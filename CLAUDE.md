@@ -27,10 +27,18 @@ When running the development server:
 
 ## Testing
 
-- **Run tests**: `pnpm test` - Runs Playwright tests
-- Test configuration in `playwright.config.ts` with projects for `e2e` and `routes` tests
+- **Run tests**: `pnpm test` - Runs Playwright tests with PLAYWRIGHT=True environment variable
+- Test configuration in `playwright.config.ts` with projects for `e2e`, `routes`, `authenticated`, and `manual-setup`
 - Tests located in `tests/` directory
 - Playwright runs on port 3000 with a 240-second timeout
+
+### Authentication Testing
+- **Setup**: `npx playwright test --project=manual-setup --headed` - Creates Google OAuth authentication state
+- **Authenticated tests**: `npx playwright test --project=authenticated --headed` - Uses saved authentication from `@playwright/.auth/user.json`
+- **Debug mode**: `npx playwright test --debug` - Interactive debugging
+- **UI mode**: `npx playwright test --ui` - Interactive test runner
+
+Requires `.env.test` file with `GOOGLE_TEST_EMAIL` and `GOOGLE_TEST_PASSWORD` for automated Google OAuth setup.
 
 ## Architecture Overview
 
@@ -47,14 +55,20 @@ This is a **Next.js 15 AI chatbot application** built with the following stack:
 
 ### Project Structure
 
-- **`app/`**: Next.js App Router structure
-  - `(auth)/`: Authentication routes (login, register) with auth configuration
-  - `(chat)/`: Main chat application with API routes and chat interface
-- **`lib/`**: Shared utilities and configurations
-  - `ai/`: AI model configurations, prompts, and tool definitions
-  - `db/`: Database schema, migrations, and queries using Drizzle ORM
-  - `editor/`: Rich text editor components and configurations
-- **`components/`**: React components including UI components from shadcn/ui
+- **`app/`**: Next.js App Router structure with route groups
+  - `(auth)/`: Authentication routes with NextAuth.js configuration (`auth.ts`, `auth.config.ts`)
+  - `(chat)/`: Main chat application with streaming API routes and bimodal interface
+  - `api/`: Utility API routes for permissions and testing
+- **`lib/`**: Core business logic and configurations
+  - `ai/`: AI model abstraction, tool definitions (`tools/`), prompts, and providers
+  - `db/`: Drizzle ORM schema, migrations, queries, and database utilities
+  - `editor/`: ProseMirror-based rich text editor with diff visualization
+  - `artifacts/`: Server-side artifact processing
+- **`components/`**: React UI components
+  - Core chat components: `chat.tsx`, `message.tsx`, `messages.tsx`
+  - Bimodal interface: `artifact.tsx` for canvas view alongside chat
+  - Document types: `text-editor.tsx`, `code-editor.tsx`, `sheet-editor.tsx`, `image-editor.tsx`
+  - Authentication: `auth-form.tsx`, `sign-out-form.tsx`
 
 ### Database Schema
 
@@ -75,9 +89,18 @@ Dual authentication system:
 
 ### AI Integration
 
-- Default model: xAI Grok-2-1212
-- Tool support for document creation/updates, weather, and suggestions
-- Streaming responses with message parts architecture
+- **Default model**: xAI Grok-2-1212 via `@ai-sdk/xai` provider
+- **AI Gateway**: Supports `@ai-sdk/gateway` for provider abstraction
+- **Tools**: Document creation/updates, weather, suggestions (see `lib/ai/tools/`)
+- **Streaming architecture**: Message parts system with real-time updates
+- **Bimodal interface**: Chat conversations alongside interactive artifact canvas
+- **Use Vercel AI Element component** for implementing AI UI components
+
+### Key UX Patterns
+- **Bimodal chat/canvas**: Primary chat with secondary artifact workspace using Framer Motion animations
+- **Version control**: Document versioning with visual diff modes via `diffview.tsx`
+- **Real-time collaboration**: Live streaming with visual feedback indicators
+- **Mobile responsive**: Adaptive layout handling with touch-friendly interactions
 
 ### Key Configuration Files
 
@@ -89,9 +112,25 @@ Dual authentication system:
 ## Environment Setup
 
 Required environment variables (see `.env.example`):
-- `AUTH_SECRET`: Authentication secret key  
-- `XAI_API_KEY`: xAI API key for chat models
-- `POSTGRES_URL`: PostgreSQL database connection
-- `BLOB_READ_WRITE_TOKEN`: Vercel Blob storage token
-- `REDIS_URL`: Redis connection for caching
-- Use "dev.log" file in the root project directory for process output redirected file.
+- `AUTH_SECRET`: Authentication secret key for NextAuth.js
+- `XAI_API_KEY`: xAI API key for Grok models (or use `AI_GATEWAY_API_KEY` with Vercel AI Gateway)
+- `POSTGRES_URL`: PostgreSQL database connection string
+- `BLOB_READ_WRITE_TOKEN`: Vercel Blob storage token for file uploads
+- `REDIS_URL`: Redis connection for session caching
+
+Testing environment (`.env.test`):
+- `GOOGLE_TEST_EMAIL`: Google account for automated OAuth testing
+- `GOOGLE_TEST_PASSWORD`: Password for test account
+
+### Development Setup
+1. Install dependencies: `pnpm install`
+2. Set up environment variables in `.env.local`
+3. Run database migrations: `pnpm db:migrate`  
+4. Start development server: `pnpm dev` (runs on port 3000)
+5. Use "dev.log" file in root directory for process output when running as background process
+
+### Deployment
+- Platform: Optimized for Vercel deployment
+- Database: Requires PostgreSQL (Neon recommended)
+- Storage: Uses Vercel Blob for file uploads
+- Caching: Redis instance required for session management

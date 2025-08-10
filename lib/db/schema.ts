@@ -9,6 +9,8 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  integer,
+  decimal,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -178,3 +180,121 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+export const story = pgTable('Story', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  title: text('title').notNull(),
+  description: text('description'),
+  genre: varchar('genre', { length: 50 }),
+  status: varchar('status', { enum: ['draft', 'ongoing', 'completed', 'hiatus'] })
+    .notNull()
+    .default('draft'),
+  authorId: uuid('authorId')
+    .notNull()
+    .references(() => user.id),
+  isPublished: boolean('isPublished').notNull().default(false),
+  publishedAt: timestamp('publishedAt'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  wordCount: integer('wordCount').notNull().default(0),
+  chapterCount: integer('chapterCount').notNull().default(0),
+  readCount: integer('readCount').notNull().default(0),
+  likeCount: integer('likeCount').notNull().default(0),
+  coverImageUrl: text('coverImageUrl'),
+  tags: json('tags').$type<string[]>().notNull().default([]),
+  mature: boolean('mature').notNull().default(false),
+});
+
+export type Story = InferSelectModel<typeof story>;
+
+export const chapter = pgTable('Chapter', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  storyId: uuid('storyId')
+    .notNull()
+    .references(() => story.id),
+  chapterNumber: integer('chapterNumber').notNull(),
+  title: text('title').notNull(),
+  content: json('content').notNull(),
+  wordCount: integer('wordCount').notNull().default(0),
+  isPublished: boolean('isPublished').notNull().default(false),
+  publishedAt: timestamp('publishedAt'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  authorNote: text('authorNote'),
+});
+
+export type Chapter = InferSelectModel<typeof chapter>;
+
+export const character = pgTable('Character', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  storyId: uuid('storyId')
+    .notNull()
+    .references(() => story.id),
+  name: text('name').notNull(),
+  description: text('description'),
+  personalityTraits: json('personalityTraits'),
+  appearance: text('appearance'),
+  role: varchar('role', { enum: ['protagonist', 'antagonist', 'supporting', 'minor'] })
+    .notNull()
+    .default('supporting'),
+  imageUrl: text('imageUrl'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type Character = InferSelectModel<typeof character>;
+
+export const readingProgress = pgTable(
+  'ReadingProgress',
+  {
+    userId: uuid('userId')
+      .notNull()
+      .references(() => user.id),
+    storyId: uuid('storyId')
+      .notNull()
+      .references(() => story.id),
+    currentChapterNumber: integer('currentChapterNumber').notNull().default(1),
+    currentPosition: decimal('currentPosition').notNull().default('0'),
+    lastReadAt: timestamp('lastReadAt').notNull().defaultNow(),
+    totalTimeRead: integer('totalTimeRead').notNull().default(0),
+    isCompleted: boolean('isCompleted').notNull().default(false),
+  },
+  (table) => {
+    return {
+      pk: primaryKey({ columns: [table.userId, table.storyId] }),
+    };
+  },
+);
+
+export type ReadingProgress = InferSelectModel<typeof readingProgress>;
+
+export const storyInteraction = pgTable(
+  'StoryInteraction',
+  {
+    userId: uuid('userId')
+      .notNull()
+      .references(() => user.id),
+    storyId: uuid('storyId')
+      .notNull()
+      .references(() => story.id),
+    interactionType: varchar('interactionType', { enum: ['like', 'bookmark', 'follow'] }).notNull(),
+    createdAt: timestamp('createdAt').notNull().defaultNow(),
+  },
+  (table) => {
+    return {
+      pk: primaryKey({ columns: [table.userId, table.storyId, table.interactionType] }),
+    };
+  },
+);
+
+export type StoryInteraction = InferSelectModel<typeof storyInteraction>;
+
+export const storyTag = pgTable('StoryTag', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  name: text('name').notNull().unique(),
+  description: text('description'),
+  color: varchar('color', { length: 7 }).default('#000000'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+});
+
+export type StoryTag = InferSelectModel<typeof storyTag>;
