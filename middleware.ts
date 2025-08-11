@@ -17,8 +17,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Allow access to stories pages in development for testing
-  if (isDevelopmentEnvironment && pathname.startsWith('/stories')) {
+  // Allow access to stories pages and root redirect in development for testing
+  if (isDevelopmentEnvironment && (pathname.startsWith('/stories') || pathname === '/')) {
     return NextResponse.next();
   }
 
