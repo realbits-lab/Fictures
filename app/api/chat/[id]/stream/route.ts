@@ -1,4 +1,4 @@
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/app/auth';
 import {
   getChatById,
   getMessagesByChatId,
