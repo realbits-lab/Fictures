@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { auth } from '../(auth)/auth';
+import { auth } from '../auth';
 
 export default async function StoriesLayout({
   children,

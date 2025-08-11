@@ -1,0 +1,102 @@
+
+> ai-chatbot@3.1.0 test /Users/thomasjeon/GitHub/@ai.thothy/Fictures
+> export PLAYWRIGHT=True && pnpm exec playwright test
+
+
+Running 94 tests using 8 workers
+
+[1A[2K[1/94] [manual-setup] › tests/auth.setup.manual.ts:11:6 › manual authenticate
+[1A[2K[2/94] [e2e] › tests/e2e/reasoning.test.ts:24:7 › chat activity with reasoning › Curie can toggle reasoning visibility
+[1A[2K[3/94] [e2e] › tests/e2e/artifacts.test.ts:55:7 › Artifacts activity › Send follow up message after generation
+[1A[2K[4/94] [e2e] › tests/e2e/reasoning.test.ts:40:7 › chat activity with reasoning › Curie can edit message and resubmit
+[1A[2K[5/94] [e2e] › tests/e2e/artifacts.test.ts:16:7 › Artifacts activity › Create a text artifact
+[1A[2K[6/94] [e2e] › tests/e2e/session.test.ts:9:9 › Guest Session › Authenticate as guest user when a new session is loaded
+[1A[2K[7/94] [e2e] › tests/e2e/artifacts.test.ts:35:7 › Artifacts activity › Toggle artifact visibility
+[1A[2K[8/94] [e2e] › tests/e2e/reasoning.test.ts:12:7 › chat activity with reasoning › Curie can send message and generate response with reasoning
+[1A[2K[manual-setup] › tests/auth.setup.manual.ts:11:6 › manual authenticate
+Starting automated authentication setup...
+
+[1A[2K🔄 Filling email and starting OAuth flow...
+
+[1A[2K✅ Email filled automatically
+
+[1A[2K🔄 Waiting for Google OAuth window...
+
+[1A[2K[9/94] [e2e] › tests/e2e/session.test.ts:104:9 › Login and Registration › Register new account
+[1A[2K[10/94] [e2e] › tests/e2e/session.test.ts:194:7 › Entitlements › Guest user cannot send more than 20 messages/day
+[1A[2K[11/94] [e2e] › tests/e2e/session.test.ts:33:9 › Guest Session › Log out is not available for guest users
+[1A[2K[12/94] [e2e] › tests/e2e/chat.test.ts:12:6 › Chat activity › Send a user message and receive response
+[1A[2K[13/94] [e2e] › tests/e2e/chat.test.ts:23:6 › Chat activity › Redirect to /chat/:id after submitting message
+[1A[2K🔄 Handling OAuth in same page...
+
+[1A[2K📝 Handling Google sign-in flow in same page...
+
+[1A[2K🔍 Found Google sign-in page
+
+[1A[2K✅ Email filled
+
+[1A[2K🔄 Clicked Next after email
+
+[1A[2K🔍 Searching for password page...
+
+[1A[2K✅ Found password field with selector: #password
+
+[1A[2K🎯 Using password field found with: #password
+
+[1A[2K✅ Password filled using .type()
+
+[1A[2K✅ Found Next button with selector: #passwordNext
+
+[1A[2K🎯 Clicking Next button found with: #passwordNext
+
+[1A[2K🔄 Clicked Next after password
+
+[1A[2Kℹ️  No consent screen found - proceeding
+
+[1A[2KManual authentication failed: page.waitForURL: Timeout 30000ms exceeded.
+=========================== logs ===========================
+waiting for navigation until "load"
+============================================================
+    at [90m/Users/thomasjeon/GitHub/@ai.thothy/Fictures/[39mtests/auth.setup.manual.ts:99:14 {
+  name: [32m'TimeoutError'[39m,
+  [[32mSymbol(step)[39m]: {
+    stepId: [32m'pw:api@32'[39m,
+    location: {
+      file: [32m'/Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/auth.setup.manual.ts'[39m,
+      line: [33m99[39m,
+      column: [33m14[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m'page.waitForURL'[39m,
+    apiName: [32m'page.waitForURL'[39m,
+    params: { info: [36m[Object][39m },
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@32'[39m
+    },
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1754927161651[39m,
+    error: {
+      message: [32m'TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n'[39m +
+        [32m'=========================== logs ===========================\n'[39m +
+        [32m'waiting for navigation until "load"\n'[39m +
+        [32m'============================================================'[39m,
+      stack: [32m'TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n'[39m +
+        [32m'=========================== logs ===========================\n'[39m +
+        [32m'waiting for navigation until "load"\n'[39m +
+        [32m'============================================================\n'[39m +
+        [32m'    at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/auth.setup.manual.ts:99:14'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
+
+[1A[2KCreating mock authentication state for testing...
+
+[1A[2K✅ Mock authentication state created
+
+[1A[2K[14/94] [e2e] › tests/e2e/chat.test.ts:35:6 › Chat activity › Send a user message from suggestion

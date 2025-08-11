@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Repository Information
+
+- **Repository**: https://github.com/realbits-lab/Fictures
+- **Owner**: realbits-lab
+- **Project**: Fictures - AI-powered content creation platform
+
 ## Development Commands
 
 - **Development**: `pnpm dev` - Starts Next.js development server with Turbo

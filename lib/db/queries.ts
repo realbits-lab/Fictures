@@ -32,6 +32,7 @@ import {
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { ChatSDKError } from '../errors';
+import { generateHashedPassword } from './utils';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
