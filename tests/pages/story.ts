@@ -133,8 +133,7 @@ export class StoryPage {
   }
 
   async filterByGenre(genre: string) {
-    await this.genreFilter.click();
-    await this.page.getByTestId(`genre-filter-${genre}`).click();
+    await this.genreFilter.selectOption({ value: genre });
   }
 
   getStoryCard(storyId: string) {

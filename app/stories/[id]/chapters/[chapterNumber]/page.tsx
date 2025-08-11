@@ -74,19 +74,19 @@ export default function ChapterPage() {
         
         <div data-testid="chapter-list-item">
           <span data-testid="chapter-number">1</span>
-          <span data-testid="chapter-title">The Beginning</span>
+          <span data-testid="nav-chapter-title">The Beginning</span>
         </div>
         <div data-testid="chapter-list-item">
           <span data-testid="chapter-number">2</span>
-          <span data-testid="chapter-title">The Journey Begins</span>
+          <span data-testid="nav-chapter-title">The Journey Begins</span>
         </div>
         <div data-testid="chapter-list-item">
           <span data-testid="chapter-number">3</span>
-          <span data-testid="chapter-title">The Dragon's Lair</span>
+          <span data-testid="nav-chapter-title">The Dragon's Lair</span>
         </div>
         <div data-testid="chapter-list-item-3">
           <span data-testid="chapter-number">3</span>
-          <span data-testid="chapter-title">The Dragon's Lair</span>
+          <span data-testid="nav-chapter-title">The Dragon's Lair</span>
         </div>
       </div>
       
