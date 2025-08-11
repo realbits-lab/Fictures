@@ -1,102 +1,523 @@
 
-> ai-chatbot@3.1.0 test /Users/thomasjeon/GitHub/@ai.thothy/Fictures
-> export PLAYWRIGHT=True && pnpm exec playwright test
+Running 17 tests using 8 workers
+
+  ✘  4 [e2e] › tests/e2e/phase2-reading-customization.test.ts:125:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Interface Customization › should save and persist reading preferences across sessions (30.1s)
+  ✘  8 [e2e] › tests/e2e/phase2-reading-customization.test.ts:95:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Interface Customization › should provide layout and spacing customization (30.1s)
+  ✘  1 [e2e] › tests/e2e/phase2-reading-customization.test.ts:54:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Interface Customization › should offer extensive font customization options (30.1s)
+  ✘  3 [e2e] › tests/e2e/phase2-reading-customization.test.ts:27:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Interface Customization › should provide comprehensive theme options (30.1s)
+  ✘  6 [e2e] › tests/e2e/phase2-reading-customization.test.ts:220:9 › Phase 2: Reading Experience Enhancement › Personal Library and Collections › should provide reading lists with custom ordering (30.1s)
+  ✘  2 [e2e] › tests/e2e/phase2-reading-customization.test.ts:191:9 › Phase 2: Reading Experience Enhancement › Personal Library and Collections › should allow creating and managing reading collections (30.1s)
+  ✘  7 [e2e] › tests/e2e/phase2-reading-customization.test.ts:152:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Interface Customization › should provide accessibility-focused customization options (30.1s)
+  ✘  5 [e2e] › tests/e2e/phase2-reading-customization.test.ts:258:9 › Phase 2: Reading Experience Enhancement › Personal Library and Collections › should track and display reading statistics (30.1s)
+  ✘  9 [e2e] › tests/e2e/phase2-reading-customization.test.ts:399:9 › Phase 2: Reading Experience Enhancement › Offline Reading Capabilities (PWA) › should sync reading progress when back online (1.6s)
+  ✘  17 [e2e] › tests/e2e/phase2-reading-customization.test.ts:566:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Features › should provide chapter-based auto-bookmarking (2.1s)
+  ✘  13 [e2e] › tests/e2e/phase2-reading-customization.test.ts:327:9 › Phase 2: Reading Experience Enhancement › Offline Reading Capabilities (PWA) › should allow downloading stories for offline reading (30.1s)
+  ✘  10 [e2e] › tests/e2e/phase2-reading-customization.test.ts:470:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Features › should provide immersive reading mode (30.1s)
+  ✘  15 [e2e] › tests/e2e/phase2-reading-customization.test.ts:500:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Features › should provide reading time estimation and pacing (30.1s)
+  ✘  12 [e2e] › tests/e2e/phase2-reading-customization.test.ts:295:9 › Phase 2: Reading Experience Enhancement › Personal Library and Collections › should provide reading achievements and badges system (30.1s)
+  ✘  16 [e2e] › tests/e2e/phase2-reading-customization.test.ts:529:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Features › should support text-to-speech functionality (30.1s)
+  ✘  11 [e2e] › tests/e2e/phase2-reading-customization.test.ts:362:9 › Phase 2: Reading Experience Enhancement › Offline Reading Capabilities (PWA) › should work offline when network is unavailable (30.1s)
+  ✘  14 [e2e] › tests/e2e/phase2-reading-customization.test.ts:435:9 › Phase 2: Reading Experience Enhancement › Offline Reading Capabilities (PWA) › should manage offline storage efficiently (30.1s)
 
 
-Running 94 tests using 8 workers
+  1) [e2e] › tests/e2e/phase2-reading-customization.test.ts:27:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Interface Customization › should provide comprehensive theme options 
 
-[1A[2K[1/94] [manual-setup] › tests/auth.setup.manual.ts:11:6 › manual authenticate
-[1A[2K[2/94] [e2e] › tests/e2e/reasoning.test.ts:24:7 › chat activity with reasoning › Curie can toggle reasoning visibility
-[1A[2K[3/94] [e2e] › tests/e2e/artifacts.test.ts:55:7 › Artifacts activity › Send follow up message after generation
-[1A[2K[4/94] [e2e] › tests/e2e/reasoning.test.ts:40:7 › chat activity with reasoning › Curie can edit message and resubmit
-[1A[2K[5/94] [e2e] › tests/e2e/artifacts.test.ts:16:7 › Artifacts activity › Create a text artifact
-[1A[2K[6/94] [e2e] › tests/e2e/session.test.ts:9:9 › Guest Session › Authenticate as guest user when a new session is loaded
-[1A[2K[7/94] [e2e] › tests/e2e/artifacts.test.ts:35:7 › Artifacts activity › Toggle artifact visibility
-[1A[2K[8/94] [e2e] › tests/e2e/reasoning.test.ts:12:7 › chat activity with reasoning › Curie can send message and generate response with reasoning
-[1A[2K[manual-setup] › tests/auth.setup.manual.ts:11:6 › manual authenticate
-Starting automated authentication setup...
+    [31mTest timeout of 30000ms exceeded.[39m
 
-[1A[2K🔄 Filling email and starting OAuth flow...
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('reading-customization-button')[22m
 
-[1A[2K✅ Email filled automatically
 
-[1A[2K🔄 Waiting for Google OAuth window...
+      28 |       // This test will FAIL - advanced themes don't exist yet
+      29 |       const settingsButton = storyPage.page.getByTestId('reading-customization-button');
+    > 30 |       await settingsButton.click();
+         |                            ^
+      31 |       
+      32 |       const customizationPanel = storyPage.page.getByTestId('reading-customization-panel');
+      33 |       await expect(customizationPanel).toBeVisible();
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-reading-customization.test.ts:30:28
 
-[1A[2K[9/94] [e2e] › tests/e2e/session.test.ts:104:9 › Login and Registration › Register new account
-[1A[2K[10/94] [e2e] › tests/e2e/session.test.ts:194:7 › Entitlements › Guest user cannot send more than 20 messages/day
-[1A[2K[11/94] [e2e] › tests/e2e/session.test.ts:33:9 › Guest Session › Log out is not available for guest users
-[1A[2K[12/94] [e2e] › tests/e2e/chat.test.ts:12:6 › Chat activity › Send a user message and receive response
-[1A[2K[13/94] [e2e] › tests/e2e/chat.test.ts:23:6 › Chat activity › Redirect to /chat/:id after submitting message
-[1A[2K🔄 Handling OAuth in same page...
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-reading-customi-cd069-comprehensive-theme-options-e2e/trace.zip
+    Usage:
 
-[1A[2K📝 Handling Google sign-in flow in same page...
+        npx playwright show-trace test-results/e2e-phase2-reading-customi-cd069-comprehensive-theme-options-e2e/trace.zip
 
-[1A[2K🔍 Found Google sign-in page
+    ────────────────────────────────────────────────────────────────────────────────────────────────
 
-[1A[2K✅ Email filled
+  2) [e2e] › tests/e2e/phase2-reading-customization.test.ts:54:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Interface Customization › should offer extensive font customization options 
 
-[1A[2K🔄 Clicked Next after email
+    [31mTest timeout of 30000ms exceeded.[39m
 
-[1A[2K🔍 Searching for password page...
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('reading-customization-button')[22m
 
-[1A[2K✅ Found password field with selector: #password
 
-[1A[2K🎯 Using password field found with: #password
+      55 |       // This test will FAIL - advanced font controls don't exist yet
+      56 |       const settingsButton = storyPage.page.getByTestId('reading-customization-button');
+    > 57 |       await settingsButton.click();
+         |                            ^
+      58 |       
+      59 |       const customizationPanel = storyPage.page.getByTestId('reading-customization-panel');
+      60 |       
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-reading-customization.test.ts:57:28
 
-[1A[2K✅ Password filled using .type()
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-reading-customi-68686--font-customization-options-e2e/trace.zip
+    Usage:
 
-[1A[2K✅ Found Next button with selector: #passwordNext
+        npx playwright show-trace test-results/e2e-phase2-reading-customi-68686--font-customization-options-e2e/trace.zip
 
-[1A[2K🎯 Clicking Next button found with: #passwordNext
+    ────────────────────────────────────────────────────────────────────────────────────────────────
 
-[1A[2K🔄 Clicked Next after password
+  3) [e2e] › tests/e2e/phase2-reading-customization.test.ts:95:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Interface Customization › should provide layout and spacing customization 
 
-[1A[2Kℹ️  No consent screen found - proceeding
+    [31mTest timeout of 30000ms exceeded.[39m
 
-[1A[2KManual authentication failed: page.waitForURL: Timeout 30000ms exceeded.
-=========================== logs ===========================
-waiting for navigation until "load"
-============================================================
-    at [90m/Users/thomasjeon/GitHub/@ai.thothy/Fictures/[39mtests/auth.setup.manual.ts:99:14 {
-  name: [32m'TimeoutError'[39m,
-  [[32mSymbol(step)[39m]: {
-    stepId: [32m'pw:api@32'[39m,
-    location: {
-      file: [32m'/Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/auth.setup.manual.ts'[39m,
-      line: [33m99[39m,
-      column: [33m14[39m
-    },
-    category: [32m'pw:api'[39m,
-    title: [32m'page.waitForURL'[39m,
-    apiName: [32m'page.waitForURL'[39m,
-    params: { info: [36m[Object][39m },
-    boxedStack: [90mundefined[39m,
-    steps: [],
-    attachmentIndices: [],
-    info: TestStepInfoImpl {
-      annotations: [],
-      _testInfo: [36m[TestInfoImpl][39m,
-      _stepId: [32m'pw:api@32'[39m
-    },
-    complete: [36m[Function: complete][39m,
-    endWallTime: [33m1754927161651[39m,
-    error: {
-      message: [32m'TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n'[39m +
-        [32m'=========================== logs ===========================\n'[39m +
-        [32m'waiting for navigation until "load"\n'[39m +
-        [32m'============================================================'[39m,
-      stack: [32m'TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n'[39m +
-        [32m'=========================== logs ===========================\n'[39m +
-        [32m'waiting for navigation until "load"\n'[39m +
-        [32m'============================================================\n'[39m +
-        [32m'    at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/auth.setup.manual.ts:99:14'[39m,
-      cause: [90mundefined[39m
-    }
-  }
-}
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('reading-customization-button')[22m
 
-[1A[2KCreating mock authentication state for testing...
 
-[1A[2K✅ Mock authentication state created
+       96 |       // This test will FAIL - layout options don't exist yet
+       97 |       const settingsButton = storyPage.page.getByTestId('reading-customization-button');
+    >  98 |       await settingsButton.click();
+          |                            ^
+       99 |       
+      100 |       const customizationPanel = storyPage.page.getByTestId('reading-customization-panel');
+      101 |       
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-reading-customization.test.ts:98:28
 
-[1A[2K[14/94] [e2e] › tests/e2e/chat.test.ts:35:6 › Chat activity › Send a user message from suggestion
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-reading-customi-5da32-t-and-spacing-customization-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-reading-customi-5da32-t-and-spacing-customization-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [e2e] › tests/e2e/phase2-reading-customization.test.ts:125:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Interface Customization › should save and persist reading preferences across sessions 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('reading-customization-button')[22m
+
+
+      126 |       // This test will FAIL - preferences persistence doesn't exist yet
+      127 |       const settingsButton = storyPage.page.getByTestId('reading-customization-button');
+    > 128 |       await settingsButton.click();
+          |                            ^
+      129 |       
+      130 |       const customizationPanel = storyPage.page.getByTestId('reading-customization-panel');
+      131 |       
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-reading-customization.test.ts:128:28
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-reading-customi-1cca4-preferences-across-sessions-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-reading-customi-1cca4-preferences-across-sessions-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [e2e] › tests/e2e/phase2-reading-customization.test.ts:152:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Interface Customization › should provide accessibility-focused customization options 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('reading-customization-button')[22m
+
+
+      153 |       // This test will FAIL - accessibility options don't exist yet
+      154 |       const settingsButton = storyPage.page.getByTestId('reading-customization-button');
+    > 155 |       await settingsButton.click();
+          |                            ^
+      156 |       
+      157 |       const customizationPanel = storyPage.page.getByTestId('reading-customization-panel');
+      158 |       
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-reading-customization.test.ts:155:28
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-reading-customi-3923e-cused-customization-options-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-reading-customi-3923e-cused-customization-options-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [e2e] › tests/e2e/phase2-reading-customization.test.ts:191:9 › Phase 2: Reading Experience Enhancement › Personal Library and Collections › should allow creating and managing reading collections 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByTestId('personal-library')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+    [2m  - expect.toBeVisible with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('personal-library')[22m
+
+
+      194 |       
+      195 |       const libraryPage = storyPage.page.getByTestId('personal-library');
+    > 196 |       await expect(libraryPage).toBeVisible();
+          |                                 ^
+      197 |       
+      198 |       // Create new collection
+      199 |       const createCollectionButton = storyPage.page.getByTestId('create-collection-button');
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-reading-customization.test.ts:196:33
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-reading-customi-95579-anaging-reading-collections-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-reading-customi-95579-anaging-reading-collections-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [e2e] › tests/e2e/phase2-reading-customization.test.ts:220:9 › Phase 2: Reading Experience Enhancement › Personal Library and Collections › should provide reading lists with custom ordering 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByTestId('reading-lists-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+    [2m  - expect.toBeVisible with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('reading-lists-page')[22m
+
+
+      223 |       
+      224 |       const readingListsPage = storyPage.page.getByTestId('reading-lists-page');
+    > 225 |       await expect(readingListsPage).toBeVisible();
+          |                                      ^
+      226 |       
+      227 |       // Create new reading list
+      228 |       const createListButton = storyPage.page.getByTestId('create-reading-list-button');
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-reading-customization.test.ts:225:38
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-reading-customi-fee64--lists-with-custom-ordering-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-reading-customi-fee64--lists-with-custom-ordering-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [e2e] › tests/e2e/phase2-reading-customization.test.ts:258:9 › Phase 2: Reading Experience Enhancement › Personal Library and Collections › should track and display reading statistics 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByTestId('reading-statistics-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+    [2m  - expect.toBeVisible with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('reading-statistics-page')[22m
+
+
+      261 |       
+      262 |       const statsPage = storyPage.page.getByTestId('reading-statistics-page');
+    > 263 |       await expect(statsPage).toBeVisible();
+          |                               ^
+      264 |       
+      265 |       // Reading time statistics
+      266 |       await expect(statsPage.getByTestId('total-reading-time')).toBeVisible();
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-reading-customization.test.ts:263:31
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-reading-customi-40a63--display-reading-statistics-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-reading-customi-40a63--display-reading-statistics-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) [e2e] › tests/e2e/phase2-reading-customization.test.ts:295:9 › Phase 2: Reading Experience Enhancement › Personal Library and Collections › should provide reading achievements and badges system 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByTestId('achievements-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+    [2m  - expect.toBeVisible with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('achievements-page')[22m
+
+
+      298 |       
+      299 |       const achievementsPage = storyPage.page.getByTestId('achievements-page');
+    > 300 |       await expect(achievementsPage).toBeVisible();
+          |                                      ^
+      301 |       
+      302 |       // Achievement categories
+      303 |       await expect(achievementsPage.getByTestId('reading-milestones')).toBeVisible();
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-reading-customization.test.ts:300:38
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-reading-customi-034c6-ievements-and-badges-system-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-reading-customi-034c6-ievements-and-badges-system-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) [e2e] › tests/e2e/phase2-reading-customization.test.ts:327:9 › Phase 2: Reading Experience Enhancement › Offline Reading Capabilities (PWA) › should allow downloading stories for offline reading 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByTestId('download-for-offline-button')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+    [2m  - expect.toBeVisible with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('download-for-offline-button')[22m
+
+
+      330 |       
+      331 |       const downloadButton = storyPage.page.getByTestId('download-for-offline-button');
+    > 332 |       await expect(downloadButton).toBeVisible();
+          |                                    ^
+      333 |       
+      334 |       await downloadButton.click();
+      335 |       
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-reading-customization.test.ts:332:36
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-reading-customi-05f6c-stories-for-offline-reading-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-reading-customi-05f6c-stories-for-offline-reading-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) [e2e] › tests/e2e/phase2-reading-customization.test.ts:362:9 › Phase 2: Reading Experience Enhancement › Offline Reading Capabilities (PWA) › should work offline when network is unavailable 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('download-for-offline-button')[22m
+
+
+      365 |       await storyPage.navigateToStory(testStoryId);
+      366 |       const downloadButton = storyPage.page.getByTestId('download-for-offline-button');
+    > 367 |       await downloadButton.click();
+          |                            ^
+      368 |       
+      369 |       const downloadModal = storyPage.page.getByTestId('offline-download-modal');
+      370 |       await downloadModal.getByTestId('select-all-chapters').click();
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-reading-customization.test.ts:367:28
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-reading-customi-87a35-when-network-is-unavailable-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-reading-customi-87a35-when-network-is-unavailable-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) [e2e] › tests/e2e/phase2-reading-customization.test.ts:399:9 › Phase 2: Reading Experience Enhancement › Offline Reading Capabilities (PWA) › should sync reading progress when back online 
+
+    Error: page.goto: net::ERR_INTERNET_DISCONNECTED at http://localhost:3000/library/offline
+    Call log:
+    [2m  - navigating to "http://localhost:3000/library/offline", waiting until "load"[22m
+
+
+      401 |       // Start offline
+      402 |       await storyPage.page.context().setOffline(true);
+    > 403 |       await storyPage.page.goto('/library/offline');
+          |                            ^
+      404 |       
+      405 |       const offlineLibrary = storyPage.page.getByTestId('offline-library');
+      406 |       const firstStory = offlineLibrary.getByTestId('offline-story-card').first();
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-reading-customization.test.ts:403:28
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-reading-customi-27072-g-progress-when-back-online-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-reading-customi-27072-g-progress-when-back-online-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  13) [e2e] › tests/e2e/phase2-reading-customization.test.ts:435:9 › Phase 2: Reading Experience Enhancement › Offline Reading Capabilities (PWA) › should manage offline storage efficiently 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByTestId('storage-settings-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+    [2m  - expect.toBeVisible with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('storage-settings-page')[22m
+
+
+      438 |       
+      439 |       const storageSettingsPage = storyPage.page.getByTestId('storage-settings-page');
+    > 440 |       await expect(storageSettingsPage).toBeVisible();
+          |                                         ^
+      441 |       
+      442 |       // Storage usage display
+      443 |       await expect(storageSettingsPage.getByTestId('storage-usage-chart')).toBeVisible();
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-reading-customization.test.ts:440:41
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-reading-customi-1643e-offline-storage-efficiently-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-reading-customi-1643e-offline-storage-efficiently-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  14) [e2e] › tests/e2e/phase2-reading-customization.test.ts:470:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Features › should provide immersive reading mode 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByTestId('immersive-mode-button')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+    [2m  - expect.toBeVisible with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('immersive-mode-button')[22m
+
+
+      473 |       
+      474 |       const immersiveModeButton = storyPage.page.getByTestId('immersive-mode-button');
+    > 475 |       await expect(immersiveModeButton).toBeVisible();
+          |                                         ^
+      476 |       
+      477 |       await immersiveModeButton.click();
+      478 |       
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-reading-customization.test.ts:475:41
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-reading-customi-1681d-vide-immersive-reading-mode-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-reading-customi-1681d-vide-immersive-reading-mode-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  15) [e2e] › tests/e2e/phase2-reading-customization.test.ts:500:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Features › should provide reading time estimation and pacing 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByTestId('chapter-info').getByTestId('estimated-reading-time')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+    [2m  - expect.toBeVisible with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('chapter-info').getByTestId('estimated-reading-time')[22m
+
+
+      503 |       
+      504 |       const chapterInfo = storyPage.page.getByTestId('chapter-info');
+    > 505 |       await expect(chapterInfo.getByTestId('estimated-reading-time')).toBeVisible();
+          |                                                                       ^
+      506 |       await expect(chapterInfo.getByTestId('words-in-chapter')).toBeVisible();
+      507 |       
+      508 |       // Should show reading progress within chapter
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-reading-customization.test.ts:505:71
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-reading-customi-d2ad4--time-estimation-and-pacing-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-reading-customi-d2ad4--time-estimation-and-pacing-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  16) [e2e] › tests/e2e/phase2-reading-customization.test.ts:529:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Features › should support text-to-speech functionality 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByTestId('text-to-speech-button')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+    [2m  - expect.toBeVisible with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('text-to-speech-button')[22m
+
+
+      532 |       
+      533 |       const ttsButton = storyPage.page.getByTestId('text-to-speech-button');
+    > 534 |       await expect(ttsButton).toBeVisible();
+          |                               ^
+      535 |       
+      536 |       await ttsButton.click();
+      537 |       
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-reading-customization.test.ts:534:31
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-reading-customi-8b499-ext-to-speech-functionality-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-reading-customi-8b499-ext-to-speech-functionality-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  17) [e2e] › tests/e2e/phase2-reading-customization.test.ts:566:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Features › should provide chapter-based auto-bookmarking 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      581 |       // Should automatically scroll to last reading position
+      582 |       const scrollPosition = await storyPage.page.evaluate(() => window.pageYOffset);
+    > 583 |       expect(scrollPosition).toBeGreaterThan(100); // Should not be at top
+          |                              ^
+      584 |       
+      585 |       // Should show bookmark indicator
+      586 |       const bookmarkIndicator = storyPage.page.getByTestId('auto-bookmark-indicator');
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-reading-customization.test.ts:583:30
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-reading-customi-6fd5b-pter-based-auto-bookmarking-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-reading-customi-6fd5b-pter-based-auto-bookmarking-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  17 failed
+    [e2e] › tests/e2e/phase2-reading-customization.test.ts:27:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Interface Customization › should provide comprehensive theme options 
+    [e2e] › tests/e2e/phase2-reading-customization.test.ts:54:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Interface Customization › should offer extensive font customization options 
+    [e2e] › tests/e2e/phase2-reading-customization.test.ts:95:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Interface Customization › should provide layout and spacing customization 
+    [e2e] › tests/e2e/phase2-reading-customization.test.ts:125:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Interface Customization › should save and persist reading preferences across sessions 
+    [e2e] › tests/e2e/phase2-reading-customization.test.ts:152:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Interface Customization › should provide accessibility-focused customization options 
+    [e2e] › tests/e2e/phase2-reading-customization.test.ts:191:9 › Phase 2: Reading Experience Enhancement › Personal Library and Collections › should allow creating and managing reading collections 
+    [e2e] › tests/e2e/phase2-reading-customization.test.ts:220:9 › Phase 2: Reading Experience Enhancement › Personal Library and Collections › should provide reading lists with custom ordering 
+    [e2e] › tests/e2e/phase2-reading-customization.test.ts:258:9 › Phase 2: Reading Experience Enhancement › Personal Library and Collections › should track and display reading statistics 
+    [e2e] › tests/e2e/phase2-reading-customization.test.ts:295:9 › Phase 2: Reading Experience Enhancement › Personal Library and Collections › should provide reading achievements and badges system 
+    [e2e] › tests/e2e/phase2-reading-customization.test.ts:327:9 › Phase 2: Reading Experience Enhancement › Offline Reading Capabilities (PWA) › should allow downloading stories for offline reading 
+    [e2e] › tests/e2e/phase2-reading-customization.test.ts:362:9 › Phase 2: Reading Experience Enhancement › Offline Reading Capabilities (PWA) › should work offline when network is unavailable 
+    [e2e] › tests/e2e/phase2-reading-customization.test.ts:399:9 › Phase 2: Reading Experience Enhancement › Offline Reading Capabilities (PWA) › should sync reading progress when back online 
+    [e2e] › tests/e2e/phase2-reading-customization.test.ts:435:9 › Phase 2: Reading Experience Enhancement › Offline Reading Capabilities (PWA) › should manage offline storage efficiently 
+    [e2e] › tests/e2e/phase2-reading-customization.test.ts:470:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Features › should provide immersive reading mode 
+    [e2e] › tests/e2e/phase2-reading-customization.test.ts:500:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Features › should provide reading time estimation and pacing 
+    [e2e] › tests/e2e/phase2-reading-customization.test.ts:529:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Features › should support text-to-speech functionality 
+    [e2e] › tests/e2e/phase2-reading-customization.test.ts:566:9 › Phase 2: Reading Experience Enhancement › Advanced Reading Features › should provide chapter-based auto-bookmarking 
