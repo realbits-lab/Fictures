@@ -37,8 +37,8 @@ const PurePreviewMessage = ({
   message: ChatMessage;
   vote: Vote | undefined;
   isLoading: boolean;
-  setMessages: UseChatHelpers<ChatMessage>['setMessages'];
-  regenerate: UseChatHelpers<ChatMessage>['regenerate'];
+  setMessages: UseChatHelpers['setMessages'];
+  regenerate: UseChatHelpers['regenerate'];
   isReadonly: boolean;
   requiresScrollPadding: boolean;
 }) => {
@@ -99,7 +99,7 @@ const PurePreviewMessage = ({
               </div>
             )}
 
-            {message.parts?.map((part, index) => {
+            {message.parts?.flatMap((part, index) => {
               const { type } = part;
               const key = `message-${message.id}-part-${index}`;
 
@@ -307,6 +307,9 @@ const PurePreviewMessage = ({
                   );
                 }
               }
+
+              // Return empty array for any unhandled part types to avoid React key warnings
+              return [];
             })}
 
             {!isReadonly && (

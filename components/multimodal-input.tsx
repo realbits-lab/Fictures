@@ -29,6 +29,7 @@ import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import type { VisibilityType } from './visibility-selector';
 import type { Attachment, ChatMessage } from '@/lib/types';
 import { usePathname, useRouter } from 'next/navigation';
+import { generateUUID } from '@/lib/utils';
 
 function PureMultimodalInput({
   chatId,
@@ -121,6 +122,7 @@ function PureMultimodalInput({
     }
 
     sendMessage({
+      id: generateUUID(),
       role: 'user',
       parts: [
         ...attachments.map((attachment) => ({

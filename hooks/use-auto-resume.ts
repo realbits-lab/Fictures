@@ -8,8 +8,8 @@ import { useDataStream } from '@/components/data-stream-provider';
 export interface UseAutoResumeParams {
   autoResume: boolean;
   initialMessages: ChatMessage[];
-  resumeStream: UseChatHelpers<ChatMessage>['resumeStream'];
-  setMessages: UseChatHelpers<ChatMessage>['setMessages'];
+  resumeStream: UseChatHelpers['resumeStream'] | undefined;
+  setMessages: UseChatHelpers['setMessages'];
 }
 
 export function useAutoResume({
@@ -22,6 +22,7 @@ export function useAutoResume({
 
   useEffect(() => {
     if (!autoResume) return;
+    if (!resumeStream || typeof resumeStream !== 'function') return;
 
     const mostRecentMessage = initialMessages.at(-1);
 
