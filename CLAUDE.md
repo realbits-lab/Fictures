@@ -48,13 +48,13 @@ Requires `.env.test` file with `GOOGLE_TEST_EMAIL` and `GOOGLE_TEST_PASSWORD` fo
 
 ## Architecture Overview
 
-This is a **Next.js 15 AI chatbot application** built with the following stack:
+This is a **Next.js 15 AI-powered web novel platform** with comprehensive community features built with the following stack:
 
 ### Core Technologies
 - **Framework**: Next.js 15 (App Router with PPR experimental feature)
 - **Database**: PostgreSQL with Drizzle ORM
 - **Authentication**: NextAuth.js v5 with credentials and guest user support
-- **AI Integration**: Vercel AI SDK with xAI (Grok) as default provider
+- **AI Integration**: Powered by Vercel AI SDK with xAI (Grok) as default provider
 - **Styling**: Tailwind CSS with shadcn/ui components
 - **File Storage**: Vercel Blob for file uploads
 - **Caching**: Redis for session storage
@@ -64,7 +64,8 @@ This is a **Next.js 15 AI chatbot application** built with the following stack:
 - **`app/`**: Next.js App Router structure with route groups
   - `(auth)/`: Authentication routes with NextAuth.js configuration (`auth.ts`, `auth.config.ts`)
   - `(chat)/`: Main chat application with streaming API routes and bimodal interface
-  - `api/`: Utility API routes for permissions and testing
+  - `community/`: Community features including forums, groups, contests, and collaboration tools
+  - `api/`: API routes for chat, community features, and utility endpoints
 - **`lib/`**: Core business logic and configurations
   - `ai/`: AI model abstraction, tool definitions (`tools/`), prompts, and providers
   - `db/`: Drizzle ORM schema, migrations, queries, and database utilities
@@ -79,6 +80,8 @@ This is a **Next.js 15 AI chatbot application** built with the following stack:
 ### Database Schema
 
 Key tables managed by Drizzle ORM:
+
+#### Core Platform
 - **Users**: Support for both regular and guest users
 - **Chats**: Chat sessions with visibility settings
 - **Messages**: Versioned message system (v2 schema with parts and attachments)
@@ -86,6 +89,14 @@ Key tables managed by Drizzle ORM:
 - **Votes**: User feedback on messages
 - **Suggestions**: Document editing suggestions
 - **Streams**: Chat streaming sessions
+
+#### Community Features (Phase 3)
+- **Forum System**: `forumCategory`, `forumThread`, `forumPost`, `forumModeration`
+- **Group System**: `group`, `groupMember`, `groupActivity`, `groupInvitation`
+- **Contest System**: `contest`, `contestSubmission`, `contestVote`
+- **Gamification**: `achievement`, `userAchievement`, `userLevel`, `leaderboard`
+- **Collaboration**: `betaReader`, `betaReaderRequest`, `coAuthor`, `workshop`, `workshopParticipant`
+- **Engagement**: `userFollowing`, `notification`, `reportContent`
 
 ### Authentication
 
@@ -106,7 +117,17 @@ Dual authentication system:
 - **Bimodal chat/canvas**: Primary chat with secondary artifact workspace using Framer Motion animations
 - **Version control**: Document versioning with visual diff modes via `diffview.tsx`
 - **Real-time collaboration**: Live streaming with visual feedback indicators
+- **Community navigation**: Structured community section with forums, groups, contests
+- **Gamification**: Achievement system, leaderboards, and user progression
 - **Mobile responsive**: Adaptive layout handling with touch-friendly interactions
+
+### Community Features (Phase 3)
+- **Forum System**: Categories, threads, posts with AI-powered moderation
+- **Group Management**: Public/private groups with role-based permissions
+- **Contest Framework**: Multi-phase contests with automated management
+- **Gamification Engine**: Achievements, XP/levels, leaderboards, badges
+- **Collaboration Tools**: Beta reader marketplace, co-authoring, workshops
+- **Engagement Systems**: Following, notifications, content reporting
 
 ### Key Configuration Files
 
