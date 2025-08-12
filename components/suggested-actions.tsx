@@ -58,25 +58,29 @@ function PureSuggestedActions({
           <Button
             variant="ghost"
             onClick={async () => {
-              // Find the textarea and submit button in the current page
-              const textarea = document.querySelector('[data-testid="multimodal-input"]') as HTMLTextAreaElement;
-              const submitButton = document.querySelector('[data-testid="send-button"]') as HTMLButtonElement;
+              console.log('=== Question button clicked ===');
+              console.log('sendMessage type:', typeof sendMessage);
+              console.log('sendMessage value:', sendMessage);
+              console.log('chatId:', chatId);
+              console.log('selectedVisibilityType:', selectedVisibilityType);
               
-              if (textarea && submitButton) {
-                // Set the value and trigger input event
-                textarea.value = suggestedAction.action;
-                textarea.dispatchEvent(new Event('input', { bubbles: true }));
-                
-                // Trigger the submit
-                submitButton.click();
-              } else {
-                // Fallback: use sendMessage if available
-                if (sendMessage && typeof sendMessage === 'function') {
+              if (sendMessage && typeof sendMessage === 'function') {
+                console.log('✅ Using sendMessage function');
+                try {
                   sendMessage({
                     role: 'user',
                     parts: [{ type: 'text', text: suggestedAction.action }],
                   });
+                  console.log('✅ sendMessage called successfully');
+                } catch (error) {
+                  console.error('❌ Error calling sendMessage:', error);
                 }
+              } else {
+                console.error('❌ sendMessage is not available');
+                console.log('Attempting to debug props passed to SuggestedActions...');
+                
+                // Log all props for debugging
+                console.log('All available props:', { sendMessage, chatId, selectedVisibilityType });
               }
             }}
             className="text-left border rounded-xl px-4 py-3.5 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start"

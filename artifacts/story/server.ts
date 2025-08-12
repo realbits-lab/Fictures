@@ -1,10 +1,16 @@
 import { smoothStream, streamText } from 'ai';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
 import { myProvider } from '@/lib/ai/providers';
 import { createDocumentHandler } from '@/lib/artifacts/server';
 import { updateDocumentPrompt } from '@/lib/ai/prompts';
-import { db } from '@/lib/db';
 import { story } from '@/lib/db/schema';
 import { generateUUID } from '@/lib/utils';
+
+// Create db instance like other query files
+// biome-ignore lint: Forbidden non-null assertion.
+const client = postgres(process.env.POSTGRES_URL!);
+const db = drizzle(client);
 
 export const storyDocumentHandler = createDocumentHandler<'story'>({
   kind: 'story',

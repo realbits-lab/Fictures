@@ -62,10 +62,20 @@ export function Chat({
       api: '/api/chat',
       fetch: fetchWithErrorHandlers,
       prepareSendMessagesRequest({ messages, id, body }) {
+        const lastMessage = messages.at(-1);
+        if (!lastMessage) {
+          console.error('No message to send');
+          throw new Error('No message to send');
+        }
+        
         return {
           body: {
             id,
-            message: messages.at(-1),
+            message: {
+              id: lastMessage.id || generateUUID(),
+              role: lastMessage.role,
+              parts: lastMessage.parts || [{ type: 'text', text: lastMessage.content || '' }],
+            },
             selectedChatModel: initialChatModel,
             selectedVisibilityType: initialVisibilityType,
             ...body,
@@ -92,11 +102,123 @@ export function Chat({
   const searchParams = useSearchParams();
   const query = searchParams.get('query');
 
+  // Manual sendMessage implementation as fallback
+  const manualSendMessage = async (message: ChatMessage) => {
+    console.log('🔥 Manual sendMessage called with:', message);
+    
+    try {
+      // Add the message to local state first
+      setMessages((prevMessages) => [...prevMessages, message]);
+      
+      // Prepare the request body in the expected format
+      const requestBody = {
+        id,
+        message: {
+          id: message.id || generateUUID(),
+          role: message.role,
+          parts: message.parts,
+        },
+        selectedChatModel: initialChatModel,
+        selectedVisibilityType: initialVisibilityType,
+      };
+
+      console.log('📤 Sending request to /api/chat with body:', requestBody);
+
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      console.log('✅ Manual sendMessage response received');
+      
+      // Handle the streaming response
+      const reader = response.body?.getReader();
+      if (reader) {
+        const decoder = new TextDecoder();
+        let accumulatedContent = '';
+        
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            const chunk = decoder.decode(value, { stream: true });
+            console.log('📥 Received chunk:', chunk);
+            
+            // Parse Server-Sent Events
+            const lines = chunk.split('\n');
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  console.log('📦 Parsed data:', data);
+                  
+                  // Handle different types of streaming data
+                  if (data.type === 'text-delta' && data.delta) {
+                    accumulatedContent += data.delta;
+                    
+                    // Update the UI with accumulated content
+                    setMessages((prevMessages) => {
+                      const newMessages = [...prevMessages];
+                      const lastMessage = newMessages[newMessages.length - 1];
+                      
+                      // If the last message is from assistant, update it
+                      if (lastMessage && lastMessage.role === 'assistant') {
+                        lastMessage.parts = [{
+                          type: 'text',
+                          text: accumulatedContent
+                        }];
+                      } else {
+                        // Add a new assistant message
+                        newMessages.push({
+                          id: generateUUID(),
+                          role: 'assistant',
+                          parts: [{
+                            type: 'text',
+                            text: accumulatedContent
+                          }]
+                        });
+                      }
+                      
+                      return newMessages;
+                    });
+                  }
+                } catch (e) {
+                  // Skip non-JSON lines
+                }
+              }
+            }
+          }
+        } catch (readerError) {
+          console.error('Error reading stream:', readerError);
+        }
+      }
+      
+    } catch (error) {
+      console.error('❌ Manual sendMessage error:', error);
+      toast({
+        type: 'error',
+        description: 'Failed to send message',
+      });
+    }
+  };
+
+  // Use manual implementation if sendMessage is not available
+  const effectiveSendMessage = sendMessage || manualSendMessage;
+
   const [hasAppendedQuery, setHasAppendedQuery] = useState(false);
 
   useEffect(() => {
     if (query && !hasAppendedQuery) {
-      sendMessage({
+      effectiveSendMessage({
+        id: generateUUID(),
         role: 'user' as const,
         parts: [{ type: 'text', text: query }],
       });
@@ -104,7 +226,7 @@ export function Chat({
       setHasAppendedQuery(true);
       window.history.replaceState({}, '', `/stories/create/${id}`);
     }
-  }, [query, sendMessage, hasAppendedQuery, id]);
+  }, [query, effectiveSendMessage, hasAppendedQuery, id]);
 
   const { data: votes } = useSWR<Array<Vote>>(
     messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
@@ -113,6 +235,22 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+
+  // Debug sendMessage availability
+  useEffect(() => {
+    console.log('🔍 Chat component - useChat debug:', {
+      sendMessageType: typeof sendMessage,
+      sendMessageAvailable: !!sendMessage,
+      sendMessageFunction: sendMessage,
+      effectiveSendMessageType: typeof effectiveSendMessage,
+      effectiveSendMessageAvailable: !!effectiveSendMessage,
+      statusValue: status,
+      messagesLength: messages.length,
+      stopType: typeof stop,
+      regenerateType: typeof regenerate,
+      chatId: id
+    });
+  }, [sendMessage, effectiveSendMessage, status, messages.length, stop, regenerate, id]);
 
   useAutoResume({
     autoResume,
@@ -155,7 +293,7 @@ export function Chat({
               setAttachments={setAttachments}
               messages={messages}
               setMessages={setMessages}
-              sendMessage={sendMessage}
+              sendMessage={effectiveSendMessage}
               selectedVisibilityType={initialVisibilityType}
             />
           )}
@@ -170,7 +308,7 @@ export function Chat({
         stop={stop}
         attachments={attachments}
         setAttachments={setAttachments}
-        sendMessage={sendMessage}
+        sendMessage={effectiveSendMessage}
         messages={messages}
         setMessages={setMessages}
         regenerate={regenerate}
