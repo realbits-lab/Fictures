@@ -1,0 +1,1235 @@
+
+Running 55 tests using 8 workers
+
+[1A[2K[1/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:134:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide dialogue enhancement suggestions
+[1A[2K[2/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:244:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should allow creating detailed character profiles
+[1A[2K[3/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:304:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should track character consistency across chapters
+[1A[2K[4/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:29:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide AI writing assistant panel
+[1A[2K[5/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:171:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide scene setting and atmosphere suggestions
+[1A[2K[6/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:218:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should provide character development dashboard
+[1A[2K[7/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:57:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide real-time writing suggestions
+[1A[2K[8/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:93:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide contextual grammar and style suggestions
+[1A[2K  1) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:93:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide contextual grammar and style suggestions 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-031a7-ammar-and-style-suggestions-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-031a7-ammar-and-style-suggestions-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  2) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:171:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide scene setting and atmosphere suggestions 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-221e4--and-atmosphere-suggestions-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-221e4--and-atmosphere-suggestions-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  3) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:134:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide dialogue enhancement suggestions 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-eabfb-gue-enhancement-suggestions-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-eabfb-gue-enhancement-suggestions-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  4) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:244:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should allow creating detailed character profiles 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-540b6-detailed-character-profiles-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-540b6-detailed-character-profiles-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  5) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:304:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should track character consistency across chapters 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-072b9-consistency-across-chapters-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-072b9-consistency-across-chapters-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  6) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:218:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should provide character development dashboard 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-10d75-acter-development-dashboard-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-10d75-acter-development-dashboard-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  7) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:57:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide real-time writing suggestions 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-3c561-al-time-writing-suggestions-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-3c561-al-time-writing-suggestions-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  8) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:29:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide AI writing assistant panel 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-fb026--AI-writing-assistant-panel-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-fb026--AI-writing-assistant-panel-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[9/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:390:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should track character relationships and dynamics
+[1A[2K[10/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:508:9 › Phase 2: AI Writing Enhancement › Plot Structure Visualization and Planning › should provide subplot tracking and management
+[1A[2K[11/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:350:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should provide AI-powered character development suggestions
+[1A[2K[12/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:461:9 › Phase 2: AI Writing Enhancement › Plot Structure Visualization and Planning › should analyze plot pacing and provide recommendations
+[1A[2K[13/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:428:9 › Phase 2: AI Writing Enhancement › Plot Structure Visualization and Planning › should provide visual plot structure dashboard
+[1A[2K[14/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:554:9 › Phase 2: AI Writing Enhancement › Plot Structure Visualization and Planning › should provide story arc templates and guides
+[1A[2K[15/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:601:9 › Phase 2: AI Writing Enhancement › Writing Productivity Tracking › should track writing session metrics
+[1A[2K[16/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:638:9 › Phase 2: AI Writing Enhancement › Writing Productivity Tracking › should provide writing habit analysis and insights
+[1A[2K  9) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:461:9 › Phase 2: AI Writing Enhancement › Plot Structure Visualization and Planning › should analyze plot pacing and provide recommendations 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-6c041-and-provide-recommendations-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-6c041-and-provide-recommendations-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  10) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:508:9 › Phase 2: AI Writing Enhancement › Plot Structure Visualization and Planning › should provide subplot tracking and management 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-2313e-lot-tracking-and-management-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-2313e-lot-tracking-and-management-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  11) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:554:9 › Phase 2: AI Writing Enhancement › Plot Structure Visualization and Planning › should provide story arc templates and guides 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-27bf6-ry-arc-templates-and-guides-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-27bf6-ry-arc-templates-and-guides-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  12) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:350:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should provide AI-powered character development suggestions 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-e4329-ter-development-suggestions-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-e4329-ter-development-suggestions-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  13) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:390:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should track character relationships and dynamics 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-dde8d--relationships-and-dynamics-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-dde8d--relationships-and-dynamics-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  14) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:428:9 › Phase 2: AI Writing Enhancement › Plot Structure Visualization and Planning › should provide visual plot structure dashboard 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-82419-al-plot-structure-dashboard-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-82419-al-plot-structure-dashboard-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  15) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:638:9 › Phase 2: AI Writing Enhancement › Writing Productivity Tracking › should provide writing habit analysis and insights 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-d1c4b-habit-analysis-and-insights-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-d1c4b-habit-analysis-and-insights-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  16) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:601:9 › Phase 2: AI Writing Enhancement › Writing Productivity Tracking › should track writing session metrics 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-bb937-ack-writing-session-metrics-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-bb937-ack-writing-session-metrics-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[17/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:677:9 › Phase 2: AI Writing Enhancement › Writing Productivity Tracking › should support writing goals and milestone tracking
+[1A[2K[18/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:723:9 › Phase 2: AI Writing Enhancement › Writing Productivity Tracking › should provide AI-powered writing schedule optimization
+[1A[2K[19/55] [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:29:9 › Phase 2: Analytics and Insights Dashboard › Advanced Analytics Dashboard for Writers › should display comprehensive analytics overview
+[1A[2K[20/55] [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:64:9 › Phase 2: Analytics and Insights Dashboard › Advanced Analytics Dashboard for Writers › should show detailed story performance metrics
+[1A[2K[21/55] [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:139:9 › Phase 2: Analytics and Insights Dashboard › Advanced Analytics Dashboard for Writers › should show revenue and monetization analytics
+[1A[2K[22/55] [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:102:9 › Phase 2: Analytics and Insights Dashboard › Advanced Analytics Dashboard for Writers › should provide traffic source analysis
+[1A[2K[23/55] [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:224:9 › Phase 2: Analytics and Insights Dashboard › Reader Engagement Metrics › should track detailed reader behavior patterns
+[1A[2K[24/55] [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:181:9 › Phase 2: Analytics and Insights Dashboard › Advanced Analytics Dashboard for Writers › should provide comparative analytics and benchmarking
+[1A[2K  17) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:723:9 › Phase 2: AI Writing Enhancement › Writing Productivity Tracking › should provide AI-powered writing schedule optimization 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-0bc64-iting-schedule-optimization-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-0bc64-iting-schedule-optimization-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  18) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:677:9 › Phase 2: AI Writing Enhancement › Writing Productivity Tracking › should support writing goals and milestone tracking 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-2f558-oals-and-milestone-tracking-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-2f558-oals-and-milestone-tracking-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  19) [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:29:9 › Phase 2: Analytics and Insights Dashboard › Advanced Analytics Dashboard for Writers › should display comprehensive analytics overview 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-analytics-dashboard.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-analytics-dashb-511a8-ehensive-analytics-overview-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-analytics-dashb-511a8-ehensive-analytics-overview-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  20) [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:139:9 › Phase 2: Analytics and Insights Dashboard › Advanced Analytics Dashboard for Writers › should show revenue and monetization analytics 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-analytics-dashboard.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-analytics-dashb-e738a--and-monetization-analytics-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-analytics-dashb-e738a--and-monetization-analytics-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  21) [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:102:9 › Phase 2: Analytics and Insights Dashboard › Advanced Analytics Dashboard for Writers › should provide traffic source analysis 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-analytics-dashboard.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-analytics-dashb-dd1ca-ide-traffic-source-analysis-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-analytics-dashb-dd1ca-ide-traffic-source-analysis-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  22) [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:64:9 › Phase 2: Analytics and Insights Dashboard › Advanced Analytics Dashboard for Writers › should show detailed story performance metrics 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-analytics-dashboard.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-analytics-dashb-b3a52-d-story-performance-metrics-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-analytics-dashb-b3a52-d-story-performance-metrics-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  23) [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:181:9 › Phase 2: Analytics and Insights Dashboard › Advanced Analytics Dashboard for Writers › should provide comparative analytics and benchmarking 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-analytics-dashboard.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-analytics-dashb-ff35c--analytics-and-benchmarking-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-analytics-dashb-ff35c--analytics-and-benchmarking-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  24) [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:224:9 › Phase 2: Analytics and Insights Dashboard › Reader Engagement Metrics › should track detailed reader behavior patterns 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-analytics-dashboard.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-analytics-dashb-a60a2-ed-reader-behavior-patterns-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-analytics-dashb-a60a2-ed-reader-behavior-patterns-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[25/55] [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:266:9 › Phase 2: Analytics and Insights Dashboard › Reader Engagement Metrics › should analyze reader demographics and preferences
+[1A[2K[26/55] [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:368:9 › Phase 2: Analytics and Insights Dashboard › Reader Engagement Metrics › should provide reader retention and loyalty analysis
+[1A[2K[27/55] [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:414:9 › Phase 2: Analytics and Insights Dashboard › Performance Insights and Trends › should identify trending content and viral moments
+[1A[2K[28/55] [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:317:9 › Phase 2: Analytics and Insights Dashboard › Reader Engagement Metrics › should track social engagement and viral metrics
+[1A[2K[29/55] [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:506:9 › Phase 2: Analytics and Insights Dashboard › Performance Insights and Trends › should forecast future performance and growth
+[1A[2K[30/55] [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:461:9 › Phase 2: Analytics and Insights Dashboard › Performance Insights and Trends › should provide seasonal and cyclical pattern analysis
+[1A[2K[31/55] [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:556:9 › Phase 2: Analytics and Insights Dashboard › Performance Insights and Trends › should provide competitive analysis and market positioning
+[1A[2K[32/55] [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:602:9 › Phase 2: Analytics and Insights Dashboard › Goal Tracking Systems › should provide comprehensive goal management dashboard
+[1A[2K  25) [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:266:9 › Phase 2: Analytics and Insights Dashboard › Reader Engagement Metrics › should analyze reader demographics and preferences 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-analytics-dashboard.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-analytics-dashb-2807d-emographics-and-preferences-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-analytics-dashb-2807d-emographics-and-preferences-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  26) [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:414:9 › Phase 2: Analytics and Insights Dashboard › Performance Insights and Trends › should identify trending content and viral moments 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-analytics-dashboard.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-analytics-dashb-c7835-g-content-and-viral-moments-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-analytics-dashb-c7835-g-content-and-viral-moments-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  27) [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:556:9 › Phase 2: Analytics and Insights Dashboard › Performance Insights and Trends › should provide competitive analysis and market positioning 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-analytics-dashboard.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-analytics-dashb-be06d-ysis-and-market-positioning-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-analytics-dashb-be06d-ysis-and-market-positioning-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  28) [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:461:9 › Phase 2: Analytics and Insights Dashboard › Performance Insights and Trends › should provide seasonal and cyclical pattern analysis 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-analytics-dashboard.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-analytics-dashb-32413-d-cyclical-pattern-analysis-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-analytics-dashb-32413-d-cyclical-pattern-analysis-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  29) [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:368:9 › Phase 2: Analytics and Insights Dashboard › Reader Engagement Metrics › should provide reader retention and loyalty analysis 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-analytics-dashboard.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-analytics-dashb-b8c97-ention-and-loyalty-analysis-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-analytics-dashb-b8c97-ention-and-loyalty-analysis-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  30) [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:506:9 › Phase 2: Analytics and Insights Dashboard › Performance Insights and Trends › should forecast future performance and growth 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-analytics-dashboard.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-analytics-dashb-9b1e0-ture-performance-and-growth-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-analytics-dashb-9b1e0-ture-performance-and-growth-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  31) [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:602:9 › Phase 2: Analytics and Insights Dashboard › Goal Tracking Systems › should provide comprehensive goal management dashboard 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-analytics-dashboard.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-analytics-dashb-f6a18-e-goal-management-dashboard-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-analytics-dashb-f6a18-e-goal-management-dashboard-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  32) [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:317:9 › Phase 2: Analytics and Insights Dashboard › Reader Engagement Metrics › should track social engagement and viral metrics 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-analytics-dashboard.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-analytics-dashb-4ef52-ngagement-and-viral-metrics-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-analytics-dashb-4ef52-ngagement-and-viral-metrics-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[33/55] [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:638:9 › Phase 2: Analytics and Insights Dashboard › Goal Tracking Systems › should support various goal types and tracking methods
+[1A[2K[34/55] [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:692:9 › Phase 2: Analytics and Insights Dashboard › Goal Tracking Systems › should provide goal progress tracking and analytics
+[1A[2K[35/55] [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:734:9 › Phase 2: Analytics and Insights Dashboard › Goal Tracking Systems › should provide goal recommendations and optimization
+[1A[2K[36/55] [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:784:9 › Phase 2: Analytics and Insights Dashboard › Goal Tracking Systems › should support team and collaborative goals
+[1A[2K[37/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:132:9 › Phase 2: Social Features Implementation › Comment System with Threading › should support chapter-specific comments
+[1A[2K[38/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:28:9 › Phase 2: Social Features Implementation › Comment System with Threading › should display story-level comments with threading
+[1A[2K[39/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:54:9 › Phase 2: Social Features Implementation › Comment System with Threading › should allow posting new comments
+[1A[2K[40/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:90:9 › Phase 2: Social Features Implementation › Comment System with Threading › should support threaded replies to comments
+[1A[2K  33) [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:638:9 › Phase 2: Analytics and Insights Dashboard › Goal Tracking Systems › should support various goal types and tracking methods 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-analytics-dashboard.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-analytics-dashb-f5db9--types-and-tracking-methods-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-analytics-dashb-f5db9--types-and-tracking-methods-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  34) [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:692:9 › Phase 2: Analytics and Insights Dashboard › Goal Tracking Systems › should provide goal progress tracking and analytics 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-analytics-dashboard.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-analytics-dashb-c1929-ress-tracking-and-analytics-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-analytics-dashb-c1929-ress-tracking-and-analytics-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  35) [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:734:9 › Phase 2: Analytics and Insights Dashboard › Goal Tracking Systems › should provide goal recommendations and optimization 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-analytics-dashboard.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-analytics-dashb-791db-mendations-and-optimization-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-analytics-dashb-791db-mendations-and-optimization-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  36) [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:784:9 › Phase 2: Analytics and Insights Dashboard › Goal Tracking Systems › should support team and collaborative goals 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      21 |   test.beforeEach(async ({ page }) => {
+      22 |     storyPage = new StoryPage(page);
+    > 23 |     await storyPage.loginAsUser(testAuthorId);
+         |                     ^
+      24 |     await storyPage.navigateToStory(testStoryId);
+      25 |     await storyPage.waitForStoryLoad();
+      26 |   });
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-analytics-dashboard.test.ts:23:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-analytics-dashb-758ed-eam-and-collaborative-goals-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-analytics-dashb-758ed-eam-and-collaborative-goals-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[41/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:168:9 › Phase 2: Social Features Implementation › Comment System with Threading › should allow liking/unliking comments and display counts
+[1A[2K[42/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:201:9 › Phase 2: Social Features Implementation › Comment System with Threading › should provide comment moderation features for story authors
+[1A[2K[43/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:241:9 › Phase 2: Social Features Implementation › Rating and Review System › should display story ratings and allow users to rate
+[1A[2K[44/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:280:9 › Phase 2: Social Features Implementation › Rating and Review System › should support detailed reviews with text
+[1A[2K[45/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:327:9 › Phase 2: Social Features Implementation › Rating and Review System › should allow marking reviews as helpful
+[1A[2K[46/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:354:9 › Phase 2: Social Features Implementation › Rating and Review System › should filter and sort reviews
+[1A[2K[47/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:402:9 › Phase 2: Social Features Implementation › Follow System for Authors › should display author profile with follow button
+[1A[2K  37) [e2e] › tests/e2e/phase2-social-interactions.test.ts:201:9 › Phase 2: Social Features Implementation › Comment System with Threading › should provide comment moderation features for story authors 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      202 |       // This test will FAIL - comment moderation doesn't exist yet
+      203 |       // Navigate as the story author
+    > 204 |       await storyPage.loginAsUser(testAuthorId);
+          |                       ^
+      205 |       await storyPage.navigateToStory(testStoryId);
+      206 |       
+      207 |       const commentsSection = storyPage.page.getByTestId('story-comments-section');
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-social-interactions.test.ts:204:23
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-social-interact-02238--features-for-story-authors-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-social-interact-02238--features-for-story-authors-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[48/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:468:9 › Phase 2: Social Features Implementation › Follow System for Authors › should show followed authors in user dashboard
+[1A[2K[49/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:495:9 › Phase 2: Social Features Implementation › Follow System for Authors › should provide notifications for followed author updates
+[1A[2K[50/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:426:9 › Phase 2: Social Features Implementation › Follow System for Authors › should allow following and unfollowing authors
+[1A[2K[51/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:532:9 › Phase 2: Social Features Implementation › Follow System for Authors › should show author activity feed
+[1A[2K[52/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:568:9 › Phase 2: Social Features Implementation › Social Engagement Metrics › should display comprehensive story engagement statistics
+[1A[2K  38) [e2e] › tests/e2e/phase2-social-interactions.test.ts:568:9 › Phase 2: Social Features Implementation › Social Engagement Metrics › should display comprehensive story engagement statistics 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      569 |       // This test will FAIL - engagement metrics don't exist yet
+      570 |       // Navigate as story author to see detailed metrics
+    > 571 |       await storyPage.loginAsUser(testAuthorId);
+          |                       ^
+      572 |       await storyPage.page.goto(`/stories/${testStoryId}/analytics`);
+      573 |       
+      574 |       const analyticsPage = storyPage.page.getByTestId('story-analytics-page');
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-social-interactions.test.ts:571:23
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-social-interact-82909-story-engagement-statistics-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-social-interact-82909-story-engagement-statistics-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[53/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:601:9 › Phase 2: Social Features Implementation › Social Engagement Metrics › should show chapter-level engagement analytics
+[1A[2K  39) [e2e] › tests/e2e/phase2-social-interactions.test.ts:601:9 › Phase 2: Social Features Implementation › Social Engagement Metrics › should show chapter-level engagement analytics 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      601 |     test('should show chapter-level engagement analytics', async () => {
+      602 |       // This test will FAIL - chapter analytics don't exist yet
+    > 603 |       await storyPage.loginAsUser(testAuthorId);
+          |                       ^
+      604 |       await storyPage.page.goto(`/stories/${testStoryId}/analytics/chapters`);
+      605 |       
+      606 |       const chapterAnalyticsPage = storyPage.page.getByTestId('chapter-analytics-page');
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-social-interactions.test.ts:603:23
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-social-interact-efec3--level-engagement-analytics-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-social-interact-efec3--level-engagement-analytics-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[54/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:635:9 › Phase 2: Social Features Implementation › Social Engagement Metrics › should provide social sharing analytics
+[1A[2K  40) [e2e] › tests/e2e/phase2-social-interactions.test.ts:635:9 › Phase 2: Social Features Implementation › Social Engagement Metrics › should provide social sharing analytics 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      635 |     test('should provide social sharing analytics', async () => {
+      636 |       // This test will FAIL - sharing analytics don't exist yet
+    > 637 |       await storyPage.loginAsUser(testAuthorId);
+          |                       ^
+      638 |       await storyPage.page.goto(`/stories/${testStoryId}/analytics/social`);
+      639 |       
+      640 |       const socialAnalyticsPage = storyPage.page.getByTestId('social-analytics-page');
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-social-interactions.test.ts:637:23
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-social-interact-cca58-de-social-sharing-analytics-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-social-interact-cca58-de-social-sharing-analytics-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[55/55] [e2e] › tests/e2e/phase2-social-interactions.test.ts:666:9 › Phase 2: Social Features Implementation › Social Engagement Metrics › should show community engagement insights
+[1A[2K  41) [e2e] › tests/e2e/phase2-social-interactions.test.ts:666:9 › Phase 2: Social Features Implementation › Social Engagement Metrics › should show community engagement insights 
+
+    TypeError: storyPage.loginAsUser is not a function
+
+      666 |     test('should show community engagement insights', async () => {
+      667 |       // This test will FAIL - community insights don't exist yet
+    > 668 |       await storyPage.loginAsUser(testAuthorId);
+          |                       ^
+      669 |       await storyPage.page.goto(`/stories/${testStoryId}/analytics/community`);
+      670 |       
+      671 |       const communityAnalyticsPage = storyPage.page.getByTestId('community-analytics-page');
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-social-interactions.test.ts:668:23
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-social-interact-aff7b-mmunity-engagement-insights-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-social-interact-aff7b-mmunity-engagement-insights-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  42) [e2e] › tests/e2e/phase2-social-interactions.test.ts:132:9 › Phase 2: Social Features Implementation › Comment System with Threading › should support chapter-specific comments 
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+    Error: browserContext._wrapApiCall: ENOENT: no such file or directory, copyfile '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-38/traces/6d7102c7cea4f0c9292e-17a7575ab368fd6f761c.network' -> '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-38/traces/6d7102c7cea4f0c9292e-17a7575ab368fd6f761c-pwnetcopy-1.network'
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByTestId('chapter-comments-section')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+    [2m  - expect.toBeVisible with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('chapter-comments-section')[22m
+
+
+      136 |       
+      137 |       const chapterCommentsSection = storyPage.page.getByTestId('chapter-comments-section');
+    > 138 |       await expect(chapterCommentsSection).toBeVisible();
+          |                                            ^
+      139 |       
+      140 |       // Should show chapter-specific comment count
+      141 |       const chapterCommentCount = chapterCommentsSection.getByTestId('chapter-comment-count');
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-social-interactions.test.ts:138:44
+
+    Error: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-38/53c6414fbc242c1ff2c74846e7d55b8b.zip'
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+
+[1A[2K  43) [e2e] › tests/e2e/phase2-social-interactions.test.ts:168:9 › Phase 2: Social Features Implementation › Comment System with Threading › should allow liking/unliking comments and display counts 
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+    Error: browserContext._wrapApiCall: ENOENT: no such file or directory, copyfile '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-40/traces/6d7102c7cea4f0c9292e-9e231a517888c72c278a.network' -> '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-40/traces/6d7102c7cea4f0c9292e-9e231a517888c72c278a-pwnetcopy-1.network'
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoContainText[2m([22m[32mexpected[39m[2m)[22m
+
+    Locator: getByTestId('story-comments-section').getByTestId('comments-list').getByTestId('comment-item').first().getByTestId('comment-likes-count')
+    Expected string: [32m"NaN"[39m
+    Received string: [31m"(6)"[39m
+    Call log:
+    [2m  - expect.toContainText with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('story-comments-section').getByTestId('comments-list').getByTestId('comment-item').first().getByTestId('comment-likes-count')[22m
+    [2m    241 × locator resolved to <span data-testid="comment-likes-count">…</span>[22m
+    [2m        - unexpected value "(6)"[22m
+
+
+      184 |       
+      185 |       // Like count should increase
+    > 186 |       await expect(likeCount).toContainText((initialLikes + 1).toString());
+          |                               ^
+      187 |       
+      188 |       // Button should show as liked
+      189 |       await expect(likeButton).toHaveAttribute('aria-pressed', 'true');
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-social-interactions.test.ts:186:31
+
+    Error: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-40/59248abef46d99c4c47259e3532b0f48.zip'
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+
+[1A[2K  44) [e2e] › tests/e2e/phase2-social-interactions.test.ts:327:9 › Phase 2: Social Features Implementation › Rating and Review System › should allow marking reviews as helpful 
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+    Error: browserContext._wrapApiCall: ENOENT: no such file or directory, copyfile '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-37/traces/6d7102c7cea4f0c9292e-d867527d04c8a71f4b55-recording1.network' -> '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-37/traces/6d7102c7cea4f0c9292e-d867527d04c8a71f4b55-recording1-pwnetcopy-1.network'
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoContainText[2m([22m[32mexpected[39m[2m)[22m
+
+    Locator: getByTestId('story-review-section').getByTestId('reviews-list').getByTestId('review-item').first().getByTestId('review-helpful-count')
+    Expected string: [32m"NaN"[39m
+    Received string: [31m"(9)"[39m
+    Call log:
+    [2m  - expect.toContainText with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('story-review-section').getByTestId('reviews-list').getByTestId('review-item').first().getByTestId('review-helpful-count')[22m
+    [2m    241 × locator resolved to <span data-testid="review-helpful-count">…</span>[22m
+    [2m        - unexpected value "(9)"[22m
+
+
+      343 |       
+      344 |       // Count should increase
+    > 345 |       await expect(helpfulCount).toContainText((initialHelpfulCount + 1).toString());
+          |                                  ^
+      346 |       
+      347 |       // Button should show as marked
+      348 |       await expect(helpfulButton).toHaveAttribute('aria-pressed', 'true');
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-social-interactions.test.ts:345:34
+
+    Error: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-37/a8d5d0ce3fdcdc2553fef8eb216426cf.zip'
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+
+[1A[2K  45) [e2e] › tests/e2e/phase2-social-interactions.test.ts:354:9 › Phase 2: Social Features Implementation › Rating and Review System › should filter and sort reviews 
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+    Error: browserContext._wrapApiCall: ENOENT: no such file or directory, copyfile '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-39/traces/6d7102c7cea4f0c9292e-215bca99b8b1a0229960-recording1.network' -> '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-39/traces/6d7102c7cea4f0c9292e-215bca99b8b1a0229960-recording1-pwnetcopy-1.network'
+
+    Error: locator.click: Test ended.
+    Call log:
+    [2m  - waiting for getByTestId('filter-5-stars')[22m
+    [2m    - locator resolved to <button data-testid="filter-5-stars">5 Stars</button>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    461 × waiting for element to be visible, enabled and stable[22m
+    [2m        - element is not visible[22m
+    [2m      - retrying click action[22m
+    [2m        - waiting 500ms[22m
+
+
+      365 |       
+      366 |       await ratingFilter.click();
+    > 367 |       await storyPage.page.getByTestId('filter-5-stars').click();
+          |                                                          ^
+      368 |       
+      369 |       // Only 5-star reviews should be shown
+      370 |       const filteredReviews = reviewSection.getByTestId('review-item');
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-social-interactions.test.ts:367:58
+
+    Error: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-39/f4c705bb7af05abc0759745cff3529c3.zip'
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+
+[1A[2K  46) [e2e] › tests/e2e/phase2-social-interactions.test.ts:468:9 › Phase 2: Social Features Implementation › Follow System for Authors › should show followed authors in user dashboard 
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+    Error: browserContext._wrapApiCall: ENOENT: no such file or directory, copyfile '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-43/traces/6d7102c7cea4f0c9292e-c0bc0d3883b754353d75-recording1.network' -> '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-43/traces/6d7102c7cea4f0c9292e-c0bc0d3883b754353d75-recording1-pwnetcopy-1.network'
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByTestId('following-dashboard')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+    [2m  - expect.toBeVisible with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('following-dashboard')[22m
+
+
+      471 |       
+      472 |       const followingPage = storyPage.page.getByTestId('following-dashboard');
+    > 473 |       await expect(followingPage).toBeVisible();
+          |                                   ^
+      474 |       
+      475 |       // Following statistics
+      476 |       const followingStats = followingPage.getByTestId('following-stats');
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-social-interactions.test.ts:473:35
+
+    Error: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-43/4b7c0ab7c1f3c3cecb9ee91e2b3cab41.zip'
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+
+[1A[2K  47) [e2e] › tests/e2e/phase2-social-interactions.test.ts:495:9 › Phase 2: Social Features Implementation › Follow System for Authors › should provide notifications for followed author updates 
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+    Error: browserContext._wrapApiCall: ENOENT: no such file or directory, copyfile '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-42/traces/6d7102c7cea4f0c9292e-c0847fda8a91663f92ff-recording1.network' -> '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-42/traces/6d7102c7cea4f0c9292e-c0847fda8a91663f92ff-recording1-pwnetcopy-1.network'
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByTestId('notifications-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+    [2m  - expect.toBeVisible with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('notifications-page')[22m
+
+
+      498 |       
+      499 |       const notificationsPage = storyPage.page.getByTestId('notifications-page');
+    > 500 |       await expect(notificationsPage).toBeVisible();
+          |                                       ^
+      501 |       
+      502 |       // Notification categories
+      503 |       const notificationTabs = notificationsPage.getByTestId('notification-tabs');
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-social-interactions.test.ts:500:39
+
+    Error: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-42/a4e03201a26533bf23bffa9c4b54f42d.zip'
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+
+[1A[2K  48) [e2e] › tests/e2e/phase2-social-interactions.test.ts:532:9 › Phase 2: Social Features Implementation › Follow System for Authors › should show author activity feed 
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+    Error: browserContext._wrapApiCall: ENOENT: no such file or directory, copyfile '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-36/traces/6d7102c7cea4f0c9292e-4536122cbb57c88c0625-recording2.network' -> '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-36/traces/6d7102c7cea4f0c9292e-4536122cbb57c88c0625-recording2-pwnetcopy-1.network'
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByTestId('author-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+    [2m  - expect.toBeVisible with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('author-page')[22m
+
+
+      535 |       
+      536 |       const authorPage = storyPage.page.getByTestId('author-page');
+    > 537 |       await expect(authorPage).toBeVisible();
+          |                                ^
+      538 |       
+      539 |       // Author tabs
+      540 |       const authorTabs = authorPage.getByTestId('author-tabs');
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-social-interactions.test.ts:537:32
+
+    Error: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-36/cb39132d65c0d8aa323bcf90f785eabc.zip'
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+
+[1A[2K  48 failed
+    [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:29:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide AI writing assistant panel 
+    [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:57:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide real-time writing suggestions 
+    [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:93:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide contextual grammar and style suggestions 
+    [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:134:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide dialogue enhancement suggestions 
+    [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:171:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide scene setting and atmosphere suggestions 
+    [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:218:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should provide character development dashboard 
+    [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:244:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should allow creating detailed character profiles 
+    [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:304:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should track character consistency across chapters 
+    [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:350:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should provide AI-powered character development suggestions 
+    [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:390:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should track character relationships and dynamics 
+    [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:428:9 › Phase 2: AI Writing Enhancement › Plot Structure Visualization and Planning › should provide visual plot structure dashboard 
+    [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:461:9 › Phase 2: AI Writing Enhancement › Plot Structure Visualization and Planning › should analyze plot pacing and provide recommendations 
+    [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:508:9 › Phase 2: AI Writing Enhancement › Plot Structure Visualization and Planning › should provide subplot tracking and management 
+    [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:554:9 › Phase 2: AI Writing Enhancement › Plot Structure Visualization and Planning › should provide story arc templates and guides 
+    [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:601:9 › Phase 2: AI Writing Enhancement › Writing Productivity Tracking › should track writing session metrics 
+    [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:638:9 › Phase 2: AI Writing Enhancement › Writing Productivity Tracking › should provide writing habit analysis and insights 
+    [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:677:9 › Phase 2: AI Writing Enhancement › Writing Productivity Tracking › should support writing goals and milestone tracking 
+    [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:723:9 › Phase 2: AI Writing Enhancement › Writing Productivity Tracking › should provide AI-powered writing schedule optimization 
+    [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:29:9 › Phase 2: Analytics and Insights Dashboard › Advanced Analytics Dashboard for Writers › should display comprehensive analytics overview 
+    [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:64:9 › Phase 2: Analytics and Insights Dashboard › Advanced Analytics Dashboard for Writers › should show detailed story performance metrics 
+    [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:102:9 › Phase 2: Analytics and Insights Dashboard › Advanced Analytics Dashboard for Writers › should provide traffic source analysis 
+    [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:139:9 › Phase 2: Analytics and Insights Dashboard › Advanced Analytics Dashboard for Writers › should show revenue and monetization analytics 
+    [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:181:9 › Phase 2: Analytics and Insights Dashboard › Advanced Analytics Dashboard for Writers › should provide comparative analytics and benchmarking 
+    [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:224:9 › Phase 2: Analytics and Insights Dashboard › Reader Engagement Metrics › should track detailed reader behavior patterns 
+    [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:266:9 › Phase 2: Analytics and Insights Dashboard › Reader Engagement Metrics › should analyze reader demographics and preferences 
+    [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:317:9 › Phase 2: Analytics and Insights Dashboard › Reader Engagement Metrics › should track social engagement and viral metrics 
+    [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:368:9 › Phase 2: Analytics and Insights Dashboard › Reader Engagement Metrics › should provide reader retention and loyalty analysis 
+    [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:414:9 › Phase 2: Analytics and Insights Dashboard › Performance Insights and Trends › should identify trending content and viral moments 
+    [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:461:9 › Phase 2: Analytics and Insights Dashboard › Performance Insights and Trends › should provide seasonal and cyclical pattern analysis 
+    [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:506:9 › Phase 2: Analytics and Insights Dashboard › Performance Insights and Trends › should forecast future performance and growth 
+    [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:556:9 › Phase 2: Analytics and Insights Dashboard › Performance Insights and Trends › should provide competitive analysis and market positioning 
+    [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:602:9 › Phase 2: Analytics and Insights Dashboard › Goal Tracking Systems › should provide comprehensive goal management dashboard 
+    [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:638:9 › Phase 2: Analytics and Insights Dashboard › Goal Tracking Systems › should support various goal types and tracking methods 
+    [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:692:9 › Phase 2: Analytics and Insights Dashboard › Goal Tracking Systems › should provide goal progress tracking and analytics 
+    [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:734:9 › Phase 2: Analytics and Insights Dashboard › Goal Tracking Systems › should provide goal recommendations and optimization 
+    [e2e] › tests/e2e/phase2-analytics-dashboard.test.ts:784:9 › Phase 2: Analytics and Insights Dashboard › Goal Tracking Systems › should support team and collaborative goals 
+    [e2e] › tests/e2e/phase2-social-interactions.test.ts:132:9 › Phase 2: Social Features Implementation › Comment System with Threading › should support chapter-specific comments 
+    [e2e] › tests/e2e/phase2-social-interactions.test.ts:168:9 › Phase 2: Social Features Implementation › Comment System with Threading › should allow liking/unliking comments and display counts 
+    [e2e] › tests/e2e/phase2-social-interactions.test.ts:201:9 › Phase 2: Social Features Implementation › Comment System with Threading › should provide comment moderation features for story authors 
+    [e2e] › tests/e2e/phase2-social-interactions.test.ts:327:9 › Phase 2: Social Features Implementation › Rating and Review System › should allow marking reviews as helpful 
+    [e2e] › tests/e2e/phase2-social-interactions.test.ts:354:9 › Phase 2: Social Features Implementation › Rating and Review System › should filter and sort reviews 
+    [e2e] › tests/e2e/phase2-social-interactions.test.ts:468:9 › Phase 2: Social Features Implementation › Follow System for Authors › should show followed authors in user dashboard 
+    [e2e] › tests/e2e/phase2-social-interactions.test.ts:495:9 › Phase 2: Social Features Implementation › Follow System for Authors › should provide notifications for followed author updates 
+    [e2e] › tests/e2e/phase2-social-interactions.test.ts:532:9 › Phase 2: Social Features Implementation › Follow System for Authors › should show author activity feed 
+    [e2e] › tests/e2e/phase2-social-interactions.test.ts:568:9 › Phase 2: Social Features Implementation › Social Engagement Metrics › should display comprehensive story engagement statistics 
+    [e2e] › tests/e2e/phase2-social-interactions.test.ts:601:9 › Phase 2: Social Features Implementation › Social Engagement Metrics › should show chapter-level engagement analytics 
+    [e2e] › tests/e2e/phase2-social-interactions.test.ts:635:9 › Phase 2: Social Features Implementation › Social Engagement Metrics › should provide social sharing analytics 
+    [e2e] › tests/e2e/phase2-social-interactions.test.ts:666:9 › Phase 2: Social Features Implementation › Social Engagement Metrics › should show community engagement insights 
+  7 passed (8.2m)
+
+[36m  Serving HTML report at http://localhost:60217. Press Ctrl+C to quit.[39m

@@ -1,0 +1,257 @@
+
+Running 55 tests using 8 workers
+
+[1A[2K[1/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:218:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should provide character development dashboard
+[1A[2K[2/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:93:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide contextual grammar and style suggestions
+[1A[2K[3/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:29:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide AI writing assistant panel
+[1A[2K[4/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:304:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should track character consistency across chapters
+[1A[2K[5/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:171:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide scene setting and atmosphere suggestions
+[1A[2K[6/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:134:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide dialogue enhancement suggestions
+[1A[2K[7/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:57:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide real-time writing suggestions
+[1A[2K[8/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:244:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should allow creating detailed character profiles
+[1A[2K  1) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:29:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide AI writing assistant panel 
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByTestId('story-writing-interface')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+    [2m  - expect.toBeVisible with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('story-writing-interface')[22m
+    [2m    - waiting for" http://localhost:3000/stories/test-story-phase2-ai/write" navigation to finish...[22m
+    [2m    - navigated to "http://localhost:3000/stories/test-story-phase2-ai/write"[22m
+
+
+      32 |       
+      33 |       const writingInterface = storyPage.page.getByTestId('story-writing-interface');
+    > 34 |       await expect(writingInterface).toBeVisible();
+         |                                      ^
+      35 |       
+      36 |       // AI assistant panel should be visible
+      37 |       const aiAssistantPanel = writingInterface.getByTestId('ai-assistant-panel');
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:34:38
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-phase2-ai-writing-assi-fb026--AI-writing-assistant-panel-e2e/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-phase2-ai-writing-assi-fb026--AI-writing-assistant-panel-e2e/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[9/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:350:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should provide AI-powered character development suggestions
+[1A[2K  2) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:93:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide contextual grammar and style suggestions 
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+    Error: browserContext._wrapApiCall: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-2/traces/3acc8cfe6d271e1c1471-073f64aafc0e212d5680.network'
+
+    Error: locator.click: Test ended.
+    Call log:
+    [2m  - waiting for getByTestId('chapter-editor').getByTestId('text-editor-content')[22m
+    [2m    - waiting for" http://localhost:3000/stories/test-story-phase2-ai/write/chapter/1" navigation to finish...[22m
+    [2m    - navigated to "http://localhost:3000/stories/test-story-phase2-ai/write/chapter/1"[22m
+
+
+      100 |       // Type text with intentional issues
+      101 |       const textWithIssues = "The character was very unique and really amazing. They literally flew threw the air.";
+    > 102 |       await textEditor.click();
+          |                        ^
+      103 |       await textEditor.fill(textWithIssues);
+      104 |       
+      105 |       // Wait for AI analysis
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:102:24
+
+    Error: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-2/3ae6bda16ed992a77563dd8f9cb3e362.zip'
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+
+[1A[2K  3) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:57:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide real-time writing suggestions 
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+    Error: browserContext._wrapApiCall: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-1/traces/3acc8cfe6d271e1c1471-978be99085d821836046.network'
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByTestId('chapter-editor')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+    [2m  - expect.toBeVisible with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('chapter-editor')[22m
+    [2m    - waiting for" http://localhost:3000/stories/test-story-phase2-ai/write/chapter/1" navigation to finish...[22m
+    [2m    - navigated to "http://localhost:3000/stories/test-story-phase2-ai/write/chapter/1"[22m
+
+
+      60 |       
+      61 |       const chapterEditor = storyPage.page.getByTestId('chapter-editor');
+    > 62 |       await expect(chapterEditor).toBeVisible();
+         |                                   ^
+      63 |       
+      64 |       const textEditor = chapterEditor.getByTestId('text-editor-content');
+      65 |       
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:62:35
+
+    Error: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-1/45e6eb4da7f18a7a95319906bc479879.zip'
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+
+[1A[2K  4) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:218:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should provide character development dashboard 
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+    Error: browserContext._wrapApiCall: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-5/traces/3acc8cfe6d271e1c1471-571180b70803bbc37944.network'
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByTestId('character-development-dashboard')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+    [2m  - expect.toBeVisible with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('character-development-dashboard')[22m
+    [2m    - waiting for" http://localhost:3000/stories/test-story-phase2-ai/characters" navigation to finish...[22m
+    [2m    - navigated to "http://localhost:3000/stories/test-story-phase2-ai/characters"[22m
+
+
+      221 |       
+      222 |       const characterDashboard = storyPage.page.getByTestId('character-development-dashboard');
+    > 223 |       await expect(characterDashboard).toBeVisible();
+          |                                        ^
+      224 |       
+      225 |       // Character list
+      226 |       const characterList = characterDashboard.getByTestId('characters-list');
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:223:40
+
+    Error: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-5/59ffacb5b0564fb2f6cacc41a04cab13.zip'
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+
+[1A[2K  5) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:171:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide scene setting and atmosphere suggestions 
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+    Error: browserContext._wrapApiCall: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-4/traces/3acc8cfe6d271e1c1471-d131bfeafb5799f5f610.network'
+
+    Error: locator.click: Test ended.
+    Call log:
+    [2m  - waiting for getByTestId('chapter-editor').getByTestId('text-editor-content')[22m
+    [2m    - waiting for" http://localhost:3000/stories/test-story-phase2-ai/write/chapter/1" navigation to finish...[22m
+    [2m    - navigated to "http://localhost:3000/stories/test-story-phase2-ai/write/chapter/1"[22m
+
+
+      178 |       // Type basic scene description
+      179 |       const sceneText = "It was a dark room. There was a table and chairs.";
+    > 180 |       await textEditor.click();
+          |                        ^
+      181 |       await textEditor.fill(sceneText);
+      182 |       
+      183 |       // Select scene text and request enhancement
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:180:24
+
+    Error: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-4/3482ccb8642f19f3863f8b179c1a58ca.zip'
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+
+[1A[2K  6) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:134:9 › Phase 2: AI Writing Enhancement › Contextual AI Assistant with Real-time Suggestions › should provide dialogue enhancement suggestions 
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+    Error: browserContext._wrapApiCall: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-3/traces/3acc8cfe6d271e1c1471-66244ecd326b69865b53.network'
+
+    Error: locator.click: Test ended.
+    Call log:
+    [2m  - waiting for getByTestId('chapter-editor').getByTestId('text-editor-content')[22m
+    [2m    - waiting for" http://localhost:3000/stories/test-story-phase2-ai/write/chapter/1" navigation to finish...[22m
+    [2m    - navigated to "http://localhost:3000/stories/test-story-phase2-ai/write/chapter/1"[22m
+
+
+      141 |       // Type dialogue
+      142 |       const dialogueText = '"Hello," she said. "How are you?" he asked. "Fine," she replied.';
+    > 143 |       await textEditor.click();
+          |                        ^
+      144 |       await textEditor.fill(dialogueText);
+      145 |       
+      146 |       // Enable dialogue enhancement mode
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:143:24
+
+    Error: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-3/b75b72bf7b1125877b0e2cc7a9670edc.zip'
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+
+[1A[2K  7) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:304:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should track character consistency across chapters 
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+    Error: browserContext._wrapApiCall: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-7/traces/3acc8cfe6d271e1c1471-136bbae6c6f42422e370.network'
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByTestId('character-profile-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+    [2m  - expect.toBeVisible with timeout 240000ms[22m
+    [2m  - waiting for getByTestId('character-profile-page')[22m
+    [2m    - waiting for" http://localhost:3000/stories/test-story-phase2-ai/characters/elena-blackwood" navigation to finish...[22m
+    [2m    - navigated to "http://localhost:3000/stories/test-story-phase2-ai/characters/elena-blackwood"[22m
+
+
+      307 |       
+      308 |       const characterProfile = storyPage.page.getByTestId('character-profile-page');
+    > 309 |       await expect(characterProfile).toBeVisible();
+          |                                      ^
+      310 |       
+      311 |       // Consistency dashboard
+      312 |       const consistencyDashboard = characterProfile.getByTestId('consistency-dashboard');
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:309:38
+
+    Error: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-7/9e4a2ed9cbbe3f02c931caf6fc915a5e.zip'
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+
+[1A[2K  8) [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:244:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should allow creating detailed character profiles 
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+    Error: browserContext._wrapApiCall: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-6/traces/3acc8cfe6d271e1c1471-e018be8a07f6d89168a7.network'
+
+    Error: locator.click: Test ended.
+    Call log:
+    [2m  - waiting for getByTestId('character-development-dashboard').getByTestId('add-character-button')[22m
+    [2m    - waiting for" http://localhost:3000/stories/test-story-phase2-ai/characters" navigation to finish...[22m
+    [2m    - navigated to "http://localhost:3000/stories/test-story-phase2-ai/characters"[22m
+
+
+      249 |       const addCharacterButton = characterDashboard.getByTestId('add-character-button');
+      250 |       
+    > 251 |       await addCharacterButton.click();
+          |                                ^
+      252 |       
+      253 |       const characterModal = storyPage.page.getByTestId('create-character-modal');
+      254 |       await expect(characterModal).toBeVisible();
+        at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/e2e/phase2-ai-writing-assistance.test.ts:251:32
+
+    Error: ENOENT: no such file or directory, open '/Users/thomasjeon/GitHub/@ai.thothy/Fictures/test-results/.playwright-artifacts-6/8dd9c4daf275f0d77b71726130047079.zip'
+
+    [31mTest timeout of 240000ms exceeded.[39m
+
+
+[1A[2K[10/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:390:9 › Phase 2: AI Writing Enhancement › Character Development Tools with Consistency Tracking › should track character relationships and dynamics
+[1A[2K[11/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:601:9 › Phase 2: AI Writing Enhancement › Writing Productivity Tracking › should track writing session metrics
+[1A[2K[12/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:508:9 › Phase 2: AI Writing Enhancement › Plot Structure Visualization and Planning › should provide subplot tracking and management
+[1A[2K[13/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:461:9 › Phase 2: AI Writing Enhancement › Plot Structure Visualization and Planning › should analyze plot pacing and provide recommendations
+[1A[2K[14/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:554:9 › Phase 2: AI Writing Enhancement › Plot Structure Visualization and Planning › should provide story arc templates and guides
+[1A[2K[15/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:638:9 › Phase 2: AI Writing Enhancement › Writing Productivity Tracking › should provide writing habit analysis and insights
+[1A[2K[16/55] [e2e] › tests/e2e/phase2-ai-writing-assistance.test.ts:428:9 › Phase 2: AI Writing Enhancement › Plot Structure Visualization and Planning › should provide visual plot structure dashboard
