@@ -298,3 +298,158 @@ export const storyTag = pgTable('StoryTag', {
 });
 
 export type StoryTag = InferSelectModel<typeof storyTag>;
+
+// Phase 2: Reading Experience Enhancement Tables
+
+export const userPreferences = pgTable(
+  'UserPreferences',
+  {
+    userId: uuid('userId')
+      .primaryKey()
+      .notNull()
+      .references(() => user.id),
+    readingTheme: varchar('readingTheme', { enum: ['light', 'dark', 'sepia', 'high-contrast', 'night-mode'] })
+      .notNull()
+      .default('light'),
+    fontFamily: varchar('fontFamily', { enum: ['serif', 'sans-serif', 'monospace', 'dyslexic'] })
+      .notNull()
+      .default('serif'),
+    fontSize: integer('fontSize').notNull().default(16),
+    lineHeight: decimal('lineHeight').notNull().default('1.5'),
+    letterSpacing: decimal('letterSpacing').notNull().default('0'),
+    wordSpacing: decimal('wordSpacing').notNull().default('0'),
+    contentWidth: integer('contentWidth').notNull().default(800),
+    marginSize: integer('marginSize').notNull().default(40),
+    paragraphSpacing: decimal('paragraphSpacing').notNull().default('1.2'),
+    layoutStyle: varchar('layoutStyle', { enum: ['single-column', 'two-column', 'book-style'] })
+      .notNull()
+      .default('single-column'),
+    highContrast: boolean('highContrast').notNull().default(false),
+    colorContrast: decimal('colorContrast').notNull().default('1.0'),
+    dyslexiaFriendly: boolean('dyslexiaFriendly').notNull().default(false),
+    highlightSyllables: boolean('highlightSyllables').notNull().default(false),
+    readingRuler: boolean('readingRuler').notNull().default(false),
+    reduceMotion: boolean('reduceMotion').notNull().default(false),
+    screenReaderMode: boolean('screenReaderMode').notNull().default(false),
+    autoBookmarking: boolean('autoBookmarking').notNull().default(true),
+    offlineReading: boolean('offlineReading').notNull().default(false),
+    createdAt: timestamp('createdAt').notNull().defaultNow(),
+    updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  }
+);
+
+export type UserPreferences = InferSelectModel<typeof userPreferences>;
+
+export const readingCollection = pgTable('ReadingCollection', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+  name: text('name').notNull(),
+  description: text('description'),
+  privacy: varchar('privacy', { enum: ['public', 'private'] })
+    .notNull()
+    .default('private'),
+  storyIds: json('storyIds').$type<string[]>().notNull().default([]),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type ReadingCollection = InferSelectModel<typeof readingCollection>;
+
+export const readingList = pgTable('ReadingList', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+  name: text('name').notNull(),
+  description: text('description'),
+  storyIds: json('storyIds').$type<string[]>().notNull().default([]),
+  storyOrder: json('storyOrder').$type<number[]>().notNull().default([]),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type ReadingList = InferSelectModel<typeof readingList>;
+
+export const offlineStory = pgTable(
+  'OfflineStory',
+  {
+    userId: uuid('userId')
+      .notNull()
+      .references(() => user.id),
+    storyId: uuid('storyId')
+      .notNull()
+      .references(() => story.id),
+    downloadedChapters: json('downloadedChapters').$type<number[]>().notNull().default([]),
+    totalSize: integer('totalSize').notNull().default(0), // in bytes
+    downloadedAt: timestamp('downloadedAt').notNull().defaultNow(),
+    lastSyncAt: timestamp('lastSyncAt').notNull().defaultNow(),
+  },
+  (table) => {
+    return {
+      pk: primaryKey({ columns: [table.userId, table.storyId] }),
+    };
+  }
+);
+
+export type OfflineStory = InferSelectModel<typeof offlineStory>;
+
+export const readingAchievement = pgTable('ReadingAchievement', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+  achievementType: varchar('achievementType', { 
+    enum: ['first-story', 'ten-stories', 'hundred-stories', 'speed-reader', 'genre-explorer', 'consistency-week', 'consistency-month'] 
+  }).notNull(),
+  progress: integer('progress').notNull().default(0),
+  target: integer('target').notNull().default(1),
+  isUnlocked: boolean('isUnlocked').notNull().default(false),
+  unlockedAt: timestamp('unlockedAt'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+});
+
+export type ReadingAchievement = InferSelectModel<typeof readingAchievement>;
+
+export const readingStatistics = pgTable(
+  'ReadingStatistics', 
+  {
+    userId: uuid('userId')
+      .primaryKey()
+      .notNull()
+      .references(() => user.id),
+    totalReadingTimeMinutes: integer('totalReadingTimeMinutes').notNull().default(0),
+    dailyReadingTimeMinutes: integer('dailyReadingTimeMinutes').notNull().default(0),
+    weeklyReadingTimeMinutes: integer('weeklyReadingTimeMinutes').notNull().default(0),
+    currentStreak: integer('currentStreak').notNull().default(0),
+    longestStreak: integer('longestStreak').notNull().default(0),
+    storiesCompleted: integer('storiesCompleted').notNull().default(0),
+    chaptersRead: integer('chaptersRead').notNull().default(0),
+    wordsRead: integer('wordsRead').notNull().default(0),
+    averageWordsPerMinute: integer('averageWordsPerMinute').notNull().default(200),
+    favoriteGenres: json('favoriteGenres').$type<string[]>().notNull().default([]),
+    lastReadingDate: timestamp('lastReadingDate'),
+    createdAt: timestamp('createdAt').notNull().defaultNow(),
+    updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  }
+);
+
+export type ReadingStatistics = InferSelectModel<typeof readingStatistics>;
+
+export const bookmark = pgTable('Bookmark', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+  storyId: uuid('storyId')
+    .notNull()
+    .references(() => story.id),
+  chapterNumber: integer('chapterNumber').notNull(),
+  position: decimal('position').notNull().default('0'), // scroll position
+  note: text('note'),
+  isAutomatic: boolean('isAutomatic').notNull().default(false),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+});
+
+export type Bookmark = InferSelectModel<typeof bookmark>;

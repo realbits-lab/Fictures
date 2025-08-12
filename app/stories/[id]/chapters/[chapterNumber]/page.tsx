@@ -1,11 +1,15 @@
 'use client';
 
 import { useParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import ReadingCustomization, { type ReadingPreferences } from '../../../../../components/reading/reading-customization';
 
 // Chapter Reading Page - minimal implementation for GREEN phase
 export default function ChapterPage() {
   const params = useParams();
   const chapterNumber = parseInt(params.chapterNumber as string) || 1;
+  const [showCustomization, setShowCustomization] = useState(false);
+  const [preferences, setPreferences] = useState<ReadingPreferences | null>(null);
   
   const getChapterContent = (num: number) => {
     const chapters = {
@@ -27,8 +31,54 @@ export default function ChapterPage() {
   
   const chapter = getChapterContent(chapterNumber);
   
+  // Load preferences from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedPreferences = localStorage.getItem('reading-preferences');
+      if (savedPreferences) {
+        setPreferences(JSON.parse(savedPreferences));
+      }
+    }
+  }, []);
+
+  const handlePreferencesChange = (newPreferences: ReadingPreferences) => {
+    setPreferences(newPreferences);
+  };
+
+  const getThemeStyles = () => {
+    if (!preferences) return {};
+    
+    const themeColors = {
+      light: { backgroundColor: '#ffffff', color: '#000000' },
+      dark: { backgroundColor: '#1a1a1a', color: '#ffffff' },
+      sepia: { backgroundColor: 'rgb(251, 241, 199)', color: '#5c4b37' },
+      'high-contrast': { backgroundColor: '#ffffff', color: '#000000' },
+      'night-mode': { backgroundColor: '#0f0f0f', color: '#e0e0e0' }
+    };
+
+    const fontFamilies = {
+      serif: '"Times New Roman", serif',
+      'sans-serif': '"Arial", sans-serif', 
+      monospace: '"Courier New", monospace',
+      dyslexic: '"OpenDyslexic", serif'
+    };
+
+    return {
+      ...themeColors[preferences.theme],
+      fontFamily: fontFamilies[preferences.fontFamily],
+      fontSize: `${preferences.fontSize}px`,
+      lineHeight: preferences.lineHeight,
+      letterSpacing: `${preferences.letterSpacing}em`,
+      wordSpacing: `${preferences.wordSpacing}em`,
+      maxWidth: `${preferences.contentWidth}px`,
+      margin: `0 ${preferences.marginSize}px`,
+      columnCount: preferences.layoutStyle === 'two-column' ? 2 : 1,
+      columnGap: preferences.layoutStyle === 'two-column' ? '2rem' : 'normal'
+    };
+  };
+
   return (
-    <div>
+    <div style={preferences ? { backgroundColor: getThemeStyles().backgroundColor, minHeight: '100vh', color: getThemeStyles().color } : {}}>
       <div data-testid="story-header">
         <h1 data-testid="story-title">The Dragon's Quest</h1>
         <div data-testid="story-author">
@@ -49,7 +99,7 @@ export default function ChapterPage() {
         Chapter <span data-testid="current-chapter-number">{chapterNumber}</span> of <span data-testid="total-chapters">5</span>
       </div>
       
-      <div data-testid="chapter-content">
+      <div data-testid="chapter-content" style={getThemeStyles()}>
         <h2 data-testid="chapter-title">{chapter.title}</h2>
         <div>
           <p>{chapter.content}</p>
@@ -93,7 +143,12 @@ export default function ChapterPage() {
       <div data-testid="story-interaction-buttons">
         <button data-testid="bookmark-story-button" aria-pressed="false">Bookmark</button>
         <button data-testid="like-story-button" aria-pressed="false">Like</button>
-        <button data-testid="reading-settings-button">Settings</button>
+        <button 
+          data-testid="reading-customization-button"
+          onClick={() => setShowCustomization(true)}
+        >
+          Reading Settings
+        </button>
       </div>
       
       <div data-testid="reading-settings-modal" style={{ display: 'none' }}>
@@ -133,6 +188,14 @@ export default function ChapterPage() {
           </div>
         </div>
       </div>
+
+      {/* Reading Customization Panel */}
+      <ReadingCustomization
+        isOpen={showCustomization}
+        onClose={() => setShowCustomization(false)}
+        onPreferencesChange={handlePreferencesChange}
+        currentPreferences={preferences || undefined}
+      />
     </div>
   );
 }
