@@ -1,4 +1,0 @@
-
-Running 1 test using 1 worker
-
-[1A[2K[1/1] [e2e] › tests/e2e/chat.test.ts:12:7 › Chat activity › Send a user message and receive response

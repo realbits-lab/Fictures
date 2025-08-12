@@ -1,9 +1,0 @@
-
-Running 1 test using 1 worker
-
-[1A[2K[1/1] [manual-setup] › tests/auth.setup.manual.ts:11:6 › manual authenticate
-[1A[2K[manual-setup] › tests/auth.setup.manual.ts:11:6 › manual authenticate
-Starting automated authentication setup...
-
-[1A[2K🔄 Filling email and starting OAuth flow...
-
