@@ -1,8 +1,7 @@
 
 import * as bcrypt from 'bcryptjs';
 
-// Password utilities removed as we now use Google OAuth authentication
-// Guest users are created through NextAuth providers
+// Password utilities removed as we now use Google OAuth authentication only
 
 export function generateHashedPassword(password: string): string {
   const saltRounds = 10;

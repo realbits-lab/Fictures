@@ -53,7 +53,7 @@ This is a **Next.js 15 AI-powered web novel platform** with comprehensive commun
 ### Core Technologies
 - **Framework**: Next.js 15 (App Router with PPR experimental feature)
 - **Database**: PostgreSQL with Drizzle ORM
-- **Authentication**: NextAuth.js v5 with credentials and guest user support
+- **Authentication**: NextAuth.js v5 with Google OAuth authentication
 - **AI Integration**: Powered by Vercel AI SDK with xAI (Grok) as default provider
 - **Styling**: Tailwind CSS with shadcn/ui components
 - **File Storage**: Vercel Blob for file uploads
@@ -82,7 +82,7 @@ This is a **Next.js 15 AI-powered web novel platform** with comprehensive commun
 Key tables managed by Drizzle ORM:
 
 #### Core Platform
-- **Users**: Support for both regular and guest users
+- **Users**: Authenticated users with Google OAuth
 - **Chats**: Chat sessions with visibility settings
 - **Messages**: Versioned message system (v2 schema with parts and attachments)
 - **Documents**: Text, code, image, and sheet artifacts created during chats  
@@ -100,9 +100,8 @@ Key tables managed by Drizzle ORM:
 
 ### Authentication
 
-Dual authentication system:
-- **Regular users**: Email/password authentication
-- **Guest users**: Temporary accounts for anonymous usage
+Authentication system:
+- **Authenticated users**: Google OAuth authentication with permitted email validation
 
 ### AI Integration
 

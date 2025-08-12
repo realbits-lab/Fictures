@@ -40,7 +40,7 @@
 ### Data & Authentication
 - **Database**: [PostgreSQL](https://postgresql.org) with [Drizzle ORM](https://orm.drizzle.team)
 - **File Storage**: [Vercel Blob](https://vercel.com/storage/blob) for efficient file storage
-- **Authentication**: [NextAuth.js v5](https://authjs.dev) with dual system (regular + guest users)
+- **Authentication**: [NextAuth.js v5](https://authjs.dev) with Google OAuth authentication
 - **Caching**: Redis for session storage and performance optimization
 
 ## Community Features

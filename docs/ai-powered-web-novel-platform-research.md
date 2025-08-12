@@ -22,7 +22,7 @@ The platform should target:
 - **Frontend**: React 18+ with TypeScript for type safety
 - **Styling**: Tailwind CSS with shadcn/ui components for consistent UI
 - **Database**: PostgreSQL with Drizzle ORM for structured relationships
-- **Authentication**: NextAuth.js v5 with support for both regular and guest users
+- **Authentication**: NextAuth.js v5 with Google OAuth authentication
 - **AI Integration**: Vercel AI SDK 4.0 with multi-provider support
 - **File Storage**: Vercel Blob for user uploads and generated content
 - **Caching**: Redis for session storage and performance optimization
@@ -88,7 +88,6 @@ users (
   email VARCHAR UNIQUE,
   username VARCHAR UNIQUE,
   profile_image_url TEXT,
-  is_guest BOOLEAN DEFAULT FALSE,
   subscription_tier VARCHAR DEFAULT 'free',
   created_at TIMESTAMP,
   updated_at TIMESTAMP
