@@ -259,14 +259,14 @@ function PureArtifact({
       {artifact.isVisible && (
         <motion.div
           data-testid="artifact"
-          className="flex flex-row h-dvh w-dvw fixed top-0 left-0 z-50 bg-transparent"
+          className="flex flex-row h-[calc(100dvh-3.5rem)] w-dvw fixed top-14 left-0 z-50 bg-transparent"
           initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { delay: 0.4 } }}
         >
           {!isMobile && (
             <motion.div
-              className="fixed bg-background h-dvh"
+              className="fixed bg-background h-[calc(100dvh-3.5rem)]" style={{top: '3.5rem'}}
               initial={{
                 width: isSidebarOpen ? windowWidth - 256 : windowWidth,
                 right: 0,
@@ -281,7 +281,7 @@ function PureArtifact({
 
           {!isMobile && (
             <motion.div
-              className="relative w-[400px] bg-muted dark:bg-background h-dvh shrink-0"
+              className="relative w-[400px] bg-muted dark:bg-background h-[calc(100dvh-3.5rem)] shrink-0"
               initial={{ opacity: 0, x: 10, scale: 1 }}
               animate={{
                 opacity: 1,
@@ -304,7 +304,7 @@ function PureArtifact({
               <AnimatePresence>
                 {!isCurrentVersion && (
                   <motion.div
-                    className="left-0 absolute h-dvh w-[400px] top-0 bg-zinc-900/50 z-50"
+                    className="left-0 absolute h-[calc(100dvh-3.5rem)] w-[400px] top-0 bg-zinc-900/50 z-50"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -345,7 +345,7 @@ function PureArtifact({
           )}
 
           <motion.div
-            className="fixed dark:bg-muted bg-background h-dvh flex flex-col overflow-y-scroll md:border-l dark:border-zinc-700 border-zinc-200"
+            className="fixed dark:bg-muted bg-background h-[calc(100dvh-3.5rem)] flex flex-col overflow-y-scroll md:border-l dark:border-zinc-700 border-zinc-200"
             initial={
               isMobile
                 ? {
