@@ -28,6 +28,7 @@ import { ArrowDown } from 'lucide-react';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import type { VisibilityType } from './visibility-selector';
 import type { Attachment, ChatMessage } from '@/lib/types';
+import { usePathname, useRouter } from 'next/navigation';
 
 function PureMultimodalInput({
   chatId,
@@ -58,6 +59,8 @@ function PureMultimodalInput({
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -109,7 +112,13 @@ function PureMultimodalInput({
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
   const submitForm = useCallback(() => {
-    window.history.replaceState({}, '', `/stories/create/${chatId}`);
+    // If on the initial landing page, navigate to specific chat page first
+    if (pathname === '/stories/create') {
+      router.push(`/stories/create/${chatId}`);
+    } else {
+      // Clean up the URL for existing chats
+      window.history.replaceState({}, '', `/stories/create/${chatId}`);
+    }
 
     sendMessage({
       role: 'user',
@@ -144,6 +153,8 @@ function PureMultimodalInput({
     setLocalStorageInput,
     width,
     chatId,
+    pathname,
+    router,
   ]);
 
   const uploadFile = async (file: File) => {

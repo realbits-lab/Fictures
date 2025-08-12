@@ -110,21 +110,8 @@ export function Chat({
     console.log('🔥 Manual sendMessage called with:', message);
     
     try {
-      // Add the message to local state first
+      // Add the message to local state for existing chats
       setMessages((prevMessages) => [...prevMessages, message]);
-      
-      // If we're on the initial landing page, navigate with query parameter
-      // The new page will automatically handle sending the message
-      if (pathname === '/stories/create') {
-        console.log('🧭 On initial page, navigating to specific chat page with query parameter');
-        
-        const messageText = message.parts?.[0]?.type === 'text' ? message.parts[0].text : '';
-        const encodedMessage = encodeURIComponent(messageText);
-        
-        console.log('📤 Navigating to:', `/stories/create/${id}?query=${encodedMessage}`);
-        router.push(`/stories/create/${id}?query=${encodedMessage}`);
-        return;
-      }
       
       // For existing chats, handle normally
       const requestBody = {
@@ -229,20 +216,21 @@ export function Chat({
   // Use manual implementation if sendMessage is not available
   const effectiveSendMessage = sendMessage || manualSendMessage;
 
-  const [hasAppendedQuery, setHasAppendedQuery] = useState(false);
+  // Disabled query parameter processing to prevent duplicate API calls
+  // const [hasAppendedQuery, setHasAppendedQuery] = useState(false);
+  
+  // useEffect(() => {
+  //   if (query && !hasAppendedQuery) {
+  //     effectiveSendMessage({
+  //       id: generateUUID(),
+  //       role: 'user' as const,
+  //       parts: [{ type: 'text', text: query }],
+  //     });
 
-  useEffect(() => {
-    if (query && !hasAppendedQuery) {
-      effectiveSendMessage({
-        id: generateUUID(),
-        role: 'user' as const,
-        parts: [{ type: 'text', text: query }],
-      });
-
-      setHasAppendedQuery(true);
-      window.history.replaceState({}, '', `/stories/create/${id}`);
-    }
-  }, [query, effectiveSendMessage, hasAppendedQuery, id]);
+  //     setHasAppendedQuery(true);
+  //     window.history.replaceState({}, '', `/stories/create/${id}`);
+  //   }
+  // }, [query, effectiveSendMessage, hasAppendedQuery, id]);
 
   const { data: votes } = useSWR<Array<Vote>>(
     messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
