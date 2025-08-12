@@ -58,7 +58,7 @@ export function Chat({
     resumeStream,
   } = useChat<ChatMessage>({
     id,
-    messages: initialMessages,
+    initialMessages,
     experimental_throttle: 100,
     generateId: generateUUID,
     transport: new DefaultChatTransport({
@@ -101,6 +101,13 @@ export function Chat({
       }
     },
   });
+
+  // Initialize messages with initialMessages if the hook didn't load them properly
+  useEffect(() => {
+    if (initialMessages.length > 0 && messages.length === 0) {
+      setMessages(initialMessages);
+    }
+  }, [initialMessages, messages.length, setMessages]);
 
   const searchParams = useSearchParams();
   const query = searchParams.get('query');
@@ -240,21 +247,6 @@ export function Chat({
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
-  // Debug sendMessage availability
-  useEffect(() => {
-    console.log('🔍 Chat component - useChat debug:', {
-      sendMessageType: typeof sendMessage,
-      sendMessageAvailable: !!sendMessage,
-      sendMessageFunction: sendMessage,
-      effectiveSendMessageType: typeof effectiveSendMessage,
-      effectiveSendMessageAvailable: !!effectiveSendMessage,
-      statusValue: status,
-      messagesLength: messages.length,
-      stopType: typeof stop,
-      regenerateType: typeof regenerate,
-      chatId: id
-    });
-  }, [sendMessage, effectiveSendMessage, status, messages.length, stop, regenerate, id]);
 
   useAutoResume({
     autoResume,
