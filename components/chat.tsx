@@ -4,6 +4,7 @@ import { DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
+import { useRouter, usePathname } from 'next/navigation';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
 import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
@@ -42,6 +43,8 @@ export function Chat({
 
   const { mutate } = useSWRConfig();
   const { setDataStream } = useDataStream();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const [input, setInput] = useState<string>('');
 
@@ -110,7 +113,20 @@ export function Chat({
       // Add the message to local state first
       setMessages((prevMessages) => [...prevMessages, message]);
       
-      // Prepare the request body in the expected format
+      // If we're on the initial landing page, navigate with query parameter
+      // The new page will automatically handle sending the message
+      if (pathname === '/stories/create') {
+        console.log('🧭 On initial page, navigating to specific chat page with query parameter');
+        
+        const messageText = message.parts?.[0]?.type === 'text' ? message.parts[0].text : '';
+        const encodedMessage = encodeURIComponent(messageText);
+        
+        console.log('📤 Navigating to:', `/stories/create/${id}?query=${encodedMessage}`);
+        router.push(`/stories/create/${id}?query=${encodedMessage}`);
+        return;
+      }
+      
+      // For existing chats, handle normally
       const requestBody = {
         id,
         message: {
