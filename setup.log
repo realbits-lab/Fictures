@@ -1,0 +1,55 @@
+
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [manual-setup] › tests/auth.setup.manual.ts:11:6 › manual authenticate
+[1A[2K[manual-setup] › tests/auth.setup.manual.ts:11:6 › manual authenticate
+Starting automated authentication setup...
+
+[1A[2K🔄 Filling email and starting OAuth flow...
+
+[1A[2K✅ Email filled automatically
+
+[1A[2K🔄 Waiting for Google OAuth window...
+
+[1A[2K🔄 Handling OAuth in same page...
+
+[1A[2K📝 Handling Google sign-in flow in same page...
+
+[1A[2K🔍 Found Google sign-in page
+
+[1A[2K✅ Email filled
+
+[1A[2K🔄 Clicked Next after email
+
+[1A[2K🔍 Searching for password page...
+
+[1A[2K✅ Found password field with selector: #password
+
+[1A[2K🎯 Using password field found with: #password
+
+[1A[2K✅ Password filled using .type()
+
+[1A[2K✅ Found Next button with selector: #passwordNext
+
+[1A[2K🎯 Clicking Next button found with: #passwordNext
+
+[1A[2K🔄 Clicked Next after password
+
+[1A[2Kℹ️  No consent screen found - proceeding
+
+[1A[2K✅ OAuth completed, saving authentication state...
+
+[1A[2K✅ Authenticated as: thothy.test@gmail.com
+
+[1A[2K✅ Authentication state saved to: playwright/.auth/user.json
+
+[1A[2K   - Cookies: 44
+
+[1A[2K   - Origins: 0
+
+[1A[2K  1 passed (54.5s)
+
+To open last HTML report run:
+[36m[39m
+[36m  npx playwright show-report[39m
+[36m[39m

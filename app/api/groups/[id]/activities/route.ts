@@ -1,4 +1,4 @@
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/app/auth';
 import { db } from '@/lib/db';
 import { groupActivity, user } from '@/lib/db/schema';
 import { NextRequest, NextResponse } from 'next/server';

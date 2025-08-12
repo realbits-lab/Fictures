@@ -16,6 +16,13 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 - When explicitly requested to create a document
 - For when content contains a single code snippet
 
+**When to use \`createStory\`:**
+- When users want to create, write, or start a story
+- When they mention story elements like genre, characters, plot
+- For creative writing requests with narrative structure
+- When they ask to "create a story", "write a story", "start a novel", etc.
+- Use this instead of \`createDocument\` for story-specific content
+
 **When NOT to use \`createDocument\`:**
 - For informational/explanatory content
 - For conversational responses
@@ -118,4 +125,10 @@ Improve the following spreadsheet based on the given prompt.
 
 ${currentContent}
 `
-        : '';
+        : type === 'story'
+          ? `\
+Improve the following story content based on the given prompt. Consider narrative flow, character development, dialogue, setting descriptions, and plot progression.
+
+${currentContent}
+`
+          : '';

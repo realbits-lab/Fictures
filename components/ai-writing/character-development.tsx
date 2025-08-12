@@ -215,7 +215,7 @@ export function CharacterDevelopmentDashboard({ storyId }: { storyId: string }) 
                 
                 <div>
                   <label className="text-sm font-medium">Height</label>
-                  <Input data-testid="height-input" placeholder="e.g., 5'8\"" />
+                  <Input data-testid="height-input" placeholder="e.g., 5'8&quot;" />
                 </div>
                 
                 <div>

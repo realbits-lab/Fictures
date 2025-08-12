@@ -1,0 +1,484 @@
+
+Running 6 tests using 6 workers
+
+[1A[2K[1/6] [authenticated] › tests/auth/authenticated-user.test.ts:52:7 › Authenticated User Tests › should be able to create a new chat
+[1A[2K[2/6] [authenticated] › tests/auth/authenticated-user.test.ts:8:7 › Authenticated User Tests › should have access to main chat interface
+[1A[2K[3/6] [authenticated] › tests/auth/storage-state-demo.test.ts:4:7 › Storage State Demo Tests › should demonstrate storage state usage
+[1A[2K[4/6] [authenticated] › tests/auth/storage-state-demo.test.ts:26:7 › Storage State Demo Tests › should show storage state configuration
+[1A[2K[5/6] [authenticated] › tests/auth/authenticated-user.test.ts:73:7 › Authenticated User Tests › should persist authentication across page reloads
+[1A[2K[6/6] [authenticated] › tests/auth/authenticated-user.test.ts:35:7 › Authenticated User Tests › should be able to access protected routes
+[1A[2K[authenticated] › tests/auth/storage-state-demo.test.ts:26:7 › Storage State Demo Tests › should show storage state configuration
+Storage State Configuration:
+
+[1A[2K- Cookies: [33m44[39m
+
+[1A[2K- Origins: [33m1[39m
+
+[1A[2K[authenticated] › tests/auth/storage-state-demo.test.ts:4:7 › Storage State Demo Tests › should demonstrate storage state usage
+Context storage state: {
+  cookies: [
+    {
+      name: [32m'authjs.csrf-token'[39m,
+      value: [32m'f364f6fbf0fdc884ae9fe15fc2a86a2b02b54356b9d8cbd4acc095be2d7fd66b%7Ce0e9834f104b69e5ea618f3f4c2dbdc2543c07c336c6ae8af2d4df499f70083a'[39m,
+      domain: [32m'localhost'[39m,
+      path: [32m'/'[39m,
+      expires: [33m-1[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mfalse[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'authjs.callback-url'[39m,
+      value: [32m'http%3A%2F%2Flocalhost%3A3000%2F'[39m,
+      domain: [32m'localhost'[39m,
+      path: [32m'/'[39m,
+      expires: [33m-1[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mfalse[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'OTZ'[39m,
+      value: [32m'8211568_20_20__20_'[39m,
+      domain: [32m'accounts.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1757590086[39m,
+      httpOnly: [33mfalse[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'NID'[39m,
+      value: [32m'525=KOtClP50URGEjMT0_ZtDe7frHueZWWqyhg7U6DyXy8bYGKhDTFI9r8YCCEoyVykJ7YbhIrmZHpeOZ5OGJkORpmcEGs7PdYCe00UNpeh4FtyBD-4oeqkVRhfKtELCSNDINcu220BKIp9voCCYOOQF51ewDGERq8o3xdTbjMLaik1xJ4IVf1FlL_hASq7ag4icdkTAxKpAXb-Th6ymQC5HGpsgUBBswDdt9eiNs8xFTAkqHObMUcClF8t-XEeIrDld7Divzoqu6uDB5i_RBLchP2VOYqngGggaoNqFkLt1gXFaTPpry1LEb77T7ez_q9I8EYDSUZsUkVEZgcl9hr-H2FIHiKNA-Mjhbe4MQCW1Ww1zHRoJ9oH1aw94jyQpA4emTzCBYUB2Bh53xwZd909SDiz5mMldYonFmnzQ3a7s9C5_c7wnSySajSUSBTS8VRKw2OL8-2V79t0rs7bzApAoOnwZ8n19qS2495sjfnJVY6yUGEZ4PaSX28DxRHxO6kptOASQ-Dvg0xcSB4Fd0qusYrGEFZV-pMmPZZ57iObmAkD9i-BpVkZbl1QxbMX49atYC18wJ_aZmR8aInWZ3KfMMXNSVhq_Evnh3UvrU-U5DHdkqCP9IDm2bOWRiZo'[39m,
+      domain: [32m'.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1770809287.490335[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'None'[39m
+    },
+    {
+      name: [32m'SID'[39m,
+      value: [32m'g.a0000AgMBNKGyyDD9e6r6d9Dfrugv7DfcxhXBJ24fvqj9sSMToZp0IIOdTM5rvQL2OlZDLVaYgACgYKAWUSARESFQHGX2MiFBPa7NDWL_KBMqMBHTpPNBoVAUF8yKoyNfnpeP8qYecrqhXGjUzq0076'[39m,
+      domain: [32m'.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.490444[39m,
+      httpOnly: [33mfalse[39m,
+      secure: [33mfalse[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'__Secure-1PSID'[39m,
+      value: [32m'g.a0000AgMBNKGyyDD9e6r6d9Dfrugv7DfcxhXBJ24fvqj9sSMToZp-8-abF8mj8ajOl9gw_A4BQACgYKAUgSARESFQHGX2MihxZVXEbIGm_nDmKeVWrb1hoVAUF8yKrMvrB0AFozEo1iGpbiBi1E0076'[39m,
+      domain: [32m'.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.49046[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'__Secure-3PSID'[39m,
+      value: [32m'g.a0000AgMBNKGyyDD9e6r6d9Dfrugv7DfcxhXBJ24fvqj9sSMToZpHNCB4CtHoJ934ousuv8c-QACgYKAe4SARESFQHGX2MihOi3ULKsswF9r3xHRe5GNRoVAUF8yKqu3jdGq74UzULIcaYkh4sP0076'[39m,
+      domain: [32m'.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.490475[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'None'[39m
+    },
+    {
+      name: [32m'HSID'[39m,
+      value: [32m'AxDXjOZ6XLxz6Ctvt'[39m,
+      domain: [32m'.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.490533[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mfalse[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'SSID'[39m,
+      value: [32m'Aw6hkf4Pe6zPogF9c'[39m,
+      domain: [32m'.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.490551[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'APISID'[39m,
+      value: [32m'42zqdcsZ3zYzRfol/A63t4poq-D7DlOTI2'[39m,
+      domain: [32m'.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.490563[39m,
+      httpOnly: [33mfalse[39m,
+      secure: [33mfalse[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'SAPISID'[39m,
+      value: [32m'us8pyQiMFZaSGth0/A0IrhY41csfaRPw6P'[39m,
+      domain: [32m'.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.490577[39m,
+      httpOnly: [33mfalse[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'__Secure-1PAPISID'[39m,
+      value: [32m'us8pyQiMFZaSGth0/A0IrhY41csfaRPw6P'[39m,
+      domain: [32m'.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.490589[39m,
+      httpOnly: [33mfalse[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'__Secure-3PAPISID'[39m,
+      value: [32m'us8pyQiMFZaSGth0/A0IrhY41csfaRPw6P'[39m,
+      domain: [32m'.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.490601[39m,
+      httpOnly: [33mfalse[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'None'[39m
+    },
+    {
+      name: [32m'__Host-GAPS'[39m,
+      value: [32m'1:5vJLMlivJBY2RRJBqsN8W_VqgM1hIdU1413cCXrEfMf4ZFeTNuPX7AlOTfPXHFJb1eRdIgGC0OdFvayPib5a4bA5H2Tvow:2EB96hJIXsnCYHe_'[39m,
+      domain: [32m'accounts.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.490627[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'LSID'[39m,
+      value: [32m's.KR|s.youtube:g.a0000AgMBC91UtL6ba7MvF-iidg2UKjZzpsZ4iP98r5VW2ouNFSkwnSl7x6JMBf2KQgG72bJxwACgYKAU4SARESFQHGX2MiI68nHEyBQWdCv4zgEx9uihoVAUF8yKpg6M3LGSw5Twqmn8xem9eB0076'[39m,
+      domain: [32m'accounts.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.643064[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'__Host-1PLSID'[39m,
+      value: [32m's.KR|s.youtube:g.a0000AgMBC91UtL6ba7MvF-iidg2UKjZzpsZ4iP98r5VW2ouNFSkEXGl8YtqHy91HiiJk8eKXgACgYKAVoSARESFQHGX2MiJyMUDEYyJmiAH2oKGt6ccBoVAUF8yKrO3yhYPDp56NQRUTrm8-b70076'[39m,
+      domain: [32m'accounts.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.643144[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'__Host-3PLSID'[39m,
+      value: [32m's.KR|s.youtube:g.a0000AgMBC91UtL6ba7MvF-iidg2UKjZzpsZ4iP98r5VW2ouNFSkcOcjeXesyyBJrIJSEHkiegACgYKAYwSARESFQHGX2Miz84vSe3VHnsBmh69KrkhNBoVAUF8yKruFfr7TvA2WeZnDw7A3mrI0076'[39m,
+      domain: [32m'accounts.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.643172[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'None'[39m
+    },
+    {
+      name: [32m'ACCOUNT_CHOOSER'[39m,
+      value: [32m'AFx_qI60yg1YtY3DHZ2kHsqHID1B2W-0TLCGO-W_YdSUXy2KJGScKO3S_3KxEr511b5XMIZzJFG4d9mcl4H5CupwnB1lVABYgDFjOwM5dgIOMpxhvj43Kbt5vQjfbWmIYpPPsX55SGWw'[39m,
+      domain: [32m'accounts.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.643196[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'__Secure-1PSIDTS'[39m,
+      value: [32m'sidts-CjUB5H03P9xRCCx4-vnl58t4Umyyebpcgf5GwBVEpTuP-6mA4-eIodHT_VKovXlL7guQGI-VYhAA'[39m,
+      domain: [32m'.youtube.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1786534123.879908[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'__Secure-3PSIDTS'[39m,
+      value: [32m'sidts-CjUB5H03P9xRCCx4-vnl58t4Umyyebpcgf5GwBVEpTuP-6mA4-eIodHT_VKovXlL7guQGI-VYhAA'[39m,
+      domain: [32m'.youtube.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1786534123.879978[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'None'[39m
+    },
+    {
+      name: [32m'HSID'[39m,
+      value: [32m'Azb2E7PVja9mT99q4'[39m,
+      domain: [32m'.youtube.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.879995[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mfalse[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'SSID'[39m,
+      value: [32m'AoqOw6REYxRe-bRXr'[39m,
+      domain: [32m'.youtube.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.880011[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'APISID'[39m,
+      value: [32m'42zqdcsZ3zYzRfol/A63t4poq-D7DlOTI2'[39m,
+      domain: [32m'.youtube.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.880024[39m,
+      httpOnly: [33mfalse[39m,
+      secure: [33mfalse[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'SAPISID'[39m,
+      value: [32m'us8pyQiMFZaSGth0/A0IrhY41csfaRPw6P'[39m,
+      domain: [32m'.youtube.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.880038[39m,
+      httpOnly: [33mfalse[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'__Secure-1PAPISID'[39m,
+      value: [32m'us8pyQiMFZaSGth0/A0IrhY41csfaRPw6P'[39m,
+      domain: [32m'.youtube.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.880051[39m,
+      httpOnly: [33mfalse[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'__Secure-3PAPISID'[39m,
+      value: [32m'us8pyQiMFZaSGth0/A0IrhY41csfaRPw6P'[39m,
+      domain: [32m'.youtube.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.880064[39m,
+      httpOnly: [33mfalse[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'None'[39m
+    },
+    {
+      name: [32m'SID'[39m,
+      value: [32m'g.a0000AgMBNKGyyDD9e6r6d9Dfrugv7DfcxhXBJ24fvqj9sSMToZp0IIOdTM5rvQL2OlZDLVaYgACgYKAWUSARESFQHGX2MiFBPa7NDWL_KBMqMBHTpPNBoVAUF8yKoyNfnpeP8qYecrqhXGjUzq0076'[39m,
+      domain: [32m'.youtube.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.880077[39m,
+      httpOnly: [33mfalse[39m,
+      secure: [33mfalse[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'__Secure-1PSID'[39m,
+      value: [32m'g.a0000AgMBNKGyyDD9e6r6d9Dfrugv7DfcxhXBJ24fvqj9sSMToZp-8-abF8mj8ajOl9gw_A4BQACgYKAUgSARESFQHGX2MihxZVXEbIGm_nDmKeVWrb1hoVAUF8yKrMvrB0AFozEo1iGpbiBi1E0076'[39m,
+      domain: [32m'.youtube.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.880093[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'__Secure-3PSID'[39m,
+      value: [32m'g.a0000AgMBNKGyyDD9e6r6d9Dfrugv7DfcxhXBJ24fvqj9sSMToZpHNCB4CtHoJ934ousuv8c-QACgYKAe4SARESFQHGX2MihOi3ULKsswF9r3xHRe5GNRoVAUF8yKqu3jdGq74UzULIcaYkh4sP0076'[39m,
+      domain: [32m'.youtube.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558123.880107[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'None'[39m
+    },
+    {
+      name: [32m'HSID'[39m,
+      value: [32m'Azb2E7PVja9mT99q4'[39m,
+      domain: [32m'.google.co.kr'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558124.200611[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mfalse[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'SSID'[39m,
+      value: [32m'AoqOw6REYxRe-bRXr'[39m,
+      domain: [32m'.google.co.kr'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558124.200683[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'APISID'[39m,
+      value: [32m'42zqdcsZ3zYzRfol/A63t4poq-D7DlOTI2'[39m,
+      domain: [32m'.google.co.kr'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558124.200698[39m,
+      httpOnly: [33mfalse[39m,
+      secure: [33mfalse[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'SAPISID'[39m,
+      value: [32m'us8pyQiMFZaSGth0/A0IrhY41csfaRPw6P'[39m,
+      domain: [32m'.google.co.kr'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558124.200713[39m,
+      httpOnly: [33mfalse[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'__Secure-1PAPISID'[39m,
+      value: [32m'us8pyQiMFZaSGth0/A0IrhY41csfaRPw6P'[39m,
+      domain: [32m'.google.co.kr'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558124.200726[39m,
+      httpOnly: [33mfalse[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'__Secure-3PAPISID'[39m,
+      value: [32m'us8pyQiMFZaSGth0/A0IrhY41csfaRPw6P'[39m,
+      domain: [32m'.google.co.kr'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558124.200739[39m,
+      httpOnly: [33mfalse[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'None'[39m
+    },
+    {
+      name: [32m'NID'[39m,
+      value: [32m'525=JM8TKkyVq_-zta_0issKnMsAzCuaEWiYI2ofVZK-hRcaSRiafHxxCmbdkTDfsr1NDvLp3wx_JswJHzrKAG3itBM_cUaneK7kzl5Fmb-Aw_AxhOYnLWePX6sHIQB80ILx--Kev0RgCIiKmrlpWaIy82JdKJT8n1i4W5CXokZY3Vc6fB1zm7JgB9ofNSYkaMktWPaUDOmBwF4'[39m,
+      domain: [32m'.google.co.kr'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1770809324.200754[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'None'[39m
+    },
+    {
+      name: [32m'SID'[39m,
+      value: [32m'g.a0000AgMBNKGyyDD9e6r6d9Dfrugv7DfcxhXBJ24fvqj9sSMToZp0IIOdTM5rvQL2OlZDLVaYgACgYKAWUSARESFQHGX2MiFBPa7NDWL_KBMqMBHTpPNBoVAUF8yKoyNfnpeP8qYecrqhXGjUzq0076'[39m,
+      domain: [32m'.google.co.kr'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558124.20077[39m,
+      httpOnly: [33mfalse[39m,
+      secure: [33mfalse[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'__Secure-1PSID'[39m,
+      value: [32m'g.a0000AgMBNKGyyDD9e6r6d9Dfrugv7DfcxhXBJ24fvqj9sSMToZp-8-abF8mj8ajOl9gw_A4BQACgYKAUgSARESFQHGX2MihxZVXEbIGm_nDmKeVWrb1hoVAUF8yKrMvrB0AFozEo1iGpbiBi1E0076'[39m,
+      domain: [32m'.google.co.kr'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558124.200783[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'__Secure-3PSID'[39m,
+      value: [32m'g.a0000AgMBNKGyyDD9e6r6d9Dfrugv7DfcxhXBJ24fvqj9sSMToZpHNCB4CtHoJ934ousuv8c-QACgYKAe4SARESFQHGX2MihOi3ULKsswF9r3xHRe5GNRoVAUF8yKqu3jdGq74UzULIcaYkh4sP0076'[39m,
+      domain: [32m'.google.co.kr'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1789558124.200798[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'None'[39m
+    },
+    {
+      name: [32m'LSOLH'[39m,
+      value: [32m'AH+1Ng2RpQ/FPqLzjDh6cFMGytsnK2OOxPetKJMs6YTT7zMQYdENa5xAhC/Y65ioJFhgpr53AgNX'[39m,
+      domain: [32m'accounts.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1786534127.741919[39m,
+      httpOnly: [33mfalse[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'None'[39m
+    },
+    {
+      name: [32m'SIDCC'[39m,
+      value: [32m'AKEyXzU2Ppww_-8sbi9VZ9wZ67eDNGD13DefApRbwKpp2SI5NSZsv6k44yV00fRTg6MqvwVJ'[39m,
+      domain: [32m'.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1786534134.543599[39m,
+      httpOnly: [33mfalse[39m,
+      secure: [33mfalse[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'__Secure-1PSIDCC'[39m,
+      value: [32m'AKEyXzU6eM4Q7arRwS3n05JLtM2hLbGUPVhclQad__dG8-uwW5SrXFf0wPYZwKyJSvRNLrKj7g'[39m,
+      domain: [32m'.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1786534134.543679[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'Lax'[39m
+    },
+    {
+      name: [32m'__Secure-3PSIDCC'[39m,
+      value: [32m'AKEyXzUl6PuUQJo4lKp2xOZA3iJ9fMQpp18fN7fsrm0S2YaFfHXZJ7Gfp_2RsspNBHpApBB5'[39m,
+      domain: [32m'.google.com'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1786534134.543701[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mtrue[39m,
+      sameSite: [32m'None'[39m
+    },
+    {
+      name: [32m'authjs.session-token'[39m,
+      value: [32m'eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwia2lkIjoibnE3d0F6c3lSdUpqalRJUGFTMlRycUtBX2RBajhKeldZTFNRdG5FWUR3SGRVRElDTHpKQnloRG5SejliYTQyek1GVTk3aEh0XzBvZzgzVzloT2JWRkEifQ..MFyAYoZ7dSqnHDE54GzKsQ.acUueadec_HTRiKOQNPZ5j3CaOPbaVBADG_ruWX0_HDapOWeWStIhj0AvyO6blvKevkh-rAyPJF9evD_vQgTn2q1kekokZw9Flv_TO-d9e1JaZYZb3OK8FZxap7wdIRwoA_ygA4uuFUbHnEzp7Z7MNb3AmMsifjs-u6mYZ1BOoG9Y59zk1ydi9PurEFV9jKS4y0dwg30C0NUosrynRPWrBLk_B7KRON36-e_oEjrHOsUJo9oRwjKpsnGon6dQ1Spw6hqtxjMXYpSRgy6DjBwEF0eT-WOP803eBQnlPFn1TzObDdJG2xMSjkMbKqoBr4CE71Didcyprq7HP5Qs_SewzvEoN4hDckIqNwDAQ09w2WrQBG7KtMVvHeG5mRthhR28v2b1sxkxUUAIjs32AcrnPoVvCBHzS6OjPs6KGLp_YKrCpP0Zs9QMa2wuuawFwSGz5PRrEUQrXOSKxhQc9BbiQ.Fy2IZU7Gp0UyVGwOKLBlqF6g0SmEnJcf2suQvw0oC4c'[39m,
+      domain: [32m'localhost'[39m,
+      path: [32m'/'[39m,
+      expires: [33m1757590137[39m,
+      httpOnly: [33mtrue[39m,
+      secure: [33mfalse[39m,
+      sameSite: [32m'Lax'[39m
+    }
+  ],
+  origins: [ { origin: [32m'http://localhost:3000'[39m, localStorage: [36m[Array][39m } ]
+}
+
+[1A[2K[authenticated] › tests/auth/storage-state-demo.test.ts:26:7 › Storage State Demo Tests › should show storage state configuration
+Session data: {
+  user: {
+    name: [32m'Thothy Test'[39m,
+    email: [32m'thothy.test@gmail.com'[39m,
+    image: [32m'https://lh3.googleusercontent.com/a/ACg8ocJDd5R4m74tPBlNFQynmmULA0aQuwxx2nD5-7rBs7Pp0k06BA=s96-c'[39m,
+    type: [32m'regular'[39m,
+    id: [32m'485c493e-c1ef-437c-ac17-752951988079'[39m
+  },
+  expires: [32m'2025-09-11T11:31:32.837Z'[39m
+}
+
+[1A[2K[authenticated] › tests/auth/storage-state-demo.test.ts:4:7 › Storage State Demo Tests › should demonstrate storage state usage
+Current URL: http://localhost:3000/chat
+
+[1A[2K  6 passed (23.1s)
+
+To open last HTML report run:
+[36m[39m
+[36m  npx playwright show-report[39m
+[36m[39m

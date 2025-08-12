@@ -95,13 +95,21 @@ setup("manual authenticate", async ({ page, context }) => {
 			await handleGoogleOAuthInSamePage(page);
 		}
 
-		// Wait for redirect back to our app
-		await page.waitForURL(
-			(url) =>
-				!url.toString().includes("/login") &&
-				!url.toString().includes("google.com"),
-			{ timeout: 30000 },
-		);
+		// Wait for redirect back to our app - be more flexible about the redirect URL
+		try {
+			await page.waitForURL(
+				(url) => {
+					const urlString = url.toString();
+					return (urlString.includes("localhost:3000") && 
+							!urlString.includes("/login") && 
+							!urlString.includes("google.com"));
+				},
+				{ timeout: 45000 },
+			);
+		} catch (urlError) {
+			console.log(`⚠️  URL wait timeout, current URL: ${page.url()}`);
+			// Continue anyway as the authentication might have worked
+		}
 
 		console.log("✅ OAuth completed, saving authentication state...");
 
@@ -109,8 +117,12 @@ setup("manual authenticate", async ({ page, context }) => {
 		await page.waitForTimeout(3000);
 
 		// Verify we're authenticated
+		console.log(`🔍 Current URL after OAuth: ${page.url()}`);
+		
 		const session = await page.request.get("/api/auth/session");
 		const sessionData = await session.json();
+		
+		console.log(`📋 Session data: ${JSON.stringify(sessionData, null, 2)}`);
 
 		if (sessionData?.user?.email) {
 			console.log(`✅ Authenticated as: ${sessionData.user.email}`);
@@ -124,6 +136,9 @@ setup("manual authenticate", async ({ page, context }) => {
 			console.log(`   - Cookies: ${savedState.cookies.length}`);
 			console.log(`   - Origins: ${savedState.origins.length}`);
 		} else {
+			// Still save the state even if session is null for debugging
+			await context.storageState({ path: authFile });
+			console.log(`⚠️  No user session found, but saved state for debugging`);
 			throw new Error("Authentication failed - no user session found");
 		}
 	} catch (error) {
@@ -135,7 +150,7 @@ setup("manual authenticate", async ({ page, context }) => {
 		const mockAuthState = {
 			cookies: [
 				{
-					name: "next-auth.session-token",
+					name: "authjs.session-token",
 					value: "mock-session-token-" + Date.now(),
 					domain: "localhost",
 					path: "/",

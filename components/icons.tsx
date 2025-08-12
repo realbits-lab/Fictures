@@ -1172,3 +1172,41 @@ export const WarningIcon = ({ size = 16 }: { size?: number }) => {
     </svg>
   );
 };
+
+export const BookOpenIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M8 2.5L8 13.5C8 13.7761 7.77614 14 7.5 14C7.22386 14 7 13.7761 7 13.5L7 3C7 2.58579 7.33579 2.25 7.75 2.25H14.25C14.6642 2.25 15 2.58579 15 3V12C15 12.4142 14.6642 12.75 14.25 12.75H8.5C8.22386 12.75 8 12.5261 8 12.25C8 11.9739 8.22386 11.75 8.5 11.75H13.5V3.75H8V2.5ZM1.75 2.25C2.16421 2.25 2.5 2.58579 2.5 3V12C2.5 12.4142 2.16421 12.75 1.75 12.75H7.5C7.77614 12.75 8 12.9739 8 13.25C8 13.5261 7.77614 13.75 7.5 13.75H1.75C1.33579 13.75 1 13.4142 1 13V3C1 2.58579 1.33579 2.25 1.75 2.25ZM2.5 3.75V11.75H7V3.75H2.5Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
+
+export const TagIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M1.75 2C1.33579 2 1 2.33579 1 2.75V7.25C1 7.66421 1.33579 8 1.75 8H6.25C6.66421 8 7 7.66421 7 7.25V2.75C7 2.33579 6.66421 2 6.25 2H1.75ZM2.5 3.5V6.5H5.5V3.5H2.5Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};

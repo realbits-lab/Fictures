@@ -1,5 +1,5 @@
-import { auth } from '@/app/(auth)/auth';
-import { db } from '@/lib/db';
+import { auth } from '@/app/auth';
+import { db } from '@/lib/db/index';
 import { contest } from '@/lib/db/schema';
 import { NextRequest, NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';

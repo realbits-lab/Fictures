@@ -1,0 +1,91 @@
+
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [manual-setup] › tests/auth.setup.manual.ts:11:6 › manual authenticate
+[1A[2K[manual-setup] › tests/auth.setup.manual.ts:11:6 › manual authenticate
+Starting automated authentication setup...
+
+[1A[2K🔄 Filling email and starting OAuth flow...
+
+[1A[2K✅ Email filled automatically
+
+[1A[2K🔄 Waiting for Google OAuth window...
+
+[1A[2K🔄 Handling OAuth in same page...
+
+[1A[2K📝 Handling Google sign-in flow in same page...
+
+[1A[2K🔍 Found Google sign-in page
+
+[1A[2K✅ Email filled
+
+[1A[2K🔄 Clicked Next after email
+
+[1A[2K🔍 Searching for password page...
+
+[1A[2K✅ Found password field with selector: #password
+
+[1A[2K🎯 Using password field found with: #password
+
+[1A[2K✅ Password filled using .type()
+
+[1A[2K✅ Found Next button with selector: #passwordNext
+
+[1A[2K🎯 Clicking Next button found with: #passwordNext
+
+[1A[2K🔄 Clicked Next after password
+
+[1A[2Kℹ️  No consent screen found - proceeding
+
+[1A[2KManual authentication failed: page.waitForURL: Timeout 30000ms exceeded.
+=========================== logs ===========================
+waiting for navigation until "load"
+============================================================
+    at [90m/Users/thomasjeon/GitHub/@ai.thothy/Fictures/[39mtests/auth.setup.manual.ts:99:14 {
+  name: [32m'TimeoutError'[39m,
+  [[32mSymbol(step)[39m]: {
+    stepId: [32m'pw:api@32'[39m,
+    location: {
+      file: [32m'/Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/auth.setup.manual.ts'[39m,
+      line: [33m99[39m,
+      column: [33m14[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m'page.waitForURL'[39m,
+    apiName: [32m'page.waitForURL'[39m,
+    params: { info: [36m[Object][39m },
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@32'[39m
+    },
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1754997349294[39m,
+    error: {
+      message: [32m'TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n'[39m +
+        [32m'=========================== logs ===========================\n'[39m +
+        [32m'waiting for navigation until "load"\n'[39m +
+        [32m'============================================================'[39m,
+      stack: [32m'TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n'[39m +
+        [32m'=========================== logs ===========================\n'[39m +
+        [32m'waiting for navigation until "load"\n'[39m +
+        [32m'============================================================\n'[39m +
+        [32m'    at /Users/thomasjeon/GitHub/@ai.thothy/Fictures/tests/auth.setup.manual.ts:99:14'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
+
+[1A[2KCreating mock authentication state for testing...
+
+[1A[2K✅ Mock authentication state created
+
+[1A[2K  1 passed (50.4s)
+
+To open last HTML report run:
+[36m[39m
+[36m  npx playwright show-report[39m
+[36m[39m
