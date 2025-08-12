@@ -121,7 +121,7 @@ export const document = pgTable(
     createdAt: timestamp('createdAt').notNull(),
     title: text('title').notNull(),
     content: text('content'),
-    kind: varchar('text', { enum: ['text', 'code', 'image', 'sheet'] })
+    kind: varchar('text', { enum: ['text', 'code', 'image', 'sheet', 'story'] })
       .notNull()
       .default('text'),
     userId: uuid('userId')
@@ -253,7 +253,8 @@ export const readingProgress = pgTable(
     storyId: uuid('storyId')
       .notNull()
       .references(() => story.id),
-    currentChapterNumber: integer('currentChapterNumber').notNull().default(1),
+    currentChapterId: uuid('currentChapterId')
+      .references(() => chapter.id),
     currentPosition: decimal('currentPosition').notNull().default('0'),
     lastReadAt: timestamp('lastReadAt').notNull().defaultNow(),
     totalTimeRead: integer('totalTimeRead').notNull().default(0),
@@ -445,7 +446,9 @@ export const bookmark = pgTable('Bookmark', {
   storyId: uuid('storyId')
     .notNull()
     .references(() => story.id),
-  chapterNumber: integer('chapterNumber').notNull(),
+  chapterId: uuid('chapterId')
+    .notNull()
+    .references(() => chapter.id),
   position: decimal('position').notNull().default('0'), // scroll position
   note: text('note'),
   isAutomatic: boolean('isAutomatic').notNull().default(false),

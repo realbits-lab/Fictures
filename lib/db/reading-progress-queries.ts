@@ -13,6 +13,7 @@ import {
   readingProgress,
   story,
   user,
+  chapter,
   type ReadingProgress,
   type Story,
   type User,
@@ -39,6 +40,19 @@ export async function updateReadingProgress({
   position: number;
 }): Promise<ReadingProgress> {
   try {
+    // Find the chapter ID based on story and chapter number
+    const [targetChapter] = await db
+      .select({ id: chapter.id })
+      .from(chapter)
+      .where(and(
+        eq(chapter.storyId, storyId),
+        eq(chapter.chapterNumber, chapterNumber)
+      ));
+
+    if (!targetChapter) {
+      throw new ChatSDKError('not_found', 'Chapter not found');
+    }
+
     const [existingProgress] = await db
       .select()
       .from(readingProgress)
@@ -51,7 +65,7 @@ export async function updateReadingProgress({
       const [updated] = await db
         .update(readingProgress)
         .set({
-          currentChapterNumber: chapterNumber,
+          currentChapterId: targetChapter.id,
           currentPosition: position.toString(),
           lastReadAt: new Date(),
           totalTimeRead: sql`${readingProgress.totalTimeRead} + 1`,
@@ -69,7 +83,7 @@ export async function updateReadingProgress({
         .values({
           userId,
           storyId,
-          currentChapterNumber: chapterNumber,
+          currentChapterId: targetChapter.id,
           currentPosition: position.toString(),
           lastReadAt: new Date(),
           totalTimeRead: 1,
@@ -80,6 +94,9 @@ export async function updateReadingProgress({
       return created;
     }
   } catch (error) {
+    if (error instanceof ChatSDKError) {
+      throw error;
+    }
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to update reading progress',
@@ -196,6 +213,32 @@ export async function getProgressPercentage(
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get progress percentage',
+      { cause: error }
+    );
+  }
+}
+
+export async function getCurrentChapterNumber(
+  userId: string,
+  storyId: string
+): Promise<number | null> {
+  try {
+    const progress = await getReadingProgress(userId, storyId);
+    if (!progress?.currentChapterId) {
+      return null;
+    }
+    
+    // Get chapter number from chapter ID
+    const [chapterInfo] = await db
+      .select({ chapterNumber: chapter.chapterNumber })
+      .from(chapter)
+      .where(eq(chapter.id, progress.currentChapterId));
+    
+    return chapterInfo?.chapterNumber || null;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get current chapter number',
       { cause: error }
     );
   }
