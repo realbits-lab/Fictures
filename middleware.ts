@@ -46,7 +46,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/',
-    '/chat/:id',
+    '/stories/create/:id',
     '/api/:path*',
     '/login',
 

@@ -102,7 +102,7 @@ export function Chat({
       });
 
       setHasAppendedQuery(true);
-      window.history.replaceState({}, '', `/chat/${id}`);
+      window.history.replaceState({}, '', `/stories/create/${id}`);
     }
   }, [query, sendMessage, hasAppendedQuery, id]);
 
