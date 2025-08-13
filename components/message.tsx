@@ -3,7 +3,7 @@ import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
-import { DocumentToolCall, DocumentToolResult } from './document';
+// DocumentToolCall and DocumentPreview archived - part of legacy artifact system removal
 import { PencilEditIcon, SparklesIcon } from './icons';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
@@ -14,7 +14,6 @@ import { cn, sanitizeText } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
-import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { ChatMessage } from '@/lib/types';
@@ -192,8 +191,9 @@ const PurePreviewMessage = ({
                 if (state === 'input-available') {
                   const { input } = part;
                   return (
-                    <div key={toolCallId}>
-                      <DocumentPreview isReadonly={isReadonly} args={input} />
+                    <div key={toolCallId} className="text-muted-foreground p-2 border rounded">
+                      {/* Legacy document preview - document tools archived */}
+                      Document creation preview (legacy)
                     </div>
                   );
                 }
@@ -213,11 +213,9 @@ const PurePreviewMessage = ({
                   }
 
                   return (
-                    <div key={toolCallId}>
-                      <DocumentPreview
-                        isReadonly={isReadonly}
-                        result={output}
-                      />
+                    <div key={toolCallId} className="text-muted-foreground p-2 border rounded">
+                      {/* Legacy document preview - document tools archived */}
+                      Document creation result (legacy)
                     </div>
                   );
                 }
@@ -230,12 +228,9 @@ const PurePreviewMessage = ({
                   const { input } = part;
 
                   return (
-                    <div key={toolCallId}>
-                      <DocumentToolCall
-                        type="update"
-                        args={input}
-                        isReadonly={isReadonly}
-                      />
+                    <div key={toolCallId} className="text-muted-foreground p-2 border rounded">
+                      {/* Legacy tool call - document tools archived */}
+                      Document update tool call (legacy)
                     </div>
                   );
                 }
@@ -256,11 +251,10 @@ const PurePreviewMessage = ({
 
                   return (
                     <div key={toolCallId}>
-                      <DocumentToolResult
-                        type="update"
-                        result={output}
-                        isReadonly={isReadonly}
-                      />
+{/* Legacy tool result - document tools archived */}
+                      <div className="text-muted-foreground p-2 border rounded">
+                        Document update result (legacy)
+                      </div>
                     </div>
                   );
                 }
@@ -272,12 +266,9 @@ const PurePreviewMessage = ({
                 if (state === 'input-available') {
                   const { input } = part;
                   return (
-                    <div key={toolCallId}>
-                      <DocumentToolCall
-                        type="request-suggestions"
-                        args={input}
-                        isReadonly={isReadonly}
-                      />
+                    <div key={toolCallId} className="text-muted-foreground p-2 border rounded">
+                      {/* Legacy tool call - document tools archived */}
+                      Suggestions request tool call (legacy)
                     </div>
                   );
                 }
@@ -297,12 +288,9 @@ const PurePreviewMessage = ({
                   }
 
                   return (
-                    <div key={toolCallId}>
-                      <DocumentToolResult
-                        type="request-suggestions"
-                        result={output}
-                        isReadonly={isReadonly}
-                      />
+                    <div key={toolCallId} className="text-muted-foreground p-2 border rounded">
+                      {/* Legacy tool result - document tools archived */}
+                      Suggestions request result (legacy)
                     </div>
                   );
                 }

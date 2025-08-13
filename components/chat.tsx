@@ -8,11 +8,10 @@ import { useRouter, usePathname } from 'next/navigation';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
 import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
-import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
 import type { VisibilityType } from './visibility-selector';
-import { useArtifactSelector } from '@/hooks/use-artifact';
+// Removed artifact imports - artifact system archived in Phase 3
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
 import { toast } from './toast';
@@ -245,7 +244,7 @@ export function Chat({
   );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
-  const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+  // Removed artifact visibility state - no artifact in simplified interface
 
 
   useAutoResume({
@@ -274,7 +273,6 @@ export function Chat({
           setMessages={setMessages}
           regenerate={regenerate}
           isReadonly={isReadonly}
-          isArtifactVisible={isArtifactVisible}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
@@ -295,23 +293,8 @@ export function Chat({
           )}
         </form>
       </div>
-
-      <Artifact
-        chatId={id}
-        input={input}
-        setInput={setInput}
-        status={status}
-        stop={stop}
-        attachments={attachments}
-        setAttachments={setAttachments}
-        sendMessage={effectiveSendMessage}
-        messages={messages}
-        setMessages={setMessages}
-        regenerate={regenerate}
-        votes={votes}
-        isReadonly={isReadonly}
-        selectedVisibilityType={initialVisibilityType}
-      />
+      
+      {/* Artifact component removed - legacy system archived in Phase 3 */}
     </>
   );
 }

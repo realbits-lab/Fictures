@@ -4,7 +4,7 @@ import Script from 'next/script';
 import { Chat } from '@/components/chat';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { generateUUID } from '@/lib/utils';
-import { DataStreamHandler } from '@/components/data-stream-handler';
+// DataStreamHandler archived - part of legacy artifact system removal
 import { auth } from '@/app/auth';
 import { redirect } from 'next/navigation';
 import { AppSidebar } from '@/components/app-sidebar';
@@ -38,7 +38,7 @@ export default async function Page() {
         session={session}
         autoResume={false}
       />
-      <DataStreamHandler />
+      {/* DataStreamHandler removed - legacy artifact system archived */}
     </>
   ) : (
     <>
@@ -52,7 +52,7 @@ export default async function Page() {
         session={session}
         autoResume={false}
       />
-      <DataStreamHandler />
+      {/* DataStreamHandler removed - legacy artifact system archived */}
     </>
   );
 

@@ -30,7 +30,7 @@ import {
   permittedUser,
   type PermittedUser,
 } from './schema';
-import type { ArtifactKind } from '@/components/artifact';
+import type { ArtifactKind } from '@/lib/types';
 import { ChatSDKError } from '../errors';
 import { generateHashedPassword } from './utils';
 

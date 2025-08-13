@@ -8,8 +8,17 @@ const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'jsdom',
   testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/', '<rootDir>/tests/'],
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
+  },
+  transformIgnorePatterns: [
+    'node_modules/(?!(next-auth|@auth/core|node-fetch|ai|@ai-sdk)/)',
+  ],
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
+  globals: {
+    'ts-jest': {
+      useESM: true,
+    },
   },
   collectCoverageFrom: [
     'app/**/*.{js,ts,jsx,tsx}',

@@ -17,7 +17,7 @@ interface MessagesProps {
   setMessages: UseChatHelpers<ChatMessage>['setMessages'];
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
-  isArtifactVisible: boolean;
+  // Removed isArtifactVisible - artifact system archived
 }
 
 function PureMessages({
@@ -84,7 +84,7 @@ function PureMessages({
 }
 
 export const Messages = memo(PureMessages, (prevProps, nextProps) => {
-  if (prevProps.isArtifactVisible && nextProps.isArtifactVisible) return true;
+  // Removed artifact visibility optimization - artifact system archived
 
   if (prevProps.status !== nextProps.status) return false;
   if (prevProps.messages.length !== nextProps.messages.length) return false;

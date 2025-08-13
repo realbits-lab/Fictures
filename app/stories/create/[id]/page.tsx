@@ -5,7 +5,7 @@ import Script from 'next/script';
 import { auth } from '@/app/auth';
 import { Chat } from '@/components/chat';
 import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
-import { DataStreamHandler } from '@/components/data-stream-handler';
+// DataStreamHandler archived - part of legacy artifact system removal
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { convertToUIMessages } from '@/lib/utils';
 import { AppSidebar } from '@/components/app-sidebar';
@@ -43,7 +43,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           session={session}
           autoResume={false}
         />
-        <DataStreamHandler />
+        {/* DataStreamHandler removed - legacy artifact system archived */}
       </>
     );
 
@@ -94,7 +94,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         session={session}
         autoResume={true}
       />
-      <DataStreamHandler />
+      {/* DataStreamHandler removed - legacy artifact system archived */}
     </>
   ) : (
     <>
@@ -107,7 +107,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         session={session}
         autoResume={true}
       />
-      <DataStreamHandler />
+      {/* DataStreamHandler removed - legacy artifact system archived */}
     </>
   );
 

@@ -41,6 +41,9 @@ export const chat = pgTable('Chat', {
   visibility: varchar('visibility', { enum: ['public', 'private'] })
     .notNull()
     .default('private'),
+  chatType: varchar('chatType', { enum: ['general', 'chapter', 'story'] })
+    .notNull()
+    .default('general'),
 });
 
 export type Chat = InferSelectModel<typeof chat>;
@@ -221,9 +224,30 @@ export const chapter = pgTable('Chapter', {
   createdAt: timestamp('createdAt').notNull().defaultNow(),
   updatedAt: timestamp('updatedAt').notNull().defaultNow(),
   authorNote: text('authorNote'),
+  chatId: uuid('chatId').references(() => chat.id),
+  generationPrompt: text('generationPrompt'),
+  previousChapterSummary: text('previousChapterSummary'),
 });
 
 export type Chapter = InferSelectModel<typeof chapter>;
+
+export const chapterGeneration = pgTable('ChapterGeneration', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  chapterId: uuid('chapterId')
+    .notNull()
+    .references(() => chapter.id, { onDelete: 'cascade' }),
+  prompt: text('prompt').notNull(),
+  generatedContent: text('generatedContent'),
+  status: varchar('status', { enum: ['pending', 'generating', 'completed', 'failed'] })
+    .notNull()
+    .default('pending'),
+  error: text('error'),
+  metadata: json('metadata'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  completedAt: timestamp('completedAt'),
+});
+
+export type ChapterGeneration = InferSelectModel<typeof chapterGeneration>;
 
 export const character = pgTable('Character', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
