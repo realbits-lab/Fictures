@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getBookById } from '@/lib/db/queries/books';
-import { getPublishedChaptersByStory } from '@/lib/db/chapter-queries';
+import { getPublishedChaptersByBook } from '@/lib/db/chapter-queries';
 import Link from 'next/link';
 
 export default async function PublicBookPage({ 
@@ -19,7 +19,7 @@ export default async function PublicBookPage({
   }
   
   // Get published chapters
-  const chapters = await getPublishedChaptersByStory(bookId);
+  const chapters = await getPublishedChaptersByBook(bookId);
   
   return (
     <div className="max-w-4xl mx-auto p-6">

@@ -11,11 +11,11 @@ import postgres from 'postgres';
 
 import {
   readingProgress,
-  story,
+  book,
   user,
   chapter,
   type ReadingProgress,
-  type Story,
+  type Book,
   type User,
 } from './schema';
 import { ChatSDKError } from '../errors';
@@ -24,28 +24,28 @@ import { ChatSDKError } from '../errors';
 const client = postgres(process.env.POSTGRES_URL!);
 const db = drizzle(client);
 
-export interface ReadingProgressWithStory extends ReadingProgress {
-  story: Story & { author: User };
+export interface ReadingProgressWithBook extends ReadingProgress {
+  book: Book & { author: User };
 }
 
 export async function updateReadingProgress({
   userId,
-  storyId,
+  bookId,
   chapterNumber,
   position,
 }: {
   userId: string;
-  storyId: string;
+  bookId: string;
   chapterNumber: number;
   position: number;
 }): Promise<ReadingProgress> {
   try {
-    // Find the chapter ID based on story and chapter number
+    // Find the chapter ID based on book and chapter number
     const [targetChapter] = await db
       .select({ id: chapter.id })
       .from(chapter)
       .where(and(
-        eq(chapter.storyId, storyId),
+        eq(chapter.bookId, bookId),
         eq(chapter.chapterNumber, chapterNumber)
       ));
 
@@ -58,7 +58,7 @@ export async function updateReadingProgress({
       .from(readingProgress)
       .where(and(
         eq(readingProgress.userId, userId),
-        eq(readingProgress.storyId, storyId)
+        eq(readingProgress.bookId, bookId)
       ));
 
     if (existingProgress) {
@@ -72,7 +72,7 @@ export async function updateReadingProgress({
         })
         .where(and(
           eq(readingProgress.userId, userId),
-          eq(readingProgress.storyId, storyId)
+          eq(readingProgress.bookId, bookId)
         ))
         .returning();
       
@@ -82,7 +82,7 @@ export async function updateReadingProgress({
         .insert(readingProgress)
         .values({
           userId,
-          storyId,
+          bookId,
           currentChapterId: targetChapter.id,
           currentPosition: position.toString(),
           lastReadAt: new Date(),
@@ -107,7 +107,7 @@ export async function updateReadingProgress({
 
 export async function getReadingProgress(
   userId: string,
-  storyId: string
+  bookId: string
 ): Promise<ReadingProgress | null> {
   try {
     const [progress] = await db
@@ -115,7 +115,7 @@ export async function getReadingProgress(
       .from(readingProgress)
       .where(and(
         eq(readingProgress.userId, userId),
-        eq(readingProgress.storyId, storyId)
+        eq(readingProgress.bookId, bookId)
       ));
 
     return progress || null;
@@ -131,27 +131,27 @@ export async function getReadingProgress(
 export async function getReadingHistoryByUser(
   userId: string,
   limit = 20
-): Promise<ReadingProgressWithStory[]> {
+): Promise<ReadingProgressWithBook[]> {
   try {
     const result = await db
       .select({
         progress: readingProgress,
-        story: story,
+        book: book,
         author: user,
       })
       .from(readingProgress)
-      .leftJoin(story, eq(readingProgress.storyId, story.id))
-      .leftJoin(user, eq(story.authorId, user.id))
+      .leftJoin(book, eq(readingProgress.bookId, book.id))
+      .leftJoin(user, eq(book.authorId, user.id))
       .where(eq(readingProgress.userId, userId))
       .orderBy(desc(readingProgress.lastReadAt))
       .limit(limit);
 
     return result
-      .filter(row => row.story && row.author)
+      .filter(row => row.book && row.author)
       .map(row => ({
         ...row.progress,
-        story: {
-          ...row.story!,
+        book: {
+          ...row.book!,
           author: row.author!,
         },
       }));
@@ -164,9 +164,9 @@ export async function getReadingHistoryByUser(
   }
 }
 
-export async function markStoryComplete(
+export async function markBookComplete(
   userId: string,
-  storyId: string
+  bookId: string
 ): Promise<ReadingProgress> {
   try {
     const [updated] = await db
@@ -177,7 +177,7 @@ export async function markStoryComplete(
       })
       .where(and(
         eq(readingProgress.userId, userId),
-        eq(readingProgress.storyId, storyId)
+        eq(readingProgress.bookId, bookId)
       ))
       .returning();
 
@@ -192,7 +192,7 @@ export async function markStoryComplete(
     }
     throw new ChatSDKError(
       'bad_request:database',
-      'Failed to mark story complete',
+      'Failed to mark book complete',
       { cause: error }
     );
   }
@@ -200,10 +200,10 @@ export async function markStoryComplete(
 
 export async function getProgressPercentage(
   userId: string,
-  storyId: string
+  bookId: string
 ): Promise<number> {
   try {
-    const progress = await getReadingProgress(userId, storyId);
+    const progress = await getReadingProgress(userId, bookId);
     if (!progress) {
       return 0;
     }
@@ -220,10 +220,10 @@ export async function getProgressPercentage(
 
 export async function getCurrentChapterNumber(
   userId: string,
-  storyId: string
+  bookId: string
 ): Promise<number | null> {
   try {
-    const progress = await getReadingProgress(userId, storyId);
+    const progress = await getReadingProgress(userId, bookId);
     if (!progress?.currentChapterId) {
       return null;
     }

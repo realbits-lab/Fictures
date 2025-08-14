@@ -12,7 +12,7 @@ import postgres from 'postgres';
 
 import {
   chapter,
-  story,
+  book,
   type Chapter,
 } from './schema';
 import { ChatSDKError } from '../errors';
@@ -22,7 +22,7 @@ const client = postgres(process.env.POSTGRES_URL!);
 const db = drizzle(client);
 
 export interface CreateChapterData {
-  storyId: string;
+  bookId: string;
   title: string;
   content: any; // ProseMirror JSON
   authorNote?: string;
@@ -41,8 +41,8 @@ export async function createChapter(data: CreateChapterData): Promise<Chapter> {
     throw new ChatSDKError('bad_request:validation', 'Chapter title is required');
   }
 
-  if (!data.storyId) {
-    throw new ChatSDKError('bad_request:validation', 'Story ID is required');
+  if (!data.bookId) {
+    throw new ChatSDKError('bad_request:validation', 'Book ID is required');
   }
 
   if (!data.content) {
@@ -53,7 +53,7 @@ export async function createChapter(data: CreateChapterData): Promise<Chapter> {
     const [newChapter] = await db
       .insert(chapter)
       .values({
-        storyId: data.storyId,
+        bookId: data.bookId,
         title: data.title,
         content: data.content,
         authorNote: data.authorNote || null,
@@ -63,14 +63,14 @@ export async function createChapter(data: CreateChapterData): Promise<Chapter> {
       })
       .returning();
 
-    // Update story chapter count
+    // Update book chapter count
     await db
-      .update(story)
+      .update(book)
       .set({
-        chapterCount: sql`${story.chapterCount} + 1`,
+        chapterCount: sql`${book.chapterCount} + 1`,
         updatedAt: new Date(),
       })
-      .where(eq(story.id, data.storyId));
+      .where(eq(book.id, data.bookId));
 
     return newChapter;
   } catch (error) {
@@ -138,7 +138,7 @@ export async function updateChapter(
 
 export async function deleteChapter(chapterId: string): Promise<boolean> {
   try {
-    // Get the chapter to find the story ID
+    // Get the chapter to find the book ID
     const chapterToDelete = await getChapterById(chapterId);
     if (!chapterToDelete) {
       return false;
@@ -147,14 +147,14 @@ export async function deleteChapter(chapterId: string): Promise<boolean> {
     const result = await db.delete(chapter).where(eq(chapter.id, chapterId));
 
     if (result.count > 0) {
-      // Update story chapter count
+      // Update book chapter count
       await db
-        .update(story)
+        .update(book)
         .set({
-          chapterCount: sql`GREATEST(${story.chapterCount} - 1, 0)`,
+          chapterCount: sql`GREATEST(${book.chapterCount} - 1, 0)`,
           updatedAt: new Date(),
         })
-        .where(eq(story.id, chapterToDelete.storyId));
+        .where(eq(book.id, chapterToDelete.bookId));
     }
 
     return result.count > 0;
@@ -167,43 +167,43 @@ export async function deleteChapter(chapterId: string): Promise<boolean> {
   }
 }
 
-export async function getChaptersByStory(storyId: string): Promise<Chapter[]> {
+export async function getChaptersByBook(bookId: string): Promise<Chapter[]> {
   try {
     return await db
       .select()
       .from(chapter)
-      .where(eq(chapter.storyId, storyId))
+      .where(eq(chapter.bookId, bookId))
       .orderBy(asc(chapter.chapterNumber));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
-      'Failed to get chapters by story',
+      'Failed to get chapters by book',
       { cause: error }
     );
   }
 }
 
-export async function getPublishedChaptersByStory(storyId: string): Promise<Chapter[]> {
+export async function getPublishedChaptersByBook(bookId: string): Promise<Chapter[]> {
   try {
     return await db
       .select()
       .from(chapter)
       .where(and(
-        eq(chapter.storyId, storyId),
+        eq(chapter.bookId, bookId),
         eq(chapter.isPublished, true)
       ))
       .orderBy(asc(chapter.chapterNumber));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
-      'Failed to get published chapters by story',
+      'Failed to get published chapters by book',
       { cause: error }
     );
   }
 }
 
 export async function getChapterByNumber(
-  storyId: string,
+  bookId: string,
   chapterNumber: number
 ): Promise<Chapter | null> {
   try {
@@ -211,7 +211,7 @@ export async function getChapterByNumber(
       .select()
       .from(chapter)
       .where(and(
-        eq(chapter.storyId, storyId),
+        eq(chapter.bookId, bookId),
         eq(chapter.chapterNumber, chapterNumber)
       ));
 
@@ -284,7 +284,7 @@ export async function unpublishChapter(chapterId: string): Promise<Chapter> {
 }
 
 export async function getNextChapter(
-  storyId: string,
+  bookId: string,
   currentChapterNumber: number
 ): Promise<Chapter | null> {
   try {
@@ -292,7 +292,7 @@ export async function getNextChapter(
       .select()
       .from(chapter)
       .where(and(
-        eq(chapter.storyId, storyId),
+        eq(chapter.bookId, bookId),
         sql`${chapter.chapterNumber} > ${currentChapterNumber}`,
         eq(chapter.isPublished, true)
       ))
@@ -310,7 +310,7 @@ export async function getNextChapter(
 }
 
 export async function getPreviousChapter(
-  storyId: string,
+  bookId: string,
   currentChapterNumber: number
 ): Promise<Chapter | null> {
   try {
@@ -318,7 +318,7 @@ export async function getPreviousChapter(
       .select()
       .from(chapter)
       .where(and(
-        eq(chapter.storyId, storyId),
+        eq(chapter.bookId, bookId),
         sql`${chapter.chapterNumber} < ${currentChapterNumber}`,
         eq(chapter.isPublished, true)
       ))

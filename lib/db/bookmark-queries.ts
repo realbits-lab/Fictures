@@ -11,11 +11,11 @@ import postgres from 'postgres';
 
 import {
   bookmark,
-  story,
+  book,
   chapter,
   user,
   type Bookmark,
-  type Story,
+  type Book,
   type Chapter,
   type User,
 } from './schema';
@@ -26,13 +26,13 @@ const client = postgres(process.env.POSTGRES_URL!);
 const db = drizzle(client);
 
 export interface BookmarkWithDetails extends Bookmark {
-  story: Story & { author: User };
+  book: Book & { author: User };
   chapter: Chapter;
 }
 
 export interface CreateBookmarkData {
   userId: string;
-  storyId: string;
+  bookId: string;
   chapterNumber: number;
   position: number;
   note?: string;
@@ -41,12 +41,12 @@ export interface CreateBookmarkData {
 
 export async function createBookmark(data: CreateBookmarkData): Promise<Bookmark> {
   try {
-    // Find the chapter ID based on story and chapter number
+    // Find the chapter ID based on book and chapter number
     const [targetChapter] = await db
       .select({ id: chapter.id })
       .from(chapter)
       .where(and(
-        eq(chapter.storyId, data.storyId),
+        eq(chapter.bookId, data.bookId),
         eq(chapter.chapterNumber, data.chapterNumber)
       ));
 
@@ -58,7 +58,7 @@ export async function createBookmark(data: CreateBookmarkData): Promise<Bookmark
       .insert(bookmark)
       .values({
         userId: data.userId,
-        storyId: data.storyId,
+        bookId: data.bookId,
         chapterId: targetChapter.id,
         position: data.position.toString(),
         note: data.note || null,
@@ -84,23 +84,23 @@ export async function getUserBookmarks(userId: string): Promise<BookmarkWithDeta
     const result = await db
       .select({
         bookmark: bookmark,
-        story: story,
+        book: story,
         chapter: chapter,
         author: user,
       })
       .from(bookmark)
-      .leftJoin(story, eq(bookmark.storyId, story.id))
+      .leftJoin(story, eq(bookmark.bookId, story.id))
       .leftJoin(chapter, eq(bookmark.chapterId, chapter.id))
       .leftJoin(user, eq(story.authorId, user.id))
       .where(eq(bookmark.userId, userId))
       .orderBy(desc(bookmark.createdAt));
 
     return result
-      .filter(row => row.bookmark && row.story && row.chapter && row.author)
+      .filter(row => row.bookmark && row.book && row.chapter && row.author)
       .map(row => ({
         ...row.bookmark!,
-        story: {
-          ...row.story!,
+        book: {
+          ...row.book!,
           author: row.author!,
         },
         chapter: row.chapter!,
@@ -114,34 +114,34 @@ export async function getUserBookmarks(userId: string): Promise<BookmarkWithDeta
   }
 }
 
-export async function getStoryBookmarks(
+export async function getBookBookmarks(
   userId: string,
-  storyId: string
+  bookId: string
 ): Promise<BookmarkWithDetails[]> {
   try {
     const result = await db
       .select({
         bookmark: bookmark,
-        story: story,
+        book: story,
         chapter: chapter,
         author: user,
       })
       .from(bookmark)
-      .leftJoin(story, eq(bookmark.storyId, story.id))
+      .leftJoin(story, eq(bookmark.bookId, story.id))
       .leftJoin(chapter, eq(bookmark.chapterId, chapter.id))
       .leftJoin(user, eq(story.authorId, user.id))
       .where(and(
         eq(bookmark.userId, userId),
-        eq(bookmark.storyId, storyId)
+        eq(bookmark.bookId, bookId)
       ))
       .orderBy(asc(chapter.chapterNumber));
 
     return result
-      .filter(row => row.bookmark && row.story && row.chapter && row.author)
+      .filter(row => row.bookmark && row.book && row.chapter && row.author)
       .map(row => ({
         ...row.bookmark!,
-        story: {
-          ...row.story!,
+        book: {
+          ...row.book!,
           author: row.author!,
         },
         chapter: row.chapter!,
@@ -149,7 +149,7 @@ export async function getStoryBookmarks(
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
-      'Failed to get story bookmarks',
+      'Failed to get book bookmarks',
       { cause: error }
     );
   }
@@ -223,16 +223,16 @@ export async function updateBookmark(
 
 export async function getBookmarkByChapter(
   userId: string,
-  storyId: string,
+  bookId: string,
   chapterNumber: number
 ): Promise<Bookmark | null> {
   try {
-    // Find the chapter ID based on story and chapter number
+    // Find the chapter ID based on book and chapter number
     const [targetChapter] = await db
       .select({ id: chapter.id })
       .from(chapter)
       .where(and(
-        eq(chapter.storyId, storyId),
+        eq(chapter.bookId, bookId),
         eq(chapter.chapterNumber, chapterNumber)
       ));
 

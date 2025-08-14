@@ -1,9 +1,7 @@
 import { db } from '@/lib/db/drizzle';
-import { story as bookTable, chapter, user, chat } from '@/lib/db/schema';
+import { book, chapter, user, chat } from '@/lib/db/schema';
 import { eq, desc, asc, and } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-
-// Type alias for clarity - Story table is our Book table
 export type Book = {
   id: string;
   title: string;
@@ -28,9 +26,9 @@ export type Book = {
 export async function getUserBooks(userId: string) {
   return await db
     .select()
-    .from(bookTable)
-    .where(eq(bookTable.authorId, userId))
-    .orderBy(desc(bookTable.updatedAt));
+    .from(book)
+    .where(eq(book.authorId, userId))
+    .orderBy(desc(book.updatedAt));
 }
 
 export async function createBook(data: {
@@ -40,8 +38,8 @@ export async function createBook(data: {
   genre?: string;
   coverImageUrl?: string;
 }) {
-  const [book] = await db
-    .insert(bookTable)
+  const [newBook] = await db
+    .insert(book)
     .values({
       authorId: data.userId,
       title: data.title,
@@ -68,7 +66,7 @@ export async function createBook(data: {
   const [newChat] = await db
     .insert(chat)
     .values({
-      title: `${book.title} - Chapter 1`,
+      title: `${newBook.title} - Chapter 1`,
       userId: data.userId,
       chatType: 'chapter',
       visibility: 'private',
@@ -78,7 +76,7 @@ export async function createBook(data: {
 
   await db.insert(chapter).values({
     id: chapterId,
-    storyId: book.id,
+    bookId: newBook.id,
     chapterNumber: 1,
     title: 'Chapter 1',
     content: {},
@@ -91,41 +89,41 @@ export async function createBook(data: {
 
   // Update chapter count
   await db
-    .update(bookTable)
+    .update(book)
     .set({ chapterCount: 1 })
-    .where(eq(bookTable.id, book.id));
+    .where(eq(book.id, newBook.id));
 
-  return book;
+  return newBook;
 }
 
 export async function getBookById(bookId: string) {
-  const [book] = await db
+  const [bookRecord] = await db
     .select()
-    .from(bookTable)
-    .where(eq(bookTable.id, bookId))
+    .from(book)
+    .where(eq(book.id, bookId))
     .limit(1);
     
-  return book;
+  return bookRecord;
 }
 
 export async function getBookWithChapters(bookId: string) {
-  const [book] = await db
+  const [bookRecord] = await db
     .select()
-    .from(bookTable)
-    .where(eq(bookTable.id, bookId))
+    .from(book)
+    .where(eq(book.id, bookId))
     .limit(1);
     
-  if (!book) {
+  if (!bookRecord) {
     return null;
   }
     
   const chapters = await db
     .select()
     .from(chapter)
-    .where(eq(chapter.storyId, bookId))
+    .where(eq(chapter.bookId, bookId))
     .orderBy(asc(chapter.chapterNumber));
     
-  return { book, chapters };
+  return { book: bookRecord, chapters };
 }
 
 export async function updateBook(
@@ -149,9 +147,9 @@ export async function updateBook(
   if (data.status !== undefined) updateData.status = data.status;
   
   const [updated] = await db
-    .update(bookTable)
+    .update(book)
     .set(updateData)
-    .where(eq(bookTable.id, bookId))
+    .where(eq(book.id, bookId))
     .returning();
     
   return updated;
@@ -160,8 +158,8 @@ export async function updateBook(
 export async function deleteBook(bookId: string) {
   // Chapters will be deleted automatically due to cascade
   await db
-    .delete(bookTable)
-    .where(eq(bookTable.id, bookId));
+    .delete(book)
+    .where(eq(book.id, bookId));
 }
 
 export async function createChapterForBook(
@@ -173,20 +171,20 @@ export async function createChapterForBook(
   const chapterId = uuidv4();
   
   // Create a chat for this chapter
-  const [book] = await db
+  const [bookRecord] = await db
     .select()
-    .from(bookTable)
-    .where(eq(bookTable.id, bookId))
+    .from(book)
+    .where(eq(book.id, bookId))
     .limit(1);
     
-  if (!book) {
+  if (!bookRecord) {
     throw new Error('Book not found');
   }
   
   const [newChat] = await db
     .insert(chat)
     .values({
-      title: `${book.title} - ${title || `Chapter ${chapterNumber}`}`,
+      title: `${bookRecord.title} - ${title || `Chapter ${chapterNumber}`}`,
       userId,
       chatType: 'chapter',
       visibility: 'private',
@@ -198,7 +196,7 @@ export async function createChapterForBook(
     .insert(chapter)
     .values({
       id: chapterId,
-      storyId: bookId,
+      bookId: bookId,
       chapterNumber,
       title: title || `Chapter ${chapterNumber}`,
       content: {},
@@ -214,33 +212,33 @@ export async function createChapterForBook(
   const currentChapterCount = await db
     .select({ count: chapter.chapterNumber })
     .from(chapter)
-    .where(eq(chapter.storyId, bookId));
+    .where(eq(chapter.bookId, bookId));
     
   await db
-    .update(bookTable)
+    .update(book)
     .set({ 
       chapterCount: currentChapterCount.length,
       updatedAt: new Date()
     })
-    .where(eq(bookTable.id, bookId));
+    .where(eq(book.id, bookId));
     
   return newChapter;
 }
 
 export async function canUserAccessBook(userId: string, bookId: string): Promise<boolean> {
-  const [book] = await db
-    .select({ authorId: bookTable.authorId })
-    .from(bookTable)
-    .where(eq(bookTable.id, bookId))
+  const [bookRecord] = await db
+    .select({ authorId: book.authorId })
+    .from(book)
+    .where(eq(book.id, bookId))
     .limit(1);
     
-  return book?.authorId === userId;
+  return bookRecord?.authorId === userId;
 }
 
 // Public access functions for viewers - all books are viewable, but only published chapters
 export async function getAllBooks() {
   return await db
     .select()
-    .from(bookTable)
-    .orderBy(desc(bookTable.updatedAt));
+    .from(book)
+    .orderBy(desc(book.updatedAt));
 }

@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify user owns the book this chapter belongs to
-    const hasAccess = await canUserAccessBook(session.user.id, chapter.storyId);
+    const hasAccess = await canUserAccessBook(session.user.id, chapter.bookId);
     
     if (!hasAccess) {
       return NextResponse.json({ error: 'Unauthorized to modify this chapter' }, { status: 403 });

@@ -2,7 +2,7 @@ import { auth } from '@/app/auth';
 import { redirect, notFound } from 'next/navigation';
 import { canUserAccessBook, getBookById } from '@/lib/db/queries/books';
 import { db } from '@/lib/db/drizzle';
-import { chapter as chapterTable, chat, story as bookTable } from '@/lib/db/schema';
+import { chapter as chapterTable, chat, book as bookTable } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import ChapterWriteLayout from '@/components/chapter/chapter-write-layout';
 
@@ -41,7 +41,7 @@ export default async function ChapterWritePage({
     .from(chapterTable)
     .where(
       and(
-        eq(chapterTable.storyId, bookId),
+        eq(chapterTable.bookId, bookId),
         eq(chapterTable.chapterNumber, chapterNumber)
       )
     )
@@ -63,7 +63,7 @@ export default async function ChapterWritePage({
     [chapter] = await db
       .insert(chapterTable)
       .values({
-        storyId: bookId,
+        bookId: bookId,
         chapterNumber,
         title: `Chapter ${chapterNumber}`,
         content: '',
@@ -79,7 +79,7 @@ export default async function ChapterWritePage({
     const allChapters = await db
       .select()
       .from(chapterTable)
-      .where(eq(chapterTable.storyId, bookId));
+      .where(eq(chapterTable.bookId, bookId));
     
     await db
       .update(bookTable)

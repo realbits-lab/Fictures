@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { auth } from '@/app/auth';
 import { db } from '@/lib/db/drizzle';
-import { story } from '@/lib/db/schema';
+import { book } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { myProvider } from '@/lib/ai/providers';
 import { streamText } from 'ai';
@@ -48,11 +48,11 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { storyId, chapterNumber, prompt, maxTokens = 2000, temperature = 0.7, includeContext } = body;
+    const { bookId, chapterNumber, prompt, maxTokens = 2000, temperature = 0.7, includeContext } = body;
 
     // Validate input
-    if (!storyId || typeof storyId !== 'string') {
-      return new Response('Invalid storyId', { status: 400 });
+    if (!bookId || typeof bookId !== 'string') {
+      return new Response('Invalid bookId', { status: 400 });
     }
 
     if (!chapterNumber || typeof chapterNumber !== 'number' || chapterNumber <= 0) {
@@ -63,25 +63,25 @@ export async function POST(request: NextRequest) {
       return new Response('Invalid prompt', { status: 400 });
     }
 
-    // Check if story exists and user owns it
-    const storyResult = await db
+    // Check if book exists and user owns it
+    const bookResult = await db
       .select()
-      .from(story)
-      .where(eq(story.id, storyId))
+      .from(book)
+      .where(eq(book.id, bookId))
       .limit(1);
 
-    if (storyResult.length === 0) {
-      return new Response('Story not found', { status: 404 });
+    if (bookResult.length === 0) {
+      return new Response('Book not found', { status: 404 });
     }
 
-    if (storyResult[0].authorId !== session.user.id) {
+    if (bookResult[0].authorId !== session.user.id) {
       return new Response('Forbidden', { status: 403 });
     }
 
     // Build context if requested
     let contextPrompt = '';
     if (includeContext) {
-      const contextResponse = await fetch(`${request.nextUrl.origin}/api/chapters/context?storyId=${storyId}&chapterNumber=${chapterNumber}`, {
+      const contextResponse = await fetch(`${request.nextUrl.origin}/api/chapters/context?bookId=${bookId}&chapterNumber=${chapterNumber}`, {
         headers: {
           'Authorization': request.headers.get('Authorization') || '',
         },
@@ -131,12 +131,12 @@ Write the chapter content directly without any meta-commentary or explanations.`
 function buildContextPrompt(context: any): string {
   let prompt = '';
 
-  if (context.storyTitle) {
-    prompt += `Story Title: ${context.storyTitle}\n`;
+  if (context.bookTitle) {
+    prompt += `Book Title: ${context.bookTitle}\n`;
   }
 
-  if (context.storyDescription) {
-    prompt += `Story Description: ${context.storyDescription}\n`;
+  if (context.bookDescription) {
+    prompt += `Book Description: ${context.bookDescription}\n`;
   }
 
   if (context.genre) {

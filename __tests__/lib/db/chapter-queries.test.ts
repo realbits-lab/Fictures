@@ -4,7 +4,7 @@ import {
   getChapterById,
   updateChapter,
   deleteChapter,
-  getChaptersByStory,
+  getChaptersByBook,
   publishChapter,
   getNextChapter,
   getPreviousChapter,
@@ -30,7 +30,7 @@ describe('Chapter Database Queries', () => {
     test('should create a new chapter with correct chapter number', async () => {
       // This test will fail because createChapter function doesn't exist yet
       const chapterData = {
-        storyId: 'story-123',
+        bookId: 'book-123',
         title: 'Chapter 1: The Beginning',
         content: { blocks: [], version: '1.0' },
         authorNote: 'First chapter!',
@@ -49,7 +49,7 @@ describe('Chapter Database Queries', () => {
     test('should auto-increment chapter number for subsequent chapters', async () => {
       // This test will fail because createChapter function doesn't exist yet
       const chapterData = {
-        storyId: 'story-123',
+        bookId: 'book-123',
         title: 'Chapter 2: The Journey',
         content: { blocks: [], version: '1.0' },
       };
@@ -68,7 +68,7 @@ describe('Chapter Database Queries', () => {
       
       expect(result).toBeDefined();
       expect(result?.id).toBe(chapterId);
-      expect(result?.story).toBeDefined();
+      expect(result?.book).toBeDefined();
     });
 
     test('should return null for non-existent chapter', async () => {
@@ -122,11 +122,11 @@ describe('Chapter Database Queries', () => {
     });
   });
 
-  describe('getChaptersByStory', () => {
-    test('should return all chapters for a story ordered by chapter number', async () => {
-      // This test will fail because getChaptersByStory function doesn't exist yet
-      const storyId = 'story-123';
-      const result = await getChaptersByStory(storyId);
+  describe('getChaptersByBook', () => {
+    test('should return all chapters for a book ordered by chapter number', async () => {
+      // This test will fail because getChaptersByBook function doesn't exist yet
+      const bookId = 'book-123';
+      const result = await getChaptersByBook(bookId);
       
       expect(Array.isArray(result)).toBe(true);
       
@@ -139,9 +139,9 @@ describe('Chapter Database Queries', () => {
     });
 
     test('should filter published chapters when requested', async () => {
-      // This test will fail because getChaptersByStory function doesn't exist yet
-      const storyId = 'story-123';
-      const result = await getChaptersByStory(storyId, { publishedOnly: true });
+      // This test will fail because getChaptersByBook function doesn't exist yet
+      const bookId = 'book-123';
+      const result = await getChaptersByBook(bookId, { publishedOnly: true });
       
       expect(Array.isArray(result)).toBe(true);
       result.forEach(chapter => {
@@ -151,7 +151,7 @@ describe('Chapter Database Queries', () => {
   });
 
   describe('publishChapter', () => {
-    test('should publish chapter and update story chapter count', async () => {
+    test('should publish chapter and update book chapter count', async () => {
       // This test will fail because publishChapter function doesn't exist yet
       const chapterId = 'chapter-123';
       const result = await publishChapter(chapterId);
@@ -205,10 +205,10 @@ describe('Chapter Database Queries', () => {
   describe('reorderChapters', () => {
     test('should reorder chapters and update chapter numbers', async () => {
       // This test will fail because reorderChapters function doesn't exist yet
-      const storyId = 'story-123';
+      const bookId = 'book-123';
       const newOrder = ['chapter-2', 'chapter-1', 'chapter-3'];
       
-      const result = await reorderChapters(storyId, newOrder);
+      const result = await reorderChapters(bookId, newOrder);
       
       expect(result).toBe(true);
     });

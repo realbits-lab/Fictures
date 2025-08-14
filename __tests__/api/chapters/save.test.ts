@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals
 import { NextRequest } from 'next/server';
 import { POST } from '@/app/api/chapters/save/route';
 import { db } from '@/lib/db/drizzle';
-import { user, story, chapter } from '@/lib/db/schema';
+import { user, book, chapter } from '@/lib/db/schema';
 import { auth } from '@/app/auth';
 
 // Mock auth
@@ -11,13 +11,13 @@ const mockAuth = auth as jest.MockedFunction<typeof auth>;
 
 describe('/api/chapters/save', () => {
   let testUser: any;
-  let testStory: any;
+  let testBook: any;
   let testChapter: any;
   
   beforeEach(async () => {
     // Clean up test data
     await db.delete(chapter);
-    await db.delete(story);
+    await db.delete(book);
     await db.delete(user);
 
     // Create test user
@@ -26,17 +26,17 @@ describe('/api/chapters/save', () => {
       name: 'Test User'
     }).returning();
 
-    // Create test story
-    [testStory] = await db.insert(story).values({
+    // Create test book
+    [testBook] = await db.insert(book).values({
       title: 'Test Story',
-      description: 'A test story for chapter saving',
+      description: 'A test book for chapter saving',
       authorId: testUser.id,
       genre: 'fantasy'
     }).returning();
 
     // Create test chapter
     [testChapter] = await db.insert(chapter).values({
-      storyId: testStory.id,
+      bookId: testBook.id,
       chapterNumber: 1,
       title: 'Test Chapter',
       content: JSON.stringify([{ type: 'paragraph', children: [{ text: 'Original content' }] }]),
@@ -51,7 +51,7 @@ describe('/api/chapters/save', () => {
 
   afterEach(async () => {
     await db.delete(chapter);
-    await db.delete(story);
+    await db.delete(book);
     await db.delete(user);
     jest.clearAllMocks();
   });
@@ -63,7 +63,7 @@ describe('/api/chapters/save', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/save', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testBook.id,
           chapterNumber: 1,
           content: 'Updated chapter content'
         })
@@ -73,11 +73,11 @@ describe('/api/chapters/save', () => {
       expect(response.status).toBe(401);
     });
 
-    it('should reject requests with invalid storyId', async () => {
+    it('should reject requests with invalid bookId', async () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/save', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: 'invalid-uuid',
+          bookId: 'invalid-uuid',
           chapterNumber: 1,
           content: 'Updated chapter content'
         })
@@ -91,7 +91,7 @@ describe('/api/chapters/save', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/save', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id
+          bookId: testBook.id
           // Missing chapterNumber and content
         })
       });
@@ -104,7 +104,7 @@ describe('/api/chapters/save', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/save', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testBook.id,
           chapterNumber: 0, // Invalid chapter number
           content: 'Updated chapter content'
         })
@@ -118,7 +118,7 @@ describe('/api/chapters/save', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/save', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testBook.id,
           chapterNumber: 1,
           content: '' // Empty content
         })
@@ -131,13 +131,13 @@ describe('/api/chapters/save', () => {
 
   describe('Authorization checks', () => {
     it('should reject requests for stories not owned by user', async () => {
-      // Create another user and story
+      // Create another user and book
       const [otherUser] = await db.insert(user).values({
         email: 'other@example.com',
         name: 'Other User'
       }).returning();
 
-      const [otherStory] = await db.insert(story).values({
+      const [otherStory] = await db.insert(book).values({
         title: 'Other Story',
         authorId: otherUser.id
       }).returning();
@@ -145,7 +145,7 @@ describe('/api/chapters/save', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/save', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: otherStory.id,
+          bookId: otherStory.id,
           chapterNumber: 1,
           content: 'Unauthorized update'
         })
@@ -163,7 +163,7 @@ describe('/api/chapters/save', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/save', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testBook.id,
           chapterNumber: 2,
           content: newContent
         })
@@ -182,7 +182,7 @@ describe('/api/chapters/save', () => {
 
       // Verify chapter was created in database
       const chapters = await db.select().from(chapter)
-        .where(sql`"storyId" = ${testStory.id} AND "chapterNumber" = 2`);
+        .where(sql`"bookId" = ${testBook.id} AND "chapterNumber" = 2`);
       expect(chapters).toHaveLength(1);
       expect(JSON.parse(chapters[0].content)).toEqual(JSON.parse(newContent));
     });
@@ -193,7 +193,7 @@ describe('/api/chapters/save', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/save', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testBook.id,
           chapterNumber: 1,
           content: updatedContent
         })
@@ -226,7 +226,7 @@ describe('/api/chapters/save', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/save', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testBook.id,
           chapterNumber: 3,
           content
         })
@@ -244,7 +244,7 @@ describe('/api/chapters/save', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/save', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testBook.id,
           chapterNumber: 1,
           content,
           autoSave: true
@@ -265,7 +265,7 @@ describe('/api/chapters/save', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/save', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testBook.id,
           chapterNumber: 1,
           content,
           generationId
@@ -285,7 +285,7 @@ describe('/api/chapters/save', () => {
       const request1 = new NextRequest('http://localhost:3000/api/chapters/save', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testBook.id,
           chapterNumber: 1,
           content: content1
         })
@@ -294,7 +294,7 @@ describe('/api/chapters/save', () => {
       const request2 = new NextRequest('http://localhost:3000/api/chapters/save', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testBook.id,
           chapterNumber: 1,
           content: content2
         })
@@ -317,7 +317,7 @@ describe('/api/chapters/save', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/save', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: '00000000-0000-0000-0000-000000000000', // Valid UUID but non-existent
+          bookId: '00000000-0000-0000-0000-000000000000', // Valid UUID but non-existent
           chapterNumber: 1,
           content: 'Test content'
         })
@@ -331,7 +331,7 @@ describe('/api/chapters/save', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/save', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testBook.id,
           chapterNumber: 1,
           content: 'invalid json content'
         })
@@ -353,7 +353,7 @@ describe('/api/chapters/save', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/save', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testBook.id,
           chapterNumber: 4,
           content
         })

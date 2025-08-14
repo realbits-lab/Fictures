@@ -6,7 +6,7 @@ import {
 } from '@/types/chapter-v2';
 
 export function useChapterGeneration(
-  storyId: string, 
+  bookId: string, 
   chapterNumber: number
 ): UseChapterGenerationReturn {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -30,7 +30,7 @@ export function useChapterGeneration(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          storyId,
+          bookId,
           chapterNumber,
           prompt,
         }),
@@ -87,10 +87,10 @@ export function useChapterGeneration(
       setIsGenerating(false);
       abortControllerRef.current = null;
     }
-  }, [storyId, chapterNumber]);
+  }, [bookId, chapterNumber]);
 
-  const regenerate = useCallback(async (historyId: string) => {
-    const historyEntry = generationHistory.find(entry => entry.id === historyId);
+  const regenerate = useCallback(async (hibookId: string) => {
+    const historyEntry = generationHistory.find(entry => entry.id === hibookId);
     if (historyEntry) {
       await generate(historyEntry.prompt);
     }
@@ -109,14 +109,14 @@ export function useChapterGeneration(
   }, []);
 
   const getContext = useCallback(async (): Promise<ChapterGenerationContext> => {
-    const response = await fetch(`/api/chapters/context?storyId=${storyId}&chapterNumber=${chapterNumber}`);
+    const response = await fetch(`/api/chapters/context?bookId=${bookId}&chapterNumber=${chapterNumber}`);
     
     if (!response.ok) {
       throw new Error('Failed to fetch chapter context');
     }
 
     return response.json();
-  }, [storyId, chapterNumber]);
+  }, [bookId, chapterNumber]);
 
   const saveContent = useCallback(async () => {
     if (!content.trim()) {
@@ -129,7 +129,7 @@ export function useChapterGeneration(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        storyId,
+        bookId,
         chapterNumber,
         title: `Chapter ${chapterNumber}`,
         content,
@@ -139,7 +139,7 @@ export function useChapterGeneration(
     if (!response.ok) {
       throw new Error(`Save failed: ${response.statusText}`);
     }
-  }, [storyId, chapterNumber, content]);
+  }, [bookId, chapterNumber, content]);
 
   return {
     isGenerating,

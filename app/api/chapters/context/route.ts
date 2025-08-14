@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/auth';
 import { db } from '@/lib/db/drizzle';
-import { story, chapter, character } from '@/lib/db/schema';
+import { book, chapter, character } from '@/lib/db/schema';
 import { eq, and, lt } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
@@ -22,12 +22,12 @@ export async function GET(request: NextRequest) {
       ? new URL(url).searchParams 
       : url.searchParams;
     
-    const storyId = searchParams.get('storyId');
+    const bookId = searchParams.get('bookId');
     const chapterNumberStr = searchParams.get('chapterNumber');
 
     // Validate input
-    if (!storyId) {
-      return NextResponse.json({ error: 'Missing storyId' }, { status: 400 });
+    if (!bookId) {
+      return NextResponse.json({ error: 'Missing bookId' }, { status: 400 });
     }
 
     const chapterNumber = chapterNumberStr ? parseInt(chapterNumberStr) : 1;
@@ -35,26 +35,26 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid chapterNumber' }, { status: 400 });
     }
 
-    // Check if story exists and user owns it
-    const storyResult = await db
+    // Check if book exists and user owns it
+    const bookResult = await db
       .select({
-        id: story.id,
-        title: story.title,
-        description: story.description,
-        genre: story.genre,
-        authorId: story.authorId,
+        id: book.id,
+        title: book.title,
+        description: book.description,
+        genre: book.genre,
+        authorId: book.authorId,
       })
-      .from(story)
-      .where(eq(story.id, storyId))
+      .from(book)
+      .where(eq(book.id, bookId))
       .limit(1);
 
-    if (storyResult.length === 0) {
-      return NextResponse.json({ error: 'Story not found' }, { status: 404 });
+    if (bookResult.length === 0) {
+      return NextResponse.json({ error: 'Book not found' }, { status: 404 });
     }
 
-    const storyData = storyResult[0];
+    const bookData = bookResult[0];
 
-    if (storyData.authorId !== session.user.id) {
+    if (bookData.authorId !== session.user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
       })
       .from(chapter)
       .where(and(
-        eq(chapter.storyId, storyId),
+        eq(chapter.bookId, bookId),
         lt(chapter.chapterNumber, chapterNumber)
       ))
       .orderBy(chapter.chapterNumber);
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // Get characters for this story (if character table exists)
+    // Get characters for this book (if character table exists)
     let characters: any[] = [];
     try {
       characters = await db
@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
           role: character.role,
         })
         .from(character)
-        .where(eq(character.storyId, storyId));
+        .where(eq(character.bookId, bookId));
     } catch (error) {
       // Character table might not exist or be populated yet
       console.log('Characters not available:', error);
@@ -113,9 +113,9 @@ export async function GET(request: NextRequest) {
 
     // Build context response
     const context = {
-      storyTitle: storyData.title,
-      storyDescription: storyData.description,
-      genre: storyData.genre,
+      bookTitle: bookData.title,
+      bookDescription: bookData.description,
+      genre: bookData.genre,
       previousChapters: chaptersWithSummaries,
       characters: characters.length > 0 ? characters : undefined,
     };
