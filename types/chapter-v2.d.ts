@@ -114,6 +114,7 @@ export interface ChapterViewerPanelProps {
   isEditing: boolean;
   lastSaved: Date | null;
   wordCount: number;
+  isGenerating?: boolean;
 }
 
 export interface ChapterPromptInputProps {

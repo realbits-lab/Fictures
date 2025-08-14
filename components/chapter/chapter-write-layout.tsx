@@ -28,7 +28,7 @@ export default function ChapterWriteLayout({ bookId, bookTitle, chapterNumber, c
     if (generation.content && generation.content !== editor.content) {
       editor.setContent(generation.content);
     }
-  }, [generation.content, editor]);
+  }, [generation.content, editor.setContent, editor.content]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -216,6 +216,7 @@ export default function ChapterWriteLayout({ bookId, bookTitle, chapterNumber, c
                 isEditing={editor.isEditing}
                 lastSaved={editor.lastSaved}
                 wordCount={editor.wordCount}
+                isGenerating={generation.isGenerating}
               />
             </React.Suspense>
           </div>

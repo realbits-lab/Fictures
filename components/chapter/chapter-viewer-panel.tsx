@@ -13,7 +13,8 @@ export default function ChapterViewerPanel({
   isSaving,
   isEditing,
   lastSaved,
-  wordCount
+  wordCount,
+  isGenerating = false
 }: ChapterViewerPanelProps) {
   // Ensure content is always a string
   const safeContent = typeof content === 'string' ? content : '';
@@ -182,6 +183,13 @@ export default function ChapterViewerPanel({
 
         {/* Status indicators */}
         <div className="flex items-center space-x-4 mt-2">
+          {isGenerating && (
+            <div className="flex items-center space-x-1 text-xs text-purple-600">
+              <div className="w-2 h-2 bg-purple-600 rounded-full animate-pulse"></div>
+              <span>Generating content...</span>
+            </div>
+          )}
+
           {isEditing && (
             <div className="flex items-center space-x-1 text-xs text-blue-600">
               <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
@@ -189,7 +197,7 @@ export default function ChapterViewerPanel({
             </div>
           )}
 
-          {!lastSaved && safeContent.trim() && (
+          {!lastSaved && safeContent.trim() && !isGenerating && (
             <div className="flex items-center space-x-1 text-xs text-orange-600">
               <div className="w-2 h-2 bg-orange-600 rounded-full"></div>
               <span>Unsaved changes</span>
@@ -207,12 +215,13 @@ export default function ChapterViewerPanel({
 
       {/* Content area */}
       <div className="flex-1 overflow-hidden">
-        {safeContent.trim() ? (
+        {safeContent.trim() || isGenerating ? (
           <ChapterContentDisplay
             content={localContent}
             isEditing={isEditing}
             onContentChange={handleContentChange}
             wordCount={wordCount}
+            isGenerating={isGenerating}
           />
         ) : (
           <div className="flex items-center justify-center h-full text-center p-8">
