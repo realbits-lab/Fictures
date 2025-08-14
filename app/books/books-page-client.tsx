@@ -43,7 +43,7 @@ export function BooksPageClient({ initialBooks }: BooksPageClientProps) {
         </div>
         
         <p className="text-muted-foreground">
-          Manage your books and continue writing your stories. Each book can contain multiple chapters.
+          Manage your books and organize your writing. Each book can contain multiple chapters.
         </p>
       </div>
 

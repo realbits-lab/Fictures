@@ -90,12 +90,26 @@ export default async function ChapterWritePage({
       .where(eq(bookTable.id, bookId));
   }
   
-  // Ensure content is a string
-  const chapterContent = typeof chapter.content === 'string' 
-    ? chapter.content 
-    : (typeof chapter.content === 'object' && chapter.content !== null 
-        ? JSON.stringify(chapter.content) 
-        : '');
+  // Extract content from different storage formats
+  let chapterContent = '';
+  
+  if (typeof chapter.content === 'string') {
+    // Already a string, use directly
+    chapterContent = chapter.content;
+  } else if (Array.isArray(chapter.content)) {
+    // Legacy format: [{ type: 'paragraph', children: [{ text: content }] }]
+    try {
+      const firstBlock = chapter.content[0];
+      if (firstBlock?.children?.[0]?.text) {
+        chapterContent = firstBlock.children[0].text;
+      }
+    } catch (e) {
+      console.warn('Failed to extract content from legacy format:', e);
+    }
+  } else if (typeof chapter.content === 'object' && chapter.content !== null) {
+    // Fallback for other object formats
+    chapterContent = JSON.stringify(chapter.content);
+  }
   
   return (
     <ChapterWriteLayout 

@@ -15,7 +15,6 @@ import {
   ArrowLeft, 
   Edit, 
   FileText, 
-  PenTool, 
   Clock,
   BarChart,
   Settings
@@ -52,23 +51,6 @@ export function BookOverviewClient({ book, chapters }: BookOverviewClientProps) 
     router.push(`/books/${book.id}/chapters/${nextChapterNumber}/write`);
   };
 
-  const getNextChapterToWrite = () => {
-    // Find the last chapter with content
-    const lastWrittenChapter = chapters
-      .filter(ch => ch.wordCount > 0)
-      .sort((a, b) => b.chapterNumber - a.chapterNumber)[0];
-    
-    if (!lastWrittenChapter) {
-      return 1; // Start with chapter 1 if nothing written
-    }
-    
-    // Check if there's an empty chapter after the last written one
-    const nextChapter = chapters.find(
-      ch => ch.chapterNumber === lastWrittenChapter.chapterNumber + 1 && ch.wordCount === 0
-    );
-    
-    return nextChapter ? nextChapter.chapterNumber : lastWrittenChapter.chapterNumber + 1;
-  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -99,18 +81,10 @@ export function BookOverviewClient({ book, chapters }: BookOverviewClientProps) 
             )}
           </div>
           
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Settings className="w-4 h-4 mr-2" />
-              Edit Book
-            </Button>
-            <Link href={`/books/${book.id}/chapters/${getNextChapterToWrite()}/write`}>
-              <Button size="sm">
-                <PenTool className="w-4 h-4 mr-2" />
-                Continue Writing
-              </Button>
-            </Link>
-          </div>
+          <Button variant="outline" size="sm">
+            <Settings className="w-4 h-4 mr-2" />
+            Edit Book
+          </Button>
         </div>
       </div>
 

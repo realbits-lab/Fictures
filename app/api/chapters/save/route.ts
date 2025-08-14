@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/auth';
 import { db } from '@/lib/db/drizzle';
-import { story, chapter } from '@/lib/db/schema';
+import { story, chapter, chat } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 
 export async function POST(request: NextRequest) {
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
         .update(chapter)
         .set({
           title: title.trim(),
-          content: JSON.stringify([{ type: 'paragraph', children: [{ text: content }] }]),
+          content: content,
           summary: summary?.trim() || null,
           wordCount,
           updatedAt: new Date(),
@@ -78,16 +78,31 @@ export async function POST(request: NextRequest) {
         .where(eq(chapter.id, existingChapter[0].id))
         .returning();
     } else {
-      // Create new chapter
+      // Create new chapter (need to create chat first)
+      const [newChat] = await db
+        .insert(chat)
+        .values({
+          title: `${title.trim()}`,
+          userId: session.user.id,
+          chatType: 'chapter',
+          visibility: 'private',
+          createdAt: new Date(),
+        })
+        .returning();
+      
       [savedChapter] = await db
         .insert(chapter)
         .values({
           storyId,
           chapterNumber,
           title: title.trim(),
-          content: JSON.stringify([{ type: 'paragraph', children: [{ text: content }] }]),
+          content: content,
           summary: summary?.trim() || null,
           wordCount,
+          isPublished: false,
+          chatId: newChat.id,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         })
         .returning();
     }
