@@ -7,8 +7,9 @@ export default function ChapterContentDisplay({
   content,
   isEditing,
   onContentChange,
-  wordCount
-}: ChapterContentDisplayProps) {
+  wordCount,
+  isGenerating = false
+}: ChapterContentDisplayProps & { isGenerating?: boolean }) {
   const [localContent, setLocalContent] = useState(content);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -126,7 +127,7 @@ export default function ChapterContentDisplay({
               title="Fullscreen view (F11)"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinecap="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+                <path strokeLinecap="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
               </svg>
             </button>
           )}
@@ -134,7 +135,7 @@ export default function ChapterContentDisplay({
       </div>
 
       {/* Content area */}
-      <div className={`overflow-y-auto ${isFullscreen ? 'h-full' : 'flex-1'} p-6`}>
+      <div className={`${isFullscreen ? 'h-full overflow-y-auto' : ''} p-6`}>
         {isEditing ? (
           // Edit mode
           <div className="h-full">
@@ -143,12 +144,13 @@ export default function ChapterContentDisplay({
               value={localContent}
               onChange={handleContentChange}
               onKeyDown={handleKeyDown}
-              className="w-full h-full resize-none border-0 focus:outline-none text-gray-800 leading-relaxed"
+              className="w-full resize-none border-0 focus:outline-none text-gray-800 leading-relaxed"
               style={{
                 fontSize: '16px',
                 lineHeight: '1.6',
                 fontFamily: 'Georgia, "Times New Roman", serif',
-                minHeight: isFullscreen ? 'calc(100vh - 200px)' : '400px',
+                minHeight: isFullscreen ? 'calc(100vh - 200px)' : 'calc(100vh - 300px)',
+                height: 'auto'
               }}
               placeholder="Start writing your chapter content here..."
             />
@@ -156,7 +158,7 @@ export default function ChapterContentDisplay({
         ) : (
           // View mode
           <div 
-            className="prose prose-lg max-w-none h-full"
+            className="prose prose-lg max-w-none"
             style={{
               fontSize: '16px',
               lineHeight: '1.6',
@@ -166,6 +168,20 @@ export default function ChapterContentDisplay({
             {displayContent.length > 0 ? (
               <div className="space-y-4">
                 {displayContent}
+                {isGenerating && (
+                  <div className="flex items-center space-x-2 text-purple-600">
+                    <div className="w-2 h-2 bg-purple-600 rounded-full animate-pulse"></div>
+                    <span className="text-sm italic">Generating more content...</span>
+                  </div>
+                )}
+              </div>
+            ) : isGenerating ? (
+              <div className="flex items-center justify-center h-64 text-center">
+                <div>
+                  <div className="text-4xl text-purple-600 mb-4 animate-pulse">✨</div>
+                  <p className="text-gray-700 text-lg">Generating content...</p>
+                  <p className="text-gray-500 text-sm mt-2">Your chapter is being written</p>
+                </div>
               </div>
             ) : (
               <div className="flex items-center justify-center h-64 text-center">

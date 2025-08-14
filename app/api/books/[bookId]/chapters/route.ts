@@ -34,7 +34,7 @@ export async function GET(
     const chapters = await db
       .select()
       .from(chapter)
-      .where(eq(chapter.storyId, bookId))
+      .where(eq(chapter.bookId, bookId))
       .orderBy(asc(chapter.chapterNumber));
     
     return NextResponse.json({ chapters });

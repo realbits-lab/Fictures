@@ -2,7 +2,7 @@ import { auth } from '@/app/auth';
 import { redirect, notFound } from 'next/navigation';
 import { canUserAccessBook, getBookById } from '@/lib/db/queries/books';
 import { db } from '@/lib/db/drizzle';
-import { chapter as chapterTable, chat, story as bookTable } from '@/lib/db/schema';
+import { chapter as chapterTable, chat, book as bookTable } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import ChapterWriteLayout from '@/components/chapter/chapter-write-layout';
 
@@ -41,7 +41,7 @@ export default async function ChapterWritePage({
     .from(chapterTable)
     .where(
       and(
-        eq(chapterTable.storyId, bookId),
+        eq(chapterTable.bookId, bookId),
         eq(chapterTable.chapterNumber, chapterNumber)
       )
     )
@@ -63,10 +63,10 @@ export default async function ChapterWritePage({
     [chapter] = await db
       .insert(chapterTable)
       .values({
-        storyId: bookId,
+        bookId: bookId,
         chapterNumber,
         title: `Chapter ${chapterNumber}`,
-        content: {},
+        content: '',
         wordCount: 0,
         isPublished: false,
         chatId: newChat.id,
@@ -79,7 +79,7 @@ export default async function ChapterWritePage({
     const allChapters = await db
       .select()
       .from(chapterTable)
-      .where(eq(chapterTable.storyId, bookId));
+      .where(eq(chapterTable.bookId, bookId));
     
     await db
       .update(bookTable)
@@ -90,13 +90,35 @@ export default async function ChapterWritePage({
       .where(eq(bookTable.id, bookId));
   }
   
+  // Extract content from different storage formats
+  let chapterContent = '';
+  
+  if (typeof chapter.content === 'string') {
+    // Already a string, use directly
+    chapterContent = chapter.content;
+  } else if (Array.isArray(chapter.content)) {
+    // Legacy format: [{ type: 'paragraph', children: [{ text: content }] }]
+    try {
+      const firstBlock = chapter.content[0];
+      if (firstBlock?.children?.[0]?.text) {
+        chapterContent = firstBlock.children[0].text;
+      }
+    } catch (e) {
+      console.warn('Failed to extract content from legacy format:', e);
+    }
+  } else if (typeof chapter.content === 'object' && chapter.content !== null) {
+    // Fallback for other object formats
+    chapterContent = JSON.stringify(chapter.content);
+  }
+  
   return (
     <ChapterWriteLayout 
       bookId={bookId}
       bookTitle={book.title}
       chapterNumber={chapterNumber}
       chapterId={chapter.id}
-      initialContent={chapter.content as string || ''}
+      initialContent={chapterContent}
+      isPublished={chapter.isPublished}
     />
   );
 }

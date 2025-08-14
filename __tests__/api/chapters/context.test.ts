@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals
 import { NextRequest } from 'next/server';
 import { GET } from '@/app/api/chapters/context/route';
 import { db } from '@/lib/db/drizzle';
-import { user, story, chapter, character } from '@/lib/db/schema';
+import { user, book, chapter, character } from '@/lib/db/schema';
 import { auth } from '@/app/auth';
 
 // Mock auth
@@ -20,7 +20,7 @@ describe('/api/chapters/context', () => {
     // Clean up test data
     await db.delete(character);
     await db.delete(chapter);
-    await db.delete(story);
+    await db.delete(book);
     await db.delete(user);
 
     // Create test user
@@ -29,17 +29,17 @@ describe('/api/chapters/context', () => {
       name: 'Test User'
     }).returning();
 
-    // Create test story
-    [testStory] = await db.insert(story).values({
+    // Create test book
+    [testStory] = await db.insert(book).values({
       title: 'The Epic Adventure',
-      description: 'A thrilling fantasy adventure story',
+      description: 'A thrilling fantasy adventure book',
       authorId: testUser.id,
       genre: 'fantasy'
     }).returning();
 
     // Create test chapters
     [testChapter1] = await db.insert(chapter).values({
-      storyId: testStory.id,
+      bookId: testStory.id,
       chapterNumber: 1,
       title: 'The Beginning',
       content: JSON.stringify([{ 
@@ -50,7 +50,7 @@ describe('/api/chapters/context', () => {
     }).returning();
 
     [testChapter2] = await db.insert(chapter).values({
-      storyId: testStory.id,
+      bookId: testStory.id,
       chapterNumber: 2,
       title: 'First Encounter',
       content: JSON.stringify([{ 
@@ -62,7 +62,7 @@ describe('/api/chapters/context', () => {
 
     // Create test character
     [testCharacter] = await db.insert(character).values({
-      storyId: testStory.id,
+      bookId: testStory.id,
       name: 'Gandalf',
       description: 'A wise old wizard with a long grey beard',
       role: 'supporting',
@@ -78,7 +78,7 @@ describe('/api/chapters/context', () => {
   afterEach(async () => {
     await db.delete(character);
     await db.delete(chapter);
-    await db.delete(story);
+    await db.delete(book);
     await db.delete(user);
     jest.clearAllMocks();
   });
@@ -88,7 +88,7 @@ describe('/api/chapters/context', () => {
       mockAuth.mockResolvedValue(null);
 
       const url = new URL('http://localhost:3000/api/chapters/context');
-      url.searchParams.set('storyId', testStory.id);
+      url.searchParams.set('bookId', testStory.id);
       url.searchParams.set('chapterNumber', '3');
 
       const request = new NextRequest(url);
@@ -97,9 +97,9 @@ describe('/api/chapters/context', () => {
       expect(response.status).toBe(401);
     });
 
-    it('should reject requests with invalid storyId', async () => {
+    it('should reject requests with invalid bookId', async () => {
       const url = new URL('http://localhost:3000/api/chapters/context');
-      url.searchParams.set('storyId', 'invalid-uuid');
+      url.searchParams.set('bookId', 'invalid-uuid');
       url.searchParams.set('chapterNumber', '1');
 
       const request = new NextRequest(url);
@@ -110,7 +110,7 @@ describe('/api/chapters/context', () => {
 
     it('should reject requests with missing required parameters', async () => {
       const url = new URL('http://localhost:3000/api/chapters/context');
-      // Missing storyId and chapterNumber
+      // Missing bookId and chapterNumber
 
       const request = new NextRequest(url);
       const response = await GET(request);
@@ -120,7 +120,7 @@ describe('/api/chapters/context', () => {
 
     it('should reject requests with invalid chapter number', async () => {
       const url = new URL('http://localhost:3000/api/chapters/context');
-      url.searchParams.set('storyId', testStory.id);
+      url.searchParams.set('bookId', testStory.id);
       url.searchParams.set('chapterNumber', '-1');
 
       const request = new NextRequest(url);
@@ -132,19 +132,19 @@ describe('/api/chapters/context', () => {
 
   describe('Authorization checks', () => {
     it('should reject requests for stories not owned by user', async () => {
-      // Create another user and story
+      // Create another user and book
       const [otherUser] = await db.insert(user).values({
         email: 'other@example.com',
         name: 'Other User'
       }).returning();
 
-      const [otherStory] = await db.insert(story).values({
+      const [otherStory] = await db.insert(book).values({
         title: 'Other Story',
         authorId: otherUser.id
       }).returning();
 
       const url = new URL('http://localhost:3000/api/chapters/context');
-      url.searchParams.set('storyId', otherStory.id);
+      url.searchParams.set('bookId', otherStory.id);
       url.searchParams.set('chapterNumber', '1');
 
       const request = new NextRequest(url);
@@ -155,9 +155,9 @@ describe('/api/chapters/context', () => {
   });
 
   describe('Context retrieval', () => {
-    it('should return complete context for existing story', async () => {
+    it('should return complete context for existing book', async () => {
       const url = new URL('http://localhost:3000/api/chapters/context');
-      url.searchParams.set('storyId', testStory.id);
+      url.searchParams.set('bookId', testStory.id);
       url.searchParams.set('chapterNumber', '3');
 
       const request = new NextRequest(url);
@@ -167,11 +167,11 @@ describe('/api/chapters/context', () => {
 
       const contextData = await response.json();
       expect(contextData).toMatchObject({
-        story: {
+        book: {
           id: testStory.id,
           title: 'The Epic Adventure',
           genre: 'fantasy',
-          description: 'A thrilling fantasy adventure story'
+          description: 'A thrilling fantasy adventure book'
         },
         previousChapters: expect.arrayContaining([
           expect.objectContaining({
@@ -199,7 +199,7 @@ describe('/api/chapters/context', () => {
 
     it('should return context for existing chapter', async () => {
       const url = new URL('http://localhost:3000/api/chapters/context');
-      url.searchParams.set('storyId', testStory.id);
+      url.searchParams.set('bookId', testStory.id);
       url.searchParams.set('chapterNumber', '2');
 
       const request = new NextRequest(url);
@@ -221,7 +221,7 @@ describe('/api/chapters/context', () => {
 
     it('should filter chapters when specific chapters requested', async () => {
       const url = new URL('http://localhost:3000/api/chapters/context');
-      url.searchParams.set('storyId', testStory.id);
+      url.searchParams.set('bookId', testStory.id);
       url.searchParams.set('chapterNumber', '3');
       url.searchParams.set('includeChapters', '1'); // Only include chapter 1
 
@@ -237,7 +237,7 @@ describe('/api/chapters/context', () => {
 
     it('should respect maxSummaryLength parameter', async () => {
       const url = new URL('http://localhost:3000/api/chapters/context');
-      url.searchParams.set('storyId', testStory.id);
+      url.searchParams.set('bookId', testStory.id);
       url.searchParams.set('chapterNumber', '3');
       url.searchParams.set('maxSummaryLength', '50');
 
@@ -256,7 +256,7 @@ describe('/api/chapters/context', () => {
   describe('Chapter summary generation', () => {
     it('should generate meaningful summaries from chapter content', async () => {
       const url = new URL('http://localhost:3000/api/chapters/context');
-      url.searchParams.set('storyId', testStory.id);
+      url.searchParams.set('bookId', testStory.id);
       url.searchParams.set('chapterNumber', '3');
 
       const request = new NextRequest(url);
@@ -284,7 +284,7 @@ describe('/api/chapters/context', () => {
         .where(sql`"id" = ${testChapter1.id}`);
 
       const url = new URL('http://localhost:3000/api/chapters/context');
-      url.searchParams.set('storyId', testStory.id);
+      url.searchParams.set('bookId', testStory.id);
       url.searchParams.set('chapterNumber', '3');
 
       const request = new NextRequest(url);
@@ -298,17 +298,17 @@ describe('/api/chapters/context', () => {
   });
 
   describe('Character context', () => {
-    it('should return all story characters', async () => {
+    it('should return all book characters', async () => {
       // Add another character
       await db.insert(character).values({
-        storyId: testStory.id,
+        bookId: testStory.id,
         name: 'Frodo',
         description: 'A brave hobbit',
         role: 'protagonist'
       });
 
       const url = new URL('http://localhost:3000/api/chapters/context');
-      url.searchParams.set('storyId', testStory.id);
+      url.searchParams.set('bookId', testStory.id);
       url.searchParams.set('chapterNumber', '3');
 
       const request = new NextRequest(url);
@@ -324,10 +324,10 @@ describe('/api/chapters/context', () => {
 
     it('should handle stories with no characters', async () => {
       // Delete all characters
-      await db.delete(character).where(sql`"storyId" = ${testStory.id}`);
+      await db.delete(character).where(sql`"bookId" = ${testStory.id}`);
 
       const url = new URL('http://localhost:3000/api/chapters/context');
-      url.searchParams.set('storyId', testStory.id);
+      url.searchParams.set('bookId', testStory.id);
       url.searchParams.set('chapterNumber', '3');
 
       const request = new NextRequest(url);
@@ -339,9 +339,9 @@ describe('/api/chapters/context', () => {
   });
 
   describe('Error handling', () => {
-    it('should handle non-existent story', async () => {
+    it('should handle non-existent book', async () => {
       const url = new URL('http://localhost:3000/api/chapters/context');
-      url.searchParams.set('storyId', '00000000-0000-0000-0000-000000000000');
+      url.searchParams.set('bookId', '00000000-0000-0000-0000-000000000000');
       url.searchParams.set('chapterNumber', '1');
 
       const request = new NextRequest(url);
@@ -353,7 +353,7 @@ describe('/api/chapters/context', () => {
     it('should handle database errors gracefully', async () => {
       // Mock database error by corrupting the connection (this is a theoretical test)
       const url = new URL('http://localhost:3000/api/chapters/context');
-      url.searchParams.set('storyId', testStory.id);
+      url.searchParams.set('bookId', testStory.id);
       url.searchParams.set('chapterNumber', '1');
 
       const request = new NextRequest(url);
@@ -368,7 +368,7 @@ describe('/api/chapters/context', () => {
     it('should respond quickly for stories with many chapters', async () => {
       // Create 50 chapters
       const chapters = Array.from({ length: 50 }, (_, i) => ({
-        storyId: testStory.id,
+        bookId: testStory.id,
         chapterNumber: i + 3, // Start from 3 since we have 1 and 2
         title: `Chapter ${i + 3}`,
         content: JSON.stringify([{ type: 'paragraph', children: [{ text: `Content for chapter ${i + 3}` }] }]),
@@ -380,7 +380,7 @@ describe('/api/chapters/context', () => {
       const startTime = Date.now();
       
       const url = new URL('http://localhost:3000/api/chapters/context');
-      url.searchParams.set('storyId', testStory.id);
+      url.searchParams.set('bookId', testStory.id);
       url.searchParams.set('chapterNumber', '53');
 
       const request = new NextRequest(url);
@@ -395,7 +395,7 @@ describe('/api/chapters/context', () => {
     it('should cache context data appropriately', async () => {
       // Make the same request twice
       const url = new URL('http://localhost:3000/api/chapters/context');
-      url.searchParams.set('storyId', testStory.id);
+      url.searchParams.set('bookId', testStory.id);
       url.searchParams.set('chapterNumber', '3');
 
       const request1 = new NextRequest(url);

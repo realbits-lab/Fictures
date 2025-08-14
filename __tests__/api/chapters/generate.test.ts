@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals
 import { NextRequest } from 'next/server';
 import { POST } from '@/app/api/chapters/generate/route';
 import { db } from '@/lib/db/drizzle';
-import { user, story, chapter } from '@/lib/db/schema';
+import { user, book, chapter } from '@/lib/db/schema';
 import { auth } from '@/app/auth';
 
 // Mock auth
@@ -23,7 +23,7 @@ describe('/api/chapters/generate', () => {
   beforeEach(async () => {
     // Clean up test data
     await db.delete(chapter);
-    await db.delete(story);
+    await db.delete(book);
     await db.delete(user);
 
     // Create test user
@@ -32,10 +32,10 @@ describe('/api/chapters/generate', () => {
       name: 'Test User'
     }).returning();
 
-    // Create test story
-    [testStory] = await db.insert(story).values({
+    // Create test book
+    [testStory] = await db.insert(book).values({
       title: 'Test Story',
-      description: 'A test story for chapter generation',
+      description: 'A test book for chapter generation',
       authorId: testUser.id,
       genre: 'fantasy'
     }).returning();
@@ -48,7 +48,7 @@ describe('/api/chapters/generate', () => {
 
   afterEach(async () => {
     await db.delete(chapter);
-    await db.delete(story);
+    await db.delete(book);
     await db.delete(user);
     jest.clearAllMocks();
   });
@@ -60,7 +60,7 @@ describe('/api/chapters/generate', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/generate', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testStory.id,
           chapterNumber: 1,
           prompt: 'Write a compelling opening chapter'
         })
@@ -70,11 +70,11 @@ describe('/api/chapters/generate', () => {
       expect(response.status).toBe(401);
     });
 
-    it('should reject requests with invalid storyId', async () => {
+    it('should reject requests with invalid bookId', async () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/generate', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: 'invalid-uuid',
+          bookId: 'invalid-uuid',
           chapterNumber: 1,
           prompt: 'Write a compelling opening chapter'
         })
@@ -88,7 +88,7 @@ describe('/api/chapters/generate', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/generate', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testStory.id,
           // Missing chapterNumber and prompt
         })
       });
@@ -101,7 +101,7 @@ describe('/api/chapters/generate', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/generate', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testStory.id,
           chapterNumber: -1, // Invalid chapter number
           prompt: 'Write a compelling opening chapter'
         })
@@ -115,7 +115,7 @@ describe('/api/chapters/generate', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/generate', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testStory.id,
           chapterNumber: 1,
           prompt: '' // Empty prompt
         })
@@ -128,13 +128,13 @@ describe('/api/chapters/generate', () => {
 
   describe('Authorization checks', () => {
     it('should reject requests for stories not owned by user', async () => {
-      // Create another user and story
+      // Create another user and book
       const [otherUser] = await db.insert(user).values({
         email: 'other@example.com',
         name: 'Other User'
       }).returning();
 
-      const [otherStory] = await db.insert(story).values({
+      const [otherStory] = await db.insert(book).values({
         title: 'Other Story',
         authorId: otherUser.id
       }).returning();
@@ -142,7 +142,7 @@ describe('/api/chapters/generate', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/generate', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: otherStory.id,
+          bookId: otherStory.id,
           chapterNumber: 1,
           prompt: 'Write a compelling opening chapter'
         })
@@ -158,7 +158,7 @@ describe('/api/chapters/generate', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/generate', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testStory.id,
           chapterNumber: 1,
           prompt: 'Write a compelling opening chapter'
         })
@@ -174,7 +174,7 @@ describe('/api/chapters/generate', () => {
     it('should include context when requested', async () => {
       // First create an existing chapter for context
       await db.insert(chapter).values({
-        storyId: testStory.id,
+        bookId: testStory.id,
         chapterNumber: 1,
         title: 'Previous Chapter',
         content: JSON.stringify([{ type: 'paragraph', children: [{ text: 'Previous content' }] }]),
@@ -184,9 +184,9 @@ describe('/api/chapters/generate', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/generate', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testStory.id,
           chapterNumber: 2,
-          prompt: 'Continue the story',
+          prompt: 'Continue the book',
           includeContext: {
             previousChapters: true,
             characters: true
@@ -202,7 +202,7 @@ describe('/api/chapters/generate', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/generate', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testStory.id,
           chapterNumber: 1,
           prompt: 'Write a compelling opening chapter',
           maxTokens: 1000
@@ -217,7 +217,7 @@ describe('/api/chapters/generate', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/generate', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testStory.id,
           chapterNumber: 1,
           prompt: 'Write a compelling opening chapter',
           temperature: 0.5
@@ -240,7 +240,7 @@ describe('/api/chapters/generate', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/generate', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testStory.id,
           chapterNumber: 1,
           prompt: 'Write a compelling opening chapter'
         })
@@ -251,11 +251,11 @@ describe('/api/chapters/generate', () => {
     });
 
     it('should handle database errors gracefully', async () => {
-      // Mock db error by using invalid storyId after validation
+      // Mock db error by using invalid bookId after validation
       const request = new NextRequest('http://localhost:3000/api/chapters/generate', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: '00000000-0000-0000-0000-000000000000', // Valid UUID but non-existent
+          bookId: '00000000-0000-0000-0000-000000000000', // Valid UUID but non-existent
           chapterNumber: 1,
           prompt: 'Write a compelling opening chapter'
         })
@@ -271,7 +271,7 @@ describe('/api/chapters/generate', () => {
       const request = new NextRequest('http://localhost:3000/api/chapters/generate', {
         method: 'POST',
         body: JSON.stringify({
-          storyId: testStory.id,
+          bookId: testStory.id,
           chapterNumber: 1,
           prompt: 'Write a compelling opening chapter'
         })

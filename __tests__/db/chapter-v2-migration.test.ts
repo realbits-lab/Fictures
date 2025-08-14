@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import { db } from '@/lib/db/drizzle';
-import { chapter, story, user, chat } from '@/lib/db/schema';
+import { chapter, book, user, chat } from '@/lib/db/schema';
 import { sql } from 'drizzle-orm';
 
 describe('Chapter V2 Database Migration', () => {
   beforeEach(async () => {
     // Clean up test data
     await db.delete(chapter);
-    await db.delete(story);
+    await db.delete(book);
     await db.delete(user);
     await db.delete(chat);
   });
@@ -15,7 +15,7 @@ describe('Chapter V2 Database Migration', () => {
   afterEach(async () => {
     // Clean up test data
     await db.delete(chapter);
-    await db.delete(story);
+    await db.delete(book);
     await db.delete(user);
     await db.delete(chat);
   });
@@ -168,22 +168,22 @@ describe('Chapter V2 Database Migration', () => {
         name: 'Test User'
       }).returning();
 
-      // Create test story
-      const [testStory] = await db.insert(story).values({
+      // Create test book
+      const [testBook] = await db.insert(book).values({
         title: 'Test Story',
         authorId: testUser.id
       }).returning();
 
       // Create test chapter
       const [testChapter] = await db.insert(chapter).values({
-        storyId: testStory.id,
+        bookId: testBook.id,
         chapterNumber: 1,
         title: 'Test Chapter',
         content: JSON.stringify([{ type: 'paragraph', children: [{ text: 'Test content' }] }])
       }).returning();
 
       expect(testChapter).toBeDefined();
-      expect(testChapter.storyId).toBe(testStory.id);
+      expect(testChapter.bookId).toBe(testBook.id);
     });
   });
 });

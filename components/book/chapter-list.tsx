@@ -91,17 +91,6 @@ export function ChapterList({ bookId, chapters, onCreateChapter }: ChapterListPr
           </Card>
         ))}
       </div>
-      
-      {chapters.length > 0 && (
-        <div className="pt-4">
-          <Link href={`/books/${bookId}/chapters/${chapters.length + 1}/write`}>
-            <Button variant="outline" className="w-full">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Chapter {chapters.length + 1}
-            </Button>
-          </Link>
-        </div>
-      )}
     </div>
   );
 }

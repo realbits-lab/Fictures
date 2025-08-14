@@ -5,7 +5,7 @@ import { ChapterChatPanelProps } from '@/types/chapter-v2';
 import ChapterPromptInput from './chapter-prompt-input';
 
 export default function ChapterChatPanel({
-  storyId,
+  bookId,
   chapterNumber,
   onGenerate,
   isGenerating,

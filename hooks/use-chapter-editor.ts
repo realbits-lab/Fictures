@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { UseChapterEditorReturn } from '@/types/chapter-v2';
 
 export function useChapterEditor(
-  storyId: string, 
+  bookId: string, 
   chapterNumber: number,
   initialContent: string = ''
 ): UseChapterEditorReturn {
@@ -70,7 +70,7 @@ export function useChapterEditor(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          storyId,
+          bookId,
           chapterNumber,
           title: `Chapter ${chapterNumber}`,
           content,
@@ -97,7 +97,7 @@ export function useChapterEditor(
     } finally {
       setIsSaving(false);
     }
-  }, [storyId, chapterNumber, content, isDirty, isSaving]);
+  }, [bookId, chapterNumber, content, isDirty, isSaving]);
 
   const revert = useCallback(() => {
     setContentState(originalContentRef.current);

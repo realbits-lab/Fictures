@@ -41,7 +41,7 @@ export const chat = pgTable('Chat', {
   visibility: varchar('visibility', { enum: ['public', 'private'] })
     .notNull()
     .default('private'),
-  chatType: varchar('chatType', { enum: ['general', 'chapter', 'story'] })
+  chatType: varchar('chatType', { enum: ['general', 'chapter', 'book'] })
     .notNull()
     .default('general'),
 });
@@ -124,7 +124,7 @@ export const document = pgTable(
     createdAt: timestamp('createdAt').notNull(),
     title: text('title').notNull(),
     content: text('content'),
-    kind: varchar('text', { enum: ['text', 'image', 'sheet', 'story'] })
+    kind: varchar('text', { enum: ['text', 'image', 'sheet', 'book'] })
       .notNull()
       .default('text'),
     userId: uuid('userId')
@@ -184,7 +184,7 @@ export const stream = pgTable(
 
 export type Stream = InferSelectModel<typeof stream>;
 
-export const story = pgTable('Story', {
+export const book = pgTable('Book', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   title: text('title').notNull(),
   description: text('description'),
@@ -208,13 +208,13 @@ export const story = pgTable('Story', {
   mature: boolean('mature').notNull().default(false),
 });
 
-export type Story = InferSelectModel<typeof story>;
+export type Book = InferSelectModel<typeof book>;
 
 export const chapter = pgTable('Chapter', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
-  storyId: uuid('storyId')
+  bookId: uuid('bookId')
     .notNull()
-    .references(() => story.id),
+    .references(() => book.id),
   chapterNumber: integer('chapterNumber').notNull(),
   title: text('title').notNull(),
   content: json('content').notNull(),
@@ -251,9 +251,9 @@ export type ChapterGeneration = InferSelectModel<typeof chapterGeneration>;
 
 export const character = pgTable('Character', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
-  storyId: uuid('storyId')
+  bookId: uuid('bookId')
     .notNull()
-    .references(() => story.id),
+    .references(() => book.id),
   name: text('name').notNull(),
   description: text('description'),
   personalityTraits: json('personalityTraits'),
@@ -274,9 +274,9 @@ export const readingProgress = pgTable(
     userId: uuid('userId')
       .notNull()
       .references(() => user.id),
-    storyId: uuid('storyId')
+    bookId: uuid('bookId')
       .notNull()
-      .references(() => story.id),
+      .references(() => book.id),
     currentChapterId: uuid('currentChapterId')
       .references(() => chapter.id),
     currentPosition: decimal('currentPosition').notNull().default('0'),
@@ -286,35 +286,35 @@ export const readingProgress = pgTable(
   },
   (table) => {
     return {
-      pk: primaryKey({ columns: [table.userId, table.storyId] }),
+      pk: primaryKey({ columns: [table.userId, table.bookId] }),
     };
   },
 );
 
 export type ReadingProgress = InferSelectModel<typeof readingProgress>;
 
-export const storyInteraction = pgTable(
-  'StoryInteraction',
+export const bookInteraction = pgTable(
+  'BookInteraction',
   {
     userId: uuid('userId')
       .notNull()
       .references(() => user.id),
-    storyId: uuid('storyId')
+    bookId: uuid('bookId')
       .notNull()
-      .references(() => story.id),
+      .references(() => book.id),
     interactionType: varchar('interactionType', { enum: ['like', 'bookmark', 'follow'] }).notNull(),
     createdAt: timestamp('createdAt').notNull().defaultNow(),
   },
   (table) => {
     return {
-      pk: primaryKey({ columns: [table.userId, table.storyId, table.interactionType] }),
+      pk: primaryKey({ columns: [table.userId, table.bookId, table.interactionType] }),
     };
   },
 );
 
-export type StoryInteraction = InferSelectModel<typeof storyInteraction>;
+export type BookInteraction = InferSelectModel<typeof bookInteraction>;
 
-export const storyTag = pgTable('StoryTag', {
+export const bookTag = pgTable('BookTag', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   name: text('name').notNull().unique(),
   description: text('description'),
@@ -322,7 +322,7 @@ export const storyTag = pgTable('StoryTag', {
   createdAt: timestamp('createdAt').notNull().defaultNow(),
 });
 
-export type StoryTag = InferSelectModel<typeof storyTag>;
+export type BookTag = InferSelectModel<typeof bookTag>;
 
 // Phase 2: Reading Experience Enhancement Tables
 
@@ -357,7 +357,6 @@ export const userPreferences = pgTable(
     reduceMotion: boolean('reduceMotion').notNull().default(false),
     screenReaderMode: boolean('screenReaderMode').notNull().default(false),
     autoBookmarking: boolean('autoBookmarking').notNull().default(true),
-    offlineReading: boolean('offlineReading').notNull().default(false),
     createdAt: timestamp('createdAt').notNull().defaultNow(),
     updatedAt: timestamp('updatedAt').notNull().defaultNow(),
   }
@@ -375,7 +374,7 @@ export const readingCollection = pgTable('ReadingCollection', {
   privacy: varchar('privacy', { enum: ['public', 'private'] })
     .notNull()
     .default('private'),
-  storyIds: json('storyIds').$type<string[]>().notNull().default([]),
+  bookIds: json('bookIds').$type<string[]>().notNull().default([]),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
   updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 });
@@ -389,23 +388,23 @@ export const readingList = pgTable('ReadingList', {
     .references(() => user.id),
   name: text('name').notNull(),
   description: text('description'),
-  storyIds: json('storyIds').$type<string[]>().notNull().default([]),
-  storyOrder: json('storyOrder').$type<number[]>().notNull().default([]),
+  bookIds: json('bookIds').$type<string[]>().notNull().default([]),
+  bookOrder: json('bookOrder').$type<number[]>().notNull().default([]),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
   updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 });
 
 export type ReadingList = InferSelectModel<typeof readingList>;
 
-export const offlineStory = pgTable(
-  'OfflineStory',
+export const offlineBook = pgTable(
+  'OfflineBook',
   {
     userId: uuid('userId')
       .notNull()
       .references(() => user.id),
-    storyId: uuid('storyId')
+    bookId: uuid('bookId')
       .notNull()
-      .references(() => story.id),
+      .references(() => book.id),
     downloadedChapters: json('downloadedChapters').$type<number[]>().notNull().default([]),
     totalSize: integer('totalSize').notNull().default(0), // in bytes
     downloadedAt: timestamp('downloadedAt').notNull().defaultNow(),
@@ -413,12 +412,12 @@ export const offlineStory = pgTable(
   },
   (table) => {
     return {
-      pk: primaryKey({ columns: [table.userId, table.storyId] }),
+      pk: primaryKey({ columns: [table.userId, table.bookId] }),
     };
   }
 );
 
-export type OfflineStory = InferSelectModel<typeof offlineStory>;
+export type OfflineBook = InferSelectModel<typeof offlineBook>;
 
 export const readingAchievement = pgTable('ReadingAchievement', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
@@ -426,7 +425,7 @@ export const readingAchievement = pgTable('ReadingAchievement', {
     .notNull()
     .references(() => user.id),
   achievementType: varchar('achievementType', { 
-    enum: ['first-story', 'ten-stories', 'hundred-stories', 'speed-reader', 'genre-explorer', 'consistency-week', 'consistency-month'] 
+    enum: ['first-book', 'ten-books', 'hundred-books', 'speed-reader', 'genre-explorer', 'consistency-week', 'consistency-month'] 
   }).notNull(),
   progress: integer('progress').notNull().default(0),
   target: integer('target').notNull().default(1),
@@ -449,7 +448,7 @@ export const readingStatistics = pgTable(
     weeklyReadingTimeMinutes: integer('weeklyReadingTimeMinutes').notNull().default(0),
     currentStreak: integer('currentStreak').notNull().default(0),
     longestStreak: integer('longestStreak').notNull().default(0),
-    storiesCompleted: integer('storiesCompleted').notNull().default(0),
+    booksCompleted: integer('booksCompleted').notNull().default(0),
     chaptersRead: integer('chaptersRead').notNull().default(0),
     wordsRead: integer('wordsRead').notNull().default(0),
     averageWordsPerMinute: integer('averageWordsPerMinute').notNull().default(200),
@@ -467,9 +466,9 @@ export const bookmark = pgTable('Bookmark', {
   userId: uuid('userId')
     .notNull()
     .references(() => user.id),
-  storyId: uuid('storyId')
+  bookId: uuid('bookId')
     .notNull()
-    .references(() => story.id),
+    .references(() => book.id),
   chapterId: uuid('chapterId')
     .notNull()
     .references(() => chapter.id),
@@ -618,7 +617,7 @@ export const groupActivity = pgTable('GroupActivity', {
   userId: uuid('userId')
     .notNull()
     .references(() => user.id),
-  activityType: varchar('activityType', { enum: ['post', 'join', 'leave', 'story_share', 'event'] }).notNull(),
+  activityType: varchar('activityType', { enum: ['post', 'join', 'leave', 'book_share', 'event'] }).notNull(),
   content: text('content').notNull(),
   metadata: json('metadata'),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
@@ -684,7 +683,7 @@ export const contestSubmission = pgTable('ContestSubmission', {
     .references(() => user.id),
   title: text('title').notNull(),
   content: text('content').notNull(),
-  storyId: uuid('storyId').references(() => story.id),
+  bookId: uuid('bookId').references(() => book.id),
   wordCount: integer('wordCount').notNull().default(0),
   isAnonymous: boolean('isAnonymous').notNull().default(false),
   publicVoteCount: integer('publicVoteCount').notNull().default(0),
@@ -830,9 +829,9 @@ export const betaReaderRequest = pgTable('BetaReaderRequest', {
   betaReaderId: uuid('betaReaderId')
     .notNull()
     .references(() => betaReader.id),
-  storyId: uuid('storyId')
+  bookId: uuid('bookId')
     .notNull()
-    .references(() => story.id),
+    .references(() => book.id),
   chapterIds: json('chapterIds').$type<string[]>().notNull().default([]),
   requestType: varchar('requestType', { enum: ['general', 'line-edit', 'developmental', 'proofreading'] }).notNull(),
   deadline: timestamp('deadline').notNull(),
@@ -847,9 +846,9 @@ export type BetaReaderRequest = InferSelectModel<typeof betaReaderRequest>;
 export const coAuthor = pgTable(
   'CoAuthor',
   {
-    storyId: uuid('storyId')
+    bookId: uuid('bookId')
       .notNull()
-      .references(() => story.id),
+      .references(() => book.id),
     userId: uuid('userId')
       .notNull()
       .references(() => user.id),
@@ -864,7 +863,7 @@ export const coAuthor = pgTable(
   },
   (table) => {
     return {
-      pk: primaryKey({ columns: [table.storyId, table.userId] }),
+      pk: primaryKey({ columns: [table.bookId, table.userId] }),
     };
   },
 );
@@ -958,7 +957,7 @@ export const reportContent = pgTable('ReportContent', {
   reporterId: uuid('reporterId')
     .notNull()
     .references(() => user.id),
-  contentType: varchar('contentType', { enum: ['story', 'comment', 'forum_post', 'user', 'group'] }).notNull(),
+  contentType: varchar('contentType', { enum: ['book', 'comment', 'forum_post', 'user', 'group'] }).notNull(),
   contentId: uuid('contentId').notNull(),
   reason: varchar('reason', { enum: ['spam', 'harassment', 'inappropriate', 'copyright'] }).notNull(),
   description: text('description'),

@@ -10,9 +10,10 @@ import { BookOpen, PenTool, Clock, FileText } from 'lucide-react';
 
 interface BookCardProps {
   book: Book;
+  variant?: 'private' | 'public';
 }
 
-export function BookCard({ book }: BookCardProps) {
+export function BookCard({ book, variant = 'private' }: BookCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'draft':
@@ -79,15 +80,13 @@ export function BookCard({ book }: BookCardProps) {
         </div>
       </CardContent>
       
-      <CardFooter className="pt-4 flex gap-2">
-        <Link href={`/books/${book.id}`} className="flex-1">
+      <CardFooter className="pt-4">
+        <Link 
+          href={variant === 'public' ? `/read/${book.id}` : `/books/${book.id}`} 
+          className="w-full"
+        >
           <Button variant="outline" className="w-full">
-            View Details
-          </Button>
-        </Link>
-        <Link href={`/books/${book.id}/chapters/${book.chapterCount > 0 ? book.chapterCount : 1}/write`} className="flex-1">
-          <Button className="w-full">
-            Continue Writing
+            {variant === 'public' ? 'Read Story' : 'View Details'}
           </Button>
         </Link>
       </CardFooter>

@@ -14,11 +14,13 @@ interface ChapterWriteLayoutProps {
   chapterNumber: number;
   chapterId: string;
   initialContent?: string;
+  isPublished?: boolean;
 }
 
-export default function ChapterWriteLayout({ bookId, bookTitle, chapterNumber, chapterId, initialContent = '' }: ChapterWriteLayoutProps) {
+export default function ChapterWriteLayout({ bookId, bookTitle, chapterNumber, chapterId, initialContent = '', isPublished = false }: ChapterWriteLayoutProps) {
   const [panelSizes, setPanelSizes] = useState({ chat: 50, viewer: 50 });
   const [isResizing, setIsResizing] = useState(false);
+  const [chapterPublished, setChapterPublished] = useState(isPublished);
 
   const generation = useChapterGeneration(bookId, chapterNumber);
   const editor = useChapterEditor(bookId, chapterNumber, initialContent || generation.content);
@@ -28,17 +30,13 @@ export default function ChapterWriteLayout({ bookId, bookTitle, chapterNumber, c
     if (generation.content && generation.content !== editor.content) {
       editor.setContent(generation.content);
     }
-  }, [generation.content, editor]);
+  }, [generation.content, editor.setContent, editor.content]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey || event.metaKey) {
         switch (event.key) {
-          case 's':
-            event.preventDefault();
-            editor.save();
-            break;
           case 'g':
             event.preventDefault();
             // Focus on chat panel for generation
@@ -55,7 +53,7 @@ export default function ChapterWriteLayout({ bookId, bookTitle, chapterNumber, c
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [editor, generation]);
+  }, [generation]);
 
   // Load panel sizes from localStorage
   useEffect(() => {
@@ -93,6 +91,36 @@ export default function ChapterWriteLayout({ bookId, bookTitle, chapterNumber, c
     editor.setContent(content);
     editor.startEditing();
   }, [editor]);
+
+  // Handle stop editing
+  const handleStopEditing = useCallback(() => {
+    editor.stopEditing();
+  }, [editor]);
+
+  // Handle publish/unpublish
+  const handleTogglePublish = useCallback(async () => {
+    try {
+      const response = await fetch('/api/chapters/publish', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chapterId,
+          action: chapterPublished ? 'unpublish' : 'publish',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update chapter status');
+      }
+
+      const data = await response.json();
+      setChapterPublished(data.chapter.isPublished);
+    } catch (error) {
+      console.error('Error toggling chapter publish status:', error);
+    }
+  }, [chapterId, chapterPublished]);
 
   // Memoize status message
   const statusMessage = useMemo(() => {
@@ -150,7 +178,7 @@ export default function ChapterWriteLayout({ bookId, bookTitle, chapterNumber, c
         </div>
 
         {/* Main content area */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-0 overflow-hidden">
+        <div className="flex-1 flex gap-0 overflow-hidden">
           {/* Chat Panel */}
           <div 
             role="region"
@@ -160,7 +188,7 @@ export default function ChapterWriteLayout({ bookId, bookTitle, chapterNumber, c
           >
             <React.Suspense fallback={<div className="p-4">Loading chat panel...</div>}>
               <ChapterChatPanel
-                storyId={bookId}
+                bookId={bookId}
                 chapterNumber={chapterNumber}
                 onGenerate={handleGenerate}
                 isGenerating={generation.isGenerating}
@@ -173,7 +201,7 @@ export default function ChapterWriteLayout({ bookId, bookTitle, chapterNumber, c
           {/* Resize handle */}
           <div 
             data-testid="panel-resize-handle"
-            className="hidden lg:block w-1 bg-gray-300 cursor-col-resize hover:bg-gray-400 transition-colors"
+            className="w-1 bg-gray-300 cursor-col-resize hover:bg-gray-400 transition-colors"
             onMouseDown={(e) => {
               setIsResizing(true);
               const startX = e.clientX;
@@ -207,15 +235,20 @@ export default function ChapterWriteLayout({ bookId, bookTitle, chapterNumber, c
           >
             <React.Suspense fallback={<div className="p-4">Loading viewer panel...</div>}>
               <ChapterViewerPanel
-                storyId={bookId}
+                bookId={bookId}
                 chapterNumber={chapterNumber}
                 content={editor.content}
                 onSave={handleSave}
                 onEdit={handleEdit}
+                onStopEditing={handleStopEditing}
                 isSaving={editor.isSaving}
                 isEditing={editor.isEditing}
+                isDirty={editor.isDirty}
                 lastSaved={editor.lastSaved}
                 wordCount={editor.wordCount}
+                isGenerating={generation.isGenerating}
+                isPublished={chapterPublished}
+                onTogglePublish={handleTogglePublish}
               />
             </React.Suspense>
           </div>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/auth';
 import { db } from '@/lib/db/drizzle';
-import { story, chapter } from '@/lib/db/schema';
+import { book, chapter, chat } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 
 export async function POST(request: NextRequest) {
@@ -14,11 +14,11 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { storyId, chapterNumber, title, content, summary } = body;
+    const { bookId, chapterNumber, title, content, summary } = body;
 
     // Validate input
-    if (!storyId || typeof storyId !== 'string') {
-      return NextResponse.json({ error: 'Invalid storyId' }, { status: 400 });
+    if (!bookId || typeof bookId !== 'string') {
+      return NextResponse.json({ error: 'Invalid bookId' }, { status: 400 });
     }
 
     if (!chapterNumber || typeof chapterNumber !== 'number' || chapterNumber <= 0) {
@@ -33,18 +33,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid content' }, { status: 400 });
     }
 
-    // Check if story exists and user owns it
-    const storyResult = await db
+    // Check if book exists and user owns it
+    const bookResult = await db
       .select()
-      .from(story)
-      .where(eq(story.id, storyId))
+      .from(book)
+      .where(eq(book.id, bookId))
       .limit(1);
 
-    if (storyResult.length === 0) {
-      return NextResponse.json({ error: 'Story not found' }, { status: 404 });
+    if (bookResult.length === 0) {
+      return NextResponse.json({ error: 'Book not found' }, { status: 404 });
     }
 
-    if (storyResult[0].authorId !== session.user.id) {
+    if (bookResult[0].authorId !== session.user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       .select()
       .from(chapter)
       .where(and(
-        eq(chapter.storyId, storyId),
+        eq(chapter.bookId, bookId),
         eq(chapter.chapterNumber, chapterNumber)
       ))
       .limit(1);
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
         .update(chapter)
         .set({
           title: title.trim(),
-          content: JSON.stringify([{ type: 'paragraph', children: [{ text: content }] }]),
+          content: content,
           summary: summary?.trim() || null,
           wordCount,
           updatedAt: new Date(),
@@ -78,37 +78,52 @@ export async function POST(request: NextRequest) {
         .where(eq(chapter.id, existingChapter[0].id))
         .returning();
     } else {
-      // Create new chapter
+      // Create new chapter (need to create chat first)
+      const [newChat] = await db
+        .insert(chat)
+        .values({
+          title: `${title.trim()}`,
+          userId: session.user.id,
+          chatType: 'chapter',
+          visibility: 'private',
+          createdAt: new Date(),
+        })
+        .returning();
+      
       [savedChapter] = await db
         .insert(chapter)
         .values({
-          storyId,
+          bookId,
           chapterNumber,
           title: title.trim(),
-          content: JSON.stringify([{ type: 'paragraph', children: [{ text: content }] }]),
+          content: content,
           summary: summary?.trim() || null,
           wordCount,
+          isPublished: false,
+          chatId: newChat.id,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         })
         .returning();
     }
 
-    // Update story's total word count and chapter count
+    // Update book's total word count and chapter count
     const allChapters = await db
       .select({ wordCount: chapter.wordCount })
       .from(chapter)
-      .where(eq(chapter.storyId, storyId));
+      .where(eq(chapter.bookId, bookId));
 
     const totalWordCount = allChapters.reduce((sum, ch) => sum + (ch.wordCount || 0), 0);
     const chapterCount = allChapters.length;
 
     await db
-      .update(story)
+      .update(book)
       .set({
         wordCount: totalWordCount,
         chapterCount,
         updatedAt: new Date(),
       })
-      .where(eq(story.id, storyId));
+      .where(eq(book.id, bookId));
 
     return NextResponse.json({
       success: true,
@@ -119,7 +134,7 @@ export async function POST(request: NextRequest) {
         wordCount: savedChapter.wordCount,
         updatedAt: savedChapter.updatedAt,
       },
-      storyStats: {
+      bookStats: {
         totalWordCount,
         chapterCount,
       },
