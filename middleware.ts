@@ -17,8 +17,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Allow access to stories pages and root redirect in development for testing
-  if (isDevelopmentEnvironment && (pathname.startsWith('/stories') || pathname === '/')) {
+  // Allow access to books pages and root redirect in development for testing
+  if (isDevelopmentEnvironment && (pathname.startsWith('/books') || pathname === '/')) {
     return NextResponse.next();
   }
 
@@ -46,7 +46,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/',
-    '/stories/create/:id',
+    '/books/:path*',
     '/api/:path*',
     '/login',
 

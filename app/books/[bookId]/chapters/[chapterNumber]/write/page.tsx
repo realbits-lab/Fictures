@@ -66,7 +66,7 @@ export default async function ChapterWritePage({
         storyId: bookId,
         chapterNumber,
         title: `Chapter ${chapterNumber}`,
-        content: {},
+        content: '',
         wordCount: 0,
         isPublished: false,
         chatId: newChat.id,
@@ -90,13 +90,20 @@ export default async function ChapterWritePage({
       .where(eq(bookTable.id, bookId));
   }
   
+  // Ensure content is a string
+  const chapterContent = typeof chapter.content === 'string' 
+    ? chapter.content 
+    : (typeof chapter.content === 'object' && chapter.content !== null 
+        ? JSON.stringify(chapter.content) 
+        : '');
+  
   return (
     <ChapterWriteLayout 
       bookId={bookId}
       bookTitle={book.title}
       chapterNumber={chapterNumber}
       chapterId={chapter.id}
-      initialContent={chapter.content as string || ''}
+      initialContent={chapterContent}
     />
   );
 }

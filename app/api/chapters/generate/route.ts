@@ -3,7 +3,7 @@ import { auth } from '@/app/auth';
 import { db } from '@/lib/db/drizzle';
 import { story } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { getDefaultModel } from '@/lib/ai/providers';
+import { myProvider } from '@/lib/ai/providers';
 import { streamText } from 'ai';
 
 // Rate limiting map (in production, use Redis or similar)
@@ -107,12 +107,9 @@ Please write Chapter ${chapterNumber} based on the request above. Write engaging
 
 Write the chapter content directly without any meta-commentary or explanations.`;
 
-    // Get AI model
-    const model = getDefaultModel();
-
     // Generate streaming response
     const result = await streamText({
-      model,
+      model: myProvider.languageModel('artifact-model'),
       prompt: finalPrompt,
       maxTokens,
       temperature,

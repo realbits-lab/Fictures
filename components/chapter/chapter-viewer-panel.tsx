@@ -15,13 +15,16 @@ export default function ChapterViewerPanel({
   lastSaved,
   wordCount
 }: ChapterViewerPanelProps) {
-  const [localContent, setLocalContent] = useState(content);
+  // Ensure content is always a string
+  const safeContent = typeof content === 'string' ? content : '';
+  const [localContent, setLocalContent] = useState(safeContent);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const exportMenuRef = useRef<HTMLDivElement>(null);
 
   // Sync content changes
   useEffect(() => {
-    setLocalContent(content);
+    const safeContent = typeof content === 'string' ? content : '';
+    setLocalContent(safeContent);
   }, [content]);
 
   // Close export menu when clicking outside
@@ -122,7 +125,7 @@ export default function ChapterViewerPanel({
                   onEdit(localContent);
                 }
               }}
-              disabled={!content.trim()}
+              disabled={!safeContent.trim()}
               className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isEditing ? 'View' : 'Edit'}
@@ -132,7 +135,7 @@ export default function ChapterViewerPanel({
             <div className="relative" ref={exportMenuRef}>
               <button
                 onClick={() => setShowExportMenu(!showExportMenu)}
-                disabled={!content.trim()}
+                disabled={!safeContent.trim()}
                 className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 aria-haspopup="true"
                 aria-expanded={showExportMenu}
@@ -186,7 +189,7 @@ export default function ChapterViewerPanel({
             </div>
           )}
 
-          {!lastSaved && content.trim() && (
+          {!lastSaved && safeContent.trim() && (
             <div className="flex items-center space-x-1 text-xs text-orange-600">
               <div className="w-2 h-2 bg-orange-600 rounded-full"></div>
               <span>Unsaved changes</span>
@@ -204,7 +207,7 @@ export default function ChapterViewerPanel({
 
       {/* Content area */}
       <div className="flex-1 overflow-hidden">
-        {content.trim() ? (
+        {safeContent.trim() ? (
           <ChapterContentDisplay
             content={localContent}
             isEditing={isEditing}
@@ -235,7 +238,7 @@ export default function ChapterViewerPanel({
         <div className="flex items-center justify-between text-xs text-gray-500">
           <div className="space-x-4">
             <span>Chapter {chapterNumber}</span>
-            {content.trim() && <span>{wordCount} words</span>}
+            {safeContent.trim() && <span>{wordCount} words</span>}
           </div>
           
           <div className="space-x-2">

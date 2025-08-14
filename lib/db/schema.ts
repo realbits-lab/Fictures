@@ -357,7 +357,6 @@ export const userPreferences = pgTable(
     reduceMotion: boolean('reduceMotion').notNull().default(false),
     screenReaderMode: boolean('screenReaderMode').notNull().default(false),
     autoBookmarking: boolean('autoBookmarking').notNull().default(true),
-    offlineReading: boolean('offlineReading').notNull().default(false),
     createdAt: timestamp('createdAt').notNull().defaultNow(),
     updatedAt: timestamp('updatedAt').notNull().defaultNow(),
   }

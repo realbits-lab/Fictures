@@ -97,27 +97,11 @@ export default function PersonalLibrary() {
         </Link>
 
         <Link
-          href="/library/offline"
-          className="p-6 border rounded-lg hover:shadow-lg transition-shadow"
-        >
-          <h3 className="text-xl font-semibold mb-2">Offline Library</h3>
-          <p className="text-gray-600">Downloaded stories</p>
-        </Link>
-
-        <Link
           href="/library/bookmarks"
           className="p-6 border rounded-lg hover:shadow-lg transition-shadow"
         >
           <h3 className="text-xl font-semibold mb-2">Bookmarks</h3>
           <p className="text-gray-600">Saved reading positions</p>
-        </Link>
-
-        <Link
-          href="/settings/storage"
-          className="p-6 border rounded-lg hover:shadow-lg transition-shadow"
-        >
-          <h3 className="text-xl font-semibold mb-2">Storage Settings</h3>
-          <p className="text-gray-600">Manage offline storage</p>
         </Link>
       </div>
 
