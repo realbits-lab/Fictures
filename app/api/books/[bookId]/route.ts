@@ -6,7 +6,7 @@ import { z } from 'zod';
 // GET /api/books/[bookId] - Get book details with chapters
 export async function GET(
   request: NextRequest,
-  { params }: { params: { bookId: string } }
+  { params }: { params: Promise<{ bookId: string }> }
 ) {
   try {
     const session = await auth();
@@ -18,7 +18,8 @@ export async function GET(
       );
     }
     
-    const hasAccess = await canUserAccessBook(session.user.id, params.bookId);
+    const { bookId } = await params;
+    const hasAccess = await canUserAccessBook(session.user.id, bookId);
     
     if (!hasAccess) {
       return NextResponse.json(
@@ -27,7 +28,7 @@ export async function GET(
       );
     }
     
-    const result = await getBookWithChapters(params.bookId);
+    const result = await getBookWithChapters(bookId);
     
     if (!result) {
       return NextResponse.json(
@@ -57,7 +58,7 @@ const updateBookSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { bookId: string } }
+  { params }: { params: Promise<{ bookId: string }> }
 ) {
   try {
     const session = await auth();
@@ -69,7 +70,8 @@ export async function PUT(
       );
     }
     
-    const hasAccess = await canUserAccessBook(session.user.id, params.bookId);
+    const { bookId } = await params;
+    const hasAccess = await canUserAccessBook(session.user.id, bookId);
     
     if (!hasAccess) {
       return NextResponse.json(
@@ -81,7 +83,7 @@ export async function PUT(
     const body = await request.json();
     const validatedData = updateBookSchema.parse(body);
     
-    const book = await updateBook(params.bookId, validatedData);
+    const book = await updateBook(bookId, validatedData);
     
     return NextResponse.json({ book });
   } catch (error) {
@@ -103,7 +105,7 @@ export async function PUT(
 // DELETE /api/books/[bookId] - Delete a book
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { bookId: string } }
+  { params }: { params: Promise<{ bookId: string }> }
 ) {
   try {
     const session = await auth();
@@ -115,7 +117,8 @@ export async function DELETE(
       );
     }
     
-    const hasAccess = await canUserAccessBook(session.user.id, params.bookId);
+    const { bookId } = await params;
+    const hasAccess = await canUserAccessBook(session.user.id, bookId);
     
     if (!hasAccess) {
       return NextResponse.json(
@@ -124,7 +127,7 @@ export async function DELETE(
       );
     }
     
-    await deleteBook(params.bookId);
+    await deleteBook(bookId);
     
     return NextResponse.json({ success: true });
   } catch (error) {

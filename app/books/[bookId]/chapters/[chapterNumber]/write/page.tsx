@@ -9,7 +9,7 @@ import ChapterWriteLayout from '@/components/chapter/chapter-write-layout';
 export default async function ChapterWritePage({ 
   params 
 }: { 
-  params: { bookId: string; chapterNumber: string } 
+  params: Promise<{ bookId: string; chapterNumber: string }>
 }) {
   const session = await auth();
   
@@ -17,20 +17,23 @@ export default async function ChapterWritePage({
     redirect('/');
   }
   
+  // Await params as required in Next.js 15
+  const { bookId, chapterNumber: chapterNumberStr } = await params;
+  
   // Check if user has access to this book
-  const hasAccess = await canUserAccessBook(session.user.id, params.bookId);
+  const hasAccess = await canUserAccessBook(session.user.id, bookId);
   
   if (!hasAccess) {
     notFound();
   }
   
-  const book = await getBookById(params.bookId);
+  const book = await getBookById(bookId);
   
   if (!book) {
     notFound();
   }
   
-  const chapterNumber = parseInt(params.chapterNumber);
+  const chapterNumber = parseInt(chapterNumberStr);
   
   // Check if chapter exists, if not create it
   let [chapter] = await db
@@ -38,7 +41,7 @@ export default async function ChapterWritePage({
     .from(chapterTable)
     .where(
       and(
-        eq(chapterTable.storyId, params.bookId),
+        eq(chapterTable.storyId, bookId),
         eq(chapterTable.chapterNumber, chapterNumber)
       )
     )
@@ -60,7 +63,7 @@ export default async function ChapterWritePage({
     [chapter] = await db
       .insert(chapterTable)
       .values({
-        storyId: params.bookId,
+        storyId: bookId,
         chapterNumber,
         title: `Chapter ${chapterNumber}`,
         content: {},
@@ -76,7 +79,7 @@ export default async function ChapterWritePage({
     const allChapters = await db
       .select()
       .from(chapterTable)
-      .where(eq(chapterTable.storyId, params.bookId));
+      .where(eq(chapterTable.storyId, bookId));
     
     await db
       .update(bookTable)
@@ -84,12 +87,12 @@ export default async function ChapterWritePage({
         chapterCount: allChapters.length,
         updatedAt: new Date()
       })
-      .where(eq(bookTable.id, params.bookId));
+      .where(eq(bookTable.id, bookId));
   }
   
   return (
     <ChapterWriteLayout 
-      bookId={params.bookId}
+      bookId={bookId}
       bookTitle={book.title}
       chapterNumber={chapterNumber}
       chapterId={chapter.id}

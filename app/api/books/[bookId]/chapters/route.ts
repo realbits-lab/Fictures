@@ -9,7 +9,7 @@ import { z } from 'zod';
 // GET /api/books/[bookId]/chapters - List chapters for a book
 export async function GET(
   request: NextRequest,
-  { params }: { params: { bookId: string } }
+  { params }: { params: Promise<{ bookId: string }> }
 ) {
   try {
     const session = await auth();
@@ -21,7 +21,8 @@ export async function GET(
       );
     }
     
-    const hasAccess = await canUserAccessBook(session.user.id, params.bookId);
+    const { bookId } = await params;
+    const hasAccess = await canUserAccessBook(session.user.id, bookId);
     
     if (!hasAccess) {
       return NextResponse.json(
@@ -33,7 +34,7 @@ export async function GET(
     const chapters = await db
       .select()
       .from(chapter)
-      .where(eq(chapter.storyId, params.bookId))
+      .where(eq(chapter.storyId, bookId))
       .orderBy(asc(chapter.chapterNumber));
     
     return NextResponse.json({ chapters });
@@ -54,7 +55,7 @@ const createChapterSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { bookId: string } }
+  { params }: { params: Promise<{ bookId: string }> }
 ) {
   try {
     const session = await auth();
@@ -66,7 +67,8 @@ export async function POST(
       );
     }
     
-    const hasAccess = await canUserAccessBook(session.user.id, params.bookId);
+    const { bookId } = await params;
+    const hasAccess = await canUserAccessBook(session.user.id, bookId);
     
     if (!hasAccess) {
       return NextResponse.json(
@@ -79,7 +81,7 @@ export async function POST(
     const validatedData = createChapterSchema.parse(body);
     
     const newChapter = await createChapterForBook(
-      params.bookId,
+      bookId,
       session.user.id,
       validatedData.chapterNumber,
       validatedData.title

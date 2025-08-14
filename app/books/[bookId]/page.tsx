@@ -6,7 +6,7 @@ import { BookOverviewClient } from './book-overview-client';
 export default async function BookOverviewPage({ 
   params 
 }: { 
-  params: { bookId: string } 
+  params: Promise<{ bookId: string }>
 }) {
   const session = await auth();
   
@@ -14,13 +14,16 @@ export default async function BookOverviewPage({
     redirect('/');
   }
   
-  const hasAccess = await canUserAccessBook(session.user.id, params.bookId);
+  // Await params as required in Next.js 15
+  const { bookId } = await params;
+  
+  const hasAccess = await canUserAccessBook(session.user.id, bookId);
   
   if (!hasAccess) {
     notFound();
   }
   
-  const result = await getBookWithChapters(params.bookId);
+  const result = await getBookWithChapters(bookId);
   
   if (!result) {
     notFound();
