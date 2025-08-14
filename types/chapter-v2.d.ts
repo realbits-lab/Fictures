@@ -1,5 +1,5 @@
 export interface ChapterGenerationRequest {
-  storyId: string;
+  bookId: string;
   chapterNumber: number;
   prompt: string;
   maxTokens?: number;
@@ -12,8 +12,8 @@ export interface ChapterGenerationRequest {
 }
 
 export interface ChapterGenerationContext {
-  storyTitle: string;
-  storyDescription?: string;
+  bookTitle: string;
+  bookDescription?: string;
   genre?: string;
   previousChapters?: Array<{
     chapterNumber: number;
@@ -29,7 +29,7 @@ export interface ChapterGenerationContext {
 }
 
 export interface ChapterSaveRequest {
-  storyId: string;
+  bookId: string;
   chapterNumber: number;
   title: string;
   content: string;
@@ -91,12 +91,12 @@ export interface UseChapterEditorReturn {
 }
 
 export interface ChapterWriteLayoutProps {
-  storyId: string;
+  bookId: string;
   chapterNumber: number;
 }
 
 export interface ChapterChatPanelProps {
-  storyId: string;
+  bookId: string;
   chapterNumber: number;
   onGenerate: (prompt: string) => void;
   isGenerating: boolean;
@@ -105,7 +105,7 @@ export interface ChapterChatPanelProps {
 }
 
 export interface ChapterViewerPanelProps {
-  storyId: string;
+  bookId: string;
   chapterNumber: number;
   content: string;
   onSave: (content: string) => void;

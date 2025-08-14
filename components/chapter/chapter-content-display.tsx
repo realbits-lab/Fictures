@@ -135,7 +135,7 @@ export default function ChapterContentDisplay({
       </div>
 
       {/* Content area */}
-      <div className={`overflow-y-auto ${isFullscreen ? 'h-full' : 'flex-1'} p-6`}>
+      <div className={`${isFullscreen ? 'h-full overflow-y-auto' : ''} p-6`}>
         {isEditing ? (
           // Edit mode
           <div className="h-full">
@@ -144,12 +144,13 @@ export default function ChapterContentDisplay({
               value={localContent}
               onChange={handleContentChange}
               onKeyDown={handleKeyDown}
-              className="w-full h-full resize-none border-0 focus:outline-none text-gray-800 leading-relaxed"
+              className="w-full resize-none border-0 focus:outline-none text-gray-800 leading-relaxed"
               style={{
                 fontSize: '16px',
                 lineHeight: '1.6',
                 fontFamily: 'Georgia, "Times New Roman", serif',
-                minHeight: isFullscreen ? 'calc(100vh - 200px)' : '400px',
+                minHeight: isFullscreen ? 'calc(100vh - 200px)' : 'calc(100vh - 300px)',
+                height: 'auto'
               }}
               placeholder="Start writing your chapter content here..."
             />
@@ -157,7 +158,7 @@ export default function ChapterContentDisplay({
         ) : (
           // View mode
           <div 
-            className="prose prose-lg max-w-none h-full"
+            className="prose prose-lg max-w-none"
             style={{
               fontSize: '16px',
               lineHeight: '1.6',

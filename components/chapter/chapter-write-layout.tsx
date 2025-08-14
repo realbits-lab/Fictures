@@ -188,7 +188,7 @@ export default function ChapterWriteLayout({ bookId, bookTitle, chapterNumber, c
           >
             <React.Suspense fallback={<div className="p-4">Loading chat panel...</div>}>
               <ChapterChatPanel
-                storyId={bookId}
+                bookId={bookId}
                 chapterNumber={chapterNumber}
                 onGenerate={handleGenerate}
                 isGenerating={generation.isGenerating}
@@ -235,7 +235,7 @@ export default function ChapterWriteLayout({ bookId, bookTitle, chapterNumber, c
           >
             <React.Suspense fallback={<div className="p-4">Loading viewer panel...</div>}>
               <ChapterViewerPanel
-                storyId={bookId}
+                bookId={bookId}
                 chapterNumber={chapterNumber}
                 content={editor.content}
                 onSave={handleSave}

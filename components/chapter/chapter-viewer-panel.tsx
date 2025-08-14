@@ -5,7 +5,7 @@ import { ChapterViewerPanelProps } from '@/types/chapter-v2';
 import ChapterContentDisplay from './chapter-content-display';
 
 export default function ChapterViewerPanel({
-  storyId,
+  bookId,
   chapterNumber,
   content,
   onSave,
