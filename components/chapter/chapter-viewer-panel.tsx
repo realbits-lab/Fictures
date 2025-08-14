@@ -10,17 +10,19 @@ export default function ChapterViewerPanel({
   content,
   onSave,
   onEdit,
+  onStopEditing,
   isSaving,
   isEditing,
+  isDirty,
   lastSaved,
   wordCount,
-  isGenerating = false
+  isGenerating = false,
+  isPublished = false,
+  onTogglePublish
 }: ChapterViewerPanelProps) {
   // Ensure content is always a string
   const safeContent = typeof content === 'string' ? content : '';
   const [localContent, setLocalContent] = useState(safeContent);
-  const [showExportMenu, setShowExportMenu] = useState(false);
-  const exportMenuRef = useRef<HTMLDivElement>(null);
 
   // Sync content changes
   useEffect(() => {
@@ -28,17 +30,6 @@ export default function ChapterViewerPanel({
     setLocalContent(safeContent);
   }, [content]);
 
-  // Close export menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
-        setShowExportMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const handleContentChange = useCallback((newContent: string) => {
     setLocalContent(newContent);
@@ -49,41 +40,6 @@ export default function ChapterViewerPanel({
     onSave(localContent);
   }, [onSave, localContent]);
 
-  const handleExportMarkdown = useCallback(() => {
-    const blob = new Blob([localContent], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `chapter-${chapterNumber}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    setShowExportMenu(false);
-  }, [localContent, chapterNumber]);
-
-  const handleExportTxt = useCallback(() => {
-    const blob = new Blob([localContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `chapter-${chapterNumber}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    setShowExportMenu(false);
-  }, [localContent, chapterNumber]);
-
-  const handleCopyToClipboard = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(localContent);
-      // Show temporary success message (you could use a toast here)
-      setShowExportMenu(false);
-    } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
-    }
-  }, [localContent]);
 
   const formatLastSaved = useCallback(() => {
     if (!lastSaved) return 'Never saved';
@@ -116,11 +72,44 @@ export default function ChapterViewerPanel({
           </div>
 
           <div className="flex items-center space-x-2">
+            {/* Publish/Unpublish button */}
+            {onTogglePublish && (
+              <div className="relative group">
+                <button
+                  onClick={onTogglePublish}
+                  disabled={!safeContent.trim()}
+                  className={`px-3 py-1 text-sm rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                    isPublished
+                      ? 'bg-green-100 text-green-700 hover:bg-red-100 hover:text-red-700 border border-green-200 hover:border-red-200'
+                      : 'bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-200'
+                  }`}
+                  title={isPublished ? 'Click to unpublish and move to draft' : 'Click to publish and make visible to readers'}
+                >
+                  {isPublished ? '📤 Unpublish' : '🚀 Publish'}
+                </button>
+                
+                {/* Tooltip */}
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                  {isPublished 
+                    ? 'Move to draft (only you can see)' 
+                    : 'Make public (readers can see)'
+                  }
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-b-gray-900"></div>
+                </div>
+              </div>
+            )}
+
             {/* Edit/View toggle button */}
             <button
               onClick={() => {
                 if (isEditing) {
-                  // Stop editing (this would be handled by the parent)
+                  // Stop editing - call onStopEditing if provided, otherwise call onEdit with current content
+                  if (onStopEditing) {
+                    onStopEditing();
+                  } else {
+                    // Fallback: trigger edit callback with current content to sync state
+                    onEdit(localContent);
+                  }
                 } else {
                   // Start editing
                   onEdit(localContent);
@@ -132,57 +121,37 @@ export default function ChapterViewerPanel({
               {isEditing ? 'View' : 'Edit'}
             </button>
 
-            {/* Export button */}
-            <div className="relative" ref={exportMenuRef}>
-              <button
-                onClick={() => setShowExportMenu(!showExportMenu)}
-                disabled={!safeContent.trim()}
-                className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                aria-haspopup="true"
-                aria-expanded={showExportMenu}
-              >
-                Export
-              </button>
 
-              {showExportMenu && (
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  <div className="py-1">
-                    <button
-                      onClick={handleExportMarkdown}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Download as Markdown
-                    </button>
-                    <button
-                      onClick={handleExportTxt}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Download as Text
-                    </button>
-                    <button
-                      onClick={handleCopyToClipboard}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Copy to Clipboard
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Save button */}
+            {/* Auto-save status button */}
             <button
-              onClick={handleSave}
-              disabled={isSaving || !content.trim()}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+              disabled
+              className="px-4 py-2 text-sm rounded transition-colors cursor-default"
+              style={{
+                backgroundColor: isSaving ? '#fbbf24' : (!isDirty ? '#10b981' : '#6b7280'),
+                color: 'white'
+              }}
             >
-              {isSaving ? 'Saving...' : 'Save Chapter'}
+              {isSaving ? 'Saving...' : (!isDirty ? 'Saved' : 'Unsaved')}
             </button>
           </div>
         </div>
 
         {/* Status indicators */}
         <div className="flex items-center space-x-4 mt-2">
+          {isPublished && (
+            <div className="flex items-center space-x-1 text-xs text-green-600">
+              <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+              <span>Published - Visible to readers</span>
+            </div>
+          )}
+
+          {!isPublished && safeContent.trim() && (
+            <div className="flex items-center space-x-1 text-xs text-gray-600">
+              <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+              <span>Draft - Only visible to you</span>
+            </div>
+          )}
+
           {isGenerating && (
             <div className="flex items-center space-x-1 text-xs text-purple-600">
               <div className="w-2 h-2 bg-purple-600 rounded-full animate-pulse"></div>
@@ -214,7 +183,7 @@ export default function ChapterViewerPanel({
       </div>
 
       {/* Content area */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
         {safeContent.trim() || isGenerating ? (
           <ChapterContentDisplay
             content={localContent}

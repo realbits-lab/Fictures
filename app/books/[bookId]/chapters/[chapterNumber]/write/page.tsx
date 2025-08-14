@@ -118,6 +118,7 @@ export default async function ChapterWritePage({
       chapterNumber={chapterNumber}
       chapterId={chapter.id}
       initialContent={chapterContent}
+      isPublished={chapter.isPublished}
     />
   );
 }

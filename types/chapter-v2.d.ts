@@ -110,11 +110,15 @@ export interface ChapterViewerPanelProps {
   content: string;
   onSave: (content: string) => void;
   onEdit: (content: string) => void;
+  onStopEditing?: () => void;
   isSaving: boolean;
   isEditing: boolean;
+  isDirty: boolean;
   lastSaved: Date | null;
   wordCount: number;
   isGenerating?: boolean;
+  isPublished?: boolean;
+  onTogglePublish?: () => void;
 }
 
 export interface ChapterPromptInputProps {
