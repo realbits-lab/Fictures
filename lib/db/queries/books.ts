@@ -24,6 +24,7 @@ export type Book = {
   mature: boolean;
 };
 
+
 export async function getUserBooks(userId: string) {
   return await db
     .select()
@@ -234,4 +235,12 @@ export async function canUserAccessBook(userId: string, bookId: string): Promise
     .limit(1);
     
   return book?.authorId === userId;
+}
+
+// Public access functions for viewers - all books are viewable, but only published chapters
+export async function getAllBooks() {
+  return await db
+    .select()
+    .from(bookTable)
+    .orderBy(desc(bookTable.updatedAt));
 }

@@ -150,7 +150,7 @@ export default function ChapterWriteLayout({ bookId, bookTitle, chapterNumber, c
         </div>
 
         {/* Main content area */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-0 overflow-hidden">
+        <div className="flex-1 flex gap-0 overflow-hidden">
           {/* Chat Panel */}
           <div 
             role="region"
@@ -173,7 +173,7 @@ export default function ChapterWriteLayout({ bookId, bookTitle, chapterNumber, c
           {/* Resize handle */}
           <div 
             data-testid="panel-resize-handle"
-            className="hidden lg:block w-1 bg-gray-300 cursor-col-resize hover:bg-gray-400 transition-colors"
+            className="w-1 bg-gray-300 cursor-col-resize hover:bg-gray-400 transition-colors"
             onMouseDown={(e) => {
               setIsResizing(true);
               const startX = e.clientX;

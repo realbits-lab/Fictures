@@ -17,6 +17,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Allow public access to reading routes (no authentication required)
+  if (pathname.startsWith('/read') || pathname.startsWith('/library')) {
+    return NextResponse.next();
+  }
+
   // Allow access to books pages and root redirect in development for testing
   if (isDevelopmentEnvironment && (pathname.startsWith('/books') || pathname === '/')) {
     return NextResponse.next();
@@ -47,6 +52,8 @@ export const config = {
   matcher: [
     '/',
     '/books/:path*',
+    '/read/:path*',
+    '/library/:path*',
     '/api/:path*',
     '/login',
 

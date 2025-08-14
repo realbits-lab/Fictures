@@ -17,7 +17,8 @@ import {
   FileText, 
   Clock,
   BarChart,
-  Settings
+  Settings,
+  PenTool
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
