@@ -1,18 +1,27 @@
 'use client';
 
 import React, { useEffect, useCallback, useState, useMemo } from 'react';
-import { ChapterWriteLayoutProps } from '@/types/chapter-v2';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { useChapterGeneration } from '@/hooks/use-chapter-generation';
 import { useChapterEditor } from '@/hooks/use-chapter-editor';
 import ChapterChatPanel from './chapter-chat-panel';
 import ChapterViewerPanel from './chapter-viewer-panel';
 
-export default function ChapterWriteLayout({ storyId, chapterNumber }: ChapterWriteLayoutProps) {
+interface ChapterWriteLayoutProps {
+  bookId: string;
+  bookTitle: string;
+  chapterNumber: number;
+  chapterId: string;
+  initialContent?: string;
+}
+
+export default function ChapterWriteLayout({ bookId, bookTitle, chapterNumber, chapterId, initialContent = '' }: ChapterWriteLayoutProps) {
   const [panelSizes, setPanelSizes] = useState({ chat: 50, viewer: 50 });
   const [isResizing, setIsResizing] = useState(false);
 
-  const generation = useChapterGeneration(storyId, chapterNumber);
-  const editor = useChapterEditor(storyId, chapterNumber, generation.content);
+  const generation = useChapterGeneration(bookId, chapterNumber);
+  const editor = useChapterEditor(bookId, chapterNumber, initialContent || generation.content);
 
   // Sync generation content with editor
   React.useEffect(() => {
@@ -117,6 +126,11 @@ export default function ChapterWriteLayout({ storyId, chapterNumber }: ChapterWr
         {/* Status bar */}
         <div className="bg-white border-b px-4 py-2 flex items-center justify-between">
           <div className="flex items-center space-x-4">
+            <Link href={`/books/${bookId}`} className="flex items-center text-sm text-gray-600 hover:text-gray-900">
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              Back to {bookTitle}
+            </Link>
+            <span className="text-gray-400">|</span>
             <h1 className="text-lg font-semibold">Chapter {chapterNumber}</h1>
             <div className="text-sm text-gray-600">{editor.wordCount} words</div>
           </div>
@@ -146,7 +160,7 @@ export default function ChapterWriteLayout({ storyId, chapterNumber }: ChapterWr
           >
             <React.Suspense fallback={<div className="p-4">Loading chat panel...</div>}>
               <ChapterChatPanel
-                storyId={storyId}
+                storyId={bookId}
                 chapterNumber={chapterNumber}
                 onGenerate={handleGenerate}
                 isGenerating={generation.isGenerating}
@@ -193,7 +207,7 @@ export default function ChapterWriteLayout({ storyId, chapterNumber }: ChapterWr
           >
             <React.Suspense fallback={<div className="p-4">Loading viewer panel...</div>}>
               <ChapterViewerPanel
-                storyId={storyId}
+                storyId={bookId}
                 chapterNumber={chapterNumber}
                 content={editor.content}
                 onSave={handleSave}
