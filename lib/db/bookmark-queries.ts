@@ -51,7 +51,7 @@ export async function createBookmark(data: CreateBookmarkData): Promise<Bookmark
       ));
 
     if (!targetChapter) {
-      throw new ChatSDKError('not_found', 'Chapter not found');
+      throw new ChatSDKError('not_found:database', 'Chapter not found');
     }
 
     const [newBookmark] = await db
@@ -73,8 +73,7 @@ export async function createBookmark(data: CreateBookmarkData): Promise<Bookmark
     }
     throw new ChatSDKError(
       'bad_request:database',
-      'Failed to create bookmark',
-      { cause: error }
+      'Failed to create bookmark'
     );
   }
 }
@@ -84,14 +83,14 @@ export async function getUserBookmarks(userId: string): Promise<BookmarkWithDeta
     const result = await db
       .select({
         bookmark: bookmark,
-        book: story,
+        book: book,
         chapter: chapter,
         author: user,
       })
       .from(bookmark)
-      .leftJoin(story, eq(bookmark.bookId, story.id))
+      .leftJoin(book, eq(bookmark.bookId, book.id))
       .leftJoin(chapter, eq(bookmark.chapterId, chapter.id))
-      .leftJoin(user, eq(story.authorId, user.id))
+      .leftJoin(user, eq(book.authorId, user.id))
       .where(eq(bookmark.userId, userId))
       .orderBy(desc(bookmark.createdAt));
 
@@ -108,8 +107,7 @@ export async function getUserBookmarks(userId: string): Promise<BookmarkWithDeta
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
-      'Failed to get user bookmarks',
-      { cause: error }
+      'Failed to get user bookmarks'
     );
   }
 }
@@ -122,14 +120,14 @@ export async function getBookBookmarks(
     const result = await db
       .select({
         bookmark: bookmark,
-        book: story,
+        book: book,
         chapter: chapter,
         author: user,
       })
       .from(bookmark)
-      .leftJoin(story, eq(bookmark.bookId, story.id))
+      .leftJoin(book, eq(bookmark.bookId, book.id))
       .leftJoin(chapter, eq(bookmark.chapterId, chapter.id))
-      .leftJoin(user, eq(story.authorId, user.id))
+      .leftJoin(user, eq(book.authorId, user.id))
       .where(and(
         eq(bookmark.userId, userId),
         eq(bookmark.bookId, bookId)
@@ -149,8 +147,7 @@ export async function getBookBookmarks(
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
-      'Failed to get book bookmarks',
-      { cause: error }
+      'Failed to get book bookmarks'
     );
   }
 }
@@ -171,8 +168,7 @@ export async function deleteBookmark(
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
-      'Failed to delete bookmark',
-      { cause: error }
+      'Failed to delete bookmark'
     );
   }
 }
@@ -205,7 +201,7 @@ export async function updateBookmark(
       .returning();
 
     if (!updated) {
-      throw new ChatSDKError('not_found', 'Bookmark not found');
+      throw new ChatSDKError('not_found:database', 'Bookmark not found');
     }
 
     return updated;
@@ -215,8 +211,7 @@ export async function updateBookmark(
     }
     throw new ChatSDKError(
       'bad_request:database',
-      'Failed to update bookmark',
-      { cause: error }
+      'Failed to update bookmark'
     );
   }
 }
@@ -252,8 +247,7 @@ export async function getBookmarkByChapter(
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
-      'Failed to get bookmark by chapter',
-      { cause: error }
+      'Failed to get bookmark by chapter'
     );
   }
 }

@@ -6,7 +6,7 @@ import { eq, and } from 'drizzle-orm';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,12 +14,13 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const [updatedNotification] = await db
       .update(notification)
       .set({ isRead: true })
       .where(
         and(
-          eq(notification.id, params.id),
+          eq(notification.id, id),
           eq(notification.userId, session.user.id!)
         )
       )

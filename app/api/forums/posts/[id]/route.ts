@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,6 +14,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const { content } = body;
 
@@ -25,7 +26,7 @@ export async function PUT(
     const [existingPost] = await db
       .select()
       .from(forumPost)
-      .where(eq(forumPost.id, params.id));
+      .where(eq(forumPost.id, id));
 
     if (!existingPost) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
@@ -42,7 +43,7 @@ export async function PUT(
         isEdited: true,
         editedAt: new Date(),
       })
-      .where(eq(forumPost.id, params.id))
+      .where(eq(forumPost.id, id))
       .returning();
 
     return NextResponse.json(updatedPost);

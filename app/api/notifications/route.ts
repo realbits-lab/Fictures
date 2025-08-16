@@ -17,21 +17,16 @@ export async function GET(request: NextRequest) {
     const unreadOnly = searchParams.get('unread') === 'true';
     const offset = (page - 1) * limit;
 
-    let query = db
-      .select()
-      .from(notification)
-      .where(eq(notification.userId, session.user.id!));
+    const conditions = [eq(notification.userId, session.user.id!)];
 
     if (unreadOnly) {
-      query = query.where(
-        and(
-          eq(notification.userId, session.user.id!),
-          eq(notification.isRead, false)
-        )
-      );
+      conditions.push(eq(notification.isRead, false));
     }
 
-    const notifications = await query
+    const notifications = await db
+      .select()
+      .from(notification)
+      .where(and(...conditions))
       .orderBy(desc(notification.createdAt))
       .limit(limit)
       .offset(offset);

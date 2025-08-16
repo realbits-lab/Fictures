@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,6 +14,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const { content, parentPostId } = body;
 
@@ -25,7 +26,7 @@ export async function POST(
     const [thread] = await db
       .select()
       .from(forumThread)
-      .where(eq(forumThread.id, params.id));
+      .where(eq(forumThread.id, id));
 
     if (!thread) {
       return NextResponse.json({ error: 'Thread not found' }, { status: 404 });
@@ -38,7 +39,7 @@ export async function POST(
     const [post] = await db
       .insert(forumPost)
       .values({
-        threadId: params.id,
+        threadId: id,
         authorId: session.user.id!,
         content,
         parentPostId,
@@ -53,7 +54,7 @@ export async function POST(
         lastPostAt: new Date(),
         lastPostAuthorId: session.user.id!,
       })
-      .where(eq(forumThread.id, params.id));
+      .where(eq(forumThread.id, id));
 
     return NextResponse.json(post, { status: 201 });
   } catch (error) {

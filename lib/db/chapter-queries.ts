@@ -77,7 +77,6 @@ export async function createChapter(data: CreateChapterData): Promise<Chapter> {
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to create chapter',
-      { cause: error }
     );
   }
 }
@@ -94,7 +93,6 @@ export async function getChapterById(chapterId: string): Promise<Chapter | null>
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get chapter by ID',
-      { cause: error }
     );
   }
 }
@@ -109,7 +107,7 @@ export async function updateChapter(
       updatedAt: new Date(),
     };
 
-    if (updates.isPublished && !updates.publishedAt) {
+    if (updates.isPublished) {
       updateData.publishedAt = new Date();
     }
 
@@ -120,7 +118,7 @@ export async function updateChapter(
       .returning();
 
     if (!updatedChapter) {
-      throw new ChatSDKError('not_found', 'Chapter not found');
+      throw new ChatSDKError('not_found:database', 'Chapter not found');
     }
 
     return updatedChapter;
@@ -131,7 +129,6 @@ export async function updateChapter(
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to update chapter',
-      { cause: error }
     );
   }
 }
@@ -162,7 +159,6 @@ export async function deleteChapter(chapterId: string): Promise<boolean> {
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to delete chapter',
-      { cause: error }
     );
   }
 }
@@ -178,7 +174,6 @@ export async function getChaptersByBook(bookId: string): Promise<Chapter[]> {
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get chapters by book',
-      { cause: error }
     );
   }
 }
@@ -197,7 +192,6 @@ export async function getPublishedChaptersByBook(bookId: string): Promise<Chapte
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get published chapters by book',
-      { cause: error }
     );
   }
 }
@@ -220,7 +214,6 @@ export async function getChapterByNumber(
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get chapter by number',
-      { cause: error }
     );
   }
 }
@@ -238,7 +231,7 @@ export async function publishChapter(chapterId: string): Promise<Chapter> {
       .returning();
 
     if (!publishedChapter) {
-      throw new ChatSDKError('not_found', 'Chapter not found');
+      throw new ChatSDKError('not_found:database', 'Chapter not found');
     }
 
     return publishedChapter;
@@ -249,7 +242,6 @@ export async function publishChapter(chapterId: string): Promise<Chapter> {
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to publish chapter',
-      { cause: error }
     );
   }
 }
@@ -267,7 +259,7 @@ export async function unpublishChapter(chapterId: string): Promise<Chapter> {
       .returning();
 
     if (!unpublishedChapter) {
-      throw new ChatSDKError('not_found', 'Chapter not found');
+      throw new ChatSDKError('not_found:database', 'Chapter not found');
     }
 
     return unpublishedChapter;
@@ -278,7 +270,6 @@ export async function unpublishChapter(chapterId: string): Promise<Chapter> {
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to unpublish chapter',
-      { cause: error }
     );
   }
 }
@@ -304,7 +295,6 @@ export async function getNextChapter(
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get next chapter',
-      { cause: error }
     );
   }
 }
@@ -330,7 +320,6 @@ export async function getPreviousChapter(
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get previous chapter',
-      { cause: error }
     );
   }
 }

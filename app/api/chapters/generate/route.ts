@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { bookId, chapterNumber, prompt, maxTokens = 2000, temperature = 0.7, includeContext } = body;
+    const { bookId, chapterNumber, prompt, temperature = 0.7, includeContext } = body;
 
     // Validate input
     if (!bookId || typeof bookId !== 'string') {
@@ -111,7 +111,6 @@ Write the chapter content directly without any meta-commentary or explanations.`
     const result = await streamText({
       model: myProvider.languageModel('artifact-model'),
       prompt: finalPrompt,
-      maxTokens,
       temperature,
     });
 

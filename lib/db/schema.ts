@@ -124,7 +124,7 @@ export const document = pgTable(
     createdAt: timestamp('createdAt').notNull(),
     title: text('title').notNull(),
     content: text('content'),
-    kind: varchar('text', { enum: ['text', 'image', 'sheet', 'book'] })
+    kind: varchar('text', { enum: ['text', 'code', 'image', 'sheet', 'book', 'story'] })
       .notNull()
       .default('text'),
     userId: uuid('userId')
@@ -488,7 +488,7 @@ export const forumCategory = pgTable('ForumCategory', {
   name: text('name').notNull(),
   description: text('description'),
   slug: text('slug').notNull().unique(),
-  parentId: uuid('parentId').references(() => forumCategory.id),
+  parentId: uuid('parentId'),
   order: integer('order').notNull().default(0),
   isVisible: boolean('isVisible').notNull().default(true),
   moderatorIds: json('moderatorIds').$type<string[]>().notNull().default([]),
@@ -536,7 +536,7 @@ export const forumPost = pgTable('ForumPost', {
   isEdited: boolean('isEdited').notNull().default(false),
   editedAt: timestamp('editedAt'),
   isDeleted: boolean('isDeleted').notNull().default(false),
-  parentPostId: uuid('parentPostId').references(() => forumPost.id),
+  parentPostId: uuid('parentPostId'),
   likeCount: integer('likeCount').notNull().default(0),
   reportCount: integer('reportCount').notNull().default(0),
   createdAt: timestamp('createdAt').notNull().defaultNow(),

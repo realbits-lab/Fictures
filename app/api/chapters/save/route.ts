@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
         .set({
           title: title.trim(),
           content: content,
-          summary: summary?.trim() || null,
+          previousChapterSummary: summary?.trim() || null,
           wordCount,
           updatedAt: new Date(),
         })
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
           chapterNumber,
           title: title.trim(),
           content: content,
-          summary: summary?.trim() || null,
+          previousChapterSummary: summary?.trim() || null,
           wordCount,
           isPublished: false,
           chatId: newChat.id,

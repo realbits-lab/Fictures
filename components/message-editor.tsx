@@ -17,8 +17,8 @@ import { getTextFromMessage } from '@/lib/utils';
 export type MessageEditorProps = {
   message: ChatMessage;
   setMode: Dispatch<SetStateAction<'view' | 'edit'>>;
-  setMessages: UseChatHelpers<ChatMessage>['setMessages'];
-  regenerate: UseChatHelpers<ChatMessage>['regenerate'];
+  setMessages: UseChatHelpers['setMessages'];
+  regenerate: () => void;
 };
 
 export function MessageEditor({
@@ -88,9 +88,10 @@ export function MessageEditor({
               const index = messages.findIndex((m) => m.id === message.id);
 
               if (index !== -1) {
-                const updatedMessage: ChatMessage = {
-                  ...message,
-                  parts: [{ type: 'text', text: draftContent }],
+                const updatedMessage = {
+                  id: message.id,
+                  role: message.role,
+                  content: draftContent,
                 };
 
                 return [...messages.slice(0, index), updatedMessage];

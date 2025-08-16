@@ -7,7 +7,7 @@ import { eq } from 'drizzle-orm';
 // For simplicity, we'll store likes as a count. In a real app, you'd have a separate likes table
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -15,10 +15,11 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const [post] = await db
       .select()
       .from(forumPost)
-      .where(eq(forumPost.id, params.id));
+      .where(eq(forumPost.id, id));
 
     if (!post) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
@@ -29,7 +30,7 @@ export async function POST(
     const [updatedPost] = await db
       .update(forumPost)
       .set({ likeCount: post.likeCount + 1 })
-      .where(eq(forumPost.id, params.id))
+      .where(eq(forumPost.id, id))
       .returning();
 
     return NextResponse.json({

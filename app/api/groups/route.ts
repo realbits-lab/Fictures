@@ -27,16 +27,21 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = (page - 1) * limit;
 
-    let query = db.select().from(group).where(eq(group.isActive, true));
+    const conditions = [eq(group.isActive, true)];
 
     if (type) {
-      query = query.where(eq(group.type, type as any));
+      conditions.push(eq(group.type, type as any));
     }
     if (category) {
-      query = query.where(eq(group.category, category as any));
+      conditions.push(eq(group.category, category as any));
     }
 
-    const groups = await query.limit(limit).offset(offset);
+    const groups = await db
+      .select()
+      .from(group)
+      .where(and(...conditions))
+      .limit(limit)
+      .offset(offset);
 
     const totalGroups = await db
       .select({ count: group.id })

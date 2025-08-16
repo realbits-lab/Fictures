@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
       .select({
         chapterNumber: chapter.chapterNumber,
         title: chapter.title,
-        summary: chapter.summary,
+        previousChapterSummary: chapter.previousChapterSummary,
         content: chapter.content,
       })
       .from(chapter)
@@ -75,11 +75,11 @@ export async function GET(request: NextRequest) {
 
     // Generate summaries for chapters that don't have them
     const chaptersWithSummaries = previousChapters.map(ch => {
-      let summary = ch.summary;
+      let summary = ch.previousChapterSummary;
       
       if (!summary && ch.content) {
         try {
-          const contentObj = JSON.parse(ch.content);
+          const contentObj = typeof ch.content === 'string' ? JSON.parse(ch.content) : ch.content;
           const text = extractTextFromContent(contentObj);
           // Generate a simple summary (first 200 characters + ellipsis)
           summary = text.length > 200 ? `${text.substring(0, 200)}...` : text;

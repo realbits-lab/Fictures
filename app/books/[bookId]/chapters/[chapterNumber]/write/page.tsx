@@ -33,7 +33,7 @@ export default async function ChapterWritePage({
     notFound();
   }
   
-  const chapterNumber = parseInt(chapterNumberStr);
+  const chapterNumber = Number.parseInt(chapterNumberStr);
   
   // Check if chapter exists, if not create it
   let [chapter] = await db

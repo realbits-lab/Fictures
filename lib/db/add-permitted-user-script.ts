@@ -28,7 +28,7 @@ async function addPermittedUserDirect(email: string) {
     });
     
   } catch (error) {
-    if (error.message && error.message.includes('duplicate key value violates unique constraint')) {
+    if (error instanceof Error && error.message && error.message.includes('duplicate key value violates unique constraint')) {
       console.log(`ℹ️ User ${email} already exists in permitted users`);
       
       // Show all users

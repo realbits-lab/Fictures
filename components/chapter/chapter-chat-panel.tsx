@@ -124,7 +124,7 @@ export default function ChapterChatPanel({
           <ul className="text-xs text-blue-700 space-y-1">
             <li>• Story information and previous chapters will be included automatically</li>
             <li>• Focus on specific scenes, dialogue, or plot developments</li>
-            <li>• The AI will maintain consistency with your story's style and characters</li>
+            <li>• The AI will maintain consistency with your story&apos;s style and characters</li>
           </ul>
         </div>
 
@@ -135,7 +135,7 @@ export default function ChapterChatPanel({
               <div className="animate-spin h-4 w-4 border-2 border-yellow-600 border-t-transparent rounded-full"></div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-yellow-800">Generating Chapter {chapterNumber}</p>
-                <p className="text-xs text-yellow-700 mt-1">"{prompt}"</p>
+                <p className="text-xs text-yellow-700 mt-1">&quot;{prompt}&quot;</p>
               </div>
             </div>
           </div>

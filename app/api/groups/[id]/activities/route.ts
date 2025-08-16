@@ -6,7 +6,7 @@ import { eq, desc } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,6 +14,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -30,7 +31,7 @@ export async function GET(
       })
       .from(groupActivity)
       .leftJoin(user, eq(groupActivity.userId, user.id))
-      .where(eq(groupActivity.groupId, params.id))
+      .where(eq(groupActivity.groupId, id))
       .orderBy(desc(groupActivity.createdAt))
       .limit(limit)
       .offset(offset);
@@ -44,7 +45,7 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -52,6 +53,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const { activityType, content, metadata } = body;
 
@@ -65,7 +67,7 @@ export async function POST(
     const [activity] = await db
       .insert(groupActivity)
       .values({
-        groupId: params.id,
+        groupId: id,
         userId: session.user.id!,
         activityType,
         content,

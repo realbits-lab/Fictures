@@ -58,7 +58,9 @@ export function GlobalNavigationBar() {
           {/* Authentication */}
           {status === 'loading' ? (
             <div className="flex items-center space-x-2">
-              <LoaderIcon className="size-4 animate-spin" />
+              <div className="animate-spin">
+                <LoaderIcon size={16} />
+              </div>
               <span className="text-sm">Loading...</span>
             </div>
           ) : session?.user ? (

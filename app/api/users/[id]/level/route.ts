@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,17 +14,18 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const [level] = await db
       .select()
       .from(userLevel)
-      .where(eq(userLevel.userId, params.id));
+      .where(eq(userLevel.userId, id));
 
     if (!level) {
       // Create default level if doesn't exist
       const [newLevel] = await db
         .insert(userLevel)
         .values({
-          userId: params.id,
+          userId: id,
           level: 1,
           experience: 0,
           nextLevelExp: 100,

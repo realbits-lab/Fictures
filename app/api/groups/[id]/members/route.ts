@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,6 +14,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -29,14 +30,14 @@ export async function GET(
       })
       .from(groupMember)
       .leftJoin(user, eq(groupMember.userId, user.id))
-      .where(eq(groupMember.groupId, params.id))
+      .where(eq(groupMember.groupId, id))
       .limit(limit)
       .offset(offset);
 
     const totalMembers = await db
       .select({ count: groupMember.userId })
       .from(groupMember)
-      .where(eq(groupMember.groupId, params.id));
+      .where(eq(groupMember.groupId, id));
 
     return NextResponse.json({
       members,

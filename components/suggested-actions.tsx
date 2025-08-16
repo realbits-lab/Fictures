@@ -9,7 +9,7 @@ import type { ChatMessage } from '@/lib/types';
 
 interface SuggestedActionsProps {
   chatId: string;
-  sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
+  sendMessage: (message: any) => void;
   selectedVisibilityType: VisibilityType;
 }
 
