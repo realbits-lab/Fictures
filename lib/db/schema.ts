@@ -210,6 +210,159 @@ export const book = pgTable('Book', {
 
 export type Book = InferSelectModel<typeof book>;
 
+// Book Hierarchy Tables - 4-level organization: Story > Part > Chapter > Scene
+
+export const story = pgTable('Story', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  bookId: uuid('bookId')
+    .notNull()
+    .references(() => book.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  synopsis: text('synopsis'),
+  themes: json('themes').$type<string[]>().notNull().default([]),
+  worldSettings: json('worldSettings'), // JSON for world-building details
+  characterArcs: json('characterArcs'), // JSON for character development arcs
+  plotStructure: json('plotStructure'), // JSON for overall plot structure
+  order: integer('order').notNull().default(0),
+  wordCount: integer('wordCount').notNull().default(0),
+  partCount: integer('partCount').notNull().default(0),
+  isActive: boolean('isActive').notNull().default(true),
+  metadata: json('metadata'), // Flexible JSON for additional data
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type Story = InferSelectModel<typeof story>;
+
+export const part = pgTable('Part', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  storyId: uuid('storyId')
+    .notNull()
+    .references(() => story.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  description: text('description'),
+  partNumber: integer('partNumber').notNull(),
+  thematicFocus: text('thematicFocus'), // Main theme for this part
+  timeframe: json('timeframe'), // JSON for timeline details
+  location: text('location'), // Primary setting
+  wordCount: integer('wordCount').notNull().default(0),
+  chapterCount: integer('chapterCount').notNull().default(0),
+  order: integer('order').notNull().default(0),
+  isComplete: boolean('isComplete').notNull().default(false),
+  notes: text('notes'), // Author's notes for this part
+  metadata: json('metadata'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type Part = InferSelectModel<typeof part>;
+
+export const chapterEnhanced = pgTable('ChapterEnhanced', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  partId: uuid('partId')
+    .notNull()
+    .references(() => part.id, { onDelete: 'cascade' }),
+  bookId: uuid('bookId')
+    .notNull()
+    .references(() => book.id), // Keep for backward compatibility
+  chapterNumber: integer('chapterNumber').notNull(),
+  globalChapterNumber: integer('globalChapterNumber').notNull(), // Across entire book
+  title: text('title').notNull(),
+  summary: text('summary'),
+  content: json('content').notNull(), // Legacy field
+  wordCount: integer('wordCount').notNull().default(0),
+  sceneCount: integer('sceneCount').notNull().default(0),
+  order: integer('order').notNull().default(0),
+  pov: text('pov'), // Point of view character
+  timeline: json('timeline'), // When this chapter occurs
+  setting: text('setting'), // Primary location
+  charactersPresent: json('charactersPresent').$type<string[]>().notNull().default([]),
+  isPublished: boolean('isPublished').notNull().default(false),
+  publishedAt: timestamp('publishedAt'),
+  chatId: uuid('chatId').references(() => chat.id),
+  generationPrompt: text('generationPrompt'),
+  previousChapterSummary: text('previousChapterSummary'),
+  nextChapterHints: text('nextChapterHints'), // AI context for next chapter
+  authorNote: text('authorNote'),
+  metadata: json('metadata'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type ChapterEnhanced = InferSelectModel<typeof chapterEnhanced>;
+
+export const scene = pgTable('Scene', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  chapterId: uuid('chapterId')
+    .notNull()
+    .references(() => chapterEnhanced.id, { onDelete: 'cascade' }),
+  sceneNumber: integer('sceneNumber').notNull(),
+  title: text('title'),
+  content: text('content').notNull(),
+  wordCount: integer('wordCount').notNull().default(0),
+  order: integer('order').notNull().default(0),
+  sceneType: varchar('sceneType', { 
+    enum: ['action', 'dialogue', 'exposition', 'transition', 'climax'] 
+  }).notNull().default('action'),
+  pov: text('pov'), // Point of view for this scene
+  location: text('location'),
+  timeOfDay: text('timeOfDay'),
+  charactersPresent: json('charactersPresent').$type<string[]>().notNull().default([]),
+  mood: varchar('mood', { 
+    enum: ['tense', 'romantic', 'mysterious', 'comedic', 'dramatic', 'neutral'] 
+  }).notNull().default('neutral'),
+  purpose: text('purpose'), // What this scene accomplishes
+  conflict: text('conflict'), // Main conflict in scene
+  resolution: text('resolution'), // How conflict resolves
+  hooks: json('hooks'), // Story hooks and foreshadowing
+  beats: json('beats'), // Story beats within scene
+  isComplete: boolean('isComplete').notNull().default(false),
+  generationPrompt: text('generationPrompt'),
+  aiContext: json('aiContext'), // AI-specific context data
+  notes: text('notes'),
+  metadata: json('metadata'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type Scene = InferSelectModel<typeof scene>;
+
+export const bookHierarchyPath = pgTable('BookHierarchyPath', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  bookId: uuid('bookId')
+    .notNull()
+    .references(() => book.id, { onDelete: 'cascade' }),
+  storyId: uuid('storyId').references(() => story.id),
+  partId: uuid('partId').references(() => part.id),
+  chapterId: uuid('chapterId').references(() => chapterEnhanced.id),
+  sceneId: uuid('sceneId').references(() => scene.id),
+  level: varchar('level', { enum: ['book', 'story', 'part', 'chapter', 'scene'] }).notNull(),
+  path: text('path').notNull(), // e.g., "/book/123/story/456/part/789"
+  breadcrumb: json('breadcrumb'), // For UI navigation
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+});
+
+export type BookHierarchyPath = InferSelectModel<typeof bookHierarchyPath>;
+
+export const contentSearchIndex = pgTable('ContentSearchIndex', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  bookId: uuid('bookId')
+    .notNull()
+    .references(() => book.id, { onDelete: 'cascade' }),
+  entityType: varchar('entityType', { 
+    enum: ['story', 'part', 'chapter', 'scene'] 
+  }).notNull(),
+  entityId: uuid('entityId').notNull(),
+  searchableText: text('searchableText').notNull(),
+  title: text('title').notNull(),
+  path: text('path').notNull(),
+  metadata: json('metadata'),
+  tsvector: text('tsvector'), // PostgreSQL full-text search vector
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type ContentSearchIndex = InferSelectModel<typeof contentSearchIndex>;
+
 export const chapter = pgTable('Chapter', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   bookId: uuid('bookId')
