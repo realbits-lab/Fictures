@@ -10,24 +10,11 @@ export default async function PublishedBooksPage() {
   return (
     <div className="max-w-7xl mx-auto p-6">
       <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold mb-2">Discover Stories</h1>
-            <p className="text-lg text-gray-600">
-              Browse published stories from our community of writers
-            </p>
-          </div>
-          
-          {session?.user && (
-            <Link 
-              href="/books" 
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              My Books
-            </Link>
-          )}
+        <div>
+          <h1 className="text-4xl font-bold mb-2">Discover Stories</h1>
+          <p className="text-lg text-gray-600">
+            Browse published stories from our community of writers
+          </p>
         </div>
       </div>
 

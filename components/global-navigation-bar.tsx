@@ -36,9 +36,6 @@ export function GlobalNavigationBar() {
           <Link href="/books" className="text-sm font-medium transition-colors hover:text-primary">
             Books
           </Link>
-          <Link href="/community" className="text-sm font-medium transition-colors hover:text-primary">
-            Community
-          </Link>
         </div>
 
         {/* Auth Section */}
