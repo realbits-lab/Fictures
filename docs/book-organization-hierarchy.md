@@ -160,35 +160,6 @@ Before writing, you must decide how to divide your complete story into major par
       "timespan": "Three weeks from Elena's disappearance to final confrontation",
       "pacingStrategy": "Escalating urgency as portal opening approaches"
     },
-    "structuralPlanning": {
-      "overallStructure": "three-part",
-      "parts": [
-        {
-          "number": 1,
-          "title": "Discovery",
-          "percentage": 25,
-          "purpose": "Maya discovers her powers and Elena's fate",
-          "plotMilestones": ["Elena's disappearance", "Maya's first shadow manifestation", "Meeting Marcus"],
-          "characterDevelopment": "Maya denial to reluctant acceptance"
-        },
-        {
-          "number": 2,
-          "title": "Training and Trials",
-          "percentage": 50,
-          "purpose": "Maya learns to control her abilities while searching for Elena",
-          "plotMilestones": ["Shadow magic training", "First journey to Shadow Realm", "Confronting Void Collector's minions"],
-          "characterDevelopment": "Growing confidence but still holding back full power"
-        },
-        {
-          "number": 3,
-          "title": "Final Confrontation",
-          "percentage": 25,
-          "purpose": "Maya embraces her full power to save Elena and stop the merge",
-          "plotMilestones": ["Final battle with Void Collector", "Elena's rescue", "Maya's full transformation"],
-          "characterDevelopment": "Complete acceptance of Shadow Keeper role"
-        }
-      ]
-    },
     "serialPublicationPlanning": {
       "targetPublicationSchedule": "Weekly chapters, approximately 3000-4000 words each",
       "estimatedSerialDuration": "18-24 months for complete story",
