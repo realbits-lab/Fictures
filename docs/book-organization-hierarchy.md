@@ -279,6 +279,11 @@ This JSON structure serves as a comprehensive example that demonstrates all the 
         "title": "Discovery",
         "percentage": 25,
         "wordCount": "20000 words",
+        "estimatedReadingTime": {
+          "hours": 1.3,
+          "sessions": "2-3 reading sessions of 25-40 minutes each",
+          "calculation": "Based on 260 words per minute average fiction reading speed"
+        },
         "estimatedChapters": "6-8 chapters",
         "centralQuestion": "How will Maya react when she discovers her magical abilities and Elena's fate?",
         "thematicFocus": {
@@ -344,6 +349,11 @@ This JSON structure serves as a comprehensive example that demonstrates all the 
         "title": "Training and Trials",
         "percentage": 50,
         "wordCount": "40000 words",
+        "estimatedReadingTime": {
+          "hours": 2.6,
+          "sessions": "4-5 reading sessions of 30-40 minutes each",
+          "calculation": "Based on 260 words per minute average fiction reading speed"
+        },
         "estimatedChapters": "12-16 chapters",
         "centralQuestion": "Can Maya master her shadow magic without losing herself to the darkness?",
         "thematicFocus": {
@@ -410,6 +420,11 @@ This JSON structure serves as a comprehensive example that demonstrates all the 
         "title": "Final Confrontation",
         "percentage": 25,
         "wordCount": "20000 words",
+        "estimatedReadingTime": {
+          "hours": 1.3,
+          "sessions": "2-3 reading sessions of 25-40 minutes each",
+          "calculation": "Based on 260 words per minute average fiction reading speed"
+        },
         "estimatedChapters": "6-8 chapters",
         "centralQuestion": "Will Maya embrace her full power to save Elena and protect both worlds?",
         "thematicFocus": {
