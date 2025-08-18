@@ -24,20 +24,57 @@ The **Story** level encompasses the complete narrative journey from the initial 
 
 ### Key Functions in Planning
 
-- **Core Premise Definition**: Clearly establish the central dramatic question and primary conflict
-- **Protagonist Journey Mapping**: Define the character's transformation arc and emotional progression
-- **Structural Planning**: Map the overall trajectory from setup through climax to resolution
-- **Thematic Integration**: Weave thematic elements throughout the entire narrative
-- **Scope and Boundaries**: Determine what will and won't be included in the story
-- **Resolution Planning**: Establish the type of ending and how conflicts will be resolved
+- **Central Question Identification**: Define the specific dramatic question your story will answer (e.g., "Will the protagonist overcome their fear to save their family?")
+- **Character Profile Creation**: Build detailed backgrounds including personality traits, backstories, goals, flaws, and what each character wants vs. what they truly need
+- **World and Setting Design**: Map specific locations, time periods, climate, technology level, and cultural context that will influence your characters' choices
+- **Conflict Architecture**: Establish the primary external conflict, internal struggles, and obstacles that will drive your story forward
+- **Message and Meaning**: Identify the underlying truth, lesson, or insight your story explores about human nature or society
+- **Character Relationship Mapping**: Chart how characters know each other, their history, current dynamics, and how relationships will evolve
+- **Timeline and Pacing Structure**: Plan when events happen, how much time passes, and whether you'll use flashbacks or chronological order
+- **Ending Strategy**: Determine how each character arc concludes and which conflicts get resolved vs. left open
+
+### Story Organization and Part Structure
+
+Before writing, you must decide how to divide your complete story into major parts. This organizational decision shapes your entire narrative approach and reader experience.
+
+**Determining Number of Parts:**
+
+**Three-Part Structure (Most Common):**
+- **Part I - Setup (25% of story)**: Establish world, characters, goals, and initial conflicts
+- **Part II - Confrontation (50% of story)**: Escalate stakes, develop complications, build toward climax
+- **Part III - Resolution (25% of story)**: Resolve conflicts, complete character arcs, provide satisfying conclusion
+
+**Four-Part Structure (Epic/Complex Narratives):**
+- **Part I - Ordinary World**: Introduce protagonist in their normal environment
+- **Part II - Journey Begins**: Launch the adventure, establish stakes and obstacles
+- **Part III - Crisis and Transformation**: Major setbacks, character growth, pivotal revelations
+- **Part IV - Final Challenge**: Climax, resolution, return to changed world
+
+**Five-Part Structure (Classical Drama):**
+- **Part I - Exposition**: Introduce characters, setting, background information
+- **Part II - Rising Action**: Build conflict, develop complications
+- **Part III - Climax**: Story's turning point, highest tension
+- **Part IV - Falling Action**: Consequences of climax, loose ends addressed
+- **Part V - Resolution**: Final outcomes, character fates determined
+
+**How to Choose Your Structure:**
+1. **Story Scope**: Larger, more complex stories benefit from more parts
+2. **Genre Conventions**: Romance often uses three parts, epic fantasy may use four or five
+3. **Character Arcs**: Match parts to major character transformation phases
+4. **Natural Story Beats**: Identify where your story naturally breaks into major movements
+5. **Reader Experience**: Consider pacing and breathing space for your audience
+
+**Flexible Application**: Remember that these structures are templates, not rigid rules. Adapt them to serve your specific story rather than forcing your narrative into predetermined boxes.
 
 ### Practical Application Guidelines
 
 **For Fiction:**
-- Identify the central dramatic question that will be answered by the story's end
-- Define the protagonist's core journey and transformation
-- Establish the primary conflict that spans the entire narrative
-- Determine the emotional and thematic resolution
+- **Characters**: Define protagonist and key supporting characters with distinct personalities, motivations, and relationships
+- **Setting**: Establish the physical world, time period, and cultural context that shapes your story
+- **Plot**: Identify the central dramatic question and primary conflict that spans the entire narrative
+- **Theme**: Determine the underlying message, moral, or insight the story explores
+- **Relationships**: Map the connections and dynamics between characters that drive conflict and growth
+- **Time Structure**: Plan how time unfolds in your narrative (chronological, flashbacks, time jumps)
 
 ### Examples
 
