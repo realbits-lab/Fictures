@@ -66,6 +66,16 @@ Before writing, you must decide how to divide your complete story into major par
 
 **Flexible Application**: Remember that these structures are templates, not rigid rules. Adapt them to serve your specific story rather than forcing your narrative into predetermined boxes.
 
+### Practical Application Guidelines
+
+**For Fiction:**
+- **Characters**: Define protagonist and key supporting characters with distinct personalities, motivations, and relationships
+- **Setting**: Establish the physical world, time period, and cultural context that shapes your story
+- **Plot**: Identify the central dramatic question and primary conflict that spans the entire narrative
+- **Theme**: Determine the underlying message, moral, or insight the story explores
+- **Relationships**: Map the connections and dynamics between characters that drive conflict and growth
+- **Time Structure**: Plan how time unfolds in your narrative (chronological, flashbacks, time jumps)
+
 ### JSON Data Structure for Story Planning
 
 ```json
@@ -189,24 +199,7 @@ Before writing, you must decide how to divide your complete story into major par
 }
 ```
 
-This JSON structure captures all the key planning elements in a format that's both human-readable and machine-processable, making it easy to reference during writing and track story development progress.
-
-### Practical Application Guidelines
-
-**For Fiction:**
-- **Characters**: Define protagonist and key supporting characters with distinct personalities, motivations, and relationships
-- **Setting**: Establish the physical world, time period, and cultural context that shapes your story
-- **Plot**: Identify the central dramatic question and primary conflict that spans the entire narrative
-- **Theme**: Determine the underlying message, moral, or insight the story explores
-- **Relationships**: Map the connections and dynamics between characters that drive conflict and growth
-- **Time Structure**: Plan how time unfolds in your narrative (chronological, flashbacks, time jumps)
-
-### Examples
-
-**Fiction Examples:**
-- *The Lord of the Rings*: The story of destroying the One Ring to save Middle-earth
-- *Pride and Prejudice*: Elizabeth Bennet's journey from prejudice to understanding and love
-- *The Hunger Games*: Katniss's evolution from survivor to revolutionary leader
+This JSON structure serves as a comprehensive example that demonstrates all the key planning elements covered in the Story level, providing a practical template that writers can adapt for their own projects.
 
 ## Level 2: Part (Major Sections)
 
