@@ -66,6 +66,131 @@ Before writing, you must decide how to divide your complete story into major par
 
 **Flexible Application**: Remember that these structures are templates, not rigid rules. Adapt them to serve your specific story rather than forcing your narrative into predetermined boxes.
 
+### JSON Data Structure for Story Planning
+
+```json
+{
+  "story": {
+    "title": "The Shadow Keeper",
+    "genre": "urban fantasy",
+    "targetLength": "80000 words",
+    "targetReadingTime": {
+      "hours": 5.1,
+      "sessions": "8-10 reading sessions of 30-40 minutes each",
+      "calculation": "Based on 260 words per minute average fiction reading speed"
+    },
+    "centralQuestion": "Can Maya overcome her fear of her shadow magic to save her sister from the Shadow Realm?",
+    "characters": {
+      "protagonist": {
+        "name": "Maya Chen",
+        "age": 24,
+        "backstory": "Photographer who discovered shadow magic after her sister's disappearance",
+        "goals": {
+          "wants": "To rescue her sister and return to normal life",
+          "needs": "To accept her magical abilities and responsibility as a Shadow Keeper"
+        },
+        "flaws": ["fear of her own power", "tendency to isolate herself"],
+        "arc": "From reluctant magic user to confident protector"
+      },
+      "supporting": [
+        {
+          "name": "Elena Chen",
+          "relationship": "Maya's younger sister",
+          "role": "Catalyst for Maya's journey, trapped in Shadow Realm"
+        },
+        {
+          "name": "Marcus Webb",
+          "relationship": "Mentor figure",
+          "role": "Former Shadow Keeper who guides Maya"
+        }
+      ],
+      "antagonist": {
+        "name": "The Void Collector",
+        "motivation": "Wants to merge Shadow Realm with physical world",
+        "connection": "Responsible for Elena's disappearance"
+      }
+    },
+    "setting": {
+      "primaryLocation": "San Francisco",
+      "timeperiod": "Present day",
+      "worldBuilding": {
+        "magicSystem": "Shadow manipulation through emotional connection",
+        "hiddenWorld": "Shadow Realm exists parallel to physical world",
+        "rules": ["Magic requires emotional vulnerability", "Overuse leads to being trapped in shadows"]
+      },
+      "keyLocations": [
+        "Maya's photography studio",
+        "Underground magical community in Chinatown",
+        "The Shadow Realm - twisted mirror of San Francisco"
+      ]
+    },
+    "conflict": {
+      "external": "Rescue Elena from the Void Collector before he uses her to open permanent portal",
+      "internal": "Maya must overcome fear of her destructive potential",
+      "stakes": "Failure means losing Elena forever and unleashing shadow creatures on the world"
+    },
+    "theme": "Embracing your true nature, even when it frightens you",
+    "relationships": {
+      "mayaElena": {
+        "current": "Protective older sister to missing younger sister",
+        "evolution": "Must let go of guilt and accept she can't control everything"
+      },
+      "mayaMarcus": {
+        "current": "Reluctant student to patient mentor",
+        "evolution": "Develops trust and learns to accept guidance"
+      }
+    },
+    "timeline": {
+      "structure": "Linear with occasional flashbacks to Elena's disappearance",
+      "timespan": "Three weeks from Elena's disappearance to final confrontation",
+      "pacing": "Escalating urgency as portal opening approaches"
+    },
+    "structure": {
+      "type": "three-part",
+      "parts": [
+        {
+          "number": 1,
+          "title": "Discovery",
+          "percentage": 25,
+          "purpose": "Maya discovers her powers and Elena's fate",
+          "keyEvents": ["Elena's disappearance", "Maya's first shadow manifestation", "Meeting Marcus"],
+          "characterDevelopment": "Maya denial to reluctant acceptance"
+        },
+        {
+          "number": 2,
+          "title": "Training and Trials",
+          "percentage": 50,
+          "purpose": "Maya learns to control her abilities while searching for Elena",
+          "keyEvents": ["Shadow magic training", "First journey to Shadow Realm", "Confronting Void Collector's minions"],
+          "characterDevelopment": "Growing confidence but still holding back full power"
+        },
+        {
+          "number": 3,
+          "title": "Final Confrontation",
+          "percentage": 25,
+          "purpose": "Maya embraces her full power to save Elena and stop the merge",
+          "keyEvents": ["Final battle with Void Collector", "Elena's rescue", "Maya's full transformation"],
+          "characterDevelopment": "Complete acceptance of Shadow Keeper role"
+        }
+      ]
+    },
+    "ending": {
+      "characterArcs": {
+        "maya": "Becomes confident Shadow Keeper, protector of both worlds",
+        "elena": "Rescued but forever changed by Shadow Realm experience"
+      },
+      "conflictResolution": {
+        "external": "Void Collector defeated, portal sealed",
+        "internal": "Maya accepts her magical identity and responsibility"
+      },
+      "openElements": ["Maya's new role as protector", "Elena's developing shadow sensitivity"]
+    }
+  }
+}
+```
+
+This JSON structure captures all the key planning elements in a format that's both human-readable and machine-processable, making it easy to reference during writing and track story development progress.
+
 ### Practical Application Guidelines
 
 **For Fiction:**
