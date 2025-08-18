@@ -80,8 +80,8 @@ Before writing, you must decide how to divide your complete story into major par
 
 ```json
 {
-  "story": {
-    "title": "The Shadow Keeper",
+  "storyStructure": {
+    "storyTitle": "The Shadow Keeper",
     "genre": "urban fantasy",
     "targetLength": "80000 words",
     "targetReadingTime": {
@@ -90,7 +90,7 @@ Before writing, you must decide how to divide your complete story into major par
       "calculation": "Based on 260 words per minute average fiction reading speed"
     },
     "centralQuestion": "Can Maya overcome her fear of her shadow magic to save her sister from the Shadow Realm?",
-    "characters": {
+    "characterDevelopmentPhases": {
       "protagonist": {
         "name": "Maya Chen",
         "age": 24,
@@ -100,7 +100,7 @@ Before writing, you must decide how to divide your complete story into major par
           "needs": "To accept her magical abilities and responsibility as a Shadow Keeper"
         },
         "flaws": ["fear of her own power", "tendency to isolate herself"],
-        "arc": "From reluctant magic user to confident protector"
+        "overallArc": "From reluctant magic user to confident protector"
       },
       "supporting": [
         {
@@ -120,7 +120,7 @@ Before writing, you must decide how to divide your complete story into major par
         "connection": "Responsible for Elena's disappearance"
       }
     },
-    "setting": {
+    "settingEstablishment": {
       "primaryLocation": "San Francisco",
       "timeperiod": "Present day",
       "worldBuilding": {
@@ -134,36 +134,39 @@ Before writing, you must decide how to divide your complete story into major par
         "The Shadow Realm - twisted mirror of San Francisco"
       ]
     },
-    "conflict": {
+    "conflictArchitecture": {
       "external": "Rescue Elena from the Void Collector before he uses her to open permanent portal",
       "internal": "Maya must overcome fear of her destructive potential",
       "stakes": "Failure means losing Elena forever and unleashing shadow creatures on the world"
     },
-    "theme": "Embracing your true nature, even when it frightens you",
-    "relationships": {
+    "thematicFocus": {
+      "primaryTheme": "Embracing your true nature, even when it frightens you",
+      "messageAndMeaning": "True strength comes from accepting responsibility despite fear"
+    },
+    "characterRelationshipMapping": {
       "mayaElena": {
-        "current": "Protective older sister to missing younger sister",
-        "evolution": "Must let go of guilt and accept she can't control everything"
+        "currentDynamic": "Protective older sister to missing younger sister",
+        "plannedEvolution": "Must let go of guilt and accept she can't control everything"
       },
       "mayaMarcus": {
-        "current": "Reluctant student to patient mentor",
-        "evolution": "Develops trust and learns to accept guidance"
+        "currentDynamic": "Reluctant student to patient mentor",
+        "plannedEvolution": "Develops trust and learns to accept guidance"
       }
     },
-    "timeline": {
-      "structure": "Linear with occasional flashbacks to Elena's disappearance",
+    "timelineAndPacingStructure": {
+      "temporalFramework": "Linear with occasional flashbacks to Elena's disappearance",
       "timespan": "Three weeks from Elena's disappearance to final confrontation",
-      "pacing": "Escalating urgency as portal opening approaches"
+      "pacingStrategy": "Escalating urgency as portal opening approaches"
     },
-    "structure": {
-      "type": "three-part",
+    "structuralPlanning": {
+      "overallStructure": "three-part",
       "parts": [
         {
           "number": 1,
           "title": "Discovery",
           "percentage": 25,
           "purpose": "Maya discovers her powers and Elena's fate",
-          "keyEvents": ["Elena's disappearance", "Maya's first shadow manifestation", "Meeting Marcus"],
+          "plotMilestones": ["Elena's disappearance", "Maya's first shadow manifestation", "Meeting Marcus"],
           "characterDevelopment": "Maya denial to reluctant acceptance"
         },
         {
@@ -171,7 +174,7 @@ Before writing, you must decide how to divide your complete story into major par
           "title": "Training and Trials",
           "percentage": 50,
           "purpose": "Maya learns to control her abilities while searching for Elena",
-          "keyEvents": ["Shadow magic training", "First journey to Shadow Realm", "Confronting Void Collector's minions"],
+          "plotMilestones": ["Shadow magic training", "First journey to Shadow Realm", "Confronting Void Collector's minions"],
           "characterDevelopment": "Growing confidence but still holding back full power"
         },
         {
@@ -179,13 +182,13 @@ Before writing, you must decide how to divide your complete story into major par
           "title": "Final Confrontation",
           "percentage": 25,
           "purpose": "Maya embraces her full power to save Elena and stop the merge",
-          "keyEvents": ["Final battle with Void Collector", "Elena's rescue", "Maya's full transformation"],
+          "plotMilestones": ["Final battle with Void Collector", "Elena's rescue", "Maya's full transformation"],
           "characterDevelopment": "Complete acceptance of Shadow Keeper role"
         }
       ]
     },
-    "ending": {
-      "characterArcs": {
+    "endingStrategy": {
+      "characterArcResolutions": {
         "maya": "Becomes confident Shadow Keeper, protector of both worlds",
         "elena": "Rescued but forever changed by Shadow Realm experience"
       },
