@@ -577,6 +577,416 @@ This JSON structure demonstrates all the key Part-level planning concepts: thema
 - How will characters change or develop during this chapter?
 - What relationships will be explored or developed?
 
+### JSON Data Structure for Chapter Planning
+
+```json
+{
+  "chapterStructure": {
+    "storyTitle": "The Shadow Keeper",
+    "partNumber": 1,
+    "partTitle": "Discovery", 
+    "partWordCount": "20000 words",
+    "totalChapters": 7,
+    "chapters": [
+      {
+        "number": 1,
+        "title": "Missing",
+        "wordCount": "2800 words",
+        "chapterLength": "medium",
+        "estimatedReadingTime": {
+          "minutes": 11,
+          "calculation": "Based on 260 words per minute average fiction reading speed"
+        },
+        "purposeDefinition": {
+          "specificFunction": "Establish normal world and introduce inciting incident",
+          "plotAdvancement": "Elena's mysterious disappearance launches Maya's journey",
+          "storyConnection": "Opening chapter sets up entire story premise"
+        },
+        "hookCreation": {
+          "openingHook": "Maya discovers Elena's empty apartment with signs of struggle",
+          "hookType": "immediate mystery",
+          "readerOrientation": "Maya POV, Elena's apartment, morning after disappearance"
+        },
+        "plotAdvancement": {
+          "majorEvents": ["Elena reported missing", "Maya finds Elena's research journal", "First hints of supernatural elements"],
+          "conflictProgression": "Mystery established - where is Elena?",
+          "informationRevelation": "Elena was researching local urban legends"
+        },
+        "characterDevelopment": {
+          "mayaGrowth": "From denial about sister's dangerous interests to growing concern",
+          "relationshipExploration": "Maya-Elena sisterly bond revealed through flashbacks",
+          "characterSpotlight": "Maya's protective nature and photography career established"
+        },
+        "readerPacing": {
+          "tensionLevel": "moderate mystery tension",
+          "informationControl": "Gradual reveal of Elena's secret interests",
+          "rhythmPattern": "Alternating present worry with past memories"
+        },
+        "povManagement": {
+          "perspective": "Maya Chen - first person",
+          "consistency": "Single POV throughout chapter",
+          "strategicFocus": "Maya's emotional state and growing fear"
+        },
+        "contentOrganization": {
+          "openingStrategy": "Maya arrives at Elena's apartment expecting normal visit",
+          "bodyDevelopment": "Discovery of disappearance, police involvement, journal clues",
+          "closingImpact": "Maya finds Elena's research on Shadow Realm legends"
+        },
+        "characterConsiderations": {
+          "dominatingPerspective": "Maya Chen",
+          "characterChanges": "From casual sister visit to desperate search for clues",
+          "relationshipDynamics": "Maya's guilt about not taking Elena's interests seriously"
+        },
+        "transitionPlanning": {
+          "connectionToPrevious": "Story opening - no previous chapter",
+          "connectionToNext": "Journal discovery leads Maya to investigate Elena's research",
+          "continuityBridge": "Elena's journal mentions specific locations Maya must visit",
+          "momentumBuilder": "Cliffhanger about strange symbols in journal"
+        }
+      },
+      {
+        "number": 2,
+        "title": "Shadows in the Light",
+        "wordCount": "3200 words",
+        "chapterLength": "medium",
+        "estimatedReadingTime": {
+          "minutes": 12,
+          "calculation": "Based on 260 words per minute average fiction reading speed"
+        },
+        "purposeDefinition": {
+          "specificFunction": "Maya investigates Elena's research and experiences first supernatural event",
+          "plotAdvancement": "Introduction of magical elements and shadow manifestation",
+          "storyConnection": "Bridges normal world to supernatural, confirms Elena's fate"
+        },
+        "hookCreation": {
+          "openingHook": "Maya's photographs develop with shadowy figures that weren't visible during shooting",
+          "hookType": "supernatural mystery",
+          "readerOrientation": "Maya's photography studio, late evening, developing photos from Elena's locations"
+        },
+        "plotAdvancement": {
+          "majorEvents": ["Maya visits locations from Elena's journal", "First shadow creatures appear in photos", "Maya's first uncontrolled shadow manifestation"],
+          "conflictProgression": "Supernatural threat revealed, Maya's safety compromised",
+          "informationRevelation": "Elena discovered something dangerous and real"
+        },
+        "characterDevelopment": {
+          "mayaGrowth": "From skeptical investigator to terrified witness of supernatural",
+          "relationshipExploration": "Maya realizes Elena was protecting her by not sharing discoveries",
+          "characterSpotlight": "Maya's artistic eye helps her notice supernatural details others miss"
+        },
+        "readerPacing": {
+          "tensionLevel": "building supernatural dread",
+          "informationControl": "Escalating reveal of magical reality",
+          "rhythmPattern": "Slow investigation building to shocking climax"
+        },
+        "povManagement": {
+          "perspective": "Maya Chen - first person",
+          "consistency": "Maintained single POV with internal fear and confusion",
+          "strategicFocus": "Maya's sensory experiences with supernatural phenomena"
+        },
+        "contentOrganization": {
+          "openingStrategy": "Maya methodically following Elena's research trail",
+          "bodyDevelopment": "Strange discoveries escalate from subtle to undeniable",
+          "closingImpact": "Maya's shadow magic manifests during emotional breakdown"
+        },
+        "characterConsiderations": {
+          "dominatingPerspective": "Maya Chen",
+          "characterChanges": "From rational skeptic to someone forced to accept impossible reality",
+          "relationshipDynamics": "Growing understanding of Elena's burden and secrets"
+        },
+        "transitionPlanning": {
+          "connectionToPrevious": "Journal research from Chapter 1 leads to field investigation",
+          "connectionToNext": "Maya's magical manifestation attracts Marcus's attention",
+          "continuityBridge": "Shadow creatures now aware of Maya's presence",
+          "momentumBuilder": "Maya realizes she has same abilities as Elena"
+        }
+      },
+      {
+        "number": 3,
+        "title": "The Watcher",
+        "wordCount": "2900 words",
+        "chapterLength": "medium",
+        "estimatedReadingTime": {
+          "minutes": 11,
+          "calculation": "Based on 260 words per minute average fiction reading speed"
+        },
+        "purposeDefinition": {
+          "specificFunction": "Introduce mentor figure and reveal Shadow Keeper history",
+          "plotAdvancement": "Marcus appears as guide, explains Elena's fate and Maya's heritage",
+          "storyConnection": "Provides exposition needed for Maya's training arc in Part 2"
+        },
+        "hookCreation": {
+          "openingHook": "Maya senses someone following her but shadows seem to move independently",
+          "hookType": "paranoid tension with supernatural elements",
+          "readerOrientation": "Maya walking home at night, hyper-aware after previous supernatural encounter"
+        },
+        "plotAdvancement": {
+          "majorEvents": ["Marcus reveals himself as Elena's mentor", "Explanation of Shadow Keepers and Shadow Realm", "Elena's current situation explained"],
+          "conflictProgression": "Maya learns Elena is trapped but alive, time is running out",
+          "informationRevelation": "Shadow Keepers are guardians between worlds, Maya has inherited the role"
+        },
+        "characterDevelopment": {
+          "mayaGrowth": "From isolated and frightened to having knowledgeable ally",
+          "relationshipExploration": "Maya-Marcus initial distrust but growing need for guidance",
+          "characterSpotlight": "Maya's fierce loyalty to Elena drives her past fear"
+        },
+        "readerPacing": {
+          "tensionLevel": "exposition balanced with emotional stakes",
+          "informationControl": "Major world-building reveals paced with character moments",
+          "rhythmPattern": "Question-and-answer structure building to decision point"
+        },
+        "povManagement": {
+          "perspective": "Maya Chen - first person",
+          "consistency": "Single POV processing overwhelming new information",
+          "strategicFocus": "Maya's emotional reaction to learning about magical responsibilities"
+        },
+        "contentOrganization": {
+          "openingStrategy": "Paranoid tension from being followed transitions to confrontation",
+          "bodyDevelopment": "Marcus provides crucial exposition about magical world and Elena's fate",
+          "closingImpact": "Maya must choose between safety and dangerous training to save Elena"
+        },
+        "characterConsiderations": {
+          "dominatingPerspective": "Maya Chen with significant Marcus introduction",
+          "characterChanges": "Maya shifts from helpless victim to potential hero with agency",
+          "relationshipDynamics": "New dynamic with Marcus as reluctant mentor, deeper understanding of Elena's choices"
+        },
+        "transitionPlanning": {
+          "connectionToPrevious": "Maya's shadow manifestation attracted Marcus's attention",
+          "connectionToNext": "Maya's decision to train leads to first magical instruction",
+          "continuityBridge": "Marcus warns about dangers of training but Elena's time is limited",
+          "momentumBuilder": "Maya realizes she's Elena's only hope for rescue"
+        }
+      },
+      {
+        "number": 4,
+        "title": "First Lessons",
+        "wordCount": "3100 words",
+        "chapterLength": "medium",
+        "estimatedReadingTime": {
+          "minutes": 12,
+          "calculation": "Based on 260 words per minute average fiction reading speed"
+        },
+        "purposeDefinition": {
+          "specificFunction": "Maya begins magical training and learns to control shadow abilities",
+          "plotAdvancement": "Training montage with progress and setbacks, Maya's power level revealed",
+          "storyConnection": "Establishes Maya's magical competence foundation for later challenges"
+        },
+        "hookCreation": {
+          "openingHook": "Maya's first deliberate shadow portal opens to wrong location - inside a wall",
+          "hookType": "magical learning curve with dangerous consequences",
+          "readerOrientation": "Hidden training space beneath San Francisco, early morning"
+        },
+        "plotAdvancement": {
+          "majorEvents": ["Maya learns basic shadow manipulation", "Discovery of hidden magical community", "Maya's power proves unusually strong"],
+          "conflictProgression": "Maya's dangerous power level concerns Marcus",
+          "informationRevelation": "Previous Shadow Keeper students had tragic fates"
+        },
+        "characterDevelopment": {
+          "mayaGrowth": "From complete beginner to showing dangerous potential",
+          "relationshipExploration": "Maya-Marcus mentor relationship develops with underlying tension",
+          "characterSpotlight": "Maya's determination balanced against her fear of her own power"
+        },
+        "readerPacing": {
+          "tensionLevel": "training challenges with underlying dread about Maya's potential",
+          "informationControl": "Gradual reveal of Maya's unusual strength and Marcus's concerns",
+          "rhythmPattern": "Success-failure-success pattern building to concerning climax"
+        },
+        "povManagement": {
+          "perspective": "Maya Chen - first person",
+          "consistency": "Single POV focused on learning experience and physical sensations",
+          "strategicFocus": "Maya's growing confidence battling against Marcus's warnings"
+        },
+        "contentOrganization": {
+          "openingStrategy": "Immediate training action with Maya's first controlled portal attempt",
+          "bodyDevelopment": "Training progression showing both aptitude and dangerous potential",
+          "closingImpact": "Maya's power surge frightens Marcus and reveals concerning parallel to previous student"
+        },
+        "characterConsiderations": {
+          "dominatingPerspective": "Maya Chen with significant Marcus guidance",
+          "characterChanges": "Maya gains confidence in abilities but becomes aware of corruption risk",
+          "relationshipDynamics": "Growing trust with Marcus tempered by his obvious fears about Maya's potential"
+        },
+        "transitionPlanning": {
+          "connectionToPrevious": "Maya's choice to train leads to first instruction session",
+          "connectionToNext": "Maya's concerning power level prompts Marcus to share tragic history",
+          "continuityBridge": "Maya's questions about Marcus's fears set up next chapter's revelations",
+          "momentumBuilder": "Maya realizes Marcus is hiding something important about previous students"
+        }
+      },
+      {
+        "number": 5,
+        "title": "The Last Student",
+        "wordCount": "2700 words", 
+        "chapterLength": "medium",
+        "estimatedReadingTime": {
+          "minutes": 10,
+          "calculation": "Based on 260 words per minute average fiction reading speed"
+        },
+        "purposeDefinition": {
+          "specificFunction": "Reveal Marcus's tragic history and the Void Collector's origin story",
+          "plotAdvancement": "Major antagonist backstory, stakes elevated as Maya learns of corruption risk",
+          "storyConnection": "Provides motivation for Maya's careful approach and Marcus's reluctance"
+        },
+        "hookCreation": {
+          "openingHook": "Maya finds Marcus's hidden shrine to a previous student who looks exactly like the Void Collector",
+          "hookType": "shocking revelation with emotional impact",
+          "readerOrientation": "Marcus's secret room in underground training space, Maya exploring alone"
+        },
+        "plotAdvancement": {
+          "majorEvents": ["Marcus reveals his previous student became the Void Collector", "Explanation of how shadow power corrupts", "Maya realizes she's following same dangerous path"],
+          "conflictProgression": "Internal conflict - Maya must risk corruption to save Elena",
+          "informationRevelation": "Void Collector was once a hero trying to save someone he loved"
+        },
+        "characterDevelopment": {
+          "mayaGrowth": "From confident student to understanding the true cost of her power",
+          "relationshipExploration": "Maya-Marcus relationship deepened by shared understanding of loss",
+          "characterSpotlight": "Maya's courage tested against knowledge of potential corruption"
+        },
+        "readerPacing": {
+          "tensionLevel": "emotional revelation balanced with increased stakes",
+          "informationControl": "Backstory revelation that reframes entire conflict",
+          "rhythmPattern": "Discovery, explanation, emotional processing, renewed determination"
+        },
+        "povManagement": {
+          "perspective": "Maya Chen - first person",
+          "consistency": "Single POV processing devastating new information",
+          "strategicFocus": "Maya's emotional journey from shock to grim acceptance"
+        },
+        "contentOrganization": {
+          "openingStrategy": "Maya's unauthorized exploration leads to shocking discovery",
+          "bodyDevelopment": "Marcus forced to explain his painful history and Maya's dangerous parallel",
+          "closingImpact": "Maya chooses to continue training despite corruption risk"
+        },
+        "characterConsiderations": {
+          "dominatingPerspective": "Maya Chen with crucial Marcus backstory",
+          "characterChanges": "Maya matures from student to someone accepting adult responsibilities",
+          "relationshipDynamics": "Maya-Marcus bond strengthened by honesty, Maya understands Elena's heroic choice"
+        },
+        "transitionPlanning": {
+          "connectionToPrevious": "Marcus's fears about Maya's power lead to backstory revelation",
+          "connectionToNext": "Maya's commitment despite risks leads to advanced training",
+          "continuityBridge": "Maya's determination to succeed where previous student failed",
+          "momentumBuilder": "Time pressure increases as Elena's condition in Shadow Realm worsens"
+        }
+      },
+      {
+        "number": 6,
+        "title": "Contact",
+        "wordCount": "2800 words",
+        "chapterLength": "medium", 
+        "estimatedReadingTime": {
+          "minutes": 11,
+          "calculation": "Based on 260 words per minute average fiction reading speed"
+        },
+        "purposeDefinition": {
+          "specificFunction": "Maya makes contact with Elena and learns about Shadow Realm urgency",
+          "plotAdvancement": "Direct Elena contact, revelation of time limit, preparation for Part 2",
+          "storyConnection": "Emotional climax of Part 1, sets up urgent timeline for rescue mission"
+        },
+        "hookCreation": {
+          "openingHook": "Maya's shadow portal practice accidentally connects to Elena's location",
+          "hookType": "emotional reunion with desperate urgency",
+          "readerOrientation": "Training space portal opens to twisted Shadow Realm version of Elena's apartment"
+        },
+        "plotAdvancement": {
+          "majorEvents": ["Maya and Elena's first direct communication", "Elena reveals Shadow Realm transformation process", "Discovery of limited time before Elena is lost forever"],
+          "conflictProgression": "Time limit established, Elena's condition deteriorating",
+          "informationRevelation": "Elena has been fighting Shadow Realm influence but is losing"
+        },
+        "characterDevelopment": {
+          "mayaGrowth": "From determined student to sister with concrete rescue plan",
+          "relationshipExploration": "Maya-Elena reunion shows both love and how both have changed",
+          "characterSpotlight": "Elena's strength and sacrifice revealed, Maya's protective instincts activated"
+        },
+        "readerPacing": {
+          "tensionLevel": "high emotional stakes with urgent time pressure",
+          "informationControl": "Elena provides crucial information about Shadow Realm and rescue requirements",
+          "rhythmPattern": "Emotional reunion building to desperate planning session"
+        },
+        "povManagement": {
+          "perspective": "Maya Chen - first person",
+          "consistency": "Single POV with some telepathic/magical connection to Elena",
+          "strategicFocus": "Maya's emotional reunion balanced with tactical information gathering"
+        },
+        "contentOrganization": {
+          "openingStrategy": "Accidental portal connection creates surprise reunion",
+          "bodyDevelopment": "Sisters share information about their respective situations and plan rescue",
+          "closingImpact": "Connection severed with Elena warning Maya about Void Collector's awareness"
+        },
+        "characterConsiderations": {
+          "dominatingPerspective": "Maya Chen with significant Elena interaction",
+          "characterChanges": "Maya transitions from learner to active hero ready for rescue mission",
+          "relationshipDynamics": "Sisters' bond reinforced despite distance, both accepting dangerous responsibilities"
+        },
+        "transitionPlanning": {
+          "connectionToPrevious": "Maya's advanced training enables accidental Elena contact",
+          "connectionToNext": "Elena's warnings about time limits drive Maya to accelerated training",
+          "continuityBridge": "Void Collector now aware of Maya's growing abilities",
+          "momentumBuilder": "Race against time as Elena's transformation accelerates"
+        }
+      },
+      {
+        "number": 7,
+        "title": "Into the Deep",
+        "wordCount": "2500 words",
+        "chapterLength": "medium",
+        "estimatedReadingTime": {
+          "minutes": 10,
+          "calculation": "Based on 260 words per minute average fiction reading speed"
+        },
+        "purposeDefinition": {
+          "specificFunction": "Part 1 climax - Maya commits fully to training despite risks",
+          "plotAdvancement": "Maya's power surge reveals dangerous potential, sets up Part 2",
+          "storyConnection": "Conclusion of discovery phase, transition to intensive training"
+        },
+        "hookCreation": {
+          "openingHook": "Maya's attempt to reestablish Elena contact results in massive power surge that alerts shadow creatures",
+          "hookType": "magical disaster with immediate consequences",
+          "readerOrientation": "Underground training space, Maya attempting advanced portal magic"
+        },
+        "plotAdvancement": {
+          "majorEvents": ["Maya's power surge creates unstable portals", "Shadow creatures attack training space", "Maya must use full power to survive"],
+          "conflictProgression": "Maya's abilities attract dangerous attention, training escalates",
+          "informationRevelation": "Maya's power could rival the Void Collector's but carries same corruption risk"
+        },
+        "characterDevelopment": {
+          "mayaGrowth": "From cautious student to accepting dangerous power levels",
+          "relationshipExploration": "Maya-Marcus partnership solidified in face of real danger",
+          "characterSpotlight": "Maya's willingness to risk everything for Elena demonstrated"
+        },
+        "readerPacing": {
+          "tensionLevel": "high action climax building to major decision point",
+          "informationControl": "Maya's true potential revealed through crisis",
+          "rhythmPattern": "Escalating magical disaster resolved by Maya embracing dangerous power"
+        },
+        "povManagement": {
+          "perspective": "Maya Chen - first person",
+          "consistency": "Single POV through intense action and magical sensory overload",
+          "strategicFocus": "Maya's experience of overwhelming power and choice to embrace it"
+        },
+        "contentOrganization": {
+          "openingStrategy": "Maya's training attempt goes disastrously wrong",
+          "bodyDevelopment": "Crisis forces Maya to use full power, revealing her dangerous potential",
+          "closingImpact": "Maya accepts training risks and commits to intensive Part 2 preparation"
+        },
+        "characterConsiderations": {
+          "dominatingPerspective": "Maya Chen with Marcus as support",
+          "characterChanges": "Maya transforms from reluctant student to committed Shadow Keeper candidate",
+          "relationshipDynamics": "Maya and Marcus now partners in dangerous mission rather than teacher-student"
+        },
+        "transitionPlanning": {
+          "connectionToPrevious": "Elena's warnings motivate Maya's risky attempt for stronger contact",
+          "connectionToNext": "Part 1 ends with Maya committed to intensive training in Part 2",
+          "continuityBridge": "Shadow creature attack reveals Maya's location to enemy forces",
+          "momentumBuilder": "Part 1 climax sets up high-stakes training and rescue mission in Part 2"
+        }
+      }
+    ]
+  }
+}
+```
+
+This JSON structure demonstrates all key Chapter-level planning concepts: purpose definition, hook creation, plot advancement, character development, reader pacing, POV management, and transition planning, while maintaining consistent key naming with the Story and Part levels.
+
 ## Level 4: Scene (Story Units)
 
 ### Definition and Purpose
