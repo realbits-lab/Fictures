@@ -92,7 +92,7 @@ export default async function PublicChapterPage({
         {chapter.authorNote && (
           <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
             <p className="text-sm text-blue-800">
-              <strong>Author's Note:</strong> {chapter.authorNote}
+              <strong>Author&apos;s Note:</strong> {chapter.authorNote}
             </p>
           </div>
         )}

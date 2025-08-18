@@ -37,7 +37,7 @@ const PurePreviewMessage = ({
   vote: Vote | undefined;
   isLoading: boolean;
   setMessages: UseChatHelpers['setMessages'];
-  regenerate: UseChatHelpers['regenerate'];
+  regenerate: () => void;
   isReadonly: boolean;
   requiresScrollPadding: boolean;
 }) => {
@@ -164,8 +164,8 @@ const PurePreviewMessage = ({
                 }
               }
 
-              if (type === 'tool-getWeather') {
-                const { toolCallId, state } = part;
+              if (type === 'tool-getWeather' as any) {
+                const { toolCallId, state } = part as any;
 
                 if (state === 'input-available') {
                   return (
@@ -176,20 +176,20 @@ const PurePreviewMessage = ({
                 }
 
                 if (state === 'output-available') {
-                  const { output } = part;
+                  const { output } = part as any;
                   return (
                     <div key={toolCallId}>
-                      <Weather weatherAtLocation={output} />
+                      <Weather weatherAtLocation={output as any} />
                     </div>
                   );
                 }
               }
 
-              if (type === 'tool-createDocument') {
-                const { toolCallId, state } = part;
+              if (type === 'tool-createDocument' as any) {
+                const { toolCallId, state } = part as any;
 
                 if (state === 'input-available') {
-                  const { input } = part;
+                  const { input } = part as any;
                   return (
                     <div key={toolCallId} className="text-muted-foreground p-2 border rounded">
                       {/* Legacy document preview - document tools archived */}
@@ -199,9 +199,9 @@ const PurePreviewMessage = ({
                 }
 
                 if (state === 'output-available') {
-                  const { output } = part;
+                  const { output } = part as any;
 
-                  if ('error' in output) {
+                  if (output && typeof output === 'object' && 'error' in output) {
                     return (
                       <div
                         key={toolCallId}
@@ -221,11 +221,11 @@ const PurePreviewMessage = ({
                 }
               }
 
-              if (type === 'tool-updateDocument') {
-                const { toolCallId, state } = part;
+              if (type === 'tool-updateDocument' as any) {
+                const { toolCallId, state } = part as any;
 
                 if (state === 'input-available') {
-                  const { input } = part;
+                  const { input } = part as any;
 
                   return (
                     <div key={toolCallId} className="text-muted-foreground p-2 border rounded">
@@ -236,9 +236,9 @@ const PurePreviewMessage = ({
                 }
 
                 if (state === 'output-available') {
-                  const { output } = part;
+                  const { output } = part as any;
 
-                  if ('error' in output) {
+                  if (output && typeof output === 'object' && 'error' in output) {
                     return (
                       <div
                         key={toolCallId}
@@ -260,11 +260,11 @@ const PurePreviewMessage = ({
                 }
               }
 
-              if (type === 'tool-requestSuggestions') {
-                const { toolCallId, state } = part;
+              if (type === 'tool-requestSuggestions' as any) {
+                const { toolCallId, state } = part as any;
 
                 if (state === 'input-available') {
-                  const { input } = part;
+                  const { input } = part as any;
                   return (
                     <div key={toolCallId} className="text-muted-foreground p-2 border rounded">
                       {/* Legacy tool call - document tools archived */}
@@ -274,9 +274,9 @@ const PurePreviewMessage = ({
                 }
 
                 if (state === 'output-available') {
-                  const { output } = part;
+                  const { output } = part as any;
 
-                  if ('error' in output) {
+                  if (output && typeof output === 'object' && 'error' in output) {
                     return (
                       <div
                         key={toolCallId}

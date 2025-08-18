@@ -4,6 +4,8 @@ import { canUserAccessBook } from '@/lib/db/queries/books';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
+  let action: string = '';
+  
   try {
     const session = await auth();
     
@@ -11,7 +13,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { chapterId, action } = await request.json();
+    const body = await request.json();
+    const chapterId = body.chapterId;
+    action = body.action;
     
     if (!chapterId || !['publish', 'unpublish'].includes(action)) {
       return NextResponse.json({ error: 'Missing or invalid parameters' }, { status: 400 });

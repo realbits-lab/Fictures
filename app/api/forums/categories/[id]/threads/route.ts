@@ -6,7 +6,7 @@ import { eq, desc } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,6 +14,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id: categoryId } = await params;
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -36,7 +37,7 @@ export async function GET(
       })
       .from(forumThread)
       .leftJoin(user, eq(forumThread.authorId, user.id))
-      .where(eq(forumThread.categoryId, params.id))
+      .where(eq(forumThread.categoryId, categoryId))
       .orderBy(desc(forumThread.isPinned), desc(forumThread.lastPostAt))
       .limit(limit)
       .offset(offset);
@@ -44,7 +45,7 @@ export async function GET(
     const totalThreads = await db
       .select({ count: forumThread.id })
       .from(forumThread)
-      .where(eq(forumThread.categoryId, params.id));
+      .where(eq(forumThread.categoryId, categoryId));
 
     return NextResponse.json({
       threads,

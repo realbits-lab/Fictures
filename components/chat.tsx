@@ -1,6 +1,5 @@
 'use client';
 
-import { DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
@@ -50,43 +49,27 @@ export function Chat({
   const {
     messages,
     setMessages,
-    sendMessage,
+    append: sendMessage,
     status,
     stop,
-    regenerate,
-    resumeStream,
-  } = useChat<ChatMessage>({
+  } = useChat({
     id,
-    initialMessages,
+    initialMessages: initialMessages.map(msg => ({
+      id: msg.id,
+      role: msg.role,
+      content: Array.isArray(msg.parts) 
+        ? msg.parts.map(part => 
+            'text' in part ? part.text : part
+          ).join('') 
+        : '',
+    })),
+    api: '/api/chat',
+    fetch: fetchWithErrorHandlers,
     experimental_throttle: 100,
     generateId: generateUUID,
-    transport: new DefaultChatTransport({
-      api: '/api/chat',
-      fetch: fetchWithErrorHandlers,
-      prepareSendMessagesRequest({ messages, id, body }) {
-        const lastMessage = messages.at(-1);
-        if (!lastMessage) {
-          console.error('No message to send');
-          throw new Error('No message to send');
-        }
-        
-        return {
-          body: {
-            id,
-            message: {
-              id: lastMessage.id || generateUUID(),
-              role: lastMessage.role,
-              parts: lastMessage.parts || [{ type: 'text', text: lastMessage.content || '' }],
-            },
-            selectedChatModel: initialChatModel,
-            selectedVisibilityType: initialVisibilityType,
-            ...body,
-          },
-        };
-      },
-    }),
-    onData: (dataPart) => {
-      setDataStream((ds) => (ds ? [...ds, dataPart] : []));
+    body: {
+      selectedChatModel: initialChatModel,
+      selectedVisibilityType: initialVisibilityType,
     },
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
@@ -104,7 +87,15 @@ export function Chat({
   // Initialize messages with initialMessages if the hook didn't load them properly
   useEffect(() => {
     if (initialMessages.length > 0 && messages.length === 0) {
-      setMessages(initialMessages);
+      setMessages(initialMessages.map(msg => ({
+        id: msg.id,
+        role: msg.role,
+        content: Array.isArray(msg.parts) 
+          ? msg.parts.map(part => 
+              'text' in part ? part.text : part
+            ).join('') 
+          : '',
+      })));
     }
   }, [initialMessages, messages.length, setMessages]);
 
@@ -117,7 +108,15 @@ export function Chat({
     
     try {
       // Add the message to local state for existing chats
-      setMessages((prevMessages) => [...prevMessages, message]);
+      setMessages((prevMessages) => [...prevMessages, {
+        id: message.id,
+        role: message.role,
+        content: Array.isArray(message.parts) 
+          ? message.parts.map(part => 
+              'text' in part ? part.text : part
+            ).join('') 
+          : '',
+      }]);
       
       // For existing chats, handle normally
       const requestBody = {
@@ -189,6 +188,7 @@ export function Chat({
                         newMessages.push({
                           id: generateUUID(),
                           role: 'assistant',
+                          content: accumulatedContent,
                           parts: [{
                             type: 'text',
                             text: accumulatedContent
@@ -250,7 +250,7 @@ export function Chat({
   useAutoResume({
     autoResume,
     initialMessages,
-    resumeStream,
+    resumeStream: () => {},
     setMessages,
   });
 
@@ -258,9 +258,7 @@ export function Chat({
     <>
       <div className="flex flex-col min-w-0 h-[calc(100dvh-3.5rem)] bg-background">
         <ChatHeader
-          chatId={id}
           selectedModelId={initialChatModel}
-          selectedVisibilityType={initialVisibilityType}
           isReadonly={isReadonly}
           session={session}
         />
@@ -269,9 +267,9 @@ export function Chat({
           chatId={id}
           status={status}
           votes={votes}
-          messages={messages}
+          messages={initialMessages}
           setMessages={setMessages}
-          regenerate={regenerate}
+          regenerate={() => {}}
           isReadonly={isReadonly}
         />
 
@@ -285,7 +283,7 @@ export function Chat({
               stop={stop}
               attachments={attachments}
               setAttachments={setAttachments}
-              messages={messages}
+              messages={initialMessages}
               setMessages={setMessages}
               sendMessage={effectiveSendMessage}
               selectedVisibilityType={initialVisibilityType}

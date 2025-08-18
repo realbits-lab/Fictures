@@ -8,6 +8,7 @@ import { gateway } from '@ai-sdk/gateway';
 import {
   artifactModel,
   chatModel,
+  chapterWriteModel,
   reasoningModel,
   titleModel,
 } from './models.test';
@@ -20,6 +21,7 @@ export const myProvider = isTestEnvironment
         'chat-model-reasoning': reasoningModel,
         'title-model': titleModel,
         'artifact-model': artifactModel,
+        'chapter-write-model': chapterWriteModel,
       },
     })
   : customProvider({
@@ -31,6 +33,7 @@ export const myProvider = isTestEnvironment
         }),
         'title-model': xai('grok-2-1212'),
         'artifact-model': xai('grok-2-1212'),
+        'chapter-write-model': gateway('gpt-5'),
       },
       imageModels: {
         'small-model': xai.imageModel('grok-2-image'),

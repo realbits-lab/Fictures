@@ -8,7 +8,7 @@ import { useDataStream } from '@/components/data-stream-provider';
 export interface UseAutoResumeParams {
   autoResume: boolean;
   initialMessages: ChatMessage[];
-  resumeStream: UseChatHelpers['resumeStream'] | undefined;
+  resumeStream: (() => void) | undefined;
   setMessages: UseChatHelpers['setMessages'];
 }
 

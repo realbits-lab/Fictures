@@ -82,3 +82,21 @@ export const artifactModel = new MockLanguageModelV2({
     rawCall: { rawPrompt: null, rawSettings: {} },
   }),
 });
+
+export const chapterWriteModel = new MockLanguageModelV2({
+  doGenerate: async () => ({
+    rawCall: { rawPrompt: null, rawSettings: {} },
+    finishReason: 'stop',
+    usage: { inputTokens: 50, outputTokens: 500, totalTokens: 550 },
+    content: [{ type: 'text', text: 'This is a sample chapter written by GPT-5 for testing purposes.' }],
+    warnings: [],
+  }),
+  doStream: async ({ prompt }) => ({
+    stream: simulateReadableStream({
+      chunkDelayInMs: 100,
+      initialDelayInMs: 200,
+      chunks: getResponseChunksByPrompt(prompt),
+    }),
+    rawCall: { rawPrompt: null, rawSettings: {} },
+  }),
+});

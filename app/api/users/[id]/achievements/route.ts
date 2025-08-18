@@ -2,11 +2,11 @@ import { auth } from '@/app/auth';
 import { db } from '@/lib/db';
 import { userAchievement, achievement } from '@/lib/db/schema';
 import { NextRequest, NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,6 +14,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const unlocked = await db
       .select({
         achievement: achievement,
@@ -22,8 +23,10 @@ export async function GET(
       })
       .from(userAchievement)
       .leftJoin(achievement, eq(userAchievement.achievementId, achievement.id))
-      .where(eq(userAchievement.userId, params.id))
-      .where(eq(userAchievement.isUnlocked, true));
+      .where(and(
+        eq(userAchievement.userId, id),
+        eq(userAchievement.isUnlocked, true)
+      ));
 
     const inProgress = await db
       .select({
@@ -33,8 +36,10 @@ export async function GET(
       })
       .from(userAchievement)
       .leftJoin(achievement, eq(userAchievement.achievementId, achievement.id))
-      .where(eq(userAchievement.userId, params.id))
-      .where(eq(userAchievement.isUnlocked, false));
+      .where(and(
+        eq(userAchievement.userId, id),
+        eq(userAchievement.isUnlocked, false)
+      ));
 
     return NextResponse.json({
       unlocked,

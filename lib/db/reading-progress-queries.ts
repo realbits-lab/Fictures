@@ -50,7 +50,7 @@ export async function updateReadingProgress({
       ));
 
     if (!targetChapter) {
-      throw new ChatSDKError('not_found', 'Chapter not found');
+      throw new ChatSDKError('not_found:database', 'Chapter not found');
     }
 
     const [existingProgress] = await db
@@ -100,7 +100,6 @@ export async function updateReadingProgress({
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to update reading progress',
-      { cause: error }
     );
   }
 }
@@ -123,7 +122,6 @@ export async function getReadingProgress(
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get reading progress',
-      { cause: error }
     );
   }
 }
@@ -159,7 +157,6 @@ export async function getReadingHistoryByUser(
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get reading history',
-      { cause: error }
     );
   }
 }
@@ -182,7 +179,7 @@ export async function markBookComplete(
       .returning();
 
     if (!updated) {
-      throw new ChatSDKError('not_found', 'Reading progress not found');
+      throw new ChatSDKError('not_found:database', 'Reading progress not found');
     }
 
     return updated;
@@ -193,7 +190,6 @@ export async function markBookComplete(
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to mark book complete',
-      { cause: error }
     );
   }
 }
@@ -213,7 +209,6 @@ export async function getProgressPercentage(
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get progress percentage',
-      { cause: error }
     );
   }
 }
@@ -239,7 +234,6 @@ export async function getCurrentChapterNumber(
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get current chapter number',
-      { cause: error }
     );
   }
 }

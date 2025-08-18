@@ -3,7 +3,7 @@ import type { UIMessage } from 'ai';
 import type { Suggestion } from './db/schema';
 
 // Legacy artifact types for backward compatibility with existing database records
-export type ArtifactKind = 'text' | 'image' | 'sheet' | 'book';
+export type ArtifactKind = 'text' | 'code' | 'image' | 'sheet' | 'book' | 'story';
 
 export type DataPart = { type: 'append-message'; message: string };
 
@@ -28,6 +28,8 @@ export type CustomUIDataTypes = {
   clear: null;
   finish: null;
 };
+
+export type ChatTools = {};
 
 export type ChatMessage = UIMessage<
   MessageMetadata,

@@ -2,7 +2,7 @@ import { auth } from '@/app/auth';
 import { db } from '@/lib/db/index';
 import { contest } from '@/lib/db/schema';
 import { NextRequest, NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
 function generateSlug(title: string): string {
   return title
@@ -27,16 +27,18 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = (page - 1) * limit;
 
-    let query = db.select().from(contest);
+    const conditions = [];
 
     if (status) {
-      query = query.where(eq(contest.status, status as any));
+      conditions.push(eq(contest.status, status as any));
     }
     if (type) {
-      query = query.where(eq(contest.type, type as any));
+      conditions.push(eq(contest.type, type as any));
     }
 
-    const contests = await query.limit(limit).offset(offset);
+    const contests = conditions.length > 0 
+      ? await db.select().from(contest).where(and(...conditions)).limit(limit).offset(offset)
+      : await db.select().from(contest).limit(limit).offset(offset);
 
     const totalContests = await db.select({ count: contest.id }).from(contest);
 

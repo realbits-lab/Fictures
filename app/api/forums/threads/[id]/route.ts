@@ -6,7 +6,7 @@ import { eq, desc } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,6 +14,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
@@ -23,7 +24,7 @@ export async function GET(
     const [thread] = await db
       .select()
       .from(forumThread)
-      .where(eq(forumThread.id, params.id));
+      .where(eq(forumThread.id, id));
 
     if (!thread) {
       return NextResponse.json({ error: 'Thread not found' }, { status: 404 });
@@ -33,7 +34,7 @@ export async function GET(
     await db
       .update(forumThread)
       .set({ viewCount: thread.viewCount + 1 })
-      .where(eq(forumThread.id, params.id));
+      .where(eq(forumThread.id, id));
 
     // Get posts
     const posts = await db
@@ -50,7 +51,7 @@ export async function GET(
       })
       .from(forumPost)
       .leftJoin(user, eq(forumPost.authorId, user.id))
-      .where(eq(forumPost.threadId, params.id))
+      .where(eq(forumPost.threadId, id))
       .orderBy(forumPost.createdAt)
       .limit(limit)
       .offset(offset);

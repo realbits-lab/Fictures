@@ -11,11 +11,11 @@ import { useDataStream } from './data-stream-provider';
 
 interface MessagesProps {
   chatId: string;
-  status: UseChatHelpers<ChatMessage>['status'];
+  status: UseChatHelpers['status'];
   votes: Array<Vote> | undefined;
   messages: ChatMessage[];
-  setMessages: UseChatHelpers<ChatMessage>['setMessages'];
-  regenerate: UseChatHelpers<ChatMessage>['regenerate'];
+  setMessages: UseChatHelpers['setMessages'];
+  regenerate: () => void;
   isReadonly: boolean;
   // Removed isArtifactVisible - artifact system archived
 }

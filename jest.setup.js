@@ -44,8 +44,9 @@ jest.mock('@/app/auth', () => ({
   signOut: jest.fn(),
 }));
 
-// Mock clearImmediate for postgres
+// Mock clearImmediate and setImmediate for postgres
 global.clearImmediate = global.clearImmediate || jest.fn();
+global.setImmediate = global.setImmediate || jest.fn((fn, ...args) => setTimeout(fn, 0, ...args));
 
 // Mock Web Streams API for AI SDK
 global.TransformStream = global.TransformStream || class {
