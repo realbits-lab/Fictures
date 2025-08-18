@@ -38,23 +38,12 @@ The **Story** level encompasses the complete narrative journey from the initial 
 - Establish the primary conflict that spans the entire narrative
 - Determine the emotional and thematic resolution
 
-**For Non-Fiction:**
-- Clarify the main argument or knowledge transfer goal
-- Define the reader's journey from current state to desired outcome
-- Establish the logical progression of ideas and evidence
-- Determine the actionable conclusion readers should reach
-
 ### Examples
 
 **Fiction Examples:**
 - *The Lord of the Rings*: The story of destroying the One Ring to save Middle-earth
 - *Pride and Prejudice*: Elizabeth Bennet's journey from prejudice to understanding and love
 - *The Hunger Games*: Katniss's evolution from survivor to revolutionary leader
-
-**Non-Fiction Examples:**
-- *Atomic Habits*: How small changes compound into remarkable results
-- *Sapiens*: The story of how humans became the dominant species on Earth
-- *The 7 Habits of Highly Effective People*: A comprehensive approach to personal and professional effectiveness
 
 ### Story-Level Planning Checklist
 
@@ -116,13 +105,6 @@ The **Story** level encompasses the complete narrative journey from the initial 
 - Part I: Winston's awakening to rebellion
 - Part II: Love and further rebellion with Julia
 - Part III: Capture, torture, and breaking
-
-**Non-Fiction Examples:**
-
-*Getting Things Done* (Allen):
-- Part I: The Art of Getting Things Done - Theory and mindset
-- Part II: Practicing Stress-Free Productivity - Implementation methods
-- Part III: The Power of the Key Principles - Advanced applications
 
 ### Part Planning Framework
 
