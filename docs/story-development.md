@@ -86,14 +86,29 @@ story_concept_development:
     story_concept:
       title: "The Shadow Keeper"
       genre: "urban fantasy"
-      main_characters:
-        ["Maya Chen", "Elena Chen"]
-      supporting_characters:
-        ["Marcus Webb", "The Void Collector"]
-      primary_setting:
-        ["San Francisco", "Maya's studio"]
-      secondary_settings:
-        ["Shadow Realm", "Chinatown passages"]
+      character_hierarchy:
+        protagonist:
+          character_name: "Maya Chen"
+          narrative_function: "hero"
+          character_archetype: "reluctant_hero"
+          story_role: "primary_viewpoint"
+        deuteragonist:
+          character_name: "Elena Chen"
+          narrative_function: "catalyst"
+          character_archetype: "missing_person"
+          story_role: "motivation_source"
+        tritagonist:
+          character_name: "Marcus Webb"
+          narrative_function: "mentor_ally"
+          character_archetype: "guide"
+          story_role: "support_wisdom"
+        antagonist:
+          character_name: "The Void Collector"
+          narrative_function: "opposition"
+          character_archetype: "supernatural_threat"
+          story_role: "primary_obstacle"
+      primary_setting: ["San Francisco", "Maya's studio"]
+      secondary_settings: ["Shadow Realm", "Chinatown passages"]
       main_plot_elements:
         [
           "Elena's disappearance",
@@ -128,14 +143,29 @@ part_development_process:
     story_concept:
       title: "The Shadow Keeper"
       genre: "urban fantasy"
-      main_characters:
-        ["Maya Chen", "Elena Chen"]
-      supporting_characters:
-        ["Marcus Webb", "The Void Collector"]
-      primary_setting:
-        ["San Francisco", "Maya's studio"]
-      secondary_settings:
-        ["Shadow Realm", "Chinatown passages"]
+      character_hierarchy:
+        protagonist:
+          character_name: "Maya Chen"
+          narrative_function: "hero"
+          character_archetype: "reluctant_hero"
+          story_role: "primary_viewpoint"
+        deuteragonist:
+          character_name: "Elena Chen"
+          narrative_function: "catalyst"
+          character_archetype: "missing_person"
+          story_role: "motivation_source"
+        tritagonist:
+          character_name: "Marcus Webb"
+          narrative_function: "mentor_ally"
+          character_archetype: "guide"
+          story_role: "support_wisdom"
+        antagonist:
+          character_name: "The Void Collector"
+          narrative_function: "opposition"
+          character_archetype: "supernatural_threat"
+          story_role: "primary_obstacle"
+      primary_setting: ["San Francisco", "Maya's studio"]
+      secondary_settings: ["Shadow Realm", "Chinatown passages"]
       main_plot_elements:
         [
           "Elena's disappearance",
@@ -164,11 +194,13 @@ part_development_process:
         target_word_count: 20000
         part_objectives:
           ["Establish world", "Introduce conflict", "Character introduction"]
-        major_plot_beats: ["Normal life", "Strange photographs", "Elena disappears"]
+        major_plot_beats:
+          ["Normal life", "Strange photographs", "Elena disappears"]
       - part_number: 2
         part_title: "Development"
         target_word_count: 40000
-        part_objectives: ["Escalate stakes", "Character growth", "Major reveals"]
+        part_objectives:
+          ["Escalate stakes", "Character growth", "Major reveals"]
         major_plot_beats:
           [
             "Magic training",
@@ -208,11 +240,13 @@ character_development_process:
         target_word_count: 20000
         part_objectives:
           ["Establish world", "Introduce conflict", "Character introduction"]
-        major_plot_beats: ["Normal life", "Strange photographs", "Elena disappears"]
+        major_plot_beats:
+          ["Normal life", "Strange photographs", "Elena disappears"]
       - part_number: 2
         part_title: "Development"
         target_word_count: 40000
-        part_objectives: ["Escalate stakes", "Character growth", "Major reveals"]
+        part_objectives:
+          ["Escalate stakes", "Character growth", "Major reveals"]
         major_plot_beats:
           [
             "Magic training",
@@ -236,28 +270,45 @@ character_development_process:
     - ensure_agency: "Maintain character autonomy and authentic motivation"
   output:
     character_evolution:
-      main_character:
-        name: "maya"
-        growth_this_scene: "slight_independence_assertion"
-        cumulative_growth: ["skill_awareness_beginning"]
-        remaining_arc: ["skill_training", "ability_acceptance", "heroism"]
-      supporting_character:
-        name: "elena"
-        growth_this_scene: "recognition_of_changes"
-        cumulative_growth: ["concern_deepening"]
-        remaining_arc:
+      protagonist:
+        character_name: "maya"
+        narrative_function: "hero"
+        arc_type: "positive_change"
+        current_growth: "slight_independence_assertion"
+        cumulative_development: ["skill_awareness_beginning"]
+        remaining_arc_stages:
+          ["skill_training", "ability_acceptance", "heroism"]
+      deuteragonist:
+        character_name: "elena"
+        narrative_function: "catalyst"
+        arc_type: "flat_arc"
+        current_growth: "recognition_of_changes"
+        cumulative_development: ["concern_deepening"]
+        remaining_arc_stages:
           ["catalyst_event", "challenge_survival", "character_strengthening"]
     dialogue_authenticity:
-      main_character_voice_markers:
+      protagonist_voice_markers:
         ["protective_tone", "artistic_references", "understated_concern"]
-      supporting_character_voice_markers:
+      deuteragonist_voice_markers:
         ["caring_directness", "academic_curiosity", "sisterly_teasing"]
-      consistency_score: 0.91
-    relationship_development:
-      character_relationship_changes:
-        tension_increase: 0.1
+      voice_consistency_score: 0.91
+    relationship_dynamics:
+      protagonist_deuteragonist:
+        relationship_type: "family_bond"
+        current_state: "strained_trust"
+        tension_level: 0.1
         understanding_shift: "protagonist_hiding_something"
-        dynamic_evolution: "codependency_to_independence_beginning"
+        dynamic_trajectory: "codependency_to_independence_beginning"
+        temporal_evolution:
+          - stage: "beginning"
+            state: "close_protective"
+            tension: 0.0
+          - stage: "current"
+            state: "emerging_distance"
+            tension: 0.1
+          - stage: "projected"
+            state: "independent_support"
+            tension: -0.2
 ```
 
 **ASCII Flow Diagram - Character Development Process:**
@@ -272,22 +323,39 @@ character_development_process:
 world_building_process:
   input:
     character_evolution:
-      main_character:
-        name: "maya"
-        growth_this_scene: "slight_independence_assertion"
-        cumulative_growth: ["skill_awareness_beginning"]
-        remaining_arc: ["skill_training", "ability_acceptance", "heroism"]
-      supporting_character:
-        name: "elena"
-        growth_this_scene: "recognition_of_changes"
-        cumulative_growth: ["concern_deepening"]
-        remaining_arc:
+      protagonist:
+        character_name: "maya"
+        narrative_function: "hero"
+        arc_type: "positive_change"
+        current_growth: "slight_independence_assertion"
+        cumulative_development: ["skill_awareness_beginning"]
+        remaining_arc_stages:
+          ["skill_training", "ability_acceptance", "heroism"]
+      deuteragonist:
+        character_name: "elena"
+        narrative_function: "catalyst"
+        arc_type: "flat_arc"
+        current_growth: "recognition_of_changes"
+        cumulative_development: ["concern_deepening"]
+        remaining_arc_stages:
           ["catalyst_event", "challenge_survival", "character_strengthening"]
-    relationship_development:
-      character_relationship_changes:
-        tension_increase: 0.1
+    relationship_dynamics:
+      protagonist_deuteragonist:
+        relationship_type: "family_bond"
+        current_state: "strained_trust"
+        tension_level: 0.1
         understanding_shift: "protagonist_hiding_something"
-        dynamic_evolution: "codependency_to_independence_beginning"
+        dynamic_trajectory: "codependency_to_independence_beginning"
+        temporal_evolution:
+          - stage: "beginning"
+            state: "close_protective"
+            tension: 0.0
+          - stage: "current"
+            state: "emerging_distance"
+            tension: 0.1
+          - stage: "projected"
+            state: "independent_support"
+            tension: -0.2
     setting_elements:
       primary_locations: ["primary_setting", "character_workspace"]
       secondary_locations: ["alternate_realm"]
@@ -364,16 +432,20 @@ consistency_verification:
       final_word_count: 20000
       completion_status: "quality_verified"
       character_development:
-        main_character:
+        protagonist:
           character_name: "maya"
-          arc_start: "ordinary_professional"
-          arc_end: "reluctant_student"
-          development_complete: true
-        supporting_character:
+          narrative_function: "hero"
+          arc_type: "positive_change"
+          arc_beginning: "ordinary_professional"
+          arc_completion: "reluctant_student"
+          development_status: "complete"
+        deuteragonist:
           character_name: "elena"
-          arc_start: "protective_family"
-          arc_end: "missing_catalyst"
-          development_complete: true
+          narrative_function: "catalyst"
+          arc_type: "flat_arc"
+          arc_beginning: "protective_family"
+          arc_completion: "missing_catalyst"
+          development_status: "complete"
       story_advancement:
         established_conflicts: ["character_disappearance", "ability_discovery"]
         introduced_mysteries: ["special_ability_nature", "antagonist_identity"]
@@ -394,6 +466,27 @@ consistency_verification:
 
 ## Development Tools and Resources
 
+### Character Architecture Framework
+
+**Character Role Classification**
+
+- **Primary Tier**: Protagonist (hero/heroine), Deuteragonist (secondary lead), Tritagonist (tertiary lead)
+- **Opposition Tier**: Antagonist (primary opposition), Foil (contrasting character)
+- **Support Tier**: Mentor (wisdom giver), Ally (companion), Threshold Guardian (challenger)
+- **Function Tier**: Catalyst (change agent), Herald (messenger), Trickster (wildcard)
+
+**Character Arc Types**
+
+- **Positive Change Arc**: Character overcomes flaws and grows (most protagonists)
+- **Negative Change Arc**: Character succumbs to flaws and declines (tragic heroes, corruption)
+- **Flat/Static Arc**: Character remains consistent, influences others (mentors, catalysts)
+
+**Ensemble Cast Structure**
+
+- **Plotline Distribution**: Each major character drives different plot types (external, internal, relationship)
+- **Connection Requirements**: All characters must influence or be influenced by dominating plotline
+- **Character Interconnection**: Relationship dynamics evolve temporally throughout narrative
+
 ### AI Integration Functions
 
 **Context Building**
@@ -401,15 +494,18 @@ consistency_verification:
 - `buildHierarchyContext(partId)`: Assembles complete story context for AI generation
 - `getCharacterStates(partId)`: Retrieves current character emotional and plot states
 - `getActivePlotThreads(partId)`: Identifies ongoing narrative elements
+- `analyzeCharacterRelationships(partId)`: Maps relationship dynamics and temporal evolution
 
 **Content Generation**
 
 - `enhanceDialogue(characters, context)`: Improves character voice authenticity
 - `developCharacterArc(character, storyPosition)`: Advances character development
+- `balanceEnsembleCast(characters)`: Ensures proper character role distribution
 
 **Quality Assurance**
 
 - `validateConsistency(hierarchy)`: Checks story coherence across all levels
+- `verifyCharacterFunctions(roles)`: Confirms narrative functions are fulfilled
 
 ### Development Workflows
 
