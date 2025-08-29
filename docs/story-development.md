@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide outlines the systematic approach to developing stories within the Fictures platform, building upon the 4-level hierarchy (Book > Story > Part > Chapter/Scene) and leveraging AI assistance for enhanced creative writing workflows.
+This guide outlines the systematic approach to developing stories within the Fictures platform, building upon the 3-level hierarchy (Book > Story > Part) and leveraging AI assistance for enhanced creative writing workflows.
 
 ## System Architecture Overview
 
@@ -45,8 +45,7 @@ getCharacterStates() ────────┤
 getActivePlotThreads() ──────┼──→ Context Building ──→ AI Generation ──→ Quality Assurance
 enhanceDialogue() ───────────┤                                               │
 developCharacterArc() ───────┘                                               │
-validateConsistency() ───────────────────────────────────────────────────────┤
-optimizePublicationSchedule() ──────────────────────────────────────────────┘
+validateConsistency() ───────────────────────────────────────────────────────┘
 
 DATA FLOW CONNECTIONS:
 
@@ -298,22 +297,6 @@ consistency_verification:
       title: "Discovery"
       word_count: 20000
       status: "quality_verified"
-      chapters:
-        - chapter: 1
-          title: "Normal Life"
-          word_count: 3000
-          scenes: 3
-          status: "completed"
-        - chapter: 2
-          title: "First Signs"
-          word_count: 3000
-          scenes: 3
-          status: "completed"
-        - chapter: 3
-          title: "The Awakening"
-          word_count: 3500
-          scenes: 4
-          status: "completed"
       character_arcs:
         maya:
           starting_point: "ordinary_photographer"
@@ -355,7 +338,6 @@ consistency_verification:
 
 **Quality Assurance**
 - `validateConsistency(hierarchy)`: Checks story coherence across all levels
-- `optimizePublicationSchedule(content, schedule)`: Balances quality with timing
 
 ### Development Workflows
 
@@ -383,10 +365,6 @@ consistency_verification:
 3. **Consistency Validation**: Regularly check AI-generated content against established story elements
 4. **Voice Preservation**: Maintain author voice while leveraging AI capabilities
 
-### Serial Publication
-1. **Sustainable Pacing**: Balance story complexity with publication schedule requirements
-2. **Format Optimization**: Design story elements specifically for serial format advantages
-3. **Long-term Planning**: Maintain story direction while adapting to serial publication realities
 
 ### Quality Management
 1. **Regular Consistency Checks**: Use automated tools to verify story coherence
