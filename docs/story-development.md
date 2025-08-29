@@ -18,21 +18,12 @@ This guide outlines the systematic approach to developing stories within the Fic
                             ┌─── PHASE 2: STRUCTURAL DEVELOPMENT ───┐
                             │                                       │
         ┌───────────────────┤  part_development_process()          │
-        │                   │           │                         │
-        │                   │           ▼                         │
-        │                   │  chapter_planning_process()         │
-        │                   │           │                         │
-        │                   │           ▼                         │
-        │                   │  scene_development_process()        │
         │                   └─────────────┬─────────────────────────┘
         │                                 │
         │                                 ▼
         │            ┌─── PHASE 3: AI-ASSISTED CONTENT CREATION ───┐
         │            │                                             │
-        ├────────────┤  ai_scene_generation()                     │
-        │            │           │                                 │
-        │            │           ▼                                 │
-        │            │  character_development_process()           │
+        ├────────────┤  character_development_process()           │
         │            │           │                                 │
         │            │           ▼                                 │
         │            │  world_building_process()                  │
@@ -42,9 +33,6 @@ This guide outlines the systematic approach to developing stories within the Fic
         │            ┌─── PHASE 4: CONTENT ASSEMBLY & FINALIZATION ───┐
         │            │                                               │
         ├────────────┤  consistency_verification()                   │
-        │            │           │                                   │
-        │            │           ▼                                   │
-        │            │  part_assembly()                             │
         │            └─────────────┬─────────────────────────────────┘
         │                          │
         │                          ▼
@@ -55,25 +43,23 @@ AI INTEGRATION FUNCTIONS (Available at all phases):
 buildHierarchyContext() ─────┐
 getCharacterStates() ────────┤
 getActivePlotThreads() ──────┼──→ Context Building ──→ AI Generation ──→ Quality Assurance
-generateScene() ─────────────┤                                               │
 enhanceDialogue() ───────────┤                                               │
 developCharacterArc() ───────┘                                               │
 validateConsistency() ───────────────────────────────────────────────────────┤
-analyzeReaderEngagement() ───────────────────────────────────────────────────┤
 optimizePublicationSchedule() ──────────────────────────────────────────────┘
 
 DATA FLOW CONNECTIONS:
 
 User Prompt (text) → Phase 1: story_concept_development()
 Phase 1 Output → Phase 2 Input: story_concept
-Phase 2 Output → Phase 3 Input: scene_outlines, character_states, world_context  
-Phase 3 Output → Phase 4 Input: generated_content, character_evolution, world_consistency
+Phase 2 Output → Phase 3 Input: part_outlines, character_arcs, conflict_progression
+Phase 3 Output → Phase 4 Input: character_evolution, world_consistency
 Phase 4 Output: final_part_data
 
 ITERATIVE FEEDBACK LOOPS:
 
 Quality Metrics ──→ consistency_verification ──→ content_refinement
-Character Development ──→ scene_generation ──→ enhanced_character_consistency
+Character Development ──→ world_building ──→ enhanced_narrative_consistency
 ```
 
 ## Development Workflow
@@ -172,195 +158,34 @@ part_development_process:
 [Map Beats] ──→ [Define Conflicts] ──→ [Character Arcs] ──→ [Word Distribution]
 ```
 
-**2.2 Chapter Planning Within Parts**
-
-```yaml
-chapter_planning_process:
-  input:
-    part_outline:
-      part: 1
-      title: "Discovery"
-      word_count: 20000
-      objectives: ["Establish world", "Introduce conflict", "Hook readers"]
-      plot_beats: ["Normal life", "Strange photographs", "Elena disappears"]
-    character_arcs:
-      - character: "Maya Chen"
-        arc_type: "reluctant_hero"
-        start_state: "ordinary_photographer"
-        end_state: "aware_magic_user"
-      - character: "Elena Chen"
-        arc_type: "catalyst"
-        start_state: "protective_sister"
-        end_state: "trapped_in_shadow_realm"
-  process:
-    - break_objectives: "Divide part goals into chapter-specific objectives"
-    - design_hooks: "Create compelling openings and cliffhangers for each chapter"
-    - map_interactions: "Plan character interactions and relationship development"
-    - plan_scenes: "Structure individual scenes within each chapter"
-  output:
-    chapter_summaries:
-      - chapter: 1
-        title: "Normal Life"
-        word_count: 3000
-        purpose: "character_introduction"
-        hook: "strange_photo_anomaly"
-      - chapter: 2
-        title: "First Signs"
-        word_count: 3000
-        purpose: "world_building"
-        cliffhanger: "elena_disappears"
-    narrative_momentum:
-      pacing_pattern: ["slow_build", "acceleration", "peak_tension"]
-      tension_curve: [0.1, 0.3, 0.5, 0.7, 0.9, 0.6, 0.8]
-    character_presence:
-      maya_appearances: [1, 2, 3, 4, 5, 6, 7]
-      elena_appearances: [1, 2]
-      marcus_intro: 3
-```
-
-**ASCII Flow Diagram - Chapter Planning Process:**
-```
-[Break Objectives] ──→ [Design Hooks] ──→ [Map Interactions] ──→ [Plan Scenes]
-```
-
-**2.3 Scene Architecture**
-
-```yaml
-scene_development_process:
-  input:
-    chapter_summary:
-      chapter: 1
-      title: "Normal Life"
-      word_count: 3000
-      purpose: "character_introduction"
-      hook: "strange_photo_anomaly"
-    character_arcs:
-      maya:
-        emotional_state: "content_but_restless"
-        plot_position: "ordinary_world"
-        motivation: "artistic_fulfillment"
-      elena:
-        emotional_state: "protective_concerned"
-        plot_position: "supporting_sister"
-        motivation: "maya_wellbeing"
-    world_context:
-      location: "maya_photography_studio"
-      time_of_day: "late_afternoon"
-      weather: "san_francisco_fog"
-      atmosphere: "cozy_creative_space"
-  process:
-    - identify_purposes: "Define specific story function for each scene"
-    - map_interactions: "Plan character dialogue and relationship dynamics"
-    - establish_setting: "Create immersive environments and atmosphere"
-    - plan_sequences: "Structure scene progression and pacing"
-  output:
-    scene_outlines:
-      - scene: 1
-        title: "Studio Work"
-        type: "exposition"
-        purpose: "character_establishment"
-        setting: "photography_studio"
-        characters: ["Maya"]
-        conflict: "artistic_block"
-      - scene: 2
-        title: "Sister's Visit"
-        type: "dialogue"
-        purpose: "relationship_dynamics" 
-        setting: "studio_kitchen"
-        characters: ["Maya", "Elena"]
-        conflict: "concern_vs_independence"
-    character_dynamics:
-      maya_elena_relationship:
-        current_state: "protective_codependency"
-        tension_source: "elena_overprotectiveness"
-        development_direction: "toward_mutual_respect"
-    plot_advancement:
-      discoveries: ["strange_photo_shadows"]
-      escalations: ["supernatural_awareness_beginning"]
-      hooks: ["shadow_movement_in_photo"]
-```
-
-**ASCII Flow Diagram - Scene Development Process:**
-```
-[Identify Purposes] ──→ [Map Interactions] ──→ [Establish Setting] ──→ [Plan Sequences]
-```
 
 ### Phase 3: AI-Assisted Content Creation
 Leveraging platform AI tools for enhanced writing productivity and quality.
 
-**3.1 Context-Aware Scene Generation**
-
-```yaml
-ai_scene_generation:
-  input:
-    scene_outline:
-      scene: 2
-      title: "Sister's Visit"
-      type: "dialogue"
-      purpose: "relationship_dynamics"
-      setting: "studio_kitchen"
-      characters: ["Maya", "Elena"]
-      conflict: "concern_vs_independence"
-    character_dynamics:
-      maya_elena_relationship:
-        current_state: "protective_codependency"
-        tension_source: "elena_overprotectiveness"
-        development_direction: "toward_mutual_respect"
-    plot_advancement:
-      discoveries: ["strange_photo_shadows"]
-      escalations: ["supernatural_awareness_beginning"]
-      hooks: ["shadow_movement_in_photo"]
-    style_requirements: ["first_person_maya", "present_tense", "urban_fantasy"]
-  process:
-    - build_context: "Establish scene context from hierarchical story structure"
-    - generate_content: "Create scene content using AI writing tools"
-    - integrate_voice: "Ensure character voice consistency"
-    - apply_style: "Maintain genre conventions and writing style"
-  output:
-    generated_scene:
-      content: "Elena appears in my kitchen doorway..."
-      word_count: 847
-      style_consistency: 0.92
-      character_voice_authenticity: 0.89
-    character_development:
-      maya:
-        growth_achieved: "increased_supernatural_awareness"
-        relationship_change: "slight_independence_assertion"
-      elena:
-        growth_achieved: "recognition_of_maya_changes"
-        relationship_change: "growing_concern"
-    plot_progression:
-      hooks_planted: ["shadow_realm_first_mention"]
-      mysteries_deepened: ["photo_anomaly_significance"]
-      next_scene_setup: "maya_investigates_alone"
-```
-
-**ASCII Flow Diagram - AI Scene Generation Process:**
-```
-[Build Context] ──→ [Generate Content] ──→ [Integrate Voice] ──→ [Apply Style]
-```
-
-**3.2 Character Development Integration**
+**3.1 Character Development Integration**
 
 ```yaml
 character_development_process:
   input:
-    generated_scene:
-      content: "Elena appears in my kitchen doorway..."
-      word_count: 847
-      style_consistency: 0.92
-      character_voice_authenticity: 0.89
-    character_development:
-      maya:
-        growth_achieved: "increased_supernatural_awareness"
-        relationship_change: "slight_independence_assertion"
-      elena:
-        growth_achieved: "recognition_of_maya_changes"
-        relationship_change: "growing_concern"
-    plot_progression:
-      hooks_planted: ["shadow_realm_first_mention"]
-      mysteries_deepened: ["photo_anomaly_significance"]
-      next_scene_setup: "maya_investigates_alone"
+    part_outlines:
+      - part: 1
+        title: "Discovery"
+        word_count: 20000
+        objectives: ["Establish world", "Introduce conflict", "Character introduction"]
+        plot_beats: ["Normal life", "Strange photographs", "Elena disappears"]
+      - part: 2
+        title: "Development"  
+        word_count: 40000
+        objectives: ["Escalate stakes", "Character growth", "Major reveals"]
+        plot_beats: ["Magic training", "Shadow Realm exploration", "Void Collector revealed"]
+      - part: 3
+        title: "Resolution"
+        word_count: 20000
+        objectives: ["Climax", "Character arcs complete", "Satisfying conclusion"]
+        plot_beats: ["Final confrontation", "Power acceptance", "Sisters reunited"]
+    conflict_progression:
+      escalation_pattern: ["personal", "interpersonal", "universal"]
+      tension_points: [0.25, 0.75, 0.95]
   process:
     - track_development: "Monitor character growth and arc progression"
     - maintain_voice: "Ensure authentic character dialogue and actions"
@@ -392,7 +217,7 @@ character_development_process:
 [Track Development] ──→ [Maintain Voice] ──→ [Develop Relations] ──→ [Ensure Agency]
 ```
 
-**3.3 World-Building Consistency**
+**3.2 World-Building Consistency**
 
 ```yaml
 world_building_process:
@@ -520,12 +345,11 @@ consistency_verification:
 ### AI Integration Functions
 
 **Context Building**
-- `buildHierarchyContext(sceneId)`: Assembles complete story context for AI generation
-- `getCharacterStates(sceneId)`: Retrieves current character emotional and plot states
-- `getActivePlotThreads(sceneId)`: Identifies ongoing narrative elements
+- `buildHierarchyContext(partId)`: Assembles complete story context for AI generation
+- `getCharacterStates(partId)`: Retrieves current character emotional and plot states
+- `getActivePlotThreads(partId)`: Identifies ongoing narrative elements
 
 **Content Generation**
-- `generateScene(context, objectives)`: Creates scene content using AI tools
 - `enhanceDialogue(characters, context)`: Improves character voice authenticity
 - `developCharacterArc(character, storyPosition)`: Advances character development
 
