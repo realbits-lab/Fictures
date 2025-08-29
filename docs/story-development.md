@@ -86,21 +86,25 @@ story_concept_development:
     story_concept:
       title: "The Shadow Keeper"
       genre: "urban fantasy"
-      characters:
-        ["Maya Chen", "Elena Chen", "Marcus Webb", "The Void Collector"]
-      setting:
-        ["San Francisco", "Shadow Realm", "Maya's studio", "Chinatown passages"]
-      plot:
+      main_characters:
+        ["Maya Chen", "Elena Chen"]
+      supporting_characters:
+        ["Marcus Webb", "The Void Collector"]
+      primary_setting:
+        ["San Francisco", "Maya's studio"]
+      secondary_settings:
+        ["Shadow Realm", "Chinatown passages"]
+      main_plot_elements:
         [
           "Elena's disappearance",
           "Maya's magical discovery",
           "Void Collector threat",
         ]
-      theme:
+      core_themes:
         ["responsibility for power", "love and control", "internal battles"]
       central_question: "Can Maya master dangerous shadow magic to save Elena before power corrupts her?"
       target_word_count: 80000
-      part_structure:
+      story_structure:
         type: "3-part"
         parts: ["Setup", "Confrontation", "Resolution"]
         distribution: [25, 50, 25]
@@ -124,21 +128,25 @@ part_development_process:
     story_concept:
       title: "The Shadow Keeper"
       genre: "urban fantasy"
-      characters:
-        ["Maya Chen", "Elena Chen", "Marcus Webb", "The Void Collector"]
-      setting:
-        ["San Francisco", "Shadow Realm", "Maya's studio", "Chinatown passages"]
-      plot:
+      main_characters:
+        ["Maya Chen", "Elena Chen"]
+      supporting_characters:
+        ["Marcus Webb", "The Void Collector"]
+      primary_setting:
+        ["San Francisco", "Maya's studio"]
+      secondary_settings:
+        ["Shadow Realm", "Chinatown passages"]
+      main_plot_elements:
         [
           "Elena's disappearance",
           "Maya's magical discovery",
           "Void Collector threat",
         ]
-      theme:
+      core_themes:
         ["responsibility for power", "love and control", "internal battles"]
       central_question: "Can Maya master dangerous shadow magic to save Elena before power corrupts her?"
       target_word_count: 80000
-      part_structure:
+      story_structure:
         type: "3-part"
         parts: ["Setup", "Confrontation", "Resolution"]
         distribution: [25, 50, 25]
@@ -151,32 +159,32 @@ part_development_process:
 
   output:
     part_outlines:
-      - part: 1
-        title: "Discovery"
-        word_count: 20000
-        objectives:
+      - part_number: 1
+        part_title: "Discovery"
+        target_word_count: 20000
+        part_objectives:
           ["Establish world", "Introduce conflict", "Character introduction"]
-        plot_beats: ["Normal life", "Strange photographs", "Elena disappears"]
-      - part: 2
-        title: "Development"
-        word_count: 40000
-        objectives: ["Escalate stakes", "Character growth", "Major reveals"]
-        plot_beats:
+        major_plot_beats: ["Normal life", "Strange photographs", "Elena disappears"]
+      - part_number: 2
+        part_title: "Development"
+        target_word_count: 40000
+        part_objectives: ["Escalate stakes", "Character growth", "Major reveals"]
+        major_plot_beats:
           [
             "Magic training",
             "Shadow Realm exploration",
             "Void Collector revealed",
           ]
-      - part: 3
-        title: "Resolution"
-        word_count: 20000
-        objectives:
+      - part_number: 3
+        part_title: "Resolution"
+        target_word_count: 20000
+        part_objectives:
           ["Climax", "Character arcs complete", "Satisfying conclusion"]
-        plot_beats:
+        major_plot_beats:
           ["Final confrontation", "Power acceptance", "Sisters reunited"]
-    conflict_progression:
-      escalation_pattern: ["personal", "interpersonal", "universal"]
-      tension_points: [0.25, 0.75, 0.95]
+    story_progression:
+      conflict_escalation: ["personal", "interpersonal", "universal"]
+      tension_peaks: [0.25, 0.75, 0.95]
 ```
 
 **ASCII Flow Diagram - Part Development Process:**
@@ -195,32 +203,32 @@ Leveraging platform AI tools for enhanced writing productivity and quality.
 character_development_process:
   input:
     part_outlines:
-      - part: 1
-        title: "Discovery"
-        word_count: 20000
-        objectives:
+      - part_number: 1
+        part_title: "Discovery"
+        target_word_count: 20000
+        part_objectives:
           ["Establish world", "Introduce conflict", "Character introduction"]
-        plot_beats: ["Normal life", "Strange photographs", "Elena disappears"]
-      - part: 2
-        title: "Development"
-        word_count: 40000
-        objectives: ["Escalate stakes", "Character growth", "Major reveals"]
-        plot_beats:
+        major_plot_beats: ["Normal life", "Strange photographs", "Elena disappears"]
+      - part_number: 2
+        part_title: "Development"
+        target_word_count: 40000
+        part_objectives: ["Escalate stakes", "Character growth", "Major reveals"]
+        major_plot_beats:
           [
             "Magic training",
             "Shadow Realm exploration",
             "Void Collector revealed",
           ]
-      - part: 3
-        title: "Resolution"
-        word_count: 20000
-        objectives:
+      - part_number: 3
+        part_title: "Resolution"
+        target_word_count: 20000
+        part_objectives:
           ["Climax", "Character arcs complete", "Satisfying conclusion"]
-        plot_beats:
+        major_plot_beats:
           ["Final confrontation", "Power acceptance", "Sisters reunited"]
-    conflict_progression:
-      escalation_pattern: ["personal", "interpersonal", "universal"]
-      tension_points: [0.25, 0.75, 0.95]
+    story_progression:
+      conflict_escalation: ["personal", "interpersonal", "universal"]
+      tension_peaks: [0.25, 0.75, 0.95]
   process:
     - track_development: "Monitor character growth and arc progression"
     - maintain_voice: "Ensure authentic character dialogue and actions"
@@ -280,22 +288,23 @@ world_building_process:
         tension_increase: 0.1
         understanding_shift: "protagonist_hiding_something"
         dynamic_evolution: "codependency_to_independence_beginning"
-    world_context:
-      locations: ["primary_setting", "alternate_realm", "character_workspace"]
-      special_elements: ["unique_abilities", "emotional_connections"]
-      cultural_context: ["local_community"]
+    setting_elements:
+      primary_locations: ["primary_setting", "character_workspace"]
+      secondary_locations: ["alternate_realm"]
+      story_mechanics: ["unique_abilities", "emotional_connections"]
+      cultural_elements: ["local_community"]
   process:
     - maintain_consistency: "Ensure world rules remain coherent across scenes"
     - develop_atmosphere: "Create immersive environmental details"
     - integrate_elements: "Connect world-building with character development"
     - ensure_authenticity: "Maintain cultural and system accuracy"
   output:
-    world_consistency:
+    setting_consistency:
       location_integrity: 0.94
-      special_system_coherence: 0.87
+      mechanics_coherence: 0.87
       cultural_authenticity: 0.91
       timeline_accuracy: 0.98
-    atmospheric_development:
+    atmosphere_quality:
       immersion_score: 0.89
       sensory_details:
         [
@@ -304,9 +313,9 @@ world_building_process:
           "atmosphere_elements",
         ]
       mood_progression: "comfortable_to_tense"
-    system_integration:
+    narrative_integration:
       plot_element_integration: "core_elements_support_conflict"
-      character_world_alignment: "protagonist_skills_match_setting"
+      character_setting_alignment: "protagonist_skills_match_setting"
       consistency_violations: []
 ```
 
@@ -325,12 +334,12 @@ Ensuring story coherence and quality across the hierarchical structure.
 ```yaml
 consistency_verification:
   input:
-    world_consistency:
+    setting_consistency:
       location_integrity: 0.94
-      special_system_coherence: 0.87
+      mechanics_coherence: 0.87
       cultural_authenticity: 0.91
       timeline_accuracy: 0.98
-    atmospheric_development:
+    atmosphere_quality:
       immersion_score: 0.89
       sensory_details:
         [
@@ -339,9 +348,9 @@ consistency_verification:
           "atmosphere_elements",
         ]
       mood_progression: "comfortable_to_tense"
-    system_integration:
+    narrative_integration:
       plot_element_integration: "core_elements_support_conflict"
-      character_world_alignment: "protagonist_skills_match_setting"
+      character_setting_alignment: "protagonist_skills_match_setting"
       consistency_violations: []
   process:
     - verify_characters: "Check character consistency across all scenes"
@@ -349,28 +358,28 @@ consistency_verification:
     - ensure_world_building: "Validate world-building elements remain coherent"
     - validate_timeline: "Confirm timeline and sequence accuracy"
   output:
-    part_data:
-      part: 1
-      title: "Discovery"
-      word_count: 20000
-      status: "quality_verified"
-      character_arcs:
+    completed_part:
+      part_number: 1
+      part_title: "Discovery"
+      final_word_count: 20000
+      completion_status: "quality_verified"
+      character_development:
         main_character:
-          name: "maya"
-          starting_point: "ordinary_professional"
-          ending_point: "reluctant_student"
+          character_name: "maya"
+          arc_start: "ordinary_professional"
+          arc_end: "reluctant_student"
           development_complete: true
         supporting_character:
-          name: "elena"
-          starting_point: "protective_family"
-          ending_point: "missing_catalyst"
+          character_name: "elena"
+          arc_start: "protective_family"
+          arc_end: "missing_catalyst"
           development_complete: true
-      plot_advancement:
-        conflicts_established: ["character_disappearance", "ability_discovery"]
-        mysteries_introduced: ["special_ability_nature", "antagonist_identity"]
-        hooks_for_next_part:
+      story_advancement:
+        established_conflicts: ["character_disappearance", "ability_discovery"]
+        introduced_mysteries: ["special_ability_nature", "antagonist_identity"]
+        next_part_hooks:
           ["skill_training_begins", "alternate_world_exploration"]
-      quality_metrics:
+      quality_assessment:
         consistency_score: 0.94
         character_voice_authenticity: 0.92
         world_building_coherence: 0.96
