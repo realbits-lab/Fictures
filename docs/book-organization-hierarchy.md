@@ -78,136 +78,51 @@ Before writing, you must decide how to divide your complete story into major par
 - **Relationships**: Map the connections and dynamics between characters that drive conflict and growth
 - **Time Structure**: Plan how time unfolds in your narrative (chronological, flashbacks, time jumps)
 
-### JSON Data Structure for Story Planning
+### YAML Data Structure for Story Planning
 
-```json
-{
-  "storyStructure": {
-    "storyTitle": "The Shadow Keeper",
-    "genre": "urban fantasy",
-    "targetLength": "80000 words",
-    "targetReadingTime": {
-      "hours": 5.1,
-      "sessions": "8-10 reading sessions of 30-40 minutes each",
-      "calculation": "Based on 260 words per minute average fiction reading speed"
-    },
-    "centralQuestion": "Can Maya overcome her fear of her shadow magic to save her sister from the Shadow Realm?",
-    "characterDevelopmentPhases": {
-      "protagonist": {
-        "name": "Maya Chen",
-        "age": 24,
-        "backstory": "Photographer who discovered shadow magic after her sister's disappearance",
-        "goals": {
-          "wants": "To rescue her sister and return to normal life",
-          "needs": "To accept her magical abilities and responsibility as a Shadow Keeper"
-        },
-        "flaws": ["fear of her own power", "tendency to isolate herself"],
-        "overallArc": "From reluctant magic user to confident protector"
-      },
-      "supporting": [
-        {
-          "name": "Elena Chen",
-          "relationship": "Maya's younger sister",
-          "role": "Catalyst for Maya's journey, trapped in Shadow Realm"
-        },
-        {
-          "name": "Marcus Webb",
-          "relationship": "Mentor figure",
-          "role": "Former Shadow Keeper who guides Maya"
-        }
-      ],
-      "antagonist": {
-        "name": "The Void Collector",
-        "motivation": "Wants to merge Shadow Realm with physical world",
-        "connection": "Responsible for Elena's disappearance"
-      }
-    },
-    "settingEstablishment": {
-      "primaryLocation": "San Francisco",
-      "timeperiod": "Present day",
-      "worldBuilding": {
-        "magicSystem": "Shadow manipulation through emotional connection",
-        "hiddenWorld": "Shadow Realm exists parallel to physical world",
-        "rules": ["Magic requires emotional vulnerability", "Overuse leads to being trapped in shadows"]
-      },
-      "keyLocations": [
-        "Maya's photography studio",
-        "Underground magical community in Chinatown",
-        "The Shadow Realm - twisted mirror of San Francisco"
-      ]
-    },
-    "conflictArchitecture": {
-      "external": "Rescue Elena from the Void Collector before he uses her to open permanent portal",
-      "internal": "Maya must overcome fear of her destructive potential",
-      "stakes": "Failure means losing Elena forever and unleashing shadow creatures on the world"
-    },
-    "thematicFocus": {
-      "primaryTheme": "Embracing your true nature, even when it frightens you",
-      "messageAndMeaning": "True strength comes from accepting responsibility despite fear"
-    },
-    "characterRelationshipMapping": {
-      "mayaElena": {
-        "currentDynamic": "Protective older sister to missing younger sister",
-        "plannedEvolution": "Must let go of guilt and accept she can't control everything"
-      },
-      "mayaMarcus": {
-        "currentDynamic": "Reluctant student to patient mentor",
-        "plannedEvolution": "Develops trust and learns to accept guidance"
-      }
-    },
-    "timelineAndPacingStructure": {
-      "temporalFramework": "Linear with occasional flashbacks to Elena's disappearance",
-      "timespan": "Three weeks from Elena's disappearance to final confrontation",
-      "pacingStrategy": "Escalating urgency as portal opening approaches"
-    },
-    "serialPublicationPlanning": {
-      "targetPublicationSchedule": "Weekly chapters, approximately 3000-4000 words each",
-      "estimatedSerialDuration": "18-24 months for complete story",
-      "sustainableWritingPace": "1 chapter per week with 2-week buffer for consistency",
-      "feedbackIntegrationPlan": "Monthly reader polls on character development preferences, major plot decision points",
-      "breakPointStrategy": "Natural publication breaks at end of each part for reader engagement analysis"
-    },
-    "readerEngagementStrategy": {
-      "overarchingHooks": ["Maya's growing power corruption risk", "Elena's transformation mystery", "Void Collector's identity revelation"],
-      "communityInteractionPoints": ["Character relationship polls", "Magic system speculation threads", "Void Collector theory discussions"],
-      "anticipationBuilders": ["Elena's gradual transformation", "Maya's power escalation", "Shadow Realm world-building reveals"],
-      "discussionGenerators": ["Moral dilemmas about power usage", "Character choice consequences", "World-building mysteries"]
-    },
-    "communityBuildingElements": {
-      "speculationOpportunities": ["Void Collector's true identity", "Elena's ultimate fate", "Maya's power limits"],
-      "characterInvestmentPoints": ["Maya-Elena sister relationship", "Maya-Marcus mentor dynamic", "Elena's fight for humanity"],
-      "worldBuildingMysteries": ["Shadow Realm rules and history", "Previous Shadow Keepers' fates", "Magic system limitations"],
-      "readerInfluenceOpportunities": ["Side character development", "Relationship progression pacing", "World exploration priorities"]
-    },
-    "publicationRhythmManagement": {
-      "chapterReleasePattern": "Consistent weekly schedule with announcement 24 hours prior",
-      "seasonalBreaks": "2-week breaks between parts for planning and reader feedback analysis",
-      "engagementMetrics": ["Chapter completion rates", "Comment volume and sentiment", "Reader retention between parts"],
-      "adaptationStrategy": "Flexible subplot development based on reader interest and engagement"
-    },
-    "longTermReaderInvestment": {
-      "characterDevelopmentSustainability": "Multi-layered character arcs that can evolve based on reader connection",
-      "mysteryManagement": "Layered reveals that answer some questions while introducing new intrigue",
-      "relationshipProgression": "Gradual development that provides ongoing emotional investment opportunities",
-      "worldExpansion": "Rich setting that supports extended exploration and reader theory-building"
-    },
-    "endingStrategy": {
-      "characterArcResolutions": {
-        "maya": "Becomes confident Shadow Keeper, protector of both worlds",
-        "elena": "Rescued but forever changed by Shadow Realm experience"
-      },
-      "conflictResolution": {
-        "external": "Void Collector defeated, portal sealed",
-        "internal": "Maya accepts her magical identity and responsibility"
-      },
-      "serialSatisfaction": "Complete character arcs with hint of future adventures",
-      "communityClosureElements": ["Reader theory resolution", "Character fate satisfaction", "World state establishment for potential continuation"]
-    }
-  }
-}
+```yaml
+story_structure:
+  title: "The Shadow Keeper"
+  genre: "urban fantasy"
+  
+  characters:
+    - "Maya Chen is a 24-year-old photographer whose protective nature drives her to master dangerous shadow magic when her sister Elena disappears into a parallel realm."
+    - "Elena Chen serves as both catalyst and emotional anchor for Maya's journey, fighting to maintain her humanity while trapped in the Shadow Realm."
+    - "Marcus Webb becomes Maya's reluctant mentor, haunted by his previous student's corruption and desperate to prevent history from repeating."
+    - "The Void Collector emerges as a tragic antagonist whose fall from grace mirrors Maya's dangerous path toward power."
+  
+  setting:
+    - "San Francisco provides a familiar urban backdrop where hidden magical communities operate beneath the city's surface."
+    - "The Shadow Realm exists as a twisted mirror of the physical world, where emotional vulnerability becomes the key to survival."
+    - "Maya's photography studio serves as her sanctuary and the place where she first discovers her supernatural abilities."
+    - "Underground passages in Chinatown conceal the remnants of an ancient magical community that has protected the city for generations."
+  
+  plot:
+    - "Elena's mysterious disappearance launches Maya into a world where shadow magic operates through emotional connection and vulnerability."
+    - "Maya must overcome her fear of her own destructive potential while racing against time to prevent the Void Collector from merging two worlds."
+    - "The discovery that Maya's mentor's previous student became the primary antagonist forces her to confront the corruption risks of her growing power."
+    - "Maya's final confrontation requires her to embrace her full magical abilities despite knowing she might follow the same dark path as her enemy."
+  
+  theme:
+    - "True strength emerges when we accept responsibility for our power, even when that power frightens us."
+    - "Love sometimes means letting go of control and trusting others to make their own choices, even dangerous ones."
+    - "The greatest battles are fought not against external enemies but against our own fears and self-doubt."
+    - "Embracing our authentic nature, including its darker aspects, becomes the path to genuine heroism."
+  
+  relationships:
+    - "Maya and Elena's sisterly bond evolves from protective guardianship to mutual respect between equals who have both been changed by their experiences."
+    - "Maya and Marcus develop a complex mentor-student dynamic complicated by his fear that she will repeat his previous failure."
+    - "The connection between Maya and the Void Collector becomes a cautionary mirror showing what Maya could become if she surrenders to power's corruption."
+    - "Elena and Marcus form an unexpected alliance as both seek to protect Maya from the dangers they have experienced firsthand."
+  
+  time_structure:
+    - "The story unfolds over three weeks of escalating urgency as Maya races to master her abilities before Elena's transformation becomes irreversible."
+    - "Flashbacks to Elena's initial disappearance provide emotional context and reveal the supernatural world's hidden presence in their lives."
+    - "Each chapter advances the timeline while building tension toward the approaching deadline when the Void Collector's plan reaches completion."
+    - "The narrative maintains a linear progression with strategic time shifts that deepen character relationships and world understanding."
 ```
 
-This JSON structure serves as a comprehensive example that demonstrates all the key planning elements covered in the Story level, providing a practical template that writers can adapt for their own projects.
+This YAML structure serves as a comprehensive example that demonstrates all the key planning elements covered in the Story level, providing a practical template that writers can adapt for their own projects.
 
 ## Level 2: Part (Major Sections)
 
