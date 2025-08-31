@@ -106,127 +106,75 @@ Before writing, you must decide how to divide your complete story into major par
 ## 5. YAML Data Structure Example for Story Planning
 
 ```yaml
-story_structure:
+# ============================================
+# STORY SPECIFICATION - COMPACT FORMAT
+# ============================================
+
+story:
   title: "The Shadow Keeper"
   genre: "urban fantasy"
-  central_question: "Can Maya master dangerous shadow magic to save Elena before power corrupts her?"
-  target_word_count: 80000
+  words: 80000
+  question: "Can Maya master shadow magic before power corrupts her?"
 
-  character_hierarchy:
-    protagonist:
-      character_name: "Maya Chen"
-      narrative_function: "hero"
-      character_archetype: "reluctant_hero"
-      story_role: "primary_viewpoint"
-      description: "A 24-year-old photographer whose protective nature drives her to master dangerous shadow magic when her sister Elena disappears into a parallel realm."
-    deuteragonist:
-      character_name: "Elena Chen"
-      narrative_function: "catalyst"
-      character_archetype: "missing_person"
-      story_role: "motivation_source"
-      description: "Serves as both catalyst and emotional anchor for Maya's journey, fighting to maintain her humanity while trapped in the Shadow Realm."
-    tritagonist:
-      character_name: "Marcus Webb"
-      narrative_function: "mentor_ally"
-      character_archetype: "guide"
-      story_role: "support_wisdom"
-      description: "Becomes Maya's reluctant mentor, haunted by his previous student's corruption and desperate to prevent history from repeating."
-    antagonist:
-      character_name: "The Void Collector"
-      narrative_function: "opposition"
-      character_archetype: "supernatural_threat"
-      story_role: "primary_obstacle"
-      description: "Emerges as a tragic antagonist whose fall from grace mirrors Maya's dangerous path toward power."
+  # Universal pattern: goal → conflict → outcome
+  goal: "Save Elena from Shadow Realm"
+  conflict: "Shadow magic corrupts those who use it"
+  outcome: "Maya embraces darkness to save light"
 
+  # Character essentials (start→end arcs)
+  chars:
+    maya: { role: "protag", arc: "denial→acceptance", flaw: "overprotective" }
+    elena:
+      { role: "catalyst", arc: "missing→transformed", goal: "survive_realm" }
+    marcus:
+      { role: "mentor", arc: "guilt→redemption", secret: "previous_failure" }
+    void: { role: "antag", arc: "power→corruption", goal: "merge_worlds" }
+
+  # Core themes and structure
+  themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
+  structure:
+    {
+      type: "3_part",
+      parts: ["setup", "confrontation", "resolution"],
+      dist: [25, 50, 25],
+    }
+
+  # Setting essentials
   setting:
-    primary_settings: ["San Francisco", "Maya's photography studio"]
-    secondary_settings: ["Shadow Realm", "Chinatown underground passages"]
-    descriptions:
-      - "San Francisco provides a familiar urban backdrop where hidden magical communities operate beneath the city's surface."
-      - "The Shadow Realm exists as a twisted mirror of the physical world, where emotional vulnerability becomes the key to survival."
-      - "Maya's photography studio serves as her sanctuary and the place where she first discovers her supernatural abilities."
-      - "Underground passages in Chinatown conceal the remnants of an ancient magical community that has protected the city for generations."
+    primary: ["san_francisco", "photography_studio"]
+    secondary: ["shadow_realm", "chinatown_passages"]
 
-  plot:
-    main_plot_elements:
-      [
-        "Elena's disappearance",
-        "Maya's magical discovery",
-        "Void Collector threat",
-      ]
-    plot_development:
-      - "Elena's mysterious disappearance launches Maya into a world where shadow magic operates through emotional connection and vulnerability."
-      - "Maya must overcome her fear of her own destructive potential while racing against time to prevent the Void Collector from merging two worlds."
-      - "The discovery that Maya's mentor's previous student became the primary antagonist forces her to confront the corruption risks of her growing power."
-      - "Maya's final confrontation requires her to embrace her full magical abilities despite knowing she might follow the same dark path as her enemy."
+  # Part-level progression
+  parts:
+    - part: 1
+      goal: "Maya accepts supernatural reality"
+      conflict: "Denial vs mounting evidence"
+      outcome: "Reluctant training commitment"
+      tension: "denial vs acceptance"
 
-  conflict_architecture:
-    part_level_tensions:
-      - "Part 1: Maya's denial vs. supernatural reality demanding acceptance"
-      - "Part 2: Growing power vs. increasing corruption risk during training"
-      - "Part 3: Ultimate power embrace vs. moral integrity preservation"
-    conflict_layers:
-      external: "Physical threats from Shadow Realm entities and the Void Collector"
-      internal: "Maya's fear of her own destructive potential and loss of humanity"
-      interpersonal: "Tension between Maya's protective instincts and Elena's independence"
-      philosophical: "The moral cost of power and responsibility for others' choices"
+    - part: 2
+      goal: "Master shadow magic safely"
+      conflict: "Growing power vs corruption risk"
+      outcome: "Power embrace despite dangers"
+      tension: "power vs integrity"
 
-  theme:
-    core_themes:
-      ["responsibility for power", "love and control", "internal battles"]
-    thematic_development:
-      - "True strength emerges when we accept responsibility for our power, even when that power frightens us."
-      - "Love sometimes means letting go of control and trusting others to make their own choices, even dangerous ones."
-      - "The greatest battles are fought not against external enemies but against our own fears and self-doubt."
-      - "Embracing our authentic nature, including its darker aspects, becomes the path to genuine heroism."
+    - part: 3
+      goal: "Save Elena without losing self"
+      conflict: "Ultimate power vs moral cost"
+      outcome: "Victory through accepting darkness"
+      tension: "salvation vs corruption"
 
-  relationships:
-    - "Maya and Elena's sisterly bond evolves from protective guardianship to mutual respect between equals who have both been changed by their experiences."
-    - "Maya and Marcus develop a complex mentor-student dynamic complicated by his fear that she will repeat his previous failure."
-    - "The connection between Maya and the Void Collector becomes a cautionary mirror showing what Maya could become if she surrenders to power's corruption."
-    - "Elena and Marcus form an unexpected alliance as both seek to protect Maya from the dangers they have experienced firsthand."
+  # Serial publication essentials
+  serial:
+    schedule: "weekly"
+    duration: "18_months"
+    chapter_words: 4000
+    breaks: ["part1_end", "part2_end"]
+    buffer: "4_chapters_ahead"
 
-  time_structure:
-    - "The story unfolds over three weeks of escalating urgency as Maya races to master her abilities before Elena's transformation becomes irreversible."
-    - "Flashbacks to Elena's initial disappearance provide emotional context and reveal the supernatural world's hidden presence in their lives."
-    - "Each chapter advances the timeline while building tension toward the approaching deadline when the Void Collector's plan reaches completion."
-    - "The narrative maintains a linear progression with strategic time shifts that deepen character relationships and world understanding."
-
-  part_structure:
-    type: "3-part"
-    parts: ["Setup", "Confrontation", "Resolution"]
-    distribution: [25, 50, 25]
-
-  serial_publication_strategy:
-    target_schedule: "weekly_chapters"
-    estimated_duration: "18-20_months"
-    chapter_length_target: "3500-4500_words"
-    publication_breaks:
-      - "End of Part 1: 2-week reader feedback integration period"
-      - "End of Part 2: 1-week anticipation building break"
-    sustainable_pace: "4-5 chapters written ahead of publication schedule"
-    feedback_integration_points:
-      - "Character relationship dynamics based on reader response"
-      - "Secondary plot thread emphasis based on reader interest"
-      - "World-building detail expansion in popular areas"
-
-  reader_engagement_strategy:
-    overarching_hooks:
-      - "Elena's fate and transformation in the Shadow Realm"
-      - "Maya's risk of corruption paralleling the antagonist's fall"
-      - "The true nature and history of shadow magic"
-    community_interaction_points:
-      - "Reader theories about The Void Collector's identity and motivations"
-      - "Speculation about shadow magic rules and Maya's power limits"
-      - "Character relationship dynamics and romantic subplot potential"
-    cliffhanger_architecture:
-      part_endings:
-        - "Part 1: Maya accepts training but discovers mentor's dark secret"
-        - "Part 2: Elena appears to Maya but may be corrupted or controlled"
-      mystery_elements:
-        - "Marcus Webb's previous student and their connection to the antagonist"
-        - "The origin and purpose of the 'mark' Maya bears"
-        - "The Shadow Realm's true relationship to the physical world"
+  # Reader engagement hooks
+  hooks:
+    overarching: ["elena_fate", "maya_corruption_risk", "shadow_magic_truth"]
+    mysteries: ["previous_student_identity", "mark_origin", "realm_connection"]
+    part_endings: ["mentor_secret_revealed", "elena_appears_changed"]
 ```
-
-This YAML structure serves as a comprehensive example that demonstrates all the key planning elements covered in the Story level, providing a practical template that writers can adapt for their own projects.

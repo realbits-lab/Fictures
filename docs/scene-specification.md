@@ -72,102 +72,78 @@ Scenes are the building blocks of chapters. A chapter is a curated collection of
 This YAML structure provides a comprehensive framework for planning and generating a complete narrative unit, integrating all the principles outlined above. It is designed to give an LLM all the necessary components to construct a rich, purposeful, and structurally sound scene.
 
 ```yaml
-scenes:
-  - order: 1
-    title: "The Unlocked Door"
-    location: "Hallway and interior of Elena's apartment"
-    time: "Sunday morning, 10:05 AM"
-    pov_character: "Maya Chen"
+# ============================================
+# SCENE SPECIFICATION - COMPACT FORMAT
+# ============================================
 
-    # Part 1: Core Mechanics
-    core_mechanics:
-      value_shift: "From positive (+) routine expectation to negative (--) active fear and suspicion."
-      turning_point:
-        type: "revelation" # action or revelation
-        description: "Maya discovers the overturned coffee table and broken ceramic, confirming her fear that something is wrong is not just paranoia—it's real."
+scene:
+  scene: 1
+  title: "The Unlocked Door"
+  time: "sunday_10:05am"
+  place: "elena_apartment_hallway"
+  pov: "maya"
 
-    # Part 2: The Scene (Action Unit)
-    scene_structure:
-      goal:
-        type: "possession" # possession/relief/information/revenge/status
-        specific: "To have a normal Sunday coffee with her sister, Elena."
-        stakes: "Maintaining routine, confirming her sister's well-being."
-        difficulty: "Should be simple, but is immediately complicated."
+  # Universal pattern: goal → conflict → outcome
+  goal: "Normal coffee date with Elena"
+  conflict: "Door unlocked, apartment silent, signs of struggle"
+  outcome: "Finds evidence, realizes Elena in danger"
 
-      conflict:
-        obstacles:
-          - "Elena doesn't answer repeated knocks or calls."
-          - "The front door is unlocked, which is highly unusual and alarming."
-          - "The apartment is unnervingly silent."
-          - "An overturned coffee table and shattered mug are discovered."
-        escalation_pattern: "Mild annoyance -> growing unease -> sharp fear -> confirmed danger."
-        conflict_type: "circumstantial" # direct_opposition/circumstantial/internal_resistance
+  # Core scene mechanics
+  turn: "Discovers overturned coffee table and broken mug"
+  value: "routine(+) → fear(--)"
+  change: "mundane_expectation → supernatural_threat_awareness"
 
-      disaster:
-        type: "no_and_furthermore" # yes_but / no / no_and_furthermore / unexpected_twist
-        outcome: "Maya fails to have coffee with Elena. Furthermore, she finds evidence of a struggle, meaning Elena is not just absent, but potentially in danger."
-        consequences: "The story's central mystery is established. Maya is now faced with a new, urgent reality."
+  # Scene-Sequel structure
+  scene_unit: # The action
+    goal_type: "possession" # wants normal sister time
+    obstacles:
+      ["no_answer", "unlocked_door", "eerie_silence", "struggle_evidence"]
+    escalation: "annoyance → unease → fear → danger_confirmed"
+    disaster: "no_and_furthermore" # fails + evidence of danger
 
-    # Part 3: The Sequel (Reaction Unit)
-    sequel_structure:
-      reaction:
-        feeling: "A jolt of cold dread, followed by a surge of adrenaline."
-        reflex: "Hands fly to her mouth; she takes a sharp, involuntary step back."
-        action: "Scans the room for more signs of trouble, pulls out her phone with trembling hands."
-        speech: "(Whispered to herself) Oh my god. Elena?"
+  sequel_unit: # The reaction
+    reaction:
+      {
+        feel: "cold_dread",
+        reflex: "hands_to_mouth",
+        action: "scan_room",
+        speech: "Oh_god_Elena",
+      }
+    dilemma: ["call_911", "call_parents", "search_clues_first"]
+    decision: "Search for journal before calling police"
 
-      dilemma:
-        options:
-          - "Call 911 immediately (but what if there's a simple explanation and she overreacts?)"
-          - "Call their parents (but this will cause immense panic)."
-          - "Look for more clues herself (but this could be dangerous or compromise evidence)."
-        pressure: "The uncertainty of how long Elena has been gone creates extreme urgency."
+  # Line-level execution essentials
+  sensory:
+    sight: "dust_motes, coffee_splash, broken_mug_edges"
+    sound: "apartment_silence, heart_thumping, distant_traffic"
+    touch: "cold_doorknob, hand_tremor"
+    smell: "elena_perfume, stale_coffee"
 
-      decision: "She decides to do a quick, careful search for Elena's journal before calling the police, believing it might hold a clue."
+  # MRU examples for writing
+  mru:
+    [
+      "knocked_third_time → irritation → sighed_phone_out",
+      "doorknob_turned → cold_stomach_knot → froze_hand_on_knob",
+    ]
 
-    # Part 4: Line-Level Execution
-    sensory_details:
-      sight: "Dust motes in the light from the window, the dark splash of cold coffee on the rug, the sharp edges of the broken mug."
-      sound: "The unnerving silence of the apartment, the frantic thumping of her own heart, the distant city traffic."
-      touch: "The cold, smooth metal of the doorknob, the slight tremor in her own hands."
-      smell: "The faint, lingering scent of Elena's perfume mixed with the stale aroma of coffee."
+  # Narrative function
+  function:
+    purpose: "story_inciting_incident"
+    connects: "journal_search_goal_next_scene"
+    builds: "journal_discovery_cliffhanger"
+    questions: ["what_happened_elena", "how_long_missing", "journal_contents"]
 
-    mru_example:
-      - motivation: "Her knuckles rapped against the solid wood of the door for the third time."
-      - reaction: "(Feeling) A prickle of irritation surfaced. (Action) She sighed, shifting her weight and pulling out her phone."
-      - motivation: "She twisted the doorknob out of habit and it turned, the latch clicking open."
-      - reaction: "(Feeling) The irritation vanished, replaced by a cold knot in her stomach. (Reflex) She froze, her hand still on the knob."
+  # Scene vs summary application
+  render:
+    scene_why: "emotional_impact_requires_realtime"
+    key_moments:
+      ["door_unlock", "evidence_discovery", "emotional_reaction", "decision"]
+    summary_elements: ["sister_background", "coffee_routine", "work_life"]
 
-    # Part 5: Narrative Function
-    chapter_function:
-      purpose: "Serves as the inciting incident for the entire story."
-      connects_to: "The decision to find the journal provides the goal for the next scene."
-      builds_toward: "The chapter will end on the cliffhanger of what she finds in the journal's last entry."
-      reader_questions:
-        - "What happened to Elena during her disappearance?"
-        - "How long has Elena been missing?"
-        - "What will Maya find in Elena's journal?"
-
-    scene_vs_summary_application:
-      scene_justification: "Elena's disappearance discovery must be rendered in real-time for maximum emotional impact"
-      key_moments_in_scene:
-        [
-          "Door unlocking",
-          "Evidence discovery",
-          "Emotional reaction",
-          "Decision making",
-        ]
-      potential_summary_elements:
-        [
-          "Background of sister relationship",
-          "Previous coffee dates",
-          "Maya's work routine",
-        ]
-
-    unit_of_change_verification:
-      opening_state: "Maya expects normal Sunday coffee with sister"
-      closing_state: "Maya realizes she and Elena are both in supernatural danger"
-      change_measurement: "From mundane family routine to active supernatural threat"
-      change_catalyst: "Discovery of evidence + journal warning + immediate threat arrival"
-      story_advancement: "Launches main plot and establishes central conflict"
+  # Story advancement verification
+  advance:
+    opening: "expects_normal_coffee"
+    closing: "realizes_supernatural_danger"
+    catalyst: "evidence_discovery"
+    plot: "launches_main_story_establishes_conflict"
 ```

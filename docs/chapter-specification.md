@@ -67,89 +67,80 @@ The Three-Act Architecture is universal, but its implementation varies by genre.
 This YAML structure is the definitive input required to generate a high-quality chapter. It is designed to be comprehensive, ensuring all principles and architectural elements are considered before writing begins.
 
 ```yaml
-# --- CHAPTER BLUEPRINT ---
-chapter_metadata:
-  order: 1
+# ============================================
+# CHAPTER SPECIFICATION - COMPACT FORMAT
+# ============================================
+
+chapter:
+  chap: 1
   title: "Missing"
-  pov_character: "Maya Chen"
-  word_count_target: 3500
+  pov: "maya"
+  words: 3500
 
-core_purpose:
-  purpose_statement: "To transition Maya from her ordinary world into the story's central mystery by establishing her sister's disappearance as a supernatural event, forcing her from skeptic to reluctant investigator."
+  # Universal pattern: goal → conflict → outcome
+  goal: "Normal coffee date with Elena"
+  conflict: "Elena missing, signs of supernatural danger"
+  outcome: "Finds journal, realizes she's also a target"
 
-structural_beats:
-  act_1_setup:
-    hook: "Maya arrives at her sister Elena's apartment for their coffee date to find the door unlocked and the coffee pot still warm, but the apartment is silent."
-    orientation: "Establishes the weekly sister ritual and Maya's grounded, slightly cynical perspective in the present moment."
-    inciting_incident: "After a quick search, Maya confirms Elena is gone, and discovers signs of a brief, violent struggle—an overturned chair and a shattered mug."
+  # Three-act structure (essential beats only)
+  acts:
+    setup: # Act 1 (20%)
+      hook_in: "Door unlocked, coffee warm, Elena gone"
+      orient: "Weekly sister ritual, Maya's skeptical nature"
+      incident: "Overturned chair, shattered mug - signs of struggle"
 
-  act_2_confrontation:
-    rising_action: "Maya calls the police, but the officer on the phone is dismissive, suggesting Elena is just an irresponsible adult. Frustrated, Maya decides to search for clues herself."
-    midpoint_shift: "Behind a loose bookshelf, Maya discovers Elena's hidden research journal, realizing her sister was hiding a secret life from her. The tone shifts from a simple missing person case to a conspiracy."
-    complication: "The journal is filled with cryptic notes on local folklore, occult symbols, and mentions of a dangerous figure called 'The Shepherd'."
+    confrontation: # Act 2 (60%)
+      rising: "Police dismissive, Maya searches alone"
+      midpoint: "Discovers Elena's hidden research journal"
+      complicate: "Journal reveals supernatural conspiracy, 'The Shepherd'"
 
-  act_3_resolution_setup:
-    climax: "Maya deciphers the last, hastily scribbled entry in the journal: 'He found me. He looks for the mark. Don't let him find you.'"
-    partial_resolution: "Maya finds a definitive clue (the journal), answering the chapter's question of 'what happened to Elena?' with 'she was involved in something dangerous and supernatural'."
-    forward_hook: "As Maya absorbs the shock, she hears a slow, deliberate knock at the apartment door. The final line is: 'She froze, remembering the journal's warning about a man who looks for a mark—a mark she'd had on her wrist since birth.'"
+    resolution: # Act 3 (20%)
+      climax: "Final journal entry: 'He looks for the mark'"
+      resolve: "Maya realizes Elena was in supernatural danger"
+      hook_out: "Knock at door, Maya has the 'mark' mentioned"
 
-functional_objectives:
-  plot_advancement: "Initiate the main plot (the search for Elena) and introduce the central conflict (supernatural conspiracy)."
-  character_development: "Showcase Maya's core motivation (protectiveness of her sister) and begin her arc from skeptic to believer."
-  world_building: "Introduce the core concept that the mundane world has a hidden supernatural layer."
-  theme_introduction: "Introduce themes of 'hidden truths' and 'familial bonds'."
+  # Character development
+  chars:
+    maya:
+      start: "casual_anticipation"
+      arc: "concern → panic → targeted_fear"
+      end: "trapped_resolve"
+      motivation: "protect_elena"
+      growth: "skeptic → reluctant_believer"
 
-tension_and_emotional_arc:
-  starting_emotion: "Casual, lighthearted anticipation."
-  peak_tension_event: "The final knock on the door, linking the journal's abstract threat to an immediate, present danger."
-  ending_emotion: "Fear and trapped resolve."
-  tension_layers:
-    - external: "Signs of a struggle; the mysterious knocker at the door."
-    - internal: "Maya's rising panic and guilt for being unaware of Elena's troubles."
-    - interpersonal: "Conflict with the dismissive police officer, highlighting Maya's isolation."
+  # Tension layers
+  tension:
+    external: "signs_struggle, mysterious_knocker"
+    internal: "maya_panic, guilt_unaware"
+    interpersonal: "dismissive_police"
+    atmospheric: "journal_warnings"
+    peak: "door_knock_connects_abstract_threat_to_immediate"
 
-continuity_management:
-  callback_to_prior_chapters: "N/A (This is Chapter 1)."
-  foreshadow_for_future_chapters:
-    - "The Shepherd (main antagonist)."
-    - "The concept of a 'mark' (key plot device)."
-    - "Elena's secret research (future exposition source)."
+  # Dual mandate fulfillment
+  mandate:
+    episodic:
+      arc: "search_for_elena → journal_discovery → question_answered"
+      payoff: "casual_concern → urgent_fear"
+      answered: "What happened to Elena? Supernatural research gone wrong"
+    serial:
+      complication: "The Shepherd threat established"
+      stakes: "Maya also targeted due to mark"
+      compulsion: "door_knock_immediate_danger"
 
-reader_engagement_points:
-  discussion_prompt: "Who or what is 'The Shepherd'? What is the significance of the mark?"
-  theory_bait: "The journal contains a map with several circled locations, inviting speculation on where Elena was investigating."
+  # Forward hook architecture
+  hook:
+    type: "compound" # revelation + threat + emotional
+    reveal: "Maya bears the mark from journal warning"
+    threat: "Knock suggests Shepherd found Maya"
+    emotion: "protective_instincts vs newfound_vulnerability"
 
-dual_mandate_fulfillment:
-  episodic_satisfaction:
-    complete_arc: "Maya's search for Elena reaches a resolution when she finds the journal"
-    emotional_payoff: "Reader experiences Maya's journey from casual concern to urgent fear"
-    question_answered: "What happened to Elena? - Answered: she was involved in dangerous supernatural research"
-  serial_momentum:
-    new_complication: "The journal's warning about 'The Shepherd' creates immediate threat"
-    escalated_stakes: "Maya realizes she may be a target due to her 'mark'"
-    forward_compulsion: "The knock at the door creates urgent need to know what happens next"
+  # Continuity
+  continuity:
+    foreshadow: ["the_shepherd", "mark_significance", "elena_research"]
+    theories: ["shepherd_identity", "mark_meaning", "journal_locations"]
 
-foundational_principles_application:
-  narrative_arc_principle: "Chapter follows complete micro-story: goal (coffee with Elena) → conflict (disappearance/evidence) → climax (journal discovery) → changed state (Maya as target)"
-  tension_engine_principle: "Escalating tension through external (signs of struggle), internal (Maya's growing panic), interpersonal (dismissive police), atmospheric (ominous journal warnings)"
-  cause_and_effect_principle: "Each discovery leads logically to the next: unlocked door → signs of struggle → journal search → supernatural revelation → immediate threat"
-
-forward_hook_architecture:
-  hook_type: "compound" # revelation + looming_threat + emotional_cliffhanger
-  revelation_component: "Maya realizes she bears the 'mark' mentioned in Elena's warning"
-  threat_component: "The deliberate knock suggests 'The Shepherd' has found Maya"
-  emotional_component: "Maya's protective instincts clash with her newfound vulnerability"
-  effectiveness_factors:
-    [
-      "natural_consequence_of_events",
-      "raises_immediate_stakes",
-      "personalizes_abstract_threat",
-    ]
-
-genre_considerations:
-  primary_genre: "urban_fantasy"
-  pacing_approach: "moderate_build_with_sharp_escalation"
-  exposition_balance: "world_building_through_discovery_rather_than_explanation"
-  hook_style: "supernatural_threat_with_personal_stakes"
-  chapter_length_justification: "3500_words_allows_proper_tension_building_and_world_establishment"
+  # Genre essentials
+  genre: "urban_fantasy"
+  pacing: "moderate_build_sharp_escalation"
+  exposition: "discovery_not_explanation"
 ```

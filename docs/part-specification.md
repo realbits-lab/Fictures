@@ -53,164 +53,94 @@
 ## 5. YAML Data Structure Example for Part Planning
 
 ```yaml
-parts:
-  - part_order: 1
-    part_title: "Discovery"
-    part_function: "story_setup"
-    target_word_count: 20000
+# ============================================
+# PART SPECIFICATION - COMPACT FORMAT
+# ============================================
 
-    structural_role:
-      story_position: "opening_act"
-      narrative_function: "world_establishment"
-      conflict_initiation: "inciting_incident"
+part:
+  part: 1
+  title: "Discovery"
+  words: 20000
+  function: "story_setup"
 
-    central_questions:
-      primary: "How will Maya react when she discovers her magical abilities?"
-      secondary: "Can Maya overcome her denial and accept the supernatural world that has claimed her sister?"
+  # Universal pattern: goal → conflict → outcome
+  goal: "Maya accepts supernatural reality"
+  conflict: "Denial vs mounting evidence"
+  outcome: "Reluctant training commitment"
 
-    character_objectives:
-      protagonist:
-        character_name: "Maya Chen"
-        starting_position: "denial_and_normalcy"
-        development_target: "reluctant_acceptance"
-        key_transformations: ["magical_manifestation", "mentor_acceptance"]
-        arc_progression:
-          [
-            "normal_routine",
-            "strange_discoveries",
-            "power_manifestation",
-            "reluctant_training_acceptance",
-          ]
-        relationship_evolution:
-          [
-            "protective_sister",
-            "understanding_elena_burden",
-            "accepting_mentor_guidance",
-          ]
-        internal_conflict: "safety_vs_responsibility"
-      deuteragonist:
-        character_name: "Elena Chen"
-        starting_position: "mysterious_absence"
-        development_target: "catalyst_revelation"
-        key_transformations:
-          ["disappearance_mystery", "supernatural_connection"]
-        arc_progression:
-          [
-            "absent_mystery",
-            "journal_revelation",
-            "supernatural_connection",
-            "catalyst_influence",
-          ]
-        relationship_evolution:
-          ["missing_sister", "revealed_researcher", "magical_connection"]
-        narrative_function: "motivation_and_world_building"
+  # Central questions driving this part
+  questions:
+    primary: "How will Maya react to discovering her magical abilities?"
+    secondary: "Can Maya overcome denial to accept the supernatural world?"
 
-    plot_development:
-      major_events:
+  # Character development in this part
+  chars:
+    maya:
+      start: "denial_normalcy"
+      end: "reluctant_acceptance"
+      arc:
         [
-          "elena_disappearance",
-          "journal_discovery",
-          "shadow_manifestation",
-          "marcus_introduction",
+          "normal_routine",
+          "strange_discoveries",
+          "power_manifestation",
+          "training_acceptance",
         ]
-      revelations:
-        [
-          "elena_supernatural_research",
-          "maya_inherited_abilities",
-          "shadow_keeper_legacy",
-        ]
-      conflict_escalation:
-        ["personal_loss", "reality_challenge", "power_responsibility"]
-      plot_descriptions:
-        - "Elena's disappearance serves as the inciting incident that launches Maya into the supernatural world and her journey to master shadow magic."
-        - "The discovery of Elena's research journal provides the first concrete clues leading Maya to investigate Shadow Realm legends and supernatural elements."
+      conflict: "safety_vs_responsibility"
+      transforms: ["magical_manifestation", "mentor_acceptance"]
 
-    thematic_integration:
-      primary_theme: "denial_and_acceptance"
-      thematic_priorities: ["denial_vs_truth", "family_responsibility"]
-      thematic_moments:
-        ["photograph_evidence", "power_manifestation", "training_decision"]
-      symbolic_elements: ["shadows_as_fears", "photography_as_truth_capture"]
-      thematic_descriptions:
-        - "Denial and fear of change dominate as Maya struggles to accept that her normal life has ended and supernatural responsibilities await."
-        - "Family responsibility and protection drive Maya's actions as she realizes she must embrace dangerous magic to save Elena."
+    elena:
+      start: "mysterious_absence"
+      end: "catalyst_revelation"
+      arc: ["absent_mystery", "journal_revelation", "supernatural_connection"]
+      function: "motivation_worldbuilding"
+      transforms: ["disappearance_mystery", "supernatural_connection"]
 
-    emotional_progression:
-      opening_state: "casual_family_concern"
-      escalation_points:
-        ["growing_fear", "supernatural_terror", "determined_resolution"]
-      closing_state: "grim_commitment"
-      emotional_descriptions:
-        - "Maya begins with anxiety and helplessness about Elena's disappearance, feeling powerless to help or understand what happened."
-        - "The part concludes with Maya's grim determination to master magic despite the dangers, accepting that saving Elena requires embracing her feared abilities."
+  # Plot progression
+  plot:
+    events:
+      [
+        "elena_disappearance",
+        "journal_discovery",
+        "shadow_manifestation",
+        "marcus_introduction",
+      ]
+    reveals: ["elena_research", "maya_abilities", "shadow_keeper_legacy"]
+    escalation: ["personal_loss", "reality_challenge", "power_responsibility"]
 
-    ending_strategy:
-      resolution_elements:
-        ["training_commitment", "moral_conflict_establishment"]
-      transition_setup: ["power_development_phase", "mentor_relationship"]
-      cliffhanger_elements: ["elena_time_pressure", "corruption_risk"]
-      ending_descriptions:
-        - "Maya commits to dangerous magical training, setting up the intensive learning phase that will dominate the next part of the story."
-        - "Maya must choose between personal safety and saving Elena, establishing the central moral conflict that will drive her character development."
+  # Thematic focus
+  themes:
+    primary: "denial_and_acceptance"
+    elements: ["denial_vs_truth", "family_responsibility"]
+    moments: ["photograph_evidence", "power_manifestation", "training_decision"]
+    symbols: ["shadows_as_fears", "photography_as_truth"]
 
-    serial_arc_development:
-      mini_arc_structure: "Setup → Rising Tension → Part Climax → Transition Hook"
-      satisfaction_elements:
-        [
-          "Elena's fate revealed",
-          "Maya's abilities confirmed",
-          "Mentor relationship established",
-        ]
-      anticipation_elements:
-        [
-          "Corruption risk established",
-          "Training challenges ahead",
-          "Time pressure intensified",
-        ]
+  # Emotional journey
+  emotion:
+    start: "casual_family_concern"
+    progression:
+      ["growing_fear", "supernatural_terror", "determined_resolution"]
+    end: "grim_commitment"
 
-    reader_engagement_cycles:
-      climax_pattern: "Part climax occurs at 85% through part structure"
-      anticipation_pattern: "Final 15% focused on setup for next part"
-      discussion_triggers:
-        [
-          "Maya's moral choices",
-          "Elena's true situation",
-          "Marcus's hidden past",
-        ]
+  # Part ending strategy
+  ending:
+    resolution: ["training_commitment", "moral_conflict_established"]
+    setup: ["power_development_phase", "mentor_relationship"]
+    hooks: ["elena_time_pressure", "corruption_risk"]
+    hook_out: "Maya accepts training but discovers mentor's dark secret"
 
-    community_discussion_points:
-      speculation_seeds:
-        [
-          "What is Marcus hiding about his previous student?",
-          "Is Elena still herself in the Shadow Realm?",
-        ]
-      character_debates:
-        [
-          "Should Maya trust Marcus completely?",
-          "Is saving Elena worth the corruption risk?",
-        ]
-      world_building_questions:
-        [
-          "How does shadow magic actually work?",
-          "What are the rules of the Shadow Realm?",
-        ]
+  # Serial structure
+  serial:
+    arc: "Setup → Rising Tension → Part Climax → Transition Hook"
+    climax_at: "85%"
+    satisfaction:
+      ["elena_fate_revealed", "maya_abilities_confirmed", "mentor_established"]
+    anticipation: ["corruption_risk", "training_challenges", "time_pressure"]
 
-    feedback_integration_opportunities:
-      reader_input_points:
-        [
-          "Character relationship dynamics",
-          "Magic system complexity preferences",
-          "Pacing feedback",
-        ]
-      adjustment_flexibility:
-        [
-          "Secondary character focus",
-          "World-building detail level",
-          "Romance subplot development",
-        ]
-
-    publication_milestone_planning:
-      natural_break_point: "End of Part 1 provides major story milestone"
-      reader_retention_hook: "Maya's transformation from skeptic to reluctant student"
-      community_engagement_peak: "Training commitment decision generates maximum reader investment"
+  # Reader engagement
+  engagement:
+    discussions:
+      ["maya_moral_choices", "elena_true_situation", "marcus_hidden_past"]
+    speculation: ["marcus_previous_student", "elena_still_herself"]
+    debates: ["trust_marcus_completely", "elena_worth_corruption_risk"]
+    feedback: ["character_dynamics", "magic_complexity", "pacing"]
 ```
