@@ -144,4 +144,19 @@ scenes:
       connects_to: "The decision to find the journal provides the goal for the next scene."
       builds_toward: "The chapter will end on the cliffhanger of what she finds in the journal's last entry."
       reader_questions:
+        - "What happened to Elena during her disappearance?"
+        - "How long has Elena been missing?"
+        - "What will Maya find in Elena's journal?"
+    
+    scene_vs_summary_application:
+      scene_justification: "Elena's disappearance discovery must be rendered in real-time for maximum emotional impact"
+      key_moments_in_scene: ["Door unlocking", "Evidence discovery", "Emotional reaction", "Decision making"]
+      potential_summary_elements: ["Background of sister relationship", "Previous coffee dates", "Maya's work routine"]
+    
+    unit_of_change_verification:
+      opening_state: "Maya expects normal Sunday coffee with sister"
+      closing_state: "Maya realizes she and Elena are both in supernatural danger"
+      change_measurement: "From mundane family routine to active supernatural threat"
+      change_catalyst: "Discovery of evidence + journal warning + immediate threat arrival"
+      story_advancement: "Launches main plot and establishes central conflict"
 ```
