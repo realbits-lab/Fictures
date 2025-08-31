@@ -1,7 +1,3 @@
-Here is a comprehensive guide on how to write a chapter, synthesized from extensive research and specifically designed to be understood and executed by a Large Language Model.
-
-# Chapter Generation Framework for LLMs
-
 ## 1. Definition and Core Purpose
 
 A **chapter** is the primary unit of narrative delivery in serialized fiction. Its function is twofold and non-negotiable, governed by **The Dual Mandate**:
@@ -141,7 +137,12 @@ forward_hook_architecture:
   revelation_component: "Maya realizes she bears the 'mark' mentioned in Elena's warning"
   threat_component: "The deliberate knock suggests 'The Shepherd' has found Maya"
   emotional_component: "Maya's protective instincts clash with her newfound vulnerability"
-  effectiveness_factors: ["natural_consequence_of_events", "raises_immediate_stakes", "personalizes_abstract_threat"]
+  effectiveness_factors:
+    [
+      "natural_consequence_of_events",
+      "raises_immediate_stakes",
+      "personalizes_abstract_threat",
+    ]
 
 genre_considerations:
   primary_genre: "urban_fantasy"
