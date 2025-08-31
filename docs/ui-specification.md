@@ -1,20 +1,111 @@
 # UI Specification - Fictures Platform
 
-## Overview
+## 1. Overview
 
 The Fictures UI supports a 4-level hierarchical story development system (Book > Story > Part > Chapter/Scene) optimized for web serial fiction creation, community engagement, and AI-assisted writing. The interface prioritizes intuitive navigation, seamless content creation, and real-time collaboration features across desktop and mobile browsers.
 
-## Core Design Principles
+## 2. Key Design Features
 
-- **Hierarchical Navigation**: Mirror the 4-level story structure in UI organization
-- **Context Awareness**: Always show user's current position in hierarchy
-- **Progressive Disclosure**: Present relevant tools and information based on current level
-- **Community Integration**: Seamless reader engagement and feedback features
-- **Publication Flow**: Streamlined serial publishing with scheduling and analytics
-- **AI Assistance**: Contextual AI tools available at every level
-- **Mobile-First Responsive**: Touch-friendly interface scaling from mobile to desktop
+### Navigation Patterns
 
-## Main Dashboard - Project Overview
+**Desktop Navigation Flow:**
+
+```
+Dashboard → Book Overview → Story Planning → Part Development → Chapter Writing
+     ↓           ↓              ↓              ↓              ↓
+Community Hub ← Analytics ← Publication ← AI Assistant ← Scene Editor
+```
+
+**Mobile Navigation:**
+
+- Collapsible hamburger menu
+- Bottom tab bar for primary actions (Write, Community, Publish, Profile)
+- Swipe gestures for moving between chapters/scenes
+- Long-press context menus for quick actions
+
+### Responsive Design Breakpoints
+
+**Mobile (320px - 768px):**
+
+- Single column layout
+- Collapsible sections
+- Touch-optimized buttons (44px minimum)
+- Simplified navigation with bottom tabs
+
+**Tablet (768px - 1024px):**
+
+- Two-column layout where appropriate
+- Expanded side panels for tools
+- Touch and cursor hybrid interface
+
+**Desktop (1024px+):**
+
+- Full multi-column layouts
+- Persistent tool panels
+- Keyboard shortcuts
+- Hover states and detailed tooltips
+
+### AI Integration Points
+
+**Contextual AI Assistant:**
+
+- Always available floating button
+- Context-aware suggestions based on current level (Story/Part/Chapter/Scene)
+- Real-time writing feedback
+- Character arc analysis and suggestions
+- Plot thread tracking and recommendations
+
+**AI Features by Level:**
+
+- **Story Level**: Theme analysis, character hierarchy optimization, plot structure suggestions
+- **Part Level**: Arc development, cliffhanger planning, pacing analysis
+- **Chapter Level**: Scene structure, dialogue enhancement, tension building
+- **Scene Level**: Goal-conflict-outcome optimization, emotional beats, sensory details
+
+### Community Integration
+
+**Reader Engagement Tools:**
+
+- Inline comment system with threading
+- Theory and prediction tracking
+- Fan content galleries
+- Author-reader Q&A sessions
+- Polls and community decisions
+
+**Feedback Integration:**
+
+- Comment sentiment analysis
+- Reader engagement metrics
+- Theory tracking and influence indicators
+- Community-driven story suggestions
+
+### Performance Considerations
+
+**Content Loading:**
+
+- Lazy loading for large story hierarchies
+- Progressive enhancement for complex features
+- Offline writing capability with sync
+- Real-time collaboration with conflict resolution
+
+**Data Management:**
+
+- Incremental saves every 30 seconds while writing
+- Version history with branching for major revisions
+- Cloud sync across devices
+- Export capabilities (EPUB, PDF, etc.)
+
+## 3. Core Design Principles
+
+1. **Hierarchical Navigation**: Mirror the 4-level story structure in UI organization
+2. **Context Awareness**: Always show user's current position in hierarchy
+3. **Progressive Disclosure**: Present relevant tools and information based on current level
+4. **Community Integration**: Seamless reader engagement and feedback features
+5. **Publication Flow**: Streamlined serial publishing with scheduling and analytics
+6. **AI Assistance**: Contextual AI tools available at every level
+7. **Mobile-First Responsive**: Touch-friendly interface scaling from mobile to desktop
+
+## 4. Main Dashboard - Project Overview
 
 ```ascii
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -56,7 +147,7 @@ The Fictures UI supports a 4-level hierarchical story development system (Book >
 
 **User Flow**: Users start here to see all projects, recent activity, and quick access to continue writing or view analytics. Clicking any book card opens the Book Overview.
 
-## Book Overview - Story Management
+## 5. Book Overview - Story Management
 
 ```ascii
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -99,7 +190,7 @@ The Fictures UI supports a 4-level hierarchical story development system (Book >
 
 **User Flow**: Shows book-level overview with all stories. Users can click "Story Planning" for high-level planning or "Continue" to jump to current writing position.
 
-## Story Planning Interface
+## 6. Story Planning Interface
 
 ```ascii
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -160,7 +251,7 @@ The Fictures UI supports a 4-level hierarchical story development system (Book >
 
 **User Flow**: Story-level planning interface where users define overall narrative structure. Users can click into individual parts for detailed development or characters for arc planning.
 
-## Part Development Interface
+## 7. Part Development Interface
 
 ```ascii
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -226,7 +317,7 @@ The Fictures UI supports a 4-level hierarchical story development system (Book >
 
 **User Flow**: Part-level management showing chapter progress and character development. Users click "Continue Writing" to open chapter editor or "Scene Outline" for detailed chapter planning.
 
-## Chapter Writing Interface
+## 8. Chapter Writing Interface
 
 ```ascii
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -338,7 +429,7 @@ The Fictures UI supports a 4-level hierarchical story development system (Book >
 
 **User Flow**: Mobile interface prioritizes writing space with collapsible tools. Touch-friendly buttons and swipe gestures for navigation.
 
-## Community Hub Interface
+## 9. Community Hub Interface
 
 ```ascii
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -404,7 +495,7 @@ The Fictures UI supports a 4-level hierarchical story development system (Book >
 
 **User Flow**: Community engagement center where authors can interact with readers, view feedback, and monitor fan theories that might influence story direction.
 
-## Publication Center Interface
+## 10. Publication Center Interface
 
 ```ascii
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -467,85 +558,5 @@ The Fictures UI supports a 4-level hierarchical story development system (Book >
 ```
 
 **User Flow**: Publication management with scheduling, analytics, and community engagement features. Authors can publish immediately or schedule releases with optimal timing suggestions.
-
-## Key Design Features
-
-### Navigation Patterns
-
-**Desktop Navigation Flow:**
-```
-Dashboard → Book Overview → Story Planning → Part Development → Chapter Writing
-     ↓           ↓              ↓              ↓              ↓
-Community Hub ← Analytics ← Publication ← AI Assistant ← Scene Editor
-```
-
-**Mobile Navigation:**
-- Collapsible hamburger menu
-- Bottom tab bar for primary actions (Write, Community, Publish, Profile)
-- Swipe gestures for moving between chapters/scenes
-- Long-press context menus for quick actions
-
-### Responsive Design Breakpoints
-
-**Mobile (320px - 768px):**
-- Single column layout
-- Collapsible sections
-- Touch-optimized buttons (44px minimum)
-- Simplified navigation with bottom tabs
-
-**Tablet (768px - 1024px):**
-- Two-column layout where appropriate
-- Expanded side panels for tools
-- Touch and cursor hybrid interface
-
-**Desktop (1024px+):**
-- Full multi-column layouts
-- Persistent tool panels
-- Keyboard shortcuts
-- Hover states and detailed tooltips
-
-### AI Integration Points
-
-**Contextual AI Assistant:**
-- Always available floating button
-- Context-aware suggestions based on current level (Story/Part/Chapter/Scene)
-- Real-time writing feedback
-- Character arc analysis and suggestions
-- Plot thread tracking and recommendations
-
-**AI Features by Level:**
-- **Story Level**: Theme analysis, character hierarchy optimization, plot structure suggestions
-- **Part Level**: Arc development, cliffhanger planning, pacing analysis
-- **Chapter Level**: Scene structure, dialogue enhancement, tension building
-- **Scene Level**: Goal-conflict-outcome optimization, emotional beats, sensory details
-
-### Community Integration
-
-**Reader Engagement Tools:**
-- Inline comment system with threading
-- Theory and prediction tracking
-- Fan content galleries
-- Author-reader Q&A sessions
-- Polls and community decisions
-
-**Feedback Integration:**
-- Comment sentiment analysis
-- Reader engagement metrics
-- Theory tracking and influence indicators
-- Community-driven story suggestions
-
-### Performance Considerations
-
-**Content Loading:**
-- Lazy loading for large story hierarchies
-- Progressive enhancement for complex features
-- Offline writing capability with sync
-- Real-time collaboration with conflict resolution
-
-**Data Management:**
-- Incremental saves every 30 seconds while writing
-- Version history with branching for major revisions
-- Cloud sync across devices
-- Export capabilities (EPUB, PDF, etc.)
 
 This UI specification creates an intuitive, hierarchical interface that mirrors the story development process while providing powerful community engagement and AI assistance features across all device types.
