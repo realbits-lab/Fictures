@@ -2,23 +2,45 @@
 
 ## 1. Overview
 
-The Fictures UI supports a 4-level hierarchical story development system (Book > Story > Part > Chapter/Scene) optimized for web serial fiction creation, community engagement, and AI-assisted writing. The interface prioritizes intuitive navigation, seamless content creation, and real-time collaboration features across desktop and mobile browsers.
+The Fictures UI supports a 4-level hierarchical story development system (Story > Part > Chapter/Scene) optimized for web serial fiction creation, community engagement, and AI-assisted writing. The interface prioritizes intuitive navigation, seamless content creation, and real-time collaboration features across desktop and mobile browsers.
 
 ## 2. Key Design Features
 
-### Navigation Patterns
+### Global Navigation Bar (GNB)
+
+**Consistent Top Navigation Bar across all screens:**
+
+```ascii
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 📖 Fictures  [📚 Stories] [📝 Write] [💬 Community] [📤 Publish] [🤖 AI]   │
+│              [📊 Analytics] [⚙️ Settings] [👤 Profile] [🔔 Notifications]    │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**GNB Menu Items:**
+- **Stories**: Navigate to story dashboard and management
+- **Write**: Quick access to current writing position
+- **Community**: Reader engagement and feedback hub
+- **Publish**: Publication scheduling and management
+- **AI**: AI assistant and writing tools
+- **Analytics**: Story performance and reader metrics
+- **Settings**: Account and story configuration
+- **Profile**: User profile and public author page
+- **Notifications**: Updates, comments, and community alerts
+
+**Navigation Patterns**
 
 **Desktop Navigation Flow:**
 
 ```
-Dashboard → Book Overview → Story Planning → Part Development → Chapter Writing
-     ↓           ↓              ↓              ↓              ↓
+Dashboard → Story Overview → Part Development → Chapter Writing
+     ↓           ↓              ↓              ↓
 Community Hub ← Analytics ← Publication ← AI Assistant ← Scene Editor
 ```
 
 **Mobile Navigation:**
 
-- Collapsible hamburger menu
+- GNB collapses to hamburger menu on mobile
 - Bottom tab bar for primary actions (Write, Community, Publish, Profile)
 - Swipe gestures for moving between chapters/scenes
 - Long-press context menus for quick actions
@@ -97,7 +119,7 @@ Community Hub ← Analytics ← Publication ← AI Assistant ← Scene Editor
 
 ## 3. Core Design Principles
 
-1. **Hierarchical Navigation**: Mirror the 4-level story structure in UI organization
+1. **Hierarchical Navigation**: Mirror the 3-level story structure in UI organization
 2. **Context Awareness**: Always show user's current position in hierarchy
 3. **Progressive Disclosure**: Present relevant tools and information based on current level
 4. **Community Integration**: Seamless reader engagement and feedback features
@@ -109,14 +131,15 @@ Community Hub ← Analytics ← Publication ← AI Assistant ← Scene Editor
 
 ```ascii
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ Fictures                                          [Profile] [Settings] [?] │
+│ 📖 Fictures  [📚 Stories] [📝 Write] [💬 Community] [📤 Publish] [🤖 AI]   │
+│              [📊 Analytics] [⚙️ Settings] [👤 Profile] [🔔 Notifications]    │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  📚 My Books & Stories                     [+ New Book] [+ New Story]      │
+│  📚 My Stories                                           [+ New Story]      │
 │                                                                             │
 │  ┌─────────────────────┐  ┌─────────────────────┐  ┌─────────────────────┐ │
 │  │ 📖 The Shadow Keeper│  │ 📖 Dragon Chronicles│  │ 📖 + Create New    │ │
-│  │ Urban Fantasy       │  │ Epic Fantasy        │  │ Book                │ │
+│  │ Urban Fantasy       │  │ Epic Fantasy        │  │ Story               │ │
 │  │ ─────────────────── │  │ ─────────────────── │  │                     │ │
 │  │ 📄 Parts: 3/3      │  │ 📄 Parts: 5/7      │  │                     │ │
 │  │ ✓ Chapters: 15/15  │  │ ⏳ Chapters: 28/35  │  │                     │ │
@@ -145,21 +168,21 @@ Community Hub ← Analytics ← Publication ← AI Assistant ← Scene Editor
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**User Flow**: Users start here to see all projects, recent activity, and quick access to continue writing or view analytics. Clicking any book card opens the Book Overview.
+**User Flow**: Users start here to see all projects, recent activity, and quick access to continue writing or view analytics. Clicking any story card opens the Story Overview and Planning Interface.
 
-## 5. Book Overview - Story Management
+## 5. Story Overview and Planning Interface
 
 ```ascii
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ 📚 The Shadow Keeper                                    [Dashboard] [Share] │
+│ 📖 Fictures  [📚 Stories] [📝 Write] [💬 Community] [📤 Publish] [🤖 AI]   │
+│              [📊 Analytics] [⚙️ Settings] [👤 Profile] [🔔 Notifications]    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 📄 The Shadow Keeper                                            [📤 Share] │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ 🏷️ Urban Fantasy | 📅 Started: Mar 2024 | 📖 Status: Publishing           │
 │                                                                             │
-│ Stories in this Book:                                      [+ New Story]   │
-│                                                                             │
+│ 📋 Story Progress Overview:                            [📝 Continue Writing] │
 │ ┌─────────────────────────────────────────────────────────────────────────┐ │
-│ │ 📄 Main Story: Shadow Magic Chronicles                  [📝 Continue]   │ │
-│ │ ──────────────────────────────────────────────────────────────────────  │ │
 │ │ Progress: ████████████████████░░ 85% Complete                          │ │
 │ │                                                                         │ │
 │ │ 📋 Parts Overview:                                                      │ │
@@ -172,30 +195,6 @@ Community Hub ← Analytics ← Publication ← AI Assistant ← Scene Editor
 │ │ 🎯 Current: Writing Chapter 16 "Final Confrontation"                   │ │
 │ │ 📊 Total: 63k words | 👥 2.4k readers | ⭐ 4.7 rating                 │ │
 │ └─────────────────────────────────────────────────────────────────────────┘ │
-│                                                                             │
-│ 📊 Analytics Summary                        🤖 AI Story Assistant          │
-│ ┌─────────────────────┐                    ┌─────────────────────┐         │
-│ │ 📈 Reader Growth    │                    │ "Chapter 16 needs   │         │
-│ │ Week: +23%          │                    │ Maya's character arc│         │
-│ │ Month: +156%        │                    │ resolution. Review  │         │
-│ │                     │                    │ her development?"   │         │
-│ │ 💬 Engagement       │                    │                     │         │
-│ │ Comments: 1.2k      │                    │ [Plan Arc] [Review] │         │
-│ │ Theories: 89        │                    │                     │         │
-│ └─────────────────────┘                    └─────────────────────┘         │
-│                                                                             │
-│ [📖 Story Planning] [📝 Write Chapter] [📊 Full Analytics] [⚙️ Settings]  │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-**User Flow**: Shows book-level overview with all stories. Users can click "Story Planning" for high-level planning or "Continue" to jump to current writing position.
-
-## 6. Story Planning Interface
-
-```ascii
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 📄 Story Planning: Shadow Magic Chronicles        [📚 Book] [📝 Write Now] │
-├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │ 🎯 Story Foundation                              🤖 AI Assistant           │
 │ ┌─────────────────────────────────────────────┐ ┌─────────────────────┐    │
@@ -249,13 +248,16 @@ Community Hub ← Analytics ← Publication ← AI Assistant ← Scene Editor
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**User Flow**: Story-level planning interface where users define overall narrative structure. Users can click into individual parts for detailed development or characters for arc planning.
+**User Flow**: Combined story overview and planning interface showing progress, analytics, and story foundation elements. Users can continue writing, plan story structure, or manage character development.
 
-## 7. Part Development Interface
+## 6. Part Development Interface
 
 ```ascii
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ 📋 Part III: Resolution Development        [📄 Story Plan] [📝 Write Chapter]│
+│ 📖 Fictures  [📚 Stories] [📝 Write] [💬 Community] [📤 Publish] [🤖 AI]   │
+│              [📊 Analytics] [⚙️ Settings] [👤 Profile] [🔔 Notifications]    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 📋 Part III: Resolution Development        [📄 Story Overview] [📝 Write Chapter]│
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │ 🎯 Part Overview                                                            │
@@ -317,10 +319,13 @@ Community Hub ← Analytics ← Publication ← AI Assistant ← Scene Editor
 
 **User Flow**: Part-level management showing chapter progress and character development. Users click "Continue Writing" to open chapter editor or "Scene Outline" for detailed chapter planning.
 
-## 8. Chapter Writing Interface
+## 7. Chapter Writing Interface
 
 ```ascii
 ┌─────────────────────────────────────────────────────────────────────────────┐
+│ 📖 Fictures  [📚 Stories] [📝 Write] [💬 Community] [📤 Publish] [🤖 AI]   │
+│              [📊 Analytics] [⚙️ Settings] [👤 Profile] [🔔 Notifications]    │
+├─────────────────────────────────────────────────────────────────────────────┤
 │ 📝 Chapter 16: "Final Confrontation"      [📋 Part III] [💾 Save] [📤 Publish]│
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
@@ -429,11 +434,14 @@ Community Hub ← Analytics ← Publication ← AI Assistant ← Scene Editor
 
 **User Flow**: Mobile interface prioritizes writing space with collapsible tools. Touch-friendly buttons and swipe gestures for navigation.
 
-## 9. Community Hub Interface
+## 8. Community Hub Interface
 
 ```ascii
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ 💬 Community Hub - The Shadow Keeper         [📚 Back to Story] [🔔 Alerts]│
+│ 📖 Fictures  [📚 Stories] [📝 Write] [💬 Community] [📤 Publish] [🤖 AI]   │
+│              [📊 Analytics] [⚙️ Settings] [👤 Profile] [🔔 Notifications]    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 💬 Community Hub - The Shadow Keeper                          [📄 Back to Story]│
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │ 🔥 Trending Discussions                        📊 Community Stats           │
@@ -495,11 +503,14 @@ Community Hub ← Analytics ← Publication ← AI Assistant ← Scene Editor
 
 **User Flow**: Community engagement center where authors can interact with readers, view feedback, and monitor fan theories that might influence story direction.
 
-## 10. Publication Center Interface
+## 9. Publication Center Interface
 
 ```ascii
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ 📤 Publication Center                      [📚 Stories] [💬 Community] [📊]│
+│ 📖 Fictures  [📚 Stories] [📝 Write] [💬 Community] [📤 Publish] [🤖 AI]   │
+│              [📊 Analytics] [⚙️ Settings] [👤 Profile] [🔔 Notifications]    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 📤 Publication Center                                                       │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │ 📅 Publishing Schedule                                    [⚙️ Schedule Settings]│
