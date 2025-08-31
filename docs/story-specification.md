@@ -65,30 +65,59 @@ Before writing, you must decide how to divide your complete story into major par
 story_structure:
   title: "The Shadow Keeper"
   genre: "urban fantasy"
+  central_question: "Can Maya master dangerous shadow magic to save Elena before power corrupts her?"
+  target_word_count: 80000
   
-  characters:
-    - "Maya Chen is a 24-year-old photographer whose protective nature drives her to master dangerous shadow magic when her sister Elena disappears into a parallel realm."
-    - "Elena Chen serves as both catalyst and emotional anchor for Maya's journey, fighting to maintain her humanity while trapped in the Shadow Realm."
-    - "Marcus Webb becomes Maya's reluctant mentor, haunted by his previous student's corruption and desperate to prevent history from repeating."
-    - "The Void Collector emerges as a tragic antagonist whose fall from grace mirrors Maya's dangerous path toward power."
+  character_hierarchy:
+    protagonist:
+      character_name: "Maya Chen"
+      narrative_function: "hero"
+      character_archetype: "reluctant_hero"
+      story_role: "primary_viewpoint"
+      description: "A 24-year-old photographer whose protective nature drives her to master dangerous shadow magic when her sister Elena disappears into a parallel realm."
+    deuteragonist:
+      character_name: "Elena Chen"
+      narrative_function: "catalyst"
+      character_archetype: "missing_person"
+      story_role: "motivation_source"
+      description: "Serves as both catalyst and emotional anchor for Maya's journey, fighting to maintain her humanity while trapped in the Shadow Realm."
+    tritagonist:
+      character_name: "Marcus Webb"
+      narrative_function: "mentor_ally"
+      character_archetype: "guide"
+      story_role: "support_wisdom"
+      description: "Becomes Maya's reluctant mentor, haunted by his previous student's corruption and desperate to prevent history from repeating."
+    antagonist:
+      character_name: "The Void Collector"
+      narrative_function: "opposition"
+      character_archetype: "supernatural_threat"
+      story_role: "primary_obstacle"
+      description: "Emerges as a tragic antagonist whose fall from grace mirrors Maya's dangerous path toward power."
   
   setting:
-    - "San Francisco provides a familiar urban backdrop where hidden magical communities operate beneath the city's surface."
-    - "The Shadow Realm exists as a twisted mirror of the physical world, where emotional vulnerability becomes the key to survival."
-    - "Maya's photography studio serves as her sanctuary and the place where she first discovers her supernatural abilities."
-    - "Underground passages in Chinatown conceal the remnants of an ancient magical community that has protected the city for generations."
+    primary_settings: ["San Francisco", "Maya's photography studio"]
+    secondary_settings: ["Shadow Realm", "Chinatown underground passages"]
+    descriptions:
+      - "San Francisco provides a familiar urban backdrop where hidden magical communities operate beneath the city's surface."
+      - "The Shadow Realm exists as a twisted mirror of the physical world, where emotional vulnerability becomes the key to survival."
+      - "Maya's photography studio serves as her sanctuary and the place where she first discovers her supernatural abilities."
+      - "Underground passages in Chinatown conceal the remnants of an ancient magical community that has protected the city for generations."
   
   plot:
-    - "Elena's mysterious disappearance launches Maya into a world where shadow magic operates through emotional connection and vulnerability."
-    - "Maya must overcome her fear of her own destructive potential while racing against time to prevent the Void Collector from merging two worlds."
-    - "The discovery that Maya's mentor's previous student became the primary antagonist forces her to confront the corruption risks of her growing power."
-    - "Maya's final confrontation requires her to embrace her full magical abilities despite knowing she might follow the same dark path as her enemy."
+    main_plot_elements: ["Elena's disappearance", "Maya's magical discovery", "Void Collector threat"]
+    plot_development:
+      - "Elena's mysterious disappearance launches Maya into a world where shadow magic operates through emotional connection and vulnerability."
+      - "Maya must overcome her fear of her own destructive potential while racing against time to prevent the Void Collector from merging two worlds."
+      - "The discovery that Maya's mentor's previous student became the primary antagonist forces her to confront the corruption risks of her growing power."
+      - "Maya's final confrontation requires her to embrace her full magical abilities despite knowing she might follow the same dark path as her enemy."
   
   theme:
-    - "True strength emerges when we accept responsibility for our power, even when that power frightens us."
-    - "Love sometimes means letting go of control and trusting others to make their own choices, even dangerous ones."
-    - "The greatest battles are fought not against external enemies but against our own fears and self-doubt."
-    - "Embracing our authentic nature, including its darker aspects, becomes the path to genuine heroism."
+    core_themes: ["responsibility for power", "love and control", "internal battles"]
+    thematic_development:
+      - "True strength emerges when we accept responsibility for our power, even when that power frightens us."
+      - "Love sometimes means letting go of control and trusting others to make their own choices, even dangerous ones."
+      - "The greatest battles are fought not against external enemies but against our own fears and self-doubt."
+      - "Embracing our authentic nature, including its darker aspects, becomes the path to genuine heroism."
   
   relationships:
     - "Maya and Elena's sisterly bond evolves from protective guardianship to mutual respect between equals who have both been changed by their experiences."
@@ -101,6 +130,11 @@ story_structure:
     - "Flashbacks to Elena's initial disappearance provide emotional context and reveal the supernatural world's hidden presence in their lives."
     - "Each chapter advances the timeline while building tension toward the approaching deadline when the Void Collector's plan reaches completion."
     - "The narrative maintains a linear progression with strategic time shifts that deepen character relationships and world understanding."
+    
+  story_structure:
+    type: "3-part"
+    parts: ["Setup", "Confrontation", "Resolution"]
+    distribution: [25, 50, 25]
 ```
 
 This YAML structure serves as a comprehensive example that demonstrates all the key planning elements covered in the Story level, providing a practical template that writers can adapt for their own projects.
