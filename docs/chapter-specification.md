@@ -1,3 +1,5 @@
+# Chapter Specification (Level 3: Individual Chapters)
+
 ## 1. Definition and Core Purpose
 
 A **chapter** is the primary unit of narrative delivery in serialized fiction. Its function is twofold and non-negotiable, governed by **The Dual Mandate**:

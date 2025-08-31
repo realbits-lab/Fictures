@@ -1,10 +1,10 @@
-Of course. Based on a comprehensive analysis of established narrative theories and practical writing advice, I have synthesized a definitive guide for scene construction. This document is designed to be a robust framework, particularly for guiding a systematic approach to scene writing, ensuring each narrative unit is purposeful, dramatic, and structurally sound.
+# Scene Specification (Level 4: Individual Scenes)
 
-Here is the revised specification:
+## Introduction
 
-# A Unified Specification for Narrative Scene Construction
+Based on a comprehensive analysis of established narrative theories and practical writing advice, this document provides a definitive guide for scene construction. It serves as a robust framework for systematic scene writing, ensuring each narrative unit is purposeful, dramatic, and structurally sound.
 
-## I. The Foundational Principle: A Scene is a Unit of Change
+## 1. The Foundational Principle: A Scene is a Unit of Change
 
 The single most critical principle of scene construction is that a **scene must create meaningful change**. A scene is not defined by its location or duration but by its function: to advance the story. If a scene can be removed without consequence, it is redundant. This change must be tangible, altering a character's situation either externally or internally and setting up the events of the next scene.
 
@@ -16,11 +16,11 @@ To ensure this change is significant, it is measured by a **Value Shift**. Every
 
 This value shift is triggered by a **Turning Point**: a specific action or revelation that unexpectedly and irrevocably alters the scene's direction, forcing a reversal of the character's circumstances or expectations. The entire scene should build toward this moment.
 
-## II. The Core Architecture: The Scene-Sequel Cycle
+## 2. The Core Architecture: The Scene-Sequel Cycle
 
 The most effective and logical structure for building a propulsive narrative is Dwight V. Swain's **Scene-Sequel** model. This framework creates an unbreakable chain of cause and effect by alternating between proactive (action) and reactive (processing) units.
 
-### A. The Scene (The Action Unit)
+### 2.1. The Scene (The Action Unit)
 
 This is the unit of conflict where a character actively pursues an objective. It is composed of three parts:
 
@@ -31,7 +31,7 @@ This is the unit of conflict where a character actively pursues an objective. It
     - **Yes, but...:** The character succeeds, but with an unforeseen negative consequence.
       A scene should rarely end in a total victory until the story's conclusion. The disaster creates the problem that the character must react to in the Sequel.
 
-### B. The Sequel (The Reaction Unit)
+### 2.2. The Sequel (The Reaction Unit)
 
 Following the disaster, the Sequel provides a structured transition for the character to process events and decide what to do next. It is the bridge that connects one Scene to the next and is vital for character development and pacing. It also has three parts:
 
@@ -39,7 +39,7 @@ Following the disaster, the Sequel provides a structured transition for the char
 2.  **Dilemma:** After the initial shock, the character must intellectually process the new situation. The disaster has left them with no easy options, forcing them to confront a difficult choice (often a "best bad choice").
 3.  **Decision:** The character analyzes their options and makes a decision on a new course of action. This decision becomes the **Goal** for the next proactive Scene, thus completing the cycle and launching the next phase of action.
 
-## III. The Line-Level Execution: Motivation-Reaction Units (MRUs)
+## 3. The Line-Level Execution: Motivation-Reaction Units (MRUs)
 
 To create prose that feels immediate and psychologically real, scenes should be constructed at the micro-level using **Motivation-Reaction Units (MRUs)**. This ensures a logical flow of stimulus and response that mirrors how people process the world.
 
@@ -52,14 +52,14 @@ To create prose that feels immediate and psychologically real, scenes should be 
 
 Maintaining this sequence is critical for creating believable, immersive prose. A reaction should never precede its motivation.
 
-## IV. Narrative Texture: Scene vs. Summary
+## 4. Narrative Texture: Scene vs. Summary
 
 The pacing of a story is controlled by the strategic balance between rendering events in real-time (**Scene**) and compressing them (**Summary**).
 
 - **Scene ("Showing"):** Dramatizes an event in real-time (story time ≈ narrative time). It uses action, dialogue, and sensory detail to create immersion. Crucial plot points, turning points, and key character interactions _must_ be rendered in scene for maximum impact.
 - **Summary ("Telling"):** Compresses time to convey information efficiently (narrative time \< story time). It is used for transitions, backstory, and relating events the reader has already witnessed.
 
-## V. From Scene to Chapter
+## 5. From Scene to Chapter
 
 Scenes are the building blocks of chapters. A chapter is a curated collection of scenes that functions as a larger, cohesive narrative unit.
 
@@ -67,7 +67,7 @@ Scenes are the building blocks of chapters. A chapter is a curated collection of
 - **Unity:** Scenes within a chapter are typically unified by a continuous block of time, a single point of view (POV), a specific objective, or a central theme.
 - **Scene Breaks:** A transition between scenes (a shift in time, location, or POV) is indicated by a clear visual break, typically an extra line of white space or a centered dinkus (e.g., `* * *`).
 
-## VI. YAML Specification for Scene Generation
+## 6. YAML Data Structure Example for Scene Planning
 
 This YAML structure provides a comprehensive framework for planning and generating a complete narrative unit, integrating all the principles outlined above. It is designed to give an LLM all the necessary components to construct a rich, purposeful, and structurally sound scene.
 
@@ -147,12 +147,23 @@ scenes:
         - "What happened to Elena during her disappearance?"
         - "How long has Elena been missing?"
         - "What will Maya find in Elena's journal?"
-    
+
     scene_vs_summary_application:
       scene_justification: "Elena's disappearance discovery must be rendered in real-time for maximum emotional impact"
-      key_moments_in_scene: ["Door unlocking", "Evidence discovery", "Emotional reaction", "Decision making"]
-      potential_summary_elements: ["Background of sister relationship", "Previous coffee dates", "Maya's work routine"]
-    
+      key_moments_in_scene:
+        [
+          "Door unlocking",
+          "Evidence discovery",
+          "Emotional reaction",
+          "Decision making",
+        ]
+      potential_summary_elements:
+        [
+          "Background of sister relationship",
+          "Previous coffee dates",
+          "Maya's work routine",
+        ]
+
     unit_of_change_verification:
       opening_state: "Maya expects normal Sunday coffee with sister"
       closing_state: "Maya realizes she and Elena are both in supernatural danger"
