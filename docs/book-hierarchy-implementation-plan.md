@@ -515,7 +515,7 @@ export const hierarchyTools = {
       bookId: z.string(),
       premise: z.string(),
       numberOfParts: z.number(),
-      genre: z.string()
+)
     }),
     execute: async (params) => {
       // Implementation

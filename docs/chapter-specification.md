@@ -18,9 +18,9 @@
 
 **Chapter Length Considerations:**
 
-- **Short Chapters (1,000-2,000 words)**: Fast pacing, frequent engagement points
-- **Medium Chapters (2,500-4,000 words)**: Balanced development and progression
-- **Long Chapters (5,000+ words)**: Deep exploration, immersive experiences
+- **Short Chapters (1,000-2,000 words)**: Fast pacing, frequent engagement points (4-8 minute read)
+- **Medium Chapters (2,500-4,000 words)**: Balanced development and progression (10-16 minute read)
+- **Long Chapters (5,000+ words)**: Deep exploration, immersive experiences (20+ minute read)
 
 **Chapter Structure Framework:**
 
