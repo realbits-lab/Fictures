@@ -144,3 +144,186 @@ chapter:
   pacing: "moderate_build_sharp_escalation"
   exposition: "discovery_not_explanation"
 ```
+
+## 6. YAML Field Documentation
+
+This comprehensive guide explains each field in the compact chapter specification YAML format, detailing how to plan and structure individual narrative episodes that fulfill the dual mandate of episodic satisfaction and serial momentum.
+
+### 6.1. Chapter Identification
+
+**`chap`**: Chapter number in overall story sequence
+- **Purpose**: Establishes position in publication order and story progression
+- **Usage**: Sequential numbering that aligns with publication schedule
+- **Tips**: Consider both story order and reader release sequence
+
+**`title`**: Chapter title that hooks readers and hints at content
+- **Purpose**: First reader engagement point and content preview
+- **Usage**: Should intrigue without spoiling, often poses question or uses evocative imagery
+- **Tips**: Can reference key scene, character state, or central conflict
+
+**`pov`**: Point of view character for this chapter
+- **Purpose**: Establishes narrative voice and perspective constraints
+- **Usage**: Use consistent character names/abbreviations across planning
+- **Tips**: POV choice affects what information can be revealed and how
+
+**`words`**: Target word count for this chapter
+- **Purpose**: Pacing control and reader experience management
+- **Usage**: Typically 3000-5000 words for serial fiction chapters
+- **Tips**: Should feel complete while maintaining appropriate pacing for genre
+
+### 6.2. Universal Pattern Fields (Chapter-Level Drama)
+
+**`goal`**: What the POV character wants to accomplish in this chapter
+- **Purpose**: Drives chapter's dramatic engine and reader investment
+- **Usage**: Must be specific, achievable within chapter scope, and personally meaningful
+- **Tips**: Should advance overall story goals while being complete mini-objective
+
+**`conflict`**: Primary obstacles preventing goal achievement
+- **Purpose**: Creates chapter tension and forces character active choices
+- **Usage**: Must escalate throughout chapter, culminating in chapter climax
+- **Tips**: Best conflicts have both external obstacles and internal resistance
+
+**`outcome`**: How chapter's central question resolves
+- **Purpose**: Provides episodic satisfaction while creating serial momentum
+- **Usage**: Should answer chapter's driving question while raising new ones
+- **Tips**: Must feel earned through character struggle and choice
+
+### 6.3. Three-Act Chapter Structure
+
+**`acts`**: Chapter's internal dramatic architecture divided into three acts
+- **Purpose**: Ensures proper pacing and dramatic progression within chapter
+- **Usage**: Each act has specific functions and percentage of chapter length
+- **Structure**: Setup (20%), Confrontation (60%), Resolution (20%)
+
+**Act Sub-fields:**
+
+**Setup Act:**
+- **`hook_in`**: Opening line/moment that immediately engages reader
+- **`orient`**: Establishes time, place, POV, and current situation
+- **`incident`**: Event that launches chapter's central conflict
+
+**Confrontation Act:**
+- **`rising`**: Obstacles escalate as character pursues goal
+- **`midpoint`**: Major shift/revelation that changes chapter dynamics (50-60% mark)
+- **`complicate`**: Obstacles intensify, stakes rise toward chapter climax
+
+**Resolution Act:**
+- **`climax`**: Chapter's highest tension moment where central conflict peaks
+- **`resolve`**: Immediate aftermath that answers chapter's driving question
+- **`hook_out`**: Ending that compels reader to continue to next chapter
+
+### 6.4. Character Development Tracking
+
+**`chars`**: Character progression within this chapter
+- **Purpose**: Maps character growth/change specific to this episode
+- **Usage**: Focus on POV character primarily, others as they interact with/affect POV
+- **Structure**: Character objects with chapter-specific development data
+
+**Character Development Sub-fields:**
+- **`start`**: Character's emotional/mental state entering chapter
+- **`arc`**: Progression of character change through chapter events
+- **`end`**: Character's state after chapter's events conclude
+- **`motivation`**: Core drive that powers character's choices this chapter
+- **`growth`**: Specific development/realization character achieves
+
+### 6.5. Tension Architecture
+
+**`tension`**: Multi-layered conflict system that sustains chapter engagement
+- **Purpose**: Creates varied sources of reader anxiety and investment
+- **Usage**: Should escalate through chapter, peak at climax
+- **Structure**: Different tension types working simultaneously
+
+**Tension Types:**
+- **`external`**: Physical obstacles, antagonist actions, environmental challenges
+- **`internal`**: Character's emotional/psychological struggles
+- **`interpersonal`**: Conflicts between characters, relationship tensions
+- **`atmospheric`**: Environmental/situational dread or uncertainty
+- **`peak`**: Moment when all tension types converge at chapter climax
+
+### 6.6. Dual Mandate Fulfillment
+
+**`mandate`**: How chapter serves both episodic and serial functions
+- **Purpose**: Ensures chapter works as standalone episode and series component
+- **Usage**: Must satisfy readers while compelling continuation
+- **Structure**: Separate tracking for episodic and serial success
+
+**Mandate Sub-fields:**
+
+**Episodic Satisfaction:**
+- **`arc`**: Complete mini-story arc within chapter
+- **`payoff`**: Emotional reward readers receive from this chapter
+- **`answered`**: Specific question/problem this chapter resolves
+
+**Serial Momentum:**
+- **`complication`**: New problem/challenge introduced
+- **`stakes`**: How overall story stakes increase/shift
+- **`compulsion`**: Specific reason readers must continue to next chapter
+
+### 6.7. Forward Hook Architecture
+
+**`hook`**: Chapter ending strategy that compels continuation
+- **Purpose**: Creates urgent need to know what happens next
+- **Usage**: Must emerge naturally from chapter events, not feel arbitrary
+- **Structure**: Multi-component hook system for maximum effectiveness
+
+**Hook Components:**
+- **`type`**: Hook category ("revelation", "threat", "emotional", "compound")
+- **`reveal`**: New information that recontextualizes story
+- **`threat`**: Immediate danger/challenge character must face
+- **`emotion`**: Emotional cliffhanger that demands resolution
+
+### 6.8. Story Continuity Management
+
+**`continuity`**: Chapter's relationship to overall story progression
+- **Purpose**: Ensures chapter advances larger narrative while being self-contained
+- **Usage**: Tracks what this chapter sets up and pays off
+- **Structure**: Forward and backward story connections
+
+**Continuity Elements:**
+- **`foreshadow`**: Future story elements this chapter plants/develops
+- **`theories`**: Reader speculation this chapter encourages
+- **`payoffs`**: Previous story elements this chapter resolves/advances
+
+### 6.9. Genre Optimization
+
+**`genre`**: Genre-specific considerations for chapter construction
+- **Purpose**: Aligns chapter structure with reader expectations for story type
+- **Usage**: Affects pacing, content focus, and hook strategies
+- **Tips**: Different genres have different optimal chapter rhythms
+
+**Genre Fields:**
+- **`genre`**: Primary genre classification
+- **`pacing`**: Speed and rhythm appropriate for genre
+- **`exposition`**: How information is revealed (discovery vs explanation)
+
+### 6.10. Field Usage Guidelines
+
+**Chapter Planning Sequence:**
+1. Identify chapter's role in overall story progression
+2. Define chapter goal that advances story while being complete
+3. Structure three-act progression with proper pacing
+4. Design character development appropriate for story phase
+5. Create ending that satisfies while compelling continuation
+
+**Validation Questions:**
+- Does this chapter advance overall story meaningfully?
+- Can readers feel satisfied if they only read this chapter?
+- Does the three-act structure create proper dramatic progression?
+- Are tension layers escalating toward an effective climax?
+- Does the ending create genuine need to continue?
+
+**Common Chapter Planning Mistakes:**
+- Making chapter too episodic (not advancing overall story)
+- Weak or missing chapter goal (no driving force)
+- Poor act structure (wrong pacing, weak midpoint)
+- Arbitrary forward hook (not emerging from chapter events)
+- Failing dual mandate (satisfying OR compelling, not both)
+
+**Chapter Success Indicators:**
+- Chapter advances overall story while feeling complete
+- Three-act structure creates satisfying dramatic progression
+- Character development connects to larger story arc
+- Forward hook emerges naturally from chapter events
+- Reader experiences both satisfaction and anticipation
+
+This systematic approach ensures each chapter functions as effective standalone episode while advancing the larger serial narrative.

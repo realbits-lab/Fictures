@@ -144,3 +144,153 @@ part:
     debates: ["trust_marcus_completely", "elena_worth_corruption_risk"]
     feedback: ["character_dynamics", "magic_complexity", "pacing"]
 ```
+
+## 6. YAML Field Documentation
+
+This comprehensive guide explains each field in the compact part specification YAML format, detailing how to plan and structure major story sections effectively.
+
+### 6.1. Part Identification
+
+**`part`**: Part number in story sequence
+- **Purpose**: Establishes position in overall story structure
+- **Usage**: Sequential numbering (1, 2, 3...) based on story structure type
+- **Tips**: Aligns with story-level part planning and reader expectations
+
+**`title`**: Distinctive name for this major story section
+- **Purpose**: Thematic identity and organizational clarity
+- **Usage**: Should reflect part's central focus or character development phase
+- **Tips**: Often reflects character state or story movement ("Discovery", "Training", "Confrontation")
+
+**`words`**: Target word count for this part
+- **Purpose**: Pacing control and publication planning
+- **Usage**: Typically 15k-25k words per part for standard novels
+- **Tips**: Should align with story-level word distribution and part function
+
+**`function`**: Part's role in overall story architecture
+- **Purpose**: Defines structural purpose within larger narrative
+- **Usage**: Common functions: "story_setup", "development", "climax_resolution"
+- **Tips**: Must serve overall story arc while having internal completeness
+
+### 6.2. Universal Pattern Fields (Part-Level Drama)
+
+**`goal`**: What the protagonist seeks to accomplish in this part
+- **Purpose**: Drives part-specific dramatic arc and reader engagement
+- **Usage**: Must advance overall story goal while being achievable within part scope
+- **Tips**: Should require significant effort/growth to achieve
+
+**`conflict`**: Primary obstacle preventing goal achievement in this part
+- **Purpose**: Creates part-level tension and forces character development
+- **Usage**: Must escalate from previous part while building toward next
+- **Tips**: Best conflicts challenge character growth needs for this story phase
+
+**`outcome`**: How this part resolves and transitions to next
+- **Purpose**: Provides satisfaction while creating momentum for continuation
+- **Usage**: Should answer part-specific questions while raising new ones
+- **Tips**: Must feel earned through character effort and growth
+
+### 6.3. Driving Questions
+
+**`questions`**: Central questions that drive reader engagement through this part
+- **`primary`**: Main question this part exists to explore/answer
+- **`secondary`**: Supporting question that adds depth and complexity
+- **Purpose**: Maintains reader investment and provides structural focus
+- **Usage**: Primary should be answerable within part; secondary may carry forward
+- **Tips**: Questions should emerge from character needs and story conflicts
+
+### 6.4. Character Development Architecture
+
+**`chars`**: Character progression tracking for this part
+- **Purpose**: Maps character growth phases within larger story arcs
+- **Usage**: Focus on characters with significant development in this part
+- **Structure**: Individual character objects with development tracking
+
+**Character Development Sub-fields:**
+- **`start`**: Character's emotional/psychological state entering this part
+- **`end`**: Character's state after completing this part's journey
+- **`arc`**: Step-by-step progression through part (array of development phases)
+- **`conflict`**: Internal struggle driving character choices in this part
+- **`transforms`**: Key moments of character change/realization
+- **`function`**: Character's role in advancing this part's themes/plot
+
+### 6.5. Plot Architecture
+
+**`plot`**: Story events and revelations specific to this part
+- **`events`**: Major plot developments that occur in this part
+- **`reveals`**: Important information discoveries that advance understanding
+- **`escalation`**: How stakes/tension increase through this part
+- **Purpose**: Tracks concrete story advancement within part structure
+- **Usage**: Must build logically from previous parts while setting up future developments
+
+### 6.6. Thematic Integration
+
+**`themes`**: Thematic exploration within this part
+- **`primary`**: Central theme this part develops
+- **`elements`**: Specific thematic contrasts/tensions explored
+- **`moments`**: Key scenes where themes become explicit
+- **`symbols`**: Recurring images/objects that reinforce themes
+- **Purpose**: Gives part depth beyond plot advancement
+- **Usage**: Should emerge naturally from character choices and conflicts
+
+### 6.7. Emotional Journey Management
+
+**`emotion`**: Reader/character emotional progression through part
+- **`start`**: Opening emotional state/tone
+- **`progression`**: Emotional beats that escalate through part
+- **`end`**: Closing emotional state that transitions to next part
+- **Purpose**: Creates satisfying emotional arc within part structure
+- **Usage**: Must feel earned and support overall story emotional trajectory
+
+### 6.8. Part Ending Strategy
+
+**`ending`**: How this part concludes and connects to story continuation
+- **`resolution`**: What gets resolved/completed in this part
+- **`setup`**: What gets established for future parts
+- **`hooks`**: Specific elements that create anticipation for next part
+- **`hook_out`**: Specific cliffhanger/transition that ends this part
+- **Purpose**: Balances satisfaction with forward momentum
+- **Usage**: Must reward reader investment while compelling continuation
+
+### 6.9. Serial Structure Management
+
+**`serial`**: Part's function within serialized publication model
+- **`arc`**: Internal dramatic structure of this part
+- **`climax_at`**: Where dramatic peak occurs within part (usually 80-90%)
+- **`satisfaction`**: What readers gain from completing this part
+- **`anticipation`**: What makes readers want to continue to next part
+- **Purpose**: Optimizes part for serial reading experience
+- **Usage**: Critical for maintaining reader engagement in serialized fiction
+
+### 6.10. Reader Engagement Strategy
+
+**`engagement`**: Community interaction planning for this part
+- **`discussions`**: Topics likely to generate reader conversation
+- **`speculation`**: Elements designed to spark reader theories
+- **`debates`**: Character choices that create reader discussion
+- **`feedback`**: Areas where reader input could influence future development
+- **Purpose**: Builds active reader community around story
+- **Usage**: Particularly important for serial fiction with reader interaction
+
+### 6.11. Field Usage Guidelines
+
+**Planning Sequence for Parts:**
+1. Define part's role in overall story (function, goal, conflict, outcome)
+2. Map character development needs for this story phase
+3. Plan plot events that support character growth
+4. Integrate thematic exploration through character choices
+5. Design ending that balances resolution with anticipation
+
+**Validation Checklist:**
+- Does this part advance overall story while being internally complete?
+- Do character arcs progress meaningfully toward story-level goals?
+- Are plot events necessary for character development?
+- Does the emotional journey feel earned and satisfying?
+- Does the ending create appropriate anticipation for continuation?
+
+**Common Part Planning Mistakes:**
+- Making parts too episodic (not advancing overall story)
+- Focusing on plot events without character development
+- Ending without sufficient resolution for reader satisfaction
+- Failing to escalate stakes/tension from previous part
+- Not setting up elements needed for future parts
+
+This systematic approach ensures each part functions as both satisfying episode and essential story component.

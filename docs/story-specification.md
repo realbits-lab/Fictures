@@ -178,3 +178,149 @@ story:
     mysteries: ["previous_student_identity", "mark_origin", "realm_connection"]
     part_endings: ["mentor_secret_revealed", "elena_appears_changed"]
 ```
+
+## 6. YAML Field Documentation
+
+This comprehensive guide explains each field in the compact YAML format, detailing what each element represents and how to use it effectively for story planning.
+
+### 6.1. Basic Story Information
+
+**`title`**: The working title of your story
+- **Purpose**: Story identification and brand recognition
+- **Usage**: Choose something memorable that hints at core conflict or theme
+- **Tips**: Can be changed later, but helps maintain focus during planning
+
+**`genre`**: Primary genre classification using underscores
+- **Purpose**: Establishes reader expectations and market positioning
+- **Usage**: Use standard genres like "urban_fantasy", "sci_fi", "romance", "mystery"
+- **Tips**: Affects pacing, chapter length, and reader engagement strategies
+
+**`words`**: Target word count for complete story
+- **Purpose**: Scope planning and publication timeline estimation
+- **Usage**: Industry standards (80k typical for adult fiction, 60k for YA)
+- **Tips**: Affects part distribution and chapter count planning
+
+**`question`**: Central dramatic question driving entire narrative
+- **Purpose**: Story focus and reader hook - what keeps readers invested
+- **Usage**: Must be answerable only at story's end, creates narrative tension
+- **Tips**: Should involve character growth/change, not just plot resolution
+
+### 6.2. Universal Pattern Fields (Core Story Engine)
+
+**`goal`**: What the protagonist wants overall (external/plot goal)
+- **Purpose**: Drives story forward, creates reader investment in outcome
+- **Usage**: Must be specific, achievable, and personally meaningful to character
+- **Tips**: Should connect to deeper character need/internal goal
+
+**`conflict`**: Primary obstacle preventing protagonist from achieving goal
+- **Purpose**: Source of story tension and character growth opportunities  
+- **Usage**: Must escalate throughout story, force character to change/grow
+- **Tips**: Best conflicts challenge character's core beliefs/flaws
+
+**`outcome`**: How the central story question resolves
+- **Purpose**: Story's thematic statement and character arc completion
+- **Usage**: Should reflect character transformation, not just plot resolution
+- **Tips**: Often involves accepting/embracing what character initially feared
+
+### 6.3. Character Architecture
+
+**`chars`**: Character hierarchy with essential development data
+- **Structure**: Main characters with role, arc, and key attributes
+- **Purpose**: Track character functions and development trajectories
+- **Usage**: Focus on story-critical characters only (4-6 maximum)
+
+**Character Sub-fields:**
+- **`role`**: Character's narrative function ("protag", "antag", "mentor", "catalyst")
+- **`arc`**: Character transformation using "start→end" format
+- **`flaw`**: Core weakness driving character's internal conflict
+- **`goal`**: What this character wants (may differ from protagonist's goal)
+- **`secret`**: Hidden information that affects story when revealed
+
+### 6.4. Themes and Structure
+
+**`themes`**: Core thematic elements explored through story
+- **Purpose**: Gives story depth and meaning beyond plot events
+- **Usage**: 2-4 themes maximum, explore through character choices/conflicts
+- **Tips**: Should emerge from character arcs and plot events naturally
+
+**`structure`**: Story organization framework
+- **`type`**: Structure pattern ("3_part", "4_part", "5_part")
+- **`parts`**: Major section names
+- **`dist`**: Percentage distribution (e.g., [25, 50, 25] for 3-part)
+
+### 6.5. Setting Information
+
+**`setting`**: Story world essentials
+- **`primary`**: Main recurring locations where most action occurs
+- **`secondary`**: Important but less frequent locations
+- **Purpose**: Establishes story world scope and atmosphere
+- **Usage**: Keep focused - too many settings dilute story impact
+
+### 6.6. Part-Level Progression
+
+**`parts`**: Array of major story sections with individual arcs
+- **Purpose**: Structure large narrative into manageable dramatic units
+- **Usage**: Each part should have complete mini-arc while advancing overall story
+
+**Part Sub-fields:**
+- **`part`**: Part number/order
+- **`goal`**: What protagonist seeks in this part
+- **`conflict`**: Primary obstacle in this part
+- **`outcome`**: How this part resolves/transitions
+- **`tension`**: Central tension driving this part's drama
+
+### 6.7. Serial Publication Strategy
+
+**`serial`**: Publication planning for serialized fiction
+- **`schedule`**: Publication frequency ("weekly", "daily", "monthly")
+- **`duration`**: Estimated total publication timeline
+- **`chapter_words`**: Target words per chapter/episode
+- **`breaks`**: Natural pause points for reader feedback integration
+- **`buffer`**: How many chapters to write ahead of publication
+
+### 6.8. Reader Engagement Architecture
+
+**`hooks`**: Story elements designed to maintain reader interest
+- **`overarching`**: Long-term mysteries/questions spanning multiple parts
+- **`mysteries`**: Specific unanswered questions driving reader speculation
+- **`part_endings`**: Cliffhangers/revelations at major structural points
+
+**Purpose**: Creates active reader community and sustained engagement
+**Usage**: Plant early, pay off strategically, balance revelation with new questions
+**Tips**: Best hooks connect to character development and thematic exploration
+
+### 6.9. Field Naming Conventions
+
+**Abbreviations Used:**
+- **`protag`**: protagonist
+- **`antag`**: antagonist  
+- **`chap`**: chapter
+- **`words`**: word count
+
+**Underscore Usage:**
+- **Time/Place**: "sunday_morning", "photography_studio"
+- **Complex Concepts**: "love_vs_control", "denial_vs_acceptance"
+- **Multi-word Items**: "part1_end", "shadow_magic_truth"
+
+**Arrow Usage (→):**
+- **Character Arcs**: "denial→acceptance" shows transformation
+- **Progression**: "start→middle→end" shows sequence
+- **Relationships**: "cause→effect" shows connection
+
+### 6.10. Using This Format Effectively
+
+**Planning Order:**
+1. Start with basic info (title, genre, words, question)
+2. Define universal pattern (goal, conflict, outcome)
+3. Develop character architecture
+4. Plan part-level progression
+5. Add serial/engagement elements
+
+**Validation Questions:**
+- Does the goal drive the entire story?
+- Does the conflict force character growth?
+- Does the outcome reflect character transformation?
+- Are character arcs interconnected and meaningful?
+- Do parts build toward overall story resolution?
+
+This compact format transforms story planning from academic exercise into practical tool for systematic narrative development.
