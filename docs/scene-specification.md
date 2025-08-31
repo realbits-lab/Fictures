@@ -69,272 +69,165 @@ Scenes are the building blocks of chapters. A chapter is a curated collection of
 
 ## 6. YAML Data Structure Example for Scene Planning
 
-This YAML structure provides a comprehensive framework for planning and generating a complete narrative unit, integrating all the principles outlined above. It is designed to give an LLM all the necessary components to construct a rich, purposeful, and structurally sound scene.
+Since scenes are components within chapters, this compact format focuses only on essential information needed for an LLM to write effective scene content.
 
 ```yaml
 # ============================================
-# SCENE SPECIFICATION - COMPACT FORMAT
+# SCENE SPECIFICATION - ESSENTIAL FORMAT
 # ============================================
 
 scene:
-  scene: 1
-  title: "The Unlocked Door"
+  id: 1
+  summary: "Maya arrives for coffee date, finds Elena missing with signs of struggle"
+
+  # Scene context
   time: "sunday_10:05am"
   place: "elena_apartment_hallway"
   pov: "maya"
 
-  # Universal pattern: goal → conflict → outcome
+  # Characters present
+  characters:
+    maya: { enters: "casual_anticipation", exits: "panicked_determination" }
+    elena: { status: "absent_but_referenced", evidence: "struggle_signs" }
+
+  # Core dramatic movement
   goal: "Normal coffee date with Elena"
-  conflict: "Door unlocked, apartment silent, signs of struggle"
-  outcome: "Finds evidence, realizes Elena in danger"
+  obstacle: "Door unlocked, apartment silent, struggle evidence"
+  outcome: "Realizes Elena in danger, decides to search"
 
-  # Core scene mechanics
-  turn: "Discovers overturned coffee table and broken mug"
-  value: "routine(+) → fear(--)"
-  change: "mundane_expectation → supernatural_threat_awareness"
+  # Key beats that must happen
+  beats:
+    - "Maya knocks, no answer, tries door"
+    - "Finds apartment unlocked, calls Elena's name"
+    - "Discovers overturned table, broken coffee mug"
+    - "Maya panics, decides to search rather than call police"
 
-  # Scene-Sequel structure
-  scene_unit: # The action
-    goal_type: "possession" # wants normal sister time
-    obstacles:
-      ["no_answer", "unlocked_door", "eerie_silence", "struggle_evidence"]
-    escalation: "annoyance → unease → fear → danger_confirmed"
-    disaster: "no_and_furthermore" # fails + evidence of danger
+  # Emotional/value shift
+  shift: "routine_expectation → urgent_fear"
 
-  sequel_unit: # The reaction
-    reaction:
-      {
-        feel: "cold_dread",
-        reflex: "hands_to_mouth",
-        action: "scan_room",
-        speech: "Oh_god_Elena",
-      }
-    dilemma: ["call_911", "call_parents", "search_clues_first"]
-    decision: "Search for journal before calling police"
-
-  # Line-level execution essentials
-  sensory:
-    sight: "dust_motes, coffee_splash, broken_mug_edges"
-    sound: "apartment_silence, heart_thumping, distant_traffic"
-    touch: "cold_doorknob, hand_tremor"
-    smell: "elena_perfume, stale_coffee"
-
-  # MRU examples for writing
-  mru:
-    [
-      "knocked_third_time → irritation → sighed_phone_out",
-      "doorknob_turned → cold_stomach_knot → froze_hand_on_knob",
-    ]
-
-  # Narrative function
-  function:
-    purpose: "story_inciting_incident"
-    connects: "journal_search_goal_next_scene"
-    builds: "journal_discovery_cliffhanger"
-    questions: ["what_happened_elena", "how_long_missing", "journal_contents"]
-
-  # Scene vs summary application
-  render:
-    scene_why: "emotional_impact_requires_realtime"
-    key_moments:
-      ["door_unlock", "evidence_discovery", "emotional_reaction", "decision"]
-    summary_elements: ["sister_background", "coffee_routine", "work_life"]
-
-  # Story advancement verification
-  advance:
-    opening: "expects_normal_coffee"
-    closing: "realizes_supernatural_danger"
-    catalyst: "evidence_discovery"
-    plot: "launches_main_story_establishes_conflict"
+  # Connection to chapter flow
+  leads_to: "maya_searches_apartment_for_clues"
 ```
 
 ## 7. YAML Field Documentation
 
-This comprehensive guide explains each field in the compact scene specification YAML format, detailing how to plan and construct individual narrative units that serve as the fundamental building blocks of dramatic fiction.
+This guide explains each field in the essential scene specification format, focusing on the minimum information needed for an LLM to write effective scene content within chapters.
 
-### 7.1. Scene Identification
+### 7.1. Scene Identification and Context
 
-**`scene`**: Scene number within chapter or story sequence
-- **Purpose**: Establishes position in narrative flow and structural hierarchy
-- **Usage**: Sequential numbering that tracks scene order within chapters
-- **Tips**: Consider both dramatic function and reader experience pacing
+**`id`**: Scene number within chapter
 
-**`title`**: Descriptive scene title for planning reference
-- **Purpose**: Quick identification and thematic focus during planning
-- **Usage**: Should capture scene's essential dramatic function or key moment
-- **Tips**: Useful for tracking and referencing during revision process
+- **Purpose**: Simple identification for scene order
+- **Usage**: Sequential numbering (1, 2, 3...)
+- **Tips**: Keep it simple since scenes are chapter components
 
-**`time`**: When scene occurs (using underscore format)
-- **Purpose**: Establishes temporal context and story timeline placement
-- **Usage**: Format like "sunday_10:05am" or "three_days_later"
-- **Tips**: Maintains story timeline consistency and pacing awareness
+**`summary`**: One-sentence description of what happens
 
-**`place`**: Where scene takes place (using underscore format)
-- **Purpose**: Establishes spatial context and environmental constraints
-- **Usage**: Specific locations like "elena_apartment_hallway" or "downtown_coffee_shop"
-- **Tips**: Location choice should support scene's dramatic function
+- **Purpose**: Quick reference for scene's essential content
+- **Usage**: Clear, concise summary of main event/conflict
+- **Tips**: Should capture the scene's core dramatic function
 
-**`pov`**: Point of view character for this scene
-- **Purpose**: Determines narrative perspective and information limitations
-- **Usage**: Consistent character abbreviations across planning documents
-- **Tips**: POV choice affects what can be revealed and how tension builds
+**`time`**: When scene occurs
 
-### 7.2. Universal Pattern Fields (Scene-Level Drama)
+- **Purpose**: Temporal context within story timeline
+- **Usage**: Format like "sunday_10:05am" or "later_that_night"
+- **Tips**: Maintains chapter pacing and story continuity
 
-**`goal`**: What the POV character wants to accomplish in this scene
-- **Purpose**: Drives scene's dramatic engine and creates reader investment
-- **Usage**: Must be specific, immediate, and achievable within scene scope
-- **Tips**: Best goals have both external action and internal significance
+**`place`**: Where scene takes place
 
-**`conflict`**: Obstacles preventing goal achievement in this scene
-- **Purpose**: Creates moment-to-moment tension and forces character choice
-- **Usage**: Should escalate through scene, forcing character adaptation
-- **Tips**: Most effective conflicts have multiple layers (external/internal)
+- **Purpose**: Physical setting for scene action
+- **Usage**: Specific locations like "elena_apartment_hallway"
+- **Tips**: Setting should support scene's dramatic purpose
 
-**`outcome`**: How scene's central conflict resolves
-- **Purpose**: Provides scene resolution while connecting to larger story
-- **Usage**: Should change character's situation or understanding
-- **Tips**: Must feel earned through character effort and struggle
+**`pov`**: Point of view character
 
-### 7.3. Core Scene Mechanics
+- **Purpose**: Determines whose perspective readers experience
+- **Usage**: Character name/abbreviation
+- **Tips**: Usually consistent within chapter unless POV shifts
 
-**`turn`**: Specific moment when scene's direction changes
-- **Purpose**: Creates scene's dramatic peak and character realization point
-- **Usage**: Precise description of the pivotal action or revelation
-- **Tips**: Should be surprising yet inevitable given scene setup
+### 7.2. Character Information
 
-**`value`**: Emotional/situational shift using charge notation
-- **Purpose**: Tracks scene's fundamental change in character circumstances
-- **Usage**: Format like "routine(+) → fear(--)" showing positive to negative shift
-- **Tips**: All effective scenes must create meaningful value shifts
+**`characters`**: Characters present in scene and their emotional states
 
-**`change`**: Overall transformation accomplished by this scene
-- **Purpose**: Defines scene's contribution to larger story progression
-- **Usage**: Describes shift in character understanding, situation, or capability
-- **Tips**: Should connect to character's overall journey and growth needs
+- **Purpose**: Tracks who's in scene and how they feel entering/exiting
+- **Usage**: Character objects with emotional state info
+- **Structure**: `character_name: { enters: "state", exits: "state" }`
+- **Tips**: Focus on POV character primarily, others as needed
 
-### 7.4. Scene-Sequel Structure
+**Character Sub-fields:**
 
-**`scene_unit`**: The action portion where character pursues goal
-- **Purpose**: Creates forward momentum and dramatic tension
-- **Usage**: Character has goal, faces obstacles, experiences setback
-- **Structure**: Goal → Conflict → Disaster pattern
+- **`enters`**: Character's emotional/mental state entering scene
+- **`exits`**: Character's state after scene events
+- **`status`**: For non-POV characters (present, absent, referenced)
+- **`evidence`**: Physical traces of absent characters
 
-**Scene Unit Sub-fields:**
-- **`goal_type`**: Category of goal character pursues ("possession", "relief", "information")
-- **`obstacles`**: Array of specific barriers character must overcome
-- **`escalation`**: Pattern of increasing difficulty through scene
-- **`disaster`**: Type of negative outcome ("yes_but", "no_and_furthermore")
+### 7.3. Core Dramatic Movement
 
-**`sequel_unit`**: The reaction portion where character processes and decides
-- **Purpose**: Provides character development and transition to next scene
-- **Usage**: Character reacts emotionally, faces dilemma, makes decision
-- **Structure**: Reaction → Dilemma → Decision pattern
+**`goal`**: What POV character wants in this scene
 
-**Sequel Unit Sub-fields:**
-- **`reaction`**: Character's immediate emotional/physical response to disaster
-- **`dilemma`**: Array of difficult choices character must consider
-- **`decision`**: What character chooses to do next (becomes next scene's goal)
+- **Purpose**: Drives scene action and reader engagement
+- **Usage**: Simple, clear objective character pursues
+- **Tips**: Should be achievable within scene scope
 
-### 7.5. Line-Level Execution Elements
+**`obstacle`**: What prevents goal achievement
 
-**`sensory`**: Sensory details that bring scene to life
-- **Purpose**: Creates immersive reading experience and emotional connection
-- **Usage**: Specific details for each sense that support scene's mood/theme
-- **Structure**: Individual fields for sight, sound, touch, smell, taste
+- **Purpose**: Creates scene conflict and tension
+- **Usage**: Specific barrier character must overcome
+- **Tips**: Can be external (events) or internal (emotions)
 
-**Sensory Sub-fields:**
-- **`sight`**: Visual details that reinforce scene's emotional tone
-- **`sound`**: Auditory elements that enhance atmosphere
-- **`touch`**: Tactile sensations that ground reader in physical reality
-- **`smell`**: Olfactory details that trigger memory and emotion
-- **`taste`**: When relevant, taste elements that add realism
+**`outcome`**: How scene conflict resolves
 
-### 7.6. Motivation-Reaction Units (MRUs)
+- **Purpose**: Shows scene's result and character's new situation
+- **Usage**: Clear statement of what character achieves or loses
+- **Tips**: Should advance story while changing character state
 
-**`mru`**: Motivation-Reaction Unit examples for scene construction
-- **Purpose**: Provides line-level writing guidance for realistic character behavior
-- **Usage**: Array of "motivation → reaction" patterns showing cause-effect
-- **Format**: "external_stimulus → internal_feeling → physical_response → conscious_action"
-- **Tips**: Essential for creating believable, immersive prose at sentence level
+### 7.4. Scene Structure and Flow
 
-### 7.7. Narrative Function Integration
+**`beats`**: Key events that must happen in scene
 
-**`function`**: Scene's role within larger story structure
-- **Purpose**: Ensures scene serves story advancement, not just dramatic entertainment
-- **Usage**: Defines how scene connects to chapter and story goals
-- **Structure**: Purpose, connections, and story building elements
+- **Purpose**: Ensures essential plot/character moments are included
+- **Usage**: Array of specific actions or events in sequence
+- **Tips**: Keep to 3-5 major beats to maintain focus
 
-**Function Sub-fields:**
-- **`purpose`**: Scene's specific job in story progression
-- **`connects`**: How this scene links to next scene's goal
-- **`builds`**: What larger story element this scene develops
-- **`questions`**: Reader questions this scene raises or answers
+**`shift`**: Emotional or situational change through scene
 
-### 7.8. Scene vs Summary Decision Making
+- **Purpose**: Tracks scene's dramatic impact on character
+- **Usage**: Format like "routine_expectation → urgent_fear"
+- **Tips**: Every scene should create some meaningful change
 
-**`render`**: Justification for writing this moment as scene vs summary
-- **Purpose**: Validates dramatic choice to render moment in real-time
-- **Usage**: Explains why this moment deserves scene treatment
-- **Structure**: Reasoning and moment identification
+**`leads_to`**: Connection to next scene or chapter element
 
-**Render Sub-fields:**
-- **`scene_why`**: Specific reason this moment needs real-time dramatic treatment
-- **`key_moments`**: Essential beats that must be shown, not told
-- **`summary_elements`**: Background information that can be compressed
+- **Purpose**: Maintains narrative flow and chapter coherence
+- **Usage**: Brief description of what naturally follows
+- **Tips**: Should emerge from this scene's outcome
 
-### 7.9. Story Advancement Verification
+### 7.5. Usage Guidelines for Scene Planning
 
-**`advance`**: How scene moves overall story forward
-- **Purpose**: Ensures scene contributes meaningfully to story progression
-- **Usage**: Tracks character/plot advancement and story connection
-- **Structure**: Before/after states and change catalyst
+**Essential Scene Planning Steps:**
 
-**Advancement Sub-fields:**
-- **`opening`**: Character's state/situation entering scene
-- **`closing`**: Character's state/situation after scene events
-- **`catalyst`**: Specific event that creates the change
-- **`plot`**: How scene advances overall plot progression
-
-### 7.10. Field Usage Guidelines
-
-**Scene Planning Sequence:**
-1. Identify scene's story function and dramatic necessity
-2. Define clear goal that character pursues actively
-3. Plan obstacles that escalate toward scene climax
-4. Design turning point that changes scene direction
-5. Structure sequel reaction that transitions to next scene
-6. Select sensory details that support emotional progression
-
-**Scene Construction Validation:**
-- Does scene create meaningful change in character's circumstances?
-- Is character pursuing specific, immediate goal throughout?
-- Do obstacles escalate, forcing character adaptation and growth?
-- Is turning point surprising yet inevitable from scene setup?
-- Does sequel provide appropriate reaction and transition time?
-- Are MRU patterns realistic and immersive for reader?
-
-**Common Scene Planning Errors:**
-- No clear character goal (scene lacks dramatic engine)
-- Static conflict (obstacles don't escalate or evolve)
-- Missing turning point (scene lacks dramatic peak)
-- Arbitrary outcome (resolution not earned through conflict)
-- Weak sequel (insufficient processing of scene events)
-- Irrelevant sensory details (atmosphere not supporting drama)
+1. Define scene's purpose within chapter
+2. Identify characters present and their emotional states
+3. Establish clear goal and obstacle
+4. List key beats that must happen
+5. Determine emotional/situational shift
+6. Connect to chapter flow
 
 **Scene Success Indicators:**
-- Character's situation clearly changes from beginning to end
-- Goal pursuit creates escalating tension throughout
-- Turning point emerges logically from established conflict
-- Sequel provides emotional processing and logical transition
-- Reader experiences both scene events and character interiority
-- Scene advances story while being dramatically satisfying
 
-**MRU Construction Guidelines:**
-- External stimulus must be observable and specific
-- Internal feeling should be immediate and involuntary
-- Physical response must be believable reflex action
-- Conscious action should be character's deliberate choice
-- Sequence must follow natural psychological progression
+- Scene has clear dramatic purpose within chapter
+- Characters have distinct emotional states entering/exiting
+- Goal and obstacle create meaningful conflict
+- Key beats advance chapter progression
+- Scene creates change that affects story
+- Connection to next element is logical
 
-This systematic approach ensures each scene functions as effective dramatic unit while advancing the larger narrative through proper cause-and-effect progression.
+**Common Scene Planning Mistakes:**
+
+- No clear purpose (scene doesn't advance chapter)
+- Unclear character emotional states
+- Weak or missing goal/obstacle
+- Too many beats (scene becomes cluttered)
+- No meaningful change occurs
+- Poor connection to chapter flow
+
+This simplified approach ensures scenes serve their function as chapter components while providing LLMs with clear, actionable information for effective scene writing.
