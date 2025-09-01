@@ -282,199 +282,64 @@ Every scene must contain these essential elements:
 - ✓ Scene advances story and develops character
 - ✓ Connection to chapter flow is logical
 
-## Iterative Feedback Loops by Phase
+## Final Consistency Verification
 
-### Phase 1: Planning Phase Feedback Loops
+### Scene Development Consistency Check
 
-**Goal-Conflict-Outcome Validation Loop**
+After completing all development phases, perform a comprehensive validation using the `consistency_verification()` function:
 
-```
-Define Goal ──→ Validate Goal Clarity ──→ Assess Goal Achievability
-    ↑                    │                       │
-    │                    ▼                       ▼
-Refine Goal ◄─── Goal Too Vague/Broad? ◄─── Goal Realistic for Scene?
-    │                    │                       │
-    │                    │ (No)                  │ (No)
-    │                    └─── Clarify Stakes ────┘
-    │                                            │
-    └──── (Yes) ──────────────────────────────────┘
-                            │
-                            ▼
-                    [Proceed to Conflict Design]
-```
+```yaml
+consistency_verification:
+  scene_structure:
+    goal_clarity: "Character objective clearly defined and achievable"
+    conflict_escalation: "Progressive complications prevent easy achievement"
+    disaster_outcome: "Scene ends with 'No, and...' or 'Yes, but...' result"
+    value_shift: "Character moves from one polarity to opposite through turning point"
+  
+  prose_quality:
+    mru_sequence: "Natural motivation-reaction flow maintained throughout"
+    scene_summary_balance: "Appropriate pacing through dramatization vs compression"
+    character_voice: "Authentic speech patterns and personality consistency"
+    sensory_grounding: "Environmental details filtered through POV character"
+  
+  story_integration:
+    chapter_flow: "Scene serves function within larger chapter arc"
+    character_continuity: "Behavior aligns with established personality traits"
+    narrative_advancement: "Scene progresses plot and develops character effectively"
+    next_scene_setup: "Clear connection established to subsequent scenes"
+  
+  ai_enhancement:
+    content_quality: "AI-generated content maintains story voice and authenticity"
+    structural_integrity: "Enhancement preserves Goal-Conflict-Outcome framework"
+    context_relevance: "All AI additions serve scene's narrative purpose"
+  
+  specification_compliance:
+    yaml_format: "Scene follows canonical specification structure"
+    image_prompt: "Visual description captures scene essence and atmosphere"
+    required_fields: "All mandatory elements present and properly formatted"
+    metadata_accuracy: "Character states, time, place, and connections verified"
 
-**Character Motivation Feedback Loop**
+validation_process:
+  1. Run comprehensive check against all criteria
+  2. Generate detailed report of any deficiencies
+  3. Provide specific improvement recommendations
+  4. Require manual review and approval for scene completion
+  5. Flag critical issues that need Phase 1 restart with analysis results
 
-```
-Character State Analysis ──→ Motivation Assessment ──→ Goal Alignment Check
-         ↑                          │                         │
-         │                          ▼                         ▼
-   Update Character ◄─── Motivation Weak? ◄─── Goal Matches Character?
-      Background              │                         │
-         ↑                    │ (Yes)                   │ (No)
-         │                    ▼                         ▼
-         └──── Strengthen Stakes ──────┐       Adjust Goal/Character
-                                      │                │
-                                      ▼                ▼
-                              [Character-Goal Locked] ←──┘
-```
-
-### Phase 2: Structure Phase Feedback Loops
-
-**MRU Sequence Validation Loop**
-
-```
-Write MRU Sequence ──→ Check Natural Flow ──→ Validate Cause-Effect
-        ↑                      │                      │
-        │                      ▼                      ▼
-  Revise Sequence ◄─── Flow Feels Forced? ◄─── Logic Breaks Down?
-        ↑                      │                      │
-        │                 │ (No)                 │ (No)
-        │                 ▼                      ▼
-        └──── Check Reader Experience ──→ [MRU Approved]
-                      │
-                      ▼ (Confusing)
-                 Clarify Motivation
-                      │
-                      ▼
-                [Return to Write MRU]
-```
-
-**Scene vs Summary Balance Loop**
-
-```
-Draft Scene Content ──→ Assess Pacing ──→ Evaluate Reader Engagement
-         ↑                    │                      │
-         │                    ▼                      ▼
-    Adjust Balance ◄─── Too Slow/Fast? ◄─── Dragging/Rushing?
-         ↑                    │                      │
-         │               │ (No)                 │ (No)
-         │               ▼                      ▼
-         └──── Test Critical Moments ──→ [Pacing Approved]
-                        │
-                        ▼ (Weak Impact)
-                   Dramatize Key Beats
-                        │
-                        ▼
-                  [Return to Draft]
+failure_handling:
+  critical_issues: "Return to Phase 1 with detailed analysis for concept revision"
+  moderate_issues: "Provide targeted improvement recommendations"
+  minor_issues: "Note for future reference but approve scene"
+  
+quality_gates:
+  - All structural elements pass validation
+  - Character consistency maintained throughout
+  - Story integration serves narrative purpose
+  - AI enhancements preserve authenticity
+  - Specification compliance achieved
 ```
 
-### Phase 3: Enhancement Phase Feedback Loops
-
-**Dialogue Authenticity Loop**
-
-```
-Generate Dialogue ──→ Voice Consistency Check ──→ Subtext Validation
-        ↑                      │                         │
-        │                      ▼                         ▼
-   Refine Voice ◄─── Sounds Like Character? ◄─── Deeper Meaning Present?
-        ↑                      │                         │
-        │                 │ (Yes)                   │ (Yes)
-        │                 ▼                         ▼
-        └──── Tension Assessment ──→ [Dialogue Approved] ←──┘
-                      │
-                      ▼ (Low Tension)
-                Build Conflict Layers
-                      │
-                      ▼
-                [Return to Generate]
-```
-
-**Sensory Integration Feedback Loop**
-
-```
-Add Sensory Details ──→ POV Filter Check ──→ Atmospheric Coherence
-         ↑                     │                      │
-         │                     ▼                      ▼
-   Adjust Details ◄─── Through Character Eyes? ◄─── Supports Mood?
-         ↑                     │                      │
-         │                │ (Yes)                │ (Yes)
-         │                ▼                      ▼
-         └──── Immersion Test ──→ [Sensory Approved] ←──┘
-                      │
-                      ▼ (Weak Grounding)
-                 Enhance Key Senses
-                      │
-                      ▼
-                [Return to Add Details]
-```
-
-### Phase 4: Validation Phase Feedback Loops
-
-**Value Shift Verification Loop**
-
-```
-Identify Value Change ──→ Measure Shift Impact ──→ Assess Turning Point
-         ↑                       │                        │
-         │                       ▼                        ▼
-   Strengthen Shift ◄─── Significant Change? ◄─── Clear Moment of Change?
-         ↑                       │                        │
-         │                  │ (Yes)                  │ (Yes)
-         │                  ▼                        ▼
-         └──── Character Arc Check ──→ [Value Shift Confirmed] ←──┘
-                        │
-                        ▼ (Inconsistent)
-                   Realign Character
-                        │
-                        ▼
-                 [Return to Identify]
-```
-
-**Chapter Integration Loop**
-
-```
-Scene Placement Check ──→ Narrative Flow Test ──→ Chapter Arc Fit
-         ↑                       │                      │
-         │                       ▼                      ▼
-   Adjust Position ◄─── Logical Sequence? ◄─── Supports Chapter Goal?
-         ↑                       │                      │
-         │                  │ (Yes)                │ (Yes)
-         │                  ▼                      ▼
-         └──── Next Scene Setup ──→ [Integration Approved] ←──┘
-                        │
-                        ▼ (Weak Connection)
-                  Strengthen Threads
-                        │
-                        ▼
-                 [Return to Check]
-```
-
-### Cross-Phase Iterative Loops
-
-**Quality Assurance Mega-Loop**
-
-```
-Phase 1 Complete ──→ Phase 2 ──→ Phase 3 ──→ Phase 4
-     ↑                 │           │           │
-     │                 ▼           ▼           ▼
-Major Revision ◄─── Structure Issues? ◄── Enhancement Issues? ◄── Validation Fails?
-     ↑                 │           │           │
-     │            │ (No)      │ (No)      │ (No)
-     │            ▼           ▼           ▼
-     └──── Minor Adjustments ──→ [Scene Approved]
-                  │
-                  ▼ (Still Issues)
-            Return to Problem Phase
-```
-
-**AI Integration Feedback Loop**
-
-```
-AI Enhancement Request ──→ Human Review ──→ Quality Assessment
-         ↑                      │                │
-         │                      ▼                ▼
-   Refine Prompt ◄─── Maintains Voice? ◄─── Improves Scene?
-         ↑                      │                │
-         │                 │ (Yes)          │ (Yes)
-         │                 ▼                ▼
-         └──── Authenticity Check ──→ [AI Enhancement Approved]
-                        │
-                        ▼ (Lacks Authenticity)
-                   Manual Override
-                        │
-                        ▼
-                 [Return to Request]
-```
+If the consistency verification fails on critical structural or narrative issues, restart Phase 1 (Essential Scene Planning) with the detailed analysis results to address fundamental problems. For moderate issues, implement recommended improvements. Minor issues may be noted but should not prevent scene approval.
 
 ## Best Practices
 
