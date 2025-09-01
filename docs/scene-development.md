@@ -2,387 +2,414 @@
 
 ## Overview
 
-This guide outlines the systematic approach to developing individual scenes within the Fictures platform, building upon the Scene Planning Framework (Pre-Scene Planning, Scene Execution, Post-Scene Evaluation) and leveraging AI assistance for enhanced scene-level writing workflows.
+This guide outlines the systematic approach to developing individual scenes within the Fictures platform, building upon the core principle that **every scene must create meaningful change** through a Goal-Conflict-Outcome structure. It integrates the Scene-Sequel cycle from established narrative theory while leveraging AI assistance for enhanced scene-level writing workflows.
 
-## System Architecture Overview
+## Core Scene Architecture
 
-**Complete Scene Development Process Flow with AI Integration Functions:**
+**The Scene-Sequel Development Cycle:**
+
+Every effective scene follows the fundamental **Goal-Conflict-Outcome** structure, creating meaningful change through a **Value Shift**:
 
 ```
-                                    ┌─── PHASE 1: SCENE FOUNDATION ───┐
-                                    │                                 │
-                     User Input ────┤  scene_concept_development()    │
-                       (context)    └─────────────┬───────────────────┘
-                                                  │
-                                                  ▼
-                            ┌─── PHASE 2: SCENE CONSTRUCTION ───┐
-                            │                                   │
-        ┌───────────────────┤  scene_structure_process()       │
-        │                   └─────────────┬─────────────────────┘
-        │                                 │
-        │                                 ▼
-        │            ┌─── PHASE 3: AI-ENHANCED SCENE CREATION ───┐
-        │            │                                           │
-        ├────────────┤  dialogue_enhancement_process()          │
-        │            │           │                               │
-        │            │           ▼                               │
-        │            │  sensory_detail_integration()            │
-        │            └─────────────┬─────────────────────────────┘
-        │                          │
-        │                          ▼
-        │            ┌─── PHASE 4: SCENE EVALUATION & REFINEMENT ───┐
-        │            │                                              │
-        ├────────────┤  scene_quality_assessment()                   │
-        │            └─────────────┬────────────────────────────────┘
-        │                          │
-        │                          ▼
-        └─────────────────────► FINAL SCENE DATA
+┌─── THE SCENE (Action Unit) ───┐        ┌─── THE SEQUEL (Reaction Unit) ───┐
+│                               │        │                                  │
+│  GOAL ────┐                   │        │  REACTION ────┐                  │
+│           │                   │        │               │                  │
+│           ▼                   │   ──►  │               ▼                  │
+│  CONFLICT │                   │        │  DILEMMA ─────┼──► Next Scene    │
+│           │                   │        │               │                  │
+│           ▼                   │        │               ▼                  │
+│  DISASTER (Outcome)           │        │  DECISION ────┘                  │
+│                               │        │                                  │
+└───────────────────────────────┘        └──────────────────────────────────┘
 
-AI INTEGRATION FUNCTIONS (Available at all phases):
+VALUE SHIFT: Character moves from one polarity to opposite (+ to -, - to +, or escalating)
+TURNING POINT: The specific moment that irrevocably alters the scene's direction
+```
 
-buildSceneContext() ─────────┐
-getCharacterEmotions() ──────┤
-getEnvironmentalDetails() ───┼──→ Context Building ──→ AI Generation ──→ Quality Assurance
-enhanceDialogueTension() ────┤                                               │
-developSensoryImmersion() ───┘                                               │
-validateSceneCoherence() ─────────────────────────────────────────────────────┘
+**AI Integration Functions** (Available throughout development):
 
-DATA FLOW CONNECTIONS:
-
-User Input (context) → Phase 1: scene_concept_development()
-Phase 1 Output → Phase 2 Input: scene_foundation
-Phase 2 Output → Phase 3 Input: scene_structure, character_positions, environmental_setup
-Phase 3 Output → Phase 4 Input: enhanced_content, dialogue_authenticity
-Phase 4 Output: final_scene_data
-
-ITERATIVE FEEDBACK LOOPS:
-
-Scene Metrics ──→ scene_quality_assessment ──→ content_refinement
-Character Positioning ──→ dialogue_enhancement ──→ improved_character_interaction
-Environmental Context ──→ sensory_integration ──→ enhanced_immersion
+```
+Context Building ──→ AI Generation ──→ Quality Assurance
+     │                    │                   │
+buildSceneContext()   dialogue_enhancement() validateSceneCoherence()
+getCharacterEmotions() sensory_integration()  verifyCharacterContinuity()
+getEnvironmentalDetails() scene_pacing()     assessNarrativeFlow()
 ```
 
 ## Development Workflow
 
-### Phase 1: Scene Foundation
+### Step 1: Essential Scene Planning
 
-Converting user input and story context into structured scene concepts that will drive the scene development process.
+**Scene Planning Process:**
 
-**1.1 Scene Concept Development**
+```
+[Define Goal] ──→ [Identify Conflict] ──→ [Plan Outcome] ──→ [Map Value Shift]
+```
+
+Convert user input into the canonical scene specification format, focusing on the core Goal-Conflict-Outcome structure.
+
+**1.1 Scene Foundation Development**
 
 ```yaml
-scene_concept_development:
+# Scene development using hierarchical input from chapter-specification output
+scene_development:
   input:
-    chapter_context: "Chapter 1: Missing - Maya arrives at Elena's apartment for their weekly coffee date"
-    character_states:
-      maya_chen:
-        emotional_state: "casual_expectation"
-        physical_location: "outside_apartment_building"
-        narrative_goal: "normal_sisterly_visit"
-      elena_chen:
-        emotional_state: "absent_mysterious"
-        physical_location: "unknown"
-        narrative_function: "catalyst_through_absence"
-    setting_parameters:
-      primary_location: "residential_street_outside_apartment"
-      time_context: "sunday_morning_10am"
-      atmosphere_target: "routine_to_worried_progression"
-
-  process:
-    - analyze_scene_purpose: "Determine scene's narrative function within chapter"
-    - establish_character_goals: "Define what each character wants in this moment"
-    - identify_obstacles: "Determine what prevents easy goal achievement"
-    - plan_outcome_impact: "Define how scene resolution affects story progression"
+    # Receives structured chapter_input as defined in scene-specification requirements
+    chapter_input:
+      chapter_context:
+        chap: 1
+        title: "Missing"
+        pov: "maya"
+        words: 3500
+      
+      story_context:
+        title: "The Shadow Keeper"
+        genre: "urban_fantasy"
+        themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
+      
+      part_context:
+        part: 1
+        title: "Discovery"
+        goal: "Maya accepts supernatural reality"
+      
+      chapter_pattern:
+        goal: "Normal coffee date with Elena"
+        conflict: "Elena missing, signs of supernatural danger"
+        outcome: "Finds journal, realizes she's also a target"
+      
+      scene_assignment:
+        function: "chapter_opening"
+        goal: "Establish Elena missing"
+        setting: "elena_apartment_hallway"
+        events: ["elena_disappearance", "struggle_evidence"]
 
   output:
-    scene_foundation:
-      order: 1
-      title: "Normal Morning"
-      narrative_purpose: "establish_inciting_incident"
-      viewpoint_character: "maya_chen"
-      scene_goal: "maya_attempts_routine_visit_discovers_mystery"
-      primary_conflict: "expectations_versus_reality"
-      emotional_arc: "casual_comfort_to_growing_concern"
-      story_function: "transition_from_normal_world_to_adventure"
-      scene_stakes: "maya_peace_of_mind_and_family_connection"
+    # Scene specification format using hierarchical context
+    scene:
+  id: 1
+  summary: "Maya arrives for coffee date, finds Elena missing with signs of struggle"
+  
+  # Scene context
+  time: "sunday_10:05am"
+  place: "elena_apartment_hallway"
+  pov: "maya"
+  
+  # Characters present
+  characters:
+    maya: { enters: "casual_anticipation", exits: "panicked_determination" }
+    elena: { status: "absent_but_referenced", evidence: "struggle_signs" }
+  
+  # Core dramatic movement (Goal-Conflict-Outcome)
+  goal: "Normal coffee date with Elena"
+  obstacle: "Door unlocked, apartment silent, struggle evidence"
+  outcome: "Realizes Elena in danger, decides to search"
+  
+  # Key beats that must happen
+  beats:
+    - "Maya knocks, no answer, tries door"
+    - "Finds apartment unlocked, calls Elena's name"
+    - "Discovers overturned table, broken coffee mug"
+    - "Maya panics, decides to search rather than call police"
+  
+  # Emotional/value shift
+  shift: "routine_expectation → urgent_fear"
+  
+  # Connection to chapter flow
+  leads_to: "maya_searches_apartment_for_clues"
+  
+  # Visual scene description
+  image_prompt: "Young woman in casual clothes standing in a dimly lit apartment hallway, her face showing concern as she looks at an ajar door. The scene suggests early morning light filtering through windows, with subtle signs of disturbance visible - an overturned coffee table and scattered items in the background. Mood: tense, mysterious, domestic thriller atmosphere."
 ```
 
-**ASCII Flow Diagram - Scene Concept Development Process:**
+**Scene Planning Process:**
 
 ```
-[Analyze Purpose] ──→ [Character Goals] ──→ [Identify Obstacles] ──→ [Plan Impact]
+[Define Goal] ──→ [Identify Conflict] ──→ [Plan Outcome] ──→ [Map Value Shift]
 ```
 
-### Phase 2: Scene Construction
+### Step 2: Scene Structure and Execution
 
-Implementing the detailed scene architecture using the Scene Planning Framework elements.
+**MRU Structure Process:**
 
-**2.1 Scene Structure Development**
+```
+[Write MRU Sequence] ──→ [Check Natural Flow] ──→ [Validate Cause-Effect] ──→ [Balance Scene/Summary]
+```
+
+Implementing the scene using line-level writing techniques that ensure immersive, psychologically real prose.
+
+**2.1 Motivation-Reaction Units (MRUs)**
+
+Structure scene prose using the natural sequence of stimulus and response:
+
+```
+MOTIVATION (External Event) ──→ REACTION (Character Response)
+                                     │
+                                     ├── 1. Feeling (Internal/Emotional)
+                                     ├── 2. Reflex (Physical/Involuntary)  
+                                     └── 3. Action/Speech (Deliberate)
+
+Example:
+Motivation: "The door slammed shut." (External, objective)
+Reaction:   
+  Feeling: "Fear shot through him." (Internal response)
+  Reflex:  "He flinched." (Physical response)
+  Action:  "He reached for the doorknob. 'Who's there?'" (Deliberate response)
+```
+
+**2.2 Scene vs. Summary Balance**
+
+Control pacing through strategic use of real-time dramatization versus time compression:
+
+- **Scene ("Showing")**: Dramatize turning points, key interactions, emotional moments
+- **Summary ("Telling")**: Compress transitions, backstory, routine actions
+
+### Step 3: AI-Enhanced Scene Writing
+
+**AI Enhancement Process:**
+
+```
+[Context Building] ──→ [AI Generation] ──→ [Voice Integration] ──→ [Quality Assurance]
+```
+
+Leverage AI tools for dialogue authenticity, sensory immersion, and scene coherence while maintaining the core Goal-Conflict-Outcome structure.
+
+**3.1 AI-Assisted Content Enhancement**
+
+Use AI functions to enhance scene elements while preserving narrative structure:
 
 ```yaml
-scene_structure_process:
-  input:
-    scene_foundation:
-      order: 1
-      title: "Normal Morning"
-      narrative_purpose: "establish_inciting_incident"
-      viewpoint_character: "maya_chen"
-      scene_goal: "maya_attempts_routine_visit_discovers_mystery"
-      primary_conflict: "expectations_versus_reality"
-      emotional_arc: "casual_comfort_to_growing_concern"
-      story_function: "transition_from_normal_world_to_adventure"
-      scene_stakes: "maya_peace_of_mind_and_family_connection"
-
-  process:
-    - establish_entry_point: "Determine optimal scene opening for maximum impact"
-    - map_progression_beats: "Structure scene development through conflict escalation"
-    - plan_sensory_grounding: "Identify key environmental and physical details"
-    - design_exit_strategy: "Create compelling scene conclusion and transition"
-
-  output:
-    scene_structure:
-      pre_scene_planning:
-        - "The scene occurs outside Elena's apartment building on a quiet residential street during Sunday morning at 10 AM, with Maya Chen as POV character while Elena is absent but present through environmental traces."
-        - "The scene begins with casual, routine expectations but gradually builds to worried concern as Maya's peace of mind and family connection become threatened by the mystery of Elena's safety."
-      scene_execution:
-        - "The scene begins with Maya arriving at Elena's building and checking her phone, grounded by sensory details like Elena's parked car, echoing knocks, and the weight of the spare key."
-        - "The scene uses minimal external dialogue, focusing on Maya's internal voice and one-sided conversation, while maintaining a deliberate build from routine normalcy to growing concern."
-      post_scene_evaluation:
-        - "Maya fails to achieve her goal of a normal visit with Elena, but this failure becomes the story's inciting incident while revealing her protective and persistent nature."
-        - "The mystery is established and Maya's investigation is launched, moving from normal world into supernatural territory while creating a compelling hook through Maya's growing unease."
+# AI Enhancement Workflow
+scene_enhancement:
+  context_building:
+    buildSceneContext(chapter_position): "Assembles complete narrative context"
+    getCharacterEmotions(scene_id): "Retrieves character emotional states"
+    getEnvironmentalDetails(setting): "Identifies relevant atmospheric elements"
+  
+  content_generation:
+    enhanceDialogueTension(characters, conflict): "Improves dialogue authenticity"
+    developSensoryImmersion(setting, pov): "Enhances environmental details"
+    balanceSceneElements(dialogue, action, description): "Optimizes component distribution"
+  
+  quality_assurance:
+    validateSceneCoherence(scene_content): "Checks internal consistency"
+    verifyCharacterContinuity(character_states): "Confirms behavior authenticity"
+    assessNarrativeFlow(scene_sequence): "Evaluates scene connections"
 ```
 
-**ASCII Flow Diagram - Scene Structure Process:**
+**3.2 Dialogue and Subtext Development**
+
+Focus on authentic character voice while building tension through conversation:
+
+- **Character Voice Consistency**: Maintain speech patterns and personality markers
+- **Subtext Integration**: Layer deeper meanings beneath surface conversation
+- **Tension Escalation**: Use dialogue rhythm to build toward scene's turning point
+- **MRU Integration**: Ensure dialogue follows natural motivation-reaction patterns
+
+### Step 4: Scene Validation and Quality Assurance
+
+**Scene Validation Process:**
 
 ```
-[Entry Point] ──→ [Progression Beats] ──→ [Sensory Grounding] ──→ [Exit Strategy]
+[Verify Value Shift] ──→ [Check Character Consistency] ──→ [Assess Story Integration] ──→ [Validate Quality Gates]
 ```
 
-### Phase 3: AI-Enhanced Scene Creation
+Ensure the scene achieves its narrative purpose and maintains story coherence.
 
-Leveraging platform AI tools for enhanced scene writing productivity and immersive quality.
+**4.1 Core Scene Validation Checklist**
 
-**3.1 Dialogue Enhancement Integration**
-
-```yaml
-dialogue_enhancement_process:
-  input:
-    scene_structure:
-      pre_scene_planning:
-        - "The scene occurs outside Elena's apartment building on a quiet residential street during Sunday morning at 10 AM, with Maya Chen as POV character while Elena is absent but present through environmental traces."
-        - "The scene begins with casual, routine expectations but gradually builds to worried concern as Maya's peace of mind and family connection become threatened by the mystery of Elena's safety."
-      scene_execution:
-        - "The scene begins with Maya arriving at Elena's building and checking her phone, grounded by sensory details like Elena's parked car, echoing knocks, and the weight of the spare key."
-        - "The scene uses minimal external dialogue, focusing on Maya's internal voice and one-sided conversation, while maintaining a deliberate build from routine normalcy to growing concern."
-
-  process:
-    - enhance_character_voice: "Ensure authentic dialogue patterns and speech markers"
-    - build_tension_through_conversation: "Use dialogue rhythm to escalate scene conflict"
-    - integrate_subtext: "Layer deeper meanings beneath surface conversation"
-    - maintain_scene_pacing: "Balance dialogue with action and description"
-
-  output:
-    dialogue_authenticity:
-      internal_monologue_patterns:
-        maya_voice_markers: ["protective_concern", "artistic_observation", "practical_problem_solving"]
-        authenticity_score: 0.92
-      conversation_dynamics:
-        dialogue_type: "minimal_external_maximal_internal"
-        tension_building: "gradual_worry_escalation"
-        pacing_rhythm: "deliberate_measured_progression"
-      subtext_integration:
-        surface_level: "routine_sister_visit"
-        underlying_concern: "something_wrong_protective_instincts"
-        emotional_undercurrent: "family_responsibility_anxiety"
-```
-
-**ASCII Flow Diagram - Dialogue Enhancement Process:**
+Verify the scene meets essential requirements:
 
 ```
-[Character Voice] ──→ [Tension Building] ──→ [Subtext Integration] ──→ [Pacing Balance]
+✓ VALUE SHIFT: Character moved from one polarity to opposite (routine → fear)
+✓ GOAL CLARITY: Maya's objective was clear (normal coffee date)
+✓ CONFLICT ESCALATION: Obstacles prevented easy achievement (empty apartment, signs of struggle)  
+✓ DISASTER OUTCOME: Scene ended with negative result (Elena missing, Maya panicked)
+✓ TURNING POINT: Specific moment altered scene direction (discovering struggle signs)
+✓ CHARACTER CONSISTENCY: Maya's actions align with established personality
+✓ MRU STRUCTURE: Prose follows natural motivation-reaction sequence
+✓ SCENE FUNCTION: Advances story and develops character effectively
 ```
 
-**3.2 Sensory Detail Integration**
+**4.2 Quality Gates Assessment**
 
-```yaml
-sensory_detail_integration:
-  input:
-    dialogue_authenticity:
-      internal_monologue_patterns:
-        maya_voice_markers: ["protective_concern", "artistic_observation", "practical_problem_solving"]
-        authenticity_score: 0.92
-      conversation_dynamics:
-        dialogue_type: "minimal_external_maximal_internal"
-        tension_building: "gradual_worry_escalation"
-        pacing_rhythm: "deliberate_measured_progression"
+Use AI functions to validate scene quality:
 
-  process:
-    - ground_environmental_details: "Establish vivid setting through sensory information"
-    - integrate_character_physicality: "Show character state through physical actions"
-    - enhance_atmospheric_mood: "Use sensory details to support emotional progression"
-    - maintain_viewpoint_consistency: "Filter all sensory information through POV character"
+- `validateSceneCoherence()`: Check internal logic and consistency
+- `verifyCharacterContinuity()`: Confirm authentic character behavior  
+- `assessNarrativeFlow()`: Evaluate connection to surrounding scenes
+- Ensure `image_prompt` captures scene's visual essence and atmosphere
 
-  output:
-    immersive_quality:
-      environmental_grounding:
-        visual_details: ["elena_parked_car", "apartment_building_facade", "quiet_street"]
-        auditory_elements: ["echoing_knocks", "phone_notification_sounds", "street_silence"]
-        tactile_sensations: ["spare_key_weight", "door_handle_resistance", "phone_vibration"]
-      character_physicality:
-        maya_body_language: ["checking_phone", "knocking_persistence", "key_handling"]
-        emotional_manifestations: ["growing_tension", "protective_alertness", "concern_escalation"]
-      atmospheric_progression:
-        opening_mood: "comfortable_routine"
-        middle_development: "emerging_unease"
-        closing_atmosphere: "worried_determination"
-      sensory_coherence_score: 0.89
-```
+**4.3 Connection to Chapter Flow**
 
-**ASCII Flow Diagram - Sensory Integration Process:**
+Verify scene serves its function within chapter structure:
+- Scene creates meaningful change that affects subsequent scenes
+- Character emotional state changes drive next scene's conflict
+- Established story threads connect logically to chapter progression
 
-```
-[Environmental Details] ──→ [Character Physicality] ──→ [Atmospheric Mood] ──→ [Viewpoint Filter]
-```
+## Scene Architecture Reference
 
-### Phase 4: Scene Evaluation and Refinement
+### Scene Function Types
 
-Ensuring scene quality and coherence within the larger narrative structure.
-
-**4.1 Scene Quality Assessment**
-
-```yaml
-scene_quality_assessment:
-  input:
-    immersive_quality:
-      environmental_grounding:
-        visual_details: ["elena_parked_car", "apartment_building_facade", "quiet_street"]
-        auditory_elements: ["echoing_knocks", "phone_notification_sounds", "street_silence"]
-        tactile_sensations: ["spare_key_weight", "door_handle_resistance", "phone_vibration"]
-      character_physicality:
-        maya_body_language: ["checking_phone", "knocking_persistence", "key_handling"]
-        emotional_manifestations: ["growing_tension", "protective_alertness", "concern_escalation"]
-      atmospheric_progression:
-        opening_mood: "comfortable_routine"
-        middle_development: "emerging_unease"
-        closing_atmosphere: "worried_determination"
-
-  process:
-    - evaluate_goal_achievement: "Assess whether scene accomplished narrative purpose"
-    - verify_character_development: "Confirm authentic character growth and revelation"
-    - check_story_advancement: "Validate scene's contribution to overall plot progression"
-    - assess_reader_engagement: "Ensure scene creates compelling reading experience"
-
-  output:
-    completed_scene:
-      order: 1
-      title: "Normal Morning"
-      final_status: "quality_verified"
-      narrative_achievement:
-        goal_fulfillment: "inciting_incident_established"
-        character_revelation: "maya_protective_nature_demonstrated"
-        story_progression: "normal_world_to_mystery_transition_complete"
-        engagement_factor: "compelling_hook_through_growing_unease"
-      quality_metrics:
-        scene_coherence_score: 0.94
-        character_authenticity: 0.92
-        sensory_immersion: 0.89
-        narrative_flow: 0.96
-        tension_progression: 0.91
-      next_scene_connections:
-        established_threads: ["elena_disappearance", "maya_investigation_begins"]
-        character_states: ["maya_worried_determined", "elena_mysteriously_absent"]
-        environmental_continuity: ["apartment_mystery", "normal_world_disrupted"]
-```
-
-**ASCII Flow Diagram - Scene Quality Assessment Process:**
-
-```
-[Goal Achievement] ──→ [Character Development] ──→ [Story Advancement] ──→ [Reader Engagement]
-```
-
-## Development Tools and Resources
-
-### Scene Architecture Framework
-
-**Scene Function Classification**
+Based on narrative purpose within story structure:
 
 - **Opening Scenes**: Hook establishment, character introduction, world grounding
-- **Transition Scenes**: Plot advancement, location changes, time progression
+- **Transition Scenes**: Plot advancement, location changes, time progression  
 - **Conflict Scenes**: Tension escalation, character confrontation, obstacle introduction
 - **Revelation Scenes**: Information disclosure, mystery resolution, plot twist delivery
 - **Emotional Scenes**: Character development, relationship dynamics, internal processing
 - **Action Scenes**: Physical conflicts, chase sequences, dynamic interactions
 - **Closing Scenes**: Resolution delivery, setup for continuation, emotional satisfaction
 
-**Scene Beat Structure**
+### Core Scene Structure
 
-- **Goal/Motivation**: Character objective and driving desire
-- **Conflict/Obstacle**: Opposition preventing easy goal achievement
-- **Outcome/Consequence**: Scene resolution and impact on story progression
+Every scene must contain these essential elements:
 
-**Scene Types and Pacing**
+**The Scene (Action Unit):**
+1. **Goal**: Character's specific, immediate objective
+2. **Conflict**: Progressive complications preventing easy achievement
+3. **Disaster**: Negative outcome ("No, and..." or "Yes, but...")
 
-- **Fast-Paced Scenes**: Action sequences, conflict moments, revelation scenes
-- **Medium-Paced Scenes**: Character development, plot advancement, world-building
-- **Slow-Paced Scenes**: Reflection moments, aftermath processing, relationship building
+**The Sequel (Reaction Unit):**
+1. **Reaction**: Immediate emotional response to disaster
+2. **Dilemma**: Processing new situation, no easy options
+3. **Decision**: Choice of new course of action (becomes next scene's Goal)
 
-### AI Integration Functions
+### Scene Pacing Control
+
+- **Fast-Paced**: Action sequences, conflict moments, revelation scenes (use Scene)
+- **Medium-Paced**: Character development, plot advancement, world-building (balance Scene/Summary)
+- **Slow-Paced**: Reflection moments, aftermath processing (use Sequel/Summary)
+
+## AI Integration Functions
 
 **Context Building**
-
-- `buildSceneContext(chapterPosition)`: Assembles complete narrative context for scene generation
-- `getCharacterEmotions(sceneId)`: Retrieves current character emotional and mental states
-- `getEnvironmentalDetails(setting)`: Identifies relevant setting and atmospheric elements
-- `analyzeScenePacing(previousScenes)`: Maps optimal rhythm and tension progression
+- `buildSceneContext(chapterPosition)`: Assembles complete narrative context
+- `getCharacterEmotions(sceneId)`: Retrieves current character emotional states
+- `getEnvironmentalDetails(setting)`: Identifies relevant atmospheric elements
 
 **Content Generation**
-
-- `enhanceDialogueTension(characters, conflict)`: Improves dialogue authenticity and dramatic impact
+- `enhanceDialogueTension(characters, conflict)`: Improves dialogue authenticity and impact
 - `developSensoryImmersion(setting, viewpoint)`: Enhances environmental and physical details
-- `balanceSceneElements(dialogue, action, description)`: Ensures optimal scene component distribution
+- `balanceSceneElements(dialogue, action, description)`: Ensures optimal component distribution
 
 **Quality Assurance**
-
-- `validateSceneCoherence(sceneContent)`: Checks scene internal consistency and logic
+- `validateSceneCoherence(sceneContent)`: Checks scene internal consistency
 - `verifyCharacterContinuity(characterStates)`: Confirms character behavior authenticity
-- `assessNarrativeFlow(sceneSequence)`: Evaluates scene connection and progression quality
+- `assessNarrativeFlow(sceneSequence)`: Evaluates scene connection quality
 
-### Development Workflows
+## Development Workflow Summary
 
-**Iterative Scene Development Cycle**
+**Scene Development Cycle**
 
-1. **Foundation**: Establish scene purpose and character objectives
-2. **Structure**: Build scene architecture using Planning Framework elements
-3. **Enhance**: Apply AI tools for dialogue, sensory details, and immersion
-4. **Evaluate**: Assess scene quality and narrative function fulfillment
-5. **Refine**: Optimize scene based on quality assessment results
+1. **Plan**: Create canonical scene specification (Goal-Conflict-Outcome)
+2. **Structure**: Implement MRU-based prose and Scene/Summary balance
+3. **Enhance**: Apply AI tools while preserving narrative structure
+4. **Validate**: Verify value shift, character consistency, and story advancement
 
-**Quality Gates**
+**Essential Quality Gates**
 
-- Scene goal achievement verification
-- Character voice authenticity validation
-- Sensory immersion and grounding assessment
-- Narrative flow and tension progression evaluation
+- ✓ Scene creates meaningful change (Value Shift)
+- ✓ Goal-Conflict-Outcome structure is clear
+- ✓ Character behavior remains authentic
+- ✓ Scene advances story and develops character
+- ✓ Connection to chapter flow is logical
+- ✓ Hierarchical input compliance verified (receives proper chapter_input structure)
+- ✓ Scene specification alignment with hierarchical data flow requirements
+
+## Final Consistency Verification
+
+### Scene Development Consistency Check
+
+After completing all development phases, perform a comprehensive validation using the `consistency_verification()` function:
+
+```yaml
+consistency_verification:
+  scene_structure:
+    goal_clarity: "Character objective clearly defined and achievable"
+    conflict_escalation: "Progressive complications prevent easy achievement"
+    disaster_outcome: "Scene ends with 'No, and...' or 'Yes, but...' result"
+    value_shift: "Character moves from one polarity to opposite through turning point"
+  
+  prose_quality:
+    mru_sequence: "Natural motivation-reaction flow maintained throughout"
+    scene_summary_balance: "Appropriate pacing through dramatization vs compression"
+    character_voice: "Authentic speech patterns and personality consistency"
+    sensory_grounding: "Environmental details filtered through POV character"
+  
+  story_integration:
+    chapter_flow: "Scene serves function within larger chapter arc"
+    character_continuity: "Behavior aligns with established personality traits"
+    narrative_advancement: "Scene progresses plot and develops character effectively"
+    next_scene_setup: "Clear connection established to subsequent scenes"
+    
+  hierarchical_data_flow:
+    input_structure_compliance: "Scene properly receives chapter_input with all required sections"
+    chapter_context_usage: "Scene utilizes chapter context for POV, title, word count alignment"
+    story_context_integration: "Scene incorporates story-level themes and genre expectations"
+    part_context_awareness: "Scene serves part-level goals and character development arcs"
+    scene_assignment_fulfillment: "Scene accomplishes specified chapter function and events"
+    data_inheritance_validation: "All hierarchical context properly flows from specification levels"
+  
+  ai_enhancement:
+    content_quality: "AI-generated content maintains story voice and authenticity"
+    structural_integrity: "Enhancement preserves Goal-Conflict-Outcome framework"
+    context_relevance: "All AI additions serve scene's narrative purpose"
+  
+  specification_compliance:
+    yaml_format: "Scene follows canonical specification structure"
+    image_prompt: "Visual description captures scene essence and atmosphere"
+    required_fields: "All mandatory elements present and properly formatted"
+    metadata_accuracy: "Character states, time, place, and connections verified"
+
+validation_process:
+  1. Run comprehensive check against all criteria
+  2. Generate detailed report of any deficiencies
+  3. Provide specific improvement recommendations
+  4. Require manual review and approval for scene completion
+  5. Flag critical issues that need Phase 1 restart with analysis results
+
+failure_handling:
+  critical_issues: "Return to Phase 1 with detailed analysis for concept revision"
+  moderate_issues: "Provide targeted improvement recommendations"
+  minor_issues: "Note for future reference but approve scene"
+  
+quality_gates:
+  - All structural elements pass validation
+  - Character consistency maintained throughout
+  - Story integration serves narrative purpose
+  - AI enhancements preserve authenticity
+  - Specification compliance achieved
+```
+
+If the consistency verification fails on critical structural or narrative issues, restart Phase 1 (Essential Scene Planning) with the detailed analysis results to address fundamental problems. For moderate issues, implement recommended improvements. Minor issues may be noted but should not prevent scene approval.
 
 ## Best Practices
 
-### Scene Development
+### Core Scene Principles
 
-1. **Clear Purpose Definition**: Every scene must serve a specific narrative function
-2. **Character-Driven Action**: Ensure character goals and obstacles drive scene progression
-3. **Sensory Grounding**: Anchor readers in scene through vivid environmental details
-4. **Emotional Progression**: Create clear emotional arc from scene beginning to end
+1. **Every Scene Must Create Change**: No scene should be removable without consequence
+2. **Value Shift Focus**: Move character from one polarity to opposite through turning point
+3. **Goal-Driven Structure**: Character enters with clear objective, faces escalating conflict
+4. **Disaster Endings**: End with "No, and..." or "Yes, but..." to drive story forward
+
+### Line-Level Writing
+
+1. **MRU Consistency**: Maintain natural motivation-reaction sequence in prose
+2. **Sensory Grounding**: Anchor readers through viewpoint character's sensory experience  
+3. **Scene/Summary Balance**: Dramatize crucial moments, compress routine transitions
+4. **Character Voice**: Maintain authentic speech patterns and personality markers
 
 ### AI Collaboration
 
-1. **Context-Rich Scene Prompting**: Provide comprehensive character and story context for AI generation
-2. **Iterative Enhancement**: Use AI as collaborative partner for dialogue, description, and pacing refinement
-3. **Authenticity Preservation**: Maintain character voice consistency while leveraging AI capabilities
-4. **Quality Validation**: Regularly assess AI-enhanced content against established scene standards
+1. **Structure First**: Establish Goal-Conflict-Outcome before AI enhancement
+2. **Context-Rich Prompting**: Provide complete character and story context
+3. **Preserve Authenticity**: Use AI to enhance, not replace, character voice consistency
+4. **Validate Against Standards**: Check AI content against scene quality gates
 
-### Quality Management
+### Quality Assurance
 
-1. **Scene Coherence Monitoring**: Ensure internal scene logic and character behavior consistency
-2. **Narrative Function Verification**: Confirm each scene advances story and develops characters effectively
-3. **Reader Engagement Assessment**: Evaluate scene's ability to maintain reader interest and investment
-4. **Connection Validation**: Verify smooth transitions and logical progression between scenes
+1. **Canonical Format**: Use specified YAML structure including `image_prompt`
+2. **Chapter Integration**: Ensure scene serves function within larger chapter arc
+3. **Character Continuity**: Verify behavior aligns with established personality
+4. **Story Advancement**: Confirm scene progresses plot and develops character effectively

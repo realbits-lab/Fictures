@@ -67,7 +67,61 @@ Scenes are the building blocks of chapters. A chapter is a curated collection of
 - **Unity:** Scenes within a chapter are typically unified by a continuous block of time, a single point of view (POV), a specific objective, or a central theme.
 - **Scene Breaks:** A transition between scenes (a shift in time, location, or POV) is indicated by a clear visual break, typically an extra line of white space or a centered dinkus (e.g., `* * *`).
 
-## 6. YAML Data Structure Example for Scene Planning
+## 6. Input Requirements from Chapter Specification
+
+The scene specification requires the following input data from the chapter-specification output:
+
+```yaml
+# ============================================
+# REQUIRED INPUT FROM CHAPTER SPECIFICATION
+# ============================================
+
+chapter_input:
+  # Chapter context for this scene
+  chapter_context:
+    chap: number
+    title: string
+    pov: string
+    words: number
+    
+  # Inherited context from higher levels
+  story_context:
+    title: string
+    genre: string
+    themes: array
+    
+  part_context:
+    part: number
+    title: string
+    goal: string
+    
+  # Chapter-specific pattern that scene must serve
+  chapter_pattern:
+    goal: string
+    conflict: string
+    outcome: string
+    
+  # Character states for this scene
+  chars: object  # Character development context and emotional states
+  
+  # Scene assignment within chapter
+  scene_assignment:
+    function: string     # "chapter_opening", "investigation", "chapter_climax", etc.
+    goal: string         # Scene-specific goal within chapter progression
+    setting: string      # Where this scene takes place
+    events: array        # Key events this scene should include
+    
+  # Chapter structure context for scene placement
+  acts: object          # Three-act structure context (setup/confrontation/resolution)
+  
+  # Tension and atmosphere context
+  tension_engine: object
+  
+  # Serial publication context
+  serial_context: object
+```
+
+## 7. YAML Data Structure Example for Scene Planning
 
 Since scenes are components within chapters, this compact format focuses only on essential information needed for an LLM to write effective scene content.
 
@@ -107,6 +161,9 @@ scene:
 
   # Connection to chapter flow
   leads_to: "maya_searches_apartment_for_clues"
+
+  # Visual scene description
+  image_prompt: "Young woman in casual clothes standing in a dimly lit apartment hallway, her face showing concern as she looks at an ajar door. The scene suggests early morning light filtering through windows, with subtle signs of disturbance visible - an overturned coffee table and scattered items in the background. Mood: tense, mysterious, domestic thriller atmosphere."
 ```
 
 ## 7. YAML Field Documentation
@@ -201,7 +258,24 @@ This guide explains each field in the essential scene specification format, focu
 - **Usage**: Brief description of what naturally follows
 - **Tips**: Should emerge from this scene's outcome
 
-### 7.5. Usage Guidelines for Scene Planning
+### 7.5. Visual Scene Elements
+
+**`image_prompt`**: Detailed visual description for scene visualization
+
+- **Purpose**: Provides comprehensive visual context for scene setting, characters, and atmosphere
+- **Usage**: Descriptive text suitable for AI image generation or writer visualization
+- **Structure**: Single detailed paragraph covering setting, characters, lighting, mood, and genre atmosphere
+- **Tips**: Include specific details about character appearance, environmental elements, lighting conditions, and emotional tone
+
+**Image Prompt Guidelines:**
+
+- **Setting Details**: Physical environment, lighting conditions, time of day
+- **Character Appearance**: Age, clothing, posture, facial expressions, positioning
+- **Atmospheric Elements**: Mood, genre feel, emotional undertone
+- **Visual Continuity**: Consistent with established story world and character descriptions
+- **Practical Focus**: Actionable details that help visualize the scene's dramatic moment
+
+### 7.6. Usage Guidelines for Scene Planning
 
 **Essential Scene Planning Steps:**
 
@@ -211,6 +285,7 @@ This guide explains each field in the essential scene specification format, focu
 4. List key beats that must happen
 5. Determine emotional/situational shift
 6. Connect to chapter flow
+7. Create visual description for scene atmosphere and key elements
 
 **Scene Success Indicators:**
 
@@ -220,6 +295,7 @@ This guide explains each field in the essential scene specification format, focu
 - Key beats advance chapter progression
 - Scene creates change that affects story
 - Connection to next element is logical
+- Visual description enhances scene atmosphere and aids visualization
 
 **Common Scene Planning Mistakes:**
 
@@ -229,5 +305,6 @@ This guide explains each field in the essential scene specification format, focu
 - Too many beats (scene becomes cluttered)
 - No meaningful change occurs
 - Poor connection to chapter flow
+- Vague or generic visual descriptions that don't capture scene specifics
 
 This simplified approach ensures scenes serve their function as chapter components while providing LLMs with clear, actionable information for effective scene writing.
