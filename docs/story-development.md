@@ -382,44 +382,6 @@ character_development_process:
         reader_hooks:
           ["mentor_mystery", "training_progress", "secret_revelation"]
 
-    # World-building integration with character development
-    atmosphere_development:
-      immersion_elements:
-        environmental_details:
-          [
-            "san_francisco_fog",
-            "photography_studio_lighting",
-            "shadow_realm_darkness",
-          ]
-        sensory_integration:
-          ["visual_contrasts", "atmospheric_tension", "location_mood"]
-        character_connection: "settings_reflect_internal_states"
-
-      mood_progression: "comfortable→uncertain→tense"
-      world_expansion_points:
-        ["realm_discovery", "magic_system_reveal", "cultural_depth"]
-
-    # Setting consistency tracking
-    world_integration:
-      primary_locations:
-        san_francisco:
-          {
-            consistency: "established",
-            character_connection: "maya_comfort_zone",
-          }
-        photography_studio:
-          { consistency: "detailed", character_connection: "maya_identity" }
-      secondary_locations:
-        shadow_realm:
-          { consistency: "mysterious", character_connection: "elena_danger" }
-        chinatown_passages:
-          {
-            consistency: "cultural_authentic",
-            character_connection: "marcus_guidance",
-          }
-
-      reader_engagement:
-        ["world_mysteries", "setting_reveals", "atmospheric_hooks"]
 ```
 
 ### Phase 4: Quality Assurance and Refinement
@@ -470,48 +432,10 @@ story_consistency_verification:
       maya_marcus:
         { type: "mentor_student", current: "reluctant_trust", tension: 0.3 }
 
-    # World-building integration from character development phase
-    atmosphere_development:
-      immersion_elements:
-        environmental_details:
-          [
-            "san_francisco_fog",
-            "photography_studio_lighting",
-            "shadow_realm_darkness",
-          ]
-        sensory_integration:
-          ["visual_contrasts", "atmospheric_tension", "location_mood"]
-        character_connection: "settings_reflect_internal_states"
-      mood_progression: "comfortable→uncertain→tense"
-      world_expansion_points:
-        ["realm_discovery", "magic_system_reveal", "cultural_depth"]
-
-    world_integration:
-      primary_locations:
-        san_francisco:
-          {
-            consistency: "established",
-            character_connection: "maya_comfort_zone",
-          }
-        photography_studio:
-          { consistency: "detailed", character_connection: "maya_identity" }
-      secondary_locations:
-        shadow_realm:
-          { consistency: "mysterious", character_connection: "elena_danger" }
-        chinatown_passages:
-          {
-            consistency: "cultural_authentic",
-            character_connection: "marcus_guidance",
-          }
-      reader_engagement:
-        ["world_mysteries", "setting_reveals", "atmospheric_hooks"]
   process:
-    - verify_characters: "Check character consistency across all scenes"
+    - verify_characters: "Check character consistency and development arcs"
     - check_plot_threads: "Ensure plot threads are properly developed and resolved"
-    - validate_world_consistency: "Ensure world rules remain coherent across scenes"
-    - verify_atmosphere_integration: "Validate immersive environmental details support story"
-    - check_setting_authenticity: "Maintain cultural and system accuracy"
-    - validate_character_world_connection: "Confirm character-setting alignment"
+    - validate_story_structure: "Confirm story structure supports narrative goals"
     - validate_timeline: "Confirm timeline and sequence accuracy"
   output:
     # Hierarchical output for part specification input
@@ -588,70 +512,6 @@ story_consistency_verification:
           part_endings: ["mentor_secret_revealed", "elena_appears_changed"],
         }
 
-    # Legacy format for reference
-    completed_part:
-      part: 1
-      title: "Discovery"
-      words: 20000
-      status: "verified"
-
-      # Character arc completion tracking
-      char_progress:
-        maya:
-          role: "protag"
-          arc_stage: "denial→reluctant_acceptance"
-          completion: "stage_1_complete"
-          next_development: "training_commitment"
-
-        elena:
-          role: "catalyst"
-          arc_stage: "present→missing"
-          completion: "catalyst_established"
-          next_development: "survival_struggle"
-
-        marcus:
-          role: "mentor"
-          arc_stage: "approach→initial_guidance"
-          completion: "mentor_introduction"
-          next_development: "secret_tension"
-
-      # Story advancement and hooks
-      story_progress:
-        conflicts_established: ["sister_disappearance", "power_discovery"]
-        mysteries_introduced:
-          ["shadow_magic_nature", "elena_location", "marcus_past"]
-        hooks_for_next:
-          overarching: ["elena_rescue_urgency", "power_corruption_risk"]
-          part_specific: ["training_begins", "realm_exploration_starts"]
-
-      # World-building validation results
-      world_validation:
-        setting_consistency:
-          location_integrity: 0.94
-          mechanics_coherence: 0.87
-          cultural_authenticity: 0.91
-          timeline_accuracy: 0.98
-
-        atmosphere_quality:
-          immersion_score: 0.89
-          sensory_detail_integration: 0.92
-          mood_progression_coherence: 0.88
-          character_connection_strength: 0.93
-
-        narrative_integration:
-          plot_element_integration: "core_elements_support_conflict"
-          character_setting_alignment: "protagonist_skills_match_setting"
-          world_mystery_effectiveness: 0.90
-          consistency_violations: []
-
-      # Serial publication readiness
-      publication_metrics:
-        consistency_score: 0.94
-        voice_authenticity: 0.92
-        world_coherence: 0.96
-        reader_engagement: 0.93
-        hook_effectiveness: 0.91
-        feedback_readiness: "high"
 ```
 
 ## Development Tools and Resources
