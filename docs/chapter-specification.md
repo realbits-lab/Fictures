@@ -74,41 +74,69 @@ The chapter specification requires the following input data from the part-specif
 part_input:
   # Part context for this chapter
   part_context:
-    part: number
-    title: string
-    words: number
-    function: string
-    
+    part: 1
+    title: "Discovery"
+    words: 20000
+    function: "story_setup"
+
   # Inherited story context
   story_context:
-    title: string
-    genre: string
-    themes: array
-    overall_goal: string
-    overall_conflict: string
-    
+    title: "The Shadow Keeper"
+    genre: "urban_fantasy"
+    themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
+    overall_goal: "Save Elena from Shadow Realm"
+    overall_conflict: "Shadow magic corrupts those who use it"
+
   # Part-specific pattern that chapter must serve
   part_pattern:
-    goal: string
-    conflict: string
-    outcome: string
-    questions: object
-    
+    goal: "Maya accepts supernatural reality"
+    conflict: "Denial vs mounting evidence"
+    outcome: "Reluctant training commitment"
+    questions:
+      primary: "How will Maya react to discovering her magical abilities?"
+      secondary: "Can Maya overcome denial to accept the supernatural world?"
+
   # Character states and arcs for this chapter
-  chars: object  # Character development context and current states
-  
+  chars:
+    maya:
+      role: "protag"
+      part_arc: "denial_normalcy→reluctant_acceptance"
+      current_state: "denial_normalcy"
+      target_state: "reluctant_acceptance"
+      conflict: "safety_vs_responsibility"
+      key_transforms: ["magical_manifestation", "mentor_acceptance"]
+    elena:
+      role: "catalyst"
+      part_arc: "mysterious_absence→catalyst_revelation"
+      current_state: "mysterious_absence"
+      target_state: "catalyst_revelation"
+      function: "motivation_worldbuilding"
+      key_transforms: ["disappearance_mystery", "supernatural_connection"]
+
   # Chapter assignment within part
   chapter_assignment:
-    function: string  # "part_opening", "rising_action", "turning_point", etc.
-    goal: string      # Chapter-specific goal within part progression
-    events: array     # Key events this chapter should include
-    
+    function: "part_opening"
+    goal: "Establish Elena's disappearance"
+    events: ["elena_disappearance", "signs_of_struggle", "supernatural_clues"]
+
   # Thematic and emotional context
-  part_themes: object
-  emotion_arc: object
-  
+  part_themes:
+    primary: "denial_and_acceptance"
+    elements: ["denial_vs_truth", "family_responsibility"]
+    symbols: ["shadows_as_fears", "photography_as_truth"]
+
+  emotion_arc:
+    start: "casual_family_concern"
+    progression:
+      ["growing_fear", "supernatural_terror", "determined_resolution"]
+    end: "grim_commitment"
+
   # Serial publication context
-  serial_context: object
+  serial_context:
+    part_climax_at: "85%"
+    satisfaction_points: ["elena_fate_revealed", "maya_abilities_confirmed"]
+    anticipation_hooks: ["corruption_risk", "training_challenges"]
+    ending_hook: "Maya accepts training but discovers mentor's dark secret"
 ```
 
 ## 6. YAML Planning Schema for LLM Chapter Generation
@@ -203,100 +231,88 @@ The chapter specification provides the following output data structure for use a
 # CHAPTER OUTPUT FOR SCENE SPECIFICATION INPUT
 # ============================================
 
-chapter_output:
-  # Chapter context for scenes
-  chapter_context:
-    chap: 1
-    title: "Missing"
-    pov: "maya"
-    words: 3500
-    
-  # Inherited context from higher levels
-  story_context:
-    title: "The Shadow Keeper"
-    genre: "urban fantasy"
-    themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
-    
-  part_context:
-    part: 1
-    title: "Discovery"
-    goal: "Maya accepts supernatural reality"
-    
-  # Chapter-specific pattern that scenes must serve
-  chapter_pattern:
-    goal: "Normal coffee date with Elena"
-    conflict: "Elena missing, signs of supernatural danger"
-    outcome: "Finds journal, realizes she's also a target"
-    
-  # Character states and development for scenes
-  chars:
-    maya:
-      role: "protag"
-      chapter_arc: "casual_concern→targeted_fear"
-      start: "casual_sisterly_concern"
-      end: "realizes_personal_danger"
-      motivation: "Find Elena and understand threat"
-      growth: "Supernatural reality acceptance begins"
-      
-    elena:
-      role: "catalyst"
-      chapter_arc: "absent→mysterious_presence"
-      start: "missing_sister"
-      end: "supernatural_connection_revealed"
-      evidence_left: ["journal", "research_notes", "struggle_signs"]
-      
-  # Scene assignments and structure
-  scene_requirements:
-    estimated_scenes: 3  # Based on three-act structure
-    scene_functions:
-      - function: "chapter_opening"
-        goal: "Establish Elena missing"
-        setting: "elena_apartment_hallway"
-        events: ["arrival", "door_discovery", "empty_apartment"]
-        
-      - function: "investigation"
-        goal: "Discover supernatural evidence"
-        setting: "elena_apartment_interior"
-        events: ["journal_discovery", "research_revelation", "struggle_evidence"]
-        
-      - function: "chapter_climax"
-        goal: "Realize personal danger"
-        setting: "elena_apartment_interior"
-        events: ["threat_realization", "decision_to_investigate", "forward_hook"]
-        
-  # Three-act chapter structure for scenes
-  acts:
-    setup:
-      percentage: 20
-      hook_in: "Door unlocked, coffee warm, Elena gone"
-      orient: "Weekly sister ritual, Maya's skeptical nature"
-      incident: "Overturned chair, shattered mug - signs of struggle"
-      
-    confrontation:
-      percentage: 60
-      rising_action: "Journal discovery leads to supernatural research evidence"
-      midpoint_shift: "Realizes Elena was targeted, not random"
-      escalation: "Maya discovers she may be next target"
-      
-    resolution:
-      percentage: 20
-      climax: "Decision to investigate supernatural threat personally"
-      resolution: "Commits to finding Elena despite danger"
-      hook_out: "Marcus Webb watching from shadows"
-      
-  # Tension and atmosphere for scenes
-  tension_engine:
-    external: "Missing person mystery with supernatural elements"
-    internal: "Maya's skepticism vs growing supernatural evidence"
-    interpersonal: "Concern for Elena, guilt over recent distance"
-    atmospheric: "Empty apartment, signs of struggle, growing dread"
-    
-  # Forward momentum context
-  serial_context:
-    satisfaction_provided: ["Elena's research revealed", "supernatural reality confirmed"]
-    anticipation_created: ["Who is watching Maya?", "What happened to Elena?"]
-    hook_type: "looming_threat"
-    hook_content: "Marcus Webb watching from shadows"
+# Output for scene specification input
+# Chapter context for this scene
+chapter_context:
+  chap: 1
+  title: "Missing"
+  pov: "maya"
+  words: 3500
+
+# Inherited context from higher levels
+story_context:
+  title: "The Shadow Keeper"
+  genre: "urban_fantasy"
+  themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
+
+part_context:
+  part: 1
+  title: "Discovery"
+  goal: "Maya accepts supernatural reality"
+
+# Chapter-specific pattern that scenes must serve
+chapter_pattern:
+  goal: "Normal coffee date with Elena"
+  conflict: "Elena missing, signs of supernatural danger"
+  outcome: "Finds journal, realizes she's also a target"
+
+# Character states and development for scenes
+chars:
+  maya:
+    role: "protag"
+    chapter_arc: "casual_concern→targeted_fear"
+    start: "casual_sisterly_concern"
+    end: "realizes_personal_danger"
+    motivation: "Find Elena and understand threat"
+    growth: "Supernatural reality acceptance begins"
+
+  elena:
+    role: "catalyst"
+    chapter_arc: "absent→mysterious_presence"
+    start: "missing_sister"
+    end: "supernatural_connection_revealed"
+    evidence_left: ["journal", "research_notes", "struggle_signs"]
+
+# Scene assignment within chapter (example: Scene 1)
+scene_assignment:
+  function: "chapter_opening"
+  goal: "Establish Elena missing"
+  setting: "elena_apartment_hallway"
+  events: ["arrival", "door_discovery", "empty_apartment"]
+
+# Three-act chapter structure context
+acts:
+  setup:
+    percentage: 20
+    hook_in: "Door unlocked, coffee warm, Elena gone"
+    orient: "Weekly sister ritual, Maya's skeptical nature"
+    incident: "Overturned chair, shattered mug - signs of struggle"
+
+  confrontation:
+    percentage: 60
+    rising_action: "Journal discovery leads to supernatural research evidence"
+    midpoint_shift: "Realizes Elena was targeted, not random"
+    escalation: "Maya discovers she may be next target"
+
+  resolution:
+    percentage: 20
+    climax: "Decision to investigate supernatural threat personally"
+    resolution: "Commits to finding Elena despite danger"
+    hook_out: "Marcus Webb watching from shadows"
+
+# Tension and atmosphere context
+tension_engine:
+  external: "Missing person mystery with supernatural elements"
+  internal: "Maya's skepticism vs growing supernatural evidence"
+  interpersonal: "Concern for Elena, guilt over recent distance"
+  atmospheric: "Empty apartment, signs of struggle, growing dread"
+
+# Serial publication context
+serial_context:
+  satisfaction_provided: ["Elena's research revealed", "supernatural reality confirmed"]
+  anticipation_created: ["Who is watching Maya?", "What happened to Elena?"]
+  hook_type: "looming_threat"
+  hook_content: "Marcus Webb watching from shadows"
 ```
 
 ## 7. YAML Field Documentation
@@ -306,21 +322,25 @@ This comprehensive guide explains each field in the compact chapter specificatio
 ### 6.1. Chapter Identification
 
 **`chap`**: Chapter number in overall story sequence
+
 - **Purpose**: Establishes position in publication order and story progression
 - **Usage**: Sequential numbering that aligns with publication schedule
 - **Tips**: Consider both story order and reader release sequence
 
 **`title`**: Chapter title that hooks readers and hints at content
+
 - **Purpose**: First reader engagement point and content preview
 - **Usage**: Should intrigue without spoiling, often poses question or uses evocative imagery
 - **Tips**: Can reference key scene, character state, or central conflict
 
 **`pov`**: Point of view character for this chapter
+
 - **Purpose**: Establishes narrative voice and perspective constraints
 - **Usage**: Use consistent character names/abbreviations across planning
 - **Tips**: POV choice affects what information can be revealed and how
 
 **`words`**: Target word count for this chapter
+
 - **Purpose**: Pacing control and reader experience management
 - **Usage**: Typically 3000-5000 words for serial fiction chapters
 - **Tips**: Should feel complete while maintaining appropriate pacing for genre
@@ -328,16 +348,19 @@ This comprehensive guide explains each field in the compact chapter specificatio
 ### 6.2. Universal Pattern Fields (Chapter-Level Drama)
 
 **`goal`**: What the POV character wants to accomplish in this chapter
+
 - **Purpose**: Drives chapter's dramatic engine and reader investment
 - **Usage**: Must be specific, achievable within chapter scope, and personally meaningful
 - **Tips**: Should advance overall story goals while being complete mini-objective
 
 **`conflict`**: Primary obstacles preventing goal achievement
+
 - **Purpose**: Creates chapter tension and forces character active choices
 - **Usage**: Must escalate throughout chapter, culminating in chapter climax
 - **Tips**: Best conflicts have both external obstacles and internal resistance
 
 **`outcome`**: How chapter's central question resolves
+
 - **Purpose**: Provides episodic satisfaction while creating serial momentum
 - **Usage**: Should answer chapter's driving question while raising new ones
 - **Tips**: Must feel earned through character struggle and choice
@@ -345,6 +368,7 @@ This comprehensive guide explains each field in the compact chapter specificatio
 ### 6.3. Three-Act Chapter Structure
 
 **`acts`**: Chapter's internal dramatic architecture divided into three acts
+
 - **Purpose**: Ensures proper pacing and dramatic progression within chapter
 - **Usage**: Each act has specific functions and percentage of chapter length
 - **Structure**: Setup (20%), Confrontation (60%), Resolution (20%)
@@ -352,16 +376,19 @@ This comprehensive guide explains each field in the compact chapter specificatio
 **Act Sub-fields:**
 
 **Setup Act:**
+
 - **`hook_in`**: Opening line/moment that immediately engages reader
 - **`orient`**: Establishes time, place, POV, and current situation
 - **`incident`**: Event that launches chapter's central conflict
 
 **Confrontation Act:**
+
 - **`rising`**: Obstacles escalate as character pursues goal
 - **`midpoint`**: Major shift/revelation that changes chapter dynamics (50-60% mark)
 - **`complicate`**: Obstacles intensify, stakes rise toward chapter climax
 
 **Resolution Act:**
+
 - **`climax`**: Chapter's highest tension moment where central conflict peaks
 - **`resolve`**: Immediate aftermath that answers chapter's driving question
 - **`hook_out`**: Ending that compels reader to continue to next chapter
@@ -369,11 +396,13 @@ This comprehensive guide explains each field in the compact chapter specificatio
 ### 6.4. Character Development Tracking
 
 **`chars`**: Character progression within this chapter
+
 - **Purpose**: Maps character growth/change specific to this episode
 - **Usage**: Focus on POV character primarily, others as they interact with/affect POV
 - **Structure**: Character objects with chapter-specific development data
 
 **Character Development Sub-fields:**
+
 - **`start`**: Character's emotional/mental state entering chapter
 - **`arc`**: Progression of character change through chapter events
 - **`end`**: Character's state after chapter's events conclude
@@ -383,11 +412,13 @@ This comprehensive guide explains each field in the compact chapter specificatio
 ### 6.5. Tension Architecture
 
 **`tension`**: Multi-layered conflict system that sustains chapter engagement
+
 - **Purpose**: Creates varied sources of reader anxiety and investment
 - **Usage**: Should escalate through chapter, peak at climax
 - **Structure**: Different tension types working simultaneously
 
 **Tension Types:**
+
 - **`external`**: Physical obstacles, antagonist actions, environmental challenges
 - **`internal`**: Character's emotional/psychological struggles
 - **`interpersonal`**: Conflicts between characters, relationship tensions
@@ -397,6 +428,7 @@ This comprehensive guide explains each field in the compact chapter specificatio
 ### 6.6. Dual Mandate Fulfillment
 
 **`mandate`**: How chapter serves both episodic and serial functions
+
 - **Purpose**: Ensures chapter works as standalone episode and series component
 - **Usage**: Must satisfy readers while compelling continuation
 - **Structure**: Separate tracking for episodic and serial success
@@ -404,11 +436,13 @@ This comprehensive guide explains each field in the compact chapter specificatio
 **Mandate Sub-fields:**
 
 **Episodic Satisfaction:**
+
 - **`arc`**: Complete mini-story arc within chapter
 - **`payoff`**: Emotional reward readers receive from this chapter
 - **`answered`**: Specific question/problem this chapter resolves
 
 **Serial Momentum:**
+
 - **`complication`**: New problem/challenge introduced
 - **`stakes`**: How overall story stakes increase/shift
 - **`compulsion`**: Specific reason readers must continue to next chapter
@@ -416,11 +450,13 @@ This comprehensive guide explains each field in the compact chapter specificatio
 ### 6.7. Forward Hook Architecture
 
 **`hook`**: Chapter ending strategy that compels continuation
+
 - **Purpose**: Creates urgent need to know what happens next
 - **Usage**: Must emerge naturally from chapter events, not feel arbitrary
 - **Structure**: Multi-component hook system for maximum effectiveness
 
 **Hook Components:**
+
 - **`type`**: Hook category ("revelation", "threat", "emotional", "compound")
 - **`reveal`**: New information that recontextualizes story
 - **`threat`**: Immediate danger/challenge character must face
@@ -429,11 +465,13 @@ This comprehensive guide explains each field in the compact chapter specificatio
 ### 6.8. Story Continuity Management
 
 **`continuity`**: Chapter's relationship to overall story progression
+
 - **Purpose**: Ensures chapter advances larger narrative while being self-contained
 - **Usage**: Tracks what this chapter sets up and pays off
 - **Structure**: Forward and backward story connections
 
 **Continuity Elements:**
+
 - **`foreshadow`**: Future story elements this chapter plants/develops
 - **`theories`**: Reader speculation this chapter encourages
 - **`payoffs`**: Previous story elements this chapter resolves/advances
@@ -441,11 +479,13 @@ This comprehensive guide explains each field in the compact chapter specificatio
 ### 6.9. Genre Optimization
 
 **`genre`**: Genre-specific considerations for chapter construction
+
 - **Purpose**: Aligns chapter structure with reader expectations for story type
 - **Usage**: Affects pacing, content focus, and hook strategies
 - **Tips**: Different genres have different optimal chapter rhythms
 
 **Genre Fields:**
+
 - **`genre`**: Primary genre classification
 - **`pacing`**: Speed and rhythm appropriate for genre
 - **`exposition`**: How information is revealed (discovery vs explanation)
@@ -453,6 +493,7 @@ This comprehensive guide explains each field in the compact chapter specificatio
 ### 6.10. Field Usage Guidelines
 
 **Chapter Planning Sequence:**
+
 1. Identify chapter's role in overall story progression
 2. Define chapter goal that advances story while being complete
 3. Structure three-act progression with proper pacing
@@ -460,6 +501,7 @@ This comprehensive guide explains each field in the compact chapter specificatio
 5. Create ending that satisfies while compelling continuation
 
 **Validation Questions:**
+
 - Does this chapter advance overall story meaningfully?
 - Can readers feel satisfied if they only read this chapter?
 - Does the three-act structure create proper dramatic progression?
@@ -467,6 +509,7 @@ This comprehensive guide explains each field in the compact chapter specificatio
 - Does the ending create genuine need to continue?
 
 **Common Chapter Planning Mistakes:**
+
 - Making chapter too episodic (not advancing overall story)
 - Weak or missing chapter goal (no driving force)
 - Poor act structure (wrong pacing, weak midpoint)
@@ -474,6 +517,7 @@ This comprehensive guide explains each field in the compact chapter specificatio
 - Failing dual mandate (satisfying OR compelling, not both)
 
 **Chapter Success Indicators:**
+
 - Chapter advances overall story while feeling complete
 - Three-act structure creates satisfying dramatic progression
 - Character development connects to larger story arc
