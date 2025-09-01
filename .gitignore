@@ -49,4 +49,3 @@ playwright/.auth/
 # Playwright test authentication data
 @playwright/.auth/
 tests/@playwright/.auth/
-tests/test-users.json

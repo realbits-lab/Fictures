@@ -1,14 +1,34 @@
 import { test as setup, expect } from '@playwright/test';
-import testUsers from './test-users.json';
 import { writeFileSync, mkdirSync } from 'fs';
 import { dirname } from 'path';
 
-const authFile = 'tests/@playwright/.auth/user.json';
+const authFile = '@playwright/.auth/user.json';
+
+// Default test user configuration (matches README.md examples)
+const defaultTestUsers = {
+  reader: {
+    email: 'reader@example.com',
+    password: 'reader-password',
+    role: 'reader',
+    name: 'Reader User'
+  },
+  writer: {
+    email: 'writer@example.com',
+    password: 'writer-password',
+    role: 'writer',
+    name: 'Writer User'
+  },
+  manager: {
+    email: 'admin@example.com',
+    password: 'admin-password',
+    role: 'manager',
+    name: 'Manager User'
+  }
+};
 
 setup('authenticate with username/password', async ({ page }) => {
-  // Get test user credentials from configuration
-  const defaultUserType = testUsers.defaultUser as keyof typeof testUsers.testUsers;
-  const testUser = testUsers.testUsers[defaultUserType];
+  // Use writer as default test user
+  const testUser = defaultTestUsers.writer;
   // Navigate to sign-in page
   await page.goto('/');
   
@@ -56,7 +76,7 @@ setup('authenticate with username/password', async ({ page }) => {
           const mergedAuthData = {
             ...authState,
             testUser: testUser,
-            allTestUsers: testUsers.testUsers
+            allTestUsers: defaultTestUsers
           };
           
           // Ensure directory exists
@@ -73,7 +93,7 @@ setup('authenticate with username/password', async ({ page }) => {
             cookies: [],
             origins: [],
             testUser: testUser,
-            allTestUsers: testUsers.testUsers
+            allTestUsers: defaultTestUsers
           };
           
           // Ensure directory exists
@@ -99,7 +119,7 @@ setup('authenticate with username/password', async ({ page }) => {
       const mergedAuthData = {
         ...authState,
         testUser: testUser,
-        allTestUsers: testUsers.testUsers
+        allTestUsers: defaultTestUsers
       };
       
       // Ensure directory exists

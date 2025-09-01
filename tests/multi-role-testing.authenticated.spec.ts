@@ -1,33 +1,35 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync, existsSync } from 'fs';
 
-const authFile = 'tests/@playwright/.auth/user.json';
+const authFile = '@playwright/.auth/user.json';
 
 // Get test credentials from authentication file
 let testUsers: any = {};
 let currentUser: any = {};
 
-// Try to read from auth file, fallback to test-users.json
+// Default fallback test users
+const fallbackTestUsers = {
+  reader: { email: 'reader@example.com', password: 'reader-password', role: 'reader', name: 'Reader User' },
+  writer: { email: 'writer@example.com', password: 'writer-password', role: 'writer', name: 'Writer User' },
+  manager: { email: 'admin@example.com', password: 'admin-password', role: 'manager', name: 'Manager User' }
+};
+
+// Try to read from auth file, fallback to default users
 try {
   if (existsSync(authFile)) {
     const authData = JSON.parse(readFileSync(authFile, 'utf-8'));
-    testUsers = authData.allTestUsers || {};
-    currentUser = authData.testUser || {};
+    testUsers = authData.allTestUsers || fallbackTestUsers;
+    currentUser = authData.testUser || fallbackTestUsers.writer;
     console.log(`✓ Loaded test users from ${authFile}`);
   } else {
-    console.log('⚠️ Auth file not found, using fallback test users');
-    const testUsersConfig = await import('./test-users.json');
-    testUsers = testUsersConfig.default.testUsers;
-    currentUser = testUsers[testUsersConfig.default.defaultUser];
+    console.log('⚠️ Auth file not found, using default test users');
+    testUsers = fallbackTestUsers;
+    currentUser = fallbackTestUsers.writer;
   }
 } catch (error) {
-  console.log('⚠️ Error loading test users, using fallback');
-  testUsers = {
-    reader: { email: 'reader@test.com', password: 'testpass123', role: 'reader' },
-    writer: { email: 'writer@test.com', password: 'testpass123', role: 'writer' },
-    manager: { email: 'manager@test.com', password: 'testpass123', role: 'manager' }
-  };
-  currentUser = testUsers.writer;
+  console.log('⚠️ Error loading test users, using default fallback');
+  testUsers = fallbackTestUsers;
+  currentUser = fallbackTestUsers.writer;
 }
 
 test.describe('Multi-Role User Testing', () => {
