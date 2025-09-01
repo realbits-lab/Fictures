@@ -48,14 +48,14 @@ validateConsistency() ───────────────────�
 DATA FLOW CONNECTIONS:
 
 User Prompt (text) → Phase 1: story_concept_development()
-Phase 1 Output → Phase 2 Input: story_concept
+Phase 1 Output → Phase 2 Input: direct story format (title, genre, chars, themes, etc.)
 Phase 2 Output → Phase 3 Input: part_outlines, character_arcs, conflict_progression
-Phase 3 Output → Phase 4 Input: character_evolution, world_integration, atmosphere_development
-Phase 4 Output: story_output → part_input (hierarchical data flow)
+Phase 3 Output → Phase 4 Input: character_evolution, relationships
+Phase 4 Output: direct story format → part_input (hierarchical data flow)
 
 HIERARCHICAL OUTPUT INTEGRATION:
-Story Development → story_output structure (story-specification format)
-story_output feeds directly into part_input (part-specification format)
+Story Development → direct story format (story-specification compatible)
+Story format feeds directly into part_input (part-specification format)
 Ensures seamless data flow: Story → Part → Chapter → Scene
 
 FINAL VALIDATION:
@@ -94,64 +94,67 @@ story_concept_development:
     - establish_themes: "Identify underlying messages and meanings"
 
   output:
-    story_concept:
-      title: "The Shadow Keeper"
-      genre: "urban_fantasy"
-      words: 80000
-      question: "Can Maya master shadow magic before power corrupts her?"
+    # Direct story format matching story-specification.md
+    title: "The Shadow Keeper"
+    genre: "urban_fantasy"
+    words: 80000
+    question: "Can Maya master shadow magic before power corrupts her?"
 
-      # Universal pattern: goal → conflict → outcome
-      goal: "Save Elena from Shadow Realm"
-      conflict: "Shadow magic corrupts those who use it"
-      outcome: "Maya embraces darkness to save light"
+    # Universal pattern: goal → conflict → outcome
+    goal: "Save Elena from Shadow Realm"
+    conflict: "Shadow magic corrupts those who use it"
+    outcome: "Maya embraces darkness to save light"
 
-      # Character essentials (start→end arcs) - using specification terminology
-      chars:
-        maya:
-          { role: "protag", arc: "denial→acceptance", flaw: "overprotective" }
-        elena:
-          {
-            role: "catalyst",
-            arc: "missing→transformed",
-            goal: "survive_realm",
-          }
-        marcus:
-          {
-            role: "mentor",
-            arc: "guilt→redemption",
-            secret: "previous_failure",
-          }
-        void: { role: "antag", arc: "power→corruption", goal: "merge_worlds" }
+    # Character essentials (start→end arcs) - using specification terminology
+    chars:
+      maya: { role: "protag", arc: "denial→acceptance", flaw: "overprotective" }
+      elena: { role: "catalyst", arc: "missing→transformed", goal: "survive_realm" }
+      marcus: { role: "mentor", arc: "guilt→redemption", secret: "previous_failure" }
+      void: { role: "antag", arc: "power→corruption", goal: "merge_worlds" }
 
-      # Core themes and structure
-      themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
-      structure:
-        {
-          type: "3_part",
-          parts: ["setup", "confrontation", "resolution"],
-          dist: [25, 50, 25],
-        }
+    # Core themes and structure
+    themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
+    structure:
+      type: "3_part"
+      parts: ["setup", "confrontation", "resolution"]
+      dist: [25, 50, 25]
 
-      # Setting essentials
-      setting:
-        primary: ["san_francisco", "photography_studio"]
-        secondary: ["shadow_realm", "chinatown_passages"]
+    # Setting essentials
+    setting:
+      primary: ["san_francisco", "photography_studio"]
+      secondary: ["shadow_realm", "chinatown_passages"]
 
-      # Serial publication essentials
-      serial:
-        schedule: "weekly"
-        duration: "18_months"
-        chapter_words: 4000
-        breaks: ["part1_end", "part2_end"]
-        buffer: "4_chapters_ahead"
+    # Part-level progression
+    parts:
+      - part: 1
+        goal: "Maya accepts supernatural reality"
+        conflict: "Denial vs mounting evidence"
+        outcome: "Reluctant training commitment"
+        tension: "denial vs acceptance"
+      - part: 2
+        goal: "Master shadow magic safely"
+        conflict: "Growing power vs corruption risk"
+        outcome: "Power embrace despite dangers"
+        tension: "power vs integrity"
+      - part: 3
+        goal: "Save Elena without losing self"
+        conflict: "Ultimate power vs moral cost"
+        outcome: "Victory through accepting darkness"
+        tension: "salvation vs corruption"
 
-      # Reader engagement hooks
-      hooks:
-        overarching:
-          ["elena_fate", "maya_corruption_risk", "shadow_magic_truth"]
-        mysteries:
-          ["previous_student_identity", "marcus_secret", "realm_connection"]
-        part_endings: ["mentor_secret_revealed", "elena_appears_changed"]
+    # Serial publication essentials
+    serial:
+      schedule: "weekly"
+      duration: "18_months"
+      chapter_words: 4000
+      breaks: ["part1_end", "part2_end"]
+      buffer: "4_chapters_ahead"
+
+    # Reader engagement hooks
+    hooks:
+      overarching: ["elena_fate", "maya_corruption_risk", "shadow_magic_truth"]
+      mysteries: ["previous_student_identity", "marcus_secret", "realm_connection"]
+      part_endings: ["mentor_secret_revealed", "elena_appears_changed"]
 ```
 
 ### Phase 2: Structural Development
@@ -169,52 +172,53 @@ Implementing the detailed story architecture using the platform's hierarchical s
 ```yaml
 part_development_process:
   input:
-    # Uses story-specification output structure from Phase 1 output
-    story_output:
-      title: "The Shadow Keeper"
-      genre: "urban_fantasy"
-      words: 80000
-      question: "Can Maya master shadow magic before power corrupts her?"
-      goal: "Save Elena from Shadow Realm"
-      conflict: "Shadow magic corrupts those who use it"
-      outcome: "Maya embraces darkness to save light"
-      chars:
-        maya:
-          { role: "protag", arc: "denial→acceptance", flaw: "overprotective" }
-        elena:
-          {
-            role: "catalyst",
-            arc: "missing→transformed",
-            goal: "survive_realm",
-          }
-        marcus:
-          {
-            role: "mentor",
-            arc: "guilt→redemption",
-            secret: "previous_failure",
-          }
-        void: { role: "antag", arc: "power→corruption", goal: "merge_worlds" }
-      themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
-      structure:
-        {
-          type: "3_part",
-          parts: ["setup", "confrontation", "resolution"],
-          dist: [25, 50, 25],
-        }
-      setting:
-        primary: ["san_francisco", "photography_studio"]
-        secondary: ["shadow_realm", "chinatown_passages"]
-      serial:
-        schedule: "weekly"
-        duration: "18_months"
-        chapter_words: 4000
-        breaks: ["part1_end", "part2_end"]
-        buffer: "4_chapters_ahead"
-      hooks:
-        overarching:
-          ["elena_fate", "maya_corruption_risk", "shadow_magic_truth"]
-        mysteries:
-          ["previous_student_identity", "marcus_secret", "realm_connection"]
+    # Direct input from story_concept_development output (Phase 1)
+    title: "The Shadow Keeper"
+    genre: "urban_fantasy"
+    words: 80000
+    question: "Can Maya master shadow magic before power corrupts her?"
+    goal: "Save Elena from Shadow Realm"
+    conflict: "Shadow magic corrupts those who use it"
+    outcome: "Maya embraces darkness to save light"
+    chars:
+      maya: { role: "protag", arc: "denial→acceptance", flaw: "overprotective" }
+      elena: { role: "catalyst", arc: "missing→transformed", goal: "survive_realm" }
+      marcus: { role: "mentor", arc: "guilt→redemption", secret: "previous_failure" }
+      void: { role: "antag", arc: "power→corruption", goal: "merge_worlds" }
+    themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
+    structure:
+      type: "3_part"
+      parts: ["setup", "confrontation", "resolution"]
+      dist: [25, 50, 25]
+    setting:
+      primary: ["san_francisco", "photography_studio"]
+      secondary: ["shadow_realm", "chinatown_passages"]
+    parts:
+      - part: 1
+        goal: "Maya accepts supernatural reality"
+        conflict: "Denial vs mounting evidence"
+        outcome: "Reluctant training commitment"
+        tension: "denial vs acceptance"
+      - part: 2
+        goal: "Master shadow magic safely"
+        conflict: "Growing power vs corruption risk"
+        outcome: "Power embrace despite dangers"
+        tension: "power vs integrity"
+      - part: 3
+        goal: "Save Elena without losing self"
+        conflict: "Ultimate power vs moral cost"
+        outcome: "Victory through accepting darkness"
+        tension: "salvation vs corruption"
+    serial:
+      schedule: "weekly"
+      duration: "18_months"
+      chapter_words: 4000
+      breaks: ["part1_end", "part2_end"]
+      buffer: "4_chapters_ahead"
+    hooks:
+      overarching: ["elena_fate", "maya_corruption_risk", "shadow_magic_truth"]
+      mysteries: ["previous_student_identity", "marcus_secret", "realm_connection"]
+      part_endings: ["mentor_secret_revealed", "elena_appears_changed"]
 
   process:
     - map_story_beats: "Distribute major plot points across part structure"
