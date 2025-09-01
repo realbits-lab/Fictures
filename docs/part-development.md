@@ -88,6 +88,16 @@ The development workflow implements the **Part Planning Framework** defined in t
 
 ### Phase 1: Part Foundation
 
+**Part Foundation Process:**
+
+```
+[Analyze Position] ──→ [Identify Objectives] ──→ [Establish Goals] ──→ [Plan Progression]
+       ↑                        ↑                       ↑                    ↓
+       └── Validation ←── Framework Check ←── Content Review ←─────────────────┘
+                ↓
+        [Refinement Cycle] ──→ [Re-evaluate] ──→ [Adjust Elements] ──→ [Proceed to Phase 2]
+```
+
 Establishing the part's role and objectives within the larger story structure, laying groundwork for all Part Planning Framework elements.
 
 **1.1 Part Concept Development**
@@ -184,17 +194,13 @@ part_concept_development:
         hook_out: "Maya accepts training but discovers mentor's dark secret"
 ```
 
-**ASCII Flow Diagram - Part Concept Development Process with Feedback Loops:**
-
-```
-[Analyze Position] ──→ [Identify Objectives] ──→ [Establish Goals] ──→ [Plan Progression]
-       ↑                        ↑                       ↑                    ↓
-       └── Validation ←── Framework Check ←── Content Review ←─────────────────┘
-                ↓
-        [Refinement Cycle] ──→ [Re-evaluate] ──→ [Adjust Elements] ──→ [Proceed to Phase 2]
-```
-
 ### Phase 2: Content Planning
+
+**Content Planning Process:**
+
+```
+[Framework Elements] ──→ [Content Blueprint] ──→ [Implementation Plan] ──→ [Validation Check]
+```
 
 Developing detailed content blueprints that implement all 6 Part Planning Framework elements systematically.
 
@@ -300,18 +306,18 @@ part_content_planning:
         feedback: ["character_dynamics", "magic_complexity", "pacing"]
 ```
 
-**ASCII Flow Diagram - Content Planning Process with Phase 1 Feedback:**
+### Phase 3: AI-Assisted Content Creation
+
+**Character Arc Development Process:**
 
 ```
-[Develop Questions] ──→ [Plan Arcs] ──→ [Structure Events] ──→ [Integrate Themes]
+[Develop Voice] ──→ [Create Dynamics] ──→ [Plan Growth] ──→ [Ensure Consistency]
         ↑                    ↑                ↑                     ↓
-        └── Phase 1 ←── Framework ←── Content ←──────────────────────┘
+        └── Phase 2 ←── Framework ←── Content ←──────────────────────┘
         Validation      Gaps Check     Review
             ↓
-    [Element Refinement] ──→ [Cross-Element Validation] ──→ [Proceed to Phase 3]
+    [Character Refinement] ──→ [Cross-Element Validation] ──→ [Continue Development]
 ```
-
-### Phase 3: AI-Assisted Content Creation
 
 Leveraging AI tools to develop rich, detailed part content that brings the Part Planning Framework elements to life through engaging narrative.
 
@@ -387,21 +393,21 @@ character_arc_development:
         emotional_impact: "drives_protagonist_protective_actions"
 ```
 
-**ASCII Flow Diagram - Character Arc Development Process with Phase 2 Feedback:**
-
-```
-[Develop Voice] ──→ [Create Dynamics] ──→ [Plan Growth] ──→ [Ensure Consistency]
-       ↑                   ↑                  ↑                    ↓
-       └── Phase 2 ←── Blueprint ←── Content ←─────────────────┘
-       Validation        Review         Alignment
-           ↓
-   [Character-Theme] ──→ [Plot-Character] ──→ [Enhanced Integration]
-   Cross-Validation      Alignment          ↓
-           ↑                 ↑           [Thematic Integration]
-           └────────────────────────┘
-```
-
 **3.2 Thematic Integration Process (Framework Element 4)**
+
+**Thematic Integration Process:**
+
+```
+[Weave Elements] ──→ [Develop Symbols] ──→ [Ensure Consistency] ──→ [Balance Subtlety]
+       ↑                   ↑                     ↑                    ↓
+       └── Character ←── Arc-Theme ←── Content ←─────────────────┘
+       Arc Feedback      Alignment        Review
+           ↓
+   [Theme-Character] ──→ [Emotional-Thematic] ──→ [Plot-Theme Alignment]
+   Synchronization       Journey Sync             ↓
+           ↑                   ↑              [Phase 4 Validation]
+           └────────────────────────────┘
+```
 
 ```yaml
 # ============================================
@@ -466,21 +472,18 @@ thematic_integration_process:
       thematic_consistency_score: 0.94
 ```
 
-**ASCII Flow Diagram - Thematic Integration Process with Character Arc Feedback:**
-
-```
-[Weave Elements] ──→ [Develop Symbols] ──→ [Ensure Consistency] ──→ [Balance Subtlety]
-       ↑                   ↑                     ↑                    ↓
-       └── Character ←── Arc-Theme ←── Content ←─────────────────┘
-       Arc Feedback      Alignment        Review
-           ↓
-   [Theme-Character] ──→ [Emotional-Thematic] ──→ [Plot-Theme Alignment]
-   Synchronization       Journey Sync             ↓
-           ↑                   ↑              [Phase 4 Validation]
-           └────────────────────────────┘
-```
-
 ### Phase 4: Integration and Validation
+
+**Part Consistency Verification Process:**
+
+```
+[Framework Validation] ──→ [Integration Check] ──→ [Quality Assessment] ──→ [Story Alignment]
+           ↑                      ↑                      ↑                    ↓
+           └── Phase 3 ←── Content ←── Enhancement ←─────────────────┘
+           Output          Review      Validation
+               ↓
+    [Specification Compliance] ──→ [Cross-Part Consistency] ──→ [Completion Verification]
+```
 
 Ensuring part content integrates seamlessly with overall story structure while validating all Part Planning Framework elements are successfully implemented.
 

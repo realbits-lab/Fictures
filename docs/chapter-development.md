@@ -68,6 +68,12 @@ Cross-Phase: Specification Compliance ──→ format_validation ──→ syst
 
 ### Phase 1: Chapter Foundation
 
+**Chapter Foundation Process:**
+
+```
+[Analyze Position] ──→ [Define Objectives] ──→ [Identify Engagement] ──→ [Ensure Satisfaction]
+```
+
 Converting part-level structure and story context into focused chapter objectives that serve both narrative progression and reader engagement.
 
 **1.1 Chapter Concept Development**
@@ -117,13 +123,13 @@ chapter_concept_development:
         compulsion: "door_knock_immediate_danger"
 ```
 
-**ASCII Flow Diagram - Chapter Concept Development Process:**
-
-```
-[Analyze Position] ──→ [Define Objectives] ──→ [Identify Engagement] ──→ [Ensure Satisfaction]
-```
-
 ### Phase 2: Chapter Structure Development
+
+**Three-Act Organization Process:**
+
+```
+[Structure Act 1] ──→ [Structure Act 2] ──→ [Structure Act 3] ──→ [Design Tension Architecture]
+```
 
 Implementing the Three-Act Chapter Architecture to create detailed content organization that fulfills the Dual Mandate while maximizing reader engagement and narrative progression.
 
@@ -216,13 +222,13 @@ three_act_chapter_organization:
         emotion: "protective_instincts vs newfound_vulnerability"
 ```
 
-**ASCII Flow Diagram - Three-Act Chapter Organization Process:**
-
-```
-[Structure Act 1] ──→ [Structure Act 2] ──→ [Structure Act 3] ──→ [Design Tension Architecture]
-```
-
 ### Phase 3: AI-Assisted Chapter Creation
+
+**Scene-Sequel Development Process:**
+
+```
+[Implement Cycles] ──→ [Escalate Tension] ──→ [Maintain Arc] ──→ [Optimize Causality]
+```
 
 Leveraging platform AI tools for enhanced scene development, dialogue authenticity, and tension architecture implementation based on the Chapter Specification's principles.
 
@@ -312,13 +318,13 @@ scene_sequel_development_process:
         tension_peaks_at_appropriate_moments: true
 ```
 
-**ASCII Flow Diagram - Scene-Sequel Development Process:**
-
-```
-[Implement Cycles] ──→ [Escalate Tension] ──→ [Maintain Arc] ──→ [Optimize Causality]
-```
-
 **3.2 Character Voice and Tension Integration Process**
+
+**Voice and Tension Integration Process:**
+
+```
+[Enhance Voice Consistency] ──→ [Integrate Tension] ──→ [Layer Subtext] ──→ [Balance Exposition]
+```
 
 Enhancing dialogue while maintaining tension architecture and character development.
 
@@ -379,13 +385,13 @@ voice_tension_integration_process:
         mystery_elements: "Layered through investigation process and journal contents"
 ```
 
-**ASCII Flow Diagram - Character Voice and Tension Integration Process:**
-
-```
-[Enhance Voice Consistency] ──→ [Integrate Tension] ──→ [Layer Subtext] ──→ [Balance Exposition]
-```
-
 ### Phase 4: Chapter Quality Assurance
+
+**Dual Mandate Verification Process:**
+
+```
+[Verify Dual Mandate] ──→ [Validate Three-Act] ──→ [Assess Tension Engine] ──→ [Verify Causality]
+```
 
 Ensuring chapter fulfills the Dual Mandate, implements Three-Act Architecture correctly, and integrates seamlessly with larger story structure.
 
@@ -525,11 +531,6 @@ dual_mandate_three_act_verification:
         story_integration_success: 0.94
 ```
 
-**ASCII Flow Diagram - Dual Mandate and Three-Act Verification Process:**
-
-```
-[Verify Dual Mandate] ──→ [Validate Three-Act] ──→ [Assess Tension Engine] ──→ [Verify Causality]
-```
 
 ## Development Tools and Resources
 

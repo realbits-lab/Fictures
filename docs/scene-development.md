@@ -41,6 +41,12 @@ getEnvironmentalDetails() scene_pacing()     assessNarrativeFlow()
 
 ### Step 1: Essential Scene Planning
 
+**Scene Planning Process:**
+
+```
+[Define Goal] ──→ [Identify Conflict] ──→ [Plan Outcome] ──→ [Map Value Shift]
+```
+
 Convert user input into the canonical scene specification format, focusing on the core Goal-Conflict-Outcome structure.
 
 **1.1 Scene Foundation Development**
@@ -91,6 +97,12 @@ scene:
 
 ### Step 2: Scene Structure and Execution
 
+**MRU Structure Process:**
+
+```
+[Write MRU Sequence] ──→ [Check Natural Flow] ──→ [Validate Cause-Effect] ──→ [Balance Scene/Summary]
+```
+
 Implementing the scene using line-level writing techniques that ensure immersive, psychologically real prose.
 
 **2.1 Motivation-Reaction Units (MRUs)**
@@ -120,6 +132,12 @@ Control pacing through strategic use of real-time dramatization versus time comp
 - **Summary ("Telling")**: Compress transitions, backstory, routine actions
 
 ### Step 3: AI-Enhanced Scene Writing
+
+**AI Enhancement Process:**
+
+```
+[Context Building] ──→ [AI Generation] ──→ [Voice Integration] ──→ [Quality Assurance]
+```
 
 Leverage AI tools for dialogue authenticity, sensory immersion, and scene coherence while maintaining the core Goal-Conflict-Outcome structure.
 
@@ -156,6 +174,12 @@ Focus on authentic character voice while building tension through conversation:
 - **MRU Integration**: Ensure dialogue follows natural motivation-reaction patterns
 
 ### Step 4: Scene Validation and Quality Assurance
+
+**Scene Validation Process:**
+
+```
+[Verify Value Shift] ──→ [Check Character Consistency] ──→ [Assess Story Integration] ──→ [Validate Quality Gates]
+```
 
 Ensure the scene achieves its narrative purpose and maintains story coherence.
 

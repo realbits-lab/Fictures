@@ -212,6 +212,12 @@ This iterative approach ensures that each phase informs and improves the others,
 
 ### Phase 1: Story Foundation
 
+**Story Concept Development Process:**
+
+```
+[Analyze Prompt] ──→ [Extract Elements] ──→ [Define Structure] ──→ [Establish Foundation]
+```
+
 Converting user input into structured story concepts that will drive the development process.
 
 **1.1 Story Concept Development**
@@ -277,13 +283,13 @@ story_concept_development:
         part_endings: ["mentor_secret_revealed", "elena_appears_changed"]
 ```
 
-**ASCII Flow Diagram - Story Concept Development Process:**
-
-```
-[Analyze Prompt] ──→ [Extract Elements] ──→ [Define Structure] ──→ [Establish Foundation]
-```
-
 ### Phase 2: Structural Development
+
+**Part Development Process:**
+
+```
+[Map Beats] ──→ [Define Conflicts] ──→ [Character Arcs] ──→ [Word Distribution]
+```
 
 Implementing the detailed story architecture using the platform's hierarchical system.
 
@@ -366,13 +372,13 @@ part_development_process:
       tension_peaks: [0.25, 0.75, 0.95]
 ```
 
-**ASCII Flow Diagram - Part Development Process:**
-
-```
-[Map Beats] ──→ [Define Conflicts] ──→ [Character Arcs] ──→ [Word Distribution]
-```
-
 ### Phase 3: AI-Assisted Content Creation
+
+**Character Development Process:**
+
+```
+[Track Development] ──→ [Maintain Voice] ──→ [Develop Relations] ──→ [Ensure Agency]
+```
 
 Leveraging platform AI tools for enhanced writing productivity and quality.
 
@@ -475,13 +481,13 @@ character_development_process:
         reader_hooks: ["mentor_mystery", "training_progress", "secret_revelation"]
 ```
 
-**ASCII Flow Diagram - Character Development Process:**
-
-```
-[Track Development] ──→ [Maintain Voice] ──→ [Develop Relations] ──→ [Ensure Agency]
-```
-
 **3.2 World-Building Consistency**
+
+**World-Building Process:**
+
+```
+[Maintain Consistency] ──→ [Develop Atmosphere] ──→ [Integrate Elements] ──→ [Ensure Authenticity]
+```
 
 ```yaml
 world_building_process:
@@ -533,13 +539,13 @@ world_building_process:
       consistency_violations: []
 ```
 
-**ASCII Flow Diagram - World-Building Process:**
-
-```
-[Maintain Consistency] ──→ [Develop Atmosphere] ──→ [Integrate Elements] ──→ [Ensure Authenticity]
-```
-
 ### Phase 4: Quality Assurance and Refinement
+
+**Consistency Verification Process:**
+
+```
+[Verify Characters] ──→ [Check Plot Threads] ──→ [Ensure World Building] ──→ [Validate Timeline]
+```
 
 Ensuring story coherence and quality across the hierarchical structure.
 
@@ -622,11 +628,6 @@ consistency_verification:
         feedback_readiness: "high"
 ```
 
-**ASCII Flow Diagram - Consistency Verification Process:**
-
-```
-[Verify Characters] ──→ [Check Plot Threads] ──→ [Ensure World Building] ──→ [Validate Timeline]
-```
 
 ## Development Tools and Resources
 
