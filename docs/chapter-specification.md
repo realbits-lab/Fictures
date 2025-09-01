@@ -62,7 +62,56 @@ The Three-Act Architecture is universal, but its implementation varies by genre.
 - **Fantasy/Sci-Fi:** Chapters are often longer (4k-6k words) to accommodate world-building. Balance exposition with action. A chapter might focus on one character's plotline within a multi-POV narrative. Forward Hooks often involve plot twists, political intrigue, or the introduction of a new fantastical element.
 - **Literary Fiction:** Pacing is introspective. The structure is driven by internal character change. Tension is often psychological or thematic. Forward Hooks are subtle—a profound realization, an unresolved moral question, or a subtle shift in a relationship's dynamic.
 
-## 5. YAML Planning Schema for LLM Chapter Generation
+## 5. Input Requirements from Part Specification
+
+The chapter specification requires the following input data from the part-specification output:
+
+```yaml
+# ============================================
+# REQUIRED INPUT FROM PART SPECIFICATION
+# ============================================
+
+part_input:
+  # Part context for this chapter
+  part_context:
+    part: number
+    title: string
+    words: number
+    function: string
+    
+  # Inherited story context
+  story_context:
+    title: string
+    genre: string
+    themes: array
+    overall_goal: string
+    overall_conflict: string
+    
+  # Part-specific pattern that chapter must serve
+  part_pattern:
+    goal: string
+    conflict: string
+    outcome: string
+    questions: object
+    
+  # Character states and arcs for this chapter
+  chars: object  # Character development context and current states
+  
+  # Chapter assignment within part
+  chapter_assignment:
+    function: string  # "part_opening", "rising_action", "turning_point", etc.
+    goal: string      # Chapter-specific goal within part progression
+    events: array     # Key events this chapter should include
+    
+  # Thematic and emotional context
+  part_themes: object
+  emotion_arc: object
+  
+  # Serial publication context
+  serial_context: object
+```
+
+## 6. YAML Planning Schema for LLM Chapter Generation
 
 This YAML structure is the definitive input required to generate a high-quality chapter. It is designed to be comprehensive, ensuring all principles and architectural elements are considered before writing begins.
 
@@ -145,7 +194,112 @@ chapter:
   exposition: "discovery_not_explanation"
 ```
 
-## 6. YAML Field Documentation
+## 6. Output Data for Scene Specification
+
+The chapter specification provides the following output data structure for use as input by scene specifications:
+
+```yaml
+# ============================================
+# CHAPTER OUTPUT FOR SCENE SPECIFICATION INPUT
+# ============================================
+
+chapter_output:
+  # Chapter context for scenes
+  chapter_context:
+    chap: 1
+    title: "Missing"
+    pov: "maya"
+    words: 3500
+    
+  # Inherited context from higher levels
+  story_context:
+    title: "The Shadow Keeper"
+    genre: "urban fantasy"
+    themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
+    
+  part_context:
+    part: 1
+    title: "Discovery"
+    goal: "Maya accepts supernatural reality"
+    
+  # Chapter-specific pattern that scenes must serve
+  chapter_pattern:
+    goal: "Normal coffee date with Elena"
+    conflict: "Elena missing, signs of supernatural danger"
+    outcome: "Finds journal, realizes she's also a target"
+    
+  # Character states and development for scenes
+  chars:
+    maya:
+      role: "protag"
+      chapter_arc: "casual_concern→targeted_fear"
+      start: "casual_sisterly_concern"
+      end: "realizes_personal_danger"
+      motivation: "Find Elena and understand threat"
+      growth: "Supernatural reality acceptance begins"
+      
+    elena:
+      role: "catalyst"
+      chapter_arc: "absent→mysterious_presence"
+      start: "missing_sister"
+      end: "supernatural_connection_revealed"
+      evidence_left: ["journal", "research_notes", "struggle_signs"]
+      
+  # Scene assignments and structure
+  scene_requirements:
+    estimated_scenes: 3  # Based on three-act structure
+    scene_functions:
+      - function: "chapter_opening"
+        goal: "Establish Elena missing"
+        setting: "elena_apartment_hallway"
+        events: ["arrival", "door_discovery", "empty_apartment"]
+        
+      - function: "investigation"
+        goal: "Discover supernatural evidence"
+        setting: "elena_apartment_interior"
+        events: ["journal_discovery", "research_revelation", "struggle_evidence"]
+        
+      - function: "chapter_climax"
+        goal: "Realize personal danger"
+        setting: "elena_apartment_interior"
+        events: ["threat_realization", "decision_to_investigate", "forward_hook"]
+        
+  # Three-act chapter structure for scenes
+  acts:
+    setup:
+      percentage: 20
+      hook_in: "Door unlocked, coffee warm, Elena gone"
+      orient: "Weekly sister ritual, Maya's skeptical nature"
+      incident: "Overturned chair, shattered mug - signs of struggle"
+      
+    confrontation:
+      percentage: 60
+      rising_action: "Journal discovery leads to supernatural research evidence"
+      midpoint_shift: "Realizes Elena was targeted, not random"
+      escalation: "Maya discovers she may be next target"
+      
+    resolution:
+      percentage: 20
+      climax: "Decision to investigate supernatural threat personally"
+      resolution: "Commits to finding Elena despite danger"
+      hook_out: "Marcus Webb watching from shadows"
+      
+  # Tension and atmosphere for scenes
+  tension_engine:
+    external: "Missing person mystery with supernatural elements"
+    internal: "Maya's skepticism vs growing supernatural evidence"
+    interpersonal: "Concern for Elena, guilt over recent distance"
+    atmospheric: "Empty apartment, signs of struggle, growing dread"
+    
+  # Forward momentum context
+  serial_context:
+    satisfaction_provided: ["Elena's research revealed", "supernatural reality confirmed"]
+    anticipation_created: ["Who is watching Maya?", "What happened to Elena?"]
+    hook_type: "looming_threat"
+    hook_content: "Marcus Webb watching from shadows"
+```
+
+## 7. YAML Field Documentation
 
 This comprehensive guide explains each field in the compact chapter specification YAML format, detailing how to plan and structure individual narrative episodes that fulfill the dual mandate of episodic satisfaction and serial momentum.
 

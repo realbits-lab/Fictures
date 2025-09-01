@@ -50,7 +50,45 @@
 - **Emotional Journey**: What emotional progression do readers experience?
 - **Ending Impact**: How does this part conclude to propel the story forward?
 
-## 5. YAML Data Structure Example for Part Planning
+## 5. Input Requirements from Story Specification
+
+The part specification requires the following input data from the story-specification output:
+
+```yaml
+# ============================================
+# REQUIRED INPUT FROM STORY SPECIFICATION
+# ============================================
+
+story_input:
+  # Core story context
+  title: string
+  genre: string
+  words: number
+  question: string
+  
+  # Universal story pattern
+  goal: string
+  conflict: string
+  outcome: string
+  
+  # Character foundations
+  chars: object  # All story-level character definitions
+  
+  # Story structure and themes
+  themes: array
+  structure: object  # Contains type, parts, and distribution
+  
+  # Story-level parts with goals and conflicts
+  parts: array  # Part assignments and goals for this specific part
+  
+  # Serial publication context
+  serial: object  # Publication schedule and requirements
+  
+  # Reader engagement strategy
+  hooks: object  # Overarching mysteries and engagement points
+```
+
+## 6. YAML Data Structure Example for Part Planning
 
 ```yaml
 # ============================================
@@ -145,7 +183,102 @@ part:
     feedback: ["character_dynamics", "magic_complexity", "pacing"]
 ```
 
-## 6. YAML Field Documentation
+## 6. Output Data for Chapter Specification
+
+The part specification provides the following output data structure for use as input by chapter specifications:
+
+```yaml
+# ============================================
+# PART OUTPUT FOR CHAPTER SPECIFICATION INPUT
+# ============================================
+
+part_output:
+  # Part context for chapters
+  part_context:
+    part: 1
+    title: "Discovery"
+    words: 20000
+    function: "story_setup"
+    
+  # Inherited story context
+  story_context:
+    title: "The Shadow Keeper"
+    genre: "urban fantasy"
+    themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
+    overall_goal: "Save Elena from Shadow Realm"
+    overall_conflict: "Shadow magic corrupts those who use it"
+    
+  # Part-specific pattern
+  part_pattern:
+    goal: "Maya accepts supernatural reality"
+    conflict: "Denial vs mounting evidence"
+    outcome: "Reluctant training commitment"
+    questions:
+      primary: "How will Maya react to discovering her magical abilities?"
+      secondary: "Can Maya overcome denial to accept the supernatural world?"
+      
+  # Character states and development for chapters
+  chars:
+    maya:
+      role: "protag"
+      part_arc: "denial_normalcy→reluctant_acceptance"
+      current_state: "denial_normalcy"
+      target_state: "reluctant_acceptance"
+      conflict: "safety_vs_responsibility"
+      key_transforms: ["magical_manifestation", "mentor_acceptance"]
+      
+    elena:
+      role: "catalyst"
+      part_arc: "mysterious_absence→catalyst_revelation"
+      current_state: "mysterious_absence"
+      target_state: "catalyst_revelation"
+      function: "motivation_worldbuilding"
+      key_transforms: ["disappearance_mystery", "supernatural_connection"]
+      
+  # Chapter assignments and structure
+  chapter_requirements:
+    estimated_chapters: 5  # Based on 20000 words / 4000 words per chapter
+    chapter_functions:
+      - function: "part_opening"
+        goal: "Establish Elena's disappearance"
+        events: ["elena_disappearance"]
+        
+      - function: "rising_action" 
+        goal: "Maya discovers supernatural evidence"
+        events: ["journal_discovery", "photograph_evidence"]
+        
+      - function: "turning_point"
+        goal: "Maya's powers manifest"
+        events: ["shadow_manifestation", "reality_acceptance"]
+        
+      - function: "climax"
+        goal: "Marcus introduces training"
+        events: ["marcus_introduction", "training_offer"]
+        
+      - function: "part_transition"
+        goal: "Commit to supernatural world"
+        events: ["training_acceptance", "mentor_secret_hint"]
+        
+  # Thematic and emotional context for chapters
+  part_themes:
+    primary: "denial_and_acceptance"
+    elements: ["denial_vs_truth", "family_responsibility"]
+    symbols: ["shadows_as_fears", "photography_as_truth"]
+    
+  emotion_arc:
+    start: "casual_family_concern"
+    progression: ["growing_fear", "supernatural_terror", "determined_resolution"]
+    end: "grim_commitment"
+    
+  # Serial publication context
+  serial_context:
+    part_climax_at: "85%"
+    satisfaction_points: ["elena_fate_revealed", "maya_abilities_confirmed"]
+    anticipation_hooks: ["corruption_risk", "training_challenges"]
+    ending_hook: "Maya accepts training but discovers mentor's dark secret"
+```
+
+## 7. YAML Field Documentation
 
 This comprehensive guide explains each field in the compact part specification YAML format, detailing how to plan and structure major story sections effectively.
 

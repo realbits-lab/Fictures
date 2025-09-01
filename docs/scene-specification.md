@@ -67,7 +67,61 @@ Scenes are the building blocks of chapters. A chapter is a curated collection of
 - **Unity:** Scenes within a chapter are typically unified by a continuous block of time, a single point of view (POV), a specific objective, or a central theme.
 - **Scene Breaks:** A transition between scenes (a shift in time, location, or POV) is indicated by a clear visual break, typically an extra line of white space or a centered dinkus (e.g., `* * *`).
 
-## 6. YAML Data Structure Example for Scene Planning
+## 6. Input Requirements from Chapter Specification
+
+The scene specification requires the following input data from the chapter-specification output:
+
+```yaml
+# ============================================
+# REQUIRED INPUT FROM CHAPTER SPECIFICATION
+# ============================================
+
+chapter_input:
+  # Chapter context for this scene
+  chapter_context:
+    chap: number
+    title: string
+    pov: string
+    words: number
+    
+  # Inherited context from higher levels
+  story_context:
+    title: string
+    genre: string
+    themes: array
+    
+  part_context:
+    part: number
+    title: string
+    goal: string
+    
+  # Chapter-specific pattern that scene must serve
+  chapter_pattern:
+    goal: string
+    conflict: string
+    outcome: string
+    
+  # Character states for this scene
+  chars: object  # Character development context and emotional states
+  
+  # Scene assignment within chapter
+  scene_assignment:
+    function: string     # "chapter_opening", "investigation", "chapter_climax", etc.
+    goal: string         # Scene-specific goal within chapter progression
+    setting: string      # Where this scene takes place
+    events: array        # Key events this scene should include
+    
+  # Chapter structure context for scene placement
+  acts: object          # Three-act structure context (setup/confrontation/resolution)
+  
+  # Tension and atmosphere context
+  tension_engine: object
+  
+  # Serial publication context
+  serial_context: object
+```
+
+## 7. YAML Data Structure Example for Scene Planning
 
 Since scenes are components within chapters, this compact format focuses only on essential information needed for an LLM to write effective scene content.
 
