@@ -381,7 +381,6 @@ character_development_process:
         trajectory: "resistance→acceptance→betrayal_fear→trust"
         reader_hooks:
           ["mentor_mystery", "training_progress", "secret_revelation"]
-
 ```
 
 ### Phase 4: Quality Assurance and Refinement
@@ -511,7 +510,6 @@ story_consistency_verification:
             ["previous_student_identity", "mark_origin", "realm_connection"],
           part_endings: ["mentor_secret_revealed", "elena_appears_changed"],
         }
-
 ```
 
 ## Development Tools and Resources
