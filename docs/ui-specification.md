@@ -11,6 +11,7 @@ The Fictures UI supports a 4-level hierarchical story development system (Story 
 **Consistent Top Navigation Bar across all screens:**
 
 **GNB Menu Items:**
+
 - **Stories**: Navigate to story dashboard and management
 - **Write**: Quick access to current writing position
 - **Community**: Reader engagement and feedback hub
@@ -34,7 +35,7 @@ Community Hub ← Analytics ← Publication ← AI Assistant ← Scene Editor
 **Mobile Navigation:**
 
 - GNB collapses to hamburger menu on mobile
-- Bottom tab bar for primary actions (Write, Community, Publish, Profile)
+- Edge-swipe drawer for primary navigation (Write, Community, Publish, Profile)
 - Swipe gestures for moving between chapters/scenes
 - Long-press context menus for quick actions
 
@@ -126,23 +127,28 @@ Reader interfaces focus on content consumption, community engagement, and discov
 
 ### 4.1. Story Reading Interface
 
-**Purpose**: Immersive reading experience with community engagement and navigation tools.
+**Purpose**: Immersive reading experience with simplified two-level navigation (story → chapter) and community engagement tools.
 
 **Key Components**:
+
 - **Chapter Display Area**: Clean, readable text with customizable typography and themes
 - **Progress Indicator**: Reading progress within chapter and overall story completion
-- **Navigation Controls**: Previous/next chapter, bookmark management, table of contents
-- **Community Tools**: Inline commenting, theory posting, reaction buttons
+- **Navigation Controls**: Previous/next chapter, chapter list, bookmark management
+- **Story Navigation**: Direct story-to-chapter navigation without part intermediaries
+- **Community Tools**: Chapter-end reply system, theory posting, reaction buttons
 - **Reading Preferences**: Font size, background color, reading mode (day/night)
-- **Social Features**: Share quotes, highlight passages, create reading lists
+- **Discussion Panel**: Collapsible community discussion area with threaded replies
 
-**User Flow**: Readers navigate through stories with seamless chapter transitions, engage with community through comments and theories, and customize their reading experience.
+**User Flow**: Readers select stories and navigate directly to chapters in sequential order, engage with community through replies and theories at chapter breaks, and customize their reading experience without complex hierarchical navigation.
 
 **Functional Requirements**:
-- Provide distraction-free reading environment with customization options
-- Support inline community engagement without disrupting reading flow
+
+- Provide simplified story → chapter navigation structure for readers
+- Support direct chapter access through story table of contents
+- Enable seamless chapter-to-chapter progression without part boundaries
+- Support chapter-end community engagement to maintain reading flow
 - Enable bookmarking and reading progress tracking across devices
-- Implement sharing tools for quotes and story recommendations
+- Implement reply-based discussion system with threading
 - Support accessibility features for diverse reading needs
 
 ### 4.2. Community Discovery Interface
@@ -150,6 +156,7 @@ Reader interfaces focus on content consumption, community engagement, and discov
 **Purpose**: Story discovery platform with community recommendations and trending content.
 
 **Key Components**:
+
 - **Trending Stories Panel**: Popular and highly-rated stories with genre filtering
 - **Community Recommendations**: Reader-curated story lists and reviews
 - **Genre Explorer**: Browse stories by category, tags, and content warnings
@@ -160,6 +167,7 @@ Reader interfaces focus on content consumption, community engagement, and discov
 **User Flow**: Readers discover new content through community recommendations, trending lists, and personalized suggestions based on reading history.
 
 **Functional Requirements**:
+
 - Display personalized story recommendations based on reading preferences
 - Enable community-driven content curation and rating systems
 - Provide comprehensive search and filtering capabilities
@@ -175,6 +183,7 @@ Writer interfaces provide comprehensive tools for content creation, story planni
 **Purpose**: Central hub displaying all user stories with quick access to writing, analytics, and management functions.
 
 **Key Components**:
+
 - **Story Cards**: Display story metadata (title, genre, progress, reader stats, ratings)
 - **Recent Activity Feed**: Shows latest writing progress, comments, and reader engagement
 - **Publishing Schedule**: Upcoming publication dates and deadlines
@@ -184,6 +193,7 @@ Writer interfaces provide comprehensive tools for content creation, story planni
 **User Flow**: Entry point showing project overview with quick access to continue writing or view analytics. Story cards navigate to detailed story management.
 
 **Functional Requirements**:
+
 - Display story progress indicators and completion statistics
 - Show real-time reader engagement metrics
 - Provide quick access to current writing position
@@ -195,6 +205,7 @@ Writer interfaces provide comprehensive tools for content creation, story planni
 **Purpose**: Comprehensive story management combining progress tracking, structural planning, and creative development tools.
 
 **Key Components**:
+
 - **Story Progress Dashboard**: Visual progress indicators for parts, chapters, and overall completion
 - **Story Foundation Panel**: Central questions, themes, genre, and target word count management
 - **Character Hierarchy Display**: Visual representation of character roles and arc progression
@@ -205,6 +216,7 @@ Writer interfaces provide comprehensive tools for content creation, story planni
 **User Flow**: Strategic story management interface for planning and tracking overall narrative development. Users can manage story structure, continue writing, or dive into detailed part development.
 
 **Functional Requirements**:
+
 - Display hierarchical progress from story level down to chapters
 - Enable editing of core story elements (themes, central questions, character roles)
 - Provide visual part structure management with quick navigation
@@ -217,6 +229,7 @@ Writer interfaces provide comprehensive tools for content creation, story planni
 **Purpose**: Focused part-level management providing detailed chapter organization, character arc tracking, and plot thread management.
 
 **Key Components**:
+
 - **Part Overview Panel**: Central question, progress metrics, word targets, and completion status
 - **Chapter Progress Grid**: Individual chapter cards showing word counts, publication status, and reader engagement
 - **Character Development Tracker**: Visual arc progression for major characters within the part
@@ -227,6 +240,7 @@ Writer interfaces provide comprehensive tools for content creation, story planni
 **User Flow**: Detailed part management interface for organizing chapters and tracking character development. Users can continue writing individual chapters or plan detailed chapter/scene structure.
 
 **Functional Requirements**:
+
 - Display chapter-level progress with publication scheduling
 - Track character arc development within part boundaries
 - Manage active plot threads and their resolution progress
@@ -239,6 +253,7 @@ Writer interfaces provide comprehensive tools for content creation, story planni
 **Purpose**: Focused writing environment with comprehensive scene management, real-time AI assistance, and progress tracking.
 
 **Key Components**:
+
 - **Chapter Status Panel**: Purpose, hook, character focus, and scene progress overview
 - **Scene Breakdown Manager**: Goal-Conflict-Outcome structure for each scene with progress tracking
 - **Primary Writing Area**: Clean, distraction-free text editor with formatting tools
@@ -249,6 +264,7 @@ Writer interfaces provide comprehensive tools for content creation, story planni
 **User Flow**: Immersive writing interface prioritizing content creation while providing contextual assistance and progress tracking. Users focus on writing with AI and analytics support always available.
 
 **Functional Requirements**:
+
 - Provide distraction-free writing environment with formatting support
 - Implement scene-based writing structure with Goal-Conflict-Outcome framework
 - Deliver real-time AI suggestions for narrative enhancement
@@ -261,13 +277,15 @@ Writer interfaces provide comprehensive tools for content creation, story planni
 **Purpose**: Touch-optimized writing interface maximizing screen real estate while maintaining essential functionality.
 
 **Key Components**:
+
 - **Collapsible Header**: Chapter title and essential controls (save, publish) with hamburger menu
 - **Progress Indicator**: Word count and scene progress prominently displayed
 - **Expanded Writing Area**: Maximum screen space dedicated to text input
 - **Contextual AI Panel**: Collapsible AI assistance with quick apply/dismiss options
-- **Bottom Action Bar**: Primary actions (continue writing, tools access) within thumb reach
+- **Floating Action Button (FAB)**: Context-sensitive primary action button that adapts to current writing state
 
 **Mobile-Specific Features**:
+
 - Touch-friendly buttons (44px minimum)
 - Swipe gestures for chapter/scene navigation
 - Long-press context menus for quick actions
@@ -277,6 +295,7 @@ Writer interfaces provide comprehensive tools for content creation, story planni
 **User Flow**: Mobile-first writing experience prioritizing content creation with contextual tools available on demand.
 
 **Functional Requirements**:
+
 - Maximize writing area while maintaining essential functionality
 - Implement touch-friendly interaction patterns
 - Provide contextual AI assistance without cluttering interface
@@ -292,6 +311,7 @@ Manager interfaces provide comprehensive tools for publication management, commu
 **Purpose**: Comprehensive publication management system with scheduling, analytics, and reader engagement optimization.
 
 **Key Components**:
+
 - **Publishing Schedule Calendar**: Weekly view of planned publications with status tracking
 - **Quick Publish Panel**: Ready-to-publish content with quality checks and community feature toggles
 - **Publication Analytics Dashboard**: Performance metrics for recently published content
@@ -302,6 +322,7 @@ Manager interfaces provide comprehensive tools for publication management, commu
 **User Flow**: Strategic publication management interface enabling authors to schedule releases, monitor performance, and optimize reader engagement.
 
 **Functional Requirements**:
+
 - Provide calendar-based publication scheduling with status tracking
 - Enable immediate or scheduled publishing with preview capabilities
 - Display comprehensive analytics for published content performance
@@ -314,6 +335,7 @@ Manager interfaces provide comprehensive tools for publication management, commu
 **Purpose**: Comprehensive reader engagement platform facilitating author-reader interaction, feedback management, and community building.
 
 **Key Components**:
+
 - **Trending Discussions Panel**: Popular theories, predictions, and analysis posts with engagement metrics
 - **Community Statistics Dashboard**: Reader activity, comment volume, and engagement trends
 - **Recent Comments Feed**: Latest reader feedback on published chapters with moderation tools
@@ -324,6 +346,7 @@ Manager interfaces provide comprehensive tools for publication management, commu
 **User Flow**: Central hub for community engagement allowing authors to monitor reader response, participate in discussions, and manage fan interactions.
 
 **Functional Requirements**:
+
 - Display trending discussions with reply and reaction tracking
 - Provide comprehensive community engagement analytics
 - Enable author response to comments with highlighting and pinning options
@@ -336,6 +359,7 @@ Manager interfaces provide comprehensive tools for publication management, commu
 **Purpose**: Comprehensive performance tracking and business intelligence for story success optimization.
 
 **Key Components**:
+
 - **Story Performance Dashboard**: Views, engagement rates, retention metrics across all stories
 - **Reader Demographics Panel**: Audience insights, geographic distribution, reading patterns
 - **Revenue Analytics**: Monetization metrics, subscription tracking, premium content performance
@@ -346,6 +370,7 @@ Manager interfaces provide comprehensive tools for publication management, commu
 **User Flow**: Data-driven decision making interface for optimizing story performance, reader engagement, and business outcomes.
 
 **Functional Requirements**:
+
 - Display comprehensive performance metrics with historical trends
 - Provide actionable insights for story and community optimization
 - Support data export and custom reporting capabilities
@@ -356,24 +381,28 @@ Manager interfaces provide comprehensive tools for publication management, commu
 ## 7. Implementation Specifications
 
 **Responsive Design Framework**:
+
 - Mobile-first responsive design with progressive enhancement
 - Breakpoints: 320px (mobile), 768px (tablet), 1024px (desktop)
 - Touch-friendly interactions with 44px minimum touch targets
 - Adaptive layout patterns for different screen sizes
 
 **Navigation Architecture**:
+
 - Hierarchical breadcrumb navigation reflecting story structure
 - Persistent global navigation bar across all interfaces
 - Context-sensitive sidebars and tool panels
 - Quick access patterns for frequently used functions
 
 **AI Integration Patterns**:
+
 - Contextual AI assistance available at every interface level
 - Real-time suggestions and feedback systems
 - Progressive disclosure of AI capabilities based on user needs
 - Consistent AI interaction patterns across all writing interfaces
 
 **Community Integration**:
+
 - Seamless reader engagement tools integrated into writing workflow
 - Real-time community feedback and interaction systems
 - Author-reader communication channels with moderation controls
