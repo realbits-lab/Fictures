@@ -61,31 +61,68 @@ The part specification requires the following input data from the story-specific
 
 story_input:
   # Core story context
-  title: string
-  genre: string
-  words: number
-  question: string
-  
+  title: "The Shadow Keeper"
+  genre: "urban_fantasy"
+  words: 80000
+  question: "Can Maya master shadow magic before power corrupts her?"
+
   # Universal story pattern
-  goal: string
-  conflict: string
-  outcome: string
-  
+  goal: "Save Elena from Shadow Realm"
+  conflict: "Shadow magic corrupts those who use it"
+  outcome: "Maya embraces darkness to save light"
+
   # Character foundations
-  chars: object  # All story-level character definitions
-  
+  chars:
+    maya: { role: "protag", arc: "denial→acceptance", flaw: "overprotective" }
+    elena:
+      { role: "catalyst", arc: "missing→transformed", goal: "survive_realm" }
+    marcus:
+      { role: "mentor", arc: "guilt→redemption", secret: "previous_failure" }
+    void: { role: "antag", arc: "power→corruption", goal: "merge_worlds" }
+
   # Story structure and themes
-  themes: array
-  structure: object  # Contains type, parts, and distribution
-  
+  themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
+  structure:
+    type: "3_part"
+    parts: ["setup", "confrontation", "resolution"]
+    dist: [25, 50, 25]
+
+  # Setting essentials
+  setting:
+    primary: ["san_francisco", "photography_studio"]
+    secondary: ["shadow_realm", "chinatown_passages"]
+
   # Story-level parts with goals and conflicts
-  parts: array  # Part assignments and goals for this specific part
-  
+  parts:
+    - part: 1
+      goal: "Maya accepts supernatural reality"
+      conflict: "Denial vs mounting evidence"
+      outcome: "Reluctant training commitment"
+      tension: "denial vs acceptance"
+    - part: 2
+      goal: "Master shadow magic safely"
+      conflict: "Growing power vs corruption risk"
+      outcome: "Power embrace despite dangers"
+      tension: "power vs integrity"
+    - part: 3
+      goal: "Save Elena without losing self"
+      conflict: "Ultimate power vs moral cost"
+      outcome: "Victory through accepting darkness"
+      tension: "salvation vs corruption"
+
   # Serial publication context
-  serial: object  # Publication schedule and requirements
-  
+  serial:
+    schedule: "weekly"
+    duration: "18_months"
+    chapter_words: 4000
+    breaks: ["part1_end", "part2_end"]
+    buffer: "4_chapters_ahead"
+
   # Reader engagement strategy
-  hooks: object  # Overarching mysteries and engagement points
+  hooks:
+    overarching: ["elena_fate", "maya_corruption_risk", "shadow_magic_truth"]
+    mysteries: ["previous_student_identity", "mark_origin", "realm_connection"]
+    part_endings: ["mentor_secret_revealed", "elena_appears_changed"]
 ```
 
 ## 6. YAML Data Structure Example for Part Planning
@@ -199,7 +236,7 @@ part_output:
     title: "Discovery"
     words: 20000
     function: "story_setup"
-    
+
   # Inherited story context
   story_context:
     title: "The Shadow Keeper"
@@ -207,7 +244,7 @@ part_output:
     themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
     overall_goal: "Save Elena from Shadow Realm"
     overall_conflict: "Shadow magic corrupts those who use it"
-    
+
   # Part-specific pattern
   part_pattern:
     goal: "Maya accepts supernatural reality"
@@ -216,7 +253,7 @@ part_output:
     questions:
       primary: "How will Maya react to discovering her magical abilities?"
       secondary: "Can Maya overcome denial to accept the supernatural world?"
-      
+
   # Character states and development for chapters
   chars:
     maya:
@@ -226,7 +263,7 @@ part_output:
       target_state: "reluctant_acceptance"
       conflict: "safety_vs_responsibility"
       key_transforms: ["magical_manifestation", "mentor_acceptance"]
-      
+
     elena:
       role: "catalyst"
       part_arc: "mysterious_absence→catalyst_revelation"
@@ -234,42 +271,43 @@ part_output:
       target_state: "catalyst_revelation"
       function: "motivation_worldbuilding"
       key_transforms: ["disappearance_mystery", "supernatural_connection"]
-      
+
   # Chapter assignments and structure
   chapter_requirements:
-    estimated_chapters: 5  # Based on 20000 words / 4000 words per chapter
+    estimated_chapters: 5 # Based on 20000 words / 4000 words per chapter
     chapter_functions:
       - function: "part_opening"
         goal: "Establish Elena's disappearance"
         events: ["elena_disappearance"]
-        
-      - function: "rising_action" 
+
+      - function: "rising_action"
         goal: "Maya discovers supernatural evidence"
         events: ["journal_discovery", "photograph_evidence"]
-        
+
       - function: "turning_point"
         goal: "Maya's powers manifest"
         events: ["shadow_manifestation", "reality_acceptance"]
-        
+
       - function: "climax"
         goal: "Marcus introduces training"
         events: ["marcus_introduction", "training_offer"]
-        
+
       - function: "part_transition"
         goal: "Commit to supernatural world"
         events: ["training_acceptance", "mentor_secret_hint"]
-        
+
   # Thematic and emotional context for chapters
   part_themes:
     primary: "denial_and_acceptance"
     elements: ["denial_vs_truth", "family_responsibility"]
     symbols: ["shadows_as_fears", "photography_as_truth"]
-    
+
   emotion_arc:
     start: "casual_family_concern"
-    progression: ["growing_fear", "supernatural_terror", "determined_resolution"]
+    progression:
+      ["growing_fear", "supernatural_terror", "determined_resolution"]
     end: "grim_commitment"
-    
+
   # Serial publication context
   serial_context:
     part_climax_at: "85%"
@@ -285,21 +323,25 @@ This comprehensive guide explains each field in the compact part specification Y
 ### 6.1. Part Identification
 
 **`part`**: Part number in story sequence
+
 - **Purpose**: Establishes position in overall story structure
 - **Usage**: Sequential numbering (1, 2, 3...) based on story structure type
 - **Tips**: Aligns with story-level part planning and reader expectations
 
 **`title`**: Distinctive name for this major story section
+
 - **Purpose**: Thematic identity and organizational clarity
 - **Usage**: Should reflect part's central focus or character development phase
 - **Tips**: Often reflects character state or story movement ("Discovery", "Training", "Confrontation")
 
 **`words`**: Target word count for this part
+
 - **Purpose**: Pacing control and publication planning
 - **Usage**: Typically 15k-25k words per part for standard novels
 - **Tips**: Should align with story-level word distribution and part function
 
 **`function`**: Part's role in overall story architecture
+
 - **Purpose**: Defines structural purpose within larger narrative
 - **Usage**: Common functions: "story_setup", "development", "climax_resolution"
 - **Tips**: Must serve overall story arc while having internal completeness
@@ -307,16 +349,19 @@ This comprehensive guide explains each field in the compact part specification Y
 ### 6.2. Universal Pattern Fields (Part-Level Drama)
 
 **`goal`**: What the protagonist seeks to accomplish in this part
+
 - **Purpose**: Drives part-specific dramatic arc and reader engagement
 - **Usage**: Must advance overall story goal while being achievable within part scope
 - **Tips**: Should require significant effort/growth to achieve
 
 **`conflict`**: Primary obstacle preventing goal achievement in this part
+
 - **Purpose**: Creates part-level tension and forces character development
 - **Usage**: Must escalate from previous part while building toward next
 - **Tips**: Best conflicts challenge character growth needs for this story phase
 
 **`outcome`**: How this part resolves and transitions to next
+
 - **Purpose**: Provides satisfaction while creating momentum for continuation
 - **Usage**: Should answer part-specific questions while raising new ones
 - **Tips**: Must feel earned through character effort and growth
@@ -324,6 +369,7 @@ This comprehensive guide explains each field in the compact part specification Y
 ### 6.3. Driving Questions
 
 **`questions`**: Central questions that drive reader engagement through this part
+
 - **`primary`**: Main question this part exists to explore/answer
 - **`secondary`**: Supporting question that adds depth and complexity
 - **Purpose**: Maintains reader investment and provides structural focus
@@ -333,11 +379,13 @@ This comprehensive guide explains each field in the compact part specification Y
 ### 6.4. Character Development Architecture
 
 **`chars`**: Character progression tracking for this part
+
 - **Purpose**: Maps character growth phases within larger story arcs
 - **Usage**: Focus on characters with significant development in this part
 - **Structure**: Individual character objects with development tracking
 
 **Character Development Sub-fields:**
+
 - **`start`**: Character's emotional/psychological state entering this part
 - **`end`**: Character's state after completing this part's journey
 - **`arc`**: Step-by-step progression through part (array of development phases)
@@ -348,6 +396,7 @@ This comprehensive guide explains each field in the compact part specification Y
 ### 6.5. Plot Architecture
 
 **`plot`**: Story events and revelations specific to this part
+
 - **`events`**: Major plot developments that occur in this part
 - **`reveals`**: Important information discoveries that advance understanding
 - **`escalation`**: How stakes/tension increase through this part
@@ -357,6 +406,7 @@ This comprehensive guide explains each field in the compact part specification Y
 ### 6.6. Thematic Integration
 
 **`themes`**: Thematic exploration within this part
+
 - **`primary`**: Central theme this part develops
 - **`elements`**: Specific thematic contrasts/tensions explored
 - **`moments`**: Key scenes where themes become explicit
@@ -367,6 +417,7 @@ This comprehensive guide explains each field in the compact part specification Y
 ### 6.7. Emotional Journey Management
 
 **`emotion`**: Reader/character emotional progression through part
+
 - **`start`**: Opening emotional state/tone
 - **`progression`**: Emotional beats that escalate through part
 - **`end`**: Closing emotional state that transitions to next part
@@ -376,6 +427,7 @@ This comprehensive guide explains each field in the compact part specification Y
 ### 6.8. Part Ending Strategy
 
 **`ending`**: How this part concludes and connects to story continuation
+
 - **`resolution`**: What gets resolved/completed in this part
 - **`setup`**: What gets established for future parts
 - **`hooks`**: Specific elements that create anticipation for next part
@@ -386,6 +438,7 @@ This comprehensive guide explains each field in the compact part specification Y
 ### 6.9. Serial Structure Management
 
 **`serial`**: Part's function within serialized publication model
+
 - **`arc`**: Internal dramatic structure of this part
 - **`climax_at`**: Where dramatic peak occurs within part (usually 80-90%)
 - **`satisfaction`**: What readers gain from completing this part
@@ -396,6 +449,7 @@ This comprehensive guide explains each field in the compact part specification Y
 ### 6.10. Reader Engagement Strategy
 
 **`engagement`**: Community interaction planning for this part
+
 - **`discussions`**: Topics likely to generate reader conversation
 - **`speculation`**: Elements designed to spark reader theories
 - **`debates`**: Character choices that create reader discussion
@@ -406,6 +460,7 @@ This comprehensive guide explains each field in the compact part specification Y
 ### 6.11. Field Usage Guidelines
 
 **Planning Sequence for Parts:**
+
 1. Define part's role in overall story (function, goal, conflict, outcome)
 2. Map character development needs for this story phase
 3. Plan plot events that support character growth
@@ -413,6 +468,7 @@ This comprehensive guide explains each field in the compact part specification Y
 5. Design ending that balances resolution with anticipation
 
 **Validation Checklist:**
+
 - Does this part advance overall story while being internally complete?
 - Do character arcs progress meaningfully toward story-level goals?
 - Are plot events necessary for character development?
@@ -420,6 +476,7 @@ This comprehensive guide explains each field in the compact part specification Y
 - Does the ending create appropriate anticipation for continuation?
 
 **Common Part Planning Mistakes:**
+
 - Making parts too episodic (not advancing overall story)
 - Focusing on plot events without character development
 - Ending without sufficient resolution for reader satisfaction
