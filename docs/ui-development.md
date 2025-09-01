@@ -316,11 +316,17 @@ This guide provides detailed UI mockups and visual development patterns for impl
 │ │ [✓] [✗] [More]      │ │
 │ └─────────────────────┘ │
 │                         │
-│ [📝 Continue] [⚙️ Tools]│
+│                   [🎯]  │
 └─────────────────────────┘
 ```
 
-**User Flow**: Mobile interface prioritizes writing space with collapsible tools. Touch-friendly buttons and swipe gestures for navigation.
+**Mobile Interface Features:**
+- **Floating Action Button (FAB)**: Context-sensitive primary action [🎯] that adapts to current writing state
+- **Edge-swipe navigation**: Access main navigation through edge gestures
+- **Collapsible AI assistance**: Quick apply/dismiss options for AI suggestions
+- **Touch-optimized**: 44px minimum touch targets and gesture-based controls
+
+**User Flow**: Mobile interface prioritizes writing space with contextual FAB and gesture-based navigation for maximum screen utilization.
 
 ## Community Hub Interface
 
@@ -469,7 +475,7 @@ This guide provides detailed UI mockups and visual development patterns for impl
 
 **Mobile Navigation:**
 - Hamburger menu collapses global navigation
-- Bottom tab bar for primary actions
+- Edge-swipe drawer for primary navigation (Write, Community, Publish, Profile)
 - Swipe gestures for moving between chapters/scenes
 - Long-press context menus for quick actions
 

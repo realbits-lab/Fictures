@@ -258,6 +258,200 @@ Every scene must contain these essential elements:
 - ✓ Scene advances story and develops character
 - ✓ Connection to chapter flow is logical
 
+## Iterative Feedback Loops by Phase
+
+### Phase 1: Planning Phase Feedback Loops
+
+**Goal-Conflict-Outcome Validation Loop**
+
+```
+Define Goal ──→ Validate Goal Clarity ──→ Assess Goal Achievability
+    ↑                    │                       │
+    │                    ▼                       ▼
+Refine Goal ◄─── Goal Too Vague/Broad? ◄─── Goal Realistic for Scene?
+    │                    │                       │
+    │                    │ (No)                  │ (No)
+    │                    └─── Clarify Stakes ────┘
+    │                                            │
+    └──── (Yes) ──────────────────────────────────┘
+                            │
+                            ▼
+                    [Proceed to Conflict Design]
+```
+
+**Character Motivation Feedback Loop**
+
+```
+Character State Analysis ──→ Motivation Assessment ──→ Goal Alignment Check
+         ↑                          │                         │
+         │                          ▼                         ▼
+   Update Character ◄─── Motivation Weak? ◄─── Goal Matches Character?
+      Background              │                         │
+         ↑                    │ (Yes)                   │ (No)
+         │                    ▼                         ▼
+         └──── Strengthen Stakes ──────┐       Adjust Goal/Character
+                                      │                │
+                                      ▼                ▼
+                              [Character-Goal Locked] ←──┘
+```
+
+### Phase 2: Structure Phase Feedback Loops
+
+**MRU Sequence Validation Loop**
+
+```
+Write MRU Sequence ──→ Check Natural Flow ──→ Validate Cause-Effect
+        ↑                      │                      │
+        │                      ▼                      ▼
+  Revise Sequence ◄─── Flow Feels Forced? ◄─── Logic Breaks Down?
+        ↑                      │                      │
+        │                 │ (No)                 │ (No)
+        │                 ▼                      ▼
+        └──── Check Reader Experience ──→ [MRU Approved]
+                      │
+                      ▼ (Confusing)
+                 Clarify Motivation
+                      │
+                      ▼
+                [Return to Write MRU]
+```
+
+**Scene vs Summary Balance Loop**
+
+```
+Draft Scene Content ──→ Assess Pacing ──→ Evaluate Reader Engagement
+         ↑                    │                      │
+         │                    ▼                      ▼
+    Adjust Balance ◄─── Too Slow/Fast? ◄─── Dragging/Rushing?
+         ↑                    │                      │
+         │               │ (No)                 │ (No)
+         │               ▼                      ▼
+         └──── Test Critical Moments ──→ [Pacing Approved]
+                        │
+                        ▼ (Weak Impact)
+                   Dramatize Key Beats
+                        │
+                        ▼
+                  [Return to Draft]
+```
+
+### Phase 3: Enhancement Phase Feedback Loops
+
+**Dialogue Authenticity Loop**
+
+```
+Generate Dialogue ──→ Voice Consistency Check ──→ Subtext Validation
+        ↑                      │                         │
+        │                      ▼                         ▼
+   Refine Voice ◄─── Sounds Like Character? ◄─── Deeper Meaning Present?
+        ↑                      │                         │
+        │                 │ (Yes)                   │ (Yes)
+        │                 ▼                         ▼
+        └──── Tension Assessment ──→ [Dialogue Approved] ←──┘
+                      │
+                      ▼ (Low Tension)
+                Build Conflict Layers
+                      │
+                      ▼
+                [Return to Generate]
+```
+
+**Sensory Integration Feedback Loop**
+
+```
+Add Sensory Details ──→ POV Filter Check ──→ Atmospheric Coherence
+         ↑                     │                      │
+         │                     ▼                      ▼
+   Adjust Details ◄─── Through Character Eyes? ◄─── Supports Mood?
+         ↑                     │                      │
+         │                │ (Yes)                │ (Yes)
+         │                ▼                      ▼
+         └──── Immersion Test ──→ [Sensory Approved] ←──┘
+                      │
+                      ▼ (Weak Grounding)
+                 Enhance Key Senses
+                      │
+                      ▼
+                [Return to Add Details]
+```
+
+### Phase 4: Validation Phase Feedback Loops
+
+**Value Shift Verification Loop**
+
+```
+Identify Value Change ──→ Measure Shift Impact ──→ Assess Turning Point
+         ↑                       │                        │
+         │                       ▼                        ▼
+   Strengthen Shift ◄─── Significant Change? ◄─── Clear Moment of Change?
+         ↑                       │                        │
+         │                  │ (Yes)                  │ (Yes)
+         │                  ▼                        ▼
+         └──── Character Arc Check ──→ [Value Shift Confirmed] ←──┘
+                        │
+                        ▼ (Inconsistent)
+                   Realign Character
+                        │
+                        ▼
+                 [Return to Identify]
+```
+
+**Chapter Integration Loop**
+
+```
+Scene Placement Check ──→ Narrative Flow Test ──→ Chapter Arc Fit
+         ↑                       │                      │
+         │                       ▼                      ▼
+   Adjust Position ◄─── Logical Sequence? ◄─── Supports Chapter Goal?
+         ↑                       │                      │
+         │                  │ (Yes)                │ (Yes)
+         │                  ▼                      ▼
+         └──── Next Scene Setup ──→ [Integration Approved] ←──┘
+                        │
+                        ▼ (Weak Connection)
+                  Strengthen Threads
+                        │
+                        ▼
+                 [Return to Check]
+```
+
+### Cross-Phase Iterative Loops
+
+**Quality Assurance Mega-Loop**
+
+```
+Phase 1 Complete ──→ Phase 2 ──→ Phase 3 ──→ Phase 4
+     ↑                 │           │           │
+     │                 ▼           ▼           ▼
+Major Revision ◄─── Structure Issues? ◄── Enhancement Issues? ◄── Validation Fails?
+     ↑                 │           │           │
+     │            │ (No)      │ (No)      │ (No)
+     │            ▼           ▼           ▼
+     └──── Minor Adjustments ──→ [Scene Approved]
+                  │
+                  ▼ (Still Issues)
+            Return to Problem Phase
+```
+
+**AI Integration Feedback Loop**
+
+```
+AI Enhancement Request ──→ Human Review ──→ Quality Assessment
+         ↑                      │                │
+         │                      ▼                ▼
+   Refine Prompt ◄─── Maintains Voice? ◄─── Improves Scene?
+         ↑                      │                │
+         │                 │ (Yes)          │ (Yes)
+         │                 ▼                ▼
+         └──── Authenticity Check ──→ [AI Enhancement Approved]
+                        │
+                        ▼ (Lacks Authenticity)
+                   Manual Override
+                        │
+                        ▼
+                 [Return to Request]
+```
+
 ## Best Practices
 
 ### Core Scene Principles

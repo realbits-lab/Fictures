@@ -57,8 +57,11 @@ Phase 4 Output: final_chapter_data
 
 ITERATIVE FEEDBACK LOOPS:
 
-Chapter Quality Metrics ──→ chapter_consistency_verification ──→ content_refinement
-Reader Engagement Elements ──→ scene_development ──→ enhanced_episodic_satisfaction
+Phase 1 ↔ Phase 4: Dual Mandate Requirements ──→ verification_results ──→ foundation_refinement
+Phase 2 ↔ Phase 4: Three-Act Architecture ──→ structure_validation ──→ organization_adjustment
+Phase 3 ↔ Phase 4: Scene-Sequel Implementation ──→ causality_assessment ──→ content_enhancement
+Phase 1-3 ↔ Phase 4: Tension Engine Operation ──→ multi_layer_evaluation ──→ tension_optimization
+Cross-Phase: Specification Compliance ──→ format_validation ──→ systematic_alignment
 ```
 
 ## Development Workflow
