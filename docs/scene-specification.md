@@ -107,6 +107,9 @@ scene:
 
   # Connection to chapter flow
   leads_to: "maya_searches_apartment_for_clues"
+
+  # Visual scene description
+  image_prompt: "Young woman in casual clothes standing in a dimly lit apartment hallway, her face showing concern as she looks at an ajar door. The scene suggests early morning light filtering through windows, with subtle signs of disturbance visible - an overturned coffee table and scattered items in the background. Mood: tense, mysterious, domestic thriller atmosphere."
 ```
 
 ## 7. YAML Field Documentation
@@ -201,7 +204,24 @@ This guide explains each field in the essential scene specification format, focu
 - **Usage**: Brief description of what naturally follows
 - **Tips**: Should emerge from this scene's outcome
 
-### 7.5. Usage Guidelines for Scene Planning
+### 7.5. Visual Scene Elements
+
+**`image_prompt`**: Detailed visual description for scene visualization
+
+- **Purpose**: Provides comprehensive visual context for scene setting, characters, and atmosphere
+- **Usage**: Descriptive text suitable for AI image generation or writer visualization
+- **Structure**: Single detailed paragraph covering setting, characters, lighting, mood, and genre atmosphere
+- **Tips**: Include specific details about character appearance, environmental elements, lighting conditions, and emotional tone
+
+**Image Prompt Guidelines:**
+
+- **Setting Details**: Physical environment, lighting conditions, time of day
+- **Character Appearance**: Age, clothing, posture, facial expressions, positioning
+- **Atmospheric Elements**: Mood, genre feel, emotional undertone
+- **Visual Continuity**: Consistent with established story world and character descriptions
+- **Practical Focus**: Actionable details that help visualize the scene's dramatic moment
+
+### 7.6. Usage Guidelines for Scene Planning
 
 **Essential Scene Planning Steps:**
 
@@ -211,6 +231,7 @@ This guide explains each field in the essential scene specification format, focu
 4. List key beats that must happen
 5. Determine emotional/situational shift
 6. Connect to chapter flow
+7. Create visual description for scene atmosphere and key elements
 
 **Scene Success Indicators:**
 
@@ -220,6 +241,7 @@ This guide explains each field in the essential scene specification format, focu
 - Key beats advance chapter progression
 - Scene creates change that affects story
 - Connection to next element is logical
+- Visual description enhances scene atmosphere and aids visualization
 
 **Common Scene Planning Mistakes:**
 
@@ -229,5 +251,6 @@ This guide explains each field in the essential scene specification format, focu
 - Too many beats (scene becomes cluttered)
 - No meaningful change occurs
 - Poor connection to chapter flow
+- Vague or generic visual descriptions that don't capture scene specifics
 
 This simplified approach ensures scenes serve their function as chapter components while providing LLMs with clear, actionable information for effective scene writing.
