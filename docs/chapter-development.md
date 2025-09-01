@@ -49,11 +49,16 @@ validateEpisodicSatisfaction() ────────────────�
 
 DATA FLOW CONNECTIONS:
 
-Part Context (structure) → Phase 1: chapter_concept_development()
+part_output (from part-specification) → Phase 1: chapter_concept_development()
 Phase 1 Output → Phase 2 Input: chapter_objectives, reader_engagement_goals
 Phase 2 Output → Phase 3 Input: scene_structure, character_moments, tension_beats
 Phase 3 Output → Phase 4 Input: scene_content, dialogue_quality, engagement_elements
-Phase 4 Output: final_chapter_data
+Phase 4 Output: chapter_output → scene_input (hierarchical data flow)
+
+HIERARCHICAL INPUT/OUTPUT INTEGRATION:
+part_output (part development) → chapter_input (chapter development)
+chapter_output (chapter development) → scene_input (scene development)
+Maintains seamless hierarchical flow: Story → Part → Chapter → Scene
 
 FINAL VALIDATION:
 
@@ -82,13 +87,49 @@ Implementing the Dual Mandate principle to ensure every chapter serves both epis
 ```yaml
 chapter_concept_development:
   input:
-    part_context:
-      part_title: "Discovery"
-      part_objectives: ["Establish world", "Introduce conflict", "Character introduction"]
-      major_plot_beats: ["Normal life", "Strange photographs", "Elena disappears"]
-      character_arcs: ["Maya reluctant acceptance", "Elena catalyst role"]
-      story_position: "opening_act"
-      target_chapter_count: 7
+    # Input receives part_output from part-specification as structured hierarchical data
+    part_input:
+      part_context:
+        part: 1
+        title: "Discovery"
+        words: 20000
+        function: "story_setup"
+      
+      story_context:
+        title: "The Shadow Keeper"
+        genre: "urban_fantasy"
+        themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
+        overall_goal: "Save Elena from Shadow Realm"
+        overall_conflict: "Shadow magic corrupts those who use it"
+      
+      part_pattern:
+        goal: "Maya accepts supernatural reality"
+        conflict: "Denial vs mounting evidence"
+        outcome: "Reluctant training commitment"
+        questions:
+          primary: "How will Maya react to discovering her magical abilities?"
+          secondary: "Can Maya overcome denial to accept the supernatural world?"
+      
+      chars:
+        maya:
+          role: "protag"
+          part_arc: "denial_normalcy→reluctant_acceptance"
+          current_state: "denial_normalcy"
+          target_state: "reluctant_acceptance"
+          conflict: "safety_vs_responsibility"
+        elena:
+          role: "catalyst"
+          part_arc: "mysterious_absence→catalyst_revelation"
+          current_state: "mysterious_absence"
+          target_state: "catalyst_revelation"
+          function: "motivation_worldbuilding"
+      
+      chapter_requirements:
+        estimated_chapters: 5
+        chapter_functions:
+          - function: "part_opening"
+            goal: "Establish Elena's disappearance"
+            events: ["elena_disappearance"]
 
   process:
     - establish_dual_mandate: "Define both episodic satisfaction and serial momentum goals"
@@ -528,8 +569,30 @@ dual_mandate_three_act_verification:
         causality_maintenance: 0.93
         reader_engagement_optimization: 0.90
         story_integration_success: 0.94
+
+    hierarchical_integration_requirements:
+      input_compliance: "Successfully receives part_output from part-specification development"
+      data_structure_usage: "Uses structured part context for chapter development planning"
+      output_generation: "Generates chapter_output for scene-specification input"
+      scene_level_setup: "Provides structured scene requirements and character states"
+      next_level_data_flow: "Ensures seamless data transition to scene development phase"
 ```
 
+## Hierarchical Data Flow Integration
+
+**Chapter Development Integration Points:**
+
+- **Input Integration**: Receives `part_output` containing part context, story context, part patterns, character states, and chapter requirements
+- **Processing Integration**: Uses hierarchical data to inform chapter goal-conflict-outcome patterns and three-act architecture
+- **Output Integration**: Generates `chapter_output` with chapter context, scene requirements, character states, and story/part context inheritance
+- **Scene Setup Integration**: Provides structured input format that scene-specification requires for seamless development
+
+**Integration Quality Assurance:**
+
+- Validates proper data inheritance from part-specification output
+- Ensures chapter output matches scene-specification input requirements
+- Maintains character state consistency across hierarchical levels
+- Preserves story and part context through development pipeline
 
 ## Development Tools and Resources
 

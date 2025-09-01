@@ -49,11 +49,16 @@ validatePartIntegration() ──────────────────
 
 DATA FLOW CONNECTIONS:
 
-Story Context (data) → Phase 1: part_concept_development()
+story_output (from story-specification) → Phase 1: part_concept_development()
 Phase 1 Output → Phase 2 Input: part (using compact specification format)
 Phase 2 Output → Phase 3 Input: part (with enhanced chars, plot, themes elements)
 Phase 3 Output → Phase 4 Input: part (with developed content and framework validation)
-Phase 4 Output: completed_part (final validated part using specification format)
+Phase 4 Output: part_output → chapter_input (hierarchical data flow)
+
+HIERARCHICAL INPUT/OUTPUT INTEGRATION:
+story_output (story development) → part_input (part development)
+part_output (part development) → chapter_input (chapter development)
+Ensures seamless hierarchical flow: Story → Part → Chapter → Scene
 
 FINAL VALIDATION:
 
@@ -197,7 +202,32 @@ Developing detailed content blueprints that implement all 6 Part Planning Framew
 
 part_content_planning:
   input:
-    # Input uses the compact part format from specification
+    # Input receives story_output from story-specification as structured hierarchical data
+    story_input:
+      title: "The Shadow Keeper"
+      genre: "urban_fantasy"
+      words: 80000
+      question: "Can Maya master shadow magic before power corrupts her?"
+      goal: "Save Elena from Shadow Realm"
+      conflict: "Shadow magic corrupts those who use it"
+      outcome: "Maya embraces darkness to save light"
+      chars:
+        maya: { role: "protag", arc: "denial→acceptance", flaw: "overprotective" }
+        elena: { role: "catalyst", arc: "missing→transformed", goal: "survive_realm" }
+        marcus: { role: "mentor", arc: "guilt→redemption", secret: "previous_failure" }
+        void: { role: "antag", arc: "power→corruption", goal: "merge_worlds" }
+      themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
+      structure: { type: "3_part", parts: ["setup", "confrontation", "resolution"], dist: [25, 50, 25] }
+      parts:
+        - part: 1
+          goal: "Maya accepts supernatural reality"
+          conflict: "Denial vs mounting evidence"
+          outcome: "Reluctant training commitment"
+          tension: "denial vs acceptance"
+      serial: { schedule: "weekly", duration: "18_months", chapter_words: 4000 }
+      hooks: { overarching: ["elena_fate", "maya_corruption_risk"], mysteries: ["previous_student_identity"] }
+    
+    # Specific part assignment from story context
     part:
       part: 1
       title: "Discovery"
@@ -526,6 +556,10 @@ part_consistency_verification:
         feedback: ["character_dynamics", "magic_complexity", "pacing"]
     
     story_integration_requirements:
+      hierarchical_input: "Receives story_output from story-specification development"
+      data_flow_compliance: "Uses structured story context for part development"
+      hierarchical_output: "Generates part_output for chapter-specification input"
+      next_level_setup: "Provides structured data for chapter development phase"
       previous_part_connections: []
       next_part_setup: ["training_phase", "mentor_relationship", "power_development"]
       character_state_transitions: ["maya_committed_student", "elena_active_influence"]

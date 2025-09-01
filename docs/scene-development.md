@@ -52,8 +52,41 @@ Convert user input into the canonical scene specification format, focusing on th
 **1.1 Scene Foundation Development**
 
 ```yaml
-# Using the canonical scene specification format
-scene:
+# Scene development using hierarchical input from chapter-specification output
+scene_development:
+  input:
+    # Receives structured chapter_input as defined in scene-specification requirements
+    chapter_input:
+      chapter_context:
+        chap: 1
+        title: "Missing"
+        pov: "maya"
+        words: 3500
+      
+      story_context:
+        title: "The Shadow Keeper"
+        genre: "urban_fantasy"
+        themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
+      
+      part_context:
+        part: 1
+        title: "Discovery"
+        goal: "Maya accepts supernatural reality"
+      
+      chapter_pattern:
+        goal: "Normal coffee date with Elena"
+        conflict: "Elena missing, signs of supernatural danger"
+        outcome: "Finds journal, realizes she's also a target"
+      
+      scene_assignment:
+        function: "chapter_opening"
+        goal: "Establish Elena missing"
+        setting: "elena_apartment_hallway"
+        events: ["elena_disappearance", "struggle_evidence"]
+
+  output:
+    # Scene specification format using hierarchical context
+    scene:
   id: 1
   summary: "Maya arrives for coffee date, finds Elena missing with signs of struggle"
   
@@ -281,6 +314,8 @@ Every scene must contain these essential elements:
 - ✓ Character behavior remains authentic
 - ✓ Scene advances story and develops character
 - ✓ Connection to chapter flow is logical
+- ✓ Hierarchical input compliance verified (receives proper chapter_input structure)
+- ✓ Scene specification alignment with hierarchical data flow requirements
 
 ## Final Consistency Verification
 
@@ -307,6 +342,14 @@ consistency_verification:
     character_continuity: "Behavior aligns with established personality traits"
     narrative_advancement: "Scene progresses plot and develops character effectively"
     next_scene_setup: "Clear connection established to subsequent scenes"
+    
+  hierarchical_data_flow:
+    input_structure_compliance: "Scene properly receives chapter_input with all required sections"
+    chapter_context_usage: "Scene utilizes chapter context for POV, title, word count alignment"
+    story_context_integration: "Scene incorporates story-level themes and genre expectations"
+    part_context_awareness: "Scene serves part-level goals and character development arcs"
+    scene_assignment_fulfillment: "Scene accomplishes specified chapter function and events"
+    data_inheritance_validation: "All hierarchical context properly flows from specification levels"
   
   ai_enhancement:
     content_quality: "AI-generated content maintains story voice and authenticity"
