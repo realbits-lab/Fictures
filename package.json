@@ -6,21 +6,33 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "db:push": "drizzle-kit push",
+    "db:pull": "drizzle-kit pull"
   },
   "dependencies": {
+    "@auth/drizzle-adapter": "^1.10.0",
     "clsx": "^2.1.1",
+    "drizzle-orm": "^0.44.5",
     "geist": "^1.3.1",
+    "nanoid": "^5.1.5",
     "next": "^15.0.0",
+    "next-auth": "5.0.0-beta.29",
+    "postgres": "^3.4.7",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.1.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.12",
     "@types/node": "^22.8.6",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "drizzle-kit": "^0.31.4",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.5",
     "postcss": "^8",

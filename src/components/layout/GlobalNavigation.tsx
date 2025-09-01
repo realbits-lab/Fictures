@@ -3,8 +3,11 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui";
+import { SignInButton } from "@/components/auth/SignInButton";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 
 interface NavItem {
   href: string;
@@ -84,6 +87,7 @@ export function GlobalNavigation() {
               <span className="hidden xl:block">{item.label}</span>
             </Link>
           ))}
+          <AuthSection />
         </div>
 
         {/* Mobile Menu Button */}
@@ -103,5 +107,44 @@ export function GlobalNavigation() {
         </div>
       </nav>
     </header>
+  );
+}
+
+function AuthSection() {
+  const { data: session, status } = useSession();
+
+  if (status === 'loading') {
+    return (
+      <div className="flex items-center space-x-2 px-3 py-2">
+        <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return <SignInButton />;
+  }
+
+  return (
+    <div className="flex items-center space-x-2">
+      <Link
+        href="/profile"
+        className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+      >
+        {session.user?.image ? (
+          <img
+            src={session.user.image}
+            alt={session.user.name || 'User'}
+            className="w-6 h-6 rounded-full"
+          />
+        ) : (
+          <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium">
+            {session.user?.name?.[0] || 'U'}
+          </div>
+        )}
+        <span className="hidden xl:block">{session.user?.name}</span>
+      </Link>
+      <SignOutButton />
+    </div>
   );
 }
