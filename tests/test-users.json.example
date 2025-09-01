@@ -1,0 +1,23 @@
+{
+  "testUsers": {
+    "reader": {
+      "email": "alice.reader@example.org",
+      "password": "ReadOnlyUser2024!",
+      "role": "reader",
+      "name": "Alice Reader"
+    },
+    "writer": {
+      "email": "bob.writer@example.org", 
+      "password": "WriteAccess2024!",
+      "role": "writer",
+      "name": "Bob Writer"
+    },
+    "manager": {
+      "email": "charlie.admin@example.org",
+      "password": "AdminPower2024!", 
+      "role": "manager",
+      "name": "Charlie Manager"
+    }
+  },
+  "defaultUser": "writer"
+}
