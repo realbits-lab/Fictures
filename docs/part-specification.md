@@ -229,91 +229,71 @@ The part specification provides the following output data structure for use as i
 # PART OUTPUT FOR CHAPTER SPECIFICATION INPUT
 # ============================================
 
-part_output:
-  # Part context for chapters
-  part_context:
-    part: 1
-    title: "Discovery"
-    words: 20000
-    function: "story_setup"
+# Output for chapter specification input
+part_context:
+  part: 1
+  title: "Discovery"
+  words: 20000
+  function: "story_setup"
 
-  # Inherited story context
-  story_context:
-    title: "The Shadow Keeper"
-    genre: "urban fantasy"
-    themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
-    overall_goal: "Save Elena from Shadow Realm"
-    overall_conflict: "Shadow magic corrupts those who use it"
+# Inherited story context
+story_context:
+  title: "The Shadow Keeper"
+  genre: "urban_fantasy"
+  themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
+  overall_goal: "Save Elena from Shadow Realm"
+  overall_conflict: "Shadow magic corrupts those who use it"
 
-  # Part-specific pattern
-  part_pattern:
-    goal: "Maya accepts supernatural reality"
-    conflict: "Denial vs mounting evidence"
-    outcome: "Reluctant training commitment"
-    questions:
-      primary: "How will Maya react to discovering her magical abilities?"
-      secondary: "Can Maya overcome denial to accept the supernatural world?"
+# Part-specific pattern that chapters must serve
+part_pattern:
+  goal: "Maya accepts supernatural reality"
+  conflict: "Denial vs mounting evidence"
+  outcome: "Reluctant training commitment"
+  questions:
+    primary: "How will Maya react to discovering her magical abilities?"
+    secondary: "Can Maya overcome denial to accept the supernatural world?"
 
-  # Character states and development for chapters
-  chars:
-    maya:
-      role: "protag"
-      part_arc: "denial_normalcy→reluctant_acceptance"
-      current_state: "denial_normalcy"
-      target_state: "reluctant_acceptance"
-      conflict: "safety_vs_responsibility"
-      key_transforms: ["magical_manifestation", "mentor_acceptance"]
+# Character states and development for chapters
+chars:
+  maya:
+    role: "protag"
+    part_arc: "denial_normalcy→reluctant_acceptance"
+    current_state: "denial_normalcy"
+    target_state: "reluctant_acceptance"
+    conflict: "safety_vs_responsibility"
+    key_transforms: ["magical_manifestation", "mentor_acceptance"]
 
-    elena:
-      role: "catalyst"
-      part_arc: "mysterious_absence→catalyst_revelation"
-      current_state: "mysterious_absence"
-      target_state: "catalyst_revelation"
-      function: "motivation_worldbuilding"
-      key_transforms: ["disappearance_mystery", "supernatural_connection"]
+  elena:
+    role: "catalyst"
+    part_arc: "mysterious_absence→catalyst_revelation"
+    current_state: "mysterious_absence"
+    target_state: "catalyst_revelation"
+    function: "motivation_worldbuilding"
+    key_transforms: ["disappearance_mystery", "supernatural_connection"]
 
-  # Chapter assignments and structure
-  chapter_requirements:
-    estimated_chapters: 5 # Based on 20000 words / 4000 words per chapter
-    chapter_functions:
-      - function: "part_opening"
-        goal: "Establish Elena's disappearance"
-        events: ["elena_disappearance"]
+# Chapter assignment for individual chapters (example: Chapter 1)
+chapter_assignment:
+  function: "part_opening"
+  goal: "Establish Elena's disappearance"
+  events: ["elena_disappearance", "signs_of_struggle", "supernatural_clues"]
 
-      - function: "rising_action"
-        goal: "Maya discovers supernatural evidence"
-        events: ["journal_discovery", "photograph_evidence"]
+# Thematic and emotional context
+part_themes:
+  primary: "denial_and_acceptance"
+  elements: ["denial_vs_truth", "family_responsibility"]
+  symbols: ["shadows_as_fears", "photography_as_truth"]
 
-      - function: "turning_point"
-        goal: "Maya's powers manifest"
-        events: ["shadow_manifestation", "reality_acceptance"]
+emotion_arc:
+  start: "casual_family_concern"
+  progression: ["growing_fear", "supernatural_terror", "determined_resolution"]
+  end: "grim_commitment"
 
-      - function: "climax"
-        goal: "Marcus introduces training"
-        events: ["marcus_introduction", "training_offer"]
-
-      - function: "part_transition"
-        goal: "Commit to supernatural world"
-        events: ["training_acceptance", "mentor_secret_hint"]
-
-  # Thematic and emotional context for chapters
-  part_themes:
-    primary: "denial_and_acceptance"
-    elements: ["denial_vs_truth", "family_responsibility"]
-    symbols: ["shadows_as_fears", "photography_as_truth"]
-
-  emotion_arc:
-    start: "casual_family_concern"
-    progression:
-      ["growing_fear", "supernatural_terror", "determined_resolution"]
-    end: "grim_commitment"
-
-  # Serial publication context
-  serial_context:
-    part_climax_at: "85%"
-    satisfaction_points: ["elena_fate_revealed", "maya_abilities_confirmed"]
-    anticipation_hooks: ["corruption_risk", "training_challenges"]
-    ending_hook: "Maya accepts training but discovers mentor's dark secret"
+# Serial publication context
+serial_context:
+  part_climax_at: "85%"
+  satisfaction_points: ["elena_fate_revealed", "maya_abilities_confirmed"]
+  anticipation_hooks: ["corruption_risk", "training_challenges"]
+  ending_hook: "Maya accepts training but discovers mentor's dark secret"
 ```
 
 ## 7. YAML Field Documentation
