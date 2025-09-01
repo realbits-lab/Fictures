@@ -79,46 +79,83 @@ The scene specification requires the following input data from the chapter-speci
 chapter_input:
   # Chapter context for this scene
   chapter_context:
-    chap: number
-    title: string
-    pov: string
-    words: number
-    
+    chap: 1
+    title: "Missing"
+    pov: "maya"
+    words: 3500
+
   # Inherited context from higher levels
   story_context:
-    title: string
-    genre: string
-    themes: array
-    
+    title: "The Shadow Keeper"
+    genre: "urban_fantasy"
+    themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
+
   part_context:
-    part: number
-    title: string
-    goal: string
-    
+    part: 1
+    title: "Discovery"
+    goal: "Maya accepts supernatural reality"
+
   # Chapter-specific pattern that scene must serve
   chapter_pattern:
-    goal: string
-    conflict: string
-    outcome: string
-    
+    goal: "Normal coffee date with Elena"
+    conflict: "Elena missing, signs of supernatural danger"
+    outcome: "Finds journal, realizes she's also a target"
+
   # Character states for this scene
-  chars: object  # Character development context and emotional states
-  
+  chars:
+    maya:
+      role: "protag"
+      chapter_arc: "casual_concern→targeted_fear"
+      start: "casual_sisterly_concern"
+      end: "realizes_personal_danger"
+      motivation: "Find Elena and understand threat"
+      growth: "Supernatural reality acceptance begins"
+    elena:
+      role: "catalyst"
+      chapter_arc: "absent→mysterious_presence"
+      start: "missing_sister"
+      end: "supernatural_connection_revealed"
+      evidence_left: ["journal", "research_notes", "struggle_signs"]
+
   # Scene assignment within chapter
   scene_assignment:
-    function: string     # "chapter_opening", "investigation", "chapter_climax", etc.
-    goal: string         # Scene-specific goal within chapter progression
-    setting: string      # Where this scene takes place
-    events: array        # Key events this scene should include
-    
+    function: "chapter_opening"
+    goal: "Establish Elena missing"
+    setting: "elena_apartment_hallway"
+    events: ["arrival", "door_discovery", "empty_apartment"]
+
   # Chapter structure context for scene placement
-  acts: object          # Three-act structure context (setup/confrontation/resolution)
-  
+  acts:
+    setup:
+      percentage: 20
+      hook_in: "Door unlocked, coffee warm, Elena gone"
+      orient: "Weekly sister ritual, Maya's skeptical nature"
+      incident: "Overturned chair, shattered mug - signs of struggle"
+    confrontation:
+      percentage: 60
+      rising_action: "Journal discovery leads to supernatural research evidence"
+      midpoint_shift: "Realizes Elena was targeted, not random"
+      escalation: "Maya discovers she may be next target"
+    resolution:
+      percentage: 20
+      climax: "Decision to investigate supernatural threat personally"
+      resolution: "Commits to finding Elena despite danger"
+      hook_out: "Marcus Webb watching from shadows"
+
   # Tension and atmosphere context
-  tension_engine: object
-  
+  tension_engine:
+    external: "Missing person mystery with supernatural elements"
+    internal: "Maya's skepticism vs growing supernatural evidence"
+    interpersonal: "Concern for Elena, guilt over recent distance"
+    atmospheric: "Empty apartment, signs of struggle, growing dread"
+
   # Serial publication context
-  serial_context: object
+  serial_context:
+    satisfaction_provided:
+      ["Elena's research revealed", "supernatural reality confirmed"]
+    anticipation_created: ["Who is watching Maya?", "What happened to Elena?"]
+    hook_type: "looming_threat"
+    hook_content: "Marcus Webb watching from shadows"
 ```
 
 ## 7. YAML Data Structure Example for Scene Planning

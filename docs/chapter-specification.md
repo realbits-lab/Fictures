@@ -231,103 +231,88 @@ The chapter specification provides the following output data structure for use a
 # CHAPTER OUTPUT FOR SCENE SPECIFICATION INPUT
 # ============================================
 
-chapter_output:
-  # Chapter context for scenes
-  chapter_context:
-    chap: 1
-    title: "Missing"
-    pov: "maya"
-    words: 3500
+# Output for scene specification input
+# Chapter context for this scene
+chapter_context:
+  chap: 1
+  title: "Missing"
+  pov: "maya"
+  words: 3500
 
-  # Inherited context from higher levels
-  story_context:
-    title: "The Shadow Keeper"
-    genre: "urban fantasy"
-    themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
+# Inherited context from higher levels
+story_context:
+  title: "The Shadow Keeper"
+  genre: "urban_fantasy"
+  themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
 
-  part_context:
-    part: 1
-    title: "Discovery"
-    goal: "Maya accepts supernatural reality"
+part_context:
+  part: 1
+  title: "Discovery"
+  goal: "Maya accepts supernatural reality"
 
-  # Chapter-specific pattern that scenes must serve
-  chapter_pattern:
-    goal: "Normal coffee date with Elena"
-    conflict: "Elena missing, signs of supernatural danger"
-    outcome: "Finds journal, realizes she's also a target"
+# Chapter-specific pattern that scenes must serve
+chapter_pattern:
+  goal: "Normal coffee date with Elena"
+  conflict: "Elena missing, signs of supernatural danger"
+  outcome: "Finds journal, realizes she's also a target"
 
-  # Character states and development for scenes
-  chars:
-    maya:
-      role: "protag"
-      chapter_arc: "casual_concern→targeted_fear"
-      start: "casual_sisterly_concern"
-      end: "realizes_personal_danger"
-      motivation: "Find Elena and understand threat"
-      growth: "Supernatural reality acceptance begins"
+# Character states and development for scenes
+chars:
+  maya:
+    role: "protag"
+    chapter_arc: "casual_concern→targeted_fear"
+    start: "casual_sisterly_concern"
+    end: "realizes_personal_danger"
+    motivation: "Find Elena and understand threat"
+    growth: "Supernatural reality acceptance begins"
 
-    elena:
-      role: "catalyst"
-      chapter_arc: "absent→mysterious_presence"
-      start: "missing_sister"
-      end: "supernatural_connection_revealed"
-      evidence_left: ["journal", "research_notes", "struggle_signs"]
+  elena:
+    role: "catalyst"
+    chapter_arc: "absent→mysterious_presence"
+    start: "missing_sister"
+    end: "supernatural_connection_revealed"
+    evidence_left: ["journal", "research_notes", "struggle_signs"]
 
-  # Scene assignments and structure
-  scene_requirements:
-    estimated_scenes: 3 # Based on three-act structure
-    scene_functions:
-      - function: "chapter_opening"
-        goal: "Establish Elena missing"
-        setting: "elena_apartment_hallway"
-        events: ["arrival", "door_discovery", "empty_apartment"]
+# Scene assignment within chapter (example: Scene 1)
+scene_assignment:
+  function: "chapter_opening"
+  goal: "Establish Elena missing"
+  setting: "elena_apartment_hallway"
+  events: ["arrival", "door_discovery", "empty_apartment"]
 
-      - function: "investigation"
-        goal: "Discover supernatural evidence"
-        setting: "elena_apartment_interior"
-        events:
-          ["journal_discovery", "research_revelation", "struggle_evidence"]
+# Three-act chapter structure context
+acts:
+  setup:
+    percentage: 20
+    hook_in: "Door unlocked, coffee warm, Elena gone"
+    orient: "Weekly sister ritual, Maya's skeptical nature"
+    incident: "Overturned chair, shattered mug - signs of struggle"
 
-      - function: "chapter_climax"
-        goal: "Realize personal danger"
-        setting: "elena_apartment_interior"
-        events:
-          ["threat_realization", "decision_to_investigate", "forward_hook"]
+  confrontation:
+    percentage: 60
+    rising_action: "Journal discovery leads to supernatural research evidence"
+    midpoint_shift: "Realizes Elena was targeted, not random"
+    escalation: "Maya discovers she may be next target"
 
-  # Three-act chapter structure for scenes
-  acts:
-    setup:
-      percentage: 20
-      hook_in: "Door unlocked, coffee warm, Elena gone"
-      orient: "Weekly sister ritual, Maya's skeptical nature"
-      incident: "Overturned chair, shattered mug - signs of struggle"
+  resolution:
+    percentage: 20
+    climax: "Decision to investigate supernatural threat personally"
+    resolution: "Commits to finding Elena despite danger"
+    hook_out: "Marcus Webb watching from shadows"
 
-    confrontation:
-      percentage: 60
-      rising_action: "Journal discovery leads to supernatural research evidence"
-      midpoint_shift: "Realizes Elena was targeted, not random"
-      escalation: "Maya discovers she may be next target"
+# Tension and atmosphere context
+tension_engine:
+  external: "Missing person mystery with supernatural elements"
+  internal: "Maya's skepticism vs growing supernatural evidence"
+  interpersonal: "Concern for Elena, guilt over recent distance"
+  atmospheric: "Empty apartment, signs of struggle, growing dread"
 
-    resolution:
-      percentage: 20
-      climax: "Decision to investigate supernatural threat personally"
-      resolution: "Commits to finding Elena despite danger"
-      hook_out: "Marcus Webb watching from shadows"
-
-  # Tension and atmosphere for scenes
-  tension_engine:
-    external: "Missing person mystery with supernatural elements"
-    internal: "Maya's skepticism vs growing supernatural evidence"
-    interpersonal: "Concern for Elena, guilt over recent distance"
-    atmospheric: "Empty apartment, signs of struggle, growing dread"
-
-  # Forward momentum context
-  serial_context:
-    satisfaction_provided:
-      ["Elena's research revealed", "supernatural reality confirmed"]
-    anticipation_created: ["Who is watching Maya?", "What happened to Elena?"]
-    hook_type: "looming_threat"
-    hook_content: "Marcus Webb watching from shadows"
+# Serial publication context
+serial_context:
+  satisfaction_provided: ["Elena's research revealed", "supernatural reality confirmed"]
+  anticipation_created: ["Who is watching Maya?", "What happened to Elena?"]
+  hook_type: "looming_threat"
+  hook_content: "Marcus Webb watching from shadows"
 ```
 
 ## 7. YAML Field Documentation
