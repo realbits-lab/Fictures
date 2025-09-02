@@ -343,11 +343,22 @@ export function PartEditor({
             </Button>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {Object.entries(partData.chars).map(([name, char]) => (
-              <div key={name} className="text-sm">
-                <div className="font-medium">{name}:</div>
-                <div className="ml-2 text-gray-600">{char.start} → {char.end}</div>
+              <div key={name} className="text-sm border-l-2 border-blue-200 pl-3">
+                <div className="font-medium text-blue-700">{name}:</div>
+                <div className="ml-2 space-y-1 text-gray-600">
+                  <div><strong>Journey:</strong> {char.start} → {char.end}</div>
+                  {char.arc && char.arc.length > 0 && (
+                    <div><strong>Arc:</strong> {char.arc.join(' → ')}</div>
+                  )}
+                  {char.conflict && (
+                    <div><strong>Conflict:</strong> {char.conflict}</div>
+                  )}
+                  {char.transforms && char.transforms.length > 0 && (
+                    <div><strong>Transforms:</strong> {char.transforms.join(', ')}</div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -507,9 +518,9 @@ export function PartEditor({
       {/* Part Editor Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold">📚 Part {partData.part} Development</h2>
+          <h2 className="text-xl font-bold">📚 {partData.title}</h2>
           <p className="text-sm text-gray-600">
-            {partData.title} • {partData.words.toLocaleString()} words • {partData.function}
+            Part {partData.part} • {partData.words.toLocaleString()} words • {partData.function}
           </p>
         </div>
         <div className="flex gap-2">
