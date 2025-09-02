@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   Badge,
@@ -7,7 +9,6 @@ import {
   CardFooter,
   Progress,
 } from "@/components/ui";
-import { JsonView } from "react-json-view-lite";
 
 interface StoryCardProps {
   id: string;
@@ -113,32 +114,6 @@ export function StoryCard({
             <Progress value={progressPercentage} />
           </div>
 
-          {storyData && (
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-              <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">📊 Story Data</h4>
-              <div className="text-xs max-h-32 overflow-auto">
-                <JsonView 
-                  data={storyData} 
-                  shouldExpandNode={(level, value, field) => level < 1}
-                  style={{
-                    container: 'font-mono text-gray-600 dark:text-gray-400',
-                    basicChildStyle: 'padding-left: 0.75rem',
-                    label: 'color: rgb(59 130 246)', // blue-500
-                    clickableLabel: 'color: rgb(59 130 246); cursor: pointer',
-                    valueText: 'color: rgb(34 197 94)', // green-500
-                    undefinedValue: 'color: rgb(156 163 175)', // gray-400
-                    nullValue: 'color: rgb(156 163 175)',
-                    booleanValue: 'color: rgb(168 85 247)', // purple-500
-                    numberValue: 'color: rgb(249 115 22)', // orange-500
-                    stringValue: 'color: rgb(34 197 94)',
-                    collapseIcon: 'color: rgb(107 114 128)', // gray-500
-                    expandIcon: 'color: rgb(107 114 128)',
-                    punctuation: 'color: rgb(107 114 128)'
-                  }}
-                />
-              </div>
-            </div>
-          )}
 
         </div>
       </CardContent>
