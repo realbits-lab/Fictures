@@ -162,7 +162,6 @@ export function ChapterEditor({ chapter, story }: ChapterEditorProps) {
               <h1 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">
                 📝 {chapter.title}
               </h1>
-              <Badge variant="info" className="hidden sm:inline-flex">{chapter.partTitle}</Badge>
             </div>
             <div className="flex items-center gap-1 md:gap-3">
               <span className="text-xs md:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
@@ -185,12 +184,18 @@ export function ChapterEditor({ chapter, story }: ChapterEditorProps) {
 
       <div className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Mobile Menu Toggle */}
-          <div className="lg:hidden mb-4">
-            <Button variant="secondary" size="sm" className="w-full">📱 Writing Tools</Button>
+          {/* Left Sidebar - Story Navigation */}
+          <div className="space-y-6">
+            <StoryNavigationSidebar story={story} currentChapterId={chapter.id} />
+            
+            {/* Mobile Menu Toggle */}
+            <div className="lg:hidden">
+              <Button variant="secondary" size="sm" className="w-full">📱 Writing Tools</Button>
+            </div>
           </div>
+          
           {/* Main Writing Area */}
-          <div className="lg:col-span-3 space-y-6">
+          <div className="lg:col-span-2 space-y-6">
             {/* Chapter Status */}
             <Card>
               <CardContent className="py-4">
@@ -290,11 +295,8 @@ export function ChapterEditor({ chapter, story }: ChapterEditorProps) {
             </Card>
           </div>
 
-          {/* Sidebar */}
+          {/* Right Sidebar - Writing Tools */}
           <div className="space-y-6">
-            {/* Story Navigation */}
-            <StoryNavigationSidebar story={story} currentChapterId={chapter.id} />
-
             {/* AI Writing Assistant */}
             <Card>
               <CardHeader>
