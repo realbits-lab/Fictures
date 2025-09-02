@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
@@ -37,17 +37,6 @@ interface StoryNavigationSidebarProps {
 
 export function StoryNavigationSidebar({ story, currentChapterId }: StoryNavigationSidebarProps) {
   const pathname = usePathname();
-  const [expandedParts, setExpandedParts] = useState<Set<string>>(new Set());
-
-  const togglePart = (partId: string) => {
-    const newExpanded = new Set(expandedParts);
-    if (newExpanded.has(partId)) {
-      newExpanded.delete(partId);
-    } else {
-      newExpanded.add(partId);
-    }
-    setExpandedParts(newExpanded);
-  };
 
   const getChapterStatusIcon = (status: string) => {
     switch (status) {
@@ -89,10 +78,7 @@ export function StoryNavigationSidebar({ story, currentChapterId }: StoryNavigat
           {/* Parts with Chapters */}
           {story.parts.map((part) => (
             <div key={part.id} className="border border-gray-200 dark:border-gray-700 rounded-lg">
-              <button
-                onClick={() => togglePart(part.id)}
-                className="w-full px-3 py-2 text-left flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
-              >
+              <div className="w-full px-3 py-2 text-left flex items-center justify-between rounded-lg">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                     📚 {part.title}
@@ -102,18 +88,16 @@ export function StoryNavigationSidebar({ story, currentChapterId }: StoryNavigat
                   </Badge>
                 </div>
                 <svg
-                  className={`w-4 h-4 text-gray-400 transition-transform ${
-                    expandedParts.has(part.id) ? 'rotate-90' : ''
-                  }`}
+                  className="w-4 h-4 text-gray-400 rotate-90"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
-              </button>
-              {expandedParts.has(part.id) && (
-                <div className="px-3 pb-2 space-y-1">
+              </div>
+{/* Always show chapters for uncollapsed tree view */}
+              <div className="px-3 pb-2 space-y-1">
                   {part.chapters.map((chapter) => (
                     <Link
                       key={chapter.id}
@@ -136,7 +120,6 @@ export function StoryNavigationSidebar({ story, currentChapterId }: StoryNavigat
                     </Link>
                   ))}
                 </div>
-              )}
             </div>
           ))}
 

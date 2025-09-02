@@ -196,89 +196,6 @@ export function ChapterEditor({ chapter, story }: ChapterEditorProps) {
           
           {/* Main Writing Area */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Chapter Status */}
-            <Card>
-              <CardContent className="py-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      Word Count: <span className="font-medium text-gray-900 dark:text-gray-100">
-                        {currentWordCount.toLocaleString()} / {chapter.targetWordCount.toLocaleString()}
-                      </span>
-                      {hasUnsavedChanges && <span className="text-orange-500 ml-2">• Unsaved</span>}
-                    </div>
-                    <Progress 
-                      value={Math.min(progressPercentage, 100)} 
-                      variant={progressPercentage >= 100 ? "success" : progressPercentage >= 80 ? "warning" : "default"}
-                    />
-                    {validationErrors.length > 0 && (
-                      <div className="mt-2 space-y-1">
-                        {validationErrors.map((error, index) => (
-                          <div key={index} className="text-xs text-red-600 dark:text-red-400">
-                            ⚠️ {error}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                      {Math.round(progressPercentage)}%
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Chapter Overview */}
-            <Card>
-              <CardHeader>
-                <CardTitle>📊 Chapter Status</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <strong>🎯 Purpose:</strong> {chapter.purpose}
-                  </div>
-                  <div>
-                    <strong>🎬 Hook:</strong> {chapter.hook}
-                  </div>
-                  <div>
-                    <strong>🎭 Character Focus:</strong> {chapter.characterFocus}
-                  </div>
-                  <div>
-                    <strong>📖 Scenes:</strong> {chapter.scenes.length} planned | Currently writing: Scene 2
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Scene Breakdown */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  🎬 Scene Breakdown
-                  <Button size="sm" variant="secondary">+ Add Scene</Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {chapter.scenes.map((scene, index) => (
-                  <div key={scene.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-medium text-gray-900 dark:text-gray-100">
-                        {getSceneStatusIcon(scene.status)} Scene {index + 1}: &ldquo;{scene.title}&rdquo; ({scene.wordCount} words)
-                      </h4>
-                    </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                      <div><strong>Goal:</strong> {scene.goal}</div>
-                      <div><strong>Conflict:</strong> {scene.conflict}</div>
-                      <div><strong>Outcome:</strong> {scene.outcome}</div>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
             {/* Writing Interface */}
             <Card>
               <CardHeader>
@@ -297,6 +214,89 @@ export function ChapterEditor({ chapter, story }: ChapterEditorProps) {
 
           {/* Right Sidebar - Writing Tools */}
           <div className="space-y-6">
+            {/* Word Count & Progress */}
+            <Card>
+              <CardContent className="py-4">
+                <div className="space-y-3">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Word Count: <span className="font-medium text-gray-900 dark:text-gray-100">
+                      {currentWordCount.toLocaleString()} / {chapter.targetWordCount.toLocaleString()}
+                    </span>
+                    {hasUnsavedChanges && <span className="text-orange-500 ml-2">• Unsaved</span>}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Progress 
+                      value={Math.min(progressPercentage, 100)} 
+                      variant={progressPercentage >= 100 ? "success" : progressPercentage >= 80 ? "warning" : "default"}
+                      className="flex-1"
+                    />
+                    <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                      {Math.round(progressPercentage)}%
+                    </div>
+                  </div>
+                  {validationErrors.length > 0 && (
+                    <div className="space-y-1">
+                      {validationErrors.map((error, index) => (
+                        <div key={index} className="text-xs text-red-600 dark:text-red-400">
+                          ⚠️ {error}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Chapter Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle>📊 Chapter Status</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <strong>🎯 Purpose:</strong> {chapter.purpose}
+                  </div>
+                  <div>
+                    <strong>🎬 Hook:</strong> {chapter.hook}
+                  </div>
+                  <div>
+                    <strong>🎭 Character Focus:</strong> {chapter.characterFocus}
+                  </div>
+                  <div>
+                    <strong>📖 Scenes:</strong> {chapter.scenes.length} planned
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Scene Breakdown */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between text-sm">
+                  🎬 Scene Breakdown
+                  <Button size="sm" variant="secondary">+ Add</Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {chapter.scenes.map((scene, index) => (
+                  <div key={scene.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                    <div className="mb-2">
+                      <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {getSceneStatusIcon(scene.status)} Scene {index + 1}: &ldquo;{scene.title}&rdquo;
+                      </h4>
+                      <div className="text-xs text-gray-500">({scene.wordCount} words)</div>
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                      <div><strong>Goal:</strong> {scene.goal}</div>
+                      <div><strong>Conflict:</strong> {scene.conflict}</div>
+                      <div><strong>Outcome:</strong> {scene.outcome}</div>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
             {/* AI Writing Assistant */}
             <Card>
               <CardHeader>
@@ -305,12 +305,12 @@ export function ChapterEditor({ chapter, story }: ChapterEditorProps) {
               <CardContent className="space-y-4">
                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <p className="text-sm text-gray-700 dark:text-gray-300">
-                    &ldquo;Great tension build! Consider Maya&rsquo;s internal monologue to show her moral struggle. Suggest: &lsquo;Elena&rsquo;s voice in her memory, warning about power&rsquo;s cost.&rsquo;&rdquo;
+                    &ldquo;Great tension build! Consider Maya&rsquo;s internal monologue to show her moral struggle.&rdquo;
                   </p>
                 </div>
                 <div className="flex gap-2">
                   <Button size="sm" variant="secondary" className="flex-1">Apply</Button>
-                  <Button size="sm" variant="ghost" className="flex-1">More Ideas</Button>
+                  <Button size="sm" variant="ghost" className="flex-1">More</Button>
                 </div>
               </CardContent>
             </Card>
