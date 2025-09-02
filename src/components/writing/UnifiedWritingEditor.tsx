@@ -405,9 +405,11 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
               <Badge variant="outline">{currentSelection.level}</Badge>
             </div>
             <div className="flex items-center gap-1 md:gap-3">
-              <Button size="sm" disabled={isLoading}>
-                {isLoading ? "⚡ Processing..." : "🚀 Publish"}
-              </Button>
+              {(currentSelection.level === "chapter" || currentSelection.level === "scene") && (
+                <Button size="sm" disabled={isLoading}>
+                  {isLoading ? "⚡ Processing..." : "🚀 Publish"}
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -474,13 +476,13 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="max-h-96 overflow-y-auto">
+                <div className="overflow-y-auto">
                   <YAMLDataDisplay
-                    storyData={yamlLevel === "story" ? sampleStoryData : undefined}
-                    partData={yamlLevel === "part" ? samplePartData : undefined}
+                    storyData={(currentSelection.level === "part" || yamlLevel === "story") ? sampleStoryData : undefined}
+                    partData={(currentSelection.level !== "part" && yamlLevel === "part") ? samplePartData : undefined}
                     chapterData={yamlLevel === "chapter" ? sampleChapterData : undefined}
                     sceneData={yamlLevel === "scene" ? sampleSceneData : undefined}
-                    currentLevel={yamlLevel}
+                    currentLevel={currentSelection.level === "part" ? "story" : yamlLevel}
                   />
                 </div>
               </CardContent>

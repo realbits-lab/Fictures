@@ -511,9 +511,6 @@ export function PartEditor({
           <p className="text-sm text-gray-600">
             {partData.title} • {partData.words.toLocaleString()} words • {partData.function}
           </p>
-          {storyContext && (
-            <Badge variant="outline" className="mt-1">{storyContext.title}</Badge>
-          )}
         </div>
         <div className="flex gap-2">
           <Button 

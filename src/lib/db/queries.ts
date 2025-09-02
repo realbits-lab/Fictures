@@ -249,16 +249,13 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
     .where(eq(chapters.storyId, storyId))
     .orderBy(chapters.orderIndex);
 
-  // Get scenes for all chapters - we'll return empty array for now since we need specific chapter scenes
-  const allScenes: Array<{
-    id: string;
-    title: string;
-    status: string;
-    wordCount: number;
-    goal: string;
-    conflict: string;
-    outcome: string;
-  }> = [];
+  // Get all scenes for chapters in this story
+  const allScenes = await db
+    .select()
+    .from(scenes)
+    .leftJoin(chapters, eq(scenes.chapterId, chapters.id))
+    .where(eq(chapters.storyId, storyId))
+    .orderBy(scenes.orderIndex);
 
   // Structure the data to match the StoryNavigationSidebar interface
   const structuredParts = storyParts.map(part => ({
@@ -274,6 +271,17 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
         status: ch.status || 'draft',
         wordCount: ch.wordCount || 0,
         targetWordCount: ch.targetWordCount || 4000,
+        scenes: allScenes
+          .filter(sceneData => sceneData.scenes?.chapterId === ch.id)
+          .map(sceneData => ({
+            id: sceneData.scenes?.id || '',
+            title: sceneData.scenes?.title || '',
+            status: sceneData.scenes?.status || 'planned',
+            wordCount: sceneData.scenes?.wordCount || 0,
+            goal: sceneData.scenes?.goal || '',
+            conflict: sceneData.scenes?.conflict || '',
+            outcome: sceneData.scenes?.outcome || ''
+          }))
       }))
   }));
 
@@ -287,6 +295,17 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
       status: ch.status || 'draft',
       wordCount: ch.wordCount || 0,
       targetWordCount: ch.targetWordCount || 4000,
+      scenes: allScenes
+        .filter(sceneData => sceneData.scenes?.chapterId === ch.id)
+        .map(sceneData => ({
+          id: sceneData.scenes?.id || '',
+          title: sceneData.scenes?.title || '',
+          status: sceneData.scenes?.status || 'planned',
+          wordCount: sceneData.scenes?.wordCount || 0,
+          goal: sceneData.scenes?.goal || '',
+          conflict: sceneData.scenes?.conflict || '',
+          outcome: sceneData.scenes?.outcome || ''
+        }))
     }));
 
   return {
