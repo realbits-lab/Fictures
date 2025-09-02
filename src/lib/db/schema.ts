@@ -64,6 +64,7 @@ export const stories = pgTable('stories', {
   viewCount: integer('view_count').default(0),
   rating: integer('rating').default(0), // Average rating * 10 (e.g., 47 = 4.7)
   ratingCount: integer('rating_count').default(0),
+  storyData: json('story_data').$type<Record<string, unknown>>(), // Store complete story development YAML data
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -74,7 +75,12 @@ export const parts = pgTable('parts', {
   title: varchar('title', { length: 255 }).notNull(),
   description: text('description'),
   storyId: text('story_id').references(() => stories.id).notNull(),
+  authorId: text('author_id').references(() => users.id).notNull(),
   orderIndex: integer('order_index').notNull(),
+  targetWordCount: integer('target_word_count').default(0),
+  currentWordCount: integer('current_word_count').default(0),
+  status: varchar('status', { length: 50 }).default('planned'), // planned, in_progress, completed
+  partData: json('part_data').$type<Record<string, unknown>>(), // Store part-specific development data
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -87,10 +93,14 @@ export const chapters = pgTable('chapters', {
   summary: text('summary'),
   storyId: text('story_id').references(() => stories.id).notNull(),
   partId: text('part_id').references(() => parts.id),
+  authorId: text('author_id').references(() => users.id).notNull(),
   orderIndex: integer('order_index').notNull(),
   wordCount: integer('word_count').default(0),
   targetWordCount: integer('target_word_count').default(4000),
   status: varchar('status', { length: 50 }).default('draft'), // draft, in_progress, completed, published
+  purpose: text('purpose'), // Chapter purpose from story development
+  hook: text('hook'), // Chapter hook from story development
+  characterFocus: text('character_focus'), // Main character focus for chapter
   publishedAt: timestamp('published_at'),
   scheduledFor: timestamp('scheduled_for'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
