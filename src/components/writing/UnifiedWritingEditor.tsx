@@ -371,6 +371,7 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
         // Find the selected chapter from story structure
         let selectedChapter = null;
         let selectedPartTitle = null;
+        let selectedPartData = null;
         
         // Look in parts first
         for (const part of story.parts) {
@@ -378,6 +379,12 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
           if (foundChapter) {
             selectedChapter = foundChapter;
             selectedPartTitle = part.title;
+            // Create part data based on the part information
+            selectedPartData = {
+              ...samplePartData,
+              part: part.orderIndex,
+              title: part.title
+            };
             break;
           }
         }
@@ -409,12 +416,95 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
           createChapterData(null, null);
         
         return (
-          <ChapterEditor 
-            key={currentSelection.chapterId} // Force re-mount when chapter changes
-            chapter={chapterData} 
-            story={story} 
-            hideSidebar={true} 
-          />
+          <div className="space-y-6">
+            {/* Chapter Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle>📝 Chapter Overview</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <strong>📖 Title:</strong> {chapterData.title}
+                  </div>
+                  <div>
+                    <strong>📚 Part:</strong> {chapterData.partTitle}
+                  </div>
+                  <div>
+                    <strong>📊 Status:</strong> 
+                    <Badge variant="outline" className="ml-2">{chapterData.status}</Badge>
+                  </div>
+                  <div>
+                    <strong>📝 Progress:</strong> {chapterData.wordCount}/{chapterData.targetWordCount} words
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <strong>🎯 Purpose:</strong> {chapterData.purpose}
+                  </div>
+                  <div>
+                    <strong>🎬 Hook:</strong> {chapterData.hook}
+                  </div>
+                  <div>
+                    <strong>🎭 Character Focus:</strong> {chapterData.characterFocus}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Scene Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle>🎬 Scene Overview</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {chapterData.scenes.length > 0 ? (
+                    chapterData.scenes.map((scene, index) => (
+                      <div 
+                        key={scene.id} 
+                        className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white/50 dark:bg-gray-800/50 hover:bg-blue-50/80 dark:hover:bg-blue-900/20 cursor-pointer transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md"
+                        onClick={() => router.push(`/write/scene/${scene.id}`)}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                            <span>{scene.status === "completed" ? "✅" : scene.status === "in_progress" ? "⏳" : "📝"}</span>
+                            Scene {index + 1}: {scene.title}
+                          </h4>
+                          <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                            {scene.wordCount}w
+                          </span>
+                        </div>
+                        <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                          <div><strong>Goal:</strong> {scene.goal}</div>
+                          <div><strong>Conflict:</strong> {scene.conflict}</div>
+                          <div><strong>Outcome:</strong> {scene.outcome}</div>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between">
+                          <Badge 
+                            variant={scene.status === "completed" ? "success" : scene.status === "in_progress" ? "warning" : "secondary"}
+                            size="sm"
+                          >
+                            {scene.status.replace('_', ' ')}
+                          </Badge>
+                          <span className="text-xs text-blue-600 dark:text-blue-400 hover:underline">
+                            Click to edit →
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <p className="text-sm mb-3">No scenes planned for this chapter</p>
+                      <Button size="sm" variant="secondary">
+                        + Create First Scene
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         );
       
       case "scene":
@@ -605,11 +695,11 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
               <CardContent className="pt-0">
                 <div className="overflow-y-auto">
                   <YAMLDataDisplay
-                    storyData={(currentSelection.level === "part" || yamlLevel === "story") ? sampleStoryData : undefined}
-                    partData={(currentSelection.level !== "part" && yamlLevel === "part") ? samplePartData : undefined}
+                    storyData={(currentSelection.level === "part" || currentSelection.level === "chapter" || yamlLevel === "story") ? sampleStoryData : undefined}
+                    partData={(currentSelection.level === "chapter") ? samplePartData : (currentSelection.level !== "part" && yamlLevel === "part") ? samplePartData : undefined}
                     chapterData={yamlLevel === "chapter" ? sampleChapterData : undefined}
                     sceneData={yamlLevel === "scene" ? sampleSceneData : undefined}
-                    currentLevel={currentSelection.level === "part" ? "story" : yamlLevel}
+                    currentLevel={currentSelection.level === "part" ? "story" : currentSelection.level === "chapter" ? "chapter" : yamlLevel}
                   />
                 </div>
               </CardContent>

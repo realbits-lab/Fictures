@@ -386,6 +386,7 @@ export function YAMLDataDisplay({
   const getMainTitle = () => {
     switch (currentLevel) {
       case "part": return "Story Data"; // Changed from "YAML Data" to "Story Data"
+      case "chapter": return "Story & Part Data";
       default: return "YAML Data";
     }
   };
@@ -424,7 +425,20 @@ export function YAMLDataDisplay({
           {/* For part view, show story data instead of part data */}
           {currentLevel === "story" && renderStoryYAML()}
           {currentLevel === "part" && renderStoryYAML()}
-          {currentLevel === "chapter" && renderChapterYAML()}
+          {currentLevel === "chapter" && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📖 Story Data</h3>
+                {renderStoryYAML()}
+              </div>
+              {partData && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📚 Part Data</h3>
+                  {renderPartYAML()}
+                </div>
+              )}
+            </div>
+          )}
           {currentLevel === "scene" && renderSceneYAML()}
           
           {!storyData && !partData && !chapterData && !sceneData && (
