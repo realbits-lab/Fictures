@@ -75,7 +75,20 @@ export async function POST(request: NextRequest) {
           partData: storyPart, // Store the part data from story generation
         }).returning();
 
-        // Don't create any chapters initially - let users create them as needed
+        // Create a starting chapter for this part so it's not empty
+        const chapterId = nanoid();
+        await db.insert(chapters).values({
+          id: chapterId,
+          title: `Chapter ${partIndex + 1}`,
+          storyId: storyId,
+          partId: partId,
+          authorId: session.user.id,
+          orderIndex: 1,
+          targetWordCount: 4000,
+          status: 'draft',
+          content: '',
+          wordCount: 0,
+        });
 
         createdParts.push(part);
       }
@@ -101,6 +114,21 @@ export async function POST(request: NextRequest) {
           status: 'planned',
           partData: partData,
         }).returning();
+
+        // Create a starting chapter for this part so it's not empty
+        const chapterId = nanoid();
+        await db.insert(chapters).values({
+          id: chapterId,
+          title: `Chapter ${partIndex + 1}`,
+          storyId: storyId,
+          partId: partId,
+          authorId: session.user.id,
+          orderIndex: 1,
+          targetWordCount: 4000,
+          status: 'draft',
+          content: '',
+          wordCount: 0,
+        });
 
         createdParts.push(part);
       }
