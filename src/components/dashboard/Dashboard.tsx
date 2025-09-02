@@ -1,5 +1,6 @@
 import React from "react";
 import { StoryCard } from "./StoryCard";
+import { CreateStoryCard } from "./CreateStoryCard";
 import { RecentActivity } from "./RecentActivity";
 import { PublishingSchedule } from "./PublishingSchedule";
 import { AIAssistantWidget } from "./AIAssistantWidget";
@@ -45,14 +46,14 @@ export async function Dashboard() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {transformedStories.length > 0 ? (
-            transformedStories.map((story) => (
-              <StoryCard key={story.id} {...story} />
-            ))
-          ) : (
+          <CreateStoryCard />
+          {transformedStories.map((story) => (
+            <StoryCard key={story.id} {...story} />
+          ))}
+          {transformedStories.length === 0 && (
             <div className="col-span-full text-center py-12 text-gray-500">
-              <p className="text-xl mb-2">📝 No stories yet</p>
-              <p>Start your writing journey by creating your first story!</p>
+              <p className="text-xl mb-2">📝 Ready to start writing?</p>
+              <p>Click the "Create New Story" card above to begin your first story!</p>
             </div>
           )}
         </div>
