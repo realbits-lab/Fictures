@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { StoryCard } from "./StoryCard";
 import { RecentActivity } from "./RecentActivity";
 import { PublishingSchedule } from "./PublishingSchedule";
@@ -39,7 +40,9 @@ export async function Dashboard() {
             <span>📚</span>
             My Stories
           </h2>
-          <Button>+ New Story</Button>
+          <Link href="/stories/new">
+            <Button>+ New Story</Button>
+          </Link>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
