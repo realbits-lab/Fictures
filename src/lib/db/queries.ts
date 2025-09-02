@@ -114,7 +114,7 @@ export async function updateStory(storyId: string, userId: string, data: Partial
 }
 
 // Chapters queries
-export async function createChapter(storyId: string, data: {
+export async function createChapter(storyId: string, authorId: string, data: {
   title: string;
   partId?: string;
   orderIndex: number;
@@ -126,6 +126,7 @@ export async function createChapter(storyId: string, data: {
     id: chapterId,
     title: data.title,
     storyId,
+    authorId,
     partId: data.partId,
     orderIndex: data.orderIndex,
     targetWordCount: data.targetWordCount || 4000,
@@ -134,6 +135,26 @@ export async function createChapter(storyId: string, data: {
   }).returning();
 
   return chapter;
+}
+
+// Create the first chapter for a story
+export async function createFirstChapter(storyId: string, authorId: string) {
+  // Get the next order index (should be 1 for first chapter)
+  const existingChapters = await db
+    .select()
+    .from(chapters)
+    .where(eq(chapters.storyId, storyId))
+    .orderBy(desc(chapters.orderIndex));
+  
+  const nextOrderIndex = existingChapters.length > 0 
+    ? existingChapters[0].orderIndex + 1 
+    : 1;
+
+  return createChapter(storyId, authorId, {
+    title: `Chapter ${nextOrderIndex}`,
+    orderIndex: nextOrderIndex,
+    targetWordCount: 4000,
+  });
 }
 
 export async function getChapterById(chapterId: string, userId?: string) {

@@ -120,11 +120,11 @@ export function StoryCard({
             </Button>
           </Link>
         ) : (
-          <div className="flex-1">
-            <Button size="sm" className="w-full" disabled>
-              📝 No Chapters
+          <Link href={`/stories/${id}/new-chapter`} className="flex-1">
+            <Button size="sm" className="w-full">
+              📝 Start Writing
             </Button>
-          </div>
+          </Link>
         )}
         <Link href={`/stories/${id}/stats`} className="flex-1">
           <Button variant="secondary" size="sm" className="w-full">

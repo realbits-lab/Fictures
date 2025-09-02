@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Story not found or access denied' }, { status: 404 });
     }
 
-    const chapter = await createChapter(validatedData.storyId, validatedData);
+    const chapter = await createChapter(validatedData.storyId, session.user.id, validatedData);
     return NextResponse.json({ chapter }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
