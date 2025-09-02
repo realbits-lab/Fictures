@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
@@ -70,6 +70,45 @@ export function StoryTreeArchitecture({
   const pathname = usePathname();
   const [expandedParts, setExpandedParts] = useState<Set<string>>(new Set());
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set());
+
+  // Auto-expand parts and chapters based on current selection
+  useEffect(() => {
+    if (currentSelection) {
+      const newExpandedParts = new Set(expandedParts);
+      const newExpandedChapters = new Set(expandedChapters);
+
+      // If viewing a scene, expand its chapter and part
+      if (currentSelection.level === "scene" && currentSelection.chapterId) {
+        newExpandedChapters.add(currentSelection.chapterId);
+        
+        // Find and expand the part containing this chapter
+        for (const part of story.parts) {
+          if (part.chapters.some(ch => ch.id === currentSelection.chapterId)) {
+            newExpandedParts.add(part.id);
+            break;
+          }
+        }
+      }
+      
+      // If viewing a chapter, expand its part
+      if (currentSelection.level === "chapter" && currentSelection.chapterId) {
+        for (const part of story.parts) {
+          if (part.chapters.some(ch => ch.id === currentSelection.chapterId)) {
+            newExpandedParts.add(part.id);
+            break;
+          }
+        }
+      }
+
+      // If viewing a part, expand it
+      if (currentSelection.level === "part" && currentSelection.partId) {
+        newExpandedParts.add(currentSelection.partId);
+      }
+
+      setExpandedParts(newExpandedParts);
+      setExpandedChapters(newExpandedChapters);
+    }
+  }, [currentSelection, story.parts]);
 
   const getChapterStatusIcon = (status: string) => {
     switch (status) {

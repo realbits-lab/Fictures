@@ -680,6 +680,7 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
               currentChapterId={currentSelection.chapterId}
               currentSceneId={currentSelection.sceneId}
               onSelectionChange={handleSelectionChange}
+              currentSelection={currentSelection}
             />
           </div>
           
