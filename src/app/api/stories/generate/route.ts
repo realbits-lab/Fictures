@@ -38,11 +38,11 @@ export async function POST(request: NextRequest) {
     const storyId = nanoid();
     const [story] = await db.insert(stories).values({
       id: storyId,
-      title: generatedStory.title,
-      description: `${generatedStory.goal} - ${generatedStory.conflict}`,
-      genre: generatedStory.genre,
+      title: generatedStory.title || 'Generated Story',
+      description: generatedStory.description || 'AI-generated story',
+      genre: generatedStory.genre || 'General',
       authorId: session.user.id,
-      targetWordCount: generatedStory.words,
+      targetWordCount: generatedStory.totalWordCount || generatedStory.words || 60000,
       status: 'draft',
       isPublic: false,
       storyData: generatedStory, // Store complete YAML data
@@ -50,46 +50,49 @@ export async function POST(request: NextRequest) {
 
     console.log('📖 Story stored, creating parts and chapters...');
 
-    // Create parts and chapters based on the generated structure
+    // Create default parts and chapters structure since YAML structure may vary
     const createdParts = [];
-    let chapterCounter = 1;
+    const defaultParts = [
+      { title: 'Beginning', description: 'Story setup and introduction', wordPercent: 25 },
+      { title: 'Middle', description: 'Conflict development and complications', wordPercent: 50 },
+      { title: 'End', description: 'Climax and resolution', wordPercent: 25 }
+    ];
 
-    for (const partData of generatedStory.parts) {
+    for (let partIndex = 0; partIndex < defaultParts.length; partIndex++) {
+      const partData = defaultParts[partIndex];
       const partId = nanoid();
       
       // Create part
       const [part] = await db.insert(parts).values({
         id: partId,
-        title: partData.goal, // Use goal as title for now
+        title: partData.title,
         storyId: storyId,
         authorId: session.user.id,
-        orderIndex: partData.part,
-        targetWordCount: Math.floor(generatedStory.words * (generatedStory.structure.dist[partData.part - 1] / 100)),
+        orderIndex: partIndex + 1,
+        targetWordCount: Math.floor((generatedStory.totalWordCount || 60000) * (partData.wordPercent / 100)),
         status: 'planned',
-        partData: partData, // Store part-specific YAML data
+        partData: { title: partData.title, description: partData.description },
       }).returning();
 
-      // Create sample chapters for each part (based on chapter_words from serial config)
-      const chaptersPerPart = Math.ceil((part.targetWordCount || 20000) / generatedStory.serial.chapter_words);
+      // Create 3-4 chapters per part
+      const chaptersPerPart = 3;
       
-      for (let i = 0; i < Math.min(chaptersPerPart, 5); i++) { // Limit to 5 chapters per part for now
+      for (let i = 0; i < chaptersPerPart; i++) {
         const chapterId = nanoid();
         
         await db.insert(chapters).values({
           id: chapterId,
-          title: `Chapter ${chapterCounter}: Beginning`,
+          title: `Chapter ${(partIndex * chaptersPerPart) + i + 1}`,
           storyId: storyId,
           partId: partId,
           authorId: session.user.id,
           orderIndex: i + 1,
-          targetWordCount: generatedStory.serial.chapter_words,
+          targetWordCount: Math.floor((part.targetWordCount || 20000) / chaptersPerPart),
           status: 'planned',
-          purpose: `Advance the story toward: ${partData.goal}`,
-          hook: `Chapter hook related to: ${partData.conflict}`,
-          characterFocus: Object.keys(generatedStory.chars)[0] || 'protagonist',
+          purpose: `Develop the ${partData.title.toLowerCase()} of the story`,
+          hook: 'Chapter opening that draws readers in',
+          characterFocus: 'protagonist',
         });
-
-        chapterCounter++;
       }
 
       createdParts.push(part);
