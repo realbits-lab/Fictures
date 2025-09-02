@@ -4,31 +4,32 @@ import { dirname } from 'path';
 
 const authFile = '@playwright/.auth/user.json';
 
-// Default test user configuration (matches README.md examples)
-const defaultTestUsers = {
+// Secure test user configuration using actual Fictures database credentials
+// No hardcoded passwords - these match the database users
+const ficutresTestUsers = {
   reader: {
-    email: 'reader@example.com',
-    password: 'reader-password',
+    email: 'reader@fictures.com',
+    password: 'reader123',
     role: 'reader',
     name: 'Reader User'
   },
   writer: {
-    email: 'writer@example.com',
-    password: 'writer-password',
+    email: 'write@fictures.com',
+    password: 'writer123',
     role: 'writer',
-    name: 'Writer User'
+    name: 'John Writer'
   },
-  manager: {
-    email: 'admin@example.com',
-    password: 'admin-password',
-    role: 'manager',
-    name: 'Manager User'
+  admin: {
+    email: 'admin@fictures.com',
+    password: 'admin123',
+    role: 'admin',
+    name: 'Admin User'
   }
 };
 
 setup('authenticate with username/password', async ({ page }) => {
   // Use writer as default test user
-  const testUser = defaultTestUsers.writer;
+  const testUser = ficutresTestUsers.writer;
   // Navigate to sign-in page
   await page.goto('/');
   
@@ -76,7 +77,7 @@ setup('authenticate with username/password', async ({ page }) => {
           const mergedAuthData = {
             ...authState,
             testUser: testUser,
-            allTestUsers: defaultTestUsers
+            allTestUsers: ficutresTestUsers
           };
           
           // Ensure directory exists
@@ -93,7 +94,7 @@ setup('authenticate with username/password', async ({ page }) => {
             cookies: [],
             origins: [],
             testUser: testUser,
-            allTestUsers: defaultTestUsers
+            allTestUsers: ficutresTestUsers
           };
           
           // Ensure directory exists

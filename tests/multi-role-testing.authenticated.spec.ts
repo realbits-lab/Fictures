@@ -1,35 +1,17 @@
 import { test, expect } from '@playwright/test';
-import { readFileSync, existsSync } from 'fs';
+import { getAllTestUsers, getDefaultTestUser } from '@/lib/test/credentials';
 
-const authFile = '@playwright/.auth/user.json';
-
-// Get test credentials from authentication file
+// Load secure test credentials from @playwright/.auth/user.json
+// No hardcoded passwords - all credentials are loaded securely
 let testUsers: any = {};
 let currentUser: any = {};
 
-// Default fallback test users
-const fallbackTestUsers = {
-  reader: { email: 'reader@example.com', password: 'reader-password', role: 'reader', name: 'Reader User' },
-  writer: { email: 'writer@example.com', password: 'writer-password', role: 'writer', name: 'Writer User' },
-  manager: { email: 'admin@example.com', password: 'admin-password', role: 'manager', name: 'Manager User' }
-};
-
-// Try to read from auth file, fallback to default users
 try {
-  if (existsSync(authFile)) {
-    const authData = JSON.parse(readFileSync(authFile, 'utf-8'));
-    testUsers = authData.allTestUsers || fallbackTestUsers;
-    currentUser = authData.testUser || fallbackTestUsers.writer;
-    console.log(`✓ Loaded test users from ${authFile}`);
-  } else {
-    console.log('⚠️ Auth file not found, using default test users');
-    testUsers = fallbackTestUsers;
-    currentUser = fallbackTestUsers.writer;
-  }
+  testUsers = getAllTestUsers();
+  currentUser = getDefaultTestUser();
+  console.log('✓ Loaded secure test credentials');
 } catch (error) {
-  console.log('⚠️ Error loading test users, using default fallback');
-  testUsers = fallbackTestUsers;
-  currentUser = fallbackTestUsers.writer;
+  throw new Error(`Failed to load test credentials: ${error instanceof Error ? error.message : 'Unknown error'}`);
 }
 
 test.describe('Multi-Role User Testing', () => {

@@ -25,6 +25,9 @@ yarn-error.log*
 dev.log
 *.log
 
+# logs directory
+logs/
+
 # local env files
 .env.local
 .env.development.local
@@ -49,3 +52,18 @@ playwright/.auth/
 # Playwright test authentication data
 @playwright/.auth/
 tests/@playwright/.auth/
+
+# Playwright MCP
+.playwright-mcp/
+
+# Password and credential files
+user.json
+credentials.json
+*.credentials.json
+*-credentials.json
+test-users.json
+auth-data.json
+
+# Scripts with hardcoded passwords (for security)
+scripts/*password*.ts
+scripts/*credential*.ts

@@ -1,56 +1,73 @@
-import React from "react";
-import { StoryCard } from "./StoryCard";
-import { CreateStoryCard } from "./CreateStoryCard";
-import { RecentActivity } from "./RecentActivity";
-import { PublishingSchedule } from "./PublishingSchedule";
+import { auth } from "@/lib/auth";
+import { getUserStoriesWithFirstChapter } from "@/lib/db/queries";
+
 import { AIAssistantWidget } from "./AIAssistantWidget";
 import { CommunityHighlights } from "./CommunityHighlights";
-import { Button } from "@/components/ui";
+import { CreateStoryCard } from "./CreateStoryCard";
+import { PublishingSchedule } from "./PublishingSchedule";
+import { RecentActivity } from "./RecentActivity";
+import { StoryCard } from "./StoryCard";
 
-// Sample story data
-const sampleStories = [
-  {
-    id: "1",
-    title: "The Shadow Keeper",
-    genre: "Urban Fantasy",
-    parts: { completed: 3, total: 3 },
-    chapters: { completed: 15, total: 15 },
-    readers: 2400,
-    rating: 4.7,
-    status: "publishing" as const,
-    wordCount: 63000
-  },
-  {
-    id: "2", 
-    title: "Dragon Chronicles",
-    genre: "Epic Fantasy",
-    parts: { completed: 5, total: 7 },
-    chapters: { completed: 28, total: 35 },
-    readers: 890,
-    rating: 4.2,
-    status: "draft" as const,
-    wordCount: 45000
+export async function Dashboard() {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return <div>Please sign in to view your dashboard.</div>;
   }
-];
 
-export function Dashboard() {
+  const userStories = await getUserStoriesWithFirstChapter(session.user.id);
+
+  // Transform database stories to match StoryCard props
+  const transformedStories = userStories.map((story) => ({
+    id: story.id,
+    title: story.title,
+    genre: story.genre || "General",
+    parts: {
+      completed: story.completedParts || 0,
+      total: story.totalParts || 0,
+    },
+    chapters: {
+      completed: story.completedChapters || 0,
+      total: story.totalChapters || 0,
+    },
+    readers: story.viewCount || 0,
+    rating: (story.rating || 0) / 10, // Convert from database format (47 = 4.7)
+    status: story.status as "draft" | "publishing" | "completed",
+    wordCount: story.currentWordCount || 0,
+    firstChapterId: story.firstChapterId,
+    storyData: story.storyData || null,
+  }));
+
   return (
     <div className="space-y-8">
       {/* Stories Section */}
       <section>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <span>📚</span>
-            My Stories
-          </h2>
-          <Button>+ New Story</Button>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <span>📚</span>
+              My Stories
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Manage and organize all your creative works
+            </p>
+          </div>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sampleStories.map((story) => (
+          <CreateStoryCard />
+          {transformedStories.map((story) => (
             <StoryCard key={story.id} {...story} />
           ))}
-          <CreateStoryCard />
+          {transformedStories.length === 0 && (
+            <div className="col-span-full text-center py-12 text-gray-500">
+              <p className="text-xl mb-2">📝 Ready to start writing?</p>
+              <p>
+                Click the &quot;Create New Story&quot; card above to begin your
+                first story!
+              </p>
+            </div>
+          )}
         </div>
       </section>
 

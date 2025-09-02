@@ -19,7 +19,7 @@ export function AIAssistantWidget() {
         <Button size="sm" variant="secondary" className="flex-1">
           Ask AI
         </Button>
-        <Button size="sm" variant="ghost">
+        <Button size="sm" variant="ghost" className="flex-1">
           📖
         </Button>
       </CardFooter>

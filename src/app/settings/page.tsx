@@ -1,7 +1,14 @@
+import { auth } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 import { MainLayout } from "@/components/layout";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const session = await auth();
+  
+  if (!session) {
+    redirect('/login');
+  }
   return (
     <MainLayout>
       <div className="space-y-8">

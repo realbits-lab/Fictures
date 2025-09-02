@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -17,27 +17,40 @@ interface NavItem {
 }
 
 const primaryNavItems: NavItem[] = [
+  { href: "/browse", label: "Browse", icon: "🔍" },
   { href: "/stories", label: "Stories", icon: "📚" },
-  { href: "/write", label: "Write", icon: "📝" },
   { href: "/community", label: "Community", icon: "💬" },
-  { href: "/publish", label: "Publish", icon: "📤" },
   { href: "/ai", label: "AI", icon: "🤖" }
 ];
 
 const secondaryNavItems: NavItem[] = [
   { href: "/analytics", label: "Analytics", icon: "📊" },
   { href: "/settings", label: "Settings", icon: "⚙️" },
-  { href: "/profile", label: "Profile", icon: "👤" },
   { href: "/notifications", label: "Notifications", icon: "🔔" }
 ];
 
 export function GlobalNavigation() {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   const isActiveRoute = (href: string) => {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   };
+
+  // Filter navigation items based on user role
+  const visiblePrimaryNavItems = primaryNavItems.filter((item) => {
+    // Browse is visible to all users
+    if (item.href === '/browse') return true;
+    
+    // Stories is only visible to writers and admins
+    if (item.href === '/stories') {
+      return session?.user?.role === 'writer' || session?.user?.role === 'admin';
+    }
+    
+    // Other items visible to all authenticated users
+    return true;
+  });
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:border-gray-700 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/60">
@@ -53,7 +66,7 @@ export function GlobalNavigation() {
 
         {/* Primary Navigation */}
         <div className="hidden md:flex items-center space-x-1">
-          {primaryNavItems.map((item) => (
+          {visiblePrimaryNavItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -112,6 +125,7 @@ export function GlobalNavigation() {
 
 function AuthSection() {
   const { data: session, status } = useSession();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   if (status === 'loading') {
     return (
@@ -126,9 +140,9 @@ function AuthSection() {
   }
 
   return (
-    <div className="flex items-center space-x-2">
-      <Link
-        href="/profile"
+    <div className="relative">
+      <button
+        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
         className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
       >
         {session.user?.image ? (
@@ -143,8 +157,35 @@ function AuthSection() {
           </div>
         )}
         <span className="hidden xl:block">{session.user?.name}</span>
-      </Link>
-      <SignOutButton />
+        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      
+      {isDropdownOpen && (
+        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+          <Link
+            href="/profile"
+            className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg"
+            onClick={() => setIsDropdownOpen(false)}
+          >
+            <span className="mr-2">👤</span>
+            Profile
+          </Link>
+          <div className="border-t border-gray-200 dark:border-gray-600">
+            <div className="px-4 py-2">
+              <SignOutButton />
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {isDropdownOpen && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={() => setIsDropdownOpen(false)}
+        />
+      )}
     </div>
   );
 }

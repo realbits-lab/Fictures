@@ -1,10 +1,14 @@
 import { MainLayout } from "@/components/layout";
-import { Dashboard } from "@/components/dashboard";
+import { HomeHero, HomeStats, HomeFeatures } from "@/components/home";
 
 export default function Home() {
   return (
     <MainLayout>
-      <Dashboard />
+      <div className="min-h-screen">
+        <HomeHero />
+        <HomeStats />
+        <HomeFeatures />
+      </div>
     </MainLayout>
   );
 }

@@ -15,6 +15,27 @@
       "when": 1756731438841,
       "tag": "0001_lyrical_dark_phoenix",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1756777593361,
+      "tag": "0002_melted_cobalt_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1756785097416,
+      "tag": "0003_dusty_ted_forrester",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1756795593098,
+      "tag": "0004_sturdy_guardsmen",
+      "breakpoints": true
     }
   ]
 }

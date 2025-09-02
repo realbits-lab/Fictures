@@ -1,6 +1,14 @@
-import React from "react";
+"use client";
+
 import Link from "next/link";
-import { Card, CardContent, CardFooter, Button, Badge, Progress } from "@/components/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardFooter,
+  Progress,
+} from "@/components/ui";
 
 interface StoryCardProps {
   id: string;
@@ -18,6 +26,7 @@ interface StoryCardProps {
   rating: number;
   status: "draft" | "publishing" | "completed";
   wordCount?: number;
+  firstChapterId?: string | null;
 }
 
 export function StoryCard({
@@ -29,10 +38,12 @@ export function StoryCard({
   readers,
   rating,
   status,
-  wordCount
+  wordCount,
+  firstChapterId,
 }: StoryCardProps) {
-  const progressPercentage = (chapters.completed / chapters.total) * 100;
-  
+  const progressPercentage =
+    chapters.total > 0 ? (chapters.completed / chapters.total) * 100 : 0;
+
   const getStatusBadge = () => {
     switch (status) {
       case "draft":
@@ -73,7 +84,8 @@ export function StoryCard({
                 📄 Parts: {parts.completed}/{parts.total}
               </p>
               <p className="text-gray-600 dark:text-gray-400">
-                {chapters.completed === chapters.total ? "✓" : "⏳"} Chapters: {chapters.completed}/{chapters.total}
+                {chapters.completed === chapters.total ? "✓" : "⏳"} Chapters:{" "}
+                {chapters.completed}/{chapters.total}
               </p>
             </div>
             <div className="space-y-1">
@@ -99,15 +111,29 @@ export function StoryCard({
             </div>
             <Progress value={progressPercentage} />
           </div>
+
+
         </div>
       </CardContent>
 
       <CardFooter className="flex gap-2">
-        <Link href={`/write/${id}`} className="flex-1">
-          <Button size="sm" className="w-full">📝 Write</Button>
-        </Link>
+        {firstChapterId ? (
+          <Link href={`/write/${firstChapterId}`} className="flex-1">
+            <Button size="sm" className="w-full">
+              📝 Write
+            </Button>
+          </Link>
+        ) : (
+          <Link href={`/stories/${id}/new-chapter`} className="flex-1">
+            <Button size="sm" className="w-full">
+              📝 Start Writing
+            </Button>
+          </Link>
+        )}
         <Link href={`/stories/${id}/stats`} className="flex-1">
-          <Button variant="secondary" size="sm" className="w-full">📊 Stats</Button>
+          <Button variant="secondary" size="sm" className="w-full">
+            📊 Stats
+          </Button>
         </Link>
       </CardFooter>
     </Card>

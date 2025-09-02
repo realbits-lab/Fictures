@@ -1,5 +1,5 @@
 import { db } from './index';
-import { stories, chapters, users, userStats } from './schema';
+import { stories, chapters, users, userStats, parts, scenes } from './schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
@@ -32,6 +32,51 @@ export async function getUserStories(userId: string) {
     .from(stories)
     .where(eq(stories.authorId, userId))
     .orderBy(desc(stories.updatedAt));
+}
+
+// Get user stories with their first chapter and counts for navigation
+export async function getUserStoriesWithFirstChapter(userId: string) {
+  const userStories = await getUserStories(userId);
+  
+  const storiesWithData = await Promise.all(
+    userStories.map(async (story) => {
+      // Get the first chapter of this story
+      const [firstChapter] = await db
+        .select()
+        .from(chapters)
+        .where(eq(chapters.storyId, story.id))
+        .orderBy(chapters.orderIndex)
+        .limit(1);
+      
+      // Get all chapters for counting
+      const allChapters = await db
+        .select()
+        .from(chapters)
+        .where(eq(chapters.storyId, story.id));
+      
+      // Get all parts for counting
+      const allParts = await db
+        .select()
+        .from(parts)
+        .where(eq(parts.storyId, story.id));
+      
+      // Count completed chapters
+      const completedChapters = allChapters.filter(ch => 
+        ch.status === 'completed' || ch.status === 'published'
+      ).length;
+      
+      return {
+        ...story,
+        firstChapterId: firstChapter?.id || null,
+        totalChapters: allChapters.length,
+        completedChapters,
+        totalParts: allParts.length,
+        completedParts: allParts.length // Assuming all parts are "completed" if they exist
+      };
+    })
+  );
+  
+  return storiesWithData;
 }
 
 export async function getStoryById(storyId: string, userId?: string) {
@@ -69,7 +114,7 @@ export async function updateStory(storyId: string, userId: string, data: Partial
 }
 
 // Chapters queries
-export async function createChapter(storyId: string, data: {
+export async function createChapter(storyId: string, authorId: string, data: {
   title: string;
   partId?: string;
   orderIndex: number;
@@ -81,6 +126,7 @@ export async function createChapter(storyId: string, data: {
     id: chapterId,
     title: data.title,
     storyId,
+    authorId,
     partId: data.partId,
     orderIndex: data.orderIndex,
     targetWordCount: data.targetWordCount || 4000,
@@ -89,6 +135,26 @@ export async function createChapter(storyId: string, data: {
   }).returning();
 
   return chapter;
+}
+
+// Create the first chapter for a story
+export async function createFirstChapter(storyId: string, authorId: string) {
+  // Get the next order index (should be 1 for first chapter)
+  const existingChapters = await db
+    .select()
+    .from(chapters)
+    .where(eq(chapters.storyId, storyId))
+    .orderBy(desc(chapters.orderIndex));
+  
+  const nextOrderIndex = existingChapters.length > 0 
+    ? existingChapters[0].orderIndex + 1 
+    : 1;
+
+  return createChapter(storyId, authorId, {
+    title: `Chapter ${nextOrderIndex}`,
+    orderIndex: nextOrderIndex,
+    targetWordCount: 4000,
+  });
 }
 
 export async function getChapterById(chapterId: string, userId?: string) {
@@ -161,4 +227,161 @@ export async function updateUserStats(userId: string, updates: Partial<{
     .update(userStats)
     .set({ ...updates, updatedAt: new Date() })
     .where(eq(userStats.userId, userId));
+}
+
+// Comprehensive story data with parts, chapters, and scenes
+export async function getStoryWithStructure(storyId: string, userId?: string) {
+  // First check if user has access to the story
+  const story = await getStoryById(storyId, userId);
+  if (!story) return null;
+
+  // Get all parts for the story
+  const storyParts = await db
+    .select()
+    .from(parts)
+    .where(eq(parts.storyId, storyId))
+    .orderBy(parts.orderIndex);
+
+  // Get all chapters for the story
+  const storyChapters = await db
+    .select()
+    .from(chapters)
+    .where(eq(chapters.storyId, storyId))
+    .orderBy(chapters.orderIndex);
+
+  // Get all scenes for chapters in this story
+  const allScenes = await db
+    .select()
+    .from(scenes)
+    .leftJoin(chapters, eq(scenes.chapterId, chapters.id))
+    .where(eq(chapters.storyId, storyId))
+    .orderBy(scenes.orderIndex);
+
+  // Structure the data to match the StoryNavigationSidebar interface
+  const structuredParts = storyParts.map(part => ({
+    id: part.id,
+    title: part.title,
+    orderIndex: part.orderIndex,
+    chapters: storyChapters
+      .filter(ch => ch.partId === part.id)
+      .map(ch => ({
+        id: ch.id,
+        title: ch.title,
+        orderIndex: ch.orderIndex,
+        status: ch.status || 'draft',
+        wordCount: ch.wordCount || 0,
+        targetWordCount: ch.targetWordCount || 4000,
+        scenes: allScenes
+          .filter(sceneData => sceneData.scenes?.chapterId === ch.id)
+          .map(sceneData => ({
+            id: sceneData.scenes?.id || '',
+            title: sceneData.scenes?.title || '',
+            status: sceneData.scenes?.status || 'planned',
+            wordCount: sceneData.scenes?.wordCount || 0,
+            goal: sceneData.scenes?.goal || '',
+            conflict: sceneData.scenes?.conflict || '',
+            outcome: sceneData.scenes?.outcome || ''
+          }))
+      }))
+  }));
+
+  // Get standalone chapters (not in parts)
+  const standaloneChapters = storyChapters
+    .filter(ch => !ch.partId)
+    .map(ch => ({
+      id: ch.id,
+      title: ch.title,
+      orderIndex: ch.orderIndex,
+      status: ch.status || 'draft',
+      wordCount: ch.wordCount || 0,
+      targetWordCount: ch.targetWordCount || 4000,
+      scenes: allScenes
+        .filter(sceneData => sceneData.scenes?.chapterId === ch.id)
+        .map(sceneData => ({
+          id: sceneData.scenes?.id || '',
+          title: sceneData.scenes?.title || '',
+          status: sceneData.scenes?.status || 'planned',
+          wordCount: sceneData.scenes?.wordCount || 0,
+          goal: sceneData.scenes?.goal || '',
+          conflict: sceneData.scenes?.conflict || '',
+          outcome: sceneData.scenes?.outcome || ''
+        }))
+    }));
+
+  return {
+    id: story.id,
+    title: story.title,
+    genre: story.genre || 'General',
+    status: story.status || 'draft',
+    storyData: story.storyData || null,
+    parts: structuredParts,
+    chapters: standaloneChapters,
+    scenes: allScenes
+  };
+}
+
+// Get chapter with part information
+export async function getChapterWithPart(chapterId: string, userId?: string) {
+  const [result] = await db
+    .select({
+      chapter: chapters,
+      part: parts,
+      story: stories
+    })
+    .from(chapters)
+    .leftJoin(parts, eq(chapters.partId, parts.id))
+    .leftJoin(stories, eq(chapters.storyId, stories.id))
+    .where(eq(chapters.id, chapterId))
+    .limit(1);
+
+  if (!result) return null;
+
+  // Check access permissions
+  if (!result.story?.isPublic && result.story?.authorId !== userId) {
+    return null;
+  }
+
+  return {
+    chapter: result.chapter,
+    partTitle: result.part?.title || null,
+    storyId: result.story?.id
+  };
+}
+
+// Get published stories for Browse page
+export async function getPublishedStories() {
+  const publishedStories = await db
+    .select({
+      id: stories.id,
+      title: stories.title,
+      description: stories.description,
+      genre: stories.genre,
+      status: stories.status,
+      viewCount: stories.viewCount,
+      rating: stories.rating,
+      currentWordCount: stories.currentWordCount,
+      createdAt: stories.createdAt,
+      authorId: stories.authorId,
+      authorName: users.name
+    })
+    .from(stories)
+    .leftJoin(users, eq(stories.authorId, users.id))
+    .where(and(eq(stories.isPublic, true), eq(stories.status, 'published')))
+    .orderBy(desc(stories.updatedAt));
+
+  return publishedStories.map(story => ({
+    id: story.id,
+    title: story.title,
+    description: story.description || '',
+    genre: story.genre || 'Fiction',
+    status: story.status,
+    viewCount: story.viewCount || 0,
+    rating: story.rating || 0,
+    currentWordCount: story.currentWordCount || 0,
+    createdAt: story.createdAt,
+    author: {
+      id: story.authorId,
+      name: story.authorName || 'Anonymous'
+    }
+  }));
 }
