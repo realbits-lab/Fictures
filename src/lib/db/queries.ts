@@ -1,5 +1,5 @@
 import { db } from './index';
-import { stories, chapters, users, userStats } from './schema';
+import { stories, chapters, users, userStats, parts, scenes } from './schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
@@ -161,4 +161,103 @@ export async function updateUserStats(userId: string, updates: Partial<{
     .update(userStats)
     .set({ ...updates, updatedAt: new Date() })
     .where(eq(userStats.userId, userId));
+}
+
+// Comprehensive story data with parts, chapters, and scenes
+export async function getStoryWithStructure(storyId: string, userId?: string) {
+  // First check if user has access to the story
+  const story = await getStoryById(storyId, userId);
+  if (!story) return null;
+
+  // Get all parts for the story
+  const storyParts = await db
+    .select()
+    .from(parts)
+    .where(eq(parts.storyId, storyId))
+    .orderBy(parts.orderIndex);
+
+  // Get all chapters for the story
+  const storyChapters = await db
+    .select()
+    .from(chapters)
+    .where(eq(chapters.storyId, storyId))
+    .orderBy(chapters.orderIndex);
+
+  // Get scenes for all chapters - we'll return empty array for now since we need specific chapter scenes
+  const allScenes: Array<{
+    id: string;
+    title: string;
+    status: string;
+    wordCount: number;
+    goal: string;
+    conflict: string;
+    outcome: string;
+  }> = [];
+
+  // Structure the data to match the StoryNavigationSidebar interface
+  const structuredParts = storyParts.map(part => ({
+    id: part.id,
+    title: part.title,
+    orderIndex: part.orderIndex,
+    chapters: storyChapters
+      .filter(ch => ch.partId === part.id)
+      .map(ch => ({
+        id: ch.id,
+        title: ch.title,
+        orderIndex: ch.orderIndex,
+        status: ch.status || 'draft',
+        wordCount: ch.wordCount || 0,
+        targetWordCount: ch.targetWordCount || 4000,
+      }))
+  }));
+
+  // Get standalone chapters (not in parts)
+  const standaloneChapters = storyChapters
+    .filter(ch => !ch.partId)
+    .map(ch => ({
+      id: ch.id,
+      title: ch.title,
+      orderIndex: ch.orderIndex,
+      status: ch.status || 'draft',
+      wordCount: ch.wordCount || 0,
+      targetWordCount: ch.targetWordCount || 4000,
+    }));
+
+  return {
+    id: story.id,
+    title: story.title,
+    genre: story.genre || 'General',
+    status: story.status || 'draft',
+    parts: structuredParts,
+    chapters: standaloneChapters,
+    scenes: allScenes
+  };
+}
+
+// Get chapter with part information
+export async function getChapterWithPart(chapterId: string, userId?: string) {
+  const [result] = await db
+    .select({
+      chapter: chapters,
+      part: parts,
+      story: stories
+    })
+    .from(chapters)
+    .leftJoin(parts, eq(chapters.partId, parts.id))
+    .leftJoin(stories, eq(chapters.storyId, stories.id))
+    .where(eq(chapters.id, chapterId))
+    .limit(1);
+
+  if (!result) return null;
+
+  // Check access permissions
+  if (!result.story?.isPublic && result.story?.authorId !== userId) {
+    return null;
+  }
+
+  return {
+    chapter: result.chapter,
+    partTitle: result.part?.title || null,
+    storyId: result.story?.id
+  };
 }

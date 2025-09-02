@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Progress, Badge } from "@/components/ui";
+import { StoryNavigationSidebar } from "./StoryNavigationSidebar";
 
 interface Scene {
   id: string;
@@ -11,6 +13,34 @@ interface Scene {
   goal: string;
   conflict: string;
   outcome: string;
+}
+
+interface Story {
+  id: string;
+  title: string;
+  genre: string;
+  status: string;
+  parts: Array<{
+    id: string;
+    title: string;
+    orderIndex: number;
+    chapters: Array<{
+      id: string;
+      title: string;
+      orderIndex: number;
+      status: string;
+      wordCount: number;
+      targetWordCount: number;
+    }>;
+  }>;
+  chapters: Array<{
+    id: string;
+    title: string;
+    orderIndex: number;
+    status: string;
+    wordCount: number;
+    targetWordCount: number;
+  }>;
 }
 
 interface ChapterEditorProps {
@@ -26,9 +56,11 @@ interface ChapterEditorProps {
     characterFocus: string;
     scenes: Scene[];
   };
+  story: Story;
 }
 
-export function ChapterEditor({ chapter }: ChapterEditorProps) {
+export function ChapterEditor({ chapter, story }: ChapterEditorProps) {
+  const router = useRouter();
   const [content, setContent] = useState(`  The Shadow Realm pulsed around Maya like a living thing, its twisted architecture bending reality with each heartbeat. She could feel Elena's presence—faint but unmistakable—calling to her from the void-touched spire ahead.
 
   "You feel it, don't you?" The Void Collector's voice echoed from everywhere and nowhere. "The pull of true power. The freedom from restraint."
@@ -115,6 +147,18 @@ export function ChapterEditor({ chapter }: ChapterEditorProps) {
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 md:gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/stories')}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                <span className="hidden sm:inline">Back to Stories</span>
+              </Button>
+              <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 hidden sm:block"></div>
               <h1 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">
                 📝 {chapter.title}
               </h1>
@@ -248,6 +292,9 @@ export function ChapterEditor({ chapter }: ChapterEditorProps) {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Story Navigation */}
+            <StoryNavigationSidebar story={story} currentChapterId={chapter.id} />
+
             {/* AI Writing Assistant */}
             <Card>
               <CardHeader>
@@ -262,56 +309,6 @@ export function ChapterEditor({ chapter }: ChapterEditorProps) {
                 <div className="flex gap-2">
                   <Button size="sm" variant="secondary" className="flex-1">Apply</Button>
                   <Button size="sm" variant="ghost" className="flex-1">More Ideas</Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Writing Analytics */}
-            <Card>
-              <CardHeader>
-                <CardTitle>📊 Writing Analytics</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Pace:</span>
-                    <div className="flex-1 mx-3">
-                      <Progress value={80} size="sm" />
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Dialog:</span>
-                    <div className="flex-1 mx-3">
-                      <Progress value={60} size="sm" />
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Action:</span>
-                    <div className="flex-1 mx-3">
-                      <Progress value={90} size="sm" />
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Emotion:</span>
-                    <div className="flex-1 mx-3">
-                      <Progress value={100} size="sm" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-gray-200 dark:border-gray-700 space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Scene Goal:</span>
-                    <Badge variant="success" size="sm">✅ Clear</Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Conflict:</span>
-                    <Badge variant="success" size="sm">✅ Strong</Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Stakes:</span>
-                    <Badge variant="success" size="sm">✅ High</Badge>
-                  </div>
                 </div>
               </CardContent>
             </Card>

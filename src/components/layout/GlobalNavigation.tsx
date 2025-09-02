@@ -39,6 +39,17 @@ export function GlobalNavigation() {
     return pathname.startsWith(href);
   };
 
+  // Check if we're on a write page with an ID (e.g., /write/story-id)
+  const isOnWritePage = pathname.match(/^\/write\/[^\/]+$/);
+  
+  // Filter out "Write" menu when on individual write pages
+  const visiblePrimaryNavItems = primaryNavItems.filter(item => {
+    if (item.href === "/write" && isOnWritePage) {
+      return false;
+    }
+    return true;
+  });
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:border-gray-700 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/60">
       <nav className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4">
@@ -53,7 +64,7 @@ export function GlobalNavigation() {
 
         {/* Primary Navigation */}
         <div className="hidden md:flex items-center space-x-1">
-          {primaryNavItems.map((item) => (
+          {visiblePrimaryNavItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
