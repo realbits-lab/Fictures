@@ -41,13 +41,32 @@ interface Story {
   chapters: Chapter[]; // Chapters not in parts
 }
 
+export type EditorLevel = "story" | "part" | "chapter" | "scene";
+
+interface Selection {
+  level: EditorLevel;
+  itemId?: string;
+  storyId: string;
+  partId?: string;
+  chapterId?: string;
+  sceneId?: string;
+}
+
 interface StoryTreeArchitectureProps {
   story: Story;
   currentChapterId?: string;
   currentSceneId?: string;
+  onSelectionChange?: (selection: Selection) => void;
+  currentSelection?: Selection;
 }
 
-export function StoryTreeArchitecture({ story, currentChapterId, currentSceneId }: StoryTreeArchitectureProps) {
+export function StoryTreeArchitecture({ 
+  story, 
+  currentChapterId, 
+  currentSceneId, 
+  onSelectionChange,
+  currentSelection 
+}: StoryTreeArchitectureProps) {
   const pathname = usePathname();
   const [expandedParts, setExpandedParts] = useState<Set<string>>(new Set());
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set());
@@ -81,7 +100,58 @@ export function StoryTreeArchitecture({ story, currentChapterId, currentSceneId 
   };
 
   const isCurrentScene = (sceneId: string) => {
-    return currentSceneId === sceneId;
+    return currentSceneId === sceneId || currentSelection?.sceneId === sceneId;
+  };
+
+  const handleStoryClick = () => {
+    onSelectionChange?.({
+      level: "story",
+      storyId: story.id
+    });
+  };
+
+  const handlePartClick = (partId: string) => {
+    onSelectionChange?.({
+      level: "part",
+      storyId: story.id,
+      partId: partId
+    });
+  };
+
+  const handleChapterClick = (chapterId: string, partId?: string) => {
+    onSelectionChange?.({
+      level: "chapter",
+      storyId: story.id,
+      partId: partId,
+      chapterId: chapterId
+    });
+  };
+
+  const handleSceneClick = (sceneId: string, chapterId: string, partId?: string) => {
+    onSelectionChange?.({
+      level: "scene",
+      storyId: story.id,
+      partId: partId,
+      chapterId: chapterId,
+      sceneId: sceneId
+    });
+  };
+
+  const isSelectedLevel = (level: EditorLevel, itemId?: string) => {
+    if (!currentSelection || currentSelection.level !== level) return false;
+    
+    switch (level) {
+      case "story":
+        return currentSelection.storyId === story.id;
+      case "part":
+        return currentSelection.partId === itemId;
+      case "chapter":
+        return currentSelection.chapterId === itemId;
+      case "scene":
+        return currentSelection.sceneId === itemId;
+      default:
+        return false;
+    }
   };
 
   const togglePart = (partId: string) => {
@@ -113,7 +183,14 @@ export function StoryTreeArchitecture({ story, currentChapterId, currentSceneId 
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <span>🏗️</span>
-          <div className="flex-1 min-w-0">
+          <button 
+            onClick={handleStoryClick}
+            className={`flex-1 min-w-0 text-left p-2 rounded transition-colors ${
+              isSelectedLevel("story") 
+                ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/20 dark:text-blue-100' 
+                : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+          >
             <div className="font-semibold truncate">{story.title}</div>
             <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
               <Badge variant="secondary" size="sm">{story.genre}</Badge>
@@ -121,7 +198,7 @@ export function StoryTreeArchitecture({ story, currentChapterId, currentSceneId 
                 {story.status}
               </Badge>
             </div>
-          </div>
+          </button>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
@@ -136,11 +213,11 @@ export function StoryTreeArchitecture({ story, currentChapterId, currentSceneId 
             {story.parts.map((part) => (
               <div key={part.id} className="border-l-2 border-green-400 pl-3 mb-3">
                 <div className="mb-2">
-                  <button
-                    onClick={() => togglePart(part.id)}
-                    className="w-full flex items-center justify-between text-left hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded"
-                  >
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => togglePart(part.id)}
+                      className="flex items-center gap-2 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
                       <svg
                         className={`w-3 h-3 text-gray-400 transition-transform ${
                           expandedParts.has(part.id) ? 'rotate-90' : ''
@@ -151,14 +228,25 @@ export function StoryTreeArchitecture({ story, currentChapterId, currentSceneId 
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
-                      <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                        📚 Part {part.orderIndex}: {part.title}
-                      </span>
-                      <Badge variant="secondary" size="sm">
-                        {part.chapters.length}
-                      </Badge>
-                    </div>
-                  </button>
+                    </button>
+                    <button
+                      onClick={() => handlePartClick(part.id)}
+                      className={`flex-1 flex items-center justify-between text-left p-2 rounded transition-colors ${
+                        isSelectedLevel("part", part.id)
+                          ? 'bg-green-100 text-green-900 dark:bg-green-900/20 dark:text-green-100'
+                          : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                          📚 Part {part.orderIndex}: {part.title}
+                        </span>
+                        <Badge variant="secondary" size="sm">
+                          {part.chapters.length}
+                        </Badge>
+                      </div>
+                    </button>
+                  </div>
                 </div>
 
                 {expandedParts.has(part.id) && (
@@ -166,25 +254,36 @@ export function StoryTreeArchitecture({ story, currentChapterId, currentSceneId 
                     {part.chapters.map((chapter) => (
                       <div key={chapter.id} className="border-l-2 border-orange-400 pl-3">
                         <div className="flex items-center justify-between mb-1">
-                          <button
-                            onClick={() => toggleChapter(chapter.id)}
-                            className="flex items-center gap-2 flex-1 text-left hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded"
-                          >
-                            <svg
-                              className={`w-3 h-3 text-gray-400 transition-transform ${
-                                expandedChapters.has(chapter.id) ? 'rotate-90' : ''
-                              }`}
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
+                          <div className="flex items-center gap-1 flex-1">
+                            <button
+                              onClick={() => toggleChapter(chapter.id)}
+                              className="flex items-center gap-2 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
                             >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                            <span>{getChapterStatusIcon(chapter.status)}</span>
-                            <span className="text-sm text-orange-600 dark:text-orange-400 truncate">
-                              Ch {chapter.orderIndex}: {chapter.title}
-                            </span>
-                          </button>
+                              <svg
+                                className={`w-3 h-3 text-gray-400 transition-transform ${
+                                  expandedChapters.has(chapter.id) ? 'rotate-90' : ''
+                                }`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => handleChapterClick(chapter.id, part.id)}
+                              className={`flex items-center gap-2 flex-1 text-left p-1 rounded transition-colors ${
+                                isSelectedLevel("chapter", chapter.id)
+                                  ? 'bg-orange-100 text-orange-900 dark:bg-orange-900/20 dark:text-orange-100'
+                                  : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                              }`}
+                            >
+                              <span>{getChapterStatusIcon(chapter.status)}</span>
+                              <span className="text-sm text-orange-600 dark:text-orange-400 truncate">
+                                Ch {chapter.orderIndex}: {chapter.title}
+                              </span>
+                            </button>
+                          </div>
                           <Link
                             href={`/write/${chapter.id}`}
                             className={`px-2 py-1 rounded text-xs transition-colors ${
@@ -201,17 +300,22 @@ export function StoryTreeArchitecture({ story, currentChapterId, currentSceneId 
                           <div className="space-y-1 mt-2">
                             {chapter.scenes.map((scene, sceneIndex) => (
                               <div key={scene.id} className="border-l-2 border-purple-400 pl-3">
-                                <div className={`flex items-center gap-2 p-1 rounded text-xs ${
-                                  isCurrentScene(scene.id)
-                                    ? 'bg-purple-100 text-purple-900 dark:bg-purple-900/20 dark:text-purple-100'
-                                    : 'text-gray-600 dark:text-gray-400'
-                                }`}>
+                                <button
+                                  onClick={() => handleSceneClick(scene.id, chapter.id, part.id)}
+                                  className={`w-full flex items-center gap-2 p-2 rounded text-xs transition-colors ${
+                                    isSelectedLevel("scene", scene.id)
+                                      ? 'bg-purple-100 text-purple-900 dark:bg-purple-900/20 dark:text-purple-100'
+                                      : isCurrentScene(scene.id)
+                                      ? 'bg-purple-50 text-purple-800 dark:bg-purple-900/10 dark:text-purple-200'
+                                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                  }`}
+                                >
                                   <span>{getSceneStatusIcon(scene.status)}</span>
                                   <span className="text-purple-600 dark:text-purple-400 truncate">
                                     Scene {sceneIndex + 1}: {scene.title}
                                   </span>
                                   <span className="text-gray-500">({scene.wordCount}w)</span>
-                                </div>
+                                </button>
                               </div>
                             ))}
                             <button className="border-l-2 border-purple-300 pl-3 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
@@ -238,23 +342,34 @@ export function StoryTreeArchitecture({ story, currentChapterId, currentSceneId 
                 {story.chapters.map((chapter) => (
                   <div key={chapter.id} className="mb-2">
                     <div className="flex items-center justify-between">
-                      <button
-                        onClick={() => toggleChapter(chapter.id)}
-                        className="flex items-center gap-2 flex-1 text-left hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded"
-                      >
-                        <svg
-                          className={`w-3 h-3 text-gray-400 transition-transform ${
-                            expandedChapters.has(chapter.id) ? 'rotate-90' : ''
-                          }`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                      <div className="flex items-center gap-1 flex-1">
+                        <button
+                          onClick={() => toggleChapter(chapter.id)}
+                          className="flex items-center gap-2 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                        <span>{getChapterStatusIcon(chapter.status)}</span>
-                        <span className="text-sm truncate">{chapter.title}</span>
-                      </button>
+                          <svg
+                            className={`w-3 h-3 text-gray-400 transition-transform ${
+                              expandedChapters.has(chapter.id) ? 'rotate-90' : ''
+                            }`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleChapterClick(chapter.id)}
+                          className={`flex items-center gap-2 flex-1 text-left p-1 rounded transition-colors ${
+                            isSelectedLevel("chapter", chapter.id)
+                              ? 'bg-orange-100 text-orange-900 dark:bg-orange-900/20 dark:text-orange-100'
+                              : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                          }`}
+                        >
+                          <span>{getChapterStatusIcon(chapter.status)}</span>
+                          <span className="text-sm truncate">{chapter.title}</span>
+                        </button>
+                      </div>
                       <Link
                         href={`/write/${chapter.id}`}
                         className={`px-2 py-1 rounded text-xs transition-colors ${
@@ -271,17 +386,22 @@ export function StoryTreeArchitecture({ story, currentChapterId, currentSceneId 
                       <div className="space-y-1 mt-2 ml-4">
                         {chapter.scenes.map((scene, sceneIndex) => (
                           <div key={scene.id} className="border-l-2 border-purple-400 pl-3">
-                            <div className={`flex items-center gap-2 p-1 rounded text-xs ${
-                              isCurrentScene(scene.id)
-                                ? 'bg-purple-100 text-purple-900 dark:bg-purple-900/20 dark:text-purple-100'
-                                : 'text-gray-600 dark:text-gray-400'
-                            }`}>
+                            <button
+                              onClick={() => handleSceneClick(scene.id, chapter.id)}
+                              className={`w-full flex items-center gap-2 p-2 rounded text-xs transition-colors ${
+                                isSelectedLevel("scene", scene.id)
+                                  ? 'bg-purple-100 text-purple-900 dark:bg-purple-900/20 dark:text-purple-100'
+                                  : isCurrentScene(scene.id)
+                                  ? 'bg-purple-50 text-purple-800 dark:bg-purple-900/10 dark:text-purple-200'
+                                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                              }`}
+                            >
                               <span>{getSceneStatusIcon(scene.status)}</span>
                               <span className="text-purple-600 dark:text-purple-400 truncate">
                                 Scene {sceneIndex + 1}: {scene.title}
                               </span>
                               <span className="text-gray-500">({scene.wordCount}w)</span>
-                            </div>
+                            </button>
                           </div>
                         ))}
                         <button className="border-l-2 border-purple-300 pl-3 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">

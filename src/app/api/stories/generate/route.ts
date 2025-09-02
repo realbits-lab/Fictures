@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     console.log('📖 Story stored, creating parts and chapters...');
 
-    // Create default parts and chapters structure since YAML structure may vary
+    // Create all parts and the first chapter of the first part
     const createdParts = [];
     const defaultParts = [
       { title: 'Beginning', description: 'Story setup and introduction', wordPercent: 25 },
@@ -74,20 +74,18 @@ export async function POST(request: NextRequest) {
         partData: { title: partData.title, description: partData.description },
       }).returning();
 
-      // Create 3-4 chapters per part
-      const chaptersPerPart = 3;
-      
-      for (let i = 0; i < chaptersPerPart; i++) {
+      // Only create the first chapter for the first part
+      if (partIndex === 0) {
         const chapterId = nanoid();
         
         await db.insert(chapters).values({
           id: chapterId,
-          title: `Chapter ${(partIndex * chaptersPerPart) + i + 1}`,
+          title: 'Chapter 1',
           storyId: storyId,
           partId: partId,
           authorId: session.user.id,
-          orderIndex: i + 1,
-          targetWordCount: Math.floor((part.targetWordCount || 20000) / chaptersPerPart),
+          orderIndex: 1,
+          targetWordCount: 4000, // Standard chapter length
           status: 'planned',
           purpose: `Develop the ${partData.title.toLowerCase()} of the story`,
           hook: 'Chapter opening that draws readers in',
