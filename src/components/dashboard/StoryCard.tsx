@@ -18,6 +18,7 @@ interface StoryCardProps {
   rating: number;
   status: "draft" | "publishing" | "completed";
   wordCount?: number;
+  firstChapterId?: string | null;
 }
 
 export function StoryCard({
@@ -29,7 +30,8 @@ export function StoryCard({
   readers,
   rating,
   status,
-  wordCount
+  wordCount,
+  firstChapterId
 }: StoryCardProps) {
   const progressPercentage = (chapters.completed / chapters.total) * 100;
   
@@ -103,9 +105,13 @@ export function StoryCard({
       </CardContent>
 
       <CardFooter className="flex gap-2">
-        <Link href={`/write/${id}`} className="flex-1">
-          <Button size="sm" className="w-full">📝 Write</Button>
-        </Link>
+        {firstChapterId ? (
+          <Link href={`/write/${firstChapterId}`} className="flex-1">
+            <Button size="sm" className="w-full">📝 Write</Button>
+          </Link>
+        ) : (
+          <Button size="sm" className="w-full" disabled>📝 No Chapters</Button>
+        )}
         <Link href={`/stories/${id}/stats`} className="flex-1">
           <Button variant="secondary" size="sm" className="w-full">📊 Stats</Button>
         </Link>

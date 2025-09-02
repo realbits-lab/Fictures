@@ -1,13 +1,11 @@
 import React from "react";
-import Link from "next/link";
 import { StoryCard } from "./StoryCard";
 import { RecentActivity } from "./RecentActivity";
 import { PublishingSchedule } from "./PublishingSchedule";
 import { AIAssistantWidget } from "./AIAssistantWidget";
 import { CommunityHighlights } from "./CommunityHighlights";
-import { Button } from "@/components/ui";
 import { auth } from "@/lib/auth";
-import { getUserStories } from "@/lib/db/queries";
+import { getUserStoriesWithFirstChapter } from "@/lib/db/queries";
 
 export async function Dashboard() {
   const session = await auth();
@@ -16,7 +14,7 @@ export async function Dashboard() {
     return <div>Please sign in to view your dashboard.</div>;
   }
 
-  const userStories = await getUserStories(session.user.id);
+  const userStories = await getUserStoriesWithFirstChapter(session.user.id);
 
   // Transform database stories to match StoryCard props
   const transformedStories = userStories.map((story) => ({
@@ -28,7 +26,8 @@ export async function Dashboard() {
     readers: story.viewCount || 0,
     rating: (story.rating || 0) / 10, // Convert from database format (47 = 4.7)
     status: story.status as "draft" | "publishing" | "completed",
-    wordCount: story.currentWordCount || 0
+    wordCount: story.currentWordCount || 0,
+    firstChapterId: story.firstChapterId
   }));
 
   return (
@@ -36,13 +35,13 @@ export async function Dashboard() {
       {/* Stories Section */}
       <section>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <span>📚</span>
-            My Stories
-          </h2>
-          <Link href="/stories/new">
-            <Button>+ New Story</Button>
-          </Link>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <span>📚</span>
+              My Stories
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Manage and organize all your creative works</p>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

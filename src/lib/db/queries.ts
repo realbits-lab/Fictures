@@ -34,6 +34,30 @@ export async function getUserStories(userId: string) {
     .orderBy(desc(stories.updatedAt));
 }
 
+// Get user stories with their first chapter for navigation
+export async function getUserStoriesWithFirstChapter(userId: string) {
+  const userStories = await getUserStories(userId);
+  
+  const storiesWithFirstChapter = await Promise.all(
+    userStories.map(async (story) => {
+      // Get the first chapter of this story
+      const [firstChapter] = await db
+        .select()
+        .from(chapters)
+        .where(eq(chapters.storyId, story.id))
+        .orderBy(chapters.orderIndex)
+        .limit(1);
+      
+      return {
+        ...story,
+        firstChapterId: firstChapter?.id || null
+      };
+    })
+  );
+  
+  return storiesWithFirstChapter;
+}
+
 export async function getStoryById(storyId: string, userId?: string) {
   const story = await db
     .select()

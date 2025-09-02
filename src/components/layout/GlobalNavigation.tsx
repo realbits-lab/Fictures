@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -18,16 +18,13 @@ interface NavItem {
 
 const primaryNavItems: NavItem[] = [
   { href: "/stories", label: "Stories", icon: "📚" },
-  { href: "/write", label: "Write", icon: "📝" },
   { href: "/community", label: "Community", icon: "💬" },
-  { href: "/publish", label: "Publish", icon: "📤" },
   { href: "/ai", label: "AI", icon: "🤖" }
 ];
 
 const secondaryNavItems: NavItem[] = [
   { href: "/analytics", label: "Analytics", icon: "📊" },
   { href: "/settings", label: "Settings", icon: "⚙️" },
-  { href: "/profile", label: "Profile", icon: "👤" },
   { href: "/notifications", label: "Notifications", icon: "🔔" }
 ];
 
@@ -39,16 +36,8 @@ export function GlobalNavigation() {
     return pathname.startsWith(href);
   };
 
-  // Check if we're on a write page with an ID (e.g., /write/story-id)
-  const isOnWritePage = pathname.match(/^\/write\/[^\/]+$/);
-  
-  // Filter out "Write" menu when on individual write pages
-  const visiblePrimaryNavItems = primaryNavItems.filter(item => {
-    if (item.href === "/write" && isOnWritePage) {
-      return false;
-    }
-    return true;
-  });
+  // No need to filter items since Write and Publish are removed
+  const visiblePrimaryNavItems = primaryNavItems;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:border-gray-700 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/60">
@@ -123,6 +112,7 @@ export function GlobalNavigation() {
 
 function AuthSection() {
   const { data: session, status } = useSession();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   if (status === 'loading') {
     return (
@@ -137,9 +127,9 @@ function AuthSection() {
   }
 
   return (
-    <div className="flex items-center space-x-2">
-      <Link
-        href="/profile"
+    <div className="relative">
+      <button
+        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
         className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
       >
         {session.user?.image ? (
@@ -154,8 +144,35 @@ function AuthSection() {
           </div>
         )}
         <span className="hidden xl:block">{session.user?.name}</span>
-      </Link>
-      <SignOutButton />
+        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      
+      {isDropdownOpen && (
+        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+          <Link
+            href="/profile"
+            className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg"
+            onClick={() => setIsDropdownOpen(false)}
+          >
+            <span className="mr-2">👤</span>
+            Profile
+          </Link>
+          <div className="border-t border-gray-200 dark:border-gray-600">
+            <div className="px-4 py-2">
+              <SignOutButton />
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {isDropdownOpen && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={() => setIsDropdownOpen(false)}
+        />
+      )}
     </div>
   );
 }
