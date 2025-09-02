@@ -220,10 +220,25 @@ export function ChapterEditor({ chapter, story, hideSidebar = false }: ChapterEd
   const handleAutoSave = async () => {
     setIsAutoSaving(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setLastSaved(new Date());
+      const response = await fetch(`/api/chapters/${chapter.id}/autosave`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content,
+          wordCount: currentWordCount,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Auto-save failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      setLastSaved(new Date(result.savedAt));
       setHasUnsavedChanges(false);
+      console.log('Chapter auto-saved successfully');
     } catch (error) {
       console.error('Auto-save failed:', error);
     } finally {
