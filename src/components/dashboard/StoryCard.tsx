@@ -27,7 +27,6 @@ interface StoryCardProps {
   status: "draft" | "publishing" | "completed";
   wordCount?: number;
   firstChapterId?: string | null;
-  storyData?: Record<string, unknown> | null;
 }
 
 export function StoryCard({
@@ -41,7 +40,6 @@ export function StoryCard({
   status,
   wordCount,
   firstChapterId,
-  storyData,
 }: StoryCardProps) {
   const progressPercentage =
     chapters.total > 0 ? (chapters.completed / chapters.total) * 100 : 0;

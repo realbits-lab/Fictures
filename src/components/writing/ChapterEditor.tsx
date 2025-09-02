@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Progress, Badge } from "@/components/ui";
-import { StoryNavigationSidebar } from "./StoryNavigationSidebar";
-import { JsonView } from "react-json-view-lite";
+import { StoryTreeArchitecture } from "./StoryTreeArchitecture";
+import { YAMLDataDisplay } from "./YAMLDataDisplay";
 
 interface Scene {
   id: string;
@@ -33,6 +33,7 @@ interface Story {
       status: string;
       wordCount: number;
       targetWordCount: number;
+      scenes?: Scene[];
     }>;
   }>;
   chapters: Array<{
@@ -42,7 +43,9 @@ interface Story {
     status: string;
     wordCount: number;
     targetWordCount: number;
+    scenes?: Scene[];
   }>;
+  scenes?: Scene[]; // Add scenes to the story level for current chapter
 }
 
 interface ChapterEditorProps {
@@ -74,6 +77,116 @@ export function ChapterEditor({ chapter, story }: ChapterEditorProps) {
   const [lastSaved, setLastSaved] = useState(new Date());
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [yamlLevel, setYamlLevel] = useState<"story" | "part" | "chapter" | "scene">("chapter");
+
+  // Sample YAML data based on documentation
+  const sampleStoryData = {
+    title: "The Shadow Keeper",
+    genre: "urban_fantasy",
+    words: 80000,
+    question: "Can Maya master shadow magic before power corrupts her?",
+    goal: "Save Elena from Shadow Realm",
+    conflict: "Shadow magic corrupts those who use it",
+    outcome: "Maya embraces darkness to save light",
+    chars: {
+      maya: { role: "protag", arc: "denial→acceptance", flaw: "overprotective" },
+      elena: { role: "catalyst", arc: "missing→transformed", goal: "survive_realm" },
+      marcus: { role: "mentor", arc: "guilt→redemption", secret: "previous_failure" },
+      void: { role: "antag", arc: "power→corruption", goal: "merge_worlds" }
+    },
+    themes: ["responsibility_for_power", "love_vs_control", "inner_battles"],
+    structure: {
+      type: "3_part",
+      parts: ["setup", "confrontation", "resolution"],
+      dist: [25, 50, 25]
+    },
+    setting: {
+      primary: ["san_francisco", "photography_studio"],
+      secondary: ["shadow_realm", "chinatown_passages"]
+    },
+    parts: [
+      {
+        part: 1,
+        goal: "Maya accepts supernatural reality",
+        conflict: "Denial vs mounting evidence",
+        outcome: "Reluctant training commitment",
+        tension: "denial vs acceptance"
+      }
+    ],
+    serial: {
+      schedule: "weekly",
+      duration: "18_months",
+      chapter_words: 4000,
+      breaks: ["part1_end", "part2_end"],
+      buffer: "4_chapters_ahead"
+    },
+    hooks: {
+      overarching: ["elena_fate", "maya_corruption_risk", "shadow_magic_truth"],
+      mysteries: ["previous_student_identity", "marcus_secret", "realm_connection"],
+      part_endings: ["mentor_secret_revealed", "elena_appears_changed"]
+    }
+  };
+
+  const sampleChapterData = {
+    chap: 1,
+    title: "Missing",
+    pov: "maya",
+    words: 3500,
+    goal: "Normal coffee date with Elena",
+    conflict: "Elena missing, signs of supernatural danger",
+    outcome: "Finds journal, realizes she's also a target",
+    acts: {
+      setup: {
+        hook_in: "Door unlocked, coffee warm, Elena gone",
+        orient: "Weekly sister ritual, Maya's skeptical nature",
+        incident: "Overturned chair, shattered mug - signs of struggle"
+      },
+      confrontation: {
+        rising: "Police dismissive, Maya searches alone",
+        midpoint: "Discovers Elena's hidden research journal",
+        complicate: "Journal reveals supernatural conspiracy, 'The Shepherd'"
+      },
+      resolution: {
+        climax: "Final journal entry: 'He looks for the mark'",
+        resolve: "Maya realizes Elena was in supernatural danger",
+        hook_out: "Knock at door, Maya has the 'mark' mentioned"
+      }
+    },
+    chars: {
+      maya: {
+        start: "casual_anticipation",
+        arc: "concern → panic → targeted_fear",
+        end: "trapped_resolve",
+        motivation: "protect_elena",
+        growth: "skeptic → reluctant_believer"
+      }
+    },
+    tension: {
+      external: "signs_struggle, mysterious_knocker",
+      internal: "maya_panic, guilt_unaware",
+      interpersonal: "dismissive_police",
+      atmospheric: "journal_warnings",
+      peak: "door_knock_connects_abstract_threat_to_immediate"
+    },
+    mandate: {
+      episodic: {
+        arc: "search_for_elena → journal_discovery → question_answered",
+        payoff: "casual_concern → urgent_fear",
+        answered: "What happened to Elena? Supernatural research gone wrong"
+      },
+      serial: {
+        complication: "The Shepherd threat established",
+        stakes: "Maya also targeted due to mark",
+        compulsion: "door_knock_immediate_danger"
+      }
+    },
+    hook: {
+      type: "compound",
+      reveal: "Maya bears the mark from journal warning",
+      threat: "Knock suggests Shepherd found Maya",
+      emotion: "protective_instincts vs newfound_vulnerability"
+    }
+  };
 
   // Auto-save functionality
   useEffect(() => {
@@ -186,9 +299,13 @@ export function ChapterEditor({ chapter, story }: ChapterEditorProps) {
 
       <div className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Sidebar - Story Navigation */}
+          {/* Left Sidebar - Story Architecture Tree */}
           <div className="space-y-6">
-            <StoryNavigationSidebar story={story} currentChapterId={chapter.id} />
+            <StoryTreeArchitecture 
+              story={story} 
+              currentChapterId={chapter.id}
+              currentSceneId={undefined}
+            />
             
             {/* Mobile Menu Toggle */}
             <div className="lg:hidden">
@@ -214,39 +331,59 @@ export function ChapterEditor({ chapter, story }: ChapterEditorProps) {
             </Card>
           </div>
 
-          {/* Right Sidebar - Writing Tools */}
+          {/* Right Sidebar - Writing Tools & YAML Data */}
           <div className="space-y-6">
-            {/* Story Data */}
-            {story.storyData && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>📊 Story Data</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="text-xs bg-gray-50 dark:bg-gray-900 rounded-lg p-3 max-h-64 overflow-auto">
-                    <JsonView 
-                      data={story.storyData} 
-                      shouldExpandNode={(level, value, field) => level < 2}
-                      style={{
-                        container: 'font-mono text-gray-700 dark:text-gray-300',
-                        basicChildStyle: 'padding-left: 1rem',
-                        label: 'color: rgb(59 130 246)', // blue-500
-                        clickableLabel: 'color: rgb(59 130 246); cursor: pointer',
-                        valueText: 'color: rgb(34 197 94)', // green-500
-                        undefinedValue: 'color: rgb(156 163 175)', // gray-400
-                        nullValue: 'color: rgb(156 163 175)',
-                        booleanValue: 'color: rgb(168 85 247)', // purple-500
-                        numberValue: 'color: rgb(249 115 22)', // orange-500
-                        stringValue: 'color: rgb(34 197 94)',
-                        collapseIcon: 'color: rgb(75 85 99)', // gray-600
-                        expandIcon: 'color: rgb(75 85 99)',
-                        punctuation: 'color: rgb(107 114 128)' // gray-500
-                      }}
-                    />
+            {/* YAML Data Display with Level Switcher */}
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm">📊 YAML Data</CardTitle>
+                  <div className="flex gap-1">
+                    <Button 
+                      variant={yamlLevel === "story" ? "default" : "ghost"} 
+                      size="sm" 
+                      className="text-xs px-2 py-1"
+                      onClick={() => setYamlLevel("story")}
+                    >
+                      📖
+                    </Button>
+                    <Button 
+                      variant={yamlLevel === "part" ? "default" : "ghost"} 
+                      size="sm" 
+                      className="text-xs px-2 py-1"
+                      onClick={() => setYamlLevel("part")}
+                    >
+                      📚
+                    </Button>
+                    <Button 
+                      variant={yamlLevel === "chapter" ? "default" : "ghost"} 
+                      size="sm" 
+                      className="text-xs px-2 py-1"
+                      onClick={() => setYamlLevel("chapter")}
+                    >
+                      📝
+                    </Button>
+                    <Button 
+                      variant={yamlLevel === "scene" ? "default" : "ghost"} 
+                      size="sm" 
+                      className="text-xs px-2 py-1"
+                      onClick={() => setYamlLevel("scene")}
+                    >
+                      🎬
+                    </Button>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="max-h-96 overflow-y-auto">
+                  <YAMLDataDisplay
+                    storyData={yamlLevel === "story" ? sampleStoryData : undefined}
+                    chapterData={yamlLevel === "chapter" ? sampleChapterData : undefined}
+                    currentLevel={yamlLevel}
+                  />
+                </div>
+              </CardContent>
+            </Card>
             
             {/* Word Count & Progress */}
             <Card>
