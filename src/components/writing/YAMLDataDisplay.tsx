@@ -376,9 +376,16 @@ export function YAMLDataDisplay({
   const getLevelTitle = () => {
     switch (currentLevel) {
       case "story": return "Story YAML Data";
-      case "part": return "Part YAML Data";
+      case "part": return "Story YAML Data"; // Changed from "Part YAML Data" to "Story YAML Data"
       case "chapter": return "Chapter YAML Data";
       case "scene": return "Scene YAML Data";
+      default: return "YAML Data";
+    }
+  };
+
+  const getMainTitle = () => {
+    switch (currentLevel) {
+      case "part": return "Story Data"; // Changed from "YAML Data" to "Story Data"
       default: return "YAML Data";
     }
   };
@@ -387,39 +394,36 @@ export function YAMLDataDisplay({
     <Card className="h-fit">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
-          <span>{getLevelIcon()}</span>
-          <div className="flex-1 min-w-0">
-            <div className="font-semibold truncate">{getLevelTitle()}</div>
-            <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-              <Badge variant="secondary" size="sm">{currentLevel}</Badge>
-              <Badge variant="outline" size="sm">YAML</Badge>
-            </div>
-          </div>
+          <span className="text-lg font-semibold">{getMainTitle()}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-3">
-          <div className="flex gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="flex-1 text-xs"
-              onClick={() => setExpandedSections(new Set(['summary', 'foundation', 'overview']))}
-            >
-              Expand Key
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="flex-1 text-xs"
-              onClick={() => setExpandedSections(new Set())}
-            >
-              Collapse All
-            </Button>
-          </div>
+          {/* Only show top buttons when not viewing part data */}
+          {currentLevel !== "part" && (
+            <div className="flex gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="flex-1 text-xs"
+                onClick={() => setExpandedSections(new Set(['summary', 'foundation', 'overview']))}
+              >
+                Expand Key
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="flex-1 text-xs"
+                onClick={() => setExpandedSections(new Set())}
+              >
+                Collapse All
+              </Button>
+            </div>
+          )}
           
+          {/* For part view, show story data instead of part data */}
           {currentLevel === "story" && renderStoryYAML()}
-          {currentLevel === "part" && renderPartYAML()}
+          {currentLevel === "part" && renderStoryYAML()}
           {currentLevel === "chapter" && renderChapterYAML()}
           {currentLevel === "scene" && renderSceneYAML()}
           
