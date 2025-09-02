@@ -52,7 +52,7 @@ function parseYamlText(yamlText: string): any {
 }
 
 // Phase 1: Story Foundation
-export async function storyConceptDevelopment(userPrompt: string) {
+export async function storyConceptDevelopment(userPrompt: string): Promise<string> {
   const { text } = await generateText({
     model: openai('gpt-4o-mini'),
     system: `You are an expert story developer implementing Phase 1: Story Foundation.
@@ -76,11 +76,11 @@ Create a complete story concept following the story development documentation fo
 Return only valid YAML format without code blocks or additional text.`,
   });
 
-  return parseYamlText(text);
+  return text;
 }
 
 // Phase 2: Structural Development
-export async function partDevelopmentProcess(storyConcept: any) {
+export async function partDevelopmentProcess(storyConcept: string): Promise<string> {
   const { text } = await generateText({
     model: openai('gpt-4o-mini'),
     system: `You are implementing Phase 2: Structural Development.
@@ -92,18 +92,18 @@ Take the story concept from Phase 1 and develop detailed part-level structure wi
 - Tension peak planning
 
 Output must be valid YAML format that can be parsed. Follow the documentation format exactly.`,
-    prompt: `Story concept from Phase 1: ${JSON.stringify(storyConcept, null, 2)}
+    prompt: `Story concept from Phase 1: ${storyConcept}
 
 Develop the part-level structure following the part development process format from the documentation.
 
 Return only valid YAML format without code blocks or additional text.`,
   });
 
-  return parseYamlText(text);
+  return text;
 }
 
 // Phase 3: Character Development
-export async function characterDevelopmentProcess(partDevelopment: any, storyConcept: any) {
+export async function characterDevelopmentProcess(partDevelopment: string, storyConcept: string): Promise<string> {
   const { text } = await generateText({
     model: openai('gpt-4o-mini'),
     system: `You are implementing Phase 3: Character Development & World-Building.
@@ -115,20 +115,20 @@ Take the part development and story concept to create detailed character evoluti
 - Reader engagement hooks through characters
 
 Output must be valid YAML format that can be parsed. Follow the documentation format exactly.`,
-    prompt: `Part development: ${JSON.stringify(partDevelopment, null, 2)}
+    prompt: `Part development: ${partDevelopment}
 
-Story concept: ${JSON.stringify(storyConcept, null, 2)}
+Story concept: ${storyConcept}
 
 Develop character evolution, relationships, and voice authenticity following the character development process format.
 
 Return only valid YAML format without code blocks or additional text.`,
   });
 
-  return parseYamlText(text);
+  return text;
 }
 
 // Phase 4: Quality Assurance
-export async function storyConsistencyVerification(characterDevelopment: any, partDevelopment: any, storyConcept: any) {
+export async function storyConsistencyVerification(characterDevelopment: string, partDevelopment: string, storyConcept: string): Promise<string> {
   const { text } = await generateText({
     model: openai('gpt-4o-mini'),
     system: `You are implementing Phase 4: Quality Assurance and Refinement.
@@ -142,18 +142,18 @@ Verify:
 - Timeline accuracy
 
 Output must be valid YAML format that can be parsed. Output the final story format ready for database storage.`,
-    prompt: `Character development: ${JSON.stringify(characterDevelopment, null, 2)}
+    prompt: `Character development: ${characterDevelopment}
 
-Part development: ${JSON.stringify(partDevelopment, null, 2)}
+Part development: ${partDevelopment}
 
-Story concept: ${JSON.stringify(storyConcept, null, 2)}
+Story concept: ${storyConcept}
 
 Create the final verified story specification following the exact format from the documentation.
 
 Return only valid YAML format without code blocks or additional text.`,
   });
 
-  return parseYamlText(text);
+  return text;
 }
 
 // Main story development workflow
@@ -162,22 +162,23 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
   
   // Phase 1: Story Foundation
   console.log('Phase 1: Story Foundation');
-  const storyConcept = await storyConceptDevelopment(userPrompt);
+  const storyConceptYaml = await storyConceptDevelopment(userPrompt);
   console.log('✅ Story concept developed');
   
   // Phase 2: Structural Development
   console.log('Phase 2: Structural Development');
-  const partDevelopment = await partDevelopmentProcess(storyConcept);
+  const partDevelopmentYaml = await partDevelopmentProcess(storyConceptYaml);
   console.log('✅ Part development completed');
   
   // Phase 3: Character Development
   console.log('Phase 3: Character Development');
-  const characterDevelopment = await characterDevelopmentProcess(partDevelopment, storyConcept);
+  const characterDevelopmentYaml = await characterDevelopmentProcess(partDevelopmentYaml, storyConceptYaml);
   console.log('✅ Character development completed');
   
   // Phase 4: Quality Assurance
   console.log('Phase 4: Quality Assurance');
-  const finalStory = await storyConsistencyVerification(characterDevelopment, partDevelopment, storyConcept);
+  const finalStoryYaml = await storyConsistencyVerification(characterDevelopmentYaml, partDevelopmentYaml, storyConceptYaml);
+  const finalStory = parseYamlText(finalStoryYaml);
   console.log('✅ Story verification completed');
   
   // Add metadata
@@ -186,9 +187,9 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
     userId,
     createdAt: new Date(),
     developmentPhases: {
-      phase1: storyConcept,
-      phase2: partDevelopment,
-      phase3: characterDevelopment,
+      phase1: parseYamlText(storyConceptYaml),
+      phase2: parseYamlText(partDevelopmentYaml),
+      phase3: parseYamlText(characterDevelopmentYaml),
       phase4: finalStory,
     }
   };
