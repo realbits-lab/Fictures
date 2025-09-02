@@ -318,16 +318,10 @@ export function StoryTreeArchitecture({
                                 </button>
                               </div>
                             ))}
-                            <button className="border-l-2 border-purple-300 pl-3 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                              ➕ Add Scene
-                            </button>
                           </div>
                         )}
                       </div>
                     ))}
-                    <button className="border-l-2 border-orange-300 pl-3 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                      ➕ Add Chapter
-                    </button>
                   </div>
                 )}
               </div>
@@ -404,19 +398,12 @@ export function StoryTreeArchitecture({
                             </button>
                           </div>
                         ))}
-                        <button className="border-l-2 border-purple-300 pl-3 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                          ➕ Add Scene
-                        </button>
                       </div>
                     )}
                   </div>
                 ))}
               </div>
             )}
-
-            <button className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 mt-3">
-              ➕ Add Part
-            </button>
           </div>
         </div>
       </CardContent>
