@@ -1,6 +1,12 @@
-import React from "react";
 import Link from "next/link";
-import { Card, CardContent, CardFooter, Button, Badge, Progress } from "@/components/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardFooter,
+  Progress,
+} from "@/components/ui";
 
 interface StoryCardProps {
   id: string;
@@ -31,10 +37,11 @@ export function StoryCard({
   rating,
   status,
   wordCount,
-  firstChapterId
+  firstChapterId,
 }: StoryCardProps) {
-  const progressPercentage = chapters.total > 0 ? (chapters.completed / chapters.total) * 100 : 0;
-  
+  const progressPercentage =
+    chapters.total > 0 ? (chapters.completed / chapters.total) * 100 : 0;
+
   const getStatusBadge = () => {
     switch (status) {
       case "draft":
@@ -75,7 +82,8 @@ export function StoryCard({
                 📄 Parts: {parts.completed}/{parts.total}
               </p>
               <p className="text-gray-600 dark:text-gray-400">
-                {chapters.completed === chapters.total ? "✓" : "⏳"} Chapters: {chapters.completed}/{chapters.total}
+                {chapters.completed === chapters.total ? "✓" : "⏳"} Chapters:{" "}
+                {chapters.completed}/{chapters.total}
               </p>
             </div>
             <div className="space-y-1">
@@ -107,13 +115,21 @@ export function StoryCard({
       <CardFooter className="flex gap-2">
         {firstChapterId ? (
           <Link href={`/write/${firstChapterId}`} className="flex-1">
-            <Button size="sm" className="w-full">📝 Write</Button>
+            <Button size="sm" className="w-full">
+              📝 Write
+            </Button>
           </Link>
         ) : (
-          <Button size="sm" className="w-full" disabled>📝 No Chapters</Button>
+          <div className="flex-1">
+            <Button size="sm" className="w-full" disabled>
+              📝 No Chapters
+            </Button>
+          </div>
         )}
         <Link href={`/stories/${id}/stats`} className="flex-1">
-          <Button variant="secondary" size="sm" className="w-full">📊 Stats</Button>
+          <Button variant="secondary" size="sm" className="w-full">
+            📊 Stats
+          </Button>
         </Link>
       </CardFooter>
     </Card>
