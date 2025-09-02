@@ -1,6 +1,6 @@
 import { auth } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
-import { ChapterEditor } from "@/components/writing/ChapterEditor";
+import { UnifiedWritingEditor } from "@/components/writing/UnifiedWritingEditor";
 import { getChapterWithPart, getStoryWithStructure } from '@/lib/db/queries';
 
 export default async function WritePage({ params }: { params: Promise<{ chapterId: string }> }) {
@@ -26,19 +26,18 @@ export default async function WritePage({ params }: { params: Promise<{ chapterI
     notFound();
   }
 
-  // Transform chapter data to match ChapterEditor interface
-  const chapterData = {
-    id: chapterInfo.chapter.id,
-    title: chapterInfo.chapter.title,
-    partTitle: chapterInfo.partTitle || "Chapter",
-    wordCount: chapterInfo.chapter.wordCount || 0,
-    targetWordCount: chapterInfo.chapter.targetWordCount || 4000,
-    status: chapterInfo.chapter.status || 'draft',
-    purpose: chapterInfo.chapter.summary || "Chapter purpose",
-    hook: "Chapter hook", // We could add this to schema later
-    characterFocus: "Character focus", // We could add this to schema later
-    scenes: storyStructure.scenes // Use scenes from the story structure
+  // Create initial selection to focus on the current chapter
+  const initialSelection = {
+    level: "chapter" as const,
+    storyId: chapterInfo.storyId,
+    partId: chapterInfo.chapter.partId || undefined,
+    chapterId: chapterInfo.chapter.id
   };
   
-  return <ChapterEditor chapter={chapterData} story={storyStructure} />;
+  return (
+    <UnifiedWritingEditor 
+      story={storyStructure} 
+      initialSelection={initialSelection}
+    />
+  );
 }
