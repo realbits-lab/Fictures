@@ -387,6 +387,7 @@ export function YAMLDataDisplay({
     switch (currentLevel) {
       case "part": return "Story Data"; // Changed from "YAML Data" to "Story Data"
       case "chapter": return "Story & Part Data";
+      case "scene": return "Story, Part & Chapter Data";
       default: return "YAML Data";
     }
   };
@@ -400,27 +401,6 @@ export function YAMLDataDisplay({
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-3">
-          {/* Only show top buttons when not viewing part data */}
-          {currentLevel !== "part" && (
-            <div className="flex gap-2">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="flex-1 text-xs"
-                onClick={() => setExpandedSections(new Set(['summary', 'foundation', 'overview']))}
-              >
-                Expand Key
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="flex-1 text-xs"
-                onClick={() => setExpandedSections(new Set())}
-              >
-                Collapse All
-              </Button>
-            </div>
-          )}
           
           {/* For part view, show story data instead of part data */}
           {currentLevel === "story" && renderStoryYAML()}
@@ -439,7 +419,26 @@ export function YAMLDataDisplay({
               )}
             </div>
           )}
-          {currentLevel === "scene" && renderSceneYAML()}
+          {currentLevel === "scene" && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📖 Story Data</h3>
+                {renderStoryYAML()}
+              </div>
+              {partData && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📚 Part Data</h3>
+                  {renderPartYAML()}
+                </div>
+              )}
+              {chapterData && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📝 Chapter Data</h3>
+                  {renderChapterYAML()}
+                </div>
+              )}
+            </div>
+          )}
           
           {!storyData && !partData && !chapterData && !sceneData && (
             <div className="text-center py-8 text-gray-500">

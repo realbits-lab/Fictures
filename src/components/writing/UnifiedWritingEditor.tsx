@@ -464,7 +464,13 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
                       <div 
                         key={scene.id} 
                         className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white/50 dark:bg-gray-800/50 hover:bg-blue-50/80 dark:hover:bg-blue-900/20 cursor-pointer transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md"
-                        onClick={() => router.push(`/write/scene/${scene.id}`)}
+                        onClick={() => handleSelectionChange({
+                          level: "scene",
+                          storyId: story.id,
+                          partId: selectedPartData ? `part-${selectedPartData.part}` : undefined,
+                          chapterId: currentSelection.chapterId,
+                          sceneId: scene.id
+                        })}
                       >
                         <div className="flex items-start justify-between mb-2">
                           <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
@@ -488,7 +494,7 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
                             {scene.status.replace('_', ' ')}
                           </Badge>
                           <span className="text-xs text-blue-600 dark:text-blue-400 hover:underline">
-                            Click to edit →
+                            Click to edit scene →
                           </span>
                         </div>
                       </div>
@@ -513,10 +519,12 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
         let selectedSceneChapter = null;
         let sceneNumber = 1;
         
-        // Look through all chapters in parts
-        for (const part of story.parts) {
-          for (const chapter of part.chapters) {
-            if (chapter.scenes) {
+        // First try to find the scene in the currently selected chapter (if we're coming from chapter view)
+        if (currentSelection.chapterId) {
+          // Look through all chapters in parts
+          for (const part of story.parts) {
+            const chapter = part.chapters.find(ch => ch.id === currentSelection.chapterId);
+            if (chapter && chapter.scenes) {
               const foundSceneIndex = chapter.scenes.findIndex(scene => scene.id === currentSelection.sceneId);
               if (foundSceneIndex !== -1) {
                 selectedScene = chapter.scenes[foundSceneIndex];
@@ -526,19 +534,50 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
               }
             }
           }
-          if (selectedScene) break;
-        }
-        
-        // Look in standalone chapters if not found in parts
-        if (!selectedScene) {
-          for (const chapter of story.chapters) {
-            if (chapter.scenes) {
+          
+          // Look in standalone chapters if not found in parts
+          if (!selectedScene) {
+            const chapter = story.chapters.find(ch => ch.id === currentSelection.chapterId);
+            if (chapter && chapter.scenes) {
               const foundSceneIndex = chapter.scenes.findIndex(scene => scene.id === currentSelection.sceneId);
               if (foundSceneIndex !== -1) {
                 selectedScene = chapter.scenes[foundSceneIndex];
                 selectedSceneChapter = chapter;
                 sceneNumber = foundSceneIndex + 1;
-                break;
+              }
+            }
+          }
+        }
+        
+        // Fallback: search all chapters if we couldn't find it in the current chapter
+        if (!selectedScene) {
+          // Look through all chapters in parts
+          for (const part of story.parts) {
+            for (const chapter of part.chapters) {
+              if (chapter.scenes) {
+                const foundSceneIndex = chapter.scenes.findIndex(scene => scene.id === currentSelection.sceneId);
+                if (foundSceneIndex !== -1) {
+                  selectedScene = chapter.scenes[foundSceneIndex];
+                  selectedSceneChapter = chapter;
+                  sceneNumber = foundSceneIndex + 1;
+                  break;
+                }
+              }
+            }
+            if (selectedScene) break;
+          }
+          
+          // Look in standalone chapters if not found in parts
+          if (!selectedScene) {
+            for (const chapter of story.chapters) {
+              if (chapter.scenes) {
+                const foundSceneIndex = chapter.scenes.findIndex(scene => scene.id === currentSelection.sceneId);
+                if (foundSceneIndex !== -1) {
+                  selectedScene = chapter.scenes[foundSceneIndex];
+                  selectedSceneChapter = chapter;
+                  sceneNumber = foundSceneIndex + 1;
+                  break;
+                }
               }
             }
           }
@@ -651,55 +690,19 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
 
           {/* Right Sidebar - YAML Data Display */}
           <div className="space-y-6">
-            {/* YAML Data Display with Level Switcher */}
+            {/* YAML Data Display */}
             <Card>
               <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm">📊 YAML Data</CardTitle>
-                  <div className="flex gap-1">
-                    <Button 
-                      variant={yamlLevel === "story" ? "default" : "ghost"} 
-                      size="sm" 
-                      className="text-xs px-2 py-1"
-                      onClick={() => setYamlLevel("story")}
-                    >
-                      📖
-                    </Button>
-                    <Button 
-                      variant={yamlLevel === "part" ? "default" : "ghost"} 
-                      size="sm" 
-                      className="text-xs px-2 py-1"
-                      onClick={() => setYamlLevel("part")}
-                    >
-                      📚
-                    </Button>
-                    <Button 
-                      variant={yamlLevel === "chapter" ? "default" : "ghost"} 
-                      size="sm" 
-                      className="text-xs px-2 py-1"
-                      onClick={() => setYamlLevel("chapter")}
-                    >
-                      📝
-                    </Button>
-                    <Button 
-                      variant={yamlLevel === "scene" ? "default" : "ghost"} 
-                      size="sm" 
-                      className="text-xs px-2 py-1"
-                      onClick={() => setYamlLevel("scene")}
-                    >
-                      🎬
-                    </Button>
-                  </div>
-                </div>
+                <CardTitle className="text-sm">📊 YAML Data</CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="overflow-y-auto">
                   <YAMLDataDisplay
-                    storyData={(currentSelection.level === "part" || currentSelection.level === "chapter" || yamlLevel === "story") ? sampleStoryData : undefined}
-                    partData={(currentSelection.level === "chapter") ? samplePartData : (currentSelection.level !== "part" && yamlLevel === "part") ? samplePartData : undefined}
-                    chapterData={yamlLevel === "chapter" ? sampleChapterData : undefined}
+                    storyData={(currentSelection.level === "part" || currentSelection.level === "chapter" || currentSelection.level === "scene" || yamlLevel === "story") ? sampleStoryData : undefined}
+                    partData={(currentSelection.level === "chapter" || currentSelection.level === "scene") ? samplePartData : (currentSelection.level !== "part" && yamlLevel === "part") ? samplePartData : undefined}
+                    chapterData={(currentSelection.level === "scene") ? sampleChapterData : yamlLevel === "chapter" ? sampleChapterData : undefined}
                     sceneData={yamlLevel === "scene" ? sampleSceneData : undefined}
-                    currentLevel={currentSelection.level === "part" ? "story" : currentSelection.level === "chapter" ? "chapter" : yamlLevel}
+                    currentLevel={currentSelection.level === "part" ? "story" : currentSelection.level === "chapter" ? "chapter" : currentSelection.level === "scene" ? "scene" : yamlLevel}
                   />
                 </div>
               </CardContent>
