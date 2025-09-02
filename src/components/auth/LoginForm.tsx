@@ -10,27 +10,42 @@ import { Label } from '@/components/ui';
 
 export function LoginForm() {
   const [credentials, setCredentials] = useState({
-    username: '',
+    email: '',
     password: '',
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setEmailError('');
+
+    // Validate email
+    if (!validateEmail(credentials.email)) {
+      setEmailError('Please enter a valid email address');
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const result = await signIn('credentials', {
-        username: credentials.username,
+        email: credentials.email,
         password: credentials.password,
         redirect: false,
       });
 
       if (result?.error) {
-        setError('Invalid username or password');
+        setError('Invalid email or password');
       } else if (result?.ok) {
         router.push('/');
         router.refresh();
@@ -42,13 +57,18 @@ export function LoginForm() {
     }
   };
 
-  const handleInputChange = (field: 'username' | 'password') => (
+  const handleInputChange = (field: 'email' | 'password') => (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     setCredentials(prev => ({
       ...prev,
       [field]: e.target.value,
     }));
+    
+    // Clear email error when user starts typing
+    if (field === 'email' && emailError) {
+      setEmailError('');
+    }
   };
 
   return (
@@ -64,28 +84,54 @@ export function LoginForm() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                type="text"
-                value={credentials.username}
-                onChange={handleInputChange('username')}
-                placeholder="Enter your username"
+                id="email"
+                type="email"
+                value={credentials.email}
+                onChange={handleInputChange('email')}
+                placeholder="Enter your email address"
                 required
                 disabled={isLoading}
+                className={emailError ? 'border-red-500 focus-visible:ring-red-500' : ''}
               />
+              {emailError && (
+                <div className="text-red-600 text-sm">
+                  {emailError}
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={credentials.password}
-                onChange={handleInputChange('password')}
-                placeholder="Enter your password"
-                required
-                disabled={isLoading}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={credentials.password}
+                  onChange={handleInputChange('password')}
+                  placeholder="Enter your password"
+                  required
+                  disabled={isLoading}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
+                >
+                  {showPassword ? (
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
             {error && (
               <div className="text-red-600 text-sm text-center">
@@ -95,7 +141,7 @@ export function LoginForm() {
             <Button
               type="submit"
               className="w-full"
-              disabled={isLoading || !credentials.username || !credentials.password}
+              disabled={isLoading || !credentials.email || !credentials.password}
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>

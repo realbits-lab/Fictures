@@ -10,11 +10,11 @@ export const authConfig = {
     Credentials({
       name: 'credentials',
       credentials: {
-        username: { label: 'Username', type: 'text' },
+        email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password) {
+        if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
@@ -22,7 +22,7 @@ export const authConfig = {
           const user = await db
             .select()
             .from(users)
-            .where(eq(users.username, credentials.username as string))
+            .where(eq(users.email, credentials.email as string))
             .limit(1);
 
           if (user.length === 0) {
