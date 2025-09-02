@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { prompt } = body;
+    const { prompt, language = 'English' } = body;
 
     if (!prompt) {
       return new Response(
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     console.log('🎯 Generating story from prompt:', prompt);
 
     // Generate story using AI development process
-    const generatedStory = await generateStoryFromPrompt(prompt, session.user.id);
+    const generatedStory = await generateStoryFromPrompt(prompt, session.user.id, language);
 
     console.log('📚 Story generated, storing in database...');
 

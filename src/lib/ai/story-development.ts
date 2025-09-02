@@ -52,7 +52,7 @@ function parseYamlText(yamlText: string): any {
 }
 
 // Phase 1: Story Foundation
-export async function storyConceptDevelopment(userPrompt: string): Promise<string> {
+export async function storyConceptDevelopment(userPrompt: string, language: string = 'English'): Promise<string> {
   const { text } = await generateText({
     model: openai('gpt-4o-mini'),
     system: `You are an expert story developer implementing Phase 1: Story Foundation.
@@ -67,11 +67,13 @@ Key requirements:
 - Create reader engagement hooks
 - Use the universal pattern: goal → conflict → outcome
 - Set reasonable word count (60000-100000 for full stories)
+- Set the main language for the story content
 
 Output must be valid YAML format that can be parsed. Use the exact format and terminology from the documentation.`,
     prompt: `User story prompt: "${userPrompt}"
+Main language: ${language}
 
-Create a complete story concept following the story development documentation format. Extract elements from the prompt and expand them into a full story structure with characters, themes, parts, and publication strategy.
+Create a complete story concept following the story development documentation format. Extract elements from the prompt and expand them into a full story structure with characters, themes, parts, and publication strategy. Include the main language in the YAML output.
 
 Return only valid YAML format without code blocks or additional text.`,
   });
@@ -157,12 +159,12 @@ Return only valid YAML format without code blocks or additional text.`,
 }
 
 // Main story development workflow
-export async function generateStoryFromPrompt(userPrompt: string, userId: string) {
+export async function generateStoryFromPrompt(userPrompt: string, userId: string, language: string = 'English') {
   console.log('🚀 Starting story development process...');
   
   // Phase 1: Story Foundation
   console.log('Phase 1: Story Foundation');
-  const storyConceptYaml = await storyConceptDevelopment(userPrompt);
+  const storyConceptYaml = await storyConceptDevelopment(userPrompt, language);
   console.log('✅ Story concept developed');
   
   // Phase 2: Structural Development

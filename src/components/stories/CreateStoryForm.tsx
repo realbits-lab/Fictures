@@ -14,6 +14,7 @@ interface ProgressStep {
 
 export function CreateStoryForm() {
   const [prompt, setPrompt] = useState('');
+  const [language, setLanguage] = useState('English');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [progress, setProgress] = useState<ProgressStep[]>([]);
@@ -68,7 +69,7 @@ export function CreateStoryForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt: prompt.trim() }),
+        body: JSON.stringify({ prompt: prompt.trim(), language }),
       });
 
       // Wait for progress to complete
@@ -128,6 +129,21 @@ export function CreateStoryForm() {
               className="flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-800 dark:bg-gray-950 dark:ring-offset-gray-950 dark:placeholder:text-gray-400 dark:focus-visible:ring-blue-400"
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="language">Main Language *</Label>
+            <select
+              id="language"
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              disabled={isLoading}
+              className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-800 dark:bg-gray-950 dark:ring-offset-gray-950 dark:focus-visible:ring-blue-400"
+              required
+            >
+              <option value="English">English</option>
+              <option value="Korean">Korean</option>
+            </select>
           </div>
 
           {error && (
