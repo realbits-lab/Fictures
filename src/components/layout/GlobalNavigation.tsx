@@ -17,6 +17,7 @@ interface NavItem {
 }
 
 const primaryNavItems: NavItem[] = [
+  { href: "/browse", label: "Browse", icon: "🔍" },
   { href: "/stories", label: "Stories", icon: "📚" },
   { href: "/community", label: "Community", icon: "💬" },
   { href: "/ai", label: "AI", icon: "🤖" }
@@ -30,14 +31,26 @@ const secondaryNavItems: NavItem[] = [
 
 export function GlobalNavigation() {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   const isActiveRoute = (href: string) => {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   };
 
-  // No need to filter items since Write and Publish are removed
-  const visiblePrimaryNavItems = primaryNavItems;
+  // Filter navigation items based on user role
+  const visiblePrimaryNavItems = primaryNavItems.filter((item) => {
+    // Browse is visible to all users
+    if (item.href === '/browse') return true;
+    
+    // Stories is only visible to writers and admins
+    if (item.href === '/stories') {
+      return session?.user?.role === 'writer' || session?.user?.role === 'admin';
+    }
+    
+    // Other items visible to all authenticated users
+    return true;
+  });
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:border-gray-700 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/60">

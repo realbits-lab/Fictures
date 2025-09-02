@@ -306,3 +306,41 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
     storyId: result.story?.id
   };
 }
+
+// Get published stories for Browse page
+export async function getPublishedStories() {
+  const publishedStories = await db
+    .select({
+      id: stories.id,
+      title: stories.title,
+      description: stories.description,
+      genre: stories.genre,
+      status: stories.status,
+      viewCount: stories.viewCount,
+      rating: stories.rating,
+      currentWordCount: stories.currentWordCount,
+      createdAt: stories.createdAt,
+      authorId: stories.authorId,
+      authorName: users.name
+    })
+    .from(stories)
+    .leftJoin(users, eq(stories.authorId, users.id))
+    .where(and(eq(stories.isPublic, true), eq(stories.status, 'published')))
+    .orderBy(desc(stories.updatedAt));
+
+  return publishedStories.map(story => ({
+    id: story.id,
+    title: story.title,
+    description: story.description || '',
+    genre: story.genre || 'Fiction',
+    status: story.status,
+    viewCount: story.viewCount || 0,
+    rating: story.rating || 0,
+    currentWordCount: story.currentWordCount || 0,
+    createdAt: story.createdAt,
+    author: {
+      id: story.authorId,
+      name: story.authorName || 'Anonymous'
+    }
+  }));
+}
