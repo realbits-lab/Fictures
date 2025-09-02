@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
 
 // Part YAML interface based on part-specification.md
@@ -131,6 +131,13 @@ export function PartEditor({
       }
     }
   );
+
+  // Update partData when initialData prop changes
+  useEffect(() => {
+    if (initialData) {
+      setPartData(initialData);
+    }
+  }, [initialData]);
 
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);

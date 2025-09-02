@@ -314,11 +314,48 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
         );
       
       case "part":
+        // Find the selected part from the story structure
+        const selectedPart = story.parts.find(part => part.id === currentSelection.partId);
+        const partNumber = selectedPart?.orderIndex || 1;
+        
+        // Create unique part data based on selected part
+        const createPartData = (partNum: number, partTitle: string) => ({
+          ...samplePartData,
+          part: partNum,
+          title: partTitle,
+          words: partNum === 2 ? 40000 : 20000, // Middle part typically longer
+          function: partNum === 1 ? "story_setup" : 
+                   partNum === 2 ? "story_development" : 
+                   "story_resolution",
+          goal: partNum === 1 ? "Maya accepts supernatural reality" :
+               partNum === 2 ? "Maya develops powers and enters Shadow Realm" :
+               "Maya confronts final enemy and rescues Elena",
+          conflict: partNum === 1 ? "Denial vs mounting evidence" :
+                   partNum === 2 ? "Power corruption vs moral compass" :
+                   "Ultimate sacrifice vs personal desires",
+          outcome: partNum === 1 ? "Reluctant training commitment" :
+                  partNum === 2 ? "Enters Shadow Realm transformed" :
+                  "Victory at personal cost",
+          questions: {
+            primary: partNum === 1 ? "How will Maya react when she discovers her magical abilities?" :
+                    partNum === 2 ? "Can Maya resist the corruption of shadow magic?" :
+                    "Will Maya sacrifice herself to save Elena?",
+            secondary: partNum === 1 ? "Can Maya overcome denial to accept the supernatural world?" :
+                      partNum === 2 ? "How will Maya's relationships change as she grows stronger?" :
+                      "What will be the true cost of Maya's choices?"
+          }
+        });
+        
+        const partData = selectedPart ? 
+          createPartData(partNumber, selectedPart.title) : 
+          samplePartData;
+        
         return (
           <PartEditor
+            key={currentSelection.partId} // Force re-mount when part changes
             partId={currentSelection.partId}
-            partNumber={1}
-            initialData={samplePartData}
+            partNumber={partNumber}
+            initialData={partData}
             storyContext={{
               title: story.title,
               genre: story.genre,
