@@ -55,3 +55,15 @@ tests/@playwright/.auth/
 
 # Playwright MCP
 .playwright-mcp/
+
+# Password and credential files
+user.json
+credentials.json
+*.credentials.json
+*-credentials.json
+test-users.json
+auth-data.json
+
+# Scripts with hardcoded passwords (for security)
+scripts/*password*.ts
+scripts/*credential*.ts

@@ -1,9 +1,14 @@
 import { test, expect } from '@playwright/test';
+import { getUserCredentials } from '@/lib/test/credentials';
 
 test.describe('Story Generation with Progress Tracking', () => {
   
-  test('User can generate story with progress display using writer@fictures.com', async ({ page }) => {
-    // First, authenticate as writer@fictures.com
+  test('User can generate story with progress display using secure writer credentials', async ({ page }) => {
+    // Load secure writer credentials
+    const writerCredentials = getUserCredentials('writer');
+    console.log(`Using secure credentials for: ${writerCredentials.email}`);
+    
+    // First, authenticate using secure credentials
     await page.goto('/');
     
     // Look for sign-in/login mechanisms
@@ -12,16 +17,16 @@ test.describe('Story Generation with Progress Tracking', () => {
       await signInButton.click();
       console.log('✓ Clicked sign-in button');
       
-      // Fill in writer@fictures.com credentials
+      // Fill in secure writer credentials
       const emailInput = page.locator('input[type="email"], input[name="email"]').first();
       if (await emailInput.isVisible({ timeout: 5000 })) {
-        await emailInput.fill('writer@fictures.com');
-        console.log('✓ Filled email: writer@fictures.com');
+        await emailInput.fill(writerCredentials.email);
+        console.log(`✓ Filled email: ${writerCredentials.email}`);
         
         const passwordInput = page.locator('input[type="password"], input[name="password"]').first();
         if (await passwordInput.isVisible({ timeout: 5000 })) {
-          await passwordInput.fill('writer-password');
-          console.log('✓ Filled password');
+          await passwordInput.fill(writerCredentials.password);
+          console.log('✓ Filled password securely');
           
           const submitButton = page.locator('button[type="submit"], button:has-text("Sign in"), button:has-text("Login")').first();
           await submitButton.click();
