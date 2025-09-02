@@ -5,8 +5,8 @@ import { z } from 'zod';
 // ============================================
 
 export const CharacterSchema = z.object({
-  role: z.enum(['protag', 'antag', 'mentor', 'catalyst', 'supporting']),
-  arc: z.string().describe('Character transformation using start→end format'),
+  role: z.string().describe('Character role in the story (e.g., protagonist, antagonist, mentor, etc.)'),
+  arc: z.string().optional().describe('Character transformation using start→end format'),
   flaw: z.string().optional(),
   goal: z.string().optional(),
   secret: z.string().optional(),
@@ -15,7 +15,7 @@ export const CharacterSchema = z.object({
 export const StructureSchema = z.object({
   type: z.enum(['3_part', '4_part', '5_part']),
   parts: z.array(z.string()),
-  dist: z.array(z.number()).describe('Percentage distribution'),
+  dist: z.array(z.number()).optional().describe('Percentage distribution'),
 });
 
 export const PartSchema = z.object({
@@ -23,7 +23,7 @@ export const PartSchema = z.object({
   goal: z.string(),
   conflict: z.string(),
   outcome: z.string(),
-  tension: z.string(),
+  tension: z.string().optional(),
 });
 
 export const SerialSchema = z.object({
@@ -56,7 +56,7 @@ export const StorySchema = z.object({
   chars: z.record(z.string(), CharacterSchema),
   themes: z.array(z.string()),
   structure: StructureSchema,
-  setting: SettingSchema,
+  setting: SettingSchema.optional(),
   parts: z.array(PartSchema),
   serial: SerialSchema,
   hooks: HooksSchema,
@@ -68,18 +68,20 @@ export const StorySchema = z.object({
 // ============================================
 
 export const PartCharacterSchema = z.object({
-  start: z.string(),
-  end: z.string(),
-  arc: z.array(z.string()),
+  name: z.string().optional(),
+  start: z.string().optional(),
+  end: z.string().optional(),
+  arc: z.array(z.string()).optional(),
+  development: z.string().optional(),
   conflict: z.string().optional(),
   transforms: z.array(z.string()).optional(),
   function: z.string().optional(),
 });
 
 export const PartPlotSchema = z.object({
-  events: z.array(z.string()),
-  reveals: z.array(z.string()),
-  escalation: z.array(z.string()),
+  events: z.array(z.string()).optional(),
+  reveals: z.array(z.string()).optional(),
+  escalation: z.array(z.string()).optional(),
 });
 
 export const PartThemesSchema = z.object({
@@ -96,17 +98,18 @@ export const PartEmotionSchema = z.object({
 });
 
 export const PartEndingSchema = z.object({
-  resolution: z.array(z.string()),
-  setup: z.array(z.string()),
-  hooks: z.array(z.string()),
-  hook_out: z.string(),
+  resolution: z.array(z.string()).optional(),
+  setup: z.array(z.string()).optional(),
+  hooks: z.array(z.string()).optional(),
+  hook_out: z.string().optional(),
 });
 
 export const PartSerialSchema = z.object({
-  arc: z.string(),
-  climax_at: z.string(),
-  satisfaction: z.array(z.string()),
-  anticipation: z.array(z.string()),
+  arc: z.string().optional(),
+  climax_at: z.string().optional(),
+  satisfaction: z.array(z.string()).optional(),
+  anticipation: z.array(z.string()).optional(),
+  chapter_words: z.number().optional(),
 });
 
 export const PartEngagementSchema = z.object({
@@ -124,19 +127,19 @@ export const PartQuestionsSchema = z.object({
 export const PartSpecificationSchema = z.object({
   part: z.number(),
   title: z.string(),
-  words: z.number(),
-  function: z.string(),
+  words: z.number().optional(),
+  function: z.string().optional(),
   goal: z.string(),
   conflict: z.string(),
   outcome: z.string(),
-  questions: PartQuestionsSchema,
-  chars: z.record(z.string(), PartCharacterSchema),
-  plot: PartPlotSchema,
-  themes: PartThemesSchema,
-  emotion: PartEmotionSchema,
-  ending: PartEndingSchema,
-  serial: PartSerialSchema,
-  engagement: PartEngagementSchema,
+  questions: PartQuestionsSchema.optional(),
+  chars: z.record(z.string(), PartCharacterSchema).optional(),
+  plot: PartPlotSchema.optional(),
+  themes: PartThemesSchema.optional(),
+  emotion: PartEmotionSchema.optional(),
+  ending: PartEndingSchema.optional(),
+  serial: PartSerialSchema.optional(),
+  engagement: PartEngagementSchema.optional(),
 });
 
 // ============================================
