@@ -30,24 +30,24 @@ const ficutresTestUsers = {
 setup('authenticate with username/password', async ({ page }) => {
   // Use writer as default test user
   const testUser = ficutresTestUsers.writer;
-  // Navigate to sign-in page
-  await page.goto('/');
   
-  // Look for authentication form or sign-in area
-  const signInButton = page.locator('[data-testid="sign-in-button"], .auth-button, button:has-text("Sign in"), button:has-text("Login")').first();
+  console.log(`🔐 Setting up authentication for test user: ${testUser.email}`);
   
-  if (await signInButton.isVisible({ timeout: 10000 })) {
-    await signInButton.click();
-    console.log('✓ Clicked sign-in button');
-  }
+  // Navigate directly to login page since we know the auth config
+  await page.goto('/login');
   
-  // Look for username/email input field
-  const usernameInput = page.locator('input[type="email"], input[name="email"], input[name="username"], input[placeholder*="email"], input[placeholder*="username"]').first();
+  // Wait for login form to load
+  await page.waitForTimeout(2000);
   
-  if (await usernameInput.isVisible({ timeout: 10000 })) {
-    // Use test user credentials from configuration
-    await usernameInput.fill(testUser.email);
-    console.log(`✓ Filled username/email field (${testUser.email})`);
+  // Look for email input field on login page
+  const emailInput = page.locator('input[type="email"], input[name="email"], input[placeholder*="email"]').first();
+  
+  if (await emailInput.isVisible({ timeout: 10000 })) {
+    console.log('✓ Login form found - performing credentials login');
+    
+    // Fill in email
+    await emailInput.fill(testUser.email);
+    console.log(`✓ Filled email field (${testUser.email})`);
     
     // Look for password input field
     const passwordInput = page.locator('input[type="password"], input[name="password"]').first();
@@ -57,82 +57,95 @@ setup('authenticate with username/password', async ({ page }) => {
       console.log('✓ Filled password field');
       
       // Look for submit button
-      const submitButton = page.locator('button[type="submit"], button:has-text("Submit"), button:has-text("Login"), button:has-text("Sign in")').first();
+      const submitButton = page.locator('button[type="submit"], button:has-text("Submit"), button:has-text("Login"), button:has-text("Sign in"), button:has-text("Sign In")').first();
       
       if (await submitButton.isVisible({ timeout: 5000 })) {
         await submitButton.click();
         console.log('✓ Clicked submit button');
         
-        // Wait for either successful login or stay on same page
-        await page.waitForTimeout(3000);
+        // Wait for authentication to complete
+        await page.waitForTimeout(5000);
         
-        // Check if we're authenticated by looking for user-specific elements
-        const userElements = page.locator('[data-testid="user-menu"], .user-avatar, .dashboard, [data-testid="dashboard"], .user-profile');
-        
-        if (await userElements.first().isVisible({ timeout: 5000 })) {
-          console.log('✓ Authentication successful - user elements found');
+        // Check if we're redirected away from login (successful login)
+        if (!page.url().includes('/login')) {
+          console.log('✓ Authentication successful - redirected away from login page');
           
-          // Get authentication state and merge with user data
-          const authState = await page.context().storageState();
-          const mergedAuthData = {
-            ...authState,
-            testUser: testUser,
-            allTestUsers: ficutresTestUsers
-          };
+          // Try navigating to a protected page to verify auth works
+          await page.goto('/stories/new');
+          await page.waitForTimeout(2000);
           
-          // Ensure directory exists
-          mkdirSync(dirname(authFile), { recursive: true });
-          
-          // Save merged authentication state with user data
-          writeFileSync(authFile, JSON.stringify(mergedAuthData, null, 2));
-          console.log('✓ Authentication state with user data saved');
+          if (!page.url().includes('/login')) {
+            console.log('✓ Protected page accessible - authentication verified');
+            
+            // Navigate back to home and save auth state
+            await page.goto('/');
+            await page.waitForTimeout(1000);
+            
+            // Save authentication state with user data
+            const authState = await page.context().storageState();
+            const mergedAuthData = {
+              ...authState,
+              testUser: testUser,
+              allTestUsers: ficutresTestUsers
+            };
+            
+            // Ensure directory exists
+            mkdirSync(dirname(authFile), { recursive: true });
+            
+            // Save merged authentication state with user data
+            writeFileSync(authFile, JSON.stringify(mergedAuthData, null, 2));
+            console.log('✓ Authentication state saved successfully');
+          } else {
+            console.log('⚠️ Protected page redirected to login - auth may have failed');
+            throw new Error('Authentication verification failed - protected page not accessible');
+          }
         } else {
-          console.log('⚠️ No user elements found after login - creating mock authentication state');
+          console.log('⚠️ Still on login page after submit - authentication may have failed');
           
-          // Create a mock authentication state with user data
-          const mockAuthData = {
-            cookies: [],
-            origins: [],
-            testUser: testUser,
-            allTestUsers: ficutresTestUsers
-          };
+          // Check for error messages and debug
+          await page.waitForTimeout(2000); // Wait for any error messages to appear
+          const errorMessages = page.locator('.text-red-600, .error, .alert-error, [role="alert"]');
+          const errorCount = await errorMessages.count();
           
-          // Ensure directory exists
-          mkdirSync(dirname(authFile), { recursive: true });
+          console.log(`📊 Found ${errorCount} error message elements`);
           
-          // Save mock authentication state with user data
-          writeFileSync(authFile, JSON.stringify(mockAuthData, null, 2));
-          console.log('✓ Mock authentication state with user data created');
+          if (errorCount > 0) {
+            for (let i = 0; i < errorCount; i++) {
+              const errorElement = errorMessages.nth(i);
+              const errorText = await errorElement.textContent();
+              console.log(`❌ Error message ${i + 1}: "${errorText}"`);
+            }
+            
+            const firstError = await errorMessages.first().textContent();
+            throw new Error(`Login failed with error: "${firstError || 'Empty error message'}"`);
+          } else {
+            console.log('🔍 No error messages found, checking form state...');
+            
+            // Debug: check if form is still in loading state
+            const loadingButton = page.locator('button:has-text("Signing in...")');
+            const isStillLoading = await loadingButton.count() > 0;
+            console.log(`🔄 Form still loading: ${isStillLoading}`);
+            
+            // Debug: check current URL
+            console.log(`📍 Current URL: ${page.url()}`);
+            
+            // Debug: take screenshot for investigation
+            await page.screenshot({ path: 'login-failure-debug.png' });
+            
+            throw new Error('Login failed - still on login page with no visible error message');
+          }
         }
+      } else {
+        throw new Error('Submit button not found on login form');
       }
+    } else {
+      throw new Error('Password input field not found on login form');
     }
   } else {
-    console.log('⚠️ No authentication form found - app might not require login or uses different auth method');
-    
-    // Check if already authenticated or no auth required
-    const userElements = page.locator('[data-testid="user-menu"], .user-avatar, .dashboard, main, .content');
-    
-    if (await userElements.first().isVisible({ timeout: 5000 })) {
-      console.log('✓ App accessible without authentication or already authenticated');
-      
-      // Get authentication state and merge with user data
-      const authState = await page.context().storageState();
-      const mergedAuthData = {
-        ...authState,
-        testUser: testUser,
-        allTestUsers: defaultTestUsers
-      };
-      
-      // Ensure directory exists
-      mkdirSync(dirname(authFile), { recursive: true });
-      
-      // Save merged authentication state with user data
-      writeFileSync(authFile, JSON.stringify(mergedAuthData, null, 2));
-      console.log('✓ Authentication state with user data saved');
-    }
+    throw new Error('Login form not found - email input field not visible');
   }
   
-  console.log('Authentication setup completed');
+  console.log('✅ Authentication setup completed successfully');
 });
 
 setup.describe.configure({ mode: 'serial' });
