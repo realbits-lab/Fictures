@@ -6,34 +6,31 @@ import { PublishingSchedule } from "./PublishingSchedule";
 import { AIAssistantWidget } from "./AIAssistantWidget";
 import { CommunityHighlights } from "./CommunityHighlights";
 import { Button } from "@/components/ui";
+import { auth } from "@/lib/auth";
+import { getUserStories } from "@/lib/db/queries";
 
-// Sample story data
-const sampleStories = [
-  {
-    id: "1",
-    title: "The Shadow Keeper",
-    genre: "Urban Fantasy",
-    parts: { completed: 3, total: 3 },
-    chapters: { completed: 15, total: 15 },
-    readers: 2400,
-    rating: 4.7,
-    status: "publishing" as const,
-    wordCount: 63000
-  },
-  {
-    id: "2", 
-    title: "Dragon Chronicles",
-    genre: "Epic Fantasy",
-    parts: { completed: 5, total: 7 },
-    chapters: { completed: 28, total: 35 },
-    readers: 890,
-    rating: 4.2,
-    status: "draft" as const,
-    wordCount: 45000
+export async function Dashboard() {
+  const session = await auth();
+  
+  if (!session?.user?.id) {
+    return <div>Please sign in to view your dashboard.</div>;
   }
-];
 
-export function Dashboard() {
+  const userStories = await getUserStories(session.user.id);
+
+  // Transform database stories to match StoryCard props
+  const transformedStories = userStories.map((story) => ({
+    id: story.id,
+    title: story.title,
+    genre: story.genre || "General",
+    parts: { completed: 0, total: 0 }, // TODO: Calculate from parts table
+    chapters: { completed: 0, total: 0 }, // TODO: Calculate from chapters table
+    readers: story.viewCount || 0,
+    rating: (story.rating || 0) / 10, // Convert from database format (47 = 4.7)
+    status: story.status as "draft" | "publishing" | "completed",
+    wordCount: story.currentWordCount || 0
+  }));
+
   return (
     <div className="space-y-8">
       {/* Stories Section */}
@@ -47,9 +44,16 @@ export function Dashboard() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sampleStories.map((story) => (
-            <StoryCard key={story.id} {...story} />
-          ))}
+          {transformedStories.length > 0 ? (
+            transformedStories.map((story) => (
+              <StoryCard key={story.id} {...story} />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12 text-gray-500">
+              <p className="text-xl mb-2">📝 No stories yet</p>
+              <p>Start your writing journey by creating your first story!</p>
+            </div>
+          )}
           <CreateStoryCard />
         </div>
       </section>
