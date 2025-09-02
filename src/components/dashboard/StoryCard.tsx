@@ -25,6 +25,7 @@ interface StoryCardProps {
   status: "draft" | "publishing" | "completed";
   wordCount?: number;
   firstChapterId?: string | null;
+  storyData?: Record<string, unknown> | null;
 }
 
 export function StoryCard({
@@ -38,6 +39,7 @@ export function StoryCard({
   status,
   wordCount,
   firstChapterId,
+  storyData,
 }: StoryCardProps) {
   const progressPercentage =
     chapters.total > 0 ? (chapters.completed / chapters.total) * 100 : 0;
@@ -109,6 +111,19 @@ export function StoryCard({
             </div>
             <Progress value={progressPercentage} />
           </div>
+
+          {storyData && (
+            <div className="space-y-2">
+              <div className="text-xs text-gray-600 dark:text-gray-400">
+                <strong>📊 Story Data:</strong>
+              </div>
+              <div className="text-xs bg-gray-50 dark:bg-gray-900 rounded p-2 font-mono max-h-32 overflow-auto">
+                <pre className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">
+                  {JSON.stringify(storyData, null, 2)}
+                </pre>
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
 

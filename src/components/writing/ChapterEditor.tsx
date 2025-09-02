@@ -20,6 +20,7 @@ interface Story {
   title: string;
   genre: string;
   status: string;
+  storyData?: Record<string, unknown>;
   parts: Array<{
     id: string;
     title: string;
@@ -214,6 +215,22 @@ export function ChapterEditor({ chapter, story }: ChapterEditorProps) {
 
           {/* Right Sidebar - Writing Tools */}
           <div className="space-y-6">
+            {/* Story Data */}
+            {story.storyData && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>📊 Story Data</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="text-xs bg-gray-50 dark:bg-gray-900 rounded-lg p-3 font-mono max-h-64 overflow-auto">
+                    <pre className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">
+                      {JSON.stringify(story.storyData, null, 2)}
+                    </pre>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
             {/* Word Count & Progress */}
             <Card>
               <CardContent className="py-4">

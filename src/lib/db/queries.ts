@@ -294,6 +294,7 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
     title: story.title,
     genre: story.genre || 'General',
     status: story.status || 'draft',
+    storyData: story.storyData || null,
     parts: structuredParts,
     chapters: standaloneChapters,
     scenes: allScenes
