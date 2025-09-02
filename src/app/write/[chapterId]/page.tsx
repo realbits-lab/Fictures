@@ -1,3 +1,5 @@
+import { auth } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 import { ChapterEditor } from "@/components/writing/ChapterEditor";
 
 // Sample chapter data
@@ -43,6 +45,12 @@ const sampleChapter = {
 };
 
 export default async function WritePage({ params }: { params: Promise<{ chapterId: string }> }) {
+  const session = await auth();
+  
+  if (!session) {
+    redirect('/login');
+  }
+
   const { chapterId } = await params;
   
   return <ChapterEditor chapter={sampleChapter} />;

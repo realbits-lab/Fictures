@@ -43,6 +43,7 @@ export const users = pgTable('users', {
   name: varchar('name', { length: 255 }),
   image: text('image'),
   bio: text('bio'),
+  role: varchar('role', { length: 20 }).default('reader').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

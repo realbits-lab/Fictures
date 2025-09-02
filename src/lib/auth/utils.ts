@@ -13,11 +13,13 @@ export async function createUser({
   email,
   password,
   name,
+  role = 'reader',
 }: {
   username: string;
   email: string;
   password: string;
   name?: string;
+  role?: 'admin' | 'writer' | 'reader' | 'moderator';
 }) {
   const hashedPassword = await hashPassword(password);
   
@@ -27,6 +29,7 @@ export async function createUser({
     email,
     password: hashedPassword,
     name,
+    role,
     createdAt: new Date(),
     updatedAt: new Date(),
   }).returning();

@@ -44,6 +44,7 @@ export const authConfig = {
             username: foundUser.username,
             email: foundUser.email,
             name: foundUser.name,
+            role: foundUser.role,
           };
         } catch (error) {
           console.error('Auth error:', error);
@@ -76,12 +77,14 @@ export const authConfig = {
     jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.role = user.role;
       }
       return token;
     },
     session({ session, token }) {
       if (token) {
         session.user.id = token.id as string;
+        session.user.role = token.role as string;
       }
       return session;
     },
