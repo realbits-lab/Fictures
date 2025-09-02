@@ -27,7 +27,6 @@ dev.log
 
 # logs directory
 logs/
-@logs/
 
 # local env files
 .env.local
