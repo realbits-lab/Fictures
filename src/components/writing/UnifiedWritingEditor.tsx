@@ -368,40 +368,130 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
         );
       
       case "chapter":
-        // Use existing ChapterEditor but modified to fit into this flow
-        const chapterMockData = {
-          id: currentSelection.chapterId || "1",
-          title: "Missing",
-          partTitle: "Discovery",
-          wordCount: 3500,
-          targetWordCount: 4000,
-          status: 'draft',
-          purpose: "Establish Elena's disappearance and supernatural threat",
-          hook: "Door unlocked, coffee warm, Elena gone",
-          characterFocus: "Maya's protective instincts vs skeptical nature",
-          scenes: [
-            {
-              id: "1",
-              title: "Elena's Apartment",
-              status: "planned" as const,
-              wordCount: 0,
-              goal: "Find Elena for coffee date",
-              conflict: "Elena missing with signs of struggle",
-              outcome: "Realizes Elena in supernatural danger"
-            }
-          ]
-        };
+        // Find the selected chapter from story structure
+        let selectedChapter = null;
+        let selectedPartTitle = null;
         
-        return <ChapterEditor chapter={chapterMockData} story={story} hideSidebar={true} />;
+        // Look in parts first
+        for (const part of story.parts) {
+          const foundChapter = part.chapters.find(ch => ch.id === currentSelection.chapterId);
+          if (foundChapter) {
+            selectedChapter = foundChapter;
+            selectedPartTitle = part.title;
+            break;
+          }
+        }
+        
+        // Look in standalone chapters if not found in parts
+        if (!selectedChapter) {
+          selectedChapter = story.chapters.find(ch => ch.id === currentSelection.chapterId);
+        }
+        
+        // Create chapter data based on selection or fallback
+        const createChapterData = (chapter: any, partTitle: string | null) => ({
+          id: chapter?.id || currentSelection.chapterId || "1",
+          title: chapter?.title || `Chapter ${chapter?.orderIndex || 1}`,
+          partTitle: partTitle || "Standalone",
+          wordCount: chapter?.wordCount || 0,
+          targetWordCount: chapter?.targetWordCount || 4000,
+          status: chapter?.status || 'draft',
+          purpose: chapter?.orderIndex === 1 ? "Establish story foundation and initial conflict" :
+                   chapter?.orderIndex === 2 ? "Develop characters and escalate tension" :
+                   "Build toward climax and resolution",
+          hook: chapter?.orderIndex === 1 ? "Opening scene that draws readers in" :
+                "Continue momentum from previous chapter",
+          characterFocus: "Character development and relationship dynamics",
+          scenes: chapter?.scenes || []
+        });
+        
+        const chapterData = selectedChapter ? 
+          createChapterData(selectedChapter, selectedPartTitle) : 
+          createChapterData(null, null);
+        
+        return (
+          <ChapterEditor 
+            key={currentSelection.chapterId} // Force re-mount when chapter changes
+            chapter={chapterData} 
+            story={story} 
+            hideSidebar={true} 
+          />
+        );
       
       case "scene":
+        // Find the selected scene from story structure
+        let selectedScene = null;
+        let selectedSceneChapter = null;
+        let sceneNumber = 1;
+        
+        // Look through all chapters in parts
+        for (const part of story.parts) {
+          for (const chapter of part.chapters) {
+            if (chapter.scenes) {
+              const foundSceneIndex = chapter.scenes.findIndex(scene => scene.id === currentSelection.sceneId);
+              if (foundSceneIndex !== -1) {
+                selectedScene = chapter.scenes[foundSceneIndex];
+                selectedSceneChapter = chapter;
+                sceneNumber = foundSceneIndex + 1;
+                break;
+              }
+            }
+          }
+          if (selectedScene) break;
+        }
+        
+        // Look in standalone chapters if not found in parts
+        if (!selectedScene) {
+          for (const chapter of story.chapters) {
+            if (chapter.scenes) {
+              const foundSceneIndex = chapter.scenes.findIndex(scene => scene.id === currentSelection.sceneId);
+              if (foundSceneIndex !== -1) {
+                selectedScene = chapter.scenes[foundSceneIndex];
+                selectedSceneChapter = chapter;
+                sceneNumber = foundSceneIndex + 1;
+                break;
+              }
+            }
+          }
+        }
+        
+        // Create scene data based on selection
+        const createSceneData = (scene: any, sceneNum: number) => ({
+          id: scene?.id || currentSelection.sceneId || `scene-${sceneNum}`,
+          summary: scene?.title || `Scene ${sceneNum}`,
+          time: sceneNum === 1 ? "morning" : sceneNum === 2 ? "afternoon" : "evening",
+          place: scene?.title?.toLowerCase().includes('apartment') ? "elena_apartment" : 
+                 scene?.title?.toLowerCase().includes('office') ? "maya_office" : "location",
+          pov: "maya",
+          characters: {
+            maya: { enters: "determined", exits: "conflicted" },
+            elena: { status: scene?.id?.includes('elena') ? "present" : "referenced" }
+          },
+          goal: scene?.goal || `Accomplish scene ${sceneNum} objective`,
+          obstacle: scene?.conflict || "Internal and external challenges",
+          outcome: scene?.outcome || "Scene resolution",
+          beats: [
+            "Opening beat - establish scene",
+            "Development - character actions",
+            "Conflict - obstacles arise", 
+            "Resolution - scene conclusion"
+          ],
+          shift: "emotional_progression",
+          leads_to: `scene_${sceneNum + 1}`,
+          image_prompt: `Scene ${sceneNum} visual description for ${selectedSceneChapter?.title || 'chapter'}`
+        });
+        
+        const sceneData = selectedScene ? 
+          createSceneData(selectedScene, sceneNumber) : 
+          createSceneData(null, sceneNumber);
+        
         return (
           <SceneEditor
+            key={currentSelection.sceneId} // Force re-mount when scene changes
             sceneId={currentSelection.sceneId}
-            sceneNumber={1}
-            initialData={sampleSceneData}
+            sceneNumber={sceneNumber}
+            initialData={sceneData}
             chapterContext={{
-              title: "Missing",
+              title: selectedSceneChapter?.title || "Chapter",
               pov: "maya",
               acts: sampleChapterData.acts
             }}
