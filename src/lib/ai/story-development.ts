@@ -1,63 +1,15 @@
-import { generateText } from 'ai';
+import { generateObject } from 'ai';
 import { openai } from '@ai-sdk/openai';
-
-// Utility function to parse YAML-like text into JSON
-function parseYamlText(yamlText: string): any {
-  try {
-    // Simple YAML parsing - convert to JSON format
-    const lines = yamlText.split('\n');
-    const result: any = {};
-    let currentKey = '';
-    let currentValue = '';
-    
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (trimmed && !trimmed.startsWith('#')) {
-        if (trimmed.includes(':')) {
-          const [key, ...valueParts] = trimmed.split(':');
-          currentKey = key.trim();
-          currentValue = valueParts.join(':').trim();
-          
-          // Handle different value types
-          if (currentValue.startsWith('[') && currentValue.endsWith(']')) {
-            // Array
-            result[currentKey] = JSON.parse(currentValue);
-          } else if (currentValue.startsWith('{') && currentValue.endsWith('}')) {
-            // Object
-            result[currentKey] = JSON.parse(currentValue);
-          } else if (!isNaN(Number(currentValue))) {
-            // Number
-            result[currentKey] = Number(currentValue);
-          } else if (currentValue === 'true' || currentValue === 'false') {
-            // Boolean
-            result[currentKey] = currentValue === 'true';
-          } else {
-            // String
-            result[currentKey] = currentValue.replace(/^["']|["']$/g, '');
-          }
-        }
-      }
-    }
-    
-    return result;
-  } catch (error) {
-    console.error('YAML parsing error, attempting JSON parse:', error);
-    try {
-      return JSON.parse(yamlText);
-    } catch (jsonError) {
-      console.error('JSON parsing also failed:', jsonError);
-      return yamlText;
-    }
-  }
-}
+import { StorySchema, PartSpecificationSchema, ChapterSpecificationSchema, SceneSpecificationSchema, type Story, type PartSpecification, type ChapterSpecification, type SceneSpecification } from './schemas';
 
 // Phase 1: Story Foundation
-export async function storyConceptDevelopment(userPrompt: string, language: string = 'English'): Promise<string> {
-  const { text } = await generateText({
+export async function storyConceptDevelopment(userPrompt: string, language: string = 'English'): Promise<Story> {
+  const { object } = await generateObject({
     model: openai('gpt-4o-mini'),
+    schema: StorySchema,
     system: `You are an expert story developer implementing Phase 1: Story Foundation.
 
-Analyze the user's story prompt and extract core elements to create a structured story concept following the exact YAML format from the story development documentation.
+Analyze the user's story prompt and extract core elements to create a structured story concept following JSON schema specifications.
 
 Key requirements:
 - Extract genre, characters, conflict, and themes from the user prompt
@@ -69,93 +21,124 @@ Key requirements:
 - Set reasonable word count (60000-100000 for full stories)
 - Set the main language for the story content
 
-Output must be valid YAML format that can be parsed. Use the exact format and terminology from the documentation.`,
+Output structured JSON data that follows the Story schema.`,
     prompt: `User story prompt: "${userPrompt}"
 Main language: ${language}
 
-Create a complete story concept following the story development documentation format. Extract elements from the prompt and expand them into a full story structure with characters, themes, parts, and publication strategy. Include the main language in the YAML output.
-
-Return only valid YAML format without code blocks or additional text.`,
+Create a complete story concept following the story development format. Extract elements from the prompt and expand them into a full story structure with characters, themes, parts, and publication strategy.`,
   });
 
-  return text;
+  return object;
 }
 
-// Phase 2: Structural Development
-export async function partDevelopmentProcess(storyConcept: string): Promise<string> {
-  const { text } = await generateText({
-    model: openai('gpt-4o-mini'),
-    system: `You are implementing Phase 2: Structural Development.
+// Phase 2: Structural Development - Generate detailed part specifications
+export async function generatePartSpecifications(storyConcept: Story): Promise<PartSpecification[]> {
+  const partSpecs: PartSpecification[] = [];
+  
+  for (let i = 0; i < storyConcept.parts.length; i++) {
+    const storyPart = storyConcept.parts[i];
+    
+    const { object } = await generateObject({
+      model: openai('gpt-4o-mini'),
+      schema: PartSpecificationSchema,
+      system: `You are implementing Phase 2: Structural Development.
 
-Take the story concept from Phase 1 and develop detailed part-level structure with:
-- Expanded part details with specific titles and word counts
+Take the story concept and develop detailed part-level structure with:
+- Expanded part details with specific character development
 - Publication flow planning for serial fiction
 - Conflict escalation patterns
 - Tension peak planning
+- Reader engagement strategies
 
-Output must be valid YAML format that can be parsed. Follow the documentation format exactly.`,
-    prompt: `Story concept from Phase 1: ${storyConcept}
+Output structured JSON data following the PartSpecification schema.`,
+      prompt: `Story concept: ${JSON.stringify(storyConcept, null, 2)}
 
-Develop the part-level structure following the part development process format from the documentation.
+Current part to develop: Part ${storyPart.part}
+- Goal: ${storyPart.goal}
+- Conflict: ${storyPart.conflict}
+- Outcome: ${storyPart.outcome}
 
-Return only valid YAML format without code blocks or additional text.`,
-  });
+Develop the detailed part specification for Part ${storyPart.part} following the part development format. Include character development, plot progression, themes, and reader engagement elements.`,
+    });
 
-  return text;
+    partSpecs.push(object);
+  }
+  
+  return partSpecs;
 }
 
-// Phase 3: Character Development
-export async function characterDevelopmentProcess(partDevelopment: string, storyConcept: string): Promise<string> {
-  const { text } = await generateText({
-    model: openai('gpt-4o-mini'),
-    system: `You are implementing Phase 3: Character Development & World-Building.
+// Phase 3: Chapter Generation
+export async function generateChapterSpecifications(storyConcept: Story, partSpec: PartSpecification, chapterCount: number = 5): Promise<ChapterSpecification[]> {
+  const chapters: ChapterSpecification[] = [];
+  
+  for (let i = 1; i <= chapterCount; i++) {
+    const { object } = await generateObject({
+      model: openai('gpt-4o-mini'),
+      schema: ChapterSpecificationSchema,
+      system: `You are implementing Chapter Generation.
 
-Take the part development and story concept to create detailed character evolution tracking:
-- Character development stages for each character
-- Voice authenticity markers
-- Relationship dynamics with tension levels
-- Reader engagement hooks through characters
+Generate detailed chapter specifications that fulfill the dual mandate:
+1. Episodic Satisfaction: Complete mini-story arc within chapter
+2. Serial Momentum: Compelling hook to next chapter
 
-Output must be valid YAML format that can be parsed. Follow the documentation format exactly.`,
-    prompt: `Part development: ${partDevelopment}
+Key requirements:
+- Three-act structure (Setup 20%, Confrontation 60%, Resolution 20%)
+- Clear goal/conflict/outcome for chapter
+- Character development within chapter
+- Multi-layered tension architecture
+- Strong forward hook that emerges naturally
 
-Story concept: ${storyConcept}
+Output structured JSON data following the ChapterSpecification schema.`,
+      prompt: `Story concept: ${JSON.stringify(storyConcept, null, 2)}
 
-Develop character evolution, relationships, and voice authenticity following the character development process format.
+Part specification: ${JSON.stringify(partSpec, null, 2)}
 
-Return only valid YAML format without code blocks or additional text.`,
-  });
+Generate Chapter ${i} of Part ${partSpec.part} (${partSpec.title}).
+This chapter should advance the part's goals while being self-contained.
+Target word count: ${storyConcept.serial.chapter_words} words
+POV character should be the main protagonist: ${Object.keys(storyConcept.chars).find(k => storyConcept.chars[k].role === 'protag')}`,
+    });
 
-  return text;
+    chapters.push(object);
+  }
+  
+  return chapters;
 }
 
-// Phase 4: Quality Assurance
-export async function storyConsistencyVerification(characterDevelopment: string, partDevelopment: string, storyConcept: string): Promise<string> {
-  const { text } = await generateText({
-    model: openai('gpt-4o-mini'),
-    system: `You are implementing Phase 4: Quality Assurance and Refinement.
+// Phase 4: Scene Generation
+export async function generateSceneSpecifications(chapterSpec: ChapterSpecification, sceneCount: number = 3): Promise<SceneSpecification[]> {
+  const scenes: SceneSpecification[] = [];
+  
+  for (let i = 1; i <= sceneCount; i++) {
+    const { object } = await generateObject({
+      model: openai('gpt-4o-mini'),
+      schema: SceneSpecificationSchema,
+      system: `You are implementing Scene Generation.
 
-Perform final consistency verification and create the complete story specification that matches the story-specification format.
+Generate detailed scene specifications that serve as building blocks of chapters:
+- Clear dramatic goal/obstacle/outcome
+- Meaningful emotional/situational shift
+- Connection to chapter flow
+- Visual scene description for atmosphere
 
-Verify:
-- Character consistency and development arcs
-- Plot thread development
-- World-building coherence
-- Timeline accuracy
+Each scene should advance the chapter while being a complete dramatic unit.
 
-Output must be valid YAML format that can be parsed. Output the final story format ready for database storage.`,
-    prompt: `Character development: ${characterDevelopment}
+Output structured JSON data following the SceneSpecification schema.`,
+      prompt: `Chapter specification: ${JSON.stringify(chapterSpec, null, 2)}
 
-Part development: ${partDevelopment}
+Generate Scene ${i} of Chapter ${chapterSpec.chap}.
+This scene should contribute to the chapter's three-act structure:
+- Act 1 (Setup): Scene 1
+- Act 2 (Confrontation): Scenes 2-3  
+- Act 3 (Resolution): Final scene
 
-Story concept: ${storyConcept}
+Scene ${i} function within chapter structure.`,
+    });
 
-Create the final verified story specification following the exact format from the documentation.
-
-Return only valid YAML format without code blocks or additional text.`,
-  });
-
-  return text;
+    scenes.push(object);
+  }
+  
+  return scenes;
 }
 
 // Main story development workflow
@@ -164,35 +147,23 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
   
   // Phase 1: Story Foundation
   console.log('Phase 1: Story Foundation');
-  const storyConceptYaml = await storyConceptDevelopment(userPrompt, language);
+  const storyConcept = await storyConceptDevelopment(userPrompt, language);
   console.log('✅ Story concept developed');
   
-  // Phase 2: Structural Development
-  console.log('Phase 2: Structural Development');
-  const partDevelopmentYaml = await partDevelopmentProcess(storyConceptYaml);
-  console.log('✅ Part development completed');
+  // Phase 2: Part Development
+  console.log('Phase 2: Part Development');
+  const partSpecs = await generatePartSpecifications(storyConcept);
+  console.log('✅ Part specifications completed');
   
-  // Phase 3: Character Development
-  console.log('Phase 3: Character Development');
-  const characterDevelopmentYaml = await characterDevelopmentProcess(partDevelopmentYaml, storyConceptYaml);
-  console.log('✅ Character development completed');
-  
-  // Phase 4: Quality Assurance
-  console.log('Phase 4: Quality Assurance');
-  const finalStoryYaml = await storyConsistencyVerification(characterDevelopmentYaml, partDevelopmentYaml, storyConceptYaml);
-  const finalStory = parseYamlText(finalStoryYaml);
-  console.log('✅ Story verification completed');
-  
-  // Add metadata
+  // Add metadata and structure the complete story
   const completeStory = {
-    ...finalStory,
+    ...storyConcept,
     userId,
     createdAt: new Date(),
+    partSpecifications: partSpecs,
     developmentPhases: {
-      phase1: parseYamlText(storyConceptYaml),
-      phase2: parseYamlText(partDevelopmentYaml),
-      phase3: parseYamlText(characterDevelopmentYaml),
-      phase4: finalStory,
+      phase1_story: storyConcept,
+      phase2_parts: partSpecs,
     }
   };
   
@@ -200,3 +171,9 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
   
   return completeStory;
 }
+
+// Helper functions for generating individual parts/chapters/scenes
+export { storyConceptDevelopment as generateStory };
+export { generatePartSpecifications as generateParts };
+export { generateChapterSpecifications as generateChapters };
+export { generateSceneSpecifications as generateScenes };

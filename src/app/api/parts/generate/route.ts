@@ -1,0 +1,154 @@
+import { NextRequest } from 'next/server';
+import { auth } from '@/lib/auth';
+import { generatePartSpecifications } from '@/lib/ai/story-development';
+import { db } from '@/lib/db';
+import { stories, parts } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
+import { nanoid } from 'nanoid';
+
+export async function POST(request: NextRequest) {
+  try {
+    // Check authentication
+    const session = await auth();
+    if (!session?.user?.id) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Parse request body
+    const body = await request.json();
+    const { storyId } = body;
+
+    if (!storyId) {
+      return new Response(
+        JSON.stringify({ error: 'Story ID is required' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('🎯 Generating parts for story:', storyId);
+
+    // Get story data from database
+    const [story] = await db.select().from(stories).where(eq(stories.id, storyId));
+    
+    if (!story) {
+      return new Response(
+        JSON.stringify({ error: 'Story not found' }),
+        { status: 404, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check if user owns the story
+    if (story.authorId !== session.user.id) {
+      return new Response(
+        JSON.stringify({ error: 'Access denied' }),
+        { status: 403, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check if story has the required storyData
+    if (!story.storyData || typeof story.storyData !== 'object') {
+      return new Response(
+        JSON.stringify({ error: 'Story data is required for part generation. Please regenerate the story first.' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('📚 Generating part specifications...');
+
+    // Generate detailed part specifications using AI
+    const partSpecs = await generatePartSpecifications(story.storyData as any);
+
+    console.log('📖 Part specifications generated, updating database...');
+
+    // Update existing parts with detailed specifications
+    const updatedParts = [];
+    
+    for (let i = 0; i < partSpecs.length; i++) {
+      const partSpec = partSpecs[i];
+      
+      // Get existing part by order index
+      const [existingPart] = await db.select().from(parts)
+        .where(eq(parts.storyId, storyId))
+        .where(eq(parts.orderIndex, partSpec.part));
+      
+      if (existingPart) {
+        // Update existing part
+        const [updatedPart] = await db.update(parts)
+          .set({
+            title: partSpec.title,
+            targetWordCount: partSpec.words,
+            status: 'planned',
+            partData: partSpec,
+            updatedAt: new Date(),
+          })
+          .where(eq(parts.id, existingPart.id))
+          .returning();
+        
+        updatedParts.push(updatedPart);
+      } else {
+        // Create new part if it doesn't exist
+        const partId = nanoid();
+        const [newPart] = await db.insert(parts).values({
+          id: partId,
+          title: partSpec.title,
+          storyId: storyId,
+          authorId: session.user.id,
+          orderIndex: partSpec.part,
+          targetWordCount: partSpec.words,
+          status: 'planned',
+          partData: partSpec,
+        }).returning();
+        
+        updatedParts.push(newPart);
+      }
+    }
+
+    console.log('✅ Parts database update completed');
+
+    // Return the generated parts with specifications
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: `Generated ${partSpecs.length} detailed part specifications`,
+        parts: updatedParts,
+        partSpecifications: partSpecs,
+      }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+
+  } catch (error) {
+    console.error('❌ Error generating parts:', error);
+    
+    return new Response(
+      JSON.stringify({ 
+        error: 'Failed to generate parts',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }),
+      { 
+        status: 500, 
+        headers: { 'Content-Type': 'application/json' } 
+      }
+    );
+  }
+}
+
+// GET endpoint to test the API
+export async function GET() {
+  return new Response(
+    JSON.stringify({
+      message: 'Parts Generation API',
+      usage: 'POST with { "storyId": "story-id" }',
+      description: 'Generate detailed part specifications for an existing story',
+    }),
+    {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    }
+  );
+}

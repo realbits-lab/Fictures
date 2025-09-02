@@ -62,9 +62,10 @@ interface ChapterEditorProps {
     scenes: Scene[];
   };
   story: Story;
+  hideSidebar?: boolean; // Add prop to hide sidebar when used within UnifiedWritingEditor
 }
 
-export function ChapterEditor({ chapter, story }: ChapterEditorProps) {
+export function ChapterEditor({ chapter, story, hideSidebar = false }: ChapterEditorProps) {
   const router = useRouter();
   const [content, setContent] = useState(`  The Shadow Realm pulsed around Maya like a living thing, its twisted architecture bending reality with each heartbeat. She could feel Elena's presence—faint but unmistakable—calling to her from the void-touched spire ahead.
 
@@ -257,64 +258,68 @@ export function ChapterEditor({ chapter, story }: ChapterEditorProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* Fixed Header */}
-      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200 dark:bg-gray-900/95 dark:border-gray-700">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 md:gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push('/stories')}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                <span className="hidden sm:inline">Back to Stories</span>
-              </Button>
-              <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 hidden sm:block"></div>
-              <h1 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">
-                📝 {chapter.title}
-              </h1>
-            </div>
-            <div className="flex items-center gap-1 md:gap-3">
-              <span className="text-xs md:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                {isAutoSaving ? "💾 Saving..." : `💾 ${hasUnsavedChanges ? 'Unsaved changes' : `Saved ${formatLastSaved(lastSaved)}`}`}
-              </span>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="hidden md:inline-flex" 
-                onClick={handleManualSave}
-                disabled={validationErrors.length > 0 || isAutoSaving}
-              >
-                {isAutoSaving ? "💾 Saving..." : "💾 Save"}
-              </Button>
-              <Button size="sm">📤</Button>
+      {/* Fixed Header (only show if not used within UnifiedWritingEditor) */}
+      {!hideSidebar && (
+        <div className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200 dark:bg-gray-900/95 dark:border-gray-700">
+          <div className="container mx-auto px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 md:gap-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => router.push('/stories')}
+                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span className="hidden sm:inline">Back to Stories</span>
+                </Button>
+                <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 hidden sm:block"></div>
+                <h1 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">
+                  📝 {chapter.title}
+                </h1>
+              </div>
+              <div className="flex items-center gap-1 md:gap-3">
+                <span className="text-xs md:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                  {isAutoSaving ? "💾 Saving..." : `💾 ${hasUnsavedChanges ? 'Unsaved changes' : `Saved ${formatLastSaved(lastSaved)}`}`}
+                </span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="hidden md:inline-flex" 
+                  onClick={handleManualSave}
+                  disabled={validationErrors.length > 0 || isAutoSaving}
+                >
+                  {isAutoSaving ? "💾 Saving..." : "💾 Save"}
+                </Button>
+                <Button size="sm">📤</Button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Sidebar - Story Architecture Tree */}
-          <div className="space-y-6">
-            <StoryTreeArchitecture 
-              story={story} 
-              currentChapterId={chapter.id}
-              currentSceneId={undefined}
-            />
-            
-            {/* Mobile Menu Toggle */}
-            <div className="lg:hidden">
-              <Button variant="secondary" size="sm" className="w-full">📱 Writing Tools</Button>
+        <div className={`grid gap-6 ${hideSidebar ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-4'}`}>
+          {/* Left Sidebar - Story Architecture Tree (only show if not hidden) */}
+          {!hideSidebar && (
+            <div className="space-y-6">
+              <StoryTreeArchitecture 
+                story={story} 
+                currentChapterId={chapter.id}
+                currentSceneId={undefined}
+              />
+              
+              {/* Mobile Menu Toggle */}
+              <div className="lg:hidden">
+                <Button variant="secondary" size="sm" className="w-full">📱 Writing Tools</Button>
+              </div>
             </div>
-          </div>
+          )}
           
           {/* Main Writing Area */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className={`space-y-6 ${hideSidebar ? 'col-span-1' : 'lg:col-span-2'}`}>
             {/* Writing Interface */}
             <Card>
               <CardHeader>
@@ -331,8 +336,9 @@ export function ChapterEditor({ chapter, story }: ChapterEditorProps) {
             </Card>
           </div>
 
-          {/* Right Sidebar - Writing Tools & YAML Data */}
-          <div className="space-y-6">
+          {/* Right Sidebar - Writing Tools & YAML Data (only show if not used within UnifiedWritingEditor) */}
+          {!hideSidebar && (
+            <div className="space-y-6">
             {/* YAML Data Display with Level Switcher */}
             <Card>
               <CardHeader className="pb-2">
@@ -476,7 +482,7 @@ export function ChapterEditor({ chapter, story }: ChapterEditorProps) {
               <CardContent className="space-y-4">
                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <p className="text-sm text-gray-700 dark:text-gray-300">
-                    &ldquo;Great tension build! Consider Maya&rsquo;s internal monologue to show her moral struggle.&rdquo;
+                    "Great tension build! Consider Maya's internal monologue to show her moral struggle."
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -496,7 +502,8 @@ export function ChapterEditor({ chapter, story }: ChapterEditorProps) {
                 </div>
               </CardContent>
             </Card>
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -45,55 +45,65 @@ export async function POST(request: NextRequest) {
       targetWordCount: generatedStory.totalWordCount || generatedStory.words || 60000,
       status: 'draft',
       isPublic: false,
-      storyData: generatedStory, // Store complete YAML data
+      storyData: generatedStory, // Store complete JSON data
     }).returning();
 
     console.log('📖 Story stored, creating parts and chapters...');
 
-    // Create all parts and the first chapter of the first part
+    // Create all parts based on generated story structure
     const createdParts = [];
-    const defaultParts = [
-      { title: 'Beginning', description: 'Story setup and introduction', wordPercent: 25 },
-      { title: 'Middle', description: 'Conflict development and complications', wordPercent: 50 },
-      { title: 'End', description: 'Climax and resolution', wordPercent: 25 }
-    ];
 
-    for (let partIndex = 0; partIndex < defaultParts.length; partIndex++) {
-      const partData = defaultParts[partIndex];
-      const partId = nanoid();
-      
-      // Create part
-      const [part] = await db.insert(parts).values({
-        id: partId,
-        title: partData.title,
-        storyId: storyId,
-        authorId: session.user.id,
-        orderIndex: partIndex + 1,
-        targetWordCount: Math.floor((generatedStory.totalWordCount || 60000) * (partData.wordPercent / 100)),
-        status: 'planned',
-        partData: { title: partData.title, description: partData.description },
-      }).returning();
-
-      // Only create the first chapter for the first part
-      if (partIndex === 0) {
-        const chapterId = nanoid();
+    if (generatedStory.parts && Array.isArray(generatedStory.parts)) {
+      for (let partIndex = 0; partIndex < generatedStory.parts.length; partIndex++) {
+        const storyPart = generatedStory.parts[partIndex];
+        const partId = nanoid();
         
-        await db.insert(chapters).values({
-          id: chapterId,
-          title: 'Chapter 1',
+        // Calculate word count from story distribution if available
+        const partWordCount = generatedStory.structure?.dist?.[partIndex] 
+          ? Math.floor((generatedStory.words || 60000) * (generatedStory.structure.dist[partIndex] / 100))
+          : Math.floor((generatedStory.words || 60000) / generatedStory.parts.length);
+        
+        // Create part
+        const [part] = await db.insert(parts).values({
+          id: partId,
+          title: `Part ${storyPart.part}: ${storyPart.goal}`,
           storyId: storyId,
-          partId: partId,
           authorId: session.user.id,
-          orderIndex: 1,
-          targetWordCount: 4000, // Standard chapter length
+          orderIndex: storyPart.part,
+          targetWordCount: partWordCount,
           status: 'planned',
-          purpose: `Develop the ${partData.title.toLowerCase()} of the story`,
-          hook: 'Chapter opening that draws readers in',
-          characterFocus: 'protagonist',
-        });
-      }
+          partData: storyPart, // Store the part data from story generation
+        }).returning();
 
-      createdParts.push(part);
+        // Don't create any chapters initially - let users create them as needed
+
+        createdParts.push(part);
+      }
+    } else {
+      // Fallback to default 3-part structure if parts are not properly generated
+      const defaultParts = [
+        { part: 1, goal: 'Setup and introduction', conflict: 'Initial obstacles', outcome: 'Stakes established', tension: 'introduction' },
+        { part: 2, goal: 'Conflict development', conflict: 'Major complications', outcome: 'Climax approached', tension: 'rising_action' },
+        { part: 3, goal: 'Resolution', conflict: 'Final challenges', outcome: 'Story resolved', tension: 'falling_action' }
+      ];
+
+      for (let partIndex = 0; partIndex < defaultParts.length; partIndex++) {
+        const partData = defaultParts[partIndex];
+        const partId = nanoid();
+        
+        const [part] = await db.insert(parts).values({
+          id: partId,
+          title: `Part ${partData.part}: ${partData.goal}`,
+          storyId: storyId,
+          authorId: session.user.id,
+          orderIndex: partData.part,
+          targetWordCount: Math.floor((generatedStory.words || 60000) * (partIndex === 1 ? 50 : 25) / 100),
+          status: 'planned',
+          partData: partData,
+        }).returning();
+
+        createdParts.push(part);
+      }
     }
 
     console.log('✅ Database storage completed');

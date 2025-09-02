@@ -355,7 +355,7 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
           ]
         };
         
-        return <ChapterEditor chapter={chapterMockData} story={story} />;
+        return <ChapterEditor chapter={chapterMockData} story={story} hideSidebar={true} />;
       
       case "scene":
         return (
