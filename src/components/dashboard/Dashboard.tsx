@@ -21,8 +21,8 @@ export async function Dashboard() {
     id: story.id,
     title: story.title,
     genre: story.genre || "General",
-    parts: { completed: 0, total: 0 }, // TODO: Calculate from parts table
-    chapters: { completed: 0, total: 0 }, // TODO: Calculate from chapters table
+    parts: { completed: story.completedParts || 0, total: story.totalParts || 0 },
+    chapters: { completed: story.completedChapters || 0, total: story.totalChapters || 0 },
     readers: story.viewCount || 0,
     rating: (story.rating || 0) / 10, // Convert from database format (47 = 4.7)
     status: story.status as "draft" | "publishing" | "completed",

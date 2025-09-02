@@ -33,7 +33,7 @@ export function StoryCard({
   wordCount,
   firstChapterId
 }: StoryCardProps) {
-  const progressPercentage = (chapters.completed / chapters.total) * 100;
+  const progressPercentage = chapters.total > 0 ? (chapters.completed / chapters.total) * 100 : 0;
   
   const getStatusBadge = () => {
     switch (status) {

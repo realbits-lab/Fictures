@@ -34,11 +34,11 @@ export async function getUserStories(userId: string) {
     .orderBy(desc(stories.updatedAt));
 }
 
-// Get user stories with their first chapter for navigation
+// Get user stories with their first chapter and counts for navigation
 export async function getUserStoriesWithFirstChapter(userId: string) {
   const userStories = await getUserStories(userId);
   
-  const storiesWithFirstChapter = await Promise.all(
+  const storiesWithData = await Promise.all(
     userStories.map(async (story) => {
       // Get the first chapter of this story
       const [firstChapter] = await db
@@ -48,14 +48,35 @@ export async function getUserStoriesWithFirstChapter(userId: string) {
         .orderBy(chapters.orderIndex)
         .limit(1);
       
+      // Get all chapters for counting
+      const allChapters = await db
+        .select()
+        .from(chapters)
+        .where(eq(chapters.storyId, story.id));
+      
+      // Get all parts for counting
+      const allParts = await db
+        .select()
+        .from(parts)
+        .where(eq(parts.storyId, story.id));
+      
+      // Count completed chapters
+      const completedChapters = allChapters.filter(ch => 
+        ch.status === 'completed' || ch.status === 'published'
+      ).length;
+      
       return {
         ...story,
-        firstChapterId: firstChapter?.id || null
+        firstChapterId: firstChapter?.id || null,
+        totalChapters: allChapters.length,
+        completedChapters,
+        totalParts: allParts.length,
+        completedParts: allParts.length // Assuming all parts are "completed" if they exist
       };
     })
   );
   
-  return storiesWithFirstChapter;
+  return storiesWithData;
 }
 
 export async function getStoryById(storyId: string, userId?: string) {
