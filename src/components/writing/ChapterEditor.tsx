@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Progress, Badge } from "@/components/ui";
 import { StoryNavigationSidebar } from "./StoryNavigationSidebar";
+import { JsonView } from "react-json-view-lite";
 
 interface Scene {
   id: string;
@@ -222,10 +223,26 @@ export function ChapterEditor({ chapter, story }: ChapterEditorProps) {
                   <CardTitle>📊 Story Data</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="text-xs bg-gray-50 dark:bg-gray-900 rounded-lg p-3 font-mono max-h-64 overflow-auto">
-                    <pre className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">
-                      {JSON.stringify(story.storyData, null, 2)}
-                    </pre>
+                  <div className="text-xs bg-gray-50 dark:bg-gray-900 rounded-lg p-3 max-h-64 overflow-auto">
+                    <JsonView 
+                      data={story.storyData} 
+                      shouldExpandNode={(level, value, field) => level < 2}
+                      style={{
+                        container: 'font-mono text-gray-700 dark:text-gray-300',
+                        basicChildStyle: 'padding-left: 1rem',
+                        label: 'color: rgb(59 130 246)', // blue-500
+                        clickableLabel: 'color: rgb(59 130 246); cursor: pointer',
+                        valueText: 'color: rgb(34 197 94)', // green-500
+                        undefinedValue: 'color: rgb(156 163 175)', // gray-400
+                        nullValue: 'color: rgb(156 163 175)',
+                        booleanValue: 'color: rgb(168 85 247)', // purple-500
+                        numberValue: 'color: rgb(249 115 22)', // orange-500
+                        stringValue: 'color: rgb(34 197 94)',
+                        collapseIcon: 'color: rgb(75 85 99)', // gray-600
+                        expandIcon: 'color: rgb(75 85 99)',
+                        punctuation: 'color: rgb(107 114 128)' // gray-500
+                      }}
+                    />
                   </div>
                 </CardContent>
               </Card>
