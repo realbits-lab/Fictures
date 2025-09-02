@@ -1,6 +1,5 @@
 import React from "react";
 import { StoryCard } from "./StoryCard";
-import { CreateStoryCard } from "./CreateStoryCard";
 import { RecentActivity } from "./RecentActivity";
 import { PublishingSchedule } from "./PublishingSchedule";
 import { AIAssistantWidget } from "./AIAssistantWidget";
@@ -54,7 +53,6 @@ export async function Dashboard() {
               <p>Start your writing journey by creating your first story!</p>
             </div>
           )}
-          <CreateStoryCard />
         </div>
       </section>
 
