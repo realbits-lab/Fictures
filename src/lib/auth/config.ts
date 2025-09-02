@@ -1,11 +1,55 @@
 import { NextAuthConfig } from 'next-auth';
-import Google from 'next-auth/providers/google';
+import Credentials from 'next-auth/providers/credentials';
+import bcrypt from 'bcryptjs';
+import { db } from '@/lib/db';
+import { users } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export const authConfig = {
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    Credentials({
+      name: 'credentials',
+      credentials: {
+        username: { label: 'Username', type: 'text' },
+        password: { label: 'Password', type: 'password' }
+      },
+      async authorize(credentials) {
+        if (!credentials?.username || !credentials?.password) {
+          return null;
+        }
+
+        try {
+          const user = await db
+            .select()
+            .from(users)
+            .where(eq(users.username, credentials.username as string))
+            .limit(1);
+
+          if (user.length === 0) {
+            return null;
+          }
+
+          const foundUser = user[0];
+          const passwordMatch = await bcrypt.compare(
+            credentials.password as string,
+            foundUser.password!
+          );
+
+          if (!passwordMatch) {
+            return null;
+          }
+
+          return {
+            id: foundUser.id,
+            username: foundUser.username,
+            email: foundUser.email,
+            name: foundUser.name,
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
+          return null;
+        }
+      },
     }),
   ],
   pages: {

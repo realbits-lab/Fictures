@@ -37,7 +37,9 @@ export const verificationTokens = pgTable('verificationTokens', {
 // Users table - Core user authentication and profile
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
+  username: varchar('username', { length: 50 }).notNull().unique(),
   email: varchar('email', { length: 255 }).notNull().unique(),
+  password: varchar('password', { length: 255 }).notNull(),
   name: varchar('name', { length: 255 }),
   image: text('image'),
   bio: text('bio'),
