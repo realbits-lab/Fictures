@@ -43,9 +43,9 @@ export function GlobalNavigation() {
     // Browse is visible to all users
     if (item.href === '/browse') return true;
     
-    // Stories is only visible to writers and admins
+    // Stories is only visible to writers and managers
     if (item.href === '/stories') {
-      return session?.user?.role === 'writer' || session?.user?.role === 'admin';
+      return session?.user?.role === 'writer' || session?.user?.role === 'manager';
     }
     
     // Other items visible to all authenticated users
