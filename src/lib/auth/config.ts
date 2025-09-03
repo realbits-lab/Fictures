@@ -35,12 +35,27 @@ export const authConfig = {
       }
       return true;
     },
-    async signIn({ account }) {
-      // Allow all Google OAuth sign-ins
+    async signIn({ account, profile }) {
+      // Allow Google OAuth sign-ins
       if (account?.provider === 'google') {
-        return true;
+        // Get allowed emails from environment variable
+        const allowedEmailsEnv = process.env.ALLOWED_EMAILS;
+        
+        // If no ALLOWED_EMAILS is set, allow all Google accounts
+        if (!allowedEmailsEnv) {
+          return true;
+        }
+        
+        // If ALLOWED_EMAILS is set, check if user email is in the list
+        const allowedEmails = allowedEmailsEnv.split(',').map(email => email.trim());
+        if (profile?.email && allowedEmails.includes(profile.email)) {
+          return true;
+        }
+        
+        // Reject unauthorized users when ALLOWED_EMAILS is configured
+        return false;
       }
-      return true;
+      return false;
     },
     jwt({ token, user }) {
       if (user) {
