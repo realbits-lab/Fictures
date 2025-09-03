@@ -3,6 +3,51 @@ import { stories, chapters, users, userStats, parts, scenes } from './schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
+// User authentication queries
+export async function findUserByEmail(email: string) {
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
+  
+  return user || null;
+}
+
+export async function createUser(data: {
+  email: string;
+  name?: string;
+  image?: string;
+}) {
+  const userId = nanoid();
+  
+  const [user] = await db.insert(users).values({
+    id: userId,
+    email: data.email,
+    name: data.name,
+    image: data.image,
+    role: 'reader',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }).returning();
+
+  return user;
+}
+
+export async function updateUser(userId: string, data: {
+  name?: string;
+  image?: string;
+  emailVerified?: Date;
+}) {
+  const [user] = await db
+    .update(users)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(users.id, userId))
+    .returning();
+
+  return user;
+}
+
 // Stories queries
 export async function createStory(authorId: string, data: {
   title: string;

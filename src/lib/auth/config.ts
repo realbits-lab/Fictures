@@ -1,60 +1,22 @@
-import { NextAuthConfig } from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
-import bcrypt from 'bcryptjs';
-import { db } from '@/lib/db';
-import { users } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import type { NextAuthConfig } from 'next-auth';
+import Google from 'next-auth/providers/google';
+import { findUserByEmail, createUser, updateUser } from '@/lib/db/queries';
 
 export const authConfig = {
   providers: [
-    Credentials({
-      name: 'credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
-
-        try {
-          const user = await db
-            .select()
-            .from(users)
-            .where(eq(users.email, credentials.email as string))
-            .limit(1);
-
-          if (user.length === 0) {
-            return null;
-          }
-
-          const foundUser = user[0];
-          const passwordMatch = await bcrypt.compare(
-            credentials.password as string,
-            foundUser.password!
-          );
-
-          if (!passwordMatch) {
-            return null;
-          }
-
-          return {
-            id: foundUser.id,
-            username: foundUser.username,
-            email: foundUser.email,
-            name: foundUser.name,
-            role: foundUser.role,
-          };
-        } catch (error) {
-          console.error('Auth error:', error);
-          return null;
-        }
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          prompt: "select_account",
+          access_type: "offline",
+          response_type: "code",
+        },
       },
     }),
   ],
   pages: {
-    signIn: '/login',
     error: '/auth/error',
   },
   callbacks: {
@@ -74,10 +36,65 @@ export const authConfig = {
       }
       return true;
     },
-    jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = user.role;
+    async signIn({ account, profile }) {
+      // Allow Google OAuth sign-ins
+      if (account?.provider === 'google') {
+        if (!profile?.email) {
+          return false; // No email provided
+        }
+
+        // Get allowed emails from environment variable
+        const allowedEmailsEnv = process.env.ALLOWED_EMAILS;
+        
+        // If ALLOWED_EMAILS is set, check if user email is in the list
+        if (allowedEmailsEnv) {
+          const allowedEmails = allowedEmailsEnv.split(',').map(email => email.trim());
+          if (!allowedEmails.includes(profile.email)) {
+            return false; // Email not in allowed list
+          }
+        }
+        
+        // Email restriction passed (or no restriction set), now handle database persistence
+        try {
+          // Check if user already exists in database
+          const existingUser = await findUserByEmail(profile.email);
+          
+          if (existingUser) {
+            // Update existing user with latest info from OAuth profile
+            await updateUser(existingUser.id, {
+              name: profile.name,
+              image: profile.image,
+              emailVerified: new Date(), // Mark as verified since they just signed in via OAuth
+            });
+          } else {
+            // Create new user in database
+            await createUser({
+              email: profile.email,
+              name: profile.name,
+              image: profile.image,
+            });
+          }
+          
+          return true; // Allow sign in
+        } catch (error) {
+          console.error('Database error during sign in:', error);
+          return false; // Reject sign in if database operation fails
+        }
+      }
+      return false;
+    },
+    async jwt({ token, user, account }) {
+      // On first sign in (when account exists), get user from database
+      if (account && token.email) {
+        try {
+          const dbUser = await findUserByEmail(token.email);
+          if (dbUser) {
+            token.id = dbUser.id;
+            token.role = dbUser.role || 'reader';
+          }
+        } catch (error) {
+          console.error('Error fetching user in JWT callback:', error);
+        }
       }
       return token;
     },

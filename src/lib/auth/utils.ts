@@ -1,34 +1,27 @@
-import bcrypt from 'bcryptjs';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { nanoid } from 'nanoid';
 
-export async function hashPassword(password: string): Promise<string> {
-  const saltRounds = 12;
-  return bcrypt.hash(password, saltRounds);
-}
-
-export async function createUser({
+export async function createOAuthUser({
   username,
   email,
-  password,
   name,
   role = 'reader',
+  image,
 }: {
   username: string;
   email: string;
-  password: string;
   name?: string;
   role?: 'admin' | 'writer' | 'reader' | 'moderator';
+  image?: string;
 }) {
-  const hashedPassword = await hashPassword(password);
-  
   const newUser = await db.insert(users).values({
     id: nanoid(),
     username,
     email,
-    password: hashedPassword,
+    password: null, // OAuth users don't have passwords
     name,
+    image,
     role,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -36,5 +29,3 @@ export async function createUser({
 
   return newUser[0];
 }
-
-export { bcrypt };

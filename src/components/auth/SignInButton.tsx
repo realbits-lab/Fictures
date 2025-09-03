@@ -1,14 +1,12 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui';
 
 export function SignInButton() {
-  const router = useRouter();
-
   return (
     <Button
-      onClick={() => router.push('/login')}
+      onClick={() => signIn('google')}
     >
       Sign In
     </Button>
