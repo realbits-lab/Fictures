@@ -29,7 +29,7 @@ export const authConfig = {
       }
       return true;
     },
-    async signIn({ user, account }) {
+    async signIn({ account }) {
       // Allow all Google OAuth sign-ins
       if (account?.provider === 'google') {
         return true;
@@ -38,7 +38,7 @@ export const authConfig = {
     },
     jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
+        token.id = user.id || '';
         token.role = 'reader'; // Default role for OAuth users
       }
       return token;
