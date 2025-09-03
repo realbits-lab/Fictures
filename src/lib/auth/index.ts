@@ -1,6 +1,4 @@
-import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import NextAuth from 'next-auth';
-import { db } from '@/lib/db';
 import { authConfig } from './config';
 
 export const {
@@ -10,7 +8,6 @@ export const {
   signOut,
 } = NextAuth({
   ...authConfig,
-  adapter: DrizzleAdapter(db),
   session: {
     strategy: 'jwt',
   },

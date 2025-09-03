@@ -2,7 +2,7 @@ import { pgTable, text, timestamp, integer, boolean, json, uuid, varchar, serial
 import { relations } from 'drizzle-orm';
 
 // NextAuth.js required tables
-export const accounts = pgTable('accounts', {
+export const accounts = pgTable('account', {
   userId: text('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
   type: text('type').notNull(),
   provider: text('provider').notNull(),
@@ -20,13 +20,13 @@ export const accounts = pgTable('accounts', {
   }),
 }));
 
-export const sessions = pgTable('sessions', {
+export const sessions = pgTable('session', {
   sessionToken: text('sessionToken').primaryKey(),
   userId: text('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
   expires: timestamp('expires', { mode: 'date' }).notNull(),
 });
 
-export const verificationTokens = pgTable('verificationTokens', {
+export const verificationTokens = pgTable('verificationToken', {
   identifier: text('identifier').notNull(),
   token: text('token').notNull(),
   expires: timestamp('expires', { mode: 'date' }).notNull(),
@@ -35,17 +35,18 @@ export const verificationTokens = pgTable('verificationTokens', {
 }));
 
 // Users table - Core user authentication and profile
-export const users = pgTable('users', {
+export const users = pgTable('user', {
   id: text('id').primaryKey(),
-  username: varchar('username', { length: 50 }).notNull().unique(),
-  email: varchar('email', { length: 255 }).notNull().unique(),
-  password: varchar('password', { length: 255 }),
-  name: varchar('name', { length: 255 }),
+  name: text('name'),
+  email: text('email').notNull(),
+  emailVerified: timestamp('emailVerified', { mode: 'date' }),
   image: text('image'),
+  username: varchar('username', { length: 50 }).unique(),
+  password: varchar('password', { length: 255 }),
   bio: text('bio'),
   role: varchar('role', { length: 20 }).default('reader').notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
 });
 
 // Stories table - Main story/book entities
