@@ -30,13 +30,9 @@ export const authConfig = {
       return true;
     },
     async signIn({ user, account }) {
+      // Allow all Google OAuth sign-ins
       if (account?.provider === 'google') {
-        // Auto-approve Google sign-ins for jong95@gmail.com
-        if (user.email === 'jong95@gmail.com') {
-          return true;
-        }
-        // You can add more permitted emails here or implement other logic
-        return user.email === 'jong95@gmail.com';
+        return true;
       }
       return true;
     },
