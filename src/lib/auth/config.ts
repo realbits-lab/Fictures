@@ -1,5 +1,6 @@
 import type { NextAuthConfig } from 'next-auth';
 import Google from 'next-auth/providers/google';
+import { findUserByEmail, createUser, updateUser } from '@/lib/db/queries';
 
 export const authConfig = {
   providers: [
@@ -38,29 +39,62 @@ export const authConfig = {
     async signIn({ account, profile }) {
       // Allow Google OAuth sign-ins
       if (account?.provider === 'google') {
+        if (!profile?.email) {
+          return false; // No email provided
+        }
+
         // Get allowed emails from environment variable
         const allowedEmailsEnv = process.env.ALLOWED_EMAILS;
         
-        // If no ALLOWED_EMAILS is set, allow all Google accounts
-        if (!allowedEmailsEnv) {
-          return true;
-        }
-        
         // If ALLOWED_EMAILS is set, check if user email is in the list
-        const allowedEmails = allowedEmailsEnv.split(',').map(email => email.trim());
-        if (profile?.email && allowedEmails.includes(profile.email)) {
-          return true;
+        if (allowedEmailsEnv) {
+          const allowedEmails = allowedEmailsEnv.split(',').map(email => email.trim());
+          if (!allowedEmails.includes(profile.email)) {
+            return false; // Email not in allowed list
+          }
         }
         
-        // Reject unauthorized users when ALLOWED_EMAILS is configured
-        return false;
+        // Email restriction passed (or no restriction set), now handle database persistence
+        try {
+          // Check if user already exists in database
+          const existingUser = await findUserByEmail(profile.email);
+          
+          if (existingUser) {
+            // Update existing user with latest info from OAuth profile
+            await updateUser(existingUser.id, {
+              name: profile.name,
+              image: profile.image,
+              emailVerified: new Date(), // Mark as verified since they just signed in via OAuth
+            });
+          } else {
+            // Create new user in database
+            await createUser({
+              email: profile.email,
+              name: profile.name,
+              image: profile.image,
+            });
+          }
+          
+          return true; // Allow sign in
+        } catch (error) {
+          console.error('Database error during sign in:', error);
+          return false; // Reject sign in if database operation fails
+        }
       }
       return false;
     },
-    jwt({ token, user }) {
-      if (user) {
-        token.id = user.id || '';
-        token.role = 'reader'; // Default role for OAuth users
+    async jwt({ token, user, account }) {
+      // On first sign in (when account exists), get user from database
+      if (account && token.email) {
+        try {
+          const dbUser = await findUserByEmail(token.email);
+          if (dbUser) {
+            token.id = dbUser.id;
+            token.role = dbUser.role || 'reader';
+          }
+        } catch (error) {
+          console.error('Error fetching user in JWT callback:', error);
+        }
       }
       return token;
     },
