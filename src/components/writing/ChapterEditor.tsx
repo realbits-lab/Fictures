@@ -497,7 +497,7 @@ export function ChapterEditor({ chapter, story, hideSidebar = false }: ChapterEd
               <CardContent className="space-y-4">
                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <p className="text-sm text-gray-700 dark:text-gray-300">
-                    "Great tension build! Consider Maya's internal monologue to show her moral struggle."
+                    &quot;Great tension build! Consider Maya&apos;s internal monologue to show her moral struggle.&quot;
                   </p>
                 </div>
                 <div className="flex gap-2">

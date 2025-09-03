@@ -1,56 +1,11 @@
 import { NextAuthConfig } from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
-import bcrypt from 'bcryptjs';
-import { db } from '@/lib/db';
-import { users } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import Google from 'next-auth/providers/google';
 
 export const authConfig = {
   providers: [
-    Credentials({
-      name: 'credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
-
-        try {
-          const user = await db
-            .select()
-            .from(users)
-            .where(eq(users.email, credentials.email as string))
-            .limit(1);
-
-          if (user.length === 0) {
-            return null;
-          }
-
-          const foundUser = user[0];
-          const passwordMatch = await bcrypt.compare(
-            credentials.password as string,
-            foundUser.password!
-          );
-
-          if (!passwordMatch) {
-            return null;
-          }
-
-          return {
-            id: foundUser.id,
-            username: foundUser.username,
-            email: foundUser.email,
-            name: foundUser.name,
-            role: foundUser.role,
-          };
-        } catch (error) {
-          console.error('Auth error:', error);
-          return null;
-        }
-      },
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
   ],
   pages: {
@@ -74,10 +29,21 @@ export const authConfig = {
       }
       return true;
     },
+    async signIn({ user, account }) {
+      if (account?.provider === 'google') {
+        // Auto-approve Google sign-ins for jong95@gmail.com
+        if (user.email === 'jong95@gmail.com') {
+          return true;
+        }
+        // You can add more permitted emails here or implement other logic
+        return user.email === 'jong95@gmail.com';
+      }
+      return true;
+    },
     jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role;
+        token.role = 'reader'; // Default role for OAuth users
       }
       return token;
     },
