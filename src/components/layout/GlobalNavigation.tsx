@@ -150,9 +150,20 @@ function AuthSection() {
             src={session.user.image}
             alt={session.user.name || 'User'}
             className="w-6 h-6 rounded-full"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              const parent = target.parentElement;
+              if (parent) {
+                const fallback = document.createElement('div');
+                fallback.className = 'w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-600';
+                fallback.textContent = session.user?.name?.[0] || 'U';
+                parent.appendChild(fallback);
+              }
+            }}
           />
         ) : (
-          <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium">
+          <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-600">
             {session.user?.name?.[0] || 'U'}
           </div>
         )}
