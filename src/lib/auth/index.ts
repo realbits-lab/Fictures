@@ -12,6 +12,6 @@ export const {
   ...authConfig,
   adapter: DrizzleAdapter(db),
   session: {
-    strategy: 'database',
+    strategy: 'jwt',
   },
 });
