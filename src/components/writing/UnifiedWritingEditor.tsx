@@ -68,8 +68,9 @@ interface UnifiedWritingEditorProps {
   initialSelection?: Selection;
 }
 
-export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWritingEditorProps) {
+export function UnifiedWritingEditor({ story: initialStory, initialSelection }: UnifiedWritingEditorProps) {
   const router = useRouter();
+  const [story, setStory] = useState<Story>(initialStory);
   const [currentSelection, setCurrentSelection] = useState<Selection>(
     initialSelection || {
       level: "story",
@@ -81,6 +82,11 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
   const [isLoading, setIsLoading] = useState(false);
   const [showThemePlanner, setShowThemePlanner] = useState(false);
   const [themePlanned, setThemePlanned] = useState(false);
+
+  // Sync story state when prop changes
+  useEffect(() => {
+    setStory(initialStory);
+  }, [initialStory]);
 
   // Sample YAML data for demonstration
   const sampleStoryData = {
@@ -348,8 +354,25 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
       const result = await response.json();
       console.log('Chapter published successfully:', result);
       
-      // Refresh the page to show updated status
-      window.location.reload();
+      // Update the story data to reflect the published status
+      setStory(prevStory => {
+        const updateChapterStatus = (chapters: any[]) => {
+          return chapters.map(chapter => 
+            chapter.id === currentSelection.chapterId 
+              ? { ...chapter, status: 'published', publishedAt: new Date() }
+              : chapter
+          );
+        };
+
+        return {
+          ...prevStory,
+          parts: prevStory.parts.map(part => ({
+            ...part,
+            chapters: updateChapterStatus(part.chapters)
+          })),
+          chapters: updateChapterStatus(prevStory.chapters)
+        };
+      });
       
     } catch (error) {
       console.error('Publish error:', error);
@@ -580,7 +603,12 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
                   </div>
                   <div>
                     <strong>📊 Status:</strong> 
-                    <Badge variant="outline" className="ml-2">{chapterData.status}</Badge>
+                    <Badge 
+                      variant={chapterData.status === 'published' ? 'default' : 'outline'} 
+                      className={`ml-2 ${chapterData.status === 'published' ? 'bg-green-600 text-white' : ''}`}
+                    >
+                      {chapterData.status === 'published' ? '🚀' : ''} {chapterData.status}
+                    </Badge>
                   </div>
                   <div>
                     <strong>📝 Progress:</strong> {chapterData.wordCount}/{chapterData.targetWordCount} words
@@ -973,9 +1001,39 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
             </div>
             <div className="flex items-center gap-1 md:gap-3">
               {currentSelection.level === "chapter" && (
-                <Button size="sm" onClick={handlePublish} disabled={isLoading}>
-                  {isLoading ? "⚡ Publishing..." : "🚀 Publish"}
-                </Button>
+                (() => {
+                  // Find the current chapter status for button styling
+                  let currentChapterStatus = 'draft';
+                  
+                  // Look in parts first
+                  for (const part of story.parts) {
+                    const foundChapter = part.chapters.find(ch => ch.id === currentSelection.chapterId);
+                    if (foundChapter) {
+                      currentChapterStatus = foundChapter.status || 'draft';
+                      break;
+                    }
+                  }
+                  
+                  // If not found in parts, check standalone chapters
+                  if (currentChapterStatus === 'draft') {
+                    const foundChapter = story.chapters.find(ch => ch.id === currentSelection.chapterId);
+                    if (foundChapter) {
+                      currentChapterStatus = foundChapter.status || 'draft';
+                    }
+                  }
+
+                  return (
+                    <Button 
+                      size="sm" 
+                      onClick={handlePublish} 
+                      disabled={isLoading || currentChapterStatus === 'published'}
+                      className={currentChapterStatus === 'published' ? 'bg-green-600 hover:bg-green-700 text-white' : ''}
+                    >
+                      {isLoading ? "⚡ Publishing..." : 
+                       currentChapterStatus === 'published' ? "✅ Published" : "🚀 Publish"}
+                    </Button>
+                  );
+                })()
               )}
             </div>
           </div>
