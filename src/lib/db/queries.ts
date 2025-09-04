@@ -511,8 +511,40 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
     return null;
   }
 
+  // Get scenes for this chapter
+  const chapterScenes = await db
+    .select()
+    .from(scenes)
+    .where(eq(scenes.chapterId, chapterId))
+    .orderBy(scenes.orderIndex);
+
+  // Map scenes with dynamic status calculation
+  const scenesWithStatus = chapterScenes.map(scene => {
+    const sceneContent = scene.content || '';
+    const sceneWordCount = scene.wordCount || 0;
+    const dynamicSceneStatus = calculateSceneStatus({ 
+      content: sceneContent, 
+      wordCount: sceneWordCount 
+    });
+    
+    return {
+      id: scene.id,
+      title: scene.title,
+      status: dynamicSceneStatus,
+      wordCount: sceneWordCount,
+      goal: scene.goal || '',
+      conflict: scene.conflict || '',
+      outcome: scene.outcome || '',
+      content: sceneContent,
+      orderIndex: scene.orderIndex
+    };
+  });
+
   return {
-    chapter: result.chapter,
+    chapter: {
+      ...result.chapter,
+      scenes: scenesWithStatus
+    },
     partTitle: result.part?.title || null,
     storyId: result.story?.id
   };
