@@ -291,8 +291,14 @@ export function StoryTreeArchitecture({
 
                 {expandedParts.has(part.id) && (
                   <div className="space-y-2">
-                    {part.chapters.map((chapter) => (
-                      <div key={chapter.id} className="border-l-2 border-orange-400 pl-3">
+                    {part.chapters.map((chapter, chapterIndex) => {
+                      // Calculate global chapter number
+                      const globalChapterNumber = story.parts
+                        .slice(0, story.parts.findIndex(p => p.id === part.id))
+                        .reduce((total, prevPart) => total + (prevPart.chapters?.length || 0), 0) + chapterIndex + 1;
+                      
+                      return (
+                        <div key={chapter.id} className="border-l-2 border-orange-400 pl-3">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-1 flex-1">
                             <button
@@ -320,7 +326,7 @@ export function StoryTreeArchitecture({
                             >
                               <span>{getStatusIcon(chapter.status)}</span>
                               <span className="text-sm text-orange-600 dark:text-orange-400 truncate">
-                                Ch {chapter.orderIndex}: {chapter.title}
+                                Ch {globalChapterNumber}: {chapter.title}
                               </span>
                             </button>
                           </div>
@@ -360,8 +366,9 @@ export function StoryTreeArchitecture({
                             ))}
                           </div>
                         )}
-                      </div>
-                    ))}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -373,8 +380,13 @@ export function StoryTreeArchitecture({
                 <div className="text-sm font-medium text-orange-600 dark:text-orange-400 mb-2">
                   📄 Standalone Chapters
                 </div>
-                {story.chapters.map((chapter) => (
-                  <div key={chapter.id} className="mb-2">
+                {story.chapters.map((chapter, chapterIndex) => {
+                  // Calculate global chapter number (after all parts)
+                  const totalPartsChapters = story.parts.reduce((total, part) => total + (part.chapters?.length || 0), 0);
+                  const globalChapterNumber = totalPartsChapters + chapterIndex + 1;
+                  
+                  return (
+                    <div key={chapter.id} className="mb-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1 flex-1">
                         <button
@@ -401,7 +413,7 @@ export function StoryTreeArchitecture({
                           }`}
                         >
                           <span>{getStatusIcon(chapter.status)}</span>
-                          <span className="text-sm truncate">{chapter.title}</span>
+                          <span className="text-sm truncate">Ch {globalChapterNumber}: {chapter.title}</span>
                         </button>
                       </div>
                       <Link
@@ -440,8 +452,9 @@ export function StoryTreeArchitecture({
                         ))}
                       </div>
                     )}
-                  </div>
-                ))}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

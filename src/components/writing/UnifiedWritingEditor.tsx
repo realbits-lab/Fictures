@@ -338,28 +338,52 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
     }
   };
 
-  const handlePublish = async () => {
+  const handlePublishToggle = async () => {
     if (!currentSelection.chapterId) return;
+    
+    // Find current chapter status
+    let currentChapterStatus = 'draft';
+    for (const part of story.parts) {
+      const foundChapter = part.chapters.find(ch => ch.id === currentSelection.chapterId);
+      if (foundChapter) {
+        currentChapterStatus = foundChapter.status || 'draft';
+        break;
+      }
+    }
+    if (currentChapterStatus === 'draft') {
+      const foundChapter = story.chapters.find(ch => ch.id === currentSelection.chapterId);
+      if (foundChapter) {
+        currentChapterStatus = foundChapter.status || 'draft';
+      }
+    }
+
+    const isPublished = currentChapterStatus === 'published';
+    const endpoint = isPublished ? 'unpublish' : 'publish';
+    const newStatus = isPublished ? 'completed' : 'published';
     
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/chapters/${currentSelection.chapterId}/publish`, {
+      const response = await fetch(`/api/chapters/${currentSelection.chapterId}/${endpoint}`, {
         method: 'POST',
       });
       
       if (!response.ok) {
-        throw new Error('Failed to publish chapter');
+        throw new Error(`Failed to ${endpoint} chapter`);
       }
       
       const result = await response.json();
-      console.log('Chapter published successfully:', result);
+      console.log(`Chapter ${endpoint}ed successfully:`, result);
       
-      // Update the story data to reflect the published status
+      // Update the story data to reflect the new status
       setStory(prevStory => {
         const updateChapterStatus = (chapters: any[]) => {
           return chapters.map(chapter => 
             chapter.id === currentSelection.chapterId 
-              ? { ...chapter, status: 'published', publishedAt: new Date() }
+              ? { 
+                  ...chapter, 
+                  status: newStatus, 
+                  publishedAt: isPublished ? null : new Date() 
+                }
               : chapter
           );
         };
@@ -375,8 +399,8 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
       });
       
     } catch (error) {
-      console.error('Publish error:', error);
-      alert('Failed to publish chapter. Please try again.');
+      console.error(`${endpoint} error:`, error);
+      alert(`Failed to ${endpoint} chapter. Please try again.`);
     } finally {
       setIsLoading(false);
     }
@@ -1025,12 +1049,13 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
                   return (
                     <Button 
                       size="sm" 
-                      onClick={handlePublish} 
-                      disabled={isLoading || currentChapterStatus === 'published'}
+                      onClick={handlePublishToggle} 
+                      disabled={isLoading}
                       className={currentChapterStatus === 'published' ? 'bg-green-600 hover:bg-green-700 text-white' : ''}
                     >
-                      {isLoading ? "⚡ Publishing..." : 
-                       currentChapterStatus === 'published' ? "✅ Published" : "🚀 Publish"}
+                      {isLoading ? 
+                        (currentChapterStatus === 'published' ? "⚡ Unpublishing..." : "⚡ Publishing...") : 
+                        (currentChapterStatus === 'published' ? "📤 Unpublish" : "🚀 Publish")}
                     </Button>
                   );
                 })()

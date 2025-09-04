@@ -1,8 +1,9 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { auth } from '@/lib/auth';
-import { getStoryById, getStoryChapters } from '@/lib/db/queries';
+import { getStoryById, getStoryWithStructure } from '@/lib/db/queries';
 import { MainLayout } from '@/components/layout';
+import { ChapterReader } from '@/components/reading/ChapterReader';
 
 interface ReadPageProps {
   params: Promise<{ id: string }>;
@@ -11,76 +12,20 @@ interface ReadPageProps {
 async function StoryReader({ storyId }: { storyId: string }) {
   const session = await auth();
   
-  // Get story details
-  const story = await getStoryById(storyId, session?.user?.id);
-  if (!story) {
+  // Get story with full structure (parts, chapters, scenes)
+  const storyWithStructure = await getStoryWithStructure(storyId, session?.user?.id);
+  if (!storyWithStructure) {
     notFound();
   }
 
   // Only show published stories in read mode
-  if (story.status !== 'published' && story.userId !== session?.user?.id) {
+  if (storyWithStructure.status !== 'published' && storyWithStructure.userId !== session?.user?.id) {
     notFound();
   }
 
-  // Get chapters for the story
-  const chapters = await getStoryChapters(storyId, session?.user?.id);
+  const isOwner = storyWithStructure.userId === session?.user?.id;
 
-  return (
-    <article className="max-w-4xl mx-auto px-4 py-8">
-      {/* Story Header */}
-      <header className="mb-8 border-b border-gray-200 dark:border-gray-800 pb-8">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-          {story.title}
-        </h1>
-        {story.description && (
-          <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">
-            {story.description}
-          </p>
-        )}
-        <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
-          <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800">
-            {story.genre || 'No genre'}
-          </span>
-          <span>📝 {story.wordCount || 0} words</span>
-          <span>📚 {chapters.length} chapters</span>
-        </div>
-      </header>
-
-      {/* Story Content */}
-      <div className="prose prose-lg dark:prose-invert max-w-none">
-        {chapters.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400">
-              This story hasn't been written yet.
-            </p>
-          </div>
-        ) : (
-          chapters.map((chapter) => (
-            <section key={chapter.id} className="mb-12">
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6 pb-2 border-b border-gray-200 dark:border-gray-700">
-                Chapter {chapter.orderIndex}: {chapter.title}
-              </h2>
-              <div className="whitespace-pre-wrap leading-relaxed">
-                {chapter.content || (
-                  <p className="text-gray-500 dark:text-gray-400 italic">
-                    This chapter is empty.
-                  </p>
-                )}
-              </div>
-            </section>
-          ))
-        )}
-      </div>
-
-      {/* Story Footer */}
-      <footer className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800 text-center">
-        <p className="text-gray-500 dark:text-gray-400">
-          Written by {story.userId === session?.user?.id ? 'You' : 'Author'} • 
-          Published on Fictures
-        </p>
-      </footer>
-    </article>
-  );
+  return <ChapterReader story={storyWithStructure} isOwner={isOwner} />;
 }
 
 export default async function ReadPage({ params }: ReadPageProps) {

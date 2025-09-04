@@ -553,8 +553,17 @@ export async function getPublishedStories() {
         }
       }
       
-      // Only include stories with substantial content (1000+ words) and completed status
-      if (totalWords >= 1000 && storyStructure.status === 'completed') {
+      // Check if any chapters are published - need to check actual database status
+      // since getStoryWithStructure overrides with calculated status
+      const rawChapters = await db
+        .select()
+        .from(chapters)
+        .where(eq(chapters.storyId, story.id));
+      
+      const hasPublishedChapters = rawChapters.some(chapter => chapter.status === 'published');
+      
+      // Only include stories with published chapters and substantial content (500+ words minimum)
+      if (hasPublishedChapters && totalWords >= 500) {
         validPublishedStories.push({
           ...story,
           currentWordCount: totalWords // Use the actual calculated word count
