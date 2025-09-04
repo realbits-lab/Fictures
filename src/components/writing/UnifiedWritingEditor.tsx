@@ -80,6 +80,7 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
   const [yamlLevel, setYamlLevel] = useState<EditorLevel>("story");
   const [isLoading, setIsLoading] = useState(false);
   const [showThemePlanner, setShowThemePlanner] = useState(false);
+  const [themePlanned, setThemePlanned] = useState(false);
 
   // Sample YAML data for demonstration
   const sampleStoryData = {
@@ -334,10 +335,10 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
   const handleCreateScene = async (chapterId: string) => {
     setIsLoading(true);
     try {
-      // Calculate next order index by counting existing scenes in the UI
+      // Calculate next available order index by finding the highest existing orderIndex
       let nextOrderIndex = 1;
       
-      // Find the current chapter to count existing scenes
+      // Find the current chapter to check existing scenes
       let currentChapter = null;
       
       // Look in parts first
@@ -354,9 +355,11 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
         currentChapter = story.chapters.find(ch => ch.id === chapterId);
       }
       
-      // Calculate next order index based on existing scenes in UI
-      if (currentChapter && currentChapter.scenes) {
-        nextOrderIndex = currentChapter.scenes.length + 1;
+      // Calculate next available order index based on existing scenes
+      if (currentChapter && currentChapter.scenes && currentChapter.scenes.length > 0) {
+        // Find the highest existing orderIndex and add 1
+        const maxOrderIndex = Math.max(...currentChapter.scenes.map(scene => scene.orderIndex || 0));
+        nextOrderIndex = maxOrderIndex + 1;
       }
       
       // Create the new scene
@@ -526,7 +529,14 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
                 <Button 
                   size="sm" 
                   variant="secondary"
-                  onClick={() => setShowThemePlanner(!showThemePlanner)}
+                  onClick={() => {
+                    const newShowState = !showThemePlanner;
+                    setShowThemePlanner(newShowState);
+                    // Mark theme as planned when user first opens the planner
+                    if (newShowState && !themePlanned) {
+                      setThemePlanned(true);
+                    }
+                  }}
                   className="flex items-center gap-2"
                 >
                   <span>🎨</span>
@@ -715,8 +725,9 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
                   size="sm" 
                   variant="secondary"
                   onClick={() => handleCreateScene(currentSelection.chapterId!)}
-                  disabled={isLoading}
+                  disabled={isLoading || !themePlanned}
                   className="flex items-center gap-2"
+                  title={!themePlanned ? "Create a theme first before adding scenes" : ""}
                 >
                   <span>🎬</span>
                   {isLoading ? "Creating..." : "Create Scene"}
@@ -771,9 +782,10 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
                         size="sm" 
                         variant="secondary"
                         onClick={() => handleCreateScene(currentSelection.chapterId!)}
-                        disabled={isLoading}
+                        disabled={isLoading || !themePlanned}
+                        title={!themePlanned ? "Create a theme first before adding scenes" : ""}
                       >
-                        {isLoading ? "Creating..." : "+ Create First Scene"}
+                        {isLoading ? "Creating..." : !themePlanned ? "Create Theme First" : "+ Create First Scene"}
                       </Button>
                     </div>
                   )}
