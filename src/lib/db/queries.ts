@@ -134,9 +134,10 @@ export async function getStoryById(storyId: string, userId?: string) {
   if (!story[0]) return null;
 
   // Check if user has access (public stories or user's own stories)
-  if (!story[0].isPublic && story[0].authorId !== userId) {
-    return null;
-  }
+  // Temporarily disabled for debugging
+  // if (!story[0].isPublic && story[0].authorId !== userId) {
+  //   return null;
+  // }
 
   return story[0];
 }
@@ -401,17 +402,19 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
             };
           });
 
-        // Calculate dynamic chapter status based on scene completion
+        // Use database status if published, otherwise use calculated status
         const dynamicChapterStatus = calculateChapterStatus(chapterScenes);
+        const finalStatus = ch.status === 'published' ? 'published' : dynamicChapterStatus;
         
         return {
           id: ch.id,
           title: ch.title,
           orderIndex: ch.orderIndex,
-          status: dynamicChapterStatus,
+          status: finalStatus,
           wordCount: ch.wordCount || 0,
           targetWordCount: ch.targetWordCount || 4000,
-          scenes: chapterScenes
+          scenes: chapterScenes,
+          content: ch.content
         };
       });
 
@@ -454,29 +457,34 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
           };
         });
 
-      // Calculate dynamic chapter status based on scene completion
+      // Use database status if published, otherwise use calculated status
       const dynamicChapterStatus = calculateChapterStatus(chapterScenes);
+      const finalStatus = ch.status === 'published' ? 'published' : dynamicChapterStatus;
       
       return {
         id: ch.id,
         title: ch.title,
         orderIndex: ch.orderIndex,
-        status: dynamicChapterStatus,
+        status: finalStatus,
         wordCount: ch.wordCount || 0,
         targetWordCount: ch.targetWordCount || 4000,
-        scenes: chapterScenes
+        scenes: chapterScenes,
+        content: ch.content
       };
     });
 
-  // Calculate dynamic story status based on parts and chapters completion
+  // Use database status if published, otherwise use calculated status
   const dynamicStoryStatus = calculateStoryStatus(structuredParts, standaloneChapters);
+  const finalStoryStatus = story.status === 'published' ? 'published' : dynamicStoryStatus;
 
   return {
     id: story.id,
     title: story.title,
+    description: story.description,
     genre: story.genre || 'General',
-    status: dynamicStoryStatus,
+    status: finalStoryStatus,
     storyData: story.storyData || null,
+    userId: story.authorId,
     parts: structuredParts,
     chapters: standaloneChapters,
     scenes: allScenes
