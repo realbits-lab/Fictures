@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/compo
 interface Scene {
   id: string;
   title: string;
-  status: "completed" | "in_progress" | "planned";
+  status: "completed" | "in_progress" | "draft";
   wordCount: number;
   goal: string;
   conflict: string;
@@ -111,31 +111,13 @@ export function StoryTreeArchitecture({
     }
   }, [currentSelection, story.parts]);
 
-  const getPartStatusIcon = (status: string) => {
+  // Unified status icons across all levels (parts, chapters, scenes)
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed": return "✅";
       case "published": return "🚀";
-      case "in_progress": return "⚠️";
-      case "draft": return "📚";
-      default: return "📚";
-    }
-  };
-
-  const getChapterStatusIcon = (status: string) => {
-    switch (status) {
-      case "completed": return "✅";
-      case "published": return "🚀";
-      case "in_progress": return "⚠️";
+      case "in_progress": return "🔄";
       case "draft": return "📝";
-      default: return "📝";
-    }
-  };
-
-  const getSceneStatusIcon = (status: string) => {
-    switch (status) {
-      case "completed": return "✅";
-      case "in_progress": return "⏳";
-      case "planned": return "📝";
       default: return "📝";
     }
   };
@@ -289,7 +271,7 @@ export function StoryTreeArchitecture({
                     >
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                          {getPartStatusIcon(part.status || 'draft')} Part {part.orderIndex}: {part.title}
+                          {getStatusIcon(part.status || 'draft')} Part {part.orderIndex}: {part.title}
                         </span>
                         <Badge variant="secondary" size="sm">
                           {part.chapters.length}
@@ -328,7 +310,7 @@ export function StoryTreeArchitecture({
                                   : 'hover:bg-gray-100 dark:hover:bg-gray-700'
                               }`}
                             >
-                              <span>{getChapterStatusIcon(chapter.status)}</span>
+                              <span>{getStatusIcon(chapter.status)}</span>
                               <span className="text-sm text-orange-600 dark:text-orange-400 truncate">
                                 Ch {chapter.orderIndex}: {chapter.title}
                               </span>
@@ -360,7 +342,7 @@ export function StoryTreeArchitecture({
                                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                                   }`}
                                 >
-                                  <span>{getSceneStatusIcon(scene.status)}</span>
+                                  <span>{getStatusIcon(scene.status)}</span>
                                   <span className="text-purple-600 dark:text-purple-400 truncate">
                                     Scene {sceneIndex + 1}: {scene.title}
                                   </span>

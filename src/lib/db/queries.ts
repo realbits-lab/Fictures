@@ -277,11 +277,11 @@ export async function updateUserStats(userId: string, updates: Partial<{
 // Dynamic status calculation utilities
 export function calculateSceneStatus(scene: { content?: string; wordCount?: number }) {
   if (!scene.content || scene.content.trim() === '') {
-    return 'planned';
+    return 'draft';
   }
   // Could add more sophisticated logic here (e.g., checking if scenes are "completed" vs "in_progress")
   // For now, any scene with content is considered in_progress
-  return scene.wordCount && scene.wordCount > 0 ? 'in_progress' : 'planned';
+  return scene.wordCount && scene.wordCount > 0 ? 'in_progress' : 'draft';
 }
 
 export function calculateChapterStatus(scenes: Array<{ status: string }>) {

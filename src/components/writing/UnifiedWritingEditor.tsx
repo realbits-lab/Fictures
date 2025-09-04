@@ -293,7 +293,7 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
             goal: data.goal,
             conflict: data.obstacle,
             outcome: data.outcome,
-            status: data.content && data.content.trim() ? 'in_progress' : 'planned'
+            status: data.content && data.content.trim() ? 'in_progress' : 'draft'
           })
         });
 
