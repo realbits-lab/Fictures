@@ -9,7 +9,7 @@ const updateStorySchema = z.object({
   title: z.string().min(1).max(255).optional(),
   description: z.string().optional(),
   genre: z.string().optional(),
-  status: z.enum(['draft', 'active', 'completed', 'hiatus']).optional(),
+  status: z.enum(['draft', 'active', 'completed', 'hiatus', 'published']).optional(),
   isPublic: z.boolean().optional(),
   targetWordCount: z.number().min(1000).max(500000).optional(),
 });
