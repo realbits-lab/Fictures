@@ -79,6 +79,7 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
   
   const [yamlLevel, setYamlLevel] = useState<EditorLevel>("story");
   const [isLoading, setIsLoading] = useState(false);
+  const [showThemePlanner, setShowThemePlanner] = useState(false);
 
   // Sample YAML data for demonstration
   const sampleStoryData = {
@@ -330,27 +331,54 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
     }
   };
 
-  const handleCreateFirstScene = async (chapterId: string) => {
+  const handleCreateScene = async (chapterId: string) => {
     setIsLoading(true);
     try {
-      // Create the first scene for this chapter
+      // Calculate next order index by counting existing scenes in the UI
+      let nextOrderIndex = 1;
+      
+      // Find the current chapter to count existing scenes
+      let currentChapter = null;
+      
+      // Look in parts first
+      for (const part of story.parts) {
+        const foundChapter = part.chapters.find(ch => ch.id === chapterId);
+        if (foundChapter) {
+          currentChapter = foundChapter;
+          break;
+        }
+      }
+      
+      // Look in standalone chapters if not found in parts
+      if (!currentChapter) {
+        currentChapter = story.chapters.find(ch => ch.id === chapterId);
+      }
+      
+      // Calculate next order index based on existing scenes in UI
+      if (currentChapter && currentChapter.scenes) {
+        nextOrderIndex = currentChapter.scenes.length + 1;
+      }
+      
+      // Create the new scene
       const response = await fetch('/api/scenes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          title: 'Scene 1',
+          title: `Scene ${nextOrderIndex}`,
           chapterId: chapterId,
-          orderIndex: 1,
-          goal: 'Establish opening scene',
-          conflict: 'Initial obstacles',
-          outcome: 'Scene conclusion'
+          orderIndex: nextOrderIndex,
+          goal: nextOrderIndex === 1 ? 'Establish opening scene' : `Scene ${nextOrderIndex} objective`,
+          conflict: nextOrderIndex === 1 ? 'Initial obstacles' : `Scene ${nextOrderIndex} challenges`,
+          outcome: nextOrderIndex === 1 ? 'Scene conclusion' : `Scene ${nextOrderIndex} resolution`
         })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create scene');
+        const errorData = await response.json();
+        console.error('Scene creation failed:', errorData);
+        throw new Error(errorData.error || 'Failed to create scene');
       }
 
       const { scene } = await response.json();
@@ -368,7 +396,7 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
       router.refresh();
       
     } catch (error) {
-      console.error('Failed to create first scene:', error);
+      console.error('Failed to create scene:', error);
       alert('Failed to create scene. Please try again.');
     } finally {
       setIsLoading(false);
@@ -493,8 +521,17 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
           <div className="space-y-6">
             {/* Chapter Overview */}
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>📝 Chapter Overview</CardTitle>
+                <Button 
+                  size="sm" 
+                  variant="secondary"
+                  onClick={() => setShowThemePlanner(!showThemePlanner)}
+                  className="flex items-center gap-2"
+                >
+                  <span>🎨</span>
+                  {showThemePlanner ? "Hide Theme Planner" : "Create Theme"}
+                </Button>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -526,10 +563,164 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
               </CardContent>
             </Card>
 
+            {/* Chapter Theme Planner - Expandable */}
+            {showThemePlanner && (
+              <Card className="border-2 border-blue-200 dark:border-blue-800">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <span>🎨</span>
+                    Chapter Theme & Structure Planner
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Three-Act Structure */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm flex items-center gap-2">
+                      <span>🎬</span>
+                      Three-Act Chapter Structure
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="border rounded-lg p-3 bg-green-50 dark:bg-green-900/20">
+                        <h5 className="font-medium text-xs text-green-800 dark:text-green-200 mb-2">Act 1: Setup (20%)</h5>
+                        <div className="space-y-2 text-xs">
+                          <div><strong>Hook:</strong> {sampleChapterData.acts.setup.hook_in}</div>
+                          <div><strong>Orient:</strong> {sampleChapterData.acts.setup.orient}</div>
+                          <div><strong>Incident:</strong> {sampleChapterData.acts.setup.incident}</div>
+                        </div>
+                      </div>
+                      <div className="border rounded-lg p-3 bg-yellow-50 dark:bg-yellow-900/20">
+                        <h5 className="font-medium text-xs text-yellow-800 dark:text-yellow-200 mb-2">Act 2: Confrontation (60%)</h5>
+                        <div className="space-y-2 text-xs">
+                          <div><strong>Rising:</strong> {sampleChapterData.acts.confrontation.rising}</div>
+                          <div><strong>Midpoint:</strong> {sampleChapterData.acts.confrontation.midpoint}</div>
+                          <div><strong>Complicate:</strong> {sampleChapterData.acts.confrontation.complicate}</div>
+                        </div>
+                      </div>
+                      <div className="border rounded-lg p-3 bg-red-50 dark:bg-red-900/20">
+                        <h5 className="font-medium text-xs text-red-800 dark:text-red-200 mb-2">Act 3: Resolution (20%)</h5>
+                        <div className="space-y-2 text-xs">
+                          <div><strong>Climax:</strong> {sampleChapterData.acts.resolution.climax}</div>
+                          <div><strong>Resolve:</strong> {sampleChapterData.acts.resolution.resolve}</div>
+                          <div><strong>Hook Out:</strong> {sampleChapterData.acts.resolution.hook_out}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tension Architecture */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm flex items-center gap-2">
+                      <span>⚡</span>
+                      Tension Architecture
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <div className="text-xs"><strong>🏃 External:</strong> {sampleChapterData.tension.external}</div>
+                        <div className="text-xs"><strong>💭 Internal:</strong> {sampleChapterData.tension.internal}</div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="text-xs"><strong>👥 Interpersonal:</strong> {sampleChapterData.tension.interpersonal}</div>
+                        <div className="text-xs"><strong>🌫️ Atmospheric:</strong> {sampleChapterData.tension.atmospheric}</div>
+                      </div>
+                    </div>
+                    <div className="bg-red-100 dark:bg-red-900/30 p-2 rounded text-xs">
+                      <strong>🎯 Peak:</strong> {sampleChapterData.tension.peak}
+                    </div>
+                  </div>
+
+                  {/* Character Development */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm flex items-center gap-2">
+                      <span>👤</span>
+                      Character Development
+                    </h4>
+                    <div className="border rounded-lg p-3 bg-blue-50 dark:bg-blue-900/20">
+                      <h5 className="font-medium text-xs text-blue-800 dark:text-blue-200 mb-2">Maya (POV)</h5>
+                      <div className="space-y-1 text-xs">
+                        <div><strong>Start:</strong> {sampleChapterData.chars.maya.start}</div>
+                        <div><strong>Arc:</strong> {sampleChapterData.chars.maya.arc}</div>
+                        <div><strong>End:</strong> {sampleChapterData.chars.maya.end}</div>
+                        <div><strong>Motivation:</strong> {sampleChapterData.chars.maya.motivation}</div>
+                        <div><strong>Growth:</strong> {sampleChapterData.chars.maya.growth}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dual Mandate */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm flex items-center gap-2">
+                      <span>⚖️</span>
+                      Dual Mandate Fulfillment
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="border rounded-lg p-3 bg-purple-50 dark:bg-purple-900/20">
+                        <h5 className="font-medium text-xs text-purple-800 dark:text-purple-200 mb-2">📖 Episodic Satisfaction</h5>
+                        <div className="space-y-1 text-xs">
+                          <div><strong>Arc:</strong> {sampleChapterData.mandate.episodic.arc}</div>
+                          <div><strong>Payoff:</strong> {sampleChapterData.mandate.episodic.payoff}</div>
+                          <div><strong>Answered:</strong> {sampleChapterData.mandate.episodic.answered}</div>
+                        </div>
+                      </div>
+                      <div className="border rounded-lg p-3 bg-indigo-50 dark:bg-indigo-900/20">
+                        <h5 className="font-medium text-xs text-indigo-800 dark:text-indigo-200 mb-2">🚀 Serial Momentum</h5>
+                        <div className="space-y-1 text-xs">
+                          <div><strong>Complication:</strong> {sampleChapterData.mandate.serial.complication}</div>
+                          <div><strong>Stakes:</strong> {sampleChapterData.mandate.serial.stakes}</div>
+                          <div><strong>Compulsion:</strong> {sampleChapterData.mandate.serial.compulsion}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Forward Hook */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm flex items-center gap-2">
+                      <span>🪝</span>
+                      Forward Hook Strategy
+                    </h4>
+                    <div className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+                      <div className="space-y-2 text-xs">
+                        <div><strong>Type:</strong> {sampleChapterData.hook.type} ({sampleChapterData.hook.reveal ? "revelation + " : ""}{sampleChapterData.hook.threat ? "threat + " : ""}{sampleChapterData.hook.emotion ? "emotional" : ""})</div>
+                        <div><strong>Reveal:</strong> {sampleChapterData.hook.reveal}</div>
+                        <div><strong>Threat:</strong> {sampleChapterData.hook.threat}</div>
+                        <div><strong>Emotion:</strong> {sampleChapterData.hook.emotion}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 pt-4 border-t">
+                    <Button size="sm" variant="default" className="flex items-center gap-2">
+                      <span>💾</span>
+                      Save Theme Plan
+                    </Button>
+                    <Button size="sm" variant="secondary" className="flex items-center gap-2">
+                      <span>🎲</span>
+                      Generate Variations
+                    </Button>
+                    <Button size="sm" variant="outline" className="flex items-center gap-2">
+                      <span>📋</span>
+                      Export YAML
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Scene Overview */}
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>🎬 Scene Overview</CardTitle>
+                <Button 
+                  size="sm" 
+                  variant="secondary"
+                  onClick={() => handleCreateScene(currentSelection.chapterId!)}
+                  disabled={isLoading}
+                  className="flex items-center gap-2"
+                >
+                  <span>🎬</span>
+                  {isLoading ? "Creating..." : "Create Scene"}
+                </Button>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -579,7 +770,7 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
                       <Button 
                         size="sm" 
                         variant="secondary"
-                        onClick={() => handleCreateFirstScene(currentSelection.chapterId!)}
+                        onClick={() => handleCreateScene(currentSelection.chapterId!)}
                         disabled={isLoading}
                       >
                         {isLoading ? "Creating..." : "+ Create First Scene"}
