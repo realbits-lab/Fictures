@@ -301,6 +301,51 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
     }
   };
 
+  const handleCreateFirstScene = async (chapterId: string) => {
+    setIsLoading(true);
+    try {
+      // Create the first scene for this chapter
+      const response = await fetch('/api/scenes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: 'Scene 1',
+          chapterId: chapterId,
+          orderIndex: 1,
+          goal: 'Establish opening scene',
+          conflict: 'Initial obstacles',
+          outcome: 'Scene conclusion'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create scene');
+      }
+
+      const { scene } = await response.json();
+      
+      // Navigate to the new scene editor
+      handleSelectionChange({
+        level: "scene",
+        storyId: story.id,
+        partId: currentSelection.partId,
+        chapterId: chapterId,
+        sceneId: scene.id
+      });
+
+      // Refresh the page to show the new scene
+      router.refresh();
+      
+    } catch (error) {
+      console.error('Failed to create first scene:', error);
+      alert('Failed to create scene. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const renderEditor = () => {
     switch (currentSelection.level) {
       case "story":
@@ -502,8 +547,13 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
                   ) : (
                     <div className="text-center py-8 text-gray-500">
                       <p className="text-sm mb-3">No scenes planned for this chapter</p>
-                      <Button size="sm" variant="secondary">
-                        + Create First Scene
+                      <Button 
+                        size="sm" 
+                        variant="secondary"
+                        onClick={() => handleCreateFirstScene(currentSelection.chapterId!)}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? "Creating..." : "+ Create First Scene"}
                       </Button>
                     </div>
                   )}
