@@ -319,30 +319,37 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
             {/* Chapter Content */}
             <div className="prose prose-lg dark:prose-invert max-w-none">
               {selectedChapter.scenes && selectedChapter.scenes.length > 0 ? (
-                selectedChapter.scenes.map((scene, index) => (
-                  <section key={scene.id} className="mb-8">
-                    {selectedChapter.scenes!.length > 1 && (
-                      <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4 opacity-75">
-                        {scene.title}
-                      </h3>
-                    )}
-                    <div className="whitespace-pre-wrap leading-relaxed">
-                      {scene.content || (
-                        <p className="text-gray-500 dark:text-gray-400 italic">
-                          This scene is empty.
-                        </p>
+                <>
+                  {console.log(`📖 Rendering ${selectedChapter.scenes.length} scenes for chapter: ${selectedChapter.title}`)}
+                  {selectedChapter.scenes.map((scene, index) => (
+                    <section key={scene.id} className="mb-8">
+                      {selectedChapter.scenes!.length > 1 && (
+                        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4 opacity-75">
+                          {scene.title}
+                        </h3>
                       )}
-                    </div>
-                  </section>
-                ))
+                      <div className="whitespace-pre-wrap leading-relaxed">
+                        {scene.content || (
+                          <p className="text-gray-500 dark:text-gray-400 italic">
+                            This scene is empty.
+                          </p>
+                        )}
+                      </div>
+                    </section>
+                  ))}
+                </>
               ) : (
-                <div className="whitespace-pre-wrap leading-relaxed">
-                  {selectedChapter.content || (
-                    <p className="text-gray-500 dark:text-gray-400 italic">
-                      This chapter is empty.
-                    </p>
-                  )}
-                </div>
+                <>
+                  {console.log(`📄 Rendering chapter content directly (no scenes) for: ${selectedChapter.title}`)}
+                  {console.log(`📏 Chapter content length: ${selectedChapter.content?.length || 0} chars`)}
+                  <div className="whitespace-pre-wrap leading-relaxed">
+                    {selectedChapter.content || (
+                      <p className="text-gray-500 dark:text-gray-400 italic">
+                        This chapter is empty.
+                      </p>
+                    )}
+                  </div>
+                </>
               )}
             </div>
 

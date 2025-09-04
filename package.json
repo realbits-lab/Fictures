@@ -11,7 +11,9 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:push": "drizzle-kit push",
-    "db:pull": "drizzle-kit pull"
+    "db:pull": "drizzle-kit pull",
+    "migrate:chapters-dry": "dotenv --file .env.local run tsx scripts/migrate-chapter-content-to-scenes.ts --dry-run",
+    "migrate:chapters": "dotenv --file .env.local run tsx scripts/migrate-chapter-content-to-scenes.ts --execute"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.23",
