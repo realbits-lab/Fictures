@@ -19,8 +19,7 @@ interface NavItem {
 const primaryNavItems: NavItem[] = [
   { href: "/browse", label: "Browse", icon: "🔍" },
   { href: "/stories", label: "Stories", icon: "📚" },
-  { href: "/community", label: "Community", icon: "💬" },
-  { href: "/ai", label: "AI", icon: "🤖" }
+  { href: "/community", label: "Community", icon: "💬" }
 ];
 
 const secondaryNavItems: NavItem[] = [

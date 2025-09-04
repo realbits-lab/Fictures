@@ -23,6 +23,8 @@ interface SceneData {
   shift: string;
   leads_to: string;
   image_prompt: string;
+  content?: string;
+  wordCount?: number;
 }
 
 interface SceneEditorProps {
@@ -64,13 +66,23 @@ export function SceneEditor({
     }
   );
 
-  const [sceneContent, setSceneContent] = useState("");
+  const [sceneContent, setSceneContent] = useState(initialData?.content || "");
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isWriting, setIsWriting] = useState(false);
-  const [wordCount, setWordCount] = useState(0);
+  const [wordCount, setWordCount] = useState(initialData?.wordCount || 0);
 
-  // Calculate word count
+  // Update scene content when initialData changes (switching scenes)
+  useEffect(() => {
+    if (initialData?.content !== undefined) {
+      setSceneContent(initialData.content);
+    }
+    if (initialData?.wordCount !== undefined) {
+      setWordCount(initialData.wordCount);
+    }
+  }, [initialData]);
+
+  // Calculate word count when content changes
   useEffect(() => {
     const words = sceneContent.trim().split(/\s+/).filter(word => word.length > 0);
     setWordCount(words.length);
@@ -80,7 +92,13 @@ export function SceneEditor({
     if (!onSave) return;
     setIsSaving(true);
     try {
-      await onSave(sceneData);
+      // Include scene content and word count in the data passed to onSave
+      const saveData = {
+        ...sceneData,
+        content: sceneContent,
+        wordCount: wordCount
+      };
+      await onSave(saveData);
     } catch (error) {
       console.error('Save failed:', error);
     } finally {

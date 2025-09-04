@@ -115,8 +115,8 @@ export const PartSerialSchema = z.object({
 export const PartEngagementSchema = z.object({
   discussions: z.array(z.string()),
   speculation: z.array(z.string()),
-  debates: z.array(z.string()),
-  feedback: z.array(z.string()),
+  debates: z.array(z.string()).optional(),
+  feedback: z.array(z.string()).optional(),
 });
 
 export const PartQuestionsSchema = z.object({
@@ -129,7 +129,7 @@ export const PartSpecificationSchema = z.object({
   title: z.string(),
   words: z.number().optional(),
   function: z.string().optional(),
-  goal: z.string(),
+  goals: z.string(),
   conflict: z.string(),
   outcome: z.string(),
   questions: PartQuestionsSchema.optional(),

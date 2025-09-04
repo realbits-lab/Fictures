@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/compo
 interface Scene {
   id: string;
   title: string;
-  status: "completed" | "in_progress" | "planned";
+  status: "completed" | "in_progress" | "draft";
   wordCount: number;
   goal: string;
   conflict: string;
@@ -29,6 +29,7 @@ interface Part {
   id: string;
   title: string;
   orderIndex: number;
+  status?: string;
   chapters: Chapter[];
 }
 
@@ -110,26 +111,26 @@ export function StoryTreeArchitecture({
     }
   }, [currentSelection, story.parts]);
 
-  const getChapterStatusIcon = (status: string) => {
+  // Unified status icons across all levels (parts, chapters, scenes)
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed": return "✅";
       case "published": return "🚀";
-      case "in_progress": return "✏️";
+      case "in_progress": return "🔄";
       case "draft": return "📝";
       default: return "📝";
     }
   };
 
-  const getSceneStatusIcon = (status: string) => {
-    switch (status) {
-      case "completed": return "✅";
-      case "in_progress": return "⏳";
-      case "planned": return "📝";
-      default: return "📝";
+  const getProgressPercentage = (wordCount: number, targetWordCount: number, chapter?: Chapter) => {
+    // If chapter has scenes, calculate progress based on completed scenes
+    if (chapter && chapter.scenes && chapter.scenes.length > 0) {
+      const completedScenes = chapter.scenes.filter(scene => scene.status === 'completed').length;
+      const totalScenes = chapter.scenes.length;
+      return Math.round((completedScenes / totalScenes) * 100);
     }
-  };
-
-  const getProgressPercentage = (wordCount: number, targetWordCount: number) => {
+    
+    // Fallback to word count progress
     if (targetWordCount === 0) return 0;
     return Math.round((wordCount / targetWordCount) * 100);
   };
@@ -277,8 +278,8 @@ export function StoryTreeArchitecture({
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                          📚 Part {part.orderIndex}: {part.title}
+                        <span className="text-sm font-medium text-green-600 dark:text-green-400 truncate">
+                          {getStatusIcon(part.status || 'draft')} Part {part.orderIndex}: {part.title}
                         </span>
                         <Badge variant="secondary" size="sm">
                           {part.chapters.length}
@@ -290,8 +291,14 @@ export function StoryTreeArchitecture({
 
                 {expandedParts.has(part.id) && (
                   <div className="space-y-2">
-                    {part.chapters.map((chapter) => (
-                      <div key={chapter.id} className="border-l-2 border-orange-400 pl-3">
+                    {part.chapters.map((chapter, chapterIndex) => {
+                      // Calculate global chapter number
+                      const globalChapterNumber = story.parts
+                        .slice(0, story.parts.findIndex(p => p.id === part.id))
+                        .reduce((total, prevPart) => total + (prevPart.chapters?.length || 0), 0) + chapterIndex + 1;
+                      
+                      return (
+                        <div key={chapter.id} className="border-l-2 border-orange-400 pl-3">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-1 flex-1">
                             <button
@@ -317,9 +324,9 @@ export function StoryTreeArchitecture({
                                   : 'hover:bg-gray-100 dark:hover:bg-gray-700'
                               }`}
                             >
-                              <span>{getChapterStatusIcon(chapter.status)}</span>
+                              <span>{getStatusIcon(chapter.status)}</span>
                               <span className="text-sm text-orange-600 dark:text-orange-400 truncate">
-                                Ch {chapter.orderIndex}: {chapter.title}
+                                Ch {globalChapterNumber}: {chapter.title}
                               </span>
                             </button>
                           </div>
@@ -331,7 +338,7 @@ export function StoryTreeArchitecture({
                                 : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
                             }`}
                           >
-                            {getProgressPercentage(chapter.wordCount, chapter.targetWordCount)}%
+                            {getProgressPercentage(chapter.wordCount, chapter.targetWordCount, chapter)}%
                           </Link>
                         </div>
 
@@ -349,7 +356,7 @@ export function StoryTreeArchitecture({
                                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                                   }`}
                                 >
-                                  <span>{getSceneStatusIcon(scene.status)}</span>
+                                  <span>{getStatusIcon(scene.status)}</span>
                                   <span className="text-purple-600 dark:text-purple-400 truncate">
                                     Scene {sceneIndex + 1}: {scene.title}
                                   </span>
@@ -359,8 +366,9 @@ export function StoryTreeArchitecture({
                             ))}
                           </div>
                         )}
-                      </div>
-                    ))}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -372,8 +380,13 @@ export function StoryTreeArchitecture({
                 <div className="text-sm font-medium text-orange-600 dark:text-orange-400 mb-2">
                   📄 Standalone Chapters
                 </div>
-                {story.chapters.map((chapter) => (
-                  <div key={chapter.id} className="mb-2">
+                {story.chapters.map((chapter, chapterIndex) => {
+                  // Calculate global chapter number (after all parts)
+                  const totalPartsChapters = story.parts.reduce((total, part) => total + (part.chapters?.length || 0), 0);
+                  const globalChapterNumber = totalPartsChapters + chapterIndex + 1;
+                  
+                  return (
+                    <div key={chapter.id} className="mb-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1 flex-1">
                         <button
@@ -399,8 +412,8 @@ export function StoryTreeArchitecture({
                               : 'hover:bg-gray-100 dark:hover:bg-gray-700'
                           }`}
                         >
-                          <span>{getChapterStatusIcon(chapter.status)}</span>
-                          <span className="text-sm truncate">{chapter.title}</span>
+                          <span>{getStatusIcon(chapter.status)}</span>
+                          <span className="text-sm truncate">Ch {globalChapterNumber}: {chapter.title}</span>
                         </button>
                       </div>
                       <Link
@@ -411,7 +424,7 @@ export function StoryTreeArchitecture({
                             : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
                         }`}
                       >
-                        {getProgressPercentage(chapter.wordCount, chapter.targetWordCount)}%
+                        {getProgressPercentage(chapter.wordCount, chapter.targetWordCount, chapter)}%
                       </Link>
                     </div>
 
@@ -429,7 +442,7 @@ export function StoryTreeArchitecture({
                                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                               }`}
                             >
-                              <span>{getSceneStatusIcon(scene.status)}</span>
+                              <span>{getStatusIcon(scene.status)}</span>
                               <span className="text-purple-600 dark:text-purple-400 truncate">
                                 Scene {sceneIndex + 1}: {scene.title}
                               </span>
@@ -439,8 +452,9 @@ export function StoryTreeArchitecture({
                         ))}
                       </div>
                     )}
-                  </div>
-                ))}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

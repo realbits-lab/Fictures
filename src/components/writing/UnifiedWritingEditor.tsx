@@ -68,8 +68,9 @@ interface UnifiedWritingEditorProps {
   initialSelection?: Selection;
 }
 
-export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWritingEditorProps) {
+export function UnifiedWritingEditor({ story: initialStory, initialSelection }: UnifiedWritingEditorProps) {
   const router = useRouter();
+  const [story, setStory] = useState<Story>(initialStory);
   const [currentSelection, setCurrentSelection] = useState<Selection>(
     initialSelection || {
       level: "story",
@@ -79,6 +80,13 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
   
   const [yamlLevel, setYamlLevel] = useState<EditorLevel>("story");
   const [isLoading, setIsLoading] = useState(false);
+  const [showThemePlanner, setShowThemePlanner] = useState(false);
+  const [themePlanned, setThemePlanned] = useState(false);
+
+  // Sync story state when prop changes
+  useEffect(() => {
+    setStory(initialStory);
+  }, [initialStory]);
 
   // Sample YAML data for demonstration
   const sampleStoryData = {
@@ -278,11 +286,40 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
   const handleSave = async (data: any) => {
     setIsLoading(true);
     try {
-      // Here you would save the data to your backend
-      console.log('Saving data:', data);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      // Check if this is scene data (has content and wordCount) and we have a sceneId
+      if (data.content !== undefined && data.wordCount !== undefined && currentSelection.sceneId) {
+        // Save scene content and metadata to the scene API
+        const response = await fetch(`/api/scenes/${currentSelection.sceneId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: data.summary || `Scene ${data.id}`,
+            content: data.content,
+            wordCount: data.wordCount,
+            goal: data.goal,
+            conflict: data.obstacle,
+            outcome: data.outcome,
+            status: data.content && data.content.trim() ? 'in_progress' : 'draft'
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`Failed to save scene: ${errorData.error || response.statusText}`);
+        }
+
+        console.log('Scene saved successfully');
+      } else {
+        // For other data types (story, part, chapter), use the original mock behavior for now
+        console.log('Saving data:', data);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
     } catch (error) {
       console.error('Save failed:', error);
+      // Show user-friendly error message
+      alert(`Failed to save: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
@@ -296,6 +333,148 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
       await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate AI generation
     } catch (error) {
       console.error('Generation failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePublishToggle = async () => {
+    if (!currentSelection.chapterId) return;
+    
+    // Find current chapter status
+    let currentChapterStatus = 'draft';
+    for (const part of story.parts) {
+      const foundChapter = part.chapters.find(ch => ch.id === currentSelection.chapterId);
+      if (foundChapter) {
+        currentChapterStatus = foundChapter.status || 'draft';
+        break;
+      }
+    }
+    if (currentChapterStatus === 'draft') {
+      const foundChapter = story.chapters.find(ch => ch.id === currentSelection.chapterId);
+      if (foundChapter) {
+        currentChapterStatus = foundChapter.status || 'draft';
+      }
+    }
+
+    const isPublished = currentChapterStatus === 'published';
+    const endpoint = isPublished ? 'unpublish' : 'publish';
+    const newStatus = isPublished ? 'completed' : 'published';
+    
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/chapters/${currentSelection.chapterId}/${endpoint}`, {
+        method: 'POST',
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to ${endpoint} chapter`);
+      }
+      
+      const result = await response.json();
+      console.log(`Chapter ${endpoint}ed successfully:`, result);
+      
+      // Update the story data to reflect the new status
+      setStory(prevStory => {
+        const updateChapterStatus = (chapters: any[]) => {
+          return chapters.map(chapter => 
+            chapter.id === currentSelection.chapterId 
+              ? { 
+                  ...chapter, 
+                  status: newStatus, 
+                  publishedAt: isPublished ? null : new Date() 
+                }
+              : chapter
+          );
+        };
+
+        return {
+          ...prevStory,
+          parts: prevStory.parts.map(part => ({
+            ...part,
+            chapters: updateChapterStatus(part.chapters)
+          })),
+          chapters: updateChapterStatus(prevStory.chapters)
+        };
+      });
+      
+    } catch (error) {
+      console.error(`${endpoint} error:`, error);
+      alert(`Failed to ${endpoint} chapter. Please try again.`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateScene = async (chapterId: string) => {
+    setIsLoading(true);
+    try {
+      // Calculate next available order index by finding the highest existing orderIndex
+      let nextOrderIndex = 1;
+      
+      // Find the current chapter to check existing scenes
+      let currentChapter = null;
+      
+      // Look in parts first
+      for (const part of story.parts) {
+        const foundChapter = part.chapters.find(ch => ch.id === chapterId);
+        if (foundChapter) {
+          currentChapter = foundChapter;
+          break;
+        }
+      }
+      
+      // Look in standalone chapters if not found in parts
+      if (!currentChapter) {
+        currentChapter = story.chapters.find(ch => ch.id === chapterId);
+      }
+      
+      // Calculate next available order index based on existing scenes
+      if (currentChapter && currentChapter.scenes && currentChapter.scenes.length > 0) {
+        // Find the highest existing orderIndex and add 1
+        const maxOrderIndex = Math.max(...currentChapter.scenes.map(scene => scene.orderIndex || 0));
+        nextOrderIndex = maxOrderIndex + 1;
+      }
+      
+      // Create the new scene
+      const response = await fetch('/api/scenes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: `Scene ${nextOrderIndex}`,
+          chapterId: chapterId,
+          orderIndex: nextOrderIndex,
+          goal: nextOrderIndex === 1 ? 'Establish opening scene' : `Scene ${nextOrderIndex} objective`,
+          conflict: nextOrderIndex === 1 ? 'Initial obstacles' : `Scene ${nextOrderIndex} challenges`,
+          outcome: nextOrderIndex === 1 ? 'Scene conclusion' : `Scene ${nextOrderIndex} resolution`
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Scene creation failed:', errorData);
+        throw new Error(errorData.error || 'Failed to create scene');
+      }
+
+      const { scene } = await response.json();
+      
+      // Navigate to the new scene editor
+      handleSelectionChange({
+        level: "scene",
+        storyId: story.id,
+        partId: currentSelection.partId,
+        chapterId: chapterId,
+        sceneId: scene.id
+      });
+
+      // Refresh the page to show the new scene
+      router.refresh();
+      
+    } catch (error) {
+      console.error('Failed to create scene:', error);
+      alert('Failed to create scene. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -419,8 +598,24 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
           <div className="space-y-6">
             {/* Chapter Overview */}
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>📝 Chapter Overview</CardTitle>
+                <Button 
+                  size="sm" 
+                  variant="secondary"
+                  onClick={() => {
+                    const newShowState = !showThemePlanner;
+                    setShowThemePlanner(newShowState);
+                    // Mark theme as planned when user first opens the planner
+                    if (newShowState && !themePlanned) {
+                      setThemePlanned(true);
+                    }
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <span>🎨</span>
+                  {showThemePlanner ? "Hide Theme Planner" : "Create Theme"}
+                </Button>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -432,7 +627,12 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
                   </div>
                   <div>
                     <strong>📊 Status:</strong> 
-                    <Badge variant="outline" className="ml-2">{chapterData.status}</Badge>
+                    <Badge 
+                      variant={chapterData.status === 'published' ? 'default' : 'outline'} 
+                      className={`ml-2 ${chapterData.status === 'published' ? 'bg-green-600 text-white' : ''}`}
+                    >
+                      {chapterData.status === 'published' ? '🚀' : ''} {chapterData.status}
+                    </Badge>
                   </div>
                   <div>
                     <strong>📝 Progress:</strong> {chapterData.wordCount}/{chapterData.targetWordCount} words
@@ -452,10 +652,165 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
               </CardContent>
             </Card>
 
+            {/* Chapter Theme Planner - Expandable */}
+            {showThemePlanner && (
+              <Card className="border-2 border-blue-200 dark:border-blue-800">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <span>🎨</span>
+                    Chapter Theme & Structure Planner
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Three-Act Structure */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm flex items-center gap-2">
+                      <span>🎬</span>
+                      Three-Act Chapter Structure
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="border rounded-lg p-3 bg-green-50 dark:bg-green-900/20">
+                        <h5 className="font-medium text-xs text-green-800 dark:text-green-200 mb-2">Act 1: Setup (20%)</h5>
+                        <div className="space-y-2 text-xs">
+                          <div><strong>Hook:</strong> {sampleChapterData.acts.setup.hook_in}</div>
+                          <div><strong>Orient:</strong> {sampleChapterData.acts.setup.orient}</div>
+                          <div><strong>Incident:</strong> {sampleChapterData.acts.setup.incident}</div>
+                        </div>
+                      </div>
+                      <div className="border rounded-lg p-3 bg-yellow-50 dark:bg-yellow-900/20">
+                        <h5 className="font-medium text-xs text-yellow-800 dark:text-yellow-200 mb-2">Act 2: Confrontation (60%)</h5>
+                        <div className="space-y-2 text-xs">
+                          <div><strong>Rising:</strong> {sampleChapterData.acts.confrontation.rising}</div>
+                          <div><strong>Midpoint:</strong> {sampleChapterData.acts.confrontation.midpoint}</div>
+                          <div><strong>Complicate:</strong> {sampleChapterData.acts.confrontation.complicate}</div>
+                        </div>
+                      </div>
+                      <div className="border rounded-lg p-3 bg-red-50 dark:bg-red-900/20">
+                        <h5 className="font-medium text-xs text-red-800 dark:text-red-200 mb-2">Act 3: Resolution (20%)</h5>
+                        <div className="space-y-2 text-xs">
+                          <div><strong>Climax:</strong> {sampleChapterData.acts.resolution.climax}</div>
+                          <div><strong>Resolve:</strong> {sampleChapterData.acts.resolution.resolve}</div>
+                          <div><strong>Hook Out:</strong> {sampleChapterData.acts.resolution.hook_out}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tension Architecture */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm flex items-center gap-2">
+                      <span>⚡</span>
+                      Tension Architecture
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <div className="text-xs"><strong>🏃 External:</strong> {sampleChapterData.tension.external}</div>
+                        <div className="text-xs"><strong>💭 Internal:</strong> {sampleChapterData.tension.internal}</div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="text-xs"><strong>👥 Interpersonal:</strong> {sampleChapterData.tension.interpersonal}</div>
+                        <div className="text-xs"><strong>🌫️ Atmospheric:</strong> {sampleChapterData.tension.atmospheric}</div>
+                      </div>
+                    </div>
+                    <div className="bg-red-100 dark:bg-red-900/30 p-2 rounded text-xs">
+                      <strong>🎯 Peak:</strong> {sampleChapterData.tension.peak}
+                    </div>
+                  </div>
+
+                  {/* Character Development */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm flex items-center gap-2">
+                      <span>👤</span>
+                      Character Development
+                    </h4>
+                    <div className="border rounded-lg p-3 bg-blue-50 dark:bg-blue-900/20">
+                      <h5 className="font-medium text-xs text-blue-800 dark:text-blue-200 mb-2">Maya (POV)</h5>
+                      <div className="space-y-1 text-xs">
+                        <div><strong>Start:</strong> {sampleChapterData.chars.maya.start}</div>
+                        <div><strong>Arc:</strong> {sampleChapterData.chars.maya.arc}</div>
+                        <div><strong>End:</strong> {sampleChapterData.chars.maya.end}</div>
+                        <div><strong>Motivation:</strong> {sampleChapterData.chars.maya.motivation}</div>
+                        <div><strong>Growth:</strong> {sampleChapterData.chars.maya.growth}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dual Mandate */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm flex items-center gap-2">
+                      <span>⚖️</span>
+                      Dual Mandate Fulfillment
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="border rounded-lg p-3 bg-purple-50 dark:bg-purple-900/20">
+                        <h5 className="font-medium text-xs text-purple-800 dark:text-purple-200 mb-2">📖 Episodic Satisfaction</h5>
+                        <div className="space-y-1 text-xs">
+                          <div><strong>Arc:</strong> {sampleChapterData.mandate.episodic.arc}</div>
+                          <div><strong>Payoff:</strong> {sampleChapterData.mandate.episodic.payoff}</div>
+                          <div><strong>Answered:</strong> {sampleChapterData.mandate.episodic.answered}</div>
+                        </div>
+                      </div>
+                      <div className="border rounded-lg p-3 bg-indigo-50 dark:bg-indigo-900/20">
+                        <h5 className="font-medium text-xs text-indigo-800 dark:text-indigo-200 mb-2">🚀 Serial Momentum</h5>
+                        <div className="space-y-1 text-xs">
+                          <div><strong>Complication:</strong> {sampleChapterData.mandate.serial.complication}</div>
+                          <div><strong>Stakes:</strong> {sampleChapterData.mandate.serial.stakes}</div>
+                          <div><strong>Compulsion:</strong> {sampleChapterData.mandate.serial.compulsion}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Forward Hook */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm flex items-center gap-2">
+                      <span>🪝</span>
+                      Forward Hook Strategy
+                    </h4>
+                    <div className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+                      <div className="space-y-2 text-xs">
+                        <div><strong>Type:</strong> {sampleChapterData.hook.type} ({sampleChapterData.hook.reveal ? "revelation + " : ""}{sampleChapterData.hook.threat ? "threat + " : ""}{sampleChapterData.hook.emotion ? "emotional" : ""})</div>
+                        <div><strong>Reveal:</strong> {sampleChapterData.hook.reveal}</div>
+                        <div><strong>Threat:</strong> {sampleChapterData.hook.threat}</div>
+                        <div><strong>Emotion:</strong> {sampleChapterData.hook.emotion}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 pt-4 border-t">
+                    <Button size="sm" variant="default" className="flex items-center gap-2">
+                      <span>💾</span>
+                      Save Theme Plan
+                    </Button>
+                    <Button size="sm" variant="secondary" className="flex items-center gap-2">
+                      <span>🎲</span>
+                      Generate Variations
+                    </Button>
+                    <Button size="sm" variant="outline" className="flex items-center gap-2">
+                      <span>📋</span>
+                      Export YAML
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Scene Overview */}
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>🎬 Scene Overview</CardTitle>
+                <Button 
+                  size="sm" 
+                  variant="secondary"
+                  onClick={() => handleCreateScene(currentSelection.chapterId!)}
+                  disabled={isLoading || !themePlanned}
+                  className="flex items-center gap-2"
+                  title={!themePlanned ? "Create a theme first before adding scenes" : ""}
+                >
+                  <span>🎬</span>
+                  {isLoading ? "Creating..." : "Create Scene"}
+                </Button>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -502,8 +857,14 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
                   ) : (
                     <div className="text-center py-8 text-gray-500">
                       <p className="text-sm mb-3">No scenes planned for this chapter</p>
-                      <Button size="sm" variant="secondary">
-                        + Create First Scene
+                      <Button 
+                        size="sm" 
+                        variant="secondary"
+                        onClick={() => handleCreateScene(currentSelection.chapterId!)}
+                        disabled={isLoading || !themePlanned}
+                        title={!themePlanned ? "Create a theme first before adding scenes" : ""}
+                      >
+                        {isLoading ? "Creating..." : !themePlanned ? "Create Theme First" : "+ Create First Scene"}
                       </Button>
                     </div>
                   )}
@@ -606,7 +967,9 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
           ],
           shift: "emotional_progression",
           leads_to: `scene_${sceneNum + 1}`,
-          image_prompt: `Scene ${sceneNum} visual description for ${selectedSceneChapter?.title || 'chapter'}`
+          image_prompt: `Scene ${sceneNum} visual description for ${selectedSceneChapter?.title || 'chapter'}`,
+          content: scene?.content || "",
+          wordCount: scene?.wordCount || 0
         });
         
         const sceneData = selectedScene ? 
@@ -661,10 +1024,41 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
               <Badge variant="outline">{currentSelection.level}</Badge>
             </div>
             <div className="flex items-center gap-1 md:gap-3">
-              {(currentSelection.level === "chapter" || currentSelection.level === "scene") && (
-                <Button size="sm" disabled={isLoading}>
-                  {isLoading ? "⚡ Processing..." : "🚀 Publish"}
-                </Button>
+              {currentSelection.level === "chapter" && (
+                (() => {
+                  // Find the current chapter status for button styling
+                  let currentChapterStatus = 'draft';
+                  
+                  // Look in parts first
+                  for (const part of story.parts) {
+                    const foundChapter = part.chapters.find(ch => ch.id === currentSelection.chapterId);
+                    if (foundChapter) {
+                      currentChapterStatus = foundChapter.status || 'draft';
+                      break;
+                    }
+                  }
+                  
+                  // If not found in parts, check standalone chapters
+                  if (currentChapterStatus === 'draft') {
+                    const foundChapter = story.chapters.find(ch => ch.id === currentSelection.chapterId);
+                    if (foundChapter) {
+                      currentChapterStatus = foundChapter.status || 'draft';
+                    }
+                  }
+
+                  return (
+                    <Button 
+                      size="sm" 
+                      onClick={handlePublishToggle} 
+                      disabled={isLoading}
+                      className={currentChapterStatus === 'published' ? 'bg-green-600 hover:bg-green-700 text-white' : ''}
+                    >
+                      {isLoading ? 
+                        (currentChapterStatus === 'published' ? "⚡ Unpublishing..." : "⚡ Publishing...") : 
+                        (currentChapterStatus === 'published' ? "📤 Unpublish" : "🚀 Publish")}
+                    </Button>
+                  );
+                })()
               )}
             </div>
           </div>
