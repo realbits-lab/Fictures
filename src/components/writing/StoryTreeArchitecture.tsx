@@ -29,6 +29,7 @@ interface Part {
   id: string;
   title: string;
   orderIndex: number;
+  status?: string;
   chapters: Chapter[];
 }
 
@@ -110,11 +111,21 @@ export function StoryTreeArchitecture({
     }
   }, [currentSelection, story.parts]);
 
+  const getPartStatusIcon = (status: string) => {
+    switch (status) {
+      case "completed": return "✅";
+      case "published": return "🚀";
+      case "in_progress": return "⚠️";
+      case "draft": return "📚";
+      default: return "📚";
+    }
+  };
+
   const getChapterStatusIcon = (status: string) => {
     switch (status) {
       case "completed": return "✅";
       case "published": return "🚀";
-      case "in_progress": return "✏️";
+      case "in_progress": return "⚠️";
       case "draft": return "📝";
       default: return "📝";
     }
@@ -278,7 +289,7 @@ export function StoryTreeArchitecture({
                     >
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                          📚 Part {part.orderIndex}: {part.title}
+                          {getPartStatusIcon(part.status || 'draft')} Part {part.orderIndex}: {part.title}
                         </span>
                         <Badge variant="secondary" size="sm">
                           {part.chapters.length}

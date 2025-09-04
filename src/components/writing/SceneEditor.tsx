@@ -80,7 +80,13 @@ export function SceneEditor({
     if (!onSave) return;
     setIsSaving(true);
     try {
-      await onSave(sceneData);
+      // Include scene content and word count in the data passed to onSave
+      const saveData = {
+        ...sceneData,
+        content: sceneContent,
+        wordCount: wordCount
+      };
+      await onSave(saveData);
     } catch (error) {
       console.error('Save failed:', error);
     } finally {

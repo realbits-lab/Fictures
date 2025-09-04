@@ -274,6 +274,72 @@ export async function updateUserStats(userId: string, updates: Partial<{
     .where(eq(userStats.userId, userId));
 }
 
+// Dynamic status calculation utilities
+export function calculateSceneStatus(scene: { content?: string; wordCount?: number }) {
+  if (!scene.content || scene.content.trim() === '') {
+    return 'planned';
+  }
+  // Could add more sophisticated logic here (e.g., checking if scenes are "completed" vs "in_progress")
+  // For now, any scene with content is considered in_progress
+  return scene.wordCount && scene.wordCount > 0 ? 'in_progress' : 'planned';
+}
+
+export function calculateChapterStatus(scenes: Array<{ status: string }>) {
+  if (!scenes || scenes.length === 0) {
+    return 'draft';
+  }
+  
+  const completedScenes = scenes.filter(scene => scene.status === 'completed').length;
+  const inProgressScenes = scenes.filter(scene => scene.status === 'in_progress').length;
+  const totalScenes = scenes.length;
+  
+  if (completedScenes === totalScenes && totalScenes > 0) {
+    return 'completed';
+  } else if (completedScenes > 0 || inProgressScenes > 0) {
+    return 'in_progress'; 
+  } else {
+    return 'draft';
+  }
+}
+
+export function calculatePartStatus(chapters: Array<{ status: string }>) {
+  if (!chapters || chapters.length === 0) {
+    return 'draft';
+  }
+  
+  const completedChapters = chapters.filter(chapter => chapter.status === 'completed').length;
+  const inProgressChapters = chapters.filter(chapter => chapter.status === 'in_progress').length;
+  const totalChapters = chapters.length;
+  
+  if (completedChapters === totalChapters && totalChapters > 0) {
+    return 'completed';
+  } else if (completedChapters > 0 || inProgressChapters > 0) {
+    return 'in_progress';
+  } else {
+    return 'draft';
+  }
+}
+
+export function calculateStoryStatus(parts: Array<{ status: string }>, chapters: Array<{ status: string }>) {
+  const allChapters = [...parts.flatMap(part => [{ status: part.status }]), ...chapters];
+  
+  if (allChapters.length === 0) {
+    return 'draft';
+  }
+  
+  const completedUnits = allChapters.filter(unit => unit.status === 'completed').length;
+  const inProgressUnits = allChapters.filter(unit => unit.status === 'in_progress').length;
+  const totalUnits = allChapters.length;
+  
+  if (completedUnits === totalUnits && totalUnits > 0) {
+    return 'completed';
+  } else if (completedUnits > 0 || inProgressUnits > 0) {
+    return 'in_progress';
+  } else {
+    return 'draft';
+  }
+}
+
 // Comprehensive story data with parts, chapters, and scenes
 export async function getStoryWithStructure(storyId: string, userId?: string) {
   // First check if user has access to the story
@@ -302,62 +368,107 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
     .where(eq(chapters.storyId, storyId))
     .orderBy(scenes.orderIndex);
 
-  // Structure the data to match the StoryNavigationSidebar interface
-  const structuredParts = storyParts.map(part => ({
-    id: part.id,
-    title: part.title,
-    orderIndex: part.orderIndex,
-    chapters: storyChapters
+  // Structure the data to match the StoryNavigationSidebar interface with dynamic status calculation
+  const structuredParts = storyParts.map(part => {
+    const partChapters = storyChapters
       .filter(ch => ch.partId === part.id)
-      .map(ch => ({
-        id: ch.id,
-        title: ch.title,
-        orderIndex: ch.orderIndex,
-        status: ch.status || 'draft',
-        wordCount: ch.wordCount || 0,
-        targetWordCount: ch.targetWordCount || 4000,
-        scenes: allScenes
+      .map(ch => {
+        const chapterScenes = allScenes
           .filter(sceneData => sceneData.scenes?.chapterId === ch.id)
-          .map(sceneData => ({
+          .map(sceneData => {
+            // Calculate dynamic scene status based on content and word count
+            const sceneContent = sceneData.scenes?.content || '';
+            const sceneWordCount = sceneData.scenes?.wordCount || 0;
+            const dynamicSceneStatus = calculateSceneStatus({ 
+              content: sceneContent, 
+              wordCount: sceneWordCount 
+            });
+            
+            return {
+              id: sceneData.scenes?.id || '',
+              title: sceneData.scenes?.title || '',
+              status: dynamicSceneStatus,
+              wordCount: sceneWordCount,
+              goal: sceneData.scenes?.goal || '',
+              conflict: sceneData.scenes?.conflict || '',
+              outcome: sceneData.scenes?.outcome || ''
+            };
+          });
+
+        // Calculate dynamic chapter status based on scene completion
+        const dynamicChapterStatus = calculateChapterStatus(chapterScenes);
+        
+        return {
+          id: ch.id,
+          title: ch.title,
+          orderIndex: ch.orderIndex,
+          status: dynamicChapterStatus,
+          wordCount: ch.wordCount || 0,
+          targetWordCount: ch.targetWordCount || 4000,
+          scenes: chapterScenes
+        };
+      });
+
+    // Calculate dynamic part status based on chapter completion
+    const dynamicPartStatus = calculatePartStatus(partChapters);
+
+    return {
+      id: part.id,
+      title: part.title,
+      orderIndex: part.orderIndex,
+      status: dynamicPartStatus,
+      chapters: partChapters
+    };
+  });
+
+  // Get standalone chapters (not in parts) with dynamic status calculation
+  const standaloneChapters = storyChapters
+    .filter(ch => !ch.partId)
+    .map(ch => {
+      const chapterScenes = allScenes
+        .filter(sceneData => sceneData.scenes?.chapterId === ch.id)
+        .map(sceneData => {
+          // Calculate dynamic scene status based on content and word count
+          const sceneContent = sceneData.scenes?.content || '';
+          const sceneWordCount = sceneData.scenes?.wordCount || 0;
+          const dynamicSceneStatus = calculateSceneStatus({ 
+            content: sceneContent, 
+            wordCount: sceneWordCount 
+          });
+          
+          return {
             id: sceneData.scenes?.id || '',
             title: sceneData.scenes?.title || '',
-            status: sceneData.scenes?.status || 'planned',
-            wordCount: sceneData.scenes?.wordCount || 0,
+            status: dynamicSceneStatus,
+            wordCount: sceneWordCount,
             goal: sceneData.scenes?.goal || '',
             conflict: sceneData.scenes?.conflict || '',
             outcome: sceneData.scenes?.outcome || ''
-          }))
-      }))
-  }));
+          };
+        });
 
-  // Get standalone chapters (not in parts)
-  const standaloneChapters = storyChapters
-    .filter(ch => !ch.partId)
-    .map(ch => ({
-      id: ch.id,
-      title: ch.title,
-      orderIndex: ch.orderIndex,
-      status: ch.status || 'draft',
-      wordCount: ch.wordCount || 0,
-      targetWordCount: ch.targetWordCount || 4000,
-      scenes: allScenes
-        .filter(sceneData => sceneData.scenes?.chapterId === ch.id)
-        .map(sceneData => ({
-          id: sceneData.scenes?.id || '',
-          title: sceneData.scenes?.title || '',
-          status: sceneData.scenes?.status || 'planned',
-          wordCount: sceneData.scenes?.wordCount || 0,
-          goal: sceneData.scenes?.goal || '',
-          conflict: sceneData.scenes?.conflict || '',
-          outcome: sceneData.scenes?.outcome || ''
-        }))
-    }));
+      // Calculate dynamic chapter status based on scene completion
+      const dynamicChapterStatus = calculateChapterStatus(chapterScenes);
+      
+      return {
+        id: ch.id,
+        title: ch.title,
+        orderIndex: ch.orderIndex,
+        status: dynamicChapterStatus,
+        wordCount: ch.wordCount || 0,
+        targetWordCount: ch.targetWordCount || 4000,
+        scenes: chapterScenes
+      };
+    });
+
+  // Calculate dynamic story status based on parts and chapters completion
+  const dynamicStoryStatus = calculateStoryStatus(structuredParts, standaloneChapters);
 
   return {
     id: story.id,
     title: story.title,
     genre: story.genre || 'General',
-    status: story.status || 'draft',
+    status: dynamicStoryStatus,
     storyData: story.storyData || null,
     parts: structuredParts,
     chapters: standaloneChapters,

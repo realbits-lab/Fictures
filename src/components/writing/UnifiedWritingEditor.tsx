@@ -278,11 +278,40 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
   const handleSave = async (data: any) => {
     setIsLoading(true);
     try {
-      // Here you would save the data to your backend
-      console.log('Saving data:', data);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      // Check if this is scene data (has content and wordCount) and we have a sceneId
+      if (data.content !== undefined && data.wordCount !== undefined && currentSelection.sceneId) {
+        // Save scene content and metadata to the scene API
+        const response = await fetch(`/api/scenes/${currentSelection.sceneId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: data.summary || `Scene ${data.id}`,
+            content: data.content,
+            wordCount: data.wordCount,
+            goal: data.goal,
+            conflict: data.obstacle,
+            outcome: data.outcome,
+            status: data.content && data.content.trim() ? 'in_progress' : 'planned'
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`Failed to save scene: ${errorData.error || response.statusText}`);
+        }
+
+        console.log('Scene saved successfully');
+      } else {
+        // For other data types (story, part, chapter), use the original mock behavior for now
+        console.log('Saving data:', data);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
     } catch (error) {
       console.error('Save failed:', error);
+      // Show user-friendly error message
+      alert(`Failed to save: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
