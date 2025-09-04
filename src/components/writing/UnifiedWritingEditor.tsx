@@ -740,7 +740,7 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
               <Badge variant="outline">{currentSelection.level}</Badge>
             </div>
             <div className="flex items-center gap-1 md:gap-3">
-              {(currentSelection.level === "chapter" || currentSelection.level === "scene") && (
+              {currentSelection.level === "chapter" && (
                 <Button size="sm" disabled={isLoading}>
                   {isLoading ? "⚡ Processing..." : "🚀 Publish"}
                 </Button>
