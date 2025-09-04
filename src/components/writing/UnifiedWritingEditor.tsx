@@ -888,7 +888,9 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
           ],
           shift: "emotional_progression",
           leads_to: `scene_${sceneNum + 1}`,
-          image_prompt: `Scene ${sceneNum} visual description for ${selectedSceneChapter?.title || 'chapter'}`
+          image_prompt: `Scene ${sceneNum} visual description for ${selectedSceneChapter?.title || 'chapter'}`,
+          content: scene?.content || "",
+          wordCount: scene?.wordCount || 0
         });
         
         const sceneData = selectedScene ? 

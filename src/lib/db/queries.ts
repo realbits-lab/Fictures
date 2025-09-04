@@ -391,7 +391,8 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
               wordCount: sceneWordCount,
               goal: sceneData.scenes?.goal || '',
               conflict: sceneData.scenes?.conflict || '',
-              outcome: sceneData.scenes?.outcome || ''
+              outcome: sceneData.scenes?.outcome || '',
+              content: sceneContent
             };
           });
 
@@ -443,7 +444,8 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
             wordCount: sceneWordCount,
             goal: sceneData.scenes?.goal || '',
             conflict: sceneData.scenes?.conflict || '',
-            outcome: sceneData.scenes?.outcome || ''
+            outcome: sceneData.scenes?.outcome || '',
+            content: sceneContent
           };
         });
 
