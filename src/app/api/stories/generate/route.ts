@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
         // Create part
         const [part] = await db.insert(parts).values({
           id: partId,
-          title: `Part ${storyPart.part}: ${storyPart.goal}`,
+          title: `Part ${storyPart.part}: ${storyPart.goals}`,
           storyId: storyId,
           authorId: session.user.id,
           orderIndex: storyPart.part,
@@ -95,9 +95,9 @@ export async function POST(request: NextRequest) {
     } else {
       // Fallback to default 3-part structure if parts are not properly generated
       const defaultParts = [
-        { part: 1, goal: 'Setup and introduction', conflict: 'Initial obstacles', outcome: 'Stakes established', tension: 'introduction' },
-        { part: 2, goal: 'Conflict development', conflict: 'Major complications', outcome: 'Climax approached', tension: 'rising_action' },
-        { part: 3, goal: 'Resolution', conflict: 'Final challenges', outcome: 'Story resolved', tension: 'falling_action' }
+        { part: 1, goals: 'Setup and introduction', conflict: 'Initial obstacles', outcome: 'Stakes established', tension: 'introduction' },
+        { part: 2, goals: 'Conflict development', conflict: 'Major complications', outcome: 'Climax approached', tension: 'rising_action' },
+        { part: 3, goals: 'Resolution', conflict: 'Final challenges', outcome: 'Story resolved', tension: 'falling_action' }
       ];
 
       for (let partIndex = 0; partIndex < defaultParts.length; partIndex++) {
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
         
         const [part] = await db.insert(parts).values({
           id: partId,
-          title: `Part ${partData.part}: ${partData.goal}`,
+          title: `Part ${partData.part}: ${partData.goals}`,
           storyId: storyId,
           authorId: session.user.id,
           orderIndex: partData.part,

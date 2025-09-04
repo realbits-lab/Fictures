@@ -54,7 +54,7 @@ Output structured JSON data following the PartSpecification schema.`,
       prompt: `Story concept: ${JSON.stringify(storyConcept, null, 2)}
 
 Current part to develop: Part ${storyPart.part}
-- Goal: ${storyPart.goal}
+- Goals: ${storyPart.goals}
 - Conflict: ${storyPart.conflict}
 - Outcome: ${storyPart.outcome}
 
