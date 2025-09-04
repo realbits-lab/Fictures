@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
 interface Scene {
@@ -47,6 +47,8 @@ interface ChapterReaderProps {
 
 export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
+  const sidebarScrollRef = useRef<HTMLDivElement>(null);
+  const mainContentRef = useRef<HTMLDivElement>(null);
 
   // Get all chapters across parts and standalone chapters
   const allChapters = [
@@ -66,6 +68,47 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
       setSelectedChapterId(firstPublishedChapter.id);
     }
   }, [selectedChapterId, availableChapters]);
+
+  // Setup non-passive wheel event listeners for independent scrolling
+  useEffect(() => {
+    const sidebarElement = sidebarScrollRef.current;
+    const mainContentElement = mainContentRef.current;
+
+    const handleSidebarWheel = (e: WheelEvent) => {
+      e.stopPropagation();
+      
+      // If sidebar is scrollable, allow scrolling within sidebar only
+      if (sidebarElement && sidebarElement.scrollHeight > sidebarElement.clientHeight) {
+        // Let the sidebar scroll naturally, but prevent bubbling to parent
+        return;
+      }
+      
+      // If sidebar is not scrollable, prevent all default behavior to avoid affecting main content
+      e.preventDefault();
+    };
+
+    const handleMainContentWheel = (e: WheelEvent) => {
+      e.stopPropagation();
+      // Allow normal scrolling in main content
+    };
+
+    if (sidebarElement) {
+      sidebarElement.addEventListener('wheel', handleSidebarWheel, { passive: false });
+    }
+    
+    if (mainContentElement) {
+      mainContentElement.addEventListener('wheel', handleMainContentWheel, { passive: false });
+    }
+
+    return () => {
+      if (sidebarElement) {
+        sidebarElement.removeEventListener('wheel', handleSidebarWheel);
+      }
+      if (mainContentElement) {
+        mainContentElement.removeEventListener('wheel', handleMainContentWheel);
+      }
+    };
+  }, []);
 
   const selectedChapter = availableChapters.find(ch => ch.id === selectedChapterId);
 
@@ -117,11 +160,11 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 flex">
+    <div data-testid="chapter-reader" className="absolute inset-0 top-16 bg-white dark:bg-gray-900 flex">
       {/* Left Sidebar - Chapter Navigation */}
-      <div className="w-80 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+      <div className="w-80 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col h-full">
         {/* Story Header */}
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             {story.title}
           </h1>
@@ -141,7 +184,10 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
         </div>
 
         {/* Chapter List */}
-        <div className="flex-1 overflow-y-auto">
+        <div 
+          ref={sidebarScrollRef}
+          className="flex-1 overflow-y-auto min-h-0"
+        >
           <div className="p-4">
             <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">
               Chapters
@@ -241,7 +287,14 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1">
+      <div 
+        ref={mainContentRef}
+        className="flex-1 h-full overflow-y-auto min-h-0"
+        style={{
+          overscrollBehavior: 'contain',
+          WebkitOverflowScrolling: 'auto'
+        }}
+      >
         {selectedChapter ? (
           <article className="max-w-4xl mx-auto px-8 py-8">
             {/* Chapter Header */}
@@ -329,7 +382,7 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
             </div>
           </article>
         ) : (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="h-full flex items-center justify-center">
             <p className="text-gray-500 dark:text-gray-400">Select a chapter to start reading</p>
           </div>
         )}

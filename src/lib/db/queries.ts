@@ -134,10 +134,9 @@ export async function getStoryById(storyId: string, userId?: string) {
   if (!story[0]) return null;
 
   // Check if user has access (public stories or user's own stories)
-  // Temporarily disabled for debugging
-  // if (!story[0].isPublic && story[0].authorId !== userId) {
-  //   return null;
-  // }
+  if (!story[0].isPublic && story[0].authorId !== userId) {
+    return null;
+  }
 
   return story[0];
 }

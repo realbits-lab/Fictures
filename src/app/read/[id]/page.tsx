@@ -19,10 +19,9 @@ async function StoryReader({ storyId }: { storyId: string }) {
   }
 
   // Only show published stories in read mode
-  // Temporarily disabled for debugging
-  // if (storyWithStructure.status !== 'published' && storyWithStructure.userId !== session?.user?.id) {
-  //   notFound();
-  // }
+  if (storyWithStructure.status !== 'published' && storyWithStructure.userId !== session?.user?.id) {
+    notFound();
+  }
 
   const isOwner = storyWithStructure.userId === session?.user?.id;
 
