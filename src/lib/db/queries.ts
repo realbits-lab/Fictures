@@ -511,7 +511,7 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
   };
 }
 
-// Get published stories for Browse page
+// Get published stories for Browse page - only stories with actual published content
 export async function getPublishedStories() {
   const publishedStories = await db
     .select({
@@ -529,10 +529,41 @@ export async function getPublishedStories() {
     })
     .from(stories)
     .leftJoin(users, eq(stories.authorId, users.id))
-    .where(and(eq(stories.isPublic, true), eq(stories.status, 'published')))
+    .where(and(
+      eq(stories.isPublic, true), 
+      eq(stories.status, 'published')
+    ))
     .orderBy(desc(stories.updatedAt));
 
-  return publishedStories.map(story => ({
+  // Filter out stories that don't have substantial published content
+  const validPublishedStories = [];
+  
+  for (const story of publishedStories) {
+    // Get the actual story structure to verify it has real content
+    const storyStructure = await getStoryWithStructure(story.id);
+    
+    if (storyStructure) {
+      // Calculate total word count from actual scenes
+      let totalWords = 0;
+      const allChapters = [...storyStructure.parts.flatMap(part => part.chapters), ...storyStructure.chapters];
+      
+      for (const chapter of allChapters) {
+        if (chapter.scenes) {
+          totalWords += chapter.scenes.reduce((sum, scene) => sum + (scene.wordCount || 0), 0);
+        }
+      }
+      
+      // Only include stories with substantial content (1000+ words) and completed status
+      if (totalWords >= 1000 && storyStructure.status === 'completed') {
+        validPublishedStories.push({
+          ...story,
+          currentWordCount: totalWords // Use the actual calculated word count
+        });
+      }
+    }
+  }
+
+  return validPublishedStories.map(story => ({
     id: story.id,
     title: story.title,
     description: story.description || '',

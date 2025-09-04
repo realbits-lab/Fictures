@@ -332,6 +332,33 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
     }
   };
 
+  const handlePublish = async () => {
+    if (!currentSelection.chapterId) return;
+    
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/chapters/${currentSelection.chapterId}/publish`, {
+        method: 'POST',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to publish chapter');
+      }
+      
+      const result = await response.json();
+      console.log('Chapter published successfully:', result);
+      
+      // Refresh the page to show updated status
+      window.location.reload();
+      
+    } catch (error) {
+      console.error('Publish error:', error);
+      alert('Failed to publish chapter. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleCreateScene = async (chapterId: string) => {
     setIsLoading(true);
     try {
@@ -946,8 +973,8 @@ export function UnifiedWritingEditor({ story, initialSelection }: UnifiedWriting
             </div>
             <div className="flex items-center gap-1 md:gap-3">
               {currentSelection.level === "chapter" && (
-                <Button size="sm" disabled={isLoading}>
-                  {isLoading ? "⚡ Processing..." : "🚀 Publish"}
+                <Button size="sm" onClick={handlePublish} disabled={isLoading}>
+                  {isLoading ? "⚡ Publishing..." : "🚀 Publish"}
                 </Button>
               )}
             </div>
