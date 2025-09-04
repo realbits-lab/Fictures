@@ -279,8 +279,13 @@ export function calculateSceneStatus(scene: { content?: string; wordCount?: numb
   if (!scene.content || scene.content.trim() === '') {
     return 'draft';
   }
-  // Could add more sophisticated logic here (e.g., checking if scenes are "completed" vs "in_progress")
-  // For now, any scene with content is considered in_progress
+  
+  // Consider a scene completed if it has substantial content (200+ words)
+  if (scene.wordCount && scene.wordCount >= 200) {
+    return 'completed';
+  }
+  
+  // Scenes with some content but less than 200 words are in progress
   return scene.wordCount && scene.wordCount > 0 ? 'in_progress' : 'draft';
 }
 
