@@ -1,102 +1,16 @@
 import { Card, CardHeader, CardTitle, CardContent, Button } from "@/components/ui";
+import { ThemeSelector } from "@/components/settings/ThemeSelector";
 
 export default function AppearancePage() {
   return (
     <div className="space-y-6">
-      {/* Theme Settings */}
+      {/* Theme Selection */}
       <Card>
         <CardHeader>
           <CardTitle>🎨 Theme & Appearance</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">
-              Theme Mode
-            </label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="relative">
-                <input type="radio" name="theme" id="light" className="sr-only peer" />
-                <label htmlFor="light" className="flex flex-col items-center gap-3 p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:border-blue-300 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20">
-                  <div className="w-16 h-12 bg-white border border-gray-300 rounded shadow-sm flex items-center justify-center">
-                    <div className="w-8 h-2 bg-gray-200 rounded"></div>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <span>☀️</span>
-                    <span>Light Mode</span>
-                  </div>
-                </label>
-              </div>
-              <div className="relative">
-                <input type="radio" name="theme" id="dark" defaultChecked className="sr-only peer" />
-                <label htmlFor="dark" className="flex flex-col items-center gap-3 p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:border-blue-300 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20">
-                  <div className="w-16 h-12 bg-gray-800 border border-gray-600 rounded shadow-sm flex items-center justify-center">
-                    <div className="w-8 h-2 bg-gray-600 rounded"></div>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <span>🌙</span>
-                    <span>Dark Mode</span>
-                  </div>
-                </label>
-              </div>
-              <div className="relative">
-                <input type="radio" name="theme" id="auto" className="sr-only peer" />
-                <label htmlFor="auto" className="flex flex-col items-center gap-3 p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:border-blue-300 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20">
-                  <div className="w-16 h-12 border border-gray-300 dark:border-gray-600 rounded shadow-sm flex">
-                    <div className="w-8 h-full bg-white flex items-center justify-center">
-                      <div className="w-3 h-1 bg-gray-300 rounded"></div>
-                    </div>
-                    <div className="w-8 h-full bg-gray-800 flex items-center justify-center">
-                      <div className="w-3 h-1 bg-gray-600 rounded"></div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <span>🔄</span>
-                    <span>Auto</span>
-                  </div>
-                </label>
-              </div>
-            </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Auto mode follows your system preference
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
-              Accent Color
-            </label>
-            <div className="flex gap-3 flex-wrap">
-              {[
-                { name: 'Blue', color: 'bg-blue-500', selected: true },
-                { name: 'Purple', color: 'bg-purple-500', selected: false },
-                { name: 'Green', color: 'bg-green-500', selected: false },
-                { name: 'Red', color: 'bg-red-500', selected: false },
-                { name: 'Orange', color: 'bg-orange-500', selected: false },
-                { name: 'Pink', color: 'bg-pink-500', selected: false },
-              ].map((color) => (
-                <div key={color.name} className="relative">
-                  <input
-                    type="radio"
-                    name="accent"
-                    id={color.name.toLowerCase()}
-                    defaultChecked={color.selected}
-                    className="sr-only peer"
-                  />
-                  <label
-                    htmlFor={color.name.toLowerCase()}
-                    className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer border-2 border-transparent peer-checked:border-gray-400 dark:peer-checked:border-gray-300"
-                  >
-                    <div className={`w-8 h-8 rounded-full ${color.color}`}></div>
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <Button>Save Changes</Button>
-            <Button variant="ghost">Reset to Default</Button>
-          </div>
+        <CardContent>
+          <ThemeSelector />
         </CardContent>
       </Card>
 

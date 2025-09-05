@@ -1,21 +1,242 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-primary: 59 130 246;
+  --color-primary-foreground: 255 255 255;
+  --color-secondary: 244 244 245;
+  --color-secondary-foreground: 39 39 42;
+  --color-muted: 244 244 245;
+  --color-muted-foreground: 113 113 122;
+  --color-accent: 244 244 245;
+  --color-accent-foreground: 39 39 42;
+  --color-destructive: 239 68 68;
+  --color-destructive-foreground: 255 255 255;
+  --color-border: 228 228 231;
+  --color-input: 228 228 231;
+  --color-ring: 59 130 246;
+  --color-background: 255 255 255;
+  --color-foreground: 39 39 42;
+  --color-card: 255 255 255;
+  --color-card-foreground: 39 39 42;
+  --color-popover: 255 255 255;
+  --color-popover-foreground: 39 39 42;
 }
 
+/* Default Light Theme */
+:root {
+  --primary: 59 130 246;
+  --primary-foreground: 255 255 255;
+  --secondary: 244 244 245;
+  --secondary-foreground: 39 39 42;
+  --muted: 244 244 245;
+  --muted-foreground: 113 113 122;
+  --accent: 244 244 245;
+  --accent-foreground: 39 39 42;
+  --destructive: 239 68 68;
+  --destructive-foreground: 255 255 255;
+  --border: 228 228 231;
+  --input: 228 228 231;
+  --ring: 59 130 246;
+  --background: 255 255 255;
+  --foreground: 39 39 42;
+  --card: 255 255 255;
+  --card-foreground: 39 39 42;
+  --popover: 255 255 255;
+  --popover-foreground: 39 39 42;
+  --radius: 0.5rem;
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+  --primary: 59 130 246;
+  --primary-foreground: 255 255 255;
+  --secondary: 39 39 42;
+  --secondary-foreground: 244 244 245;
+  --muted: 39 39 42;
+  --muted-foreground: 161 161 170;
+  --accent: 39 39 42;
+  --accent-foreground: 244 244 245;
+  --destructive: 239 68 68;
+  --destructive-foreground: 255 255 255;
+  --border: 39 39 42;
+  --input: 39 39 42;
+  --ring: 59 130 246;
+  --background: 9 9 11;
+  --foreground: 244 244 245;
+  --card: 9 9 11;
+  --card-foreground: 244 244 245;
+  --popover: 9 9 11;
+  --popover-foreground: 244 244 245;
+}
+
+/* Blue Ocean Theme */
+[data-theme="ocean"] {
+  --primary: 59 130 246;
+  --primary-foreground: 255 255 255;
+  --secondary: 219 234 254;
+  --secondary-foreground: 30 58 138;
+  --muted: 219 234 254;
+  --muted-foreground: 59 130 246;
+  --accent: 147 197 253;
+  --accent-foreground: 30 58 138;
+  --destructive: 239 68 68;
+  --destructive-foreground: 255 255 255;
+  --border: 147 197 253;
+  --input: 219 234 254;
+  --ring: 59 130 246;
+  --background: 248 250 252;
+  --foreground: 30 58 138;
+  --card: 255 255 255;
+  --card-foreground: 30 58 138;
+  --popover: 255 255 255;
+  --popover-foreground: 30 58 138;
+}
+
+/* Purple Dream Theme */
+[data-theme="purple"] {
+  --primary: 147 51 234;
+  --primary-foreground: 255 255 255;
+  --secondary: 233 213 255;
+  --secondary-foreground: 88 28 135;
+  --muted: 233 213 255;
+  --muted-foreground: 147 51 234;
+  --accent: 196 181 253;
+  --accent-foreground: 88 28 135;
+  --destructive: 239 68 68;
+  --destructive-foreground: 255 255 255;
+  --border: 196 181 253;
+  --input: 233 213 255;
+  --ring: 147 51 234;
+  --background: 250 245 255;
+  --foreground: 88 28 135;
+  --card: 255 255 255;
+  --card-foreground: 88 28 135;
+  --popover: 255 255 255;
+  --popover-foreground: 88 28 135;
+}
+
+/* Forest Green Theme */
+[data-theme="forest"] {
+  --primary: 34 197 94;
+  --primary-foreground: 255 255 255;
+  --secondary: 220 252 231;
+  --secondary-foreground: 21 128 61;
+  --muted: 220 252 231;
+  --muted-foreground: 34 197 94;
+  --accent: 134 239 172;
+  --accent-foreground: 21 128 61;
+  --destructive: 239 68 68;
+  --destructive-foreground: 255 255 255;
+  --border: 134 239 172;
+  --input: 220 252 231;
+  --ring: 34 197 94;
+  --background: 247 254 231;
+  --foreground: 21 128 61;
+  --card: 255 255 255;
+  --card-foreground: 21 128 61;
+  --popover: 255 255 255;
+  --popover-foreground: 21 128 61;
+}
+
+/* Warm Sunset Theme */
+[data-theme="sunset"] {
+  --primary: 234 88 12;
+  --primary-foreground: 255 255 255;
+  --secondary: 254 215 170;
+  --secondary-foreground: 154 52 18;
+  --muted: 254 215 170;
+  --muted-foreground: 234 88 12;
+  --accent: 253 186 116;
+  --accent-foreground: 154 52 18;
+  --destructive: 239 68 68;
+  --destructive-foreground: 255 255 255;
+  --border: 253 186 116;
+  --input: 254 215 170;
+  --ring: 234 88 12;
+  --background: 255 247 237;
+  --foreground: 154 52 18;
+  --card: 255 255 255;
+  --card-foreground: 154 52 18;
+  --popover: 255 255 255;
+  --popover-foreground: 154 52 18;
+}
+
+/* Rose Garden Theme */
+[data-theme="rose"] {
+  --primary: 244 63 94;
+  --primary-foreground: 255 255 255;
+  --secondary: 254 205 211;
+  --secondary-foreground: 159 18 57;
+  --muted: 254 205 211;
+  --muted-foreground: 244 63 94;
+  --accent: 251 113 133;
+  --accent-foreground: 159 18 57;
+  --destructive: 239 68 68;
+  --destructive-foreground: 255 255 255;
+  --border: 251 113 133;
+  --input: 254 205 211;
+  --ring: 244 63 94;
+  --background: 255 241 242;
+  --foreground: 159 18 57;
+  --card: 255 255 255;
+  --card-foreground: 159 18 57;
+  --popover: 255 255 255;
+  --popover-foreground: 159 18 57;
+}
+
+/* Midnight Theme */
+[data-theme="midnight"] {
+  --primary: 168 85 247;
+  --primary-foreground: 255 255 255;
+  --secondary: 30 41 59;
+  --secondary-foreground: 203 213 225;
+  --muted: 30 41 59;
+  --muted-foreground: 148 163 184;
+  --accent: 51 65 85;
+  --accent-foreground: 203 213 225;
+  --destructive: 239 68 68;
+  --destructive-foreground: 255 255 255;
+  --border: 51 65 85;
+  --input: 30 41 59;
+  --ring: 168 85 247;
+  --background: 15 23 42;
+  --foreground: 241 245 249;
+  --card: 30 41 59;
+  --card-foreground: 241 245 249;
+  --popover: 30 41 59;
+  --popover-foreground: 241 245 249;
+}
+
+/* Auto theme based on system preference */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme]) {
+    --primary: 59 130 246;
+    --primary-foreground: 255 255 255;
+    --secondary: 39 39 42;
+    --secondary-foreground: 244 244 245;
+    --muted: 39 39 42;
+    --muted-foreground: 161 161 170;
+    --accent: 39 39 42;
+    --accent-foreground: 244 244 245;
+    --destructive: 239 68 68;
+    --destructive-foreground: 255 255 255;
+    --border: 39 39 42;
+    --input: 39 39 42;
+    --ring: 59 130 246;
+    --background: 9 9 11;
+    --foreground: 244 244 245;
+    --card: 9 9 11;
+    --card-foreground: 244 244 245;
+    --popover: 9 9 11;
+    --popover-foreground: 244 244 245;
   }
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: rgb(var(--foreground));
+  background: rgb(var(--background));
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @layer utilities {

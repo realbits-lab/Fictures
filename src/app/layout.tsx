@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { auth } from '@/lib/auth';
 import { SessionProvider } from '@/components/auth/SessionProvider';
+import { ThemeProvider } from '@/lib/contexts/ThemeContext';
 import { GlobalNavigation } from '@/components/layout/GlobalNavigation';
 import "./globals.css";
 
@@ -32,10 +33,12 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SessionProvider session={session}>
-          <GlobalNavigation />
-          {children}
-        </SessionProvider>
+        <ThemeProvider>
+          <SessionProvider session={session}>
+            <GlobalNavigation />
+            {children}
+          </SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
