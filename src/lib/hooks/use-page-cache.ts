@@ -18,8 +18,11 @@ export function useUserStories() {
     fetcher,
     CACHE_CONFIGS.writing,
     {
-      revalidateOnFocus: true,
+      revalidateOnFocus: false, // Optimized: Don't revalidate on tab focus for better performance
       revalidateOnReconnect: true,
+      refreshInterval: 10 * 60 * 1000, // Optimized: Refresh every 10 minutes instead of default
+      dedupingInterval: 60 * 1000, // Optimized: Extended to 1 minute for better deduplication
+      staleTime: 5 * 60 * 1000, // Keep data fresh for 5 minutes before considering stale
       errorRetryCount: 3,
       errorRetryInterval: 1000,
       onSuccess: (data) => {
@@ -111,17 +114,18 @@ export function useGenreStories(genre: string | null) {
   );
 }
 
-// Community page hooks (enhanced)
+// Community page hooks (optimized)
 export function useCommunityStories() {
   return usePersistedSWR(
     '/api/community/stories',
     fetcher,
     CACHE_CONFIGS.community,
     {
-      revalidateOnFocus: true,
+      revalidateOnFocus: false, // Optimized: Don't revalidate on tab focus for better performance
       revalidateOnReconnect: true,
-      refreshInterval: 30 * 1000, // Refresh every 30 seconds
-      dedupingInterval: 5 * 1000, // Dedupe for 5 seconds
+      refreshInterval: 5 * 60 * 1000, // Optimized: Refresh every 5 minutes instead of 30 seconds
+      dedupingInterval: 30 * 1000, // Optimized: Extended to 30 seconds for better deduplication
+      staleTime: 2 * 60 * 1000, // Keep data fresh for 2 minutes before considering stale
       errorRetryCount: 3,
       errorRetryInterval: 1000,
       onSuccess: (data) => {

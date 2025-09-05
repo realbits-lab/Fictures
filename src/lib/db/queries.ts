@@ -79,54 +79,76 @@ export async function getUserStories(userId: string) {
     .orderBy(desc(stories.updatedAt));
 }
 
-// Get user stories with their first chapter and counts for navigation
+// Get user stories with their first chapter and counts for navigation - optimized version with only 3 DB queries
 export async function getUserStoriesWithFirstChapter(userId: string) {
+  // Query 1: Get all user stories
   const userStories = await getUserStories(userId);
   
-  const storiesWithData = await Promise.all(
-    userStories.map(async (story) => {
-      // Get the first chapter of this story
-      const [firstChapter] = await db
-        .select()
-        .from(chapters)
-        .where(eq(chapters.storyId, story.id))
-        .orderBy(chapters.orderIndex)
-        .limit(1);
-      
-      // Get all chapters for counting
-      const allChapters = await db
-        .select()
-        .from(chapters)
-        .where(eq(chapters.storyId, story.id));
-      
-      // Get all parts for counting
-      const allParts = await db
-        .select()
-        .from(parts)
-        .where(eq(parts.storyId, story.id));
-      
-      // Count completed chapters
-      const completedChapters = allChapters.filter(ch => 
-        ch.status === 'completed' || ch.status === 'published'
-      ).length;
-      
-      // Check if story is actually published (has published chapters AND is public)
-      const hasPublishedChapters = allChapters.some(chapter => chapter.status === 'published');
-      const actualStatus = (story.isPublic && story.status === 'published' && hasPublishedChapters) 
-        ? 'published' 
-        : story.status;
-      
-      return {
-        ...story,
-        status: actualStatus, // Override with actual publication status
-        firstChapterId: firstChapter?.id || null,
-        totalChapters: allChapters.length,
-        completedChapters,
-        totalParts: allParts.length,
-        completedParts: allParts.length // Assuming all parts are "completed" if they exist
-      };
+  if (userStories.length === 0) return [];
+
+  // Extract story IDs for subsequent queries
+  const storyIds = userStories.map(story => story.id);
+
+  // Query 2: Get all chapters for all user stories at once with minimal data
+  const allChapters = await db
+    .select({
+      storyId: chapters.storyId,
+      id: chapters.id,
+      orderIndex: chapters.orderIndex,
+      status: chapters.status
     })
-  );
+    .from(chapters)
+    .where(storyIds.length === 1 
+      ? eq(chapters.storyId, storyIds[0])
+      : chapters.storyId.in 
+        ? chapters.storyId.in(storyIds)
+        : storyIds.map(id => eq(chapters.storyId, id)).reduce((a, b) => a.or ? a.or(b) : b)
+    )
+    .orderBy(chapters.orderIndex);
+
+  // Query 3: Get all parts for all user stories at once with minimal data
+  const allParts = await db
+    .select({
+      storyId: parts.storyId,
+      id: parts.id
+    })
+    .from(parts)
+    .where(storyIds.length === 1 
+      ? eq(parts.storyId, storyIds[0])
+      : parts.storyId.in 
+        ? parts.storyId.in(storyIds)
+        : storyIds.map(id => eq(parts.storyId, id)).reduce((a, b) => a.or ? a.or(b) : b)
+    );
+
+  // Process data efficiently in memory
+  const storiesWithData = userStories.map(story => {
+    const storyChapters = allChapters.filter(ch => ch.storyId === story.id);
+    const storyParts = allParts.filter(pt => pt.storyId === story.id);
+    
+    // Get first chapter (already ordered by orderIndex)
+    const firstChapter = storyChapters.length > 0 ? storyChapters[0] : null;
+    
+    // Count completed chapters
+    const completedChapters = storyChapters.filter(ch => 
+      ch.status === 'completed' || ch.status === 'published'
+    ).length;
+    
+    // Check if story is actually published (has published chapters AND is public)
+    const hasPublishedChapters = storyChapters.some(chapter => chapter.status === 'published');
+    const actualStatus = (story.isPublic && story.status === 'published' && hasPublishedChapters) 
+      ? 'published' 
+      : story.status;
+    
+    return {
+      ...story,
+      status: actualStatus, // Override with actual publication status
+      firstChapterId: firstChapter?.id || null,
+      totalChapters: storyChapters.length,
+      completedChapters,
+      totalParts: storyParts.length,
+      completedParts: storyParts.length // Assuming all parts are "completed" if they exist
+    };
+  });
   
   return storiesWithData;
 }

@@ -42,6 +42,7 @@ export async function GET() {
       wordCount: story.currentWordCount || 0,
       firstChapterId: story.firstChapterId,
       storyData: story.storyData || null,
+      isPublic: story.isPublic || false,
     }));
 
     return NextResponse.json({ stories: transformedStories });

@@ -27,6 +27,7 @@ interface StoryCardProps {
   status: "draft" | "publishing" | "completed" | "published";
   wordCount?: number;
   firstChapterId?: string | null;
+  isPublic?: boolean;
 }
 
 export function StoryCard({
@@ -40,22 +41,16 @@ export function StoryCard({
   status,
   wordCount,
   firstChapterId,
+  isPublic,
 }: StoryCardProps) {
   const progressPercentage =
     chapters.total > 0 ? (chapters.completed / chapters.total) * 100 : 0;
 
-  const getStatusBadge = () => {
-    switch (status) {
-      case "draft":
-        return <Badge variant="default">Draft</Badge>;
-      case "publishing":
-        return <Badge variant="info">Publishing</Badge>;
-      case "completed":
-        return <Badge variant="success">Complete</Badge>;
-      case "published":
-        return <Badge variant="success">Published</Badge>;
-      default:
-        return <Badge variant="default">Draft</Badge>;
+  const getVisibilityBadge = () => {
+    if (isPublic === true) {
+      return <Badge variant="success">Public</Badge>;
+    } else {
+      return <Badge variant="default">Private</Badge>;
     }
   };
 
@@ -76,7 +71,7 @@ export function StoryCard({
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">{genre}</p>
           </div>
-          {getStatusBadge()}
+          {getVisibilityBadge()}
         </div>
 
         <div className="space-y-3">
