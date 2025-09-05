@@ -36,7 +36,7 @@ export default async function ReadPage({ params }: ReadPageProps) {
       <div className="min-h-screen bg-white dark:bg-gray-900">
         <Suspense fallback={
           <div className="max-w-4xl mx-auto px-4 py-8">
-            <div className="animate-pulse">
+            <div className="skeleton-shimmer">
               <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
               <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-8 w-3/4"></div>
               <div className="space-y-4">

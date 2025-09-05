@@ -29,7 +29,7 @@ export function CommunityStoryCard({ story }: CommunityStoryCardProps) {
             {/* Activity Indicator */}
             {story.isActive && (
               <div className="absolute top-3 left-3 z-10">
-                <Badge variant="success" className="animate-pulse text-xs">
+                <Badge variant="success" className="skeleton-shimmer text-xs">
                   <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
                   Live
                 </Badge>

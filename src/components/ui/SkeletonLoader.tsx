@@ -2,6 +2,15 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import { cn } from '@/lib/utils/cn'
 
+// Utility component for standalone shimmer effect
+export function Shimmer({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={cn("skeleton-shimmer", className)} {...props}>
+      {children}
+    </div>
+  );
+}
+
 interface SkeletonLoaderProps {
   className?: string;
   children: React.ReactNode;
@@ -12,11 +21,13 @@ export function SkeletonLoader({ className, children, theme = 'light' }: Skeleto
   const themeColors = {
     light: {
       baseColor: '#f3f4f6',
-      highlightColor: '#e5e7eb'
+      highlightColor: '#ffffff',
+      duration: 1.2
     },
     dark: {
       baseColor: '#374151',
-      highlightColor: '#4b5563'
+      highlightColor: '#6b7280',
+      duration: 1.2
     }
   };
 
@@ -24,6 +35,8 @@ export function SkeletonLoader({ className, children, theme = 'light' }: Skeleto
     <SkeletonTheme 
       baseColor={themeColors[theme].baseColor} 
       highlightColor={themeColors[theme].highlightColor}
+      duration={themeColors[theme].duration}
+      enableAnimation={true}
     >
       <div className={cn(className)}>
         {children}

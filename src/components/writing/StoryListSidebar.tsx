@@ -267,7 +267,7 @@ export function StoryListSidebar({
             return (
               <div key={story.id} className={`border rounded-lg p-2 transition-all duration-200 ${
                 loadingStoryId === story.id
-                  ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-600 shadow-md animate-pulse'
+                  ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-600 shadow-md skeleton-shimmer'
                   : isCurrentStory 
                     ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600 shadow-md' 
                     : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
