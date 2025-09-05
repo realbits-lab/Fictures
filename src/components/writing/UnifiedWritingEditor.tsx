@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
+import { useStoryData } from "@/lib/hooks/useStoryData";
 import { YAMLDataDisplay } from "./YAMLDataDisplay";
 import { StoryEditor } from "./StoryEditor";
 import { PartEditor } from "./PartEditor";
@@ -90,11 +91,16 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       storyId: story.id
     }
   );
-  
   const [yamlLevel, setYamlLevel] = useState<EditorLevel>("story");
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingStoryId, setLoadingStoryId] = useState<string | null>(null);
   const [showThemePlanner, setShowThemePlanner] = useState(false);
+
+  // SWR hook for fetching story data when switching stories
+  const [targetStoryId, setTargetStoryId] = useState<string | null>(null);
+  const { story: swrStory, isLoading: isLoadingStory, isValidating: isValidatingStory, error: storyError } = useStoryData(targetStoryId);
+  
+  // SWR hook for current story to track background validation
+  const { isValidating: isValidatingCurrentStory } = useStoryData(story.id);
   const [themePlanned, setThemePlanned] = useState(false);
   const [isSavingTheme, setIsSavingTheme] = useState(false);
 
@@ -102,6 +108,24 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   useEffect(() => {
     setStory(initialStory);
   }, [initialStory]);
+
+  // Handle SWR story data loading
+  useEffect(() => {
+    if (swrStory && !isLoadingStory) {
+      setStory(swrStory);
+      setCurrentSelection({
+        level: "story",
+        storyId: swrStory.id
+      });
+      setYamlLevel("story");
+      // Signal to sidebar to expand the newly loaded story
+      window.dispatchEvent(new CustomEvent('storyLoaded', { 
+        detail: { storyId: swrStory.id }
+      }));
+      // Reset target story ID
+      setTargetStoryId(null);
+    }
+  }, [swrStory, isLoadingStory]);
 
   // Sample YAML data for demonstration
   const sampleStoryData = {
@@ -293,43 +317,11 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     image_prompt: "Young woman in casual clothes standing in a dimly lit apartment hallway, her face showing concern as she looks at an ajar door. The scene suggests early morning light filtering through windows, with subtle signs of disturbance visible - an overturned coffee table and scattered items in the background. Mood: tense, mysterious, domestic thriller atmosphere."
   };
 
-  const fetchStoryData = async (storyId: string) => {
-    setLoadingStoryId(storyId);
-    try {
-      const response = await fetch(`/api/stories/${storyId}/structure`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch story data');
-      }
-      const storyData = await response.json();
-      return storyData;
-    } catch (error) {
-      console.error('Error fetching story data:', error);
-      throw error;
-    } finally {
-      setLoadingStoryId(null);
-    }
-  };
-
   const handleSelectionChange = async (selection: Selection) => {
-    // If switching to a different story, fetch its data and show story editor
+    // If switching to a different story, trigger SWR fetch
     if (selection.level === "story" && selection.storyId !== story.id) {
-      try {
-        const newStoryData = await fetchStoryData(selection.storyId);
-        setStory(newStoryData);
-        setCurrentSelection({
-          level: "story",
-          storyId: selection.storyId
-        });
-        setYamlLevel("story");
-        // Signal to sidebar to expand the newly loaded story
-        window.dispatchEvent(new CustomEvent('storyLoaded', { 
-          detail: { storyId: selection.storyId }
-        }));
-        return;
-      } catch (error) {
-        console.error('Failed to load story:', error);
-        return;
-      }
+      setTargetStoryId(selection.storyId);
+      return;
     }
     
     // If clicking on the current story (level === "story"), show the story editor
@@ -1266,7 +1258,12 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               currentStory={story}
               currentSelection={currentSelection}
               onSelectionChange={handleSelectionChange}
-              loadingStoryId={loadingStoryId}
+              loadingStoryId={targetStoryId}
+              validatingStoryId={
+                (isValidatingStory && targetStoryId === story.id) || isValidatingCurrentStory 
+                  ? story.id 
+                  : null
+              }
             />
           </div>
           

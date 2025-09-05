@@ -1,0 +1,151 @@
+"use client";
+
+import React from "react";
+import { useStats } from "@/hooks/useStats";
+import { SkeletonLoader } from "@/components/ui";
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
+
+function StatsCardSkeleton() {
+  return (
+    <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+      <div className="mb-2">
+        <Skeleton height={36} width={80} />
+      </div>
+      <div>
+        <Skeleton height={16} width={100} />
+      </div>
+    </div>
+  );
+}
+
+function StatsSkeletonSection() {
+  return (
+    <div className="py-16 bg-gray-50 dark:bg-gray-900/50">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <Skeleton height={32} width={250} className="mx-auto mb-4" />
+          <Skeleton height={20} width={200} className="mx-auto" />
+        </div>
+        
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
+          <StatsCardSkeleton />
+          <StatsCardSkeleton />
+          <StatsCardSkeleton />
+          <StatsCardSkeleton />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function HomeStatsClient() {
+  const { stats, isLoading, isValidating, error, refreshStats } = useStats();
+  
+  // Show skeleton loading while fetching
+  if (isLoading) {
+    return (
+      <SkeletonLoader theme="light">
+        <StatsSkeletonSection />
+      </SkeletonLoader>
+    );
+  }
+  
+  // Show error state with retry
+  if (error) {
+    return (
+      <div className="py-16 bg-gray-50 dark:bg-gray-900/50">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+              Unable to Load Stats
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              {error.message}
+            </p>
+            <button 
+              onClick={refreshStats}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show unauthenticated state
+  if (!stats?.isAuthenticated) {
+    return (
+      <div className="py-16 bg-gray-50 dark:bg-gray-900/50">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+              Start Your Writing Journey
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-8">
+              Sign in to begin creating amazing stories with AI assistance.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="py-16 bg-gray-50 dark:bg-gray-900/50">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center justify-center gap-2">
+            Your Writing Progress
+            {isValidating && (
+              <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin opacity-60"></div>
+            )}
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Keep up the great work, {stats.userName}!
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
+          <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+              {stats.totalStories}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Stories Created
+            </div>
+          </div>
+          
+          <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+            <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
+              {stats.totalWords.toLocaleString()}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Words Written
+            </div>
+          </div>
+          
+          <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+              {stats.totalReaders.toLocaleString()}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Total Readers
+            </div>
+          </div>
+          
+          <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+            <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
+              {stats.avgRating}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Average Rating
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

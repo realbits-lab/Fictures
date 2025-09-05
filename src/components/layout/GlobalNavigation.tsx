@@ -16,16 +16,18 @@ interface NavItem {
   isActive?: boolean;
 }
 
-const primaryNavItems: NavItem[] = [
-  { href: "/browse", label: "Browse", icon: "🔍" },
-  { href: "/stories", label: "Stories", icon: "📚" },
-  { href: "/community", label: "Community", icon: "💬" }
+const gnbMenuItems: NavItem[] = [
+  { href: "/stories", label: "Writing", icon: "✍️" },
+  { href: "/browse", label: "Reading", icon: "📚" },
+  { href: "/community", label: "Community", icon: "💬" },
+  { href: "/publish", label: "Publish", icon: "📤" },
+  { href: "/analytics", label: "Analytics", icon: "📊" }
 ];
 
-const secondaryNavItems: NavItem[] = [
-  { href: "/analytics", label: "Analytics", icon: "📊" },
+const profileMenuItems: NavItem[] = [
   { href: "/settings", label: "Settings", icon: "⚙️" },
-  { href: "/notifications", label: "Notifications", icon: "🔔" }
+  { href: "/notifications", label: "Notifications", icon: "🔔" },
+  { href: "/profile", label: "Profile", icon: "👤" }
 ];
 
 export function GlobalNavigation() {
@@ -38,17 +40,14 @@ export function GlobalNavigation() {
   };
 
   // Filter navigation items based on user role
-  const visiblePrimaryNavItems = primaryNavItems.filter((item) => {
-    // Browse is visible to all users
-    if (item.href === '/browse') return true;
-    
-    // Stories is only visible to writers and managers
-    if (item.href === '/stories') {
+  const visibleGnbItems = gnbMenuItems.filter((item) => {
+    // Writing, Publish, and Analytics are writer/manager specific
+    if (item.href === '/stories' || item.href === '/publish' || item.href === '/analytics') {
       return session?.user?.role === 'writer' || session?.user?.role === 'manager';
     }
     
-    // Other items visible to all authenticated users
-    return true;
+    // Reading and Community are visible to all authenticated users
+    return !!session;
   });
 
   return (
@@ -57,15 +56,20 @@ export function GlobalNavigation() {
         {/* Logo */}
         <Link 
           href="/" 
-          className="flex items-center space-x-2 text-xl font-bold text-gray-900 dark:text-gray-100"
+          className={cn(
+            "flex items-center space-x-2 text-xl font-bold transition-colors px-2 py-1 rounded-lg",
+            pathname === "/"
+              ? "bg-blue-100 text-blue-900 dark:bg-blue-900/20 dark:text-blue-100"
+              : "text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
+          )}
         >
           <span className="text-2xl">📖</span>
           <span>Fictures</span>
         </Link>
 
-        {/* Primary Navigation */}
+        {/* GNB Menu Items */}
         <div className="hidden md:flex items-center space-x-1">
-          {visiblePrimaryNavItems.map((item) => (
+          {visibleGnbItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -77,28 +81,13 @@ export function GlobalNavigation() {
               )}
             >
               <span className="text-lg">{item.icon}</span>
-              <span>{item.label}</span>
+              <span className="hidden lg:block">{item.label}</span>
             </Link>
           ))}
         </div>
 
-        {/* Secondary Navigation */}
-        <div className="hidden lg:flex items-center space-x-1">
-          {secondaryNavItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                isActiveRoute(item.href)
-                  ? "bg-blue-100 text-blue-900 dark:bg-blue-900/20 dark:text-blue-100"
-                  : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-              )}
-            >
-              <span className="text-lg">{item.icon}</span>
-              <span className="hidden xl:block">{item.label}</span>
-            </Link>
-          ))}
+        {/* Auth Section */}
+        <div className="hidden md:flex items-center">
           <AuthSection />
         </div>
 
@@ -174,14 +163,21 @@ function AuthSection() {
       
       {isDropdownOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
-          <Link
-            href="/profile"
-            className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg"
-            onClick={() => setIsDropdownOpen(false)}
-          >
-            <span className="mr-2">👤</span>
-            Profile
-          </Link>
+          {profileMenuItems.map((item, index) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700",
+                index === 0 && "rounded-t-lg",
+                index === profileMenuItems.length - 1 && "rounded-b-lg"
+              )}
+              onClick={() => setIsDropdownOpen(false)}
+            >
+              <span className="mr-2">{item.icon}</span>
+              {item.label}
+            </Link>
+          ))}
           <div className="border-t border-gray-200 dark:border-gray-600">
             <div className="px-4 py-2">
               <SignOutButton />

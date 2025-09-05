@@ -123,6 +123,7 @@ interface StoryListSidebarProps {
   currentSelection?: Selection;
   onSelectionChange?: (selection: Selection) => void;
   loadingStoryId?: string | null;
+  validatingStoryId?: string | null;
 }
 
 export function StoryListSidebar({ 
@@ -130,7 +131,8 @@ export function StoryListSidebar({
   currentStory,
   currentSelection,
   onSelectionChange,
-  loadingStoryId
+  loadingStoryId,
+  validatingStoryId
 }: StoryListSidebarProps) {
   const [expandedStories, setExpandedStories] = useState<Set<string>>(
     currentSelection ? new Set([currentSelection.storyId]) : new Set()
@@ -300,6 +302,10 @@ export function StoryListSidebar({
                       <>
                         <BookOpen size={12} className="mr-1" />
                         <span className="truncate">{story.title}</span>
+                        {validatingStoryId === story.id && (
+                          <div className="w-2 h-2 border border-gray-400 border-t-blue-400 rounded-full animate-spin ml-auto opacity-60" 
+                               title="Updating story data in background" />
+                        )}
                       </>
                     )}
                   </Button>

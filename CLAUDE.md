@@ -175,3 +175,197 @@ Testing environment (`.env.test`):
 - Database: Requires PostgreSQL (Neon recommended)
 - Storage: Uses Vercel Blob for file uploads
 - Caching: Redis instance required for session management
+
+## Data Fetching and Loading States Guidelines
+
+This project uses **SWR (Stale-While-Revalidate)** for client-side data fetching with **React Loading Skeleton** for loading states. Follow these guidelines for consistent UX across the application.
+
+### SWR Usage Discipline
+
+**When to Use SWR:**
+- ✅ Client-side data that needs caching and background updates
+- ✅ Data that changes frequently (user stories, progress, community content)  
+- ✅ API endpoints that benefit from optimistic updates
+- ✅ Dashboard-style interfaces with real-time data needs
+
+**When NOT to Use SWR:**
+- ❌ Static content that rarely changes
+- ❌ One-time fetches without caching needs
+- ❌ Server-side rendered content that doesn't need client updates
+- ❌ Authentication flows or critical user actions
+
+**SWR Implementation Pattern:**
+
+```typescript
+// 1. Create custom hooks for data management
+export function useStories() {
+  const { data: session } = useSession();
+  
+  const { data, error, isLoading, isValidating, mutate } = useSWR(
+    session?.user?.id ? '/api/stories' : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+      refreshInterval: 0,
+      dedupingInterval: 5000,
+      errorRetryCount: 3,
+    }
+  );
+
+  return {
+    stories: data?.stories || [],
+    isLoading,
+    isValidating,
+    error,
+    refreshStories: () => mutate(),
+    // Optimistic update helpers
+    addOptimistically: (item) => mutate(current => [...current, item], false),
+    updateOptimistically: (id, updates) => mutate(current => 
+      current.map(item => item.id === id ? {...item, ...updates} : item), false
+    )
+  };
+}
+
+// 2. Use in components with proper error handling
+function MyComponent() {
+  const { stories, isLoading, error, refreshStories } = useStories();
+  
+  if (isLoading) return <SkeletonLoader>...</SkeletonLoader>;
+  if (error) return <ErrorState onRetry={refreshStories} />;
+  
+  return <DataView data={stories} />;
+}
+```
+
+### Skeleton Loading Discipline
+
+**Skeleton Component Usage:**
+
+```typescript
+// Use pre-built skeleton components from src/components/ui/SkeletonLoader.tsx
+import { SkeletonLoader, StoryCardSkeleton, DashboardWidgetSkeleton } from "@/components/ui";
+
+// Wrap skeleton content in SkeletonLoader for theme consistency
+<SkeletonLoader theme="light">
+  <StoryCardSkeleton />
+  <DashboardWidgetSkeleton />
+</SkeletonLoader>
+```
+
+**Loading State Hierarchy:**
+
+1. **Initial Load**: Show full skeleton layout matching the expected content structure
+2. **Background Updates**: Small loading indicator (spinner) while revalidating
+3. **Error States**: Clear error message with retry functionality
+4. **Empty States**: Helpful messaging when no data exists
+
+**Progress Indicator Differentiation:**
+
+There are two distinct types of data fetching that require different visual treatments:
+
+**1. Foreground Fetching Data (Primary Loading)**
+- **When**: Initial page load, user-initiated actions, empty state loading
+- **Visual Treatment**: 
+  - Full skeleton screens with solid, non-transparent colors
+  - Prominent loading spinners with thick borders
+  - Higher opacity indicators (opacity: 1.0)
+  - Larger size indicators (24px+ spinners)
+  - Example: `border-4 border-blue-600 border-t-transparent` (thick, solid)
+
+**2. Background Fetching Data (Secondary Loading)**
+- **When**: Cache revalidation, background updates, polling, optimistic update confirmations
+- **Visual Treatment**:
+  - Small, subtle indicators that don't interrupt user flow
+  - Transparent or semi-transparent colors
+  - Lower opacity indicators (opacity: 0.6-0.8)  
+  - Smaller size indicators (12-16px spinners)
+  - Example: `border-2 border-blue-300 border-t-blue-600 opacity-60` (thin, subtle)
+
+```typescript
+// Foreground Loading (Initial/Primary)
+{isLoading && (
+  <div className="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+)}
+
+// Background Loading (Revalidation/Secondary)  
+{isValidating && (
+  <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin opacity-60" />
+)}
+```
+
+**Implementation Guidelines:**
+- **Never show both types simultaneously** - Background loading should be hidden during foreground loading
+- **Position background indicators subtly** - Corner of sections, next to titles, or in headers
+- **Use animation timing differences** - Foreground: normal speed, Background: slightly slower
+- **Color hierarchy** - Foreground: Primary colors (blue-600), Background: Muted colors (blue-300)
+
+**Skeleton Best Practices:**
+
+- ✅ **Match Content Structure**: Skeleton should mirror the actual layout and dimensions
+- ✅ **Use Consistent Theming**: Light/dark mode support via SkeletonLoader wrapper
+- ✅ **Progressive Loading**: Show skeleton → data → background updates
+- ✅ **Responsive Design**: Skeleton adapts to different screen sizes
+- ✅ **Performance**: Minimize skeleton rendering time
+
+**File Organization:**
+
+```
+src/
+├── hooks/
+│   └── useStories.ts          # SWR custom hooks
+├── components/ui/
+│   └── SkeletonLoader.tsx     # Reusable skeleton components
+├── app/
+│   └── stories/
+│       ├── page.tsx           # Client component using SWR
+│       └── loading.tsx        # Next.js loading UI (fallback)
+└── api/
+    └── stories/
+        └── route.ts           # API endpoint optimized for SWR
+```
+
+**Example Implementation:**
+
+```typescript
+// Custom Hook (src/hooks/useStories.ts)
+export function useStories() { /* SWR logic */ }
+
+// Component (src/app/stories/page.tsx)  
+export default function StoriesPage() {
+  return <DashboardClient />; // Uses SWR hook
+}
+
+// Loading Fallback (src/app/stories/loading.tsx)
+export default function StoriesLoading() {
+  return <SkeletonLoader><StoryCardSkeleton /></SkeletonLoader>;
+}
+
+// API Endpoint (src/api/stories/route.ts)
+export async function GET() {
+  // Return data optimized for client-side caching
+  return NextResponse.json({ stories: transformedData });
+}
+```
+
+### Performance Benefits
+
+**SWR Caching Strategy:**
+- **Instant Navigation**: Cached data shows immediately on return visits
+- **Background Refresh**: Data stays fresh without blocking UI
+- **Request Deduplication**: Multiple components share same cache
+- **Optimistic Updates**: UI responds before server confirmation
+
+**User Experience:**
+- **First Visit**: Foreground skeleton → API data (2-3 seconds max)
+- **Return Visits**: Instant cached data → subtle background refresh indicator
+- **Network Issues**: Graceful degradation with retry options
+- **Real-time Feel**: Background updates with subtle, non-intrusive loading indicators
+
+**Visual Loading Hierarchy:**
+```
+Foreground Loading (Blocking):     [████████████] Skeleton + Thick Spinner
+Background Loading (Non-blocking): [░░░░] Small Subtle Indicator
+```
+
+This dual-loading approach creates an "ultrasync" experience where users see content immediately while ensuring data freshness behind the scenes through differentiated visual feedback.
