@@ -178,38 +178,88 @@ test.describe('/browse Page Performance Tests', () => {
     expect(dataApiRequests.length).toBeLessThanOrEqual(3);
   });
 
-  test('should verify story content displays correctly', async ({ page }) => {
+  test('should verify story content displays correctly and shows all 6 stories', async ({ page }) => {
+    console.log('\n=== BROWSE STORIES VERIFICATION TEST ===');
+    
     // Navigate to browse page
     await page.goto('http://localhost:3000/browse');
+    console.log('Navigated to http://localhost:3000/browse');
     
     // Wait for stories to load
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('[data-testid="story-card"], .story-card, [class*="story"]').first()).toBeVisible({ timeout: 10000 });
+    await page.waitForTimeout(2000); // Give extra time for all stories to render
     
-    // Count visible stories
-    const storyElements = page.locator('[data-testid="story-card"], .story-card, [class*="story"]');
-    const storyCount = await storyElements.count();
+    // Try multiple selectors to find story elements
+    const possibleSelectors = [
+      '[data-testid="story-card"]',
+      '.story-card',
+      '[class*="story"]',
+      'article',
+      '.card',
+      '[data-story-id]',
+      '.grid > div',
+      '.flex.flex-col'
+    ];
     
-    console.log(`\n=== CONTENT VERIFICATION ===`);
-    console.log(`Number of stories displayed: ${storyCount}`);
+    let storyElements;
+    let storyCount = 0;
     
-    // Verify at least some stories are displayed
-    expect(storyCount).toBeGreaterThan(0);
-    
-    // Check if story cards have expected content
-    if (storyCount > 0) {
-      const firstStory = storyElements.first();
+    for (const selector of possibleSelectors) {
+      storyElements = page.locator(selector);
+      storyCount = await storyElements.count();
+      console.log(`Selector "${selector}" found ${storyCount} elements`);
       
-      // Check for story title or content
-      const hasTitle = await firstStory.locator('h1, h2, h3, h4, [class*="title"], [data-testid="story-title"]').count() > 0;
-      const hasContent = await firstStory.locator('p, [class*="content"], [class*="description"], [data-testid="story-content"]').count() > 0;
-      
-      console.log(`First story has title: ${hasTitle}`);
-      console.log(`First story has content: ${hasContent}`);
-      
-      // At least one should be present
-      expect(hasTitle || hasContent).toBeTruthy();
+      if (storyCount > 0) {
+        // Check if these look like story cards by examining their content
+        for (let i = 0; i < Math.min(storyCount, 3); i++) {
+          const element = storyElements.nth(i);
+          const hasText = await element.innerText().catch(() => '');
+          console.log(`Element ${i} with selector "${selector}" has text: ${hasText.substring(0, 100)}...`);
+        }
+        
+        if (storyCount >= 6) {
+          console.log(`Found ${storyCount} stories with selector: ${selector}`);
+          break;
+        }
+      }
     }
+    
+    // Check if we can find specific story titles in the page content
+    const expectedStories = [
+      'The Last Guardian',
+      'Mirrors of Reality', 
+      'The Digital Awakening',
+      'Echoes of Tomorrow',
+      'Digital Nexus: The Code Between Worlds',
+      'Debugging Realities'
+    ];
+    
+    const foundStories = [];
+    for (const storyTitle of expectedStories) {
+      const isVisible = await page.locator(`text="${storyTitle}"`).isVisible().catch(() => false);
+      if (isVisible) {
+        foundStories.push(storyTitle);
+        console.log(`✓ Found story: ${storyTitle}`);
+      } else {
+        console.log(`✗ Missing story: ${storyTitle}`);
+      }
+    }
+    
+    console.log(`\n=== VERIFICATION RESULTS ===`);
+    console.log(`Expected stories: 6`);
+    console.log(`Stories found by title: ${foundStories.length}`);
+    console.log(`Stories found by element count: ${storyCount}`);
+    console.log(`Found stories: ${foundStories.join(', ')}`);
+    
+    // Take a screenshot for debugging
+    await page.screenshot({ path: 'browse-page-verification.png', fullPage: true });
+    console.log('Screenshot saved as browse-page-verification.png');
+    
+    // Verify all 6 stories are present
+    expect(foundStories.length).toBeGreaterThanOrEqual(6);
+    expect(foundStories).toEqual(expect.arrayContaining(expectedStories));
+    
+    console.log('✅ All 6 stories are correctly displayed on the browse page');
   });
 
   test('should check SWR caching effectiveness', async ({ page }) => {

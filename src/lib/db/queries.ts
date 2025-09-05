@@ -665,17 +665,12 @@ export async function getPublishedStories() {
         : chapterIds.map(id => eq(scenes.chapterId, id)).reduce((a, b) => a.or ? a.or(b) : b)
     ) : [];
 
-  // Process data to calculate word counts and filter valid stories
+  // Process data to calculate word counts - show all published stories
   const validPublishedStories = [];
 
   for (const story of publishedStories) {
     const storyChaps = storyChapters.filter(ch => ch.storyId === story.id);
     
-    // Check if story has any published chapters
-    const hasPublishedChapters = storyChaps.some(ch => ch.chapterStatus === 'published');
-    
-    if (!hasPublishedChapters) continue;
-
     // Calculate total word count from scenes or chapters
     let totalWords = 0;
     
@@ -697,13 +692,14 @@ export async function getPublishedStories() {
       }
     }
 
-    // Only include stories with substantial content (500+ words minimum)
-    if (totalWords >= 500) {
-      validPublishedStories.push({
-        ...story,
-        currentWordCount: totalWords // Use the calculated word count
-      });
-    }
+    // Use calculated word count or fall back to story's currentWordCount
+    const finalWordCount = totalWords > 0 ? totalWords : (story.currentWordCount || 0);
+    
+    // Include all published stories (the DB query already filtered for public + published)
+    validPublishedStories.push({
+      ...story,
+      currentWordCount: finalWordCount
+    });
   }
 
   return validPublishedStories.map(story => ({

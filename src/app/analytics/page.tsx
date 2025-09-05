@@ -154,7 +154,7 @@ export default function AnalyticsPage() {
 
         {/* Story Performance */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {isLoading ? <StoryPerformanceSkeleton /> : <Card>
+          {isLoading ? <StoryPerformanceSkeleton /> : (<Card>
             <CardHeader>
               <CardTitle>📈 Story Performance</CardTitle>
             </CardHeader>
@@ -201,7 +201,7 @@ export default function AnalyticsPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card>)}
 
           {isLoading ? (
             <Card>
