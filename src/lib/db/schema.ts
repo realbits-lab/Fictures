@@ -169,11 +169,43 @@ export const userStats = pgTable('user_stats', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// Community posts table - Story-specific community discussions
+export const communityPosts = pgTable('community_posts', {
+  id: text('id').primaryKey(),
+  title: varchar('title', { length: 255 }).notNull(),
+  content: text('content').notNull(),
+  storyId: text('story_id').references(() => stories.id).notNull(),
+  authorId: text('author_id').references(() => users.id).notNull(),
+  type: varchar('type', { length: 50 }).default('discussion'), // discussion, theory, review, question
+  isPinned: boolean('is_pinned').default(false),
+  isLocked: boolean('is_locked').default(false),
+  likes: integer('likes').default(0),
+  replies: integer('replies').default(0),
+  views: integer('views').default(0),
+  lastActivityAt: timestamp('last_activity_at').defaultNow().notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Community replies table - Threaded replies to posts
+export const communityReplies = pgTable('community_replies', {
+  id: text('id').primaryKey(),
+  content: text('content').notNull(),
+  postId: text('post_id').references(() => communityPosts.id).notNull(),
+  authorId: text('author_id').references(() => users.id).notNull(),
+  parentReplyId: text('parent_reply_id'), // For nested replies
+  likes: integer('likes').default(0),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 // Define relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   stories: many(stories),
   aiInteractions: many(aiInteractions),
   stats: one(userStats),
+  communityPosts: many(communityPosts),
+  communityReplies: many(communityReplies),
 }));
 
 export const storiesRelations = relations(stories, ({ one, many }) => ({
@@ -184,6 +216,7 @@ export const storiesRelations = relations(stories, ({ one, many }) => ({
   parts: many(parts),
   chapters: many(chapters),
   characters: many(characters),
+  communityPosts: many(communityPosts),
 }));
 
 export const partsRelations = relations(parts, ({ one, many }) => ({
@@ -225,5 +258,34 @@ export const aiInteractionsRelations = relations(aiInteractions, ({ one }) => ({
     fields: [aiInteractions.userId],
     references: [users.id],
   }),
+}));
+
+export const communityPostsRelations = relations(communityPosts, ({ one, many }) => ({
+  story: one(stories, {
+    fields: [communityPosts.storyId],
+    references: [stories.id],
+  }),
+  author: one(users, {
+    fields: [communityPosts.authorId],
+    references: [users.id],
+  }),
+  replies: many(communityReplies),
+}));
+
+export const communityRepliesRelations = relations(communityReplies, ({ one, many }) => ({
+  post: one(communityPosts, {
+    fields: [communityReplies.postId],
+    references: [communityPosts.id],
+  }),
+  author: one(users, {
+    fields: [communityReplies.authorId],
+    references: [users.id],
+  }),
+  parentReply: one(communityReplies, {
+    fields: [communityReplies.parentReplyId],
+    references: [communityReplies.id],
+    relationName: 'parentChild',
+  }),
+  childReplies: many(communityReplies, { relationName: 'parentChild' }),
 }));
 

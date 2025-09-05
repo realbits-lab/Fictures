@@ -16,6 +16,7 @@ interface Story {
   title: string;
   genre: string;
   status: string;
+  isPublic?: boolean;
   storyData?: Record<string, unknown>;
   parts: Array<{
     id: string;
@@ -502,6 +503,46 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     } catch (error) {
       console.error(`${endpoint} error:`, error);
       alert(`Failed to ${endpoint} chapter. Please try again.`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVisibilityToggle = async () => {
+    const currentVisibility = story.isPublic || false;
+    const newVisibility = !currentVisibility;
+    
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/stories/${story.id}/visibility`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ isPublic: newVisibility }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update story visibility');
+      }
+      
+      const result = await response.json();
+      console.log(`Story visibility updated:`, result);
+      
+      // Update the story data to reflect the new visibility
+      setStory(prevStory => ({
+        ...prevStory,
+        isPublic: newVisibility,
+      }));
+      
+      // Show confirmation message
+      const action = newVisibility ? 'public' : 'private';
+      alert(`Story is now ${action}! ${newVisibility ? 'It will appear in the community hub for discussions.' : 'It has been removed from the community hub.'}`);
+      
+    } catch (error) {
+      console.error('Visibility toggle error:', error);
+      alert(`Failed to update story visibility. Please try again.`);
     } finally {
       setIsLoading(false);
     }
@@ -1252,6 +1293,33 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               <Badge variant="outline">{currentSelection.level}</Badge>
             </div>
             <div className="flex items-center gap-1 md:gap-3">
+              {currentSelection.level === "story" && (
+                <Button 
+                  size="sm" 
+                  onClick={handleVisibilityToggle} 
+                  disabled={isLoading}
+                  className={story.isPublic ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-600 hover:bg-gray-700 text-white'}
+                  title={
+                    story.isPublic 
+                      ? 'Story is public - visible in community hub. Click to make private.'
+                      : 'Story is private - not visible in community hub. Click to make public.'
+                  }
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></div>
+                      <span className="hidden sm:inline">Updating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{story.isPublic ? '🌍' : '🔒'}</span>
+                      <span className="hidden sm:inline ml-1">
+                        {story.isPublic ? 'Public' : 'Private'}
+                      </span>
+                    </>
+                  )}
+                </Button>
+              )}
               {currentSelection.level === "chapter" && (
                 (() => {
                   // Find the current chapter status for button styling
