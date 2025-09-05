@@ -3,18 +3,21 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
-import { StoryTreeArchitecture } from "./StoryTreeArchitecture";
+import { useStoryData } from "@/lib/hooks/useStoryData";
+import { useWritingProgress, useWritingSession } from "@/hooks/useStoryWriter";
 import { YAMLDataDisplay } from "./YAMLDataDisplay";
 import { StoryEditor } from "./StoryEditor";
 import { PartEditor } from "./PartEditor";
 import { ChapterEditor } from "./ChapterEditor";
 import { SceneEditor } from "./SceneEditor";
+import { StoryStructureSidebar } from "./StoryStructureSidebar";
 
 interface Story {
   id: string;
   title: string;
   genre: string;
   status: string;
+  isPublic?: boolean;
   storyData?: Record<string, unknown>;
   parts: Array<{
     id: string;
@@ -63,12 +66,25 @@ interface Selection {
   sceneId?: string;
 }
 
+interface AllStoryListItem {
+  id: string;
+  title: string;
+  genre: string;
+  status: string;
+  parts?: any[];
+  chapters?: any[];
+  firstChapterId?: string;
+  totalChapters: number;
+  totalParts: number;
+}
+
 interface UnifiedWritingEditorProps {
   story: Story;
+  allStories?: AllStoryListItem[];
   initialSelection?: Selection;
 }
 
-export function UnifiedWritingEditor({ story: initialStory, initialSelection }: UnifiedWritingEditorProps) {
+export function UnifiedWritingEditor({ story: initialStory, allStories, initialSelection }: UnifiedWritingEditorProps) {
   const router = useRouter();
   const [story, setStory] = useState<Story>(initialStory);
   const [currentSelection, setCurrentSelection] = useState<Selection>(
@@ -81,12 +97,70 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
   const [yamlLevel, setYamlLevel] = useState<EditorLevel>("story");
   const [isLoading, setIsLoading] = useState(false);
   const [showThemePlanner, setShowThemePlanner] = useState(false);
+
+  // SWR hook for fetching story data when switching stories
+  const [targetStoryId, setTargetStoryId] = useState<string | null>(null);
+  const { story: swrStory, isLoading: isLoadingStory, isValidating: isValidatingStory, error: storyError } = useStoryData(targetStoryId);
+  
+  // SWR hook for current story to track background validation
+  const { isValidating: isValidatingCurrentStory } = useStoryData(story.id);
   const [themePlanned, setThemePlanned] = useState(false);
+  const [isSavingTheme, setIsSavingTheme] = useState(false);
+  
+  // Writing progress and session tracking
+  const writingProgress = useWritingProgress(
+    story.id, 
+    currentSelection.chapterId || null, 
+    currentSelection.sceneId || null
+  );
+  const writingSession = useWritingSession(story.id);
+  
+  // Track writing session
+  useEffect(() => {
+    // Start a writing session when component mounts
+    const session = writingSession.startSession();
+    console.log('✍️ Started writing session for:', story.title);
+    
+    // Cleanup: End session when component unmounts
+    return () => {
+      const result = writingSession.endSession();
+      if (result) {
+        console.log(`✅ Writing session ended: ${result.duration}ms, ${result.wordsWritten} words written`);
+      }
+    };
+  }, [story.id]);
 
   // Sync story state when prop changes
   useEffect(() => {
     setStory(initialStory);
   }, [initialStory]);
+
+  // Handle SWR story data loading
+  useEffect(() => {
+    if (swrStory && !isLoadingStory) {
+      setStory(swrStory);
+      setCurrentSelection({
+        level: "story",
+        storyId: swrStory.id
+      });
+      setYamlLevel("story");
+      // Signal to sidebar to expand the newly loaded story
+      window.dispatchEvent(new CustomEvent('storyLoaded', { 
+        detail: { storyId: swrStory.id }
+      }));
+      // Reset target story ID
+      setTargetStoryId(null);
+    }
+  }, [swrStory, isLoadingStory]);
+  
+  // Save writing position when selection changes
+  useEffect(() => {
+    writingProgress.saveWritingState({
+      chapterId: currentSelection.chapterId,
+      sceneId: currentSelection.sceneId,
+      lastEdited: new Date().toISOString(),
+    });
+  }, [currentSelection, writingProgress]);
 
   // Sample YAML data for demonstration
   const sampleStoryData = {
@@ -278,7 +352,38 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
     image_prompt: "Young woman in casual clothes standing in a dimly lit apartment hallway, her face showing concern as she looks at an ajar door. The scene suggests early morning light filtering through windows, with subtle signs of disturbance visible - an overturned coffee table and scattered items in the background. Mood: tense, mysterious, domestic thriller atmosphere."
   };
 
-  const handleSelectionChange = (selection: Selection) => {
+  const handleSelectionChange = async (selection: Selection) => {
+    // If switching to a different story, trigger SWR fetch
+    if (selection.level === "story" && selection.storyId !== story.id) {
+      setTargetStoryId(selection.storyId);
+      return;
+    }
+    
+    // If clicking on the current story (level === "story"), show the story editor
+    if (selection.level === "story" && selection.storyId === story.id) {
+      setCurrentSelection(selection);
+      setYamlLevel(selection.level);
+      return;
+    }
+    
+    // If switching to chapter level within the same story, update selection
+    if (selection.level === "chapter" && selection.chapterId && selection.storyId === story.id) {
+      // Only update if it's actually a different chapter or we're coming from a different level
+      if (selection.chapterId !== currentSelection.chapterId || currentSelection.level !== "chapter") {
+        console.log('Switching to chapter:', selection.chapterId, 'from current:', currentSelection.chapterId);
+        setCurrentSelection(selection);
+        setYamlLevel(selection.level);
+        return;
+      }
+    }
+    
+    // If switching to a chapter in a different story, navigate to it
+    if (selection.level === "chapter" && selection.chapterId && selection.storyId !== story.id) {
+      router.push(`/write/${selection.chapterId}`);
+      return;
+    }
+    
+    // Otherwise, just update the current selection for the same story
     setCurrentSelection(selection);
     setYamlLevel(selection.level);
   };
@@ -341,23 +446,53 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
   const handlePublishToggle = async () => {
     if (!currentSelection.chapterId) return;
     
-    // Find current chapter status
+    // Find current chapter and its status
     let currentChapterStatus = 'draft';
+    let currentChapter = null;
+    
     for (const part of story.parts) {
       const foundChapter = part.chapters.find(ch => ch.id === currentSelection.chapterId);
       if (foundChapter) {
+        currentChapter = foundChapter;
         currentChapterStatus = foundChapter.status || 'draft';
         break;
       }
     }
-    if (currentChapterStatus === 'draft') {
+    if (!currentChapter) {
       const foundChapter = story.chapters.find(ch => ch.id === currentSelection.chapterId);
       if (foundChapter) {
+        currentChapter = foundChapter;
         currentChapterStatus = foundChapter.status || 'draft';
+      }
+    }
+    
+    // If chapter is marked as published but has no content, force it to draft status
+    if (currentChapter && currentChapterStatus === 'published') {
+      const hasScenes = currentChapter.scenes && currentChapter.scenes.length > 0;
+      const hasContent = currentChapter.purpose || currentChapter.hook || currentChapter.characterFocus || (currentChapter.wordCount && currentChapter.wordCount > 0);
+      const scenesWithContent = hasScenes ? currentChapter.scenes.filter((scene: any) => scene.wordCount > 0) : [];
+      
+      if (!hasContent && scenesWithContent.length === 0) {
+        currentChapterStatus = 'draft';
       }
     }
 
     const isPublished = currentChapterStatus === 'published';
+    
+    // Check if trying to publish and validate scenes
+    if (!isPublished) {
+      const chapterScenes = currentChapter?.scenes || [];
+      if (chapterScenes.length === 0) {
+        alert('Cannot publish chapter without scenes. Please add at least one scene before publishing.');
+        return;
+      }
+      const scenesWithContent = chapterScenes.filter(scene => scene.wordCount > 0);
+      if (scenesWithContent.length === 0) {
+        alert('Cannot publish chapter with empty scenes. Please add content to at least one scene before publishing.');
+        return;
+      }
+    }
+    
     const endpoint = isPublished ? 'unpublish' : 'publish';
     const newStatus = isPublished ? 'completed' : 'published';
     
@@ -406,33 +541,57 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
     }
   };
 
+  const handleVisibilityToggle = async () => {
+    const currentVisibility = story.isPublic || false;
+    const newVisibility = !currentVisibility;
+    
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/stories/${story.id}/visibility`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ isPublic: newVisibility }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update story visibility');
+      }
+      
+      const result = await response.json();
+      console.log(`Story visibility updated:`, result);
+      
+      // Update the story data to reflect the new visibility
+      setStory(prevStory => ({
+        ...prevStory,
+        isPublic: newVisibility,
+      }));
+      
+      // Show confirmation message
+      const action = newVisibility ? 'public' : 'private';
+      alert(`Story is now ${action}! ${newVisibility ? 'It will appear in the community hub for discussions.' : 'It has been removed from the community hub.'}`);
+      
+    } catch (error) {
+      console.error('Visibility toggle error:', error);
+      alert(`Failed to update story visibility. Please try again.`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleCreateScene = async (chapterId: string) => {
     setIsLoading(true);
     try {
+      // Fetch current scenes from the API to ensure we have the latest data
+      const scenesResponse = await fetch(`/api/scenes?chapterId=${chapterId}`);
+      const scenesData = await scenesResponse.json();
+      
       // Calculate next available order index by finding the highest existing orderIndex
       let nextOrderIndex = 1;
-      
-      // Find the current chapter to check existing scenes
-      let currentChapter = null;
-      
-      // Look in parts first
-      for (const part of story.parts) {
-        const foundChapter = part.chapters.find(ch => ch.id === chapterId);
-        if (foundChapter) {
-          currentChapter = foundChapter;
-          break;
-        }
-      }
-      
-      // Look in standalone chapters if not found in parts
-      if (!currentChapter) {
-        currentChapter = story.chapters.find(ch => ch.id === chapterId);
-      }
-      
-      // Calculate next available order index based on existing scenes
-      if (currentChapter && currentChapter.scenes && currentChapter.scenes.length > 0) {
-        // Find the highest existing orderIndex and add 1
-        const maxOrderIndex = Math.max(...currentChapter.scenes.map(scene => scene.orderIndex || 0));
+      if (scenesData.scenes && scenesData.scenes.length > 0) {
+        const maxOrderIndex = Math.max(...scenesData.scenes.map((scene: any) => scene.orderIndex || 0));
         nextOrderIndex = maxOrderIndex + 1;
       }
       
@@ -475,6 +634,77 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
     } catch (error) {
       console.error('Failed to create scene:', error);
       alert('Failed to create scene. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveThemePlan = async () => {
+    setIsSavingTheme(true);
+    try {
+      // Simulate saving the theme plan data to the chapter or story
+      // This would typically save the three-act structure, tension architecture, 
+      // character development, dual mandate fulfillment, and hook strategy data
+      
+      // For now, we'll just simulate an API call with a delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Here you would save the theme plan data to the database
+      // const response = await fetch(`/api/chapters/${currentSelection.chapterId}/theme`, {
+      //   method: 'PATCH',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(themePlanData)
+      // });
+      
+      // Show success feedback
+      console.log('Theme plan saved successfully');
+      
+    } catch (error) {
+      console.error('Failed to save theme plan:', error);
+      alert('Failed to save theme plan. Please try again.');
+    } finally {
+      setIsSavingTheme(false);
+    }
+  };
+
+  const handleToggleSceneStatus = async (sceneId: string, currentStatus: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent scene edit navigation
+    
+    setIsLoading(true);
+    try {
+      // Determine next status based on current status
+      let nextStatus: string;
+      if (currentStatus === 'planned') {
+        nextStatus = 'in_progress';
+      } else if (currentStatus === 'in_progress') {
+        nextStatus = 'completed';
+      } else { // completed
+        nextStatus = 'in_progress';
+      }
+      
+      // Update scene status via API
+      const response = await fetch(`/api/scenes/${sceneId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: nextStatus
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Scene status update failed:', errorData);
+        throw new Error(`Failed to update scene status: ${errorData.error || 'Unknown error'}`);
+      }
+
+      // Refresh the page to show updated status
+      router.refresh();
+      
+    } catch (error) {
+      console.error('Failed to update scene status:', error);
+      alert('Failed to update scene status. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -573,27 +803,66 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
           selectedChapter = story.chapters.find(ch => ch.id === currentSelection.chapterId);
         }
         
-        // Create chapter data based on selection or fallback
-        const createChapterData = (chapter: any, partTitle: string | null) => ({
-          id: chapter?.id || currentSelection.chapterId || "1",
-          title: chapter?.title || `Chapter ${chapter?.orderIndex || 1}`,
-          partTitle: partTitle || "Standalone",
-          wordCount: chapter?.wordCount || 0,
-          targetWordCount: chapter?.targetWordCount || 4000,
-          status: chapter?.status || 'draft',
-          purpose: chapter?.orderIndex === 1 ? "Establish story foundation and initial conflict" :
-                   chapter?.orderIndex === 2 ? "Develop characters and escalate tension" :
-                   "Build toward climax and resolution",
-          hook: chapter?.orderIndex === 1 ? "Opening scene that draws readers in" :
-                "Continue momentum from previous chapter",
-          characterFocus: "Character development and relationship dynamics",
-          scenes: chapter?.scenes || []
-        });
+        // Create chapter data only if chapter exists, otherwise show empty state
+        const createChapterData = (chapter: any, partTitle: string | null) => {
+          // Check if chapter has any actual content
+          const hasScenes = chapter.scenes && chapter.scenes.length > 0;
+          const hasContent = chapter.purpose || chapter.hook || chapter.characterFocus || (chapter.wordCount && chapter.wordCount > 0);
+          const scenesWithContent = hasScenes ? chapter.scenes.filter((scene: any) => scene.wordCount > 0) : [];
+          
+          // If chapter is marked as published but has no content, force it to draft status
+          let actualStatus = chapter.status || 'draft';
+          if (actualStatus === 'published' && !hasContent && scenesWithContent.length === 0) {
+            console.warn(`Chapter ${chapter.id} (${chapter.title}) is marked as published but has no content. Showing as draft.`);
+            actualStatus = 'draft';
+          }
+          
+          return {
+            id: chapter.id,
+            title: chapter.title,
+            partTitle: partTitle || "Standalone",
+            wordCount: chapter.wordCount || 0,
+            targetWordCount: chapter.targetWordCount || 4000,
+            status: actualStatus,
+            purpose: chapter.purpose || "",
+            hook: chapter.hook || "",
+            characterFocus: chapter.characterFocus || "",
+            scenes: chapter.scenes || []
+          };
+        };
         
+        // Only create chapter data if we found the actual chapter
         const chapterData = selectedChapter ? 
           createChapterData(selectedChapter, selectedPartTitle) : 
-          createChapterData(null, null);
+          null;
         
+        // If no chapter data found, show empty state
+        if (!chapterData) {
+          return (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>📝 Chapter Not Found</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center py-8">
+                  <div className="text-gray-500 dark:text-gray-400 mb-4">
+                    <div className="text-4xl mb-4">📄</div>
+                    <h3 className="text-lg font-medium mb-2 text-[rgb(var(--card-foreground))]">No Chapter Data</h3>
+                    <p>This chapter doesn't exist or hasn't been created yet.</p>
+                    <p className="text-sm mt-2">Chapter ID: {currentSelection.chapterId}</p>
+                  </div>
+                  <Button 
+                    onClick={() => handleSelectionChange({ level: "story", storyId: story.id })}
+                    variant="secondary"
+                  >
+                    ← Back to Story Overview
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          );
+        }
+
         return (
           <div className="space-y-6">
             {/* Chapter Overview */}
@@ -779,9 +1048,24 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
 
                   {/* Action Buttons */}
                   <div className="flex gap-2 pt-4 border-t">
-                    <Button size="sm" variant="default" className="flex items-center gap-2">
-                      <span>💾</span>
-                      Save Theme Plan
+                    <Button 
+                      size="sm" 
+                      variant="default" 
+                      className="flex items-center gap-2" 
+                      onClick={handleSaveThemePlan}
+                      disabled={isSavingTheme}
+                    >
+                      {isSavingTheme ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                          Saving Theme Plan...
+                        </>
+                      ) : (
+                        <>
+                          <span>💾</span>
+                          Save Theme Plan
+                        </>
+                      )}
                     </Button>
                     <Button size="sm" variant="secondary" className="flex items-center gap-2">
                       <span>🎲</span>
@@ -818,7 +1102,7 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
                     chapterData.scenes.map((scene, index) => (
                       <div 
                         key={scene.id} 
-                        className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white/50 dark:bg-gray-800/50 hover:bg-blue-50/80 dark:hover:bg-blue-900/20 cursor-pointer transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md"
+                        className="border border-[rgb(var(--border))] rounded-[var(--radius)] p-4 bg-[rgb(var(--card)/50%)] hover:bg-[rgb(var(--primary)/8%)] cursor-pointer transition-all duration-[var(--animate-duration)] hover:border-[rgb(var(--primary)/60%)] hover:shadow-[var(--shadow)]"
                         onClick={() => handleSelectionChange({
                           level: "scene",
                           storyId: story.id,
@@ -828,34 +1112,59 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
                         })}
                       >
                         <div className="flex items-start justify-between mb-2">
-                          <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                          <h4 className="text-sm font-medium text-[rgb(var(--card-foreground))] flex items-center gap-2">
                             <span>{scene.status === "completed" ? "✅" : scene.status === "in_progress" ? "⏳" : "📝"}</span>
                             Scene {index + 1}: {scene.title}
                           </h4>
-                          <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                          <span className="text-xs text-[rgb(var(--muted-foreground))] bg-[rgb(var(--muted))] px-2 py-1 rounded-[var(--radius-sm)]">                          
                             {scene.wordCount}w
                           </span>
                         </div>
-                        <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                        <div className="space-y-1 text-xs text-[rgb(var(--muted-foreground))]">
                           <div><strong>Goal:</strong> {scene.goal}</div>
                           <div><strong>Conflict:</strong> {scene.conflict}</div>
                           <div><strong>Outcome:</strong> {scene.outcome}</div>
                         </div>
                         <div className="mt-2 flex items-center justify-between">
-                          <Badge 
-                            variant={scene.status === "completed" ? "success" : scene.status === "in_progress" ? "warning" : "secondary"}
-                            size="sm"
-                          >
-                            {scene.status.replace('_', ' ')}
-                          </Badge>
-                          <span className="text-xs text-blue-600 dark:text-blue-400 hover:underline">
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant={scene.status === "completed" ? "success" : scene.status === "in_progress" ? "warning" : "secondary"}
+                              size="sm"
+                            >
+                              {scene.status.replace('_', ' ')}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              variant={scene.status === "completed" ? "secondary" : "default"}
+                              onClick={(e) => handleToggleSceneStatus(scene.id, scene.status, e)}
+                              disabled={isLoading}
+                              className="text-xs px-2 py-1 h-auto"
+                              title={
+                                scene.status === 'planned' ? 'Start working on scene' :
+                                scene.status === 'in_progress' ? 'Mark scene as complete' :
+                                'Mark scene as in progress'
+                              }
+                            >
+                              <div className="flex items-center gap-1">
+                                <span>
+                                  {scene.status === 'planned' ? '▶️ Start' :
+                                   scene.status === 'in_progress' ? '✅ Complete' :
+                                   '🔄 Resume'}
+                                </span>
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" opacity="0.6">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                </svg>
+                              </div>
+                            </Button>
+                          </div>
+                          <span className="text-xs text-[rgb(var(--primary))] hover:underline">
                             Click to edit scene →
                           </span>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-[rgb(var(--muted-foreground))]">
                       <p className="text-sm mb-3">No scenes planned for this chapter</p>
                       <Button 
                         size="sm" 
@@ -998,9 +1307,9 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-[rgb(var(--background))]">
       {/* Fixed Header */}
-      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200 dark:bg-gray-900/95 dark:border-gray-700">
+      <div className="sticky top-0 z-50 bg-[rgb(var(--background)/95%)] backdrop-blur-[var(--blur)] border-b border-[rgb(var(--border))]">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 md:gap-4">
@@ -1008,54 +1317,119 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
                 variant="ghost"
                 size="sm"
                 onClick={() => router.push('/stories')}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                className="flex items-center gap-2 text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))]"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
                 <span className="hidden sm:inline">Back to Stories</span>
               </Button>
-              <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 hidden sm:block"></div>
-              <h1 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">
+              <div className="w-px h-6 bg-[rgb(var(--border))] hidden sm:block"></div>
+              <h1 className="text-lg md:text-xl font-semibold text-[rgb(var(--foreground))] truncate font-[var(--font-heading)]">
                 {currentSelection.level === "story" ? "📖" : 
                  currentSelection.level === "part" ? "📚" :
                  currentSelection.level === "chapter" ? "📝" : "🎬"} {story.title}
               </h1>
               <Badge variant="outline">{currentSelection.level}</Badge>
+              
+              {/* Cache Status Indicators */}
+              {(isValidatingCurrentStory || isValidatingStory) && (
+                <div className="flex items-center gap-2 text-xs text-[rgb(var(--primary))] opacity-60">
+                  <div className="w-3 h-3 border-2 border-[rgb(var(--primary))] border-t-transparent rounded-full animate-spin"></div>
+                  <span className="hidden md:inline">Syncing...</span>
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-1 md:gap-3">
+              {currentSelection.level === "story" && (
+                <Button 
+                  size="sm" 
+                  onClick={handleVisibilityToggle} 
+                  disabled={isLoading}
+                  className={story.isPublic ? 'bg-[rgb(var(--primary))] hover:bg-[rgb(var(--primary)/90%)] text-[rgb(var(--primary-foreground))]' : 'bg-[rgb(var(--muted))] hover:bg-[rgb(var(--muted)/80%)] text-[rgb(var(--muted-foreground))]'}
+                  title={
+                    story.isPublic 
+                      ? 'Story is public - visible in community hub. Click to make private.'
+                      : 'Story is private - not visible in community hub. Click to make public.'
+                  }
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-[rgb(var(--primary-foreground))] border-t-transparent rounded-full animate-spin mr-1"></div>
+                      <span className="hidden sm:inline">Updating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{story.isPublic ? '🌍' : '🔒'}</span>
+                      <span className="hidden sm:inline ml-1">
+                        {story.isPublic ? 'Public' : 'Private'}
+                      </span>
+                      <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" opacity="0.6">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                      </svg>
+                    </>
+                  )}
+                </Button>
+              )}
               {currentSelection.level === "chapter" && (
                 (() => {
                   // Find the current chapter status for button styling
                   let currentChapterStatus = 'draft';
+                  let currentChapter = null;
                   
                   // Look in parts first
                   for (const part of story.parts) {
                     const foundChapter = part.chapters.find(ch => ch.id === currentSelection.chapterId);
                     if (foundChapter) {
+                      currentChapter = foundChapter;
                       currentChapterStatus = foundChapter.status || 'draft';
                       break;
                     }
                   }
                   
                   // If not found in parts, check standalone chapters
-                  if (currentChapterStatus === 'draft') {
+                  if (!currentChapter) {
                     const foundChapter = story.chapters.find(ch => ch.id === currentSelection.chapterId);
                     if (foundChapter) {
+                      currentChapter = foundChapter;
                       currentChapterStatus = foundChapter.status || 'draft';
                     }
                   }
+                  
+                  // If chapter is marked as published but has no content, force it to draft status
+                  if (currentChapter && currentChapterStatus === 'published') {
+                    const hasScenes = currentChapter.scenes && currentChapter.scenes.length > 0;
+                    const hasContent = currentChapter.purpose || currentChapter.hook || currentChapter.characterFocus || (currentChapter.wordCount && currentChapter.wordCount > 0);
+                    const scenesWithContent = hasScenes ? currentChapter.scenes.filter((scene: any) => scene.wordCount > 0) : [];
+                    
+                    if (!hasContent && scenesWithContent.length === 0) {
+                      currentChapterStatus = 'draft';
+                    }
+                  }
 
+                  
                   return (
                     <Button 
                       size="sm" 
                       onClick={handlePublishToggle} 
                       disabled={isLoading}
-                      className={currentChapterStatus === 'published' ? 'bg-green-600 hover:bg-green-700 text-white' : ''}
+                      className={`${currentChapterStatus === 'published' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-[rgb(var(--primary))] hover:bg-[rgb(var(--primary)/90%)] text-[rgb(var(--primary-foreground))]'} rounded-[var(--radius)]`}
+                      title={
+                        currentChapterStatus === 'published' 
+                          ? 'Unpublish chapter' 
+                          : 'Publish chapter'
+                      }
                     >
                       {isLoading ? 
                         (currentChapterStatus === 'published' ? "⚡ Unpublishing..." : "⚡ Publishing...") : 
-                        (currentChapterStatus === 'published' ? "📤 Unpublish" : "🚀 Publish")}
+                        (
+                          <div className="flex items-center gap-1">
+                            <span>{currentChapterStatus === 'published' ? "📤 Unpublish" : "🚀 Publish"}</span>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" opacity="0.6">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                            </svg>
+                          </div>
+                        )}
                     </Button>
                   );
                 })()
@@ -1067,14 +1441,15 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
 
       <div className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Sidebar - Story Architecture Tree */}
+          {/* Left Sidebar - Story Structure Navigation */}
           <div className="space-y-6">
-            <StoryTreeArchitecture 
-              story={story} 
-              currentChapterId={currentSelection.chapterId}
-              currentSceneId={currentSelection.sceneId}
-              onSelectionChange={handleSelectionChange}
+            <StoryStructureSidebar 
+              story={story}
               currentSelection={currentSelection}
+              onSelectionChange={handleSelectionChange}
+              validatingStoryId={
+                isValidatingCurrentStory ? story.id : null
+              }
             />
           </div>
           
@@ -1096,7 +1471,7 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
                     storyData={(currentSelection.level === "part" || currentSelection.level === "chapter" || currentSelection.level === "scene" || yamlLevel === "story") ? sampleStoryData : undefined}
                     partData={(currentSelection.level === "chapter" || currentSelection.level === "scene") ? samplePartData : (currentSelection.level !== "part" && yamlLevel === "part") ? samplePartData : undefined}
                     chapterData={(currentSelection.level === "scene") ? sampleChapterData : yamlLevel === "chapter" ? sampleChapterData : undefined}
-                    sceneData={yamlLevel === "scene" ? sampleSceneData : undefined}
+                    sceneData={currentSelection.level === "scene" ? sampleSceneData : undefined}
                     currentLevel={currentSelection.level === "part" ? "story" : currentSelection.level === "chapter" ? "chapter" : currentSelection.level === "scene" ? "scene" : yamlLevel}
                   />
                 </div>

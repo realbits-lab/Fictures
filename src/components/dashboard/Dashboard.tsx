@@ -32,7 +32,7 @@ export async function Dashboard() {
     },
     readers: story.viewCount || 0,
     rating: (story.rating || 0) / 10, // Convert from database format (47 = 4.7)
-    status: story.status as "draft" | "publishing" | "completed",
+    status: story.status as "draft" | "publishing" | "completed" | "published",
     wordCount: story.currentWordCount || 0,
     firstChapterId: story.firstChapterId,
     storyData: story.storyData || null,

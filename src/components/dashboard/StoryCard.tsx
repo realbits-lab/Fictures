@@ -24,9 +24,10 @@ interface StoryCardProps {
   };
   readers: number;
   rating: number;
-  status: "draft" | "publishing" | "completed";
+  status: "draft" | "publishing" | "completed" | "published";
   wordCount?: number;
   firstChapterId?: string | null;
+  isPublic?: boolean;
 }
 
 export function StoryCard({
@@ -40,20 +41,24 @@ export function StoryCard({
   status,
   wordCount,
   firstChapterId,
+  isPublic,
 }: StoryCardProps) {
   const progressPercentage =
     chapters.total > 0 ? (chapters.completed / chapters.total) * 100 : 0;
 
-  const getStatusBadge = () => {
-    switch (status) {
-      case "draft":
-        return <Badge variant="default">Draft</Badge>;
-      case "publishing":
-        return <Badge variant="info">Publishing</Badge>;
-      case "completed":
-        return <Badge variant="success">Complete</Badge>;
-      default:
-        return <Badge variant="default">Draft</Badge>;
+  const getVisibilityBadge = () => {
+    if (isPublic === true) {
+      return (
+        <Badge variant="success">
+          Public
+        </Badge>
+      );
+    } else {
+      return (
+        <Badge variant="default">
+          Private
+        </Badge>
+      );
     }
   };
 
@@ -69,43 +74,43 @@ export function StoryCard({
       <CardContent className="space-y-4">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            <h3 className="text-lg font-semibold text-[rgb(var(--foreground))]">
               📖 {title}
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">{genre}</p>
+            <p className="text-sm text-[rgb(var(--muted-foreground))]">{genre}</p>
           </div>
-          {getStatusBadge()}
+          {getVisibilityBadge()}
         </div>
 
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="space-y-1">
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-[rgb(var(--muted-foreground))]">
                 📄 Parts: {parts.completed}/{parts.total}
               </p>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-[rgb(var(--muted-foreground))]">
                 {chapters.completed === chapters.total ? "✓" : "⏳"} Chapters:{" "}
                 {chapters.completed}/{chapters.total}
               </p>
             </div>
             <div className="space-y-1">
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-[rgb(var(--muted-foreground))]">
                 📊 Readers: {formatReaders(readers)}
               </p>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-[rgb(var(--muted-foreground))]">
                 ⭐ Rating: {rating.toFixed(1)}
               </p>
             </div>
           </div>
 
           {wordCount && (
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-[rgb(var(--muted-foreground))]">
               📝 {wordCount.toLocaleString()} words
             </p>
           )}
 
           <div className="space-y-2">
-            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex justify-between text-sm text-[rgb(var(--muted-foreground))]">
               <span>Progress</span>
               <span>{Math.round(progressPercentage)}%</span>
             </div>

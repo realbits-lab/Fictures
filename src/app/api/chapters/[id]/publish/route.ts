@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { updateChapter, getStoryWithStructure } from '@/lib/db/queries';
+import { db } from '@/lib/db';
+import { scenes } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function POST(
   request: NextRequest,
@@ -13,6 +16,27 @@ export async function POST(
     }
 
     const { id: chapterId } = await params;
+    
+    // Check if chapter has scenes before allowing publishing
+    const chapterScenes = await db.select().from(scenes)
+      .where(eq(scenes.chapterId, chapterId));
+    
+    if (chapterScenes.length === 0) {
+      return NextResponse.json({ 
+        error: 'Cannot publish chapter without scenes. Please add at least one scene before publishing.' 
+      }, { status: 400 });
+    }
+
+    // Check if chapter has any content (at least one scene with content)
+    const scenesWithContent = chapterScenes.filter(scene => 
+      scene.content && scene.content.trim().length > 0
+    );
+    
+    if (scenesWithContent.length === 0) {
+      return NextResponse.json({ 
+        error: 'Cannot publish chapter with empty scenes. Please add content to at least one scene before publishing.' 
+      }, { status: 400 });
+    }
     
     // Update the chapter status to published
     const updatedChapter = await updateChapter(chapterId, session.user.id, {

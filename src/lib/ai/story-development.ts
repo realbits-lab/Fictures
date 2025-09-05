@@ -1,11 +1,11 @@
 import { generateObject } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import { AI_MODELS } from './config';
 import { StorySchema, PartSpecificationSchema, ChapterSpecificationSchema, SceneSpecificationSchema, type Story, type PartSpecification, type ChapterSpecification, type SceneSpecification } from './schemas';
 
 // Phase 1: Story Foundation
 export async function storyConceptDevelopment(userPrompt: string, language: string = 'English'): Promise<Story> {
   const { object } = await generateObject({
-    model: openai('gpt-4o-mini'),
+    model: AI_MODELS.writing,
     schema: StorySchema,
     system: `You are an expert story developer implementing Phase 1: Story Foundation.
 
@@ -39,7 +39,7 @@ export async function generatePartSpecifications(storyConcept: Story): Promise<P
     const storyPart = storyConcept.parts[i];
     
     const { object } = await generateObject({
-      model: openai('gpt-4o-mini'),
+      model: AI_MODELS.writing,
       schema: PartSpecificationSchema,
       system: `You are implementing Phase 2: Structural Development.
 
@@ -73,7 +73,7 @@ export async function generateChapterSpecifications(storyConcept: Story, partSpe
   
   for (let i = 1; i <= chapterCount; i++) {
     const { object } = await generateObject({
-      model: openai('gpt-4o-mini'),
+      model: AI_MODELS.writing,
       schema: ChapterSpecificationSchema,
       system: `You are implementing Chapter Generation.
 
@@ -111,7 +111,7 @@ export async function generateSceneSpecifications(chapterSpec: ChapterSpecificat
   
   for (let i = 1; i <= sceneCount; i++) {
     const { object } = await generateObject({
-      model: openai('gpt-4o-mini'),
+      model: AI_MODELS.writing,
       schema: SceneSpecificationSchema,
       system: `You are implementing Scene Generation.
 

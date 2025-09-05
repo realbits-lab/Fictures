@@ -8,7 +8,7 @@ export const runtime = 'nodejs';
 const createChapterSchema = z.object({
   title: z.string().min(1).max(255),
   storyId: z.string(),
-  partId: z.string(), // Required - all chapters must belong to a part
+  partId: z.string().optional(), // Optional - supports standalone chapters
   orderIndex: z.number().min(0),
   targetWordCount: z.number().min(100).max(20000).optional(),
 });

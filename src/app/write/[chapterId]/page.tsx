@@ -26,12 +26,10 @@ export default async function WritePage({ params }: { params: Promise<{ chapterI
     notFound();
   }
 
-  // Create initial selection to focus on the current chapter
+  // Create initial selection to focus on the story level first
   const initialSelection = {
-    level: "chapter" as const,
-    storyId: chapterInfo.storyId,
-    partId: chapterInfo.chapter.partId || undefined,
-    chapterId: chapterInfo.chapter.id
+    level: "story" as const,
+    storyId: chapterInfo.storyId
   };
   
   return (
