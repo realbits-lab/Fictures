@@ -6,7 +6,7 @@ import { SkeletonLoader, Skeleton } from "@/components/ui";
 
 function StatsCardSkeleton() {
   return (
-    <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+    <div className="text-center p-6 bg-[rgb(var(--card)/80%)] backdrop-blur-sm rounded-lg shadow-sm border border-[rgb(var(--border)/50%)]">
       <div className="mb-2">
         <Skeleton className="h-9 w-20" />
       </div>
@@ -19,7 +19,7 @@ function StatsCardSkeleton() {
 
 function StatsSkeletonSection() {
   return (
-    <div className="py-16 bg-gray-50 dark:bg-gray-900/50">
+    <div className="py-16 bg-[rgb(var(--primary)/8%)] dark:bg-[rgb(var(--primary)/12%)]">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <Skeleton className="h-8 w-60 mx-auto mb-4" />
@@ -52,7 +52,7 @@ export function HomeStatsClient() {
   // Show error state with retry
   if (error) {
     return (
-      <div className="py-16 bg-gray-50 dark:bg-gray-900/50">
+      <div className="py-16 bg-[rgb(var(--primary)/8%)] dark:bg-[rgb(var(--primary)/12%)]">
         <div className="container mx-auto px-4">
           <div className="text-center">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
@@ -63,7 +63,7 @@ export function HomeStatsClient() {
             </p>
             <button 
               onClick={mutate}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] rounded-lg hover:bg-[rgb(var(--primary)/90%)] transition-colors"
             >
               Try Again
             </button>
@@ -76,7 +76,7 @@ export function HomeStatsClient() {
   // Show unauthenticated state
   if (!data?.isAuthenticated) {
     return (
-      <div className="py-16 bg-gray-50 dark:bg-gray-900/50">
+      <div className="py-16 bg-[rgb(var(--primary)/8%)] dark:bg-[rgb(var(--primary)/12%)]">
         <div className="container mx-auto px-4">
           <div className="text-center">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
@@ -92,7 +92,7 @@ export function HomeStatsClient() {
   }
 
   return (
-    <div className="py-16 bg-gray-50 dark:bg-gray-900/50">
+    <div className="py-16 bg-[rgb(var(--primary)/8%)] dark:bg-[rgb(var(--primary)/12%)]">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center justify-center gap-2">
@@ -107,7 +107,7 @@ export function HomeStatsClient() {
         </div>
         
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
-          <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+          <div className="text-center p-6 bg-[rgb(var(--card)/80%)] backdrop-blur-sm rounded-lg shadow-sm border border-[rgb(var(--border)/50%)]">
             <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
               {data?.totalStories || 0}
             </div>
@@ -116,7 +116,7 @@ export function HomeStatsClient() {
             </div>
           </div>
           
-          <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+          <div className="text-center p-6 bg-[rgb(var(--card)/80%)] backdrop-blur-sm rounded-lg shadow-sm border border-[rgb(var(--border)/50%)]">
             <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
               {data?.totalWords?.toLocaleString() || 0}
             </div>
@@ -125,7 +125,7 @@ export function HomeStatsClient() {
             </div>
           </div>
           
-          <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+          <div className="text-center p-6 bg-[rgb(var(--card)/80%)] backdrop-blur-sm rounded-lg shadow-sm border border-[rgb(var(--border)/50%)]">
             <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
               {data?.totalReaders?.toLocaleString() || 0}
             </div>
@@ -134,7 +134,7 @@ export function HomeStatsClient() {
             </div>
           </div>
           
-          <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+          <div className="text-center p-6 bg-[rgb(var(--card)/80%)] backdrop-blur-sm rounded-lg shadow-sm border border-[rgb(var(--border)/50%)]">
             <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
               {data?.avgRating || 0}
             </div>

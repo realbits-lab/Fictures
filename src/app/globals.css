@@ -1,8 +1,10 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-heading: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
   
   --color-primary: 59 130 246;
   --color-primary-foreground: 255 255 255;
@@ -24,9 +26,30 @@
   --color-popover: 255 255 255;
   --color-popover-foreground: 39 39 42;
   
+  --radius-none: 0;
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
   --radius-lg: 0.5rem;
-  --radius-md: calc(0.5rem - 2px);
-  --radius-sm: calc(0.5rem - 4px);
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-full: 9999px;
+  
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  
+  --animate-duration-fast: 150ms;
+  --animate-duration-normal: 300ms;
+  --animate-duration-slow: 500ms;
+  
+  --blur-sm: blur(4px);
+  --blur-md: blur(8px);
+  --blur-lg: blur(16px);
+  --blur-xl: blur(24px);
 }
 
 /* Default Light Theme */
@@ -50,7 +73,16 @@
   --card-foreground: 39 39 42;
   --popover: 255 255 255;
   --popover-foreground: 39 39 42;
+  
   --radius: 0.5rem;
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+  
+  --shadow: var(--shadow-md);
+  --animate-duration: var(--animate-duration-normal);
+  --blur: var(--blur-md);
 }
 
 /* Dark Theme */
@@ -74,6 +106,16 @@
   --card-foreground: 244 244 245;
   --popover: 9 9 11;
   --popover-foreground: 244 244 245;
+  
+  --radius: 0.5rem;
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+  
+  --shadow: var(--shadow-lg);
+  --animate-duration: var(--animate-duration-normal);
+  --blur: var(--blur-lg);
 }
 
 /* Blue Ocean Theme */
@@ -97,6 +139,15 @@
   --card-foreground: 30 58 138;
   --popover: 255 255 255;
   --popover-foreground: 30 58 138;
+  
+  --radius: 0.75rem;
+  --font-sans: "Nunito Variable", var(--font-sans);
+  --font-heading: "Nunito Variable", var(--font-heading);
+  --font-body: "Inter Variable", var(--font-body);
+  
+  --shadow: var(--shadow-lg);
+  --animate-duration: var(--animate-duration-slow);
+  --blur: var(--blur-sm);
 }
 
 /* Purple Dream Theme */
@@ -120,6 +171,15 @@
   --card-foreground: 88 28 135;
   --popover: 255 255 255;
   --popover-foreground: 88 28 135;
+  
+  --radius: 1rem;
+  --font-sans: "DM Sans Variable", var(--font-sans);
+  --font-heading: "Space Grotesk Variable", var(--font-heading);
+  --font-body: "DM Sans Variable", var(--font-body);
+  
+  --shadow: var(--shadow-xl);
+  --animate-duration: var(--animate-duration-fast);
+  --blur: var(--blur-lg);
 }
 
 /* Forest Green Theme */
@@ -143,6 +203,15 @@
   --card-foreground: 21 128 61;
   --popover: 255 255 255;
   --popover-foreground: 21 128 61;
+  
+  --radius: 0.375rem;
+  --font-sans: "Inter Variable", var(--font-sans);
+  --font-heading: "Fraunces Variable", var(--font-heading);
+  --font-body: "Source Sans 3 Variable", var(--font-body);
+  
+  --shadow: var(--shadow-sm);
+  --animate-duration: var(--animate-duration-normal);
+  --blur: var(--blur-sm);
 }
 
 /* Warm Sunset Theme */
@@ -166,6 +235,15 @@
   --card-foreground: 154 52 18;
   --popover: 255 255 255;
   --popover-foreground: 154 52 18;
+  
+  --radius: 1.5rem;
+  --font-sans: "Manrope Variable", var(--font-sans);
+  --font-heading: "Playfair Display Variable", var(--font-heading);
+  --font-body: "Manrope Variable", var(--font-body);
+  
+  --shadow: var(--shadow-2xl);
+  --animate-duration: var(--animate-duration-slow);
+  --blur: var(--blur-xl);
 }
 
 /* Rose Garden Theme */
@@ -189,6 +267,15 @@
   --card-foreground: 159 18 57;
   --popover: 255 255 255;
   --popover-foreground: 159 18 57;
+  
+  --radius: 0.25rem;
+  --font-sans: "Plus Jakarta Sans Variable", var(--font-sans);
+  --font-heading: "Crimson Text Variable", var(--font-heading);
+  --font-body: "Plus Jakarta Sans Variable", var(--font-body);
+  
+  --shadow: var(--shadow-md);
+  --animate-duration: var(--animate-duration-fast);
+  --blur: var(--blur-md);
 }
 
 /* Midnight Theme */
@@ -212,6 +299,15 @@
   --card-foreground: 241 245 249;
   --popover: 30 41 59;
   --popover-foreground: 241 245 249;
+  
+  --radius: 0.125rem;
+  --font-sans: "Outfit Variable", var(--font-sans);
+  --font-heading: "JetBrains Mono Variable", var(--font-heading);
+  --font-body: "IBM Plex Sans Variable", var(--font-body);
+  
+  --shadow: var(--shadow-2xl);
+  --animate-duration: var(--animate-duration-fast);
+  --blur: var(--blur-xl);
 }
 
 /* Auto theme based on system preference */
@@ -242,8 +338,10 @@
 body {
   color: rgb(var(--foreground));
   background: rgb(var(--background));
-  font-family: Arial, Helvetica, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: var(--font-body, "Inter Variable", ui-sans-serif, system-ui, sans-serif);
+  transition: background-color var(--animate-duration, 300ms) ease, color var(--animate-duration, 300ms) ease;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  font-variation-settings: "opsz" auto;
 }
 
 @layer utilities {

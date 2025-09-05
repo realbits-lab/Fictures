@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
 import { useStoryData } from "@/lib/hooks/useStoryData";
+import { useWritingProgress, useWritingSession } from "@/hooks/useStoryWriter";
 import { YAMLDataDisplay } from "./YAMLDataDisplay";
 import { StoryEditor } from "./StoryEditor";
 import { PartEditor } from "./PartEditor";
@@ -105,6 +106,29 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const { isValidating: isValidatingCurrentStory } = useStoryData(story.id);
   const [themePlanned, setThemePlanned] = useState(false);
   const [isSavingTheme, setIsSavingTheme] = useState(false);
+  
+  // Writing progress and session tracking
+  const writingProgress = useWritingProgress(
+    story.id, 
+    currentSelection.chapterId || null, 
+    currentSelection.sceneId || null
+  );
+  const writingSession = useWritingSession(story.id);
+  
+  // Track writing session
+  useEffect(() => {
+    // Start a writing session when component mounts
+    const session = writingSession.startSession();
+    console.log('✍️ Started writing session for:', story.title);
+    
+    // Cleanup: End session when component unmounts
+    return () => {
+      const result = writingSession.endSession();
+      if (result) {
+        console.log(`✅ Writing session ended: ${result.duration}ms, ${result.wordsWritten} words written`);
+      }
+    };
+  }, [story.id]);
 
   // Sync story state when prop changes
   useEffect(() => {
@@ -128,6 +152,15 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       setTargetStoryId(null);
     }
   }, [swrStory, isLoadingStory]);
+  
+  // Save writing position when selection changes
+  useEffect(() => {
+    writingProgress.saveWritingState({
+      chapterId: currentSelection.chapterId,
+      sceneId: currentSelection.sceneId,
+      lastEdited: new Date().toISOString(),
+    });
+  }, [currentSelection, writingProgress]);
 
   // Sample YAML data for demonstration
   const sampleStoryData = {
@@ -814,7 +847,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 <CardContent className="text-center py-8">
                   <div className="text-gray-500 dark:text-gray-400 mb-4">
                     <div className="text-4xl mb-4">📄</div>
-                    <h3 className="text-lg font-medium mb-2">No Chapter Data</h3>
+                    <h3 className="text-lg font-medium mb-2 text-[rgb(var(--card-foreground))]">No Chapter Data</h3>
                     <p>This chapter doesn't exist or hasn't been created yet.</p>
                     <p className="text-sm mt-2">Chapter ID: {currentSelection.chapterId}</p>
                   </div>
@@ -1069,7 +1102,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                     chapterData.scenes.map((scene, index) => (
                       <div 
                         key={scene.id} 
-                        className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white/50 dark:bg-gray-800/50 hover:bg-blue-50/80 dark:hover:bg-blue-900/20 cursor-pointer transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md"
+                        className="border border-[rgb(var(--border))] rounded-[var(--radius)] p-4 bg-[rgb(var(--card)/50%)] hover:bg-[rgb(var(--primary)/8%)] cursor-pointer transition-all duration-[var(--animate-duration)] hover:border-[rgb(var(--primary)/60%)] hover:shadow-[var(--shadow)]"
                         onClick={() => handleSelectionChange({
                           level: "scene",
                           storyId: story.id,
@@ -1079,15 +1112,15 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                         })}
                       >
                         <div className="flex items-start justify-between mb-2">
-                          <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                          <h4 className="text-sm font-medium text-[rgb(var(--card-foreground))] flex items-center gap-2">
                             <span>{scene.status === "completed" ? "✅" : scene.status === "in_progress" ? "⏳" : "📝"}</span>
                             Scene {index + 1}: {scene.title}
                           </h4>
-                          <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                          <span className="text-xs text-[rgb(var(--muted-foreground))] bg-[rgb(var(--muted))] px-2 py-1 rounded-[var(--radius-sm)]">                          
                             {scene.wordCount}w
                           </span>
                         </div>
-                        <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                        <div className="space-y-1 text-xs text-[rgb(var(--muted-foreground))]">
                           <div><strong>Goal:</strong> {scene.goal}</div>
                           <div><strong>Conflict:</strong> {scene.conflict}</div>
                           <div><strong>Outcome:</strong> {scene.outcome}</div>
@@ -1112,19 +1145,26 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                                 'Mark scene as in progress'
                               }
                             >
-                              {scene.status === 'planned' ? '▶️ Start' :
-                               scene.status === 'in_progress' ? '✅ Complete' :
-                               '🔄 Resume'}
+                              <div className="flex items-center gap-1">
+                                <span>
+                                  {scene.status === 'planned' ? '▶️ Start' :
+                                   scene.status === 'in_progress' ? '✅ Complete' :
+                                   '🔄 Resume'}
+                                </span>
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" opacity="0.6">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                </svg>
+                              </div>
                             </Button>
                           </div>
-                          <span className="text-xs text-blue-600 dark:text-blue-400 hover:underline">
+                          <span className="text-xs text-[rgb(var(--primary))] hover:underline">
                             Click to edit scene →
                           </span>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-[rgb(var(--muted-foreground))]">
                       <p className="text-sm mb-3">No scenes planned for this chapter</p>
                       <Button 
                         size="sm" 
@@ -1267,9 +1307,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-[rgb(var(--background))]">
       {/* Fixed Header */}
-      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200 dark:bg-gray-900/95 dark:border-gray-700">
+      <div className="sticky top-0 z-50 bg-[rgb(var(--background)/95%)] backdrop-blur-[var(--blur)] border-b border-[rgb(var(--border))]">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 md:gap-4">
@@ -1277,20 +1317,28 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 variant="ghost"
                 size="sm"
                 onClick={() => router.push('/stories')}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                className="flex items-center gap-2 text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))]"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
                 <span className="hidden sm:inline">Back to Stories</span>
               </Button>
-              <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 hidden sm:block"></div>
-              <h1 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">
+              <div className="w-px h-6 bg-[rgb(var(--border))] hidden sm:block"></div>
+              <h1 className="text-lg md:text-xl font-semibold text-[rgb(var(--foreground))] truncate font-[var(--font-heading)]">
                 {currentSelection.level === "story" ? "📖" : 
                  currentSelection.level === "part" ? "📚" :
                  currentSelection.level === "chapter" ? "📝" : "🎬"} {story.title}
               </h1>
               <Badge variant="outline">{currentSelection.level}</Badge>
+              
+              {/* Cache Status Indicators */}
+              {(isValidatingCurrentStory || isValidatingStory) && (
+                <div className="flex items-center gap-2 text-xs text-[rgb(var(--primary))] opacity-60">
+                  <div className="w-3 h-3 border-2 border-[rgb(var(--primary))] border-t-transparent rounded-full animate-spin"></div>
+                  <span className="hidden md:inline">Syncing...</span>
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-1 md:gap-3">
               {currentSelection.level === "story" && (
@@ -1298,7 +1346,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                   size="sm" 
                   onClick={handleVisibilityToggle} 
                   disabled={isLoading}
-                  className={story.isPublic ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-600 hover:bg-gray-700 text-white'}
+                  className={story.isPublic ? 'bg-[rgb(var(--primary))] hover:bg-[rgb(var(--primary)/90%)] text-[rgb(var(--primary-foreground))]' : 'bg-[rgb(var(--muted))] hover:bg-[rgb(var(--muted)/80%)] text-[rgb(var(--muted-foreground))]'}
                   title={
                     story.isPublic 
                       ? 'Story is public - visible in community hub. Click to make private.'
@@ -1307,7 +1355,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 >
                   {isLoading ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></div>
+                      <div className="w-4 h-4 border-2 border-[rgb(var(--primary-foreground))] border-t-transparent rounded-full animate-spin mr-1"></div>
                       <span className="hidden sm:inline">Updating...</span>
                     </>
                   ) : (
@@ -1316,6 +1364,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                       <span className="hidden sm:inline ml-1">
                         {story.isPublic ? 'Public' : 'Private'}
                       </span>
+                      <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" opacity="0.6">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                      </svg>
                     </>
                   )}
                 </Button>
@@ -1362,7 +1413,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                       size="sm" 
                       onClick={handlePublishToggle} 
                       disabled={isLoading}
-                      className={currentChapterStatus === 'published' ? 'bg-green-600 hover:bg-green-700 text-white' : ''}
+                      className={`${currentChapterStatus === 'published' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-[rgb(var(--primary))] hover:bg-[rgb(var(--primary)/90%)] text-[rgb(var(--primary-foreground))]'} rounded-[var(--radius)]`}
                       title={
                         currentChapterStatus === 'published' 
                           ? 'Unpublish chapter' 
@@ -1371,7 +1422,14 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                     >
                       {isLoading ? 
                         (currentChapterStatus === 'published' ? "⚡ Unpublishing..." : "⚡ Publishing...") : 
-                        (currentChapterStatus === 'published' ? "📤 Unpublish" : "🚀 Publish")}
+                        (
+                          <div className="flex items-center gap-1">
+                            <span>{currentChapterStatus === 'published' ? "📤 Unpublish" : "🚀 Publish"}</span>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" opacity="0.6">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                            </svg>
+                          </div>
+                        )}
                     </Button>
                   );
                 })()

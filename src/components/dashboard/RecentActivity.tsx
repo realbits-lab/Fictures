@@ -55,10 +55,10 @@ export function RecentActivity() {
             <div key={item.id} className="flex items-start gap-3">
               <span className="text-lg flex-shrink-0">{item.icon}</span>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-900 dark:text-gray-100">
+                <p className="text-sm text-[rgb(var(--foreground))]">
                   • {item.message}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-[rgb(var(--muted-foreground))] mt-1">
                   ({item.timestamp})
                 </p>
               </div>

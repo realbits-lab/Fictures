@@ -48,9 +48,17 @@ export function StoryCard({
 
   const getVisibilityBadge = () => {
     if (isPublic === true) {
-      return <Badge variant="success">Public</Badge>;
+      return (
+        <Badge variant="success">
+          Public
+        </Badge>
+      );
     } else {
-      return <Badge variant="default">Private</Badge>;
+      return (
+        <Badge variant="default">
+          Private
+        </Badge>
+      );
     }
   };
 

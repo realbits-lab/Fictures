@@ -26,25 +26,6 @@ export function CommunityStoryCard({ story }: CommunityStoryCardProps) {
         <CardContent className="p-0">
           {/* Cover Image */}
           <div className="relative aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-t-lg overflow-hidden">
-            {/* Activity Indicator */}
-            {story.isActive && (
-              <div className="absolute top-3 left-3 z-10">
-                <Badge variant="success" className="skeleton-shimmer text-xs">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
-                  Live
-                </Badge>
-              </div>
-            )}
-            
-            {/* Status Badge */}
-            <div className="absolute top-3 right-3 z-10">
-              <Badge 
-                variant={story.status === 'published' ? 'default' : 'secondary'}
-                className="text-xs"
-              >
-                {story.status === 'published' ? '🚀 Published' : '📝 Draft'}
-              </Badge>
-            </div>
             
             {/* Placeholder Cover */}
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">

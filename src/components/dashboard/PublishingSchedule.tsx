@@ -66,24 +66,24 @@ export function PublishingSchedule() {
           ) : error ? (
             // Error state
             <div className="text-center py-4">
-              <p className="text-sm text-gray-500">Unable to load schedule</p>
+              <p className="text-sm text-[rgb(var(--muted-foreground))]">Unable to load schedule</p>
             </div>
           ) : (
             // Display data
             (publishStatus?.upcomingSchedule || fallbackSchedule).map((item) => (
               <div key={item.id} className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-sm text-gray-900 dark:text-gray-100">
+                  <span className="font-medium text-sm text-[rgb(var(--foreground))]">
                     {item.day}: {item.title}
                   </span>
                   {item.time && (
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                    <span className="text-xs text-[rgb(var(--muted-foreground))]">
                       ⏰ {item.time}
                     </span>
                   )}
                 </div>
                 {item.story && (
-                  <p className="text-xs text-gray-600 dark:text-gray-400 pl-4">
+                  <p className="text-xs text-[rgb(var(--muted-foreground))] pl-4">
                     {item.story}
                   </p>
                 )}

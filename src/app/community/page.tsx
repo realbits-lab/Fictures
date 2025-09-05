@@ -231,12 +231,6 @@ export default function CommunityPage() {
                   </div>
                 )}
                 
-                {stats.activeToday > 0 && (
-                  <Badge variant="success" className="skeleton-shimmer">
-                    <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                    Live Discussions
-                  </Badge>
-                )}
               </div>
             </div>
 

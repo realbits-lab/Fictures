@@ -22,26 +22,26 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const baseStyles = [
       "inline-flex items-center justify-center gap-2",
       "rounded-lg font-medium transition-colors",
-      "focus:outline-none focus:ring-2 focus:ring-offset-2",
+      "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[rgb(var(--background))]",
       "disabled:opacity-50 disabled:cursor-not-allowed"
     ];
 
     const variants = {
       primary: [
-        "bg-blue-600 text-white",
-        "hover:bg-blue-700 focus:ring-blue-500"
+        "bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))]",
+        "hover:bg-[rgb(var(--primary)/90%)] focus:ring-[rgb(var(--primary)/50%)]"
       ],
       secondary: [
-        "bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100",
-        "hover:bg-gray-300 dark:hover:bg-gray-600 focus:ring-gray-500"
+        "bg-[rgb(var(--secondary))] text-[rgb(var(--secondary-foreground))]",
+        "hover:bg-[rgb(var(--secondary)/80%)] focus:ring-[rgb(var(--secondary)/50%)]"
       ],
       ghost: [
-        "bg-transparent text-gray-700 dark:text-gray-300",
-        "hover:bg-gray-100 dark:hover:bg-gray-800 focus:ring-gray-500"
+        "bg-transparent text-[rgb(var(--foreground))]",
+        "hover:bg-[rgb(var(--muted))] focus:ring-[rgb(var(--muted)/50%)]"
       ],
       destructive: [
-        "bg-red-600 text-white",
-        "hover:bg-red-700 focus:ring-red-500"
+        "bg-[rgb(var(--destructive))] text-[rgb(var(--destructive-foreground))]",
+        "hover:bg-[rgb(var(--destructive)/90%)] focus:ring-[rgb(var(--destructive)/50%)]"
       ]
     };
 

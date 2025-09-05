@@ -1,4 +1,5 @@
-import useSWR from 'swr';
+import { usePersistedSWR, CACHE_CONFIGS } from '@/lib/hooks/use-persisted-swr';
+import { useSession } from 'next-auth/react';
 
 interface Story {
   id: string;
@@ -49,51 +50,71 @@ const fetcher = async (url: string): Promise<Story> => {
   return res.json();
 };
 
-// Custom hook for fetching story data with SWR
+// Custom hook for fetching story data with enhanced SWR caching
 export function useStoryData(storyId: string | null) {
-  const { data, error, isLoading, isValidating, mutate } = useSWR(
-    storyId ? `/api/stories/${storyId}/structure` : null,
+  const { data: session, status: sessionStatus } = useSession();
+  
+  // Only fetch if we have a story ID and session is loaded
+  const shouldFetch = storyId && sessionStatus !== 'loading';
+  
+  const { data, error, isLoading, isValidating, mutate } = usePersistedSWR(
+    shouldFetch ? `/api/stories/${storyId}/write` : null,
     fetcher,
     {
-      // Cache for 5 minutes (300 seconds)
-      dedupingInterval: 300000,
-      // Revalidate when window regains focus
+      ...CACHE_CONFIGS.writing, // 30min TTL with localStorage persistence
+    },
+    {
       revalidateOnFocus: true,
-      // Revalidate when network reconnects
       revalidateOnReconnect: true,
-      // Retry on error up to 3 times
+      refreshInterval: 0, // No automatic polling during writing
+      dedupingInterval: 10 * 1000, // 10 seconds deduplication for rapid navigation
       errorRetryCount: 3,
-      // Retry interval starts at 5s
-      errorRetryInterval: 5000,
-      // Keep previous data while revalidating
-      keepPreviousData: true,
+      errorRetryInterval: 1000,
+      onError: (error) => {
+        console.error(`Story data error for ID ${storyId}:`, error);
+      },
+      onSuccess: (data) => {
+        console.log(`Story writing data cached for: ${data?.story?.title}`);
+      }
     }
   );
 
   return {
-    story: data,
-    isLoading,
+    story: data?.story,
+    isOwner: data?.isOwner ?? false,
+    metadata: data?.metadata,
+    isLoading: sessionStatus === 'loading' || isLoading,
     isValidating, // Background revalidation indicator
     error,
     mutate, // For manual revalidation
+    refreshStory: () => mutate(),
   };
 }
 
 // Hook for multiple stories (for sidebar list)
 export function useStoriesData(storyIds: string[]) {
-  const { data, error, isLoading } = useSWR(
-    storyIds.length > 0 ? ['stories', ...storyIds] : null,
+  const { data: session, status: sessionStatus } = useSession();
+  
+  const shouldFetch = storyIds.length > 0 && sessionStatus !== 'loading';
+  
+  const { data, error, isLoading } = usePersistedSWR(
+    shouldFetch ? ['stories', ...storyIds] : null,
     async () => {
       const promises = storyIds.map(id => 
-        fetcher(`/api/stories/${id}/structure`)
+        fetcher(`/api/stories/${id}/write`)
       );
-      return Promise.all(promises);
+      const results = await Promise.all(promises);
+      return results.map(result => result?.story).filter(Boolean);
     },
     {
-      dedupingInterval: 300000,
+      ...CACHE_CONFIGS.writing,
+      ttl: 10 * 60 * 1000, // 10min TTL for story lists (shorter than individual stories)
+    },
+    {
       revalidateOnFocus: false, // Don't revalidate all stories on focus
       revalidateOnReconnect: true,
       errorRetryCount: 2,
+      dedupingInterval: 30 * 1000, // 30 seconds for story lists
     }
   );
 
