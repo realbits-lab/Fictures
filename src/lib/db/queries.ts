@@ -415,6 +415,7 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
               status: sceneData.scenes?.status || ''
             });
             
+            // Create new scene object for each chapter to avoid reference sharing
             return {
               id: sceneData.scenes?.id || '',
               title: sceneData.scenes?.title || '',
@@ -423,9 +424,11 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
               goal: sceneData.scenes?.goal || '',
               conflict: sceneData.scenes?.conflict || '',
               outcome: sceneData.scenes?.outcome || '',
-              content: sceneContent
+              content: sceneContent,
+              orderIndex: sceneData.scenes?.orderIndex || 0
             };
-          });
+          })
+          .sort((a, b) => a.orderIndex - b.orderIndex);
 
         // Use database status if published, otherwise use calculated status
         const dynamicChapterStatus = calculateChapterStatus(chapterScenes);
@@ -470,6 +473,7 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
             status: sceneData.scenes?.status || ''
           });
           
+          // Create new scene object for each chapter to avoid reference sharing
           return {
             id: sceneData.scenes?.id || '',
             title: sceneData.scenes?.title || '',
@@ -478,9 +482,11 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
             goal: sceneData.scenes?.goal || '',
             conflict: sceneData.scenes?.conflict || '',
             outcome: sceneData.scenes?.outcome || '',
-            content: sceneContent
+            content: sceneContent,
+            orderIndex: sceneData.scenes?.orderIndex || 0
           };
-        });
+        })
+        .sort((a, b) => a.orderIndex - b.orderIndex);
 
       // Use database status if published, otherwise use calculated status
       const dynamicChapterStatus = calculateChapterStatus(chapterScenes);
@@ -579,8 +585,9 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
   };
 }
 
-// Get published stories for Browse page - only stories with actual published content
+// Get published stories for Browse page - optimized version with only 3 DB queries
 export async function getPublishedStories() {
+  // Query 1: Get all published stories with their authors
   const publishedStories = await db
     .select({
       id: stories.id,
@@ -603,50 +610,77 @@ export async function getPublishedStories() {
     ))
     .orderBy(desc(stories.updatedAt));
 
-  // Filter out stories that don't have substantial published content
+  if (publishedStories.length === 0) return [];
+
+  // Extract story IDs for subsequent queries
+  const storyIds = publishedStories.map(story => story.id);
+
+  // Query 2: Get all chapters for all published stories at once with aggregated data
+  const storyChapters = await db
+    .select({
+      storyId: chapters.storyId,
+      chapterId: chapters.id,
+      chapterWordCount: chapters.wordCount,
+      chapterStatus: chapters.status,
+      hasPublishedChapter: eq(chapters.status, 'published')
+    })
+    .from(chapters)
+    .where(chapters.storyId.in ? chapters.storyId.in(storyIds) : 
+           storyIds.map(id => eq(chapters.storyId, id)).reduce((a, b) => a.or ? a.or(b) : b));
+
+  // Query 3: Get all scenes for all chapters in published stories with aggregated data
+  const chapterIds = storyChapters.map(ch => ch.chapterId);
+  const chapterScenes = chapterIds.length > 0 ? await db
+    .select({
+      chapterId: scenes.chapterId,
+      sceneWordCount: scenes.wordCount
+    })
+    .from(scenes)
+    .where(chapterIds.length === 1 
+      ? eq(scenes.chapterId, chapterIds[0])
+      : scenes.chapterId.in 
+        ? scenes.chapterId.in(chapterIds)
+        : chapterIds.map(id => eq(scenes.chapterId, id)).reduce((a, b) => a.or ? a.or(b) : b)
+    ) : [];
+
+  // Process data to calculate word counts and filter valid stories
   const validPublishedStories = [];
-  
+
   for (const story of publishedStories) {
-    // Get the actual story structure to verify it has real content
-    const storyStructure = await getStoryWithStructure(story.id);
+    const storyChaps = storyChapters.filter(ch => ch.storyId === story.id);
     
-    if (storyStructure) {
-      // Calculate total word count from scenes or chapters
-      let totalWords = 0;
-      const allChapters = [...storyStructure.parts.flatMap(part => part.chapters), ...storyStructure.chapters];
+    // Check if story has any published chapters
+    const hasPublishedChapters = storyChaps.some(ch => ch.chapterStatus === 'published');
+    
+    if (!hasPublishedChapters) continue;
+
+    // Calculate total word count from scenes or chapters
+    let totalWords = 0;
+    
+    for (const chapter of storyChaps) {
+      const chapScenes = chapterScenes.filter(sc => sc.chapterId === chapter.chapterId);
       
-      for (const chapter of allChapters) {
-        if (chapter.scenes && chapter.scenes.length > 0) {
-          // Count from scenes if they exist and have content
-          const sceneWords = chapter.scenes.reduce((sum, scene) => sum + (scene.wordCount || 0), 0);
-          if (sceneWords > 0) {
-            totalWords += sceneWords;
-          } else {
-            // Fallback to chapter word count if scenes exist but have no word count
-            totalWords += chapter.wordCount || 0;
-          }
+      if (chapScenes.length > 0) {
+        // Use scene word counts if available
+        const sceneWords = chapScenes.reduce((sum, scene) => sum + (scene.sceneWordCount || 0), 0);
+        if (sceneWords > 0) {
+          totalWords += sceneWords;
         } else {
-          // Count from chapter word count when no scenes exist
-          totalWords += chapter.wordCount || 0;
+          // Fallback to chapter word count if scenes exist but have no word count
+          totalWords += chapter.chapterWordCount || 0;
         }
+      } else {
+        // Use chapter word count when no scenes exist
+        totalWords += chapter.chapterWordCount || 0;
       }
-      
-      // Check if any chapters are published - need to check actual database status
-      // since getStoryWithStructure overrides with calculated status
-      const rawChapters = await db
-        .select()
-        .from(chapters)
-        .where(eq(chapters.storyId, story.id));
-      
-      const hasPublishedChapters = rawChapters.some(chapter => chapter.status === 'published');
-      
-      // Only include stories with published chapters and substantial content (500+ words minimum)
-      if (hasPublishedChapters && totalWords >= 500) {
-        validPublishedStories.push({
-          ...story,
-          currentWordCount: totalWords // Use the actual calculated word count
-        });
-      }
+    }
+
+    // Only include stories with substantial content (500+ words minimum)
+    if (totalWords >= 500) {
+      validPublishedStories.push({
+        ...story,
+        currentWordCount: totalWords // Use the calculated word count
+      });
     }
   }
 

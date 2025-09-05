@@ -14,7 +14,7 @@ interface CacheConfig {
 // Default cache settings for different page types
 export const CACHE_CONFIGS = {
   writing: { ttl: 30 * 60 * 1000, version: '1.0.0' }, // 30min
-  reading: { ttl: 10 * 60 * 1000, version: '1.0.0' }, // 10min  
+  reading: { ttl: 30 * 60 * 1000, version: '1.0.0' }, // 30min (optimized from 10min)
   community: { ttl: 5 * 60 * 1000, version: '1.0.0' }, // 5min
   publish: { ttl: 60 * 60 * 1000, version: '1.0.0' }, // 1hr
   analytics: { ttl: 2 * 60 * 1000, version: '1.0.0' }, // 2min

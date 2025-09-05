@@ -14,7 +14,7 @@ const fetcher = async (url: string) => {
 // Writing page hooks
 export function useUserStories() {
   return usePersistedSWR(
-    '/api/stories/user',
+    '/api/stories',
     fetcher,
     CACHE_CONFIGS.writing,
     {
@@ -67,10 +67,11 @@ export function usePublishedStories() {
     fetcher,
     CACHE_CONFIGS.reading,
     {
-      revalidateOnFocus: true,
+      revalidateOnFocus: false, // Optimized: Don't revalidate on tab focus since data is static
       revalidateOnReconnect: true,
-      refreshInterval: 5 * 60 * 1000, // Refresh every 5 minutes
-      dedupingInterval: 30 * 1000, // Dedupe for 30 seconds
+      refreshInterval: 15 * 60 * 1000, // Optimized: Refresh every 15 minutes instead of 5
+      dedupingInterval: 2 * 60 * 1000, // Optimized: Extended to 2 minutes for better deduplication
+      staleTime: 10 * 60 * 1000, // Keep data fresh for 10 minutes before considering stale
       onSuccess: (data) => {
         console.log('✅ Published stories loaded:', data?.stories?.length || 0, 'stories');
       },

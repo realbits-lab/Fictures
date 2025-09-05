@@ -9,7 +9,7 @@ import { StoryEditor } from "./StoryEditor";
 import { PartEditor } from "./PartEditor";
 import { ChapterEditor } from "./ChapterEditor";
 import { SceneEditor } from "./SceneEditor";
-import { StoryListSidebar } from "./StoryListSidebar";
+import { StoryStructureSidebar } from "./StoryStructureSidebar";
 
 interface Story {
   id: string;
@@ -79,7 +79,7 @@ interface AllStoryListItem {
 
 interface UnifiedWritingEditorProps {
   story: Story;
-  allStories: AllStoryListItem[];
+  allStories?: AllStoryListItem[];
   initialSelection?: Selection;
 }
 
@@ -1383,18 +1383,14 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
       <div className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Sidebar - Unified Story Navigation */}
+          {/* Left Sidebar - Story Structure Navigation */}
           <div className="space-y-6">
-            <StoryListSidebar 
-              stories={allStories}
-              currentStory={story}
+            <StoryStructureSidebar 
+              story={story}
               currentSelection={currentSelection}
               onSelectionChange={handleSelectionChange}
-              loadingStoryId={targetStoryId}
               validatingStoryId={
-                (isValidatingStory && targetStoryId === story.id) || isValidatingCurrentStory 
-                  ? story.id 
-                  : null
+                isValidatingCurrentStory ? story.id : null
               }
             />
           </div>

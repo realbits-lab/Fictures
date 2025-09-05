@@ -67,7 +67,7 @@ export function DashboardClient() {
   const { data, isLoading, isValidating, error, mutate: refreshStories } = useUserStories();
   
   // Transform data to match expected format
-  const stories = data?.success ? data.stories : [];
+  const stories = data?.stories || [];
 
   // Show loading state
   if (!session?.user?.id) {
