@@ -11,7 +11,7 @@ export function AIAssistantWidget() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+        <p className="text-sm text-[rgb(var(--muted-foreground))] leading-relaxed">
           &ldquo;Ready to help with Shadow Keeper Part 3 development. Shall we review character arcs and plan Part 4?&rdquo;
         </p>
       </CardContent>

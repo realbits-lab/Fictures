@@ -1,11 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useSession } from 'next-auth/react';
-import { SkeletonLoader } from "@/components/ui";
+import { SkeletonLoader, Skeleton } from "@/components/ui";
 import { usePublishedStories } from "@/lib/hooks/use-page-cache";
-import { Skeleton } from "@/components/ui";
 import { StoryGrid } from "./StoryGrid";
+import { cacheManager } from "@/lib/hooks/use-persisted-swr";
 
 // Skeleton component for story cards
 function StoryCardSkeleton() {
@@ -67,20 +67,81 @@ function StoriesSkeleton() {
 export function BrowseClient() {
   const { data: session } = useSession();
   const { data, isLoading, isValidating, error, mutate } = usePublishedStories();
+  const [showCacheInfo, setShowCacheInfo] = useState(false);
   
   const stories = data?.stories || [];
   const count = data?.count || 0;
+  
+  // Get cache health status
+  const cacheHealth = cacheManager.getCacheHealth('reading');
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">      
+    <div className="min-h-screen bg-[rgb(var(--background))]">      
       <div className="container mx-auto px-4 py-8">
         {/* Background validation indicator in top right */}
         {isValidating && !isLoading && (
-          <div className="fixed top-20 right-4 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 px-3 py-2">
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
+          <div className="fixed top-20 right-4 z-50 bg-[rgb(var(--background))] rounded-lg shadow-lg border border-[rgb(var(--border))] px-3 py-2">
+            <div className="flex items-center gap-2 text-sm text-[rgb(var(--muted-foreground))]">
+              <div className="w-4 h-4 border-2 border-[rgb(var(--primary)/30%)] border-t-[rgb(var(--primary))] rounded-full animate-spin" />
               <span>Refreshing stories...</span>
             </div>
+          </div>
+        )}
+
+        {/* Cache status indicator - only for manager role */}
+        {!isLoading && stories.length > 0 && session?.user?.role === 'manager' && (
+          <div className="fixed top-20 right-4 z-40">
+            <div className="flex items-center gap-2">
+              {/* Cache health indicator */}
+              <div 
+                className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full cursor-pointer transition-all duration-200 hover:scale-105 ${
+                  cacheHealth === 'fresh' ? 'bg-emerald-500 text-white' : 
+                  cacheHealth === 'stale' ? 'bg-amber-500 text-white' : 
+                  cacheHealth === 'expired' ? 'bg-red-500 text-white' : 
+                  'bg-[rgb(var(--muted))] text-[rgb(var(--muted-foreground))]'
+                }`}
+                onClick={() => setShowCacheInfo(!showCacheInfo)}
+                title={`Cache status: ${cacheHealth} - Click for details`}
+              >
+                <div className="w-2 h-2 rounded-full bg-white" />
+                <span className="font-medium">
+                  {cacheHealth === 'fresh' ? '📦 Fresh' : 
+                   cacheHealth === 'stale' ? '⏳ Stale' : 
+                   cacheHealth === 'expired' ? '🔄 Expired' : '❓ Unknown'}
+                </span>
+              </div>
+              
+              {/* Cache management button */}
+              <button
+                onClick={() => {
+                  cacheManager.clearPageCache('reading');
+                  mutate();
+                }}
+                className="text-xs px-2 py-1 bg-[rgb(var(--secondary))] hover:bg-[rgb(var(--secondary)/80%)] text-[rgb(var(--secondary-foreground))] rounded-full transition-colors"
+                title="Clear cache and refresh"
+              >
+                🗑️ Clear Cache
+              </button>
+            </div>
+
+            {/* Cache info panel */}
+            {showCacheInfo && (
+              <div className="absolute top-12 right-0 bg-[rgb(var(--background))] rounded-lg shadow-xl border border-[rgb(var(--border))] p-4 w-64 text-sm">
+                <h4 className="font-medium mb-2 text-[rgb(var(--foreground))]">Cache Status</h4>
+                <div className="space-y-1 text-[rgb(var(--muted-foreground))]">
+                  <div>Status: <span className="font-medium text-[rgb(var(--foreground))]">{cacheHealth}</span></div>
+                  <div>Stories: <span className="font-medium text-[rgb(var(--foreground))]">{stories.length}</span></div>
+                  <div>TTL: <span className="font-medium text-[rgb(var(--foreground))]">1 hour</span></div>
+                  <div>Source: <span className="font-medium text-[rgb(var(--foreground))]">localStorage</span></div>
+                </div>
+                <button
+                  onClick={() => setShowCacheInfo(false)}
+                  className="mt-2 text-xs text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))] transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -93,15 +154,15 @@ export function BrowseClient() {
           /* Error state */
           <div className="text-center py-12">
             <div className="text-4xl mb-4">⚠️</div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+            <h3 className="text-lg font-medium text-[rgb(var(--foreground))] mb-2">
               Failed to load stories
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-[rgb(var(--muted-foreground))] mb-4">
               {error.message || "Something went wrong while loading stories."}
             </p>
             <button 
               onClick={() => mutate()} 
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] rounded-lg hover:bg-[rgb(var(--primary)/80%)] transition-colors disabled:opacity-50"
               disabled={isValidating}
             >
               {isValidating ? 'Retrying...' : 'Try Again'}

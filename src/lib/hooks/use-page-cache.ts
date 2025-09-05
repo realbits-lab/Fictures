@@ -72,11 +72,11 @@ export function usePublishedStories() {
     {
       revalidateOnFocus: false, // Optimized: Don't revalidate on tab focus since data is static
       revalidateOnReconnect: true,
-      refreshInterval: 15 * 60 * 1000, // Optimized: Refresh every 15 minutes instead of 5
-      dedupingInterval: 2 * 60 * 1000, // Optimized: Extended to 2 minutes for better deduplication
-      staleTime: 10 * 60 * 1000, // Keep data fresh for 10 minutes before considering stale
+      refreshInterval: 30 * 60 * 1000, // Optimized: Refresh every 30 minutes (published stories don't change frequently)
+      dedupingInterval: 5 * 60 * 1000, // Optimized: Extended to 5 minutes for better deduplication
+      staleTime: 15 * 60 * 1000, // Keep data fresh for 15 minutes before considering stale
       onSuccess: (data) => {
-        console.log('✅ Published stories loaded:', data?.stories?.length || 0, 'stories');
+        console.log('✅ Published stories loaded from', data?.fromCache ? 'localStorage cache' : 'API:', data?.stories?.length || 0, 'stories');
       },
       onError: (error) => {
         console.error('❌ Published stories fetch failed:', error);

@@ -165,8 +165,8 @@ export default function NotificationsPage() {
             <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
               Email Frequency
             </label>
-            <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-              <option selected>Immediately</option>
+            <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" defaultValue="Immediately">
+              <option>Immediately</option>
               <option>Daily Digest</option>
               <option>Weekly Digest</option>
               <option>Never</option>
@@ -236,8 +236,8 @@ export default function NotificationsPage() {
               <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
                 Time Zone
               </label>
-              <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-                <option selected>UTC-8 (Pacific Time)</option>
+              <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" defaultValue="UTC-8 (Pacific Time)">
+                <option>UTC-8 (Pacific Time)</option>
                 <option>UTC-5 (Eastern Time)</option>
                 <option>UTC+0 (GMT)</option>
                 <option>UTC+9 (Japan Time)</option>

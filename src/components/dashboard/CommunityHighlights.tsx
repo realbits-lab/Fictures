@@ -12,11 +12,11 @@ export function CommunityHighlights() {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <p className="text-sm text-gray-900 dark:text-gray-100 mb-2">
+          <div className="p-3 bg-[rgb(var(--muted)/50%)] rounded-lg">
+            <p className="text-sm text-[rgb(var(--foreground))] mb-2">
               &ldquo;Theory about Maya&rsquo;s true power origin&rdquo;
             </p>
-            <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
+            <div className="flex items-center gap-4 text-xs text-[rgb(var(--muted-foreground))]">
               <span>+847 💬</span>
               <span>+234 ❤️</span>
             </div>

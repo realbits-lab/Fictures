@@ -2,8 +2,7 @@
 
 import React from "react";
 import { useAppStats } from "@/lib/hooks/use-page-cache";
-import { SkeletonLoader } from "@/components/ui";
-import { Skeleton } from "@/components/ui";
+import { SkeletonLoader, Skeleton } from "@/components/ui";
 
 function StatsCardSkeleton() {
   return (

@@ -59,9 +59,9 @@ export default function DataAnalyticsPage() {
             <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
               Analytics Dashboard Layout
             </label>
-            <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" defaultValue="Standard View">
               <option>Compact View</option>
-              <option selected>Standard View</option>
+              <option>Standard View</option>
               <option>Detailed View</option>
               <option>Custom Layout</option>
             </select>
@@ -84,11 +84,11 @@ export default function DataAnalyticsPage() {
             <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
               Analytics History
             </label>
-            <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" defaultValue="1 Year">
               <option>1 Month</option>
               <option>3 Months</option>
               <option>6 Months</option>
-              <option selected>1 Year</option>
+              <option>1 Year</option>
               <option>2 Years</option>
               <option>Forever</option>
             </select>
@@ -101,8 +101,8 @@ export default function DataAnalyticsPage() {
             <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
               Export Format
             </label>
-            <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-              <option selected>CSV</option>
+            <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" defaultValue="CSV">
+              <option>CSV</option>
               <option>JSON</option>
               <option>Excel (.xlsx)</option>
               <option>PDF Report</option>

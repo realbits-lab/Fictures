@@ -17,9 +17,9 @@ export default function AIAssistantPage() {
               <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
                 AI Writing Style
               </label>
-              <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+              <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" defaultValue="Balanced & Constructive">
                 <option>Creative & Inspirational</option>
-                <option selected>Balanced & Constructive</option>
+                <option>Balanced & Constructive</option>
                 <option>Technical & Analytical</option>
                 <option>Minimal Suggestions</option>
               </select>
@@ -28,9 +28,9 @@ export default function AIAssistantPage() {
               <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
                 AI Response Speed
               </label>
-              <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+              <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" defaultValue="Balanced">
                 <option>Fast (Less detailed)</option>
-                <option selected>Balanced</option>
+                <option>Balanced</option>
                 <option>Thorough (More detailed)</option>
               </select>
             </div>
@@ -110,8 +110,8 @@ export default function AIAssistantPage() {
             <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
               Primary AI Model
             </label>
-            <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-              <option selected>Grok-2 (Default)</option>
+            <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" defaultValue="Grok-2 (Default)">
+              <option>Grok-2 (Default)</option>
               <option>GPT-4</option>
               <option>Claude-3.5</option>
               <option>Gemini Pro</option>

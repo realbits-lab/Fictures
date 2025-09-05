@@ -160,38 +160,135 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
   }
 
   return (
-    <div data-testid="chapter-reader" className="absolute inset-0 top-16 bg-white dark:bg-gray-900 flex">
-      {/* Left Sidebar - Chapter Navigation */}
-      <div className="w-80 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col h-full">
-        {/* Story Header */}
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            {story.title}
-          </h1>
-          {story.description && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-              {story.description}
-            </p>
-          )}
-          <div className="flex flex-wrap gap-2 text-xs">
-            <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-              {story.genre || 'No genre'}
-            </span>
-            <span className="text-gray-500 dark:text-gray-400">
-              📚 {availableChapters.length} chapters
-            </span>
+    <div data-testid="chapter-reader" className="absolute inset-0 top-16 bg-white dark:bg-gray-900 flex flex-col">
+      {/* Second GNB - Reading Navigation Header */}
+      <div className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between px-6 py-3">
+          {/* Left: Story Info & Chapter Navigation */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Link 
+                href="/browse"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+              >
+                ← Browse
+              </Link>
+              <span className="text-gray-300 dark:text-gray-600">/</span>
+              <span className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-xs">
+                {story.title}
+              </span>
+            </div>
+            {selectedChapter && (
+              <div className="flex items-center gap-2">
+                <span className="text-gray-300 dark:text-gray-600">/</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">{getStatusIcon(selectedChapter.status)}</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate max-w-sm">
+                    Ch {getGlobalChapterNumber(selectedChapter.id)}: {selectedChapter.title}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right: Reading Controls */}
+          <div className="flex items-center gap-3">
+            {/* Chapter Navigation */}
+            {(() => {
+              const currentIndex = availableChapters.findIndex(ch => ch.id === selectedChapterId);
+              const prevChapter = currentIndex > 0 ? availableChapters[currentIndex - 1] : null;
+              const nextChapter = currentIndex < availableChapters.length - 1 ? availableChapters[currentIndex + 1] : null;
+              
+              return (
+                <>
+                  <button
+                    onClick={() => prevChapter && setSelectedChapterId(prevChapter.id)}
+                    disabled={!prevChapter}
+                    className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    title={prevChapter ? `Previous: ${prevChapter.title}` : 'No previous chapter'}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  
+                  <span className="text-sm text-gray-500 dark:text-gray-400 px-2">
+                    {currentIndex + 1} of {availableChapters.length}
+                  </span>
+                  
+                  <button
+                    onClick={() => nextChapter && setSelectedChapterId(nextChapter.id)}
+                    disabled={!nextChapter}
+                    className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    title={nextChapter ? `Next: ${nextChapter.title}` : 'No next chapter'}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </>
+              );
+            })()}
+
+            {/* Reading Progress */}
+            {selectedChapter && (
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-xs text-gray-600 dark:text-gray-400">
+                <span>📖</span>
+                <span>{selectedChapter.wordCount || 0} words</span>
+              </div>
+            )}
+
+            {/* Share Button */}
+            <button
+              onClick={() => {
+                if (typeof window !== 'undefined' && selectedChapter) {
+                  navigator.clipboard.writeText(window.location.href);
+                }
+              }}
+              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              title="Copy chapter link"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+              </svg>
+            </button>
           </div>
         </div>
+      </div>
 
-        {/* Chapter List */}
-        <div 
-          ref={sidebarScrollRef}
-          className="flex-1 overflow-y-auto min-h-0"
-        >
-          <div className="p-4">
-            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">
-              Chapters
-            </h2>
+      {/* Main Content Container */}
+      <div className="flex flex-1 min-h-0">
+        {/* Left Sidebar - Chapter Navigation */}
+        <div className="w-80 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col h-full">
+          {/* Story Header */}
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              {story.title}
+            </h1>
+            {story.description && (
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                {story.description}
+              </p>
+            )}
+            <div className="flex flex-wrap gap-2 text-xs">
+              <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                {story.genre || 'No genre'}
+              </span>
+              <span className="text-gray-500 dark:text-gray-400">
+                📚 {availableChapters.length} chapters
+              </span>
+            </div>
+          </div>
+
+          {/* Chapter List */}
+          <div 
+            ref={sidebarScrollRef}
+            className="flex-1 overflow-y-auto min-h-0"
+          >
+            <div className="p-4">
+              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">
+                Chapters
+              </h2>
             
             {/* Chapters in Parts */}
             {story.parts.map((part) => {
@@ -272,133 +369,134 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
                   })}
               </div>
             )}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+            <Link 
+              href="/browse"
+              className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+            >
+              ← Back to Browse
+            </Link>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-          <Link 
-            href="/browse"
-            className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-          >
-            ← Back to Browse
-          </Link>
-        </div>
-      </div>
+        {/* Main Content Area */}
+        <div 
+          ref={mainContentRef}
+          className="flex-1 h-full overflow-y-auto min-h-0"
+          style={{
+            overscrollBehavior: 'contain',
+            WebkitOverflowScrolling: 'auto'
+          }}
+        >
+          {selectedChapter ? (
+            <article className="max-w-4xl mx-auto px-8 py-8">
+              {/* Chapter Header */}
+              <header className="mb-8 border-b border-gray-200 dark:border-gray-800 pb-6">
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-3">
+                  <span>{getStatusIcon(selectedChapter.status)}</span>
+                  <span>Chapter {getGlobalChapterNumber(selectedChapter.id)}</span>
+                  {selectedChapter.status !== 'published' && (
+                    <span className="px-2 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 text-xs">
+                      {selectedChapter.status}
+                    </span>
+                  )}
+                </div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                  {selectedChapter.title}
+                </h1>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {selectedChapter.wordCount || 0} words
+                </div>
+              </header>
 
-      {/* Main Content Area */}
-      <div 
-        ref={mainContentRef}
-        className="flex-1 h-full overflow-y-auto min-h-0"
-        style={{
-          overscrollBehavior: 'contain',
-          WebkitOverflowScrolling: 'auto'
-        }}
-      >
-        {selectedChapter ? (
-          <article className="max-w-4xl mx-auto px-8 py-8">
-            {/* Chapter Header */}
-            <header className="mb-8 border-b border-gray-200 dark:border-gray-800 pb-6">
-              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-3">
-                <span>{getStatusIcon(selectedChapter.status)}</span>
-                <span>Chapter {getGlobalChapterNumber(selectedChapter.id)}</span>
-                {selectedChapter.status !== 'published' && (
-                  <span className="px-2 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 text-xs">
-                    {selectedChapter.status}
-                  </span>
-                )}
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-                {selectedChapter.title}
-              </h1>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                {selectedChapter.wordCount || 0} words
-              </div>
-            </header>
-
-            {/* Chapter Content */}
-            <div className="prose prose-lg dark:prose-invert max-w-none">
-              {selectedChapter.scenes && selectedChapter.scenes.length > 0 ? (
-                <>
-                  {console.log(`📖 Rendering ${selectedChapter.scenes.length} scenes for chapter: ${selectedChapter.title}`)}
-                  {selectedChapter.scenes.map((scene, index) => (
-                    <section key={scene.id} className="mb-8">
-                      {selectedChapter.scenes!.length > 1 && (
-                        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4 opacity-75">
-                          {scene.title}
-                        </h3>
-                      )}
-                      <div className="whitespace-pre-wrap leading-relaxed">
-                        {scene.content || (
-                          <p className="text-gray-500 dark:text-gray-400 italic">
-                            This scene is empty.
+              {/* Chapter Content */}
+              <div className="prose prose-lg dark:prose-invert max-w-none">
+                {selectedChapter.scenes && selectedChapter.scenes.length > 0 ? (
+                  <>
+                    {console.log(`📖 Rendering ${selectedChapter.scenes.length} scenes for chapter: ${selectedChapter.title}`)}
+                    {selectedChapter.scenes.map((scene, index) => (
+                      <section key={scene.id} className="mb-8">
+                        {selectedChapter.scenes!.length > 1 && (
+                          <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4 opacity-75">
+                            {scene.title}
+                          </h3>
+                        )}
+                        <div className="whitespace-pre-wrap leading-relaxed">
+                          {scene.content || (
+                            <p className="text-gray-500 dark:text-gray-400 italic">
+                              This scene is empty.
+                            </p>
+                          )}
+                        </div>
+                      </section>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    {console.log(`⚠️  Chapter has no scenes: ${selectedChapter.title} - Architecture violation!`)}
+                    <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                      <div className="max-w-md mx-auto">
+                        <h3 className="text-lg font-semibold mb-4">📝 Chapter Not Ready</h3>
+                        <p className="text-sm mb-4">
+                          This chapter hasn't been structured into scenes yet. 
+                          Chapters must be organized into scenes to be readable.
+                        </p>
+                        {isOwner && (
+                          <p className="text-xs text-gray-400">
+                            As the author, please use the writing interface to create scenes for this chapter.
                           </p>
                         )}
                       </div>
-                    </section>
-                  ))}
-                </>
-              ) : (
-                <>
-                  {console.log(`⚠️  Chapter has no scenes: ${selectedChapter.title} - Architecture violation!`)}
-                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                    <div className="max-w-md mx-auto">
-                      <h3 className="text-lg font-semibold mb-4">📝 Chapter Not Ready</h3>
-                      <p className="text-sm mb-4">
-                        This chapter hasn't been structured into scenes yet. 
-                        Chapters must be organized into scenes to be readable.
-                      </p>
-                      {isOwner && (
-                        <p className="text-xs text-gray-400">
-                          As the author, please use the writing interface to create scenes for this chapter.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Navigation */}
-            <div className="mt-12 pt-6 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center">
-              {(() => {
-                const currentIndex = availableChapters.findIndex(ch => ch.id === selectedChapterId);
-                const prevChapter = currentIndex > 0 ? availableChapters[currentIndex - 1] : null;
-                const nextChapter = currentIndex < availableChapters.length - 1 ? availableChapters[currentIndex + 1] : null;
-                
-                return (
-                  <>
-                    <div>
-                      {prevChapter && (
-                        <button
-                          onClick={() => setSelectedChapterId(prevChapter.id)}
-                          className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-                        >
-                          ← Previous: {prevChapter.title}
-                        </button>
-                      )}
-                    </div>
-                    
-                    <div>
-                      {nextChapter && (
-                        <button
-                          onClick={() => setSelectedChapterId(nextChapter.id)}
-                          className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-                        >
-                          Next: {nextChapter.title} →
-                        </button>
-                      )}
                     </div>
                   </>
-                );
-              })()}
+                )}
+              </div>
+
+              {/* Navigation */}
+              <div className="mt-12 pt-6 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                {(() => {
+                  const currentIndex = availableChapters.findIndex(ch => ch.id === selectedChapterId);
+                  const prevChapter = currentIndex > 0 ? availableChapters[currentIndex - 1] : null;
+                  const nextChapter = currentIndex < availableChapters.length - 1 ? availableChapters[currentIndex + 1] : null;
+                  
+                  return (
+                    <>
+                      <div>
+                        {prevChapter && (
+                          <button
+                            onClick={() => setSelectedChapterId(prevChapter.id)}
+                            className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                          >
+                            ← Previous: {prevChapter.title}
+                          </button>
+                        )}
+                      </div>
+                      
+                      <div>
+                        {nextChapter && (
+                          <button
+                            onClick={() => setSelectedChapterId(nextChapter.id)}
+                            className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                          >
+                            Next: {nextChapter.title} →
+                          </button>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </article>
+          ) : (
+            <div className="h-full flex items-center justify-center">
+              <p className="text-gray-500 dark:text-gray-400">Select a chapter to start reading</p>
             </div>
-          </article>
-        ) : (
-          <div className="h-full flex items-center justify-center">
-            <p className="text-gray-500 dark:text-gray-400">Select a chapter to start reading</p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
