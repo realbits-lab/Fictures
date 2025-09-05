@@ -86,15 +86,15 @@ export default function AccountSettingsPage() {
     return (
       <div className="text-center py-12">
         <div className="text-4xl mb-4">⚠️</div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+        <h3 className="text-lg font-medium text-[rgb(var(--foreground))] mb-2">
           Failed to load settings
         </h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
+        <p className="text-[rgb(var(--muted-foreground))] mb-4">
           {error.message || "Something went wrong while loading your settings."}
         </p>
         <button 
           onClick={() => refreshSettings()} 
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] rounded-lg hover:bg-[rgb(var(--primary)/90%)] transition-colors"
         >
           Try Again
         </button>
@@ -112,45 +112,45 @@ export default function AccountSettingsPage() {
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+              <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
                 Display Name
               </label>
               <input
                 type="text"
                 defaultValue={userSettings?.displayName || session?.user?.name || ""}
-                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="w-full px-3 py-2 border border-[rgb(var(--input))] rounded-lg bg-[rgb(var(--background))] text-[rgb(var(--foreground))]"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+              <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
                 Email Address
               </label>
               <input
                 type="email"
                 defaultValue={session?.user?.email || ""}
                 disabled
-                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+                className="w-full px-3 py-2 border border-[rgb(var(--input))] rounded-lg bg-[rgb(var(--muted))] text-[rgb(var(--muted-foreground))]"
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-[rgb(var(--muted-foreground))] mt-1">
                 Email cannot be changed as it&apos;s managed by OAuth provider
               </p>
             </div>
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+            <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
               Bio
             </label>
             <textarea
               rows={3}
               defaultValue={userSettings?.bio || ""}
               placeholder="Tell us about yourself as a writer..."
-              className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+              className="w-full px-3 py-2 border border-[rgb(var(--input))] rounded-lg bg-[rgb(var(--background))] text-[rgb(var(--foreground))]"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+            <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
               Profile Image
             </label>
             <div className="flex items-center gap-4">
@@ -168,13 +168,13 @@ export default function AccountSettingsPage() {
                   }}
                 />
               ) : (
-                <div className="w-16 h-16 rounded-full bg-blue-500 dark:bg-blue-600 flex items-center justify-center">
-                  <span className="text-2xl font-semibold text-white">
+                <div className="w-16 h-16 rounded-full bg-[rgb(var(--primary))] flex items-center justify-center">
+                  <span className="text-2xl font-semibold text-[rgb(var(--primary-foreground))]">
                     {session?.user?.name?.[0]?.toUpperCase() || 'U'}
                   </span>
                 </div>
               )}
-              <div className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="text-sm text-[rgb(var(--muted-foreground))]">
                 Profile image is managed by your OAuth provider (Google)
               </div>
             </div>
@@ -195,14 +195,14 @@ export default function AccountSettingsPage() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="font-medium text-gray-600 dark:text-gray-400">Account Type:</span>
-              <div className="text-gray-900 dark:text-gray-100 capitalize">
+              <span className="font-medium text-[rgb(var(--muted-foreground))]">Account Type:</span>
+              <div className="text-[rgb(var(--foreground))] capitalize">
                 {userSettings?.accountType || session?.user?.role || 'User'}
               </div>
             </div>
             <div>
-              <span className="font-medium text-gray-600 dark:text-gray-400">Member Since:</span>
-              <div className="text-gray-900 dark:text-gray-100">
+              <span className="font-medium text-[rgb(var(--muted-foreground))]">Member Since:</span>
+              <div className="text-[rgb(var(--foreground))]">
                 {userSettings?.memberSince ? new Date(userSettings.memberSince).toLocaleDateString() : new Date().toLocaleDateString()}
               </div>
             </div>

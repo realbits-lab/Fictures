@@ -56,7 +56,7 @@ export function GlobalNavigation() {
   });
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:border-gray-700 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/60">
+    <header className="sticky top-0 z-50 w-full border-b border-[rgb(var(--border))] bg-[rgb(var(--background))/95%] backdrop-blur supports-[backdrop-filter]:bg-[rgb(var(--background))/60%]">
       <nav className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4">
         {/* Logo */}
         <Link 
@@ -64,8 +64,8 @@ export function GlobalNavigation() {
           className={cn(
             "flex items-center space-x-2 text-xl font-bold transition-colors px-2 py-1 rounded-lg",
             pathname === "/"
-              ? "bg-blue-100 text-blue-900 dark:bg-blue-900/20 dark:text-blue-100"
-              : "text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
+              ? "bg-[rgb(var(--primary)/10%)] text-[rgb(var(--primary))]"
+              : "text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))]"
           )}
         >
           <span className="text-2xl">📖</span>
@@ -81,8 +81,8 @@ export function GlobalNavigation() {
               className={cn(
                 "flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                 isActiveRoute(item.href)
-                  ? "bg-blue-100 text-blue-900 dark:bg-blue-900/20 dark:text-blue-100"
-                  : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                  ? "bg-[rgb(var(--primary)/10%)] text-[rgb(var(--primary))]"
+                  : "text-[rgb(var(--muted-foreground))] hover:bg-[rgb(var(--muted))]"
               )}
             >
               <span className="text-lg">{item.icon}</span>
@@ -105,9 +105,9 @@ export function GlobalNavigation() {
           >
             <span className="sr-only">Open menu</span>
             <div className="flex flex-col space-y-1">
-              <div className="w-4 h-0.5 bg-gray-900 dark:bg-gray-100" />
-              <div className="w-4 h-0.5 bg-gray-900 dark:bg-gray-100" />
-              <div className="w-4 h-0.5 bg-gray-900 dark:bg-gray-100" />
+              <div className="w-4 h-0.5 bg-[rgb(var(--foreground))]" />
+              <div className="w-4 h-0.5 bg-[rgb(var(--foreground))]" />
+              <div className="w-4 h-0.5 bg-[rgb(var(--foreground))]" />
             </div>
           </Button>
         </div>
@@ -124,7 +124,7 @@ function AuthSection() {
   if (status === 'loading') {
     return (
       <div className="flex items-center space-x-2 px-3 py-2">
-        <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+        <div className="w-4 h-4 border-2 border-[rgb(var(--muted))] border-t-[rgb(var(--primary))] rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -137,7 +137,7 @@ function AuthSection() {
     <div className="relative">
       <button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+        className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-[rgb(var(--muted-foreground))] hover:bg-[rgb(var(--muted))]"
       >
         {session.user?.image && !imageError ? (
           <img
@@ -153,7 +153,7 @@ function AuthSection() {
             }}
           />
         ) : (
-          <div className="w-6 h-6 rounded-full bg-blue-500 dark:bg-blue-600 flex items-center justify-center text-xs font-semibold text-white">
+          <div className="w-6 h-6 rounded-full bg-[rgb(var(--primary))] flex items-center justify-center text-xs font-semibold text-[rgb(var(--primary-foreground))]">
             {session.user?.name?.[0]?.toUpperCase() || 'U'}
           </div>
         )}
@@ -164,13 +164,13 @@ function AuthSection() {
       </button>
       
       {isDropdownOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+        <div className="absolute right-0 mt-2 w-48 bg-[rgb(var(--popover))] border border-[rgb(var(--border))] rounded-lg shadow-lg z-50">
           {profileMenuItems.map((item, index) => (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700",
+                "flex items-center px-4 py-2 text-sm text-[rgb(var(--popover-foreground))] hover:bg-[rgb(var(--muted))]",
                 index === 0 && "rounded-t-lg",
                 index === profileMenuItems.length - 1 && "rounded-b-lg"
               )}
@@ -180,7 +180,7 @@ function AuthSection() {
               {item.label}
             </Link>
           ))}
-          <div className="border-t border-gray-200 dark:border-gray-600">
+          <div className="border-t border-[rgb(var(--border))]">
             <div className="px-4 py-2">
               <SignOutButton />
             </div>
