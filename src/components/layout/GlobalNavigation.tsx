@@ -46,7 +46,12 @@ export function GlobalNavigation() {
       return session?.user?.role === 'writer' || session?.user?.role === 'manager';
     }
     
-    // Reading and Community are visible to all authenticated users
+    // Reading and Community are visible to all users (authenticated or anonymous)
+    if (item.href === '/browse' || item.href === '/community') {
+      return true;
+    }
+    
+    // Settings requires authentication
     return !!session;
   });
 
