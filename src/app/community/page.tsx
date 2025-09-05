@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import useSWR from 'swr';
 import { MainLayout } from "@/components/layout";
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from "@/components/ui";
 import Link from "next/link";
 import { CommunityStoryCard } from "@/components/community/CommunityStoryCard";
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 interface CommunityStory {
   id: string;
@@ -33,81 +35,14 @@ interface CommunityStats {
   totalMembers: number;
 }
 
+// SWR fetcher function
+const fetcher = (url: string) => fetch(url).then(res => {
+  if (!res.ok) throw new Error('Failed to fetch community stories');
+  return res.json();
+});
+
 export default function CommunityPage() {
-  const [stories, setStories] = useState<CommunityStory[]>([]);
-  const [stats, setStats] = useState<CommunityStats>({
-    activeToday: 0,
-    commentsToday: 0,
-    averageRating: 0,
-    totalStories: 0,
-    totalPosts: 0,
-    totalMembers: 0,
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchCommunityData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        // Fetch public stories
-        const response = await fetch('/api/community/stories');
-        if (!response.ok) {
-          throw new Error('Failed to fetch community stories');
-        }
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          const storiesData = data.stories.map((story: any) => ({
-            ...story,
-            // Keep author as object structure for CommunityStoryCard
-            author: story.author?.name || story.author || 'Unknown Author',
-            description: story.description || 'No description available',
-            coverImage: story.coverImage || "/api/placeholder/200/300",
-            lastActivity: formatRelativeTime(story.lastActivity),
-          }));
-          
-          setStories(storiesData);
-          
-          // Calculate stats from fetched data
-          const calculatedStats: CommunityStats = {
-            totalStories: storiesData.length,
-            totalPosts: storiesData.reduce((sum: number, story: CommunityStory) => sum + story.totalPosts, 0),
-            totalMembers: storiesData.reduce((sum: number, story: CommunityStory) => sum + story.totalMembers, 0),
-            activeToday: storiesData.filter((story: CommunityStory) => story.isActive).length,
-            commentsToday: Math.floor(storiesData.reduce((sum: number, story: CommunityStory) => sum + story.totalPosts, 0) * 0.3), // Estimate
-            averageRating: 4.7, // Default for now
-          };
-          
-          setStats(calculatedStats);
-        } else {
-          throw new Error(data.error || 'Failed to fetch stories');
-        }
-      } catch (err) {
-        console.error('Error fetching community data:', err);
-        setError(err instanceof Error ? err.message : 'Unknown error');
-        
-        // Fallback to empty state
-        setStories([]);
-        setStats({
-          activeToday: 0,
-          commentsToday: 0,
-          averageRating: 0,
-          totalStories: 0,
-          totalPosts: 0,
-          totalMembers: 0,
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchCommunityData();
-  }, []);
-
+  // Helper function for formatting relative time
   const formatRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -117,6 +52,48 @@ export default function CommunityPage() {
     if (diffInHours < 24) return `${diffInHours}h ago`;
     if (diffInHours < 48) return '1 day ago';
     return `${Math.floor(diffInHours / 24)} days ago`;
+  };
+
+  // SWR hook for community stories
+  const { data, error, isLoading, isValidating } = useSWR('/api/community/stories', fetcher, {
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+    refreshInterval: 30000, // Refresh every 30 seconds
+    dedupingInterval: 5000, // Dedupe requests within 5 seconds
+    errorRetryCount: 3,
+    errorRetryInterval: 1000,
+    onSuccess: (data) => {
+      console.log('✅ Community data loaded successfully:', data.stories?.length, 'stories');
+    },
+    onError: (error) => {
+      console.error('❌ Community data fetch failed:', error);
+    }
+  });
+
+  // Transform data when available
+  const stories = data?.success ? data.stories.map((story: any) => ({
+    ...story,
+    author: story.author?.name || story.author || 'Unknown Author',
+    description: story.description || 'No description available',
+    coverImage: story.coverImage || "/api/placeholder/200/300",
+    lastActivity: formatRelativeTime(story.lastActivity),
+  })) : [];
+
+  // Calculate stats from fetched data
+  const stats: CommunityStats = stories.length > 0 ? {
+    totalStories: stories.length,
+    totalPosts: stories.reduce((sum: number, story: CommunityStory) => sum + story.totalPosts, 0),
+    totalMembers: stories.reduce((sum: number, story: CommunityStory) => sum + story.totalMembers, 0),
+    activeToday: stories.filter((story: CommunityStory) => story.isActive).length,
+    commentsToday: Math.floor(stories.reduce((sum: number, story: CommunityStory) => sum + story.totalPosts, 0) * 0.3),
+    averageRating: 4.7,
+  } : {
+    activeToday: 0,
+    commentsToday: 0,
+    averageRating: 0,
+    totalStories: 0,
+    totalPosts: 0,
+    totalMembers: 0,
   };
   return (
     <MainLayout>
@@ -137,9 +114,43 @@ export default function CommunityPage() {
 
         {/* Loading State */}
         {isLoading && (
-          <div className="text-center py-12">
-            <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Loading community data...</p>
+          <div className="space-y-8">
+            {/* Skeleton for Community Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} className="text-center">
+                  <CardContent className="py-4">
+                    <Skeleton height={32} width={60} className="mx-auto mb-2" />
+                    <Skeleton height={12} width={80} className="mx-auto" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Skeleton for Story Selection Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <Skeleton height={28} width={200} className="mb-2" />
+                <Skeleton height={16} width={300} />
+              </div>
+            </div>
+
+            {/* Skeleton for Story Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <Card key={i}>
+                  <div className="p-4 space-y-3">
+                    <Skeleton height={160} className="w-full" />
+                    <Skeleton height={20} width="80%" />
+                    <Skeleton height={16} width="60%" />
+                    <div className="flex justify-between">
+                      <Skeleton height={14} width={60} />
+                      <Skeleton height={14} width={80} />
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
           </div>
         )}
 
@@ -161,13 +172,24 @@ export default function CommunityPage() {
 
         {/* Community Stats */}
         {!isLoading && !error && (
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-            <Card className="text-center">
-              <CardContent className="py-4">
-                <div className="text-2xl font-bold text-blue-600">{stats.activeToday.toLocaleString()}</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">Active Today</div>
-              </CardContent>
-            </Card>
+          <div className="relative">
+            {/* Background revalidation indicator */}
+            {isValidating && !isLoading && (
+              <div className="absolute -top-2 right-0 z-10">
+                <div className="flex items-center gap-2 text-xs text-blue-500 dark:text-blue-400 opacity-60">
+                  <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span>Updating...</span>
+                </div>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+              <Card className="text-center">
+                <CardContent className="py-4">
+                  <div className="text-2xl font-bold text-blue-600">{stats.activeToday.toLocaleString()}</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">Active Today</div>
+                </CardContent>
+              </Card>
             
             <Card className="text-center">
               <CardContent className="py-4">
@@ -203,12 +225,13 @@ export default function CommunityPage() {
                 <div className="text-xs text-gray-600 dark:text-gray-400">Members</div>
               </CardContent>
             </Card>
+            </div>
           </div>
         )}
 
         {/* Story Selection */}
         {!isLoading && !error && (
-          <div>
+          <div className="relative">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -220,6 +243,14 @@ export default function CommunityPage() {
               </div>
               
               <div className="flex items-center gap-3">
+                {/* Background revalidation indicator for stories */}
+                {isValidating && !isLoading && (
+                  <div className="flex items-center gap-2 text-xs text-blue-500 dark:text-blue-400 opacity-60">
+                    <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span>Refreshing stories...</span>
+                  </div>
+                )}
+                
                 {stats.activeToday > 0 && (
                   <Badge variant="success" className="animate-pulse">
                     <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
