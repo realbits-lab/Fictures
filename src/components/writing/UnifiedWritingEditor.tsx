@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
-import { StoryTreeArchitecture } from "./StoryTreeArchitecture";
 import { YAMLDataDisplay } from "./YAMLDataDisplay";
 import { StoryEditor } from "./StoryEditor";
 import { PartEditor } from "./PartEditor";
 import { ChapterEditor } from "./ChapterEditor";
 import { SceneEditor } from "./SceneEditor";
+import { StoryListSidebar } from "./StoryListSidebar";
 
 interface Story {
   id: string;
@@ -63,12 +63,25 @@ interface Selection {
   sceneId?: string;
 }
 
+interface AllStoryListItem {
+  id: string;
+  title: string;
+  genre: string;
+  status: string;
+  parts?: any[];
+  chapters?: any[];
+  firstChapterId?: string;
+  totalChapters: number;
+  totalParts: number;
+}
+
 interface UnifiedWritingEditorProps {
   story: Story;
+  allStories: AllStoryListItem[];
   initialSelection?: Selection;
 }
 
-export function UnifiedWritingEditor({ story: initialStory, initialSelection }: UnifiedWritingEditorProps) {
+export function UnifiedWritingEditor({ story: initialStory, allStories, initialSelection }: UnifiedWritingEditorProps) {
   const router = useRouter();
   const [story, setStory] = useState<Story>(initialStory);
   const [currentSelection, setCurrentSelection] = useState<Selection>(
@@ -280,6 +293,23 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
   };
 
   const handleSelectionChange = (selection: Selection) => {
+    // If switching to a different story, we need to navigate to that story's page
+    if (selection.level === "story" && selection.storyId !== story.id) {
+      // Find the first chapter of the new story to navigate to
+      const targetStory = allStories.find(s => s.id === selection.storyId);
+      if (targetStory && targetStory.firstChapterId) {
+        router.push(`/write/${targetStory.firstChapterId}`);
+        return;
+      }
+    }
+    
+    // If switching to a different chapter, navigate to it
+    if (selection.level === "chapter" && selection.chapterId && selection.chapterId !== currentSelection.chapterId) {
+      router.push(`/write/${selection.chapterId}`);
+      return;
+    }
+    
+    // Otherwise, just update the current selection for the same story
     setCurrentSelection(selection);
     setYamlLevel(selection.level);
   };
@@ -1193,14 +1223,13 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
 
       <div className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Sidebar - Story Architecture Tree */}
+          {/* Left Sidebar - Unified Story Navigation */}
           <div className="space-y-6">
-            <StoryTreeArchitecture 
-              story={story} 
-              currentChapterId={currentSelection.chapterId}
-              currentSceneId={currentSelection.sceneId}
-              onSelectionChange={handleSelectionChange}
+            <StoryListSidebar 
+              stories={allStories}
+              currentStory={story}
               currentSelection={currentSelection}
+              onSelectionChange={handleSelectionChange}
             />
           </div>
           

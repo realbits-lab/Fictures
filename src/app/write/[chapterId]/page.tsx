@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
 import { UnifiedWritingEditor } from "@/components/writing/UnifiedWritingEditor";
-import { getChapterWithPart, getStoryWithStructure } from '@/lib/db/queries';
+import { getChapterWithPart, getStoryWithStructure, getUserStoriesWithFirstChapter } from '@/lib/db/queries';
 
 export default async function WritePage({ params }: { params: Promise<{ chapterId: string }> }) {
   const session = await auth();
@@ -26,6 +26,9 @@ export default async function WritePage({ params }: { params: Promise<{ chapterI
     notFound();
   }
 
+  // Get all user stories for the story list sidebar
+  const allUserStories = await getUserStoriesWithFirstChapter(session.user?.id);
+
   // Create initial selection to focus on the current chapter
   const initialSelection = {
     level: "chapter" as const,
@@ -37,6 +40,7 @@ export default async function WritePage({ params }: { params: Promise<{ chapterI
   return (
     <UnifiedWritingEditor 
       story={storyStructure} 
+      allStories={allUserStories}
       initialSelection={initialSelection}
     />
   );
