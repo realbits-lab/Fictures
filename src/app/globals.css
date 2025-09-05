@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
 @theme {
+  --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  
   --color-primary: 59 130 246;
   --color-primary-foreground: 255 255 255;
   --color-secondary: 244 244 245;
@@ -20,6 +23,10 @@
   --color-card-foreground: 39 39 42;
   --color-popover: 255 255 255;
   --color-popover-foreground: 39 39 42;
+  
+  --radius-lg: 0.5rem;
+  --radius-md: calc(0.5rem - 2px);
+  --radius-sm: calc(0.5rem - 4px);
 }
 
 /* Default Light Theme */
