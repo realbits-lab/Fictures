@@ -122,17 +122,32 @@ interface StoryListSidebarProps {
   currentStory: DetailedStory;
   currentSelection?: Selection;
   onSelectionChange?: (selection: Selection) => void;
+  loadingStoryId?: string | null;
 }
 
 export function StoryListSidebar({ 
   stories, 
   currentStory,
   currentSelection,
-  onSelectionChange 
+  onSelectionChange,
+  loadingStoryId
 }: StoryListSidebarProps) {
   const [expandedStories, setExpandedStories] = useState<Set<string>>(
     currentSelection ? new Set([currentSelection.storyId]) : new Set()
   );
+
+  // Listen for story loaded event to auto-expand
+  React.useEffect(() => {
+    const handleStoryLoaded = (event: CustomEvent) => {
+      const { storyId } = event.detail;
+      setExpandedStories(prev => new Set(prev).add(storyId));
+    };
+
+    window.addEventListener('storyLoaded', handleStoryLoaded as EventListener);
+    return () => {
+      window.removeEventListener('storyLoaded', handleStoryLoaded as EventListener);
+    };
+  }, []);
   const [expandedParts, setExpandedParts] = useState<Set<string>>(
     currentSelection?.partId ? new Set([currentSelection.partId]) : new Set()
   );
@@ -247,7 +262,13 @@ export function StoryListSidebar({
             const isCurrentStory = currentSelection?.storyId === story.id;
 
             return (
-              <div key={story.id} className="border rounded-lg p-2 bg-white dark:bg-gray-800">
+              <div key={story.id} className={`border rounded-lg p-2 transition-all duration-200 ${
+                loadingStoryId === story.id
+                  ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-600 shadow-md animate-pulse'
+                  : isCurrentStory 
+                    ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600 shadow-md' 
+                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+              }`}>
                 {/* Story Header */}
                 <div className="flex items-center gap-2">
                   <Button
@@ -268,9 +289,19 @@ export function StoryListSidebar({
                     size="sm"
                     className="flex-1 justify-start h-8 text-xs"
                     onClick={() => handleStorySelect(story.id)}
+                    disabled={loadingStoryId === story.id}
                   >
-                    <BookOpen size={12} className="mr-1" />
-                    <span className="truncate">{story.title}</span>
+                    {loadingStoryId === story.id ? (
+                      <>
+                        <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin mr-1" />
+                        <span className="truncate">Loading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <BookOpen size={12} className="mr-1" />
+                        <span className="truncate">{story.title}</span>
+                      </>
+                    )}
                   </Button>
                 </div>
 

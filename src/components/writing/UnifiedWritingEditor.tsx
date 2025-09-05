@@ -93,6 +93,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   
   const [yamlLevel, setYamlLevel] = useState<EditorLevel>("story");
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingStoryId, setLoadingStoryId] = useState<string | null>(null);
   const [showThemePlanner, setShowThemePlanner] = useState(false);
   const [themePlanned, setThemePlanned] = useState(false);
   const [isSavingTheme, setIsSavingTheme] = useState(false);
@@ -292,15 +293,41 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     image_prompt: "Young woman in casual clothes standing in a dimly lit apartment hallway, her face showing concern as she looks at an ajar door. The scene suggests early morning light filtering through windows, with subtle signs of disturbance visible - an overturned coffee table and scattered items in the background. Mood: tense, mysterious, domestic thriller atmosphere."
   };
 
-  const handleSelectionChange = (selection: Selection) => {
-    console.log('🎯 handleSelectionChange called with:', selection);
-    console.log('📖 Current story ID:', story.id);
-    // If switching to a different story, we need to navigate to that story's page
+  const fetchStoryData = async (storyId: string) => {
+    setLoadingStoryId(storyId);
+    try {
+      const response = await fetch(`/api/stories/${storyId}/structure`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch story data');
+      }
+      const storyData = await response.json();
+      return storyData;
+    } catch (error) {
+      console.error('Error fetching story data:', error);
+      throw error;
+    } finally {
+      setLoadingStoryId(null);
+    }
+  };
+
+  const handleSelectionChange = async (selection: Selection) => {
+    // If switching to a different story, fetch its data and show story editor
     if (selection.level === "story" && selection.storyId !== story.id) {
-      // Find the first chapter of the new story to navigate to
-      const targetStory = allStories.find(s => s.id === selection.storyId);
-      if (targetStory && targetStory.firstChapterId) {
-        router.push(`/write/${targetStory.firstChapterId}`);
+      try {
+        const newStoryData = await fetchStoryData(selection.storyId);
+        setStory(newStoryData);
+        setCurrentSelection({
+          level: "story",
+          storyId: selection.storyId
+        });
+        setYamlLevel("story");
+        // Signal to sidebar to expand the newly loaded story
+        window.dispatchEvent(new CustomEvent('storyLoaded', { 
+          detail: { storyId: selection.storyId }
+        }));
+        return;
+      } catch (error) {
+        console.error('Failed to load story:', error);
         return;
       }
     }
@@ -607,7 +634,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   };
 
   const renderEditor = () => {
-    console.log('🔍 renderEditor called with currentSelection:', currentSelection);
     switch (currentSelection.level) {
       case "story":
         return (
@@ -1240,6 +1266,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               currentStory={story}
               currentSelection={currentSelection}
               onSelectionChange={handleSelectionChange}
+              loadingStoryId={loadingStoryId}
             />
           </div>
           
