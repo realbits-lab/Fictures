@@ -119,6 +119,7 @@ export function GlobalNavigation() {
 function AuthSection() {
   const { data: session, status } = useSession();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   if (status === 'loading') {
     return (
@@ -138,26 +139,22 @@ function AuthSection() {
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
         className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
       >
-        {session.user?.image ? (
+        {session.user?.image && !imageError ? (
           <img
             src={session.user.image}
             alt={session.user.name || 'User'}
-            className="w-6 h-6 rounded-full"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-              const parent = target.parentElement;
-              if (parent) {
-                const fallback = document.createElement('div');
-                fallback.className = 'w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-600';
-                fallback.textContent = session.user?.name?.[0] || 'U';
-                parent.appendChild(fallback);
+            className="w-6 h-6 rounded-full object-cover"
+            onError={() => setImageError(true)}
+            onLoad={(e) => {
+              const img = e.target as HTMLImageElement;
+              if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+                setImageError(true);
               }
             }}
           />
         ) : (
-          <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-600">
-            {session.user?.name?.[0] || 'U'}
+          <div className="w-6 h-6 rounded-full bg-blue-500 dark:bg-blue-600 flex items-center justify-center text-xs font-semibold text-white">
+            {session.user?.name?.[0]?.toUpperCase() || 'U'}
           </div>
         )}
         <span className="hidden xl:block">{session.user?.name}</span>

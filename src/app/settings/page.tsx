@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useSession } from 'next-auth/react';
 import { Card, CardHeader, CardTitle, CardContent, Button } from "@/components/ui";
 import { useUserSettings } from "@/lib/hooks/use-page-cache";
@@ -10,6 +10,7 @@ import 'react-loading-skeleton/dist/skeleton.css';
 export default function AccountSettingsPage() {
   const { data: session } = useSession();
   const { data: userSettings, isLoading, error, mutate: refreshSettings } = useUserSettings();
+  const [imageError, setImageError] = useState(false);
 
   // Show loading state for unauthenticated users
   if (!session?.user?.id) {
@@ -153,16 +154,23 @@ export default function AccountSettingsPage() {
               Profile Image
             </label>
             <div className="flex items-center gap-4">
-              {session?.user?.image ? (
+              {session?.user?.image && !imageError ? (
                 <img
                   src={session.user.image}
                   alt={session.user.name || 'Profile'}
-                  className="w-16 h-16 rounded-full"
+                  className="w-16 h-16 rounded-full object-cover"
+                  onError={() => setImageError(true)}
+                  onLoad={(e) => {
+                    const img = e.target as HTMLImageElement;
+                    if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+                      setImageError(true);
+                    }
+                  }}
                 />
               ) : (
-                <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                  <span className="text-2xl text-gray-500 dark:text-gray-400">
-                    {session?.user?.name?.[0] || 'U'}
+                <div className="w-16 h-16 rounded-full bg-blue-500 dark:bg-blue-600 flex items-center justify-center">
+                  <span className="text-2xl font-semibold text-white">
+                    {session?.user?.name?.[0]?.toUpperCase() || 'U'}
                   </span>
                 </div>
               )}
