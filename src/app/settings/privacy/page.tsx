@@ -206,7 +206,7 @@ export default function PrivacySecurityPage() {
               No Blocked Users
             </h3>
             <p className="text-gray-600 dark:text-gray-400 text-sm">
-              You haven't blocked any users yet. Blocked users won't be able to interact with your content.
+              You haven&apos;t blocked any users yet. Blocked users won&apos;t be able to interact with your content.
             </p>
           </div>
         </CardContent>

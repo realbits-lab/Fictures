@@ -332,11 +332,15 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       return;
     }
     
-    // If switching to a different chapter within the same story, update selection
-    if (selection.level === "chapter" && selection.chapterId && selection.chapterId !== currentSelection.chapterId && selection.storyId === story.id) {
-      setCurrentSelection(selection);
-      setYamlLevel(selection.level);
-      return;
+    // If switching to chapter level within the same story, update selection
+    if (selection.level === "chapter" && selection.chapterId && selection.storyId === story.id) {
+      // Only update if it's actually a different chapter or we're coming from a different level
+      if (selection.chapterId !== currentSelection.chapterId || currentSelection.level !== "chapter") {
+        console.log('Switching to chapter:', selection.chapterId, 'from current:', currentSelection.chapterId);
+        setCurrentSelection(selection);
+        setYamlLevel(selection.level);
+        return;
+      }
     }
     
     // If switching to a chapter in a different story, navigate to it

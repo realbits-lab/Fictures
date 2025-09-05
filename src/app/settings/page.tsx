@@ -34,7 +34,7 @@ export default async function AccountSettingsPage() {
                 className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Email cannot be changed as it's managed by OAuth provider
+                Email cannot be changed as it&apos;s managed by OAuth provider
               </p>
             </div>
           </div>
