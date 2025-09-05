@@ -293,6 +293,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   };
 
   const handleSelectionChange = (selection: Selection) => {
+    console.log('🎯 handleSelectionChange called with:', selection);
+    console.log('📖 Current story ID:', story.id);
     // If switching to a different story, we need to navigate to that story's page
     if (selection.level === "story" && selection.storyId !== story.id) {
       // Find the first chapter of the new story to navigate to
@@ -605,6 +607,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   };
 
   const renderEditor = () => {
+    console.log('🔍 renderEditor called with currentSelection:', currentSelection);
     switch (currentSelection.level) {
       case "story":
         return (
@@ -1258,7 +1261,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                     storyData={(currentSelection.level === "part" || currentSelection.level === "chapter" || currentSelection.level === "scene" || yamlLevel === "story") ? sampleStoryData : undefined}
                     partData={(currentSelection.level === "chapter" || currentSelection.level === "scene") ? samplePartData : (currentSelection.level !== "part" && yamlLevel === "part") ? samplePartData : undefined}
                     chapterData={(currentSelection.level === "scene") ? sampleChapterData : yamlLevel === "chapter" ? sampleChapterData : undefined}
-                    sceneData={yamlLevel === "scene" ? sampleSceneData : undefined}
+                    sceneData={currentSelection.level === "scene" ? sampleSceneData : undefined}
                     currentLevel={currentSelection.level === "part" ? "story" : currentSelection.level === "chapter" ? "chapter" : currentSelection.level === "scene" ? "scene" : yamlLevel}
                   />
                 </div>
