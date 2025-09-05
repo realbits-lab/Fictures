@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useStats } from "@/hooks/useStats";
+import { useAppStats } from "@/lib/hooks/use-page-cache";
 import { SkeletonLoader } from "@/components/ui";
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
@@ -40,7 +40,7 @@ function StatsSkeletonSection() {
 }
 
 export function HomeStatsClient() {
-  const { stats, isLoading, isValidating, error, refreshStats } = useStats();
+  const { data, isLoading, isValidating, error, mutate } = useAppStats();
   
   // Show skeleton loading while fetching
   if (isLoading) {
@@ -64,7 +64,7 @@ export function HomeStatsClient() {
               {error.message}
             </p>
             <button 
-              onClick={refreshStats}
+              onClick={mutate}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               Try Again
@@ -76,7 +76,7 @@ export function HomeStatsClient() {
   }
   
   // Show unauthenticated state
-  if (!stats?.isAuthenticated) {
+  if (!data?.isAuthenticated) {
     return (
       <div className="py-16 bg-gray-50 dark:bg-gray-900/50">
         <div className="container mx-auto px-4">
@@ -104,14 +104,14 @@ export function HomeStatsClient() {
             )}
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            Keep up the great work, {stats.userName}!
+            Keep up the great work, {data?.userName || 'Writer'}!
           </p>
         </div>
         
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
           <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
             <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-              {stats.totalStories}
+              {data?.totalStories || 0}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
               Stories Created
@@ -120,7 +120,7 @@ export function HomeStatsClient() {
           
           <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
             <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
-              {stats.totalWords.toLocaleString()}
+              {data?.totalWords?.toLocaleString() || 0}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
               Words Written
@@ -129,7 +129,7 @@ export function HomeStatsClient() {
           
           <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
             <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
-              {stats.totalReaders.toLocaleString()}
+              {data?.totalReaders?.toLocaleString() || 0}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
               Total Readers
@@ -138,7 +138,7 @@ export function HomeStatsClient() {
           
           <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
             <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
-              {stats.avgRating}
+              {data?.avgRating || 0}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
               Average Rating

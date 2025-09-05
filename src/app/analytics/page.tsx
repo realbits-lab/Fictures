@@ -203,7 +203,7 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
 
-{isLoading ? (
+          {isLoading ? (
             <Card>
               <CardHeader>
                 <CardTitle>💬 Community Engagement</CardTitle>

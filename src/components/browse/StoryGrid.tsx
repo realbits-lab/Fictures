@@ -27,7 +27,7 @@ interface StoryGridProps {
 
 const genres = ["All", "Fantasy", "Science Fiction", "Romance", "Mystery", "Thriller", "Horror", "Adventure"];
 
-export function StoryGrid({ stories, currentUserId }: StoryGridProps) {
+export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
   const [selectedGenre, setSelectedGenre] = useState("All");
   const [sortBy, setSortBy] = useState<"latest" | "popular" | "rating">("latest");
 

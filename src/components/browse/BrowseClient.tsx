@@ -67,7 +67,10 @@ function StoriesSkeleton() {
 
 export function BrowseClient() {
   const { data: session } = useSession();
-  const { stories, count, isLoading, isValidating, error, mutate } = usePublishedStories();
+  const { data, isLoading, isValidating, error, mutate } = usePublishedStories();
+  
+  const stories = data?.stories || [];
+  const count = data?.count || 0;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">      
