@@ -21,11 +21,11 @@ const gnbMenuItems: NavItem[] = [
   { href: "/browse", label: "Reading", icon: "📚" },
   { href: "/community", label: "Community", icon: "💬" },
   { href: "/publish", label: "Publish", icon: "📤" },
-  { href: "/analytics", label: "Analytics", icon: "📊" }
+  { href: "/analytics", label: "Analytics", icon: "📊" },
+  { href: "/settings", label: "Settings", icon: "⚙️" }
 ];
 
 const profileMenuItems: NavItem[] = [
-  { href: "/settings", label: "Settings", icon: "⚙️" },
   { href: "/notifications", label: "Notifications", icon: "🔔" },
   { href: "/profile", label: "Profile", icon: "👤" }
 ];

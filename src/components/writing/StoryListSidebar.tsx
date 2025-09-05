@@ -137,6 +137,7 @@ export function StoryListSidebar({
   const [expandedStories, setExpandedStories] = useState<Set<string>>(
     currentSelection ? new Set([currentSelection.storyId]) : new Set()
   );
+  
 
   // Listen for story loaded event to auto-expand
   React.useEffect(() => {
@@ -388,23 +389,18 @@ export function StoryListSidebar({
                                           )}
                                         </Button>
                                         
-                                        <Link
-                                          href={`/write/${chapter.id}`}
-                                          className="flex-1"
+                                        <Button
+                                          variant={isCurrentChapter ? "secondary" : "ghost"}
+                                          size="sm"
+                                          className="flex-1 justify-start h-6 text-xs"
+                                          onClick={() => handleChapterSelect(story.id, part.id, chapter.id)}
                                         >
-                                          <Button
-                                            variant={isCurrentChapter ? "secondary" : "ghost"}
-                                            size="sm"
-                                            className="w-full justify-start h-6 text-xs"
-                                            onClick={() => handleChapterSelect(story.id, part.id, chapter.id)}
-                                          >
-                                            <Edit3 size={8} className="mr-1" />
-                                            <span className="truncate">Ch {chapter.orderIndex}: {chapter.title}</span>
-                                            <span className="ml-auto text-xs text-gray-400">
-                                              {getStatusIcon(chapter.status)}
-                                            </span>
-                                          </Button>
-                                        </Link>
+                                          <Edit3 size={8} className="mr-1" />
+                                          <span className="truncate">Ch {chapter.orderIndex}: {chapter.title}</span>
+                                          <span className="ml-auto text-xs text-gray-400">
+                                            {getStatusIcon(chapter.status)}
+                                          </span>
+                                        </Button>
                                       </div>
 
                                       {/* Chapter Scenes */}
@@ -442,10 +438,14 @@ export function StoryListSidebar({
                     })()}
 
                     {/* Standalone Chapters */}
-                    {story.chapters && story.chapters.length > 0 && (
-                      <div className="border-l-2 border-gray-200 pl-2">
-                        <div className="text-xs text-gray-500 mb-1">Standalone Chapters</div>
-                        {story.chapters.map((chapter) => {
+                    {(() => {
+                      const isCurrentStoryExpanded = story.id === currentStory.id;
+                      const chaptersToRender = isCurrentStoryExpanded ? currentStory.chapters : (story.chapters || []);
+                      
+                      return chaptersToRender && chaptersToRender.length > 0 ? (
+                        <div className="border-l-2 border-gray-200 pl-2">
+                          <div className="text-xs text-gray-500 mb-1">Standalone Chapters</div>
+                          {chaptersToRender.map((chapter) => {
                           const isChapterExpanded = expandedChapters.has(chapter.id);
                           const isCurrentChapter = currentSelection?.chapterId === chapter.id;
 
@@ -470,23 +470,18 @@ export function StoryListSidebar({
                                   )}
                                 </Button>
                                 
-                                <Link
-                                  href={`/write/${chapter.id}`}
-                                  className="flex-1"
+                                <Button
+                                  variant={isCurrentChapter ? "secondary" : "ghost"}
+                                  size="sm"
+                                  className="flex-1 justify-start h-6 text-xs"
+                                  onClick={() => handleChapterSelect(story.id, undefined, chapter.id)}
                                 >
-                                  <Button
-                                    variant={isCurrentChapter ? "secondary" : "ghost"}
-                                    size="sm"
-                                    className="w-full justify-start h-6 text-xs"
-                                    onClick={() => handleChapterSelect(story.id, undefined, chapter.id)}
-                                  >
-                                    <Edit3 size={8} className="mr-1" />
-                                    <span className="truncate">Ch {chapter.orderIndex}: {chapter.title}</span>
-                                    <span className="ml-auto text-xs text-gray-400">
-                                      {getStatusIcon(chapter.status)}
-                                    </span>
-                                  </Button>
-                                </Link>
+                                  <Edit3 size={8} className="mr-1" />
+                                  <span className="truncate">Ch {chapter.orderIndex}: {chapter.title}</span>
+                                  <span className="ml-auto text-xs text-gray-400">
+                                    {getStatusIcon(chapter.status)}
+                                  </span>
+                                </Button>
                               </div>
 
                               {/* Chapter Scenes */}
@@ -515,9 +510,10 @@ export function StoryListSidebar({
                               )}
                             </div>
                           );
-                        })}
-                      </div>
-                    )}
+                          })}
+                        </div>
+                      ) : null;
+                    })()}
                   </div>
                 )}
               </div>

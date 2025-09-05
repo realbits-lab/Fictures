@@ -91,6 +91,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       storyId: story.id
     }
   );
+  
   const [yamlLevel, setYamlLevel] = useState<EditorLevel>("story");
   const [isLoading, setIsLoading] = useState(false);
   const [showThemePlanner, setShowThemePlanner] = useState(false);
@@ -331,8 +332,15 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       return;
     }
     
-    // If switching to a different chapter, navigate to it
-    if (selection.level === "chapter" && selection.chapterId && selection.chapterId !== currentSelection.chapterId) {
+    // If switching to a different chapter within the same story, update selection
+    if (selection.level === "chapter" && selection.chapterId && selection.chapterId !== currentSelection.chapterId && selection.storyId === story.id) {
+      setCurrentSelection(selection);
+      setYamlLevel(selection.level);
+      return;
+    }
+    
+    // If switching to a chapter in a different story, navigate to it
+    if (selection.level === "chapter" && selection.chapterId && selection.storyId !== story.id) {
       router.push(`/write/${selection.chapterId}`);
       return;
     }
@@ -400,19 +408,34 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const handlePublishToggle = async () => {
     if (!currentSelection.chapterId) return;
     
-    // Find current chapter status
+    // Find current chapter and its status
     let currentChapterStatus = 'draft';
+    let currentChapter = null;
+    
     for (const part of story.parts) {
       const foundChapter = part.chapters.find(ch => ch.id === currentSelection.chapterId);
       if (foundChapter) {
+        currentChapter = foundChapter;
         currentChapterStatus = foundChapter.status || 'draft';
         break;
       }
     }
-    if (currentChapterStatus === 'draft') {
+    if (!currentChapter) {
       const foundChapter = story.chapters.find(ch => ch.id === currentSelection.chapterId);
       if (foundChapter) {
+        currentChapter = foundChapter;
         currentChapterStatus = foundChapter.status || 'draft';
+      }
+    }
+    
+    // If chapter is marked as published but has no content, force it to draft status
+    if (currentChapter && currentChapterStatus === 'published') {
+      const hasScenes = currentChapter.scenes && currentChapter.scenes.length > 0;
+      const hasContent = currentChapter.purpose || currentChapter.hook || currentChapter.characterFocus || (currentChapter.wordCount && currentChapter.wordCount > 0);
+      const scenesWithContent = hasScenes ? currentChapter.scenes.filter((scene: any) => scene.wordCount > 0) : [];
+      
+      if (!hasContent && scenesWithContent.length === 0) {
+        currentChapterStatus = 'draft';
       }
     }
 
@@ -420,22 +443,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     
     // Check if trying to publish and validate scenes
     if (!isPublished) {
-      // Find the current chapter to check its scenes
-      let currentChapter = null;
-      for (const part of story.parts) {
-        const foundChapter = part.chapters.find(ch => ch.id === currentSelection.chapterId);
-        if (foundChapter) {
-          currentChapter = foundChapter;
-          break;
-        }
-      }
-      if (!currentChapter) {
-        const foundChapter = story.chapters.find(ch => ch.id === currentSelection.chapterId);
-        if (foundChapter) {
-          currentChapter = foundChapter;
-        }
-      }
-      
       const chapterScenes = currentChapter?.scenes || [];
       if (chapterScenes.length === 0) {
         alert('Cannot publish chapter without scenes. Please add at least one scene before publishing.');
@@ -718,27 +725,66 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           selectedChapter = story.chapters.find(ch => ch.id === currentSelection.chapterId);
         }
         
-        // Create chapter data based on selection or fallback
-        const createChapterData = (chapter: any, partTitle: string | null) => ({
-          id: chapter?.id || currentSelection.chapterId || "1",
-          title: chapter?.title || `Chapter ${chapter?.orderIndex || 1}`,
-          partTitle: partTitle || "Standalone",
-          wordCount: chapter?.wordCount || 0,
-          targetWordCount: chapter?.targetWordCount || 4000,
-          status: chapter?.status || 'draft',
-          purpose: chapter?.orderIndex === 1 ? "Establish story foundation and initial conflict" :
-                   chapter?.orderIndex === 2 ? "Develop characters and escalate tension" :
-                   "Build toward climax and resolution",
-          hook: chapter?.orderIndex === 1 ? "Opening scene that draws readers in" :
-                "Continue momentum from previous chapter",
-          characterFocus: "Character development and relationship dynamics",
-          scenes: chapter?.scenes || []
-        });
+        // Create chapter data only if chapter exists, otherwise show empty state
+        const createChapterData = (chapter: any, partTitle: string | null) => {
+          // Check if chapter has any actual content
+          const hasScenes = chapter.scenes && chapter.scenes.length > 0;
+          const hasContent = chapter.purpose || chapter.hook || chapter.characterFocus || (chapter.wordCount && chapter.wordCount > 0);
+          const scenesWithContent = hasScenes ? chapter.scenes.filter((scene: any) => scene.wordCount > 0) : [];
+          
+          // If chapter is marked as published but has no content, force it to draft status
+          let actualStatus = chapter.status || 'draft';
+          if (actualStatus === 'published' && !hasContent && scenesWithContent.length === 0) {
+            console.warn(`Chapter ${chapter.id} (${chapter.title}) is marked as published but has no content. Showing as draft.`);
+            actualStatus = 'draft';
+          }
+          
+          return {
+            id: chapter.id,
+            title: chapter.title,
+            partTitle: partTitle || "Standalone",
+            wordCount: chapter.wordCount || 0,
+            targetWordCount: chapter.targetWordCount || 4000,
+            status: actualStatus,
+            purpose: chapter.purpose || "",
+            hook: chapter.hook || "",
+            characterFocus: chapter.characterFocus || "",
+            scenes: chapter.scenes || []
+          };
+        };
         
+        // Only create chapter data if we found the actual chapter
         const chapterData = selectedChapter ? 
           createChapterData(selectedChapter, selectedPartTitle) : 
-          createChapterData(null, null);
+          null;
         
+        // If no chapter data found, show empty state
+        if (!chapterData) {
+          return (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>📝 Chapter Not Found</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center py-8">
+                  <div className="text-gray-500 dark:text-gray-400 mb-4">
+                    <div className="text-4xl mb-4">📄</div>
+                    <h3 className="text-lg font-medium mb-2">No Chapter Data</h3>
+                    <p>This chapter doesn't exist or hasn't been created yet.</p>
+                    <p className="text-sm mt-2">Chapter ID: {currentSelection.chapterId}</p>
+                  </div>
+                  <Button 
+                    onClick={() => handleSelectionChange({ level: "story", storyId: story.id })}
+                    variant="secondary"
+                  >
+                    ← Back to Story Overview
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          );
+        }
+
         return (
           <div className="space-y-6">
             {/* Chapter Overview */}
@@ -1206,21 +1252,35 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 (() => {
                   // Find the current chapter status for button styling
                   let currentChapterStatus = 'draft';
+                  let currentChapter = null;
                   
                   // Look in parts first
                   for (const part of story.parts) {
                     const foundChapter = part.chapters.find(ch => ch.id === currentSelection.chapterId);
                     if (foundChapter) {
+                      currentChapter = foundChapter;
                       currentChapterStatus = foundChapter.status || 'draft';
                       break;
                     }
                   }
                   
                   // If not found in parts, check standalone chapters
-                  if (currentChapterStatus === 'draft') {
+                  if (!currentChapter) {
                     const foundChapter = story.chapters.find(ch => ch.id === currentSelection.chapterId);
                     if (foundChapter) {
+                      currentChapter = foundChapter;
                       currentChapterStatus = foundChapter.status || 'draft';
+                    }
+                  }
+                  
+                  // If chapter is marked as published but has no content, force it to draft status
+                  if (currentChapter && currentChapterStatus === 'published') {
+                    const hasScenes = currentChapter.scenes && currentChapter.scenes.length > 0;
+                    const hasContent = currentChapter.purpose || currentChapter.hook || currentChapter.characterFocus || (currentChapter.wordCount && currentChapter.wordCount > 0);
+                    const scenesWithContent = hasScenes ? currentChapter.scenes.filter((scene: any) => scene.wordCount > 0) : [];
+                    
+                    if (!hasContent && scenesWithContent.length === 0) {
+                      currentChapterStatus = 'draft';
                     }
                   }
 

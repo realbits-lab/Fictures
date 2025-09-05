@@ -29,12 +29,10 @@ export default async function WritePage({ params }: { params: Promise<{ chapterI
   // Get all user stories for the story list sidebar
   const allUserStories = await getUserStoriesWithFirstChapter(session.user?.id);
 
-  // Create initial selection to focus on the current chapter
+  // Create initial selection to focus on the story level first
   const initialSelection = {
-    level: "chapter" as const,
-    storyId: chapterInfo.storyId,
-    partId: chapterInfo.chapter.partId || undefined,
-    chapterId: chapterInfo.chapter.id
+    level: "story" as const,
+    storyId: chapterInfo.storyId
   };
   
   return (

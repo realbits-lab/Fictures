@@ -6,7 +6,6 @@ import { SkeletonLoader } from "@/components/ui";
 import { usePublishedStories } from "@/lib/hooks/usePublishedStories";
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-import { BrowseHero } from "./BrowseHero";
 import { StoryGrid } from "./StoryGrid";
 
 // Skeleton component for story cards
@@ -38,7 +37,7 @@ function StoryCardSkeleton() {
 function StoriesSkeleton() {
   return (
     <div>
-      {/* Filter Skeletons */}
+      {/* Filter Skeletons - immediately at the top */}
       <div className="mb-8 space-y-4">
         <div className="flex flex-wrap gap-2">
           <Skeleton height={32} width={50} className="mr-2" />
@@ -54,9 +53,9 @@ function StoriesSkeleton() {
         </div>
       </div>
 
-      {/* Story Grid Skeleton */}
+      {/* Story Grid Skeleton - starts immediately after filters */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Array.from({ length: 6 }).map((_, i) => (
+        {Array.from({ length: 9 }).map((_, i) => (
           <StoryCardSkeleton key={i} />
         ))}
       </div>
@@ -69,27 +68,17 @@ export function BrowseClient() {
   const { stories, count, isLoading, isValidating, error, mutate } = usePublishedStories();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <BrowseHero />
-      
-      <div className="container mx-auto px-4 py-12">
-        <div className="mb-8 flex justify-between items-start">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-3">
-              Discover Amazing Stories
-              {isValidating && !isLoading && (
-                <div className="w-5 h-5 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin opacity-70" 
-                     title="Refreshing stories in background" />
-              )}
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400">
-              {isLoading 
-                ? "Loading amazing stories from talented writers..." 
-                : `Explore ${count} creative works from talented writers around the world.`
-              }
-            </p>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">      
+      <div className="container mx-auto px-4 py-8">
+        {/* Background validation indicator in top right */}
+        {isValidating && !isLoading && (
+          <div className="fixed top-20 right-4 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 px-3 py-2">
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
+              <span>Refreshing stories...</span>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Show skeleton loading while fetching */}
         {isLoading ? (
