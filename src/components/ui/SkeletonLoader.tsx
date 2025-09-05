@@ -2,10 +2,34 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import { cn } from '@/lib/utils/cn'
 
-// Utility component for standalone shimmer effect
+// Utility components for standalone shimmer effects
 export function Shimmer({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div className={cn("skeleton-shimmer", className)} {...props}>
+      {children}
+    </div>
+  );
+}
+
+export function ShimmerPulse({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={cn("skeleton-shimmer-pulse", className)} {...props}>
+      {children}
+    </div>
+  );
+}
+
+export function ShimmerFast({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={cn("skeleton-shimmer skeleton-shimmer-fast", className)} {...props}>
+      {children}
+    </div>
+  );
+}
+
+export function ShimmerDiagonal({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={cn("skeleton-shimmer skeleton-shimmer-diagonal", className)} {...props}>
       {children}
     </div>
   );
