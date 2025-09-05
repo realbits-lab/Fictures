@@ -110,8 +110,15 @@ export async function getUserStoriesWithFirstChapter(userId: string) {
         ch.status === 'completed' || ch.status === 'published'
       ).length;
       
+      // Check if story is actually published (has published chapters AND is public)
+      const hasPublishedChapters = allChapters.some(chapter => chapter.status === 'published');
+      const actualStatus = (story.isPublic && story.status === 'published' && hasPublishedChapters) 
+        ? 'published' 
+        : story.status;
+      
       return {
         ...story,
+        status: actualStatus, // Override with actual publication status
         firstChapterId: firstChapter?.id || null,
         totalChapters: allChapters.length,
         completedChapters,
@@ -606,13 +613,23 @@ export async function getPublishedStories() {
     const storyStructure = await getStoryWithStructure(story.id);
     
     if (storyStructure) {
-      // Calculate total word count from actual scenes
+      // Calculate total word count from scenes or chapters
       let totalWords = 0;
       const allChapters = [...storyStructure.parts.flatMap(part => part.chapters), ...storyStructure.chapters];
       
       for (const chapter of allChapters) {
-        if (chapter.scenes) {
-          totalWords += chapter.scenes.reduce((sum, scene) => sum + (scene.wordCount || 0), 0);
+        if (chapter.scenes && chapter.scenes.length > 0) {
+          // Count from scenes if they exist and have content
+          const sceneWords = chapter.scenes.reduce((sum, scene) => sum + (scene.wordCount || 0), 0);
+          if (sceneWords > 0) {
+            totalWords += sceneWords;
+          } else {
+            // Fallback to chapter word count if scenes exist but have no word count
+            totalWords += chapter.wordCount || 0;
+          }
+        } else {
+          // Count from chapter word count when no scenes exist
+          totalWords += chapter.wordCount || 0;
         }
       }
       

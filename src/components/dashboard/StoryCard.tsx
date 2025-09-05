@@ -24,7 +24,7 @@ interface StoryCardProps {
   };
   readers: number;
   rating: number;
-  status: "draft" | "publishing" | "completed";
+  status: "draft" | "publishing" | "completed" | "published";
   wordCount?: number;
   firstChapterId?: string | null;
 }
@@ -52,6 +52,8 @@ export function StoryCard({
         return <Badge variant="info">Publishing</Badge>;
       case "completed":
         return <Badge variant="success">Complete</Badge>;
+      case "published":
+        return <Badge variant="success">Published</Badge>;
       default:
         return <Badge variant="default">Draft</Badge>;
     }
