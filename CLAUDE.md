@@ -23,6 +23,12 @@ When running the development server:
 - Redirect output to a log file for monitoring and debugging purposes  
 - Check port 3000 availability before starting - if already in use, kill the existing process and restart
 
+### Story Development Workflow
+
+When working with story writing and scene management:
+- **Scene Completion**: After you finish writing content for a scene, always set the status of that scene to "completed" via API or UI interaction
+- This ensures proper tracking of writing progress and maintains accurate scene status throughout the development workflow
+
 ## Database Management Guidelines
 
 **IMPORTANT: Use Neon Database, NOT Supabase**
