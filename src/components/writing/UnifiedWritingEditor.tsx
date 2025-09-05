@@ -303,6 +303,13 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       }
     }
     
+    // If clicking on the current story (level === "story"), show the story editor
+    if (selection.level === "story" && selection.storyId === story.id) {
+      setCurrentSelection(selection);
+      setYamlLevel(selection.level);
+      return;
+    }
+    
     // If switching to a different chapter, navigate to it
     if (selection.level === "chapter" && selection.chapterId && selection.chapterId !== currentSelection.chapterId) {
       router.push(`/write/${selection.chapterId}`);
