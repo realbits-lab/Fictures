@@ -4,8 +4,7 @@ import { MainLayout } from "@/components/layout";
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from "@/components/ui";
 import Link from "next/link";
 import { CommunityStoryCard } from "@/components/community/CommunityStoryCard";
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
+import { Skeleton } from "@/components/ui";
 import { useCommunityStories } from '@/lib/hooks/use-page-cache';
 
 interface CommunityStory {
@@ -101,8 +100,8 @@ export default function CommunityPage() {
               {[...Array(6)].map((_, i) => (
                 <Card key={i} className="text-center">
                   <CardContent className="py-4">
-                    <Skeleton height={32} width={60} className="mx-auto mb-2" />
-                    <Skeleton height={12} width={80} className="mx-auto" />
+                    <Skeleton className="h-8 w-15 mx-auto mb-2" />
+                    <Skeleton className="h-3 w-20 mx-auto" />
                   </CardContent>
                 </Card>
               ))}
@@ -111,8 +110,8 @@ export default function CommunityPage() {
             {/* Skeleton for Story Selection Header */}
             <div className="flex items-center justify-between mb-6">
               <div>
-                <Skeleton height={28} width={200} className="mb-2" />
-                <Skeleton height={16} width={300} />
+                <Skeleton className="h-7 w-50 mb-2" />
+                <Skeleton className="h-4 w-75" />
               </div>
             </div>
 
@@ -121,12 +120,12 @@ export default function CommunityPage() {
               {[...Array(8)].map((_, i) => (
                 <Card key={i}>
                   <div className="p-4 space-y-3">
-                    <Skeleton height={160} className="w-full" />
-                    <Skeleton height={20} width="80%" />
-                    <Skeleton height={16} width="60%" />
+                    <Skeleton className="h-40 w-full" />
+                    <Skeleton className="h-5 w-4/5" />
+                    <Skeleton className="h-4 w-3/5" />
                     <div className="flex justify-between">
-                      <Skeleton height={14} width={60} />
-                      <Skeleton height={14} width={80} />
+                      <Skeleton className="h-[14px] w-15" />
+                      <Skeleton className="h-[14px] w-20" />
                     </div>
                   </div>
                 </Card>

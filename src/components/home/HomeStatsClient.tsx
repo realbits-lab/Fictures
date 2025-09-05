@@ -3,17 +3,16 @@
 import React from "react";
 import { useAppStats } from "@/lib/hooks/use-page-cache";
 import { SkeletonLoader } from "@/components/ui";
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
+import { Skeleton } from "@/components/ui";
 
 function StatsCardSkeleton() {
   return (
     <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
       <div className="mb-2">
-        <Skeleton height={36} width={80} />
+        <Skeleton className="h-9 w-20" />
       </div>
       <div>
-        <Skeleton height={16} width={100} />
+        <Skeleton className="h-4 w-25" />
       </div>
     </div>
   );
@@ -24,8 +23,8 @@ function StatsSkeletonSection() {
     <div className="py-16 bg-gray-50 dark:bg-gray-900/50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <Skeleton height={32} width={250} className="mx-auto mb-4" />
-          <Skeleton height={20} width={200} className="mx-auto" />
+          <Skeleton className="h-8 w-60 mx-auto mb-4" />
+          <Skeleton className="h-5 w-50 mx-auto" />
         </div>
         
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">

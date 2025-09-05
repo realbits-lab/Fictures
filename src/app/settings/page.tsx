@@ -4,8 +4,7 @@ import React, { useState } from "react";
 import { useSession } from 'next-auth/react';
 import { Card, CardHeader, CardTitle, CardContent, Button } from "@/components/ui";
 import { useUserSettings } from "@/lib/hooks/use-page-cache";
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
+import { Skeleton } from "@/components/ui";
 
 export default function AccountSettingsPage() {
   const { data: session } = useSession();
@@ -29,32 +28,32 @@ export default function AccountSettingsPage() {
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Skeleton height={14} width={80} className="mb-2" />
-                <Skeleton height={40} width="100%" />
+                <Skeleton className="h-[14px] w-20 mb-2" />
+                <Skeleton className="h-10 w-full" />
               </div>
               <div>
-                <Skeleton height={14} width={80} className="mb-2" />
-                <Skeleton height={40} width="100%" />
-                <Skeleton height={12} width="60%" className="mt-1" />
+                <Skeleton className="h-[14px] w-20 mb-2" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-3 w-3/5 mt-1" />
               </div>
             </div>
             
             <div>
-              <Skeleton height={14} width={30} className="mb-2" />
-              <Skeleton height={72} width="100%" />
+              <Skeleton className="h-[14px] w-8 mb-2" />
+              <Skeleton className="h-18 w-full" />
             </div>
 
             <div>
-              <Skeleton height={14} width={80} className="mb-2" />
+              <Skeleton className="h-[14px] w-20 mb-2" />
               <div className="flex items-center gap-4">
-                <Skeleton height={64} width={64} className="rounded-full" />
-                <Skeleton height={14} width={250} />
+                <Skeleton className="h-16 w-16 rounded-full" />
+                <Skeleton className="h-[14px] w-60" />
               </div>
             </div>
 
             <div className="flex gap-3">
-              <Skeleton height={36} width={100} />
-              <Skeleton height={36} width={70} />
+              <Skeleton className="h-9 w-25" />
+              <Skeleton className="h-9 w-18" />
             </div>
           </CardContent>
         </Card>
@@ -67,12 +66,12 @@ export default function AccountSettingsPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
-                <Skeleton height={14} width={80} className="mb-1" />
-                <Skeleton height={16} width={60} />
+                <Skeleton className="h-[14px] w-20 mb-1" />
+                <Skeleton className="h-4 w-15" />
               </div>
               <div>
-                <Skeleton height={14} width={80} className="mb-1" />
-                <Skeleton height={16} width={100} />
+                <Skeleton className="h-[14px] w-20 mb-1" />
+                <Skeleton className="h-4 w-25" />
               </div>
             </div>
           </CardContent>

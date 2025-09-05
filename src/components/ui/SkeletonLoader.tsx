@@ -1,11 +1,28 @@
-import Skeleton, { SkeletonTheme } from 'react-loading-skeleton'
-import 'react-loading-skeleton/dist/skeleton.css'
 import { cn } from '@/lib/utils/cn'
 
-// Utility components for standalone shimmer effects
+// Base Skeleton Component using Tailwind's animate-pulse with theme-aware colors
+export function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div 
+      className={cn("animate-pulse rounded-md", className)} 
+      style={{ 
+        backgroundColor: 'var(--shimmer-base, rgb(203 213 225 / 0.8))',
+      }}
+      {...props} 
+    />
+  );
+}
+
+// Enhanced Shimmer Effects using custom CSS animations with theme colors
 export function Shimmer({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("skeleton-shimmer", className)} {...props}>
+    <div 
+      className={cn("skeleton-shimmer rounded-md", className)} 
+      style={{ 
+        backgroundColor: 'var(--shimmer-base, rgb(203 213 225 / 0.8))',
+      }}
+      {...props}
+    >
       {children}
     </div>
   );
@@ -13,7 +30,13 @@ export function Shimmer({ className, children, ...props }: React.HTMLAttributes<
 
 export function ShimmerPulse({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("skeleton-shimmer-pulse", className)} {...props}>
+    <div 
+      className={cn("skeleton-shimmer-pulse rounded-md", className)} 
+      style={{ 
+        backgroundColor: 'var(--shimmer-base, rgb(203 213 225 / 0.8))',
+      }}
+      {...props}
+    >
       {children}
     </div>
   );
@@ -21,7 +44,13 @@ export function ShimmerPulse({ className, children, ...props }: React.HTMLAttrib
 
 export function ShimmerFast({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("skeleton-shimmer skeleton-shimmer-fast", className)} {...props}>
+    <div 
+      className={cn("skeleton-shimmer skeleton-shimmer-fast rounded-md", className)} 
+      style={{ 
+        backgroundColor: 'var(--shimmer-base, rgb(203 213 225 / 0.8))',
+      }}
+      {...props}
+    >
       {children}
     </div>
   );
@@ -29,43 +58,37 @@ export function ShimmerFast({ className, children, ...props }: React.HTMLAttribu
 
 export function ShimmerDiagonal({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("skeleton-shimmer skeleton-shimmer-diagonal", className)} {...props}>
+    <div 
+      className={cn("skeleton-shimmer skeleton-shimmer-diagonal rounded-md", className)} 
+      style={{ 
+        backgroundColor: 'var(--shimmer-base, rgb(203 213 225 / 0.8))',
+      }}
+      {...props}
+    >
       {children}
     </div>
   );
 }
 
+// Utility component for skeleton container with theme support
 interface SkeletonLoaderProps {
   className?: string;
   children: React.ReactNode;
-  theme?: 'light' | 'dark';
+  variant?: 'pulse' | 'shimmer' | 'fast' | 'diagonal';
 }
 
-export function SkeletonLoader({ className, children, theme = 'light' }: SkeletonLoaderProps) {
-  const themeColors = {
-    light: {
-      baseColor: '#f3f4f6',
-      highlightColor: '#ffffff',
-      duration: 1.2
-    },
-    dark: {
-      baseColor: '#374151',
-      highlightColor: '#6b7280',
-      duration: 1.2
-    }
+export function SkeletonLoader({ className, children, variant = 'pulse' }: SkeletonLoaderProps) {
+  const variantClasses = {
+    pulse: "animate-pulse",
+    shimmer: "skeleton-shimmer",
+    fast: "skeleton-shimmer skeleton-shimmer-fast", 
+    diagonal: "skeleton-shimmer skeleton-shimmer-diagonal"
   };
 
   return (
-    <SkeletonTheme 
-      baseColor={themeColors[theme].baseColor} 
-      highlightColor={themeColors[theme].highlightColor}
-      duration={themeColors[theme].duration}
-      enableAnimation={true}
-    >
-      <div className={cn(className)}>
-        {children}
-      </div>
-    </SkeletonTheme>
+    <div className={cn(variantClasses[variant], className)}>
+      {children}
+    </div>
   );
 }
 
@@ -75,41 +98,37 @@ export function StoryCardSkeleton() {
     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <Skeleton height={24} className="mb-2" />
-          <Skeleton height={16} width="60%" />
+          <Skeleton className="h-6 w-full mb-2" />
+          <Skeleton className="h-4 w-3/5" />
         </div>
-        <Skeleton height={20} width={60} />
+        <Skeleton className="h-5 w-15" />
       </div>
       
       <div className="space-y-3 mb-4">
-        <div className="flex justify-between text-sm">
-          <Skeleton width={80} />
-          <Skeleton width={40} />
+        <div className="flex justify-between">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-10" />
         </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-          <Skeleton height={8} />
+        <Skeleton className="h-2 w-full rounded-full" />
+        <div className="flex justify-between">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-10" />
         </div>
-        <div className="flex justify-between text-sm">
-          <Skeleton width={80} />
-          <Skeleton width={40} />
-        </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-          <Skeleton height={8} />
-        </div>
+        <Skeleton className="h-2 w-full rounded-full" />
       </div>
 
       <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-1">
-            <Skeleton width={20} height={16} />
-            <Skeleton width={30} />
+            <Skeleton className="h-4 w-5" />
+            <Skeleton className="h-4 w-8" />
           </div>
           <div className="flex items-center space-x-1">
-            <Skeleton width={20} height={16} />
-            <Skeleton width={30} />
+            <Skeleton className="h-4 w-5" />
+            <Skeleton className="h-4 w-8" />
           </div>
         </div>
-        <Skeleton height={32} width={80} />
+        <Skeleton className="h-8 w-20 rounded-lg" />
       </div>
     </div>
   );
@@ -119,14 +138,14 @@ export function DashboardWidgetSkeleton() {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center gap-2 mb-4">
-        <Skeleton height={24} width={24} />
-        <Skeleton height={24} width={120} />
+        <Skeleton className="h-6 w-6" />
+        <Skeleton className="h-6 w-30" />
       </div>
       <div className="space-y-3">
-        <Skeleton height={16} />
-        <Skeleton height={16} width="90%" />
-        <Skeleton height={16} width="70%" />
-        <Skeleton height={16} width="50%" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-4/5" />
+        <Skeleton className="h-4 w-3/5" />
+        <Skeleton className="h-4 w-2/5" />
       </div>
     </div>
   );
@@ -135,12 +154,12 @@ export function DashboardWidgetSkeleton() {
 export function ListItemSkeleton() {
   return (
     <div className="flex items-center space-x-3 p-3">
-      <Skeleton height={40} width={40} className="rounded-full" />
+      <Skeleton className="h-10 w-10 rounded-full" />
       <div className="flex-1">
-        <Skeleton height={16} width="70%" className="mb-1" />
-        <Skeleton height={14} width="50%" />
+        <Skeleton className="h-4 w-3/5 mb-1" />
+        <Skeleton className="h-3 w-2/5" />
       </div>
-      <Skeleton height={32} width={80} />
+      <Skeleton className="h-8 w-20 rounded-lg" />
     </div>
   );
 }
@@ -151,8 +170,7 @@ export function TextBlockSkeleton({ lines = 3 }: { lines?: number }) {
       {Array.from({ length: lines }, (_, i) => (
         <Skeleton 
           key={i} 
-          height={16} 
-          width={i === lines - 1 ? '70%' : '100%'} 
+          className={cn("h-4", i === lines - 1 ? "w-3/5" : "w-full")}
         />
       ))}
     </div>
@@ -160,9 +178,9 @@ export function TextBlockSkeleton({ lines = 3 }: { lines?: number }) {
 }
 
 export function ButtonSkeleton() {
-  return <Skeleton height={40} width={120} className="rounded-lg" />;
+  return <Skeleton className="h-10 w-30 rounded-lg" />;
 }
 
 export function ImageSkeleton({ width = 200, height = 200 }: { width?: number; height?: number }) {
-  return <Skeleton height={height} width={width} className="rounded-lg" />;
+  return <Skeleton className="rounded-lg" style={{ width, height }} />;
 }

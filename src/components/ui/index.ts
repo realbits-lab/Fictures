@@ -4,4 +4,4 @@ export { Progress } from "./Progress";
 export { Badge } from "./Badge";
 export { Input } from "./Input";
 export { Label } from "./Label";
-export { SkeletonLoader, StoryCardSkeleton, DashboardWidgetSkeleton, ListItemSkeleton, TextBlockSkeleton, ButtonSkeleton, ImageSkeleton, Shimmer } from "./SkeletonLoader";
+export { SkeletonLoader, Skeleton, StoryCardSkeleton, DashboardWidgetSkeleton, ListItemSkeleton, TextBlockSkeleton, ButtonSkeleton, ImageSkeleton, Shimmer, ShimmerPulse, ShimmerFast, ShimmerDiagonal } from "./SkeletonLoader";

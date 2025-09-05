@@ -1,10 +1,8 @@
 "use client";
 
 import { MainLayout } from "@/components/layout";
-import { Card, CardHeader, CardTitle, CardContent, Progress, Badge } from "@/components/ui";
+import { Card, CardHeader, CardTitle, CardContent, Progress, Badge, Skeleton } from "@/components/ui";
 import { useStoryAnalytics, useReaderAnalytics } from "@/lib/hooks/use-page-cache";
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
 
 // Skeleton components for loading states
 function MetricsSkeleton() {
@@ -14,9 +12,9 @@ function MetricsSkeleton() {
         <Card key={i}>
           <CardContent className="py-6">
             <div className="text-center space-y-2">
-              <Skeleton height={36} width={60} className="mx-auto" />
-              <Skeleton height={14} width={80} className="mx-auto" />
-              <Skeleton height={12} width={100} className="mx-auto" />
+              <Skeleton className="h-9 w-15 mx-auto" />
+              <Skeleton className="h-3 w-20 mx-auto" />
+              <Skeleton className="h-3 w-25 mx-auto" />
             </div>
           </CardContent>
         </Card>
@@ -36,19 +34,19 @@ function StoryPerformanceSkeleton() {
           <div key={i} className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <Skeleton height={20} width={150} className="mb-1" />
-                <Skeleton height={14} width={80} />
+                <Skeleton className="h-5 w-38 mb-1" />
+                <Skeleton className="h-3 w-20" />
               </div>
-              <Skeleton height={24} width={80} />
+              <Skeleton className="h-6 w-20" />
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <Skeleton height={14} width={100} />
-                <Skeleton height={14} width={40} />
+                <Skeleton className="h-3 w-25" />
+                <Skeleton className="h-3 w-10" />
               </div>
-              <Skeleton height={8} width="100%" />
+              <Skeleton className="h-2 w-full" />
             </div>
-            <Skeleton height={12} width="80%" />
+            <Skeleton className="h-3 w-4/5" />
             {i < 1 && <div className="border-t border-gray-200 dark:border-gray-700 pt-4" />}
           </div>
         ))}
@@ -213,13 +211,13 @@ export default function AnalyticsPage() {
                   {Array.from({ length: 3 }).map((_, i) => (
                     <div key={i} className="p-3 bg-gray-50 dark:bg-gray-800/20 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
-                        <Skeleton height={16} width={120} />
-                        <Skeleton height={20} width={40} className="rounded-full" />
+                        <Skeleton className="h-4 w-30" />
+                        <Skeleton className="h-5 w-10 rounded-full" />
                       </div>
-                      <Skeleton height={16} width="90%" className="mb-2" />
+                      <Skeleton className="h-4 w-9/10 mb-2" />
                       <div className="flex items-center gap-4 mt-2">
-                        <Skeleton height={12} width={80} />
-                        <Skeleton height={12} width={60} />
+                        <Skeleton className="h-3 w-20" />
+                        <Skeleton className="h-3 w-15" />
                       </div>
                     </div>
                   ))}
@@ -294,12 +292,12 @@ export default function AnalyticsPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i}>
-                    <Skeleton height={20} width={120} className="mb-3" />
+                    <Skeleton className="h-5 w-30 mb-3" />
                     <div className="space-y-2">
                       {Array.from({ length: 3 }).map((_, j) => (
                         <div key={j} className="flex justify-between items-center text-sm">
-                          <Skeleton height={16} width={80} />
-                          <Skeleton height={16} width={40} />
+                          <Skeleton className="h-4 w-20" />
+                          <Skeleton className="h-4 w-10" />
                         </div>
                       ))}
                     </div>

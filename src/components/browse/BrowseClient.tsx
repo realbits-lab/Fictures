@@ -4,8 +4,7 @@ import React from "react";
 import { useSession } from 'next-auth/react';
 import { SkeletonLoader } from "@/components/ui";
 import { usePublishedStories } from "@/lib/hooks/use-page-cache";
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
+import { Skeleton } from "@/components/ui";
 import { StoryGrid } from "./StoryGrid";
 
 // Skeleton component for story cards
@@ -13,24 +12,24 @@ function StoryCardSkeleton() {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 flex flex-col h-[270px]">
       <div className="flex justify-between items-start mb-2 flex-shrink-0">
-        <Skeleton height={18} width={50} className="rounded-full" />
-        <Skeleton height={18} width={50} className="rounded-full" />
+        <Skeleton className="h-[18px] w-12 rounded-full" />
+        <Skeleton className="h-[18px] w-12 rounded-full" />
       </div>
-      <Skeleton height={20} width="80%" className="mb-2 flex-shrink-0" />
+      <Skeleton className="h-5 w-4/5 mb-2 flex-shrink-0" />
       <div className="flex-grow mb-2">
-        <Skeleton height={12} width="100%" className="mb-1" />
-        <Skeleton height={12} width="90%" className="mb-1" />
-        <Skeleton height={12} width="70%" />
+        <Skeleton className="h-3 w-full mb-1" />
+        <Skeleton className="h-3 w-9/10 mb-1" />
+        <Skeleton className="h-3 w-7/10" />
       </div>
-      <Skeleton height={12} width={80} className="mb-3 flex-shrink-0" />
+      <Skeleton className="h-3 w-20 mb-3 flex-shrink-0" />
       <div className="flex justify-between items-center mb-3 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <Skeleton height={12} width={30} />
-          <Skeleton height={12} width={25} />
-          <Skeleton height={12} width={40} />
+          <Skeleton className="h-3 w-8" />
+          <Skeleton className="h-3 w-6" />
+          <Skeleton className="h-3 w-10" />
         </div>
       </div>
-      <Skeleton height={30} width="100%" className="rounded flex-shrink-0" />
+      <Skeleton className="h-8 w-full rounded flex-shrink-0" />
     </div>
   );
 }
@@ -42,16 +41,16 @@ function StoriesSkeleton() {
       {/* Filter Skeletons - immediately at the top */}
       <div className="mb-8 space-y-4">
         <div className="flex flex-wrap gap-2">
-          <Skeleton height={32} width={50} className="mr-2" />
+          <Skeleton className="h-8 w-12 mr-2" />
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} height={32} width={80} className="rounded" />
+            <Skeleton key={i} className="h-8 w-20 rounded" />
           ))}
         </div>
         <div className="flex gap-2">
-          <Skeleton height={32} width={60} className="mr-2" />
-          <Skeleton height={32} width={60} />
-          <Skeleton height={32} width={100} />
-          <Skeleton height={32} width={120} />
+          <Skeleton className="h-8 w-15 mr-2" />
+          <Skeleton className="h-8 w-15" />
+          <Skeleton className="h-8 w-25" />
+          <Skeleton className="h-8 w-30" />
         </div>
       </div>
 

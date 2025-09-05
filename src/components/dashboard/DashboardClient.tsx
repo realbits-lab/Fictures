@@ -1,10 +1,8 @@
 "use client";
 
 import { useSession } from 'next-auth/react';
-import { SkeletonLoader, StoryCardSkeleton, DashboardWidgetSkeleton } from "@/components/ui";
+import { SkeletonLoader, Skeleton, StoryCardSkeleton, DashboardWidgetSkeleton } from "@/components/ui";
 import { useUserStories } from "@/lib/hooks/use-page-cache";
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
 
 import { AIAssistantWidget } from "./AIAssistantWidget";
 import { CommunityHighlights } from "./CommunityHighlights";
@@ -17,9 +15,9 @@ function CreateStoryCardSkeleton() {
   return (
     <div className="bg-gradient-to-br from-[rgb(var(--primary)/10%)] to-[rgb(var(--primary)/15%)] rounded-xl border-2 border-dashed border-[rgb(var(--primary)/30%)] p-6">
       <div className="text-center">
-        <Skeleton height={48} width={48} className="mx-auto mb-4 rounded-full" />
-        <Skeleton height={20} width="60%" className="mx-auto mb-2" />
-        <Skeleton height={16} width="80%" className="mx-auto" />
+        <Skeleton className="h-12 w-12 mx-auto mb-4 rounded-full" />
+        <Skeleton className="h-5 w-3/5 mx-auto mb-2" />
+        <Skeleton className="h-4 w-4/5 mx-auto" />
       </div>
     </div>
   );
@@ -31,10 +29,10 @@ function StoriesSkeletonSection() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Skeleton height={32} width={32} />
-            <Skeleton height={32} width={150} />
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-38" />
           </div>
-          <Skeleton height={16} width={250} />
+          <Skeleton className="h-4 w-64" />
         </div>
       </div>
 

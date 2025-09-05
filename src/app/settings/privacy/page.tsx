@@ -3,8 +3,7 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
 import { usePrivacySettings } from "@/lib/hooks/use-page-cache";
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
+import { Skeleton } from "@/components/ui";
 
 export default function PrivacySecurityPage() {
   const { data: privacySettings, isLoading, error, mutate: refreshSettings } = usePrivacySettings();
@@ -23,23 +22,23 @@ export default function PrivacySecurityPage() {
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex items-center justify-between">
                   <div>
-                    <Skeleton height={16} width={120} className="mb-1" />
-                    <Skeleton height={14} width={200} />
+                    <Skeleton className="h-4 w-30 mb-1" />
+                    <Skeleton className="h-[14px] w-50" />
                   </div>
-                  <Skeleton height={24} width={44} className="rounded-full" />
+                  <Skeleton className="h-6 w-11 rounded-full" />
                 </div>
               ))}
             </div>
 
             <div>
-              <Skeleton height={14} width={140} className="mb-2" />
-              <Skeleton height={40} width="100%" />
-              <Skeleton height={12} width="80%" className="mt-1" />
+              <Skeleton className="h-[14px] w-35 mb-2" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-3 w-4/5 mt-1" />
             </div>
 
             <div className="flex gap-3">
-              <Skeleton height={36} width={100} />
-              <Skeleton height={36} width={70} />
+              <Skeleton className="h-9 w-25" />
+              <Skeleton className="h-9 w-18" />
             </div>
           </CardContent>
         </Card>
@@ -48,10 +47,10 @@ export default function PrivacySecurityPage() {
         {Array.from({ length: 3 }).map((_, i) => (
           <Card key={i}>
             <CardHeader>
-              <CardTitle><Skeleton height={24} width={160} /></CardTitle>
+              <CardTitle><Skeleton className="h-6 w-40" /></CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Skeleton height={120} width="100%" />
+              <Skeleton className="h-30 w-full" />
             </CardContent>
           </Card>
         ))}

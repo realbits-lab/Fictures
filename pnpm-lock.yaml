@@ -56,9 +56,6 @@ importers:
       react-json-view-lite:
         specifier: ^2.4.2
         version: 2.4.2(react@18.3.1)
-      react-loading-skeleton:
-        specifier: ^3.5.0
-        version: 3.5.0(react@18.3.1)
       swr:
         specifier: ^2.3.6
         version: 2.3.6(react@18.3.1)
@@ -2197,11 +2194,6 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
-
-  react-loading-skeleton@3.5.0:
-    resolution: {integrity: sha512-gxxSyLbrEAdXTKgfbpBEFZCO/P153DnqSCQau2+o6lNy1jgMRr2MmRmOzMmyrwSaSYLRB8g7b0waYPmUjz7IhQ==}
-    peerDependencies:
-      react: '>=16.8.0'
 
   react@18.3.1:
     resolution: {integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==}
@@ -4505,10 +4497,6 @@ snapshots:
   react-is@16.13.1: {}
 
   react-json-view-lite@2.4.2(react@18.3.1):
-    dependencies:
-      react: 18.3.1
-
-  react-loading-skeleton@3.5.0(react@18.3.1):
     dependencies:
       react: 18.3.1
 

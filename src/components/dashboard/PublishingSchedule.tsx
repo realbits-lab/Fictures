@@ -3,8 +3,7 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui";
 import { usePublishStatus } from "@/lib/hooks/use-page-cache";
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
+import { Skeleton } from "@/components/ui";
 
 interface ScheduleItem {
   id: string;
@@ -56,11 +55,11 @@ export function PublishingSchedule() {
             Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <Skeleton height={16} width={120} />
-                  <Skeleton height={12} width={60} />
+                  <Skeleton className="h-4 w-30" />
+                  <Skeleton className="h-3 w-15" />
                 </div>
                 <div className="pl-4">
-                  <Skeleton height={12} width={80} />
+                  <Skeleton className="h-3 w-20" />
                 </div>
               </div>
             ))

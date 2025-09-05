@@ -5,8 +5,7 @@ import { useSession } from 'next-auth/react';
 import { SkeletonLoader } from "@/components/ui";
 import { usePublishStatus, usePublishHistory, usePublishAnalytics } from "@/lib/hooks/use-page-cache";
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Progress } from "@/components/ui";
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
+import { Skeleton } from "@/components/ui";
 
 // Skeleton components for loading states
 function PublishingScheduleSkeleton() {
@@ -15,21 +14,21 @@ function PublishingScheduleSkeleton() {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           📅 Publishing Schedule
-          <Skeleton height={28} width={120} className="rounded" />
+          <Skeleton className="h-7 w-30 rounded" />
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <Skeleton height={20} width={100} className="mb-4" />
+          <Skeleton className="h-5 w-25 mb-4" />
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div className="text-center space-y-2">
-                  <Skeleton height={20} width={80} />
-                  <Skeleton height={16} width={120} />
-                  <Skeleton height={12} width={60} />
-                  <Skeleton height={20} width={60} className="rounded-full" />
-                  <Skeleton height={32} width="100%" className="rounded" />
+                  <Skeleton className="h-5 w-20" />
+                  <Skeleton className="h-4 w-30" />
+                  <Skeleton className="h-3 w-15" />
+                  <Skeleton className="h-5 w-15 rounded-full" />
+                  <Skeleton className="h-8 w-full rounded" />
                 </div>
               </div>
             ))}
@@ -48,42 +47,42 @@ function QuickPublishSkeleton() {
       </CardHeader>
       <CardContent className="space-y-6">
         <div>
-          <Skeleton height={24} width="60%" className="mb-4" />
+          <Skeleton className="h-6 w-3/5 mb-4" />
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="flex items-center gap-2">
-                <Skeleton height={14} width={80} />
-                <Skeleton height={20} width={60} className="rounded-full" />
+                <Skeleton className="h-[14px] w-20" />
+                <Skeleton className="h-5 w-15 rounded-full" />
               </div>
             ))}
           </div>
 
           <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg mb-4">
-            <Skeleton height={20} width={60} className="mb-2" />
-            <Skeleton height={16} width="90%" />
+            <Skeleton className="h-5 w-15 mb-2" />
+            <Skeleton className="h-4 w-9/10" />
           </div>
 
           <div className="space-y-4">
             <div>
-              <Skeleton height={20} width={120} className="mb-3" />
+              <Skeleton className="h-5 w-30 mb-3" />
               <div className="flex gap-4">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <Skeleton height={16} width={16} className="rounded" />
-                    <Skeleton height={14} width={100} />
+                    <Skeleton className="h-4 w-4 rounded" />
+                    <Skeleton className="h-[14px] w-25" />
                   </div>
                 ))}
               </div>
             </div>
 
             <div>
-              <Skeleton height={20} width={140} className="mb-3" />
+              <Skeleton className="h-5 w-35 mb-3" />
               <div className="space-y-2">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <Skeleton height={16} width={16} className="rounded" />
-                    <Skeleton height={14} width={200} />
+                    <Skeleton className="h-4 w-4 rounded" />
+                    <Skeleton className="h-[14px] w-50" />
                   </div>
                 ))}
               </div>
@@ -92,7 +91,7 @@ function QuickPublishSkeleton() {
 
           <div className="flex gap-3 pt-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} height={36} width={80} className="rounded" />
+              <Skeleton key={i} className="h-9 w-20 rounded" />
             ))}
           </div>
         </div>
@@ -107,28 +106,28 @@ function AnalyticsSkeleton() {
       {Array.from({ length: 2 }).map((_, i) => (
         <Card key={i}>
           <CardHeader>
-            <CardTitle><Skeleton height={24} width={180} /></CardTitle>
+            <CardTitle><Skeleton className="h-6 w-45" /></CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Skeleton height={20} width={160} className="mb-3" />
-              <Skeleton height={14} width={120} className="mb-3" />
+              <Skeleton className="h-5 w-40 mb-3" />
+              <Skeleton className="h-[14px] w-30 mb-3" />
               
               <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                 {Array.from({ length: 4 }).map((_, j) => (
                   <div key={j} className="flex justify-between">
-                    <Skeleton height={14} width={60} />
-                    <Skeleton height={14} width={40} />
+                    <Skeleton className="h-[14px] w-15" />
+                    <Skeleton className="h-[14px] w-10" />
                   </div>
                 ))}
               </div>
               
               <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex justify-between text-sm mb-1">
-                  <Skeleton height={14} width={100} />
-                  <Skeleton height={14} width={30} />
+                  <Skeleton className="h-[14px] w-25" />
+                  <Skeleton className="h-[14px] w-8" />
                 </div>
-                <Skeleton height={14} width={140} />
+                <Skeleton className="h-[14px] w-35" />
               </div>
             </div>
           </CardContent>
@@ -160,9 +159,9 @@ export function PublishClient() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <span>📤</span>
-              <Skeleton height={36} width={200} />
+              <Skeleton className="h-9 w-50" />
             </div>
-            <Skeleton height={16} width={300} />
+            <Skeleton className="h-4 w-75" />
           </div>
           <PublishingScheduleSkeleton />
           <QuickPublishSkeleton />
