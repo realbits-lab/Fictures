@@ -63,7 +63,8 @@ export default function CommunityPage() {
         if (data.success) {
           const storiesData = data.stories.map((story: any) => ({
             ...story,
-            author: story.author?.name || 'Unknown Author',
+            // Keep author as object structure for CommunityStoryCard
+            author: story.author?.name || story.author || 'Unknown Author',
             description: story.description || 'No description available',
             coverImage: story.coverImage || "/api/placeholder/200/300",
             lastActivity: formatRelativeTime(story.lastActivity),
@@ -264,30 +265,32 @@ export default function CommunityPage() {
         )}
 
         {/* Quick Actions */}
-        <Card>
-          <CardContent className="py-6">
-            <div className="text-center space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                💡 Want to start discussions for your story?
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Publish your story to enable community discussions and connect with readers
-              </p>
-              <div className="flex justify-center gap-3">
-                <Link href="/stories">
-                  <Button variant="outline">
-                    📝 Manage Stories
-                  </Button>
-                </Link>
-                <Link href="/publish">
-                  <Button>
-                    🚀 Publish Story
-                  </Button>
-                </Link>
+        {!isLoading && !error && (
+          <Card>
+            <CardContent className="py-6">
+              <div className="text-center space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  💡 Want to start discussions for your story?
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Make your story public to enable community discussions and connect with readers
+                </p>
+                <div className="flex justify-center gap-3">
+                  <Link href="/stories">
+                    <Button variant="outline">
+                      📝 Manage Stories
+                    </Button>
+                  </Link>
+                  <Link href="/stories/new">
+                    <Button>
+                      ✍️ Write New Story
+                    </Button>
+                  </Link>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </MainLayout>
   );

@@ -1,54 +1,22 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent, Badge } from "@/components/ui";
 
-// Mock data - replace with real API calls
-const allStories = [
+// Fallback data for when API is unavailable
+const fallbackStories = [
   {
-    id: "yWzfrPc85xT0SfF3rzxjU",
-    title: "Digital Nexus: The Code Between Worlds",
-    genre: "Science Fiction/Fantasy",
-    author: "Thomas Jeon",
-    totalPosts: 89,
-    totalMembers: 1247,
+    id: "demo-1",
+    title: "Sample Public Story",
+    genre: "Fantasy",
+    author: { name: "Demo Author" },
+    totalPosts: 25,
+    totalMembers: 150,
     isActive: true,
     status: "published",
     lastActivity: "2 hours ago",
-  },
-  {
-    id: "IiE1KTLwsDAVJvzEVzoRi",
-    title: "The Last Guardian", 
-    genre: "Epic Fantasy",
-    author: "Thomas Jeon",
-    totalPosts: 156,
-    totalMembers: 892,
-    isActive: true,
-    status: "draft",
-    lastActivity: "5 hours ago",
-  },
-  {
-    id: "A97aQ6OzNmOoCJ1svugJY",
-    title: "Mirrors of Reality",
-    genre: "Psychological Mystery", 
-    author: "Thomas Jeon",
-    totalPosts: 67,
-    totalMembers: 543,
-    isActive: false,
-    status: "draft",
-    lastActivity: "1 day ago",
-  },
-  {
-    id: "uzvfKaRxAgNzIW1tRreGb",
-    title: "The Digital Awakening",
-    genre: "Cyberpunk Thriller",
-    author: "Thomas Jeon",
-    totalPosts: 234,
-    totalMembers: 1567,
-    isActive: true,
-    status: "draft",
-    lastActivity: "6 hours ago",
   },
 ];
 
@@ -58,6 +26,26 @@ interface CommunityStorySidebarProps {
 
 export function CommunityStorySidebar({ currentStoryId }: CommunityStorySidebarProps) {
   const pathname = usePathname();
+  const [stories, setStories] = useState(fallbackStories);
+  
+  useEffect(() => {
+    const fetchStories = async () => {
+      try {
+        const response = await fetch('/api/community/stories');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.stories.length > 0) {
+            setStories(data.stories);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch stories for sidebar:', error);
+        // Keep fallback stories on error
+      }
+    };
+
+    fetchStories();
+  }, []);
   
   return (
     <div className="space-y-4">
@@ -83,7 +71,7 @@ export function CommunityStorySidebar({ currentStoryId }: CommunityStorySidebarP
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0 space-y-2">
-          {allStories.map((story) => {
+          {stories.map((story) => {
             const isCurrentStory = story.id === currentStoryId;
             
             return (
@@ -117,10 +105,10 @@ export function CommunityStorySidebar({ currentStoryId }: CommunityStorySidebarP
                       </Badge>
                     )}
                     <Badge 
-                      variant={story.status === 'published' ? 'default' : 'secondary'}
+                      variant="success"
                       className="text-xs py-0 px-1"
                     >
-                      {story.status === 'published' ? '🚀' : '📝'}
+                      🌍 Public
                     </Badge>
                   </div>
                 </div>
@@ -150,7 +138,7 @@ export function CommunityStorySidebar({ currentStoryId }: CommunityStorySidebarP
         </CardHeader>
         <CardContent className="pt-0">
           {(() => {
-            const currentStory = allStories.find(s => s.id === currentStoryId);
+            const currentStory = stories.find(s => s.id === currentStoryId);
             if (!currentStory) return null;
             
             return (
@@ -164,12 +152,12 @@ export function CommunityStorySidebar({ currentStoryId }: CommunityStorySidebarP
                   <span className="font-medium">{currentStory.totalMembers.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Status</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Visibility</span>
                   <Badge 
-                    variant={currentStory.status === 'published' ? 'default' : 'secondary'}
+                    variant="success"
                     className="text-xs"
                   >
-                    {currentStory.status === 'published' ? 'Published' : 'Draft'}
+                    🌍 Public
                   </Badge>
                 </div>
                 <div className="flex justify-between">

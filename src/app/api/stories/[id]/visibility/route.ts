@@ -5,7 +5,7 @@ import { stories } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 
 interface RouteParams {
-  storyId: string;
+  id: string;
 }
 
 export async function PUT(
@@ -33,7 +33,7 @@ export async function PUT(
       );
     }
 
-    const { storyId } = params;
+    const { id: storyId } = params;
 
     // Check if story exists and belongs to the authenticated user
     const [story] = await db
@@ -122,7 +122,7 @@ export async function GET(
       );
     }
 
-    const { storyId } = params;
+    const { id: storyId } = params;
 
     // Get story visibility status
     const [story] = await db
