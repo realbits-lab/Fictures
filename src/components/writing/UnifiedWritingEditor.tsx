@@ -359,6 +359,37 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
     }
 
     const isPublished = currentChapterStatus === 'published';
+    
+    // Check if trying to publish and validate scenes
+    if (!isPublished) {
+      // Find the current chapter to check its scenes
+      let currentChapter = null;
+      for (const part of story.parts) {
+        const foundChapter = part.chapters.find(ch => ch.id === currentSelection.chapterId);
+        if (foundChapter) {
+          currentChapter = foundChapter;
+          break;
+        }
+      }
+      if (!currentChapter) {
+        const foundChapter = story.chapters.find(ch => ch.id === currentSelection.chapterId);
+        if (foundChapter) {
+          currentChapter = foundChapter;
+        }
+      }
+      
+      const chapterScenes = currentChapter?.scenes || [];
+      if (chapterScenes.length === 0) {
+        alert('Cannot publish chapter without scenes. Please add at least one scene before publishing.');
+        return;
+      }
+      const scenesWithContent = chapterScenes.filter(scene => scene.wordCount > 0);
+      if (scenesWithContent.length === 0) {
+        alert('Cannot publish chapter with empty scenes. Please add content to at least one scene before publishing.');
+        return;
+      }
+    }
+    
     const endpoint = isPublished ? 'unpublish' : 'publish';
     const newStatus = isPublished ? 'completed' : 'published';
     
@@ -1135,12 +1166,18 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
                     }
                   }
 
+                  
                   return (
                     <Button 
                       size="sm" 
                       onClick={handlePublishToggle} 
                       disabled={isLoading}
                       className={currentChapterStatus === 'published' ? 'bg-green-600 hover:bg-green-700 text-white' : ''}
+                      title={
+                        currentChapterStatus === 'published' 
+                          ? 'Unpublish chapter' 
+                          : 'Publish chapter'
+                      }
                     >
                       {isLoading ? 
                         (currentChapterStatus === 'published' ? "⚡ Unpublishing..." : "⚡ Publishing...") : 
