@@ -438,8 +438,7 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
           status: finalStatus,
           wordCount: ch.wordCount || 0,
           targetWordCount: ch.targetWordCount || 4000,
-          scenes: chapterScenes,
-          content: ch.content
+          scenes: chapterScenes
         };
       });
 
@@ -494,8 +493,7 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
         status: finalStatus,
         wordCount: ch.wordCount || 0,
         targetWordCount: ch.targetWordCount || 4000,
-        scenes: chapterScenes,
-        content: ch.content
+        scenes: chapterScenes
       };
     });
 

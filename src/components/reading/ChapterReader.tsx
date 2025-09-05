@@ -340,14 +340,20 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
                 </>
               ) : (
                 <>
-                  {console.log(`📄 Rendering chapter content directly (no scenes) for: ${selectedChapter.title}`)}
-                  {console.log(`📏 Chapter content length: ${selectedChapter.content?.length || 0} chars`)}
-                  <div className="whitespace-pre-wrap leading-relaxed">
-                    {selectedChapter.content || (
-                      <p className="text-gray-500 dark:text-gray-400 italic">
-                        This chapter is empty.
+                  {console.log(`⚠️  Chapter has no scenes: ${selectedChapter.title} - Architecture violation!`)}
+                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                    <div className="max-w-md mx-auto">
+                      <h3 className="text-lg font-semibold mb-4">📝 Chapter Not Ready</h3>
+                      <p className="text-sm mb-4">
+                        This chapter hasn't been structured into scenes yet. 
+                        Chapters must be organized into scenes to be readable.
                       </p>
-                    )}
+                      {isOwner && (
+                        <p className="text-xs text-gray-400">
+                          As the author, please use the writing interface to create scenes for this chapter.
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </>
               )}

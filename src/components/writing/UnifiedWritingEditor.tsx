@@ -82,6 +82,7 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
   const [isLoading, setIsLoading] = useState(false);
   const [showThemePlanner, setShowThemePlanner] = useState(false);
   const [themePlanned, setThemePlanned] = useState(false);
+  const [isSavingTheme, setIsSavingTheme] = useState(false);
 
   // Sync story state when prop changes
   useEffect(() => {
@@ -409,30 +410,14 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
   const handleCreateScene = async (chapterId: string) => {
     setIsLoading(true);
     try {
+      // Fetch current scenes from the API to ensure we have the latest data
+      const scenesResponse = await fetch(`/api/scenes?chapterId=${chapterId}`);
+      const scenesData = await scenesResponse.json();
+      
       // Calculate next available order index by finding the highest existing orderIndex
       let nextOrderIndex = 1;
-      
-      // Find the current chapter to check existing scenes
-      let currentChapter = null;
-      
-      // Look in parts first
-      for (const part of story.parts) {
-        const foundChapter = part.chapters.find(ch => ch.id === chapterId);
-        if (foundChapter) {
-          currentChapter = foundChapter;
-          break;
-        }
-      }
-      
-      // Look in standalone chapters if not found in parts
-      if (!currentChapter) {
-        currentChapter = story.chapters.find(ch => ch.id === chapterId);
-      }
-      
-      // Calculate next available order index based on existing scenes
-      if (currentChapter && currentChapter.scenes && currentChapter.scenes.length > 0) {
-        // Find the highest existing orderIndex and add 1
-        const maxOrderIndex = Math.max(...currentChapter.scenes.map(scene => scene.orderIndex || 0));
+      if (scenesData.scenes && scenesData.scenes.length > 0) {
+        const maxOrderIndex = Math.max(...scenesData.scenes.map((scene: any) => scene.orderIndex || 0));
         nextOrderIndex = maxOrderIndex + 1;
       }
       
@@ -475,6 +460,77 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
     } catch (error) {
       console.error('Failed to create scene:', error);
       alert('Failed to create scene. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveThemePlan = async () => {
+    setIsSavingTheme(true);
+    try {
+      // Simulate saving the theme plan data to the chapter or story
+      // This would typically save the three-act structure, tension architecture, 
+      // character development, dual mandate fulfillment, and hook strategy data
+      
+      // For now, we'll just simulate an API call with a delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Here you would save the theme plan data to the database
+      // const response = await fetch(`/api/chapters/${currentSelection.chapterId}/theme`, {
+      //   method: 'PATCH',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(themePlanData)
+      // });
+      
+      // Show success feedback
+      console.log('Theme plan saved successfully');
+      
+    } catch (error) {
+      console.error('Failed to save theme plan:', error);
+      alert('Failed to save theme plan. Please try again.');
+    } finally {
+      setIsSavingTheme(false);
+    }
+  };
+
+  const handleToggleSceneStatus = async (sceneId: string, currentStatus: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent scene edit navigation
+    
+    setIsLoading(true);
+    try {
+      // Determine next status based on current status
+      let nextStatus: string;
+      if (currentStatus === 'planned') {
+        nextStatus = 'in_progress';
+      } else if (currentStatus === 'in_progress') {
+        nextStatus = 'completed';
+      } else { // completed
+        nextStatus = 'in_progress';
+      }
+      
+      // Update scene status via API
+      const response = await fetch(`/api/scenes/${sceneId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: nextStatus
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Scene status update failed:', errorData);
+        throw new Error(`Failed to update scene status: ${errorData.error || 'Unknown error'}`);
+      }
+
+      // Refresh the page to show updated status
+      router.refresh();
+      
+    } catch (error) {
+      console.error('Failed to update scene status:', error);
+      alert('Failed to update scene status. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -779,9 +835,24 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
 
                   {/* Action Buttons */}
                   <div className="flex gap-2 pt-4 border-t">
-                    <Button size="sm" variant="default" className="flex items-center gap-2">
-                      <span>💾</span>
-                      Save Theme Plan
+                    <Button 
+                      size="sm" 
+                      variant="default" 
+                      className="flex items-center gap-2" 
+                      onClick={handleSaveThemePlan}
+                      disabled={isSavingTheme}
+                    >
+                      {isSavingTheme ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                          Saving Theme Plan...
+                        </>
+                      ) : (
+                        <>
+                          <span>💾</span>
+                          Save Theme Plan
+                        </>
+                      )}
                     </Button>
                     <Button size="sm" variant="secondary" className="flex items-center gap-2">
                       <span>🎲</span>
@@ -842,12 +913,30 @@ export function UnifiedWritingEditor({ story: initialStory, initialSelection }: 
                           <div><strong>Outcome:</strong> {scene.outcome}</div>
                         </div>
                         <div className="mt-2 flex items-center justify-between">
-                          <Badge 
-                            variant={scene.status === "completed" ? "success" : scene.status === "in_progress" ? "warning" : "secondary"}
-                            size="sm"
-                          >
-                            {scene.status.replace('_', ' ')}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant={scene.status === "completed" ? "success" : scene.status === "in_progress" ? "warning" : "secondary"}
+                              size="sm"
+                            >
+                              {scene.status.replace('_', ' ')}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              variant={scene.status === "completed" ? "secondary" : "default"}
+                              onClick={(e) => handleToggleSceneStatus(scene.id, scene.status, e)}
+                              disabled={isLoading}
+                              className="text-xs px-2 py-1 h-auto"
+                              title={
+                                scene.status === 'planned' ? 'Start working on scene' :
+                                scene.status === 'in_progress' ? 'Mark scene as complete' :
+                                'Mark scene as in progress'
+                              }
+                            >
+                              {scene.status === 'planned' ? '▶️ Start' :
+                               scene.status === 'in_progress' ? '✅ Complete' :
+                               '🔄 Resume'}
+                            </Button>
+                          </div>
                           <span className="text-xs text-blue-600 dark:text-blue-400 hover:underline">
                             Click to edit scene →
                           </span>

@@ -86,11 +86,10 @@ export const parts = pgTable('parts', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Chapters table - Individual chapters
+// Chapters table - Individual chapters (content stored in scenes)
 export const chapters = pgTable('chapters', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
-  content: text('content').default(''),
   summary: text('summary'),
   storyId: text('story_id').references(() => stories.id).notNull(),
   partId: text('part_id').references(() => parts.id),
