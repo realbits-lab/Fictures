@@ -1,6 +1,102 @@
+"use client";
+
+import React from "react";
 import { Card, CardHeader, CardTitle, CardContent, Button } from "@/components/ui";
+import { useNotificationSettings } from "@/lib/hooks/use-page-cache";
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 export default function NotificationsPage() {
+  const { data: notificationSettings, isLoading, error, mutate: refreshSettings } = useNotificationSettings();
+
+  // Show skeleton loading while fetching
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {/* Email Notifications Skeleton */}
+        <Card>
+          <CardHeader>
+            <CardTitle>📧 Email Notifications</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div>
+                    <Skeleton height={16} width={120} className="mb-1" />
+                    <Skeleton height={14} width={200} />
+                  </div>
+                  <Skeleton height={24} width={44} className="rounded-full" />
+                </div>
+              ))}
+            </div>
+
+            <div>
+              <Skeleton height={14} width={100} className="mb-2" />
+              <Skeleton height={40} width="100%" />
+            </div>
+
+            <div className="flex gap-3">
+              <Skeleton height={36} width={100} />
+              <Skeleton height={36} width={70} />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Push Notifications Skeleton */}
+        <Card>
+          <CardHeader>
+            <CardTitle>🔔 Push Notifications</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div>
+                    <Skeleton height={16} width={140} className="mb-1" />
+                    <Skeleton height={14} width={180} />
+                  </div>
+                  <Skeleton height={24} width={44} className="rounded-full" />
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Skeleton height={14} width={100} className="mb-2" />
+                <Skeleton height={40} width="100%" />
+              </div>
+              <div>
+                <Skeleton height={14} width={70} className="mb-2" />
+                <Skeleton height={40} width="100%" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-4xl mb-4">⚠️</div>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+          Failed to load notification settings
+        </h3>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
+          {error.message || "Something went wrong while loading your notification settings."}
+        </p>
+        <button 
+          onClick={() => refreshSettings()} 
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
   return (
     <div className="space-y-6">
       {/* Email Notifications */}
@@ -16,7 +112,7 @@ export default function NotificationsPage() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">Get notified when someone comments on your story</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" defaultChecked className="sr-only peer" />
+                <input type="checkbox" defaultChecked={notificationSettings?.email?.newComments !== false} className="sr-only peer" />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
               </label>
             </div>
@@ -27,7 +123,7 @@ export default function NotificationsPage() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">Get notified when someone likes your story</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" defaultChecked className="sr-only peer" />
+                <input type="checkbox" defaultChecked={notificationSettings?.email?.storyLikes !== false} className="sr-only peer" />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
               </label>
             </div>
@@ -38,7 +134,7 @@ export default function NotificationsPage() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">Get notified when someone follows you</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" defaultChecked className="sr-only peer" />
+                <input type="checkbox" defaultChecked={notificationSettings?.email?.newFollowers !== false} className="sr-only peer" />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
               </label>
             </div>
@@ -49,7 +145,7 @@ export default function NotificationsPage() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">Weekly digest of your writing activity</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
+                <input type="checkbox" defaultChecked={notificationSettings?.email?.weeklySummary === true} className="sr-only peer" />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
               </label>
             </div>
@@ -60,7 +156,7 @@ export default function NotificationsPage() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">Product updates and writing tips</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
+                <input type="checkbox" defaultChecked={notificationSettings?.email?.marketing === true} className="sr-only peer" />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
               </label>
             </div>

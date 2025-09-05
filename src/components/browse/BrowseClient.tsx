@@ -3,7 +3,7 @@
 import React from "react";
 import { useSession } from 'next-auth/react';
 import { SkeletonLoader } from "@/components/ui";
-import { usePublishedStories } from "@/lib/hooks/usePublishedStories";
+import { usePublishedStories } from "@/lib/hooks/use-page-cache";
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { StoryGrid } from "./StoryGrid";
@@ -11,24 +11,26 @@ import { StoryGrid } from "./StoryGrid";
 // Skeleton component for story cards
 function StoryCardSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-      <div className="flex justify-between items-start mb-3">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 flex flex-col h-[400px]">
+      <div className="flex justify-between items-start mb-3 flex-shrink-0">
         <Skeleton height={20} width={60} className="rounded-full" />
         <Skeleton height={20} width={60} className="rounded-full" />
       </div>
-      <Skeleton height={24} width="80%" className="mb-2" />
-      <Skeleton height={16} width="100%" className="mb-1" />
-      <Skeleton height={16} width="90%" className="mb-1" />
-      <Skeleton height={16} width="70%" className="mb-3" />
-      <Skeleton height={14} width={100} className="mb-4" />
-      <div className="flex justify-between items-center mb-4">
+      <Skeleton height={24} width="80%" className="mb-2 flex-shrink-0" />
+      <div className="flex-grow mb-3">
+        <Skeleton height={16} width="100%" className="mb-1" />
+        <Skeleton height={16} width="90%" className="mb-1" />
+        <Skeleton height={16} width="70%" />
+      </div>
+      <Skeleton height={14} width={100} className="mb-4 flex-shrink-0" />
+      <div className="flex justify-between items-center mb-4 flex-shrink-0">
         <div className="flex items-center gap-4">
           <Skeleton height={14} width={40} />
           <Skeleton height={14} width={30} />
           <Skeleton height={14} width={50} />
         </div>
       </div>
-      <Skeleton height={36} width="100%" className="rounded" />
+      <Skeleton height={36} width="100%" className="rounded flex-shrink-0" />
     </div>
   );
 }

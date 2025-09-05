@@ -1,12 +1,12 @@
 "use client";
 
-import useSWR from 'swr';
 import { MainLayout } from "@/components/layout";
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from "@/components/ui";
 import Link from "next/link";
 import { CommunityStoryCard } from "@/components/community/CommunityStoryCard";
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import { useCommunityStories } from '@/lib/hooks/use-page-cache';
 
 interface CommunityStory {
   id: string;
@@ -35,12 +35,6 @@ interface CommunityStats {
   totalMembers: number;
 }
 
-// SWR fetcher function
-const fetcher = (url: string) => fetch(url).then(res => {
-  if (!res.ok) throw new Error('Failed to fetch community stories');
-  return res.json();
-});
-
 export default function CommunityPage() {
   // Helper function for formatting relative time
   const formatRelativeTime = (dateString: string) => {
@@ -54,21 +48,8 @@ export default function CommunityPage() {
     return `${Math.floor(diffInHours / 24)} days ago`;
   };
 
-  // SWR hook for community stories
-  const { data, error, isLoading, isValidating } = useSWR('/api/community/stories', fetcher, {
-    revalidateOnFocus: true,
-    revalidateOnReconnect: true,
-    refreshInterval: 30000, // Refresh every 30 seconds
-    dedupingInterval: 5000, // Dedupe requests within 5 seconds
-    errorRetryCount: 3,
-    errorRetryInterval: 1000,
-    onSuccess: (data) => {
-      console.log('✅ Community data loaded successfully:', data.stories?.length, 'stories');
-    },
-    onError: (error) => {
-      console.error('❌ Community data fetch failed:', error);
-    }
-  });
+  // Enhanced SWR hook with localStorage caching
+  const { data, error, isLoading, isValidating } = useCommunityStories();
 
   // Transform data when available
   const stories = data?.success ? data.stories.map((story: any) => ({

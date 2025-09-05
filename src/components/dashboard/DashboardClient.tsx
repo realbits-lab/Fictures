@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { SkeletonLoader, StoryCardSkeleton, DashboardWidgetSkeleton } from "@/components/ui";
-import { useStories } from "@/hooks/useStories";
+import { useUserStories } from "@/lib/hooks/use-page-cache";
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
@@ -64,7 +64,10 @@ function DashboardWidgetsSkeletonSection() {
 
 export function DashboardClient() {
   const { data: session } = useSession();
-  const { stories, isLoading, isValidating, error, refreshStories } = useStories();
+  const { data, isLoading, isValidating, error, mutate: refreshStories } = useUserStories();
+  
+  // Transform data to match expected format
+  const stories = data?.success ? data.stories : [];
 
   // Show loading state
   if (!session?.user?.id) {
