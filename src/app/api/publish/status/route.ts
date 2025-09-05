@@ -16,14 +16,14 @@ export async function GET(request: NextRequest) {
     const userStories = await db
       .select()
       .from(stories)
-      .where(eq(stories.userId, session.user.id))
+      .where(eq(stories.authorId, session.user.id))
       .orderBy(desc(stories.updatedAt))
       .limit(10);
 
     const userChapters = await db
       .select()
       .from(chapters)
-      .where(eq(chapters.userId, session.user.id))
+      .where(eq(chapters.authorId, session.user.id))
       .orderBy(desc(chapters.updatedAt))
       .limit(20);
 

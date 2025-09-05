@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       .from(chapters)
       .where(
         and(
-          eq(chapters.userId, session.user.id),
+          eq(chapters.authorId, session.user.id),
           isNotNull(chapters.publishedAt)
         )
       )
