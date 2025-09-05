@@ -140,99 +140,16 @@ export const characters = pgTable('characters', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Writing sessions table - Track AI-assisted writing sessions
-export const writingSessions = pgTable('writing_sessions', {
-  id: text('id').primaryKey(),
-  userId: text('user_id').references(() => users.id).notNull(),
-  chapterId: text('chapter_id').references(() => chapters.id),
-  startTime: timestamp('start_time').defaultNow().notNull(),
-  endTime: timestamp('end_time'),
-  wordsWritten: integer('words_written').default(0),
-  aiSuggestionsUsed: integer('ai_suggestions_used').default(0),
-  status: varchar('status', { length: 50 }).default('active'), // active, completed, paused
-  sessionData: json('session_data').$type<Record<string, unknown>>().default({}),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
-
-// AI interactions table - Track AI assistant usage
+// AI interactions table - Track AI assistant usage (simplified, no sessions)
 export const aiInteractions = pgTable('ai_interactions', {
   id: text('id').primaryKey(),
   userId: text('user_id').references(() => users.id).notNull(),
-  sessionId: text('session_id').references(() => writingSessions.id),
   type: varchar('type', { length: 100 }).notNull(), // suggestion, analysis, generation, etc.
   prompt: text('prompt').notNull(),
   response: text('response').notNull(),
   applied: boolean('applied').default(false),
   rating: integer('rating'), // 1-5 rating by user
   createdAt: timestamp('created_at').defaultNow().notNull(),
-});
-
-// Comments table - Reader comments on chapters
-export const comments = pgTable('comments', {
-  id: text('id').primaryKey(),
-  content: text('content').notNull(),
-  chapterId: text('chapter_id').references(() => chapters.id).notNull(),
-  userId: text('user_id').references(() => users.id).notNull(),
-  parentId: text('parent_id'), // For replies - self-reference
-  likes: integer('likes').default(0),
-  isHighlighted: boolean('is_highlighted').default(false), // Author can highlight comments
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
-
-// Reactions table - User reactions to stories/chapters
-export const reactions = pgTable('reactions', {
-  id: text('id').primaryKey(),
-  userId: text('user_id').references(() => users.id).notNull(),
-  targetId: text('target_id').notNull(), // Can reference stories or chapters
-  targetType: varchar('target_type', { length: 50 }).notNull(), // story, chapter
-  type: varchar('type', { length: 50 }).notNull(), // like, love, wow, etc.
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
-
-// Ratings table - User ratings for stories
-export const ratings = pgTable('ratings', {
-  id: text('id').primaryKey(),
-  userId: text('user_id').references(() => users.id).notNull(),
-  storyId: text('story_id').references(() => stories.id).notNull(),
-  rating: integer('rating').notNull(), // 1-5
-  review: text('review'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
-
-// Follows table - User follows/subscriptions
-export const follows = pgTable('follows', {
-  id: text('id').primaryKey(),
-  followerId: text('follower_id').references(() => users.id).notNull(),
-  followingId: text('following_id').references(() => users.id).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
-
-// Story subscriptions table - Users subscribed to story updates
-export const storySubscriptions = pgTable('story_subscriptions', {
-  id: text('id').primaryKey(),
-  userId: text('user_id').references(() => users.id).notNull(),
-  storyId: text('story_id').references(() => stories.id).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
-
-// User achievements table - Gamification
-export const achievements = pgTable('achievements', {
-  id: text('id').primaryKey(),
-  name: varchar('name', { length: 255 }).notNull(),
-  description: text('description').notNull(),
-  icon: varchar('icon', { length: 50 }),
-  category: varchar('category', { length: 100 }),
-  requirement: json('requirement').$type<Record<string, unknown>>(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
-
-export const userAchievements = pgTable('user_achievements', {
-  id: text('id').primaryKey(),
-  userId: text('user_id').references(() => users.id).notNull(),
-  achievementId: text('achievement_id').references(() => achievements.id).notNull(),
-  unlockedAt: timestamp('unlocked_at').defaultNow().notNull(),
 });
 
 // User stats table - Track various user statistics
@@ -256,14 +173,7 @@ export const userStats = pgTable('user_stats', {
 // Define relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   stories: many(stories),
-  writingSessions: many(writingSessions),
-  comments: many(comments),
-  reactions: many(reactions),
-  ratings: many(ratings),
-  followers: many(follows, { relationName: 'followers' }),
-  following: many(follows, { relationName: 'following' }),
-  subscriptions: many(storySubscriptions),
-  achievements: many(userAchievements),
+  aiInteractions: many(aiInteractions),
   stats: one(userStats),
 }));
 
@@ -275,10 +185,6 @@ export const storiesRelations = relations(stories, ({ one, many }) => ({
   parts: many(parts),
   chapters: many(chapters),
   characters: many(characters),
-  comments: many(comments),
-  reactions: many(reactions),
-  ratings: many(ratings),
-  subscriptions: many(storySubscriptions),
 }));
 
 export const partsRelations = relations(parts, ({ one, many }) => ({
@@ -299,9 +205,6 @@ export const chaptersRelations = relations(chapters, ({ one, many }) => ({
     references: [parts.id],
   }),
   scenes: many(scenes),
-  comments: many(comments),
-  reactions: many(reactions),
-  writingSessions: many(writingSessions),
 }));
 
 export const scenesRelations = relations(scenes, ({ one }) => ({
@@ -318,31 +221,10 @@ export const charactersRelations = relations(characters, ({ one }) => ({
   }),
 }));
 
-export const writingSessionsRelations = relations(writingSessions, ({ one, many }) => ({
+export const aiInteractionsRelations = relations(aiInteractions, ({ one }) => ({
   user: one(users, {
-    fields: [writingSessions.userId],
+    fields: [aiInteractions.userId],
     references: [users.id],
   }),
-  chapter: one(chapters, {
-    fields: [writingSessions.chapterId],
-    references: [chapters.id],
-  }),
-  aiInteractions: many(aiInteractions),
 }));
 
-export const commentsRelations = relations(comments, ({ one, many }) => ({
-  chapter: one(chapters, {
-    fields: [comments.chapterId],
-    references: [chapters.id],
-  }),
-  user: one(users, {
-    fields: [comments.userId],
-    references: [users.id],
-  }),
-  parent: one(comments, {
-    fields: [comments.parentId],
-    references: [comments.id],
-    relationName: 'commentReplies',
-  }),
-  replies: many(comments, { relationName: 'commentReplies' }),
-}));

@@ -19,9 +19,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Process Guidelines
 
 When running the development server:
-- Execute `pnpm dev` as a background process for continuous development
-- Redirect output to a log file for monitoring and debugging purposes
+- Execute `dotenv --file .env.local run pnpm dev` as a background process for continuous development to ensure proper environment variable loading
+- Redirect output to a log file for monitoring and debugging purposes  
 - Check port 3000 availability before starting - if already in use, kill the existing process and restart
+
+## Database Management Guidelines
+
+**IMPORTANT: Use Neon Database, NOT Supabase**
+- This application uses **Neon PostgreSQL database** as configured in `.env.local` 
+- The Supabase MCP tool connects to a different database instance and should NOT be used for this project
+- Always use the application's built-in database connection (Drizzle ORM) for data operations
+- When debugging database issues, use database queries within the application code rather than external tools
+- Environment variables must be loaded with `dotenv --file .env.local run` to ensure proper database connectivity
 
 ## Database Commands
 
