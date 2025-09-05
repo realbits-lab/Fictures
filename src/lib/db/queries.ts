@@ -275,7 +275,25 @@ export async function updateUserStats(userId: string, updates: Partial<{
 }
 
 // Dynamic status calculation utilities
-export function calculateSceneStatus(scene: { content?: string; wordCount?: number }) {
+export function calculateSceneStatus(scene: { content?: string; wordCount?: number; status?: string }) {
+  // Always respect explicit database status first
+  if (scene.status === 'complete') {
+    return 'completed';
+  }
+  if (scene.status === 'completed') {
+    return 'completed';
+  }
+  if (scene.status === 'in_progress') {
+    return 'in_progress';
+  }
+  if (scene.status === 'planned') {
+    return 'planned';
+  }
+  if (scene.status === 'draft') {
+    return 'draft';
+  }
+  
+  // If no explicit database status, calculate based on content
   if (!scene.content || scene.content.trim() === '') {
     return 'draft';
   }
@@ -386,7 +404,8 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
             const sceneWordCount = sceneData.scenes?.wordCount || 0;
             const dynamicSceneStatus = calculateSceneStatus({ 
               content: sceneContent, 
-              wordCount: sceneWordCount 
+              wordCount: sceneWordCount,
+              status: sceneData.scenes?.status || ''
             });
             
             return {
@@ -441,7 +460,8 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
           const sceneWordCount = sceneData.scenes?.wordCount || 0;
           const dynamicSceneStatus = calculateSceneStatus({ 
             content: sceneContent, 
-            wordCount: sceneWordCount 
+            wordCount: sceneWordCount,
+            status: sceneData.scenes?.status || ''
           });
           
           return {
@@ -492,6 +512,7 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
 
 // Get chapter with part information
 export async function getChapterWithPart(chapterId: string, userId?: string) {
+  
   const [result] = await db
     .select({
       chapter: chapters,
@@ -522,9 +543,12 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
   const scenesWithStatus = chapterScenes.map(scene => {
     const sceneContent = scene.content || '';
     const sceneWordCount = scene.wordCount || 0;
+    const dbStatus = scene.status || '';
+    
     const dynamicSceneStatus = calculateSceneStatus({ 
       content: sceneContent, 
-      wordCount: sceneWordCount 
+      wordCount: sceneWordCount,
+      status: dbStatus
     });
     
     return {
