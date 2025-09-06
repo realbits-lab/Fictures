@@ -1,19 +1,24 @@
-import { xai } from '@ai-sdk/xai';
+import { gateway } from '@ai-sdk/gateway';
+
+// AI Gateway configuration  
+const aiGateway = gateway({
+  apiKey: process.env.AI_GATEWAY_API_KEY!,
+});
 
 // Default model configuration
-export const DEFAULT_MODEL = 'grok-2-1212';
-export const REASONING_MODEL = 'grok-2-reasoning';
+export const DEFAULT_MODEL = 'openai/gpt-4o-mini';
+export const REASONING_MODEL = 'openai/gpt-4o-mini';
 
 // AI models configuration
 export const AI_MODELS = {
   // Main writing model - balanced for creative writing
-  writing: xai(DEFAULT_MODEL),
+  writing: aiGateway(DEFAULT_MODEL),
   
   // Reasoning model for complex analysis
-  analysis: xai(REASONING_MODEL),
+  analysis: aiGateway(REASONING_MODEL),
   
   // Fast model for quick suggestions
-  quick: xai('grok-2-mini'),
+  quick: aiGateway('openai/gpt-4o-mini'),
 } as const;
 
 // AI prompt templates

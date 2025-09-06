@@ -1,7 +1,8 @@
 import { db } from './index';
 import { stories, chapters, users, userStats, parts, scenes } from './schema';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc, and, inArray } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import { RelationshipManager } from './relationships';
 
 // User authentication queries
 export async function findUserByEmail(email: string) {
@@ -66,6 +67,9 @@ export async function createStory(authorId: string, data: {
     targetWordCount: data.targetWordCount || 50000,
     status: 'draft',
     isPublic: false,
+    // Initialize bi-directional arrays
+    partIds: [],
+    chapterIds: [],
   }).returning();
 
   return story;
@@ -98,12 +102,7 @@ export async function getUserStoriesWithFirstChapter(userId: string) {
       status: chapters.status
     })
     .from(chapters)
-    .where(storyIds.length === 1 
-      ? eq(chapters.storyId, storyIds[0])
-      : chapters.storyId.in 
-        ? chapters.storyId.in(storyIds)
-        : storyIds.map(id => eq(chapters.storyId, id)).reduce((a, b) => a.or ? a.or(b) : b)
-    )
+    .where(inArray(chapters.storyId, storyIds))
     .orderBy(chapters.orderIndex);
 
   // Query 3: Get all parts for all user stories at once with minimal data
@@ -113,12 +112,7 @@ export async function getUserStoriesWithFirstChapter(userId: string) {
       id: parts.id
     })
     .from(parts)
-    .where(storyIds.length === 1 
-      ? eq(parts.storyId, storyIds[0])
-      : parts.storyId.in 
-        ? parts.storyId.in(storyIds)
-        : storyIds.map(id => eq(parts.storyId, id)).reduce((a, b) => a.or ? a.or(b) : b)
-    );
+    .where(inArray(parts.storyId, storyIds));
 
   // Process data efficiently in memory
   const storiesWithData = userStories.map(story => {
@@ -194,35 +188,40 @@ export async function createChapter(storyId: string, authorId: string, data: {
   orderIndex: number;
   targetWordCount?: number;
 }) {
-  const chapterId = nanoid();
-  
-  const [chapter] = await db.insert(chapters).values({
-    id: chapterId,
-    title: data.title,
+  // Use RelationshipManager for bi-directional consistency
+  const chapterId = await RelationshipManager.addChapterToStory(
     storyId,
-    authorId,
-    partId: data.partId,
-    orderIndex: data.orderIndex,
-    targetWordCount: data.targetWordCount || 4000,
-    status: 'draft',
-    content: '',
-  }).returning();
-
-  return chapter;
+    {
+      title: data.title,
+      authorId,
+      orderIndex: data.orderIndex,
+      targetWordCount: data.targetWordCount || 4000,
+      status: 'draft',
+      sceneIds: [], // Initialize empty scene IDs
+    },
+    data.partId
+  );
+  
+  // Return the created chapter
+  const [chapter] = await db.select()
+    .from(chapters)
+    .where(eq(chapters.id, chapterId))
+    .limit(1);
+    
+  return chapter!;
 }
 
 // Create the first chapter for a story
 export async function createFirstChapter(storyId: string, authorId: string) {
-  // Get the next order index (should be 1 for first chapter)
-  const existingChapters = await db
-    .select()
-    .from(chapters)
-    .where(eq(chapters.storyId, storyId))
-    .orderBy(desc(chapters.orderIndex));
+  // Use bi-directional lookup for faster chapter count
+  const [story] = await db.select()
+    .from(stories)
+    .where(eq(stories.id, storyId))
+    .limit(1);
+    
+  if (!story) throw new Error('Story not found');
   
-  const nextOrderIndex = existingChapters.length > 0 
-    ? existingChapters[0].orderIndex + 1 
-    : 1;
+  const nextOrderIndex = story.chapterIds.length + 1;
 
   return createChapter(storyId, authorId, {
     title: `Chapter ${nextOrderIndex}`,
@@ -392,84 +391,59 @@ export function calculateStoryStatus(parts: Array<{ status: string }>, chapters:
   }
 }
 
-// Comprehensive story data with parts, chapters, and scenes
+// Comprehensive story data with parts, chapters, and scenes - OPTIMIZED with bi-directional relationships
 export async function getStoryWithStructure(storyId: string, userId?: string) {
-  // First check if user has access to the story
-  const story = await getStoryById(storyId, userId);
-  if (!story) return null;
-
-  // Get all parts for the story
-  const storyParts = await db
-    .select()
-    .from(parts)
-    .where(eq(parts.storyId, storyId))
-    .orderBy(parts.orderIndex);
-
-  // Get all chapters for the story
-  const storyChapters = await db
-    .select()
-    .from(chapters)
-    .where(eq(chapters.storyId, storyId))
-    .orderBy(chapters.orderIndex);
-
-  // Get all scenes for chapters in this story
-  const allScenes = await db
-    .select()
-    .from(scenes)
-    .leftJoin(chapters, eq(scenes.chapterId, chapters.id))
-    .where(eq(chapters.storyId, storyId))
-    .orderBy(scenes.orderIndex);
-
-  // Structure the data to match the StoryNavigationSidebar interface with dynamic status calculation
-  const structuredParts = storyParts.map(part => {
-    const partChapters = storyChapters
-      .filter(ch => ch.partId === part.id)
-      .map(ch => {
-        const chapterScenes = allScenes
-          .filter(sceneData => sceneData.scenes?.chapterId === ch.id)
-          .map(sceneData => {
-            // Calculate dynamic scene status based on content and word count
-            const sceneContent = sceneData.scenes?.content || '';
-            const sceneWordCount = sceneData.scenes?.wordCount || 0;
-            const dynamicSceneStatus = calculateSceneStatus({ 
-              content: sceneContent, 
-              wordCount: sceneWordCount,
-              status: sceneData.scenes?.status || ''
-            });
-            
-            // Create new scene object for each chapter to avoid reference sharing
-            return {
-              id: sceneData.scenes?.id || '',
-              title: sceneData.scenes?.title || '',
-              status: dynamicSceneStatus,
-              wordCount: sceneWordCount,
-              goal: sceneData.scenes?.goal || '',
-              conflict: sceneData.scenes?.conflict || '',
-              outcome: sceneData.scenes?.outcome || '',
-              content: sceneContent,
-              orderIndex: sceneData.scenes?.orderIndex || 0
-            };
-          })
-          .sort((a, b) => a.orderIndex - b.orderIndex);
-
-        // Use database status if published, otherwise use calculated status
-        const dynamicChapterStatus = calculateChapterStatus(chapterScenes);
-        const finalStatus = ch.status === 'published' ? 'published' : dynamicChapterStatus;
+  // Get story with all relationships using direct array lookups (much faster)
+  const result = await RelationshipManager.getStoryWithStructure(storyId);
+  if (!result) return null;
+  
+  // Check user access
+  if (userId && result.authorId !== userId && !result.isPublic) {
+    return null;
+  }
+  
+  // Apply dynamic status calculations to match original interface
+  const structuredParts = result.parts.map(part => {
+    const partChapters = part.chapters.map(chapter => {
+      const chapterScenes = chapter.scenes.map(scene => {
+        // Calculate dynamic scene status
+        const dynamicSceneStatus = calculateSceneStatus({
+          content: scene.content || '',
+          wordCount: scene.wordCount || 0,
+          status: scene.status || ''
+        });
         
         return {
-          id: ch.id,
-          title: ch.title,
-          orderIndex: ch.orderIndex,
-          status: finalStatus,
-          wordCount: ch.wordCount || 0,
-          targetWordCount: ch.targetWordCount || 4000,
-          scenes: chapterScenes
+          id: scene.id,
+          title: scene.title,
+          status: dynamicSceneStatus,
+          wordCount: scene.wordCount || 0,
+          goal: scene.goal || '',
+          conflict: scene.conflict || '',
+          outcome: scene.outcome || '',
+          content: scene.content || '',
+          orderIndex: scene.orderIndex
         };
-      });
-
-    // Calculate dynamic part status based on chapter completion
+      }).sort((a, b) => a.orderIndex - b.orderIndex);
+      
+      // Calculate dynamic chapter status
+      const dynamicChapterStatus = calculateChapterStatus(chapterScenes);
+      const finalStatus = chapter.status === 'published' ? 'published' : dynamicChapterStatus;
+      
+      return {
+        id: chapter.id,
+        title: chapter.title,
+        orderIndex: chapter.orderIndex,
+        status: finalStatus,
+        wordCount: chapter.wordCount || 0,
+        targetWordCount: chapter.targetWordCount || 4000,
+        scenes: chapterScenes
+      };
+    });
+    
+    // Calculate dynamic part status
     const dynamicPartStatus = calculatePartStatus(partChapters);
-
+    
     return {
       id: part.id,
       title: part.title,
@@ -478,68 +452,58 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
       chapters: partChapters
     };
   });
-
-  // Get standalone chapters (not in parts) with dynamic status calculation
-  const standaloneChapters = storyChapters
-    .filter(ch => !ch.partId)
-    .map(ch => {
-      const chapterScenes = allScenes
-        .filter(sceneData => sceneData.scenes?.chapterId === ch.id)
-        .map(sceneData => {
-          // Calculate dynamic scene status based on content and word count
-          const sceneContent = sceneData.scenes?.content || '';
-          const sceneWordCount = sceneData.scenes?.wordCount || 0;
-          const dynamicSceneStatus = calculateSceneStatus({ 
-            content: sceneContent, 
-            wordCount: sceneWordCount,
-            status: sceneData.scenes?.status || ''
-          });
-          
-          // Create new scene object for each chapter to avoid reference sharing
-          return {
-            id: sceneData.scenes?.id || '',
-            title: sceneData.scenes?.title || '',
-            status: dynamicSceneStatus,
-            wordCount: sceneWordCount,
-            goal: sceneData.scenes?.goal || '',
-            conflict: sceneData.scenes?.conflict || '',
-            outcome: sceneData.scenes?.outcome || '',
-            content: sceneContent,
-            orderIndex: sceneData.scenes?.orderIndex || 0
-          };
-        })
-        .sort((a, b) => a.orderIndex - b.orderIndex);
-
-      // Use database status if published, otherwise use calculated status
-      const dynamicChapterStatus = calculateChapterStatus(chapterScenes);
-      const finalStatus = ch.status === 'published' ? 'published' : dynamicChapterStatus;
+  
+  // Process standalone chapters
+  const standaloneChapters = result.chapters.map(chapter => {
+    const chapterScenes = chapter.scenes.map(scene => {
+      const dynamicSceneStatus = calculateSceneStatus({
+        content: scene.content || '',
+        wordCount: scene.wordCount || 0,
+        status: scene.status || ''
+      });
       
       return {
-        id: ch.id,
-        title: ch.title,
-        orderIndex: ch.orderIndex,
-        status: finalStatus,
-        wordCount: ch.wordCount || 0,
-        targetWordCount: ch.targetWordCount || 4000,
-        scenes: chapterScenes
+        id: scene.id,
+        title: scene.title,
+        status: dynamicSceneStatus,
+        wordCount: scene.wordCount || 0,
+        goal: scene.goal || '',
+        conflict: scene.conflict || '',
+        outcome: scene.outcome || '',
+        content: scene.content || '',
+        orderIndex: scene.orderIndex
       };
-    });
-
-  // Use database status if published, otherwise use calculated status
+    }).sort((a, b) => a.orderIndex - b.orderIndex);
+    
+    const dynamicChapterStatus = calculateChapterStatus(chapterScenes);
+    const finalStatus = chapter.status === 'published' ? 'published' : dynamicChapterStatus;
+    
+    return {
+      id: chapter.id,
+      title: chapter.title,
+      orderIndex: chapter.orderIndex,
+      status: finalStatus,
+      wordCount: chapter.wordCount || 0,
+      targetWordCount: chapter.targetWordCount || 4000,
+      scenes: chapterScenes
+    };
+  });
+  
+  // Calculate dynamic story status
   const dynamicStoryStatus = calculateStoryStatus(structuredParts, standaloneChapters);
-  const finalStoryStatus = story.status === 'published' ? 'published' : dynamicStoryStatus;
-
+  const finalStoryStatus = result.status === 'published' ? 'published' : dynamicStoryStatus;
+  
   return {
-    id: story.id,
-    title: story.title,
-    description: story.description,
-    genre: story.genre || 'General',
+    id: result.id,
+    title: result.title,
+    description: result.description,
+    genre: result.genre || 'General',
     status: finalStoryStatus,
-    storyData: story.storyData || null,
-    userId: story.authorId,
+    storyData: result.storyData || null,
+    userId: result.authorId,
     parts: structuredParts,
     chapters: standaloneChapters,
-    scenes: allScenes
+    scenes: [] // Legacy field - scenes are now nested in chapters
   };
 }
 
@@ -548,7 +512,25 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
   
   const [result] = await db
     .select({
-      chapter: chapters,
+      chapter: {
+        id: chapters.id,
+        title: chapters.title,
+        summary: chapters.summary,
+        storyId: chapters.storyId,
+        partId: chapters.partId,
+        authorId: chapters.authorId,
+        orderIndex: chapters.orderIndex,
+        wordCount: chapters.wordCount,
+        targetWordCount: chapters.targetWordCount,
+        status: chapters.status,
+        purpose: chapters.purpose,
+        hook: chapters.hook,
+        characterFocus: chapters.characterFocus,
+        publishedAt: chapters.publishedAt,
+        scheduledFor: chapters.scheduledFor,
+        createdAt: chapters.createdAt,
+        updatedAt: chapters.updatedAt,
+      },
       part: parts,
       story: stories
     })
@@ -647,8 +629,7 @@ export async function getPublishedStories() {
       hasPublishedChapter: eq(chapters.status, 'published')
     })
     .from(chapters)
-    .where(chapters.storyId.in ? chapters.storyId.in(storyIds) : 
-           storyIds.map(id => eq(chapters.storyId, id)).reduce((a, b) => a.or ? a.or(b) : b));
+    .where(inArray(chapters.storyId, storyIds));
 
   // Query 3: Get all scenes for all chapters in published stories with aggregated data
   const chapterIds = storyChapters.map(ch => ch.chapterId);
@@ -658,12 +639,8 @@ export async function getPublishedStories() {
       sceneWordCount: scenes.wordCount
     })
     .from(scenes)
-    .where(chapterIds.length === 1 
-      ? eq(scenes.chapterId, chapterIds[0])
-      : scenes.chapterId.in 
-        ? scenes.chapterId.in(chapterIds)
-        : chapterIds.map(id => eq(scenes.chapterId, id)).reduce((a, b) => a.or ? a.or(b) : b)
-    ) : [];
+    .where(inArray(scenes.chapterId, chapterIds))
+    : [];
 
   // Process data to calculate word counts - show all published stories
   const validPublishedStories = [];

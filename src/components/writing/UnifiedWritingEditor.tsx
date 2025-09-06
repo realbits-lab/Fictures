@@ -11,6 +11,9 @@ import { PartEditor } from "./PartEditor";
 import { ChapterEditor } from "./ChapterEditor";
 import { SceneEditor } from "./SceneEditor";
 import { StoryStructureSidebar } from "./StoryStructureSidebar";
+import { SceneSidebar } from "./SceneSidebar";
+import { WritingGuidelines } from "./WritingGuidelines";
+import { HierarchicalDataSidebar } from "./HierarchicalDataSidebar";
 
 interface Story {
   id: string;
@@ -97,6 +100,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const [yamlLevel, setYamlLevel] = useState<EditorLevel>("story");
   const [isLoading, setIsLoading] = useState(false);
   const [showThemePlanner, setShowThemePlanner] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // SWR hook for fetching story data when switching stories
   const [targetStoryId, setTargetStoryId] = useState<string | null>(null);
@@ -756,7 +760,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         });
         
         const partData = selectedPart ? 
-          createPartData(partNumber, selectedPart.title) : 
+          createPartData(partNumber, `Part ${partNumber}`) : 
           samplePartData;
         
         return (
@@ -848,7 +852,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                   <div className="text-gray-500 dark:text-gray-400 mb-4">
                     <div className="text-4xl mb-4">📄</div>
                     <h3 className="text-lg font-medium mb-2 text-[rgb(var(--card-foreground))]">No Chapter Data</h3>
-                    <p>This chapter doesn't exist or hasn't been created yet.</p>
+                    <p>This chapter doesn&apos;t exist or hasn&apos;t been created yet.</p>
                     <p className="text-sm mt-2">Chapter ID: {currentSelection.chapterId}</p>
                   </div>
                   <Button 
@@ -1416,7 +1420,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                       className={`${currentChapterStatus === 'published' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-[rgb(var(--primary))] hover:bg-[rgb(var(--primary)/90%)] text-[rgb(var(--primary-foreground))]'} rounded-[var(--radius)]`}
                       title={
                         currentChapterStatus === 'published' 
-                          ? 'Unpublish chapter' 
+                          ? 'Chapter is published - click to unpublish' 
                           : 'Publish chapter'
                       }
                     >
@@ -1424,7 +1428,105 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                         (currentChapterStatus === 'published' ? "⚡ Unpublishing..." : "⚡ Publishing...") : 
                         (
                           <div className="flex items-center gap-1">
-                            <span>{currentChapterStatus === 'published' ? "📤 Unpublish" : "🚀 Publish"}</span>
+                            <span>{currentChapterStatus === 'published' ? "🚀 Published" : "🚀 Publish"}</span>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" opacity="0.6">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                            </svg>
+                          </div>
+                        )}
+                    </Button>
+                  );
+                })()
+              )}
+              {currentSelection.level === "scene" && (
+                (() => {
+                  // Find the current scene for status buttons
+                  let currentScene = null;
+                  let currentSceneStatus = 'planned';
+                  
+                  // Look through all parts and chapters to find the current scene
+                  for (const part of story.parts) {
+                    for (const chapter of part.chapters) {
+                      if (chapter.scenes) {
+                        const foundScene = chapter.scenes.find(scene => scene.id === currentSelection.sceneId);
+                        if (foundScene) {
+                          currentScene = foundScene;
+                          currentSceneStatus = foundScene.status || 'planned';
+                          break;
+                        }
+                      }
+                    }
+                    if (currentScene) break;
+                  }
+                  
+                  // Also check standalone chapters
+                  if (!currentScene) {
+                    for (const chapter of story.chapters) {
+                      if (chapter.scenes) {
+                        const foundScene = chapter.scenes.find(scene => scene.id === currentSelection.sceneId);
+                        if (foundScene) {
+                          currentScene = foundScene;
+                          currentSceneStatus = foundScene.status || 'planned';
+                          break;
+                        }
+                      }
+                    }
+                  }
+
+                  // If scene is planned, treat as in_progress for display
+                  const displayStatus = currentSceneStatus === 'planned' ? 'in_progress' : currentSceneStatus;
+
+                  const handleSceneStatusToggle = async () => {
+                    if (!currentScene) return;
+                    
+                    // Toggle between in_progress and completed only (treat planned as in_progress)
+                    const newStatus = currentSceneStatus === 'completed' ? 'in_progress' : 'completed';
+                    
+                    setIsLoading(true);
+                    try {
+                      const response = await fetch(`/api/scenes/${currentScene.id}`, {
+                        method: 'PATCH',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          status: newStatus
+                        })
+                      });
+
+                      if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`Failed to update scene status: ${errorData.error || 'Unknown error'}`);
+                      }
+
+                      // Refresh to show updated status
+                      router.refresh();
+                      
+                    } catch (error) {
+                      console.error('Failed to update scene status:', error);
+                      alert('Failed to update scene status. Please try again.');
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  };
+
+                  return (
+                    <Button 
+                      size="sm" 
+                      onClick={handleSceneStatusToggle} 
+                      disabled={isLoading}
+                      className={`${displayStatus === 'completed' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-yellow-600 hover:bg-yellow-700 text-white'} rounded-[var(--radius)]`}
+                      title={
+                        displayStatus === 'completed' 
+                          ? 'Scene is completed - click to mark as in progress' 
+                          : 'Scene is in progress - click to mark as completed'
+                      }
+                    >
+                      {isLoading ? 
+                        "⚡ Updating..." : 
+                        (
+                          <div className="flex items-center gap-1">
+                            <span>{displayStatus === 'completed' ? "✅ Completed" : "⏳ In Progress"}</span>
                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" opacity="0.6">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                             </svg>
@@ -1439,44 +1541,88 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="w-full px-4 py-6">
+        <div className={`grid ${sidebarCollapsed ? 'grid-cols-12' : 'grid-cols-12'} gap-6 min-h-[calc(100vh-200px)]`}>
           {/* Left Sidebar - Story Structure Navigation */}
-          <div className="space-y-6">
-            <StoryStructureSidebar 
-              story={story}
-              currentSelection={currentSelection}
+          {!sidebarCollapsed && (
+            <div className="col-span-12 lg:col-span-3 space-y-6">
+              <StoryStructureSidebar 
+                story={story}
+                currentSelection={currentSelection}
+                onSidebarCollapse={setSidebarCollapsed}
               onSelectionChange={handleSelectionChange}
               validatingStoryId={
                 isValidatingCurrentStory ? story.id : null
               }
             />
-          </div>
+            </div>
+          )}
           
-          {/* Main Writing Area */}
-          <div className="lg:col-span-2">
+          {/* Collapsed sidebar trigger */}
+          {sidebarCollapsed && (
+            <StoryStructureSidebar 
+              story={story}
+              currentSelection={currentSelection}
+              onSidebarCollapse={setSidebarCollapsed}
+              onSelectionChange={handleSelectionChange}
+              validatingStoryId={
+                isValidatingCurrentStory ? story.id : null
+              }
+            />
+          )}
+          
+          {/* Main Writing Area - 50% width */}
+          <div className={`col-span-12 ${sidebarCollapsed ? 'lg:col-span-9' : 'lg:col-span-6'}`}>
             {renderEditor()}
           </div>
 
-          {/* Right Sidebar - YAML Data Display */}
-          <div className="space-y-6">
-            {/* YAML Data Display */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">📊 YAML Data</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="overflow-y-auto">
-                  <YAMLDataDisplay
-                    storyData={(currentSelection.level === "part" || currentSelection.level === "chapter" || currentSelection.level === "scene" || yamlLevel === "story") ? sampleStoryData : undefined}
-                    partData={(currentSelection.level === "chapter" || currentSelection.level === "scene") ? samplePartData : (currentSelection.level !== "part" && yamlLevel === "part") ? samplePartData : undefined}
-                    chapterData={(currentSelection.level === "scene") ? sampleChapterData : yamlLevel === "chapter" ? sampleChapterData : undefined}
-                    sceneData={currentSelection.level === "scene" ? sampleSceneData : undefined}
-                    currentLevel={currentSelection.level === "part" ? "story" : currentSelection.level === "chapter" ? "chapter" : currentSelection.level === "scene" ? "scene" : yamlLevel}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+          {/* Right Sidebar */}
+          <div className="col-span-12 lg:col-span-3 space-y-6">
+            {currentSelection.level === "scene" ? (
+              // Scene view: Show SceneSidebar with scene controls and YAML data
+              <SceneSidebar
+                sceneData={{
+                  id: sampleSceneData.id,
+                  summary: sampleSceneData.summary,
+                  time: sampleSceneData.time,
+                  place: sampleSceneData.place,
+                  pov: sampleSceneData.pov,
+                  characters: sampleSceneData.characters,
+                  goal: sampleSceneData.goal,
+                  obstacle: sampleSceneData.obstacle,
+                  outcome: sampleSceneData.outcome,
+                  beats: sampleSceneData.beats,
+                  shift: sampleSceneData.shift,
+                  leads_to: sampleSceneData.leads_to,
+                  image_prompt: sampleSceneData.image_prompt
+                }}
+                chapterContext={{
+                  title: "Chapter Context",
+                  pov: sampleChapterData.pov,
+                  acts: sampleChapterData.acts
+                }}
+                storyData={sampleStoryData}
+                partData={samplePartData}
+                chapterData={sampleChapterData}
+                onSave={handleSave}
+                onSceneDataChange={(field, value) => {
+                  // Handle scene data changes
+                  console.log(`Updating scene field ${field}:`, value);
+                }}
+              />
+            ) : null}
+            
+            {/* Hierarchical Data Sidebar - Show for all levels */}
+            <HierarchicalDataSidebar
+              storyData={sampleStoryData}
+              partData={(currentSelection.level === "part" || currentSelection.level === "chapter" || currentSelection.level === "scene") ? samplePartData : undefined}
+              chapterData={(currentSelection.level === "chapter" || currentSelection.level === "scene") ? sampleChapterData : undefined}
+              sceneData={currentSelection.level === "scene" ? sampleSceneData : undefined}
+              currentLevel={currentSelection.level}
+            />
+            
+            {/* Writing Guidelines - Show for scene editing */}
+            <WritingGuidelines currentLevel={currentSelection.level} />
           </div>
         </div>
       </div>

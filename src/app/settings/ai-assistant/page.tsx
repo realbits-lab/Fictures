@@ -110,11 +110,9 @@ export default function AIAssistantPage() {
             <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
               Primary AI Model
             </label>
-            <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" defaultValue="Grok-2 (Default)">
-              <option>Grok-2 (Default)</option>
-              <option>GPT-4</option>
-              <option>Claude-3.5</option>
-              <option>Gemini Pro</option>
+            <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" defaultValue="OpenAI GPT-4o-mini (Default)">
+              <option>OpenAI GPT-4o-mini (Default)</option>
+              <option disabled>Other models (via AI Gateway)</option>
             </select>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Choose the AI model that best suits your writing style

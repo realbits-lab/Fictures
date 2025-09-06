@@ -47,6 +47,34 @@ const Camera = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
+const ExpandAll = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+  </svg>
+);
+
+const CollapseAll = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <path d="M8 3v3a2 2 0 0 1-2 2H3M16 3v3a2 2 0 0 0 2 2h3M8 21v-3a2 2 0 0 1-2-2H3M16 21v-3a2 2 0 0 0 2-2h3" />
+  </svg>
+);
+
+const PanelLeftClose = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+    <path d="M9 3v18" />
+    <path d="m16 15-3-3 3-3" />
+  </svg>
+);
+
+const PanelLeftOpen = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+    <path d="M9 3v18" />
+    <path d="m14 9 3 3-3 3" />
+  </svg>
+);
+
 interface Scene {
   id: string;
   title: string;
@@ -93,16 +121,19 @@ interface StoryStructureSidebarProps {
   currentSelection?: Selection;
   onSelectionChange?: (selection: Selection) => void;
   validatingStoryId?: string | null;
+  onSidebarCollapse?: (collapsed: boolean) => void;
 }
 
 export function StoryStructureSidebar({ 
   story, 
   currentSelection, 
   onSelectionChange,
-  validatingStoryId 
+  validatingStoryId,
+  onSidebarCollapse 
 }: StoryStructureSidebarProps) {
   const [expandedParts, setExpandedParts] = useState<Set<string>>(new Set());
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set());
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const togglePartExpansion = (partId: string) => {
     const newExpanded = new Set(expandedParts);
@@ -124,6 +155,22 @@ export function StoryStructureSidebar({
     setExpandedChapters(newExpanded);
   };
 
+  const expandAll = () => {
+    setExpandedParts(new Set(story.parts.map(p => p.id)));
+    setExpandedChapters(new Set(story.parts.flatMap(p => p.chapters).map(c => c.id)));
+  };
+
+  const collapseAll = () => {
+    setExpandedParts(new Set());
+    setExpandedChapters(new Set());
+  };
+
+  const toggleSidebar = () => {
+    const newCollapsed = !sidebarCollapsed;
+    setSidebarCollapsed(newCollapsed);
+    onSidebarCollapse?.(newCollapsed);
+  };
+
   const handleStorySelect = () => {
     onSelectionChange?.({
       level: "story",
@@ -132,6 +179,9 @@ export function StoryStructureSidebar({
   };
 
   const handlePartSelect = (partId: string) => {
+    // Toggle expansion when selecting a part
+    togglePartExpansion(partId);
+    
     onSelectionChange?.({
       level: "part",
       storyId: story.id,
@@ -140,6 +190,9 @@ export function StoryStructureSidebar({
   };
 
   const handleChapterSelect = (partId: string | undefined, chapterId: string) => {
+    // Toggle expansion when selecting a chapter
+    toggleChapterExpansion(chapterId);
+    
     onSelectionChange?.({
       level: "chapter",
       storyId: story.id,
@@ -158,18 +211,47 @@ export function StoryStructureSidebar({
     });
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string, size: number = 12) => {
+    const iconProps = { size, className: "inline-block" };
+    
     switch (status) {
       case 'published':
-        return '🚀';
+        return (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="inline-block text-green-600">
+            <path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        );
       case 'completed':
-        return '✅';
+        return (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="inline-block text-blue-600">
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+        );
       case 'in_progress':
-        return '⏳';
+        return (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="inline-block text-yellow-600">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12,6 12,12 16,14" />
+          </svg>
+        );
       case 'planned':
-        return '📋';
+        return (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="inline-block text-gray-500">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+        );
       default:
-        return '📝';
+        return (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="inline-block text-gray-400">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <path d="M14 2v6h6" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
+        );
     }
   };
 
@@ -188,13 +270,59 @@ export function StoryStructureSidebar({
 
   const isCurrentStory = currentSelection?.level === "story";
 
+  if (sidebarCollapsed) {
+    return (
+      <div className="fixed left-2 top-1/2 transform -translate-y-1/2 z-50">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={toggleSidebar}
+          className="h-12 w-8 p-0 rounded-full shadow-lg"
+        >
+          <PanelLeftOpen size={16} />
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <Card className="h-fit">
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <BookOpen size={16} />
-          Story Structure
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <BookOpen size={16} />
+            Story Structure
+          </CardTitle>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={expandAll}
+              className="h-6 w-6 p-0"
+              title="Expand All"
+            >
+              <ExpandAll size={12} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={collapseAll}
+              className="h-6 w-6 p-0"
+              title="Collapse All"
+            >
+              <CollapseAll size={12} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleSidebar}
+              className="h-6 w-6 p-0"
+              title="Collapse Sidebar"
+            >
+              <PanelLeftClose size={12} />
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-2 max-h-[calc(100vh-16rem)] overflow-y-auto">
@@ -211,7 +339,7 @@ export function StoryStructureSidebar({
                 className="flex-1 justify-start h-8 text-xs"
                 onClick={handleStorySelect}
               >
-                <BookOpen size={12} className="mr-1" />
+                <BookOpen size={10} className="mr-1" />
                 <span className="truncate">{story.title}</span>
                 {validatingStoryId === story.id && (
                   <div className="w-2 h-2 border border-gray-400 border-t-blue-400 rounded-full animate-spin ml-auto opacity-60" 
@@ -220,15 +348,6 @@ export function StoryStructureSidebar({
               </Button>
             </div>
 
-            {/* Story Details */}
-            <div className="ml-2 mt-1 flex items-center gap-2 text-xs text-gray-500">
-              <Badge variant="secondary" className={`text-xs ${getStatusColor(story.status)}`}>
-                {getStatusIcon(story.status)} {story.status}
-              </Badge>
-              <span>{story.genre}</span>
-              <span>•</span>
-              <span>{story.parts.length}P/{(story.parts.flatMap(p => p.chapters).length + story.chapters.length)}C</span>
-            </div>
 
             {/* Story Structure */}
             <div className="ml-2 mt-2 space-y-1">
@@ -260,7 +379,7 @@ export function StoryStructureSidebar({
                         onClick={() => handlePartSelect(part.id)}
                       >
                         <FileText size={10} className="mr-1" />
-                        <span className="truncate">Part {part.orderIndex}: {part.title}</span>
+                        <span className="truncate">Part {part.orderIndex}</span>
                       </Button>
                     </div>
 
@@ -319,9 +438,9 @@ export function StoryStructureSidebar({
                                         >
                                           <Camera size={6} className="mr-1" />
                                           <span className="truncate">{scene.title}</span>
-                                          <Badge variant="outline" className="ml-auto text-xs">
-                                            {getStatusIcon(scene.status)}
-                                          </Badge>
+                                          <div className="ml-auto">
+                                            {getStatusIcon(scene.status, 8)}
+                                          </div>
                                         </Button>
                                       </div>
                                     );
@@ -337,78 +456,6 @@ export function StoryStructureSidebar({
                 );
               })}
 
-              {/* Standalone Chapters */}
-              {story.chapters.length > 0 && (
-                <div className="border-l-2 border-gray-200 pl-2">
-                  <div className="text-xs font-medium text-gray-500 mb-2 px-2">
-                    Standalone Chapters
-                  </div>
-                  {story.chapters.map((chapter) => {
-                    const isChapterExpanded = expandedChapters.has(chapter.id);
-                    const isCurrentChapter = currentSelection?.chapterId === chapter.id;
-
-                    return (
-                      <div key={chapter.id} className="border-l-2 border-gray-100 pl-2 mb-1">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={() => toggleChapterExpansion(chapter.id)}
-                            disabled={!chapter.scenes || chapter.scenes.length === 0}
-                          >
-                            {chapter.scenes && chapter.scenes.length > 0 ? (
-                              isChapterExpanded ? (
-                                <ChevronDown size={8} />
-                              ) : (
-                                <ChevronRight size={8} />
-                              )
-                            ) : (
-                              <div className="w-2 h-2" />
-                            )}
-                          </Button>
-                          
-                          <Button
-                            variant={isCurrentChapter ? "secondary" : "ghost"}
-                            size="sm"
-                            className="flex-1 justify-start h-6 text-xs"
-                            onClick={() => handleChapterSelect(undefined, chapter.id)}
-                          >
-                            <Edit3 size={8} className="mr-1" />
-                            <span className="truncate">Ch {chapter.orderIndex}: {chapter.title}</span>
-                          </Button>
-                        </div>
-
-                        {/* Chapter Scenes */}
-                        {isChapterExpanded && chapter.scenes && (
-                          <div className="ml-6 mt-1 space-y-1">
-                            {chapter.scenes.map((scene) => {
-                              const isCurrentScene = currentSelection?.sceneId === scene.id;
-
-                              return (
-                                <div key={scene.id} className="border-l-2 border-gray-50 pl-2">
-                                  <Button
-                                    variant={isCurrentScene ? "secondary" : "ghost"}
-                                    size="sm"
-                                    className="w-full justify-start h-5 text-xs"
-                                    onClick={() => handleSceneSelect(undefined, chapter.id, scene.id)}
-                                  >
-                                    <Camera size={6} className="mr-1" />
-                                    <span className="truncate">{scene.title}</span>
-                                    <Badge variant="outline" className="ml-auto text-xs">
-                                      {getStatusIcon(scene.status)}
-                                    </Badge>
-                                  </Button>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
             </div>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { parts, stories } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { z } from 'zod';
+import { RelationshipManager } from '@/lib/db/relationships';
 
 export const runtime = 'nodejs';
 
@@ -90,19 +91,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create the part
-    const partId = nanoid();
-    const [newPart] = await db.insert(parts).values({
-      id: partId,
-      title: validatedData.title,
-      description: validatedData.description,
-      storyId: validatedData.storyId,
-      authorId: session.user.id,
-      orderIndex: validatedData.orderIndex,
-      targetWordCount: validatedData.targetWordCount || 20000,
-      status: 'planned',
-      partData: validatedData.partData || {},
-    }).returning();
+    // Create the part using RelationshipManager for bi-directional consistency
+    const partId = await RelationshipManager.addPartToStory(
+      validatedData.storyId,
+      {
+        title: validatedData.title,
+        description: validatedData.description,
+        authorId: session.user.id,
+        orderIndex: validatedData.orderIndex,
+        targetWordCount: validatedData.targetWordCount || 20000,
+        status: 'planned',
+        partData: validatedData.partData || {},
+        chapterIds: [], // Initialize empty chapter IDs
+      }
+    );
+
+    // Get the created part for response
+    const [newPart] = await db.select()
+      .from(parts)
+      .where(eq(parts.id, partId))
+      .limit(1);
 
     return NextResponse.json({ part: newPart }, { status: 201 });
   } catch (error) {
