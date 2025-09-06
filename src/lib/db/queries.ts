@@ -102,12 +102,7 @@ export async function getUserStoriesWithFirstChapter(userId: string) {
       status: chapters.status
     })
     .from(chapters)
-    .where(storyIds.length === 1 
-      ? eq(chapters.storyId, storyIds[0])
-      : chapters.storyId.in 
-        ? chapters.storyId.in(storyIds)
-        : storyIds.map(id => eq(chapters.storyId, id)).reduce((a, b) => a.or ? a.or(b) : b)
-    )
+    .where(inArray(chapters.storyId, storyIds))
     .orderBy(chapters.orderIndex);
 
   // Query 3: Get all parts for all user stories at once with minimal data
@@ -117,12 +112,7 @@ export async function getUserStoriesWithFirstChapter(userId: string) {
       id: parts.id
     })
     .from(parts)
-    .where(storyIds.length === 1 
-      ? eq(parts.storyId, storyIds[0])
-      : parts.storyId.in 
-        ? parts.storyId.in(storyIds)
-        : storyIds.map(id => eq(parts.storyId, id)).reduce((a, b) => a.or ? a.or(b) : b)
-    );
+    .where(inArray(parts.storyId, storyIds));
 
   // Process data efficiently in memory
   const storiesWithData = userStories.map(story => {
@@ -639,8 +629,7 @@ export async function getPublishedStories() {
       hasPublishedChapter: eq(chapters.status, 'published')
     })
     .from(chapters)
-    .where(chapters.storyId.in ? chapters.storyId.in(storyIds) : 
-           storyIds.map(id => eq(chapters.storyId, id)).reduce((a, b) => a.or ? a.or(b) : b));
+    .where(inArray(chapters.storyId, storyIds));
 
   // Query 3: Get all scenes for all chapters in published stories with aggregated data
   const chapterIds = storyChapters.map(ch => ch.chapterId);
@@ -650,12 +639,8 @@ export async function getPublishedStories() {
       sceneWordCount: scenes.wordCount
     })
     .from(scenes)
-    .where(chapterIds.length === 1 
-      ? eq(scenes.chapterId, chapterIds[0])
-      : scenes.chapterId.in 
-        ? scenes.chapterId.in(chapterIds)
-        : chapterIds.map(id => eq(scenes.chapterId, id)).reduce((a, b) => a.or ? a.or(b) : b)
-    ) : [];
+    .where(inArray(scenes.chapterId, chapterIds))
+    : [];
 
   // Process data to calculate word counts - show all published stories
   const validPublishedStories = [];
