@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { parts, stories, chapters } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
+import { RelationshipManager } from '@/lib/db/relationships';
 
 export const runtime = 'nodejs';
 
@@ -140,17 +141,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
-    // Check if part has chapters
-    const partChapters = await db.select().from(chapters).where(eq(chapters.partId, id));
-    if (partChapters.length > 0) {
-      return NextResponse.json(
-        { error: 'Cannot delete part with existing chapters. Delete chapters first.' },
-        { status: 400 }
-      );
-    }
-
-    // Delete part
-    await db.delete(parts).where(eq(parts.id, id));
+    // Delete part using RelationshipManager for bi-directional consistency
+    // (RelationshipManager.deletePart handles checking for chapters and deleting them if needed)
+    await RelationshipManager.deletePart(id);
 
     return NextResponse.json({ message: 'Part deleted successfully' });
   } catch (error) {

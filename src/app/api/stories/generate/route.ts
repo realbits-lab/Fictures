@@ -3,7 +3,9 @@ import { auth } from '@/lib/auth';
 import { generateStoryFromPrompt } from '@/lib/ai/story-development';
 import { db } from '@/lib/db';
 import { stories, parts, chapters } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import { RelationshipManager } from '@/lib/db/relationships';
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     console.log('📚 Story generated, storing in database...');
 
-    // Store main story in database
+    // Store main story in database with bi-directional relationship arrays initialized
     const storyId = nanoid();
     const [story] = await db.insert(stories).values({
       id: storyId,
@@ -46,6 +48,8 @@ export async function POST(request: NextRequest) {
       status: 'draft',
       isPublic: false,
       storyData: generatedStory, // Store complete JSON data
+      partIds: [], // Initialize empty bi-directional arrays
+      chapterIds: [],
     }).returning();
 
     console.log('📖 Story stored, creating parts and chapters...');
@@ -56,39 +60,45 @@ export async function POST(request: NextRequest) {
     if (generatedStory.parts && Array.isArray(generatedStory.parts)) {
       for (let partIndex = 0; partIndex < generatedStory.parts.length; partIndex++) {
         const storyPart = generatedStory.parts[partIndex];
-        const partId = nanoid();
         
         // Calculate word count from story distribution if available
         const partWordCount = generatedStory.structure?.dist?.[partIndex] 
           ? Math.floor((generatedStory.words || 60000) * (generatedStory.structure.dist[partIndex] / 100))
           : Math.floor((generatedStory.words || 60000) / generatedStory.parts.length);
         
-        // Create part
-        const [part] = await db.insert(parts).values({
-          id: partId,
-          title: `Part ${storyPart.part}: ${storyPart.goals}`,
-          storyId: storyId,
-          authorId: session.user.id,
-          orderIndex: storyPart.part,
-          targetWordCount: partWordCount,
-          status: 'planned',
-          partData: storyPart, // Store the part data from story generation
-        }).returning();
+        // Create part using RelationshipManager for bi-directional consistency
+        const partId = await RelationshipManager.addPartToStory(
+          storyId,
+          {
+            title: `Part ${storyPart.part}: ${storyPart.goals}`,
+            authorId: session.user.id,
+            orderIndex: storyPart.part,
+            targetWordCount: partWordCount,
+            status: 'planned',
+            partData: storyPart, // Store the part data from story generation
+            chapterIds: [], // Initialize empty chapter IDs
+          }
+        );
 
-        // Create a starting chapter for this part so it's not empty
-        const chapterId = nanoid();
-        await db.insert(chapters).values({
-          id: chapterId,
-          title: `Chapter ${partIndex + 1}`,
-          storyId: storyId,
-          partId: partId,
-          authorId: session.user.id,
-          orderIndex: 1,
-          targetWordCount: 4000,
-          status: 'draft',
-          content: '',
-          wordCount: 0,
-        });
+        // Create a starting chapter for this part so it's not empty using RelationshipManager
+        const chapterId = await RelationshipManager.addChapterToStory(
+          storyId,
+          {
+            title: `Chapter ${partIndex + 1}`,
+            authorId: session.user.id,
+            orderIndex: 1,
+            targetWordCount: 4000,
+            status: 'draft',
+            sceneIds: [], // Initialize empty scene IDs
+          },
+          partId // partId parameter
+        );
+
+        // Get the created part for response
+        const [part] = await db.select()
+          .from(parts)
+          .where(eq(parts.id, partId))
+          .limit(1);
 
         createdParts.push(part);
       }
@@ -102,33 +112,40 @@ export async function POST(request: NextRequest) {
 
       for (let partIndex = 0; partIndex < defaultParts.length; partIndex++) {
         const partData = defaultParts[partIndex];
-        const partId = nanoid();
         
-        const [part] = await db.insert(parts).values({
-          id: partId,
-          title: `Part ${partData.part}: ${partData.goals}`,
-          storyId: storyId,
-          authorId: session.user.id,
-          orderIndex: partData.part,
-          targetWordCount: Math.floor((generatedStory.words || 60000) * (partIndex === 1 ? 50 : 25) / 100),
-          status: 'planned',
-          partData: partData,
-        }).returning();
+        // Create part using RelationshipManager for bi-directional consistency
+        const partId = await RelationshipManager.addPartToStory(
+          storyId,
+          {
+            title: `Part ${partData.part}: ${partData.goals}`,
+            authorId: session.user.id,
+            orderIndex: partData.part,
+            targetWordCount: Math.floor((generatedStory.words || 60000) * (partIndex === 1 ? 50 : 25) / 100),
+            status: 'planned',
+            partData: partData,
+            chapterIds: [], // Initialize empty chapter IDs
+          }
+        );
 
-        // Create a starting chapter for this part so it's not empty
-        const chapterId = nanoid();
-        await db.insert(chapters).values({
-          id: chapterId,
-          title: `Chapter ${partIndex + 1}`,
-          storyId: storyId,
-          partId: partId,
-          authorId: session.user.id,
-          orderIndex: 1,
-          targetWordCount: 4000,
-          status: 'draft',
-          content: '',
-          wordCount: 0,
-        });
+        // Create a starting chapter for this part so it's not empty using RelationshipManager
+        const chapterId = await RelationshipManager.addChapterToStory(
+          storyId,
+          {
+            title: `Chapter ${partIndex + 1}`,
+            authorId: session.user.id,
+            orderIndex: 1,
+            targetWordCount: 4000,
+            status: 'draft',
+            sceneIds: [], // Initialize empty scene IDs
+          },
+          partId // partId parameter
+        );
+
+        // Get the created part for response
+        const [part] = await db.select()
+          .from(parts)
+          .where(eq(parts.id, partId))
+          .limit(1);
 
         createdParts.push(part);
       }

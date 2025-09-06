@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { stories, parts, chapters } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import { RelationshipManager } from '@/lib/db/relationships';
 
 export async function POST(request: NextRequest) {
   try {
@@ -76,27 +77,32 @@ export async function POST(request: NextRequest) {
 
     console.log('📖 Chapter specifications generated, creating database entries...');
 
-    // Create chapters in database
+    // Create chapters in database using RelationshipManager for bi-directional consistency
     const createdChapters = [];
     
     for (let i = 0; i < chapterSpecs.length; i++) {
       const chapterSpec = chapterSpecs[i];
-      const chapterId = nanoid();
       
-      const [newChapter] = await db.insert(chapters).values({
-        id: chapterId,
-        title: chapterSpec.title,
-        content: '', // Empty content initially
-        storyId: part.storyId,
-        partId: part.id,
-        authorId: session.user.id,
-        orderIndex: chapterSpec.chap,
-        targetWordCount: chapterSpec.words,
-        status: 'draft',
-        purpose: `Chapter ${chapterSpec.chap} - ${chapterSpec.goal}`,
-        characterFocus: chapterSpec.pov,
-        // Store complete chapter specification in a metadata field if needed
-      }).returning();
+      const chapterId = await RelationshipManager.addChapterToStory(
+        part.storyId,
+        {
+          title: chapterSpec.title,
+          authorId: session.user.id,
+          orderIndex: chapterSpec.chap,
+          targetWordCount: chapterSpec.words,
+          status: 'draft',
+          purpose: `Chapter ${chapterSpec.chap} - ${chapterSpec.goal}`,
+          characterFocus: chapterSpec.pov,
+          sceneIds: [], // Initialize empty scene IDs
+        },
+        part.id // partId parameter
+      );
+
+      // Get the created chapter for response
+      const [newChapter] = await db.select()
+        .from(chapters)
+        .where(eq(chapters.id, chapterId))
+        .limit(1);
       
       createdChapters.push(newChapter);
     }

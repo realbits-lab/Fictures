@@ -66,6 +66,9 @@ export const stories = pgTable('stories', {
   rating: integer('rating').default(0), // Average rating * 10 (e.g., 47 = 4.7)
   ratingCount: integer('rating_count').default(0),
   storyData: json('story_data').$type<Record<string, unknown>>(), // Store complete story development YAML data
+  // Bi-directional relationship fields
+  partIds: json('part_ids').$type<string[]>().default([]).notNull(),
+  chapterIds: json('chapter_ids').$type<string[]>().default([]).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -82,6 +85,8 @@ export const parts = pgTable('parts', {
   currentWordCount: integer('current_word_count').default(0),
   status: varchar('status', { length: 50 }).default('planned'), // planned, in_progress, completed
   partData: json('part_data').$type<Record<string, unknown>>(), // Store part-specific development data
+  // Bi-directional relationship fields
+  chapterIds: json('chapter_ids').$type<string[]>().default([]).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -103,6 +108,8 @@ export const chapters = pgTable('chapters', {
   characterFocus: text('character_focus'), // Main character focus for chapter
   publishedAt: timestamp('published_at'),
   scheduledFor: timestamp('scheduled_for'),
+  // Bi-directional relationship fields
+  sceneIds: json('scene_ids').$type<string[]>().default([]).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

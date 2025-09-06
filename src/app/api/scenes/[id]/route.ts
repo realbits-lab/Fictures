@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { scenes, chapters, stories } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
+import { RelationshipManager } from '@/lib/db/relationships';
 
 export const runtime = 'nodejs';
 
@@ -156,8 +157,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
-    // Delete scene
-    await db.delete(scenes).where(eq(scenes.id, id));
+    // Delete scene using RelationshipManager for bi-directional consistency
+    await RelationshipManager.deleteScene(id);
 
     return NextResponse.json({ message: 'Scene deleted successfully' });
   } catch (error) {

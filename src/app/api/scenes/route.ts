@@ -5,6 +5,7 @@ import { scenes, chapters, stories } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { z } from 'zod';
+import { RelationshipManager } from '@/lib/db/relationships';
 
 export const runtime = 'nodejs';
 
@@ -106,19 +107,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create the scene
-    const sceneId = nanoid();
-    const [newScene] = await db.insert(scenes).values({
-      id: sceneId,
-      title: validatedData.title,
-      content: '', // Empty content initially
-      chapterId: validatedData.chapterId,
-      orderIndex: validatedData.orderIndex,
-      status: 'planned',
-      goal: validatedData.goal,
-      conflict: validatedData.conflict,
-      outcome: validatedData.outcome,
-    }).returning();
+    // Create the scene using RelationshipManager for bi-directional consistency
+    const sceneId = await RelationshipManager.addSceneToChapter(
+      validatedData.chapterId,
+      {
+        title: validatedData.title,
+        content: '', // Empty content initially
+        orderIndex: validatedData.orderIndex,
+        status: 'planned',
+        goal: validatedData.goal,
+        conflict: validatedData.conflict,
+        outcome: validatedData.outcome,
+      }
+    );
+
+    // Get the created scene for response
+    const [newScene] = await db.select()
+      .from(scenes)
+      .where(eq(scenes.id, sceneId))
+      .limit(1);
 
     return NextResponse.json({ scene: newScene }, { status: 201 });
   } catch (error) {

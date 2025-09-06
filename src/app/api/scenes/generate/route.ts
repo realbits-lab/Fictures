@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { stories, chapters, scenes } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import { RelationshipManager } from '@/lib/db/relationships';
 
 export async function POST(request: NextRequest) {
   try {
@@ -66,24 +67,30 @@ export async function POST(request: NextRequest) {
 
     console.log('📖 Scene specifications generated, creating database entries...');
 
-    // Create scenes in database
+    // Create scenes in database using RelationshipManager for bi-directional consistency
     const createdScenes = [];
     
     for (let i = 0; i < sceneSpecs.length; i++) {
       const sceneSpec = sceneSpecs[i];
-      const sceneId = nanoid();
       
-      const [newScene] = await db.insert(scenes).values({
-        id: sceneId,
-        title: `Scene ${sceneSpec.id}: ${sceneSpec.summary}`,
-        content: '', // Empty content initially
-        chapterId: chapter.id,
-        orderIndex: sceneSpec.id,
-        status: 'planned',
-        goal: sceneSpec.goal,
-        conflict: sceneSpec.obstacle,
-        outcome: sceneSpec.outcome,
-      }).returning();
+      const sceneId = await RelationshipManager.addSceneToChapter(
+        chapter.id,
+        {
+          title: `Scene ${sceneSpec.id}: ${sceneSpec.summary}`,
+          content: '', // Empty content initially
+          orderIndex: sceneSpec.id,
+          status: 'planned',
+          goal: sceneSpec.goal,
+          conflict: sceneSpec.obstacle,
+          outcome: sceneSpec.outcome,
+        }
+      );
+
+      // Get the created scene for response
+      const [newScene] = await db.select()
+        .from(scenes)
+        .where(eq(scenes.id, sceneId))
+        .limit(1);
       
       createdScenes.push(newScene);
     }

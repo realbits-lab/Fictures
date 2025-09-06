@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { stories, parts } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import { RelationshipManager } from '@/lib/db/relationships';
 
 export async function POST(request: NextRequest) {
   try {
@@ -89,18 +90,25 @@ export async function POST(request: NextRequest) {
         
         updatedParts.push(updatedPart);
       } else {
-        // Create new part if it doesn't exist
-        const partId = nanoid();
-        const [newPart] = await db.insert(parts).values({
-          id: partId,
-          title: partSpec.title,
-          storyId: storyId,
-          authorId: session.user.id,
-          orderIndex: partSpec.part,
-          targetWordCount: partSpec.words,
-          status: 'planned',
-          partData: partSpec,
-        }).returning();
+        // Create new part if it doesn't exist using RelationshipManager for bi-directional consistency
+        const partId = await RelationshipManager.addPartToStory(
+          storyId,
+          {
+            title: partSpec.title,
+            authorId: session.user.id,
+            orderIndex: partSpec.part,
+            targetWordCount: partSpec.words,
+            status: 'planned',
+            partData: partSpec,
+            chapterIds: [], // Initialize empty chapter IDs
+          }
+        );
+
+        // Get the created part for response
+        const [newPart] = await db.select()
+          .from(parts)
+          .where(eq(parts.id, partId))
+          .limit(1);
         
         updatedParts.push(newPart);
       }
