@@ -1420,7 +1420,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                       className={`${currentChapterStatus === 'published' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-[rgb(var(--primary))] hover:bg-[rgb(var(--primary)/90%)] text-[rgb(var(--primary-foreground))]'} rounded-[var(--radius)]`}
                       title={
                         currentChapterStatus === 'published' 
-                          ? 'Unpublish chapter' 
+                          ? 'Chapter is published - click to unpublish' 
                           : 'Publish chapter'
                       }
                     >
@@ -1428,7 +1428,105 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                         (currentChapterStatus === 'published' ? "⚡ Unpublishing..." : "⚡ Publishing...") : 
                         (
                           <div className="flex items-center gap-1">
-                            <span>{currentChapterStatus === 'published' ? "📤 Unpublish" : "🚀 Publish"}</span>
+                            <span>{currentChapterStatus === 'published' ? "🚀 Published" : "🚀 Publish"}</span>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" opacity="0.6">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                            </svg>
+                          </div>
+                        )}
+                    </Button>
+                  );
+                })()
+              )}
+              {currentSelection.level === "scene" && (
+                (() => {
+                  // Find the current scene for status buttons
+                  let currentScene = null;
+                  let currentSceneStatus = 'planned';
+                  
+                  // Look through all parts and chapters to find the current scene
+                  for (const part of story.parts) {
+                    for (const chapter of part.chapters) {
+                      if (chapter.scenes) {
+                        const foundScene = chapter.scenes.find(scene => scene.id === currentSelection.sceneId);
+                        if (foundScene) {
+                          currentScene = foundScene;
+                          currentSceneStatus = foundScene.status || 'planned';
+                          break;
+                        }
+                      }
+                    }
+                    if (currentScene) break;
+                  }
+                  
+                  // Also check standalone chapters
+                  if (!currentScene) {
+                    for (const chapter of story.chapters) {
+                      if (chapter.scenes) {
+                        const foundScene = chapter.scenes.find(scene => scene.id === currentSelection.sceneId);
+                        if (foundScene) {
+                          currentScene = foundScene;
+                          currentSceneStatus = foundScene.status || 'planned';
+                          break;
+                        }
+                      }
+                    }
+                  }
+
+                  const handleSceneStatusToggle = async () => {
+                    if (!currentScene) return;
+                    
+                    // Toggle between in_progress and completed only (treat planned as in_progress)
+                    const newStatus = currentSceneStatus === 'completed' ? 'in_progress' : 'completed';
+                    
+                    // If scene is planned, treat as in_progress for display
+                    const displayStatus = currentSceneStatus === 'planned' ? 'in_progress' : currentSceneStatus;
+                    
+                    setIsLoading(true);
+                    try {
+                      const response = await fetch(`/api/scenes/${currentScene.id}`, {
+                        method: 'PATCH',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          status: newStatus
+                        })
+                      });
+
+                      if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`Failed to update scene status: ${errorData.error || 'Unknown error'}`);
+                      }
+
+                      // Refresh to show updated status
+                      router.refresh();
+                      
+                    } catch (error) {
+                      console.error('Failed to update scene status:', error);
+                      alert('Failed to update scene status. Please try again.');
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  };
+
+                  return (
+                    <Button 
+                      size="sm" 
+                      onClick={handleSceneStatusToggle} 
+                      disabled={isLoading}
+                      className={`${displayStatus === 'completed' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-yellow-600 hover:bg-yellow-700 text-white'} rounded-[var(--radius)]`}
+                      title={
+                        displayStatus === 'completed' 
+                          ? 'Scene is completed - click to mark as in progress' 
+                          : 'Scene is in progress - click to mark as completed'
+                      }
+                    >
+                      {isLoading ? 
+                        "⚡ Updating..." : 
+                        (
+                          <div className="flex items-center gap-1">
+                            <span>{displayStatus === 'completed' ? "✅ Completed" : "⏳ In Progress"}</span>
                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" opacity="0.6">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                             </svg>

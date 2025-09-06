@@ -339,7 +339,7 @@ export function StoryStructureSidebar({
                 className="flex-1 justify-start h-8 text-xs"
                 onClick={handleStorySelect}
               >
-                <BookOpen size={12} className="mr-1" />
+                <BookOpen size={10} className="mr-1" />
                 <span className="truncate">{story.title}</span>
                 {validatingStoryId === story.id && (
                   <div className="w-2 h-2 border border-gray-400 border-t-blue-400 rounded-full animate-spin ml-auto opacity-60" 
@@ -348,15 +348,6 @@ export function StoryStructureSidebar({
               </Button>
             </div>
 
-            {/* Story Details */}
-            <div className="ml-2 mt-1 flex items-center gap-2 text-xs text-gray-500">
-              <Badge variant="secondary" className={`text-xs ${getStatusColor(story.status)} flex items-center gap-1`}>
-                {getStatusIcon(story.status, 10)} {story.status}
-              </Badge>
-              <span>{story.genre}</span>
-              <span>•</span>
-              <span>{story.parts.length}P/{(story.parts.flatMap(p => p.chapters).length + story.chapters.length)}C</span>
-            </div>
 
             {/* Story Structure */}
             <div className="ml-2 mt-2 space-y-1">
@@ -388,7 +379,7 @@ export function StoryStructureSidebar({
                         onClick={() => handlePartSelect(part.id)}
                       >
                         <FileText size={10} className="mr-1" />
-                        <span className="truncate">Part {part.orderIndex}: {part.title}</span>
+                        <span className="truncate">Part {part.orderIndex}</span>
                       </Button>
                     </div>
 
