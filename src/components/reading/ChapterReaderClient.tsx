@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useStoryReader, useReadingProgress } from '@/hooks/useStoryReader';
+import { useChapterScenes } from '@/hooks/useChapterScenes';
+import { ProgressIndicator } from './ProgressIndicator';
 import type { Chapter } from '@/hooks/useStoryReader';
 
 interface ChapterReaderClientProps {
@@ -27,6 +29,14 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
 
   // Reading progress management
   const readingProgress = useReadingProgress(storyId, selectedChapterId);
+
+  // Fetch scenes for selected chapter on demand
+  const {
+    scenes: chapterScenes,
+    isLoading: scenesLoading,
+    isValidating: scenesValidating,
+    error: scenesError
+  } = useChapterScenes(selectedChapterId);
 
   // Auto-select first published chapter on load
   useEffect(() => {
@@ -266,6 +276,12 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
 
           {/* Right: Reading Controls */}
           <div className="flex items-center gap-3">
+            {/* Progress Indicator */}
+            <ProgressIndicator 
+              isLoading={isLoading || scenesLoading} 
+              isValidating={isValidating || scenesValidating}
+              className="shrink-0"
+            />
             {/* Chapter Navigation */}
             {(() => {
               const currentIndex = availableChapters.findIndex(ch => ch.id === selectedChapterId);
@@ -277,7 +293,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                   <button
                     onClick={() => prevChapter && setSelectedChapterId(prevChapter.id)}
                     disabled={!prevChapter}
-                    className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="h-10 p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     title={prevChapter ? `Previous: ${prevChapter.title}` : 'No previous chapter'}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -285,14 +301,14 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                     </svg>
                   </button>
                   
-                  <span className="text-sm text-gray-500 dark:text-gray-400 px-2">
+                  <span className="text-sm text-gray-500 dark:text-gray-400 px-2 h-10 flex items-center">
                     {currentIndex + 1} of {availableChapters.length}
                   </span>
                   
                   <button
                     onClick={() => nextChapter && setSelectedChapterId(nextChapter.id)}
                     disabled={!nextChapter}
-                    className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="h-10 p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     title={nextChapter ? `Next: ${nextChapter.title}` : 'No next chapter'}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -305,7 +321,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
 
             {/* Reading Progress */}
             {selectedChapter && (
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-xs text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-xs text-gray-600 dark:text-gray-400 h-10">
                 <span>📖</span>
                 <span>{selectedChapter.wordCount || 0} words</span>
               </div>
@@ -315,7 +331,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
             <button
               onClick={() => refreshStory()}
               disabled={isValidating}
-              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
+              className="h-10 p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
               title="Refresh story content"
             >
               <svg className={`w-4 h-4 ${isValidating ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -330,7 +346,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                   navigator.clipboard.writeText(window.location.href);
                 }
               }}
-              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="h-10 p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               title="Copy chapter link"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -500,12 +516,40 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
 
               {/* Chapter Content */}
               <div className="prose prose-lg dark:prose-invert max-w-none">
-                {selectedChapter.scenes && selectedChapter.scenes.length > 0 ? (
+                {scenesError ? (
+                  <div className="text-center py-12 text-red-500 dark:text-red-400">
+                    <div className="max-w-md mx-auto">
+                      <h3 className="text-lg font-semibold mb-4">❌ Error Loading Scenes</h3>
+                      <p className="text-sm mb-4">
+                        Failed to load scenes for this chapter.
+                      </p>
+                      <button
+                        onClick={() => window.location.reload()}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  </div>
+                ) : scenesLoading ? (
+                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                    <div className="max-w-md mx-auto">
+                      <div className="animate-pulse">
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-4 w-3/4 mx-auto"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-5/6"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
+                      </div>
+                      <p className="text-sm mt-4">Loading scenes...</p>
+                    </div>
+                  </div>
+                ) : chapterScenes.length > 0 ? (
                   <>
-                    {console.log(`📖 Rendering ${selectedChapter.scenes.length} scenes for chapter: ${selectedChapter.title}`)}
-                    {selectedChapter.scenes.map((scene, index) => (
+                    {console.log(`📖 Rendering ${chapterScenes.length} scenes for chapter: ${selectedChapter.title}`)}
+                    {chapterScenes.map((scene, index) => (
                       <section key={scene.id} className="mb-8">
-                        {selectedChapter.scenes!.length > 1 && (
+                        {chapterScenes.length > 1 && (
                           <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4 opacity-75">
                             {scene.title}
                           </h3>

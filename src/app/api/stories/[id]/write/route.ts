@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getStoryWithStructure } from '@/lib/db/queries';
+import { createHash } from 'crypto';
 
 export async function GET(
   request: NextRequest,
@@ -56,9 +57,36 @@ export async function GET(
       }
     };
 
+    // Generate ETag based on story, chapters, and scenes modification times
+    const contentForHash = JSON.stringify({
+      storyId: storyWithStructure.id,
+      storyUpdatedAt: storyWithStructure.updatedAt,
+      chaptersData: allChapters.map(ch => ({
+        id: ch.id,
+        updatedAt: ch.updatedAt,
+        wordCount: ch.wordCount,
+        status: ch.status
+      })),
+      scenesData: allScenes.map(sc => ({
+        id: sc.id,
+        updatedAt: sc.updatedAt,
+        wordCount: sc.wordCount,
+        status: sc.status
+      })),
+      writingMetrics: response.metadata.writingContext
+    });
+    const etag = createHash('md5').update(contentForHash).digest('hex');
+
+    // Check if client has the same version
+    const clientETag = request.headers.get('if-none-match');
+    if (clientETag === etag) {
+      return new NextResponse(null, { status: 304 });
+    }
+
     // Set cache headers optimized for writing (shorter cache for active editing)
     const headers = new Headers({
       'Content-Type': 'application/json',
+      'ETag': etag,
       // Shorter cache for writing mode to ensure fresh data during active editing
       'Cache-Control': 'private, max-age=300, stale-while-revalidate=600', // 5min cache, 10min stale
       'X-Writing-Mode': 'true',

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getStoryWithStructure } from '@/lib/db/queries';
+import { createHash } from 'crypto';
 
 export async function GET(
   request: NextRequest,
@@ -10,8 +11,8 @@ export async function GET(
     const session = await auth();
     const { id } = await params;
 
-    // Get story with full structure (parts, chapters, scenes)
-    const storyWithStructure = await getStoryWithStructure(id, session?.user?.id);
+    // Get story with structure but without scenes (loaded on demand)
+    const storyWithStructure = await getStoryWithStructure(id, false);
     
     if (!storyWithStructure) {
       return NextResponse.json({ error: 'Story not found' }, { status: 404 });
@@ -41,9 +42,29 @@ export async function GET(
       }
     };
 
+    // Generate ETag based on story structure and modification times
+    const contentForHash = JSON.stringify({
+      storyId: storyWithStructure.id,
+      storyUpdatedAt: storyWithStructure.updatedAt,
+      chapters: [
+        ...storyWithStructure.parts.flatMap(part => part.chapters),
+        ...storyWithStructure.chapters
+      ].map(ch => ({ id: ch.id, updatedAt: ch.updatedAt })),
+      totalChapters: response.metadata.totalChapters,
+      publishedChapters: response.metadata.publishedChapters
+    });
+    const etag = createHash('md5').update(contentForHash).digest('hex');
+
+    // Check if client has the same version
+    const clientETag = request.headers.get('if-none-match');
+    if (clientETag === etag) {
+      return new NextResponse(null, { status: 304 });
+    }
+
     // Set cache headers for better performance
     const headers = new Headers({
       'Content-Type': 'application/json',
+      'ETag': etag,
       // Cache for 10 minutes for published stories, no cache for drafts
       'Cache-Control': storyWithStructure.status === 'published' && !isOwner 
         ? 'public, max-age=600, stale-while-revalidate=1200' 

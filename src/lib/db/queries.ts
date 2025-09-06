@@ -392,9 +392,9 @@ export function calculateStoryStatus(parts: Array<{ status: string }>, chapters:
 }
 
 // Comprehensive story data with parts, chapters, and scenes - OPTIMIZED with bi-directional relationships
-export async function getStoryWithStructure(storyId: string, userId?: string) {
+export async function getStoryWithStructure(storyId: string, includeScenes: boolean = true, userId?: string) {
   // Get story with all relationships using direct array lookups (much faster)
-  const result = await RelationshipManager.getStoryWithStructure(storyId);
+  const result = await RelationshipManager.getStoryWithStructure(storyId, includeScenes);
   if (!result) return null;
   
   // Check user access
@@ -405,7 +405,7 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
   // Apply dynamic status calculations to match original interface
   const structuredParts = result.parts.map(part => {
     const partChapters = part.chapters.map(chapter => {
-      const chapterScenes = chapter.scenes.map(scene => {
+      const chapterScenes = (chapter.scenes || []).map(scene => {
         // Calculate dynamic scene status
         const dynamicSceneStatus = calculateSceneStatus({
           content: scene.content || '',
@@ -455,7 +455,7 @@ export async function getStoryWithStructure(storyId: string, userId?: string) {
   
   // Process standalone chapters
   const standaloneChapters = result.chapters.map(chapter => {
-    const chapterScenes = chapter.scenes.map(scene => {
+    const chapterScenes = (chapter.scenes || []).map(scene => {
       const dynamicSceneStatus = calculateSceneStatus({
         content: scene.content || '',
         wordCount: scene.wordCount || 0,

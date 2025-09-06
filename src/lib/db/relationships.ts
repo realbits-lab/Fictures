@@ -270,8 +270,9 @@ export class RelationshipManager {
 
   /**
    * Get story with all relationships populated via direct lookup
+   * For reading mode, scenes are loaded separately on demand
    */
-  static async getStoryWithStructure(storyId: string) {
+  static async getStoryWithStructure(storyId: string, includeScenes: boolean = true) {
     const [story] = await db.select()
       .from(stories)
       .where(eq(stories.id, storyId))
@@ -284,12 +285,43 @@ export class RelationshipManager {
       ? await db.select().from(parts).where(inArray(parts.id, story.partIds))
       : [];
     
-    // Get chapters directly using stored IDs
+    // Get standalone chapters directly using stored IDs
     const storyChapters = story.chapterIds.length > 0
       ? await db.select().from(chapters).where(inArray(chapters.id, story.chapterIds))
       : [];
     
-    // Get all scene IDs from chapters
+    // Collect all chapter IDs from parts and story
+    const allChapterIds = [
+      ...story.chapterIds,
+      ...storyParts.flatMap(part => part.chapterIds || [])
+    ].filter(Boolean);
+    
+    // Get all chapters at once
+    const allChapters = allChapterIds.length > 0
+      ? await db.select().from(chapters).where(inArray(chapters.id, allChapterIds))
+      : [];
+    
+    if (!includeScenes) {
+      // For reading mode - don't load scenes, they'll be fetched on demand
+      return {
+        ...story,
+        parts: storyParts.map(part => ({
+          ...part,
+          chapters: allChapters.filter(chapter => 
+            (part.chapterIds || []).includes(chapter.id)
+          ).map(chapter => ({
+            ...chapter,
+            scenes: undefined // Will be loaded on demand
+          }))
+        })),
+        chapters: storyChapters.map(chapter => ({
+          ...chapter,
+          scenes: undefined // Will be loaded on demand
+        }))
+      };
+    }
+    
+    // For writing mode - load all scenes
     const allSceneIds = storyChapters
       .flatMap(chapter => chapter.sceneIds)
       .filter(Boolean);
