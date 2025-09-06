@@ -760,7 +760,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         });
         
         const partData = selectedPart ? 
-          createPartData(partNumber, selectedPart.title) : 
+          createPartData(partNumber, `Part ${partNumber}`) : 
           samplePartData;
         
         return (
@@ -1473,14 +1473,14 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                     }
                   }
 
+                  // If scene is planned, treat as in_progress for display
+                  const displayStatus = currentSceneStatus === 'planned' ? 'in_progress' : currentSceneStatus;
+
                   const handleSceneStatusToggle = async () => {
                     if (!currentScene) return;
                     
                     // Toggle between in_progress and completed only (treat planned as in_progress)
                     const newStatus = currentSceneStatus === 'completed' ? 'in_progress' : 'completed';
-                    
-                    // If scene is planned, treat as in_progress for display
-                    const displayStatus = currentSceneStatus === 'planned' ? 'in_progress' : currentSceneStatus;
                     
                     setIsLoading(true);
                     try {
