@@ -101,7 +101,7 @@ export function SceneWriting({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="h-full flex flex-col space-y-4">
       {/* Writing Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -137,37 +137,19 @@ export function SceneWriting({
       </div>
 
       {/* Main Writing Area */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            <textarea
-              value={sceneContent}
-              onChange={(e) => setSceneContent(e.target.value)}
-              disabled={disabled}
-              className="w-full h-96 p-4 border border-[rgb(var(--border))] rounded-[var(--radius)] font-mono text-sm leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-[rgb(var(--ring))] focus:border-transparent"
-              placeholder="Write your scene here using the MRU (Motivation-Reaction Unit) structure:
-
-Motivation (External): The door slammed shut.
-
-Reaction:
-  1. Feeling: Fear shot through him.
-  2. Reflex: He flinched.
-  3. Action: He reached for the doorknob. &apos;Who&apos;s there?&apos;
-
-Remember: Each paragraph should follow Motivation → Reaction flow for natural pacing and reader engagement."
-            />
-            
-            {/* Writing Guidelines */}
-            <Card className="border-[rgb(var(--border))] bg-[rgb(var(--muted)/20%)]">
-              <CardContent className="p-4">
-                <div className="text-xs text-[rgb(var(--muted-foreground))] space-y-2">
-                  <div><strong>📝 MRU Structure:</strong> Write each paragraph as Motivation (what happens) followed by Reaction (feeling → reflex → action/speech)</div>
-                  <div><strong>🎯 Scene Focus:</strong> Keep the POV character's goal clear throughout the scene</div>
-                  <div><strong>⚡ Pacing:</strong> Vary sentence length and structure to control rhythm and tension</div>
-                  <div><strong>🎭 Show Don't Tell:</strong> Use actions, dialogue, and sensory details instead of exposition</div>
-                </div>
-              </CardContent>
-            </Card>
+      <Card className="flex-1 h-full">
+        <CardContent className="p-6 h-full">
+          <div className="h-full">
+            <div
+              contentEditable={!disabled}
+              onInput={(e) => setSceneContent(e.currentTarget.textContent || '')}
+              className="w-full h-full min-h-[600px] p-4 border border-[rgb(var(--border))] rounded-[var(--radius)] font-serif text-base leading-relaxed focus:outline-none focus:ring-2 focus:ring-[rgb(var(--ring))] focus:border-transparent overflow-y-auto bg-white dark:bg-gray-900"
+              style={{ whiteSpace: 'pre-wrap' }}
+              suppressContentEditableWarning={true}
+              data-placeholder="Write your scene here using the MRU (Motivation-Reaction Unit) structure..."
+            >
+              {sceneContent}
+            </div>
           </div>
         </CardContent>
       </Card>

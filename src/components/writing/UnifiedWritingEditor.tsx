@@ -12,6 +12,8 @@ import { ChapterEditor } from "./ChapterEditor";
 import { SceneEditor } from "./SceneEditor";
 import { StoryStructureSidebar } from "./StoryStructureSidebar";
 import { SceneSidebar } from "./SceneSidebar";
+import { WritingGuidelines } from "./WritingGuidelines";
+import { HierarchicalDataSidebar } from "./HierarchicalDataSidebar";
 
 interface Story {
   id: string;
@@ -98,6 +100,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const [yamlLevel, setYamlLevel] = useState<EditorLevel>("story");
   const [isLoading, setIsLoading] = useState(false);
   const [showThemePlanner, setShowThemePlanner] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // SWR hook for fetching story data when switching stories
   const [targetStoryId, setTargetStoryId] = useState<string | null>(null);
@@ -1440,27 +1443,43 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6">
-        <div className={`grid gap-6 ${currentSelection.level === "scene" ? "grid-cols-1 lg:grid-cols-3" : "grid-cols-1 lg:grid-cols-4"}`}>
+      <div className="w-full px-4 py-6">
+        <div className={`grid ${sidebarCollapsed ? 'grid-cols-12' : 'grid-cols-12'} gap-6 min-h-[calc(100vh-200px)]`}>
           {/* Left Sidebar - Story Structure Navigation */}
-          <div className="space-y-6">
-            <StoryStructureSidebar 
-              story={story}
-              currentSelection={currentSelection}
+          {!sidebarCollapsed && (
+            <div className="col-span-12 lg:col-span-3 space-y-6">
+              <StoryStructureSidebar 
+                story={story}
+                currentSelection={currentSelection}
+                onSidebarCollapse={setSidebarCollapsed}
               onSelectionChange={handleSelectionChange}
               validatingStoryId={
                 isValidatingCurrentStory ? story.id : null
               }
             />
-          </div>
+            </div>
+          )}
           
-          {/* Main Writing Area */}
-          <div className={currentSelection.level === "scene" ? "" : "lg:col-span-2"}>
+          {/* Collapsed sidebar trigger */}
+          {sidebarCollapsed && (
+            <StoryStructureSidebar 
+              story={story}
+              currentSelection={currentSelection}
+              onSidebarCollapse={setSidebarCollapsed}
+              onSelectionChange={handleSelectionChange}
+              validatingStoryId={
+                isValidatingCurrentStory ? story.id : null
+              }
+            />
+          )}
+          
+          {/* Main Writing Area - 50% width */}
+          <div className={`col-span-12 ${sidebarCollapsed ? 'lg:col-span-9' : 'lg:col-span-6'}`}>
             {renderEditor()}
           </div>
 
           {/* Right Sidebar */}
-          <div className="space-y-6">
+          <div className="col-span-12 lg:col-span-3 space-y-6">
             {currentSelection.level === "scene" ? (
               // Scene view: Show SceneSidebar with scene controls and YAML data
               <SceneSidebar
@@ -1493,25 +1512,19 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                   console.log(`Updating scene field ${field}:`, value);
                 }}
               />
-            ) : (
-              // Other views: Show YAML Data Display
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">📊 YAML Data</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="overflow-y-auto">
-                    <YAMLDataDisplay
-                      storyData={(currentSelection.level === "part" || currentSelection.level === "chapter" || currentSelection.level === "scene" || yamlLevel === "story") ? sampleStoryData : undefined}
-                      partData={(currentSelection.level === "chapter" || currentSelection.level === "scene") ? samplePartData : (currentSelection.level !== "part" && yamlLevel === "part") ? samplePartData : undefined}
-                      chapterData={(currentSelection.level === "scene") ? sampleChapterData : yamlLevel === "chapter" ? sampleChapterData : undefined}
-                      sceneData={currentSelection.level === "scene" ? sampleSceneData : undefined}
-                      currentLevel={currentSelection.level === "part" ? "story" : currentSelection.level === "chapter" ? "chapter" : currentSelection.level === "scene" ? "scene" : yamlLevel}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            ) : null}
+            
+            {/* Hierarchical Data Sidebar - Show for all levels */}
+            <HierarchicalDataSidebar
+              storyData={sampleStoryData}
+              partData={(currentSelection.level === "part" || currentSelection.level === "chapter" || currentSelection.level === "scene") ? samplePartData : undefined}
+              chapterData={(currentSelection.level === "chapter" || currentSelection.level === "scene") ? sampleChapterData : undefined}
+              sceneData={currentSelection.level === "scene" ? sampleSceneData : undefined}
+              currentLevel={currentSelection.level}
+            />
+            
+            {/* Writing Guidelines - Show for scene editing */}
+            <WritingGuidelines currentLevel={currentSelection.level} />
           </div>
         </div>
       </div>
