@@ -179,6 +179,9 @@ export function StoryStructureSidebar({
   };
 
   const handlePartSelect = (partId: string) => {
+    // Toggle expansion when selecting a part
+    togglePartExpansion(partId);
+    
     onSelectionChange?.({
       level: "part",
       storyId: story.id,
@@ -187,6 +190,9 @@ export function StoryStructureSidebar({
   };
 
   const handleChapterSelect = (partId: string | undefined, chapterId: string) => {
+    // Toggle expansion when selecting a chapter
+    toggleChapterExpansion(chapterId);
+    
     onSelectionChange?.({
       level: "chapter",
       storyId: story.id,
