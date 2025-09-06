@@ -848,7 +848,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                   <div className="text-gray-500 dark:text-gray-400 mb-4">
                     <div className="text-4xl mb-4">📄</div>
                     <h3 className="text-lg font-medium mb-2 text-[rgb(var(--card-foreground))]">No Chapter Data</h3>
-                    <p>This chapter doesn't exist or hasn't been created yet.</p>
+                    <p>This chapter doesn&apos;t exist or hasn&apos;t been created yet.</p>
                     <p className="text-sm mt-2">Chapter ID: {currentSelection.chapterId}</p>
                   </div>
                   <Button 

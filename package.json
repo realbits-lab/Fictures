@@ -16,8 +16,8 @@
     "migrate:chapters": "dotenv --file .env.local run tsx scripts/migrate-chapter-content-to-scenes.ts --execute"
   },
   "dependencies": {
+    "@ai-sdk/gateway": "^1.0.18",
     "@ai-sdk/openai": "^2.0.23",
-    "@ai-sdk/xai": "^2.0.14",
     "@auth/drizzle-adapter": "^1.10.0",
     "ai": "^5.0.29",
     "clsx": "^2.1.1",
