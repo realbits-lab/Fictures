@@ -285,9 +285,20 @@ export class RelationshipManager {
       ? await db.select().from(parts).where(inArray(parts.id, story.partIds))
       : [];
     
-    // Get chapters directly using stored IDs
+    // Get standalone chapters directly using stored IDs
     const storyChapters = story.chapterIds.length > 0
       ? await db.select().from(chapters).where(inArray(chapters.id, story.chapterIds))
+      : [];
+    
+    // Collect all chapter IDs from parts and story
+    const allChapterIds = [
+      ...story.chapterIds,
+      ...storyParts.flatMap(part => part.chapterIds || [])
+    ].filter(Boolean);
+    
+    // Get all chapters at once
+    const allChapters = allChapterIds.length > 0
+      ? await db.select().from(chapters).where(inArray(chapters.id, allChapterIds))
       : [];
     
     if (!includeScenes) {
@@ -296,17 +307,17 @@ export class RelationshipManager {
         ...story,
         parts: storyParts.map(part => ({
           ...part,
-          chapters: storyChapters.filter(chapter => chapter.partId === part.id)
-            .map(chapter => ({
-              ...chapter,
-              scenes: undefined // Will be loaded on demand
-            }))
-        })),
-        chapters: storyChapters.filter(chapter => !chapter.partId)
-          .map(chapter => ({
+          chapters: allChapters.filter(chapter => 
+            (part.chapterIds || []).includes(chapter.id)
+          ).map(chapter => ({
             ...chapter,
             scenes: undefined // Will be loaded on demand
           }))
+        })),
+        chapters: storyChapters.map(chapter => ({
+          ...chapter,
+          scenes: undefined // Will be loaded on demand
+        }))
       };
     }
     

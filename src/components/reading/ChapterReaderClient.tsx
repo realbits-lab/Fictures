@@ -293,7 +293,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                   <button
                     onClick={() => prevChapter && setSelectedChapterId(prevChapter.id)}
                     disabled={!prevChapter}
-                    className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="h-10 p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     title={prevChapter ? `Previous: ${prevChapter.title}` : 'No previous chapter'}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -301,14 +301,14 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                     </svg>
                   </button>
                   
-                  <span className="text-sm text-gray-500 dark:text-gray-400 px-2">
+                  <span className="text-sm text-gray-500 dark:text-gray-400 px-2 h-10 flex items-center">
                     {currentIndex + 1} of {availableChapters.length}
                   </span>
                   
                   <button
                     onClick={() => nextChapter && setSelectedChapterId(nextChapter.id)}
                     disabled={!nextChapter}
-                    className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="h-10 p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     title={nextChapter ? `Next: ${nextChapter.title}` : 'No next chapter'}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -321,7 +321,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
 
             {/* Reading Progress */}
             {selectedChapter && (
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-xs text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-xs text-gray-600 dark:text-gray-400 h-10">
                 <span>📖</span>
                 <span>{selectedChapter.wordCount || 0} words</span>
               </div>
@@ -331,7 +331,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
             <button
               onClick={() => refreshStory()}
               disabled={isValidating}
-              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
+              className="h-10 p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
               title="Refresh story content"
             >
               <svg className={`w-4 h-4 ${isValidating ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -346,7 +346,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                   navigator.clipboard.writeText(window.location.href);
                 }
               }}
-              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="h-10 p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               title="Copy chapter link"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
