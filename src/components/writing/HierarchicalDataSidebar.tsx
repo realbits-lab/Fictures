@@ -176,28 +176,32 @@ export function HierarchicalDataSidebar({
       title: "Story Data",
       icon: <BookOpen size={14} />,
       data: storyData,
-      show: !!storyData
+      show: !!storyData && currentLevel === "scene",
+      editable: false
     },
     {
       id: "part",
       title: "Part Data", 
       icon: <FileText size={14} />,
       data: partData,
-      show: !!partData && (currentLevel === "part" || currentLevel === "chapter" || currentLevel === "scene")
+      show: !!partData && currentLevel === "scene",
+      editable: false
     },
     {
       id: "chapter",
       title: "Chapter Data",
       icon: <Edit3 size={14} />,
       data: chapterData,
-      show: !!chapterData && (currentLevel === "chapter" || currentLevel === "scene")
+      show: !!chapterData && currentLevel === "scene",
+      editable: false
     },
     {
       id: "scene",
       title: "Scene Data",
       icon: <Camera size={14} />,
       data: sceneData,
-      show: !!sceneData && currentLevel === "scene"
+      show: !!sceneData && currentLevel === "scene",
+      editable: true
     }
   ];
 
@@ -228,6 +232,11 @@ export function HierarchicalDataSidebar({
                     <Badge variant="outline" className="text-xs">
                       {section.id === currentLevel ? "Current" : "Context"}
                     </Badge>
+                    {section.editable && (
+                      <Badge variant="secondary" className="text-xs">
+                        Editable
+                      </Badge>
+                    )}
                   </div>
                   {isExpanded ? (
                     <ChevronDown size={12} />
@@ -238,9 +247,18 @@ export function HierarchicalDataSidebar({
                 
                 {isExpanded && section.data && (
                   <div className="px-3 pb-3">
-                    <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                    <div className={`p-3 rounded-lg ${
+                      section.editable 
+                        ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700" 
+                        : "bg-gray-50 dark:bg-gray-800 opacity-75"
+                    }`}>
                       {Object.entries(section.data).map(([key, value]) =>
                         renderDataField(key, value)
+                      )}
+                      {!section.editable && (
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">
+                          Read-only context data
+                        </div>
                       )}
                     </div>
                   </div>
