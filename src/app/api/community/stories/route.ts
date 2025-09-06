@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import { stories, users } from '@/lib/db/schema';
 import { eq, desc } from 'drizzle-orm';
+import { createHash } from 'crypto';
 
 export async function GET(request: NextRequest) {
   try {
@@ -48,17 +49,58 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        stories: storiesWithStats,
-        total: storiesWithStats.length,
-      }),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
+    const response = {
+      success: true,
+      stories: storiesWithStats,
+      total: storiesWithStats.length,
+      metadata: {
+        fetchedAt: new Date().toISOString(),
+        lastUpdated: publicStories.length > 0
+          ? publicStories.reduce((latest, story) =>
+              !latest || (story.updatedAt && story.updatedAt > latest) ? story.updatedAt : latest,
+              null
+            )
+          : new Date().toISOString()
       }
-    );
+    };
+
+    // Generate ETag based on community stories data (excluding random mock data)
+    const contentForHash = JSON.stringify({
+      storiesData: publicStories.map(story => ({
+        id: story.id,
+        title: story.title,
+        updatedAt: story.updatedAt,
+        status: story.status,
+        viewCount: story.viewCount,
+        rating: story.rating,
+        wordCount: story.currentWordCount,
+        author: story.author
+      })),
+      totalStories: storiesWithStats.length,
+      lastUpdated: response.metadata.lastUpdated
+    });
+    const etag = createHash('md5').update(contentForHash).digest('hex');
+
+    // Check if client has the same version
+    const clientETag = request.headers.get('if-none-match');
+    if (clientETag === etag) {
+      return new Response(null, { status: 304 });
+    }
+
+    // Set cache headers optimized for community content
+    const headers = {
+      'Content-Type': 'application/json',
+      'ETag': etag,
+      // Medium cache for community content since it changes moderately
+      'Cache-Control': 'public, max-age=1200, stale-while-revalidate=2400', // 20min cache, 40min stale
+      'X-Content-Type': 'community-stories',
+      'X-Last-Modified': response.metadata.lastUpdated || new Date().toISOString()
+    };
+
+    return new Response(JSON.stringify(response), {
+      status: 200,
+      headers
+    });
 
   } catch (error) {
     console.error('❌ Error fetching community stories:', error);

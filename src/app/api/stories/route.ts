@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { createStory, getUserStories, getUserStoriesWithFirstChapter } from '@/lib/db/queries';
 import { z } from 'zod';
+import { createHash } from 'crypto';
 
 export const runtime = 'nodejs';
 
@@ -13,7 +14,7 @@ const createStorySchema = z.object({
 });
 
 // GET /api/stories - Get user's stories with detailed data for dashboard
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     
@@ -45,7 +46,61 @@ export async function GET() {
       isPublic: story.isPublic || false,
     }));
 
-    return NextResponse.json({ stories: transformedStories });
+    const response = {
+      stories: transformedStories,
+      metadata: {
+        fetchedAt: new Date().toISOString(),
+        userId: session.user.id,
+        totalStories: transformedStories.length,
+        lastUpdated: stories.length > 0
+          ? stories.reduce((latest, story) =>
+              !latest || (story.updatedAt && story.updatedAt > latest) ? story.updatedAt : latest,
+              null
+            )
+          : new Date().toISOString()
+      }
+    };
+
+    // Generate ETag based on user stories data
+    const contentForHash = JSON.stringify({
+      userId: session.user.id,
+      storiesData: stories.map(story => ({
+        id: story.id,
+        title: story.title,
+        updatedAt: story.updatedAt,
+        status: story.status,
+        wordCount: story.currentWordCount,
+        completedChapters: story.completedChapters,
+        totalChapters: story.totalChapters,
+        rating: story.rating,
+        viewCount: story.viewCount
+      })),
+      totalStories: transformedStories.length,
+      lastUpdated: response.metadata.lastUpdated
+    });
+    const etag = createHash('md5').update(contentForHash).digest('hex');
+
+    // Check if client has the same version
+    const clientETag = request.headers.get('if-none-match');
+    if (clientETag === etag) {
+      return new NextResponse(null, { status: 304 });
+    }
+
+    // Set cache headers optimized for user dashboard (medium cache)
+    const headers = new Headers({
+      'Content-Type': 'application/json',
+      'ETag': etag,
+      // Medium cache for user dashboard - changes when user modifies stories
+      'Cache-Control': 'private, max-age=900, stale-while-revalidate=1800', // 15min cache, 30min stale
+      'X-Content-Type': 'user-dashboard',
+      'X-User-Id': session.user.id,
+      'X-Last-Modified': response.metadata.lastUpdated || new Date().toISOString()
+    });
+
+    return new NextResponse(JSON.stringify(response), {
+      status: 200,
+      headers
+    });
   } catch (error) {
     console.error('Error fetching stories:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
