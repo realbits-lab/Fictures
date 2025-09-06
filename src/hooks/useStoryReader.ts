@@ -102,10 +102,8 @@ export function useStoryReader(storyId: string | null): UseStoryReaderReturn {
     fetcher,
     {
       ...CACHE_CONFIGS.reading, // 1hr TTL + compression
-      // Override TTL based on story status
-      ttl: data?.story?.status === 'published' && !data?.isOwner 
-        ? 60 * 60 * 1000  // 1hr for published stories
-        : 10 * 60 * 1000  // 10min for drafts/owned stories
+      // Use default TTL - will be optimized after data is available
+      ttl: 10 * 60 * 1000  // 10min default
     },
     {
       revalidateOnFocus: false,
