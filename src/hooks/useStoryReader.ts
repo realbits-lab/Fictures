@@ -63,12 +63,59 @@ export interface UseStoryReaderReturn {
   refreshStory: () => Promise<StoryReaderResponse | undefined>;
 }
 
-// Fetcher function for story reading data
-const fetcher = async (url: string): Promise<StoryReaderResponse> => {
-  const res = await fetch(url, {
-    // Add credentials for authentication
-    credentials: 'include',
+// ETag cache for story data
+const storyETagCache = new Map<string, { data: StoryReaderResponse; etag: string; timestamp: number }>();
+
+function getCachedStoryData(url: string) {
+  const cached = storyETagCache.get(url);
+  if (cached) {
+    // Keep ETag cache for 1 hour
+    const isExpired = Date.now() - cached.timestamp > 60 * 60 * 1000;
+    if (!isExpired) {
+      return cached;
+    } else {
+      storyETagCache.delete(url);
+    }
+  }
+  return null;
+}
+
+function cacheStoryData(url: string, data: StoryReaderResponse, etag: string) {
+  storyETagCache.set(url, {
+    data,
+    etag,
+    timestamp: Date.now()
   });
+  
+  // Limit cache size
+  if (storyETagCache.size > 20) {
+    const oldestKey = storyETagCache.keys().next().value;
+    storyETagCache.delete(oldestKey);
+  }
+}
+
+// Enhanced fetcher function for story reading data with ETag support
+const fetcher = async (url: string): Promise<StoryReaderResponse> => {
+  // Get cached ETag from previous request
+  const cachedData = getCachedStoryData(url);
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (cachedData?.etag) {
+    headers['If-None-Match'] = cachedData.etag;
+  }
+
+  const res = await fetch(url, {
+    credentials: 'include',
+    headers,
+  });
+
+  // Handle 304 Not Modified - return cached data
+  if (res.status === 304 && cachedData?.data) {
+    console.log('🎯 Story data unchanged, using cached version');
+    return cachedData.data;
+  }
   
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
@@ -78,7 +125,15 @@ const fetcher = async (url: string): Promise<StoryReaderResponse> => {
     throw error;
   }
   
-  return res.json();
+  const data = await res.json();
+  
+  // Cache the data with ETag for next request
+  const etag = res.headers.get('ETag');
+  if (etag) {
+    cacheStoryData(url, data, etag);
+  }
+  
+  return data;
 };
 
 /**

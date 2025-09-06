@@ -270,8 +270,9 @@ export class RelationshipManager {
 
   /**
    * Get story with all relationships populated via direct lookup
+   * For reading mode, scenes are loaded separately on demand
    */
-  static async getStoryWithStructure(storyId: string) {
+  static async getStoryWithStructure(storyId: string, includeScenes: boolean = true) {
     const [story] = await db.select()
       .from(stories)
       .where(eq(stories.id, storyId))
@@ -289,7 +290,27 @@ export class RelationshipManager {
       ? await db.select().from(chapters).where(inArray(chapters.id, story.chapterIds))
       : [];
     
-    // Get all scene IDs from chapters
+    if (!includeScenes) {
+      // For reading mode - don't load scenes, they'll be fetched on demand
+      return {
+        ...story,
+        parts: storyParts.map(part => ({
+          ...part,
+          chapters: storyChapters.filter(chapter => chapter.partId === part.id)
+            .map(chapter => ({
+              ...chapter,
+              scenes: undefined // Will be loaded on demand
+            }))
+        })),
+        chapters: storyChapters.filter(chapter => !chapter.partId)
+          .map(chapter => ({
+            ...chapter,
+            scenes: undefined // Will be loaded on demand
+          }))
+      };
+    }
+    
+    // For writing mode - load all scenes
     const allSceneIds = storyChapters
       .flatMap(chapter => chapter.sceneIds)
       .filter(Boolean);
