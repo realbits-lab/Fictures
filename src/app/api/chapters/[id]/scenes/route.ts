@@ -30,7 +30,7 @@ export async function GET(
     }
 
     // Get story to check permissions
-    const [story] = await db.query.stories.findFirst({
+    const story = await db.query.stories.findFirst({
       where: (stories, { eq }) => eq(stories.id, chapter.storyId),
       columns: {
         id: true,
