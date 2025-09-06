@@ -44,12 +44,12 @@ async function removeLastGuardianChapters() {
     
     console.log(`📚 Found ${allChapters.length} chapters total`);
     
-    // Identify chapters to remove (order index 2-8)
+    // Identify Chapter 4 to remove specifically
     const chaptersToRemove = allChapters.filter(chapter => 
-      chapter.orderIndex >= 2 && chapter.orderIndex <= 8
+      chapter.orderIndex === 4
     );
     
-    console.log(`🎯 Found ${chaptersToRemove.length} chapters to remove:`);
+    console.log(`🎯 Found ${chaptersToRemove.length} chapters to remove (Chapter 4 only):`);
     for (const chapter of chaptersToRemove) {
       console.log(`   - Chapter ${chapter.orderIndex}: "${chapter.title}" (ID: ${chapter.id})`);
     }
@@ -87,13 +87,13 @@ async function removeLastGuardianChapters() {
     console.log(`   ✅ Deleted ${chaptersToRemove.length} chapters`);
     
     // Get remaining chapters and reorder them
-    console.log('\n🔄 Reordering remaining chapters...');
+    console.log('\n🔄 Checking if reordering is needed...');
     
     const remainingChapters = await db
       .select()
       .from(chapters)
       .where(eq(chapters.storyId, story.id))
-      .orderBy(chapters.createdAt); // Order by creation time to maintain original sequence
+      .orderBy(chapters.orderIndex); // Order by current order index
     
     console.log(`   Found ${remainingChapters.length} remaining chapters`);
     
@@ -124,7 +124,7 @@ async function removeLastGuardianChapters() {
       console.log(`   📖 Chapter ${chapter.orderIndex}: "${chapter.title}"`);
     }
     
-    console.log(`\n🎉 Successfully removed ${chaptersToRemove.length} standalone chapters (2-8) from "The Last Guardian"`);
+    console.log(`\n🎉 Successfully removed Chapter 4 from "The Last Guardian"`);
     console.log(`📊 Story now has ${finalChapters.length} chapters properly ordered`);
     
   } catch (error) {

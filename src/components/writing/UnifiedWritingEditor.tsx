@@ -11,6 +11,7 @@ import { PartEditor } from "./PartEditor";
 import { ChapterEditor } from "./ChapterEditor";
 import { SceneEditor } from "./SceneEditor";
 import { StoryStructureSidebar } from "./StoryStructureSidebar";
+import { SceneSidebar } from "./SceneSidebar";
 
 interface Story {
   id: string;
@@ -1440,7 +1441,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       </div>
 
       <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className={`grid gap-6 ${currentSelection.level === "scene" ? "grid-cols-1 lg:grid-cols-3" : "grid-cols-1 lg:grid-cols-4"}`}>
           {/* Left Sidebar - Story Structure Navigation */}
           <div className="space-y-6">
             <StoryStructureSidebar 
@@ -1454,29 +1455,63 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           </div>
           
           {/* Main Writing Area */}
-          <div className="lg:col-span-2">
+          <div className={currentSelection.level === "scene" ? "" : "lg:col-span-2"}>
             {renderEditor()}
           </div>
 
-          {/* Right Sidebar - YAML Data Display */}
+          {/* Right Sidebar */}
           <div className="space-y-6">
-            {/* YAML Data Display */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">📊 YAML Data</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="overflow-y-auto">
-                  <YAMLDataDisplay
-                    storyData={(currentSelection.level === "part" || currentSelection.level === "chapter" || currentSelection.level === "scene" || yamlLevel === "story") ? sampleStoryData : undefined}
-                    partData={(currentSelection.level === "chapter" || currentSelection.level === "scene") ? samplePartData : (currentSelection.level !== "part" && yamlLevel === "part") ? samplePartData : undefined}
-                    chapterData={(currentSelection.level === "scene") ? sampleChapterData : yamlLevel === "chapter" ? sampleChapterData : undefined}
-                    sceneData={currentSelection.level === "scene" ? sampleSceneData : undefined}
-                    currentLevel={currentSelection.level === "part" ? "story" : currentSelection.level === "chapter" ? "chapter" : currentSelection.level === "scene" ? "scene" : yamlLevel}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            {currentSelection.level === "scene" ? (
+              // Scene view: Show SceneSidebar with scene controls and YAML data
+              <SceneSidebar
+                sceneData={{
+                  id: sampleSceneData.id,
+                  summary: sampleSceneData.summary,
+                  time: sampleSceneData.time,
+                  place: sampleSceneData.place,
+                  pov: sampleSceneData.pov,
+                  characters: sampleSceneData.characters,
+                  goal: sampleSceneData.goal,
+                  obstacle: sampleSceneData.obstacle,
+                  outcome: sampleSceneData.outcome,
+                  beats: sampleSceneData.beats,
+                  shift: sampleSceneData.shift,
+                  leads_to: sampleSceneData.leads_to,
+                  image_prompt: sampleSceneData.image_prompt
+                }}
+                chapterContext={{
+                  title: "Chapter Context",
+                  pov: sampleChapterData.pov,
+                  acts: sampleChapterData.acts
+                }}
+                storyData={sampleStoryData}
+                partData={samplePartData}
+                chapterData={sampleChapterData}
+                onSave={handleSave}
+                onSceneDataChange={(field, value) => {
+                  // Handle scene data changes
+                  console.log(`Updating scene field ${field}:`, value);
+                }}
+              />
+            ) : (
+              // Other views: Show YAML Data Display
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">📊 YAML Data</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="overflow-y-auto">
+                    <YAMLDataDisplay
+                      storyData={(currentSelection.level === "part" || currentSelection.level === "chapter" || currentSelection.level === "scene" || yamlLevel === "story") ? sampleStoryData : undefined}
+                      partData={(currentSelection.level === "chapter" || currentSelection.level === "scene") ? samplePartData : (currentSelection.level !== "part" && yamlLevel === "part") ? samplePartData : undefined}
+                      chapterData={(currentSelection.level === "scene") ? sampleChapterData : yamlLevel === "chapter" ? sampleChapterData : undefined}
+                      sceneData={currentSelection.level === "scene" ? sampleSceneData : undefined}
+                      currentLevel={currentSelection.level === "part" ? "story" : currentSelection.level === "chapter" ? "chapter" : currentSelection.level === "scene" ? "scene" : yamlLevel}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>
