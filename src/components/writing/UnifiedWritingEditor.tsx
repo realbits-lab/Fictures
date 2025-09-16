@@ -430,8 +430,26 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         }
 
         console.log('Scene saved successfully');
+      } else if (currentSelection.level === "story" && data) {
+        // Save story data to the stories API
+        const response = await fetch(`/api/stories/${currentSelection.storyId}/write`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            storyData: data
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`Failed to save story: ${errorData.error || response.statusText}`);
+        }
+
+        console.log('Story data saved successfully');
       } else {
-        // For other data types (story, part, chapter), use the original mock behavior for now
+        // For other data types (part, chapter), use the original mock behavior for now
         console.log('Saving data:', data);
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
@@ -734,7 +752,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             hasChanges={storyHasChanges}
             onStoryUpdate={handleStoryDataUpdate}
             onSave={async (data) => {
-              await handleSave();
+              await handleSave(data);
               setOriginalStoryData(data);
               setStoryHasChanges(false);
             }}

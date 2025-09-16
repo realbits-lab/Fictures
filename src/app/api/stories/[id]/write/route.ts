@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getStoryWithStructure } from '@/lib/db/queries';
+import { db } from '@/lib/db';
+import { stories } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { createHash } from 'crypto';
 
 export async function GET(
@@ -101,7 +104,62 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching story for writing:', error);
     return NextResponse.json(
-      { error: 'Internal server error' }, 
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+    const { id } = await params;
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const { storyData } = await request.json();
+
+    if (!storyData) {
+      return NextResponse.json({ error: 'Story data is required' }, { status: 400 });
+    }
+
+    // First, get the story to check ownership
+    const existingStory = await db.query.stories.findFirst({
+      where: eq(stories.id, id)
+    });
+
+    if (!existingStory) {
+      return NextResponse.json({ error: 'Story not found' }, { status: 404 });
+    }
+
+    // Check if user owns the story
+    if (existingStory.userId !== session?.user?.id) {
+      return NextResponse.json({ error: 'Access denied - you are not the owner of this story' }, { status: 403 });
+    }
+
+    // Update the story with the new storyData
+    await db.update(stories)
+      .set({
+        storyData: storyData,
+        updatedAt: new Date()
+      })
+      .where(eq(stories.id, id));
+
+    return NextResponse.json({
+      success: true,
+      message: 'Story data saved successfully',
+      updatedAt: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Error saving story data:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
