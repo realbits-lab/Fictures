@@ -1,24 +1,19 @@
 import { gateway } from '@ai-sdk/gateway';
 
-// AI Gateway configuration  
-const aiGateway = gateway({
-  apiKey: process.env.AI_GATEWAY_API_KEY!,
-});
-
 // Default model configuration
 export const DEFAULT_MODEL = 'openai/gpt-4o-mini';
 export const REASONING_MODEL = 'openai/gpt-4o-mini';
 
-// AI models configuration
+// AI models configuration using AI Gateway
 export const AI_MODELS = {
   // Main writing model - balanced for creative writing
-  writing: aiGateway(DEFAULT_MODEL),
-  
+  writing: gateway(DEFAULT_MODEL),
+
   // Reasoning model for complex analysis
-  analysis: aiGateway(REASONING_MODEL),
-  
+  analysis: gateway(REASONING_MODEL),
+
   // Fast model for quick suggestions
-  quick: aiGateway('openai/gpt-4o-mini'),
+  quick: gateway('openai/gpt-4o-mini'),
 } as const;
 
 // AI prompt templates

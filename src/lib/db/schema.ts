@@ -159,6 +159,17 @@ export const characters = pgTable('characters', {
   storyId: text('story_id').references(() => stories.id).notNull(),
   imageUrl: text('image_url'),
   isMain: boolean('is_main').default(false),
+  content: text('content').default(''), // Store character YAML data
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Places table - Story locations/settings
+export const places = pgTable('places', {
+  id: text('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  storyId: text('story_id').references(() => stories.id).notNull(),
+  content: text('content').default(''), // Store place YAML data
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -241,6 +252,7 @@ export const storiesRelations = relations(stories, ({ one, many }) => ({
   parts: many(parts),
   chapters: many(chapters),
   characters: many(characters),
+  places: many(places),
   communityPosts: many(communityPosts),
 }));
 
@@ -274,6 +286,13 @@ export const scenesRelations = relations(scenes, ({ one }) => ({
 export const charactersRelations = relations(characters, ({ one }) => ({
   story: one(stories, {
     fields: [characters.storyId],
+    references: [stories.id],
+  }),
+}));
+
+export const placesRelations = relations(places, ({ one }) => ({
+  story: one(stories, {
+    fields: [places.storyId],
     references: [stories.id],
   }),
 }));
