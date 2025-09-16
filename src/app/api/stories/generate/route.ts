@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     console.log('🎯 Generating story from prompt:', prompt);
 
-    // Generate story using AI development process
+    // Generate story using AI development process with streaming response
     const generatedStory = await generateStoryFromPrompt(prompt, session.user.id, language);
 
     console.log('📚 Story generated, storing in database...');
@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Database storage completed');
 
-    // Return the generated story with database IDs
+    // Return the generated story with database IDs and YAML data
     return new Response(
       JSON.stringify({
         success: true,
@@ -178,6 +178,12 @@ export async function POST(request: NextRequest) {
           parts: createdParts,
           characters: createdCharacters,
           places: createdPlaces,
+        },
+        yamlData: {
+          storyYaml: `# Story Foundation (Phase 1)\n---\ntitle: "${generatedStory.title || 'Generated Story'}"\ngenre: "${generatedStory.genre || 'General'}"\nlanguage: "${language}"\n---`,
+          charactersYaml: generatedStory.characters?.map(c => `# Character: ${c.parsedData?.name || c.id}\n${c.content}`).join('\n\n') || '',
+          placesYaml: generatedStory.places?.map(p => `# Place: ${p.parsedData?.name || p.name}\n${p.content}`).join('\n\n') || '',
+          partsYaml: generatedStory.partSpecifications?.map((p: any, i: number) => `# Part ${i + 1}\n${JSON.stringify(p, null, 2)}`).join('\n\n') || ''
         }
       }),
       {

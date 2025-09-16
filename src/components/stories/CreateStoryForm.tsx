@@ -5,11 +5,19 @@ import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { Label } from '@/components/ui';
+import { useStoryCreation } from './StoryCreationContext';
 
 interface ProgressStep {
   phase: string;
   description: string;
   status: 'pending' | 'in_progress' | 'completed' | 'error';
+}
+
+interface YamlData {
+  storyYaml?: string;
+  charactersYaml?: string;
+  placesYaml?: string;
+  partsYaml?: string;
 }
 
 export function CreateStoryForm() {
@@ -18,15 +26,16 @@ export function CreateStoryForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [progress, setProgress] = useState<ProgressStep[]>([]);
+  const { setYamlData, clearYamlData } = useStoryCreation();
   const router = useRouter();
 
   const initializeProgress = () => {
     const steps: ProgressStep[] = [
       { phase: 'Phase 1', description: 'Story Foundation - Analyzing prompt and creating story concept', status: 'pending' },
-      { phase: 'Phase 2', description: 'Structural Development - Creating part-level structure', status: 'pending' },
-      { phase: 'Phase 3', description: 'Character Development - Building character arcs and relationships', status: 'pending' },
-      { phase: 'Phase 4', description: 'Quality Assurance - Final verification and consistency check', status: 'pending' },
-      { phase: 'Database', description: 'Storing story structure in database', status: 'pending' },
+      { phase: 'Phase 2', description: 'Part Development - Creating detailed part structure', status: 'pending' },
+      { phase: 'Phase 3', description: 'Character Development - Building character profiles with Korean names', status: 'pending' },
+      { phase: 'Phase 4', description: 'Place Development - Creating location details and settings', status: 'pending' },
+      { phase: 'Database', description: 'Storing story, character, and place data in database', status: 'pending' },
     ];
     setProgress(steps);
     return steps;
@@ -59,6 +68,7 @@ export function CreateStoryForm() {
     setIsLoading(true);
     setError('');
     setProgress([]);
+    clearYamlData();
 
     // Start progress simulation
     const progressPromise = simulateProgress(30000); // 30 seconds total
@@ -77,13 +87,19 @@ export function CreateStoryForm() {
 
       if (response.ok) {
         const result = await response.json();
+
+        // Update YAML data in sidebar
+        if (result.yamlData) {
+          setYamlData(result.yamlData);
+        }
+
         // All steps completed successfully
         setProgress(prev => prev.map(step => ({ ...step, status: 'completed' })));
-        
-        // Wait a moment to show completion
+
+        // Wait a moment to show completion and YAML data
         setTimeout(() => {
           router.push(`/stories`);
-        }, 1500);
+        }, 3000); // Extended time to show YAML data
       } else {
         const errorData = await response.json();
         setError(errorData.error || 'Failed to generate story');
