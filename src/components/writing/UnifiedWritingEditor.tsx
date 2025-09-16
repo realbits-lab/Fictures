@@ -166,57 +166,84 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     });
   }, [currentSelection, writingProgress]);
 
-  // Sample YAML data for demonstration - converted to state for real-time updates
-  const [sampleStoryData, setSampleStoryData] = useState({
-    title: story.title || "The Shadow Keeper",
-    genre: story.genre || "urban_fantasy",
-    words: 80000,
-    question: "Can Maya master shadow magic before power corrupts her?",
-    goal: "Save Elena from Shadow Realm",
-    conflict: "Shadow magic corrupts those who use it",
-    outcome: "Maya embraces darkness to save light",
-    chars: {
-      maya: { role: "protag", arc: "denial→acceptance", flaw: "overprotective" },
-      elena: { role: "catalyst", arc: "missing→transformed", goal: "survive_realm" },
-      marcus: { role: "mentor", arc: "guilt→redemption", secret: "previous_failure" },
-      void: { role: "antag", arc: "power→corruption", goal: "merge_worlds" }
-    },
-    themes: ["responsibility_for_power", "love_vs_control", "inner_battles"],
-    structure: {
-      type: "3_part",
-      parts: ["setup", "confrontation", "resolution"],
-      dist: [25, 50, 25]
-    },
-    setting: {
-      primary: ["san_francisco", "photography_studio"],
-      secondary: ["shadow_realm", "chinatown_passages"]
-    },
-    parts: [
-      {
-        part: 1,
-        goal: "Maya accepts supernatural reality",
-        conflict: "Denial vs mounting evidence",
-        outcome: "Reluctant training commitment",
-        tension: "denial vs acceptance"
+  // Parse actual story data from database, fallback to default structure if not available
+  const parseStoryData = () => {
+    let parsedData = null;
+
+    // Handle both JSON string and object cases
+    if (story.storyData) {
+      if (typeof story.storyData === 'object') {
+        parsedData = story.storyData;
+      } else if (typeof story.storyData === 'string') {
+        try {
+          parsedData = JSON.parse(story.storyData);
+        } catch (error) {
+          console.error('Failed to parse story storyData JSON:', error);
+        }
       }
-    ],
-    serial: {
-      schedule: "weekly",
-      duration: "18_months",
-      chapter_words: 4000,
-      breaks: ["part1_end", "part2_end"],
-      buffer: "4_chapters_ahead"
-    },
-    hooks: {
-      overarching: ["elena_fate", "maya_corruption_risk", "shadow_magic_truth"],
-      mysteries: ["previous_student_identity", "marcus_secret", "realm_connection"],
-      part_endings: ["mentor_secret_revealed", "elena_appears_changed"]
     }
-  });
+
+    // If we successfully parsed data, use it
+    if (parsedData && typeof parsedData === 'object') {
+      return {
+        title: story.title || parsedData.title || "Generated Story",
+        genre: story.genre || parsedData.genre || "General",
+        words: parsedData.words || parsedData.targetWordCount || 60000,
+        question: parsedData.question || "What is the central question of this story?",
+        goal: parsedData.goal || "Story goal not defined",
+        conflict: parsedData.conflict || "Story conflict not defined",
+        outcome: parsedData.outcome || "Story outcome not defined",
+        chars: parsedData.chars || parsedData.characters || {},
+        themes: parsedData.themes || [],
+        structure: parsedData.structure || {
+          type: "3_part",
+          parts: ["setup", "confrontation", "resolution"],
+          dist: [25, 50, 25]
+        },
+        setting: parsedData.setting || {},
+        parts: parsedData.parts || [],
+        serial: parsedData.serial || {},
+        hooks: parsedData.hooks || {}
+      };
+    }
+
+    // Fallback to basic story info if no parsed data available
+    return {
+      title: story.title || "Generated Story",
+      genre: story.genre || "General",
+      words: 60000,
+      question: "What is the central question of this story?",
+      goal: "Story goal not defined",
+      conflict: "Story conflict not defined",
+      outcome: "Story outcome not defined",
+      chars: {},
+      themes: [],
+      structure: {
+        type: "3_part",
+        parts: ["setup", "confrontation", "resolution"],
+        dist: [25, 50, 25]
+      },
+      setting: {},
+      parts: [],
+      serial: {},
+      hooks: {}
+    };
+  };
+
+  // Real story data from database
+  const [sampleStoryData, setSampleStoryData] = useState(parseStoryData());
 
   // Track changes and original data for save/cancel functionality
   const [originalStoryData, setOriginalStoryData] = useState(sampleStoryData);
   const [storyHasChanges, setStoryHasChanges] = useState(false);
+
+  // Update story data when story prop changes (for real-time updates)
+  useEffect(() => {
+    const newStoryData = parseStoryData();
+    setSampleStoryData(newStoryData);
+    setOriginalStoryData(newStoryData);
+    setStoryHasChanges(false);
+  }, [story]);
 
   // Update story data and track changes
   const handleStoryDataUpdate = (updatedData: any) => {

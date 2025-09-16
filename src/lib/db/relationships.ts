@@ -277,7 +277,8 @@ export class RelationshipManager {
       .from(stories)
       .where(eq(stories.id, storyId))
       .limit(1);
-      
+
+
     if (!story) return null;
     
     // Get parts directly using stored IDs
@@ -330,7 +331,7 @@ export class RelationshipManager {
       ? await db.select().from(scenes).where(inArray(scenes.id, allSceneIds))
       : [];
     
-    return {
+    const result = {
       ...story,
       parts: storyParts.map(part => ({
         ...part,
@@ -346,6 +347,9 @@ export class RelationshipManager {
           scenes: allScenes.filter(scene => scene.chapterId === chapter.id)
         }))
     };
+
+
+    return result;
   }
 
   /**

@@ -18,8 +18,10 @@ export async function GET(
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
+
     // Get story with full structure (parts, chapters, scenes)
     const storyWithStructure = await getStoryWithStructure(id, session?.user?.id);
+
 
     if (!storyWithStructure) {
       return NextResponse.json({ error: 'Story not found' }, { status: 404 });
@@ -45,9 +47,29 @@ export async function GET(
 
     const allScenes = allChapters.flatMap(chapter => chapter.scenes || []);
 
+    // Parse story content JSON for storyData (note: field is named 'storyData', not 'content')
+    let parsedStoryData = null;
+
+    if (storyWithStructure.storyData) {
+      try {
+        // Handle case where storyData might already be an object
+        if (typeof storyWithStructure.storyData === 'object') {
+          parsedStoryData = storyWithStructure.storyData;
+        } else if (typeof storyWithStructure.storyData === 'string') {
+          parsedStoryData = JSON.parse(storyWithStructure.storyData);
+        }
+      } catch (error) {
+        console.error('Failed to parse story storyData JSON:', error);
+        // Keep parsedStoryData as null if parsing fails
+      }
+    }
+
     // Return story data optimized for writing with additional metadata
     const response = {
-      story: storyWithStructure,
+      story: {
+        ...storyWithStructure,
+        storyData: parsedStoryData // Add parsed story data
+      },
       characters: storyCharacters,
       isOwner,
       metadata: {
@@ -59,7 +81,7 @@ export async function GET(
           draftsCount: allChapters.filter(ch => ch.status === 'draft').length,
           completedChapters: allChapters.filter(ch => ch.status === 'completed').length,
           totalWordCount: allChapters.reduce((sum, ch) => sum + (ch.wordCount || 0), 0),
-          averageChapterLength: allChapters.length > 0 
+          averageChapterLength: allChapters.length > 0
             ? Math.round(allChapters.reduce((sum, ch) => sum + (ch.wordCount || 0), 0) / allChapters.length)
             : 0
         }

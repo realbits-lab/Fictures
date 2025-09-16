@@ -172,6 +172,10 @@ export function StoryEditor({
 	const [isSaving, setIsSaving] = useState(false);
 	const [isGenerating, setIsGenerating] = useState(false);
 
+	// State for collapsible sections
+	const [charactersCollapsed, setCharactersCollapsed] = useState(true);
+	const [placesCollapsed, setPlacesCollapsed] = useState(true);
+
 	const handleSave = async () => {
 		if (!onSave || !externalHasChanges) return;
 		setIsSaving(true);
@@ -276,26 +280,196 @@ export function StoryEditor({
 		</Card>
 	);
 
-	const renderCharacters = () => (
-		<Card>
-			<CardHeader>
-				<CardTitle className="flex items-center gap-2">
-					🎭 Characters (YAML Story Data)
-				</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-4">
-				<div className="space-y-2">
-					{Object.entries(storyData.chars).map(([name, char]) => (
-						<div key={name} className="flex items-center gap-2 text-sm">
-							<Badge variant="outline">{char.role}</Badge>
-							<span className="font-medium">{name}:</span>
-							<span>{char.arc}</span>
-						</div>
-					))}
-				</div>
-			</CardContent>
-		</Card>
-	);
+	const renderCollapsibleCharacters = () => {
+		const hasStoryCharacters = Object.keys(storyData.chars).length > 0;
+		const hasDatabaseCharacters = characters && characters.length > 0;
+		const hasAnyCharacters = hasStoryCharacters || hasDatabaseCharacters;
+
+		return (
+			<Card>
+				<CardHeader
+					className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+					onClick={() => setCharactersCollapsed(!charactersCollapsed)}
+				>
+					<CardTitle className="flex items-center justify-between">
+						<span className="flex items-center gap-2">
+							🎭 Characters
+							{hasAnyCharacters && (
+								<Badge variant="secondary" className="text-xs">
+									{Object.keys(storyData.chars).length + (characters?.length || 0)}
+								</Badge>
+							)}
+						</span>
+						<span className="text-sm">
+							{charactersCollapsed ? "▶" : "▼"}
+						</span>
+					</CardTitle>
+				</CardHeader>
+				{!charactersCollapsed && (
+					<CardContent className="space-y-4">
+						{/* Story Characters from YAML */}
+						{hasStoryCharacters && (
+							<div>
+								<h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
+									Story Characters
+								</h4>
+								<div className="space-y-2">
+									{Object.entries(storyData.chars).map(([name, char]) => (
+										<div key={name} className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+											<div className="flex items-center gap-2 mb-1">
+												<Badge variant="outline">{char.role}</Badge>
+												<span className="font-medium">{name}</span>
+											</div>
+											<p className="text-sm text-gray-700 dark:text-gray-300">
+												<strong>Arc:</strong> {char.arc}
+											</p>
+											{char.flaw && (
+												<p className="text-sm text-gray-700 dark:text-gray-300">
+													<strong>Flaw:</strong> {char.flaw}
+												</p>
+											)}
+											{char.secret && (
+												<p className="text-sm text-gray-700 dark:text-gray-300">
+													<strong>Secret:</strong> {char.secret}
+												</p>
+											)}
+										</div>
+									))}
+								</div>
+							</div>
+						)}
+
+						{/* Database Characters */}
+						{hasDatabaseCharacters && (
+							<div>
+								<h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
+									Character Database
+								</h4>
+								<div className="space-y-3">
+									{characters!.map((character) => (
+										<div key={character.id} className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+											<div className="flex items-center gap-2 mb-2">
+												<span className="font-bold text-base">{character.name}</span>
+												{character.role && (
+													<Badge variant="secondary">{character.role}</Badge>
+												)}
+												{character.isMain && (
+													<Badge variant="default">Main</Badge>
+												)}
+											</div>
+											{character.description && (
+												<p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+													{character.description}
+												</p>
+											)}
+											<div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+												{character.personality && (
+													<div>
+														<strong className="text-gray-600 dark:text-gray-400">Personality:</strong>
+														<p className="text-gray-700 dark:text-gray-300">{character.personality}</p>
+													</div>
+												)}
+												{character.background && (
+													<div>
+														<strong className="text-gray-600 dark:text-gray-400">Background:</strong>
+														<p className="text-gray-700 dark:text-gray-300">{character.background}</p>
+													</div>
+												)}
+											</div>
+										</div>
+									))}
+								</div>
+							</div>
+						)}
+
+						{!hasAnyCharacters && (
+							<div className="text-center text-gray-500 dark:text-gray-400 py-4">
+								<p>No characters have been created yet.</p>
+								<p className="text-sm">Add characters to your story to see them here.</p>
+							</div>
+						)}
+					</CardContent>
+				)}
+			</Card>
+		);
+	};
+
+	const renderCollapsiblePlaces = () => {
+		const hasPrimarySettings = storyData.setting.primary.length > 0;
+		const hasSecondarySettings = storyData.setting.secondary.length > 0;
+		const hasAnySettings = hasPrimarySettings || hasSecondarySettings;
+
+		return (
+			<Card>
+				<CardHeader
+					className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+					onClick={() => setPlacesCollapsed(!placesCollapsed)}
+				>
+					<CardTitle className="flex items-center justify-between">
+						<span className="flex items-center gap-2">
+							🏛️ Places & Settings
+							{hasAnySettings && (
+								<Badge variant="secondary" className="text-xs">
+									{storyData.setting.primary.length + storyData.setting.secondary.length}
+								</Badge>
+							)}
+						</span>
+						<span className="text-sm">
+							{placesCollapsed ? "▶" : "▼"}
+						</span>
+					</CardTitle>
+				</CardHeader>
+				{!placesCollapsed && (
+					<CardContent className="space-y-4">
+						{/* Primary Settings */}
+						{hasPrimarySettings && (
+							<div>
+								<h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
+									Primary Settings
+								</h4>
+								<div className="space-y-2">
+									{storyData.setting.primary.map((place, index) => (
+										<div key={index} className="border rounded-lg p-3 bg-blue-50 dark:bg-blue-900/20">
+											<div className="flex items-center gap-2">
+												<Badge variant="default" className="bg-blue-600">Primary</Badge>
+												<span className="font-medium text-blue-800 dark:text-blue-200">{place}</span>
+											</div>
+										</div>
+									))}
+								</div>
+							</div>
+						)}
+
+						{/* Secondary Settings */}
+						{hasSecondarySettings && (
+							<div>
+								<h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
+									Secondary Settings
+								</h4>
+								<div className="space-y-2">
+									{storyData.setting.secondary.map((place, index) => (
+										<div key={index} className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+											<div className="flex items-center gap-2">
+												<Badge variant="outline">Secondary</Badge>
+												<span className="font-medium">{place}</span>
+											</div>
+										</div>
+									))}
+								</div>
+							</div>
+						)}
+
+						{!hasAnySettings && (
+							<div className="text-center text-gray-500 dark:text-gray-400 py-4">
+								<p>No settings or places have been defined yet.</p>
+								<p className="text-sm">Define primary and secondary locations for your story.</p>
+							</div>
+						)}
+					</CardContent>
+				)}
+			</Card>
+		);
+	};
 
 	const renderDatabaseCharacters = () => (
 		<Card>
@@ -431,10 +605,10 @@ export function StoryEditor({
 
 			{/* Story Development Sections */}
 			<div className="space-y-6">
+				{renderCollapsibleCharacters()}
+				{renderCollapsiblePlaces()}
 				{renderBasicInfo()}
 				{renderUniversalPattern()}
-				{renderCharacters()}
-				{renderDatabaseCharacters()}
 				{renderParts()}
 			</div>
 
