@@ -351,9 +351,9 @@ export function StoryEditor({
 								{characters!.map((character) => {
 									const isCharacterCollapsed = collapsedCharacterCards[character.id] ?? true;
 									return (
-										<div key={character.id} className="border rounded-lg bg-gray-50 dark:bg-gray-800">
+										<div key={character.id} className="border rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800">
 											<div
-												className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg"
+												className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
 												onClick={() => toggleCharacterCard(character.id)}
 											>
 												<div className="flex items-center gap-2">
@@ -527,9 +527,9 @@ export function StoryEditor({
 								{places!.map((place) => {
 									const isPlaceCollapsed = collapsedPlaceCards[place.id] ?? true;
 									return (
-										<div key={place.id} className="border rounded-lg bg-gray-50 dark:bg-gray-800">
+										<div key={place.id} className="border rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800">
 											<div
-												className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg"
+												className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
 												onClick={() => togglePlaceCard(place.id)}
 											>
 												<div className="flex items-center gap-2">
