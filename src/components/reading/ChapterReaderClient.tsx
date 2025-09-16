@@ -515,7 +515,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
               </header>
 
               {/* Chapter Content */}
-              <div className="prose prose-lg dark:prose-invert max-w-none">
+              <div className="prose prose-lg max-w-none" style={{ color: 'rgb(var(--foreground))' }}>
                 {scenesError ? (
                   <div className="text-center py-12 text-red-500 dark:text-red-400">
                     <div className="max-w-md mx-auto">
@@ -571,7 +571,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                       <div className="max-w-md mx-auto">
                         <h3 className="text-lg font-semibold mb-4">📝 Chapter Not Ready</h3>
                         <p className="text-sm mb-4">
-                          This chapter hasn't been structured into scenes yet. 
+                          This chapter hasn&apos;t been structured into scenes yet. 
                           Chapters must be organized into scenes to be readable.
                         </p>
                         {isOwner && (
