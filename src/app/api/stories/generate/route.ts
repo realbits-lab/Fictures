@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       targetWordCount: generatedStory.totalWordCount || generatedStory.words || 60000,
       status: 'draft',
       isPublic: false,
-      storyData: generatedStory, // Store complete JSON data
+      content: JSON.stringify(generatedStory), // Store complete data as JSON text
       partIds: [], // Initialize empty bi-directional arrays
       chapterIds: [],
     }).returning();
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
             orderIndex: storyPart.part,
             targetWordCount: partWordCount,
             status: 'planned',
-            partData: storyPart, // Store the part data from story generation
+            content: JSON.stringify(storyPart), // Store the part data from story generation
             chapterIds: [], // Initialize empty chapter IDs
           }
         );

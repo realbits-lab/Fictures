@@ -151,7 +151,7 @@ export async function PATCH(
     // Update the story with the new storyData
     await db.update(stories)
       .set({
-        storyData: storyData,
+        content: storyData,
         updatedAt: new Date()
       })
       .where(eq(stories.id, id));

@@ -51,27 +51,38 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if part has detailed specification data
-    if (!part.partData || typeof part.partData !== 'object') {
+    if (!part.content || typeof part.content !== 'string') {
       return new Response(
         JSON.stringify({ error: 'Part specification data is required. Please generate part specifications first.' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    // Check if story has the required storyData
-    if (!story.storyData || typeof story.storyData !== 'object') {
+    // Check if story has the required content
+    if (!story.content || typeof story.content !== 'string') {
       return new Response(
-        JSON.stringify({ error: 'Story data is required. Please regenerate the story first.' }),
+        JSON.stringify({ error: 'Story content is required. Please regenerate the story first.' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
     console.log('📚 Generating chapter specifications...');
 
-    // Generate detailed chapter specifications using AI
+    // Parse content and generate detailed chapter specifications using AI
+    let storyData, partData;
+    try {
+      storyData = JSON.parse(story.content);
+    } catch {
+      storyData = { content: story.content };
+    }
+    try {
+      partData = JSON.parse(part.content);
+    } catch {
+      partData = { content: part.content };
+    }
     const chapterSpecs = await generateChapterSpecifications(
-      story.storyData as any, 
-      part.partData as any, 
+      storyData,
+      partData,
       chapterCount
     );
 

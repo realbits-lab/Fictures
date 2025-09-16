@@ -82,7 +82,7 @@ export const stories = pgTable('stories', {
   viewCount: integer('view_count').default(0),
   rating: integer('rating').default(0), // Average rating * 10 (e.g., 47 = 4.7)
   ratingCount: integer('rating_count').default(0),
-  storyData: json('story_data').$type<Record<string, unknown>>(), // Store complete story development YAML data
+  content: text('content').default(''), // Store complete story development YAML data as text
   // Bi-directional relationship fields
   partIds: json('part_ids').$type<string[]>().default([]).notNull(),
   chapterIds: json('chapter_ids').$type<string[]>().default([]).notNull(),
@@ -101,7 +101,7 @@ export const parts = pgTable('parts', {
   targetWordCount: integer('target_word_count').default(0),
   currentWordCount: integer('current_word_count').default(0),
   status: varchar('status', { length: 50 }).default('planned'), // planned, in_progress, completed
-  partData: json('part_data').$type<Record<string, unknown>>(), // Store part-specific development data
+  content: text('content').default(''), // Store part-specific development YAML data as text
   // Bi-directional relationship fields
   chapterIds: json('chapter_ids').$type<string[]>().default([]).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
