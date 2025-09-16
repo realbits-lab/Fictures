@@ -121,7 +121,8 @@ CRITICAL REQUIREMENTS:
 - Create culturally appropriate settings and themes for the target language
 - serial.schedule must be exactly: "weekly", "daily", or "monthly"
 - You can add more key/value pairs to YAML data if needed for better story development
-- Output must be valid YAML format`,
+- Output must be valid YAML format - NO semicolons, proper indentation, quotes around string values
+- All string values must be properly quoted and indented`,
     prompt: `Analyze this user story prompt deeply: "${userPrompt}"
 Target language: ${language}
 
@@ -265,7 +266,8 @@ REQUIREMENTS:
 - Character names must match the story's target language and culture
 - All elements must connect to the user's original prompt and story concept
 - Focus on character development that serves the story's central conflict
-- You can add more key/value pairs to YAML data if needed for better part development`,
+- You can add more key/value pairs to YAML data if needed for better part development
+- Output must be valid YAML format - NO semicolons, proper indentation, quotes around string values`,
       prompt: `Story concept: ${JSON.stringify(storyConcept, null, 2)}
 
 Current part to develop: Part ${storyPart.part}
@@ -393,7 +395,7 @@ POV character should be the main protagonist: ${Object.keys(storyConcept.chars).
 }
 
 // Phase 4: Scene Generation
-export async function generateSceneSpecifications(chapterSpec: ChapterSpecification, sceneCount: number = 3): Promise<SceneSpecification[]> {
+export async function generateSceneSpecifications(chapterSpec: ChapterSpecification, storyCharacters: any[] = [], storyPlaces: any[] = [], sceneCount: number = 3): Promise<SceneSpecification[]> {
   const scenes: SceneSpecification[] = [];
 
   for (let i = 1; i <= sceneCount; i++) {
@@ -404,36 +406,46 @@ export async function generateSceneSpecifications(chapterSpec: ChapterSpecificat
 Create detailed scene specifications in YAML format following this structure:
 
 ---
-id: 1
-summary: "Scene summary"
-time: "Scene time"
-place: "Scene location"
-pov: "POV character"
+id: [scene number]
+summary: [scene summary]
+time: [scene time]
+place_name: [specific location from story places]
+place_id: [will be filled by system]
+pov: [POV character name]
+character_names:
+  - [character name 1]
+  - [character name 2]
+character_ids: [will be filled by system]
 characters:
-  protag:
-    enters: "How character enters"
-    exits: "How character exits"
-    status: "Character status"
-    evidence: "Evidence character provides"
-  antag:
-    enters: "How character enters"
-    exits: "How character exits"
-    status: "Character status"
-    evidence: "Evidence character provides"
-goal: "Scene goal"
-obstacle: "Scene obstacle"
-outcome: "Scene outcome"
+  [character_name]:
+    enters: [how character enters]
+    exits: [how character exits]
+    status: [character status]
+    evidence: [evidence character provides]
+goal: [scene goal]
+obstacle: [scene obstacle]
+outcome: [scene outcome]
 beats:
-  - "Beat 1"
-  - "Beat 2"
-  - "Beat 3"
-shift: "Emotional/value shift through scene"
-leads_to: "What this leads to"
-image_prompt: "Visual description for scene visualization"
+  - [beat 1]
+  - [beat 2]
+  - [beat 3]
+shift: [emotional/value shift through scene]
+leads_to: [what this leads to]
+image_prompt: [visual description for scene visualization]
 ---
 
-Generate detailed scenes that serve as complete dramatic units while advancing the chapter.`,
+REQUIREMENTS:
+- Each scene must include at least one character and one place from the story
+- Use actual character names and place names from the story context
+- Characters and places must be relevant to the scene's purpose
+- Generate detailed scenes that serve as complete dramatic units while advancing the chapter
+- You can add more key/value pairs to YAML data if needed for richer scene development
+- Output must be valid YAML format - NO semicolons, proper indentation, quotes around string values`,
       prompt: `Chapter specification: ${JSON.stringify(chapterSpec, null, 2)}
+
+Available characters: ${storyCharacters.map(c => `${c.parsedData?.name || c.id} (${c.parsedData?.role || c.id})`).join(', ') || 'No characters available'}
+
+Available places: ${storyPlaces.map(p => p.parsedData?.name || p.name).join(', ') || 'No places available'}
 
 Generate Scene ${i} of Chapter ${chapterSpec.chap}.
 This scene should contribute to the chapter's three-act structure:
@@ -441,7 +453,7 @@ This scene should contribute to the chapter's three-act structure:
 - Act 2 (Confrontation): Scenes 2-3
 - Act 3 (Resolution): Final scene
 
-Scene ${i} function within chapter structure.`,
+Scene ${i} function within chapter structure. Must include at least one character and one place from the available lists above.`,
     });
 
     try {

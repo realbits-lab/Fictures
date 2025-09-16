@@ -150,7 +150,14 @@ export async function POST(request: NextRequest) {
         await db.insert(places).values({
           id: placeId,
           name: place.parsedData?.name || place.name,
+          description: place.parsedData?.description || '',
+          type: place.parsedData?.type || 'location',
+          atmosphere: place.parsedData?.atmosphere || '',
+          significance: place.parsedData?.significance || '',
           storyId: storyId,
+          isMain: ['primary', 'main'].some(keyword =>
+            (place.parsedData?.significance || '').toLowerCase().includes(keyword)
+          ),
           content: place.content, // Store YAML data
         });
 

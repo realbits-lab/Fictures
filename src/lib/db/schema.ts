@@ -143,6 +143,9 @@ export const scenes = pgTable('scenes', {
   goal: text('goal'),
   conflict: text('conflict'),
   outcome: text('outcome'),
+  // Character and place references for scene writing
+  characterIds: json('character_ids').$type<string[]>().default([]).notNull(),
+  placeIds: json('place_ids').$type<string[]>().default([]).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -168,7 +171,13 @@ export const characters = pgTable('characters', {
 export const places = pgTable('places', {
   id: text('id').primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  type: varchar('type', { length: 100 }), // indoor, outdoor, building, street, etc.
+  atmosphere: text('atmosphere'), // mood, feeling of the place
+  significance: text('significance'), // importance to the story
   storyId: text('story_id').references(() => stories.id).notNull(),
+  imageUrl: text('image_url'),
+  isMain: boolean('is_main').default(false), // is this a main location?
   content: text('content').default(''), // Store place YAML data
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
