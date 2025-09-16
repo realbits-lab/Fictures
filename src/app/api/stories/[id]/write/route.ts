@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getStoryWithStructure } from '@/lib/db/queries';
 import { db } from '@/lib/db';
-import { stories } from '@/lib/db/schema';
+import { stories, characters } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { createHash } from 'crypto';
 
@@ -20,10 +20,15 @@ export async function GET(
 
     // Get story with full structure (parts, chapters, scenes)
     const storyWithStructure = await getStoryWithStructure(id, session?.user?.id);
-    
+
     if (!storyWithStructure) {
       return NextResponse.json({ error: 'Story not found' }, { status: 404 });
     }
+
+    // Get characters for this story
+    const storyCharacters = await db.query.characters.findMany({
+      where: eq(characters.storyId, id)
+    });
 
     // Only story owners can edit
     if (storyWithStructure.userId !== session?.user?.id) {
@@ -43,6 +48,7 @@ export async function GET(
     // Return story data optimized for writing with additional metadata
     const response = {
       story: storyWithStructure,
+      characters: storyCharacters,
       isOwner,
       metadata: {
         fetchedAt: new Date().toISOString(),

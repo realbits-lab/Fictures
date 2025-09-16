@@ -106,8 +106,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const [targetStoryId, setTargetStoryId] = useState<string | null>(null);
   const { story: swrStory, isLoading: isLoadingStory, isValidating: isValidatingStory, error: storyError } = useStoryData(targetStoryId);
   
-  // SWR hook for current story to track background validation
-  const { isValidating: isValidatingCurrentStory } = useStoryData(story.id);
+  // SWR hook for current story to track background validation and get characters
+  const { isValidating: isValidatingCurrentStory, characters: currentStoryCharacters } = useStoryData(story.id);
   const [themePlanned, setThemePlanned] = useState(false);
   const [isSavingTheme, setIsSavingTheme] = useState(false);
   
@@ -749,6 +749,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           <StoryEditor
             storyId={currentSelection.storyId}
             storyData={sampleStoryData}
+            characters={currentStoryCharacters}
             hasChanges={storyHasChanges}
             onStoryUpdate={handleStoryDataUpdate}
             onSave={async (data) => {

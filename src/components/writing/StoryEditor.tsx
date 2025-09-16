@@ -61,9 +61,22 @@ interface StoryData {
 	};
 }
 
+interface Character {
+	id: string;
+	name: string;
+	description?: string;
+	personality?: string;
+	background?: string;
+	appearance?: string;
+	role?: string;
+	imageUrl?: string;
+	isMain?: boolean;
+}
+
 interface StoryEditorProps {
 	storyId?: string;
 	storyData?: StoryData;
+	characters?: Character[];
 	hasChanges?: boolean;
 	onStoryUpdate?: (data: StoryData) => void;
 	onSave?: (data: StoryData) => Promise<void>;
@@ -74,6 +87,7 @@ interface StoryEditorProps {
 export function StoryEditor({
 	storyId,
 	storyData: externalStoryData,
+	characters,
 	hasChanges: externalHasChanges,
 	onStoryUpdate,
 	onSave,
@@ -266,7 +280,7 @@ export function StoryEditor({
 		<Card>
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2">
-					🎭 Characters
+					🎭 Characters (YAML Story Data)
 				</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-4">
@@ -279,6 +293,70 @@ export function StoryEditor({
 						</div>
 					))}
 				</div>
+			</CardContent>
+		</Card>
+	);
+
+	const renderDatabaseCharacters = () => (
+		<Card>
+			<CardHeader>
+				<CardTitle className="flex items-center gap-2">
+					👥 Character Database
+				</CardTitle>
+			</CardHeader>
+			<CardContent className="space-y-4">
+				{characters && characters.length > 0 ? (
+					<div className="space-y-4">
+						{characters.map((character) => (
+							<div key={character.id} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+								<div className="flex items-start gap-3 mb-3">
+									<div className="flex-1">
+										<div className="flex items-center gap-2 mb-2">
+											<span className="font-bold text-base">{character.name}</span>
+											{character.role && (
+												<Badge variant="secondary">{character.role}</Badge>
+											)}
+											{character.isMain && (
+												<Badge variant="default">Main Character</Badge>
+											)}
+										</div>
+										{character.description && (
+											<p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+												<strong>Description:</strong> {character.description}
+											</p>
+										)}
+									</div>
+								</div>
+
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+									{character.personality && (
+										<div>
+											<strong className="text-gray-600 dark:text-gray-400">Personality:</strong>
+											<p className="text-gray-700 dark:text-gray-300 mt-1">{character.personality}</p>
+										</div>
+									)}
+									{character.background && (
+										<div>
+											<strong className="text-gray-600 dark:text-gray-400">Background:</strong>
+											<p className="text-gray-700 dark:text-gray-300 mt-1">{character.background}</p>
+										</div>
+									)}
+									{character.appearance && (
+										<div>
+											<strong className="text-gray-600 dark:text-gray-400">Appearance:</strong>
+											<p className="text-gray-700 dark:text-gray-300 mt-1">{character.appearance}</p>
+										</div>
+									)}
+								</div>
+							</div>
+						))}
+					</div>
+				) : (
+					<div className="text-center py-8 text-gray-500 dark:text-gray-400">
+						<p>No characters have been created yet.</p>
+						<p className="text-sm mt-1">Characters will appear here when they are added to the database.</p>
+					</div>
+				)}
 			</CardContent>
 		</Card>
 	);
@@ -356,6 +434,7 @@ export function StoryEditor({
 				{renderBasicInfo()}
 				{renderUniversalPattern()}
 				{renderCharacters()}
+				{renderDatabaseCharacters()}
 				{renderParts()}
 			</div>
 
