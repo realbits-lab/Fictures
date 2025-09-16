@@ -64,13 +64,24 @@ interface StoryData {
 interface Character {
 	id: string;
 	name: string;
+	role?: string;
 	description?: string;
 	personality?: string;
 	background?: string;
 	appearance?: string;
-	role?: string;
+	motivations?: string;
+	flaws?: string;
+	strengths?: string;
+	relationships?: string;
+	arc?: string;
+	dialogue_style?: string;
+	secrets?: string;
+	goals?: string;
+	conflicts?: string;
 	imageUrl?: string;
 	isMain?: boolean;
+	createdAt: string;
+	updatedAt: string;
 }
 
 interface Place {
@@ -360,15 +371,15 @@ export function StoryEditor({
 											</div>
 
 											{!isCharacterCollapsed && (
-												<div className="p-4 pt-0 space-y-3">
-													{character.description && (
-														<div>
-															<strong className="text-gray-600 dark:text-gray-400">Description:</strong>
-															<p className="text-gray-700 dark:text-gray-300 mt-1">{character.description}</p>
-														</div>
-													)}
-
+												<div className="p-4 pt-0 space-y-4">
+													{/* Basic Info Section */}
 													<div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+														{character.description && (
+															<div className="md:col-span-2">
+																<strong className="text-gray-600 dark:text-gray-400">Description:</strong>
+																<p className="text-gray-700 dark:text-gray-300 mt-1">{character.description}</p>
+															</div>
+														)}
 														{character.personality && (
 															<div>
 																<strong className="text-gray-600 dark:text-gray-400">Personality:</strong>
@@ -387,18 +398,83 @@ export function StoryEditor({
 																<p className="text-gray-700 dark:text-gray-300 mt-1">{character.appearance}</p>
 															</div>
 														)}
-														{character.imageUrl && (
+														{character.motivations && (
 															<div>
-																<strong className="text-gray-600 dark:text-gray-400">Image:</strong>
-																<img
-																	src={character.imageUrl}
-																	alt={character.name}
-																	className="mt-1 w-20 h-20 object-cover rounded-md"
-																/>
+																<strong className="text-gray-600 dark:text-gray-400">Motivations:</strong>
+																<p className="text-gray-700 dark:text-gray-300 mt-1">{character.motivations}</p>
 															</div>
 														)}
 													</div>
 
+													{/* Character Traits Section */}
+													<div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm border-t pt-3">
+														{character.strengths && (
+															<div>
+																<strong className="text-gray-600 dark:text-gray-400">Strengths:</strong>
+																<p className="text-gray-700 dark:text-gray-300 mt-1">{character.strengths}</p>
+															</div>
+														)}
+														{character.flaws && (
+															<div>
+																<strong className="text-gray-600 dark:text-gray-400">Flaws:</strong>
+																<p className="text-gray-700 dark:text-gray-300 mt-1">{character.flaws}</p>
+															</div>
+														)}
+														{character.goals && (
+															<div>
+																<strong className="text-gray-600 dark:text-gray-400">Goals:</strong>
+																<p className="text-gray-700 dark:text-gray-300 mt-1">{character.goals}</p>
+															</div>
+														)}
+														{character.conflicts && (
+															<div>
+																<strong className="text-gray-600 dark:text-gray-400">Conflicts:</strong>
+																<p className="text-gray-700 dark:text-gray-300 mt-1">{character.conflicts}</p>
+															</div>
+														)}
+													</div>
+
+													{/* Story Development Section */}
+													<div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm border-t pt-3">
+														{character.arc && (
+															<div>
+																<strong className="text-gray-600 dark:text-gray-400">Character Arc:</strong>
+																<p className="text-gray-700 dark:text-gray-300 mt-1">{character.arc}</p>
+															</div>
+														)}
+														{character.relationships && (
+															<div>
+																<strong className="text-gray-600 dark:text-gray-400">Relationships:</strong>
+																<p className="text-gray-700 dark:text-gray-300 mt-1">{character.relationships}</p>
+															</div>
+														)}
+														{character.dialogue_style && (
+															<div>
+																<strong className="text-gray-600 dark:text-gray-400">Dialogue Style:</strong>
+																<p className="text-gray-700 dark:text-gray-300 mt-1">{character.dialogue_style}</p>
+															</div>
+														)}
+														{character.secrets && (
+															<div>
+																<strong className="text-gray-600 dark:text-gray-400">Secrets:</strong>
+																<p className="text-gray-700 dark:text-gray-300 mt-1">{character.secrets}</p>
+															</div>
+														)}
+													</div>
+
+													{/* Image Section */}
+													{character.imageUrl && (
+														<div className="border-t pt-3">
+															<strong className="text-gray-600 dark:text-gray-400">Image:</strong>
+															<img
+																src={character.imageUrl}
+																alt={character.name}
+																className="mt-2 w-32 h-32 object-cover rounded-md"
+															/>
+														</div>
+													)}
+
+													{/* Timestamps */}
 													<div className="text-xs text-gray-500 dark:text-gray-400 border-t pt-2">
 														<div>Created: {new Date(character.createdAt).toLocaleDateString()}</div>
 														<div>Updated: {new Date(character.updatedAt).toLocaleDateString()}</div>

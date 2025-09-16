@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { stories, characters, places } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { createHash } from 'crypto';
+import * as yaml from 'js-yaml';
 
 export async function GET(
   request: NextRequest,
@@ -28,8 +29,50 @@ export async function GET(
     }
 
     // Get characters for this story
-    const storyCharacters = await db.query.characters.findMany({
+    const rawCharacters = await db.query.characters.findMany({
       where: eq(characters.storyId, id)
+    });
+
+    // Parse character content data
+    const storyCharacters = rawCharacters.map(character => {
+      let parsedContent = {};
+      if (character.content) {
+        try {
+          if (typeof character.content === 'string') {
+            // Try to parse as JSON first
+            try {
+              parsedContent = JSON.parse(character.content);
+            } catch (jsonError) {
+              // If JSON parsing fails, try YAML parsing
+              parsedContent = yaml.load(character.content) as Record<string, any> || {};
+            }
+          } else if (typeof character.content === 'object') {
+            parsedContent = character.content;
+          }
+        } catch (error) {
+          console.error(`Failed to parse character content for ${character.name}:`, error);
+        }
+      }
+
+      return {
+        ...character,
+        // Merge parsed content fields with character record
+        role: parsedContent.role || null,
+        description: parsedContent.description || null,
+        personality: parsedContent.personality || null,
+        background: parsedContent.background || null,
+        appearance: parsedContent.appearance || null,
+        motivations: parsedContent.motivations || null,
+        flaws: parsedContent.flaws || null,
+        strengths: parsedContent.strengths || null,
+        relationships: parsedContent.relationships || null,
+        arc: parsedContent.arc || null,
+        dialogue_style: parsedContent.dialogue_style || null,
+        secrets: parsedContent.secrets || null,
+        goals: parsedContent.goals || null,
+        conflicts: parsedContent.conflicts || null,
+        imageUrl: parsedContent.imageUrl || null
+      };
     });
 
     // Get places for this story
