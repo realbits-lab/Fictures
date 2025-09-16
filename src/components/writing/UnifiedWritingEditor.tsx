@@ -166,8 +166,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     });
   }, [currentSelection, writingProgress]);
 
-  // Sample YAML data for demonstration
-  const sampleStoryData = {
+  // Sample YAML data for demonstration - converted to state for real-time updates
+  const [sampleStoryData, setSampleStoryData] = useState({
     title: story.title || "The Shadow Keeper",
     genre: story.genre || "urban_fantasy",
     words: 80000,
@@ -212,7 +212,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       mysteries: ["previous_student_identity", "marcus_secret", "realm_connection"],
       part_endings: ["mentor_secret_revealed", "elena_appears_changed"]
     }
-  };
+  });
 
   const samplePartData = {
     part: 1,
@@ -720,7 +720,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         return (
           <StoryEditor
             storyId={currentSelection.storyId}
-            initialData={sampleStoryData}
+            storyData={sampleStoryData}
+            onStoryUpdate={setSampleStoryData}
             onSave={handleSave}
             onGenerate={handleGenerate}
           />
@@ -1616,10 +1617,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             {currentSelection.level === "story" && (
               <StoryPromptAnalyzer
                 storyData={sampleStoryData}
-                onStoryUpdate={(updatedData) => {
-                  console.log("Story updated via prompt analyzer:", updatedData);
-                  // Here you could update the actual story data if needed
-                }}
+                onStoryUpdate={setSampleStoryData}
               />
             )}
             

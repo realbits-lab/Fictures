@@ -63,19 +63,21 @@ interface StoryData {
 
 interface StoryEditorProps {
 	storyId?: string;
-	initialData?: StoryData;
+	storyData?: StoryData;
+	onStoryUpdate?: (data: StoryData) => void;
 	onSave?: (data: StoryData) => Promise<void>;
 	onGenerate?: (data: StoryData) => Promise<void>;
 }
 
 export function StoryEditor({
 	storyId,
-	initialData,
+	storyData: externalStoryData,
+	onStoryUpdate,
 	onSave,
 	onGenerate,
 }: StoryEditorProps) {
-	const [storyData, setStoryData] = useState<StoryData>(
-		initialData || {
+	const [originalStoryData, setOriginalStoryData] = useState<StoryData>(
+		externalStoryData || {
 			title: "",
 			genre: "urban_fantasy",
 			words: 80000,
@@ -137,22 +139,39 @@ export function StoryEditor({
 			},
 		},
 	);
+	const [storyData, setStoryData] = useState<StoryData>(originalStoryData);
+
+	// Use external story data when available
+	useEffect(() => {
+		if (externalStoryData) {
+			setOriginalStoryData(externalStoryData);
+			setStoryData(externalStoryData);
+		}
+	}, [externalStoryData]);
 
 	const [isEditing, setIsEditing] = useState(false);
 	const [editingSection, setEditingSection] = useState<string | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
 	const [isGenerating, setIsGenerating] = useState(false);
+	const [hasChanges, setHasChanges] = useState(false);
 
 	const handleSave = async () => {
-		if (!onSave) return;
+		if (!onSave || !hasChanges) return;
 		setIsSaving(true);
 		try {
 			await onSave(storyData);
+			setOriginalStoryData(storyData);
+			setHasChanges(false);
 		} catch (error) {
 			console.error("Save failed:", error);
 		} finally {
 			setIsSaving(false);
 		}
+	};
+
+	const handleCancel = () => {
+		setStoryData(originalStoryData);
+		setHasChanges(false);
 	};
 
 	const handleGenerate = async () => {
@@ -182,6 +201,14 @@ export function StoryEditor({
 			current[path[path.length - 1]] = value;
 			return newData;
 		});
+	};
+
+	const handleStoryUpdate = (updatedData: StoryData) => {
+		setStoryData(updatedData);
+		setHasChanges(true);
+		if (onStoryUpdate) {
+			onStoryUpdate(updatedData);
+		}
 	};
 
 	const renderBasicInfo = () => (
@@ -300,6 +327,26 @@ export function StoryEditor({
 					</p>
 				</div>
 				<div className="flex flex-col sm:flex-row gap-2">
+					{hasChanges && (
+						<div className="flex gap-2">
+							<Button
+								variant="outline"
+								size="lg"
+								onClick={handleCancel}
+								className="whitespace-nowrap min-w-fit px-6"
+							>
+								Cancel
+							</Button>
+							<Button
+								size="lg"
+								onClick={handleSave}
+								disabled={isSaving}
+								className="whitespace-nowrap min-w-fit px-6"
+							>
+								{isSaving ? "💾 Saving..." : "💾 Save Changes"}
+							</Button>
+						</div>
+					)}
 					<Button
 						size="lg"
 						onClick={handleGenerate}
