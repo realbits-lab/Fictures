@@ -524,7 +524,7 @@ Generate comprehensive character details in YAML format.`
 
     try {
       const cleanYaml = extractYamlFromText(text);
-      let parsedData;
+      let parsedData: any;
       try {
         parsedData = yaml.load(cleanYaml);
       } catch (yamlError) {
@@ -612,7 +612,7 @@ Generate comprehensive location details in YAML format.`
 
     try {
       const cleanYaml = extractYamlFromText(text);
-      let parsedData;
+      let parsedData: any;
       try {
         parsedData = yaml.load(cleanYaml);
       } catch (yamlError) {

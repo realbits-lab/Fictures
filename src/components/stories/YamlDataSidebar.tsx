@@ -9,9 +9,9 @@ export function YamlDataSidebar() {
 
   const tabs = [
     { id: 'story', label: 'Story', data: yamlData.storyYaml },
+    { id: 'parts', label: 'Parts', data: yamlData.partsYaml },
     { id: 'characters', label: 'Characters', data: yamlData.charactersYaml },
     { id: 'places', label: 'Places', data: yamlData.placesYaml },
-    { id: 'parts', label: 'Parts', data: yamlData.partsYaml },
   ];
 
   const hasAnyData = Object.values(yamlData).some(data => data && data.trim().length > 0);
