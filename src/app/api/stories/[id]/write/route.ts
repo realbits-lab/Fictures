@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getStoryWithStructure } from '@/lib/db/queries';
 import { db } from '@/lib/db';
-import { stories, characters } from '@/lib/db/schema';
+import { stories, characters, places } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { createHash } from 'crypto';
 
@@ -30,6 +30,11 @@ export async function GET(
     // Get characters for this story
     const storyCharacters = await db.query.characters.findMany({
       where: eq(characters.storyId, id)
+    });
+
+    // Get places for this story
+    const storyPlaces = await db.query.places.findMany({
+      where: eq(places.storyId, id)
     });
 
     // Only story owners can edit
@@ -71,6 +76,7 @@ export async function GET(
         storyData: parsedStoryData // Add parsed story data
       },
       characters: storyCharacters,
+      places: storyPlaces,
       isOwner,
       metadata: {
         fetchedAt: new Date().toISOString(),

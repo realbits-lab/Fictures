@@ -73,10 +73,21 @@ interface Character {
 	isMain?: boolean;
 }
 
+interface Place {
+	id: string;
+	name: string;
+	storyId: string;
+	isMain?: boolean;
+	content?: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
 interface StoryEditorProps {
 	storyId?: string;
 	storyData?: StoryData;
 	characters?: Character[];
+	places?: Place[];
 	hasChanges?: boolean;
 	onStoryUpdate?: (data: StoryData) => void;
 	onSave?: (data: StoryData) => Promise<void>;
@@ -88,6 +99,7 @@ export function StoryEditor({
 	storyId,
 	storyData: externalStoryData,
 	characters,
+	places,
 	hasChanges: externalHasChanges,
 	onStoryUpdate,
 	onSave,
@@ -281,9 +293,7 @@ export function StoryEditor({
 	);
 
 	const renderCollapsibleCharacters = () => {
-		const hasStoryCharacters = Object.keys(storyData.chars).length > 0;
 		const hasDatabaseCharacters = characters && characters.length > 0;
-		const hasAnyCharacters = hasStoryCharacters || hasDatabaseCharacters;
 
 		return (
 			<Card>
@@ -294,9 +304,9 @@ export function StoryEditor({
 					<CardTitle className="flex items-center justify-between">
 						<span className="flex items-center gap-2">
 							🎭 Characters
-							{hasAnyCharacters && (
+							{hasDatabaseCharacters && (
 								<Badge variant="secondary" className="text-xs">
-									{Object.keys(storyData.chars).length + (characters?.length || 0)}
+									{characters?.length || 0}
 								</Badge>
 							)}
 						</span>
@@ -307,82 +317,61 @@ export function StoryEditor({
 				</CardHeader>
 				{!charactersCollapsed && (
 					<CardContent className="space-y-4">
-						{/* Story Characters from YAML */}
-						{hasStoryCharacters && (
-							<div>
-								<h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
-									Story Characters
-								</h4>
-								<div className="space-y-2">
-									{Object.entries(storyData.chars).map(([name, char]) => (
-										<div key={name} className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
-											<div className="flex items-center gap-2 mb-1">
-												<Badge variant="outline">{char.role}</Badge>
-												<span className="font-medium">{name}</span>
-											</div>
-											<p className="text-sm text-gray-700 dark:text-gray-300">
-												<strong>Arc:</strong> {char.arc}
-											</p>
-											{char.flaw && (
-												<p className="text-sm text-gray-700 dark:text-gray-300">
-													<strong>Flaw:</strong> {char.flaw}
-												</p>
+						{hasDatabaseCharacters ? (
+							<div className="space-y-4">
+								{characters!.map((character) => (
+									<div key={character.id} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+										<div className="flex items-center gap-2 mb-3">
+											<span className="font-bold text-lg">{character.name}</span>
+											{character.role && (
+												<Badge variant="secondary">{character.role}</Badge>
 											)}
-											{char.secret && (
-												<p className="text-sm text-gray-700 dark:text-gray-300">
-													<strong>Secret:</strong> {char.secret}
-												</p>
+											{character.isMain && (
+												<Badge variant="default">Main Character</Badge>
 											)}
 										</div>
-									))}
-								</div>
-							</div>
-						)}
 
-						{/* Database Characters */}
-						{hasDatabaseCharacters && (
-							<div>
-								<h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
-									Character Database
-								</h4>
-								<div className="space-y-3">
-									{characters!.map((character) => (
-										<div key={character.id} className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
-											<div className="flex items-center gap-2 mb-2">
-												<span className="font-bold text-base">{character.name}</span>
-												{character.role && (
-													<Badge variant="secondary">{character.role}</Badge>
-												)}
-												{character.isMain && (
-													<Badge variant="default">Main</Badge>
-												)}
+										{character.description && (
+											<div className="mb-3">
+												<strong className="text-gray-600 dark:text-gray-400">Description:</strong>
+												<p className="text-gray-700 dark:text-gray-300 mt-1">{character.description}</p>
 											</div>
-											{character.description && (
-												<p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-													{character.description}
-												</p>
+										)}
+
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+											{character.personality && (
+												<div>
+													<strong className="text-gray-600 dark:text-gray-400">Personality:</strong>
+													<p className="text-gray-700 dark:text-gray-300 mt-1">{character.personality}</p>
+												</div>
 											)}
-											<div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-												{character.personality && (
-													<div>
-														<strong className="text-gray-600 dark:text-gray-400">Personality:</strong>
-														<p className="text-gray-700 dark:text-gray-300">{character.personality}</p>
-													</div>
-												)}
-												{character.background && (
-													<div>
-														<strong className="text-gray-600 dark:text-gray-400">Background:</strong>
-														<p className="text-gray-700 dark:text-gray-300">{character.background}</p>
-													</div>
-												)}
-											</div>
+											{character.background && (
+												<div>
+													<strong className="text-gray-600 dark:text-gray-400">Background:</strong>
+													<p className="text-gray-700 dark:text-gray-300 mt-1">{character.background}</p>
+												</div>
+											)}
+											{character.appearance && (
+												<div>
+													<strong className="text-gray-600 dark:text-gray-400">Appearance:</strong>
+													<p className="text-gray-700 dark:text-gray-300 mt-1">{character.appearance}</p>
+												</div>
+											)}
+											{character.imageUrl && (
+												<div>
+													<strong className="text-gray-600 dark:text-gray-400">Image:</strong>
+													<img
+														src={character.imageUrl}
+														alt={character.name}
+														className="mt-1 w-20 h-20 object-cover rounded-md"
+													/>
+												</div>
+											)}
 										</div>
-									))}
-								</div>
+									</div>
+								))}
 							</div>
-						)}
-
-						{!hasAnyCharacters && (
+						) : (
 							<div className="text-center text-gray-500 dark:text-gray-400 py-4">
 								<p>No characters have been created yet.</p>
 								<p className="text-sm">Add characters to your story to see them here.</p>
@@ -395,9 +384,7 @@ export function StoryEditor({
 	};
 
 	const renderCollapsiblePlaces = () => {
-		const hasPrimarySettings = storyData.setting.primary.length > 0;
-		const hasSecondarySettings = storyData.setting.secondary.length > 0;
-		const hasAnySettings = hasPrimarySettings || hasSecondarySettings;
+		const hasDatabasePlaces = places && places.length > 0;
 
 		return (
 			<Card>
@@ -408,9 +395,9 @@ export function StoryEditor({
 					<CardTitle className="flex items-center justify-between">
 						<span className="flex items-center gap-2">
 							🏛️ Places & Settings
-							{hasAnySettings && (
+							{hasDatabasePlaces && (
 								<Badge variant="secondary" className="text-xs">
-									{storyData.setting.primary.length + storyData.setting.secondary.length}
+									{places?.length || 0}
 								</Badge>
 							)}
 						</span>
@@ -421,48 +408,39 @@ export function StoryEditor({
 				</CardHeader>
 				{!placesCollapsed && (
 					<CardContent className="space-y-4">
-						{/* Primary Settings */}
-						{hasPrimarySettings && (
-							<div>
-								<h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
-									Primary Settings
-								</h4>
-								<div className="space-y-2">
-									{storyData.setting.primary.map((place, index) => (
-										<div key={index} className="border rounded-lg p-3 bg-blue-50 dark:bg-blue-900/20">
-											<div className="flex items-center gap-2">
-												<Badge variant="default" className="bg-blue-600">Primary</Badge>
-												<span className="font-medium text-blue-800 dark:text-blue-200">{place}</span>
-											</div>
+						{hasDatabasePlaces ? (
+							<div className="space-y-4">
+								{places!.map((place) => (
+									<div key={place.id} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+										<div className="flex items-center gap-2 mb-3">
+											<span className="font-bold text-lg">{place.name}</span>
+											{place.isMain && (
+												<Badge variant="default">Main Location</Badge>
+											)}
 										</div>
-									))}
-								</div>
-							</div>
-						)}
 
-						{/* Secondary Settings */}
-						{hasSecondarySettings && (
-							<div>
-								<h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
-									Secondary Settings
-								</h4>
-								<div className="space-y-2">
-									{storyData.setting.secondary.map((place, index) => (
-										<div key={index} className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
-											<div className="flex items-center gap-2">
-												<Badge variant="outline">Secondary</Badge>
-												<span className="font-medium">{place}</span>
+										{place.content && (
+											<div className="space-y-2">
+												<div>
+													<span className="text-sm font-medium text-gray-600 dark:text-gray-400">Content:</span>
+													<p className="text-sm text-gray-700 dark:text-gray-300 mt-1 whitespace-pre-wrap">
+														{place.content}
+													</p>
+												</div>
 											</div>
-										</div>
-									))}
-								</div>
-							</div>
-						)}
+										)}
 
-						{!hasAnySettings && (
+										<div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+											<div>Created: {new Date(place.createdAt).toLocaleDateString()}</div>
+											<div>Updated: {new Date(place.updatedAt).toLocaleDateString()}</div>
+										</div>
+									</div>
+								))}
+							</div>
+						) : (
 							<div className="text-center text-gray-500 dark:text-gray-400 py-4">
-								<p>No settings or places have been defined yet.</p>
-								<p className="text-sm">Define primary and secondary locations for your story.</p>
+								<p>No places have been created yet.</p>
+								<p className="text-sm">Add places to your story to see them here.</p>
 							</div>
 						)}
 					</CardContent>

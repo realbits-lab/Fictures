@@ -82,6 +82,7 @@ export function useStoryData(storyId: string | null) {
   return {
     story: data?.story,
     characters: data?.characters,
+    places: data?.places,
     isOwner: data?.isOwner ?? false,
     metadata: data?.metadata,
     isLoading: sessionStatus === 'loading' || isLoading,
