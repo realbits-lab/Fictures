@@ -64,16 +64,20 @@ interface StoryData {
 interface StoryEditorProps {
 	storyId?: string;
 	storyData?: StoryData;
+	hasChanges?: boolean;
 	onStoryUpdate?: (data: StoryData) => void;
 	onSave?: (data: StoryData) => Promise<void>;
+	onCancel?: () => void;
 	onGenerate?: (data: StoryData) => Promise<void>;
 }
 
 export function StoryEditor({
 	storyId,
 	storyData: externalStoryData,
+	hasChanges: externalHasChanges,
 	onStoryUpdate,
 	onSave,
+	onCancel,
 	onGenerate,
 }: StoryEditorProps) {
 	const [originalStoryData, setOriginalStoryData] = useState<StoryData>(
@@ -153,15 +157,12 @@ export function StoryEditor({
 	const [editingSection, setEditingSection] = useState<string | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
 	const [isGenerating, setIsGenerating] = useState(false);
-	const [hasChanges, setHasChanges] = useState(false);
 
 	const handleSave = async () => {
-		if (!onSave || !hasChanges) return;
+		if (!onSave || !externalHasChanges) return;
 		setIsSaving(true);
 		try {
 			await onSave(storyData);
-			setOriginalStoryData(storyData);
-			setHasChanges(false);
 		} catch (error) {
 			console.error("Save failed:", error);
 		} finally {
@@ -170,8 +171,9 @@ export function StoryEditor({
 	};
 
 	const handleCancel = () => {
-		setStoryData(originalStoryData);
-		setHasChanges(false);
+		if (onCancel) {
+			onCancel();
+		}
 	};
 
 	const handleGenerate = async () => {
@@ -205,7 +207,6 @@ export function StoryEditor({
 
 	const handleStoryUpdate = (updatedData: StoryData) => {
 		setStoryData(updatedData);
-		setHasChanges(true);
 		if (onStoryUpdate) {
 			onStoryUpdate(updatedData);
 		}
@@ -327,7 +328,7 @@ export function StoryEditor({
 					</p>
 				</div>
 				<div className="flex flex-col sm:flex-row gap-2">
-					{hasChanges && (
+					{externalHasChanges && (
 						<div className="flex gap-2">
 							<Button
 								variant="outline"
@@ -347,14 +348,6 @@ export function StoryEditor({
 							</Button>
 						</div>
 					)}
-					<Button
-						size="lg"
-						onClick={handleGenerate}
-						disabled={isGenerating}
-						className="whitespace-nowrap min-w-fit px-6"
-					>
-						{isGenerating ? "⚡ Generating..." : "⚡ Generate Parts & Chapters"}
-					</Button>
 				</div>
 			</div>
 

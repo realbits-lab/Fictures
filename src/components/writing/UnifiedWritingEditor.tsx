@@ -214,6 +214,16 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     }
   });
 
+  // Track changes and original data for save/cancel functionality
+  const [originalStoryData, setOriginalStoryData] = useState(sampleStoryData);
+  const [storyHasChanges, setStoryHasChanges] = useState(false);
+
+  // Update story data and track changes
+  const handleStoryDataUpdate = (updatedData: any) => {
+    setSampleStoryData(updatedData);
+    setStoryHasChanges(JSON.stringify(updatedData) !== JSON.stringify(originalStoryData));
+  };
+
   const samplePartData = {
     part: 1,
     title: "Discovery",
@@ -721,8 +731,17 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           <StoryEditor
             storyId={currentSelection.storyId}
             storyData={sampleStoryData}
-            onStoryUpdate={setSampleStoryData}
-            onSave={handleSave}
+            hasChanges={storyHasChanges}
+            onStoryUpdate={handleStoryDataUpdate}
+            onSave={async (data) => {
+              await handleSave();
+              setOriginalStoryData(data);
+              setStoryHasChanges(false);
+            }}
+            onCancel={() => {
+              setSampleStoryData(originalStoryData);
+              setStoryHasChanges(false);
+            }}
             onGenerate={handleGenerate}
           />
         );
@@ -1617,7 +1636,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             {currentSelection.level === "story" && (
               <StoryPromptAnalyzer
                 storyData={sampleStoryData}
-                onStoryUpdate={setSampleStoryData}
+                onStoryUpdate={handleStoryDataUpdate}
               />
             )}
             
