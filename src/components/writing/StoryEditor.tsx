@@ -743,7 +743,7 @@ export function StoryEditor({
 							{Object.entries(storyData.chars)
 								.map(
 									([name, char]) =>
-										`    ${name}: { role: "${char.role}", arc: "${char.arc}" }`,
+										`    ${name}: { role: "${char.role || 'character'}", arc: "${typeof char.arc === 'string' ? char.arc : (Array.isArray(char.arc) ? char.arc.join(' → ') : 'character development')}" }`,
 								)
 								.join("\n")}
 							{`

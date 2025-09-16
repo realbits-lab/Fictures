@@ -798,37 +798,49 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         const selectedPart = story.parts.find(part => part.id === currentSelection.partId);
         const partNumber = selectedPart?.orderIndex || 1;
         
-        // Create unique part data based on selected part
-        const createPartData = (partNum: number, partTitle: string) => ({
-          ...samplePartData,
-          part: partNum,
-          title: partTitle,
-          words: partNum === 2 ? 40000 : 20000, // Middle part typically longer
-          function: partNum === 1 ? "story_setup" : 
-                   partNum === 2 ? "story_development" : 
-                   "story_resolution",
-          goal: partNum === 1 ? "Maya accepts supernatural reality" :
-               partNum === 2 ? "Maya develops powers and enters Shadow Realm" :
-               "Maya confronts final enemy and rescues Elena",
-          conflict: partNum === 1 ? "Denial vs mounting evidence" :
-                   partNum === 2 ? "Power corruption vs moral compass" :
-                   "Ultimate sacrifice vs personal desires",
-          outcome: partNum === 1 ? "Reluctant training commitment" :
-                  partNum === 2 ? "Enters Shadow Realm transformed" :
-                  "Victory at personal cost",
-          questions: {
-            primary: partNum === 1 ? "How will Maya react when she discovers her magical abilities?" :
-                    partNum === 2 ? "Can Maya resist the corruption of shadow magic?" :
-                    "Will Maya sacrifice herself to save Elena?",
-            secondary: partNum === 1 ? "Can Maya overcome denial to accept the supernatural world?" :
-                      partNum === 2 ? "How will Maya's relationships change as she grows stronger?" :
-                      "What will be the true cost of Maya's choices?"
-          }
-        });
+        // Create part data based on actual story data
+        const createPartData = (partNum: number, partTitle: string) => {
+          // Get part data from actual story data if available
+          const storyParts = sampleStoryData.parts || [];
+          const currentPart = storyParts.find((p: any) => p.part === partNum) || storyParts[partNum - 1];
+
+          return {
+            part: partNum,
+            title: partTitle,
+            words: partNum === 2 ? 40000 : 20000, // Middle part typically longer
+            function: partNum === 1 ? "story_setup" :
+                     partNum === 2 ? "story_development" :
+                     "story_resolution",
+            goal: currentPart?.goal || `Part ${partNum} goal from ${sampleStoryData.title}`,
+            conflict: currentPart?.conflict || `Part ${partNum} conflict from ${sampleStoryData.title}`,
+            outcome: currentPart?.outcome || `Part ${partNum} outcome from ${sampleStoryData.title}`,
+            questions: {
+              primary: `What is the main question for Part ${partNum} of ${sampleStoryData.title}?`,
+              secondary: `What is the secondary question for Part ${partNum} of ${sampleStoryData.title}?`
+            },
+            chars: sampleStoryData.chars || {},
+            plot: {
+              events: [],
+              reveals: [],
+              escalation: []
+            },
+            themes: {
+              primary: sampleStoryData.themes?.[0] || `Part ${partNum} theme`,
+              elements: sampleStoryData.themes || [],
+              moments: [],
+              symbols: []
+            },
+            emotion: {
+              start: `Part ${partNum} emotional start`,
+              progression: [],
+              end: `Part ${partNum} emotional end`
+            }
+          };
+        };
         
-        const partData = selectedPart ? 
-          createPartData(partNumber, `Part ${partNumber}`) : 
-          samplePartData;
+        const partData = selectedPart ?
+          createPartData(partNumber, `Part ${partNumber}`) :
+          createPartData(1, "Part 1");
         
         return (
           <PartEditor

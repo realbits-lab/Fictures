@@ -296,7 +296,7 @@ export function PartEditor({
                   <div className="col-span-2">
                     <label className="text-xs font-medium">Character Arc Steps</label>
                     <div className="space-y-1">
-                      {char.arc.map((step, index) => (
+                      {(Array.isArray(char.arc) ? char.arc : []).map((step, index) => (
                         <div key={index} className="flex gap-2">
                           <input
                             type="text"
@@ -356,8 +356,11 @@ export function PartEditor({
                 <div className="font-medium text-blue-700">{name}:</div>
                 <div className="ml-2 space-y-1 text-gray-600">
                   <div><strong>Journey:</strong> {char.start} → {char.end}</div>
-                  {char.arc && char.arc.length > 0 && (
+                  {char.arc && Array.isArray(char.arc) && char.arc.length > 0 && (
                     <div><strong>Arc:</strong> {char.arc.join(' → ')}</div>
+                  )}
+                  {char.arc && typeof char.arc === 'string' && (
+                    <div><strong>Arc:</strong> {char.arc}</div>
                   )}
                   {char.conflict && (
                     <div><strong>Conflict:</strong> {char.conflict}</div>
@@ -655,7 +658,7 @@ export function PartEditor({
 `    ${name}:
       start: "${char.start}"
       end: "${char.end}"
-      arc: [${char.arc.map(step => `"${step}"`).join(', ')}]`
+      arc: [${Array.isArray(char.arc) ? char.arc.map(step => `"${step}"`).join(', ') : `"${char.arc || 'character development'}"`}]`
 ).join('\n')}
 {`
   
