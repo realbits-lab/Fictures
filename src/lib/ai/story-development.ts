@@ -477,48 +477,83 @@ export async function generateCharacterData(storyConcept: Story, language: strin
   for (const [key, char] of Object.entries(storyConcept.chars)) {
     const { text } = await generateText({
       model: AI_MODELS.writing,
-      system: `Generate detailed character data in YAML format for story development.
+      messages: [
+        {
+          role: 'system',
+          content: `Generate detailed character data in YAML format for story development.
 
 Structure:
 ---
-name: [character name appropriate for ${language} language]
-role: [character role]
-description: [physical description]
-personality: [personality traits]
-background: [character history]
-motivations: [what drives them]
-flaws: [character weaknesses]
-strengths: [character strengths]
-relationships: [connections to other characters]
-arc: [character development arc]
-dialogue_style: [how they speak]
-secrets: [hidden aspects]
-goals: [what they want]
-conflicts: [internal/external conflicts]
+name: "Character Name"
+role: "Character Role"
+description: "Physical description in one line"
+personality: "Personality traits in one line"
+background: "Character history in one line"
+motivations: "What drives them in one line"
+flaws: "Character weaknesses in one line"
+strengths: "Character strengths in one line"
+relationships: "Connections to other characters in one line"
+arc: "Character development arc in one line"
+dialogue_style: "How they speak in one line"
+secrets: "Hidden aspects in one line"
+goals: "What they want in one line"
+conflicts: "Internal/external conflicts in one line"
 ---
 
-REQUIREMENTS:
+CRITICAL YAML REQUIREMENTS:
+- ALL values must be quoted strings on single lines
+- NO multi-line values or complex nested structures
+- NO colons (:) inside quoted values
+- Use simple, flat YAML structure only
+- Keep descriptions concise and in single sentences
 - Name must be culturally appropriate for ${language}
 - All details must connect to the user's story concept
-- Character should feel authentic to the story's world
-- You can add more key/value pairs to YAML data if needed for richer character development`,
-      prompt: `Create detailed character data for: ${char.role}
+- Output must be valid, parseable YAML format`
+        },
+        {
+          role: 'user',
+          content: `Create detailed character data for: ${char.role}
 Story context: ${storyConcept.title} - ${storyConcept.genre}
 Story language: ${language}
 Character info from story concept: ${JSON.stringify(char, null, 2)}
 
 Generate comprehensive character details in YAML format.`
+        }
+      ]
     });
 
     try {
       const cleanYaml = extractYamlFromText(text);
+      let parsedData;
+      try {
+        parsedData = yaml.load(cleanYaml);
+      } catch (yamlError) {
+        console.error(`Failed to parse character YAML for ${key}:`, yamlError);
+        // Create fallback parsed data
+        parsedData = {
+          name: key,
+          role: char.role || 'Character',
+          description: 'Character description not available due to parsing error'
+        };
+      }
+
       characters.push({
         id: key,
         content: cleanYaml,
-        parsedData: yaml.load(cleanYaml)
+        parsedData
       });
     } catch (error) {
-      console.error(`Failed to parse character YAML for ${key}:`, error);
+      console.error(`Failed to generate character data for ${key}:`, error);
+      // Create fallback character
+      characters.push({
+        id: key,
+        content: `name: "${key}"\nrole: "${char.role || 'Character'}"\ndescription: "Generated with errors"`,
+        parsedData: {
+          name: key,
+          role: char.role || 'Character',
+          description: 'Generated with errors'
+        }
+      });
     }
   }
 
@@ -533,45 +568,80 @@ export async function generatePlaceData(storyConcept: Story, language: string = 
   for (const place of allPlaces) {
     const { text } = await generateText({
       model: AI_MODELS.writing,
-      system: `Generate detailed location data in YAML format for story development.
+      messages: [
+        {
+          role: 'system',
+          content: `Generate detailed location data in YAML format for story development.
 
 Structure:
 ---
-name: [location name]
-type: [location type]
-description: [detailed description]
-atmosphere: [mood and feeling]
-significance: [importance to story]
-culture: [cultural aspects appropriate for ${language}]
-history: [location background]
-details: [specific features]
-connections: [how it relates to plot/characters]
-sensory: [sounds, smells, textures]
-accessibility: [how characters reach it]
-secrets: [hidden aspects]
+name: "Location Name"
+type: "Location Type"
+description: "Detailed description in one line"
+atmosphere: "Mood and feeling in one line"
+significance: "Importance to story in one line"
+culture: "Cultural aspects in one line"
+history: "Location background in one line"
+details: "Specific features in one line"
+connections: "How it relates to plot/characters in one line"
+sensory: "Sounds, smells, textures in one line"
+accessibility: "How characters reach it in one line"
+secrets: "Hidden aspects in one line"
 ---
 
-REQUIREMENTS:
+CRITICAL YAML REQUIREMENTS:
+- ALL values must be quoted strings on single lines
+- NO multi-line values or complex nested structures
+- NO colons (:) inside quoted values
+- Use simple, flat YAML structure only
+- Keep descriptions concise and in single sentences
 - Location must be culturally appropriate for ${language}
 - Details must serve the story's plot and themes
-- Should enhance the story's atmosphere
-- You can add more key/value pairs to YAML data if needed for more detailed location development`,
-      prompt: `Create detailed location data for: ${place}
+- Output must be valid, parseable YAML format`
+        },
+        {
+          role: 'user',
+          content: `Create detailed location data for: ${place}
 Story context: ${storyConcept.title} - ${storyConcept.genre}
 Story language: ${language}
 
 Generate comprehensive location details in YAML format.`
+        }
+      ]
     });
 
     try {
       const cleanYaml = extractYamlFromText(text);
+      let parsedData;
+      try {
+        parsedData = yaml.load(cleanYaml);
+      } catch (yamlError) {
+        console.error(`Failed to parse place YAML for ${place}:`, yamlError);
+        // Create fallback parsed data
+        parsedData = {
+          name: place,
+          type: 'location',
+          description: 'Place description not available due to parsing error'
+        };
+      }
+
       places.push({
         name: place,
         content: cleanYaml,
-        parsedData: yaml.load(cleanYaml)
+        parsedData
       });
     } catch (error) {
-      console.error(`Failed to parse place YAML for ${place}:`, error);
+      console.error(`Failed to generate place data for ${place}:`, error);
+      // Create fallback place
+      places.push({
+        name: place,
+        content: `name: "${place}"\ntype: "location"\ndescription: "Generated with errors"`,
+        parsedData: {
+          name: place,
+          type: 'location',
+          description: 'Generated with errors'
+        }
+      });
     }
   }
 

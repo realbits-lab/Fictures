@@ -132,8 +132,6 @@ export async function POST(request: NextRequest) {
           id: characterId,
           name: character.parsedData?.name || character.id,
           storyId: storyId,
-          role: character.parsedData?.role || character.id,
-          description: character.parsedData?.description || '',
           isMain: ['protag', 'antag'].includes(character.id),
           content: character.content, // Store YAML data
         });
@@ -150,10 +148,6 @@ export async function POST(request: NextRequest) {
         await db.insert(places).values({
           id: placeId,
           name: place.parsedData?.name || place.name,
-          description: place.parsedData?.description || '',
-          type: place.parsedData?.type || 'location',
-          atmosphere: place.parsedData?.atmosphere || '',
-          significance: place.parsedData?.significance || '',
           storyId: storyId,
           isMain: ['primary', 'main'].some(keyword =>
             (place.parsedData?.significance || '').toLowerCase().includes(keyword)

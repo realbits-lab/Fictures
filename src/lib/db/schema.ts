@@ -154,15 +154,9 @@ export const scenes = pgTable('scenes', {
 export const characters = pgTable('characters', {
   id: text('id').primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
-  description: text('description'),
-  personality: text('personality'),
-  background: text('background'),
-  appearance: text('appearance'),
-  role: varchar('role', { length: 100 }), // protagonist, antagonist, supporting, etc.
   storyId: text('story_id').references(() => stories.id).notNull(),
-  imageUrl: text('image_url'),
   isMain: boolean('is_main').default(false),
-  content: text('content').default(''), // Store character YAML data
+  content: text('content').default(''), // Store all character data as YAML/JSON
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -171,14 +165,9 @@ export const characters = pgTable('characters', {
 export const places = pgTable('places', {
   id: text('id').primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
-  description: text('description'),
-  type: varchar('type', { length: 100 }), // indoor, outdoor, building, street, etc.
-  atmosphere: text('atmosphere'), // mood, feeling of the place
-  significance: text('significance'), // importance to the story
   storyId: text('story_id').references(() => stories.id).notNull(),
-  imageUrl: text('image_url'),
   isMain: boolean('is_main').default(false), // is this a main location?
-  content: text('content').default(''), // Store place YAML data
+  content: text('content').default(''), // Store all place data as YAML/JSON
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
