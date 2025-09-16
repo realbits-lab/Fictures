@@ -179,9 +179,11 @@ export function StoryStructureSidebar({
   };
 
   const handlePartSelect = (partId: string) => {
-    // Toggle expansion when selecting a part
-    togglePartExpansion(partId);
-    
+    // Always expand the part when selecting it (don't toggle if already expanded)
+    if (!expandedParts.has(partId)) {
+      togglePartExpansion(partId);
+    }
+
     onSelectionChange?.({
       level: "part",
       storyId: story.id,
@@ -190,9 +192,11 @@ export function StoryStructureSidebar({
   };
 
   const handleChapterSelect = (partId: string | undefined, chapterId: string) => {
-    // Toggle expansion when selecting a chapter
-    toggleChapterExpansion(chapterId);
-    
+    // Always expand the chapter when selecting it (don't toggle if already expanded)
+    if (!expandedChapters.has(chapterId)) {
+      toggleChapterExpansion(chapterId);
+    }
+
     onSelectionChange?.({
       level: "chapter",
       storyId: story.id,
@@ -363,7 +367,10 @@ export function StoryStructureSidebar({
                         variant="ghost"
                         size="sm"
                         className="h-6 w-6 p-0"
-                        onClick={() => togglePartExpansion(part.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          togglePartExpansion(part.id);
+                        }}
                       >
                         {isPartExpanded ? (
                           <ChevronDown size={10} />
@@ -397,7 +404,10 @@ export function StoryStructureSidebar({
                                   variant="ghost"
                                   size="sm"
                                   className="h-6 w-6 p-0"
-                                  onClick={() => toggleChapterExpansion(chapter.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleChapterExpansion(chapter.id);
+                                  }}
                                   disabled={!chapter.scenes || chapter.scenes.length === 0}
                                 >
                                   {chapter.scenes && chapter.scenes.length > 0 ? (
