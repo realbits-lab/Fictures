@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils/cn";
 
 interface ThemeSelectorProps {
@@ -246,7 +247,58 @@ function ThemePreview({
 
 export function ThemeSelector({ className }: ThemeSelectorProps) {
 	const { theme, setTheme, resolvedTheme } = useTheme();
+	const { data: session } = useSession();
 	const [mounted, setMounted] = useState(false);
+
+	// Save theme preference to database
+	const saveThemePreference = async (newTheme: string) => {
+		if (!session?.user?.id) return;
+
+		try {
+			await fetch('/api/settings/user', {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					preferences: {
+						theme: newTheme,
+					},
+				}),
+			});
+		} catch (error) {
+			console.error('Failed to save theme preference:', error);
+		}
+	};
+
+	// Handle theme change with database persistence
+	const handleThemeChange = (newTheme: string) => {
+		setTheme(newTheme);
+		saveThemePreference(newTheme);
+	};
+
+	// Load user's saved theme preference
+	useEffect(() => {
+		const loadUserTheme = async () => {
+			if (!session?.user?.id) return;
+
+			try {
+				const response = await fetch('/api/settings/user');
+				if (response.ok) {
+					const settings = await response.json();
+					if (settings.preferences?.theme && settings.preferences.theme !== theme) {
+						setTheme(settings.preferences.theme);
+					}
+				}
+			} catch (error) {
+				console.error('Failed to load user theme preference:', error);
+			}
+		};
+
+		if (mounted && session?.user?.id) {
+			loadUserTheme();
+		}
+	}, [session?.user?.id, mounted]);
 
 	// Avoid hydration mismatch
 	useEffect(() => {
@@ -296,7 +348,7 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
 							? "border-blue-500 bg-blue-50 dark:bg-blue-950/20"
 							: "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600",
 					)}
-					onClick={() => setTheme("system")}
+					onClick={() => handleThemeChange("system")}
 				>
 					<div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-green-500">
 						<svg
@@ -341,7 +393,7 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
 						key={themeOption.id}
 						theme={themeOption}
 						isSelected={theme === themeOption.id}
-						onClick={() => setTheme(themeOption.id)}
+						onClick={() => handleThemeChange(themeOption.id)}
 					/>
 				))}
 			</div>

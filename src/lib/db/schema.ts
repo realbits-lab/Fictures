@@ -49,6 +49,23 @@ export const users = pgTable('user', {
   updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
 });
 
+// User preferences table - Store user settings and preferences
+export const userPreferences = pgTable('user_preferences', {
+  id: text('id').primaryKey(),
+  userId: text('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  theme: varchar('theme', { length: 20 }).default('system'),
+  language: varchar('language', { length: 10 }).default('en'),
+  timezone: varchar('timezone', { length: 50 }).default('UTC'),
+  emailNotifications: boolean('emailNotifications').default(true),
+  pushNotifications: boolean('pushNotifications').default(false),
+  marketingEmails: boolean('marketingEmails').default(false),
+  profileVisibility: varchar('profileVisibility', { length: 20 }).default('public'),
+  showEmail: boolean('showEmail').default(false),
+  showStats: boolean('showStats').default(true),
+  createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
+});
+
 // Stories table - Main story/book entities
 export const stories = pgTable('stories', {
   id: text('id').primaryKey(),
@@ -211,6 +228,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   stories: many(stories),
   aiInteractions: many(aiInteractions),
   stats: one(userStats),
+  preferences: one(userPreferences),
   communityPosts: many(communityPosts),
   communityReplies: many(communityReplies),
 }));
@@ -294,5 +312,12 @@ export const communityRepliesRelations = relations(communityReplies, ({ one, man
     relationName: 'parentChild',
   }),
   childReplies: many(communityReplies, { relationName: 'parentChild' }),
+}));
+
+export const userPreferencesRelations = relations(userPreferences, ({ one }) => ({
+  user: one(users, {
+    fields: [userPreferences.userId],
+    references: [users.id],
+  }),
 }));
 
