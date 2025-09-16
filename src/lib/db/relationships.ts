@@ -322,7 +322,7 @@ export class RelationshipManager {
     }
     
     // For writing mode - load all scenes
-    const allSceneIds = storyChapters
+    const allSceneIds = allChapters
       .flatMap(chapter => chapter.sceneIds)
       .filter(Boolean);
     
@@ -334,7 +334,7 @@ export class RelationshipManager {
       ...story,
       parts: storyParts.map(part => ({
         ...part,
-        chapters: storyChapters.filter(chapter => chapter.partId === part.id)
+        chapters: allChapters.filter(chapter => chapter.partId === part.id)
           .map(chapter => ({
             ...chapter,
             scenes: allScenes.filter(scene => scene.chapterId === chapter.id)
