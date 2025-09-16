@@ -187,6 +187,24 @@ export function StoryEditor({
 	// State for collapsible sections
 	const [charactersCollapsed, setCharactersCollapsed] = useState(true);
 	const [placesCollapsed, setPlacesCollapsed] = useState(true);
+	const [collapsedPlaceCards, setCollapsedPlaceCards] = useState<Record<string, boolean>>({});
+	const [collapsedCharacterCards, setCollapsedCharacterCards] = useState<Record<string, boolean>>({});
+
+	// Helper function to toggle individual place card collapse
+	const togglePlaceCard = (placeId: string) => {
+		setCollapsedPlaceCards(prev => ({
+			...prev,
+			[placeId]: !prev[placeId]
+		}));
+	};
+
+	// Helper function to toggle individual character card collapse
+	const toggleCharacterCard = (characterId: string) => {
+		setCollapsedCharacterCards(prev => ({
+			...prev,
+			[characterId]: !prev[characterId]
+		}));
+	};
 
 	const handleSave = async () => {
 		if (!onSave || !externalHasChanges) return;
@@ -319,57 +337,77 @@ export function StoryEditor({
 					<CardContent className="space-y-4">
 						{hasDatabaseCharacters ? (
 							<div className="space-y-4">
-								{characters!.map((character) => (
-									<div key={character.id} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-										<div className="flex items-center gap-2 mb-3">
-											<span className="font-bold text-lg">{character.name}</span>
-											{character.role && (
-												<Badge variant="secondary">{character.role}</Badge>
-											)}
-											{character.isMain && (
-												<Badge variant="default">Main Character</Badge>
-											)}
-										</div>
-
-										{character.description && (
-											<div className="mb-3">
-												<strong className="text-gray-600 dark:text-gray-400">Description:</strong>
-												<p className="text-gray-700 dark:text-gray-300 mt-1">{character.description}</p>
+								{characters!.map((character) => {
+									const isCharacterCollapsed = collapsedCharacterCards[character.id] ?? true;
+									return (
+										<div key={character.id} className="border rounded-lg bg-gray-50 dark:bg-gray-800">
+											<div
+												className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg"
+												onClick={() => toggleCharacterCard(character.id)}
+											>
+												<div className="flex items-center gap-2">
+													<span className="font-bold text-lg">{character.name}</span>
+													{character.role && (
+														<Badge variant="secondary">{character.role}</Badge>
+													)}
+													{character.isMain && (
+														<Badge variant="default">Main Character</Badge>
+													)}
+												</div>
+												<span className="text-sm">
+													{isCharacterCollapsed ? "▶" : "▼"}
+												</span>
 											</div>
-										)}
 
-										<div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-											{character.personality && (
-												<div>
-													<strong className="text-gray-600 dark:text-gray-400">Personality:</strong>
-													<p className="text-gray-700 dark:text-gray-300 mt-1">{character.personality}</p>
-												</div>
-											)}
-											{character.background && (
-												<div>
-													<strong className="text-gray-600 dark:text-gray-400">Background:</strong>
-													<p className="text-gray-700 dark:text-gray-300 mt-1">{character.background}</p>
-												</div>
-											)}
-											{character.appearance && (
-												<div>
-													<strong className="text-gray-600 dark:text-gray-400">Appearance:</strong>
-													<p className="text-gray-700 dark:text-gray-300 mt-1">{character.appearance}</p>
-												</div>
-											)}
-											{character.imageUrl && (
-												<div>
-													<strong className="text-gray-600 dark:text-gray-400">Image:</strong>
-													<img
-														src={character.imageUrl}
-														alt={character.name}
-														className="mt-1 w-20 h-20 object-cover rounded-md"
-													/>
+											{!isCharacterCollapsed && (
+												<div className="p-4 pt-0 space-y-3">
+													{character.description && (
+														<div>
+															<strong className="text-gray-600 dark:text-gray-400">Description:</strong>
+															<p className="text-gray-700 dark:text-gray-300 mt-1">{character.description}</p>
+														</div>
+													)}
+
+													<div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+														{character.personality && (
+															<div>
+																<strong className="text-gray-600 dark:text-gray-400">Personality:</strong>
+																<p className="text-gray-700 dark:text-gray-300 mt-1">{character.personality}</p>
+															</div>
+														)}
+														{character.background && (
+															<div>
+																<strong className="text-gray-600 dark:text-gray-400">Background:</strong>
+																<p className="text-gray-700 dark:text-gray-300 mt-1">{character.background}</p>
+															</div>
+														)}
+														{character.appearance && (
+															<div>
+																<strong className="text-gray-600 dark:text-gray-400">Appearance:</strong>
+																<p className="text-gray-700 dark:text-gray-300 mt-1">{character.appearance}</p>
+															</div>
+														)}
+														{character.imageUrl && (
+															<div>
+																<strong className="text-gray-600 dark:text-gray-400">Image:</strong>
+																<img
+																	src={character.imageUrl}
+																	alt={character.name}
+																	className="mt-1 w-20 h-20 object-cover rounded-md"
+																/>
+															</div>
+														)}
+													</div>
+
+													<div className="text-xs text-gray-500 dark:text-gray-400 border-t pt-2">
+														<div>Created: {new Date(character.createdAt).toLocaleDateString()}</div>
+														<div>Updated: {new Date(character.updatedAt).toLocaleDateString()}</div>
+													</div>
 												</div>
 											)}
 										</div>
-									</div>
-								))}
+									);
+								})}
 							</div>
 						) : (
 							<div className="text-center text-gray-500 dark:text-gray-400 py-4">
@@ -410,32 +448,47 @@ export function StoryEditor({
 					<CardContent className="space-y-4">
 						{hasDatabasePlaces ? (
 							<div className="space-y-4">
-								{places!.map((place) => (
-									<div key={place.id} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-										<div className="flex items-center gap-2 mb-3">
-											<span className="font-bold text-lg">{place.name}</span>
-											{place.isMain && (
-												<Badge variant="default">Main Location</Badge>
+								{places!.map((place) => {
+									const isPlaceCollapsed = collapsedPlaceCards[place.id] ?? true;
+									return (
+										<div key={place.id} className="border rounded-lg bg-gray-50 dark:bg-gray-800">
+											<div
+												className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg"
+												onClick={() => togglePlaceCard(place.id)}
+											>
+												<div className="flex items-center gap-2">
+													<span className="font-bold text-lg">{place.name}</span>
+													{place.isMain && (
+														<Badge variant="default">Main Location</Badge>
+													)}
+												</div>
+												<span className="text-sm">
+													{isPlaceCollapsed ? "▶" : "▼"}
+												</span>
+											</div>
+
+											{!isPlaceCollapsed && (
+												<div className="p-4 pt-0 space-y-3">
+													{place.content && (
+														<div className="space-y-2">
+															<div>
+																<span className="text-sm font-medium text-gray-600 dark:text-gray-400">Content:</span>
+																<p className="text-sm text-gray-700 dark:text-gray-300 mt-1 whitespace-pre-wrap">
+																	{place.content}
+																</p>
+															</div>
+														</div>
+													)}
+
+													<div className="text-xs text-gray-500 dark:text-gray-400 border-t pt-2">
+														<div>Created: {new Date(place.createdAt).toLocaleDateString()}</div>
+														<div>Updated: {new Date(place.updatedAt).toLocaleDateString()}</div>
+													</div>
+												</div>
 											)}
 										</div>
-
-										{place.content && (
-											<div className="space-y-2">
-												<div>
-													<span className="text-sm font-medium text-gray-600 dark:text-gray-400">Content:</span>
-													<p className="text-sm text-gray-700 dark:text-gray-300 mt-1 whitespace-pre-wrap">
-														{place.content}
-													</p>
-												</div>
-											</div>
-										)}
-
-										<div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-											<div>Created: {new Date(place.createdAt).toLocaleDateString()}</div>
-											<div>Updated: {new Date(place.updatedAt).toLocaleDateString()}</div>
-										</div>
-									</div>
-								))}
+									);
+								})}
 							</div>
 						) : (
 							<div className="text-center text-gray-500 dark:text-gray-400 py-4">
