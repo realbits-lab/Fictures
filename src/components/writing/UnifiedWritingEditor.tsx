@@ -13,7 +13,7 @@ import { SceneEditor } from "./SceneEditor";
 import { StoryStructureSidebar } from "./StoryStructureSidebar";
 import { SceneSidebar } from "./SceneSidebar";
 import { WritingGuidelines } from "./WritingGuidelines";
-import { HierarchicalDataSidebar } from "./HierarchicalDataSidebar";
+import { StoryPromptAnalyzer } from "./StoryPromptAnalyzer";
 
 interface Story {
   id: string;
@@ -1612,14 +1612,16 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               />
             ) : null}
             
-            {/* Hierarchical Data Sidebar - Show for all levels */}
-            <HierarchicalDataSidebar
-              storyData={sampleStoryData}
-              partData={(currentSelection.level === "part" || currentSelection.level === "chapter" || currentSelection.level === "scene") ? samplePartData : undefined}
-              chapterData={(currentSelection.level === "chapter" || currentSelection.level === "scene") ? sampleChapterData : undefined}
-              sceneData={currentSelection.level === "scene" ? sampleSceneData : undefined}
-              currentLevel={currentSelection.level}
-            />
+            {/* Story Prompt Analyzer - Show for story level */}
+            {currentSelection.level === "story" && (
+              <StoryPromptAnalyzer
+                storyData={sampleStoryData}
+                onStoryUpdate={(updatedData) => {
+                  console.log("Story updated via prompt analyzer:", updatedData);
+                  // Here you could update the actual story data if needed
+                }}
+              />
+            )}
             
             {/* Writing Guidelines - Show for scene editing */}
             <WritingGuidelines currentLevel={currentSelection.level} />

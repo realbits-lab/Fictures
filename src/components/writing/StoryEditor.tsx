@@ -189,84 +189,24 @@ export function StoryEditor({
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2">
 					📖 Story Foundation
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() =>
-							setEditingSection(editingSection === "basic" ? null : "basic")
-						}
-					>
-						{editingSection === "basic" ? "✓" : "✏️"}
-					</Button>
 				</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-4">
-				{editingSection === "basic" ? (
-					<div className="space-y-3">
-						<div>
-							<label className="text-sm font-medium">Title</label>
-							<input
-								type="text"
-								value={storyData.title}
-								onChange={(e) => updateField(["title"], e.target.value)}
-								className="w-full p-2 border rounded"
-								placeholder="Story title"
-							/>
-						</div>
-						<div>
-							<label className="text-sm font-medium">Genre</label>
-							<select
-								value={storyData.genre}
-								onChange={(e) => updateField(["genre"], e.target.value)}
-								className="w-full p-2 border rounded"
-							>
-								<option value="urban_fantasy">Urban Fantasy</option>
-								<option value="sci_fi">Science Fiction</option>
-								<option value="romance">Romance</option>
-								<option value="mystery">Mystery</option>
-								<option value="thriller">Thriller</option>
-								<option value="literary">Literary Fiction</option>
-							</select>
-						</div>
-						<div>
-							<label className="text-sm font-medium">Target Word Count</label>
-							<input
-								type="number"
-								value={storyData.words}
-								onChange={(e) =>
-									updateField(["words"], parseInt(e.target.value))
-								}
-								className="w-full p-2 border rounded"
-							/>
-						</div>
-						<div>
-							<label className="text-sm font-medium">Central Question</label>
-							<textarea
-								value={storyData.question}
-								onChange={(e) => updateField(["question"], e.target.value)}
-								className="w-full p-2 border rounded"
-								rows={2}
-								placeholder="What is the central dramatic question?"
-							/>
-						</div>
+				<div className="space-y-2 text-sm">
+					<div>
+						<strong>Title:</strong> {storyData.title || "Untitled Story"}
 					</div>
-				) : (
-					<div className="space-y-2 text-sm">
-						<div>
-							<strong>Title:</strong> {storyData.title || "Untitled Story"}
-						</div>
-						<div>
-							<strong>Genre:</strong>{" "}
-							<Badge variant="secondary">{storyData.genre}</Badge>
-						</div>
-						<div>
-							<strong>Target Words:</strong> {storyData.words.toLocaleString()}
-						</div>
-						<div>
-							<strong>Question:</strong> {storyData.question || "Not set"}
-						</div>
+					<div>
+						<strong>Genre:</strong>{" "}
+						<Badge variant="secondary">{storyData.genre}</Badge>
 					</div>
-				)}
+					<div>
+						<strong>Target Words:</strong> {storyData.words.toLocaleString()}
+					</div>
+					<div>
+						<strong>Question:</strong> {storyData.question || "Not set"}
+					</div>
+				</div>
 			</CardContent>
 		</Card>
 	);
@@ -276,64 +216,20 @@ export function StoryEditor({
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2">
 					🎯 Universal Pattern (Goal → Conflict → Outcome)
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() =>
-							setEditingSection(editingSection === "pattern" ? null : "pattern")
-						}
-					>
-						{editingSection === "pattern" ? "✓" : "✏️"}
-					</Button>
 				</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-4">
-				{editingSection === "pattern" ? (
-					<div className="space-y-3">
-						<div>
-							<label className="text-sm font-medium">Goal</label>
-							<textarea
-								value={storyData.goal}
-								onChange={(e) => updateField(["goal"], e.target.value)}
-								className="w-full p-2 border rounded"
-								rows={2}
-								placeholder="What does the protagonist want?"
-							/>
-						</div>
-						<div>
-							<label className="text-sm font-medium">Conflict</label>
-							<textarea
-								value={storyData.conflict}
-								onChange={(e) => updateField(["conflict"], e.target.value)}
-								className="w-full p-2 border rounded"
-								rows={2}
-								placeholder="What prevents them from getting it?"
-							/>
-						</div>
-						<div>
-							<label className="text-sm font-medium">Outcome</label>
-							<textarea
-								value={storyData.outcome}
-								onChange={(e) => updateField(["outcome"], e.target.value)}
-								className="w-full p-2 border rounded"
-								rows={2}
-								placeholder="How does it resolve?"
-							/>
-						</div>
+				<div className="space-y-2 text-sm">
+					<div>
+						<strong>Goal:</strong> {storyData.goal || "Not set"}
 					</div>
-				) : (
-					<div className="space-y-2 text-sm">
-						<div>
-							<strong>Goal:</strong> {storyData.goal || "Not set"}
-						</div>
-						<div>
-							<strong>Conflict:</strong> {storyData.conflict || "Not set"}
-						</div>
-						<div>
-							<strong>Outcome:</strong> {storyData.outcome || "Not set"}
-						</div>
+					<div>
+						<strong>Conflict:</strong> {storyData.conflict || "Not set"}
 					</div>
-				)}
+					<div>
+						<strong>Outcome:</strong> {storyData.outcome || "Not set"}
+					</div>
+				</div>
 			</CardContent>
 		</Card>
 	);
@@ -343,94 +239,18 @@ export function StoryEditor({
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2">
 					🎭 Characters
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() =>
-							setEditingSection(editingSection === "chars" ? null : "chars")
-						}
-					>
-						{editingSection === "chars" ? "✓" : "✏️"}
-					</Button>
 				</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-4">
-				{editingSection === "chars" ? (
-					<div className="space-y-4">
-						{Object.entries(storyData.chars).map(([name, char]) => (
-							<div key={name} className="border p-3 rounded">
-								<div className="grid grid-cols-2 gap-3">
-									<div>
-										<label className="text-xs font-medium">Name</label>
-										<input
-											type="text"
-											value={name}
-											onChange={(e) => {
-												const newChars = { ...storyData.chars };
-												delete newChars[name];
-												newChars[e.target.value] = char;
-												updateField(["chars"], newChars);
-											}}
-											className="w-full p-1 border rounded text-sm"
-										/>
-									</div>
-									<div>
-										<label className="text-xs font-medium">Role</label>
-										<select
-											value={char.role}
-											onChange={(e) =>
-												updateField(["chars", name, "role"], e.target.value)
-											}
-											className="w-full p-1 border rounded text-sm"
-										>
-											<option value="protag">Protagonist</option>
-											<option value="antag">Antagonist</option>
-											<option value="mentor">Mentor</option>
-											<option value="catalyst">Catalyst</option>
-											<option value="ally">Ally</option>
-										</select>
-									</div>
-									<div className="col-span-2">
-										<label className="text-xs font-medium">
-											Arc (start→end)
-										</label>
-										<input
-											type="text"
-											value={char.arc}
-											onChange={(e) =>
-												updateField(["chars", name, "arc"], e.target.value)
-											}
-											className="w-full p-1 border rounded text-sm"
-											placeholder="denial→acceptance"
-										/>
-									</div>
-								</div>
-							</div>
-						))}
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => {
-								const newChars = { ...storyData.chars };
-								const newName = `character_${Object.keys(newChars).length + 1}`;
-								newChars[newName] = { role: "ally", arc: "start→end" };
-								updateField(["chars"], newChars);
-							}}
-						>
-							+ Add Character
-						</Button>
-					</div>
-				) : (
-					<div className="space-y-2">
-						{Object.entries(storyData.chars).map(([name, char]) => (
-							<div key={name} className="flex items-center gap-2 text-sm">
-								<Badge variant="outline">{char.role}</Badge>
-								<span className="font-medium">{name}:</span>
-								<span>{char.arc}</span>
-							</div>
-						))}
-					</div>
-				)}
+				<div className="space-y-2">
+					{Object.entries(storyData.chars).map(([name, char]) => (
+						<div key={name} className="flex items-center gap-2 text-sm">
+							<Badge variant="outline">{char.role}</Badge>
+							<span className="font-medium">{name}:</span>
+							<span>{char.arc}</span>
+						</div>
+					))}
+				</div>
 			</CardContent>
 		</Card>
 	);
@@ -440,15 +260,6 @@ export function StoryEditor({
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2">
 					📚 Story Parts ({storyData.structure.type})
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() =>
-							setEditingSection(editingSection === "parts" ? null : "parts")
-						}
-					>
-						{editingSection === "parts" ? "✓" : "✏️"}
-					</Button>
 				</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-4">
@@ -461,48 +272,17 @@ export function StoryEditor({
 								{storyData.structure.dist[index]}%)
 							</span>
 						</div>
-						{editingSection === "parts" ? (
-							<div className="space-y-2">
-								<div>
-									<label className="text-xs font-medium">Goal</label>
-									<input
-										type="text"
-										value={part.goal}
-										onChange={(e) => {
-											const newParts = [...storyData.parts];
-											newParts[index] = { ...part, goal: e.target.value };
-											updateField(["parts"], newParts);
-										}}
-										className="w-full p-1 border rounded text-sm"
-									/>
-								</div>
-								<div>
-									<label className="text-xs font-medium">Conflict</label>
-									<input
-										type="text"
-										value={part.conflict}
-										onChange={(e) => {
-											const newParts = [...storyData.parts];
-											newParts[index] = { ...part, conflict: e.target.value };
-											updateField(["parts"], newParts);
-										}}
-										className="w-full p-1 border rounded text-sm"
-									/>
-								</div>
+						<div className="text-sm space-y-1">
+							<div>
+								<strong>Goal:</strong> {part.goal}
 							</div>
-						) : (
-							<div className="text-sm space-y-1">
-								<div>
-									<strong>Goal:</strong> {part.goal}
-								</div>
-								<div>
-									<strong>Conflict:</strong> {part.conflict}
-								</div>
-								<div>
-									<strong>Tension:</strong> {part.tension}
-								</div>
+							<div>
+								<strong>Conflict:</strong> {part.conflict}
 							</div>
-						)}
+							<div>
+								<strong>Tension:</strong> {part.tension}
+							</div>
+						</div>
 					</div>
 				))}
 			</CardContent>
@@ -521,15 +301,6 @@ export function StoryEditor({
 				</div>
 				<div className="flex flex-col sm:flex-row gap-2">
 					<Button
-						variant="secondary"
-						size="lg"
-						onClick={handleSave}
-						disabled={isSaving}
-						className="whitespace-nowrap min-w-fit px-6"
-					>
-						{isSaving ? "💾 Saving..." : "💾 Save Story"}
-					</Button>
-					<Button
 						size="lg"
 						onClick={handleGenerate}
 						disabled={isGenerating}
@@ -541,15 +312,11 @@ export function StoryEditor({
 			</div>
 
 			{/* Story Development Sections */}
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				<div className="space-y-6">
-					{renderBasicInfo()}
-					{renderUniversalPattern()}
-				</div>
-				<div className="space-y-6">
-					{renderCharacters()}
-					{renderParts()}
-				</div>
+			<div className="space-y-6">
+				{renderBasicInfo()}
+				{renderUniversalPattern()}
+				{renderCharacters()}
+				{renderParts()}
 			</div>
 
 			{/* YAML Preview */}
