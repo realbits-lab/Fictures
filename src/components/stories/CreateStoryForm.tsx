@@ -35,6 +35,8 @@ export function CreateStoryForm() {
       { phase: 'Phase 2', description: 'Part Development - Creating detailed part structure', status: 'pending' },
       { phase: 'Phase 3', description: 'Character Development - Building character profiles with Korean names', status: 'pending' },
       { phase: 'Phase 4', description: 'Place Development - Creating location details and settings', status: 'pending' },
+      { phase: 'Phase 5', description: 'Character Images - Generating AI images for each character', status: 'pending' },
+      { phase: 'Phase 6', description: 'Place Images - Generating AI images for each location', status: 'pending' },
       { phase: 'Database', description: 'Storing story, character, and place data in database', status: 'pending' },
     ];
     setProgress(steps);
@@ -164,9 +166,19 @@ export function CreateStoryForm() {
                   updateProgress(3, 'completed');
                   break;
 
+                case 'phase5_complete':
+                  // Phase 5 completed - character images generated
+                  updateProgress(4, 'completed');
+                  break;
+
+                case 'phase6_complete':
+                  // Phase 6 completed - place images generated
+                  updateProgress(5, 'completed');
+                  break;
+
                 case 'database_complete':
                   // Database storage completed
-                  updateProgress(4, 'completed');
+                  updateProgress(6, 'completed');
                   break;
 
                 case 'complete':

@@ -127,6 +127,107 @@ export async function POST(request: NextRequest) {
 
           console.log('✅ Place data generated and streamed');
 
+          // Phase 5: Character Image Generation
+          sendUpdate('progress', { phase: 'Phase 5', description: 'Character Images - Generating AI images for each character', status: 'in_progress' });
+
+          console.log('Phase 5: Character Image Generation');
+          const characterImages = [];
+          if (characters && Array.isArray(characters)) {
+            for (const character of characters) {
+              try {
+                const parsedData = character.parsedData as Record<string, unknown>;
+                const characterName = (parsedData?.name as string) || character.id;
+                const characterDescription = (parsedData?.appearance as string) ||
+                  (parsedData?.description as string) ||
+                  `A character named ${characterName}`;
+
+                const imagePrompt = `A detailed portrait of ${characterName}, ${characterDescription}. High quality digital art style, suitable for a story illustration.`;
+
+                const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/generate-image`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    prompt: imagePrompt,
+                    type: 'character',
+                    storyId: storyId
+                  })
+                });
+
+                if (response.ok) {
+                  const imageResult = await response.json();
+                  characterImages.push({
+                    characterId: character.id,
+                    name: characterName,
+                    imageUrl: imageResult.imageUrl
+                  });
+                  console.log(`✅ Generated image for character: ${characterName}`);
+                } else {
+                  console.warn(`⚠️ Failed to generate image for character: ${characterName}`);
+                }
+              } catch (error) {
+                console.error(`❌ Error generating image for character:`, error);
+              }
+            }
+          }
+
+          sendUpdate('phase5_complete', {
+            phase: 'Phase 5',
+            status: 'completed',
+            characterImages
+          });
+
+          console.log('✅ Character images generated');
+
+          // Phase 6: Place Image Generation
+          sendUpdate('progress', { phase: 'Phase 6', description: 'Place Images - Generating AI images for each location', status: 'in_progress' });
+
+          console.log('Phase 6: Place Image Generation');
+          const placeImages = [];
+          if (places && Array.isArray(places)) {
+            for (const place of places) {
+              try {
+                const parsedData = place.parsedData as Record<string, unknown>;
+                const placeName = (parsedData?.name as string) || place.name;
+                const placeDescription = (parsedData?.description as string) ||
+                  `A location called ${placeName}`;
+
+                const imagePrompt = `A scenic view of ${placeName}, ${placeDescription}. High quality digital art style, cinematic landscape suitable for a story setting.`;
+
+                const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/generate-image`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    prompt: imagePrompt,
+                    type: 'place',
+                    storyId: storyId
+                  })
+                });
+
+                if (response.ok) {
+                  const imageResult = await response.json();
+                  placeImages.push({
+                    placeId: place.id,
+                    name: placeName,
+                    imageUrl: imageResult.imageUrl
+                  });
+                  console.log(`✅ Generated image for place: ${placeName}`);
+                } else {
+                  console.warn(`⚠️ Failed to generate image for place: ${placeName}`);
+                }
+              } catch (error) {
+                console.error(`❌ Error generating image for place:`, error);
+              }
+            }
+          }
+
+          sendUpdate('phase6_complete', {
+            phase: 'Phase 6',
+            status: 'completed',
+            placeImages
+          });
+
+          console.log('✅ Place images generated');
+
           // Database Storage Phase
           sendUpdate('progress', { phase: 'Database', description: 'Storing story, character, and place data in database', status: 'in_progress' });
 
@@ -184,15 +285,24 @@ export async function POST(request: NextRequest) {
             for (const character of characters) {
               const characterId = nanoid();
               const parsedData = character.parsedData as Record<string, unknown>;
+
+              // Find corresponding generated image
+              const characterImage = characterImages.find(img => img.characterId === character.id);
+
               await db.insert(charactersTable).values({
                 id: characterId,
                 name: (parsedData?.name as string) || character.id,
                 storyId: storyId,
                 isMain: ['protag', 'antag'].includes(character.id),
                 content: character.content,
+                imageUrl: characterImage?.imageUrl || null,
               });
 
-              createdCharacters.push({ id: characterId, name: (parsedData?.name as string) });
+              createdCharacters.push({
+                id: characterId,
+                name: (parsedData?.name as string),
+                imageUrl: characterImage?.imageUrl
+              });
             }
           }
 
@@ -202,6 +312,10 @@ export async function POST(request: NextRequest) {
             for (const place of places) {
               const placeId = nanoid();
               const parsedData = place.parsedData as Record<string, unknown>;
+
+              // Find corresponding generated image
+              const placeImage = placeImages.find(img => img.placeId === place.id);
+
               await db.insert(placesTable).values({
                 id: placeId,
                 name: (parsedData?.name as string) || place.name,
@@ -210,9 +324,14 @@ export async function POST(request: NextRequest) {
                   ((parsedData?.significance as string) || '').toLowerCase().includes(keyword)
                 ),
                 content: place.content,
+                imageUrl: placeImage?.imageUrl || null,
               });
 
-              createdPlaces.push({ id: placeId, name: (parsedData?.name as string) || place.name });
+              createdPlaces.push({
+                id: placeId,
+                name: (parsedData?.name as string) || place.name,
+                imageUrl: placeImage?.imageUrl
+              });
             }
           }
 

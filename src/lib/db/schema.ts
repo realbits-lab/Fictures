@@ -157,6 +157,7 @@ export const characters = pgTable('characters', {
   storyId: text('story_id').references(() => stories.id).notNull(),
   isMain: boolean('is_main').default(false),
   content: text('content').default(''), // Store all character data as YAML/JSON
+  imageUrl: text('image_url'), // Store generated character image URL from Vercel Blob
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -168,6 +169,7 @@ export const places = pgTable('places', {
   storyId: text('story_id').references(() => stories.id).notNull(),
   isMain: boolean('is_main').default(false), // is this a main location?
   content: text('content').default(''), // Store all place data as YAML/JSON
+  imageUrl: text('image_url'), // Store generated place image URL from Vercel Blob
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
