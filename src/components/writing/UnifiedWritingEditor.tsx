@@ -488,7 +488,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         console.log('Scene saved successfully');
       } else if (currentSelection.level === "story" && data) {
         // Save story data to the stories API
-        const response = await fetch(`/api/stories/${currentSelection.storyId}/write`, {
+        const response = await fetch(`/api/stories/${story.id}/write`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -837,7 +837,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       case "story":
         return (
           <StoryEditor
-            storyId={currentSelection.storyId}
+            storyId={story.id}
             storyData={sampleStoryData}
             characters={currentStoryCharacters}
             places={currentStoryPlaces}

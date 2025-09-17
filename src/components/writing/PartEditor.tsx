@@ -146,7 +146,6 @@ export function PartEditor({
     }
   }, [initialData]);
 
-  const [editingSection, setEditingSection] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   // Update part data and notify parent
@@ -214,45 +213,13 @@ export function PartEditor({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           ❓ Central Questions (Framework Element 1)
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setEditingSection(editingSection === 'questions' ? null : 'questions')}
-          >
-            {editingSection === 'questions' ? '✓' : '✏️'}
-          </Button>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {editingSection === 'questions' ? (
-          <div className="space-y-3">
-            <div>
-              <label className="text-sm font-medium">Primary Question</label>
-              <textarea
-                value={partData.questions.primary}
-                onChange={(e) => updateField(['questions', 'primary'], e.target.value)}
-                className="w-full p-2 border rounded"
-                rows={2}
-                placeholder="What major question does this part explore or answer?"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Secondary Question</label>
-              <textarea
-                value={partData.questions.secondary}
-                onChange={(e) => updateField(['questions', 'secondary'], e.target.value)}
-                className="w-full p-2 border rounded"
-                rows={2}
-                placeholder="Supporting question that drives subplot or character development"
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-2 text-sm">
-            <div><strong>Primary:</strong> {partData.questions.primary || 'Not set'}</div>
-            <div><strong>Secondary:</strong> {partData.questions.secondary || 'Not set'}</div>
-          </div>
-        )}
+        <div className="space-y-2 text-sm">
+          <div><strong>Primary:</strong> {partData.questions.primary || 'Not set'}</div>
+          <div><strong>Secondary:</strong> {partData.questions.secondary || 'Not set'}</div>
+        </div>
       </CardContent>
     </Card>
   );
@@ -263,190 +230,55 @@ export function PartEditor({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           🎭 Character Development (Framework Element 2)
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setEditingSection(editingSection === 'chars' ? null : 'chars')}
-          >
-            {editingSection === 'chars' ? '✓' : '✏️'}
-          </Button>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {editingSection === 'chars' ? (
-          <div className="space-y-4">
-            {Object.entries(partData.chars).map(([name, char]) => (
-              <div key={name} className="border p-3 rounded">
-                <div className="font-medium mb-2">{name}</div>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <label className="text-xs font-medium">Start State</label>
-                    <input
-                      type="text"
-                      value={char.start}
-                      onChange={(e) => updateField(['chars', name, 'start'], e.target.value)}
-                      className="w-full p-1 border rounded"
-                      placeholder="denial_normalcy"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium">End State</label>
-                    <input
-                      type="text"
-                      value={char.end}
-                      onChange={(e) => updateField(['chars', name, 'end'], e.target.value)}
-                      className="w-full p-1 border rounded"
-                      placeholder="reluctant_acceptance"
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <label className="text-xs font-medium">Character Arc Steps</label>
-                    <div className="space-y-1">
-                      {(Array.isArray(char.arc) ? char.arc : []).map((step, index) => (
-                        <div key={index} className="flex gap-2">
-                          <input
-                            type="text"
-                            value={step}
-                            onChange={(e) => updateArrayField(['chars', name, 'arc'], index, e.target.value)}
-                            className="flex-1 p-1 border rounded text-xs"
-                            placeholder="Arc step"
-                          />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeArrayItem(['chars', name, 'arc'], index)}
-                          >
-                            ×
-                          </Button>
-                        </div>
-                      ))}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => addArrayItem(['chars', name, 'arc'], "")}
-                      >
-                        + Add Arc Step
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+        <div className="space-y-3">
+          {Object.entries(partData.chars).map(([name, char]) => (
+            <div key={name} className="text-sm border-l-2 border-blue-200 pl-3">
+              <div className="font-medium text-blue-700">{name}:</div>
+              <div className="ml-2 space-y-1 text-gray-600">
+                <div><strong>Journey:</strong> {char.start} → {char.end}</div>
+                {char.arc && Array.isArray(char.arc) && char.arc.length > 0 && (
+                  <div><strong>Arc:</strong> {char.arc.join(' → ')}</div>
+                )}
+                {char.arc && typeof char.arc === 'string' && (
+                  <div><strong>Arc:</strong> {char.arc}</div>
+                )}
+                {char.conflict && (
+                  <div><strong>Conflict:</strong> {char.conflict}</div>
+                )}
+                {char.transforms && char.transforms.length > 0 && (
+                  <div><strong>Transforms:</strong> {char.transforms.join(', ')}</div>
+                )}
               </div>
-            ))}
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                if (storyContext?.chars) {
-                  const availableChars = Object.keys(storyContext.chars).filter(
-                    name => !partData.chars[name]
-                  );
-                  if (availableChars.length > 0) {
-                    const charName = availableChars[0];
-                    updateField(['chars', charName], {
-                      start: "",
-                      end: "",
-                      arc: [""],
-                      conflict: "",
-                      transforms: [""]
-                    });
-                  }
-                }
-              }}
-            >
-              + Add Character Development
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {Object.entries(partData.chars).map(([name, char]) => (
-              <div key={name} className="text-sm border-l-2 border-blue-200 pl-3">
-                <div className="font-medium text-blue-700">{name}:</div>
-                <div className="ml-2 space-y-1 text-gray-600">
-                  <div><strong>Journey:</strong> {char.start} → {char.end}</div>
-                  {char.arc && Array.isArray(char.arc) && char.arc.length > 0 && (
-                    <div><strong>Arc:</strong> {char.arc.join(' → ')}</div>
-                  )}
-                  {char.arc && typeof char.arc === 'string' && (
-                    <div><strong>Arc:</strong> {char.arc}</div>
-                  )}
-                  {char.conflict && (
-                    <div><strong>Conflict:</strong> {char.conflict}</div>
-                  )}
-                  {char.transforms && char.transforms.length > 0 && (
-                    <div><strong>Transforms:</strong> {char.transforms.join(', ')}</div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
 
-  // Framework Element 3: Plot Development  
+  // Framework Element 3: Plot Development
   const renderPlotDevelopment = () => (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           📈 Plot Development (Framework Element 3)
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setEditingSection(editingSection === 'plot' ? null : 'plot')}
-          >
-            {editingSection === 'plot' ? '✓' : '✏️'}
-          </Button>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {editingSection === 'plot' ? (
-          <div className="space-y-4">
-            {(['events', 'reveals', 'escalation'] as const).map(category => (
-              <div key={category}>
-                <label className="text-sm font-medium capitalize">{category}</label>
-                <div className="space-y-1 mt-1">
-                  {partData.plot[category].map((item, index) => (
-                    <div key={index} className="flex gap-2">
-                      <input
-                        type="text"
-                        value={item}
-                        onChange={(e) => updateArrayField(['plot', category], index, e.target.value)}
-                        className="flex-1 p-1 border rounded text-sm"
-                        placeholder={`${category} item`}
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeArrayItem(['plot', category], index)}
-                      >
-                        ×
-                      </Button>
-                    </div>
-                  ))}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => addArrayItem(['plot', category])}
-                  >
-                    + Add {category.slice(0, -1)}
-                  </Button>
-                </div>
-              </div>
-            ))}
+        <div className="space-y-3 text-sm">
+          <div>
+            <strong>Events:</strong> {partData.plot.events.join(', ') || 'None set'}
           </div>
-        ) : (
-          <div className="space-y-3 text-sm">
-            <div>
-              <strong>Events:</strong> {partData.plot.events.join(', ') || 'None set'}
-            </div>
-            <div>
-              <strong>Reveals:</strong> {partData.plot.reveals.join(', ') || 'None set'}
-            </div>
-            <div>
-              <strong>Escalation:</strong> {partData.plot.escalation.join(', ') || 'None set'}
-            </div>
+          <div>
+            <strong>Reveals:</strong> {partData.plot.reveals.join(', ') || 'None set'}
           </div>
-        )}
+          <div>
+            <strong>Escalation:</strong> {partData.plot.escalation.join(', ') || 'None set'}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
@@ -457,74 +289,12 @@ export function PartEditor({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           💭 Emotional Journey (Framework Element 5)
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setEditingSection(editingSection === 'emotion' ? null : 'emotion')}
-          >
-            {editingSection === 'emotion' ? '✓' : '✏️'}
-          </Button>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {editingSection === 'emotion' ? (
-          <div className="space-y-3">
-            <div>
-              <label className="text-sm font-medium">Start Emotion</label>
-              <input
-                type="text"
-                value={partData.emotion.start}
-                onChange={(e) => updateField(['emotion', 'start'], e.target.value)}
-                className="w-full p-2 border rounded"
-                placeholder="casual_family_concern"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Emotional Progression</label>
-              <div className="space-y-1">
-                {partData.emotion.progression.map((step, index) => (
-                  <div key={index} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={step}
-                      onChange={(e) => updateArrayField(['emotion', 'progression'], index, e.target.value)}
-                      className="flex-1 p-1 border rounded text-sm"
-                      placeholder="Emotional step"
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeArrayItem(['emotion', 'progression'], index)}
-                    >
-                      ×
-                    </Button>
-                  </div>
-                ))}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => addArrayItem(['emotion', 'progression'])}
-                >
-                  + Add Step
-                </Button>
-              </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium">End Emotion</label>
-              <input
-                type="text"
-                value={partData.emotion.end}
-                onChange={(e) => updateField(['emotion', 'end'], e.target.value)}
-                className="w-full p-2 border rounded"
-                placeholder="grim_commitment"
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-2 text-sm">
-            <div><strong>Journey:</strong> {partData.emotion.start} → {partData.emotion.progression.join(' → ')} → {partData.emotion.end}</div>
-          </div>
-        )}
+        <div className="space-y-2 text-sm">
+          <div><strong>Journey:</strong> {partData.emotion.start} → {partData.emotion.progression.join(' → ')} → {partData.emotion.end}</div>
+        </div>
       </CardContent>
     </Card>
   );
