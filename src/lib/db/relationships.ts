@@ -19,13 +19,21 @@ export class RelationshipManager {
       await tx.insert(parts).values({
         id: partId,
         storyId,
-        ...partData,
+        title: partData.title!,
+        description: partData.description,
+        authorId: partData.authorId!,
+        orderIndex: partData.orderIndex!,
+        targetWordCount: partData.targetWordCount,
+        currentWordCount: partData.currentWordCount,
+        status: partData.status,
+        content: partData.content,
+        chapterIds: partData.chapterIds || [],
       });
       
       // Update story's part IDs
       await tx.update(stories)
-        .set({ 
-          partIds: sql`part_ids || ${JSON.stringify([partId])}::jsonb`,
+        .set({
+          partIds: sql`part_ids || ${JSON.stringify([partId])}::json`,
           updatedAt: new Date()
         })
         .where(eq(stories.id, storyId));
@@ -56,7 +64,7 @@ export class RelationshipManager {
       // Update story's chapter IDs
       await tx.update(stories)
         .set({ 
-          chapterIds: sql`chapter_ids || ${JSON.stringify([chapterId])}::jsonb`,
+          chapterIds: sql`chapter_ids || ${JSON.stringify([chapterId])}::json`,
           updatedAt: new Date()
         })
         .where(eq(stories.id, storyId));
@@ -65,7 +73,7 @@ export class RelationshipManager {
       if (partId) {
         await tx.update(parts)
           .set({ 
-            chapterIds: sql`chapter_ids || ${JSON.stringify([chapterId])}::jsonb`,
+            chapterIds: sql`chapter_ids || ${JSON.stringify([chapterId])}::json`,
             updatedAt: new Date()
           })
           .where(eq(parts.id, partId));
@@ -95,7 +103,7 @@ export class RelationshipManager {
       // Update chapter's scene IDs
       await tx.update(chapters)
         .set({ 
-          sceneIds: sql`scene_ids || ${JSON.stringify([sceneId])}::jsonb`,
+          sceneIds: sql`scene_ids || ${JSON.stringify([sceneId])}::json`,
           updatedAt: new Date()
         })
         .where(eq(chapters.id, chapterId));
