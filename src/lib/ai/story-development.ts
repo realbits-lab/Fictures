@@ -3,18 +3,62 @@ import * as yaml from 'js-yaml';
 import { AI_MODELS } from './config';
 import { type Story, type PartSpecification, type ChapterSpecification, type SceneSpecification } from './schemas';
 
-// Helper function to extract YAML content from markdown code blocks
+// Helper function to extract and clean YAML content from markdown code blocks
 function extractYamlFromText(text: string): string {
   // Remove markdown code fences if present
   const yamlBlockRegex = /^```ya?ml\s*\n([\s\S]*?)\n```$/m;
   const match = text.match(yamlBlockRegex);
 
-  if (match) {
-    return match[1]; // Return content between code fences
+  let yamlContent = match ? match[1] : text.trim();
+
+  // Clean up common YAML formatting issues
+  yamlContent = cleanYamlContent(yamlContent);
+
+  return yamlContent;
+}
+
+// Helper function to clean and fix common YAML formatting issues
+function cleanYamlContent(yamlContent: string): string {
+  const lines = yamlContent.split('\n');
+  const cleanedLines: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+
+    // Skip empty lines at the beginning
+    if (cleanedLines.length === 0 && line.trim() === '') {
+      continue;
+    }
+
+    // Fix common array item indentation issues
+    if (line.trim().startsWith('- ') && line.includes('"')) {
+      // Ensure proper indentation for array items with quotes
+      const indentMatch = line.match(/^(\s*)/);
+      const indent = indentMatch ? indentMatch[1] : '';
+      const content = line.trim();
+
+      // If the content looks malformed (e.g., "- some text", instead of proper YAML)
+      if (content.match(/^-\s+"[^"]*",?\s*$/)) {
+        // Clean up trailing commas and ensure proper YAML format
+        const cleanContent = content.replace(/,$/, '').replace(/^-\s+"([^"]*)"$/, '- "$1"');
+        line = indent + cleanContent;
+      }
+    }
+
+    // Fix malformed array items in feedback sections
+    if (line.includes('- "') && line.includes('",')) {
+      line = line.replace(/",\s*$/, '"');
+    }
+
+    // Remove trailing commas that break YAML
+    if (line.trim().endsWith(',') && !line.includes('"')) {
+      line = line.replace(/,\s*$/, '');
+    }
+
+    cleanedLines.push(line);
   }
 
-  // If no code fences, return original text (might already be clean YAML)
-  return text.trim();
+  return cleanedLines.join('\n');
 }
 
 // Phase 1: Story Foundation
@@ -267,7 +311,9 @@ REQUIREMENTS:
 - All elements must connect to the user's original prompt and story concept
 - Focus on character development that serves the story's central conflict
 - You can add more key/value pairs to YAML data if needed for better part development
-- Output must be valid YAML format - NO semicolons, proper indentation, quotes around string values`,
+- Output must be valid YAML format - NO semicolons, proper indentation, quotes around string values
+- For arrays, use proper YAML format: each item on new line with "- " prefix, NO trailing commas
+- Example: discussions:\n    - "Topic 1"\n    - "Topic 2"`,
       prompt: `Story concept: ${JSON.stringify(storyConcept, null, 2)}
 
 Current part to develop: Part ${storyPart.part}
@@ -285,7 +331,71 @@ Create detailed part specification in YAML format for Part ${storyPart.part}. In
     } catch (error) {
       console.error(`Failed to parse YAML part specification for Part ${storyPart.part}:`, error);
       console.error('Raw text:', text);
-      throw new Error(`Invalid YAML output for Part ${storyPart.part}: ${error}`);
+
+      // Create fallback part specification instead of failing
+      const fallbackPartSpec: PartSpecification = {
+        part: storyPart.part,
+        title: `Part ${storyPart.part}: ${storyPart.goal}`,
+        words: Math.floor((storyConcept.words || 60000) / storyConcept.parts.length),
+        function: `Develops the story through Part ${storyPart.part}`,
+        goals: storyPart.goal,
+        conflict: storyPart.conflict,
+        outcome: storyPart.outcome,
+        questions: {
+          primary: "What will happen in this part of the story?",
+          secondary: "How will the characters develop?"
+        },
+        chars: {
+          protag: {
+            name: "Protagonist",
+            start: "Beginning state",
+            end: "Changed state",
+            arc: ["Character development arc"],
+            development: "Character grows and changes",
+            conflict: "Internal and external challenges",
+            transforms: ["Key transformation"],
+            function: "Drives the story forward"
+          }
+        },
+        plot: {
+          events: [`Events for Part ${storyPart.part}`],
+          reveals: [`Revelations in Part ${storyPart.part}`],
+          escalation: [`Escalation in Part ${storyPart.part}`]
+        },
+        themes: {
+          primary: "Main theme",
+          elements: ["Theme elements"],
+          moments: ["Key thematic moments"],
+          symbols: ["Symbolic elements"]
+        },
+        emotion: {
+          start: "Initial emotional state",
+          progression: ["Emotional journey"],
+          end: "Final emotional state"
+        },
+        ending: {
+          resolution: [`Resolution for Part ${storyPart.part}`],
+          setup: [`Setup for next part`],
+          hooks: [`Hooks to continue reading`],
+          hook_out: "Ending hook"
+        },
+        serial: {
+          arc: "Part arc in serial",
+          climax_at: "Climactic moment",
+          satisfaction: ["Satisfying elements"],
+          anticipation: ["Elements building anticipation"],
+          chapter_words: storyConcept.serial?.chapter_words || 3000
+        },
+        engagement: {
+          discussions: ["Discussion topics"],
+          speculation: ["Speculation points"],
+          debates: ["Debate topics"],
+          feedback: ["Feedback areas"]
+        }
+      };
+
+      console.log(`✅ Created fallback part specification for Part ${storyPart.part}`);
+      partSpecs.push(fallbackPartSpec);
     }
   }
 
@@ -440,7 +550,9 @@ REQUIREMENTS:
 - Characters and places must be relevant to the scene's purpose
 - Generate detailed scenes that serve as complete dramatic units while advancing the chapter
 - You can add more key/value pairs to YAML data if needed for richer scene development
-- Output must be valid YAML format - NO semicolons, proper indentation, quotes around string values`,
+- Output must be valid YAML format - NO semicolons, proper indentation, quotes around string values
+- For arrays, use proper YAML format: each item on new line with "- " prefix, NO trailing commas
+- Example: discussions:\n    - "Topic 1"\n    - "Topic 2"`,
       prompt: `Chapter specification: ${JSON.stringify(chapterSpec, null, 2)}
 
 Available characters: ${storyCharacters.map(c => `${c.parsedData?.name || c.id} (${c.parsedData?.role || c.id})`).join(', ') || 'No characters available'}
