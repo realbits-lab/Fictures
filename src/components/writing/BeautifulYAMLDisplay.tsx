@@ -19,10 +19,12 @@ interface YAMLKeyCardProps {
   keyName: string;
   value: any;
   isDark: boolean;
+  columnIndex: number;
+  isExpanded: boolean;
+  onToggleExpansion: (keyName: string) => void;
 }
 
-function YAMLKeyCard({ keyName, value, isDark }: YAMLKeyCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+function YAMLKeyCard({ keyName, value, isDark, columnIndex, isExpanded, onToggleExpansion }: YAMLKeyCardProps) {
 
   const renderValue = (val: any): string => {
     if (typeof val === 'object' && val !== null) {
@@ -39,19 +41,21 @@ function YAMLKeyCard({ keyName, value, isDark }: YAMLKeyCardProps) {
 
   const canExpand = typeof value === 'object' && value !== null;
 
+  const getExpandedStyles = () => {
+    if (!isExpanded) return {};
+    return {
+      width: '100%'
+    };
+  };
+
+
   return (
-    <div className={`border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800 hover:shadow-md transition-shadow ${
-      isExpanded ? 'absolute z-20' : 'relative'
-    }`}
-    style={isExpanded ? {
-      width: 'calc(300% + 1.5rem)', // 3 columns + 2 gaps
-      maxWidth: 'calc(100vw - 4rem)'
-    } : {}}>
+    <div className={`relative border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800 hover:shadow-md transition-shadow ${isExpanded ? 'shadow-2xl' : ''}`} style={getExpandedStyles()}>
       <div
         className={`flex items-center justify-between mb-2 ${
           canExpand ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 -m-1 p-1 rounded transition-colors' : ''
         }`}
-        onClick={canExpand ? () => setIsExpanded(!isExpanded) : undefined}
+        onClick={canExpand ? () => onToggleExpansion(keyName) : undefined}
         title={canExpand ? (isExpanded ? 'Collapse' : 'Expand') : undefined}
       >
         <h5 className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
@@ -69,7 +73,7 @@ function YAMLKeyCard({ keyName, value, isDark }: YAMLKeyCardProps) {
           {renderValue(value)}
         </div>
       ) : (
-        <div className="text-xs">
+        <div className="mt-2 text-xs border-t border-gray-200 dark:border-gray-700 pt-2">
           <SyntaxHighlighter
             language="yaml"
             style={isDark ? oneDark : oneLight}
@@ -78,8 +82,8 @@ function YAMLKeyCard({ keyName, value, isDark }: YAMLKeyCardProps) {
               padding: '8px',
               fontSize: '11px',
               borderRadius: '4px',
-              maxHeight: 'none',
-              overflow: 'visible'
+              maxHeight: '300px',
+              overflow: 'auto'
             }}
             wrapLongLines={true}
           >
@@ -100,6 +104,14 @@ export function BeautifulYAMLDisplay({
 }: BeautifulYAMLDisplayProps) {
   const { theme, systemTheme } = useTheme();
   const isDark = theme === 'dark' || (theme === 'system' && systemTheme === 'dark');
+
+  // State to track which card is currently expanded (only one at a time)
+  const [expandedCardKey, setExpandedCardKey] = useState<string | null>(null);
+
+  // Handler to toggle card expansion - only one card can be expanded at a time
+  const handleCardToggle = (keyName: string) => {
+    setExpandedCardKey(expandedCardKey === keyName ? null : keyName);
+  };
 
   const parseYAMLContent = (content: string | object) => {
     try {
@@ -155,15 +167,38 @@ export function BeautifulYAMLDisplay({
               <p>No data available</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 auto-rows-min">
-              {keys.map((key) => (
-                <YAMLKeyCard
-                  key={key}
-                  keyName={key}
-                  value={parsedData[key]}
-                  isDark={isDark}
-                />
-              ))}
+            <div className="relative">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 auto-rows-min">
+                {keys.map((key, index) => {
+                  const isExpanded = key === expandedCardKey;
+                  return (
+                    <div key={key} className="relative">
+                      <YAMLKeyCard
+                        keyName={key}
+                        value={parsedData[key]}
+                        isDark={isDark}
+                        columnIndex={index}
+                        isExpanded={false}
+                        onToggleExpansion={handleCardToggle}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Expanded card overlay */}
+              {expandedCardKey && (
+                <div className="absolute inset-0 z-50" style={{ top: `${Math.floor(keys.indexOf(expandedCardKey) / 3) * 100}px` }}>
+                  <YAMLKeyCard
+                    keyName={expandedCardKey}
+                    value={parsedData[expandedCardKey]}
+                    isDark={isDark}
+                    columnIndex={keys.indexOf(expandedCardKey) % 3}
+                    isExpanded={true}
+                    onToggleExpansion={handleCardToggle}
+                  />
+                </div>
+              )}
             </div>
           )}
 
