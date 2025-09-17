@@ -40,9 +40,17 @@ function YAMLKeyCard({ keyName, value, isDark }: YAMLKeyCardProps) {
   const canExpand = typeof value === 'object' && value !== null;
 
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800 hover:shadow-md transition-shadow">
+    <div className={`border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800 hover:shadow-md transition-shadow ${
+      isExpanded ? 'md:col-span-2 lg:col-span-3 z-10 relative' : ''
+    }`}>
       <div className="flex items-center justify-between mb-2">
-        <h5 className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
+        <h5
+          className={`font-medium text-sm text-gray-900 dark:text-gray-100 truncate ${
+            canExpand ? 'cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 transition-colors' : ''
+          }`}
+          onClick={canExpand ? () => setIsExpanded(!isExpanded) : undefined}
+          title={canExpand ? (isExpanded ? 'Collapse' : 'Expand') : undefined}
+        >
           {keyName}
         </h5>
         {canExpand && (
@@ -71,8 +79,8 @@ function YAMLKeyCard({ keyName, value, isDark }: YAMLKeyCardProps) {
               padding: '8px',
               fontSize: '11px',
               borderRadius: '4px',
-              maxHeight: '200px',
-              overflow: 'auto'
+              maxHeight: 'none',
+              overflow: 'visible'
             }}
             wrapLongLines={true}
           >
@@ -148,7 +156,7 @@ export function BeautifulYAMLDisplay({
               <p>No data available</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 auto-rows-min">
               {keys.map((key) => (
                 <YAMLKeyCard
                   key={key}
