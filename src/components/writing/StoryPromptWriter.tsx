@@ -151,9 +151,15 @@ ${changes.join("\n")}
 
 **Review the changes below and choose to Save or Cancel.**`);
 
-        // Set up preview instead of immediately applying changes
+        // Apply changes immediately to trigger highlighting
         setPreviewStoryData(updatedStoryData);
         setHasPreviewChanges(true);
+
+        // Call onStoryUpdate to update the main story data and trigger highlighting
+        if (onStoryUpdate) {
+          onStoryUpdate(updatedStoryData);
+        }
+
         if (onPreviewUpdate) {
           onPreviewUpdate(updatedStoryData);
         }
@@ -188,7 +194,7 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
   };
 
   return (
-    <Card className="h-fit">
+    <Card className="h-fit" data-testid="story-prompt-writer">
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center gap-2">
           🤖 Story Prompt Writer
@@ -206,6 +212,7 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
             placeholder="Enter your request to modify the story (e.g., 'make it a romance story', 'add a mentor character named Alex', 'change the goal to rescue Elena')..."
             className="w-full p-3 border rounded-md text-sm resize-none bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
             rows={4}
+            data-testid="prompt-input"
           />
         </div>
 
@@ -216,6 +223,7 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
             disabled={isProcessing || !inputPrompt.trim()}
             size="sm"
             className="flex-1"
+            data-testid="apply-changes-button"
           >
             {isProcessing ? (
               <>

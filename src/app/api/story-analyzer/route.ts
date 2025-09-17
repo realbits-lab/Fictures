@@ -20,26 +20,41 @@ export async function POST(request: NextRequest) {
   try {
     const { storyData, userRequest } = await request.json();
 
+    // Add null safety checks for all nested objects
+    const safeStoryData = {
+      title: storyData?.title || '',
+      genre: storyData?.genre || 'urban_fantasy',
+      words: storyData?.words || 80000,
+      question: storyData?.question || '',
+      goal: storyData?.goal || '',
+      conflict: storyData?.conflict || '',
+      outcome: storyData?.outcome || '',
+      chars: storyData?.chars || {},
+      themes: storyData?.themes || [],
+      structure: storyData?.structure || { type: '3_part', parts: ['setup', 'confrontation', 'resolution'], dist: [25, 50, 25] },
+      parts: storyData?.parts || []
+    };
+
     const currentStoryYAML = `story:
-  title: "${storyData.title}"
-  genre: "${storyData.genre}"
-  words: ${storyData.words}
-  question: "${storyData.question}"
-  goal: "${storyData.goal}"
-  conflict: "${storyData.conflict}"
-  outcome: "${storyData.outcome}"
-  chars:${Object.entries(storyData.chars).map(([name, char]: [string, any]) => `
-    ${name}: { role: "${char.role}", arc: "${char.arc}" }`).join('')}
-  themes: [${storyData.themes.map((theme: string) => `"${theme}"`).join(', ')}]
+  title: "${safeStoryData.title}"
+  genre: "${safeStoryData.genre}"
+  words: ${safeStoryData.words}
+  question: "${safeStoryData.question}"
+  goal: "${safeStoryData.goal}"
+  conflict: "${safeStoryData.conflict}"
+  outcome: "${safeStoryData.outcome}"
+  chars:${Object.entries(safeStoryData.chars).map(([name, char]: [string, any]) => `
+    ${name}: { role: "${char?.role || 'character'}", arc: "${char?.arc || 'development'}" }`).join('')}
+  themes: [${safeStoryData.themes.map((theme: string) => `"${theme}"`).join(', ')}]
   structure:
-    type: "${storyData.structure.type}"
-    parts: [${storyData.structure.parts.map((part: string) => `"${part}"`).join(', ')}]
-    dist: [${storyData.structure.dist.join(', ')}]
-  parts:${storyData.parts.map((part: any) => `
+    type: "${safeStoryData.structure.type}"
+    parts: [${safeStoryData.structure.parts.map((part: string) => `"${part}"`).join(', ')}]
+    dist: [${safeStoryData.structure.dist.join(', ')}]
+  parts:${safeStoryData.parts.map((part: any) => `
     - part: ${part.part}
-      goal: "${part.goal}"
-      conflict: "${part.conflict}"
-      tension: "${part.tension}"`).join('')}`;
+      goal: "${part.goal || ''}"
+      conflict: "${part.conflict || ''}"
+      tension: "${part.tension || ''}"`).join('')}`;
 
     const result = await generateText({
       model: 'gpt-4o-mini',
