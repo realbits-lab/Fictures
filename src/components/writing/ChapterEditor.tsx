@@ -402,33 +402,41 @@ export function ChapterEditor({
           
           {/* Main Writing Area */}
           <div className={`space-y-6 ${hideSidebar ? 'col-span-1' : 'lg:col-span-2'}`}>
-            {/* Chapter Editor Header with Save/Cancel */}
+            {/* Cancel/Save Buttons Above YAML */}
             {externalHasChanges && (
-              <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
-                <div>
-                  <h3 className="font-medium text-blue-900 dark:text-blue-100">📝 Chapter Changes</h3>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">You have unsaved changes to this chapter</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCancel}
-                    className="whitespace-nowrap"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="whitespace-nowrap"
-                  >
-                    {isSaving ? '💾 Saving...' : '💾 Save Changes'}
-                  </Button>
-                </div>
+              <div className="flex justify-center gap-2 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleCancel}
+                  className="whitespace-nowrap min-w-fit px-6"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="lg"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className="whitespace-nowrap min-w-fit px-6"
+                >
+                  {isSaving ? '💾 Saving...' : '💾 Save Changes'}
+                </Button>
               </div>
             )}
+
+            {/* Chapter YAML Data */}
+            <Card>
+              <CardHeader>
+                <CardTitle>📄 Chapter YAML Data</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded whitespace-pre-wrap">
+                  <code>
+                    {yaml.dump({ chapter: chapterData }, { indent: 2 })}
+                  </code>
+                </pre>
+              </CardContent>
+            </Card>
 
             {/* Writing Interface */}
             <Card>
@@ -446,22 +454,10 @@ export function ChapterEditor({
             </Card>
           </div>
 
-          {/* Right Sidebar - Chapter YAML Data (only show if not used within UnifiedWritingEditor) */}
+          {/* Right Sidebar - Empty (YAML moved to main area) */}
           {!hideSidebar && (
             <div className="space-y-6">
-              {/* Chapter YAML Data */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>📄 Chapter YAML Data</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded whitespace-pre-wrap">
-                    <code>
-                      {yaml.dump({ chapter: chapterData }, { indent: 2 })}
-                    </code>
-                  </pre>
-                </CardContent>
-              </Card>
+              {/* Sidebar content can be added here if needed */}
             </div>
           )}
         </div>

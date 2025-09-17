@@ -288,29 +288,29 @@ export function StoryEditor({
 						Define the overall narrative structure and themes
 					</p>
 				</div>
-				<div className="flex flex-col sm:flex-row gap-2">
-					{externalHasChanges && (
-						<div className="flex gap-2">
-							<Button
-								variant="outline"
-								size="lg"
-								onClick={handleCancel}
-								className="whitespace-nowrap min-w-fit px-6"
-							>
-								Cancel
-							</Button>
-							<Button
-								size="lg"
-								onClick={handleSave}
-								disabled={isSaving}
-								className="whitespace-nowrap min-w-fit px-6"
-							>
-								{isSaving ? "💾 Saving..." : "💾 Save Changes"}
-							</Button>
-						</div>
-					)}
-				</div>
 			</div>
+
+			{/* Cancel/Save Buttons Above YAML */}
+			{externalHasChanges && (
+				<div className="flex justify-center gap-2 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+					<Button
+						variant="outline"
+						size="lg"
+						onClick={handleCancel}
+						className="whitespace-nowrap min-w-fit px-6"
+					>
+						Cancel
+					</Button>
+					<Button
+						size="lg"
+						onClick={handleSave}
+						disabled={isSaving}
+						className="whitespace-nowrap min-w-fit px-6"
+					>
+						{isSaving ? "💾 Saving..." : "💾 Save Changes"}
+					</Button>
+				</div>
+			)}
 
 			{/* Story YAML Data */}
 			<Card>
