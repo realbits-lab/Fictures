@@ -14,6 +14,7 @@ import { StoryStructureSidebar } from "./StoryStructureSidebar";
 import { SceneSidebar } from "./SceneSidebar";
 import { WritingGuidelines } from "./WritingGuidelines";
 import { StoryPromptAnalyzer } from "./StoryPromptAnalyzer";
+import { PartPromptAnalyzer } from "./PartPromptAnalyzer";
 
 interface Story {
   id: string;
@@ -769,6 +770,40 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     }
   };
 
+  // Create part data based on actual story data
+  const createPartData = (partNum: number, partTitle: string) => {
+    // Get part data from actual story data if available
+    const storyParts = sampleStoryData.parts || [];
+    const currentPart = storyParts.find((p: any) => p.part === partNum) || storyParts[partNum - 1];
+
+    return {
+      part: partNum,
+      title: partTitle,
+      words: partNum === 2 ? 40000 : 20000, // Middle part typically longer
+      function: partNum === 1 ? "story_setup" :
+               partNum === 2 ? "story_development" :
+               "story_resolution",
+      goal: currentPart?.goal || `Part ${partNum} goal from ${sampleStoryData.title}`,
+      conflict: currentPart?.conflict || `Part ${partNum} conflict from ${sampleStoryData.title}`,
+      outcome: currentPart?.outcome || `Part ${partNum} outcome from ${sampleStoryData.title}`,
+      questions: {
+        primary: `What is the main question for Part ${partNum} of ${sampleStoryData.title}?`,
+        secondary: `What is the secondary question for Part ${partNum} of ${sampleStoryData.title}?`
+      },
+      chars: sampleStoryData.chars || {},
+      plot: {
+        events: [],
+        reveals: [],
+        escalation: []
+      },
+      emotion: {
+        start: `Part ${partNum} emotional start`,
+        progression: [],
+        end: `Part ${partNum} emotional end`
+      }
+    };
+  };
+
   const renderEditor = () => {
     switch (currentSelection.level) {
       case "story":
@@ -797,46 +832,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         // Find the selected part from the story structure
         const selectedPart = story.parts.find(part => part.id === currentSelection.partId);
         const partNumber = selectedPart?.orderIndex || 1;
-        
-        // Create part data based on actual story data
-        const createPartData = (partNum: number, partTitle: string) => {
-          // Get part data from actual story data if available
-          const storyParts = sampleStoryData.parts || [];
-          const currentPart = storyParts.find((p: any) => p.part === partNum) || storyParts[partNum - 1];
-
-          return {
-            part: partNum,
-            title: partTitle,
-            words: partNum === 2 ? 40000 : 20000, // Middle part typically longer
-            function: partNum === 1 ? "story_setup" :
-                     partNum === 2 ? "story_development" :
-                     "story_resolution",
-            goal: currentPart?.goal || `Part ${partNum} goal from ${sampleStoryData.title}`,
-            conflict: currentPart?.conflict || `Part ${partNum} conflict from ${sampleStoryData.title}`,
-            outcome: currentPart?.outcome || `Part ${partNum} outcome from ${sampleStoryData.title}`,
-            questions: {
-              primary: `What is the main question for Part ${partNum} of ${sampleStoryData.title}?`,
-              secondary: `What is the secondary question for Part ${partNum} of ${sampleStoryData.title}?`
-            },
-            chars: sampleStoryData.chars || {},
-            plot: {
-              events: [],
-              reveals: [],
-              escalation: []
-            },
-            themes: {
-              primary: sampleStoryData.themes?.[0] || `Part ${partNum} theme`,
-              elements: sampleStoryData.themes || [],
-              moments: [],
-              symbols: []
-            },
-            emotion: {
-              start: `Part ${partNum} emotional start`,
-              progression: [],
-              end: `Part ${partNum} emotional end`
-            }
-          };
-        };
         
         const partData = selectedPart ?
           createPartData(partNumber, `Part ${partNumber}`) :
@@ -1696,6 +1691,17 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               <StoryPromptAnalyzer
                 storyData={sampleStoryData}
                 onStoryUpdate={handleStoryDataUpdate}
+              />
+            )}
+
+            {/* Part Prompt Analyzer - Show for part level */}
+            {currentSelection.level === "part" && (
+              <PartPromptAnalyzer
+                partData={createPartData(currentSelection.partNumber, currentSelection.partTitle)}
+                onPartUpdate={(updatedPartData) => {
+                  console.log('Part updated:', updatedPartData);
+                  // Handle part data update here
+                }}
               />
             )}
             
