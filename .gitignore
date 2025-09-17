@@ -56,6 +56,9 @@ tests/@playwright/.auth/
 # Playwright MCP
 .playwright-mcp/
 
+# Playwright auth directory
+.playwright/
+
 # Password and credential files
 user.json
 credentials.json

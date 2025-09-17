@@ -253,16 +253,6 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
           </div>
         </div>
 
-        {/* Current Story Summary */}
-        <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            <div className="font-medium mb-1">Current Story:</div>
-            <div>Genre: <Badge variant="outline" className="text-xs">{storyData.genre}</Badge></div>
-            <div>Characters: {Object.keys(storyData.chars).length}</div>
-            <div>Parts: {storyData.parts.length}</div>
-            <div>Target Words: {storyData.words.toLocaleString()}</div>
-          </div>
-        </div>
       </CardContent>
     </Card>
   );

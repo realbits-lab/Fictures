@@ -18,6 +18,7 @@ import { StoryPromptWriter } from "./StoryPromptWriter";
 import { PartPromptEditor } from "./PartPromptEditor";
 import { ChapterPromptEditor } from "./ChapterPromptEditor";
 import { ScenePromptEditor } from "./ScenePromptEditor";
+import { BeautifulYAMLDisplay } from "./BeautifulYAMLDisplay";
 
 interface Story {
   id: string;
@@ -105,6 +106,13 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const [isLoading, setIsLoading] = useState(false);
   const [showThemePlanner, setShowThemePlanner] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Collapse states for YAML data displays
+  const [storyDataCollapsed, setStoryDataCollapsed] = useState(false);
+  const [charactersCollapsed, setCharactersCollapsed] = useState(false);
+  const [placesCollapsed, setPlacesCollapsed] = useState(false);
+  const [characterCollapseStates, setCharacterCollapseStates] = useState<Record<string, boolean>>({});
+  const [placeCollapseStates, setPlaceCollapseStates] = useState<Record<string, boolean>>({});
 
   // SWR hook for fetching story data when switching stories
   const [targetStoryId, setTargetStoryId] = useState<string | null>(null);
@@ -1128,24 +1136,97 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     switch (currentSelection.level) {
       case "story":
         return (
-          <StoryEditor
-            storyId={story.id}
-            storyData={sampleStoryData}
-            characters={currentStoryCharacters}
-            places={currentStoryPlaces}
-            hasChanges={storyHasChanges}
-            onStoryUpdate={handleStoryDataUpdate}
-            onSave={async (data) => {
-              await handleSave(data);
-              setOriginalStoryData(data);
-              setStoryHasChanges(false);
-            }}
-            onCancel={() => {
-              setSampleStoryData(originalStoryData);
-              setStoryHasChanges(false);
-            }}
-            onGenerate={handleGenerate}
-          />
+          <div className="space-y-6">
+            <StoryEditor
+              storyId={story.id}
+              storyData={sampleStoryData}
+              characters={currentStoryCharacters}
+              places={currentStoryPlaces}
+              hasChanges={storyHasChanges}
+              onStoryUpdate={handleStoryDataUpdate}
+              onSave={async (data) => {
+                await handleSave(data);
+                setOriginalStoryData(data);
+                setStoryHasChanges(false);
+              }}
+              onCancel={() => {
+                setSampleStoryData(originalStoryData);
+                setStoryHasChanges(false);
+              }}
+              onGenerate={handleGenerate}
+            />
+
+            {/* Story YAML Data Display */}
+            <BeautifulYAMLDisplay
+              title="Story YAML Data"
+              icon="📖"
+              data={sampleStoryData}
+              isCollapsed={storyDataCollapsed}
+              onToggleCollapse={() => setStoryDataCollapsed(!storyDataCollapsed)}
+            />
+
+            {/* Characters YAML Data Display */}
+            {currentStoryCharacters && currentStoryCharacters.length > 0 && (
+              <div className="space-y-4">
+                <BeautifulYAMLDisplay
+                  title={`Characters (${currentStoryCharacters.length})`}
+                  icon="🎭"
+                  data={{
+                    total_characters: currentStoryCharacters.length,
+                    main_characters: currentStoryCharacters.filter((c: any) => c.isMain).length,
+                    supporting_characters: currentStoryCharacters.filter((c: any) => !c.isMain).length,
+                    character_names: currentStoryCharacters.map((c: any) => c.name)
+                  }}
+                  isCollapsed={charactersCollapsed}
+                  onToggleCollapse={() => setCharactersCollapsed(!charactersCollapsed)}
+                />
+                {!charactersCollapsed && currentStoryCharacters.map((character: any) => (
+                  <BeautifulYAMLDisplay
+                    key={character.id}
+                    title={`${character.name} ${character.isMain ? '(Main Character)' : '(Supporting Character)'}`}
+                    icon="👤"
+                    data={character.content}
+                    isCollapsed={characterCollapseStates[character.id] || false}
+                    onToggleCollapse={() => setCharacterCollapseStates(prev => ({
+                      ...prev,
+                      [character.id]: !prev[character.id]
+                    }))}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Places YAML Data Display */}
+            {currentStoryPlaces && currentStoryPlaces.length > 0 && (
+              <div className="space-y-4">
+                <BeautifulYAMLDisplay
+                  title={`Places (${currentStoryPlaces.length})`}
+                  icon="🏞️"
+                  data={{
+                    total_places: currentStoryPlaces.length,
+                    main_locations: currentStoryPlaces.filter((p: any) => p.isMain).length,
+                    supporting_locations: currentStoryPlaces.filter((p: any) => !p.isMain).length,
+                    place_names: currentStoryPlaces.map((p: any) => p.name)
+                  }}
+                  isCollapsed={placesCollapsed}
+                  onToggleCollapse={() => setPlacesCollapsed(!placesCollapsed)}
+                />
+                {!placesCollapsed && currentStoryPlaces.map((place: any) => (
+                  <BeautifulYAMLDisplay
+                    key={place.id}
+                    title={`${place.name} ${place.isMain ? '(Main Location)' : '(Supporting Location)'}`}
+                    icon="🏛️"
+                    data={place.content}
+                    isCollapsed={placeCollapseStates[place.id] || false}
+                    onToggleCollapse={() => setPlaceCollapseStates(prev => ({
+                      ...prev,
+                      [place.id]: !prev[place.id]
+                    }))}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         );
       
       case "part":
@@ -1622,6 +1703,77 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 </div>
               </CardContent>
             </Card>
+
+            {/* Story YAML Data Display */}
+            <BeautifulYAMLDisplay
+              title="Story YAML Data"
+              icon="📖"
+              data={sampleStoryData}
+              isCollapsed={storyDataCollapsed}
+              onToggleCollapse={() => setStoryDataCollapsed(!storyDataCollapsed)}
+            />
+
+            {/* Characters YAML Data Display */}
+            {currentStoryCharacters && currentStoryCharacters.length > 0 && (
+              <div className="space-y-4">
+                <BeautifulYAMLDisplay
+                  title={`Characters (${currentStoryCharacters.length})`}
+                  icon="🎭"
+                  data={{
+                    total_characters: currentStoryCharacters.length,
+                    main_characters: currentStoryCharacters.filter((c: any) => c.isMain).length,
+                    supporting_characters: currentStoryCharacters.filter((c: any) => !c.isMain).length,
+                    character_names: currentStoryCharacters.map((c: any) => c.name)
+                  }}
+                  isCollapsed={charactersCollapsed}
+                  onToggleCollapse={() => setCharactersCollapsed(!charactersCollapsed)}
+                />
+                {!charactersCollapsed && currentStoryCharacters.map((character: any) => (
+                  <BeautifulYAMLDisplay
+                    key={character.id}
+                    title={`${character.name} ${character.isMain ? '(Main Character)' : '(Supporting Character)'}`}
+                    icon="👤"
+                    data={character.content}
+                    isCollapsed={characterCollapseStates[character.id] || false}
+                    onToggleCollapse={() => setCharacterCollapseStates(prev => ({
+                      ...prev,
+                      [character.id]: !prev[character.id]
+                    }))}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Places YAML Data Display */}
+            {currentStoryPlaces && currentStoryPlaces.length > 0 && (
+              <div className="space-y-4">
+                <BeautifulYAMLDisplay
+                  title={`Places (${currentStoryPlaces.length})`}
+                  icon="🏞️"
+                  data={{
+                    total_places: currentStoryPlaces.length,
+                    main_locations: currentStoryPlaces.filter((p: any) => p.isMain).length,
+                    supporting_locations: currentStoryPlaces.filter((p: any) => !p.isMain).length,
+                    place_names: currentStoryPlaces.map((p: any) => p.name)
+                  }}
+                  isCollapsed={placesCollapsed}
+                  onToggleCollapse={() => setPlacesCollapsed(!placesCollapsed)}
+                />
+                {!placesCollapsed && currentStoryPlaces.map((place: any) => (
+                  <BeautifulYAMLDisplay
+                    key={place.id}
+                    title={`${place.name} ${place.isMain ? '(Main Location)' : '(Supporting Location)'}`}
+                    icon="🏛️"
+                    data={place.content}
+                    isCollapsed={placeCollapseStates[place.id] || false}
+                    onToggleCollapse={() => setPlaceCollapseStates(prev => ({
+                      ...prev,
+                      [place.id]: !prev[place.id]
+                    }))}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         );
 
@@ -1977,51 +2129,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               />
             )}
 
-            {/* Characters YAML Data Display */}
-            {currentStoryCharacters && currentStoryCharacters.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>🎭 Characters YAML Data</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {currentStoryCharacters.map((character: any) => (
-                      <div key={character.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-                        <h4 className="font-medium text-sm mb-2 text-gray-900 dark:text-gray-100">
-                          {character.name} {character.isMain ? '(Main Character)' : '(Supporting Character)'}
-                        </h4>
-                        <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded whitespace-pre-wrap overflow-auto max-h-40">
-                          <code>{character.content || `name: ${character.name}\nrole: character\ndescription: "Character description not yet defined"`}</code>
-                        </pre>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Places YAML Data Display */}
-            {currentStoryPlaces && currentStoryPlaces.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>🏞️ Places YAML Data</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {currentStoryPlaces.map((place: any) => (
-                      <div key={place.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-                        <h4 className="font-medium text-sm mb-2 text-gray-900 dark:text-gray-100">
-                          {place.name} {place.isMain ? '(Main Location)' : '(Supporting Location)'}
-                        </h4>
-                        <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded whitespace-pre-wrap overflow-auto max-h-40">
-                          <code>{place.content || `name: ${place.name}\ntype: location\ndescription: "Location description not yet defined"`}</code>
-                        </pre>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
 
             {/* Writing Guidelines - Show for scene editing */}
             <WritingGuidelines currentLevel={currentSelection.level} />
