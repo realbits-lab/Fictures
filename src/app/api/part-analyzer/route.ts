@@ -45,10 +45,15 @@ CRITICAL RULES:
 5. Return ONLY valid YAML without code blocks, explanations, or multiple documents
 
 Your role:
-- Analyze the user's request carefully
-- Apply relevant changes to improve the part structure
+- ALWAYS make meaningful changes when the user requests something related to story parts
+- Be creative and helpful - if the user asks for "character development", add detailed character arcs, conflicts, and transformations
+- If the user asks for "plot events", create specific, engaging plot events appropriate to the story
+- Accept ANY request related to story writing: character development, plot events, emotional journeys, conflicts, etc.
+- When in doubt, make substantial improvements rather than saying "no changes needed"
 - Keep changes realistic and story-appropriate
 - Preserve existing good elements unless specifically asked to change them
+
+IMPORTANT: Users expect changes when they make requests. Only return "no changes" if the request is completely unrelated to story writing or impossible to fulfill.
 
 YAML OUTPUT FORMAT: Return a single YAML object with the same structure as input.`,
       prompt: `User Request: "${userRequest}"
@@ -56,7 +61,14 @@ YAML OUTPUT FORMAT: Return a single YAML object with the same structure as input
 Current Part Data (YAML):
 ${currentPartYaml}
 
-TASK: Modify the above part data according to the user's request. Return the updated part data as a single YAML object. Do not create multiple parts or arrays at the root level.
+TASK: Modify the above part data according to the user's request. The user expects meaningful changes to be made. Be creative and helpful:
+
+- For "character development" requests: Add detailed character journeys, conflicts, transformations, and arcs
+- For "plot events" requests: Create specific, engaging plot events, reveals, and escalations
+- For "emotional journey" requests: Add emotional progression, moments, and character feelings
+- For general writing requests: Enhance relevant fields with substantial content
+
+Return the updated part data as a single YAML object with meaningful improvements. Do not create multiple parts or arrays at the root level.
 
 IMPORTANT: Return ONLY the YAML data, no explanations, no code blocks, no markdown formatting.`,
     });

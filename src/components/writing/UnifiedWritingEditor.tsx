@@ -241,6 +241,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   // Part data state management for change tracking
   const [originalPartData, setOriginalPartData] = useState<any>(null);
   const [currentPartData, setCurrentPartData] = useState<any>(null);
+  const [partPreviewData, setPartPreviewData] = useState<any>(null);
   const [partHasChanges, setPartHasChanges] = useState(false);
 
   // Update story data when story prop changes (for real-time updates)
@@ -867,21 +868,24 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             partId={currentSelection.partId}
             partNumber={partNumber}
             initialData={currentPartData}
+            previewData={partPreviewData}
             storyContext={{
               title: story.title,
               genre: story.genre,
               themes: ["responsibility_for_power", "love_vs_control"],
               chars: sampleStoryData.chars
             }}
-            hasChanges={partHasChanges}
+            hasChanges={partHasChanges || !!partPreviewData}
             onPartUpdate={handlePartDataUpdate}
             onSave={async (data) => {
-              await handleSave(data);
-              setOriginalPartData(data);
+              await handleSave(partPreviewData || data);
+              setOriginalPartData(partPreviewData || data);
+              setPartPreviewData(null);
               setPartHasChanges(false);
             }}
             onCancel={() => {
               setCurrentPartData(originalPartData);
+              setPartPreviewData(null);
               setPartHasChanges(false);
             }}
           />
@@ -1732,6 +1736,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               <PartPromptAnalyzer
                 partData={currentPartData}
                 onPartUpdate={handlePartDataUpdate}
+                onPreviewUpdate={setPartPreviewData}
               />
             )}
             
