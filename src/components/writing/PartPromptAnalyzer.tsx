@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
+import yaml from "js-yaml";
 
 interface PartData {
   part: number;
@@ -44,11 +45,20 @@ export function PartPromptAnalyzer({ partData, onPartUpdate }: PartPromptAnalyze
   const [outputResult, setOutputResult] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Preview functionality for cancel/save pattern
+  const [originalPartData, setOriginalPartData] = useState<PartData | null>(null);
+  const [previewPartData, setPreviewPartData] = useState<PartData | null>(null);
+  const [hasPreviewChanges, setHasPreviewChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
   const analyzePrompt = async () => {
     if (!inputPrompt.trim()) return;
 
     setIsProcessing(true);
     setOutputResult("Processing your request with AI...");
+
+    // Store original data for cancel functionality
+    setOriginalPartData(partData);
 
     try {
       const response = await fetch('/api/part-analyzer', {
@@ -62,7 +72,9 @@ export function PartPromptAnalyzer({ partData, onPartUpdate }: PartPromptAnalyze
         })
       });
 
-      const result = await response.json();
+      // Parse YAML response
+      const yamlText = await response.text();
+      const result = yaml.load(yamlText) as any;
 
       if (!result.success) {
         throw new Error(result.error || 'API request failed');
@@ -128,27 +140,30 @@ Your request: "${inputPrompt.trim()}"
 • "Add emotional depth"
 
 **Current part remains unchanged.**`);
+
+        // Reset preview state when no changes
+        setPreviewPartData(null);
+        setHasPreviewChanges(false);
       } else {
-        setOutputResult(`✅ **Request Completed**
+        setOutputResult(`✅ **Preview Changes Ready**
 
 Your request: "${inputPrompt.trim()}"
 
-**AI-Applied Changes:**
+**AI-Suggested Changes:**
 ${changes.join("\n")}
 
-**Updated Part Summary:**
+**Preview Summary:**
 • Function: ${updatedPartData.function}
 • Word Count: ${updatedPartData.words.toLocaleString()}
 • Characters: ${Object.keys(updatedPartData.chars).length}
 • Plot Events: ${updatedPartData.plot.events.length}
 • Plot Reveals: ${updatedPartData.plot.reveals.length}
 
-**All modifications have been applied using Vercel AI Gateway.**`);
+**Review the changes below and choose to Save or Cancel.**`);
 
-        // Call the update callback if provided
-        if (onPartUpdate) {
-          onPartUpdate(updatedPartData);
-        }
+        // Set up preview instead of immediately applying changes
+        setPreviewPartData(updatedPartData);
+        setHasPreviewChanges(true);
       }
 
     } catch (error) {
@@ -166,9 +181,66 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
+  const handleSave = async () => {
+    if (!previewPartData) return;
+
+    setIsSaving(true);
+    try {
+      // Call the update callback to persist changes
+      if (onPartUpdate) {
+        await onPartUpdate(previewPartData);
+      }
+
+      // Clear preview state
+      setPreviewPartData(null);
+      setHasPreviewChanges(false);
+      setOriginalPartData(null);
+
+      // Update output to show success
+      setOutputResult(`✅ **Changes Saved Successfully**
+
+Your changes have been applied to the part data.
+
+**Saved Changes:**
+${outputResult.includes("**AI-Suggested Changes:**")
+  ? outputResult.split("**AI-Suggested Changes:**")[1].split("**Preview Summary:**")[0].trim()
+  : "Changes applied"}
+
+**All modifications have been saved.**`);
+
+    } catch (error) {
+      console.error("Save error:", error);
+      setOutputResult(`❌ **Error Saving Changes**
+
+There was an error saving your changes. Please try again.
+
+Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    // Reset to original state
+    setPreviewPartData(null);
+    setHasPreviewChanges(false);
+    setOriginalPartData(null);
+
+    setOutputResult(`🔄 **Changes Cancelled**
+
+Your preview changes have been discarded. The part data remains unchanged.
+
+**Original part data has been restored.**`);
+  };
+
   const clearAll = () => {
     setInputPrompt("");
     setOutputResult("");
+
+    // Reset preview state
+    setPreviewPartData(null);
+    setHasPreviewChanges(false);
+    setOriginalPartData(null);
   };
 
   return (
@@ -237,15 +309,71 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
           </div>
         </div>
 
-        {/* Current Part Summary */}
+        {/* Cancel/Save Buttons - Only show when there are preview changes */}
+        {hasPreviewChanges && (
+          <div className="flex gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCancel}
+              disabled={isSaving}
+              className="flex-1"
+            >
+              Cancel Changes
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex-1"
+            >
+              {isSaving ? (
+                <>
+                  <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Saving...
+                </>
+              ) : (
+                <>💾 Save Changes</>
+              )}
+            </Button>
+          </div>
+        )}
+
+        {/* Current Part Summary with Preview */}
         {partData && (
           <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              <div className="font-medium mb-1">Current Part:</div>
-              <div>Function: <Badge variant="outline" className="text-xs">{partData.function || 'Not set'}</Badge></div>
-              <div>Characters: {Object.keys(partData.chars || {}).length}</div>
-              <div>Plot Events: {partData.plot?.events?.length || 0}</div>
-              <div>Target Words: {partData.words?.toLocaleString() || '0'}</div>
+              {hasPreviewChanges && previewPartData ? (
+                <div>
+                  <div className="font-medium mb-1 text-blue-600 dark:text-blue-400">
+                    📋 Preview Changes:
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <div className="font-medium text-gray-600 dark:text-gray-300">Before:</div>
+                      <div>Function: <Badge variant="outline" className="text-xs">{partData.function || 'Not set'}</Badge></div>
+                      <div>Characters: {Object.keys(partData.chars || {}).length}</div>
+                      <div>Plot Events: {partData.plot?.events?.length || 0}</div>
+                      <div>Target Words: {partData.words?.toLocaleString() || '0'}</div>
+                    </div>
+                    <div>
+                      <div className="font-medium text-blue-600 dark:text-blue-400">After:</div>
+                      <div>Function: <Badge variant="outline" className="text-xs border-blue-300 text-blue-700 dark:border-blue-600 dark:text-blue-300">{previewPartData.function || 'Not set'}</Badge></div>
+                      <div>Characters: <span className={Object.keys(previewPartData.chars || {}).length > Object.keys(partData.chars || {}).length ? "text-green-600 dark:text-green-400 font-medium" : ""}>{Object.keys(previewPartData.chars || {}).length}</span></div>
+                      <div>Plot Events: <span className={previewPartData.plot?.events?.length > (partData.plot?.events?.length || 0) ? "text-green-600 dark:text-green-400 font-medium" : ""}>{previewPartData.plot?.events?.length || 0}</span></div>
+                      <div>Target Words: <span className={previewPartData.words > partData.words ? "text-green-600 dark:text-green-400 font-medium" : previewPartData.words < partData.words ? "text-orange-600 dark:text-orange-400 font-medium" : ""}>{previewPartData.words?.toLocaleString() || '0'}</span></div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <div className="font-medium mb-1">Current Part:</div>
+                  <div>Function: <Badge variant="outline" className="text-xs">{partData.function || 'Not set'}</Badge></div>
+                  <div>Characters: {Object.keys(partData.chars || {}).length}</div>
+                  <div>Plot Events: {partData.plot?.events?.length || 0}</div>
+                  <div>Target Words: {partData.words?.toLocaleString() || '0'}</div>
+                </div>
+              )}
             </div>
           </div>
         )}
