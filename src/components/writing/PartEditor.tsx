@@ -194,7 +194,7 @@ export function PartEditor({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          ❓ Central Questions (Framework Element 1)
+          ❓ Central Questions
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -211,7 +211,7 @@ export function PartEditor({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          🎭 Character Development (Framework Element 2)
+          🎭 Character Development
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -246,7 +246,7 @@ export function PartEditor({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          📈 Plot Development (Framework Element 3)
+          📈 Plot Development
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -270,7 +270,7 @@ export function PartEditor({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          💭 Emotional Journey (Framework Element 5)
+          💭 Emotional Journey
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
