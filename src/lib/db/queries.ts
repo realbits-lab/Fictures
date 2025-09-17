@@ -500,6 +500,7 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
     genre: result.genre || 'General',
     status: finalStoryStatus,
     storyData: result.content || null,
+    authorId: result.authorId,
     userId: result.authorId,
     parts: structuredParts,
     chapters: standaloneChapters,
