@@ -75,7 +75,7 @@ export function ChapterEditor({ chapter, story, hideSidebar = false }: ChapterEd
   
   const [currentWordCount, setCurrentWordCount] = useState(chapter.wordCount);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
-  const [lastSaved, setLastSaved] = useState(new Date());
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [yamlLevel, setYamlLevel] = useState<"story" | "part" | "chapter" | "scene">("chapter");
@@ -189,6 +189,11 @@ export function ChapterEditor({ chapter, story, hideSidebar = false }: ChapterEd
     }
   };
 
+  // Initialize lastSaved date on client side to prevent hydration mismatch
+  useEffect(() => {
+    setLastSaved(new Date());
+  }, []);
+
   // Auto-save functionality
   useEffect(() => {
     const autoSaveInterval = setInterval(() => {
@@ -252,7 +257,8 @@ export function ChapterEditor({ chapter, story, hideSidebar = false }: ChapterEd
     }
   };
 
-  const formatLastSaved = (date: Date) => {
+  const formatLastSaved = (date: Date | null) => {
+    if (!date) return "not yet saved";
     const now = new Date();
     const diffMinutes = Math.floor((now.getTime() - date.getTime()) / 60000);
     if (diffMinutes < 1) return "just now";
