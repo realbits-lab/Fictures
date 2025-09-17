@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
+import { Card, CardHeader, CardTitle, CardContent, Button } from "@/components/ui";
 
 // Part YAML interface based on part-specification.md
 interface PartData {
@@ -189,24 +189,6 @@ export function PartEditor({
     handlePartDataUpdate(newData);
   };
 
-  const updateArrayField = (path: string[], index: number, value: string) => {
-    const currentArray = path.reduce((obj, key) => obj[key], partData) as string[];
-    const newArray = [...currentArray];
-    newArray[index] = value;
-    updateField(path, newArray);
-  };
-
-  const addArrayItem = (path: string[], defaultValue = "") => {
-    const currentArray = path.reduce((obj, key) => obj[key], partData) as string[];
-    updateField(path, [...currentArray, defaultValue]);
-  };
-
-  const removeArrayItem = (path: string[], index: number) => {
-    const currentArray = path.reduce((obj, key) => obj[key], partData) as string[];
-    const newArray = currentArray.filter((_, i) => i !== index);
-    updateField(path, newArray);
-  };
-
   // Framework Element 1: Central Questions
   const renderCentralQuestions = () => (
     <Card>
@@ -334,66 +316,16 @@ export function PartEditor({
       {/* Part Foundation */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle>
             🎯 Part Foundation
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setEditingSection(editingSection === 'foundation' ? null : 'foundation')}
-            >
-              {editingSection === 'foundation' ? '✓' : '✏️'}
-            </Button>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {editingSection === 'foundation' ? (
-            <div className="space-y-3">
-              <div>
-                <label className="text-sm font-medium">Title</label>
-                <input
-                  type="text"
-                  value={partData.title}
-                  onChange={(e) => updateField(['title'], e.target.value)}
-                  className="w-full p-2 border rounded"
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="text-sm font-medium">Goal</label>
-                  <textarea
-                    value={partData.goal}
-                    onChange={(e) => updateField(['goal'], e.target.value)}
-                    className="w-full p-2 border rounded"
-                    rows={2}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Conflict</label>
-                  <textarea
-                    value={partData.conflict}
-                    onChange={(e) => updateField(['conflict'], e.target.value)}
-                    className="w-full p-2 border rounded"
-                    rows={2}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Outcome</label>
-                  <textarea
-                    value={partData.outcome}
-                    onChange={(e) => updateField(['outcome'], e.target.value)}
-                    className="w-full p-2 border rounded"
-                    rows={2}
-                  />
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-2 text-sm">
-              <div><strong>Goal:</strong> {partData.goal || 'Not set'}</div>
-              <div><strong>Conflict:</strong> {partData.conflict || 'Not set'}</div>
-              <div><strong>Outcome:</strong> {partData.outcome || 'Not set'}</div>
-            </div>
-          )}
+          <div className="space-y-2 text-sm">
+            <div><strong>Goal:</strong> {partData.goal || 'Not set'}</div>
+            <div><strong>Conflict:</strong> {partData.conflict || 'Not set'}</div>
+            <div><strong>Outcome:</strong> {partData.outcome || 'Not set'}</div>
+          </div>
         </CardContent>
       </Card>
 
