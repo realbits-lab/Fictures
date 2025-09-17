@@ -315,6 +315,7 @@ export function ChapterEditor({
     setIsSaving(true);
     try {
       await onSave(chapterData);
+      // Reset after saving - no original data state in ChapterEditor, so just maintain current state
     } catch (error) {
       console.error('Save failed:', error);
     } finally {
@@ -445,172 +446,22 @@ export function ChapterEditor({
             </Card>
           </div>
 
-          {/* Right Sidebar - Writing Tools & YAML Data (only show if not used within UnifiedWritingEditor) */}
+          {/* Right Sidebar - Chapter YAML Data (only show if not used within UnifiedWritingEditor) */}
           {!hideSidebar && (
             <div className="space-y-6">
-            {/* YAML Data Display with Level Switcher */}
-            <Card>
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm">📊 YAML Data</CardTitle>
-                  <div className="flex gap-1">
-                    <Button 
-                      variant={yamlLevel === "story" ? "default" : "ghost"} 
-                      size="sm" 
-                      className="text-xs px-2 py-1"
-                      onClick={() => setYamlLevel("story")}
-                    >
-                      📖
-                    </Button>
-                    <Button 
-                      variant={yamlLevel === "part" ? "default" : "ghost"} 
-                      size="sm" 
-                      className="text-xs px-2 py-1"
-                      onClick={() => setYamlLevel("part")}
-                    >
-                      📚
-                    </Button>
-                    <Button 
-                      variant={yamlLevel === "chapter" ? "default" : "ghost"} 
-                      size="sm" 
-                      className="text-xs px-2 py-1"
-                      onClick={() => setYamlLevel("chapter")}
-                    >
-                      📝
-                    </Button>
-                    <Button 
-                      variant={yamlLevel === "scene" ? "default" : "ghost"} 
-                      size="sm" 
-                      className="text-xs px-2 py-1"
-                      onClick={() => setYamlLevel("scene")}
-                    >
-                      🎬
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="max-h-96 overflow-y-auto">
-                  <YAMLDataDisplay
-                    storyData={yamlLevel === "story" ? sampleStoryData : undefined}
-                    chapterData={yamlLevel === "chapter" ? sampleChapterData : undefined}
-                    currentLevel={yamlLevel}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-            
-            {/* Word Count & Progress */}
-            <Card>
-              <CardContent className="py-4">
-                <div className="space-y-3">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Word Count: <span className="font-medium text-gray-900 dark:text-gray-100">
-                      {currentWordCount.toLocaleString()} / {chapterData.targetWordCount.toLocaleString()}
-                    </span>
-                    {hasUnsavedChanges && <span className="text-orange-500 ml-2">• Unsaved</span>}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Progress 
-                      value={Math.min(progressPercentage, 100)} 
-                      variant={progressPercentage >= 100 ? "success" : progressPercentage >= 80 ? "warning" : "default"}
-                      className="flex-1"
-                    />
-                    <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                      {Math.round(progressPercentage)}%
-                    </div>
-                  </div>
-                  {validationErrors.length > 0 && (
-                    <div className="space-y-1">
-                      {validationErrors.map((error, index) => (
-                        <div key={index} className="text-xs text-red-600 dark:text-red-400">
-                          ⚠️ {error}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Chapter Overview */}
-            <Card>
-              <CardHeader>
-                <CardTitle>📊 Chapter Status</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="space-y-2 text-sm">
-                  <div>
-                    <strong>🎯 Purpose:</strong> {chapterData.purpose}
-                  </div>
-                  <div>
-                    <strong>🎬 Hook:</strong> {chapterData.hook}
-                  </div>
-                  <div>
-                    <strong>🎭 Character Focus:</strong> {chapterData.characterFocus}
-                  </div>
-                  <div>
-                    <strong>📖 Scenes:</strong> {chapterData.scenes.length} planned
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Scene Breakdown */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between text-sm">
-                  🎬 Scene Breakdown
-                  <Button size="sm" variant="secondary">+ Add</Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {chapterData.scenes.map((scene, index) => (
-                  <div key={scene.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-                    <div className="mb-2">
-                      <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {getSceneStatusIcon(scene.status)} Scene {index + 1}: &ldquo;{scene.title}&rdquo;
-                      </h4>
-                      <div className="text-xs text-gray-500">({scene.wordCount} words)</div>
-                    </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                      <div><strong>Goal:</strong> {scene.goal}</div>
-                      <div><strong>Conflict:</strong> {scene.conflict}</div>
-                      <div><strong>Outcome:</strong> {scene.outcome}</div>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* AI Writing Assistant */}
-            <Card>
-              <CardHeader>
-                <CardTitle>🤖 AI Writing Assistant</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    &quot;Great tension build! Consider Maya&apos;s internal monologue to show her moral struggle.&quot;
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="secondary" className="flex-1">Apply</Button>
-                  <Button size="sm" variant="ghost" className="flex-1">More</Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card>
-              <CardContent className="py-4">
-                <div className="grid grid-cols-1 gap-2">
-                  <Button size="sm" variant="ghost" className="justify-start">📖 Scene Notes</Button>
-                  <Button size="sm" variant="ghost" className="justify-start">🎭 Character Sheet</Button>
-                  <Button size="sm" variant="ghost" className="justify-start">📚 Research</Button>
-                </div>
-              </CardContent>
-            </Card>
+              {/* Chapter YAML Data */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>📄 Chapter YAML Data</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-auto max-h-96 whitespace-pre-wrap">
+                    <code>
+                      {yaml.dump({ chapter: chapterData }, { indent: 2 })}
+                    </code>
+                  </pre>
+                </CardContent>
+              </Card>
             </div>
           )}
         </div>

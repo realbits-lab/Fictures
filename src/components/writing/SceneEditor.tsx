@@ -92,6 +92,7 @@ export function SceneEditor({
     setIsSaving(true);
     try {
       await onSave(sceneData);
+      // Reset after saving - data is managed by parent component
     } catch (error) {
       console.error('Save failed:', error);
     } finally {

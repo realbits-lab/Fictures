@@ -167,6 +167,8 @@ export function PartEditor({
     setIsSaving(true);
     try {
       await onSave(partData);
+      // Reset after saving
+      setPartData(originalPartData);
     } catch (error) {
       console.error('Save failed:', error);
     } finally {
@@ -194,90 +196,6 @@ export function PartEditor({
     current[path[path.length - 1]] = value;
     handlePartDataUpdate(newData);
   };
-
-  // Framework Element 1: Central Questions
-  const renderCentralQuestions = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          ❓ Central Questions
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2 text-sm">
-          <div><strong>Primary:</strong> {displayData.questions.primary || 'Not set'}</div>
-          <div><strong>Secondary:</strong> {displayData.questions.secondary || 'Not set'}</div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  // Framework Element 2: Character Development
-  const renderCharacterDevelopment = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          🎭 Character Development
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-3">
-          {Object.entries(displayData.chars).map(([name, char]) => (
-            <div key={name} className="text-sm border-l-2 border-blue-200 pl-3">
-              <div className="font-medium text-blue-700">{name}:</div>
-              <div className="ml-2 space-y-1 text-gray-600">
-                <div><strong>Journey:</strong> {char.start} → {char.end}</div>
-                {char.arc && Array.isArray(char.arc) && char.arc.length > 0 && (
-                  <div><strong>Arc:</strong> {char.arc.join(' → ')}</div>
-                )}
-                {char.arc && typeof char.arc === 'string' && (
-                  <div><strong>Arc:</strong> {char.arc}</div>
-                )}
-                {char.conflict && (
-                  <div><strong>Conflict:</strong> {char.conflict}</div>
-                )}
-                {char.transforms && char.transforms.length > 0 && (
-                  <div><strong>Transforms:</strong> {char.transforms.join(', ')}</div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  // Framework Element 3: Plot Development
-  const renderPlotDevelopment = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          📈 Plot Development
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <pre className="text-xs bg-gray-50 dark:bg-gray-800 p-3 rounded border overflow-x-auto whitespace-pre-wrap">
-          {yaml.dump({ plot: displayData.plot }, { indent: 2 })}
-        </pre>
-      </CardContent>
-    </Card>
-  );
-
-  // Framework Element 5: Emotional Journey
-  const renderEmotionalJourney = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          💭 Emotional Journey
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <pre className="text-xs bg-gray-50 dark:bg-gray-800 p-3 rounded border overflow-x-auto whitespace-pre-wrap">
-          {yaml.dump({ emotion: displayData.emotion }, { indent: 2 })}
-        </pre>
-      </CardContent>
-    </Card>
-  );
 
   return (
     <div className="space-y-6">
@@ -311,79 +229,15 @@ export function PartEditor({
         )}
       </div>
 
-      {/* Part Foundation */}
+      {/* Part YAML Data */}
       <Card>
         <CardHeader>
-          <CardTitle>
-            🎯 Part Foundation
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2 text-sm">
-            <div><strong>Goal:</strong> {displayData.goal || 'Not set'}</div>
-            <div><strong>Conflict:</strong> {displayData.conflict || 'Not set'}</div>
-            <div><strong>Outcome:</strong> {displayData.outcome || 'Not set'}</div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Part Planning Framework Elements */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          {renderCentralQuestions()}
-          {renderCharacterDevelopment()}
-        </div>
-        <div className="space-y-6">
-          {renderPlotDevelopment()}
-          {renderEmotionalJourney()}
-        </div>
-      </div>
-
-      {/* YAML Preview */}
-      <Card>
-        <CardHeader>
-          <CardTitle>📄 Part YAML Preview</CardTitle>
+          <CardTitle>📄 Part YAML Data</CardTitle>
         </CardHeader>
         <CardContent>
-          <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-auto max-h-64">
+          <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-auto max-h-96 whitespace-pre-wrap">
             <code>
-{`part:
-  part: ${displayData.part}
-  title: "${displayData.title}"
-  words: ${displayData.words}
-  function: "${displayData.function}"
-
-  # Universal pattern
-  goal: "${displayData.goal}"
-  conflict: "${displayData.conflict}"
-  outcome: "${displayData.outcome}"
-
-  # Central questions
-  questions:
-    primary: "${displayData.questions.primary}"
-    secondary: "${displayData.questions.secondary}"
-
-  # Characters (${Object.keys(displayData.chars).length})
-  chars:`}
-{Object.entries(displayData.chars).map(([name, char]) =>
-`    ${name}:
-      start: "${char.start}"
-      end: "${char.end}"
-      arc: [${Array.isArray(char.arc) ? char.arc.map(step => `"${step}"`).join(', ') : `"${char.arc || 'character development'}"`}]`
-).join('\n')}
-{`
-
-  # Plot development
-  plot:
-    events: [${displayData.plot.events.map(e => `"${e}"`).join(', ')}]
-    reveals: [${displayData.plot.reveals.map(r => `"${r}"`).join(', ')}]
-    escalation: [${displayData.plot.escalation.map(e => `"${e}"`).join(', ')}]
-
-  # Emotional journey
-  emotion:
-    start: "${displayData.emotion.start}"
-    progression: [${displayData.emotion.progression.map(p => `"${p}"`).join(', ')}]
-    end: "${displayData.emotion.end}"`}
+              {yaml.dump({ part: displayData }, { indent: 2 })}
             </code>
           </pre>
         </CardContent>
