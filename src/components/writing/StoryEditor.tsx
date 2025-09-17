@@ -318,7 +318,7 @@ export function StoryEditor({
 					<CardTitle>📄 Story YAML Data</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-auto max-h-96 whitespace-pre-wrap">
+					<pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded whitespace-pre-wrap">
 						<code>
 							{yaml.dump({ story: storyData }, { indent: 2 })}
 						</code>

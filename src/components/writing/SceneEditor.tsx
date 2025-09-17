@@ -194,13 +194,13 @@ export function SceneEditor({
         </CardContent>
       </Card>
 
-      {/* YAML Preview */}
+      {/* Scene YAML Data */}
       <Card>
         <CardHeader>
-          <CardTitle>📄 Scene YAML Preview</CardTitle>
+          <CardTitle>📄 Scene YAML Data</CardTitle>
         </CardHeader>
         <CardContent>
-          <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-auto max-h-64 whitespace-pre-wrap">
+          <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded whitespace-pre-wrap">
             <code>
               {yaml.dump({ scene: sceneData }, { indent: 2 })}
             </code>
