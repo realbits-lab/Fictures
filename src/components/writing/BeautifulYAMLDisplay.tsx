@@ -117,7 +117,11 @@ export function BeautifulYAMLDisplay({
     <Card className="mb-4">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle
+            className="flex items-center gap-2 text-base cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            onClick={onToggleCollapse}
+            title={isCollapsed ? 'Expand' : 'Collapse'}
+          >
             <span>{icon}</span>
             {title}
             <span className="text-sm text-gray-500 dark:text-gray-400 font-normal">
