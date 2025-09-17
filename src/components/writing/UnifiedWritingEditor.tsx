@@ -271,11 +271,18 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
   // Update story data when story prop changes (for real-time updates)
   useEffect(() => {
+    console.log('🔄 Story prop changed, updating story data...');
+    console.log('📦 Story storyData:', story.storyData);
+
     const newStoryData = parseStoryData();
+    console.log('📝 Parsed story data:', newStoryData);
+
     setSampleStoryData(newStoryData);
     setOriginalStoryData(newStoryData);
     setStoryHasChanges(false);
     setChangedStoryKeys([]);
+
+    console.log('✅ Story data state updated');
   }, [story]);
 
   // Helper function to find changed keys between two objects
@@ -649,6 +656,10 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         console.log('Chapter data saved successfully');
       } else if (currentSelection.level === "story" && data) {
         // Save story data to the stories API
+        console.log('💾 Saving story data to API...');
+        console.log('📝 Data being saved:', data);
+        console.log('🎯 Story ID:', story.id);
+
         const response = await fetch(`/api/stories/${story.id}/write`, {
           method: 'PATCH',
           headers: {
@@ -661,10 +672,20 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
         if (!response.ok) {
           const errorData = await response.json();
+          console.error('❌ Save failed:', errorData);
           throw new Error(`Failed to save story: ${errorData.error || response.statusText}`);
         }
 
-        console.log('Story data saved successfully');
+        const saveResult = await response.json();
+        console.log('✅ Story data saved successfully:', saveResult);
+
+        // Important: Update local story state to reflect saved data
+        console.log('🔄 Updating local story state with saved data...');
+        setStory(prevStory => ({
+          ...prevStory,
+          storyData: data,
+          updatedAt: saveResult.updatedAt || new Date().toISOString()
+        }));
       } else {
         // For other data types (part), use the original mock behavior for now
         console.log('Saving data:', data);
