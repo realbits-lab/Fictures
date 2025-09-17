@@ -41,27 +41,26 @@ function YAMLKeyCard({ keyName, value, isDark }: YAMLKeyCardProps) {
 
   return (
     <div className={`border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800 hover:shadow-md transition-shadow ${
-      isExpanded ? 'md:col-span-2 lg:col-span-3 z-10 relative' : ''
-    }`}>
-      <div className="flex items-center justify-between mb-2">
-        <h5
-          className={`font-medium text-sm text-gray-900 dark:text-gray-100 truncate ${
-            canExpand ? 'cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 transition-colors' : ''
-          }`}
-          onClick={canExpand ? () => setIsExpanded(!isExpanded) : undefined}
-          title={canExpand ? (isExpanded ? 'Collapse' : 'Expand') : undefined}
-        >
+      isExpanded ? 'absolute z-20' : 'relative'
+    }`}
+    style={isExpanded ? {
+      width: 'calc(300% + 1.5rem)', // 3 columns + 2 gaps
+      maxWidth: 'calc(100vw - 4rem)'
+    } : {}}>
+      <div
+        className={`flex items-center justify-between mb-2 ${
+          canExpand ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 -m-1 p-1 rounded transition-colors' : ''
+        }`}
+        onClick={canExpand ? () => setIsExpanded(!isExpanded) : undefined}
+        title={canExpand ? (isExpanded ? 'Collapse' : 'Expand') : undefined}
+      >
+        <h5 className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
           {keyName}
         </h5>
         {canExpand && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700"
-          >
+          <div className="h-6 w-6 flex items-center justify-center text-gray-500 hover:text-gray-700 text-sm">
             {isExpanded ? '−' : '+'}
-          </Button>
+          </div>
         )}
       </div>
 
