@@ -55,7 +55,7 @@ function YAMLKeyCard({ keyName, value, isDark, columnIndex, isExpanded, isChange
   return (
     <div className={`relative border rounded-lg p-3 hover:shadow-md transition-all duration-300 ${
       isChanged
-        ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20 shadow-blue-200 dark:shadow-blue-800 shadow-lg animate-pulse'
+        ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20 shadow-blue-200 dark:shadow-blue-800 shadow-lg'
         : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
     } ${isExpanded ? 'shadow-2xl' : ''}`} style={getExpandedStyles()}>
       <div

@@ -215,14 +215,14 @@ export async function PATCH(
     }
 
     // Check if user owns the story
-    if (existingStory.userId !== session?.user?.id) {
+    if (existingStory.authorId !== session?.user?.id) {
       return NextResponse.json({ error: 'Access denied - you are not the owner of this story' }, { status: 403 });
     }
 
     // Update the story with the new storyData
     await db.update(stories)
       .set({
-        content: storyData,
+        storyData: storyData,
         updatedAt: new Date()
       })
       .where(eq(stories.id, id));
