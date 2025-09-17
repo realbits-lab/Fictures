@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent, Button } from "@/components/ui";
+import yaml from "js-yaml";
 
 // Part YAML interface based on part-specification.md
 interface PartData {
@@ -255,17 +256,9 @@ export function PartEditor({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-3 text-sm">
-          <div>
-            <strong>Events:</strong> {displayData.plot.events.join(', ') || 'None set'}
-          </div>
-          <div>
-            <strong>Reveals:</strong> {displayData.plot.reveals.join(', ') || 'None set'}
-          </div>
-          <div>
-            <strong>Escalation:</strong> {displayData.plot.escalation.join(', ') || 'None set'}
-          </div>
-        </div>
+        <pre className="text-xs bg-gray-50 dark:bg-gray-800 p-3 rounded border overflow-x-auto whitespace-pre-wrap">
+          {yaml.dump({ plot: displayData.plot }, { indent: 2 })}
+        </pre>
       </CardContent>
     </Card>
   );
@@ -279,9 +272,9 @@ export function PartEditor({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2 text-sm">
-          <div><strong>Journey:</strong> {displayData.emotion.start} → {displayData.emotion.progression.join(' → ')} → {displayData.emotion.end}</div>
-        </div>
+        <pre className="text-xs bg-gray-50 dark:bg-gray-800 p-3 rounded border overflow-x-auto whitespace-pre-wrap">
+          {yaml.dump({ emotion: displayData.emotion }, { indent: 2 })}
+        </pre>
       </CardContent>
     </Card>
   );

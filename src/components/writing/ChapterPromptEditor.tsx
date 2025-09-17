@@ -177,6 +177,40 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
+  const handleSave = () => {
+    if (previewChapterData && onChapterUpdate) {
+      onChapterUpdate(previewChapterData);
+    }
+
+    // Clear preview state after saving
+    setPreviewChapterData(null);
+    setHasPreviewChanges(false);
+    setOriginalChapterData(null);
+    if (onPreviewUpdate) {
+      onPreviewUpdate(null);
+    }
+
+    // Clear the analysis
+    setInputPrompt("");
+    setOutputResult("");
+  };
+
+  const handleCancel = () => {
+    // Reset to original data
+    if (originalChapterData && onPreviewUpdate) {
+      onPreviewUpdate(null);
+    }
+
+    // Clear preview state
+    setPreviewChapterData(null);
+    setHasPreviewChanges(false);
+    setOriginalChapterData(null);
+
+    // Clear the analysis
+    setInputPrompt("");
+    setOutputResult("");
+  };
+
   const clearAll = () => {
     setInputPrompt("");
     setOutputResult("");
@@ -237,6 +271,27 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
             Clear
           </Button>
         </div>
+
+        {/* Save/Cancel Buttons - Only show when there are preview changes */}
+        {hasPreviewChanges && (
+          <div className="flex gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+            <Button
+              onClick={handleCancel}
+              variant="outline"
+              size="sm"
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSave}
+              size="sm"
+              className="flex-1"
+            >
+              💾 Save Changes
+            </Button>
+          </div>
+        )}
 
         {/* Output Section */}
         <div className="space-y-2">

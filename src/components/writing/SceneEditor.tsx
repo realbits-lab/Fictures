@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent, Button } from "@/components/ui";
 import { SceneWriting } from "./SceneWriting";
+import yaml from "js-yaml";
 
 export interface SceneData {
   id: string | number;
@@ -189,6 +190,20 @@ export function SceneEditor({
               <strong>👁️ POV:</strong> {sceneData.pov}
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* YAML Preview */}
+      <Card>
+        <CardHeader>
+          <CardTitle>📄 Scene YAML Preview</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-auto max-h-64 whitespace-pre-wrap">
+            <code>
+              {yaml.dump({ scene: sceneData }, { indent: 2 })}
+            </code>
+          </pre>
         </CardContent>
       </Card>
 

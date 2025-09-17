@@ -10,6 +10,7 @@ import {
 	Progress,
 	Badge,
 } from "@/components/ui";
+import yaml from "js-yaml";
 
 // Story YAML interface based on story-specification.md
 interface StoryData {
@@ -725,46 +726,9 @@ export function StoryEditor({
 					<CardTitle>📄 YAML Preview</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-auto max-h-64">
+					<pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-auto max-h-64 whitespace-pre-wrap">
 						<code>
-							{`story:
-  title: "${storyData.title}"
-  genre: "${storyData.genre}"
-  words: ${storyData.words}
-  question: "${storyData.question}"
-  
-  # Universal pattern
-  goal: "${storyData.goal}"
-  conflict: "${storyData.conflict}"
-  outcome: "${storyData.outcome}"
-  
-  # Characters (${Object.keys(storyData.chars).length})
-  chars:`}
-							{Object.entries(storyData.chars)
-								.map(
-									([name, char]) =>
-										`    ${name}: { role: "${char.role || 'character'}", arc: "${typeof char.arc === 'string' ? char.arc : (Array.isArray(char.arc) ? char.arc.join(' → ') : 'character development')}" }`,
-								)
-								.join("\n")}
-							{`
-  
-  # Structure
-  structure:
-    type: "${storyData.structure.type}"
-    parts: [${storyData.structure.parts.map((p) => `"${p}"`).join(", ")}]
-    dist: [${storyData.structure.dist.join(", ")}]
-  
-  # Parts (${storyData.parts.length})
-  parts:`}
-							{storyData.parts
-								.map(
-									(part) =>
-										`    - part: ${part.part}
-      goal: "${part.goal}"
-      conflict: "${part.conflict}"
-      tension: "${part.tension}"`,
-								)
-								.join("\n")}
+							{yaml.dump({ story: storyData }, { indent: 2 })}
 						</code>
 					</pre>
 				</CardContent>

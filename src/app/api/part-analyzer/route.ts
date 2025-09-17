@@ -60,6 +60,10 @@ CREATIVE INTERPRETATION FOR STORY PARTS:
 - "Add themes" = Introduce thematic elements, moral dilemmas, deeper meaning
 - "More chapters" = Break part into multiple detailed chapters with specific focus areas
 
+IMPORTANT: For plot events, reveals, escalation, and emotional progression arrays, ALWAYS use simple descriptive text strings, NOT objects.
+Example: events: ["Detective A discovers a hidden clue", "Detective B confronts their past trauma"]
+NOT: events: [{description: "Detective A discovers clue", type: "discovery"}]
+
 ALWAYS MAKE SUBSTANTIAL CHANGES that reflect the user's intent, even if the request is vague or abstract.
 
 YAML OUTPUT FORMAT: Return a single YAML object with the same structure as input.`,
