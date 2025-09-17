@@ -1734,7 +1734,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             {/* Part Prompt Analyzer - Show for part level */}
             {currentSelection.level === "part" && (
               <PartPromptAnalyzer
-                partData={currentPartData}
+                partData={partPreviewData || currentPartData}
                 onPartUpdate={handlePartDataUpdate}
                 onPreviewUpdate={setPartPreviewData}
               />
