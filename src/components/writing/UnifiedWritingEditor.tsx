@@ -239,6 +239,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
   // Track changes and original data for save/cancel functionality
   const [originalStoryData, setOriginalStoryData] = useState(sampleStoryData);
+  const [storyPreviewData, setStoryPreviewData] = useState<any>(null);
   const [storyHasChanges, setStoryHasChanges] = useState(false);
 
   // Part data state management for change tracking

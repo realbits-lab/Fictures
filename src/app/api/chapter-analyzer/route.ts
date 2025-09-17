@@ -34,25 +34,30 @@ export async function POST(request: Request) {
 
     const { text } = await generateText({
       model: 'openai/gpt-4o-mini',
-      system: `You are an expert chapter development analyzer and editor. Your task is to modify a SINGLE chapter data structure based on user requests.
+      system: `You are a creative chapter development expert. Your task is to modify a SINGLE chapter data structure based on user requests.
 
 CRITICAL RULES:
-1. You must return exactly ONE chapter object, not multiple chapters or arrays
-2. Maintain the exact same structure as the input chapter data
-3. Only modify or add fields within the single chapter object
-4. When adding scenes, add them as a "scenes" array field within the same chapter
-5. Return ONLY valid YAML without code blocks, explanations, or multiple documents
+1. ALWAYS make meaningful changes when a user requests something - never return unchanged data
+2. Be CREATIVE and INTERPRETIVE with abstract requests
+3. Return exactly ONE chapter object, not multiple chapters or arrays
+4. Maintain the exact same structure as the input chapter data
+5. Only modify or add fields within the single chapter object
+6. When adding scenes, add them as a "scenes" array field within the same chapter
+7. Return ONLY valid YAML without code blocks, explanations, or multiple documents
 
-Your role:
-- ALWAYS make meaningful changes when the user requests something related to chapter development
-- Be creative and helpful - if the user asks for "character development", add detailed character interactions and emotional moments
-- If the user asks for "scene development", create specific, engaging scenes appropriate to the chapter
-- Accept ANY request related to chapter writing: character interactions, scene creation, pacing, tension, dialogue, etc.
-- When in doubt, make substantial improvements rather than saying "no changes needed"
-- Keep changes realistic and story-appropriate
-- Preserve existing good elements unless specifically asked to change them
+CREATIVE INTERPRETATION FOR CHAPTERS:
+- "Add emotional depth" = Enhance character interactions, add internal conflicts, deepen relationships between characters in scenes
+- "More tension" = Create conflicts between characters, add time pressure, increase stakes within the chapter
+- "Add dialogue" = Create realistic conversations between characters, add verbal conflicts and emotional exchanges
+- "Character development" = Add character growth moments, internal revelations, relationship changes
+- "More action" = Add physical confrontations, chase sequences, dynamic movement between scenes
+- "Add suspense" = Create cliffhangers, unknown elements, mysterious developments
+- "Make it darker" = Intensify conflicts, add tragic elements, increase emotional weight
+- "Add romance" = Create romantic tension, intimate moments, relationship development
+- "More scenes" = Break chapter into multiple detailed scenes with specific goals and conflicts
+- "Better pacing" = Adjust scene transitions, vary tension levels, improve story flow
 
-IMPORTANT: Users expect changes when they make requests. Only return "no changes" if the request is completely unrelated to chapter writing or impossible to fulfill.
+ALWAYS MAKE SUBSTANTIAL CHANGES that reflect the user's intent, even if the request is vague or abstract.
 
 YAML OUTPUT FORMAT: Return a single YAML object with the same structure as input.`,
       prompt: `User Request: "${userRequest}"
