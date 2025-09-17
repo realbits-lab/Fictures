@@ -238,6 +238,11 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const [originalStoryData, setOriginalStoryData] = useState(sampleStoryData);
   const [storyHasChanges, setStoryHasChanges] = useState(false);
 
+  // Part data state management for change tracking
+  const [originalPartData, setOriginalPartData] = useState<any>(null);
+  const [currentPartData, setCurrentPartData] = useState<any>(null);
+  const [partHasChanges, setPartHasChanges] = useState(false);
+
   // Update story data when story prop changes (for real-time updates)
   useEffect(() => {
     const newStoryData = parseStoryData();
@@ -251,6 +256,29 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     setSampleStoryData(updatedData);
     setStoryHasChanges(JSON.stringify(updatedData) !== JSON.stringify(originalStoryData));
   };
+
+  // Update part data and track changes
+  const handlePartDataUpdate = (updatedData: any) => {
+    setCurrentPartData(updatedData);
+    if (originalPartData) {
+      setPartHasChanges(JSON.stringify(updatedData) !== JSON.stringify(originalPartData));
+    }
+  };
+
+  // Initialize part data when switching to part level or changing part
+  useEffect(() => {
+    if (currentSelection.level === "part") {
+      const selectedPart = story.parts.find(part => part.id === currentSelection.partId);
+      const partNumber = selectedPart?.orderIndex || 1;
+      const partData = selectedPart ?
+        createPartData(partNumber, `Part ${partNumber}`) :
+        createPartData(1, "Part 1");
+
+      setOriginalPartData(partData);
+      setCurrentPartData(partData);
+      setPartHasChanges(false);
+    }
+  }, [currentSelection.level, currentSelection.partId, story.parts]);
 
   const samplePartData = {
     part: 1,
@@ -832,25 +860,30 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         // Find the selected part from the story structure
         const selectedPart = story.parts.find(part => part.id === currentSelection.partId);
         const partNumber = selectedPart?.orderIndex || 1;
-        
-        const partData = selectedPart ?
-          createPartData(partNumber, `Part ${partNumber}`) :
-          createPartData(1, "Part 1");
-        
+
         return (
           <PartEditor
             key={currentSelection.partId} // Force re-mount when part changes
             partId={currentSelection.partId}
             partNumber={partNumber}
-            initialData={partData}
+            initialData={currentPartData}
             storyContext={{
               title: story.title,
               genre: story.genre,
               themes: ["responsibility_for_power", "love_vs_control"],
               chars: sampleStoryData.chars
             }}
-            onSave={handleSave}
-            onGenerate={handleGenerate}
+            hasChanges={partHasChanges}
+            onPartUpdate={handlePartDataUpdate}
+            onSave={async (data) => {
+              await handleSave(data);
+              setOriginalPartData(data);
+              setPartHasChanges(false);
+            }}
+            onCancel={() => {
+              setCurrentPartData(originalPartData);
+              setPartHasChanges(false);
+            }}
           />
         );
       
@@ -1697,11 +1730,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             {/* Part Prompt Analyzer - Show for part level */}
             {currentSelection.level === "part" && (
               <PartPromptAnalyzer
-                partData={createPartData(currentSelection.partNumber, currentSelection.partTitle)}
-                onPartUpdate={(updatedPartData) => {
-                  console.log('Part updated:', updatedPartData);
-                  // Handle part data update here
-                }}
+                partData={currentPartData}
+                onPartUpdate={handlePartDataUpdate}
               />
             )}
             

@@ -238,15 +238,17 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
         </div>
 
         {/* Current Part Summary */}
-        <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            <div className="font-medium mb-1">Current Part:</div>
-            <div>Function: <Badge variant="outline" className="text-xs">{partData.function}</Badge></div>
-            <div>Characters: {Object.keys(partData.chars).length}</div>
-            <div>Plot Events: {partData.plot.events.length}</div>
-            <div>Target Words: {partData.words.toLocaleString()}</div>
+        {partData && (
+          <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              <div className="font-medium mb-1">Current Part:</div>
+              <div>Function: <Badge variant="outline" className="text-xs">{partData.function || 'Not set'}</Badge></div>
+              <div>Characters: {Object.keys(partData.chars || {}).length}</div>
+              <div>Plot Events: {partData.plot?.events?.length || 0}</div>
+              <div>Target Words: {partData.words?.toLocaleString() || '0'}</div>
+            </div>
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

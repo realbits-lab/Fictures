@@ -69,19 +69,23 @@ interface PartEditorProps {
     themes: string[];
     chars: Record<string, any>;
   };
+  hasChanges?: boolean;
+  onPartUpdate?: (data: PartData) => void;
   onSave?: (data: PartData) => Promise<void>;
-  onGenerate?: (data: PartData) => Promise<void>;
+  onCancel?: () => void;
 }
 
-export function PartEditor({ 
-  partId, 
-  partNumber, 
-  initialData, 
-  storyContext, 
-  onSave, 
-  onGenerate 
+export function PartEditor({
+  partId,
+  partNumber,
+  initialData,
+  storyContext,
+  hasChanges: externalHasChanges,
+  onPartUpdate,
+  onSave,
+  onCancel
 }: PartEditorProps) {
-  const [partData, setPartData] = useState<PartData>(
+  const [originalPartData, setOriginalPartData] = useState<PartData>(
     initialData || {
       part: partNumber,
       title: `Part ${partNumber}`,
@@ -132,19 +136,29 @@ export function PartEditor({
     }
   );
 
-  // Update partData when initialData prop changes
+  const [partData, setPartData] = useState<PartData>(originalPartData);
+
+  // Update partData when initialData prop changes (for real-time updates)
   useEffect(() => {
     if (initialData) {
       setPartData(initialData);
+      setOriginalPartData(initialData);
     }
   }, [initialData]);
 
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Update part data and notify parent
+  const handlePartDataUpdate = (updatedData: PartData) => {
+    setPartData(updatedData);
+    if (onPartUpdate) {
+      onPartUpdate(updatedData);
+    }
+  };
 
   const handleSave = async () => {
-    if (!onSave) return;
+    if (!onSave || !externalHasChanges) return;
     setIsSaving(true);
     try {
       await onSave(partData);
@@ -155,33 +169,25 @@ export function PartEditor({
     }
   };
 
-  const handleGenerate = async () => {
-    if (!onGenerate) return;
-    setIsGenerating(true);
-    try {
-      await onGenerate(partData);
-    } catch (error) {
-      console.error('Generation failed:', error);
-    } finally {
-      setIsGenerating(false);
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
     }
   };
 
   const updateField = (path: string[], value: any) => {
-    setPartData(prev => {
-      const newData = { ...prev };
-      let current: any = newData;
-      
-      for (let i = 0; i < path.length - 1; i++) {
-        if (!current[path[i]]) {
-          current[path[i]] = {};
-        }
-        current = current[path[i]];
+    const newData = { ...partData };
+    let current: any = newData;
+
+    for (let i = 0; i < path.length - 1; i++) {
+      if (!current[path[i]]) {
+        current[path[i]] = {};
       }
-      
-      current[path[path.length - 1]] = value;
-      return newData;
-    });
+      current = current[path[i]];
+    }
+
+    current[path[path.length - 1]] = value;
+    handlePartDataUpdate(newData);
   };
 
   const updateArrayField = (path: string[], index: number, value: string) => {
@@ -533,21 +539,26 @@ export function PartEditor({
             Part {partData.part} • {partData.words.toLocaleString()} words • {partData.function}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={handleSave} 
-            disabled={isSaving}
-          >
-            {isSaving ? '💾 Saving...' : '💾 Save Part'}
-          </Button>
-          <Button 
-            onClick={handleGenerate} 
-            disabled={isGenerating}
-          >
-            {isGenerating ? '⚡ Generating...' : '⚡ Generate Chapters'}
-          </Button>
-        </div>
+        {externalHasChanges && (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={handleCancel}
+              className="whitespace-nowrap min-w-fit px-6"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="lg"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="whitespace-nowrap min-w-fit px-6"
+            >
+              {isSaving ? '💾 Saving...' : '💾 Save Changes'}
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Part Foundation */}

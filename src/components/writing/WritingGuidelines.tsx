@@ -79,8 +79,8 @@ export function WritingGuidelines({ currentLevel = "scene" }: WritingGuidelinesP
             <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Structure:</h4>
             <ol className="list-decimal list-inside space-y-1 text-blue-700 dark:text-blue-300">
               <li><strong>Motivation:</strong> External stimulus/event</li>
-              <li><strong>Reaction:</strong> Character's internal response</li>
-              <li><strong>Action:</strong> Character's external response</li>
+              <li><strong>Reaction:</strong> Character&apos;s internal response</li>
+              <li><strong>Action:</strong> Character&apos;s external response</li>
             </ol>
           </div>
           <div className="text-xs text-gray-600 dark:text-gray-400">
@@ -136,14 +136,14 @@ export function WritingGuidelines({ currentLevel = "scene" }: WritingGuidelinesP
             <h4 className="font-semibold text-purple-800 dark:text-purple-200 mb-2">Techniques:</h4>
             <div className="text-purple-700 dark:text-purple-300 space-y-2 text-xs">
               <div>
-                <strong>Instead of:</strong> "He was angry"
+                <strong>Instead of:</strong> &quot;He was angry&quot;
                 <br />
-                <strong>Show:</strong> "His jaw tightened as he slammed the door"
+                <strong>Show:</strong> &quot;His jaw tightened as he slammed the door&quot;
               </div>
               <div>
-                <strong>Instead of:</strong> "She was nervous"
+                <strong>Instead of:</strong> &quot;She was nervous&quot;
                 <br />
-                <strong>Show:</strong> "Her fingers drummed against her thigh"
+                <strong>Show:</strong> &quot;Her fingers drummed against her thigh&quot;
               </div>
             </div>
           </div>

@@ -442,7 +442,7 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
                       <div className="max-w-md mx-auto">
                         <h3 className="text-lg font-semibold mb-4">📝 Chapter Not Ready</h3>
                         <p className="text-sm mb-4">
-                          This chapter hasn't been structured into scenes yet. 
+                          This chapter hasn&apos;t been structured into scenes yet. 
                           Chapters must be organized into scenes to be readable.
                         </p>
                         {isOwner && (

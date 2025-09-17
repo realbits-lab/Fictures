@@ -370,7 +370,7 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
 							System
 						</div>
 						<div className="text-xs text-gray-600 dark:text-gray-400">
-							Use your device's theme setting
+							Use your device&apos;s theme setting
 						</div>
 					</div>
 					{theme === "system" && (
