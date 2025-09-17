@@ -1,37 +1,6 @@
-import { openai } from '@ai-sdk/openai';
-import { generateObject } from 'ai';
-import { z } from 'zod';
+import { generateText } from 'ai';
+import yaml from 'js-yaml';
 
-const PartDataSchema = z.object({
-  part: z.number(),
-  title: z.string(),
-  words: z.number(),
-  function: z.string(),
-  goal: z.string(),
-  conflict: z.string(),
-  outcome: z.string(),
-  questions: z.object({
-    primary: z.string(),
-    secondary: z.string()
-  }),
-  chars: z.record(z.object({
-    start: z.string(),
-    end: z.string(),
-    arc: z.union([z.array(z.string()), z.string()]),
-    conflict: z.string().optional(),
-    transforms: z.array(z.string()).optional()
-  })),
-  plot: z.object({
-    events: z.array(z.string()),
-    reveals: z.array(z.string()),
-    escalation: z.array(z.string())
-  }),
-  emotion: z.object({
-    start: z.string(),
-    progression: z.array(z.string()),
-    end: z.string()
-  })
-});
 
 export async function POST(request: Request) {
   try {
@@ -44,19 +13,11 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    const systemPrompt = `You are an expert story part analyzer and editor. Your task is to modify story part data based on user requests.
+    const currentPartYaml = yaml.dump(partData);
 
-Current Part Data (Part ${partData.part}):
-- Title: ${partData.title}
-- Function: ${partData.function}
-- Word Count: ${partData.words}
-- Goal: ${partData.goal}
-- Conflict: ${partData.conflict}
-- Outcome: ${partData.outcome}
-- Central Questions: ${partData.questions.primary} / ${partData.questions.secondary}
-- Characters: ${Object.keys(partData.chars).length} character developments
-- Plot Events: ${partData.plot.events.length} events
-- Plot Reveals: ${partData.plot.reveals.length} reveals
+    const { text } = await generateText({
+      model: 'openai/gpt-4o-mini',
+      system: `You are an expert story part analyzer and editor. Your task is to modify story part data based on user requests.
 
 Your role:
 1. Analyze the user's request carefully
@@ -72,20 +33,30 @@ Guidelines:
 - Maintain proper character arc progression
 - Ensure plot events support the part's goal and conflict
 - Preserve existing good elements unless specifically asked to change them
-- For Korean content, maintain language and cultural authenticity`;
+- For Korean content, maintain language and cultural authenticity
 
-    const result = await generateObject({
-      model: openai('gpt-4o-mini'),
-      system: systemPrompt,
+IMPORTANT: Return the updated part data as valid YAML format only. Do not include any other text or explanations.`,
       prompt: `User Request: "${userRequest}"
 
-Please analyze and modify the part data accordingly. Return the updated part data with any improvements or changes based on the user's request.`,
-      schema: PartDataSchema,
+Current Part Data (YAML):
+${currentPartYaml}
+
+Please analyze and modify the part data according to the user's request. Return the updated part data as valid YAML format.`,
     });
+
+    // Extract YAML from markdown code blocks if present
+    let yamlContent = text;
+    const yamlBlockMatch = text.match(/```(?:yaml|yml)?\s*\n([\s\S]*?)\n```/);
+    if (yamlBlockMatch) {
+      yamlContent = yamlBlockMatch[1];
+    }
+
+    // Parse the YAML response back to JSON
+    const updatedPartData = yaml.load(yamlContent);
 
     return Response.json({
       success: true,
-      updatedPartData: result.object
+      updatedPartData: updatedPartData
     });
 
   } catch (error) {
