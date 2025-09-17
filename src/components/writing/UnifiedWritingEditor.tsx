@@ -249,6 +249,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const [originalStoryData, setOriginalStoryData] = useState(sampleStoryData);
   const [storyPreviewData, setStoryPreviewData] = useState<any>(null);
   const [storyHasChanges, setStoryHasChanges] = useState(false);
+  const [changedStoryKeys, setChangedStoryKeys] = useState<string[]>([]);
 
   // Part data state management for change tracking
   const [originalPartData, setOriginalPartData] = useState<any>(null);
@@ -274,12 +275,39 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     setSampleStoryData(newStoryData);
     setOriginalStoryData(newStoryData);
     setStoryHasChanges(false);
+    setChangedStoryKeys([]);
   }, [story]);
+
+  // Helper function to find changed keys between two objects
+  const findChangedKeys = (original: any, updated: any): string[] => {
+    const changedKeys: string[] = [];
+
+    if (!original || !updated) return changedKeys;
+
+    // Get all keys from both objects
+    const allKeys = new Set([...Object.keys(original), ...Object.keys(updated)]);
+
+    for (const key of allKeys) {
+      const originalValue = original[key];
+      const updatedValue = updated[key];
+
+      // Compare values (deep comparison for objects)
+      if (JSON.stringify(originalValue) !== JSON.stringify(updatedValue)) {
+        changedKeys.push(key);
+      }
+    }
+
+    return changedKeys;
+  };
 
   // Update story data and track changes
   const handleStoryDataUpdate = (updatedData: any) => {
     setSampleStoryData(updatedData);
     setStoryHasChanges(JSON.stringify(updatedData) !== JSON.stringify(originalStoryData));
+
+    // Calculate and track changed keys
+    const changed = findChangedKeys(originalStoryData, updatedData);
+    setChangedStoryKeys(changed);
   };
 
   // Update part data and track changes
@@ -1148,10 +1176,12 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 await handleSave(data);
                 setOriginalStoryData(data);
                 setStoryHasChanges(false);
+                setChangedStoryKeys([]);
               }}
               onCancel={() => {
                 setSampleStoryData(originalStoryData);
                 setStoryHasChanges(false);
+                setChangedStoryKeys([]);
               }}
               onGenerate={handleGenerate}
             />
@@ -1163,6 +1193,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               data={sampleStoryData}
               isCollapsed={storyDataCollapsed}
               onToggleCollapse={() => setStoryDataCollapsed(!storyDataCollapsed)}
+              changedKeys={changedStoryKeys}
+              onDataChange={handleStoryDataUpdate}
             />
 
             {/* Characters YAML Data Display */}

@@ -13,6 +13,8 @@ interface BeautifulYAMLDisplayProps {
   data: any;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  changedKeys?: string[];
+  onDataChange?: (data: any) => void;
 }
 
 interface YAMLKeyCardProps {
@@ -21,10 +23,11 @@ interface YAMLKeyCardProps {
   isDark: boolean;
   columnIndex: number;
   isExpanded: boolean;
+  isChanged?: boolean;
   onToggleExpansion: (keyName: string) => void;
 }
 
-function YAMLKeyCard({ keyName, value, isDark, columnIndex, isExpanded, onToggleExpansion }: YAMLKeyCardProps) {
+function YAMLKeyCard({ keyName, value, isDark, columnIndex, isExpanded, isChanged = false, onToggleExpansion }: YAMLKeyCardProps) {
 
   const renderValue = (val: any): string => {
     if (typeof val === 'object' && val !== null) {
@@ -50,7 +53,11 @@ function YAMLKeyCard({ keyName, value, isDark, columnIndex, isExpanded, onToggle
 
 
   return (
-    <div className={`relative border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800 hover:shadow-md transition-shadow ${isExpanded ? 'shadow-2xl' : ''}`} style={getExpandedStyles()}>
+    <div className={`relative border rounded-lg p-3 hover:shadow-md transition-all duration-300 ${
+      isChanged
+        ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20 shadow-blue-200 dark:shadow-blue-800 shadow-lg animate-pulse'
+        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+    } ${isExpanded ? 'shadow-2xl' : ''}`} style={getExpandedStyles()}>
       <div
         className={`flex items-center justify-between mb-2 ${
           canExpand ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 -m-1 p-1 rounded transition-colors' : 'cursor-pointer'
@@ -107,7 +114,9 @@ export function BeautifulYAMLDisplay({
   icon,
   data,
   isCollapsed = false,
-  onToggleCollapse
+  onToggleCollapse,
+  changedKeys = [],
+  onDataChange
 }: BeautifulYAMLDisplayProps) {
   const { theme, systemTheme } = useTheme();
   const isDark = theme === 'dark' || (theme === 'system' && systemTheme === 'dark');
@@ -201,6 +210,7 @@ export function BeautifulYAMLDisplay({
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 auto-rows-min">
                 {keys.map((key, index) => {
                   const isExpanded = key === expandedCardKey;
+                  const isChanged = changedKeys.includes(key);
                   return (
                     <div key={key} className="relative">
                       <YAMLKeyCard
@@ -209,6 +219,7 @@ export function BeautifulYAMLDisplay({
                         isDark={isDark}
                         columnIndex={index}
                         isExpanded={false}
+                        isChanged={isChanged}
                         onToggleExpansion={handleCardToggle}
                       />
                     </div>
@@ -238,6 +249,7 @@ export function BeautifulYAMLDisplay({
                     isDark={isDark}
                     columnIndex={keys.indexOf(expandedCardKey) % 3}
                     isExpanded={true}
+                    isChanged={changedKeys.includes(expandedCardKey)}
                     onToggleExpansion={handleCardToggle}
                   />
                 </div>
@@ -252,21 +264,30 @@ export function BeautifulYAMLDisplay({
                 View complete YAML
               </summary>
               <div className="mt-2">
-                <SyntaxHighlighter
-                  language="yaml"
-                  style={isDark ? oneDark : oneLight}
-                  customStyle={{
-                    margin: 0,
-                    padding: '12px',
-                    fontSize: '12px',
-                    borderRadius: '6px',
-                    maxHeight: '400px',
-                    overflow: 'auto'
-                  }}
-                  wrapLongLines={true}
-                >
-                  {typeof data === 'string' ? data : yaml.dump(parsedData, { indent: 2 })}
-                </SyntaxHighlighter>
+                <div className="relative">
+                  <SyntaxHighlighter
+                    language="yaml"
+                    style={isDark ? oneDark : oneLight}
+                    customStyle={{
+                      margin: 0,
+                      padding: '12px',
+                      fontSize: '12px',
+                      borderRadius: '6px',
+                      maxHeight: '400px',
+                      overflow: 'auto'
+                    }}
+                    wrapLongLines={true}
+                  >
+                    {typeof data === 'string' ? data : yaml.dump(parsedData, { indent: 2 })}
+                  </SyntaxHighlighter>
+                  {changedKeys.length > 0 && (
+                    <div className="absolute top-2 right-2">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        {changedKeys.length} changed
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </details>
           )}
