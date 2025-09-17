@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
+import yaml from "js-yaml";
 import { useStoryData } from "@/lib/hooks/useStoryData";
 import { useWritingProgress, useWritingSession } from "@/hooks/useStoryWriter";
 import { YAMLDataDisplay } from "./YAMLDataDisplay";
@@ -284,7 +285,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const handleChapterDataUpdate = (updatedData: any) => {
     setCurrentChapterData(updatedData);
     if (originalChapterData) {
-      setChapterHasChanges(JSON.stringify(updatedData) !== JSON.stringify(originalChapterData));
+      setChapterHasChanges(yaml.dump(updatedData) !== yaml.dump(originalChapterData));
     }
   };
 
@@ -292,7 +293,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const handleSceneDataUpdate = (updatedData: any) => {
     setCurrentSceneData(updatedData);
     if (originalSceneData) {
-      setSceneHasChanges(JSON.stringify(updatedData) !== JSON.stringify(originalSceneData));
+      setSceneHasChanges(yaml.dump(updatedData) !== yaml.dump(originalSceneData));
     }
   };
 
@@ -545,29 +546,70 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     try {
       // Check if this is scene data (has content and wordCount) and we have a sceneId
       if (data.content !== undefined && data.wordCount !== undefined && currentSelection.sceneId) {
-        // Save scene content and metadata to the scene API
+        // Save scene content and metadata to the scene API using YAML
+        const sceneYamlData = {
+          title: data.summary || `Scene ${data.id}`,
+          content: data.content,
+          wordCount: data.wordCount,
+          goal: data.goal,
+          conflict: data.obstacle,
+          outcome: data.outcome,
+          status: data.content && data.content.trim() ? 'in_progress' : 'draft'
+        };
+
         const response = await fetch(`/api/scenes/${currentSelection.sceneId}`, {
           method: 'PATCH',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/yaml',
           },
-          body: JSON.stringify({
-            title: data.summary || `Scene ${data.id}`,
-            content: data.content,
-            wordCount: data.wordCount,
-            goal: data.goal,
-            conflict: data.obstacle,
-            outcome: data.outcome,
-            status: data.content && data.content.trim() ? 'in_progress' : 'draft'
-          })
+          body: yaml.dump(sceneYamlData)
         });
 
         if (!response.ok) {
-          const errorData = await response.json();
+          const responseText = await response.text();
+          let errorData;
+          try {
+            errorData = yaml.load(responseText) as any;
+          } catch {
+            errorData = { error: responseText };
+          }
           throw new Error(`Failed to save scene: ${errorData.error || response.statusText}`);
         }
 
         console.log('Scene saved successfully');
+      } else if (currentSelection.level === "chapter" && data) {
+        // Save chapter data using YAML
+        const chapterYamlData = {
+          id: data.id,
+          title: data.title,
+          purpose: data.purpose,
+          hook: data.hook,
+          characterFocus: data.characterFocus,
+          wordCount: data.wordCount,
+          targetWordCount: data.targetWordCount,
+          status: data.status
+        };
+
+        const response = await fetch(`/api/chapters/${data.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/yaml',
+          },
+          body: yaml.dump(chapterYamlData)
+        });
+
+        if (!response.ok) {
+          const responseText = await response.text();
+          let errorData;
+          try {
+            errorData = yaml.load(responseText) as any;
+          } catch {
+            errorData = { error: responseText };
+          }
+          throw new Error(`Failed to save chapter: ${errorData.error || response.statusText}`);
+        }
+
+        console.log('Chapter data saved successfully');
       } else if (currentSelection.level === "story" && data) {
         // Save story data to the stories API
         const response = await fetch(`/api/stories/${story.id}/write`, {
@@ -587,7 +629,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
         console.log('Story data saved successfully');
       } else {
-        // For other data types (part, chapter), use the original mock behavior for now
+        // For other data types (part), use the original mock behavior for now
         console.log('Saving data:', data);
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
@@ -756,7 +798,14 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     try {
       // Fetch current scenes from the API to ensure we have the latest data
       const scenesResponse = await fetch(`/api/scenes?chapterId=${chapterId}`);
-      const scenesData = await scenesResponse.json();
+      const responseText = await scenesResponse.text();
+      let scenesData;
+      try {
+        scenesData = yaml.load(responseText) as any;
+      } catch {
+        // Fallback to JSON for backward compatibility
+        scenesData = JSON.parse(responseText);
+      }
       
       // Calculate next available order index by finding the highest existing orderIndex
       let nextOrderIndex = 1;
@@ -765,29 +814,45 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         nextOrderIndex = maxOrderIndex + 1;
       }
       
-      // Create the new scene
+      // Create the new scene using YAML
+      const newSceneData = {
+        title: `Scene ${nextOrderIndex}`,
+        chapterId: chapterId,
+        orderIndex: nextOrderIndex,
+        goal: nextOrderIndex === 1 ? 'Establish opening scene' : `Scene ${nextOrderIndex} objective`,
+        conflict: nextOrderIndex === 1 ? 'Initial obstacles' : `Scene ${nextOrderIndex} challenges`,
+        outcome: nextOrderIndex === 1 ? 'Scene conclusion' : `Scene ${nextOrderIndex} resolution`
+      };
+
       const response = await fetch('/api/scenes', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/yaml',
         },
-        body: JSON.stringify({
-          title: `Scene ${nextOrderIndex}`,
-          chapterId: chapterId,
-          orderIndex: nextOrderIndex,
-          goal: nextOrderIndex === 1 ? 'Establish opening scene' : `Scene ${nextOrderIndex} objective`,
-          conflict: nextOrderIndex === 1 ? 'Initial obstacles' : `Scene ${nextOrderIndex} challenges`,
-          outcome: nextOrderIndex === 1 ? 'Scene conclusion' : `Scene ${nextOrderIndex} resolution`
-        })
+        body: yaml.dump(newSceneData)
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const responseText = await response.text();
+        let errorData;
+        try {
+          errorData = yaml.load(responseText) as any;
+        } catch {
+          errorData = { error: responseText };
+        }
         console.error('Scene creation failed:', errorData);
         throw new Error(errorData.error || 'Failed to create scene');
       }
 
-      const { scene } = await response.json();
+      const responseText = await response.text();
+      let responseData;
+      try {
+        responseData = yaml.load(responseText) as any;
+      } catch {
+        // Fallback to JSON for backward compatibility
+        responseData = JSON.parse(responseText);
+      }
+      const { scene } = responseData;
       
       // Navigate to the new scene editor
       handleSelectionChange({
@@ -852,19 +917,25 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         nextStatus = 'in_progress';
       }
       
-      // Update scene status via API
+      // Update scene status via API using YAML
       const response = await fetch(`/api/scenes/${sceneId}`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/yaml',
         },
-        body: JSON.stringify({
+        body: yaml.dump({
           status: nextStatus
         })
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const responseText = await response.text();
+        let errorData;
+        try {
+          errorData = yaml.load(responseText) as any;
+        } catch {
+          errorData = { error: responseText };
+        }
         console.error('Scene status update failed:', errorData);
         throw new Error(`Failed to update scene status: ${errorData.error || 'Unknown error'}`);
       }
@@ -1727,15 +1798,21 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                       const response = await fetch(`/api/scenes/${currentScene.id}`, {
                         method: 'PATCH',
                         headers: {
-                          'Content-Type': 'application/json',
+                          'Content-Type': 'application/yaml',
                         },
-                        body: JSON.stringify({
+                        body: yaml.dump({
                           status: newStatus
                         })
                       });
 
                       if (!response.ok) {
-                        const errorData = await response.json();
+                        const responseText = await response.text();
+                        let errorData;
+                        try {
+                          errorData = yaml.load(responseText) as any;
+                        } catch {
+                          errorData = { error: responseText };
+                        }
                         throw new Error(`Failed to update scene status: ${errorData.error || 'Unknown error'}`);
                       }
 
