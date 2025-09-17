@@ -13,7 +13,7 @@ import { SceneEditor } from "./SceneEditor";
 import { StoryStructureSidebar } from "./StoryStructureSidebar";
 import { SceneSidebar } from "./SceneSidebar";
 import { WritingGuidelines } from "./WritingGuidelines";
-import { StoryPromptAnalyzer } from "./StoryPromptAnalyzer";
+import { AIEditor } from "./AIEditor";
 import { PartPromptAnalyzer } from "./PartPromptAnalyzer";
 
 interface Story {
@@ -1719,9 +1719,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               />
             ) : null}
             
-            {/* Story Prompt Analyzer - Show for story level */}
+            {/* AI Editor - Show for story level */}
             {currentSelection.level === "story" && (
-              <StoryPromptAnalyzer
+              <AIEditor
                 storyData={sampleStoryData}
                 onStoryUpdate={handleStoryDataUpdate}
               />

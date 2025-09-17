@@ -17,12 +17,12 @@ interface StoryData {
   parts: any[];
 }
 
-interface StoryPromptAnalyzerProps {
+interface AIEditorProps {
   storyData: StoryData;
   onStoryUpdate?: (updatedData: StoryData) => void;
 }
 
-export function StoryPromptAnalyzer({ storyData, onStoryUpdate }: StoryPromptAnalyzerProps) {
+export function AIEditor({ storyData, onStoryUpdate }: AIEditorProps) {
   const [inputPrompt, setInputPrompt] = useState("");
   const [outputResult, setOutputResult] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -165,7 +165,7 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
     <Card className="h-fit">
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center gap-2">
-          🤖 Story Prompt Analyzer
+          🤖 AI Editor
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
