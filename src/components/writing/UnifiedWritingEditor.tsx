@@ -1977,6 +1977,52 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               />
             )}
 
+            {/* Characters YAML Data Display */}
+            {currentStoryCharacters && currentStoryCharacters.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>🎭 Characters YAML Data</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {currentStoryCharacters.map((character: any) => (
+                      <div key={character.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                        <h4 className="font-medium text-sm mb-2 text-gray-900 dark:text-gray-100">
+                          {character.name} {character.isMain ? '(Main Character)' : '(Supporting Character)'}
+                        </h4>
+                        <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded whitespace-pre-wrap overflow-auto max-h-40">
+                          <code>{character.content || `name: ${character.name}\nrole: character\ndescription: "Character description not yet defined"`}</code>
+                        </pre>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Places YAML Data Display */}
+            {currentStoryPlaces && currentStoryPlaces.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>🏞️ Places YAML Data</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {currentStoryPlaces.map((place: any) => (
+                      <div key={place.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                        <h4 className="font-medium text-sm mb-2 text-gray-900 dark:text-gray-100">
+                          {place.name} {place.isMain ? '(Main Location)' : '(Supporting Location)'}
+                        </h4>
+                        <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded whitespace-pre-wrap overflow-auto max-h-40">
+                          <code>{place.content || `name: ${place.name}\ntype: location\ndescription: "Location description not yet defined"`}</code>
+                        </pre>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Writing Guidelines - Show for scene editing */}
             <WritingGuidelines currentLevel={currentSelection.level} />
           </div>
