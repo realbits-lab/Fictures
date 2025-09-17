@@ -48,37 +48,79 @@ interface Story {
   scenes?: Scene[]; // Add scenes to the story level for current chapter
 }
 
-interface ChapterEditorProps {
-  chapter: {
-    id: string;
-    title: string;
-    partTitle: string;
-    wordCount: number;
-    targetWordCount: number;
-    status: string;
-    purpose: string;
-    hook: string;
-    characterFocus: string;
-    scenes: Scene[];
-  };
-  story: Story;
-  hideSidebar?: boolean; // Add prop to hide sidebar when used within UnifiedWritingEditor
+interface ChapterData {
+  id: string;
+  title: string;
+  partTitle: string;
+  wordCount: number;
+  targetWordCount: number;
+  status: string;
+  purpose: string;
+  hook: string;
+  characterFocus: string;
+  scenes: Scene[];
 }
 
-export function ChapterEditor({ chapter, story, hideSidebar = false }: ChapterEditorProps) {
+interface ChapterEditorProps {
+  chapter?: ChapterData;
+  initialData?: ChapterData;
+  previewData?: ChapterData;
+  story: Story;
+  hideSidebar?: boolean;
+  hasChanges?: boolean;
+  onChapterUpdate?: (data: ChapterData) => void;
+  onSave?: (data: ChapterData) => Promise<void>;
+  onCancel?: () => void;
+}
+
+export function ChapterEditor({
+  chapter,
+  initialData,
+  previewData,
+  story,
+  hideSidebar = false,
+  hasChanges: externalHasChanges,
+  onChapterUpdate,
+  onSave,
+  onCancel
+}: ChapterEditorProps) {
   const router = useRouter();
+
+  // Use the appropriate data source: previewData > initialData > chapter
+  const chapterData = previewData || initialData || chapter;
+
+  if (!chapterData) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>📝 Chapter Not Found</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center py-8">
+            <div className="text-gray-500 dark:text-gray-400 mb-4">
+              <div className="text-4xl mb-4">📄</div>
+              <h3 className="text-lg font-medium mb-2">No Chapter Data</h3>
+              <p>Chapter data is not available.</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const [content, setContent] = useState(`  The Shadow Realm pulsed around Maya like a living thing, its twisted architecture bending reality with each heartbeat. She could feel Elena's presence—faint but unmistakable—calling to her from the void-touched spire ahead.
 
   "You feel it, don't you?" The Void Collector's voice echoed from everywhere and nowhere. "The pull of true power. The freedom from restraint."
 
   Maya's shadows writhed, responding to her emotional turmoil. Part of her—the part she'd been fighting since this began—whispered that he was right. Why should she hold back? Elena was dying. The world was at stake.`);
-  
-  const [currentWordCount, setCurrentWordCount] = useState(chapter.wordCount);
+
+  const [currentWordCount, setCurrentWordCount] = useState(chapterData.wordCount);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [yamlLevel, setYamlLevel] = useState<"story" | "part" | "chapter" | "scene">("chapter");
+  const [isSaving, setIsSaving] = useState(false);
 
   // Sample YAML data based on documentation
   const sampleStoryData = {
@@ -216,16 +258,16 @@ export function ChapterEditor({ chapter, story, hideSidebar = false }: ChapterEd
     if (words.length < 100) {
       errors.push("Chapter should have at least 100 words");
     }
-    if (words.length > chapter.targetWordCount * 1.5) {
+    if (words.length > chapterData.targetWordCount * 1.5) {
       errors.push("Chapter exceeds recommended length");
     }
     setValidationErrors(errors);
-  }, [content, chapter.targetWordCount]);
+  }, [content, chapterData.targetWordCount]);
 
   const handleAutoSave = async () => {
     setIsAutoSaving(true);
     try {
-      const response = await fetch(`/api/chapters/${chapter.id}/autosave`, {
+      const response = await fetch(`/api/chapters/${chapterData.id}/autosave`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -266,7 +308,25 @@ export function ChapterEditor({ chapter, story, hideSidebar = false }: ChapterEd
     return `${diffMinutes} minutes ago`;
   };
 
-  const progressPercentage = (currentWordCount / chapter.targetWordCount) * 100;
+  const progressPercentage = (currentWordCount / chapterData.targetWordCount) * 100;
+
+  const handleSave = async () => {
+    if (!onSave || !externalHasChanges) return;
+    setIsSaving(true);
+    try {
+      await onSave(chapterData);
+    } catch (error) {
+      console.error('Save failed:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+    }
+  };
 
   const getSceneStatusIcon = (status: string) => {
     switch (status) {
@@ -298,7 +358,7 @@ export function ChapterEditor({ chapter, story, hideSidebar = false }: ChapterEd
                 </Button>
                 <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 hidden sm:block"></div>
                 <h1 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">
-                  📝 {chapter.title}
+                  📝 {chapterData.title}
                 </h1>
               </div>
               <div className="flex items-center gap-1 md:gap-3">
@@ -326,9 +386,9 @@ export function ChapterEditor({ chapter, story, hideSidebar = false }: ChapterEd
           {/* Left Sidebar - Story Architecture Tree (only show if not hidden) */}
           {!hideSidebar && (
             <div className="space-y-6">
-              <StoryTreeArchitecture 
-                story={story} 
-                currentChapterId={chapter.id}
+              <StoryTreeArchitecture
+                story={story}
+                currentChapterId={chapterData.id}
                 currentSceneId={undefined}
               />
               
@@ -341,6 +401,34 @@ export function ChapterEditor({ chapter, story, hideSidebar = false }: ChapterEd
           
           {/* Main Writing Area */}
           <div className={`space-y-6 ${hideSidebar ? 'col-span-1' : 'lg:col-span-2'}`}>
+            {/* Chapter Editor Header with Save/Cancel */}
+            {externalHasChanges && (
+              <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                <div>
+                  <h3 className="font-medium text-blue-900 dark:text-blue-100">📝 Chapter Changes</h3>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">You have unsaved changes to this chapter</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCancel}
+                    className="whitespace-nowrap"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="whitespace-nowrap"
+                  >
+                    {isSaving ? '💾 Saving...' : '💾 Save Changes'}
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Writing Interface */}
             <Card>
               <CardHeader>
@@ -418,7 +506,7 @@ export function ChapterEditor({ chapter, story, hideSidebar = false }: ChapterEd
                 <div className="space-y-3">
                   <div className="text-sm text-gray-600 dark:text-gray-400">
                     Word Count: <span className="font-medium text-gray-900 dark:text-gray-100">
-                      {currentWordCount.toLocaleString()} / {chapter.targetWordCount.toLocaleString()}
+                      {currentWordCount.toLocaleString()} / {chapterData.targetWordCount.toLocaleString()}
                     </span>
                     {hasUnsavedChanges && <span className="text-orange-500 ml-2">• Unsaved</span>}
                   </div>
@@ -453,16 +541,16 @@ export function ChapterEditor({ chapter, story, hideSidebar = false }: ChapterEd
               <CardContent className="space-y-3">
                 <div className="space-y-2 text-sm">
                   <div>
-                    <strong>🎯 Purpose:</strong> {chapter.purpose}
+                    <strong>🎯 Purpose:</strong> {chapterData.purpose}
                   </div>
                   <div>
-                    <strong>🎬 Hook:</strong> {chapter.hook}
+                    <strong>🎬 Hook:</strong> {chapterData.hook}
                   </div>
                   <div>
-                    <strong>🎭 Character Focus:</strong> {chapter.characterFocus}
+                    <strong>🎭 Character Focus:</strong> {chapterData.characterFocus}
                   </div>
                   <div>
-                    <strong>📖 Scenes:</strong> {chapter.scenes.length} planned
+                    <strong>📖 Scenes:</strong> {chapterData.scenes.length} planned
                   </div>
                 </div>
               </CardContent>
@@ -477,7 +565,7 @@ export function ChapterEditor({ chapter, story, hideSidebar = false }: ChapterEd
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {chapter.scenes.map((scene, index) => (
+                {chapterData.scenes.map((scene, index) => (
                   <div key={scene.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
                     <div className="mb-2">
                       <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">

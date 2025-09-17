@@ -9,12 +9,14 @@ import { YAMLDataDisplay } from "./YAMLDataDisplay";
 import { StoryEditor } from "./StoryEditor";
 import { PartEditor } from "./PartEditor";
 import { ChapterEditor } from "./ChapterEditor";
-import { SceneEditor } from "./SceneEditor";
+import { SceneEditor, SceneData } from "./SceneEditor";
 import { StoryStructureSidebar } from "./StoryStructureSidebar";
 import { SceneSidebar } from "./SceneSidebar";
 import { WritingGuidelines } from "./WritingGuidelines";
-import { AIEditor } from "./AIEditor";
-import { PartPromptAnalyzer } from "./PartPromptAnalyzer";
+import { StoryPromptWriter } from "./StoryPromptWriter";
+import { PartPromptEditor } from "./PartPromptEditor";
+import { ChapterPromptEditor } from "./ChapterPromptEditor";
+import { ScenePromptEditor } from "./ScenePromptEditor";
 
 interface Story {
   id: string;
@@ -244,6 +246,18 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const [partPreviewData, setPartPreviewData] = useState<any>(null);
   const [partHasChanges, setPartHasChanges] = useState(false);
 
+  // Chapter data state management for change tracking
+  const [originalChapterData, setOriginalChapterData] = useState<any>(null);
+  const [currentChapterData, setCurrentChapterData] = useState<any>(null);
+  const [chapterPreviewData, setChapterPreviewData] = useState<any>(null);
+  const [chapterHasChanges, setChapterHasChanges] = useState(false);
+
+  // Scene data state management for change tracking
+  const [originalSceneData, setOriginalSceneData] = useState<any>(null);
+  const [currentSceneData, setCurrentSceneData] = useState<any>(null);
+  const [scenePreviewData, setScenePreviewData] = useState<any>(null);
+  const [sceneHasChanges, setSceneHasChanges] = useState(false);
+
   // Update story data when story prop changes (for real-time updates)
   useEffect(() => {
     const newStoryData = parseStoryData();
@@ -266,6 +280,22 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     }
   };
 
+  // Update chapter data and track changes
+  const handleChapterDataUpdate = (updatedData: any) => {
+    setCurrentChapterData(updatedData);
+    if (originalChapterData) {
+      setChapterHasChanges(JSON.stringify(updatedData) !== JSON.stringify(originalChapterData));
+    }
+  };
+
+  // Update scene data and track changes
+  const handleSceneDataUpdate = (updatedData: any) => {
+    setCurrentSceneData(updatedData);
+    if (originalSceneData) {
+      setSceneHasChanges(JSON.stringify(updatedData) !== JSON.stringify(originalSceneData));
+    }
+  };
+
   // Initialize part data when switching to part level or changing part
   useEffect(() => {
     if (currentSelection.level === "part") {
@@ -280,6 +310,57 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       setPartHasChanges(false);
     }
   }, [currentSelection.level, currentSelection.partId, story.parts]);
+
+  // Initialize chapter data when switching to chapter level or changing chapter
+  useEffect(() => {
+    if (currentSelection.level === "chapter") {
+      const selectedChapter = story.chapters?.find(chapter => chapter.id === currentSelection.chapterId);
+      const chapterData = selectedChapter || {
+        id: currentSelection.chapterId || 'sample-chapter',
+        title: 'Chapter 1',
+        summary: '',
+        orderIndex: 1,
+        wordCount: 0,
+        targetWordCount: 4000,
+        status: 'draft',
+        purpose: '',
+        hook: '',
+        characterFocus: '',
+        sceneIds: [],
+        scenes: []
+      };
+
+      setOriginalChapterData(chapterData);
+      setCurrentChapterData(chapterData);
+      setChapterHasChanges(false);
+    }
+  }, [currentSelection.level, currentSelection.chapterId, story.chapters]);
+
+  // Initialize scene data when switching to scene level or changing scene
+  useEffect(() => {
+    if (currentSelection.level === "scene") {
+      const selectedScene = story.scenes?.find(scene => scene.id === currentSelection.sceneId);
+      const sceneData = selectedScene || {
+        id: currentSelection.sceneId || 'sample-scene',
+        title: 'Scene 1',
+        content: '',
+        orderIndex: 1,
+        wordCount: 0,
+        status: 'planned',
+        goal: '',
+        conflict: '',
+        outcome: '',
+        characterIds: [],
+        placeIds: [],
+        characters: [],
+        places: []
+      };
+
+      setOriginalSceneData(sceneData);
+      setCurrentSceneData(sceneData);
+      setSceneHasChanges(false);
+    }
+  }, [currentSelection.level, currentSelection.sceneId, story.scenes]);
 
   const samplePartData = {
     part: 1,
@@ -980,6 +1061,42 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
         return (
           <div className="space-y-6">
+            {/* Chapter Editor Header with Save/Cancel */}
+            {(chapterHasChanges || !!chapterPreviewData) && (
+              <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                <div>
+                  <h3 className="font-medium text-blue-900 dark:text-blue-100">📝 Chapter Changes</h3>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">You have unsaved changes to this chapter</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setCurrentChapterData(originalChapterData);
+                      setChapterPreviewData(null);
+                      setChapterHasChanges(false);
+                    }}
+                    className="whitespace-nowrap"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={async () => {
+                      await handleSave(chapterPreviewData || currentChapterData);
+                      setOriginalChapterData(chapterPreviewData || currentChapterData);
+                      setChapterPreviewData(null);
+                      setChapterHasChanges(false);
+                    }}
+                    className="whitespace-nowrap"
+                  >
+                    💾 Save Changes
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Chapter Overview */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -1295,7 +1412,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 </div>
               </CardContent>
             </Card>
-          </div>
         );
       
       case "scene":
@@ -1402,16 +1518,29 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         
         return (
           <SceneEditor
-            key={currentSelection.sceneId} // Force re-mount when scene changes
+            key={currentSelection.sceneId}
             sceneId={currentSelection.sceneId}
             sceneNumber={sceneNumber}
-            initialData={sceneData}
+            initialData={currentSceneData}
+            previewData={scenePreviewData}
             chapterContext={{
               title: selectedSceneChapter?.title || "Chapter",
               pov: "maya",
               acts: sampleChapterData.acts
             }}
-            onSave={handleSave}
+            hasChanges={sceneHasChanges || !!scenePreviewData}
+            onSceneUpdate={handleSceneDataUpdate}
+            onSave={async (data) => {
+              await handleSave(scenePreviewData || data);
+              setOriginalSceneData(scenePreviewData || data);
+              setScenePreviewData(null);
+              setSceneHasChanges(false);
+            }}
+            onCancel={() => {
+              setCurrentSceneData(originalSceneData);
+              setScenePreviewData(null);
+              setSceneHasChanges(false);
+            }}
             onWrite={handleGenerate}
           />
         );
@@ -1723,23 +1852,42 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               />
             ) : null}
             
-            {/* AI Editor - Show for story level */}
+            {/* Story Prompt Writer - Show for story level */}
             {currentSelection.level === "story" && (
-              <AIEditor
-                storyData={sampleStoryData}
+              <StoryPromptWriter
+                storyData={storyPreviewData || sampleStoryData}
                 onStoryUpdate={handleStoryDataUpdate}
+                onPreviewUpdate={setStoryPreviewData}
               />
             )}
 
-            {/* Part Prompt Analyzer - Show for part level */}
+            {/* Part Prompt Editor - Show for part level */}
             {currentSelection.level === "part" && (
-              <PartPromptAnalyzer
+              <PartPromptEditor
                 partData={partPreviewData || currentPartData}
                 onPartUpdate={handlePartDataUpdate}
                 onPreviewUpdate={setPartPreviewData}
               />
             )}
-            
+
+            {/* Chapter Prompt Editor - Show for chapter level */}
+            {currentSelection.level === "chapter" && (
+              <ChapterPromptEditor
+                chapterData={chapterPreviewData || currentChapterData}
+                onChapterUpdate={handleChapterDataUpdate}
+                onPreviewUpdate={setChapterPreviewData}
+              />
+            )}
+
+            {/* Scene Prompt Editor - Show for scene level */}
+            {currentSelection.level === "scene" && (
+              <ScenePromptEditor
+                sceneData={scenePreviewData || currentSceneData}
+                onSceneUpdate={handleSceneDataUpdate}
+                onPreviewUpdate={setScenePreviewData}
+              />
+            )}
+
             {/* Writing Guidelines - Show for scene editing */}
             <WritingGuidelines currentLevel={currentSelection.level} />
           </div>

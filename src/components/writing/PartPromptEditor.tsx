@@ -35,13 +35,13 @@ interface PartData {
   };
 }
 
-interface PartPromptAnalyzerProps {
+interface PartPromptEditorProps {
   partData: PartData;
   onPartUpdate?: (updatedData: PartData) => void;
   onPreviewUpdate?: (previewData: PartData | null) => void;
 }
 
-export function PartPromptAnalyzer({ partData, onPartUpdate, onPreviewUpdate }: PartPromptAnalyzerProps) {
+export function PartPromptEditor({ partData, onPartUpdate, onPreviewUpdate }: PartPromptEditorProps) {
   const [inputPrompt, setInputPrompt] = useState("");
   const [outputResult, setOutputResult] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -205,7 +205,7 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
     <Card className="h-fit">
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center gap-2">
-          🤖 Part Prompt Analyzer
+          🤖 Part Prompt Editor
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
