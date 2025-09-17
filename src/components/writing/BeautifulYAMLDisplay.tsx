@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, CardHeader, CardTitle, CardContent, Button } from "@/components/ui";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -53,9 +53,16 @@ function YAMLKeyCard({ keyName, value, isDark, columnIndex, isExpanded, onToggle
     <div className={`relative border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800 hover:shadow-md transition-shadow ${isExpanded ? 'shadow-2xl' : ''}`} style={getExpandedStyles()}>
       <div
         className={`flex items-center justify-between mb-2 ${
-          canExpand ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 -m-1 p-1 rounded transition-colors' : ''
+          canExpand ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 -m-1 p-1 rounded transition-colors' : 'cursor-pointer'
         }`}
-        onClick={canExpand ? () => onToggleExpansion(keyName) : undefined}
+        onClick={() => {
+          if (canExpand) {
+            onToggleExpansion(keyName);
+          } else {
+            // If clicking on a non-expandable card, collapse any expanded card
+            onToggleExpansion('');
+          }
+        }}
         title={canExpand ? (isExpanded ? 'Collapse' : 'Expand') : undefined}
       >
         <h5 className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
@@ -107,11 +114,34 @@ export function BeautifulYAMLDisplay({
 
   // State to track which card is currently expanded (only one at a time)
   const [expandedCardKey, setExpandedCardKey] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Handler to toggle card expansion - only one card can be expanded at a time
   const handleCardToggle = (keyName: string) => {
-    setExpandedCardKey(expandedCardKey === keyName ? null : keyName);
+    if (keyName === '') {
+      // Empty string means collapse any expanded card
+      setExpandedCardKey(null);
+    } else {
+      setExpandedCardKey(expandedCardKey === keyName ? null : keyName);
+    }
   };
+
+  // Click outside to collapse expanded card
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (expandedCardKey && containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setExpandedCardKey(null);
+      }
+    };
+
+    if (expandedCardKey) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [expandedCardKey]);
 
   const parseYAMLContent = (content: string | object) => {
     try {
@@ -167,7 +197,7 @@ export function BeautifulYAMLDisplay({
               <p>No data available</p>
             </div>
           ) : (
-            <div className="relative">
+            <div className="relative" ref={containerRef}>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 auto-rows-min">
                 {keys.map((key, index) => {
                   const isExpanded = key === expandedCardKey;
@@ -186,9 +216,22 @@ export function BeautifulYAMLDisplay({
                 })}
               </div>
 
-              {/* Expanded card overlay */}
+              {/* Expanded card overlay positioned at exact same height as collapsed card */}
               {expandedCardKey && (
-                <div className="absolute inset-0 z-50" style={{ top: `${Math.floor(keys.indexOf(expandedCardKey) / 3) * 100}px` }}>
+                <div
+                  className="absolute top-0 left-0 right-0 z-50"
+                  style={{
+                    top: '0px', // Will be positioned exactly at the collapsed card's position
+                    transform: `translateY(${(() => {
+                      const cardIndex = keys.indexOf(expandedCardKey);
+                      const row = Math.floor(cardIndex / 3);
+                      // More precise calculation based on typical card dimensions
+                      const cardHeight = 76; // Based on p-3 (12px * 2) + title height + content preview
+                      const gap = 12; // gap-3 = 0.75rem = 12px
+                      return row * (cardHeight + gap);
+                    })()}px)`
+                  }}
+                >
                   <YAMLKeyCard
                     keyName={expandedCardKey}
                     value={parsedData[expandedCardKey]}
