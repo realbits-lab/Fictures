@@ -44,13 +44,27 @@ export async function GET(
               parsedContent = JSON.parse(character.content);
             } catch (jsonError) {
               // If JSON parsing fails, try YAML parsing
-              parsedContent = yaml.load(character.content) as Record<string, any> || {};
+              // First convert \n literal strings to actual newlines
+              const cleanedContent = character.content.replace(/\\n/g, '\n');
+              parsedContent = yaml.load(cleanedContent) as Record<string, any> || {};
             }
           } else if (typeof character.content === 'object') {
             parsedContent = character.content;
           }
         } catch (error) {
           console.error(`Failed to parse character content for ${character.name}:`, error);
+          // Fallback: try to extract basic info from the raw string
+          if (typeof character.content === 'string') {
+            const nameMatch = character.content.match(/name:\s*["']?([^"'\n]+)["']?/);
+            const roleMatch = character.content.match(/role:\s*["']?([^"'\n]+)["']?/);
+            const descMatch = character.content.match(/description:\s*["']?([^"'\n]+)["']?/);
+
+            parsedContent = {
+              name: nameMatch ? nameMatch[1] : character.name,
+              role: roleMatch ? roleMatch[1] : null,
+              description: descMatch ? descMatch[1] : null
+            };
+          }
         }
       }
 
@@ -71,7 +85,8 @@ export async function GET(
         secrets: parsedContent.secrets || null,
         goals: parsedContent.goals || null,
         conflicts: parsedContent.conflicts || null,
-        imageUrl: parsedContent.imageUrl || null
+        // Use the imageUrl from the database record, not parsed content
+        imageUrl: character.imageUrl || parsedContent.imageUrl || null
       };
     });
 
