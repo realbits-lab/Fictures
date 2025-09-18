@@ -123,13 +123,33 @@ Please try:
     }
 
     try {
+      // Ensure we're sending proper YAML format to the API
+      let yamlToSend = storyYaml;
+
+      // If storyYaml looks like JSON, convert it to YAML
+      if (storyYaml && (storyYaml.trim().startsWith('{') || !storyYaml.includes('story:'))) {
+        try {
+          const parsed = typeof storyYaml === 'string' ? JSON.parse(storyYaml) : storyYaml;
+          yamlToSend = yaml.dump({ story: parsed }, { indent: 2 });
+          console.log('🔄 Converted JSON story data to YAML format for API');
+        } catch (e) {
+          console.warn('Failed to parse storyYaml as JSON, sending as-is:', e);
+        }
+      }
+
+      console.log('📤 Sending to story-analyzer API:', {
+        yamlLength: yamlToSend?.length || 0,
+        userRequest: inputPrompt.trim(),
+        yamlPreview: yamlToSend?.substring(0, 200) + '...'
+      });
+
       const response = await fetch('/api/story-analyzer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          storyYaml,
+          storyYaml: yamlToSend,
           userRequest: inputPrompt.trim()
         })
       });

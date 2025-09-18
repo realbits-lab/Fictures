@@ -1,4 +1,6 @@
 import { generateText } from 'ai';
+import { gateway } from '@ai-sdk/gateway';
+import { DEFAULT_MODEL } from '@/lib/ai/config';
 import yaml from 'js-yaml';
 
 
@@ -34,7 +36,7 @@ export async function POST(request: Request) {
     const currentPartYaml = yaml.dump(partData);
 
     const { text } = await generateText({
-      model: 'openai/gpt-4o-mini',
+      model: gateway(DEFAULT_MODEL),
       system: `You are a creative story part development expert. Your task is to modify a SINGLE story part data structure based on user requests.
 
 CRITICAL RULES:

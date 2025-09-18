@@ -1,9 +1,9 @@
 import { gateway } from '@ai-sdk/gateway';
 
 // Default model configuration
-export const DEFAULT_MODEL = 'openai/gpt-4o-mini';
-export const REASONING_MODEL = 'openai/gpt-4o-mini';
-export const STORY_ANALYSIS_MODEL = 'openai/gpt-4o-mini';
+export const DEFAULT_MODEL = 'google/gemini-2.5-flash';
+export const REASONING_MODEL = 'google/gemini-2.5-flash';
+export const STORY_ANALYSIS_MODEL = 'google/gemini-2.5-flash';
 
 // AI models configuration using AI Gateway
 export const AI_MODELS = {
@@ -14,7 +14,7 @@ export const AI_MODELS = {
   analysis: gateway(REASONING_MODEL),
 
   // Fast model for quick suggestions
-  quick: gateway('openai/gpt-4o-mini'),
+  quick: gateway(DEFAULT_MODEL),
 } as const;
 
 // AI prompt templates
