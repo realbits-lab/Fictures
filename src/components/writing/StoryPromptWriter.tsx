@@ -34,6 +34,9 @@ export function StoryPromptWriter({ storyData, onStoryUpdate, onPreviewUpdate }:
     const themes = data.themes || [];
     const structure = data.structure || { type: '3_part', parts: ['setup', 'confrontation', 'resolution'], dist: [25, 50, 25] };
     const parts = data.parts || [];
+    const setting = (data as any).setting || { primary: [], secondary: [] };
+    const serial = (data as any).serial || { schedule: 'weekly', duration: '6 months', chapter_words: 3000, breaks: [], buffer: '2 weeks' };
+    const hooks = (data as any).hooks || { overarching: [], mysteries: [], part_endings: [] };
 
     const charsYaml = Object.entries(chars)
       .map(([name, char]) => `    ${name}: { role: "${char?.role || 'character'}", arc: "${char?.arc || 'development'}" }`)
@@ -44,6 +47,25 @@ export function StoryPromptWriter({ storyData, onStoryUpdate, onPreviewUpdate }:
     const partsYaml = parts
       .map((part, index) => `    - part: ${index + 1}\n      goal: "${part?.goal || ''}"\n      conflict: "${part?.conflict || ''}"\n      tension: "${part?.tension || ''}"`)
       .join('\n');
+
+    const settingYaml = `    primary:
+${setting.primary.map(loc => `      - "${loc}"`).join('\n') || '      []'}
+    secondary:
+${setting.secondary.map(loc => `      - "${loc}"`).join('\n') || '      []'}`;
+
+    const serialYaml = `    schedule: "${serial.schedule}"
+    duration: "${serial.duration}"
+    chapter_words: ${serial.chapter_words}
+    breaks:
+${serial.breaks.map(br => `      - "${br}"`).join('\n') || '      []'}
+    buffer: "${serial.buffer}"`;
+
+    const hooksYaml = `    overarching:
+${hooks.overarching.map(hook => `      - "${hook}"`).join('\n') || '      []'}
+    mysteries:
+${hooks.mysteries.map(mystery => `      - "${mystery}"`).join('\n') || '      []'}
+    part_endings:
+${hooks.part_endings.map(ending => `      - "${ending}"`).join('\n') || '      []'}`;
 
     return `story:
   title: "${data.title || ''}"
@@ -60,8 +82,14 @@ ${charsYaml || '    {}'}
     type: "${structure.type}"
     parts: [${structure.parts.map(p => `"${p}"`).join(', ')}]
     dist: [${structure.dist.join(', ')}]
+  setting:
+${settingYaml}
   parts:
-${partsYaml || '    []'}`;
+${partsYaml || '    []'}
+  serial:
+${serialYaml}
+  hooks:
+${hooksYaml}`;
   };
 
   // Preview functionality for cancel/save pattern

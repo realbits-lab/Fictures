@@ -1,8 +1,8 @@
 import { streamText, tool, stepCountIs, generateText } from 'ai';
 import { google } from '@ai-sdk/google';
-import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import * as yaml from 'js-yaml';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,47 +11,18 @@ export async function POST(request: NextRequest) {
       throw new Error('Invalid request body');
     }
 
-    // Support both new YAML format and legacy JSON format
-    const { storyYaml, storyData, userRequest } = requestBody;
+    // Extract YAML data and user request
+    const { storyYaml, userRequest } = requestBody;
 
     if (!userRequest || typeof userRequest !== 'string') {
       throw new Error('Missing or invalid userRequest');
     }
 
-    let currentStoryYAML: string;
-
-    if (storyYaml && typeof storyYaml === 'string') {
-      // New YAML format - use directly
-      currentStoryYAML = storyYaml;
-    } else if (storyData) {
-      // Legacy JSON format - convert to YAML with minimal processing
-      const title = storyData?.title || 'Untitled Story';
-      const genre = storyData?.genre || 'fiction';
-      const words = storyData?.words || 50000;
-      const question = storyData?.question || '';
-      const goal = storyData?.goal || '';
-      const conflict = storyData?.conflict || '';
-      const outcome = storyData?.outcome || '';
-
-      // Simple YAML generation without complex object processing
-      currentStoryYAML = `story:
-  title: "${title}"
-  genre: "${genre}"
-  words: ${words}
-  question: "${question}"
-  goal: "${goal}"
-  conflict: "${conflict}"
-  outcome: "${outcome}"
-  chars: {}
-  themes: []
-  structure:
-    type: "3_part"
-    parts: ["setup", "confrontation", "resolution"]
-    dist: [25, 50, 25]
-  parts: []`;
-    } else {
-      throw new Error('Missing storyYaml or storyData in request');
+    if (!storyYaml || typeof storyYaml !== 'string') {
+      throw new Error('Missing or invalid storyYaml in request');
     }
+
+    const currentStoryYAML = storyYaml;
 
     // Define tools for the AI to choose from
     const tools = {
@@ -76,7 +47,19 @@ FOCUS ON STORY-LEVEL ELEMENTS:
 - Title, genre, word count, themes
 - Main plot: goal, conflict, outcome, central question
 - Story structure and parts
+- Setting: primary and secondary locations
+- Serial publishing: schedule, duration, chapter structure
+- Hooks: overarching narrative hooks, mysteries, part endings
+- Characters: complete character development
 - Overall narrative arc and pacing
+
+CRITICAL: When user requests "complete story data" or similar:
+- Fill in ALL empty arrays (parts, themes, setting.primary, setting.secondary, serial.breaks, hooks.overarching, hooks.mysteries, hooks.part_endings)
+- Complete ALL empty strings and missing values
+- Add meaningful content to chars object with proper character details
+- Ensure setting.primary and setting.secondary have actual locations
+- Populate serial section with realistic publishing schedule
+- Create compelling hooks for narrative engagement
 
 IMPORTANT: Return ONLY valid YAML of the updated story data, nothing else. No explanations, no markdown formatting.`,
             prompt: `Current story YAML:
@@ -263,7 +246,7 @@ Create a beautiful, high-quality image that matches the story's genre, theme, an
     };
 
     // Use AI SDK to let the model choose and execute appropriate tools
-    const result = await streamText({
+    const result = streamText({
       model: 'openai/gpt-4o-mini',
       system: `You are a creative story development assistant. Your job is to help users modify their stories by choosing and using the appropriate tools.
 
@@ -275,10 +258,15 @@ FUNDAMENTAL PRINCIPLE:
 - Use your understanding to enhance and improve the story
 
 TOOL SELECTION GUIDELINES:
-- Use "modifyStoryStructure" for: plot changes, themes, genre, word count, story structure, overall narrative
+- Use "modifyStoryStructure" for: plot changes, themes, genre, word count, story structure, overall narrative, completing missing story data, filling empty fields, setting, serial publishing, hooks, parts
 - Use "modifyCharacterData" for: adding characters, character development, relationships, backstories
 - Use "modifyPlaceData" for: locations, settings, environments, world-building
 - Use "generateImageDescription" for: any visual requests, character/place images, "show me", "what does X look like"
+
+SPECIAL CASES:
+- "complete story data", "complete all data", "fill missing fields" → Use "modifyStoryStructure"
+- "complete parts", "complete setting", "complete serial", "complete hooks" → Use "modifyStoryStructure"
+- Any request to fill empty arrays or complete zero data → Use "modifyStoryStructure"
 
 You can use MULTIPLE tools if the request involves multiple aspects (e.g., add character AND generate their image).
 
@@ -297,7 +285,7 @@ Please analyze this request and use the appropriate tool(s) to fulfill it. Be cr
     });
 
     // Collect tool results
-    const toolResults: any[] = [];
+    const toolResults: Array<Record<string, unknown>> = [];
     let finalText = '';
 
     // Process the streaming result to collect tool outputs
@@ -306,7 +294,7 @@ Please analyze this request and use the appropriate tool(s) to fulfill it. Be cr
         finalText += chunk.text;
       }
       if (chunk.type === 'tool-result') {
-        toolResults.push(chunk.output);
+        toolResults.push(chunk.output as Record<string, unknown>);
       }
     }
 
@@ -319,7 +307,7 @@ Please analyze this request and use the appropriate tool(s) to fulfill it. Be cr
     }
 
     // Combine results from multiple tools if used
-    let finalResult: any = {
+    let finalResult: Record<string, unknown> = {
       success: true,
       originalRequest: userRequest,
       toolsUsed: toolResults.map(r => r.type),
