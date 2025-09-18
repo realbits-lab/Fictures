@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { stories } from './src/lib/db/schema.ts';
+import { stories } from './src/lib/db/schema.js';
 import { eq } from 'drizzle-orm';
 
 const client = postgres(process.env.POSTGRES_URL);

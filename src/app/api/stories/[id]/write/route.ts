@@ -234,10 +234,15 @@ export async function PATCH(
       return NextResponse.json({ error: 'Access denied - you are not the owner of this story' }, { status: 403 });
     }
 
+    // Ensure storyData is properly serialized as JSON string
+    const serializedStoryData = JSON.stringify(storyData);
+
+    console.log('📦 Serializing storyData for database:', serializedStoryData.substring(0, 200) + '...');
+
     // Update the story with the new storyData
     await db.update(stories)
       .set({
-        storyData: storyData,
+        storyData: serializedStoryData,
         updatedAt: new Date()
       })
       .where(eq(stories.id, id));

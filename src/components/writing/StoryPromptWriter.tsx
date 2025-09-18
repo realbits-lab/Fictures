@@ -412,14 +412,26 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
 
       console.log('Saving image to story ID:', effectiveStoryId);
 
-      // Update story cover image
-      const response = await fetch(`/api/stories/${effectiveStoryId}`, {
+      // Parse current story data to preserve existing data
+      const parsedData = yaml.load(storyYaml) as any;
+      const currentStoryData = parsedData?.story || parsedData;
+
+      // Update story data with cover image
+      const updatedStoryData = {
+        ...currentStoryData,
+        coverImage: previewImageData.url
+      };
+
+      console.log('📸 Saving coverImage to storyData field:', previewImageData.url);
+
+      // Update story cover image via write endpoint to save in storyData field
+      const response = await fetch(`/api/stories/${effectiveStoryId}/write`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          coverImage: previewImageData.url
+          storyData: updatedStoryData
         })
       });
 
