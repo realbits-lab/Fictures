@@ -25,6 +25,7 @@ export function StoryPromptWriter({ storyYaml, onStoryUpdate, onPreviewUpdate }:
   } | null>(null);
   const [hasImagePreview, setHasImagePreview] = useState(false);
 
+
   // Function to detect if request is for image generation
   const isImageRequest = (prompt: string) => {
     const lowerPrompt = prompt.toLowerCase();
@@ -32,7 +33,11 @@ export function StoryPromptWriter({ storyYaml, onStoryUpdate, onPreviewUpdate }:
       'show', 'image', 'picture', 'draw', 'generate', 'create', 'look like', 'looks like',
       'visualize', 'illustration', 'portrait', 'appearance', 'visual', 'depict'
     ];
-    return imageKeywords.some(keyword => lowerPrompt.includes(keyword));
+    return imageKeywords.some(keyword => {
+      // Use word boundaries to match whole words only
+      const regex = new RegExp(`\\b${keyword}\\b`);
+      return regex.test(lowerPrompt);
+    });
   };
 
   const handleImageRequest = async (prompt: string) => {
@@ -333,6 +338,7 @@ ${changes.join("\n")}
         if (onPreviewUpdate) {
           onPreviewUpdate(updatedYaml);
         }
+
       }
 
     } catch (error) {
