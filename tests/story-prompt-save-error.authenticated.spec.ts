@@ -55,10 +55,11 @@ test.describe('Story Prompt Writer - Save Error Testing', () => {
         // Now test the save functionality - this might reveal privilege issues
         console.log('💾 Testing save functionality...');
 
-        // Test if we can make a PUT request to update the chapter/story
-        const saveResponse = await page.request.put('/api/chapters/lq0F1cgRH23Hi5Ef0oq66', {
+        // Test if we can make a PATCH request to update the chapter/story
+        const saveResponse = await page.request.patch('/api/chapters/lq0F1cgRH23Hi5Ef0oq66', {
           data: {
-            storyData: data.updatedStoryData
+            title: data.updatedStoryData?.title || 'Updated Story Title',
+            status: 'in_progress' as const
           }
         });
 
