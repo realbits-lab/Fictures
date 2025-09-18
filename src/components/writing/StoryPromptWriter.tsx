@@ -33,6 +33,93 @@ export function StoryPromptWriter({ storyData, onStoryUpdate, onPreviewUpdate }:
   const [previewStoryData, setPreviewStoryData] = useState<StoryData | null>(null);
   const [hasPreviewChanges, setHasPreviewChanges] = useState(false);
 
+  // Image preview functionality
+  const [previewImageData, setPreviewImageData] = useState<{
+    url: string;
+    description: string;
+    subject: string;
+    imageType: string;
+    style: string;
+  } | null>(null);
+  const [hasImagePreview, setHasImagePreview] = useState(false);
+
+  // Function to detect if request is for image generation
+  const isImageRequest = (prompt: string) => {
+    const lowerPrompt = prompt.toLowerCase();
+    const imageKeywords = [
+      'show', 'image', 'picture', 'draw', 'generate', 'create', 'look like', 'looks like',
+      'visualize', 'illustration', 'portrait', 'appearance', 'visual', 'depict'
+    ];
+    return imageKeywords.some(keyword => lowerPrompt.includes(keyword));
+  };
+
+  const handleImageRequest = async (prompt: string) => {
+    try {
+      // Get story ID from storyData prop or fallback
+      const storyId = (storyData as any)?.id || 'temp-story';
+      console.log('Using story ID for image generation:', storyId);
+
+      const response = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: prompt,
+          type: 'general',
+          storyId: storyId
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.details || 'Image generation failed');
+      }
+
+      // Set up image preview state
+      setPreviewImageData({
+        url: result.imageUrl,
+        description: result.modelResponse || prompt,
+        subject: 'Generated image',
+        imageType: 'general',
+        style: result.method === 'placeholder_quota' ? 'placeholder' : 'AI generated'
+      });
+      setHasImagePreview(true);
+
+      const outputMessage = `🎨 **Image Generated Successfully**
+
+Your request: "${prompt}"
+
+**Method:** ${result.method}
+**Description:** ${result.modelResponse}
+
+**Generated image is shown below. Choose to Save or Cancel.**`;
+
+      setOutputResult(outputMessage);
+      return true;
+
+    } catch (error) {
+      console.error("Image generation error:", error);
+      setOutputResult(`❌ **Image Generation Failed**
+
+Your request: "${prompt}"
+
+**Error:** ${error instanceof Error ? error.message : 'Unknown error'}
+
+Please try:
+• Rephrasing your image request
+• Being more specific about what you want to see
+• Checking if the image service is available`);
+      return false;
+    }
+  };
+
   const analyzePrompt = async () => {
     if (!inputPrompt.trim()) return;
 
@@ -41,6 +128,13 @@ export function StoryPromptWriter({ storyData, onStoryUpdate, onPreviewUpdate }:
 
     // Store original data for cancel functionality
     setOriginalStoryData(storyData);
+
+    // Check if this is an image generation request
+    if (isImageRequest(inputPrompt.trim())) {
+      const success = await handleImageRequest(inputPrompt.trim());
+      setIsProcessing(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/story-analyzer', {
@@ -61,7 +155,20 @@ export function StoryPromptWriter({ storyData, onStoryUpdate, onPreviewUpdate }:
       }
 
       // Handle different response types from the new intelligent system
-      const { requestType, responseType, updatedStoryData, imageDescription, suggestedPrompt, requiresImageService } = result;
+      const {
+        requestType,
+        responseType,
+        updatedStoryData,
+        imageDescription,
+        suggestedPrompt,
+        generatedImageUrl,
+        isImagePreview,
+        imageType,
+        subject,
+        style,
+        imageError,
+        requiresImageService
+      } = result;
 
       // Compare changes and generate summary
       const changes: string[] = [];
@@ -118,7 +225,37 @@ export function StoryPromptWriter({ storyData, onStoryUpdate, onPreviewUpdate }:
       let outputMessage = '';
 
       if (responseType === 'image') {
-        outputMessage = `🎨 **Image Generation Request**
+        if (imageError) {
+          outputMessage = `❌ **Image Generation Failed**
+
+Your request: "${inputPrompt.trim()}"
+
+**Error:** ${imageError}
+
+**Description:** ${imageDescription}`;
+        } else if (generatedImageUrl && isImagePreview) {
+          // Set up image preview state
+          setPreviewImageData({
+            url: generatedImageUrl,
+            description: imageDescription || '',
+            subject: subject || '',
+            imageType: imageType || 'scene',
+            style: style || 'digital art'
+          });
+          setHasImagePreview(true);
+
+          outputMessage = `🎨 **Image Generated Successfully**
+
+Your request: "${inputPrompt.trim()}"
+
+**Subject:** ${subject}
+**Style:** ${style}
+
+**Description:** ${imageDescription}
+
+**Generated image is shown below. Choose to Save or Cancel.**`;
+        } else {
+          outputMessage = `🎨 **Image Generation Request**
 
 Your request: "${inputPrompt.trim()}"
 
@@ -127,6 +264,7 @@ Your request: "${inputPrompt.trim()}"
 **Suggested Prompt:** ${suggestedPrompt}
 
 ${requiresImageService ? '**Note:** Image generation service integration needed.' : ''}`;
+        }
 
         setOutputResult(outputMessage);
         // Don't update story data for pure image requests
@@ -230,6 +368,72 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
     if (onPreviewUpdate) {
       onPreviewUpdate(null);
     }
+
+    // Reset image preview state
+    setPreviewImageData(null);
+    setHasImagePreview(false);
+  };
+
+  const saveImagePreview = async () => {
+    if (!previewImageData) return;
+
+    try {
+      // Get story ID from storyData prop
+      const storyId = (storyData as any)?.id;
+
+      if (!storyId) {
+        // Fallback: try to get from URL (chapter ID path) and find associated story
+        const url = new URL(window.location.href);
+        const chapterId = url.pathname.split('/')[2];
+        console.error('No story ID found in storyData. Chapter ID from URL:', chapterId);
+        throw new Error('Story ID not available. Cannot save image.');
+      }
+
+      console.log('Saving image to story ID:', storyId);
+
+      // Update story cover image
+      const response = await fetch(`/api/stories/${storyId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          coverImage: previewImageData.url
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to save image: ${response.status} ${errorText}`);
+      }
+
+      console.log('✅ Image saved as story cover image:', previewImageData.url);
+
+      // Update the story data locally if we have the onStoryUpdate callback
+      if (onStoryUpdate && storyData) {
+        const updatedData = {
+          ...storyData,
+          coverImage: previewImageData.url
+        };
+        onStoryUpdate(updatedData);
+      }
+
+      // Clear the preview
+      setPreviewImageData(null);
+      setHasImagePreview(false);
+
+      // Update output to confirm save
+      setOutputResult(prev => prev + '\n\n✅ **Image Saved Successfully** as story cover image!');
+
+    } catch (error) {
+      console.error('Error saving image:', error);
+      setOutputResult(prev => prev + '\n\n❌ **Error Saving Image**: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
+  };
+
+  const cancelImagePreview = () => {
+    setPreviewImageData(null);
+    setHasImagePreview(false);
   };
 
   return (
@@ -299,6 +503,56 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
             )}
           </div>
         </div>
+
+        {/* Image Preview Section */}
+        {hasImagePreview && previewImageData && (
+          <div className="space-y-4 mt-4 p-4 border rounded-md bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                🎨 Generated Image Preview
+              </span>
+            </div>
+
+            {/* Generated Image Display */}
+            <div className="space-y-3">
+              <img
+                src={previewImageData.url}
+                alt={previewImageData.description}
+                className="w-full max-w-md mx-auto rounded-lg shadow-md border"
+                onError={(e) => {
+                  console.error('Image failed to load:', previewImageData.url);
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+
+              <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                <div><strong>Subject:</strong> {previewImageData.subject}</div>
+                <div><strong>Type:</strong> {previewImageData.imageType}</div>
+                <div><strong>Style:</strong> {previewImageData.style}</div>
+                <div><strong>Description:</strong> {previewImageData.description}</div>
+              </div>
+            </div>
+
+            {/* Save/Cancel Buttons */}
+            <div className="flex gap-2 justify-end pt-2 border-t border-blue-200 dark:border-blue-700">
+              <Button
+                onClick={cancelImagePreview}
+                variant="outline"
+                size="sm"
+                className="text-red-600 border-red-300 hover:bg-red-50 dark:text-red-400 dark:border-red-600 dark:hover:bg-red-900/20"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={saveImagePreview}
+                size="sm"
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                Save Image
+              </Button>
+            </div>
+          </div>
+        )}
 
       </CardContent>
     </Card>

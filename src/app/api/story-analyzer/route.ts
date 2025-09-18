@@ -1,4 +1,5 @@
 import { streamText, tool, stepCountIs, generateText } from 'ai';
+import { google } from '@ai-sdk/google';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import * as yaml from 'js-yaml';
@@ -169,62 +170,84 @@ Add or modify places/settings as requested and return complete updated story YAM
       }),
 
       generateImageDescription: tool({
-        description: 'Generate detailed descriptions and prompts for character images, place images, or scene visuals',
+        description: 'Generate actual images for characters, places, or scenes using Vercel AI Gateway with Gemini Flash Image',
         inputSchema: z.object({
           currentYamlData: z.string().describe('Current story data as YAML text'),
           userRequest: z.string().describe('User request for image generation')
         }),
         execute: async ({ currentYamlData, userRequest }) => {
-          const result = await generateText({
-            model: 'openai/gpt-4o-mini',
-            system: `You are a visual art specialist focusing on creating detailed image descriptions and generation prompts.
+          try {
+            // Generate image using Google Gemini 2.5 Flash Image
+            const result = await generateText({
+              model: google('gemini-2.5-flash-image-preview'),
+              system: `You are a visual art specialist. Generate a detailed image based on the story context and user request.
 
-Your job is to:
-- Analyze the story context to understand the visual elements
-- Create detailed visual descriptions for characters, places, or scenes
-- Generate specific AI image generation prompts
-- Consider the story's genre, theme, and atmosphere
-
-IMPORTANT: Return ONLY a JSON object with this exact structure:
-{
-  "imageType": "character" | "place" | "scene",
-  "subject": "what to generate an image of",
-  "description": "detailed visual description",
-  "imagePrompt": "AI image generation prompt",
-  "style": "art style or visual style"
-}
-
-No explanations, no markdown formatting, just the JSON object.`,
-            prompt: `Current story context:
+Story Context:
 ${currentYamlData}
 
-User request: "${userRequest}"
+Create a beautiful, high-quality image that matches the story's genre, theme, and atmosphere. Focus on visual storytelling and artistic quality.`,
+              prompt: userRequest,
+              providerOptions: {
+                google: {
+                  responseModalities: ['TEXT', 'IMAGE']
+                }
+              }
+            });
 
-Generate detailed image description and prompt based on the story context.`
-          });
+            // Extract image data from the result
+            const imageFiles = result.files?.filter(f => f.mediaType?.startsWith('image/'));
 
-          try {
-            const imageData = JSON.parse(result.text.trim());
-            return {
-              type: 'image_generation',
-              imageDescription: imageData.description,
-              suggestedPrompt: imageData.imagePrompt,
-              imageType: imageData.imageType,
-              subject: imageData.subject,
-              style: imageData.style,
-              requiresImageService: true,
-              success: true
-            };
+            if (imageFiles && imageFiles.length > 0) {
+              // Convert the image data to a data URL for preview
+              const imageFile = imageFiles[0];
+              const base64Data = Buffer.from(imageFile.uint8Array).toString('base64');
+              const mimeType = imageFile.mediaType || 'image/png';
+              const dataUrl = `data:${mimeType};base64,${base64Data}`;
+
+              // Determine image type and subject from the request
+              const imageType = userRequest.toLowerCase().includes('character') ? 'character' :
+                               userRequest.toLowerCase().includes('place') || userRequest.toLowerCase().includes('location') ? 'place' : 'scene';
+
+              return {
+                type: 'image_generation',
+                imageDescription: result.text || userRequest,
+                suggestedPrompt: userRequest,
+                imageType: imageType,
+                subject: userRequest,
+                style: 'digital art',
+                generatedImageUrl: dataUrl,
+                requiresImageService: false,
+                isPreview: true,
+                success: true
+              };
+            } else {
+              // Fallback if no image was generated
+              return {
+                type: 'image_generation',
+                imageDescription: result.text || userRequest,
+                suggestedPrompt: userRequest,
+                imageType: 'scene',
+                subject: userRequest,
+                style: 'digital art',
+                generatedImageUrl: null,
+                requiresImageService: true,
+                error: 'No image was generated in the response',
+                success: false
+              };
+            }
           } catch (error) {
+            console.error('Vercel AI Gateway image generation error:', error);
             return {
               type: 'image_generation',
               imageDescription: userRequest,
-              suggestedPrompt: `Generate an image for: ${userRequest}`,
+              suggestedPrompt: userRequest,
               imageType: 'scene',
               subject: userRequest,
               style: 'digital art',
+              generatedImageUrl: null,
               requiresImageService: true,
-              success: true
+              error: error instanceof Error ? error.message : 'Image generation failed',
+              success: false
             };
           }
         }
@@ -335,8 +358,11 @@ Please analyze this request and use the appropriate tool(s) to fulfill it. Be cr
           imageType: toolResult.imageType,
           subject: toolResult.subject,
           style: toolResult.style,
+          generatedImageUrl: toolResult.generatedImageUrl,
+          isImagePreview: toolResult.isPreview,
           requiresImageService: toolResult.requiresImageService,
-          responseType: finalResult.responseType === 'yaml' ? 'mixed' : 'image'
+          responseType: finalResult.responseType === 'yaml' ? 'mixed' : 'image',
+          imageError: toolResult.error
         };
       }
     }

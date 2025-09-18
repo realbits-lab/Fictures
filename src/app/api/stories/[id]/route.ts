@@ -12,6 +12,7 @@ const updateStorySchema = z.object({
   status: z.enum(['draft', 'active', 'completed', 'hiatus', 'published']).optional(),
   isPublic: z.boolean().optional(),
   targetWordCount: z.number().min(1000).max(500000).optional(),
+  coverImage: z.string().url().optional(),
 });
 
 // GET /api/stories/[id] - Get story details with chapters
