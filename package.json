@@ -20,6 +20,7 @@
     "@ai-sdk/google": "^2.0.14",
     "@ai-sdk/openai": "^2.0.23",
     "@auth/drizzle-adapter": "^1.10.0",
+    "@google/generative-ai": "^0.24.1",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@vercel/blob": "^2.0.0",
     "ai": "^5.0.29",

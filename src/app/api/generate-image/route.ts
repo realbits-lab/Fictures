@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
 import { google } from '@ai-sdk/google';
-import { experimental_generateImage as generateImage } from 'ai';
+import { generateText } from 'ai';
 import { put } from '@vercel/blob';
 import { nanoid } from 'nanoid';
 
@@ -29,36 +29,48 @@ export async function POST(request: NextRequest) {
 
     console.log(`🎨 Generating ${type} image with prompt:`, prompt);
 
-    // Generate image using Gemini
-    const { image } = await generateImage({
-      model: google.image('imagen-3.0-generate-002'),
+    // Generate image using Gemini 2.5 Flash Image Preview
+    const result = await generateText({
+      model: google('gemini-2.5-flash-image-preview'),
       prompt: prompt,
-      aspectRatio: '1:1', // Square images for character/place portraits
-      providerOptions: {
-        google: {
-          personGeneration: type === 'character' ? 'allow_all' : 'dont_allow',
-        }
-      }
     });
 
     console.log('✅ Image generated successfully');
+    console.log('📝 Model response:', result.text);
+
+    // Find the first image file in the response
+    let imageFile = null;
+    for (const file of result.files) {
+      if (file.mediaType.startsWith('image/')) {
+        imageFile = file;
+        break;
+      }
+    }
+
+    if (!imageFile) {
+      throw new Error('No image file found in response');
+    }
 
     // Upload to Vercel Blob
     const imageFileName = `${storyId}/${type}s/${nanoid()}.png`;
-    const blob = await put(imageFileName, image.uint8Array, {
+    const blob = await put(imageFileName, imageFile.uint8Array, {
       access: 'public',
       contentType: 'image/png',
     });
 
     console.log('✅ Image uploaded to Vercel Blob:', blob.url);
 
+    // Convert uint8Array to base64 for response
+    const base64 = Buffer.from(imageFile.uint8Array).toString('base64');
+
     return Response.json({
       success: true,
       imageUrl: blob.url,
       imageData: {
-        base64: image.base64,
+        base64: base64,
         mediaType: 'image/png'
-      }
+      },
+      modelResponse: result.text
     });
 
   } catch (error) {
