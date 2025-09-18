@@ -28,6 +28,42 @@ export function StoryPromptWriter({ storyData, onStoryUpdate, onPreviewUpdate }:
   const [outputResult, setOutputResult] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Convert story data to YAML format for API
+  const convertToYAML = (data: StoryData): string => {
+    const chars = data.chars || {};
+    const themes = data.themes || [];
+    const structure = data.structure || { type: '3_part', parts: ['setup', 'confrontation', 'resolution'], dist: [25, 50, 25] };
+    const parts = data.parts || [];
+
+    const charsYaml = Object.entries(chars)
+      .map(([name, char]) => `    ${name}: { role: "${char?.role || 'character'}", arc: "${char?.arc || 'development'}" }`)
+      .join('\n');
+
+    const themesYaml = themes.map(theme => `"${theme}"`).join(', ');
+
+    const partsYaml = parts
+      .map((part, index) => `    - part: ${index + 1}\n      goal: "${part?.goal || ''}"\n      conflict: "${part?.conflict || ''}"\n      tension: "${part?.tension || ''}"`)
+      .join('\n');
+
+    return `story:
+  title: "${data.title || ''}"
+  genre: "${data.genre || 'fiction'}"
+  words: ${data.words || 50000}
+  question: "${data.question || ''}"
+  goal: "${data.goal || ''}"
+  conflict: "${data.conflict || ''}"
+  outcome: "${data.outcome || ''}"
+  chars:
+${charsYaml || '    {}'}
+  themes: [${themesYaml}]
+  structure:
+    type: "${structure.type}"
+    parts: [${structure.parts.map(p => `"${p}"`).join(', ')}]
+    dist: [${structure.dist.join(', ')}]
+  parts:
+${partsYaml || '    []'}`;
+  };
+
   // Preview functionality for cancel/save pattern
   const [originalStoryData, setOriginalStoryData] = useState<StoryData | null>(null);
   const [previewStoryData, setPreviewStoryData] = useState<StoryData | null>(null);
@@ -137,13 +173,16 @@ Please try:
     }
 
     try {
+      // Convert story data to YAML format for cleaner API processing
+      const storyYaml = convertToYAML(storyData);
+
       const response = await fetch('/api/story-analyzer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          storyData,
+          storyYaml,
           userRequest: inputPrompt.trim()
         })
       });

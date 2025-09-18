@@ -6,44 +6,52 @@ import * as yaml from 'js-yaml';
 
 export async function POST(request: NextRequest) {
   try {
-    const { storyData, userRequest } = await request.json();
+    const requestBody = await request.json();
+    if (!requestBody || typeof requestBody !== 'object') {
+      throw new Error('Invalid request body');
+    }
 
-    // Add null safety checks for all nested objects
-    const safeStoryData = {
-      title: storyData?.title || '',
-      genre: storyData?.genre || 'urban_fantasy',
-      words: storyData?.words || 80000,
-      question: storyData?.question || '',
-      goal: storyData?.goal || '',
-      conflict: storyData?.conflict || '',
-      outcome: storyData?.outcome || '',
-      chars: storyData?.chars || {},
-      themes: storyData?.themes || [],
-      structure: storyData?.structure || { type: '3_part', parts: ['setup', 'confrontation', 'resolution'], dist: [25, 50, 25] },
-      parts: storyData?.parts || []
-    };
+    // Support both new YAML format and legacy JSON format
+    const { storyYaml, storyData, userRequest } = requestBody;
 
-    // Convert story data to YAML for context
-    const currentStoryYAML = `story:
-  title: "${safeStoryData.title}"
-  genre: "${safeStoryData.genre}"
-  words: ${safeStoryData.words}
-  question: "${safeStoryData.question}"
-  goal: "${safeStoryData.goal}"
-  conflict: "${safeStoryData.conflict}"
-  outcome: "${safeStoryData.outcome}"
-  chars:${Object.entries(safeStoryData.chars).map(([name, char]: [string, any]) => `
-    ${name}: { role: "${char?.role || 'character'}", arc: "${char?.arc || 'development'}" }`).join('')}
-  themes: [${safeStoryData.themes.map((theme: string) => `"${theme}"`).join(', ')}]
+    if (!userRequest || typeof userRequest !== 'string') {
+      throw new Error('Missing or invalid userRequest');
+    }
+
+    let currentStoryYAML: string;
+
+    if (storyYaml && typeof storyYaml === 'string') {
+      // New YAML format - use directly
+      currentStoryYAML = storyYaml;
+    } else if (storyData) {
+      // Legacy JSON format - convert to YAML with minimal processing
+      const title = storyData?.title || 'Untitled Story';
+      const genre = storyData?.genre || 'fiction';
+      const words = storyData?.words || 50000;
+      const question = storyData?.question || '';
+      const goal = storyData?.goal || '';
+      const conflict = storyData?.conflict || '';
+      const outcome = storyData?.outcome || '';
+
+      // Simple YAML generation without complex object processing
+      currentStoryYAML = `story:
+  title: "${title}"
+  genre: "${genre}"
+  words: ${words}
+  question: "${question}"
+  goal: "${goal}"
+  conflict: "${conflict}"
+  outcome: "${outcome}"
+  chars: {}
+  themes: []
   structure:
-    type: "${safeStoryData.structure.type}"
-    parts: [${safeStoryData.structure.parts.map((part: string) => `"${part}"`).join(', ')}]
-    dist: [${safeStoryData.structure.dist.join(', ')}]
-  parts:${safeStoryData.parts.map((part: any) => `
-    - part: ${part.part}
-      goal: "${part.goal || ''}"
-      conflict: "${part.conflict || ''}"
-      tension: "${part.tension || ''}"`).join('')}`;
+    type: "3_part"
+    parts: ["setup", "confrontation", "resolution"]
+    dist: [25, 50, 25]
+  parts: []`;
+    } else {
+      throw new Error('Missing storyYaml or storyData in request');
+    }
 
     // Define tools for the AI to choose from
     const tools = {
@@ -321,21 +329,38 @@ Please analyze this request and use the appropriate tool(s) to fulfill it. Be cr
     // Process each tool result
     for (const toolResult of toolResults) {
       if (toolResult.type === 'story_modification' || toolResult.type === 'character_modification' || toolResult.type === 'place_modification') {
-        // Parse the updated YAML text and convert back to story data
+        // Parse the updated YAML text - simplified approach
         try {
           let cleanedYaml = toolResult.updatedYamlText;
+          if (!cleanedYaml || typeof cleanedYaml !== 'string') {
+            throw new Error('Invalid YAML text received from tool');
+          }
+
+          // Clean markdown formatting
           if (cleanedYaml.startsWith('```yaml')) {
             cleanedYaml = cleanedYaml.replace(/^```yaml\s*/, '').replace(/\s*```$/, '');
           } else if (cleanedYaml.startsWith('```')) {
             cleanedYaml = cleanedYaml.replace(/^```\s*/, '').replace(/\s*```$/, '');
           }
 
-          const parsedYAML = yaml.load(cleanedYaml) as any;
-          const updatedStoryData = parsedYAML.story || parsedYAML;
+          // Parse and validate YAML
+          const parsedYAML = yaml.load(cleanedYaml);
+          if (!parsedYAML || typeof parsedYAML !== 'object') {
+            throw new Error('YAML parsing returned null or invalid data');
+          }
+
+          const rawStoryData = (parsedYAML as Record<string, unknown>).story || parsedYAML;
+          if (!rawStoryData || typeof rawStoryData !== 'object') {
+            throw new Error('No valid story data found in parsed YAML');
+          }
+
+          // Simple data extraction without complex safety checks
+          const updatedStoryData = rawStoryData as Record<string, unknown>;
 
           finalResult = {
             ...finalResult,
             updatedStoryData,
+            updatedYaml: cleanedYaml,
             responseType: 'yaml',
             requestType: toolResult.type,
             reasoning: `AI processed ${toolResult.type.replace('_', ' ')} request`
@@ -345,7 +370,7 @@ Please analyze this request and use the appropriate tool(s) to fulfill it. Be cr
           finalResult = {
             ...finalResult,
             responseType: 'error',
-            error: 'Failed to parse updated story data'
+            error: `Failed to parse updated story data: ${error instanceof Error ? error.message : 'Unknown parsing error'}`
           };
         }
       }
