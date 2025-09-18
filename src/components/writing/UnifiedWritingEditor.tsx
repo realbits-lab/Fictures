@@ -2563,6 +2563,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             {currentSelection.level === "story" && (
               <StoryPromptWriter
                 storyYaml={convertStoryDataToYAML(storyPreviewData || sampleStoryData)}
+                storyId={story.id}
                 onStoryUpdate={handleStoryYAMLUpdate}
                 onPreviewUpdate={handleStoryYAMLPreviewUpdate}
               />

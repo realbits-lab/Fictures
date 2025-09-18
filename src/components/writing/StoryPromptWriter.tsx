@@ -6,11 +6,12 @@ import * as yaml from 'js-yaml';
 
 interface StoryPromptWriterProps {
   storyYaml: string;
+  storyId?: string;
   onStoryUpdate?: (updatedYaml: string) => void;
   onPreviewUpdate?: (previewYaml: string | null) => void;
 }
 
-export function StoryPromptWriter({ storyYaml, onStoryUpdate, onPreviewUpdate }: StoryPromptWriterProps) {
+export function StoryPromptWriter({ storyYaml, storyId, onStoryUpdate, onPreviewUpdate }: StoryPromptWriterProps) {
   const [inputPrompt, setInputPrompt] = useState("");
   const [outputResult, setOutputResult] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -42,10 +43,12 @@ export function StoryPromptWriter({ storyYaml, onStoryUpdate, onPreviewUpdate }:
 
   const handleImageRequest = async (prompt: string) => {
     try {
-      // Parse YAML to get story ID
-      const parsedStory = yaml.load(storyYaml) as any;
-      const storyId = parsedStory?.story?.id || parsedStory?.id || 'temp-story';
-      console.log('Using story ID for image generation:', storyId);
+      // Use passed storyId or parse YAML as fallback
+      const effectiveStoryId = storyId || (() => {
+        const parsedStory = yaml.load(storyYaml) as any;
+        return parsedStory?.story?.id || parsedStory?.id || 'temp-story';
+      })();
+      console.log('Using story ID for image generation:', effectiveStoryId);
 
       const response = await fetch('/api/generate-image', {
         method: 'POST',
@@ -55,7 +58,7 @@ export function StoryPromptWriter({ storyYaml, onStoryUpdate, onPreviewUpdate }:
         body: JSON.stringify({
           prompt: prompt,
           type: 'general',
-          storyId: storyId
+          storyId: effectiveStoryId
         })
       });
 
@@ -393,11 +396,13 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
     if (!previewImageData) return;
 
     try {
-      // Parse YAML to get story ID
-      const parsedStory = yaml.load(storyYaml) as any;
-      const storyId = parsedStory?.story?.id || parsedStory?.id;
+      // Use passed storyId or parse YAML as fallback
+      const effectiveStoryId = storyId || (() => {
+        const parsedStory = yaml.load(storyYaml) as any;
+        return parsedStory?.story?.id || parsedStory?.id;
+      })();
 
-      if (!storyId) {
+      if (!effectiveStoryId) {
         // Fallback: try to get from URL (chapter ID path) and find associated story
         const url = new URL(window.location.href);
         const chapterId = url.pathname.split('/')[2];
@@ -405,10 +410,10 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
         throw new Error('Story ID not available. Cannot save image.');
       }
 
-      console.log('Saving image to story ID:', storyId);
+      console.log('Saving image to story ID:', effectiveStoryId);
 
       // Update story cover image
-      const response = await fetch(`/api/stories/${storyId}`, {
+      const response = await fetch(`/api/stories/${effectiveStoryId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
