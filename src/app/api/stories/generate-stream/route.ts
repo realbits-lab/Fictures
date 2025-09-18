@@ -127,13 +127,13 @@ export async function POST(request: NextRequest) {
 
           console.log('✅ Place data generated and streamed');
 
-          // Phase 5: Character Image Generation
+          // Phase 5: Character Image Generation (Parallel)
           sendUpdate('progress', { phase: 'Phase 5', description: 'Character Images - Generating AI images for each character', status: 'in_progress' });
 
-          console.log('Phase 5: Character Image Generation');
-          const characterImages = [];
+          console.log('Phase 5: Character Image Generation (Parallel)');
+          const characterImages: Array<{characterId: string; name: string; imageUrl: string}> = [];
           if (characters && Array.isArray(characters)) {
-            for (const character of characters) {
+            const characterImagePromises = characters.map(async (character) => {
               try {
                 const parsedData = character.parsedData as Record<string, unknown>;
                 const characterName = (parsedData?.name as string) || character.id;
@@ -156,19 +156,24 @@ export async function POST(request: NextRequest) {
 
                 if (response.ok) {
                   const imageResult = await response.json();
-                  characterImages.push({
+                  console.log(`✅ Generated image for character: ${characterName}`);
+                  return {
                     characterId: character.id,
                     name: characterName,
                     imageUrl: imageResult.imageUrl
-                  });
-                  console.log(`✅ Generated image for character: ${characterName}`);
+                  };
                 } else {
                   console.warn(`⚠️ Failed to generate image for character: ${characterName}`);
+                  return null;
                 }
               } catch (error) {
                 console.error(`❌ Error generating image for character:`, error);
+                return null;
               }
-            }
+            });
+
+            const characterImageResults = await Promise.all(characterImagePromises);
+            characterImages.push(...characterImageResults.filter(result => result !== null));
           }
 
           sendUpdate('phase5_complete', {
@@ -179,13 +184,13 @@ export async function POST(request: NextRequest) {
 
           console.log('✅ Character images generated');
 
-          // Phase 6: Place Image Generation
+          // Phase 6: Place Image Generation (Parallel)
           sendUpdate('progress', { phase: 'Phase 6', description: 'Place Images - Generating AI images for each location', status: 'in_progress' });
 
-          console.log('Phase 6: Place Image Generation');
-          const placeImages = [];
+          console.log('Phase 6: Place Image Generation (Parallel)');
+          const placeImages: Array<{placeId: string; name: string; imageUrl: string}> = [];
           if (places && Array.isArray(places)) {
-            for (const place of places) {
+            const placeImagePromises = places.map(async (place) => {
               try {
                 const parsedData = place.parsedData as Record<string, unknown>;
                 const placeName = (parsedData?.name as string) || place.name;
@@ -207,19 +212,24 @@ export async function POST(request: NextRequest) {
 
                 if (response.ok) {
                   const imageResult = await response.json();
-                  placeImages.push({
+                  console.log(`✅ Generated image for place: ${placeName}`);
+                  return {
                     placeId: place.id,
                     name: placeName,
                     imageUrl: imageResult.imageUrl
-                  });
-                  console.log(`✅ Generated image for place: ${placeName}`);
+                  };
                 } else {
                   console.warn(`⚠️ Failed to generate image for place: ${placeName}`);
+                  return null;
                 }
               } catch (error) {
                 console.error(`❌ Error generating image for place:`, error);
+                return null;
               }
-            }
+            });
+
+            const placeImageResults = await Promise.all(placeImagePromises);
+            placeImages.push(...placeImageResults.filter(result => result !== null));
           }
 
           sendUpdate('phase6_complete', {
@@ -281,10 +291,10 @@ export async function POST(request: NextRequest) {
             }
           }
 
-          // Create characters
+          // Create characters (Parallel)
           const createdCharacters = [];
           if (characters && Array.isArray(characters)) {
-            for (const character of characters) {
+            const characterCreationPromises = characters.map(async (character) => {
               const characterId = nanoid();
               const parsedData = character.parsedData as Record<string, unknown>;
 
@@ -300,18 +310,21 @@ export async function POST(request: NextRequest) {
                 imageUrl: characterImage?.imageUrl || null,
               });
 
-              createdCharacters.push({
+              return {
                 id: characterId,
                 name: (parsedData?.name as string),
                 imageUrl: characterImage?.imageUrl
-              });
-            }
+              };
+            });
+
+            const characterCreationResults = await Promise.all(characterCreationPromises);
+            createdCharacters.push(...characterCreationResults);
           }
 
-          // Create places
+          // Create places (Parallel)
           const createdPlaces = [];
           if (places && Array.isArray(places)) {
-            for (const place of places) {
+            const placeCreationPromises = places.map(async (place) => {
               const placeId = nanoid();
               const parsedData = place.parsedData as Record<string, unknown>;
 
@@ -329,12 +342,15 @@ export async function POST(request: NextRequest) {
                 imageUrl: placeImage?.imageUrl || null,
               });
 
-              createdPlaces.push({
+              return {
                 id: placeId,
                 name: (parsedData?.name as string) || place.name,
                 imageUrl: placeImage?.imageUrl
-              });
-            }
+              };
+            });
+
+            const placeCreationResults = await Promise.all(placeCreationPromises);
+            createdPlaces.push(...placeCreationResults);
           }
 
           // Send final completion update

@@ -582,17 +582,16 @@ Scene ${i} function within chapter structure. Must include at least one characte
   return scenes;
 }
 
-// Generate character data from story concept
+// Generate character data from story concept (Parallel)
 export async function generateCharacterData(storyConcept: Story, language: string = 'English') {
-  const characters = [];
-
-  for (const [key, char] of Object.entries(storyConcept.chars)) {
-    const { text } = await generateText({
-      model: AI_MODELS.writing,
-      messages: [
-        {
-          role: 'system',
-          content: `Generate detailed character data in YAML format for story development.
+  const characterPromises = Object.entries(storyConcept.chars).map(async ([key, char]) => {
+    try {
+      const { text } = await generateText({
+        model: AI_MODELS.writing,
+        messages: [
+          {
+            role: 'system',
+            content: `Generate detailed character data in YAML format for story development.
 
 Structure:
 ---
@@ -621,20 +620,19 @@ CRITICAL YAML REQUIREMENTS:
 - Name must be culturally appropriate for ${language}
 - All details must connect to the user's story concept
 - Output must be valid, parseable YAML format`
-        },
-        {
-          role: 'user',
-          content: `Create detailed character data for: ${char.role}
+          },
+          {
+            role: 'user',
+            content: `Create detailed character data for: ${char.role}
 Story context: ${storyConcept.title} - ${storyConcept.genre}
 Story language: ${language}
 Character info from story concept: ${JSON.stringify(char, null, 2)}
 
 Generate comprehensive character details in YAML format.`
-        }
-      ]
-    });
+          }
+        ]
+      });
 
-    try {
       const cleanYaml = extractYamlFromText(text);
       let parsedData: any;
       try {
@@ -649,15 +647,15 @@ Generate comprehensive character details in YAML format.`
         };
       }
 
-      characters.push({
+      return {
         id: key,
         content: cleanYaml,
         parsedData
-      });
+      };
     } catch (error) {
       console.error(`Failed to generate character data for ${key}:`, error);
       // Create fallback character
-      characters.push({
+      return {
         id: key,
         content: `name: "${key}"\nrole: "${char.role || 'Character'}"\ndescription: "Generated with errors"`,
         parsedData: {
@@ -665,25 +663,26 @@ Generate comprehensive character details in YAML format.`
           role: char.role || 'Character',
           description: 'Generated with errors'
         }
-      });
+      };
     }
-  }
+  });
 
+  const characters = await Promise.all(characterPromises);
   return characters;
 }
 
-// Generate place data from story concept
+// Generate place data from story concept (Parallel)
 export async function generatePlaceData(storyConcept: Story, language: string = 'English') {
-  const places = [];
   const allPlaces = [...(storyConcept.setting?.primary || []), ...(storyConcept.setting?.secondary || [])];
 
-  for (const place of allPlaces) {
-    const { text } = await generateText({
-      model: AI_MODELS.writing,
-      messages: [
-        {
-          role: 'system',
-          content: `Generate detailed location data in YAML format for story development.
+  const placePromises = allPlaces.map(async (place) => {
+    try {
+      const { text } = await generateText({
+        model: AI_MODELS.writing,
+        messages: [
+          {
+            role: 'system',
+            content: `Generate detailed location data in YAML format for story development.
 
 Structure:
 ---
@@ -710,19 +709,18 @@ CRITICAL YAML REQUIREMENTS:
 - Location must be culturally appropriate for ${language}
 - Details must serve the story's plot and themes
 - Output must be valid, parseable YAML format`
-        },
-        {
-          role: 'user',
-          content: `Create detailed location data for: ${place}
+          },
+          {
+            role: 'user',
+            content: `Create detailed location data for: ${place}
 Story context: ${storyConcept.title} - ${storyConcept.genre}
 Story language: ${language}
 
 Generate comprehensive location details in YAML format.`
-        }
-      ]
-    });
+          }
+        ]
+      });
 
-    try {
       const cleanYaml = extractYamlFromText(text);
       let parsedData: any;
       try {
@@ -737,15 +735,15 @@ Generate comprehensive location details in YAML format.`
         };
       }
 
-      places.push({
+      return {
         name: place,
         content: cleanYaml,
         parsedData
-      });
+      };
     } catch (error) {
       console.error(`Failed to generate place data for ${place}:`, error);
       // Create fallback place
-      places.push({
+      return {
         name: place,
         content: `name: "${place}"\ntype: "location"\ndescription: "Generated with errors"`,
         parsedData: {
@@ -753,10 +751,11 @@ Generate comprehensive location details in YAML format.`
           type: 'location',
           description: 'Generated with errors'
         }
-      });
+      };
     }
-  }
+  });
 
+  const places = await Promise.all(placePromises);
   return places;
 }
 
