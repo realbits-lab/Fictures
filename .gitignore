@@ -70,3 +70,6 @@ auth-data.json
 # Scripts with hardcoded passwords (for security)
 scripts/*password*.ts
 scripts/*credential*.ts
+
+# Claude Code settings (local configuration)
+.claude/

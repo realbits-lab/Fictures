@@ -1,0 +1,153 @@
+# Cursor Rules for Fictures Project
+
+## Project Overview
+
+Fictures is an AI-powered story writing platform built with Next.js 15, PostgreSQL (Neon), and OpenAI integration.
+
+## Development Environment
+
+**Required Commands:**
+- **Development**: `dotenv --file .env.local run pnpm dev` (runs on port 3000)
+- **Build**: `pnpm build` (includes type checking)
+- **Database migrations**: `pnpm db:migrate`
+- **Database studio**: `pnpm db:studio`
+- **Testing**: `dotenv --file .env.local run npx playwright test --headless`
+
+**Package Manager:** Always use `pnpm` instead of `npm`
+
+## Commit Message Guidelines
+
+When writing commit messages for GitHub:
+
+1. **Before Writing**:
+   - Always examine what changes were made using `git diff` or `git status`
+   - Review the actual file changes to understand what was modified
+   - Use `git add` to stage specific changes if needed
+
+2. **Title (First Line)**:
+   - Use 10-15 words maximum
+   - Be specific and descriptive
+   - Use imperative mood (e.g., "Add", "Fix", "Update", "Remove")
+   - No period at the end
+
+3. **Body**:
+   - List the specific items that were changed
+   - Use bullet points for clarity
+   - Be concise but descriptive
+   - Focus on what was done, not why (unless the why is not obvious)
+   - Do NOT include conclusions, closing remarks, or closing statements
+
+### Examples:
+
+**Good:**
+```
+Add character management to story creation workflow
+
+- Implement character schema with personality traits
+- Create character creation form components
+- Add character selection to scene writing
+- Update story database relationships
+```
+
+**Good:**
+```
+Fix AI writing assistant timeout issues
+
+- Increase OpenAI API timeout from 30s to 60s
+- Add retry logic for failed AI requests
+- Improve error handling for writing assistance
+- Update loading states in writing interface
+```
+
+**Avoid:**
+```
+Fixed some bugs and added features
+```
+
+## Code Style
+
+**Core Principles:**
+- Follow TypeScript best practices with strict typing
+- Use meaningful variable and function names
+- Add JSDoc comments for complex functions
+- Maintain consistent formatting with Prettier
+- Use proper error handling with try-catch blocks
+- NEVER use ellipsis ("...") as placeholders - write complete, executable code
+
+**Database & API:**
+- Use Drizzle ORM for all database operations
+- Implement proper error boundaries and loading states
+- Use NextAuth.js for authentication throughout
+- Integrate OpenAI GPT-4o-mini via Vercel AI Gateway
+
+## Project Structure
+
+**Next.js 15 App Router Structure:**
+```
+src/
+├── app/                    # App Router pages and API routes
+│   ├── auth/              # Authentication routes
+│   ├── stories/           # Story management pages
+│   ├── write/             # Writing interface
+│   ├── community/         # Story sharing features
+│   ├── api/               # API endpoints
+│   └── settings/          # User settings
+├── components/            # Reusable React components
+├── lib/
+│   ├── auth/             # NextAuth.js configuration
+│   ├── db/               # Database schema and operations
+│   └── hooks/            # Custom React hooks
+└── types/                # TypeScript type definitions
+```
+
+**Key Directories:**
+- Components in `/src/components/`
+- API routes in `/src/app/api/`
+- Database schemas in `/src/lib/db/schema.ts`
+- Types in `/src/types/`
+- Utilities in `/src/lib/`
+
+## Database Schema
+
+**Story Writing Hierarchy:**
+- **stories** → **parts** → **chapters** → **scenes**
+- **characters**: Character profiles and management
+- **users**: Google OAuth authentication
+- **aiInteractions**: AI writing assistance tracking
+- **communityPosts**: Story sharing features
+
+## Testing
+
+**Unit Testing (Jest):**
+- Write tests for new features and utilities
+- Test files in `/__tests__/` directory
+- Use descriptive test names
+
+**E2E Testing (Playwright):**
+- Test user workflows and critical paths
+- Use `@playwright/.auth/user.json` for Google OAuth
+- Always run with `--headless` flag
+- Follow existing patterns in `/tests/` directory
+
+## Environment Variables
+
+**Required for Development:**
+```bash
+# Authentication
+AUTH_SECRET=***
+GOOGLE_CLIENT_ID=***
+GOOGLE_CLIENT_SECRET=***
+
+# AI Integration
+AI_GATEWAY_API_KEY=***             # Vercel AI Gateway for OpenAI
+
+# Database
+POSTGRES_URL=***                   # Neon PostgreSQL
+```
+
+## AI Integration Guidelines
+
+- Use OpenAI GPT-4o-mini via Vercel AI Gateway
+- Always use `AI_GATEWAY_API_KEY` instead of direct OpenAI keys
+- Implement proper streaming and error handling
+- Track AI interactions in database for usage analytics
