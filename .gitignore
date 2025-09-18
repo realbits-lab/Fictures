@@ -73,3 +73,6 @@ scripts/*credential*.ts
 
 # Claude Code settings (local configuration)
 .claude/
+
+# Output directory
+@output/
