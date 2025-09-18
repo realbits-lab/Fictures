@@ -3,6 +3,7 @@ import { stories, chapters, users, userStats, parts, scenes } from './schema';
 import { eq, desc, and, inArray } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { RelationshipManager } from './relationships';
+import { hashPassword } from '../auth/password';
 
 // User authentication queries
 export async function findUserByEmail(email: string) {
@@ -19,20 +20,36 @@ export async function createUser(data: {
   email: string;
   name?: string;
   image?: string;
+  password?: string;
 }) {
   const userId = nanoid();
-  
+
   const [user] = await db.insert(users).values({
     id: userId,
     email: data.email,
     name: data.name,
     image: data.image,
+    password: data.password,
     role: 'reader',
     createdAt: new Date(),
     updatedAt: new Date(),
   }).returning();
 
   return user;
+}
+
+export async function createUserWithPassword(data: {
+  email: string;
+  password: string;
+  name?: string;
+}) {
+  const hashedPassword = await hashPassword(data.password);
+
+  return createUser({
+    email: data.email,
+    name: data.name,
+    password: hashedPassword,
+  });
 }
 
 export async function updateUser(userId: string, data: {

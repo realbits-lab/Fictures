@@ -1,5 +1,7 @@
 import type { NextAuthConfig } from 'next-auth';
 import Google from 'next-auth/providers/google';
+import Credentials from 'next-auth/providers/credentials';
+import { verifyPassword } from './password';
 import { findUserByEmail, createUser, updateUser } from '@/lib/db/queries';
 
 export const authConfig = {
@@ -14,6 +16,56 @@ export const authConfig = {
           response_type: "code",
         },
       },
+    }),
+    Credentials({
+      name: "credentials",
+      credentials: {
+        email: {
+          label: "Email",
+          type: "email",
+          placeholder: "email@example.com"
+        },
+        password: {
+          label: "Password",
+          type: "password"
+        }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        try {
+          // Find user by email
+          const user = await findUserByEmail(credentials.email as string);
+
+          if (!user || !user.password) {
+            return null;
+          }
+
+          // Verify password
+          const isPasswordValid = await verifyPassword(
+            credentials.password as string,
+            user.password
+          );
+
+          if (!isPasswordValid) {
+            return null;
+          }
+
+          // Return user object that will be used in JWT
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            role: user.role,
+          };
+        } catch (error) {
+          console.error('Authorization error:', error);
+          return null;
+        }
+      }
     }),
   ],
   pages: {
@@ -36,7 +88,12 @@ export const authConfig = {
       }
       return true;
     },
-    async signIn({ account, profile }) {
+    async signIn({ account, profile, user }) {
+      // Allow credentials sign-ins (handled by authorize function)
+      if (account?.provider === 'credentials') {
+        return true;
+      }
+
       // Allow Google OAuth sign-ins
       if (account?.provider === 'google') {
         if (!profile?.email) {
