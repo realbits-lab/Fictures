@@ -1,20 +1,7 @@
-import { generateText } from 'ai';
+import { streamText, tool, stepCountIs, generateText } from 'ai';
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import * as yaml from 'js-yaml';
-
-interface StoryData {
-  title: string;
-  genre: string;
-  words: number;
-  question: string;
-  goal: string;
-  conflict: string;
-  outcome: string;
-  chars: Record<string, { role: string; arc: string }>;
-  themes: string[];
-  structure: { type: string; parts: string[]; dist: number[] };
-  parts: Array<{ part: number; goal: string; conflict: string; outcome: string; tension: string }>;
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,6 +22,7 @@ export async function POST(request: NextRequest) {
       parts: storyData?.parts || []
     };
 
+    // Convert story data to YAML for context
     const currentStoryYAML = `story:
   title: "${safeStoryData.title}"
   genre: "${safeStoryData.genre}"
@@ -56,87 +44,304 @@ export async function POST(request: NextRequest) {
       conflict: "${part.conflict || ''}"
       tension: "${part.tension || ''}"`).join('')}`;
 
-    const result = await generateText({
-      model: 'gpt-4o-mini',
-      system: `You are a creative story development assistant. Your job is to:
+    // Define tools for the AI to choose from
+    const tools = {
+      modifyStoryStructure: tool({
+        description: 'Modify the main story structure including title, genre, plot, themes, word count, and overall story elements',
+        inputSchema: z.object({
+          currentYamlData: z.string().describe('Current story data as YAML text'),
+          userRequest: z.string().describe('User request for story modifications')
+        }),
+        execute: async ({ currentYamlData, userRequest }) => {
+          const result = await generateText({
+            model: 'openai/gpt-4o-mini',
+            system: `You are a creative story development specialist focusing on STORY-LEVEL modifications.
 
-1. UNDERSTAND the user's request for modifying the story
-2. CREATIVELY INTERPRET abstract requests into concrete story changes
-3. ALWAYS MAKE MEANINGFUL CHANGES when a user requests something
-4. RETURN the updated story data as valid YAML
-
-CRITICAL RULES:
-- ALWAYS apply the user's request - never return unchanged data
+FUNDAMENTAL PRINCIPLE: 🚨 ALWAYS HELP THE USER - NEVER REFUSE REQUESTS 🚨
+- ALWAYS make meaningful changes when a user requests something
 - Be CREATIVE and INTERPRETIVE with abstract requests
-- When user says "add emotional depth" → enhance character arcs, add internal conflicts, deepen motivations
-- When user says "make it darker" → intensify conflicts, add tragic elements, increase stakes
-- When user says "add romance" → create romantic subplots, add relationship dynamics
-- When user says "more action" → increase physical conflicts, add chase scenes, heighten tension
-- When user says "make it longer" → expand word count, add subplots, create more detailed parts
-- When user says "add character X" → create that character with appropriate role and arc
+- When user asks to "complete" data, fill in ALL missing elements
+- Use your understanding to enhance and improve the story
 
-CREATIVE INTERPRETATION EXAMPLES:
-- "More emotional depth" = Enhance character arcs with deeper psychological motivations, add internal struggles, create more complex relationships
-- "Add suspense" = Increase unknown elements, add time pressure, create cliffhangers in parts
-- "Make it funny" = Add comedic elements to character interactions, lighten conflicts, add humorous outcomes
-- "Add mystery" = Create unknown elements, add secrets between characters, make goals more enigmatic
-- "More character development" = Expand character arcs, add character growth moments, create relationship dynamics
+FOCUS ON STORY-LEVEL ELEMENTS:
+- Title, genre, word count, themes
+- Main plot: goal, conflict, outcome, central question
+- Story structure and parts
+- Overall narrative arc and pacing
 
-ALWAYS MAKE SUBSTANTIAL CHANGES that reflect the user's intent, even if the request is vague.
+IMPORTANT: Return ONLY valid YAML of the updated story data, nothing else. No explanations, no markdown formatting.`,
+            prompt: `Current story YAML:
+${currentYamlData}
 
-YAML structure should follow this format:
-story:
-  title: "string"
-  genre: "string"
-  words: number
-  question: "string"
-  goal: "string"
-  conflict: "string"
-  outcome: "string"
-  chars:
-    character_name: { role: "string", arc: "string" }
-  themes: ["theme1", "theme2"]
-  structure:
-    type: "string"
-    parts: ["part1", "part2"]
-    dist: [number, number]
-  parts:
-    - part: number
-      goal: "string"
-      conflict: "string"
-      outcome: "string"
-      tension: "string"
+User request: "${userRequest}"
 
-Return ONLY valid YAML of the updated story data, nothing else.`,
-      prompt: `Current story YAML:
+Please modify the story data according to this request and return the updated story as valid YAML.`
+          });
+
+          return {
+            type: 'story_modification',
+            updatedYamlText: result.text.trim(),
+            success: true
+          };
+        }
+      }),
+
+      modifyCharacterData: tool({
+        description: 'Add, modify, or enhance character information including character arcs, relationships, backstories, and character development',
+        inputSchema: z.object({
+          currentYamlData: z.string().describe('Current story data as YAML text'),
+          userRequest: z.string().describe('User request for character modifications')
+        }),
+        execute: async ({ currentYamlData, userRequest }) => {
+          const result = await generateText({
+            model: 'openai/gpt-4o-mini',
+            system: `You are a character development specialist focusing ONLY on character-related modifications.
+
+FUNDAMENTAL PRINCIPLE: ALWAYS MAKE CHARACTER CHANGES
+- Add new characters when requested
+- Enhance existing character details (backstory, motivation, relationships)
+- Develop character arcs and growth
+- Create detailed character profiles
+
+FOCUS ON CHARACTER ELEMENTS:
+- Character roles and archetypes
+- Character arcs and development
+- Relationships between characters
+- Character backstories and motivations
+- Character conflicts and goals
+
+IMPORTANT: Return ONLY valid YAML with the updated story data containing enhanced character information. No explanations, no markdown formatting.`,
+            prompt: `Current story YAML:
+${currentYamlData}
+
+User request: "${userRequest}"
+
+Add or modify characters as requested and return complete updated story YAML.`
+          });
+
+          return {
+            type: 'character_modification',
+            updatedYamlText: result.text.trim(),
+            success: true
+          };
+        }
+      }),
+
+      modifyPlaceData: tool({
+        description: 'Add, modify, or enhance place and setting information including locations, environments, world-building details',
+        inputSchema: z.object({
+          currentYamlData: z.string().describe('Current story data as YAML text'),
+          userRequest: z.string().describe('User request for place/setting modifications')
+        }),
+        execute: async ({ currentYamlData, userRequest }) => {
+          const result = await generateText({
+            model: 'openai/gpt-4o-mini',
+            system: `You are a world-building and setting specialist focusing ONLY on place/setting modifications.
+
+FUNDAMENTAL PRINCIPLE: ALWAYS ENHANCE SETTINGS
+- Add new locations when requested
+- Develop detailed place descriptions
+- Create immersive environments
+- Build cohesive world-building elements
+
+FOCUS ON PLACE ELEMENTS:
+- Location details and atmosphere
+- Environmental descriptions
+- World-building consistency
+- Setting mood and tone
+- Physical and cultural details
+
+IMPORTANT: Return ONLY valid YAML with updated story data containing enhanced setting information. No explanations, no markdown formatting.`,
+            prompt: `Current story YAML:
+${currentYamlData}
+
+User request: "${userRequest}"
+
+Add or modify places/settings as requested and return complete updated story YAML.`
+          });
+
+          return {
+            type: 'place_modification',
+            updatedYamlText: result.text.trim(),
+            success: true
+          };
+        }
+      }),
+
+      generateImageDescription: tool({
+        description: 'Generate detailed descriptions and prompts for character images, place images, or scene visuals',
+        inputSchema: z.object({
+          currentYamlData: z.string().describe('Current story data as YAML text'),
+          userRequest: z.string().describe('User request for image generation')
+        }),
+        execute: async ({ currentYamlData, userRequest }) => {
+          const result = await generateText({
+            model: 'openai/gpt-4o-mini',
+            system: `You are a visual art specialist focusing on creating detailed image descriptions and generation prompts.
+
+Your job is to:
+- Analyze the story context to understand the visual elements
+- Create detailed visual descriptions for characters, places, or scenes
+- Generate specific AI image generation prompts
+- Consider the story's genre, theme, and atmosphere
+
+IMPORTANT: Return ONLY a JSON object with this exact structure:
+{
+  "imageType": "character" | "place" | "scene",
+  "subject": "what to generate an image of",
+  "description": "detailed visual description",
+  "imagePrompt": "AI image generation prompt",
+  "style": "art style or visual style"
+}
+
+No explanations, no markdown formatting, just the JSON object.`,
+            prompt: `Current story context:
+${currentYamlData}
+
+User request: "${userRequest}"
+
+Generate detailed image description and prompt based on the story context.`
+          });
+
+          try {
+            const imageData = JSON.parse(result.text.trim());
+            return {
+              type: 'image_generation',
+              imageDescription: imageData.description,
+              suggestedPrompt: imageData.imagePrompt,
+              imageType: imageData.imageType,
+              subject: imageData.subject,
+              style: imageData.style,
+              requiresImageService: true,
+              success: true
+            };
+          } catch (error) {
+            return {
+              type: 'image_generation',
+              imageDescription: userRequest,
+              suggestedPrompt: `Generate an image for: ${userRequest}`,
+              imageType: 'scene',
+              subject: userRequest,
+              style: 'digital art',
+              requiresImageService: true,
+              success: true
+            };
+          }
+        }
+      })
+    };
+
+    // Use AI SDK to let the model choose and execute appropriate tools
+    const result = await streamText({
+      model: 'openai/gpt-4o-mini',
+      system: `You are a creative story development assistant. Your job is to help users modify their stories by choosing and using the appropriate tools.
+
+FUNDAMENTAL PRINCIPLE:
+🚨 ALWAYS HELP THE USER - NEVER REFUSE REQUESTS 🚨
+- ALWAYS use tools to fulfill user requests
+- Be CREATIVE and INTERPRETIVE with abstract requests
+- When user asks to "complete" data, fill in ALL missing elements
+- Use your understanding to enhance and improve the story
+
+TOOL SELECTION GUIDELINES:
+- Use "modifyStoryStructure" for: plot changes, themes, genre, word count, story structure, overall narrative
+- Use "modifyCharacterData" for: adding characters, character development, relationships, backstories
+- Use "modifyPlaceData" for: locations, settings, environments, world-building
+- Use "generateImageDescription" for: any visual requests, character/place images, "show me", "what does X look like"
+
+You can use MULTIPLE tools if the request involves multiple aspects (e.g., add character AND generate their image).
+
+IMPORTANT TOOL USAGE:
+- For ALL tools, pass the current story YAML data as the "currentYamlData" parameter
+- Pass the user request as the "userRequest" parameter
+- Each tool will handle the specialized AI processing internally`,
+      prompt: `Current story data:
 ${currentStoryYAML}
 
 User request: "${userRequest}"
 
-Please modify the story data according to this request and return the updated story as valid YAML.`,
+Please analyze this request and use the appropriate tool(s) to fulfill it. Be creative and comprehensive in your modifications.`,
+      tools,
+      stopWhen: stepCountIs(3) // Allow multiple tool calls if needed
     });
 
-    // Clean the AI response by removing markdown code blocks if present
-    let cleanedResponse = result.text.trim();
+    // Collect tool results
+    const toolResults: any[] = [];
+    let finalText = '';
 
-    // Remove ```yaml or ```json at the beginning and ``` at the end if present
-    if (cleanedResponse.startsWith('```yaml')) {
-      cleanedResponse = cleanedResponse.replace(/^```yaml\s*/, '').replace(/\s*```$/, '');
-    } else if (cleanedResponse.startsWith('```json')) {
-      cleanedResponse = cleanedResponse.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-    } else if (cleanedResponse.startsWith('```')) {
-      cleanedResponse = cleanedResponse.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    // Process the streaming result to collect tool outputs
+    for await (const chunk of result.fullStream) {
+      if (chunk.type === 'text-delta') {
+        finalText += chunk.text;
+      }
+      if (chunk.type === 'tool-result') {
+        toolResults.push(chunk.output);
+      }
     }
 
-    // Parse the cleaned AI response as YAML and extract the story data
-    const parsedYAML = yaml.load(cleanedResponse) as any;
-    const updatedStoryData = parsedYAML.story;
+    // Process results based on tool outputs
+    if (toolResults.length === 0) {
+      return NextResponse.json({
+        success: false,
+        error: 'No tools were called. Please try a more specific request.'
+      });
+    }
 
-    return NextResponse.json({
+    // Combine results from multiple tools if used
+    let finalResult: any = {
       success: true,
-      updatedStoryData,
-      originalRequest: userRequest
-    });
+      originalRequest: userRequest,
+      toolsUsed: toolResults.map(r => r.type),
+      text: finalText.trim()
+    };
+
+    // Process each tool result
+    for (const toolResult of toolResults) {
+      if (toolResult.type === 'story_modification' || toolResult.type === 'character_modification' || toolResult.type === 'place_modification') {
+        // Parse the updated YAML text and convert back to story data
+        try {
+          let cleanedYaml = toolResult.updatedYamlText;
+          if (cleanedYaml.startsWith('```yaml')) {
+            cleanedYaml = cleanedYaml.replace(/^```yaml\s*/, '').replace(/\s*```$/, '');
+          } else if (cleanedYaml.startsWith('```')) {
+            cleanedYaml = cleanedYaml.replace(/^```\s*/, '').replace(/\s*```$/, '');
+          }
+
+          const parsedYAML = yaml.load(cleanedYaml) as any;
+          const updatedStoryData = parsedYAML.story || parsedYAML;
+
+          finalResult = {
+            ...finalResult,
+            updatedStoryData,
+            responseType: 'yaml',
+            requestType: toolResult.type,
+            reasoning: `AI processed ${toolResult.type.replace('_', ' ')} request`
+          };
+        } catch (error) {
+          console.error('Error parsing YAML from tool result:', error);
+          finalResult = {
+            ...finalResult,
+            responseType: 'error',
+            error: 'Failed to parse updated story data'
+          };
+        }
+      }
+
+      if (toolResult.type === 'image_generation') {
+        finalResult = {
+          ...finalResult,
+          imageDescription: toolResult.imageDescription,
+          suggestedPrompt: toolResult.suggestedPrompt,
+          imageType: toolResult.imageType,
+          subject: toolResult.subject,
+          style: toolResult.style,
+          requiresImageService: toolResult.requiresImageService,
+          responseType: finalResult.responseType === 'yaml' ? 'mixed' : 'image'
+        };
+      }
+    }
+
+    return NextResponse.json(finalResult);
 
   } catch (error) {
     console.error('Story analyzer API error:', error);

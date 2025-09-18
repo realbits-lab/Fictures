@@ -60,7 +60,8 @@ export function StoryPromptWriter({ storyData, onStoryUpdate, onPreviewUpdate }:
         throw new Error(result.error || 'API request failed');
       }
 
-      const updatedStoryData = result.updatedStoryData;
+      // Handle different response types from the new intelligent system
+      const { requestType, responseType, updatedStoryData, imageDescription, suggestedPrompt, requiresImageService } = result;
 
       // Compare changes and generate summary
       const changes: string[] = [];
@@ -113,30 +114,64 @@ export function StoryPromptWriter({ storyData, onStoryUpdate, onPreviewUpdate }:
         changes.push(`✓ Added ${updatedStoryData.parts.length - storyData.parts.length} new story part(s)`);
       }
 
-      if (changes.length === 0) {
-        setOutputResult(`🔍 **Request Processed**
+      // Generate appropriate response based on request type
+      let outputMessage = '';
+
+      if (responseType === 'image') {
+        outputMessage = `🎨 **Image Generation Request**
 
 Your request: "${inputPrompt.trim()}"
 
-**No changes were made** - The AI determined that no modifications were needed or the request was unclear.
+**Image Description:** ${imageDescription}
 
-**Try specific requests like:**
-• "Make it a romance story"
-• "Add a mentor character named Marcus"
-• "Change the goal to rescue Elena"
-• "Make it longer"
-• "Add friendship theme"
+**Suggested Prompt:** ${suggestedPrompt}
 
-**Current story remains unchanged.**`);
+${requiresImageService ? '**Note:** Image generation service integration needed.' : ''}`;
 
-        // Reset preview state when no changes
-        setPreviewStoryData(null);
-        setHasPreviewChanges(false);
-        if (onPreviewUpdate) {
-          onPreviewUpdate(null);
-        }
+        setOutputResult(outputMessage);
+        // Don't update story data for pure image requests
+        return;
+      }
+
+      if (responseType === 'mixed') {
+        outputMessage = `🎭 **Mixed Request Processed**
+
+Your request: "${inputPrompt.trim()}"
+
+**Story Changes Applied** + **Image Generation**
+
+${imageDescription ? `**Image:** ${imageDescription}` : ''}
+${suggestedPrompt ? `**Image Prompt:** ${suggestedPrompt}` : ''}
+
+**Updated Story Structure:**
+• Genre: ${updatedStoryData?.genre || 'Not specified'}
+• Word Count: ${updatedStoryData?.words?.toLocaleString() || 'Not specified'}
+• Characters: ${updatedStoryData?.chars ? Object.keys(updatedStoryData.chars).length : 0}
+• Story Parts: ${updatedStoryData?.parts?.length || 0}`;
       } else {
-        setOutputResult(`✅ **Preview Changes Ready**
+        // Handle YAML changes (story, character, or place modifications)
+        const requestTypeDisplay = {
+          'story_yaml': 'Story Structure',
+          'character_yaml': 'Character Data',
+          'place_yaml': 'Place/Setting Data'
+        }[requestType] || 'Story Data';
+
+        if (changes.length === 0) {
+          outputMessage = `✅ **${requestTypeDisplay} Updated**
+
+Your request: "${inputPrompt.trim()}"
+
+**Changes Applied** - The AI has processed your ${requestType.replace('_', ' ')} request.
+
+**Updated Story Structure:**
+• Genre: ${updatedStoryData?.genre || 'Not specified'}
+• Word Count: ${updatedStoryData?.words?.toLocaleString() || 'Not specified'}
+• Characters: ${updatedStoryData?.chars ? Object.keys(updatedStoryData.chars).length : 0}
+• Story Parts: ${updatedStoryData?.parts?.length || 0}
+
+**The ${requestTypeDisplay.toLowerCase()} has been updated according to your request.**`;
+        } else {
+          outputMessage = `✅ **${requestTypeDisplay} Changes Ready**
 
 Your request: "${inputPrompt.trim()}"
 
@@ -144,18 +179,22 @@ Your request: "${inputPrompt.trim()}"
 ${changes.join("\n")}
 
 **Preview Summary:**
-• Genre: ${updatedStoryData.genre}
-• Word Count: ${updatedStoryData.words.toLocaleString()}
-• Characters: ${Object.keys(updatedStoryData.chars).length}
-• Story Parts: ${updatedStoryData.parts.length}
+• Genre: ${updatedStoryData?.genre || 'Not specified'}
+• Word Count: ${updatedStoryData?.words?.toLocaleString() || 'Not specified'}
+• Characters: ${updatedStoryData?.chars ? Object.keys(updatedStoryData.chars).length : 0}
+• Story Parts: ${updatedStoryData?.parts?.length || 0}
 
-**Review the changes below and choose to Save or Cancel.**`);
+**Review the changes below and choose to Save or Cancel.**`;
+        }
+      }
 
-        // Apply changes immediately to trigger highlighting
+      setOutputResult(outputMessage);
+
+      if (updatedStoryData) {
+        // Apply the updated data
         setPreviewStoryData(updatedStoryData);
         setHasPreviewChanges(true);
 
-        // Call onStoryUpdate to update the main story data and trigger highlighting
         if (onStoryUpdate) {
           onStoryUpdate(updatedStoryData);
         }
