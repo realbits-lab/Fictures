@@ -149,7 +149,8 @@ export async function POST(request: NextRequest) {
                   body: JSON.stringify({
                     prompt: imagePrompt,
                     type: 'character',
-                    storyId: storyId
+                    storyId: storyId,
+                    internal: true
                   })
                 });
 
@@ -199,7 +200,8 @@ export async function POST(request: NextRequest) {
                   body: JSON.stringify({
                     prompt: imagePrompt,
                     type: 'place',
-                    storyId: storyId
+                    storyId: storyId,
+                    internal: true
                   })
                 });
 

@@ -7,15 +7,17 @@ import { nanoid } from 'nanoid';
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await auth();
-    if (!session?.user?.id) {
-      return new Response('Authentication required', { status: 401 });
-    }
-
     // Parse request body
     const body = await request.json();
-    const { prompt, type, storyId } = body;
+    const { prompt, type, storyId, internal } = body;
+
+    // Check authentication (skip for internal server-to-server calls)
+    if (!internal) {
+      const session = await auth();
+      if (!session?.user?.id) {
+        return new Response('Authentication required', { status: 401 });
+      }
+    }
 
     if (!prompt || !type || !storyId) {
       return new Response('Missing required fields: prompt, type, storyId', { status: 400 });
@@ -34,7 +36,7 @@ export async function POST(request: NextRequest) {
       aspectRatio: '1:1', // Square images for character/place portraits
       providerOptions: {
         google: {
-          personGeneration: type === 'character' ? 'allow' : 'dont_allow',
+          personGeneration: type === 'character' ? 'allow_all' : 'dont_allow',
         }
       }
     });
@@ -60,7 +62,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error(`❌ Error generating ${body?.type || 'unknown'} image:`, error);
+    console.error(`❌ Error generating image:`, error);
 
     return Response.json(
       {
