@@ -1,101 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
-
-interface StoryData {
-  title: string;
-  genre: string;
-  words: number;
-  question: string;
-  goal: string;
-  conflict: string;
-  outcome: string;
-  chars: Record<string, any>;
-  themes: string[];
-  structure: any;
-  parts: any[];
-}
+import { Card, CardHeader, CardTitle, CardContent, Button } from "@/components/ui";
+import * as yaml from 'js-yaml';
 
 interface StoryPromptWriterProps {
-  storyData: StoryData;
-  onStoryUpdate?: (updatedData: StoryData) => void;
-  onPreviewUpdate?: (previewData: StoryData | null) => void;
+  storyYaml: string;
+  onStoryUpdate?: (updatedYaml: string) => void;
+  onPreviewUpdate?: (previewYaml: string | null) => void;
 }
 
-export function StoryPromptWriter({ storyData, onStoryUpdate, onPreviewUpdate }: StoryPromptWriterProps) {
+export function StoryPromptWriter({ storyYaml, onStoryUpdate, onPreviewUpdate }: StoryPromptWriterProps) {
   const [inputPrompt, setInputPrompt] = useState("");
   const [outputResult, setOutputResult] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-
-  // Convert story data to YAML format for API
-  const convertToYAML = (data: StoryData): string => {
-    const chars = data.chars || {};
-    const themes = data.themes || [];
-    const structure = data.structure || { type: '3_part', parts: ['setup', 'confrontation', 'resolution'], dist: [25, 50, 25] };
-    const parts = data.parts || [];
-    const setting = (data as any).setting || { primary: [], secondary: [] };
-    const serial = (data as any).serial || { schedule: 'weekly', duration: '6 months', chapter_words: 3000, breaks: [], buffer: '2 weeks' };
-    const hooks = (data as any).hooks || { overarching: [], mysteries: [], part_endings: [] };
-
-    const charsYaml = Object.entries(chars)
-      .map(([name, char]) => `    ${name}: { role: "${char?.role || 'character'}", arc: "${char?.arc || 'development'}" }`)
-      .join('\n');
-
-    const themesYaml = themes.map(theme => `"${theme}"`).join(', ');
-
-    const partsYaml = parts
-      .map((part, index) => `    - part: ${index + 1}\n      goal: "${part?.goal || ''}"\n      conflict: "${part?.conflict || ''}"\n      tension: "${part?.tension || ''}"`)
-      .join('\n');
-
-    const settingYaml = `    primary:
-${setting.primary.map(loc => `      - "${loc}"`).join('\n') || '      []'}
-    secondary:
-${setting.secondary.map(loc => `      - "${loc}"`).join('\n') || '      []'}`;
-
-    const serialYaml = `    schedule: "${serial.schedule}"
-    duration: "${serial.duration}"
-    chapter_words: ${serial.chapter_words}
-    breaks:
-${serial.breaks.map(br => `      - "${br}"`).join('\n') || '      []'}
-    buffer: "${serial.buffer}"`;
-
-    const hooksYaml = `    overarching:
-${hooks.overarching.map(hook => `      - "${hook}"`).join('\n') || '      []'}
-    mysteries:
-${hooks.mysteries.map(mystery => `      - "${mystery}"`).join('\n') || '      []'}
-    part_endings:
-${hooks.part_endings.map(ending => `      - "${ending}"`).join('\n') || '      []'}`;
-
-    return `story:
-  title: "${data.title || ''}"
-  genre: "${data.genre || 'fiction'}"
-  words: ${data.words || 50000}
-  question: "${data.question || ''}"
-  goal: "${data.goal || ''}"
-  conflict: "${data.conflict || ''}"
-  outcome: "${data.outcome || ''}"
-  chars:
-${charsYaml || '    {}'}
-  themes: [${themesYaml}]
-  structure:
-    type: "${structure.type}"
-    parts: [${structure.parts.map(p => `"${p}"`).join(', ')}]
-    dist: [${structure.dist.join(', ')}]
-  setting:
-${settingYaml}
-  parts:
-${partsYaml || '    []'}
-  serial:
-${serialYaml}
-  hooks:
-${hooksYaml}`;
-  };
-
-  // Preview functionality for cancel/save pattern
-  const [originalStoryData, setOriginalStoryData] = useState<StoryData | null>(null);
-  const [previewStoryData, setPreviewStoryData] = useState<StoryData | null>(null);
-  const [hasPreviewChanges, setHasPreviewChanges] = useState(false);
 
   // Image preview functionality
   const [previewImageData, setPreviewImageData] = useState<{
@@ -119,8 +37,9 @@ ${hooksYaml}`;
 
   const handleImageRequest = async (prompt: string) => {
     try {
-      // Get story ID from storyData prop or fallback
-      const storyId = (storyData as any)?.id || 'temp-story';
+      // Parse YAML to get story ID
+      const parsedStory = yaml.load(storyYaml) as any;
+      const storyId = parsedStory?.story?.id || parsedStory?.id || 'temp-story';
       console.log('Using story ID for image generation:', storyId);
 
       const response = await fetch('/api/generate-image', {
@@ -190,20 +109,15 @@ Please try:
     setIsProcessing(true);
     setOutputResult("Processing your request with AI...");
 
-    // Store original data for cancel functionality
-    setOriginalStoryData(storyData);
 
     // Check if this is an image generation request
     if (isImageRequest(inputPrompt.trim())) {
-      const success = await handleImageRequest(inputPrompt.trim());
+      await handleImageRequest(inputPrompt.trim());
       setIsProcessing(false);
       return;
     }
 
     try {
-      // Convert story data to YAML format for cleaner API processing
-      const storyYaml = convertToYAML(storyData);
-
       const response = await fetch('/api/story-analyzer', {
         method: 'POST',
         headers: {
@@ -240,52 +154,64 @@ Please try:
       // Compare changes and generate summary
       const changes: string[] = [];
 
-      if (updatedStoryData.title !== storyData.title) {
-        changes.push(`✓ Changed title from "${storyData.title}" to "${updatedStoryData.title}"`);
-      }
-      if (updatedStoryData.genre !== storyData.genre) {
-        changes.push(`✓ Changed genre from "${storyData.genre}" to "${updatedStoryData.genre}"`);
-      }
-      if (updatedStoryData.words !== storyData.words) {
-        changes.push(`✓ Changed word count from ${storyData.words.toLocaleString()} to ${updatedStoryData.words.toLocaleString()}`);
-      }
-      if (updatedStoryData.question !== storyData.question) {
-        changes.push(`✓ Updated central question`);
-      }
-      if (updatedStoryData.goal !== storyData.goal) {
-        changes.push(`✓ Updated story goal`);
-      }
-      if (updatedStoryData.conflict !== storyData.conflict) {
-        changes.push(`✓ Updated main conflict`);
-      }
-      if (updatedStoryData.outcome !== storyData.outcome) {
-        changes.push(`✓ Updated story outcome`);
-      }
+      try {
+        const originalStory = yaml.load(storyYaml) as any;
+        const originalData = originalStory?.story || originalStory;
 
-      // Check for character changes
-      const oldCharNames = Object.keys(storyData.chars);
-      const newCharNames = Object.keys(updatedStoryData.chars);
+        if (updatedStoryData.title !== originalData.title) {
+          changes.push(`✓ Changed title from "${originalData.title}" to "${updatedStoryData.title}"`);
+        }
+        if (updatedStoryData.genre !== originalData.genre) {
+          changes.push(`✓ Changed genre from "${originalData.genre}" to "${updatedStoryData.genre}"`);
+        }
+        if (updatedStoryData.words !== originalData.words) {
+          changes.push(`✓ Changed word count from ${originalData.words?.toLocaleString() || 0} to ${updatedStoryData.words?.toLocaleString() || 0}`);
+        }
+        if (updatedStoryData.question !== originalData.question) {
+          changes.push(`✓ Updated central question`);
+        }
+        if (updatedStoryData.goal !== originalData.goal) {
+          changes.push(`✓ Updated story goal`);
+        }
+        if (updatedStoryData.conflict !== originalData.conflict) {
+          changes.push(`✓ Updated main conflict`);
+        }
+        if (updatedStoryData.outcome !== originalData.outcome) {
+          changes.push(`✓ Updated story outcome`);
+        }
 
-      if (newCharNames.length > oldCharNames.length) {
-        changes.push(`✓ Added ${newCharNames.length - oldCharNames.length} new character(s)`);
-      }
+        // Check for character changes
+        const oldCharNames = Object.keys(originalData.chars || {});
+        const newCharNames = Object.keys(updatedStoryData.chars || {});
 
-      // Check for character name changes
-      const changedChars = oldCharNames.filter(oldName =>
-        !newCharNames.includes(oldName) && oldCharNames.length === newCharNames.length
-      );
-      if (changedChars.length > 0) {
-        changes.push(`✓ Changed character names as requested`);
-      }
+        if (newCharNames.length > oldCharNames.length) {
+          changes.push(`✓ Added ${newCharNames.length - oldCharNames.length} new character(s)`);
+        }
 
-      // Check for theme changes
-      if (updatedStoryData.themes.length > storyData.themes.length) {
-        changes.push(`✓ Added ${updatedStoryData.themes.length - storyData.themes.length} new theme(s)`);
-      }
+        // Check for character name changes
+        const changedChars = oldCharNames.filter(oldName =>
+          !newCharNames.includes(oldName) && oldCharNames.length === newCharNames.length
+        );
+        if (changedChars.length > 0) {
+          changes.push(`✓ Changed character names as requested`);
+        }
 
-      // Check for parts changes
-      if (updatedStoryData.parts.length > storyData.parts.length) {
-        changes.push(`✓ Added ${updatedStoryData.parts.length - storyData.parts.length} new story part(s)`);
+        // Check for theme changes
+        const oldThemes = originalData.themes || [];
+        const newThemes = updatedStoryData.themes || [];
+        if (newThemes.length > oldThemes.length) {
+          changes.push(`✓ Added ${newThemes.length - oldThemes.length} new theme(s)`);
+        }
+
+        // Check for parts changes
+        const oldParts = originalData.parts || [];
+        const newParts = updatedStoryData.parts || [];
+        if (newParts.length > oldParts.length) {
+          changes.push(`✓ Added ${newParts.length - oldParts.length} new story part(s)`);
+        }
+      } catch (error) {
+        console.warn('Error parsing original YAML for comparison:', error);
+        changes.push(`✓ Updated story data as requested`);
       }
 
       // Generate appropriate response based on request type
@@ -355,11 +281,12 @@ ${suggestedPrompt ? `**Image Prompt:** ${suggestedPrompt}` : ''}
 • Story Parts: ${updatedStoryData?.parts?.length || 0}`;
       } else {
         // Handle YAML changes (story, character, or place modifications)
-        const requestTypeDisplay = {
-          'story_yaml': 'Story Structure',
-          'character_yaml': 'Character Data',
-          'place_yaml': 'Place/Setting Data'
-        }[requestType] || 'Story Data';
+        const requestTypeMap: Record<string, string> = {
+          'story_modification': 'Story Structure',
+          'character_modification': 'Character Data',
+          'place_modification': 'Place/Setting Data'
+        };
+        const requestTypeDisplay = requestTypeMap[requestType] || 'Story Data';
 
         if (changes.length === 0) {
           outputMessage = `✅ **${requestTypeDisplay} Updated**
@@ -396,16 +323,15 @@ ${changes.join("\n")}
       setOutputResult(outputMessage);
 
       if (updatedStoryData) {
-        // Apply the updated data
-        setPreviewStoryData(updatedStoryData);
-        setHasPreviewChanges(true);
+        // Convert updated story data back to YAML string format
+        const updatedYaml = yaml.dump({ story: updatedStoryData }, { indent: 2 });
 
         if (onStoryUpdate) {
-          onStoryUpdate(updatedStoryData);
+          onStoryUpdate(updatedYaml);
         }
 
         if (onPreviewUpdate) {
-          onPreviewUpdate(updatedStoryData);
+          onPreviewUpdate(updatedYaml);
         }
       }
 
@@ -428,10 +354,6 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
     setInputPrompt("");
     setOutputResult("");
 
-    // Reset preview state
-    setPreviewStoryData(null);
-    setHasPreviewChanges(false);
-    setOriginalStoryData(null);
     if (onPreviewUpdate) {
       onPreviewUpdate(null);
     }
@@ -445,14 +367,15 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
     if (!previewImageData) return;
 
     try {
-      // Get story ID from storyData prop
-      const storyId = (storyData as any)?.id;
+      // Parse YAML to get story ID
+      const parsedStory = yaml.load(storyYaml) as any;
+      const storyId = parsedStory?.story?.id || parsedStory?.id;
 
       if (!storyId) {
         // Fallback: try to get from URL (chapter ID path) and find associated story
         const url = new URL(window.location.href);
         const chapterId = url.pathname.split('/')[2];
-        console.error('No story ID found in storyData. Chapter ID from URL:', chapterId);
+        console.error('No story ID found in YAML. Chapter ID from URL:', chapterId);
         throw new Error('Story ID not available. Cannot save image.');
       }
 
@@ -477,12 +400,19 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
       console.log('✅ Image saved as story cover image:', previewImageData.url);
 
       // Update the story data locally if we have the onStoryUpdate callback
-      if (onStoryUpdate && storyData) {
-        const updatedData = {
-          ...storyData,
-          coverImage: previewImageData.url
-        };
-        onStoryUpdate(updatedData);
+      if (onStoryUpdate) {
+        try {
+          const parsedData = yaml.load(storyYaml) as any;
+          const storyData = parsedData?.story || parsedData;
+          const updatedData = {
+            ...storyData,
+            coverImage: previewImageData.url
+          };
+          const updatedYaml = yaml.dump({ story: updatedData }, { indent: 2 });
+          onStoryUpdate(updatedYaml);
+        } catch (error) {
+          console.warn('Error updating YAML with cover image:', error);
+        }
       }
 
       // Clear the preview
@@ -490,11 +420,11 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setHasImagePreview(false);
 
       // Update output to confirm save
-      setOutputResult(prev => prev + '\n\n✅ **Image Saved Successfully** as story cover image!');
+      setOutputResult(prev => `${prev}\n\n✅ **Image Saved Successfully** as story cover image!`);
 
     } catch (error) {
       console.error('Error saving image:', error);
-      setOutputResult(prev => prev + '\n\n❌ **Error Saving Image**: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      setOutputResult(prev => `${prev}\n\n❌ **Error Saving Image**: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -513,10 +443,11 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
       <CardContent className="space-y-4">
         {/* Input Section */}
         <div className="space-y-2">
-          <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor="prompt-input" className="text-xs font-medium text-gray-700 dark:text-gray-300">
             Test Prompt Input
           </label>
           <textarea
+            id="prompt-input"
             value={inputPrompt}
             onChange={(e) => setInputPrompt(e.target.value)}
             placeholder="Enter your request to modify the story (e.g., 'make it a romance story', 'add a mentor character named Alex', 'change the goal to rescue Elena')..."
@@ -541,7 +472,7 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
                 Analyzing...
               </>
             ) : (
-              <>⚡ Apply Changes</>
+              "⚡ Apply Changes"
             )}
           </Button>
           <Button
@@ -555,10 +486,10 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
 
         {/* Output Section */}
         <div className="space-y-2">
-          <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor="analysis-result" className="text-xs font-medium text-gray-700 dark:text-gray-300">
             Analysis Result
           </label>
-          <div className="w-full p-3 border rounded-md text-xs bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 min-h-[120px] max-h-[300px] overflow-y-auto">
+          <div id="analysis-result" className="w-full p-3 border rounded-md text-xs bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 min-h-[120px] max-h-[300px] overflow-y-auto">
             {outputResult ? (
               <pre className="whitespace-pre-wrap font-mono text-gray-700 dark:text-gray-300">
                 {outputResult}

@@ -325,6 +325,45 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     }
   };
 
+  // Helper functions for YAML conversion for StoryPromptWriter
+  const convertStoryDataToYAML = (storyData: any): string => {
+    try {
+      return yaml.dump({ story: storyData }, { indent: 2 });
+    } catch (error) {
+      console.error('Error converting story data to YAML:', error);
+      return '';
+    }
+  };
+
+  const convertYAMLToStoryData = (yamlText: string): any => {
+    try {
+      const parsed = yaml.load(yamlText) as any;
+      return parsed?.story || parsed;
+    } catch (error) {
+      console.error('Error parsing YAML to story data:', error);
+      return null;
+    }
+  };
+
+  // Wrapper handlers for StoryPromptWriter that work with YAML
+  const handleStoryYAMLUpdate = (updatedYaml: string) => {
+    const storyData = convertYAMLToStoryData(updatedYaml);
+    if (storyData) {
+      handleStoryDataUpdate(storyData);
+    }
+  };
+
+  const handleStoryYAMLPreviewUpdate = (previewYaml: string | null) => {
+    if (previewYaml === null) {
+      setStoryPreviewData(null);
+    } else {
+      const storyData = convertYAMLToStoryData(previewYaml);
+      if (storyData) {
+        setStoryPreviewData(storyData);
+      }
+    }
+  };
+
   // Update chapter data and track changes
   const handleChapterDataUpdate = (updatedData: any) => {
     setCurrentChapterData(updatedData);
@@ -2523,9 +2562,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             {/* Story Prompt Writer - Show for story level */}
             {currentSelection.level === "story" && (
               <StoryPromptWriter
-                storyData={storyPreviewData || sampleStoryData}
-                onStoryUpdate={handleStoryDataUpdate}
-                onPreviewUpdate={setStoryPreviewData}
+                storyYaml={convertStoryDataToYAML(storyPreviewData || sampleStoryData)}
+                onStoryUpdate={handleStoryYAMLUpdate}
+                onPreviewUpdate={handleStoryYAMLPreviewUpdate}
               />
             )}
 
