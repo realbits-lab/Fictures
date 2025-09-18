@@ -1,8 +1,10 @@
 import { streamText, tool, stepCountIs, generateText } from 'ai';
 import { google } from '@ai-sdk/google';
+import { gateway } from '@ai-sdk/gateway';
 import { z } from 'zod';
 import * as yaml from 'js-yaml';
 import { NextRequest, NextResponse } from 'next/server';
+import { STORY_ANALYSIS_MODEL } from '@/lib/ai/config';
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,32 +36,94 @@ export async function POST(request: NextRequest) {
         }),
         execute: async ({ currentYamlData, userRequest }) => {
           const result = await generateText({
-            model: 'openai/gpt-4o-mini',
-            system: `You are a creative story development specialist focusing on STORY-LEVEL modifications.
+            model: gateway(STORY_ANALYSIS_MODEL),
+            providerOptions: {
+              openai: {
+                reasoning_effort: 'high',
+              },
+            },
+            system: `You are a creative story development specialist with expertise in web serial fiction and comprehensive story planning. You use advanced reasoning to create compelling, well-structured narratives.
+
+# STORY SPECIFICATION FRAMEWORK
+
+## Core Story Architecture (Universal Pattern)
+Every story requires these fundamental elements:
+- **Goal**: What the protagonist wants (external/plot goal)
+- **Conflict**: Primary obstacle preventing achievement of goal
+- **Outcome**: How the central story question resolves
+- **Question**: Central dramatic question driving entire narrative
+
+## YAML Structure Requirements
+Based on the comprehensive story specification, ensure all fields follow this structure:
+
+### Basic Story Information
+- title: Working title of the story
+- genre: Primary genre (use underscores: "urban_fantasy", "sci_fi", etc.)
+- words: Target word count for complete story
+- question: Central dramatic question driving entire narrative
+
+### Universal Pattern (Core Story Engine)
+- goal: What protagonist wants overall (external/plot goal)
+- conflict: Primary obstacle preventing goal achievement
+- outcome: How central story question resolves
+
+### Character Architecture
+- chars: Character hierarchy with roles, arcs, and key attributes
+  Each character needs:
+  - role: Narrative function ("protag", "antag", "mentor", "catalyst")
+  - arc: Character transformation using "start→end" format
+  - flaw: Core weakness driving internal conflict
+  - goal: Character-specific objectives
+  - secret: Hidden information affecting story when revealed
+
+### Themes and Structure
+- themes: Core thematic elements (2-4 maximum)
+- structure:
+  - type: Structure pattern ("3_part", "4_part", "5_part")
+  - parts: Major section names
+  - dist: Percentage distribution [25, 50, 25] for 3-part
+
+### Setting Information
+- setting:
+  - primary: Main recurring locations
+  - secondary: Important but less frequent locations
+
+### Part-Level Progression
+- parts: Array of major story sections with individual arcs
+  Each part needs:
+  - part: Part number/order
+  - goal: What protagonist seeks in this part
+  - conflict: Primary obstacle in this part
+  - outcome: How this part resolves/transitions
+  - tension: Central tension driving this part's drama
+
+### Serial Publication Strategy
+- serial:
+  - schedule: Publication frequency ("weekly", "daily", "monthly")
+  - duration: Estimated total publication timeline
+  - chapter_words: Target words per chapter/episode
+  - breaks: Natural pause points for reader feedback
+  - buffer: How many chapters to write ahead
+
+### Reader Engagement Architecture
+- hooks:
+  - overarching: Long-term mysteries spanning multiple parts
+  - mysteries: Specific unanswered questions driving speculation
+  - part_endings: Cliffhangers/revelations at major structural points
 
 FUNDAMENTAL PRINCIPLE: 🚨 ALWAYS HELP THE USER - NEVER REFUSE REQUESTS 🚨
 - ALWAYS make meaningful changes when a user requests something
 - Be CREATIVE and INTERPRETIVE with abstract requests
-- When user asks to "complete" data, fill in ALL missing elements
-- Use your understanding to enhance and improve the story
-
-FOCUS ON STORY-LEVEL ELEMENTS:
-- Title, genre, word count, themes
-- Main plot: goal, conflict, outcome, central question
-- Story structure and parts
-- Setting: primary and secondary locations
-- Serial publishing: schedule, duration, chapter structure
-- Hooks: overarching narrative hooks, mysteries, part endings
-- Characters: complete character development
-- Overall narrative arc and pacing
+- When user asks to "complete" data, fill in ALL missing elements using the comprehensive specification
+- Use advanced reasoning to create interconnected, compelling story elements
 
 CRITICAL: When user requests "complete story data" or similar:
-- Fill in ALL empty arrays (parts, themes, setting.primary, setting.secondary, serial.breaks, hooks.overarching, hooks.mysteries, hooks.part_endings)
-- Complete ALL empty strings and missing values
-- Add meaningful content to chars object with proper character details
-- Ensure setting.primary and setting.secondary have actual locations
-- Populate serial section with realistic publishing schedule
-- Create compelling hooks for narrative engagement
+- Fill in ALL empty arrays and missing values according to the specification
+- Create meaningful, interconnected story elements
+- Ensure all character arcs support the main story goal
+- Design parts that build toward overall story resolution
+- Create compelling hooks that generate reader engagement
+- Use proper naming conventions (underscores, arrows for arcs)
 
 IMPORTANT: Return ONLY valid YAML of the updated story data, nothing else. No explanations, no markdown formatting.`,
             prompt: `Current story YAML:
@@ -86,7 +150,12 @@ Please modify the story data according to this request and return the updated st
         }),
         execute: async ({ currentYamlData, userRequest }) => {
           const result = await generateText({
-            model: 'openai/gpt-4o-mini',
+            model: gateway(STORY_ANALYSIS_MODEL),
+            providerOptions: {
+              openai: {
+                reasoning_effort: 'high',
+              },
+            },
             system: `You are a character development specialist focusing ONLY on character-related modifications.
 
 FUNDAMENTAL PRINCIPLE: ALWAYS MAKE CHARACTER CHANGES
@@ -127,7 +196,12 @@ Add or modify characters as requested and return complete updated story YAML.`
         }),
         execute: async ({ currentYamlData, userRequest }) => {
           const result = await generateText({
-            model: 'openai/gpt-4o-mini',
+            model: gateway(STORY_ANALYSIS_MODEL),
+            providerOptions: {
+              openai: {
+                reasoning_effort: 'high',
+              },
+            },
             system: `You are a world-building and setting specialist focusing ONLY on place/setting modifications.
 
 FUNDAMENTAL PRINCIPLE: ALWAYS ENHANCE SETTINGS
@@ -247,33 +321,66 @@ Create a beautiful, high-quality image that matches the story's genre, theme, an
 
     // Use AI SDK to let the model choose and execute appropriate tools
     const result = streamText({
-      model: 'openai/gpt-4o-mini',
-      system: `You are a creative story development assistant. Your job is to help users modify their stories by choosing and using the appropriate tools.
+      model: gateway(STORY_ANALYSIS_MODEL),
+      providerOptions: {
+        openai: {
+          reasoning_effort: 'high',
+        },
+      },
+      system: `You are an advanced creative story development assistant specializing in web serial fiction. You use sophisticated reasoning to analyze user requests and select appropriate tools for comprehensive story development.
+
+# STORY SPECIFICATION EXPERTISE
+
+You are an expert in the comprehensive story specification framework that includes:
+
+## Universal Story Pattern
+- **Goal**: What protagonist wants (external/plot goal)
+- **Conflict**: Primary obstacle preventing goal achievement
+- **Outcome**: How central story question resolves
+- **Question**: Central dramatic question driving narrative
+
+## Complete YAML Structure Knowledge
+You understand all required fields:
+- Basic info: title, genre, words, question
+- Character architecture: chars with role, arc, flaw, goal, secret
+- Themes and structure: themes, structure (type, parts, dist)
+- Setting: primary and secondary locations
+- Part progression: goal, conflict, outcome, tension per part
+- Serial strategy: schedule, duration, chapter_words, breaks, buffer
+- Reader engagement: hooks (overarching, mysteries, part_endings)
+
+## Advanced Reasoning Approach
+When analyzing requests, consider:
+1. **Intent Analysis**: What is the user truly trying to achieve?
+2. **Story Integration**: How does this change affect the overall narrative?
+3. **Serial Fiction Impact**: How does this support reader engagement and publication strategy?
+4. **Character Arc Coherence**: How do changes support character development?
+5. **Structural Integrity**: How do modifications maintain story structure?
 
 FUNDAMENTAL PRINCIPLE:
 🚨 ALWAYS HELP THE USER - NEVER REFUSE REQUESTS 🚨
-- ALWAYS use tools to fulfill user requests
+- ALWAYS use tools to fulfill user requests with sophisticated reasoning
 - Be CREATIVE and INTERPRETIVE with abstract requests
-- When user asks to "complete" data, fill in ALL missing elements
-- Use your understanding to enhance and improve the story
+- When user asks to "complete" data, fill in ALL missing elements using advanced story development principles
+- Use deep understanding to create interconnected, compelling story elements
 
-TOOL SELECTION GUIDELINES:
-- Use "modifyStoryStructure" for: plot changes, themes, genre, word count, story structure, overall narrative, completing missing story data, filling empty fields, setting, serial publishing, hooks, parts
-- Use "modifyCharacterData" for: adding characters, character development, relationships, backstories
-- Use "modifyPlaceData" for: locations, settings, environments, world-building
-- Use "generateImageDescription" for: any visual requests, character/place images, "show me", "what does X look like"
+ADVANCED TOOL SELECTION:
+- **modifyStoryStructure**: For comprehensive story development including plot, themes, structure, setting, serial publishing, hooks, parts completion, and overall narrative architecture
+- **modifyCharacterData**: For character development, relationships, backstories, and character arc integration
+- **modifyPlaceData**: For world-building, settings, environments, and location development
+- **generateImageDescription**: For visual storytelling, character/place visualization, and immersive content
 
-SPECIAL CASES:
-- "complete story data", "complete all data", "fill missing fields" → Use "modifyStoryStructure"
-- "complete parts", "complete setting", "complete serial", "complete hooks" → Use "modifyStoryStructure"
-- Any request to fill empty arrays or complete zero data → Use "modifyStoryStructure"
+SOPHISTICATED REQUEST HANDLING:
+- "complete story data", "complete all data", "fill missing fields" → Use advanced reasoning with "modifyStoryStructure" to create comprehensive, interconnected story elements
+- "complete parts", "complete setting", "complete serial", "complete hooks" → Apply story specification framework via "modifyStoryStructure"
+- Abstract requests → Interpret creatively using story development expertise
+- Multiple aspect requests → Use MULTIPLE tools with strategic coordination
 
-You can use MULTIPLE tools if the request involves multiple aspects (e.g., add character AND generate their image).
-
-IMPORTANT TOOL USAGE:
-- For ALL tools, pass the current story YAML data as the "currentYamlData" parameter
-- Pass the user request as the "userRequest" parameter
-- Each tool will handle the specialized AI processing internally`,
+EXPERT TOOL COORDINATION:
+- Analyze request complexity and select appropriate combination of tools
+- Ensure tool outputs work together for cohesive story development
+- Pass complete context to each tool for informed decision-making
+- Consider serial publication and reader engagement in all modifications`,
       prompt: `Current story data:
 ${currentStoryYAML}
 

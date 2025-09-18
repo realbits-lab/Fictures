@@ -2,7 +2,8 @@ import { gateway } from '@ai-sdk/gateway';
 
 // Default model configuration
 export const DEFAULT_MODEL = 'openai/gpt-4o-mini';
-export const REASONING_MODEL = 'openai/gpt-4o-mini';
+export const REASONING_MODEL = 'openai/gpt-5';
+export const STORY_ANALYSIS_MODEL = 'openai/gpt-5';
 
 // AI models configuration using AI Gateway
 export const AI_MODELS = {
