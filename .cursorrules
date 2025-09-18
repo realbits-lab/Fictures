@@ -125,7 +125,7 @@ src/
 
 **E2E Testing (Playwright):**
 - Test user workflows and critical paths
-- Use `@playwright/.auth/user.json` for Google OAuth
+- Use `.auth/user.json` for Google OAuth
 - Always run with `--headless` flag
 - Follow existing patterns in `/tests/` directory
 

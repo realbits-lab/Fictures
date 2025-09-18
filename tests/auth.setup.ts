@@ -5,9 +5,9 @@ import { dirname } from 'path';
 const authFile = '@playwright/.auth/user.json';
 
 // Test user configuration for Google OAuth
-// Using jong95@gmail.com as specified in CLAUDE.md
+// Using test.user@example.com as specified in CLAUDE.md
 const testUser = {
-  email: 'jong95@gmail.com',
+  email: 'test.user@example.com',
   name: 'Test User'
 };
 

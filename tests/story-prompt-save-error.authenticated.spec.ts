@@ -4,7 +4,7 @@ test.describe('Story Prompt Writer - Save Error Testing', () => {
   test.use({ storageState: '@playwright/.auth/user.json' });
 
   test('Test privilege error when saving Story Prompt Writer changes', async ({ page }) => {
-    console.log('🔍 Testing Story Prompt Writer save functionality with jong95@gmail.com');
+    console.log('🔍 Testing Story Prompt Writer save functionality with test.user@example.com');
 
     // Navigate to working chapter ID
     await page.goto('/write/lq0F1cgRH23Hi5Ef0oq66');

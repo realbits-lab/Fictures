@@ -4,7 +4,7 @@ test.describe('Story Save Privilege Fix - Testing', () => {
   test.use({ storageState: '@playwright/.auth/user.json' });
 
   test('Test correct API endpoint for saving story data', async ({ page }) => {
-    console.log('🔍 Testing correct story save API with jong95@gmail.com');
+    console.log('🔍 Testing correct story save API with test.user@example.com');
 
     // Navigate to working chapter ID
     await page.goto('/write/lq0F1cgRH23Hi5Ef0oq66');

@@ -50,9 +50,39 @@ This file provides guidance to Claude Code when working with this repository.
 - **Framework**: Playwright for e2e tests
 - **Command**: `dotenv --file .env.local run npx playwright test --headless`
 - **Background Testing**: `dotenv --file .env.local run npx playwright test --headless > logs/playwright.log 2>&1 &`
-- **Authentication**: Uses `@playwright/.auth/user.json` for Google OAuth testing
+- **Authentication**: Uses `.auth/user.json` for Google OAuth testing
 - **Test Setup**: Run setup project first for authentication state
 - **Headless Mode**: Always use `--headless` option for automated testing
+
+**Google OAuth Authentication Setup for Playwright:**
+1. **Initial Capture**: Run `dotenv --file .env.local run node scripts/capture-auth-manual.mjs`
+   - Opens browser for manual Google login with test.user@example.com
+   - Automatically captures authentication state to `.auth/user.json`
+   - Includes NextAuth.js session cookies and Google OAuth tokens
+
+2. **Testing Automatic Login**: Run `dotenv --file .env.local run node scripts/test-auto-login.mjs`
+   - Verifies stored credentials work for automatic authentication
+   - Tests navigation to protected routes like `/stories`
+
+3. **Using in Playwright Tests**:
+   ```javascript
+   // In your Playwright test files
+   const { test, expect } = require('@playwright/test');
+
+   test.use({
+     storageState: '.auth/user.json'
+   });
+
+   test('authenticated user can access stories', async ({ page }) => {
+     await page.goto('http://localhost:3000/stories');
+     // Test runs with Google authentication
+   });
+   ```
+
+4. **Refreshing Authentication**: When credentials expire, re-run capture script:
+   ```bash
+   dotenv --file .env.local run node scripts/capture-auth-manual.mjs
+   ```
 
 ## Architecture Overview
 
