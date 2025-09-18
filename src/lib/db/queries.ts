@@ -56,6 +56,7 @@ export async function updateUser(userId: string, data: {
   name?: string;
   image?: string;
   emailVerified?: Date;
+  role?: string;
 }) {
   const [user] = await db
     .update(users)
