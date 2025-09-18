@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
 import { google } from '@ai-sdk/google';
+import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { put } from '@vercel/blob';
 import { nanoid } from 'nanoid';
@@ -29,48 +30,84 @@ export async function POST(request: NextRequest) {
 
     console.log(`🎨 Generating ${type} image with prompt:`, prompt);
 
-    // Generate image using Gemini 2.5 Flash Image Preview
-    const result = await generateText({
-      model: google('gemini-2.5-flash-image-preview'),
-      prompt: prompt,
-    });
+    // Try to generate image using Gemini first, fallback to placeholder if quota exceeded
+    let imageUrl = null;
+    let modelResponse = '';
+    let method = 'placeholder';
 
-    console.log('✅ Image generated successfully');
-    console.log('📝 Model response:', result.text);
+    try {
+      // Try Gemini 2.5 Flash first
+      console.log('🔄 Attempting image generation with Gemini...');
+      const result = await generateText({
+        model: google('gemini-2.5-flash-image-preview'),
+        prompt: prompt,
+      });
 
-    // Find the first image file in the response
-    let imageFile = null;
-    for (const file of result.files) {
-      if (file.mediaType.startsWith('image/')) {
-        imageFile = file;
-        break;
+      console.log('✅ Gemini response received');
+      modelResponse = result.text;
+
+      // Find the first image file in the response
+      let imageFile = null;
+      if (result.files && result.files.length > 0) {
+        for (const file of result.files) {
+          if (file.mediaType.startsWith('image/')) {
+            imageFile = file;
+            break;
+          }
+        }
       }
+
+      if (imageFile) {
+        // Upload to Vercel Blob
+        const imageFileName = `${storyId}/${type}s/${nanoid()}.png`;
+        const blob = await put(imageFileName, imageFile.uint8Array, {
+          access: 'public',
+          contentType: 'image/png',
+        });
+
+        imageUrl = blob.url;
+        method = 'gemini';
+        console.log('✅ Image uploaded to Vercel Blob:', blob.url);
+      } else {
+        throw new Error('No image file found in Gemini response');
+      }
+
+    } catch (error) {
+      console.warn('⚠️ Gemini image generation failed:', error instanceof Error ? error.message : 'Unknown error');
+
+      // Check if it's a quota error
+      if (error instanceof Error && (error.message.includes('quota') || error.message.includes('RESOURCE_EXHAUSTED'))) {
+        console.log('📦 Using placeholder image due to API quota limits');
+        method = 'placeholder_quota';
+      } else {
+        console.log('📦 Using placeholder image due to generation failure');
+        method = 'placeholder_error';
+      }
+
+      // Generate a unique placeholder image URL based on the prompt and storyId
+      const placeholderService = 'https://picsum.photos';
+      const uniqueString = `${prompt}_${storyId}_${type}_${Date.now()}`;
+      const hash = uniqueString.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0);
+      const imageId = Math.abs(hash) % 1000 + 100; // Range 100-1099
+
+      if (type === 'character') {
+        // Use a portrait-oriented placeholder for characters with unique seed
+        imageUrl = `${placeholderService}/400/600?random=${imageId}&blur=0`;
+      } else {
+        // Use a landscape-oriented placeholder for places with unique seed
+        imageUrl = `${placeholderService}/600/400?random=${imageId}&blur=0`;
+      }
+
+      modelResponse = `Placeholder ${type} image generated due to API limitations. Original prompt: ${prompt}`;
     }
-
-    if (!imageFile) {
-      throw new Error('No image file found in response');
-    }
-
-    // Upload to Vercel Blob
-    const imageFileName = `${storyId}/${type}s/${nanoid()}.png`;
-    const blob = await put(imageFileName, imageFile.uint8Array, {
-      access: 'public',
-      contentType: 'image/png',
-    });
-
-    console.log('✅ Image uploaded to Vercel Blob:', blob.url);
-
-    // Convert uint8Array to base64 for response
-    const base64 = Buffer.from(imageFile.uint8Array).toString('base64');
 
     return Response.json({
       success: true,
-      imageUrl: blob.url,
-      imageData: {
-        base64: base64,
-        mediaType: 'image/png'
-      },
-      modelResponse: result.text
+      imageUrl: imageUrl,
+      method: method,
+      modelResponse: modelResponse,
+      type: type,
+      prompt: prompt
     });
 
   } catch (error) {
