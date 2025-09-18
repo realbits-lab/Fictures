@@ -35,7 +35,7 @@ export async function Dashboard() {
     status: story.status as "draft" | "publishing" | "completed" | "published",
     wordCount: story.currentWordCount || 0,
     firstChapterId: story.firstChapterId,
-    storyData: story.storyData || null,
+    storyData: story.content || null,
   }));
 
   return (

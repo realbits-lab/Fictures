@@ -5,7 +5,7 @@ import { hashPassword } from '@/lib/auth/utils';
 import { getAllTestUsers } from '@/lib/test/credentials';
 
 /**
- * Secure user management script that uses credentials from @playwright/.auth/user.json
+ * Secure user management script that uses credentials from .auth/user.json
  * No hardcoded passwords - all credentials are loaded securely
  */
 async function secureUserPasswordReset() {
@@ -53,7 +53,7 @@ async function secureUserPasswordReset() {
     }
 
     console.log('\n🎉 All passwords updated successfully using secure credentials!');
-    console.log('\nCredentials loaded from: @playwright/.auth/user.json');
+    console.log('\nCredentials loaded from: .auth/user.json');
     console.log('✅ No hardcoded passwords in source code');
 
   } catch (error) {

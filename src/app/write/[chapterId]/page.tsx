@@ -20,9 +20,14 @@ export default async function WritePage({ params }: { params: Promise<{ chapterI
   }
 
   // Get story structure for navigation sidebar
-  const storyStructure = await getStoryWithStructure(chapterInfo.storyId, session.user?.id);
-  
+  const storyStructure = await getStoryWithStructure(chapterInfo.storyId, true, session.user?.id);
+
   if (!storyStructure) {
+    notFound();
+  }
+
+  // Check write permissions - user must be the author for write access
+  if (storyStructure.authorId !== session.user?.id) {
     notFound();
   }
 

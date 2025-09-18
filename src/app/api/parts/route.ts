@@ -15,7 +15,7 @@ const createPartSchema = z.object({
   storyId: z.string(),
   orderIndex: z.number().min(1),
   targetWordCount: z.number().min(100).max(100000).optional(),
-  partData: z.record(z.any()).optional(),
+  content: z.string().optional(),
 });
 
 // GET /api/parts - Get parts for a story
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
         orderIndex: validatedData.orderIndex,
         targetWordCount: validatedData.targetWordCount || 20000,
         status: 'planned',
-        partData: validatedData.partData || {},
+        content: validatedData.content || '',
         chapterIds: [], // Initialize empty chapter IDs
       }
     );

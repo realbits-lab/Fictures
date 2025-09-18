@@ -50,11 +50,14 @@ logs/
 playwright/.auth/
 
 # Playwright test authentication data
-@playwright/.auth/
+.auth/
 tests/@playwright/.auth/
 
 # Playwright MCP
 .playwright-mcp/
+
+# Playwright auth directory
+.playwright/
 
 # Password and credential files
 user.json
@@ -67,3 +70,9 @@ auth-data.json
 # Scripts with hardcoded passwords (for security)
 scripts/*password*.ts
 scripts/*credential*.ts
+
+# Claude Code settings (local configuration)
+.claude/
+
+# Output directory
+@output/

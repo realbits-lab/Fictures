@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
+import yaml from "js-yaml";
 
 // YAML data interfaces based on the development documentation
 interface StoryYAML {
@@ -227,9 +228,9 @@ export function YAMLDataDisplay({
         </button>
         {isExpanded && (
           <div className="px-3 pb-3">
-            <pre className="text-xs font-mono bg-gray-50 dark:bg-gray-900 rounded p-3 overflow-x-auto">
+            <pre className="text-xs font-mono bg-gray-50 dark:bg-gray-900 rounded p-3 overflow-x-auto whitespace-pre-wrap">
               <code className="text-gray-700 dark:text-gray-300">
-                {typeof content === 'object' ? JSON.stringify(content, null, 2) : content}
+                {typeof content === 'object' ? yaml.dump(content, { indent: 2 }) : content}
               </code>
             </pre>
           </div>

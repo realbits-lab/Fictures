@@ -25,7 +25,7 @@ export default defineConfig({
       name: 'authenticated',
       use: { 
         ...devices['Desktop Chrome'],
-        storageState: '@playwright/.auth/user.json',
+        storageState: '.auth/user.json',
       },
       dependencies: ['setup'],
       testMatch: /.*\.authenticated\.spec\.ts/,

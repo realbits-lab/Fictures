@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getStoryWithStructure } from '@/lib/db/queries';
+import { db } from '@/lib/db';
+import { stories, characters, places } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { createHash } from 'crypto';
+import * as yaml from 'js-yaml';
 
 export async function GET(
   request: NextRequest,
@@ -15,12 +19,81 @@ export async function GET(
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
+
     // Get story with full structure (parts, chapters, scenes)
     const storyWithStructure = await getStoryWithStructure(id, session?.user?.id);
-    
+
+
     if (!storyWithStructure) {
       return NextResponse.json({ error: 'Story not found' }, { status: 404 });
     }
+
+    // Get characters for this story
+    const rawCharacters = await db.query.characters.findMany({
+      where: eq(characters.storyId, id)
+    });
+
+    // Parse character content data
+    const storyCharacters = rawCharacters.map(character => {
+      let parsedContent = {};
+      if (character.content) {
+        try {
+          if (typeof character.content === 'string') {
+            // Try to parse as JSON first
+            try {
+              parsedContent = JSON.parse(character.content);
+            } catch (jsonError) {
+              // If JSON parsing fails, try YAML parsing
+              // First convert \n literal strings to actual newlines
+              const cleanedContent = character.content.replace(/\\n/g, '\n');
+              parsedContent = yaml.load(cleanedContent) as Record<string, any> || {};
+            }
+          } else if (typeof character.content === 'object') {
+            parsedContent = character.content;
+          }
+        } catch (error) {
+          console.error(`Failed to parse character content for ${character.name}:`, error);
+          // Fallback: try to extract basic info from the raw string
+          if (typeof character.content === 'string') {
+            const nameMatch = character.content.match(/name:\s*["']?([^"'\n]+)["']?/);
+            const roleMatch = character.content.match(/role:\s*["']?([^"'\n]+)["']?/);
+            const descMatch = character.content.match(/description:\s*["']?([^"'\n]+)["']?/);
+
+            parsedContent = {
+              name: nameMatch ? nameMatch[1] : character.name,
+              role: roleMatch ? roleMatch[1] : null,
+              description: descMatch ? descMatch[1] : null
+            };
+          }
+        }
+      }
+
+      return {
+        ...character,
+        // Merge parsed content fields with character record
+        role: parsedContent.role || null,
+        description: parsedContent.description || null,
+        personality: parsedContent.personality || null,
+        background: parsedContent.background || null,
+        appearance: parsedContent.appearance || null,
+        motivations: parsedContent.motivations || null,
+        flaws: parsedContent.flaws || null,
+        strengths: parsedContent.strengths || null,
+        relationships: parsedContent.relationships || null,
+        arc: parsedContent.arc || null,
+        dialogue_style: parsedContent.dialogue_style || null,
+        secrets: parsedContent.secrets || null,
+        goals: parsedContent.goals || null,
+        conflicts: parsedContent.conflicts || null,
+        // Use the imageUrl from the database record, not parsed content
+        imageUrl: character.imageUrl || parsedContent.imageUrl || null
+      };
+    });
+
+    // Get places for this story
+    const storyPlaces = await db.query.places.findMany({
+      where: eq(places.storyId, id)
+    });
 
     // Only story owners can edit
     if (storyWithStructure.userId !== session?.user?.id) {
@@ -37,9 +110,31 @@ export async function GET(
 
     const allScenes = allChapters.flatMap(chapter => chapter.scenes || []);
 
+    // Parse story content JSON for storyData (note: field is named 'storyData', not 'content')
+    let parsedStoryData = null;
+
+    if (storyWithStructure.storyData) {
+      try {
+        // Handle case where storyData might already be an object
+        if (typeof storyWithStructure.storyData === 'object') {
+          parsedStoryData = storyWithStructure.storyData;
+        } else if (typeof storyWithStructure.storyData === 'string') {
+          parsedStoryData = JSON.parse(storyWithStructure.storyData);
+        }
+      } catch (error) {
+        console.error('Failed to parse story storyData JSON:', error);
+        // Keep parsedStoryData as null if parsing fails
+      }
+    }
+
     // Return story data optimized for writing with additional metadata
     const response = {
-      story: storyWithStructure,
+      story: {
+        ...storyWithStructure,
+        storyData: parsedStoryData // Add parsed story data
+      },
+      characters: storyCharacters,
+      places: storyPlaces,
       isOwner,
       metadata: {
         fetchedAt: new Date().toISOString(),
@@ -50,7 +145,7 @@ export async function GET(
           draftsCount: allChapters.filter(ch => ch.status === 'draft').length,
           completedChapters: allChapters.filter(ch => ch.status === 'completed').length,
           totalWordCount: allChapters.reduce((sum, ch) => sum + (ch.wordCount || 0), 0),
-          averageChapterLength: allChapters.length > 0 
+          averageChapterLength: allChapters.length > 0
             ? Math.round(allChapters.reduce((sum, ch) => sum + (ch.wordCount || 0), 0) / allChapters.length)
             : 0
         }
@@ -101,7 +196,62 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching story for writing:', error);
     return NextResponse.json(
-      { error: 'Internal server error' }, 
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+    const { id } = await params;
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const { storyData } = await request.json();
+
+    if (!storyData) {
+      return NextResponse.json({ error: 'Story data is required' }, { status: 400 });
+    }
+
+    // First, get the story to check ownership
+    const existingStory = await db.query.stories.findFirst({
+      where: eq(stories.id, id)
+    });
+
+    if (!existingStory) {
+      return NextResponse.json({ error: 'Story not found' }, { status: 404 });
+    }
+
+    // Check if user owns the story
+    if (existingStory.authorId !== session?.user?.id) {
+      return NextResponse.json({ error: 'Access denied - you are not the owner of this story' }, { status: 403 });
+    }
+
+    // Update the story with the new storyData
+    await db.update(stories)
+      .set({
+        storyData: storyData,
+        updatedAt: new Date()
+      })
+      .where(eq(stories.id, id));
+
+    return NextResponse.json({
+      success: true,
+      message: 'Story data saved successfully',
+      updatedAt: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Error saving story data:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

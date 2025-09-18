@@ -190,7 +190,7 @@ test.describe('Chapter Management - Core Writing Functionality', () => {
           console.log(`✓ New chapter created with ID: ${newChapterId}`);
           
           // Test updating the created chapter
-          const updateResponse = await page.request.put(`/api/chapters/${newChapterId}`, {
+          const updateResponse = await page.request.patch(`/api/chapters/${newChapterId}`, {
             data: {
               title: 'Updated Test Chapter Title',
               content: 'Updated content for test chapter'

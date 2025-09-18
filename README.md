@@ -114,10 +114,48 @@ Your Fictures application should now be running on [localhost:3000](http://local
 
 This project uses Playwright for testing with Google OAuth authentication. Follow these steps to set up authenticated testing:
 
+**Method 1: Manual Capture (Recommended)**
+
+**Step 1: Capture Authentication State**
+Run the interactive authentication capture tool:
+```bash
+dotenv --file .env.local run node scripts/capture-auth-manual.mjs
+```
+
+This command will:
+- Open a browser window for manual Google login
+- Wait for you to complete authentication with test.user@example.com
+- Automatically detect when login is complete
+- Save authentication cookies to `.auth/user.json`
+- Capture NextAuth.js session data and Google OAuth tokens
+
+**Step 2: Test Automatic Login**
+Verify the captured credentials work:
+```bash
+dotenv --file .env.local run node scripts/test-auto-login.mjs
+```
+
+**Step 3: Use in Playwright Tests**
+```javascript
+// In your Playwright test files
+const { test, expect } = require('@playwright/test');
+
+test.use({
+  storageState: '.auth/user.json'
+});
+
+test('authenticated user can access stories', async ({ page }) => {
+  await page.goto('http://localhost:3000/stories');
+  // Test runs with Google authentication
+});
+```
+
+**Method 2: Legacy Configuration**
+
 **Step 1: Environment Configuration**
 Create a `.env.test` file with your Google test credentials:
 ```bash
-GOOGLE_TEST_EMAIL=your.email@gmail.com  
+GOOGLE_TEST_EMAIL=your.email@gmail.com
 GOOGLE_TEST_PASSWORD=your_password
 ```
 
@@ -128,20 +166,12 @@ Generate the `user.json` file containing Google OAuth cookies:
 npx playwright test --project=manual-setup --headed
 ```
 
-This command will:
-- Open a browser window showing the authentication process
-- Navigate to your login page  
-- Automatically fill email from `.env.test`
-- Handle Google OAuth popup/redirect
-- Auto-fill email and password in Google's sign-in form
-- Complete authentication and save cookies to `playwright/.auth/user.json`
-
 **Step 3: Run Authenticated Tests**
 ```bash
 # Run tests using saved authentication state
 npx playwright test --project=authenticated --headed
 
-# Test specific authenticated features  
+# Test specific authenticated features
 npx playwright test tests/auth/storage-state-demo.test.ts --project=authenticated --headed
 
 # Run all test projects

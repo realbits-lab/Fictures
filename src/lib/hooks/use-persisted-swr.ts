@@ -378,11 +378,21 @@ export function usePersistedSWR<Data = any, Error = any>(
   swrConfig?: SWRConfiguration<Data, Error>
 ): SWRResponse<Data, Error> {
   const cache = CacheManager.getInstance();
-  
-  // Get initial data from localStorage
-  const [fallbackData] = useState<Data | undefined>(() => {
-    return cache.getCachedData<Data>(key, cacheConfig);
-  });
+
+  // Get initial data from localStorage only on client side to prevent hydration mismatch
+  const [fallbackData, setFallbackData] = useState<Data | undefined>(undefined);
+  const [hasSetFallback, setHasSetFallback] = useState(false);
+
+  // Use useEffect to set fallback data after hydration (only once)
+  useEffect(() => {
+    if (!hasSetFallback) {
+      const cachedData = cache.getCachedData<Data>(key, cacheConfig);
+      if (cachedData) {
+        setFallbackData(cachedData);
+      }
+      setHasSetFallback(true);
+    }
+  }, [key, hasSetFallback]);
 
   const swr = useSWR<Data, Error>(
     key,

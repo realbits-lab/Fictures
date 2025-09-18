@@ -102,7 +102,7 @@ test.describe('Database Integration Testing - Comprehensive Data Operations', ()
       };
       
       try {
-        const updateResponse = await page.request.put(`/api/stories/${createdStoryId}`, {
+        const updateResponse = await page.request.patch(`/api/stories/${createdStoryId}`, {
           data: updateData
         });
         

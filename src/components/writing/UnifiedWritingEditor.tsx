@@ -3,17 +3,22 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
+import yaml from "js-yaml";
 import { useStoryData } from "@/lib/hooks/useStoryData";
 import { useWritingProgress, useWritingSession } from "@/hooks/useStoryWriter";
 import { YAMLDataDisplay } from "./YAMLDataDisplay";
 import { StoryEditor } from "./StoryEditor";
 import { PartEditor } from "./PartEditor";
 import { ChapterEditor } from "./ChapterEditor";
-import { SceneEditor } from "./SceneEditor";
+import { SceneEditor, SceneData } from "./SceneEditor";
 import { StoryStructureSidebar } from "./StoryStructureSidebar";
 import { SceneSidebar } from "./SceneSidebar";
 import { WritingGuidelines } from "./WritingGuidelines";
-import { HierarchicalDataSidebar } from "./HierarchicalDataSidebar";
+import { StoryPromptWriter } from "./StoryPromptWriter";
+import { PartPromptEditor } from "./PartPromptEditor";
+import { ChapterPromptEditor } from "./ChapterPromptEditor";
+import { ScenePromptEditor } from "./ScenePromptEditor";
+import { BeautifulYAMLDisplay } from "./BeautifulYAMLDisplay";
 
 interface Story {
   id: string;
@@ -102,12 +107,19 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const [showThemePlanner, setShowThemePlanner] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+  // Collapse states for YAML data displays
+  const [storyDataCollapsed, setStoryDataCollapsed] = useState(false);
+  const [charactersCollapsed, setCharactersCollapsed] = useState(false);
+  const [placesCollapsed, setPlacesCollapsed] = useState(false);
+  const [characterCollapseStates, setCharacterCollapseStates] = useState<Record<string, boolean>>({});
+  const [placeCollapseStates, setPlaceCollapseStates] = useState<Record<string, boolean>>({});
+
   // SWR hook for fetching story data when switching stories
   const [targetStoryId, setTargetStoryId] = useState<string | null>(null);
   const { story: swrStory, isLoading: isLoadingStory, isValidating: isValidatingStory, error: storyError } = useStoryData(targetStoryId);
   
-  // SWR hook for current story to track background validation
-  const { isValidating: isValidatingCurrentStory } = useStoryData(story.id);
+  // SWR hook for current story to track background validation and get characters and places
+  const { isValidating: isValidatingCurrentStory, characters: currentStoryCharacters, places: currentStoryPlaces } = useStoryData(story.id);
   const [themePlanned, setThemePlanned] = useState(false);
   const [isSavingTheme, setIsSavingTheme] = useState(false);
   
@@ -166,53 +178,234 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     });
   }, [currentSelection, writingProgress]);
 
-  // Sample YAML data for demonstration
-  const sampleStoryData = {
-    title: story.title || "The Shadow Keeper",
-    genre: story.genre || "urban_fantasy",
-    words: 80000,
-    question: "Can Maya master shadow magic before power corrupts her?",
-    goal: "Save Elena from Shadow Realm",
-    conflict: "Shadow magic corrupts those who use it",
-    outcome: "Maya embraces darkness to save light",
-    chars: {
-      maya: { role: "protag", arc: "denial→acceptance", flaw: "overprotective" },
-      elena: { role: "catalyst", arc: "missing→transformed", goal: "survive_realm" },
-      marcus: { role: "mentor", arc: "guilt→redemption", secret: "previous_failure" },
-      void: { role: "antag", arc: "power→corruption", goal: "merge_worlds" }
-    },
-    themes: ["responsibility_for_power", "love_vs_control", "inner_battles"],
-    structure: {
-      type: "3_part",
-      parts: ["setup", "confrontation", "resolution"],
-      dist: [25, 50, 25]
-    },
-    setting: {
-      primary: ["san_francisco", "photography_studio"],
-      secondary: ["shadow_realm", "chinatown_passages"]
-    },
-    parts: [
-      {
-        part: 1,
-        goal: "Maya accepts supernatural reality",
-        conflict: "Denial vs mounting evidence",
-        outcome: "Reluctant training commitment",
-        tension: "denial vs acceptance"
+  // Parse actual story data from database, fallback to default structure if not available
+  const parseStoryData = () => {
+    let parsedData = null;
+
+    // Handle both JSON string and object cases
+    if (story.storyData) {
+      if (typeof story.storyData === 'object') {
+        parsedData = story.storyData;
+      } else if (typeof story.storyData === 'string') {
+        try {
+          parsedData = JSON.parse(story.storyData);
+        } catch (error) {
+          console.error('Failed to parse story storyData JSON:', error);
+        }
       }
-    ],
-    serial: {
-      schedule: "weekly",
-      duration: "18_months",
-      chapter_words: 4000,
-      breaks: ["part1_end", "part2_end"],
-      buffer: "4_chapters_ahead"
-    },
-    hooks: {
-      overarching: ["elena_fate", "maya_corruption_risk", "shadow_magic_truth"],
-      mysteries: ["previous_student_identity", "marcus_secret", "realm_connection"],
-      part_endings: ["mentor_secret_revealed", "elena_appears_changed"]
+    }
+
+    // If we successfully parsed data, use it
+    if (parsedData && typeof parsedData === 'object') {
+      return {
+        title: story.title || parsedData.title || "Generated Story",
+        genre: story.genre || parsedData.genre || "General",
+        words: parsedData.words || parsedData.targetWordCount || 60000,
+        question: parsedData.question || "What is the central question of this story?",
+        goal: parsedData.goal || "Story goal not defined",
+        conflict: parsedData.conflict || "Story conflict not defined",
+        outcome: parsedData.outcome || "Story outcome not defined",
+        chars: parsedData.chars || parsedData.characters || {},
+        themes: parsedData.themes || [],
+        structure: parsedData.structure || {
+          type: "3_part",
+          parts: ["setup", "confrontation", "resolution"],
+          dist: [25, 50, 25]
+        },
+        setting: parsedData.setting || {},
+        parts: parsedData.parts || [],
+        serial: parsedData.serial || {},
+        hooks: parsedData.hooks || {}
+      };
+    }
+
+    // Fallback to basic story info if no parsed data available
+    return {
+      title: story.title || "Generated Story",
+      genre: story.genre || "General",
+      words: 60000,
+      question: "What is the central question of this story?",
+      goal: "Story goal not defined",
+      conflict: "Story conflict not defined",
+      outcome: "Story outcome not defined",
+      chars: {},
+      themes: [],
+      structure: {
+        type: "3_part",
+        parts: ["setup", "confrontation", "resolution"],
+        dist: [25, 50, 25]
+      },
+      setting: {},
+      parts: [],
+      serial: {},
+      hooks: {}
+    };
+  };
+
+  // Real story data from database
+  const [sampleStoryData, setSampleStoryData] = useState(parseStoryData());
+
+  // Track changes and original data for save/cancel functionality
+  const [originalStoryData, setOriginalStoryData] = useState(sampleStoryData);
+  const [storyPreviewData, setStoryPreviewData] = useState<any>(null);
+  const [storyHasChanges, setStoryHasChanges] = useState(false);
+  const [changedStoryKeys, setChangedStoryKeys] = useState<string[]>([]);
+
+  // Part data state management for change tracking
+  const [originalPartData, setOriginalPartData] = useState<any>(null);
+  const [currentPartData, setCurrentPartData] = useState<any>(null);
+  const [partPreviewData, setPartPreviewData] = useState<any>(null);
+  const [partHasChanges, setPartHasChanges] = useState(false);
+
+  // Chapter data state management for change tracking
+  const [originalChapterData, setOriginalChapterData] = useState<any>(null);
+  const [currentChapterData, setCurrentChapterData] = useState<any>(null);
+  const [chapterPreviewData, setChapterPreviewData] = useState<any>(null);
+  const [chapterHasChanges, setChapterHasChanges] = useState(false);
+
+  // Scene data state management for change tracking
+  const [originalSceneData, setOriginalSceneData] = useState<any>(null);
+  const [currentSceneData, setCurrentSceneData] = useState<any>(null);
+  const [scenePreviewData, setScenePreviewData] = useState<any>(null);
+  const [sceneHasChanges, setSceneHasChanges] = useState(false);
+
+  // Update story data when story prop changes (for real-time updates)
+  useEffect(() => {
+    console.log('🔄 Story prop changed, updating story data...');
+    console.log('📦 Story storyData:', story.storyData);
+
+    const newStoryData = parseStoryData();
+    console.log('📝 Parsed story data:', newStoryData);
+
+    setSampleStoryData(newStoryData);
+    setOriginalStoryData(newStoryData);
+    setStoryHasChanges(false);
+    setChangedStoryKeys([]);
+
+    console.log('✅ Story data state updated');
+  }, [story]);
+
+  // Helper function to find changed keys between two objects
+  const findChangedKeys = (original: any, updated: any): string[] => {
+    const changedKeys: string[] = [];
+
+    if (!original || !updated) return changedKeys;
+
+    // Get all keys from both objects
+    const allKeys = new Set([...Object.keys(original), ...Object.keys(updated)]);
+
+    for (const key of allKeys) {
+      const originalValue = original[key];
+      const updatedValue = updated[key];
+
+      // Compare values (deep comparison for objects)
+      if (JSON.stringify(originalValue) !== JSON.stringify(updatedValue)) {
+        changedKeys.push(key);
+      }
+    }
+
+    return changedKeys;
+  };
+
+  // Update story data and track changes
+  const handleStoryDataUpdate = (updatedData: any) => {
+    setSampleStoryData(updatedData);
+    setStoryHasChanges(JSON.stringify(updatedData) !== JSON.stringify(originalStoryData));
+
+    // Calculate and track changed keys
+    const changed = findChangedKeys(originalStoryData, updatedData);
+    setChangedStoryKeys(changed);
+  };
+
+  // Update part data and track changes
+  const handlePartDataUpdate = (updatedData: any) => {
+    setCurrentPartData(updatedData);
+    if (originalPartData) {
+      setPartHasChanges(JSON.stringify(updatedData) !== JSON.stringify(originalPartData));
     }
   };
+
+  // Update chapter data and track changes
+  const handleChapterDataUpdate = (updatedData: any) => {
+    setCurrentChapterData(updatedData);
+    if (originalChapterData) {
+      setChapterHasChanges(yaml.dump(updatedData) !== yaml.dump(originalChapterData));
+    }
+  };
+
+  // Update scene data and track changes
+  const handleSceneDataUpdate = (updatedData: any) => {
+    setCurrentSceneData(updatedData);
+    if (originalSceneData) {
+      setSceneHasChanges(yaml.dump(updatedData) !== yaml.dump(originalSceneData));
+    }
+  };
+
+  // Initialize part data when switching to part level or changing part
+  useEffect(() => {
+    if (currentSelection.level === "part") {
+      const selectedPart = story.parts.find(part => part.id === currentSelection.partId);
+      const partNumber = selectedPart?.orderIndex || 1;
+      const partData = selectedPart ?
+        createPartData(partNumber, `Part ${partNumber}`) :
+        createPartData(1, "Part 1");
+
+      setOriginalPartData(partData);
+      setCurrentPartData(partData);
+      setPartHasChanges(false);
+    }
+  }, [currentSelection.level, currentSelection.partId, story.parts]);
+
+  // Initialize chapter data when switching to chapter level or changing chapter
+  useEffect(() => {
+    if (currentSelection.level === "chapter") {
+      const selectedChapter = story.chapters?.find(chapter => chapter.id === currentSelection.chapterId);
+      const chapterData = selectedChapter || {
+        id: currentSelection.chapterId || 'sample-chapter',
+        title: 'Chapter 1',
+        summary: '',
+        orderIndex: 1,
+        wordCount: 0,
+        targetWordCount: 4000,
+        status: 'draft',
+        purpose: '',
+        hook: '',
+        characterFocus: '',
+        sceneIds: [],
+        scenes: []
+      };
+
+      setOriginalChapterData(chapterData);
+      setCurrentChapterData(chapterData);
+      setChapterHasChanges(false);
+    }
+  }, [currentSelection.level, currentSelection.chapterId, story.chapters]);
+
+  // Initialize scene data when switching to scene level or changing scene
+  useEffect(() => {
+    if (currentSelection.level === "scene") {
+      const selectedScene = story.scenes?.find(scene => scene.id === currentSelection.sceneId);
+      const sceneData = selectedScene || {
+        id: currentSelection.sceneId || 'sample-scene',
+        title: 'Scene 1',
+        content: '',
+        orderIndex: 1,
+        wordCount: 0,
+        status: 'planned',
+        goal: '',
+        conflict: '',
+        outcome: '',
+        characterIds: [],
+        placeIds: [],
+        characters: [],
+        places: []
+      };
+
+      setOriginalSceneData(sceneData);
+      setCurrentSceneData(sceneData);
+      setSceneHasChanges(false);
+    }
+  }, [currentSelection.level, currentSelection.sceneId, story.scenes]);
 
   const samplePartData = {
     part: 1,
@@ -397,31 +590,104 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     try {
       // Check if this is scene data (has content and wordCount) and we have a sceneId
       if (data.content !== undefined && data.wordCount !== undefined && currentSelection.sceneId) {
-        // Save scene content and metadata to the scene API
+        // Save scene content and metadata to the scene API using YAML
+        const sceneYamlData = {
+          title: data.summary || `Scene ${data.id}`,
+          content: data.content,
+          wordCount: data.wordCount,
+          goal: data.goal,
+          conflict: data.obstacle,
+          outcome: data.outcome,
+          status: data.content && data.content.trim() ? 'in_progress' : 'draft'
+        };
+
         const response = await fetch(`/api/scenes/${currentSelection.sceneId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/yaml',
+          },
+          body: yaml.dump(sceneYamlData)
+        });
+
+        if (!response.ok) {
+          const responseText = await response.text();
+          let errorData;
+          try {
+            errorData = yaml.load(responseText) as any;
+          } catch {
+            errorData = { error: responseText };
+          }
+          throw new Error(`Failed to save scene: ${errorData.error || response.statusText}`);
+        }
+
+        console.log('Scene saved successfully');
+      } else if (currentSelection.level === "chapter" && data) {
+        // Save chapter data using YAML
+        const chapterYamlData = {
+          id: data.id,
+          title: data.title,
+          purpose: data.purpose,
+          hook: data.hook,
+          characterFocus: data.characterFocus,
+          wordCount: data.wordCount,
+          targetWordCount: data.targetWordCount,
+          status: data.status
+        };
+
+        const response = await fetch(`/api/chapters/${data.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/yaml',
+          },
+          body: yaml.dump(chapterYamlData)
+        });
+
+        if (!response.ok) {
+          const responseText = await response.text();
+          let errorData;
+          try {
+            errorData = yaml.load(responseText) as any;
+          } catch {
+            errorData = { error: responseText };
+          }
+          throw new Error(`Failed to save chapter: ${errorData.error || response.statusText}`);
+        }
+
+        console.log('Chapter data saved successfully');
+      } else if (currentSelection.level === "story" && data) {
+        // Save story data to the stories API
+        console.log('💾 Saving story data to API...');
+        console.log('📝 Data being saved:', data);
+        console.log('🎯 Story ID:', story.id);
+
+        const response = await fetch(`/api/stories/${story.id}/write`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            title: data.summary || `Scene ${data.id}`,
-            content: data.content,
-            wordCount: data.wordCount,
-            goal: data.goal,
-            conflict: data.obstacle,
-            outcome: data.outcome,
-            status: data.content && data.content.trim() ? 'in_progress' : 'draft'
+            storyData: data
           })
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(`Failed to save scene: ${errorData.error || response.statusText}`);
+          console.error('❌ Save failed:', errorData);
+          throw new Error(`Failed to save story: ${errorData.error || response.statusText}`);
         }
 
-        console.log('Scene saved successfully');
+        const saveResult = await response.json();
+        console.log('✅ Story data saved successfully:', saveResult);
+
+        // Important: Update local story state to reflect saved data
+        console.log('🔄 Updating local story state with saved data...');
+        setStory(prevStory => ({
+          ...prevStory,
+          storyData: data,
+          updatedAt: saveResult.updatedAt || new Date().toISOString()
+        }));
       } else {
-        // For other data types (story, part, chapter), use the original mock behavior for now
+        // For other data types (part), use the original mock behavior for now
         console.log('Saving data:', data);
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
@@ -590,7 +856,14 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     try {
       // Fetch current scenes from the API to ensure we have the latest data
       const scenesResponse = await fetch(`/api/scenes?chapterId=${chapterId}`);
-      const scenesData = await scenesResponse.json();
+      const scenesText = await scenesResponse.text();
+      let scenesData;
+      try {
+        scenesData = yaml.load(scenesText) as any;
+      } catch {
+        // Fallback to JSON for backward compatibility
+        scenesData = JSON.parse(scenesText);
+      }
       
       // Calculate next available order index by finding the highest existing orderIndex
       let nextOrderIndex = 1;
@@ -599,29 +872,45 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         nextOrderIndex = maxOrderIndex + 1;
       }
       
-      // Create the new scene
+      // Create the new scene using YAML
+      const newSceneData = {
+        title: `Scene ${nextOrderIndex}`,
+        chapterId: chapterId,
+        orderIndex: nextOrderIndex,
+        goal: nextOrderIndex === 1 ? 'Establish opening scene' : `Scene ${nextOrderIndex} objective`,
+        conflict: nextOrderIndex === 1 ? 'Initial obstacles' : `Scene ${nextOrderIndex} challenges`,
+        outcome: nextOrderIndex === 1 ? 'Scene conclusion' : `Scene ${nextOrderIndex} resolution`
+      };
+
       const response = await fetch('/api/scenes', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/yaml',
         },
-        body: JSON.stringify({
-          title: `Scene ${nextOrderIndex}`,
-          chapterId: chapterId,
-          orderIndex: nextOrderIndex,
-          goal: nextOrderIndex === 1 ? 'Establish opening scene' : `Scene ${nextOrderIndex} objective`,
-          conflict: nextOrderIndex === 1 ? 'Initial obstacles' : `Scene ${nextOrderIndex} challenges`,
-          outcome: nextOrderIndex === 1 ? 'Scene conclusion' : `Scene ${nextOrderIndex} resolution`
-        })
+        body: yaml.dump(newSceneData)
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = yaml.load(errorText) as any;
+        } catch {
+          errorData = { error: errorText };
+        }
         console.error('Scene creation failed:', errorData);
         throw new Error(errorData.error || 'Failed to create scene');
       }
 
-      const { scene } = await response.json();
+      const responseText = await response.text();
+      let responseData;
+      try {
+        responseData = yaml.load(responseText) as any;
+      } catch {
+        // Fallback to JSON for backward compatibility
+        responseData = JSON.parse(responseText);
+      }
+      const { scene } = responseData;
       
       // Navigate to the new scene editor
       handleSelectionChange({
@@ -686,19 +975,25 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         nextStatus = 'in_progress';
       }
       
-      // Update scene status via API
+      // Update scene status via API using YAML
       const response = await fetch(`/api/scenes/${sceneId}`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/yaml',
         },
-        body: JSON.stringify({
+        body: yaml.dump({
           status: nextStatus
         })
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const responseText = await response.text();
+        let errorData;
+        try {
+          errorData = yaml.load(responseText) as any;
+        } catch {
+          errorData = { error: responseText };
+        }
         console.error('Scene status update failed:', errorData);
         throw new Error(`Failed to update scene status: ${errorData.error || 'Unknown error'}`);
       }
@@ -714,69 +1009,497 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     }
   };
 
+  // Create part data based on actual story data
+  const createPartData = (partNum: number, partTitle: string) => {
+    // Get part data from actual story data if available
+    const storyParts = sampleStoryData.parts || [];
+    const currentPart = storyParts.find((p: any) => p.part === partNum) || storyParts[partNum - 1];
+
+    return {
+      part: partNum,
+      title: partTitle,
+      words: partNum === 2 ? 40000 : 20000, // Middle part typically longer
+      function: partNum === 1 ? "story_setup" :
+               partNum === 2 ? "story_development" :
+               "story_resolution",
+      goal: currentPart?.goal || `Part ${partNum} goal from ${sampleStoryData.title}`,
+      conflict: currentPart?.conflict || `Part ${partNum} conflict from ${sampleStoryData.title}`,
+      outcome: currentPart?.outcome || `Part ${partNum} outcome from ${sampleStoryData.title}`,
+      questions: {
+        primary: `What is the main question for Part ${partNum} of ${sampleStoryData.title}?`,
+        secondary: `What is the secondary question for Part ${partNum} of ${sampleStoryData.title}?`
+      },
+      chars: sampleStoryData.chars || {},
+      plot: {
+        events: [],
+        reveals: [],
+        escalation: []
+      },
+      emotion: {
+        start: `Part ${partNum} emotional start`,
+        progression: [],
+        end: `Part ${partNum} emotional end`
+      }
+    };
+  };
+
+  // Helper function to find scene data
+  const findSceneData = () => {
+    let selectedScene = null;
+    let selectedSceneChapter = null;
+    let sceneNumber = 1;
+
+    // First try to find the scene in the currently selected chapter (if we're coming from chapter view)
+    if (currentSelection.chapterId) {
+      // Look through all chapters in parts
+      for (const part of story.parts) {
+        const chapter = part.chapters.find(ch => ch.id === currentSelection.chapterId);
+        if (chapter && chapter.scenes) {
+          const foundSceneIndex = chapter.scenes.findIndex(scene => scene.id === currentSelection.sceneId);
+          if (foundSceneIndex !== -1) {
+            selectedScene = chapter.scenes[foundSceneIndex];
+            selectedSceneChapter = chapter;
+            sceneNumber = foundSceneIndex + 1;
+            break;
+          }
+        }
+      }
+
+      // Look in standalone chapters if not found in parts
+      if (!selectedScene) {
+        const chapter = story.chapters.find(ch => ch.id === currentSelection.chapterId);
+        if (chapter && chapter.scenes) {
+          const foundSceneIndex = chapter.scenes.findIndex(scene => scene.id === currentSelection.sceneId);
+          if (foundSceneIndex !== -1) {
+            selectedScene = chapter.scenes[foundSceneIndex];
+            selectedSceneChapter = chapter;
+            sceneNumber = foundSceneIndex + 1;
+          }
+        }
+      }
+    }
+
+    // Fallback: search all chapters if we couldn't find it in the current chapter
+    if (!selectedScene) {
+      // Look through all chapters in parts
+      for (const part of story.parts) {
+        for (const chapter of part.chapters) {
+          if (chapter.scenes) {
+            const foundSceneIndex = chapter.scenes.findIndex(scene => scene.id === currentSelection.sceneId);
+            if (foundSceneIndex !== -1) {
+              selectedScene = chapter.scenes[foundSceneIndex];
+              selectedSceneChapter = chapter;
+              sceneNumber = foundSceneIndex + 1;
+              break;
+            }
+          }
+        }
+        if (selectedScene) break;
+      }
+
+      // Look in standalone chapters if not found in parts
+      if (!selectedScene) {
+        for (const chapter of story.chapters) {
+          if (chapter.scenes) {
+            const foundSceneIndex = chapter.scenes.findIndex(scene => scene.id === currentSelection.sceneId);
+            if (foundSceneIndex !== -1) {
+              selectedScene = chapter.scenes[foundSceneIndex];
+              selectedSceneChapter = chapter;
+              sceneNumber = foundSceneIndex + 1;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // Create scene data based on selection
+    const createSceneData = (scene: any, sceneNum: number) => ({
+      id: scene?.id || currentSelection.sceneId || `scene-${sceneNum}`,
+      summary: scene?.title || `Scene ${sceneNum}`,
+      time: sceneNum === 1 ? "morning" : sceneNum === 2 ? "afternoon" : "evening",
+      place: scene?.title?.toLowerCase().includes('apartment') ? "elena_apartment" :
+             scene?.title?.toLowerCase().includes('office') ? "maya_office" : "location",
+      pov: "maya",
+      characters: {
+        maya: { enters: "determined", exits: "conflicted" },
+        elena: { status: scene?.id?.includes('elena') ? "present" : "referenced" }
+      },
+      goal: scene?.goal || `Accomplish scene ${sceneNum} objective`,
+      obstacle: scene?.conflict || "Internal and external challenges",
+      outcome: scene?.outcome || "Scene resolution",
+      beats: [
+        "Opening beat - establish scene",
+        "Development - character actions",
+        "Conflict - obstacles arise",
+        "Resolution - scene conclusion"
+      ],
+      shift: "emotional_progression",
+      leads_to: `scene_${sceneNum + 1}`,
+      image_prompt: `Scene ${sceneNum} visual description for ${selectedSceneChapter?.title || 'chapter'}`,
+      content: scene?.content || "",
+      wordCount: scene?.wordCount || 0
+    });
+
+    const sceneData = selectedScene ?
+      createSceneData(selectedScene, sceneNumber) :
+      createSceneData(null, sceneNumber);
+
+    return { sceneData, selectedSceneChapter, sceneNumber };
+  };
+
+  const renderSceneEditor = () => {
+    const { sceneData, selectedSceneChapter, sceneNumber } = findSceneData();
+
+    return (
+      <SceneEditor
+        key={currentSelection.sceneId}
+        sceneId={currentSelection.sceneId}
+        sceneNumber={sceneNumber}
+        initialData={currentSceneData}
+        previewData={scenePreviewData}
+        chapterContext={{
+          title: selectedSceneChapter?.title || "Chapter",
+          pov: "maya",
+          acts: sampleChapterData.acts
+        }}
+        hasChanges={sceneHasChanges || !!scenePreviewData}
+        onSceneUpdate={handleSceneDataUpdate}
+        onSave={async (data) => {
+          await handleSave(scenePreviewData || data);
+          setOriginalSceneData(scenePreviewData || data);
+          setScenePreviewData(null);
+          setSceneHasChanges(false);
+        }}
+        onCancel={() => {
+          setCurrentSceneData(originalSceneData);
+          setScenePreviewData(null);
+          setSceneHasChanges(false);
+        }}
+        onWrite={handleGenerate}
+      />
+    );
+  };
+
   const renderEditor = () => {
     switch (currentSelection.level) {
       case "story":
         return (
-          <StoryEditor
-            storyId={currentSelection.storyId}
-            initialData={sampleStoryData}
-            onSave={handleSave}
-            onGenerate={handleGenerate}
-          />
+          <div className="space-y-6">
+            <StoryEditor
+              storyId={story.id}
+              storyData={sampleStoryData}
+              characters={currentStoryCharacters}
+              places={currentStoryPlaces}
+              hasChanges={storyHasChanges}
+              onStoryUpdate={handleStoryDataUpdate}
+              onSave={async (data) => {
+                await handleSave(data);
+                setOriginalStoryData(data);
+                setStoryHasChanges(false);
+                setChangedStoryKeys([]);
+              }}
+              onCancel={() => {
+                setSampleStoryData(originalStoryData);
+                setStoryHasChanges(false);
+                setChangedStoryKeys([]);
+              }}
+              onGenerate={handleGenerate}
+            />
+
+            {/* Story YAML Data Display */}
+            <BeautifulYAMLDisplay
+              title="Story YAML Data"
+              icon="📖"
+              data={sampleStoryData}
+              isCollapsed={storyDataCollapsed}
+              onToggleCollapse={() => setStoryDataCollapsed(!storyDataCollapsed)}
+              changedKeys={changedStoryKeys}
+              onDataChange={handleStoryDataUpdate}
+            />
+
+            {/* Characters Grid Display */}
+            {currentStoryCharacters && currentStoryCharacters.length > 0 && (
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <span>🎭</span>
+                    Characters ({currentStoryCharacters.length})
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setCharactersCollapsed(!charactersCollapsed)}
+                    className="flex items-center gap-1"
+                  >
+                    <span className="text-xs">
+                      {charactersCollapsed ? 'Show' : 'Hide'}
+                    </span>
+                    <svg
+                      className={`w-4 h-4 transition-transform ${charactersCollapsed ? 'rotate-0' : 'rotate-180'}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </Button>
+                </CardHeader>
+                {!charactersCollapsed && (
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {currentStoryCharacters.map((character: any) => (
+                        <div
+                          key={character.id}
+                          className="group relative bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer"
+                          onClick={() => setCharacterCollapseStates(prev => ({
+                            ...prev,
+                            [character.id]: !prev[character.id]
+                          }))}
+                        >
+                          {/* Character Image */}
+                          <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
+                            {character.imageUrl ? (
+                              <img
+                                src={character.imageUrl}
+                                alt={character.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.nextElementSibling?.classList.remove('hidden');
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-600">
+                                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                              </div>
+                            )}
+
+                            {/* Character Badge */}
+                            {character.isMain && (
+                              <div className="absolute top-2 right-2">
+                                <Badge variant="default" size="sm" className="bg-blue-600 text-white text-xs px-1 py-0">
+                                  Main
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Character Info */}
+                          <div className="p-3">
+                            <h4 className="font-medium text-sm text-[rgb(var(--card-foreground))] truncate">
+                              {character.name}
+                            </h4>
+                            {character.role && (
+                              <p className="text-xs text-[rgb(var(--muted-foreground))] truncate mt-1">
+                                {character.role}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Expanded Content */}
+                          {characterCollapseStates[character.id] && (
+                            <div className="absolute inset-0 bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg p-4 z-10 shadow-xl max-h-[300px] overflow-y-auto">
+                              <div className="flex items-center justify-between mb-3">
+                                <h4 className="font-medium text-[rgb(var(--card-foreground))]">
+                                  {character.name}
+                                </h4>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCharacterCollapseStates(prev => ({
+                                      ...prev,
+                                      [character.id]: false
+                                    }));
+                                  }}
+                                  className="h-auto p-1"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </Button>
+                              </div>
+                              {character.content && (
+                                <div className="text-xs text-[rgb(var(--muted-foreground))] space-y-2">
+                                  {typeof character.content === 'object' ? (
+                                    <pre className="whitespace-pre-wrap font-mono text-xs">
+                                      {JSON.stringify(character.content, null, 2)}
+                                    </pre>
+                                  ) : (
+                                    <p>{character.content}</p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            )}
+
+            {/* Places Grid Display */}
+            {currentStoryPlaces && currentStoryPlaces.length > 0 && (
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <span>🏞️</span>
+                    Places ({currentStoryPlaces.length})
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPlacesCollapsed(!placesCollapsed)}
+                    className="flex items-center gap-1"
+                  >
+                    <span className="text-xs">
+                      {placesCollapsed ? 'Show' : 'Hide'}
+                    </span>
+                    <svg
+                      className={`w-4 h-4 transition-transform ${placesCollapsed ? 'rotate-0' : 'rotate-180'}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </Button>
+                </CardHeader>
+                {!placesCollapsed && (
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {currentStoryPlaces.map((place: any) => (
+                        <div
+                          key={place.id}
+                          className="group relative bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer"
+                          onClick={() => setPlaceCollapseStates(prev => ({
+                            ...prev,
+                            [place.id]: !prev[place.id]
+                          }))}
+                        >
+                          {/* Place Image */}
+                          <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
+                            {place.imageUrl ? (
+                              <img
+                                src={place.imageUrl}
+                                alt={place.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.nextElementSibling?.classList.remove('hidden');
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-600">
+                                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                              </div>
+                            )}
+
+                            {/* Place Badge */}
+                            {place.isMain && (
+                              <div className="absolute top-2 right-2">
+                                <Badge variant="default" size="sm" className="bg-green-600 text-white text-xs px-1 py-0">
+                                  Main
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Place Info */}
+                          <div className="p-3">
+                            <h4 className="font-medium text-sm text-[rgb(var(--card-foreground))] truncate">
+                              {place.name}
+                            </h4>
+                          </div>
+
+                          {/* Expanded Content */}
+                          {placeCollapseStates[place.id] && (
+                            <div className="absolute inset-0 bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg p-4 z-10 shadow-xl max-h-[300px] overflow-y-auto">
+                              <div className="flex items-center justify-between mb-3">
+                                <h4 className="font-medium text-[rgb(var(--card-foreground))]">
+                                  {place.name}
+                                </h4>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setPlaceCollapseStates(prev => ({
+                                      ...prev,
+                                      [place.id]: false
+                                    }));
+                                  }}
+                                  className="h-auto p-1"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </Button>
+                              </div>
+                              {place.content && (
+                                <div className="text-xs text-[rgb(var(--muted-foreground))] space-y-2">
+                                  {typeof place.content === 'object' ? (
+                                    <pre className="whitespace-pre-wrap font-mono text-xs">
+                                      {JSON.stringify(place.content, null, 2)}
+                                    </pre>
+                                  ) : (
+                                    <p>{place.content}</p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            )}
+          </div>
         );
       
       case "part":
         // Find the selected part from the story structure
         const selectedPart = story.parts.find(part => part.id === currentSelection.partId);
         const partNumber = selectedPart?.orderIndex || 1;
-        
-        // Create unique part data based on selected part
-        const createPartData = (partNum: number, partTitle: string) => ({
-          ...samplePartData,
-          part: partNum,
-          title: partTitle,
-          words: partNum === 2 ? 40000 : 20000, // Middle part typically longer
-          function: partNum === 1 ? "story_setup" : 
-                   partNum === 2 ? "story_development" : 
-                   "story_resolution",
-          goal: partNum === 1 ? "Maya accepts supernatural reality" :
-               partNum === 2 ? "Maya develops powers and enters Shadow Realm" :
-               "Maya confronts final enemy and rescues Elena",
-          conflict: partNum === 1 ? "Denial vs mounting evidence" :
-                   partNum === 2 ? "Power corruption vs moral compass" :
-                   "Ultimate sacrifice vs personal desires",
-          outcome: partNum === 1 ? "Reluctant training commitment" :
-                  partNum === 2 ? "Enters Shadow Realm transformed" :
-                  "Victory at personal cost",
-          questions: {
-            primary: partNum === 1 ? "How will Maya react when she discovers her magical abilities?" :
-                    partNum === 2 ? "Can Maya resist the corruption of shadow magic?" :
-                    "Will Maya sacrifice herself to save Elena?",
-            secondary: partNum === 1 ? "Can Maya overcome denial to accept the supernatural world?" :
-                      partNum === 2 ? "How will Maya's relationships change as she grows stronger?" :
-                      "What will be the true cost of Maya's choices?"
-          }
-        });
-        
-        const partData = selectedPart ? 
-          createPartData(partNumber, `Part ${partNumber}`) : 
-          samplePartData;
-        
+
         return (
           <PartEditor
             key={currentSelection.partId} // Force re-mount when part changes
             partId={currentSelection.partId}
             partNumber={partNumber}
-            initialData={partData}
+            initialData={currentPartData}
+            previewData={partPreviewData}
             storyContext={{
               title: story.title,
               genre: story.genre,
               themes: ["responsibility_for_power", "love_vs_control"],
               chars: sampleStoryData.chars
             }}
-            onSave={handleSave}
-            onGenerate={handleGenerate}
+            hasChanges={partHasChanges || !!partPreviewData}
+            onPartUpdate={handlePartDataUpdate}
+            onSave={async (data) => {
+              await handleSave(partPreviewData || data);
+              setOriginalPartData(partPreviewData || data);
+              setPartPreviewData(null);
+              setPartHasChanges(false);
+            }}
+            onCancel={() => {
+              setCurrentPartData(originalPartData);
+              setPartPreviewData(null);
+              setPartHasChanges(false);
+            }}
           />
         );
       
@@ -869,6 +1592,42 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
         return (
           <div className="space-y-6">
+            {/* Chapter Editor Header with Save/Cancel */}
+            {(chapterHasChanges || !!chapterPreviewData) && (
+              <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                <div>
+                  <h3 className="font-medium text-blue-900 dark:text-blue-100">📝 Chapter Changes</h3>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">You have unsaved changes to this chapter</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setCurrentChapterData(originalChapterData);
+                      setChapterPreviewData(null);
+                      setChapterHasChanges(false);
+                    }}
+                    className="whitespace-nowrap"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={async () => {
+                      await handleSave(chapterPreviewData || currentChapterData);
+                      setOriginalChapterData(chapterPreviewData || currentChapterData);
+                      setChapterPreviewData(null);
+                      setChapterHasChanges(false);
+                    }}
+                    className="whitespace-nowrap"
+                  >
+                    💾 Save Changes
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Chapter Overview */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -1184,127 +1943,270 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 </div>
               </CardContent>
             </Card>
+
+            {/* Story YAML Data Display */}
+            <BeautifulYAMLDisplay
+              title="Story YAML Data"
+              icon="📖"
+              data={sampleStoryData}
+              isCollapsed={storyDataCollapsed}
+              onToggleCollapse={() => setStoryDataCollapsed(!storyDataCollapsed)}
+            />
+
+            {/* Characters Grid Display */}
+            {currentStoryCharacters && currentStoryCharacters.length > 0 && (
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <span>🎭</span>
+                    Characters ({currentStoryCharacters.length})
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setCharactersCollapsed(!charactersCollapsed)}
+                    className="flex items-center gap-1"
+                  >
+                    <span className="text-xs">
+                      {charactersCollapsed ? 'Show' : 'Hide'}
+                    </span>
+                    <svg
+                      className={`w-4 h-4 transition-transform ${charactersCollapsed ? 'rotate-0' : 'rotate-180'}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </Button>
+                </CardHeader>
+                {!charactersCollapsed && (
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {currentStoryCharacters.map((character: any) => (
+                        <div
+                          key={character.id}
+                          className="group relative bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer"
+                          onClick={() => setCharacterCollapseStates(prev => ({
+                            ...prev,
+                            [character.id]: !prev[character.id]
+                          }))}
+                        >
+                          {/* Character Image */}
+                          <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
+                            {character.imageUrl ? (
+                              <img
+                                src={character.imageUrl}
+                                alt={character.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.nextElementSibling?.classList.remove('hidden');
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-600">
+                                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                              </div>
+                            )}
+
+                            {/* Character Badge */}
+                            {character.isMain && (
+                              <div className="absolute top-2 right-2">
+                                <Badge variant="default" size="sm" className="bg-blue-600 text-white text-xs px-1 py-0">
+                                  Main
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Character Info */}
+                          <div className="p-3">
+                            <h4 className="font-medium text-sm text-[rgb(var(--card-foreground))] truncate">
+                              {character.name}
+                            </h4>
+                            {character.role && (
+                              <p className="text-xs text-[rgb(var(--muted-foreground))] truncate mt-1">
+                                {character.role}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Expanded Content */}
+                          {characterCollapseStates[character.id] && (
+                            <div className="absolute inset-0 bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg p-4 z-10 shadow-xl max-h-[300px] overflow-y-auto">
+                              <div className="flex items-center justify-between mb-3">
+                                <h4 className="font-medium text-[rgb(var(--card-foreground))]">
+                                  {character.name}
+                                </h4>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCharacterCollapseStates(prev => ({
+                                      ...prev,
+                                      [character.id]: false
+                                    }));
+                                  }}
+                                  className="h-auto p-1"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </Button>
+                              </div>
+                              {character.content && (
+                                <div className="text-xs text-[rgb(var(--muted-foreground))] space-y-2">
+                                  {typeof character.content === 'object' ? (
+                                    <pre className="whitespace-pre-wrap font-mono text-xs">
+                                      {JSON.stringify(character.content, null, 2)}
+                                    </pre>
+                                  ) : (
+                                    <p>{character.content}</p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            )}
+
+            {/* Places Grid Display */}
+            {currentStoryPlaces && currentStoryPlaces.length > 0 && (
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <span>🏞️</span>
+                    Places ({currentStoryPlaces.length})
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPlacesCollapsed(!placesCollapsed)}
+                    className="flex items-center gap-1"
+                  >
+                    <span className="text-xs">
+                      {placesCollapsed ? 'Show' : 'Hide'}
+                    </span>
+                    <svg
+                      className={`w-4 h-4 transition-transform ${placesCollapsed ? 'rotate-0' : 'rotate-180'}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </Button>
+                </CardHeader>
+                {!placesCollapsed && (
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {currentStoryPlaces.map((place: any) => (
+                        <div
+                          key={place.id}
+                          className="group relative bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer"
+                          onClick={() => setPlaceCollapseStates(prev => ({
+                            ...prev,
+                            [place.id]: !prev[place.id]
+                          }))}
+                        >
+                          {/* Place Image */}
+                          <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
+                            {place.imageUrl ? (
+                              <img
+                                src={place.imageUrl}
+                                alt={place.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.nextElementSibling?.classList.remove('hidden');
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-600">
+                                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                              </div>
+                            )}
+
+                            {/* Place Badge */}
+                            {place.isMain && (
+                              <div className="absolute top-2 right-2">
+                                <Badge variant="default" size="sm" className="bg-green-600 text-white text-xs px-1 py-0">
+                                  Main
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Place Info */}
+                          <div className="p-3">
+                            <h4 className="font-medium text-sm text-[rgb(var(--card-foreground))] truncate">
+                              {place.name}
+                            </h4>
+                          </div>
+
+                          {/* Expanded Content */}
+                          {placeCollapseStates[place.id] && (
+                            <div className="absolute inset-0 bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg p-4 z-10 shadow-xl max-h-[300px] overflow-y-auto">
+                              <div className="flex items-center justify-between mb-3">
+                                <h4 className="font-medium text-[rgb(var(--card-foreground))]">
+                                  {place.name}
+                                </h4>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setPlaceCollapseStates(prev => ({
+                                      ...prev,
+                                      [place.id]: false
+                                    }));
+                                  }}
+                                  className="h-auto p-1"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </Button>
+                              </div>
+                              {place.content && (
+                                <div className="text-xs text-[rgb(var(--muted-foreground))] space-y-2">
+                                  {typeof place.content === 'object' ? (
+                                    <pre className="whitespace-pre-wrap font-mono text-xs">
+                                      {JSON.stringify(place.content, null, 2)}
+                                    </pre>
+                                  ) : (
+                                    <p>{place.content}</p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            )}
           </div>
         );
-      
+
       case "scene":
-        // Find the selected scene from story structure
-        let selectedScene = null;
-        let selectedSceneChapter = null;
-        let sceneNumber = 1;
-        
-        // First try to find the scene in the currently selected chapter (if we're coming from chapter view)
-        if (currentSelection.chapterId) {
-          // Look through all chapters in parts
-          for (const part of story.parts) {
-            const chapter = part.chapters.find(ch => ch.id === currentSelection.chapterId);
-            if (chapter && chapter.scenes) {
-              const foundSceneIndex = chapter.scenes.findIndex(scene => scene.id === currentSelection.sceneId);
-              if (foundSceneIndex !== -1) {
-                selectedScene = chapter.scenes[foundSceneIndex];
-                selectedSceneChapter = chapter;
-                sceneNumber = foundSceneIndex + 1;
-                break;
-              }
-            }
-          }
-          
-          // Look in standalone chapters if not found in parts
-          if (!selectedScene) {
-            const chapter = story.chapters.find(ch => ch.id === currentSelection.chapterId);
-            if (chapter && chapter.scenes) {
-              const foundSceneIndex = chapter.scenes.findIndex(scene => scene.id === currentSelection.sceneId);
-              if (foundSceneIndex !== -1) {
-                selectedScene = chapter.scenes[foundSceneIndex];
-                selectedSceneChapter = chapter;
-                sceneNumber = foundSceneIndex + 1;
-              }
-            }
-          }
-        }
-        
-        // Fallback: search all chapters if we couldn't find it in the current chapter
-        if (!selectedScene) {
-          // Look through all chapters in parts
-          for (const part of story.parts) {
-            for (const chapter of part.chapters) {
-              if (chapter.scenes) {
-                const foundSceneIndex = chapter.scenes.findIndex(scene => scene.id === currentSelection.sceneId);
-                if (foundSceneIndex !== -1) {
-                  selectedScene = chapter.scenes[foundSceneIndex];
-                  selectedSceneChapter = chapter;
-                  sceneNumber = foundSceneIndex + 1;
-                  break;
-                }
-              }
-            }
-            if (selectedScene) break;
-          }
-          
-          // Look in standalone chapters if not found in parts
-          if (!selectedScene) {
-            for (const chapter of story.chapters) {
-              if (chapter.scenes) {
-                const foundSceneIndex = chapter.scenes.findIndex(scene => scene.id === currentSelection.sceneId);
-                if (foundSceneIndex !== -1) {
-                  selectedScene = chapter.scenes[foundSceneIndex];
-                  selectedSceneChapter = chapter;
-                  sceneNumber = foundSceneIndex + 1;
-                  break;
-                }
-              }
-            }
-          }
-        }
-        
-        // Create scene data based on selection
-        const createSceneData = (scene: any, sceneNum: number) => ({
-          id: scene?.id || currentSelection.sceneId || `scene-${sceneNum}`,
-          summary: scene?.title || `Scene ${sceneNum}`,
-          time: sceneNum === 1 ? "morning" : sceneNum === 2 ? "afternoon" : "evening",
-          place: scene?.title?.toLowerCase().includes('apartment') ? "elena_apartment" : 
-                 scene?.title?.toLowerCase().includes('office') ? "maya_office" : "location",
-          pov: "maya",
-          characters: {
-            maya: { enters: "determined", exits: "conflicted" },
-            elena: { status: scene?.id?.includes('elena') ? "present" : "referenced" }
-          },
-          goal: scene?.goal || `Accomplish scene ${sceneNum} objective`,
-          obstacle: scene?.conflict || "Internal and external challenges",
-          outcome: scene?.outcome || "Scene resolution",
-          beats: [
-            "Opening beat - establish scene",
-            "Development - character actions",
-            "Conflict - obstacles arise", 
-            "Resolution - scene conclusion"
-          ],
-          shift: "emotional_progression",
-          leads_to: `scene_${sceneNum + 1}`,
-          image_prompt: `Scene ${sceneNum} visual description for ${selectedSceneChapter?.title || 'chapter'}`,
-          content: scene?.content || "",
-          wordCount: scene?.wordCount || 0
-        });
-        
-        const sceneData = selectedScene ? 
-          createSceneData(selectedScene, sceneNumber) : 
-          createSceneData(null, sceneNumber);
-        
-        return (
-          <SceneEditor
-            key={currentSelection.sceneId} // Force re-mount when scene changes
-            sceneId={currentSelection.sceneId}
-            sceneNumber={sceneNumber}
-            initialData={sceneData}
-            chapterContext={{
-              title: selectedSceneChapter?.title || "Chapter",
-              pov: "maya",
-              acts: sampleChapterData.acts
-            }}
-            onSave={handleSave}
-            onWrite={handleGenerate}
-          />
-        );
-      
+        return renderSceneEditor();
+
       default:
         return <div>Unknown editor level</div>;
     }
@@ -1487,15 +2389,21 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                       const response = await fetch(`/api/scenes/${currentScene.id}`, {
                         method: 'PATCH',
                         headers: {
-                          'Content-Type': 'application/json',
+                          'Content-Type': 'application/yaml',
                         },
-                        body: JSON.stringify({
+                        body: yaml.dump({
                           status: newStatus
                         })
                       });
 
                       if (!response.ok) {
-                        const errorData = await response.json();
+                        const responseText = await response.text();
+                        let errorData;
+                        try {
+                          errorData = yaml.load(responseText) as any;
+                        } catch {
+                          errorData = { error: responseText };
+                        }
                         throw new Error(`Failed to update scene status: ${errorData.error || 'Unknown error'}`);
                       }
 
@@ -1612,15 +2520,43 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               />
             ) : null}
             
-            {/* Hierarchical Data Sidebar - Show for all levels */}
-            <HierarchicalDataSidebar
-              storyData={sampleStoryData}
-              partData={(currentSelection.level === "part" || currentSelection.level === "chapter" || currentSelection.level === "scene") ? samplePartData : undefined}
-              chapterData={(currentSelection.level === "chapter" || currentSelection.level === "scene") ? sampleChapterData : undefined}
-              sceneData={currentSelection.level === "scene" ? sampleSceneData : undefined}
-              currentLevel={currentSelection.level}
-            />
-            
+            {/* Story Prompt Writer - Show for story level */}
+            {currentSelection.level === "story" && (
+              <StoryPromptWriter
+                storyData={storyPreviewData || sampleStoryData}
+                onStoryUpdate={handleStoryDataUpdate}
+                onPreviewUpdate={setStoryPreviewData}
+              />
+            )}
+
+            {/* Part Prompt Editor - Show for part level */}
+            {currentSelection.level === "part" && (
+              <PartPromptEditor
+                partData={partPreviewData || currentPartData}
+                onPartUpdate={handlePartDataUpdate}
+                onPreviewUpdate={setPartPreviewData}
+              />
+            )}
+
+            {/* Chapter Prompt Editor - Show for chapter level */}
+            {currentSelection.level === "chapter" && (
+              <ChapterPromptEditor
+                chapterData={chapterPreviewData || currentChapterData}
+                onChapterUpdate={handleChapterDataUpdate}
+                onPreviewUpdate={setChapterPreviewData}
+              />
+            )}
+
+            {/* Scene Prompt Editor - Show for scene level */}
+            {currentSelection.level === "scene" && (
+              <ScenePromptEditor
+                sceneData={scenePreviewData || currentSceneData}
+                onSceneUpdate={handleSceneDataUpdate}
+                onPreviewUpdate={setScenePreviewData}
+              />
+            )}
+
+
             {/* Writing Guidelines - Show for scene editing */}
             <WritingGuidelines currentLevel={currentSelection.level} />
           </div>

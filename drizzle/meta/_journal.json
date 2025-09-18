@@ -43,6 +43,13 @@
       "when": 1756902222559,
       "tag": "0005_boring_madrox",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1758006055161,
+      "tag": "0006_woozy_lake",
+      "breakpoints": true
     }
   ]
 }

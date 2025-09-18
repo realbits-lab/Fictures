@@ -14,7 +14,7 @@ const updatePartSchema = z.object({
   status: z.enum(['planned', 'in_progress', 'completed']).optional(),
   targetWordCount: z.number().min(100).max(100000).optional(),
   currentWordCount: z.number().min(0).optional(),
-  partData: z.record(z.any()).optional(),
+  content: z.string().optional(),
 });
 
 // GET /api/parts/[id] - Get part details with chapters

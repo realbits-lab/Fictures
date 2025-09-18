@@ -35,7 +35,7 @@ export const verificationTokens = pgTable('verificationToken', {
 }));
 
 // Users table - Core user authentication and profile
-export const users = pgTable('user', {
+export const users = pgTable('users', {
   id: text('id').primaryKey(),
   name: text('name'),
   email: text('email').notNull(),
@@ -45,6 +45,23 @@ export const users = pgTable('user', {
   password: varchar('password', { length: 255 }),
   bio: text('bio'),
   role: varchar('role', { length: 20 }).default('reader').notNull(),
+  createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
+});
+
+// User preferences table - Store user settings and preferences
+export const userPreferences = pgTable('user_preferences', {
+  id: text('id').primaryKey(),
+  userId: text('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  theme: varchar('theme', { length: 20 }).default('system'),
+  language: varchar('language', { length: 10 }).default('en'),
+  timezone: varchar('timezone', { length: 50 }).default('UTC'),
+  emailNotifications: boolean('emailNotifications').default(true),
+  pushNotifications: boolean('pushNotifications').default(false),
+  marketingEmails: boolean('marketingEmails').default(false),
+  profileVisibility: varchar('profileVisibility', { length: 20 }).default('public'),
+  showEmail: boolean('showEmail').default(false),
+  showStats: boolean('showStats').default(true),
   createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
 });
@@ -65,7 +82,7 @@ export const stories = pgTable('stories', {
   viewCount: integer('view_count').default(0),
   rating: integer('rating').default(0), // Average rating * 10 (e.g., 47 = 4.7)
   ratingCount: integer('rating_count').default(0),
-  storyData: json('story_data').$type<Record<string, unknown>>(), // Store complete story development YAML data
+  content: text('content').default(''), // Store complete story development YAML data as text
   // Bi-directional relationship fields
   partIds: json('part_ids').$type<string[]>().default([]).notNull(),
   chapterIds: json('chapter_ids').$type<string[]>().default([]).notNull(),
@@ -84,7 +101,7 @@ export const parts = pgTable('parts', {
   targetWordCount: integer('target_word_count').default(0),
   currentWordCount: integer('current_word_count').default(0),
   status: varchar('status', { length: 50 }).default('planned'), // planned, in_progress, completed
-  partData: json('part_data').$type<Record<string, unknown>>(), // Store part-specific development data
+  content: text('content').default(''), // Store part-specific development YAML data as text
   // Bi-directional relationship fields
   chapterIds: json('chapter_ids').$type<string[]>().default([]).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -126,6 +143,9 @@ export const scenes = pgTable('scenes', {
   goal: text('goal'),
   conflict: text('conflict'),
   outcome: text('outcome'),
+  // Character and place references for scene writing
+  characterIds: json('character_ids').$type<string[]>().default([]).notNull(),
+  placeIds: json('place_ids').$type<string[]>().default([]).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -134,14 +154,22 @@ export const scenes = pgTable('scenes', {
 export const characters = pgTable('characters', {
   id: text('id').primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
-  description: text('description'),
-  personality: text('personality'),
-  background: text('background'),
-  appearance: text('appearance'),
-  role: varchar('role', { length: 100 }), // protagonist, antagonist, supporting, etc.
   storyId: text('story_id').references(() => stories.id).notNull(),
-  imageUrl: text('image_url'),
   isMain: boolean('is_main').default(false),
+  content: text('content').default(''), // Store all character data as YAML/JSON
+  imageUrl: text('image_url'), // Store generated character image URL from Vercel Blob
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Places table - Story locations/settings
+export const places = pgTable('places', {
+  id: text('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  storyId: text('story_id').references(() => stories.id).notNull(),
+  isMain: boolean('is_main').default(false), // is this a main location?
+  content: text('content').default(''), // Store all place data as YAML/JSON
+  imageUrl: text('image_url'), // Store generated place image URL from Vercel Blob
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -211,6 +239,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   stories: many(stories),
   aiInteractions: many(aiInteractions),
   stats: one(userStats),
+  preferences: one(userPreferences),
   communityPosts: many(communityPosts),
   communityReplies: many(communityReplies),
 }));
@@ -223,6 +252,7 @@ export const storiesRelations = relations(stories, ({ one, many }) => ({
   parts: many(parts),
   chapters: many(chapters),
   characters: many(characters),
+  places: many(places),
   communityPosts: many(communityPosts),
 }));
 
@@ -256,6 +286,13 @@ export const scenesRelations = relations(scenes, ({ one }) => ({
 export const charactersRelations = relations(characters, ({ one }) => ({
   story: one(stories, {
     fields: [characters.storyId],
+    references: [stories.id],
+  }),
+}));
+
+export const placesRelations = relations(places, ({ one }) => ({
+  story: one(stories, {
+    fields: [places.storyId],
     references: [stories.id],
   }),
 }));
@@ -294,5 +331,12 @@ export const communityRepliesRelations = relations(communityReplies, ({ one, man
     relationName: 'parentChild',
   }),
   childReplies: many(communityReplies, { relationName: 'parentChild' }),
+}));
+
+export const userPreferencesRelations = relations(userPreferences, ({ one }) => ({
+  user: one(users, {
+    fields: [userPreferences.userId],
+    references: [users.id],
+  }),
 }));
 

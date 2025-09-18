@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
+import { Card, CardHeader, CardTitle, CardContent, Button } from "@/components/ui";
+import yaml from "js-yaml";
 
 // Part YAML interface based on part-specification.md
 interface PartData {
@@ -69,19 +70,25 @@ interface PartEditorProps {
     themes: string[];
     chars: Record<string, any>;
   };
+  hasChanges?: boolean;
+  previewData?: PartData;
+  onPartUpdate?: (data: PartData) => void;
   onSave?: (data: PartData) => Promise<void>;
-  onGenerate?: (data: PartData) => Promise<void>;
+  onCancel?: () => void;
 }
 
-export function PartEditor({ 
-  partId, 
-  partNumber, 
-  initialData, 
-  storyContext, 
-  onSave, 
-  onGenerate 
+export function PartEditor({
+  partId,
+  partNumber,
+  initialData,
+  storyContext,
+  hasChanges: externalHasChanges,
+  previewData,
+  onPartUpdate,
+  onSave,
+  onCancel
 }: PartEditorProps) {
-  const [partData, setPartData] = useState<PartData>(
+  const [originalPartData, setOriginalPartData] = useState<PartData>(
     initialData || {
       part: partNumber,
       title: `Part ${partNumber}`,
@@ -132,22 +139,36 @@ export function PartEditor({
     }
   );
 
-  // Update partData when initialData prop changes
+  const [partData, setPartData] = useState<PartData>(originalPartData);
+
+  // Use preview data if available, otherwise use regular part data
+  const displayData = previewData || partData;
+
+  // Update partData when initialData prop changes (for real-time updates)
   useEffect(() => {
     if (initialData) {
       setPartData(initialData);
+      setOriginalPartData(initialData);
     }
   }, [initialData]);
 
-  const [editingSection, setEditingSection] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Update part data and notify parent
+  const handlePartDataUpdate = (updatedData: PartData) => {
+    setPartData(updatedData);
+    if (onPartUpdate) {
+      onPartUpdate(updatedData);
+    }
+  };
 
   const handleSave = async () => {
-    if (!onSave) return;
+    if (!onSave || !externalHasChanges) return;
     setIsSaving(true);
     try {
       await onSave(partData);
+      // Reset after saving
+      setPartData(originalPartData);
     } catch (error) {
       console.error('Save failed:', error);
     } finally {
@@ -155,521 +176,70 @@ export function PartEditor({
     }
   };
 
-  const handleGenerate = async () => {
-    if (!onGenerate) return;
-    setIsGenerating(true);
-    try {
-      await onGenerate(partData);
-    } catch (error) {
-      console.error('Generation failed:', error);
-    } finally {
-      setIsGenerating(false);
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
     }
   };
 
   const updateField = (path: string[], value: any) => {
-    setPartData(prev => {
-      const newData = { ...prev };
-      let current: any = newData;
-      
-      for (let i = 0; i < path.length - 1; i++) {
-        if (!current[path[i]]) {
-          current[path[i]] = {};
-        }
-        current = current[path[i]];
+    const newData = { ...partData };
+    let current: any = newData;
+
+    for (let i = 0; i < path.length - 1; i++) {
+      if (!current[path[i]]) {
+        current[path[i]] = {};
       }
-      
-      current[path[path.length - 1]] = value;
-      return newData;
-    });
+      current = current[path[i]];
+    }
+
+    current[path[path.length - 1]] = value;
+    handlePartDataUpdate(newData);
   };
-
-  const updateArrayField = (path: string[], index: number, value: string) => {
-    const currentArray = path.reduce((obj, key) => obj[key], partData) as string[];
-    const newArray = [...currentArray];
-    newArray[index] = value;
-    updateField(path, newArray);
-  };
-
-  const addArrayItem = (path: string[], defaultValue = "") => {
-    const currentArray = path.reduce((obj, key) => obj[key], partData) as string[];
-    updateField(path, [...currentArray, defaultValue]);
-  };
-
-  const removeArrayItem = (path: string[], index: number) => {
-    const currentArray = path.reduce((obj, key) => obj[key], partData) as string[];
-    const newArray = currentArray.filter((_, i) => i !== index);
-    updateField(path, newArray);
-  };
-
-  // Framework Element 1: Central Questions
-  const renderCentralQuestions = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          ❓ Central Questions (Framework Element 1)
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setEditingSection(editingSection === 'questions' ? null : 'questions')}
-          >
-            {editingSection === 'questions' ? '✓' : '✏️'}
-          </Button>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {editingSection === 'questions' ? (
-          <div className="space-y-3">
-            <div>
-              <label className="text-sm font-medium">Primary Question</label>
-              <textarea
-                value={partData.questions.primary}
-                onChange={(e) => updateField(['questions', 'primary'], e.target.value)}
-                className="w-full p-2 border rounded"
-                rows={2}
-                placeholder="What major question does this part explore or answer?"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Secondary Question</label>
-              <textarea
-                value={partData.questions.secondary}
-                onChange={(e) => updateField(['questions', 'secondary'], e.target.value)}
-                className="w-full p-2 border rounded"
-                rows={2}
-                placeholder="Supporting question that drives subplot or character development"
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-2 text-sm">
-            <div><strong>Primary:</strong> {partData.questions.primary || 'Not set'}</div>
-            <div><strong>Secondary:</strong> {partData.questions.secondary || 'Not set'}</div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-
-  // Framework Element 2: Character Development
-  const renderCharacterDevelopment = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          🎭 Character Development (Framework Element 2)
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setEditingSection(editingSection === 'chars' ? null : 'chars')}
-          >
-            {editingSection === 'chars' ? '✓' : '✏️'}
-          </Button>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {editingSection === 'chars' ? (
-          <div className="space-y-4">
-            {Object.entries(partData.chars).map(([name, char]) => (
-              <div key={name} className="border p-3 rounded">
-                <div className="font-medium mb-2">{name}</div>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <label className="text-xs font-medium">Start State</label>
-                    <input
-                      type="text"
-                      value={char.start}
-                      onChange={(e) => updateField(['chars', name, 'start'], e.target.value)}
-                      className="w-full p-1 border rounded"
-                      placeholder="denial_normalcy"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium">End State</label>
-                    <input
-                      type="text"
-                      value={char.end}
-                      onChange={(e) => updateField(['chars', name, 'end'], e.target.value)}
-                      className="w-full p-1 border rounded"
-                      placeholder="reluctant_acceptance"
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <label className="text-xs font-medium">Character Arc Steps</label>
-                    <div className="space-y-1">
-                      {char.arc.map((step, index) => (
-                        <div key={index} className="flex gap-2">
-                          <input
-                            type="text"
-                            value={step}
-                            onChange={(e) => updateArrayField(['chars', name, 'arc'], index, e.target.value)}
-                            className="flex-1 p-1 border rounded text-xs"
-                            placeholder="Arc step"
-                          />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeArrayItem(['chars', name, 'arc'], index)}
-                          >
-                            ×
-                          </Button>
-                        </div>
-                      ))}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => addArrayItem(['chars', name, 'arc'], "")}
-                      >
-                        + Add Arc Step
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                if (storyContext?.chars) {
-                  const availableChars = Object.keys(storyContext.chars).filter(
-                    name => !partData.chars[name]
-                  );
-                  if (availableChars.length > 0) {
-                    const charName = availableChars[0];
-                    updateField(['chars', charName], {
-                      start: "",
-                      end: "",
-                      arc: [""],
-                      conflict: "",
-                      transforms: [""]
-                    });
-                  }
-                }
-              }}
-            >
-              + Add Character Development
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {Object.entries(partData.chars).map(([name, char]) => (
-              <div key={name} className="text-sm border-l-2 border-blue-200 pl-3">
-                <div className="font-medium text-blue-700">{name}:</div>
-                <div className="ml-2 space-y-1 text-gray-600">
-                  <div><strong>Journey:</strong> {char.start} → {char.end}</div>
-                  {char.arc && char.arc.length > 0 && (
-                    <div><strong>Arc:</strong> {char.arc.join(' → ')}</div>
-                  )}
-                  {char.conflict && (
-                    <div><strong>Conflict:</strong> {char.conflict}</div>
-                  )}
-                  {char.transforms && char.transforms.length > 0 && (
-                    <div><strong>Transforms:</strong> {char.transforms.join(', ')}</div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-
-  // Framework Element 3: Plot Development  
-  const renderPlotDevelopment = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          📈 Plot Development (Framework Element 3)
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setEditingSection(editingSection === 'plot' ? null : 'plot')}
-          >
-            {editingSection === 'plot' ? '✓' : '✏️'}
-          </Button>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {editingSection === 'plot' ? (
-          <div className="space-y-4">
-            {(['events', 'reveals', 'escalation'] as const).map(category => (
-              <div key={category}>
-                <label className="text-sm font-medium capitalize">{category}</label>
-                <div className="space-y-1 mt-1">
-                  {partData.plot[category].map((item, index) => (
-                    <div key={index} className="flex gap-2">
-                      <input
-                        type="text"
-                        value={item}
-                        onChange={(e) => updateArrayField(['plot', category], index, e.target.value)}
-                        className="flex-1 p-1 border rounded text-sm"
-                        placeholder={`${category} item`}
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeArrayItem(['plot', category], index)}
-                      >
-                        ×
-                      </Button>
-                    </div>
-                  ))}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => addArrayItem(['plot', category])}
-                  >
-                    + Add {category.slice(0, -1)}
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-3 text-sm">
-            <div>
-              <strong>Events:</strong> {partData.plot.events.join(', ') || 'None set'}
-            </div>
-            <div>
-              <strong>Reveals:</strong> {partData.plot.reveals.join(', ') || 'None set'}
-            </div>
-            <div>
-              <strong>Escalation:</strong> {partData.plot.escalation.join(', ') || 'None set'}
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-
-  // Framework Element 5: Emotional Journey
-  const renderEmotionalJourney = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          💭 Emotional Journey (Framework Element 5)
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setEditingSection(editingSection === 'emotion' ? null : 'emotion')}
-          >
-            {editingSection === 'emotion' ? '✓' : '✏️'}
-          </Button>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {editingSection === 'emotion' ? (
-          <div className="space-y-3">
-            <div>
-              <label className="text-sm font-medium">Start Emotion</label>
-              <input
-                type="text"
-                value={partData.emotion.start}
-                onChange={(e) => updateField(['emotion', 'start'], e.target.value)}
-                className="w-full p-2 border rounded"
-                placeholder="casual_family_concern"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Emotional Progression</label>
-              <div className="space-y-1">
-                {partData.emotion.progression.map((step, index) => (
-                  <div key={index} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={step}
-                      onChange={(e) => updateArrayField(['emotion', 'progression'], index, e.target.value)}
-                      className="flex-1 p-1 border rounded text-sm"
-                      placeholder="Emotional step"
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeArrayItem(['emotion', 'progression'], index)}
-                    >
-                      ×
-                    </Button>
-                  </div>
-                ))}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => addArrayItem(['emotion', 'progression'])}
-                >
-                  + Add Step
-                </Button>
-              </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium">End Emotion</label>
-              <input
-                type="text"
-                value={partData.emotion.end}
-                onChange={(e) => updateField(['emotion', 'end'], e.target.value)}
-                className="w-full p-2 border rounded"
-                placeholder="grim_commitment"
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-2 text-sm">
-            <div><strong>Journey:</strong> {partData.emotion.start} → {partData.emotion.progression.join(' → ')} → {partData.emotion.end}</div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
 
   return (
     <div className="space-y-6">
       {/* Part Editor Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold">📚 {partData.title}</h2>
+          <h2 className="text-xl font-bold">📚 {displayData.title}</h2>
           <p className="text-sm text-gray-600">
-            Part {partData.part} • {partData.words.toLocaleString()} words • {partData.function}
+            Part {displayData.part} • {displayData.words.toLocaleString()} words • {displayData.function}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={handleSave} 
+      </div>
+
+      {/* Cancel/Save Buttons Above YAML */}
+      {externalHasChanges && (
+        <div className="flex justify-center gap-2 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={handleCancel}
+            className="whitespace-nowrap min-w-fit px-6"
+          >
+            Cancel
+          </Button>
+          <Button
+            size="lg"
+            onClick={handleSave}
             disabled={isSaving}
+            className="whitespace-nowrap min-w-fit px-6"
           >
-            {isSaving ? '💾 Saving...' : '💾 Save Part'}
-          </Button>
-          <Button 
-            onClick={handleGenerate} 
-            disabled={isGenerating}
-          >
-            {isGenerating ? '⚡ Generating...' : '⚡ Generate Chapters'}
+            {isSaving ? '💾 Saving...' : '💾 Save Changes'}
           </Button>
         </div>
-      </div>
+      )}
 
-      {/* Part Foundation */}
+      {/* Part YAML Data */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            🎯 Part Foundation
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setEditingSection(editingSection === 'foundation' ? null : 'foundation')}
-            >
-              {editingSection === 'foundation' ? '✓' : '✏️'}
-            </Button>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {editingSection === 'foundation' ? (
-            <div className="space-y-3">
-              <div>
-                <label className="text-sm font-medium">Title</label>
-                <input
-                  type="text"
-                  value={partData.title}
-                  onChange={(e) => updateField(['title'], e.target.value)}
-                  className="w-full p-2 border rounded"
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="text-sm font-medium">Goal</label>
-                  <textarea
-                    value={partData.goal}
-                    onChange={(e) => updateField(['goal'], e.target.value)}
-                    className="w-full p-2 border rounded"
-                    rows={2}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Conflict</label>
-                  <textarea
-                    value={partData.conflict}
-                    onChange={(e) => updateField(['conflict'], e.target.value)}
-                    className="w-full p-2 border rounded"
-                    rows={2}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Outcome</label>
-                  <textarea
-                    value={partData.outcome}
-                    onChange={(e) => updateField(['outcome'], e.target.value)}
-                    className="w-full p-2 border rounded"
-                    rows={2}
-                  />
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-2 text-sm">
-              <div><strong>Goal:</strong> {partData.goal || 'Not set'}</div>
-              <div><strong>Conflict:</strong> {partData.conflict || 'Not set'}</div>
-              <div><strong>Outcome:</strong> {partData.outcome || 'Not set'}</div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Part Planning Framework Elements */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          {renderCentralQuestions()}
-          {renderCharacterDevelopment()}
-        </div>
-        <div className="space-y-6">
-          {renderPlotDevelopment()}
-          {renderEmotionalJourney()}
-        </div>
-      </div>
-
-      {/* YAML Preview */}
-      <Card>
-        <CardHeader>
-          <CardTitle>📄 Part YAML Preview</CardTitle>
+          <CardTitle>📄 Part YAML Data</CardTitle>
         </CardHeader>
         <CardContent>
-          <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-auto max-h-64">
+          <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded whitespace-pre-wrap">
             <code>
-{`part:
-  part: ${partData.part}
-  title: "${partData.title}"
-  words: ${partData.words}
-  function: "${partData.function}"
-  
-  # Universal pattern
-  goal: "${partData.goal}"
-  conflict: "${partData.conflict}"
-  outcome: "${partData.outcome}"
-  
-  # Central questions
-  questions:
-    primary: "${partData.questions.primary}"
-    secondary: "${partData.questions.secondary}"
-  
-  # Characters (${Object.keys(partData.chars).length})
-  chars:`}
-{Object.entries(partData.chars).map(([name, char]) => 
-`    ${name}:
-      start: "${char.start}"
-      end: "${char.end}"
-      arc: [${char.arc.map(step => `"${step}"`).join(', ')}]`
-).join('\n')}
-{`
-  
-  # Plot development
-  plot:
-    events: [${partData.plot.events.map(e => `"${e}"`).join(', ')}]
-    reveals: [${partData.plot.reveals.map(r => `"${r}"`).join(', ')}]
-    escalation: [${partData.plot.escalation.map(e => `"${e}"`).join(', ')}]
-  
-  # Emotional journey
-  emotion:
-    start: "${partData.emotion.start}"
-    progression: [${partData.emotion.progression.map(p => `"${p}"`).join(', ')}]
-    end: "${partData.emotion.end}"`}
+              {yaml.dump({ part: displayData }, { indent: 2 })}
             </code>
           </pre>
         </CardContent>

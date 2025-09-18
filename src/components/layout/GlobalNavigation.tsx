@@ -56,7 +56,7 @@ export function GlobalNavigation() {
   });
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[rgb(var(--border))] bg-[rgb(var(--background))/95%] backdrop-blur supports-[backdrop-filter]:bg-[rgb(var(--background))/60%]">
+    <header className="sticky top-0 z-[60] w-full border-b border-[rgb(var(--border))] bg-[rgb(var(--background))/95%] backdrop-blur supports-[backdrop-filter]:bg-[rgb(var(--background))/60%]">
       <nav className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4">
         {/* Logo */}
         <Link 
@@ -164,7 +164,7 @@ function AuthSection() {
       </button>
       
       {isDropdownOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-[rgb(var(--popover))] border border-[rgb(var(--border))] rounded-lg shadow-lg z-50">
+        <div className="absolute right-0 mt-2 w-48 bg-[rgb(var(--popover))] border border-[rgb(var(--border))] rounded-lg shadow-lg z-[70]">
           {profileMenuItems.map((item, index) => (
             <Link
               key={item.href}
@@ -190,7 +190,7 @@ function AuthSection() {
       
       {isDropdownOpen && (
         <div 
-          className="fixed inset-0 z-40" 
+          className="fixed inset-0 z-[65]" 
           onClick={() => setIsDropdownOpen(false)}
         />
       )}

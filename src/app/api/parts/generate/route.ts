@@ -49,18 +49,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if story has the required storyData
-    if (!story.storyData || typeof story.storyData !== 'object') {
+    // Check if story has the required content
+    if (!story.content || typeof story.content !== 'string') {
       return new Response(
-        JSON.stringify({ error: 'Story data is required for part generation. Please regenerate the story first.' }),
+        JSON.stringify({ error: 'Story content is required for part generation. Please regenerate the story first.' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
     console.log('📚 Generating part specifications...');
 
-    // Generate detailed part specifications using AI
-    const partSpecs = await generatePartSpecifications(story.storyData as any);
+    // Parse YAML content and generate detailed part specifications using AI
+    let storyData;
+    try {
+      storyData = JSON.parse(story.content);
+    } catch {
+      // If not JSON, treat as YAML or plain text
+      storyData = { content: story.content };
+    }
+    const partSpecs = await generatePartSpecifications(storyData);
 
     console.log('📖 Part specifications generated, updating database...');
 
@@ -82,7 +89,7 @@ export async function POST(request: NextRequest) {
             title: partSpec.title,
             targetWordCount: partSpec.words,
             status: 'planned',
-            partData: partSpec,
+            content: JSON.stringify(partSpec),
             updatedAt: new Date(),
           })
           .where(eq(parts.id, existingPart.id))
@@ -99,7 +106,7 @@ export async function POST(request: NextRequest) {
             orderIndex: partSpec.part,
             targetWordCount: partSpec.words,
             status: 'planned',
-            partData: partSpec,
+            content: JSON.stringify(partSpec),
             chapterIds: [], // Initialize empty chapter IDs
           }
         );

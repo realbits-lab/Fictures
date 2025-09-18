@@ -5,11 +5,19 @@ import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { Label } from '@/components/ui';
+import { useStoryCreation } from './StoryCreationContext';
 
 interface ProgressStep {
   phase: string;
   description: string;
   status: 'pending' | 'in_progress' | 'completed' | 'error';
+}
+
+interface YamlData {
+  storyYaml?: string;
+  charactersYaml?: string;
+  placesYaml?: string;
+  partsYaml?: string;
 }
 
 export function CreateStoryForm() {
@@ -18,15 +26,18 @@ export function CreateStoryForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [progress, setProgress] = useState<ProgressStep[]>([]);
+  const { setYamlData, clearYamlData } = useStoryCreation();
   const router = useRouter();
 
   const initializeProgress = () => {
     const steps: ProgressStep[] = [
       { phase: 'Phase 1', description: 'Story Foundation - Analyzing prompt and creating story concept', status: 'pending' },
-      { phase: 'Phase 2', description: 'Structural Development - Creating part-level structure', status: 'pending' },
-      { phase: 'Phase 3', description: 'Character Development - Building character arcs and relationships', status: 'pending' },
-      { phase: 'Phase 4', description: 'Quality Assurance - Final verification and consistency check', status: 'pending' },
-      { phase: 'Database', description: 'Storing story structure in database', status: 'pending' },
+      { phase: 'Phase 2', description: 'Part Development - Creating detailed part structure', status: 'pending' },
+      { phase: 'Phase 3', description: 'Character Development - Building character profiles with Korean names', status: 'pending' },
+      { phase: 'Phase 4', description: 'Place Development - Creating location details and settings', status: 'pending' },
+      { phase: 'Phase 5', description: 'Character Images - Generating AI images for each character', status: 'pending' },
+      { phase: 'Phase 6', description: 'Place Images - Generating AI images for each location', status: 'pending' },
+      { phase: 'Database', description: 'Storing story, character, and place data in database', status: 'pending' },
     ];
     setProgress(steps);
     return steps;
@@ -55,16 +66,18 @@ export function CreateStoryForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim()) return;
-    
+
     setIsLoading(true);
     setError('');
     setProgress([]);
+    clearYamlData();
 
-    // Start progress simulation
-    const progressPromise = simulateProgress(30000); // 30 seconds total
+    // Initialize progress steps
+    initializeProgress();
 
     try {
-      const response = await fetch('/api/stories/generate', {
+      // Use fetch with streaming for POST request
+      const response = await fetch('/api/stories/generate-stream', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -72,31 +85,136 @@ export function CreateStoryForm() {
         body: JSON.stringify({ prompt: prompt.trim(), language }),
       });
 
-      // Wait for progress to complete
-      await progressPromise;
-
-      if (response.ok) {
-        const result = await response.json();
-        // All steps completed successfully
-        setProgress(prev => prev.map(step => ({ ...step, status: 'completed' })));
-        
-        // Wait a moment to show completion
-        setTimeout(() => {
-          router.push(`/stories`);
-        }, 1500);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'Failed to generate story');
-        // Mark current step as error
-        setProgress(prev => prev.map(step => 
-          step.status === 'in_progress' ? { ...step, status: 'error' } : step
-        ));
+      if (!response.ok) {
+        throw new Error('Failed to start story generation');
       }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        throw new Error('No response body reader available');
+      }
+
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        // Process complete SSE messages
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+
+              switch (data.phase) {
+                case 'progress':
+                  // Update progress step status
+                  setProgress(prev => {
+                    const stepIndex = prev.findIndex(step =>
+                      step.phase === data.data.phase
+                    );
+                    if (stepIndex !== -1) {
+                      return prev.map((step, index) =>
+                        index === stepIndex ? { ...step, status: data.data.status } : step
+                      );
+                    }
+                    return prev;
+                  });
+                  break;
+
+                case 'phase1_complete':
+                  // Phase 1 completed - update YAML data and progress
+                  setYamlData(prev => ({
+                    ...prev,
+                    storyYaml: data.data.yamlData.storyYaml
+                  }));
+                  updateProgress(0, 'completed');
+                  break;
+
+                case 'phase2_complete':
+                  // Phase 2 completed - update parts YAML data and progress
+                  setYamlData(prev => ({
+                    ...prev,
+                    partsYaml: data.data.yamlData.partsYaml
+                  }));
+                  updateProgress(1, 'completed');
+                  break;
+
+                case 'phase3_complete':
+                  // Phase 3 completed - update characters YAML data and progress
+                  setYamlData(prev => ({
+                    ...prev,
+                    charactersYaml: data.data.yamlData.charactersYaml
+                  }));
+                  updateProgress(2, 'completed');
+                  break;
+
+                case 'phase4_complete':
+                  // Phase 4 completed - update places YAML data and progress
+                  setYamlData(prev => ({
+                    ...prev,
+                    placesYaml: data.data.yamlData.placesYaml
+                  }));
+                  updateProgress(3, 'completed');
+                  break;
+
+                case 'phase5_complete':
+                  // Phase 5 completed - character images generated
+                  updateProgress(4, 'completed');
+                  break;
+
+                case 'phase6_complete':
+                  // Phase 6 completed - place images generated
+                  updateProgress(5, 'completed');
+                  break;
+
+                case 'database_complete':
+                  // Database storage completed
+                  updateProgress(6, 'completed');
+                  break;
+
+                case 'complete':
+                  // All phases completed successfully
+                  console.log('✅ Story generation completed:', data.storyId);
+
+                  // Wait a moment to show completion
+                  setTimeout(() => {
+                    router.push(`/stories`);
+                  }, 2000);
+                  break;
+
+                case 'error':
+                  // Handle error
+                  console.error('Story generation error:', data.error);
+                  setError(data.error || 'Failed to generate story');
+
+                  // Mark current in-progress step as error
+                  setProgress(prev => prev.map(step =>
+                    step.status === 'in_progress' ? { ...step, status: 'error' } : step
+                  ));
+                  break;
+              }
+            } catch (parseError) {
+              console.error('Error parsing SSE data:', parseError);
+            }
+          }
+        }
+      }
+
     } catch (error) {
-      console.error('Error generating story:', error);
+      console.error('Error with streaming story generation:', error);
       setError('Failed to generate story. Please try again.');
+
       // Mark current step as error
-      setProgress(prev => prev.map(step => 
+      setProgress(prev => prev.map(step =>
         step.status === 'in_progress' ? { ...step, status: 'error' } : step
       ));
     } finally {

@@ -10,6 +10,7 @@ import {
 	Progress,
 	Badge,
 } from "@/components/ui";
+import yaml from "js-yaml";
 
 // Story YAML interface based on story-specification.md
 interface StoryData {
@@ -61,21 +62,64 @@ interface StoryData {
 	};
 }
 
+interface Character {
+	id: string;
+	name: string;
+	role?: string;
+	description?: string;
+	personality?: string;
+	background?: string;
+	appearance?: string;
+	motivations?: string;
+	flaws?: string;
+	strengths?: string;
+	relationships?: string;
+	arc?: string;
+	dialogue_style?: string;
+	secrets?: string;
+	goals?: string;
+	conflicts?: string;
+	imageUrl?: string;
+	isMain?: boolean;
+	createdAt: string;
+	updatedAt: string;
+}
+
+interface Place {
+	id: string;
+	name: string;
+	storyId: string;
+	isMain?: boolean;
+	content?: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
 interface StoryEditorProps {
 	storyId?: string;
-	initialData?: StoryData;
+	storyData?: StoryData;
+	characters?: Character[];
+	places?: Place[];
+	hasChanges?: boolean;
+	onStoryUpdate?: (data: StoryData) => void;
 	onSave?: (data: StoryData) => Promise<void>;
+	onCancel?: () => void;
 	onGenerate?: (data: StoryData) => Promise<void>;
 }
 
 export function StoryEditor({
 	storyId,
-	initialData,
+	storyData: externalStoryData,
+	characters,
+	places,
+	hasChanges: externalHasChanges,
+	onStoryUpdate,
 	onSave,
+	onCancel,
 	onGenerate,
 }: StoryEditorProps) {
-	const [storyData, setStoryData] = useState<StoryData>(
-		initialData || {
+	const [originalStoryData, setOriginalStoryData] = useState<StoryData>(
+		externalStoryData || {
 			title: "",
 			genre: "urban_fantasy",
 			words: 80000,
@@ -137,21 +181,60 @@ export function StoryEditor({
 			},
 		},
 	);
+	const [storyData, setStoryData] = useState<StoryData>(originalStoryData);
+
+	// Use external story data when available
+	useEffect(() => {
+		if (externalStoryData) {
+			setOriginalStoryData(externalStoryData);
+			setStoryData(externalStoryData);
+		}
+	}, [externalStoryData]);
 
 	const [isEditing, setIsEditing] = useState(false);
 	const [editingSection, setEditingSection] = useState<string | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
 	const [isGenerating, setIsGenerating] = useState(false);
 
+	// State for collapsible sections
+	const [charactersCollapsed, setCharactersCollapsed] = useState(true);
+	const [placesCollapsed, setPlacesCollapsed] = useState(true);
+	const [collapsedPlaceCards, setCollapsedPlaceCards] = useState<Record<string, boolean>>({});
+	const [collapsedCharacterCards, setCollapsedCharacterCards] = useState<Record<string, boolean>>({});
+
+	// Helper function to toggle individual place card collapse
+	const togglePlaceCard = (placeId: string) => {
+		setCollapsedPlaceCards(prev => ({
+			...prev,
+			[placeId]: !prev[placeId]
+		}));
+	};
+
+	// Helper function to toggle individual character card collapse
+	const toggleCharacterCard = (characterId: string) => {
+		setCollapsedCharacterCards(prev => ({
+			...prev,
+			[characterId]: !prev[characterId]
+		}));
+	};
+
 	const handleSave = async () => {
-		if (!onSave) return;
+		if (!onSave || !externalHasChanges) return;
 		setIsSaving(true);
 		try {
 			await onSave(storyData);
+			// Reset after saving
+			setStoryData(originalStoryData);
 		} catch (error) {
 			console.error("Save failed:", error);
 		} finally {
 			setIsSaving(false);
+		}
+	};
+
+	const handleCancel = () => {
+		if (onCancel) {
+			onCancel();
 		}
 	};
 
@@ -184,330 +267,16 @@ export function StoryEditor({
 		});
 	};
 
-	const renderBasicInfo = () => (
-		<Card>
-			<CardHeader>
-				<CardTitle className="flex items-center gap-2">
-					📖 Story Foundation
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() =>
-							setEditingSection(editingSection === "basic" ? null : "basic")
-						}
-					>
-						{editingSection === "basic" ? "✓" : "✏️"}
-					</Button>
-				</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-4">
-				{editingSection === "basic" ? (
-					<div className="space-y-3">
-						<div>
-							<label className="text-sm font-medium">Title</label>
-							<input
-								type="text"
-								value={storyData.title}
-								onChange={(e) => updateField(["title"], e.target.value)}
-								className="w-full p-2 border rounded"
-								placeholder="Story title"
-							/>
-						</div>
-						<div>
-							<label className="text-sm font-medium">Genre</label>
-							<select
-								value={storyData.genre}
-								onChange={(e) => updateField(["genre"], e.target.value)}
-								className="w-full p-2 border rounded"
-							>
-								<option value="urban_fantasy">Urban Fantasy</option>
-								<option value="sci_fi">Science Fiction</option>
-								<option value="romance">Romance</option>
-								<option value="mystery">Mystery</option>
-								<option value="thriller">Thriller</option>
-								<option value="literary">Literary Fiction</option>
-							</select>
-						</div>
-						<div>
-							<label className="text-sm font-medium">Target Word Count</label>
-							<input
-								type="number"
-								value={storyData.words}
-								onChange={(e) =>
-									updateField(["words"], parseInt(e.target.value))
-								}
-								className="w-full p-2 border rounded"
-							/>
-						</div>
-						<div>
-							<label className="text-sm font-medium">Central Question</label>
-							<textarea
-								value={storyData.question}
-								onChange={(e) => updateField(["question"], e.target.value)}
-								className="w-full p-2 border rounded"
-								rows={2}
-								placeholder="What is the central dramatic question?"
-							/>
-						</div>
-					</div>
-				) : (
-					<div className="space-y-2 text-sm">
-						<div>
-							<strong>Title:</strong> {storyData.title || "Untitled Story"}
-						</div>
-						<div>
-							<strong>Genre:</strong>{" "}
-							<Badge variant="secondary">{storyData.genre}</Badge>
-						</div>
-						<div>
-							<strong>Target Words:</strong> {storyData.words.toLocaleString()}
-						</div>
-						<div>
-							<strong>Question:</strong> {storyData.question || "Not set"}
-						</div>
-					</div>
-				)}
-			</CardContent>
-		</Card>
-	);
+	const handleStoryUpdate = (updatedData: StoryData) => {
+		setStoryData(updatedData);
+		if (onStoryUpdate) {
+			onStoryUpdate(updatedData);
+		}
+	};
 
-	const renderUniversalPattern = () => (
-		<Card>
-			<CardHeader>
-				<CardTitle className="flex items-center gap-2">
-					🎯 Universal Pattern (Goal → Conflict → Outcome)
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() =>
-							setEditingSection(editingSection === "pattern" ? null : "pattern")
-						}
-					>
-						{editingSection === "pattern" ? "✓" : "✏️"}
-					</Button>
-				</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-4">
-				{editingSection === "pattern" ? (
-					<div className="space-y-3">
-						<div>
-							<label className="text-sm font-medium">Goal</label>
-							<textarea
-								value={storyData.goal}
-								onChange={(e) => updateField(["goal"], e.target.value)}
-								className="w-full p-2 border rounded"
-								rows={2}
-								placeholder="What does the protagonist want?"
-							/>
-						</div>
-						<div>
-							<label className="text-sm font-medium">Conflict</label>
-							<textarea
-								value={storyData.conflict}
-								onChange={(e) => updateField(["conflict"], e.target.value)}
-								className="w-full p-2 border rounded"
-								rows={2}
-								placeholder="What prevents them from getting it?"
-							/>
-						</div>
-						<div>
-							<label className="text-sm font-medium">Outcome</label>
-							<textarea
-								value={storyData.outcome}
-								onChange={(e) => updateField(["outcome"], e.target.value)}
-								className="w-full p-2 border rounded"
-								rows={2}
-								placeholder="How does it resolve?"
-							/>
-						</div>
-					</div>
-				) : (
-					<div className="space-y-2 text-sm">
-						<div>
-							<strong>Goal:</strong> {storyData.goal || "Not set"}
-						</div>
-						<div>
-							<strong>Conflict:</strong> {storyData.conflict || "Not set"}
-						</div>
-						<div>
-							<strong>Outcome:</strong> {storyData.outcome || "Not set"}
-						</div>
-					</div>
-				)}
-			</CardContent>
-		</Card>
-	);
 
-	const renderCharacters = () => (
-		<Card>
-			<CardHeader>
-				<CardTitle className="flex items-center gap-2">
-					🎭 Characters
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() =>
-							setEditingSection(editingSection === "chars" ? null : "chars")
-						}
-					>
-						{editingSection === "chars" ? "✓" : "✏️"}
-					</Button>
-				</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-4">
-				{editingSection === "chars" ? (
-					<div className="space-y-4">
-						{Object.entries(storyData.chars).map(([name, char]) => (
-							<div key={name} className="border p-3 rounded">
-								<div className="grid grid-cols-2 gap-3">
-									<div>
-										<label className="text-xs font-medium">Name</label>
-										<input
-											type="text"
-											value={name}
-											onChange={(e) => {
-												const newChars = { ...storyData.chars };
-												delete newChars[name];
-												newChars[e.target.value] = char;
-												updateField(["chars"], newChars);
-											}}
-											className="w-full p-1 border rounded text-sm"
-										/>
-									</div>
-									<div>
-										<label className="text-xs font-medium">Role</label>
-										<select
-											value={char.role}
-											onChange={(e) =>
-												updateField(["chars", name, "role"], e.target.value)
-											}
-											className="w-full p-1 border rounded text-sm"
-										>
-											<option value="protag">Protagonist</option>
-											<option value="antag">Antagonist</option>
-											<option value="mentor">Mentor</option>
-											<option value="catalyst">Catalyst</option>
-											<option value="ally">Ally</option>
-										</select>
-									</div>
-									<div className="col-span-2">
-										<label className="text-xs font-medium">
-											Arc (start→end)
-										</label>
-										<input
-											type="text"
-											value={char.arc}
-											onChange={(e) =>
-												updateField(["chars", name, "arc"], e.target.value)
-											}
-											className="w-full p-1 border rounded text-sm"
-											placeholder="denial→acceptance"
-										/>
-									</div>
-								</div>
-							</div>
-						))}
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => {
-								const newChars = { ...storyData.chars };
-								const newName = `character_${Object.keys(newChars).length + 1}`;
-								newChars[newName] = { role: "ally", arc: "start→end" };
-								updateField(["chars"], newChars);
-							}}
-						>
-							+ Add Character
-						</Button>
-					</div>
-				) : (
-					<div className="space-y-2">
-						{Object.entries(storyData.chars).map(([name, char]) => (
-							<div key={name} className="flex items-center gap-2 text-sm">
-								<Badge variant="outline">{char.role}</Badge>
-								<span className="font-medium">{name}:</span>
-								<span>{char.arc}</span>
-							</div>
-						))}
-					</div>
-				)}
-			</CardContent>
-		</Card>
-	);
 
-	const renderParts = () => (
-		<Card>
-			<CardHeader>
-				<CardTitle className="flex items-center gap-2">
-					📚 Story Parts ({storyData.structure.type})
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() =>
-							setEditingSection(editingSection === "parts" ? null : "parts")
-						}
-					>
-						{editingSection === "parts" ? "✓" : "✏️"}
-					</Button>
-				</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-4">
-				{storyData.parts.map((part, index) => (
-					<div key={part.part} className="border rounded p-3">
-						<div className="flex items-center gap-2 mb-2">
-							<Badge variant="secondary">Part {part.part}</Badge>
-							<span className="text-sm font-medium">
-								{storyData.structure.parts[index]} (
-								{storyData.structure.dist[index]}%)
-							</span>
-						</div>
-						{editingSection === "parts" ? (
-							<div className="space-y-2">
-								<div>
-									<label className="text-xs font-medium">Goal</label>
-									<input
-										type="text"
-										value={part.goal}
-										onChange={(e) => {
-											const newParts = [...storyData.parts];
-											newParts[index] = { ...part, goal: e.target.value };
-											updateField(["parts"], newParts);
-										}}
-										className="w-full p-1 border rounded text-sm"
-									/>
-								</div>
-								<div>
-									<label className="text-xs font-medium">Conflict</label>
-									<input
-										type="text"
-										value={part.conflict}
-										onChange={(e) => {
-											const newParts = [...storyData.parts];
-											newParts[index] = { ...part, conflict: e.target.value };
-											updateField(["parts"], newParts);
-										}}
-										className="w-full p-1 border rounded text-sm"
-									/>
-								</div>
-							</div>
-						) : (
-							<div className="text-sm space-y-1">
-								<div>
-									<strong>Goal:</strong> {part.goal}
-								</div>
-								<div>
-									<strong>Conflict:</strong> {part.conflict}
-								</div>
-								<div>
-									<strong>Tension:</strong> {part.tension}
-								</div>
-							</div>
-						)}
-					</div>
-				))}
-			</CardContent>
-		</Card>
-	);
+
 
 	return (
 		<div className="space-y-6">
@@ -519,89 +288,29 @@ export function StoryEditor({
 						Define the overall narrative structure and themes
 					</p>
 				</div>
-				<div className="flex flex-col sm:flex-row gap-2">
+			</div>
+
+			{/* Cancel/Save Buttons Above YAML */}
+			{externalHasChanges && (
+				<div className="flex justify-center gap-2 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
 					<Button
-						variant="secondary"
+						variant="outline"
+						size="lg"
+						onClick={handleCancel}
+						className="whitespace-nowrap min-w-fit px-6"
+					>
+						Cancel
+					</Button>
+					<Button
 						size="lg"
 						onClick={handleSave}
 						disabled={isSaving}
 						className="whitespace-nowrap min-w-fit px-6"
 					>
-						{isSaving ? "💾 Saving..." : "💾 Save Story"}
-					</Button>
-					<Button
-						size="lg"
-						onClick={handleGenerate}
-						disabled={isGenerating}
-						className="whitespace-nowrap min-w-fit px-6"
-					>
-						{isGenerating ? "⚡ Generating..." : "⚡ Generate Parts & Chapters"}
+						{isSaving ? "💾 Saving..." : "💾 Save Changes"}
 					</Button>
 				</div>
-			</div>
-
-			{/* Story Development Sections */}
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				<div className="space-y-6">
-					{renderBasicInfo()}
-					{renderUniversalPattern()}
-				</div>
-				<div className="space-y-6">
-					{renderCharacters()}
-					{renderParts()}
-				</div>
-			</div>
-
-			{/* YAML Preview */}
-			<Card>
-				<CardHeader>
-					<CardTitle>📄 YAML Preview</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-auto max-h-64">
-						<code>
-							{`story:
-  title: "${storyData.title}"
-  genre: "${storyData.genre}"
-  words: ${storyData.words}
-  question: "${storyData.question}"
-  
-  # Universal pattern
-  goal: "${storyData.goal}"
-  conflict: "${storyData.conflict}"
-  outcome: "${storyData.outcome}"
-  
-  # Characters (${Object.keys(storyData.chars).length})
-  chars:`}
-							{Object.entries(storyData.chars)
-								.map(
-									([name, char]) =>
-										`    ${name}: { role: "${char.role}", arc: "${char.arc}" }`,
-								)
-								.join("\n")}
-							{`
-  
-  # Structure
-  structure:
-    type: "${storyData.structure.type}"
-    parts: [${storyData.structure.parts.map((p) => `"${p}"`).join(", ")}]
-    dist: [${storyData.structure.dist.join(", ")}]
-  
-  # Parts (${storyData.parts.length})
-  parts:`}
-							{storyData.parts
-								.map(
-									(part) =>
-										`    - part: ${part.part}
-      goal: "${part.goal}"
-      conflict: "${part.conflict}"
-      tension: "${part.tension}"`,
-								)
-								.join("\n")}
-						</code>
-					</pre>
-				</CardContent>
-			</Card>
+			)}
 		</div>
 	);
 }
