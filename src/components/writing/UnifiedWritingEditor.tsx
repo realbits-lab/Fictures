@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
 import { useStoryData } from "@/lib/hooks/useStoryData";
@@ -443,147 +443,32 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     }
   }, [currentSelection.level, currentSelection.sceneId, story.scenes]);
 
-  const samplePartData = {
-    part: 1,
-    title: "Discovery",
-    words: 20000,
-    function: "story_setup",
-    goal: "Maya accepts supernatural reality",
-    conflict: "Denial vs mounting evidence",
-    outcome: "Reluctant training commitment",
-    questions: {
-      primary: "How will Maya react when she discovers her magical abilities?",
-      secondary: "Can Maya overcome denial to accept the supernatural world?"
-    },
-    chars: {
-      maya: {
-        start: "denial_normalcy",
-        end: "reluctant_acceptance",
-        arc: ["normal_routine", "strange_discoveries", "power_manifestation", "training_acceptance"],
-        conflict: "safety_vs_responsibility",
-        transforms: ["magical_manifestation", "mentor_acceptance"]
-      }
-    },
-    plot: {
-      events: ["elena_disappearance", "journal_discovery", "shadow_manifestation", "marcus_introduction"],
-      reveals: ["elena_research", "maya_abilities", "shadow_keeper_legacy"],
-      escalation: ["personal_loss", "reality_challenge", "power_responsibility"]
-    },
-    themes: {
-      primary: "denial_and_acceptance",
-      elements: ["denial_vs_truth", "family_responsibility"],
-      moments: ["photograph_evidence", "power_manifestation", "training_decision"],
-      symbols: ["shadows_as_fears", "photography_as_truth"]
-    },
-    emotion: {
-      start: "casual_family_concern",
-      progression: ["growing_fear", "supernatural_terror", "determined_resolution"],
-      end: "grim_commitment"
-    },
-    ending: {
-      resolution: ["training_commitment", "moral_conflict_established"],
-      setup: ["power_development_phase", "mentor_relationship"],
-      hooks: ["elena_time_pressure", "corruption_risk"],
-      hook_out: "Maya accepts training but discovers mentor's dark secret"
-    },
-    serial: {
-      arc: "Setup → Rising Tension → Part Climax → Transition Hook",
-      climax_at: "85%",
-      satisfaction: ["elena_fate_revealed", "maya_abilities_confirmed", "mentor_established"],
-      anticipation: ["corruption_risk", "training_challenges", "time_pressure"]
-    },
-    engagement: {
-      discussions: ["maya_moral_choices", "elena_true_situation", "marcus_hidden_past"],
-      speculation: ["marcus_previous_student", "elena_still_herself"],
-      debates: ["trust_marcus_completely", "elena_worth_corruption_risk"],
-      feedback: ["character_dynamics", "magic_complexity", "pacing"]
-    }
-  };
+  // Extract data from the actual story structure
+  const extractedPartData = useMemo(() => {
+    if (!currentSelection.partId || !sampleStoryData?.parts) return null;
+    const partIndex = parseInt(currentSelection.partId.replace('part', '')) - 1;
+    return sampleStoryData.parts?.[partIndex] || null;
+  }, [currentSelection.partId, sampleStoryData]);
 
-  const sampleChapterData = {
-    chap: 1,
-    title: "Missing",
-    pov: "maya",
-    words: 3500,
-    goal: "Normal coffee date with Elena",
-    conflict: "Elena missing, signs of supernatural danger",
-    outcome: "Finds journal, realizes she's also a target",
-    acts: {
-      setup: {
-        hook_in: "Door unlocked, coffee warm, Elena gone",
-        orient: "Weekly sister ritual, Maya's skeptical nature",
-        incident: "Overturned chair, shattered mug - signs of struggle"
-      },
-      confrontation: {
-        rising: "Police dismissive, Maya searches alone",
-        midpoint: "Discovers Elena's hidden research journal",
-        complicate: "Journal reveals supernatural conspiracy, 'The Shepherd'"
-      },
-      resolution: {
-        climax: "Final journal entry: 'He looks for the mark'",
-        resolve: "Maya realizes Elena was in supernatural danger",
-        hook_out: "Knock at door, Maya has the 'mark' mentioned"
-      }
-    },
-    chars: {
-      maya: {
-        start: "casual_anticipation",
-        arc: "concern → panic → targeted_fear",
-        end: "trapped_resolve",
-        motivation: "protect_elena",
-        growth: "skeptic → reluctant_believer"
-      }
-    },
-    tension: {
-      external: "signs_struggle, mysterious_knocker",
-      internal: "maya_panic, guilt_unaware",
-      interpersonal: "dismissive_police",
-      atmospheric: "journal_warnings",
-      peak: "door_knock_connects_abstract_threat_to_immediate"
-    },
-    mandate: {
-      episodic: {
-        arc: "search_for_elena → journal_discovery → question_answered",
-        payoff: "casual_concern → urgent_fear",
-        answered: "What happened to Elena? Supernatural research gone wrong"
-      },
-      serial: {
-        complication: "The Shepherd threat established",
-        stakes: "Maya also targeted due to mark",
-        compulsion: "door_knock_immediate_danger"
-      }
-    },
-    hook: {
-      type: "compound",
-      reveal: "Maya bears the mark from journal warning",
-      threat: "Knock suggests Shepherd found Maya",
-      emotion: "protective_instincts vs newfound_vulnerability"
-    }
-  };
+  const extractedChapterData = useMemo(() => {
+    if (!currentSelection.chapterId || !sampleStoryData?.parts) return null;
+    const partIndex = parseInt(currentSelection.partId?.replace('part', '') || '1') - 1;
+    const chapterIndex = parseInt(currentSelection.chapterId.replace('chapter', '')) - 1;
+    return sampleStoryData.parts?.[partIndex]?.chapters?.[chapterIndex] || null;
+  }, [currentSelection.chapterId, currentSelection.partId, sampleStoryData]);
 
-  const sampleSceneData = {
-    id: 1,
-    summary: "Maya arrives for coffee date, finds Elena missing with signs of struggle",
-    time: "sunday_10:05am",
-    place: "elena_apartment_hallway",
-    pov: "maya",
-    characters: {
-      maya: { enters: "casual_anticipation", exits: "panicked_determination" },
-      elena: { status: "absent_but_referenced", evidence: "struggle_signs" }
-    },
-    goal: "Normal coffee date with Elena",
-    obstacle: "Door unlocked, apartment silent, struggle evidence",
-    outcome: "Realizes Elena in danger, decides to search",
-    beats: [
-      "Maya knocks, no answer, tries door",
-      "Finds apartment unlocked, calls Elena's name",
-      "Discovers overturned table, broken coffee mug",
-      "Maya panics, decides to search rather than call police"
-    ],
-    shift: "routine_expectation → urgent_fear",
-    leads_to: "maya_searches_apartment_for_clues",
-    image_prompt: "Young woman in casual clothes standing in a dimly lit apartment hallway, her face showing concern as she looks at an ajar door. The scene suggests early morning light filtering through windows, with subtle signs of disturbance visible - an overturned coffee table and scattered items in the background. Mood: tense, mysterious, domestic thriller atmosphere."
-  };
+  const extractedSceneData = useMemo(() => {
+    if (!currentSelection.sceneId || !sampleStoryData?.parts) return null;
+    const partIndex = parseInt(currentSelection.partId?.replace('part', '') || '1') - 1;
+    const chapterIndex = parseInt(currentSelection.chapterId?.replace('chapter', '') || '1') - 1;
+    const sceneIndex = parseInt(currentSelection.sceneId.replace('scene', '')) - 1;
+    return sampleStoryData.parts?.[partIndex]?.chapters?.[chapterIndex]?.scenes?.[sceneIndex] || null;
+  }, [currentSelection.sceneId, currentSelection.chapterId, currentSelection.partId, sampleStoryData]);
+
+  // Helper functions for backwards compatibility
+  const getPartData = () => extractedPartData;
+  const getChapterData = () => extractedChapterData;
+  const getSceneData = () => extractedSceneData;
 
   const handleSelectionChange = async (selection: Selection) => {
     // If switching to a different story, trigger SWR fetch
@@ -1211,7 +1096,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         chapterContext={{
           title: selectedSceneChapter?.title || "Chapter",
           pov: "maya",
-          acts: sampleChapterData.acts
+          acts: getChapterData()?.acts || {}
         }}
         hasChanges={sceneHasChanges || !!scenePreviewData}
         onSceneUpdate={handleSceneDataUpdate}
@@ -1318,9 +1203,14 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             selectedPartTitle = part.title;
             // Create part data based on the part information
             selectedPartData = {
-              ...samplePartData,
               part: part.orderIndex,
-              title: part.title
+              title: part.title,
+              words: part.targetWordCount || 20000,
+              function: part.function || "story_setup",
+              goal: part.goal || "",
+              conflict: part.conflict || "",
+              outcome: part.outcome || "",
+              ...part
             };
             break;
           }
@@ -1479,56 +1369,56 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                     three_act_structure: {
                       act1_setup: {
                         weight: "20%",
-                        hook_in: sampleChapterData.acts.setup.hook_in,
-                        orient: sampleChapterData.acts.setup.orient,
-                        incident: sampleChapterData.acts.setup.incident
+                        hook_in: getChapterData()?.acts?.setup?.hook_in || "",
+                        orient: getChapterData()?.acts?.setup?.orient || "",
+                        incident: getChapterData()?.acts?.setup?.incident || ""
                       },
                       act2_confrontation: {
                         weight: "60%",
-                        rising: sampleChapterData.acts.confrontation.rising,
-                        midpoint: sampleChapterData.acts.confrontation.midpoint,
-                        complicate: sampleChapterData.acts.confrontation.complicate
+                        rising: getChapterData()?.acts?.confrontation?.rising || "",
+                        midpoint: getChapterData()?.acts?.confrontation?.midpoint || "",
+                        complicate: getChapterData()?.acts?.confrontation?.complicate || ""
                       },
                       act3_resolution: {
                         weight: "20%",
-                        climax: sampleChapterData.acts.resolution.climax,
-                        resolve: sampleChapterData.acts.resolution.resolve,
-                        hook_out: sampleChapterData.acts.resolution.hook_out
+                        climax: getChapterData()?.acts?.resolution?.climax || "",
+                        resolve: getChapterData()?.acts?.resolution?.resolve || "",
+                        hook_out: getChapterData()?.acts?.resolution?.hook_out || ""
                       }
                     },
                     tension_architecture: {
-                      external: sampleChapterData.tension.external,
-                      internal: sampleChapterData.tension.internal,
-                      interpersonal: sampleChapterData.tension.interpersonal,
-                      atmospheric: sampleChapterData.tension.atmospheric,
-                      peak_moment: sampleChapterData.tension.peak
+                      external: getChapterData()?.tension?.external || "",
+                      internal: getChapterData()?.tension?.internal || "",
+                      interpersonal: getChapterData()?.tension?.interpersonal || "",
+                      atmospheric: getChapterData()?.tension?.atmospheric || "",
+                      peak_moment: getChapterData()?.tension?.peak || ""
                     },
                     character_development: {
                       maya_pov: {
-                        start: sampleChapterData.chars.maya.start,
-                        arc: sampleChapterData.chars.maya.arc,
-                        end: sampleChapterData.chars.maya.end,
-                        motivation: sampleChapterData.chars.maya.motivation,
-                        growth: sampleChapterData.chars.maya.growth
+                        start: getChapterData()?.chars?.maya?.start || "",
+                        arc: getChapterData()?.chars?.maya?.arc || "",
+                        end: getChapterData()?.chars?.maya?.end || "",
+                        motivation: getChapterData()?.chars?.maya?.motivation || "",
+                        growth: getChapterData()?.chars?.maya?.growth || ""
                       }
                     },
                     dual_mandate: {
                       episodic_satisfaction: {
-                        arc: sampleChapterData.mandate.episodic.arc,
-                        payoff: sampleChapterData.mandate.episodic.payoff,
-                        answered: sampleChapterData.mandate.episodic.answered
+                        arc: getChapterData()?.mandate?.episodic?.arc || "",
+                        payoff: getChapterData()?.mandate?.episodic?.payoff || "",
+                        answered: getChapterData()?.mandate?.episodic?.answered || ""
                       },
                       serial_momentum: {
-                        complication: sampleChapterData.mandate.serial.complication,
-                        stakes: sampleChapterData.mandate.serial.stakes,
-                        compulsion: sampleChapterData.mandate.serial.compulsion
+                        complication: getChapterData()?.mandate?.serial?.complication || "",
+                        stakes: getChapterData()?.mandate?.serial?.stakes || "",
+                        compulsion: getChapterData()?.mandate?.serial?.compulsion || ""
                       }
                     },
                     forward_hook: {
-                      type: sampleChapterData.hook.type,
-                      reveal: sampleChapterData.hook.reveal,
-                      threat: sampleChapterData.hook.threat,
-                      emotion: sampleChapterData.hook.emotion
+                      type: getChapterData()?.hook?.type || "",
+                      reveal: getChapterData()?.hook?.reveal || "",
+                      threat: getChapterData()?.hook?.threat || "",
+                      emotion: getChapterData()?.hook?.emotion || ""
                     }
                   }}
                   isCollapsed={false}
@@ -2012,28 +1902,28 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               // Scene view: Show SceneSidebar with scene controls and JSON data
               <SceneSidebar
                 sceneData={{
-                  id: sampleSceneData.id,
-                  summary: sampleSceneData.summary,
-                  time: sampleSceneData.time,
-                  place: sampleSceneData.place,
-                  pov: sampleSceneData.pov,
-                  characters: sampleSceneData.characters,
-                  goal: sampleSceneData.goal,
-                  obstacle: sampleSceneData.obstacle,
-                  outcome: sampleSceneData.outcome,
-                  beats: sampleSceneData.beats,
-                  shift: sampleSceneData.shift,
-                  leads_to: sampleSceneData.leads_to,
-                  image_prompt: sampleSceneData.image_prompt
+                  id: getSceneData()?.id || 1,
+                  summary: getSceneData()?.summary || "",
+                  time: getSceneData()?.time || "",
+                  place: getSceneData()?.place || "",
+                  pov: getSceneData()?.pov || "",
+                  characters: getSceneData()?.characters || {},
+                  goal: getSceneData()?.goal || "",
+                  obstacle: getSceneData()?.obstacle || "",
+                  outcome: getSceneData()?.outcome || "",
+                  beats: getSceneData()?.beats || [],
+                  shift: getSceneData()?.shift || "",
+                  leads_to: getSceneData()?.leads_to || "",
+                  image_prompt: getSceneData()?.image_prompt || ""
                 }}
                 chapterContext={{
                   title: "Chapter Context",
-                  pov: sampleChapterData.pov,
-                  acts: sampleChapterData.acts
+                  pov: getChapterData()?.pov || "",
+                  acts: getChapterData()?.acts || {}
                 }}
                 storyData={sampleStoryData}
-                partData={samplePartData}
-                chapterData={sampleChapterData}
+                partData={getPartData()}
+                chapterData={getChapterData()}
                 onSave={handleSave}
                 onSceneDataChange={(field, value) => {
                   // Handle scene data changes
