@@ -217,85 +217,57 @@ The **Chapter** is the primary unit of reader consumption, especially critical i
 - Provide partial resolution
 - Deploy chapter-ending hook
 
-## 4. YAML Data Structure for Chapter Object
+## 4. JSON Data Structure for Chapter Object
 
-```yaml
-# ============================================
-# CHAPTER SPECIFICATION - HNS FORMAT
-# ============================================
+### Field Descriptions
 
-chapter:
-  # Identification
-  chapter_id: "chap_001"
-  chapter_number: 1
-  chapter_title: "Missing"
-  part_ref: "part_001"
-  target_words: 2000
+**chapter_id**: A unique identifier for the chapter.
 
-  # POV and perspective
-  pov_character_id: "char_maya_001"
-  narrative_voice: "third_person_limited"
+**chapter_number**: The sequential number of the chapter within the story.
 
-  # Chapter summary
-  summary: "Maya arrives for her weekly coffee date with Elena only to find her sister's apartment unlocked and abandoned. Signs of struggle and a mysterious journal lead Maya to discover Elena was researching something called 'Shadow Keepers' before her disappearance."
+**chapter_title**: The title of the chapter.
 
-  # Pacing control
-  pacing_goal: "medium"
-  scene_count: 3
-  action_dialogue_ratio: "40:60"  # Action vs dialogue percentage
+**part_ref**: Reference to the part this chapter belongs to.
 
-  # Chapter-level dramatic structure
-  chapter_goal: "Find Elena for coffee date"
-  chapter_conflict: "Elena missing with signs of danger"
-  chapter_outcome: "Discovers supernatural research"
+**pov_character_id**: The identifier of the character from whose point of view the chapter is told. This is essential for maintaining narrative voice and focus.
 
-  # Chapter questions driving reader interest
-  questions:
-    opening: "Why didn't Elena answer her phone?"
-    development: "What happened in Elena's apartment?"
-    closing: "What are Shadow Keepers?"
+**narrative_voice**: The narrative perspective (e.g., "third_person_limited", "first_person").
 
-  # Key plot beats within chapter
-  chapter_beats:
-    - beat: "Arrival"
-      description: "Maya arrives at Elena's building"
-      scene_ref: "scene_001"
-    - beat: "Discovery"
-      description: "Finds apartment abandoned with struggle signs"
-      scene_ref: "scene_002"
-    - beat: "Journal"
-      description: "Discovers Elena's research journal"
-      scene_ref: "scene_003"
+**summary**: A detailed, one-paragraph summary of the chapter's events. This corresponds directly to the expanded paragraphs generated in Step 4 of the Snowflake Method, where each sentence of an act's summary is developed into a full paragraph.
 
-  # Character emotional journey
-  character_state:
-    opening: "casual_anticipation"
-    midpoint: "growing_concern"
-    closing: "fearful_determination"
+**pacing_goal**: An enum ('fast', 'medium', 'slow', 'reflective') that dictates the intended tempo of the chapter. This attribute can be used by a procedural text generator to modulate sentence length, paragraph structure, and the ratio of action to description, ensuring the prose style matches the narrative intent.
 
-  # Chapter-end hook
-  chapter_hook:
-    type: "revelation"
-    description: "Journal's last entry: 'They know about Maya. She has the mark too.'"
-    urgency_level: "high"
+**action_dialogue_ratio**: The percentage ratio of action to dialogue (e.g., "40:60").
 
-  # Scenes comprising this chapter
-  scenes:
-    - scene_id: "scene_001"
-      scene_number: 1
-      summary: "Maya arrives and finds door unlocked"
-    - scene_id: "scene_002"
-      scene_number: 2
-      summary: "Searches apartment, finds signs of struggle"
-    - scene_id: "scene_003"
-      scene_number: 3
-      summary: "Discovers and reads Elena's journal"
+**chapter_hook**: A structured object designed to formalize the end-of-chapter hook, a critical element for reader retention in serialized fiction. It contains:
+- **type**: An enum specifying the nature of the hook (e.g., "revelation", "danger", "decision", "question", "emotional_turning_point").
+- **description**: A brief sentence describing the hook itself.
+- **urgency_level**: The urgency level of the hook (e.g., "high", "medium", "low").
 
-  # Chapter metadata for serialization
-  publication:
-    release_date: "2024-01-15"
-    estimated_reading_time: 12  # minutes
-    content_warnings: ["mild violence", "missing person"]
+**scenes**: An ordered array of scene_ids that make up the chapter.
+
+### Example JSON Structure
+
+```json
+{
+  "chapter": {
+    "chapter_id": "chap_001",
+    "chapter_number": 1,
+    "chapter_title": "Missing",
+    "part_ref": "part_001",
+    "pov_character_id": "char_maya_001",
+    "narrative_voice": "third_person_limited",
+    "summary": "Maya arrives for her weekly coffee date with Elena only to find her sister's apartment unlocked and abandoned. Signs of struggle and a mysterious journal lead Maya to discover Elena was researching something called 'Shadow Keepers' before her disappearance.",
+    "pacing_goal": "medium",
+    "action_dialogue_ratio": "40:60",
+    "chapter_hook": {
+      "type": "revelation",
+      "description": "Journal's last entry: 'They know about Maya. She has the mark too.'",
+      "urgency_level": "high"
+    },
+    "scenes": ["scene_001", "scene_002", "scene_003"]
+  }
+}
 ```
 
 ---
