@@ -173,7 +173,7 @@ Return a JSON object with a 'parts' array containing exactly three parts, each w
 
     return object.parts.map((part, index) => ({
       ...part,
-      part_id: part.part_id || `part_${String(index + 1).padStart(3, '0')}`,
+      part_id: part.part_id || nanoid(),
     }));
   } catch (error) {
     console.error('Error generating story parts:', error);
@@ -312,7 +312,7 @@ Ensure chapters:
 
     return object.chapters.map((chapter, index) => ({
       ...chapter,
-      chapter_id: chapter.chapter_id || `chap_${part.part_id}_${String(index + 1).padStart(2, '0')}`,
+      chapter_id: chapter.chapter_id || nanoid(),
     }));
   } catch (error) {
     console.error('Error generating chapters:', error);
@@ -370,7 +370,7 @@ Each scene should:
 
     return object.scenes.map((scene, index) => ({
       ...scene,
-      scene_id: scene.scene_id || `scene_${chapter.chapter_id}_${String(index + 1).padStart(2, '0')}`,
+      scene_id: scene.scene_id || nanoid(),
     }));
   } catch (error) {
     console.error('Error generating scenes:', error);
@@ -480,7 +480,7 @@ export async function generateCompleteHNS(
           description: part.part_summary,
           storyId: currentStoryId,
           authorId: userId,
-          orderIndex: parseInt(part.part_id.split('_').pop() || '1'),
+          orderIndex: index + 1,
           summary: part.part_summary,
           keyBeats: part.key_beats,
           hnsData: part as Record<string, unknown>,
@@ -586,7 +586,7 @@ export async function generateCompleteHNS(
 
         // Assign chapter IDs and part references
         chapters.forEach((chapter, index) => {
-          chapter.chapter_id = chapter.chapter_id || `${part.part_id}_chapter_${index + 1}`;
+          chapter.chapter_id = chapter.chapter_id || nanoid();
           chapter.part_ref = part.part_id;
           chapter.chapter_number = index + 1;
           allChapters.push(chapter);
