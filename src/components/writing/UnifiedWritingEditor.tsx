@@ -18,6 +18,8 @@ import { PartPromptEditor } from "./PartPromptEditor";
 import { ChapterPromptEditor } from "./ChapterPromptEditor";
 import { ScenePromptEditor } from "./ScenePromptEditor";
 import { BeautifulJSONDisplay } from "./BeautifulJSONDisplay";
+import { CharactersDisplay } from "./CharactersDisplay";
+import { SettingsDisplay } from "./SettingsDisplay";
 
 interface Story {
   id: string;
@@ -62,7 +64,7 @@ interface Scene {
   outcome: string;
 }
 
-export type EditorLevel = "story" | "part" | "chapter" | "scene";
+export type EditorLevel = "story" | "part" | "chapter" | "scene" | "characters" | "settings";
 
 interface Selection {
   level: EditorLevel;
@@ -617,7 +619,21 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       router.push(`/write/${selection.chapterId}`);
       return;
     }
-    
+
+    // Handle Characters selection
+    if (selection.level === "characters" && selection.storyId === story.id) {
+      setCurrentSelection(selection);
+      setJsonLevel(selection.level);
+      return;
+    }
+
+    // Handle Settings selection
+    if (selection.level === "settings" && selection.storyId === story.id) {
+      setCurrentSelection(selection);
+      setJsonLevel(selection.level);
+      return;
+    }
+
     // Otherwise, just update the current selection for the same story
     setCurrentSelection(selection);
     setJsonLevel(selection.level);
@@ -2270,9 +2286,11 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               </Button>
               <div className="w-px h-6 bg-[rgb(var(--border))] hidden sm:block"></div>
               <h1 className="text-lg md:text-xl font-semibold text-[rgb(var(--foreground))] truncate font-[var(--font-heading)]">
-                {currentSelection.level === "story" ? "📖" : 
+                {currentSelection.level === "story" ? "📖" :
                  currentSelection.level === "part" ? "📚" :
-                 currentSelection.level === "chapter" ? "📝" : "🎬"} {story.title}
+                 currentSelection.level === "chapter" ? "📝" :
+                 currentSelection.level === "characters" ? "👥" :
+                 currentSelection.level === "settings" ? "🗺️" : "🎬"} {story.title}
               </h1>
               <Badge variant="outline">{currentSelection.level}</Badge>
               
@@ -2595,6 +2613,19 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               />
             )}
 
+            {/* Characters Display - Show for characters level */}
+            {currentSelection.level === "characters" && (
+              <CharactersDisplay
+                storyData={storyPreviewData || sampleStoryData}
+              />
+            )}
+
+            {/* Settings Display - Show for settings level */}
+            {currentSelection.level === "settings" && (
+              <SettingsDisplay
+                storyData={storyPreviewData || sampleStoryData}
+              />
+            )}
 
             {/* Writing Guidelines - Show for scene editing */}
             <WritingGuidelines currentLevel={currentSelection.level} />

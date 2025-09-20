@@ -75,6 +75,22 @@ const PanelLeftOpen = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
+const Users = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
+
+const MapPin = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+    <circle cx="12" cy="10" r="3" />
+  </svg>
+);
+
 interface Scene {
   id: string;
   title: string;
@@ -109,7 +125,7 @@ interface Story {
 }
 
 interface Selection {
-  level: "story" | "part" | "chapter" | "scene";
+  level: "story" | "part" | "chapter" | "scene" | "characters" | "settings";
   storyId: string;
   partId?: string;
   chapterId?: string;
@@ -174,6 +190,20 @@ export function StoryStructureSidebar({
   const handleStorySelect = () => {
     onSelectionChange?.({
       level: "story",
+      storyId: story.id
+    });
+  };
+
+  const handleCharactersSelect = () => {
+    onSelectionChange?.({
+      level: "characters",
+      storyId: story.id
+    });
+  };
+
+  const handleSettingsSelect = () => {
+    onSelectionChange?.({
+      level: "settings",
       storyId: story.id
     });
   };
@@ -467,6 +497,40 @@ export function StoryStructureSidebar({
               })}
 
             </div>
+          </div>
+
+          {/* Characters Section */}
+          <div className={`border rounded-lg p-2 mt-2 transition-all duration-200 ${
+            currentSelection?.level === 'characters'
+              ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-300 dark:border-purple-600 shadow-md'
+              : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+          }`}>
+            <Button
+              variant={currentSelection?.level === 'characters' ? "default" : "ghost"}
+              size="sm"
+              className="w-full justify-start h-8 text-xs"
+              onClick={handleCharactersSelect}
+            >
+              <Users size={10} className="mr-1" />
+              <span className="truncate">Characters</span>
+            </Button>
+          </div>
+
+          {/* Settings Section */}
+          <div className={`border rounded-lg p-2 transition-all duration-200 ${
+            currentSelection?.level === 'settings'
+              ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-600 shadow-md'
+              : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+          }`}>
+            <Button
+              variant={currentSelection?.level === 'settings' ? "default" : "ghost"}
+              size="sm"
+              className="w-full justify-start h-8 text-xs"
+              onClick={handleSettingsSelect}
+            >
+              <MapPin size={10} className="mr-1" />
+              <span className="truncate">Settings</span>
+            </Button>
           </div>
         </div>
       </CardContent>
