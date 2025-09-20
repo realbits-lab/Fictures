@@ -846,74 +846,68 @@ If not, explain why the transition feels unearned and what narrative element mig
 
 ---
 
-## Section 10: AI-Augmented Generation Process
+## Section 10: AI-Powered Narrative Visualization with Gemini
 
-### 10.1 The Iterative Refinement Paradigm
+### 10.1 Gemini Prompting Principles
 
-The process breaks down novel creation into manageable, sequential steps following the Snowflake Method, augmented with AI assistance at each stage.
+Google's Gemini 2.5 Flash Image model excels at natural language understanding for visual generation. Unlike keyword-based models, Gemini responds best to descriptive, narrative prompts that describe scenes as complete thoughts.
 
-### 10.2 The AI-Augmented Snowflake Algorithm
+**Core Principle**: Describe the scene, don't list keywords. Use detailed narrative paragraphs rather than disconnected terms.
 
-#### Step 1: Core Concept Generation
+**Effective Prompt Structure:**
+- Subject description with specific details
+- Action or pose (for characters)
+- Environment and setting context
+- Lighting and atmosphere
+- Photographic or artistic style references
 
-- **Action**: Create one-sentence premise
-- **Target**: Story object
-- **AI Role**: Generate multiple premise variations
-- **Human Role**: Select and refine best option
+### 10.2 Character Visualization with Gemini
 
-#### Step 2: Act-Level Structuring
+Gemini maintains character consistency across multiple generations by preserving facial features, distinctive appearance, and clothing details when properly prompted.
 
-- **Action**: Expand premise to paragraph
-- **Target**: Part objects
-- **AI Role**: Structure into three-act format
-- **Human Role**: Segment and assign to parts
+#### Initial Character Generation
 
-#### Step 3: Character Conception
+Transform Character.physical_description into narrative prompts:
 
-- **Action**: Create character profiles
-- **Target**: Character objects
-- **AI Role**: Generate character foundations
-- **Human Role**: Add psychological depth
-
-#### Step 4: Chapter-Level Expansion
-
-- **Action**: Expand act summaries
-- **Target**: Chapter objects
-- **AI Role**: Detail plot progression
-- **Human Role**: Ensure coherence
-
-#### Step 5: Scene Breakdown
-
-- **Action**: List individual scenes
-- **Target**: Scene objects
-- **AI Role**: Break chapters into scenes
-- **Human Role**: Adjust pacing and flow
-
-### 10.3 AI Prompting Templates
-
-**Premise Generation:**
-
+**Gemini Character Template:**
 ```
-Given the concept "[initial idea]", generate 5 one-sentence premises under 20 words.
-Each must introduce: protagonist, core conflict, personal stakes.
+A photorealistic portrait of [Character.name], a [age]-year-old [ethnicity] person with [build] build.
+They have [hair_style_color] and [eye_color] eyes with [facial_features].
+Notable features include [distinguishing_marks].
+They wear [typical_attire], reflecting their role as [archetype].
+Their expression shows [personality.traits[0]] and [personality.traits[1]] personality.
+Shot with an 85mm portrait lens, soft natural lighting, professional photography style.
 ```
 
-**Act Expansion:**
+#### Maintaining Character Consistency
 
+**Best Practices:**
+- Establish detailed character in first prompt with all physical attributes
+- Use follow-up prompts to place same character in new contexts
+- Include phrase "same character as previously generated" in subsequent prompts
+- Store initial generation description in Character.visual_reference_id for reuse
+- Restart conversation with full description if features begin to drift
+
+### 10.3 Setting Visualization with Gemini
+
+Gemini excels at atmospheric environment generation when provided with rich sensory details from Setting objects.
+
+**Gemini Environment Template:**
 ```
-Expand premise "[premise]" into 5-sentence paragraph following three-act structure:
-- Sentence 1: Setup and ordinary world
-- Sentences 2-4: Three escalating disasters
-- Sentence 5: Resolution hint
+A [visual_style] wide establishing shot of [Setting.name]: [Setting.description].
+The architecture features [architectural_style] design elements.
+The scene shows [sensory.sight[0]] in the foreground and [sensory.sight[1]] in the background.
+The atmosphere feels [mood], with [sensory.sound descriptions] implied through visual elements.
+Color palette dominated by [color_palette[0]], [color_palette[1]], and [color_palette[2]].
+Photographic style inspired by [visual_references[0]].
+Wide-angle lens perspective capturing the full environment.
 ```
 
-**Scene Breakdown:**
-
-```
-Break this chapter summary into 3-5 distinct scenes:
-"[chapter summary]"
-For each scene provide: one-sentence action, setting, involved characters.
-```
+**Environmental Details:**
+- Use photographic terminology (wide-angle, macro, Dutch angle) for precise control
+- Describe lighting naturally: "illuminated by warm sunset light" rather than technical terms
+- Include sensory details as visual cues (e.g., "mist suggesting cold air")
+- Reference artistic styles conversationally: "in the style of [visual_references]"
 
 ---
 
@@ -925,89 +919,94 @@ Web novel success prioritizes sustained reader engagement over traditional liter
 
 ### 11.2 Multi-Axis Evaluation Matrix
 
-#### Quantitative Metrics
+The evaluation matrix combines objective data-driven metrics with structured qualitative assessment applied at the chapter level.
 
-**Chapter Word Count:**
+#### 11.2.1 Quantitative Metrics
 
-- Target Range: 1,500-2,500 words
-- Measurement: Simple word count
-- Purpose: Optimal for single-session reading
+##### 11.2.1.1 Chapter Word Count
+- **Definition**: Total number of words in the chapter
+- **Measurement**: Automated word count
+- **Target Range**: 1,200-2,500 words (optimal for single-session reading and binge consumption)
+- **Purpose**: Ensure chapters are long enough to advance plot but short enough for one sitting
 
-**Pacing Score:**
+##### 11.2.1.2 Pacing Score
+- **Definition**: Density of plot-advancing events relative to chapter length
+- **Formula**: (Number of Plot-Advancing Scenes) / (Word Count / 1000)
+- **Measurement**: Plot-advancing scene = any scene where outcome is not neutral (Success, Failure, Success with cost)
+- **Target**: Evaluated against chapter's pacing_goal (Fast chapters need higher scores than Slow chapters)
 
-- Formula: (Plot-Advancing Scenes) / (Word Count / 1000)
-- Measurement: Density of meaningful events
-- Purpose: Ensure appropriate narrative momentum
+##### 11.2.1.3 Hook Presence
+- **Definition**: Binary check ensuring chapter concludes with deliberate reader retention mechanism
+- **Measurement**: 1 if chapter_hook object exists in HNS, 0 if absent
+- **Target**: 1 for all chapters (absence is red flag for reader drop-off)
+- **Purpose**: Verify structural hook implementation
 
-**Hook Presence:**
+##### 11.2.1.4 Reader Engagement Score
+- **Definition**: Direct measure of audience interaction with published chapter
+- **Formula**: (Total Comments + Total Likes) / Total Views
+- **Source**: Platform analytics data
+- **Purpose**: Track engagement trends over time (sudden drops indicate content issues)
 
-- Measurement: Binary check for chapter_hook
-- Target: 1 (present) for all chapters
-- Purpose: Ensure reader retention mechanism
+#### 11.2.2 Qualitative Metrics (1-5 Scale with Detailed Rubrics)
 
-**Reader Engagement Score:**
+##### 11.2.2.1 Plot Coherence & Progression
+- **Definition**: Logical consistency of plot within chapter and contribution to overall arc
+- **1 (Poor)**: Contains significant plot holes or contradictions; fails to advance main plot or subplots
+- **3 (Average)**: Logically consistent but disconnected from main arc or relies on clichés; minimal progression
+- **5 (Excellent)**: Seamlessly advances main plot and subplots in logical, compelling way; events are causally linked
 
-- Formula: (Comments + Likes) / Views
-- Source: Platform analytics
-- Purpose: Track audience interaction trends
+##### 11.2.2.2 Character Development & Believability
+- **Definition**: Consistency and depth of characterization, particularly for POV character
+- **1 (Poor)**: Character contradicts established personality/motivations without justification
+- **3 (Average)**: Actions are plausible but internal state unexplored; character feels static
+- **5 (Excellent)**: Actions directly result from personality and situation; reveals new depths or advances arc
 
-#### Qualitative Metrics (1-5 Scale)
+##### 11.2.2.3 Pacing & Flow
+- **Definition**: Subjective assessment of reading rhythm and tempo, independent of calculated Pacing Score
+- **1 (Poor)**: Jarringly rushed or painfully slow; ineffective balance of action/dialogue/description
+- **3 (Average)**: Generally acceptable but has sections that drag or feel abrupt
+- **5 (Excellent)**: Perfectly matches content and pacing_goal; smooth scene flow; engaging narrative balance
 
-**Plot Coherence & Progression:**
+##### 11.2.2.4 Hook Effectiveness
+- **Definition**: Compelling power of chapter-end hook to drive continued reading
+- **1 (Poor)**: Chapter ends abruptly or flat with no incentive to continue
+- **3 (Average)**: Hook present but generic or predictable; creates mild curiosity
+- **5 (Excellent)**: Surprising, specific hook creating powerful urgency or burning question; impossible not to continue
 
-- 1: Significant plot holes or contradictions
-- 3: Logically consistent but weak progression
-- 5: Compelling, logical advancement
-
-**Character Development & Believability:**
-
-- 1: Out-of-character actions
-- 3: Plausible but static
-- 5: Deep, consistent development
-
-**Pacing & Flow:**
-
-- 1: Jarringly slow/fast
-- 3: Acceptable but uneven
-- 5: Perfectly matched to content
-
-**Hook Effectiveness:**
-
-- 1: Flat ending
-- 3: Generic hook
-- 5: Compelling urgency to continue
-
-**Prose & Style:**
-
-- 1: Many errors
-- 3: Clear but generic
-- 5: Evocative and immersive
+##### 11.2.2.5 Prose & Style
+- **Definition**: Quality of sentence-level writing and stylistic execution
+- **1 (Poor)**: Numerous grammatical errors, awkward phrasing, or inappropriate genre style
+- **3 (Average)**: Technically proficient and clear but lacks distinct voice or evocative language
+- **5 (Excellent)**: Clean, evocative prose with confident style matching genre/tone; enhances immersion
 
 ### 11.3 Diagnostic Application
 
 The evaluation matrix serves as a diagnostic tool for systematic improvement:
 
-```yaml
-chapter_evaluation:
-  chapter_id: "chap_001"
-
-  quantitative:
-    word_count: 2,145
-    pacing_score: 2.8
-    hook_present: true
-    engagement_score: 0.145
-
-  qualitative:
-    plot_coherence: 4
-    character_believability: 5
-    pacing_flow: 3
-    hook_effectiveness: 5
-    prose_style: 4
-
-  recommendations:
-    - "Consider adding one more plot-advancing scene"
-    - "Smooth transitions between scene 2 and 3"
-    - "Strong character voice maintained throughout"
+```json
+{
+  "chapter_evaluation": {
+    "chapter_id": "chap_001",
+    "quantitative": {
+      "word_count": 2145,
+      "pacing_score": 2.8,
+      "hook_present": true,
+      "engagement_score": 0.145
+    },
+    "qualitative": {
+      "plot_coherence": 4,
+      "character_believability": 5,
+      "pacing_flow": 3,
+      "hook_effectiveness": 5,
+      "prose_style": 4
+    },
+    "recommendations": [
+      "Consider adding one more plot-advancing scene",
+      "Smooth transitions between scene 2 and 3",
+      "Strong character voice maintained throughout"
+    ]
+  }
+}
 ```
 
 ---
