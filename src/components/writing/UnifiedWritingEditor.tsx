@@ -1271,255 +1271,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               changedKeys={changedStoryKeys}
               onDataChange={handleStoryDataUpdate}
             />
-
-            {/* Characters Grid Display */}
-            {currentStoryCharacters && currentStoryCharacters.length > 0 && (
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <span>🎭</span>
-                    Characters ({currentStoryCharacters.length})
-                  </CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setCharactersCollapsed(!charactersCollapsed)}
-                    className="flex items-center gap-1"
-                  >
-                    <span className="text-xs">
-                      {charactersCollapsed ? 'Show' : 'Hide'}
-                    </span>
-                    <svg
-                      className={`w-4 h-4 transition-transform ${charactersCollapsed ? 'rotate-0' : 'rotate-180'}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </Button>
-                </CardHeader>
-                {!charactersCollapsed && (
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {currentStoryCharacters.map((character: any) => (
-                        <div
-                          key={character.id}
-                          className="group relative bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer"
-                          onClick={() => setCharacterCollapseStates(prev => ({
-                            ...prev,
-                            [character.id]: !prev[character.id]
-                          }))}
-                        >
-                          {/* Character Image */}
-                          <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
-                            {character.imageUrl ? (
-                              <img
-                                src={character.imageUrl}
-                                alt={character.name}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.style.display = 'none';
-                                  target.nextElementSibling?.classList.remove('hidden');
-                                }}
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-600">
-                                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                              </div>
-                            )}
-
-                            {/* Character Badge */}
-                            {character.isMain && (
-                              <div className="absolute top-2 right-2">
-                                <Badge variant="default" size="sm" className="bg-blue-600 text-white text-xs px-1 py-0">
-                                  Main
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Character Info */}
-                          <div className="p-3">
-                            <h4 className="font-medium text-sm text-[rgb(var(--card-foreground))] truncate">
-                              {character.name}
-                            </h4>
-                            {character.role && (
-                              <p className="text-xs text-[rgb(var(--muted-foreground))] truncate mt-1">
-                                {character.role}
-                              </p>
-                            )}
-                          </div>
-
-                          {/* Expanded Content */}
-                          {characterCollapseStates[character.id] && (
-                            <div className="absolute inset-0 bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg p-4 z-10 shadow-xl max-h-[300px] overflow-y-auto">
-                              <div className="flex items-center justify-between mb-3">
-                                <h4 className="font-medium text-[rgb(var(--card-foreground))]">
-                                  {character.name}
-                                </h4>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setCharacterCollapseStates(prev => ({
-                                      ...prev,
-                                      [character.id]: false
-                                    }));
-                                  }}
-                                  className="h-auto p-1"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </Button>
-                              </div>
-                              {character.content && (
-                                <div className="text-xs text-[rgb(var(--muted-foreground))] space-y-2">
-                                  {typeof character.content === 'object' ? (
-                                    <pre className="whitespace-pre-wrap font-mono text-xs">
-                                      {JSON.stringify(character.content, null, 2)}
-                                    </pre>
-                                  ) : (
-                                    <p>{character.content}</p>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            )}
-
-            {/* Places Grid Display */}
-            {currentStoryPlaces && currentStoryPlaces.length > 0 && (
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <span>🏞️</span>
-                    Places ({currentStoryPlaces.length})
-                  </CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setPlacesCollapsed(!placesCollapsed)}
-                    className="flex items-center gap-1"
-                  >
-                    <span className="text-xs">
-                      {placesCollapsed ? 'Show' : 'Hide'}
-                    </span>
-                    <svg
-                      className={`w-4 h-4 transition-transform ${placesCollapsed ? 'rotate-0' : 'rotate-180'}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </Button>
-                </CardHeader>
-                {!placesCollapsed && (
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {currentStoryPlaces.map((place: any) => (
-                        <div
-                          key={place.id}
-                          className="group relative bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer"
-                          onClick={() => setPlaceCollapseStates(prev => ({
-                            ...prev,
-                            [place.id]: !prev[place.id]
-                          }))}
-                        >
-                          {/* Place Image */}
-                          <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
-                            {place.imageUrl ? (
-                              <img
-                                src={place.imageUrl}
-                                alt={place.name}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.style.display = 'none';
-                                  target.nextElementSibling?.classList.remove('hidden');
-                                }}
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-600">
-                                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                </svg>
-                              </div>
-                            )}
-
-                            {/* Place Badge */}
-                            {place.isMain && (
-                              <div className="absolute top-2 right-2">
-                                <Badge variant="default" size="sm" className="bg-green-600 text-white text-xs px-1 py-0">
-                                  Main
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Place Info */}
-                          <div className="p-3">
-                            <h4 className="font-medium text-sm text-[rgb(var(--card-foreground))] truncate">
-                              {place.name}
-                            </h4>
-                          </div>
-
-                          {/* Expanded Content */}
-                          {placeCollapseStates[place.id] && (
-                            <div className="absolute inset-0 bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg p-4 z-10 shadow-xl max-h-[300px] overflow-y-auto">
-                              <div className="flex items-center justify-between mb-3">
-                                <h4 className="font-medium text-[rgb(var(--card-foreground))]">
-                                  {place.name}
-                                </h4>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setPlaceCollapseStates(prev => ({
-                                      ...prev,
-                                      [place.id]: false
-                                    }));
-                                  }}
-                                  className="h-auto p-1"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </Button>
-                              </div>
-                              {place.content && (
-                                <div className="text-xs text-[rgb(var(--muted-foreground))] space-y-2">
-                                  {typeof place.content === 'object' ? (
-                                    <pre className="whitespace-pre-wrap font-mono text-xs">
-                                      {JSON.stringify(place.content, null, 2)}
-                                    </pre>
-                                  ) : (
-                                    <p>{place.content}</p>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            )}
           </div>
         );
       
@@ -2261,6 +2012,20 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       case "scene":
         return renderSceneEditor();
 
+      case "characters":
+        return (
+          <div className="space-y-6">
+            <CharactersDisplay storyData={sampleStoryData} />
+          </div>
+        );
+
+      case "settings":
+        return (
+          <div className="space-y-6">
+            <SettingsDisplay storyData={sampleStoryData} />
+          </div>
+        );
+
       default:
         return <div>Unknown editor level</div>;
     }
@@ -2613,19 +2378,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               />
             )}
 
-            {/* Characters Display - Show for characters level */}
-            {currentSelection.level === "characters" && (
-              <CharactersDisplay
-                storyData={storyPreviewData || sampleStoryData}
-              />
-            )}
-
-            {/* Settings Display - Show for settings level */}
-            {currentSelection.level === "settings" && (
-              <SettingsDisplay
-                storyData={storyPreviewData || sampleStoryData}
-              />
-            )}
 
             {/* Writing Guidelines - Show for scene editing */}
             <WritingGuidelines currentLevel={currentSelection.level} />
