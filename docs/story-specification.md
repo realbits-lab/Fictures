@@ -12,45 +12,42 @@ The framework is built on the **Hierarchical Narrative Schema (HNS)**, a four-le
 
 ### 2.1 Definition and Purpose
 
-The **Story** level represents the complete narrative at its most abstract level. It contains the core conceptual DNA of the work, serving as the foundational input for the entire generation process. At this level, writers consider the fundamental premise, core themes, and the ultimate destination of their narrative.
+The **Story** level represents the complete narrative at its most abstract level. It contains the core conceptual DNA of the work, serving as the foundational input for the entire generation process. The story object encapsulates the essential elements: a unique identifier, title, genre array, premise statement, dramatic question, thematic message, and references to all characters, settings, and parts that comprise the narrative.
 
 ### 2.2 Key Functions in Planning
 
-- **Central Question Identification**: Define the specific dramatic question your serial will explore over time
-- **Character Profile Creation**: Build detailed backgrounds including personality traits, backstories, goals, flaws, and character development arcs
-- **World and Setting Design**: Map specific locations, time periods, and cultural context
-- **Conflict Architecture**: Establish layered conflicts including overarching story conflict, part-level tensions, and chapter-specific obstacles
-- **Message and Meaning**: Identify themes that can develop gradually across serial installments
-- **Character Relationship Mapping**: Chart complex relationship dynamics that can evolve across chapters
-- **Serial Publication Planning**: Design story structure that accommodates regular publishing schedules and reader feedback
-- **Reader Engagement Strategy**: Plan hooks, cliffhangers, and community interaction points
+- **Premise Development**: Craft a single, succinct sentence (under 20 words) that encapsulates the entire novel, tying together the big-picture conflict with personal stakes
+- **Dramatic Question Formation**: Define the central yes-or-no question that drives the narrative and must be answered in the climax
+- **Theme Articulation**: Establish a concise statement of the story's central message to guide narrative coherence
+- **Genre Classification**: Specify primary and secondary genres as an array to inform stylistic choices in text and image generation
+- **Character Registry**: Maintain an array of character_ids linking to all major and minor characters
+- **Setting Catalog**: Track an array of setting_ids for all key locations in the story world
+- **Part Structure**: Define the array of part_ids representing major structural divisions (typically three acts)
+- **Unique Identification**: Generate a story_id (UUID) for database management and tracking
 
 ### 2.3 Story Organization and Part Structure
 
-Before writing, you must decide how to divide your complete story into major parts. This organizational decision shapes your entire narrative approach.
+The story structure is defined through the 'parts' array containing part_ids that reference major narrative divisions. Each part maps to a structural role within the Three-Act Structure.
 
-**Common Part Structures:**
+**Standard Three-Act Implementation (as per JSON example):**
 
-**Three-Part Structure (Most Common):**
+- **part_001**: Maps to "Act 1: Setup" - Introduces characters, establishes the ordinary world, presents the inciting incident
+- **part_002**: Maps to "Act 2: Confrontation" - Develops rising action, presents obstacles, builds to climax
+- **part_003**: Maps to "Act 3: Resolution" - Resolves conflicts, completes character arcs, provides closure
 
-- **Part I - Setup (25%)**: Establish world, characters, goals, and initial conflicts
-- **Part II - Confrontation (50%)**: Escalate stakes, develop complications, build toward climax
-- **Part III - Resolution (25%)**: Resolve conflicts, complete character arcs, provide conclusion
+**Key Structural Elements:**
 
-**Four-Part Structure (Epic/Complex Narratives):**
+- Each part contains an ordered array of chapter_ids
+- Parts maintain their own summary paragraphs describing major movements
+- Key beats are tracked for narrative validation (e.g., "Inciting Incident" in Act 1)
+- The structural_role field ensures adherence to proven dramatic frameworks
 
-- **Part I - Ordinary World**: Introduce protagonist in their normal environment
-- **Part II - Journey Begins**: Launch the adventure, establish stakes and obstacles
-- **Part III - Crisis and Transformation**: Major setbacks, character growth, pivotal revelations
-- **Part IV - Final Challenge**: Climax, resolution, return to changed world
+**Data Relationships:**
 
-**Five-Part Structure (Classical Drama):**
-
-- **Part I - Exposition**: Introduce characters, setting, background
-- **Part II - Rising Action**: Build conflict, develop complications
-- **Part III - Climax**: Story's turning point, highest tension
-- **Part IV - Falling Action**: Consequences of climax, loose ends addressed
-- **Part V - Resolution**: Final outcomes, character fates determined
+- Story object references parts through part_ids array
+- Parts reference chapters through chapter_ids array
+- Chapters reference scenes through scene_ids array
+- This hierarchical structure enables both top-down planning and bottom-up validation
 
 ### 2.4 Implementation Strategies for Web Serial Fiction
 
@@ -143,28 +140,45 @@ Before writing, you must decide how to divide your complete story into major par
 
 ### 3.1 Definition and Purpose
 
-**Parts** represent major thematic or narrative divisions within the overall story. These substantial sections each have their own internal logic, often featuring distinct settings, time periods, or phases of character development. Parts typically correspond to acts in traditional dramatic structure.
+**Parts** represent major thematic or narrative divisions within the overall story. Each part contains a unique part_id, descriptive title, structural role (e.g., "Act 1: Setup"), comprehensive summary paragraph, array of key narrative beats, and ordered list of chapter_ids. Parts typically correspond to acts in traditional dramatic structure, ensuring the story follows proven dramatic arcs.
 
 ### 3.2 Key Functions in Planning
 
-- **Serial Arc Development**: Structure each part as a satisfying mini-arc within the larger story
-- **Reader Engagement Cycles**: Design parts to create natural climax-and-anticipation patterns
-- **Character Growth Phases**: Organize character development into distinct stages
-- **Community Discussion Points**: Plan major plot developments generating reader speculation
-- **Feedback Integration**: Structure parts to allow reader response between major movements
-- **Publication Milestones**: Align part conclusions with natural publication breaks
-- **Cliffhanger Architecture**: Design part endings creating anticipation for next movement
+- **Structural Role Assignment**: Map each part to its function ("Act 1: Setup", "Act 2: Confrontation", "Act 3: Resolution")
+- **Summary Development**: Create one-paragraph summaries describing main movements and developments within each act
+- **Key Beat Tracking**: Identify crucial plot points (e.g., "Exposition", "Inciting Incident", "Plot Point One" for Act 1)
+- **Chapter Organization**: Maintain ordered array of chapter_ids that comprise each part
+- **Title Creation**: Develop descriptive part titles (e.g., "Part I: Discovery")
+- **Narrative Framework**: Ensure parts follow recognized dramatic structures for automated validation
+- **Arc Completion**: Structure each part as a satisfying mini-arc within the larger story
 
 ### 3.3 Part Planning Framework
 
-**For Each Part, Define:**
+**Required Part Elements (per JSON structure):**
 
-- **Central Question**: What major question does this part explore or answer?
-- **Character Development**: How do characters change during this section?
-- **Plot Development**: What major events or revelations occur?
-- **Thematic Focus**: What themes are emphasized in this part?
-- **Emotional Journey**: What emotional progression do readers experience?
-- **Ending Impact**: How does this part conclude to propel the story forward?
+- **part_id**: Unique identifier (e.g., "part_001")
+- **part_title**: Descriptive name (e.g., "Part I: Discovery")
+- **structural_role**: Act designation ("Act 1: Setup", "Act 2: Confrontation", "Act 3: Resolution")
+- **summary**: One-paragraph description of main movements and developments
+- **key_beats**: Array of critical plot points for this act
+- **chapters**: Ordered array of chapter_ids
+
+**Key Beats by Act:**
+
+**Act 1 Required Beats:**
+- "Exposition" - World and character introduction
+- "Inciting Incident" - Event that launches the story
+- "Plot Point One" - Transition into Act 2
+
+**Act 2 Required Beats:**
+- "Rising Action" - Escalating complications
+- "Midpoint" - Major revelation or reversal
+- "Plot Point Two" - Crisis leading to Act 3
+
+**Act 3 Required Beats:**
+- "Climax" - Peak conflict resolution
+- "Falling Action" - Immediate aftermath
+- "Resolution" - Final outcome
 
 ### 3.4 JSON Data Structure for Part Object
 
@@ -203,39 +217,48 @@ Before writing, you must decide how to divide your complete story into major par
 
 ### 4.1 Definition and Purpose
 
-The **Chapter** is the primary unit of reader consumption, especially critical in web novel format. Chapters must balance being self-contained reading experiences while advancing the larger narrative. They are designed for serialized release, requiring particular attention to pacing and hooks.
+The **Chapter** is the primary unit of reader consumption, especially critical in web novel format. Each chapter contains a unique chapter_id, sequential number, title, reference to its parent part, detailed summary paragraph, pacing goal enum, action-to-dialogue ratio, structured chapter hook object, and ordered array of scene_ids. Chapters must balance being self-contained reading experiences while advancing the larger narrative through carefully designed hooks and pacing.
 
 ### 4.2 Key Functions in Planning
 
-- **Reader Session Management**: Each chapter should be consumable in a single reading session (10-20 minutes)
-- **Pacing Control**: Modulate narrative tempo through scene selection and prose style
-- **Engagement Maintenance**: Every chapter must give readers a reason to continue
-- **Character Voice Consistency**: Maintain POV character's perspective throughout
-- **Subplot Integration**: Weave multiple story threads while maintaining focus
-- **Cliffhanger Engineering**: Design chapter endings that compel continuation
-- **Feedback Integration Points**: Natural breaks for reader comments and reactions
+- **Summary Creation**: Develop detailed one-paragraph summaries corresponding to expanded Snowflake Method paragraphs
+- **Pacing Goal Setting**: Assign tempo enums ('fast', 'medium', 'slow', 'reflective') to guide prose generation
+- **Action-Dialogue Balance**: Define percentage ratios (e.g., "40:60") for narrative composition
+- **Hook Engineering**: Structure end-of-chapter hooks with type (revelation, danger, decision, question, emotional_turning_point), description, and urgency level
+- **Scene Organization**: Maintain ordered array of scene_ids comprising the chapter
+- **Sequential Numbering**: Track chapter position within overall story structure
+- **Part Reference**: Link each chapter to its parent part through part_ref field
 
 ### 4.3 Chapter Structure Framework
 
-**Three-Act Chapter Structure:**
+**Required Chapter Components (per JSON structure):**
 
-**Setup (20%):**
+- **chapter_id**: Unique identifier (e.g., "chap_001")
+- **chapter_number**: Sequential position in story
+- **chapter_title**: Descriptive name (e.g., "Missing")
+- **part_ref**: Link to parent part (e.g., "part_001")
+- **summary**: Detailed paragraph of chapter events
+- **pacing_goal**: Tempo control ('fast', 'medium', 'slow', 'reflective')
+- **action_dialogue_ratio**: Balance specification (e.g., "40:60")
+- **chapter_hook**: Structured ending for reader retention
+- **scenes**: Ordered array of scene_ids
 
-- Hook readers with opening line or situation
-- Establish chapter goal or question
-- Orient readers to time, place, and POV
+**Chapter Hook Structure:**
 
-**Confrontation (60%):**
+```json
+"chapter_hook": {
+  "type": "[hook_type]",
+  "description": "[specific_hook_content]",
+  "urgency_level": "[high/medium/low]"
+}
+```
 
-- Develop conflict through escalating complications
-- Build tension toward chapter climax
-- Integrate character development moments
-
-**Resolution (20%):**
-
-- Reach chapter-level climax
-- Provide partial resolution
-- Deploy chapter-ending hook
+**Hook Types:**
+- **revelation**: New information that changes everything
+- **danger**: Immediate threat or peril
+- **decision**: Critical choice point
+- **question**: Mystery or uncertainty
+- **emotional_turning_point**: Major character moment
 
 ### 4.4 JSON Data Structure for Chapter Object
 
@@ -291,35 +314,39 @@ The **Chapter** is the primary unit of reader consumption, especially critical i
 
 ### 5.1 The Foundational Principle: A Scene is a Unit of Change
 
-The single most critical principle of scene construction is that a **scene must create meaningful change**. A scene is not defined by its location or duration but by its function: to advance the story. If a scene can be removed without consequence, it is redundant. This change must be tangible, altering a character's situation either externally or internally.
+The single most critical principle of scene construction is that a **scene must create meaningful change**. Each scene contains a unique scene_id, sequential number, chapter reference, array of character_ids, setting_id link, POV character identifier, narrative voice specification, one-sentence summary, entry hook, clear goal statement, defined conflict, outcome enum, and emotional shift tracking. A scene advances the story through tangible change in a character's situation, either externally or internally.
 
 ### 5.2 The Core Architecture: Scene-Sequel Model
 
-Scenes follow the **Scene-Sequel** model, creating an unbreakable chain of cause and effect:
+Scenes follow the **Scene-Sequel** model, creating an unbreakable chain of cause and effect. This architecture directly maps to the JSON structure's goal, conflict, and outcome fields:
 
 #### 5.2.1 The Scene (Action Unit)
 
-1. **Goal**: POV character enters with specific, immediate objective
-2. **Conflict**: Series of escalating obstacles preventing goal achievement
-3. **Disaster (Outcome)**: Scene ends with negative outcome or complication
-   - "No, and furthermore..." (failure plus new problem)
-   - "Yes, but..." (success with unforeseen consequence)
+1. **Goal**: POV character enters with specific, immediate objective (maps to 'goal' field)
+2. **Conflict**: The obstacle preventing easy achievement (maps to 'conflict' field)
+3. **Outcome**: Result tracked as enum values:
+   - 'failure': Complete failure to achieve goal
+   - 'success': Goal achieved as intended
+   - 'success_with_cost': Goal achieved but with negative consequences
+   - 'failure_with_discovery': Failed but learned something important
 
 #### 5.2.2 The Sequel (Reaction Unit)
 
-1. **Reaction**: Immediate emotional response to disaster
-2. **Dilemma**: Character processes situation and faces difficult choice
-3. **Decision**: Character chooses new course, becoming next scene's goal
+1. **Emotional Shift**: Tracked through the 'emotional_shift' object with 'from' and 'to' states
+2. **Processing**: Character internalizes the outcome (reflected in narrative voice)
+3. **New Direction**: Decision becomes the goal for the next scene (continuity through scene_ids array)
 
-### 5.3 Line-Level Execution: Motivation-Reaction Units (MRUs)
+### 5.3 Line-Level Execution: Scene Components
 
-Scenes should be constructed using **Motivation-Reaction Units** for psychological realism:
+Scenes are constructed with specific data elements for consistency:
 
-- **Motivation (External)**: Observable event happens TO character
-- **Reaction (Internal → External)**:
-  1. Feeling (involuntary emotion)
-  2. Reflex (involuntary action)
-  3. Rational action & speech (conscious response)
+- **Entry Hook**: Opening line or action for immediate reader engagement
+- **POV Management**: Tracked through 'pov_character_id' field
+- **Narrative Voice**: Specified as enum ('third_person_limited', 'first_person', etc.)
+- **Character Presence**: All participants tracked in 'character_ids' array
+- **Setting Context**: Location linked through 'setting_id'
+- **Summary**: One-sentence description of core action or purpose
+- **Emotional Arc**: Tracked from beginning to end state for character development
 
 ### 5.4 JSON Data Structure for Scene Object
 
