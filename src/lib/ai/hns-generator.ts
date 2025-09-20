@@ -3,7 +3,8 @@
  * Implements the Hierarchical Narrative Schema from the story specification
  */
 
-import { generateText } from 'ai';
+import { generateObject } from 'ai';
+import { z } from 'zod';
 import { AI_MODELS } from './config';
 import { nanoid } from 'nanoid';
 import type {
@@ -16,14 +17,81 @@ import type {
   HNSDocument
 } from '@/types/hns';
 
+// Define Zod schemas for each HNS component
+const HNSStorySchema = z.object({
+  story_id: z.string().optional(),
+  story_title: z.string(),
+  genre: z.array(z.string()).min(1).max(3),
+  premise: z.string().max(200), // Increased from 100 to allow for more descriptive premises
+  dramatic_question: z.string(),
+  theme: z.string(),
+  characters: z.array(z.any()).default([]),
+  settings: z.array(z.any()).default([]),
+  parts: z.array(z.any()).default([])
+});
+
+const HNSPartSchema = z.object({
+  part_id: z.string().optional(),
+  part_title: z.string(),
+  part_summary: z.string(),
+  key_beats: z.array(z.string()),
+  chapters: z.array(z.any()).default([])
+});
+
+const HNSChapterSchema = z.object({
+  chapter_id: z.string().optional(),
+  chapter_title: z.string(),
+  chapter_summary: z.string(),
+  chapter_hook: z.string(),
+  scenes: z.array(z.any()).default([])
+});
+
+const HNSSceneSchema = z.object({
+  scene_id: z.string().optional(),
+  scene_title: z.string(),
+  scene_goal: z.string(),
+  scene_conflict: z.string(),
+  scene_outcome: z.string(),
+  dialogue_snippets: z.array(z.string()).optional(),
+  setting_ref: z.string().optional(),
+  characters_present: z.array(z.string()).optional()
+});
+
+const HNSCharacterSchema = z.object({
+  character_id: z.string().optional(),
+  character_name: z.string(),
+  role: z.string(),
+  description: z.string(),
+  psychological_profile: z.string(),
+  backstory: z.string(),
+  arc: z.string(),
+  speech_pattern: z.string().optional(),
+  relationships: z.array(z.object({
+    character_id: z.string(),
+    relationship_type: z.string()
+  })).optional()
+});
+
+const HNSSettingSchema = z.object({
+  setting_id: z.string().optional(),
+  setting_name: z.string(),
+  description: z.string(),
+  sensory_details: z.string(),
+  mood_atmosphere: z.string(),
+  significance: z.string(),
+  time_period: z.string().optional()
+});
+
 /**
  * Phase 1: Core Concept Generation (Story Object)
  * Creates one-sentence summary and foundational story elements
  */
 export async function generateHNSStory(userPrompt: string, language: string = 'English'): Promise<HNSStory> {
-  const { text } = await generateText({
-    model: AI_MODELS.writing,
-    system: `You are an expert story developer creating a story following the Hierarchical Narrative Schema (HNS).
+  try {
+    const { object } = await generateObject({
+      model: AI_MODELS.writing,
+      schema: HNSStorySchema,
+      system: `You are an expert story developer creating a story following the Hierarchical Narrative Schema (HNS).
 
 Your task is to create a comprehensive story foundation based on the user's prompt.
 
@@ -32,34 +100,19 @@ Requirements:
 2. Dramatic question must be a yes/no question that drives the narrative
 3. Theme should be a concise statement of the story's central message
 4. Genre should be an array of 1-3 relevant genres
-5. Create placeholder arrays for characters, settings, and parts (will be populated later)
-
-Output JSON format:
-{
-  "story_id": "[generate unique id]",
-  "story_title": "[compelling title]",
-  "genre": ["primary_genre", "secondary_genre"],
-  "premise": "[single sentence under 20 words tying together conflict and personal stakes]",
-  "dramatic_question": "[central yes/no question, e.g., 'Will she save her sister?']",
-  "theme": "[central message or underlying idea]",
-  "characters": [],
-  "settings": [],
-  "parts": []
-}
+5. Create placeholder empty arrays for characters, settings, and parts (will be populated later)
 
 Language preference: ${language}`,
-    prompt: userPrompt,
-    temperature: 0.9,
-  });
+      prompt: userPrompt,
+      temperature: 0.9,
+    });
 
-  try {
-    const storyData = JSON.parse(text);
     return {
-      ...storyData,
-      story_id: storyData.story_id || `story_${nanoid()}`,
+      ...object,
+      story_id: object.story_id || `story_${nanoid()}`,
     };
   } catch (error) {
-    console.error('Error parsing story JSON:', error);
+    console.error('Error generating story foundation:', error);
     throw new Error('Failed to generate story foundation');
   }
 }
@@ -69,9 +122,13 @@ Language preference: ${language}`,
  * Expands premise into three-act structure with key narrative beats
  */
 export async function generateHNSParts(story: HNSStory): Promise<HNSPart[]> {
-  const { text } = await generateText({
-    model: AI_MODELS.writing,
-    system: `You are structuring a story into three acts following the Hierarchical Narrative Schema.
+  try {
+    const { object } = await generateObject({
+      model: AI_MODELS.writing,
+      schema: z.object({
+        parts: z.array(HNSPartSchema).length(3)
+      }),
+      system: `You are structuring a story into three acts following the Hierarchical Narrative Schema.
 
 Story Context:
 - Title: ${story.story_title}
@@ -95,53 +152,37 @@ Act 3 (Resolution):
 - Resolves conflicts and completes arcs
 - Key beats: ["Climax", "Falling Action", "Resolution"]
 
-Output JSON format:
-[
-  {
-    "part_id": "part_001",
-    "part_title": "Part I: [Descriptive Title]",
-    "structural_role": "Act 1: Setup",
-    "summary": "[One paragraph describing main movements and developments]",
-    "key_beats": ["Exposition", "Inciting Incident", "Plot Point One"],
-    "chapters": []
-  },
-  {
-    "part_id": "part_002",
-    "part_title": "Part II: [Descriptive Title]",
-    "structural_role": "Act 2: Confrontation",
-    "summary": "[One paragraph describing main movements and developments]",
-    "key_beats": ["Rising Action", "Midpoint", "Plot Point Two"],
-    "chapters": []
-  },
-  {
-    "part_id": "part_003",
-    "part_title": "Part III: [Descriptive Title]",
-    "structural_role": "Act 3: Resolution",
-    "summary": "[One paragraph describing main movements and developments]",
-    "key_beats": ["Climax", "Falling Action", "Resolution"],
-    "chapters": []
-  }
-]`,
-    prompt: 'Generate three-act structure',
-    temperature: 0.8,
-  });
+Return a JSON object with a 'parts' array containing exactly three parts, each with:
+- part_title: A descriptive title for the part
+- part_summary: One paragraph describing main movements and developments
+- key_beats: Array of narrative beats for this act
+- chapters: Empty array (will be populated later)`,
+      prompt: 'Generate three-act structure with proper narrative beats and development.',
+      temperature: 0.8,
+    });
 
-  try {
-    return JSON.parse(text);
+    return object.parts.map((part, index) => ({
+      ...part,
+      part_id: part.part_id || `part_${String(index + 1).padStart(3, '0')}`,
+    }));
   } catch (error) {
-    console.error('Error parsing parts JSON:', error);
+    console.error('Error generating story parts:', error);
     throw new Error('Failed to generate story parts');
   }
 }
 
 /**
  * Phase 3: Character Conception (Character Objects)
- * Creates detailed character profiles with psychological complexity
+ * Creates detailed character profiles with psychology and backstory
  */
 export async function generateHNSCharacters(story: HNSStory, parts: HNSPart[]): Promise<HNSCharacter[]> {
-  const { text } = await generateText({
-    model: AI_MODELS.writing,
-    system: `You are creating detailed character profiles following the Hierarchical Narrative Schema.
+  try {
+    const { object } = await generateObject({
+      model: AI_MODELS.writing,
+      schema: z.object({
+        characters: z.array(HNSCharacterSchema).min(4).max(6)
+      }),
+      system: `You are creating detailed character profiles following the Hierarchical Narrative Schema.
 
 Story Context:
 - Title: ${story.story_title}
@@ -150,7 +191,7 @@ Story Context:
 - Genre: ${story.genre.join(', ')}
 
 Act Summaries:
-${parts.map(p => `${p.structural_role}: ${p.summary}`).join('\n')}
+${parts.map(p => `${p.part_title}: ${p.part_summary}`).join('\n')}
 
 Create 4-6 main characters with diverse roles. Include:
 1. Protagonist (the main character driving the story)
@@ -158,61 +199,25 @@ Create 4-6 main characters with diverse roles. Include:
 3. Mentor or ally (supportive character)
 4. Additional key characters as needed
 
-For each character, provide comprehensive details following this structure:
+For each character provide:
+- character_name: Full name
+- role: Their function in the story (protagonist/antagonist/mentor/ally/neutral)
+- description: Physical appearance and initial impression
+- psychological_profile: Personality traits, Myers-Briggs type, motivations
+- backstory: Key life events that shaped them
+- arc: How they change throughout the story
+- speech_pattern: How they speak (optional)
+- relationships: Connections to other characters (optional)`,
+      prompt: 'Create diverse, compelling characters with depth and clear motivations.',
+      temperature: 0.9,
+    });
 
-Output JSON format:
-[
-  {
-    "character_id": "char_[name]_001",
-    "name": "[Full character name]",
-    "role": "[protagonist/antagonist/mentor/ally/neutral]",
-    "archetype": "[e.g., reluctant_hero, trickster, sage]",
-    "summary": "[Brief description and role in story]",
-    "storyline": "[Character's complete narrative journey]",
-    "personality": {
-      "traits": ["trait1", "trait2", "trait3", "trait4"],
-      "myers_briggs": "[MBTI type]",
-      "enneagram": "[Type # - Label]"
-    },
-    "backstory": {
-      "childhood": "[Formative years and key events]",
-      "education": "[Academic and training background]",
-      "career": "[Professional history]",
-      "relationships": "[Key connections]",
-      "trauma": "[Defining wounds or losses]"
-    },
-    "motivations": {
-      "primary": "[Main driving goal]",
-      "secondary": "[Supporting objectives]",
-      "fear": "[Core anxieties]"
-    },
-    "voice": {
-      "speech_pattern": "[How they structure sentences]",
-      "vocabulary": "[Word choice level]",
-      "verbal_tics": ["tic1", "tic2"],
-      "internal_voice": "[Thought patterns]"
-    },
-    "physical_description": {
-      "age": [number],
-      "ethnicity": "[Cultural background]",
-      "height": "[Physical stature]",
-      "build": "[Body type]",
-      "hair_style_color": "[Hair appearance]",
-      "eye_color": "[Eye characteristics]",
-      "facial_features": "[Distinctive features]",
-      "distinguishing_marks": "[Unique identifiers]",
-      "typical_attire": "[Standard clothing]"
-    }
-  }
-]`,
-    prompt: 'Generate main characters',
-    temperature: 0.9,
-  });
-
-  try {
-    return JSON.parse(text);
+    return object.characters.map((char, index) => ({
+      ...char,
+      character_id: char.character_id || `char_${index + 1}_${nanoid(6)}`,
+    }));
   } catch (error) {
-    console.error('Error parsing characters JSON:', error);
+    console.error('Error generating characters:', error);
     throw new Error('Failed to generate characters');
   }
 }
@@ -222,246 +227,223 @@ Output JSON format:
  * Creates immersive locations with sensory details
  */
 export async function generateHNSSettings(story: HNSStory, parts: HNSPart[]): Promise<HNSSetting[]> {
-  const { text } = await generateText({
-    model: AI_MODELS.writing,
-    system: `You are creating detailed settings following the Hierarchical Narrative Schema.
+  try {
+    const { object } = await generateObject({
+      model: AI_MODELS.writing,
+      schema: z.object({
+        settings: z.array(HNSSettingSchema).min(3).max(6)
+      }),
+      system: `You are creating detailed settings following the Hierarchical Narrative Schema.
 
 Story Context:
 - Title: ${story.story_title}
 - Genre: ${story.genre.join(', ')}
 - Theme: ${story.theme}
 
-Create 3-5 key settings where the story takes place. Include varied locations that support different narrative moments.
+Create 3-6 key settings where the story unfolds. Include:
+1. Primary location (where most action occurs)
+2. Contrasting location (different atmosphere)
+3. Significant locations for key scenes
 
-For each setting, provide rich sensory details:
+For each setting provide:
+- setting_name: Clear, memorable name
+- description: Visual and atmospheric details
+- sensory_details: Sounds, smells, textures, temperatures
+- mood_atmosphere: The feeling this place evokes
+- significance: Why this location matters to the story
+- time_period: When this takes place (optional)`,
+      prompt: 'Create immersive, memorable settings that enhance the narrative.',
+      temperature: 0.8,
+    });
 
-Output JSON format:
-[
-  {
-    "setting_id": "setting_[name]_001",
-    "name": "[Location name]",
-    "description": "[Comprehensive paragraph describing the location]",
-    "mood": "[Atmospheric quality, e.g., 'oppressive', 'serene', 'bustling']",
-    "sensory": {
-      "sight": ["visual detail 1", "visual detail 2", "visual detail 3"],
-      "sound": ["auditory element 1", "auditory element 2"],
-      "smell": ["olfactory detail 1", "olfactory detail 2"],
-      "touch": ["tactile sensation 1", "tactile sensation 2"],
-      "taste": ["optional taste element"]
-    },
-    "visual_style": "[Artistic direction, e.g., 'dark fantasy', 'cyberpunk', 'pastoral']",
-    "visual_references": ["reference 1", "reference 2"],
-    "color_palette": ["dominant color 1", "dominant color 2", "accent color"],
-    "architectural_style": "[Structural design language]"
-  }
-]`,
-    prompt: 'Generate key settings',
-    temperature: 0.8,
-  });
-
-  try {
-    return JSON.parse(text);
+    return object.settings.map((setting, index) => ({
+      ...setting,
+      setting_id: setting.setting_id || `setting_${index + 1}_${nanoid(6)}`,
+    }));
   } catch (error) {
-    console.error('Error parsing settings JSON:', error);
+    console.error('Error generating settings:', error);
     throw new Error('Failed to generate settings');
   }
 }
 
 /**
- * Phase 5: Chapter-Level Expansion (Chapter Objects)
- * Breaks each part into chapters with hooks and pacing
+ * Phase 5: Chapter Structuring (Chapter Objects)
+ * Creates chapter breakdowns with hooks and arcs
  */
 export async function generateHNSChapters(story: HNSStory, part: HNSPart, chapterCount: number = 5): Promise<HNSChapter[]> {
-  const { text } = await generateText({
-    model: AI_MODELS.writing,
-    system: `You are creating detailed chapters for a story part following the Hierarchical Narrative Schema.
+  try {
+    const { object } = await generateObject({
+      model: AI_MODELS.writing,
+      schema: z.object({
+        chapters: z.array(HNSChapterSchema).length(chapterCount)
+      }),
+      system: `You are creating chapter structures following the Hierarchical Narrative Schema.
 
 Story Context:
 - Title: ${story.story_title}
 - Part: ${part.part_title}
-- Role: ${part.structural_role}
-- Summary: ${part.summary}
+- Part Summary: ${part.part_summary}
 - Key Beats: ${part.key_beats.join(', ')}
 
-Create ${chapterCount} chapters that:
-1. Advance the plot through the key beats
-2. Each have a compelling hook for reader retention
-3. Vary pacing appropriately
-4. Balance action and dialogue
+Create ${chapterCount} chapters for this part, each with:
+- chapter_title: Engaging, descriptive title
+- chapter_summary: What happens in this chapter (1-2 paragraphs)
+- chapter_hook: Opening line or situation that grabs attention
+- scenes: Empty array (will be populated later)
 
-Output JSON format:
-[
-  {
-    "chapter_id": "chap_[number]",
-    "chapter_number": [sequential number],
-    "chapter_title": "[Compelling chapter title]",
-    "part_ref": "${part.part_id}",
-    "summary": "[Detailed paragraph of chapter events]",
-    "pacing_goal": "[fast/medium/slow/reflective]",
-    "action_dialogue_ratio": "[e.g., 40:60]",
-    "chapter_hook": {
-      "type": "[revelation/danger/decision/question/emotional_turning_point]",
-      "description": "[Specific hook content]",
-      "urgency_level": "[high/medium/low]"
-    },
-    "scenes": []
-  }
-]`,
-    prompt: `Generate ${chapterCount} chapters for ${part.part_title}`,
-    temperature: 0.8,
-  });
+Ensure chapters:
+1. Flow naturally from one to the next
+2. Each advances the plot meaningfully
+3. Include the key beats at appropriate points
+4. Build tension toward the part's climax`,
+      prompt: `Create ${chapterCount} compelling chapters that develop the narrative beats: ${part.key_beats.join(', ')}`,
+      temperature: 0.8,
+    });
 
-  try {
-    return JSON.parse(text);
+    return object.chapters.map((chapter, index) => ({
+      ...chapter,
+      chapter_id: chapter.chapter_id || `chap_${part.part_id}_${String(index + 1).padStart(2, '0')}`,
+    }));
   } catch (error) {
-    console.error('Error parsing chapters JSON:', error);
+    console.error('Error generating chapters:', error);
     throw new Error('Failed to generate chapters');
   }
 }
 
 /**
- * Phase 6: Scene Breakdown (Scene Objects)
- * Creates discrete scenes with goals, conflicts, and emotional shifts
+ * Phase 6: Scene Creation (Scene Objects)
+ * Creates scene-level breakdowns with goals and conflicts
  */
 export async function generateHNSScenes(
+  story: HNSStory,
   chapter: HNSChapter,
   characters: HNSCharacter[],
   settings: HNSSetting[],
   sceneCount: number = 3
 ): Promise<HNSScene[]> {
-  const { text } = await generateText({
-    model: AI_MODELS.writing,
-    system: `You are creating detailed scenes following the Hierarchical Narrative Schema's Scene-Sequel model.
+  try {
+    const { object } = await generateObject({
+      model: AI_MODELS.writing,
+      schema: z.object({
+        scenes: z.array(HNSSceneSchema).length(sceneCount)
+      }),
+      system: `You are creating scene structures following the Hierarchical Narrative Schema.
 
 Chapter Context:
 - Title: ${chapter.chapter_title}
-- Summary: ${chapter.summary}
-- Pacing Goal: ${chapter.pacing_goal}
-- Chapter Hook: ${chapter.chapter_hook.description}
+- Summary: ${chapter.chapter_summary}
+- Hook: ${chapter.chapter_hook}
 
 Available Characters:
-${characters.map(c => `- ${c.name} (${c.role}): ${c.summary}`).join('\n')}
+${characters.map(c => `- ${c.character_name} (${c.role})`).join('\n')}
 
 Available Settings:
-${settings.map(s => `- ${s.name}: ${s.mood}`).join('\n')}
+${settings.map(s => `- ${s.setting_name}`).join('\n')}
 
-Create ${sceneCount} scenes that:
-1. Each have a clear goal, conflict, and outcome
-2. Show emotional progression in POV character
-3. Advance toward the chapter hook
-4. Follow Scene-Sequel structure (goal → conflict → outcome)
+Create ${sceneCount} scenes, each with:
+- scene_title: Clear, action-oriented title
+- scene_goal: What the protagonist wants to achieve
+- scene_conflict: What prevents them from achieving it
+- scene_outcome: How the scene resolves (success/failure/complication)
+- dialogue_snippets: 2-3 key lines of dialogue (optional)
+- setting_ref: Which setting this occurs in (optional)
+- characters_present: Which characters appear (optional)
 
-Output JSON format:
-[
-  {
-    "scene_id": "scene_[number]",
-    "scene_number": [sequential number],
-    "chapter_ref": "${chapter.chapter_id}",
-    "character_ids": ["char_id1", "char_id2"],
-    "setting_id": "setting_id",
-    "pov_character_id": "char_id",
-    "narrative_voice": "[third_person_limited/first_person/third_person_omniscient]",
-    "summary": "[One-sentence scene description]",
-    "entry_hook": "[Opening line or action for engagement]",
-    "goal": "[What POV character wants to achieve]",
-    "conflict": "[Obstacle preventing easy achievement]",
-    "outcome": "[success/failure/success_with_cost/failure_with_discovery]",
-    "emotional_shift": {
-      "from": "[starting emotional state]",
-      "to": "[ending emotional state]"
-    }
-  }
-]`,
-    prompt: `Generate ${sceneCount} scenes`,
-    temperature: 0.8,
-  });
+Each scene should:
+1. Have clear cause-and-effect with other scenes
+2. Advance character arcs or plot
+3. Include conflict or tension
+4. End with a hook or question`,
+      prompt: `Create ${sceneCount} dynamic scenes that bring the chapter to life.`,
+      temperature: 0.9,
+    });
 
-  try {
-    return JSON.parse(text);
+    return object.scenes.map((scene, index) => ({
+      ...scene,
+      scene_id: scene.scene_id || `scene_${chapter.chapter_id}_${String(index + 1).padStart(2, '0')}`,
+    }));
   } catch (error) {
-    console.error('Error parsing scenes JSON:', error);
+    console.error('Error generating scenes:', error);
     throw new Error('Failed to generate scenes');
   }
 }
 
 /**
- * Complete HNS Document Generation
- * Orchestrates all phases to create a full story structure
+ * Complete HNS Generation Pipeline
+ * Orchestrates all phases to create a complete story structure
  */
 export async function generateCompleteHNS(userPrompt: string, language: string = 'English'): Promise<HNSDocument> {
   console.log('🚀 Starting HNS story generation...');
 
-  // Phase 1: Story Foundation
-  console.log('Phase 1: Generating story foundation...');
-  const story = await generateHNSStory(userPrompt, language);
+  try {
+    // Phase 1: Generate core story
+    console.log('Phase 1: Generating story foundation...');
+    const story = await generateHNSStory(userPrompt, language);
 
-  // Phase 2: Three-Act Structure
-  console.log('Phase 2: Generating three-act structure...');
-  const parts = await generateHNSParts(story);
+    // Phase 2: Generate three-act structure
+    console.log('Phase 2: Creating three-act structure...');
+    const parts = await generateHNSParts(story);
 
-  // Phase 3: Character Development
-  console.log('Phase 3: Generating characters...');
-  const characters = await generateHNSCharacters(story, parts);
+    // Phase 3: Generate characters
+    console.log('Phase 3: Developing characters...');
+    const characters = await generateHNSCharacters(story, parts);
 
-  // Phase 4: Setting Development
-  console.log('Phase 4: Generating settings...');
-  const settings = await generateHNSSettings(story, parts);
+    // Phase 4: Generate settings
+    console.log('Phase 4: Building settings...');
+    const settings = await generateHNSSettings(story, parts);
 
-  // Update story with character and setting references
-  story.characters = characters.map(c => c.character_id);
-  story.settings = settings.map(s => s.setting_id);
-  story.parts = parts.map(p => p.part_id);
+    // Phase 5 & 6: Generate chapters and scenes for each part
+    console.log('Phase 5 & 6: Creating chapters and scenes...');
+    const partsWithContent = await Promise.all(
+      parts.map(async (part) => {
+        const chapters = await generateHNSChapters(story, part, 5);
 
-  // Phase 5 & 6: Generate chapters and scenes for each part
-  console.log('Phase 5 & 6: Generating chapters and scenes...');
-  const allChapters: HNSChapter[] = [];
-  const allScenes: HNSScene[] = [];
+        const chaptersWithScenes = await Promise.all(
+          chapters.map(async (chapter) => {
+            const scenes = await generateHNSScenes(story, chapter, characters, settings, 3);
+            return { ...chapter, scenes };
+          })
+        );
 
-  for (const part of parts) {
-    const chapters = await generateHNSChapters(story, part, 5);
+        return { ...part, chapters: chaptersWithScenes };
+      })
+    );
 
-    for (const chapter of chapters) {
-      const scenes = await generateHNSScenes(chapter, characters, settings, 3);
-      chapter.scenes = scenes.map(s => s.scene_id);
-      allScenes.push(...scenes);
-    }
+    // Assemble complete HNS document
+    const completeStory: HNSStory = {
+      ...story,
+      characters,
+      settings,
+      parts: partsWithContent,
+    };
 
-    part.chapters = chapters.map(c => c.chapter_id);
-    allChapters.push(...chapters);
+    console.log('✅ HNS generation complete!');
+
+    return {
+      metadata: {
+        version: '1.0.0',
+        created_at: new Date().toISOString(),
+        language,
+        generation_prompt: userPrompt,
+      },
+      story: completeStory,
+    };
+  } catch (error) {
+    console.error('Error in HNS generation:', error);
+    throw error;
   }
-
-  console.log('✅ HNS generation complete!');
-
-  return {
-    story,
-    parts,
-    chapters: allChapters,
-    scenes: allScenes,
-    characters,
-    settings
-  };
 }
 
 /**
- * Generate Gemini image prompts from HNS data
+ * Generate image prompt for a character
  */
 export function generateCharacterImagePrompt(character: HNSCharacter): string {
-  const { name, physical_description: pd } = character;
-
-  return `A photorealistic portrait of ${name}, a ${pd.age}-year-old ${pd.ethnicity} person with ${pd.build} build.
-They have ${pd.hair_style_color} and ${pd.eye_color} eyes with ${pd.facial_features}.
-Notable features include ${pd.distinguishing_marks}.
-They wear ${pd.typical_attire}, reflecting their role as ${character.archetype}.
-Their expression shows ${character.personality.traits[0]} and ${character.personality.traits[1]} personality.
-Shot with an 85mm portrait lens, soft natural lighting, professional photography style.`;
+  return `Portrait of ${character.character_name}, ${character.description}. ${character.role} character. Photorealistic, detailed, professional photography style.`;
 }
 
+/**
+ * Generate image prompt for a setting
+ */
 export function generateSettingImagePrompt(setting: HNSSetting): string {
-  return `A ${setting.visual_style} wide establishing shot of ${setting.name}: ${setting.description}.
-The architecture features ${setting.architectural_style} design elements.
-The scene shows ${setting.sensory.sight[0]} in the foreground and ${setting.sensory.sight[1]} in the background.
-The atmosphere feels ${setting.mood}, with ${setting.sensory.sound[0]} implied through visual elements.
-Color palette dominated by ${setting.color_palette[0]}, ${setting.color_palette[1]}, and ${setting.color_palette[2]}.
-Photographic style inspired by ${setting.visual_references[0]}.
-Wide-angle lens perspective capturing the full environment.`;
+  return `${setting.setting_name}: ${setting.description}. ${setting.mood_atmosphere}. Cinematic, atmospheric, detailed environment art.`;
 }

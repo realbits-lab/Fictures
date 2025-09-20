@@ -27,6 +27,14 @@ This file provides guidance to Claude Code when working with this repository.
 - Kill existing processes on port 3000 before starting development server
 - Use proper environment variable loading with `dotenv --file .env.local run` prefix
 
+**File Organization Guidelines:**
+- **Test Files**: Always write test files in `tests/` or `__tests__/` directories
+  - E2E tests: `tests/*.spec.ts` (Playwright tests)
+  - Unit tests: `__tests__/*.test.ts` or `__tests__/*.test.tsx` (Jest tests)
+- **Script Files**: Always write script files in `scripts/` directory
+  - Example: `scripts/capture-auth-manual.mjs` for authentication capture
+  - Example: `scripts/test-auto-login.mjs` for testing automated login
+
 ## Database Management
 
 **IMPORTANT: Uses Neon PostgreSQL Database**
