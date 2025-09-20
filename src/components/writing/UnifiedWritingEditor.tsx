@@ -6,7 +6,6 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/compo
 import { useStoryData } from "@/lib/hooks/useStoryData";
 import { useWritingProgress, useWritingSession } from "@/hooks/useStoryWriter";
 import { JSONDataDisplay } from "./JSONDataDisplay";
-import { StoryEditor } from "./StoryEditor";
 import { PartEditor } from "./PartEditor";
 import { ChapterEditor } from "./ChapterEditor";
 import { SceneEditor, SceneData } from "./SceneEditor";
@@ -1073,33 +1072,12 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       case "story":
         return (
           <div className="space-y-6">
-            <StoryEditor
-              storyId={story.id}
-              storyData={sampleStoryData}
-              characters={currentStoryCharacters}
-              places={currentStoryPlaces}
-              hasChanges={storyHasChanges}
-              onStoryUpdate={handleStoryDataUpdate}
-              onSave={async (data) => {
-                await handleSave(data);
-                setOriginalStoryData(data);
-                setStoryHasChanges(false);
-                setChangedStoryKeys([]);
-              }}
-              onCancel={() => {
-                setSampleStoryData(originalStoryData);
-                setStoryHasChanges(false);
-                setChangedStoryKeys([]);
-              }}
-              onGenerate={handleGenerate}
-            />
-
             {/* Story JSON Data Display */}
             <BeautifulJSONDisplay
               title="Story JSON Data"
               icon="📖"
               data={sampleStoryData}
-              isCollapsed={storyDataCollapsed}
+              isCollapsed={false}
               onToggleCollapse={() => setStoryDataCollapsed(!storyDataCollapsed)}
               changedKeys={changedStoryKeys}
               onDataChange={handleStoryDataUpdate}
