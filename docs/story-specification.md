@@ -1,6 +1,6 @@
 # Hierarchical Narrative Schema (HNS) for Serialized Fiction
 
-## Introduction: A Systems-Oriented Framework
+## Section 1: Introduction and Systems-Oriented Framework
 
 This document provides a comprehensive, data-driven framework for planning, generating, validating, and evaluating serialized fiction. It transforms storytelling from unstructured creative processes into a systematic approach using the "Story as Data" paradigm, enabling procedural generation and AI-assisted narrative creation.
 
@@ -8,13 +8,13 @@ The framework is built on the **Hierarchical Narrative Schema (HNS)**, a four-le
 
 ---
 
-# Story Specification (Level 1: Overall Narrative)
+## Section 2: Story Specification (Level 1: Overall Narrative)
 
-## 1. Definition and Purpose
+### 2.1 Definition and Purpose
 
 The **Story** level represents the complete narrative at its most abstract level. It contains the core conceptual DNA of the work, serving as the foundational input for the entire generation process. At this level, writers consider the fundamental premise, core themes, and the ultimate destination of their narrative.
 
-## 2. Key Functions in Planning
+### 2.2 Key Functions in Planning
 
 - **Central Question Identification**: Define the specific dramatic question your serial will explore over time
 - **Character Profile Creation**: Build detailed backgrounds including personality traits, backstories, goals, flaws, and character development arcs
@@ -25,7 +25,7 @@ The **Story** level represents the complete narrative at its most abstract level
 - **Serial Publication Planning**: Design story structure that accommodates regular publishing schedules and reader feedback
 - **Reader Engagement Strategy**: Plan hooks, cliffhangers, and community interaction points
 
-## 3. Story Organization and Part Structure
+### 2.3 Story Organization and Part Structure
 
 Before writing, you must decide how to divide your complete story into major parts. This organizational decision shapes your entire narrative approach.
 
@@ -52,9 +52,9 @@ Before writing, you must decide how to divide your complete story into major par
 - **Part IV - Falling Action**: Consequences of climax, loose ends addressed
 - **Part V - Resolution**: Final outcomes, character fates determined
 
-## 4. Implementation Strategies for Web Serial Fiction
+### 2.4 Implementation Strategies for Web Serial Fiction
 
-### 4.1. For New Serial Writers
+#### 2.4.1 For New Serial Writers
 
 **Establish Your Serial Foundation:**
 
@@ -70,7 +70,7 @@ Before writing, you must decide how to divide your complete story into major par
 3. Establish community engagement points throughout narrative
 4. Create feedback integration opportunities at story breaks
 
-### 4.2. For Community Building
+#### 2.4.2 For Community Building
 
 **Reader Engagement Planning:**
 
@@ -79,7 +79,7 @@ Before writing, you must decide how to divide your complete story into major par
 3. Build mystery elements sustaining curiosity across chapters
 4. Create opportunities for reader influence on development
 
-### 4.3. For Sustainable Serial Writing
+#### 2.4.3 For Sustainable Serial Writing
 
 **Publication Rhythm Management:**
 
@@ -88,9 +88,9 @@ Before writing, you must decide how to divide your complete story into major par
 3. Design character development sustaining long-term interest
 4. Create backup content strategies for schedule maintenance
 
-## 5. JSON Data Structure for Story Object
+### 2.5 JSON Data Structure for Story Object
 
-### Field Descriptions
+#### Field Descriptions
 
 **story_id**: A unique identifier (e.g., UUID) for database management.
 
@@ -110,7 +110,7 @@ Before writing, you must decide how to divide your complete story into major par
 
 **parts**: An array of part_ids, representing the major structural divisions of the story.
 
-### Example JSON Structure
+#### Example JSON Structure
 
 ```json
 {
@@ -139,13 +139,13 @@ Before writing, you must decide how to divide your complete story into major par
 
 ---
 
-# Part Specification (Level 2: Major Sections)
+## Section 3: Part Specification (Level 2: Major Sections)
 
-## 1. Definition and Purpose
+### 3.1 Definition and Purpose
 
 **Parts** represent major thematic or narrative divisions within the overall story. These substantial sections each have their own internal logic, often featuring distinct settings, time periods, or phases of character development. Parts typically correspond to acts in traditional dramatic structure.
 
-## 2. Key Functions in Planning
+### 3.2 Key Functions in Planning
 
 - **Serial Arc Development**: Structure each part as a satisfying mini-arc within the larger story
 - **Reader Engagement Cycles**: Design parts to create natural climax-and-anticipation patterns
@@ -155,7 +155,7 @@ Before writing, you must decide how to divide your complete story into major par
 - **Publication Milestones**: Align part conclusions with natural publication breaks
 - **Cliffhanger Architecture**: Design part endings creating anticipation for next movement
 
-## 3. Part Planning Framework
+### 3.3 Part Planning Framework
 
 **For Each Part, Define:**
 
@@ -166,9 +166,9 @@ Before writing, you must decide how to divide your complete story into major par
 - **Emotional Journey**: What emotional progression do readers experience?
 - **Ending Impact**: How does this part conclude to propel the story forward?
 
-## 4. JSON Data Structure for Part Object
+### 3.4 JSON Data Structure for Part Object
 
-### Field Descriptions
+#### Field Descriptions
 
 **part_id**: A unique identifier for the part.
 
@@ -182,7 +182,7 @@ Before writing, you must decide how to divide your complete story into major par
 
 **chapters**: An ordered array of chapter_ids that comprise this part of the story.
 
-### Example JSON Structure
+#### Example JSON Structure
 
 ```json
 {
@@ -199,13 +199,13 @@ Before writing, you must decide how to divide your complete story into major par
 
 ---
 
-# Chapter Specification (Level 3: Reading Units)
+## Section 4: Chapter Specification (Level 3: Reading Units)
 
-## 1. Definition and Purpose
+### 4.1 Definition and Purpose
 
 The **Chapter** is the primary unit of reader consumption, especially critical in web novel format. Chapters must balance being self-contained reading experiences while advancing the larger narrative. They are designed for serialized release, requiring particular attention to pacing and hooks.
 
-## 2. Key Functions in Planning
+### 4.2 Key Functions in Planning
 
 - **Reader Session Management**: Each chapter should be consumable in a single reading session (10-20 minutes)
 - **Pacing Control**: Modulate narrative tempo through scene selection and prose style
@@ -215,7 +215,7 @@ The **Chapter** is the primary unit of reader consumption, especially critical i
 - **Cliffhanger Engineering**: Design chapter endings that compel continuation
 - **Feedback Integration Points**: Natural breaks for reader comments and reactions
 
-## 3. Chapter Structure Framework
+### 4.3 Chapter Structure Framework
 
 **Three-Act Chapter Structure:**
 
@@ -237,9 +237,9 @@ The **Chapter** is the primary unit of reader consumption, especially critical i
 - Provide partial resolution
 - Deploy chapter-ending hook
 
-## 4. JSON Data Structure for Chapter Object
+### 4.4 JSON Data Structure for Chapter Object
 
-### Field Descriptions
+#### Field Descriptions
 
 **chapter_id**: A unique identifier for the chapter.
 
@@ -263,7 +263,7 @@ The **Chapter** is the primary unit of reader consumption, especially critical i
 
 **scenes**: An ordered array of scene_ids that make up the chapter.
 
-### Example JSON Structure
+#### Example JSON Structure
 
 ```json
 {
@@ -287,17 +287,17 @@ The **Chapter** is the primary unit of reader consumption, especially critical i
 
 ---
 
-# Scene Specification (Level 4: Individual Scenes)
+## Section 5: Scene Specification (Level 4: Individual Scenes)
 
-## 1. The Foundational Principle: A Scene is a Unit of Change
+### 5.1 The Foundational Principle: A Scene is a Unit of Change
 
 The single most critical principle of scene construction is that a **scene must create meaningful change**. A scene is not defined by its location or duration but by its function: to advance the story. If a scene can be removed without consequence, it is redundant. This change must be tangible, altering a character's situation either externally or internally.
 
-## 2. The Core Architecture: Scene-Sequel Model
+### 5.2 The Core Architecture: Scene-Sequel Model
 
 Scenes follow the **Scene-Sequel** model, creating an unbreakable chain of cause and effect:
 
-### 2.1. The Scene (Action Unit)
+#### 5.2.1 The Scene (Action Unit)
 
 1. **Goal**: POV character enters with specific, immediate objective
 2. **Conflict**: Series of escalating obstacles preventing goal achievement
@@ -305,13 +305,13 @@ Scenes follow the **Scene-Sequel** model, creating an unbreakable chain of cause
    - "No, and furthermore..." (failure plus new problem)
    - "Yes, but..." (success with unforeseen consequence)
 
-### 2.2. The Sequel (Reaction Unit)
+#### 5.2.2 The Sequel (Reaction Unit)
 
 1. **Reaction**: Immediate emotional response to disaster
 2. **Dilemma**: Character processes situation and faces difficult choice
 3. **Decision**: Character chooses new course, becoming next scene's goal
 
-## 3. Line-Level Execution: Motivation-Reaction Units (MRUs)
+### 5.3 Line-Level Execution: Motivation-Reaction Units (MRUs)
 
 Scenes should be constructed using **Motivation-Reaction Units** for psychological realism:
 
@@ -321,9 +321,9 @@ Scenes should be constructed using **Motivation-Reaction Units** for psychologic
   2. Reflex (involuntary action)
   3. Rational action & speech (conscious response)
 
-## 4. JSON Data Structure for Scene Object
+### 5.4 JSON Data Structure for Scene Object
 
-### Field Descriptions
+#### Field Descriptions
 
 **scene_id**: A unique identifier for the scene.
 
@@ -351,7 +351,7 @@ Scenes should be constructed using **Motivation-Reaction Units** for psychologic
 
 **emotional_shift**: A description of the change in the POV character's emotional state from the beginning to the end of the scene (e.g., from "hopeful" to "terrified"). This is crucial for tracking character arcs.
 
-### Example JSON Structure
+#### Example JSON Structure
 
 ```json
 {
@@ -378,33 +378,33 @@ Scenes should be constructed using **Motivation-Reaction Units** for psychologic
 
 ---
 
-# Character Specification (Cross-Level: Character Identity and Context)
+## Section 6: Character Specification (Cross-Level: Character Identity and Context)
 
-## 1. Definition and Core Purpose
+### 6.1 Definition and Core Purpose
 
 A **character** is the fundamental human element driving narrative engagement. Characters must maintain consistent identity while evolving through story events. The character specification provides essential information for writing characters consistently across all narrative levels.
 
-## 2. The Essential Principle: Consistency Through Context
+### 6.2 The Essential Principle: Consistency Through Context
 
 Characters need two types of information:
 
-### 2.1. Fixed Identity (Who They Are)
+#### 6.2.1 Fixed Identity (Who They Are)
 
 - **Personality**: Core traits driving behavior
 - **Voice**: How they speak and express themselves
 - **Background**: Essential history affecting current behavior
 - **Capabilities**: What they can and cannot do
 
-### 2.2. Current Context (Where They Are Now)
+#### 6.2.2 Current Context (Where They Are Now)
 
 - **Knowledge**: What they know at this story point
 - **Emotional State**: Current feelings and mental condition
 - **Relationships**: Current dynamics with other characters
 - **Goals**: What they want right now
 
-## 3. JSON Data Structure for Character Object
+### 6.3 JSON Data Structure for Character Object
 
-### Field Descriptions
+#### Field Descriptions
 
 **character_id**: A unique identifier.
 
@@ -440,7 +440,7 @@ Characters need two types of information:
 
 **visual_reference_id**: Reference to visual asset file for consistency.
 
-### Example JSON Structure
+#### Example JSON Structure
 
 ```json
 {
@@ -492,15 +492,15 @@ Characters need two types of information:
 
 ---
 
-# Setting Specification (Cross-Level: Location Context)
+## Section 7: Setting Specification (Cross-Level: Location Context)
 
-## 1. Definition and Purpose
+### 7.1 Definition and Purpose
 
 **Settings** define specific locations within the story world, providing necessary details for both descriptive prose and environmental visualization. Settings must support the narrative's dramatic needs while maintaining consistency.
 
-## 2. JSON Data Structure for Setting Object
+### 7.2 JSON Data Structure for Setting Object
 
-### Field Descriptions
+#### Field Descriptions
 
 **setting_id**: A unique identifier.
 
@@ -526,7 +526,7 @@ Characters need two types of information:
 
 **architectural_style**: The architectural design and structure style.
 
-### Example JSON Structure
+#### Example JSON Structure
 
 ```json
 {
@@ -569,9 +569,9 @@ Characters need two types of information:
 
 ---
 
-## Section II: A Procedural Methodology for Narrative Generation
+## Section 8: A Procedural Methodology for Narrative Generation
 
-### 2.1 The Iterative Refinement Paradigm
+### 8.1 The Iterative Refinement Paradigm
 
 The process of creating a complex narrative from a simple idea can be a daunting task, often leading to writer's block or significant structural issues that require extensive rewrites. The core principle to overcome this is iterative refinement, a paradigm that breaks down the monumental task of writing a novel into a series of smaller, manageable, and logically sequential steps. This approach, exemplified by the Snowflake Method, involves starting with the most basic element of the story—a single sentence—and progressively expanding it with greater detail at each stage.
 
@@ -579,7 +579,7 @@ This methodology works because it mirrors the way the human brain naturally proc
 
 In a modern content pipeline, this paradigm can be powerfully augmented with generative AI. The iterative nature of the Snowflake Method aligns perfectly with the conversational, request-and-refine workflow of interacting with Large Language Models (LLMs). The AI does not serve as an autonomous author but as a "design partner" or a tireless brainstorming assistant. At each step, the AI can generate multiple options based on the previously established layer, allowing the human creator to act as a curator and guide. This human-in-the-loop model leverages the AI's strength in rapid, structured content generation while reserving the uniquely human skills of creative selection, taste, and the infusion of emotional depth. The result is a highly efficient, structured, and collaborative process that transforms a blank page into a fully plotted narrative.
 
-### 2.2 The AI-Augmented Snowflake Algorithm
+### 8.2 The AI-Augmented Snowflake Algorithm
 
 The following algorithm formalizes the iterative refinement paradigm into a concrete, step-by-step workflow. It directly maps the stages of the Snowflake Method to the population of the Hierarchical Narrative Schema (HNS), integrating specific LLM prompts at each phase to assist the human creator.
 
@@ -657,15 +657,15 @@ This structured, AI-augmented process provides a clear and repeatable path from 
 
 ---
 
-# Validation and Coherence Auditing
+## Section 9: Validation and Coherence Auditing
 
-## 1. The Challenge of Narrative Coherence
+### 9.1 The Challenge of Narrative Coherence
 
 A compelling narrative requires absolute coherence—events must follow logical cause-and-effect chains, characters must act consistently with their established personalities, and story world rules must be respected. The risk of incoherence is magnified in procedural or AI-assisted generation.
 
-## 2. Dual-System Validation Framework
+### 9.2 Dual-System Validation Framework
 
-### System 1: Narrative State Tracker (Symbolic Validation)
+#### System 1: Narrative State Tracker (Symbolic Validation)
 
 Tracks objective state of story entities using a key-value store:
 
@@ -690,7 +690,7 @@ validation_checks:
     - UPDATE(character_A.knows('betrayal') = true)
 ```
 
-### System 2: LLM Logic & Emotion Auditor (Semantic Validation)
+#### System 2: LLM Logic & Emotion Auditor (Semantic Validation)
 
 Uses AI to evaluate nuanced narrative coherence:
 
@@ -714,50 +714,50 @@ Uses AI to evaluate nuanced narrative coherence:
 
 ---
 
-# AI-Augmented Generation Process
+## Section 10: AI-Augmented Generation Process
 
-## 1. The Iterative Refinement Paradigm
+### 10.1 The Iterative Refinement Paradigm
 
 The process breaks down novel creation into manageable, sequential steps following the Snowflake Method, augmented with AI assistance at each stage.
 
-## 2. The AI-Augmented Snowflake Algorithm
+### 10.2 The AI-Augmented Snowflake Algorithm
 
-### Step 1: Core Concept Generation
+#### Step 1: Core Concept Generation
 
 - **Action**: Create one-sentence premise
 - **Target**: Story object
 - **AI Role**: Generate multiple premise variations
 - **Human Role**: Select and refine best option
 
-### Step 2: Act-Level Structuring
+#### Step 2: Act-Level Structuring
 
 - **Action**: Expand premise to paragraph
 - **Target**: Part objects
 - **AI Role**: Structure into three-act format
 - **Human Role**: Segment and assign to parts
 
-### Step 3: Character Conception
+#### Step 3: Character Conception
 
 - **Action**: Create character profiles
 - **Target**: Character objects
 - **AI Role**: Generate character foundations
 - **Human Role**: Add psychological depth
 
-### Step 4: Chapter-Level Expansion
+#### Step 4: Chapter-Level Expansion
 
 - **Action**: Expand act summaries
 - **Target**: Chapter objects
 - **AI Role**: Detail plot progression
 - **Human Role**: Ensure coherence
 
-### Step 5: Scene Breakdown
+#### Step 5: Scene Breakdown
 
 - **Action**: List individual scenes
 - **Target**: Scene objects
 - **AI Role**: Break chapters into scenes
 - **Human Role**: Adjust pacing and flow
 
-## 3. AI Prompting Templates
+### 10.3 AI Prompting Templates
 
 **Premise Generation:**
 
@@ -785,15 +785,15 @@ For each scene provide: one-sentence action, setting, involved characters.
 
 ---
 
-# Evaluation Framework for Web Novels
+## Section 11: Evaluation Framework for Web Novels
 
-## 1. Defining Quality for Serialized Fiction
+### 11.1 Defining Quality for Serialized Fiction
 
 Web novel success prioritizes sustained reader engagement over traditional literary merit. The primary goal is compelling readers to consume the next chapter through effective pacing, conflict escalation, and hooks.
 
-## 2. Multi-Axis Evaluation Matrix
+### 11.2 Multi-Axis Evaluation Matrix
 
-### Quantitative Metrics
+#### Quantitative Metrics
 
 **Chapter Word Count:**
 
@@ -819,7 +819,7 @@ Web novel success prioritizes sustained reader engagement over traditional liter
 - Source: Platform analytics
 - Purpose: Track audience interaction trends
 
-### Qualitative Metrics (1-5 Scale)
+#### Qualitative Metrics (1-5 Scale)
 
 **Plot Coherence & Progression:**
 
@@ -851,7 +851,7 @@ Web novel success prioritizes sustained reader engagement over traditional liter
 - 3: Clear but generic
 - 5: Evocative and immersive
 
-## 3. Diagnostic Application
+### 11.3 Diagnostic Application
 
 The evaluation matrix serves as a diagnostic tool for systematic improvement:
 
@@ -880,7 +880,7 @@ chapter_evaluation:
 
 ---
 
-# Conclusion
+## Section 12: Conclusion
 
 This Hierarchical Narrative Schema provides a comprehensive framework for systematic story creation, validation, and evaluation. By treating narrative as structured data, it enables:
 
