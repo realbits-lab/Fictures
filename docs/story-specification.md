@@ -409,27 +409,77 @@ Scenes are constructed with specific data elements for consistency:
 
 ### 6.1 Definition and Core Purpose
 
-A **character** is the fundamental human element driving narrative engagement. Characters must maintain consistent identity while evolving through story events. The character specification provides essential information for writing characters consistently across all narrative levels.
+A **character** is the fundamental human element driving narrative engagement. Each character contains a unique character_id, name, narrative role, archetype designation, summary description, storyline arc, structured personality object, detailed backstory, motivations object, voice characteristics, comprehensive physical_description object optimized for AI image generation, and visual_reference_id for asset consistency.
 
-### 6.2 The Essential Principle: Consistency Through Context
+### 6.2 Character Data Architecture
 
-Characters need two types of information:
+Character objects are structured with comprehensive nested data:
 
-#### 6.2.1 Fixed Identity (Who They Are)
+#### 6.2.1 Core Identity Fields
 
-- **Personality**: Core traits driving behavior
-- **Voice**: How they speak and express themselves
-- **Background**: Essential history affecting current behavior
-- **Capabilities**: What they can and cannot do
+- **role**: Narrative function ('protagonist', 'antagonist', 'mentor')
+- **archetype**: Character pattern ('reluctant_hero', 'trickster', 'mentor')
+- **summary**: Brief character description and story role
+- **storyline**: Character's complete narrative journey
 
-#### 6.2.2 Current Context (Where They Are Now)
+#### 6.2.2 Psychological Profile
 
-- **Knowledge**: What they know at this story point
-- **Emotional State**: Current feelings and mental condition
-- **Relationships**: Current dynamics with other characters
-- **Goals**: What they want right now
+**Personality Object:**
+- **traits**: Array of defining characteristics
+- **myers_briggs**: MBTI type (e.g., 'INTJ')
+- **enneagram**: Enneagram designation (e.g., 'Type 5 - Investigator')
 
-### 6.3 JSON Data Structure for Character Object
+**Backstory Object:**
+- **childhood**: Formative years and key events
+- **education**: Academic and training background
+- **career**: Professional history and expertise
+- **relationships**: Key connections and bonds
+- **trauma**: Defining wounds or losses
+
+**Motivations Object:**
+- **primary**: Main driving goal
+- **secondary**: Supporting objectives
+- **fear**: Core anxieties and dreads
+
+#### 6.2.3 Expression and Communication
+
+**Voice Object:**
+- **speech_pattern**: How they structure sentences
+- **vocabulary**: Word choice and education level
+- **verbal_tics**: Repeated phrases or expressions (array)
+- **internal_voice**: Thought patterns and self-talk
+
+### 6.3 Physical Description for Visual Generation
+
+The **physical_description** object is optimized for AI image generation with specific sub-fields:
+
+- **age**: Numeric age value
+- **ethnicity**: Cultural/ethnic background
+- **height**: Physical stature
+- **build**: Body type and physique
+- **hair_style_color**: Hair appearance details
+- **eye_color**: Eye characteristics and magical changes
+- **facial_features**: Distinctive face characteristics
+- **distinguishing_marks**: Unique identifiers (scars, birthmarks)
+- **typical_attire**: Standard clothing and accessories
+
+### 6.4 Character Integration in Narrative
+
+**Cross-Level References:**
+
+- Story object maintains array of all character_ids
+- Scene objects track present characters through character_ids array
+- Scenes specify POV through pov_character_id field
+- Chapters inherit character continuity through their scenes
+
+**Character Tracking Patterns:**
+
+- Each scene explicitly lists all present or referenced characters
+- POV character determines narrative voice and perspective
+- Character arcs tracked through emotional_shift in scenes
+- Motivations drive goal setting at scene level
+
+### 6.5 JSON Data Structure for Character Object
 
 #### Field Descriptions
 
@@ -523,35 +573,58 @@ Characters need two types of information:
 
 ### 7.1 Definition and Purpose
 
-**Settings** define specific locations within the story world, providing necessary details for both descriptive prose and environmental visualization. Settings must support the narrative's dramatic needs while maintaining consistency.
+**Settings** define specific locations within the story world through structured data. Each setting contains a unique setting_id, location name, comprehensive description, mood designation, structured sensory object with five sense arrays, visual_style specification, visual_references array for artistic consistency, color_palette array, and architectural_style definition. These elements enable both descriptive prose generation and environmental visualization.
 
-### 7.2 JSON Data Structure for Setting Object
+### 7.2 Setting Data Architecture
 
-#### Field Descriptions
+**Core Descriptive Fields:**
 
-**setting_id**: A unique identifier.
+- **setting_id**: Unique identifier (e.g., "setting_shadow_realm_002")
+- **name**: Location designation (e.g., "The Shadow Realm")
+- **description**: Comprehensive paragraph describing the location's nature and characteristics
+- **mood**: Atmospheric quality (e.g., "oppressive and surreal", "serene", "bustling")
 
-**name**: The name of the location (e.g., "The Whispering Caverns").
+**Sensory Object Structure:**
 
-**description**: A multi-sensory description, including details for sight, sound, smell, and touch to create an immersive experience.
+The **sensory** object contains arrays for complete environmental immersion:
 
-**mood**: The typical atmosphere or emotional tone of the location (e.g., "ominous", "serene", "bustling").
+- **sight**: Array of visual descriptions
+  - Example: "Inverted architecture defying gravity"
+  - Example: "Shadows moving independently of sources"
+- **sound**: Array of auditory elements
+  - Example: "Whispers in unknown languages"
+  - Example: "Echoes that precede their sources"
+- **smell**: Array of olfactory details
+  - Example: "Ozone and old paper"
+- **touch**: Array of tactile sensations
+  - Example: "Surfaces that feel liquid but appear solid"
+- **taste**: Array of flavor elements (optional)
+  - Example: "Metallic undertone to the air"
 
-**sensory**: A structured object containing multi-sensory details:
+**Visual Generation Fields:**
 
-- **sight**: Visual elements and appearances
-- **sound**: Auditory elements and ambient noises
-- **smell**: Scents and aromas
-- **touch**: Textures and physical sensations
-- **taste**: Flavors in the air or environment
+- **visual_style**: Artistic direction (e.g., "dark fantasy horror")
+- **visual_references**: Array of style inspirations (e.g., ["HR Giger", "Silent Hill", "Inception folding city"])
+- **color_palette**: Array of dominant colors (e.g., ["deep purples", "blacks", "silver highlights"])
+- **architectural_style**: Structural design language (e.g., "Gothic mixed with non-Euclidean geometry")
 
-**visual_style**: The artistic style for visual generation (e.g., "dark fantasy horror").
+### 7.3 Setting Integration in Narrative
 
-**visual_references**: Array of artistic references for visual consistency.
+**Cross-Level References:**
 
-**color_palette**: Array of dominant colors in the setting.
+- Story object maintains array of all setting_ids
+- Scene objects reference specific settings through setting_id field
+- Multiple scenes can occur in same setting
+- Settings enable consistent world-building across all narrative levels
 
-**architectural_style**: The architectural design and structure style.
+**Usage Patterns:**
+
+- Characters interact with sensory elements during scenes
+- Mood field influences pacing and tone decisions
+- Visual fields ensure consistent imagery across chapters
+- Architectural style maintains spatial coherence
+
+### 7.4 JSON Data Structure for Setting Object
 
 #### Example JSON Structure
 
