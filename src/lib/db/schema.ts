@@ -1,5 +1,25 @@
-import { pgTable, text, timestamp, integer, boolean, json, uuid, varchar, serial, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, integer, boolean, json, uuid, varchar, serial, primaryKey, pgEnum } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+
+// Story generation status enum
+export const storyGenerationStatusEnum = pgEnum('story_generation_status', [
+  'draft',
+  'phase1_in_progress',  // Generating story concept
+  'phase1_complete',     // Story concept completed
+  'phase2_complete',     // Parts development completed
+  'phase3_complete',     // Character development completed
+  'phase4_complete',     // Place development completed
+  'phase5_6_complete',   // Chapters and scenes completed
+  'generating_character_images', // Generating character images
+  'character_images_complete',   // Character images generated
+  'generating_setting_images',   // Generating setting images
+  'setting_images_complete',     // Setting images generated
+  'completed',           // All phases completed
+  'failed',             // Generation failed
+  'active',             // Active story
+  'hiatus',             // Story on hiatus
+  'archived'            // Archived story
+]);
 
 // NextAuth.js required tables
 export const accounts = pgTable('accounts', {
@@ -72,7 +92,7 @@ export const stories = pgTable('stories', {
   title: varchar('title', { length: 255 }).notNull(),
   description: text('description'),
   genre: varchar('genre', { length: 100 }),
-  status: varchar('status', { length: 50 }).default('draft'), // draft, active, completed, hiatus
+  status: storyGenerationStatusEnum('status').default('draft').notNull(),
   coverImage: text('cover_image'),
   tags: json('tags').$type<string[]>().default([]),
   isPublic: boolean('is_public').default(false),

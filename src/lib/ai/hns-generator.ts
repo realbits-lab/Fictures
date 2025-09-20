@@ -7,6 +7,16 @@ import { generateObject } from 'ai';
 import { z } from 'zod';
 import { AI_MODELS } from './config';
 import { nanoid } from 'nanoid';
+import { db } from '@/lib/db';
+import {
+  stories,
+  parts as partsTable,
+  chapters as chaptersTable,
+  scenes as scenesTable,
+  characters as charactersTable,
+  settings as settingsTable
+} from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import type {
   HNSStory,
   HNSPart,
@@ -369,38 +379,231 @@ Each scene should:
 }
 
 /**
- * Complete HNS Generation Pipeline
+ * Complete HNS Generation Pipeline with Incremental Saving
  * Orchestrates all phases to create a complete story structure
+ * Saves data to database after each phase completion
  */
-export async function generateCompleteHNS(userPrompt: string, language: string = 'English'): Promise<HNSDocument> {
-  console.log('🚀 Starting HNS story generation...');
+export async function generateCompleteHNS(
+  userPrompt: string,
+  language: string = 'English',
+  userId: string,
+  storyId?: string
+): Promise<HNSDocument> {
+  console.log('🚀 Starting HNS story generation with incremental saving...');
+
+  // Generate story ID upfront if not provided
+  const currentStoryId = storyId || nanoid();
 
   try {
-    // Phase 1: Generate core story
+    // Phase 1: Generate core story and save immediately
     console.log('Phase 1: Generating story foundation...');
     const story = await generateHNSStory(userPrompt, language);
+    story.story_id = currentStoryId; // Assign the story ID
+    console.log('✅ Story foundation generated');
 
-    // Phase 2: Generate three-act structure
+    // Save Phase 1 data to database
+    console.log('💾 Saving Phase 1 data to database...');
+    await db.insert(stories)
+      .values({
+        id: currentStoryId,
+        title: story.story_title,
+        description: story.premise,
+        genre: story.genre.join(', '),
+        authorId: userId,
+        status: 'phase1_in_progress',
+        isPublic: false,
+        premise: story.premise,
+        dramaticQuestion: story.dramatic_question,
+        theme: story.theme,
+        hnsData: {
+          phase1_story: story,
+          metadata: {
+            version: '1.0.0',
+            language,
+            generation_prompt: userPrompt,
+            phase: 'phase1_complete'
+          }
+        },
+        partIds: [],
+        chapterIds: [],
+      })
+      .onConflictDoUpdate({
+        target: [stories.id],
+        set: {
+          status: 'phase1_complete',
+          hnsData: {
+            phase1_story: story,
+            metadata: {
+              version: '1.0.0',
+              language,
+              generation_prompt: userPrompt,
+              phase: 'phase1_complete'
+            }
+          },
+          updatedAt: new Date()
+        }
+      });
+    console.log('✅ Phase 1 data saved');
+
+    // Phase 2: Generate three-act structure and save
     console.log('Phase 2: Creating three-act structure...');
     const parts = await generateHNSParts(story);
+    console.log('✅ Three-act structure created');
 
-    // Phase 3: Generate characters
+    // Update story with Phase 2 data
+    console.log('💾 Saving Phase 2 data to database...');
+    const [phase2Story] = await db.select().from(stories).where(eq(stories.id, currentStoryId));
+    const phase2HnsData = phase2Story?.hnsData as any || {};
+
+    await db.update(stories)
+      .set({
+        status: 'phase2_complete',
+        hnsData: {
+          ...phase2HnsData,
+          phase2_parts: parts,
+          metadata: {
+            ...phase2HnsData.metadata,
+            phase: 'phase2_complete'
+          }
+        },
+        partIds: parts.map(p => p.part_id),
+        updatedAt: new Date()
+      })
+      .where(eq(stories.id, currentStoryId));
+
+    // Create parts in database
+    for (const part of parts) {
+      await db.insert(partsTable)
+        .values({
+          id: part.part_id,
+          title: part.part_title,
+          description: part.part_summary,
+          storyId: currentStoryId,
+          authorId: userId,
+          orderIndex: parseInt(part.part_id.split('_').pop() || '1'),
+          summary: part.part_summary,
+          keyBeats: part.key_beats,
+          hnsData: part as Record<string, unknown>,
+          chapterIds: [],
+          status: 'planned',
+        })
+        .onConflictDoNothing();
+    }
+    console.log('✅ Phase 2 data and parts saved');
+
+    // Phase 3: Generate characters and save
     console.log('Phase 3: Developing characters...');
     const characters = await generateHNSCharacters(story, parts);
+    console.log('✅ Characters developed');
 
-    // Phase 4: Generate settings
+    // Update story with Phase 3 data
+    console.log('💾 Saving Phase 3 data to database...');
+    const [phase3Story] = await db.select().from(stories).where(eq(stories.id, currentStoryId));
+    const phase3HnsData = phase3Story?.hnsData as any || {};
+
+    await db.update(stories)
+      .set({
+        status: 'phase3_complete',
+        hnsData: {
+          ...phase3HnsData,
+          phase3_characters: characters,
+          metadata: {
+            ...phase3HnsData.metadata,
+            phase: 'phase3_complete'
+          }
+        },
+        updatedAt: new Date()
+      })
+      .where(eq(stories.id, currentStoryId));
+
+    // Create characters in database
+    for (const character of characters) {
+      await db.insert(charactersTable)
+        .values({
+          id: character.character_id || nanoid(),
+          name: character.character_name,
+          storyId: currentStoryId,
+          isMain: ['protagonist', 'antagonist'].includes(character.role.toLowerCase()),
+          role: character.role,
+          summary: character.description,
+          backstory: character.backstory,
+          personality: character.psychological_profile,
+          hnsData: character as Record<string, unknown>,
+          content: JSON.stringify(character),
+        })
+        .onConflictDoNothing();
+    }
+    console.log('✅ Phase 3 data and characters saved');
+
+    // Phase 4: Generate settings and save
     console.log('Phase 4: Building settings...');
     const settings = await generateHNSSettings(story, parts);
+    console.log('✅ Settings built');
+
+    // Update story with Phase 4 data
+    console.log('💾 Saving Phase 4 data to database...');
+    const [phase4Story] = await db.select().from(stories).where(eq(stories.id, currentStoryId));
+    const phase4HnsData = phase4Story?.hnsData as any || {};
+
+    await db.update(stories)
+      .set({
+        status: 'phase4_complete',
+        hnsData: {
+          ...phase4HnsData,
+          phase4_settings: settings,
+          metadata: {
+            ...phase4HnsData.metadata,
+            phase: 'phase4_complete'
+          }
+        },
+        updatedAt: new Date()
+      })
+      .where(eq(stories.id, currentStoryId));
+
+    // Create settings in database
+    for (const setting of settings) {
+      await db.insert(settingsTable)
+        .values({
+          id: setting.setting_id || nanoid(),
+          name: setting.setting_name,
+          storyId: currentStoryId,
+          description: setting.description,
+          mood: setting.mood_atmosphere,
+          sensory: { details: setting.sensory_details },
+        })
+        .onConflictDoNothing();
+    }
+    console.log('✅ Phase 4 data and settings saved');
 
     // Phase 5 & 6: Generate chapters and scenes for each part
     console.log('Phase 5 & 6: Creating chapters and scenes...');
+    const allChapters: HNSChapter[] = [];
+    const allScenes: HNSScene[] = [];
+
     const partsWithContent = await Promise.all(
       parts.map(async (part) => {
         const chapters = await generateHNSChapters(story, part, 5);
 
+        // Assign chapter IDs and part references
+        chapters.forEach((chapter, index) => {
+          chapter.chapter_id = chapter.chapter_id || `${part.part_id}_chapter_${index + 1}`;
+          chapter.part_ref = part.part_id;
+          chapter.chapter_number = index + 1;
+          allChapters.push(chapter);
+        });
+
         const chaptersWithScenes = await Promise.all(
           chapters.map(async (chapter) => {
             const scenes = await generateHNSScenes(story, chapter, characters, settings, 3);
+
+            // Assign scene IDs and chapter references
+            scenes.forEach((scene, index) => {
+              scene.scene_id = scene.scene_id || `${chapter.chapter_id}_scene_${index + 1}`;
+              scene.chapter_ref = chapter.chapter_id;
+              scene.scene_number = index + 1;
+              allScenes.push(scene);
+            });
+
             return { ...chapter, scenes };
           })
         );
@@ -408,6 +611,61 @@ export async function generateCompleteHNS(userPrompt: string, language: string =
         return { ...part, chapters: chaptersWithScenes };
       })
     );
+    console.log('✅ Chapters and scenes created');
+
+    // Save chapters to database
+    console.log('💾 Saving chapters to database...');
+    for (const chapter of allChapters) {
+      await db.insert(chaptersTable)
+        .values({
+          id: chapter.chapter_id || nanoid(),
+          title: chapter.chapter_title,
+          summary: chapter.chapter_summary,
+          storyId: currentStoryId,
+          partId: chapter.part_ref,
+          authorId: userId,
+          orderIndex: chapter.chapter_number || 1,
+          chapterHook: chapter.chapter_hook,
+          hnsData: chapter as Record<string, unknown>,
+          sceneIds: chapter.scenes?.map(s => s.scene_id || nanoid()) || [],
+          status: 'draft',
+        })
+        .onConflictDoNothing();
+    }
+    console.log('✅ Chapters saved');
+
+    // Save scenes to database
+    console.log('💾 Saving scenes to database...');
+    for (const scene of allScenes) {
+      await db.insert(scenesTable)
+        .values({
+          id: scene.scene_id || nanoid(),
+          title: scene.scene_title || `Scene ${scene.scene_number}`,
+          chapterId: scene.chapter_ref,
+          orderIndex: scene.scene_number || 1,
+          goal: scene.scene_goal,
+          conflict: scene.scene_conflict,
+          outcome: scene.scene_outcome,
+          povCharacterId: scene.characters_present?.[0],
+          settingId: scene.setting_ref,
+          summary: `${scene.scene_goal} - ${scene.scene_conflict} - ${scene.scene_outcome}`,
+          hnsData: scene as Record<string, unknown>,
+          characterIds: scene.characters_present || [],
+          placeIds: scene.setting_ref ? [scene.setting_ref] : [],
+          status: 'planned',
+        })
+        .onConflictDoNothing();
+    }
+    console.log('✅ Scenes saved');
+
+    // Update status to phase 5&6 complete
+    await db.update(stories)
+      .set({
+        status: 'phase5_6_complete',
+        updatedAt: new Date()
+      })
+      .where(eq(stories.id, currentStoryId));
+    console.log('✅ Phase 5&6 marked as complete');
 
     // Assemble complete HNS document
     const completeStory: HNSStory = {
@@ -417,7 +675,38 @@ export async function generateCompleteHNS(userPrompt: string, language: string =
       parts: partsWithContent,
     };
 
-    console.log('✅ HNS generation complete!');
+    // Final update with complete HNS data (but not marking as fully completed yet)
+    console.log('💾 Saving complete HNS data to database...');
+    await db.update(stories)
+      .set({
+        status: 'phase5_6_complete',  // Keep at phase5_6 since images aren't generated yet
+        hnsData: {
+          story: completeStory,
+          metadata: {
+            version: '1.0.0',
+            created_at: new Date().toISOString(),
+            language,
+            generation_prompt: userPrompt,
+            phase: 'completed'
+          },
+          phases: {
+            phase1_story: story,
+            phase2_parts: parts,
+            phase3_characters: characters,
+            phase4_settings: settings,
+            phase5_6_chapters_scenes: {
+              chapters: allChapters,
+              scenes: allScenes,
+              partsWithContent
+            }
+          }
+        },
+        chapterIds: allChapters.map(c => c.chapter_id || nanoid()),
+        updatedAt: new Date()
+      })
+      .where(eq(stories.id, currentStoryId));
+
+    console.log('✅ HNS generation complete with incremental saves!');
 
     return {
       metadata: {
@@ -427,9 +716,23 @@ export async function generateCompleteHNS(userPrompt: string, language: string =
         generation_prompt: userPrompt,
       },
       story: completeStory,
+      parts,
+      chapters: allChapters,
+      scenes: allScenes,
+      characters,
+      settings,
     };
   } catch (error) {
-    console.error('Error in HNS generation:', error);
+    console.error('❌ Error in HNS generation:', error);
+
+    // Update story status to failed if it exists
+    await db.update(stories)
+      .set({
+        status: 'failed',
+        updatedAt: new Date()
+      })
+      .where(eq(stories.id, currentStoryId));
+
     throw error;
   }
 }
