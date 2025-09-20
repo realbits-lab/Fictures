@@ -166,16 +166,19 @@ The story structure is defined through the 'parts' array containing part_ids tha
 **Key Beats by Act:**
 
 **Act 1 Required Beats:**
+
 - "Exposition" - World and character introduction
 - "Inciting Incident" - Event that launches the story
 - "Plot Point One" - Transition into Act 2
 
 **Act 2 Required Beats:**
+
 - "Rising Action" - Escalating complications
 - "Midpoint" - Major revelation or reversal
 - "Plot Point Two" - Crisis leading to Act 3
 
 **Act 3 Required Beats:**
+
 - "Climax" - Peak conflict resolution
 - "Falling Action" - Immediate aftermath
 - "Resolution" - Final outcome
@@ -254,6 +257,7 @@ The **Chapter** is the primary unit of reader consumption, especially critical i
 ```
 
 **Hook Types:**
+
 - **revelation**: New information that changes everything
 - **danger**: Immediate threat or peril
 - **decision**: Critical choice point
@@ -425,11 +429,13 @@ Character objects are structured with comprehensive nested data:
 #### 6.2.2 Psychological Profile
 
 **Personality Object:**
+
 - **traits**: Array of defining characteristics
 - **myers_briggs**: MBTI type (e.g., 'INTJ')
 - **enneagram**: Enneagram designation (e.g., 'Type 5 - Investigator')
 
 **Backstory Object:**
+
 - **childhood**: Formative years and key events
 - **education**: Academic and training background
 - **career**: Professional history and expertise
@@ -437,6 +443,7 @@ Character objects are structured with comprehensive nested data:
 - **trauma**: Defining wounds or losses
 
 **Motivations Object:**
+
 - **primary**: Main driving goal
 - **secondary**: Supporting objectives
 - **fear**: Core anxieties and dreads
@@ -444,6 +451,7 @@ Character objects are structured with comprehensive nested data:
 #### 6.2.3 Expression and Communication
 
 **Voice Object:**
+
 - **speech_pattern**: How they structure sentences
 - **vocabulary**: Word choice and education level
 - **verbal_tics**: Repeated phrases or expressions (array)
@@ -695,6 +703,7 @@ Maps Snowflake Method stages to HNS population with LLM assistance:
 - **Output**: Complete Story object with foundational narrative DNA and structural references
 
 **Example LLM Prompt**:
+
 ```
 Act as an expert novel outliner. Given the rough story idea "a wizard who has lost his magic," generate 5 potential one-sentence premises. Each premise must be under 20 words, introduce a clear protagonist, a core conflict, and hint at the personal stakes involved.
 ```
@@ -708,6 +717,7 @@ Act as an expert novel outliner. Given the rough story idea "a wizard who has lo
 - **Output**: Three Part objects with act designations, key narrative beats, and chapter containers
 
 **Example LLM Prompt**:
+
 ```
 Based on the premise: "[premise]", write a five-sentence summary paragraph for the novel. The first sentence should establish the setup and the protagonist's ordinary world. The next three sentences should each describe a major disaster or turning point that escalates the conflict. The final sentence should describe the story's resolution or ending.
 ```
@@ -721,6 +731,7 @@ Based on the premise: "[premise]", write a five-sentence summary paragraph for t
 - **Output**: Full Character objects with personality profiles, backstories, motivations, and physical descriptions
 
 **Example LLM Prompt**:
+
 ```
 Analyze the following story summary: "[summary]". Identify the protagonist, the primary antagonist, and one key supporting character. For each character, generate a profile containing:
 1. A one-sentence summary of their storyline
@@ -738,6 +749,7 @@ Analyze the following story summary: "[summary]". Identify the protagonist, the 
 - **Output**: Chapter objects with summaries, pacing controls, and structured cliffhangers for serialization
 
 **Example LLM Prompt**:
+
 ```
 Take the following sentence, which represents a major story beat: "[sentence]". Expand this sentence into a full paragraph of approximately 150 words, detailing the key events that occur. The paragraph should end with a significant setback, complication, or disaster for the protagonist.
 ```
@@ -751,6 +763,7 @@ Take the following sentence, which represents a major story beat: "[sentence]". 
 - **Output**: Complete scene-by-scene blueprint with character dynamics, settings, and narrative mechanics
 
 **Example LLM Prompt**:
+
 ```
 Given the following chapter summary: "[Chapter.summary]". Break this down into a list of 3 to 5 distinct scenes required to tell this part of the story. For each scene, provide a one-sentence description of the key action, the setting, and the characters involved.
 ```
@@ -765,7 +778,7 @@ A compelling narrative requires absolute coherence—events must follow logical 
 
 ### 9.2 Dual-System Validation Framework
 
-#### System 1: Narrative State Tracker (Symbolic Validation)
+#### 9.2.1 Narrative State Tracker (Symbolic Validation)
 
 Tracks objective state of story entities using a key-value store:
 
@@ -778,19 +791,13 @@ Tracks objective state of story entities using a key-value store:
 
 **Implementation:**
 
-```yaml
-validation_checks:
-  pre_conditions:
-    - ASSERT(character_A.status == 'alive')
-    - ASSERT(character_A.location == scene.location)
-    - ASSERT(object.owner == character_A)
+The validation process is integrated directly into the content generation pipeline.
 
-  post_conditions:
-    - UPDATE(object.owner = character_B)
-    - UPDATE(character_A.knows('betrayal') = true)
-```
+**Pre-Condition Check:** Before generating the prose for a given scene from the HNS, the system runs a series of assertions based on the scene's summary. For a scene summarized as "Character A gives the magic sword to Character B in the castle," the pre-condition checks would include: verifying both characters are alive, confirming both characters are present at the castle location, and asserting that Character A currently owns the magic sword. If any assertion fails, the system flags a continuity error, halting generation and alerting the creator to a logical flaw in the outline.
 
-#### System 2: LLM Logic & Emotion Auditor (Semantic Validation)
+**Post-Condition Update:** After a scene is successfully validated and generated, the system updates the state tracker based on the scene's outcome. For the example above, the state would be updated to reflect that the magic sword's owner is now Character B, and any relevant knowledge states would be modified to indicate both characters know about the transfer.
+
+#### 9.2.2 LLM Logic & Emotion Auditor (Semantic Validation)
 
 Uses AI to evaluate nuanced narrative coherence:
 
@@ -800,17 +807,42 @@ Uses AI to evaluate nuanced narrative coherence:
 - Identifies missing steps or logical gaps
 - Suggests bridging scenes when needed
 
+**Example Prompt:**
+
+```
+You are a narrative logic analyzer.
+Scene A Summary: "The detective discovers a muddy boot print at the crime scene."
+Scene B Summary: "The detective accuses the well-dressed CEO of the murder."
+Is there a clear and believable causal link between Scene A and Scene B? If not, identify the logical gap and suggest a bridging scene or detail that is missing.
+```
+
 **Character Consistency Check:**
 
 - Compares character actions against established profile
 - Flags out-of-character behavior
 - Evaluates psychological plausibility
 
+**Example Prompt:**
+
+```
+You are a character consistency expert. Here is a character profile: [character object data].
+Here is a scene summary: "Trapped in a collapsing elevator, John calmly picks the lock and leads everyone to safety."
+Are John's actions in this scene consistent with his profile? Specifically address his established fears and motivations. Explain your reasoning.
+```
+
 **Emotional Arc Check:**
 
 - Tracks emotional progression across scenes
 - Identifies unearned emotional shifts
 - Ensures organic character development
+
+**Example Prompt:**
+
+```
+You are an emotional coherence specialist. In Scene 5, a character's emotional state shifts from "grief-stricken" to "furious." In Scene 6, their emotional state shifts from "furious" to "joyful."
+Given the following summaries for Scene 5 and 6: [scene summaries], is this emotional progression believable?
+If not, explain why the transition feels unearned and what narrative element might be required to justify it.
+```
 
 ---
 
