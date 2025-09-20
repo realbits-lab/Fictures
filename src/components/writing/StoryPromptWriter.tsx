@@ -2,16 +2,15 @@
 
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent, Button } from "@/components/ui";
-import * as yaml from 'js-yaml';
 
 interface StoryPromptWriterProps {
-  storyYaml: string;
+  storyJson: string;
   storyId?: string;
-  onStoryUpdate?: (updatedYaml: string) => void;
-  onPreviewUpdate?: (previewYaml: string | null) => void;
+  onStoryUpdate?: (updatedJson: string) => void;
+  onPreviewUpdate?: (previewJson: string | null) => void;
 }
 
-export function StoryPromptWriter({ storyYaml, storyId, onStoryUpdate, onPreviewUpdate }: StoryPromptWriterProps) {
+export function StoryPromptWriter({ storyJson, storyId, onStoryUpdate, onPreviewUpdate }: StoryPromptWriterProps) {
   const [inputPrompt, setInputPrompt] = useState("");
   const [outputResult, setOutputResult] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -43,9 +42,9 @@ export function StoryPromptWriter({ storyYaml, storyId, onStoryUpdate, onPreview
 
   const handleImageRequest = async (prompt: string) => {
     try {
-      // Use passed storyId or parse YAML as fallback
+      // Use passed storyId or parse JSON as fallback
       const effectiveStoryId = storyId || (() => {
-        const parsedStory = yaml.load(storyYaml) as any;
+        const parsedStory = JSON.parse(storyJson);
         return parsedStory?.story?.id || parsedStory?.id || 'temp-story';
       })();
       console.log('Using story ID for image generation:', effectiveStoryId);
@@ -126,24 +125,24 @@ Please try:
     }
 
     try {
-      // Ensure we're sending proper YAML format to the API
-      let yamlToSend = storyYaml;
+      // Ensure we're sending proper JSON format to the API
+      let jsonToSend = storyJson;
 
-      // If storyYaml looks like JSON, convert it to YAML
-      if (storyYaml && (storyYaml.trim().startsWith('{') || !storyYaml.includes('story:'))) {
+      // If storyJson looks like it needs parsing
+      if (storyJson && typeof storyJson === 'string') {
         try {
-          const parsed = typeof storyYaml === 'string' ? JSON.parse(storyYaml) : storyYaml;
-          yamlToSend = yaml.dump({ story: parsed }, { indent: 2 });
-          console.log('🔄 Converted JSON story data to YAML format for API');
+          const parsed = JSON.parse(storyJson);
+          jsonToSend = JSON.stringify({ story: parsed }, null, 2);
+          console.log('🔄 Formatted story data for API');
         } catch (e) {
-          console.warn('Failed to parse storyYaml as JSON, sending as-is:', e);
+          console.warn('Failed to parse storyJson, sending as-is:', e);
         }
       }
 
       console.log('📤 Sending to story-analyzer API:', {
-        yamlLength: yamlToSend?.length || 0,
+        jsonLength: jsonToSend?.length || 0,
         userRequest: inputPrompt.trim(),
-        yamlPreview: yamlToSend?.substring(0, 200) + '...'
+        jsonPreview: jsonToSend?.substring(0, 200) + '...'
       });
 
       const response = await fetch('/api/story-analyzer', {
@@ -152,7 +151,7 @@ Please try:
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          storyYaml: yamlToSend,
+          storyJson: jsonToSend,
           userRequest: inputPrompt.trim()
         })
       });
@@ -183,7 +182,7 @@ Please try:
       const changes: string[] = [];
 
       try {
-        const originalStory = yaml.load(storyYaml) as any;
+        const originalStory = JSON.parse(storyJson);
         const originalData = originalStory?.story || originalStory;
 
         if (updatedStoryData.title !== originalData.title) {
@@ -238,7 +237,7 @@ Please try:
           changes.push(`✓ Added ${newParts.length - oldParts.length} new story part(s)`);
         }
       } catch (error) {
-        console.warn('Error parsing original YAML for comparison:', error);
+        console.warn('Error parsing original JSON for comparison:', error);
         changes.push(`✓ Updated story data as requested`);
       }
 
@@ -308,7 +307,7 @@ ${suggestedPrompt ? `**Image Prompt:** ${suggestedPrompt}` : ''}
 • Characters: ${updatedStoryData?.chars ? Object.keys(updatedStoryData.chars).length : 0}
 • Story Parts: ${updatedStoryData?.parts?.length || 0}`;
       } else {
-        // Handle YAML changes (story, character, or place modifications)
+        // Handle JSON changes (story, character, or place modifications)
         const requestTypeMap: Record<string, string> = {
           'story_modification': 'Story Structure',
           'character_modification': 'Character Data',
@@ -351,15 +350,15 @@ ${changes.join("\n")}
       setOutputResult(outputMessage);
 
       if (updatedStoryData) {
-        // Convert updated story data back to YAML string format
-        const updatedYaml = yaml.dump({ story: updatedStoryData }, { indent: 2 });
+        // Convert updated story data back to JSON string format
+        const updatedJson = JSON.stringify({ story: updatedStoryData }, null, 2);
 
         if (onStoryUpdate) {
-          onStoryUpdate(updatedYaml);
+          onStoryUpdate(updatedJson);
         }
 
         if (onPreviewUpdate) {
-          onPreviewUpdate(updatedYaml);
+          onPreviewUpdate(updatedJson);
         }
 
       }
@@ -396,9 +395,9 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
     if (!previewImageData) return;
 
     try {
-      // Use passed storyId or parse YAML as fallback
+      // Use passed storyId or parse JSON as fallback
       const effectiveStoryId = storyId || (() => {
-        const parsedStory = yaml.load(storyYaml) as any;
+        const parsedStory = JSON.parse(storyJson);
         return parsedStory?.story?.id || parsedStory?.id;
       })();
 
@@ -406,14 +405,14 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
         // Fallback: try to get from URL (chapter ID path) and find associated story
         const url = new URL(window.location.href);
         const chapterId = url.pathname.split('/')[2];
-        console.error('No story ID found in YAML. Chapter ID from URL:', chapterId);
+        console.error('No story ID found in JSON. Chapter ID from URL:', chapterId);
         throw new Error('Story ID not available. Cannot save image.');
       }
 
       console.log('Saving image to story ID:', effectiveStoryId);
 
       // Parse current story data to preserve existing data
-      const parsedData = yaml.load(storyYaml) as any;
+      const parsedData = JSON.parse(storyJson);
       const currentStoryData = parsedData?.story || parsedData;
 
       // Update story data with cover image
@@ -445,16 +444,16 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
       // Update the story data locally if we have the onStoryUpdate callback
       if (onStoryUpdate) {
         try {
-          const parsedData = yaml.load(storyYaml) as any;
+          const parsedData = JSON.parse(storyJson);
           const storyData = parsedData?.story || parsedData;
           const updatedData = {
             ...storyData,
             coverImage: previewImageData.url
           };
-          const updatedYaml = yaml.dump({ story: updatedData }, { indent: 2 });
-          onStoryUpdate(updatedYaml);
+          const updatedJson = JSON.stringify({ story: updatedData }, null, 2);
+          onStoryUpdate(updatedJson);
         } catch (error) {
-          console.warn('Error updating YAML with cover image:', error);
+          console.warn('Error updating JSON with cover image:', error);
         }
       }
 

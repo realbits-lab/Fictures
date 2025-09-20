@@ -3,10 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
-import yaml from "js-yaml";
 import { useStoryData } from "@/lib/hooks/useStoryData";
 import { useWritingProgress, useWritingSession } from "@/hooks/useStoryWriter";
-import { YAMLDataDisplay } from "./YAMLDataDisplay";
+import { JSONDataDisplay } from "./JSONDataDisplay";
 import { StoryEditor } from "./StoryEditor";
 import { PartEditor } from "./PartEditor";
 import { ChapterEditor } from "./ChapterEditor";
@@ -18,7 +17,7 @@ import { StoryPromptWriter } from "./StoryPromptWriter";
 import { PartPromptEditor } from "./PartPromptEditor";
 import { ChapterPromptEditor } from "./ChapterPromptEditor";
 import { ScenePromptEditor } from "./ScenePromptEditor";
-import { BeautifulYAMLDisplay } from "./BeautifulYAMLDisplay";
+import { BeautifulJSONDisplay } from "./BeautifulJSONDisplay";
 
 interface Story {
   id: string;
@@ -102,7 +101,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     }
   );
   
-  const [yamlLevel, setYamlLevel] = useState<EditorLevel>("story");
+  const [jsonLevel, setJsonLevel] = useState<EditorLevel>("story");
   const [isLoading, setIsLoading] = useState(false);
   const [showThemePlanner, setShowThemePlanner] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -159,7 +158,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         level: "story",
         storyId: swrStory.id
       });
-      setYamlLevel("story");
+      setJsonLevel("story");
       // Signal to sidebar to expand the newly loaded story
       window.dispatchEvent(new CustomEvent('storyLoaded', { 
         detail: { storyId: swrStory.id }
@@ -325,39 +324,39 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     }
   };
 
-  // Helper functions for YAML conversion for StoryPromptWriter
-  const convertStoryDataToYAML = (storyData: any): string => {
+  // Helper functions for JSON conversion for StoryPromptWriter
+  const convertStoryDataToJSON = (storyData: any): string => {
     try {
-      return yaml.dump({ story: storyData }, { indent: 2 });
+      return JSON.stringify({ story: storyData }, null, 2);
     } catch (error) {
-      console.error('Error converting story data to YAML:', error);
+      console.error('Error converting story data to JSON:', error);
       return '';
     }
   };
 
-  const convertYAMLToStoryData = (yamlText: string): any => {
+  const convertJSONToStoryData = (jsonText: string): any => {
     try {
-      const parsed = yaml.load(yamlText) as any;
+      const parsed = JSON.parse(jsonText);
       return parsed?.story || parsed;
     } catch (error) {
-      console.error('Error parsing YAML to story data:', error);
+      console.error('Error parsing JSON to story data:', error);
       return null;
     }
   };
 
-  // Wrapper handlers for StoryPromptWriter that work with YAML
-  const handleStoryYAMLUpdate = (updatedYaml: string) => {
-    const storyData = convertYAMLToStoryData(updatedYaml);
+  // Wrapper handlers for StoryPromptWriter that work with JSON
+  const handleStoryJSONUpdate = (updatedJson: string) => {
+    const storyData = convertJSONToStoryData(updatedJson);
     if (storyData) {
       handleStoryDataUpdate(storyData);
     }
   };
 
-  const handleStoryYAMLPreviewUpdate = (previewYaml: string | null) => {
-    if (previewYaml === null) {
+  const handleStoryJSONPreviewUpdate = (previewJson: string | null) => {
+    if (previewJson === null) {
       setStoryPreviewData(null);
     } else {
-      const storyData = convertYAMLToStoryData(previewYaml);
+      const storyData = convertJSONToStoryData(previewJson);
       if (storyData) {
         setStoryPreviewData(storyData);
       }
@@ -368,7 +367,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const handleChapterDataUpdate = (updatedData: any) => {
     setCurrentChapterData(updatedData);
     if (originalChapterData) {
-      setChapterHasChanges(yaml.dump(updatedData) !== yaml.dump(originalChapterData));
+      setChapterHasChanges(JSON.stringify(updatedData) !== JSON.stringify(originalChapterData));
     }
   };
 
@@ -376,7 +375,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const handleSceneDataUpdate = (updatedData: any) => {
     setCurrentSceneData(updatedData);
     if (originalSceneData) {
-      setSceneHasChanges(yaml.dump(updatedData) !== yaml.dump(originalSceneData));
+      setSceneHasChanges(JSON.stringify(updatedData) !== JSON.stringify(originalSceneData));
     }
   };
 
@@ -598,7 +597,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     // If clicking on the current story (level === "story"), show the story editor
     if (selection.level === "story" && selection.storyId === story.id) {
       setCurrentSelection(selection);
-      setYamlLevel(selection.level);
+      setJsonLevel(selection.level);
       return;
     }
     
@@ -608,7 +607,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       if (selection.chapterId !== currentSelection.chapterId || currentSelection.level !== "chapter") {
         console.log('Switching to chapter:', selection.chapterId, 'from current:', currentSelection.chapterId);
         setCurrentSelection(selection);
-        setYamlLevel(selection.level);
+        setJsonLevel(selection.level);
         return;
       }
     }
@@ -621,7 +620,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     
     // Otherwise, just update the current selection for the same story
     setCurrentSelection(selection);
-    setYamlLevel(selection.level);
+    setJsonLevel(selection.level);
   };
 
   const handleSave = async (data: any) => {
@@ -629,8 +628,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     try {
       // Check if this is scene data (has content and wordCount) and we have a sceneId
       if (data.content !== undefined && data.wordCount !== undefined && currentSelection.sceneId) {
-        // Save scene content and metadata to the scene API using YAML
-        const sceneYamlData = {
+        // Save scene content and metadata to the scene API using JSON
+        const sceneJsonData = {
           title: data.summary || `Scene ${data.id}`,
           content: data.content,
           wordCount: data.wordCount,
@@ -643,16 +642,16 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         const response = await fetch(`/api/scenes/${currentSelection.sceneId}`, {
           method: 'PATCH',
           headers: {
-            'Content-Type': 'application/yaml',
+            'Content-Type': 'application/json',
           },
-          body: yaml.dump(sceneYamlData)
+          body: JSON.stringify(sceneJsonData)
         });
 
         if (!response.ok) {
           const responseText = await response.text();
           let errorData;
           try {
-            errorData = yaml.load(responseText) as any;
+            errorData = JSON.parse(responseText);
           } catch {
             errorData = { error: responseText };
           }
@@ -661,8 +660,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
         console.log('Scene saved successfully');
       } else if (currentSelection.level === "chapter" && data) {
-        // Save chapter data using YAML
-        const chapterYamlData = {
+        // Save chapter data using JSON
+        const chapterJsonData = {
           id: data.id,
           title: data.title,
           purpose: data.purpose,
@@ -676,16 +675,16 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         const response = await fetch(`/api/chapters/${data.id}`, {
           method: 'PATCH',
           headers: {
-            'Content-Type': 'application/yaml',
+            'Content-Type': 'application/json',
           },
-          body: yaml.dump(chapterYamlData)
+          body: JSON.stringify(chapterJsonData)
         });
 
         if (!response.ok) {
           const responseText = await response.text();
           let errorData;
           try {
-            errorData = yaml.load(responseText) as any;
+            errorData = JSON.parse(responseText);
           } catch {
             errorData = { error: responseText };
           }
@@ -898,7 +897,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       const scenesText = await scenesResponse.text();
       let scenesData;
       try {
-        scenesData = yaml.load(scenesText) as any;
+        scenesData = JSON.parse(scenesText);
       } catch {
         // Fallback to JSON for backward compatibility
         scenesData = JSON.parse(scenesText);
@@ -911,7 +910,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         nextOrderIndex = maxOrderIndex + 1;
       }
       
-      // Create the new scene using YAML
+      // Create the new scene using JSON
       const newSceneData = {
         title: `Scene ${nextOrderIndex}`,
         chapterId: chapterId,
@@ -924,16 +923,16 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       const response = await fetch('/api/scenes', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/yaml',
+          'Content-Type': 'application/json',
         },
-        body: yaml.dump(newSceneData)
+        body: JSON.stringify(newSceneData)
       });
 
       if (!response.ok) {
         const errorText = await response.text();
         let errorData;
         try {
-          errorData = yaml.load(errorText) as any;
+          errorData = JSON.parse(errorText);
         } catch {
           errorData = { error: errorText };
         }
@@ -944,7 +943,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       const responseText = await response.text();
       let responseData;
       try {
-        responseData = yaml.load(responseText) as any;
+        responseData = JSON.parse(responseText);
       } catch {
         // Fallback to JSON for backward compatibility
         responseData = JSON.parse(responseText);
@@ -1014,13 +1013,13 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         nextStatus = 'in_progress';
       }
       
-      // Update scene status via API using YAML
+      // Update scene status via API using JSON
       const response = await fetch(`/api/scenes/${sceneId}`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/yaml',
+          'Content-Type': 'application/json',
         },
-        body: yaml.dump({
+        body: JSON.stringify({
           status: nextStatus
         })
       });
@@ -1029,7 +1028,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         const responseText = await response.text();
         let errorData;
         try {
-          errorData = yaml.load(responseText) as any;
+          errorData = JSON.parse(responseText);
         } catch {
           errorData = { error: responseText };
         }
@@ -1246,9 +1245,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               onGenerate={handleGenerate}
             />
 
-            {/* Story YAML Data Display */}
-            <BeautifulYAMLDisplay
-              title="Story YAML Data"
+            {/* Story JSON Data Display */}
+            <BeautifulJSONDisplay
+              title="Story JSON Data"
               icon="📖"
               data={sampleStoryData}
               isCollapsed={storyDataCollapsed}
@@ -1875,7 +1874,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                     </Button>
                     <Button size="sm" variant="outline" className="flex items-center gap-2">
                       <span>📋</span>
-                      Export YAML
+                      Export JSON
                     </Button>
                   </div>
                 </CardContent>
@@ -1983,9 +1982,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               </CardContent>
             </Card>
 
-            {/* Story YAML Data Display */}
-            <BeautifulYAMLDisplay
-              title="Story YAML Data"
+            {/* Story JSON Data Display */}
+            <BeautifulJSONDisplay
+              title="Story JSON Data"
               icon="📖"
               data={sampleStoryData}
               isCollapsed={storyDataCollapsed}
@@ -2428,9 +2427,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                       const response = await fetch(`/api/scenes/${currentScene.id}`, {
                         method: 'PATCH',
                         headers: {
-                          'Content-Type': 'application/yaml',
+                          'Content-Type': 'application/json',
                         },
-                        body: yaml.dump({
+                        body: JSON.stringify({
                           status: newStatus
                         })
                       });
@@ -2439,7 +2438,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                         const responseText = await response.text();
                         let errorData;
                         try {
-                          errorData = yaml.load(responseText) as any;
+                          errorData = JSON.parse(responseText);
                         } catch {
                           errorData = { error: responseText };
                         }
@@ -2526,7 +2525,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           {/* Right Sidebar */}
           <div className="col-span-12 lg:col-span-3 space-y-6">
             {currentSelection.level === "scene" ? (
-              // Scene view: Show SceneSidebar with scene controls and YAML data
+              // Scene view: Show SceneSidebar with scene controls and JSON data
               <SceneSidebar
                 sceneData={{
                   id: sampleSceneData.id,
@@ -2562,10 +2561,10 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             {/* Story Prompt Writer - Show for story level */}
             {currentSelection.level === "story" && (
               <StoryPromptWriter
-                storyYaml={convertStoryDataToYAML(storyPreviewData || sampleStoryData)}
+                storyJson={convertStoryDataToJSON(storyPreviewData || sampleStoryData)}
                 storyId={story.id}
-                onStoryUpdate={handleStoryYAMLUpdate}
-                onPreviewUpdate={handleStoryYAMLPreviewUpdate}
+                onStoryUpdate={handleStoryJSONUpdate}
+                onPreviewUpdate={handleStoryJSONPreviewUpdate}
               />
             )}
 
