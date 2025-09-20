@@ -20,14 +20,25 @@ import { ScenePromptEditor } from "./ScenePromptEditor";
 import { BeautifulJSONDisplay } from "./BeautifulJSONDisplay";
 import { CharactersDisplay } from "./CharactersDisplay";
 import { SettingsDisplay } from "./SettingsDisplay";
+import type {
+  HNSStory,
+  HNSPart,
+  HNSChapter,
+  HNSScene,
+  HNSCharacter,
+  HNSSetting,
+  HNSDocument
+} from "@/types/hns";
 
+// Extended Story interface to include database fields with HNS data
 interface Story {
   id: string;
   title: string;
   genre: string;
   status: string;
   isPublic?: boolean;
-  storyData?: Record<string, unknown>;
+  storyData?: HNSDocument | Record<string, unknown>;
+  // Database structure fields for compatibility
   parts: Array<{
     id: string;
     title: string;
@@ -39,7 +50,15 @@ interface Story {
       status: string;
       wordCount: number;
       targetWordCount: number;
-      scenes?: Scene[];
+      scenes?: Array<{
+        id: string;
+        title: string;
+        status: "completed" | "in_progress" | "planned";
+        wordCount: number;
+        goal: string;
+        conflict: string;
+        outcome: string;
+      }>;
     }>;
   }>;
   chapters: Array<{
@@ -49,19 +68,25 @@ interface Story {
     status: string;
     wordCount: number;
     targetWordCount: number;
-    scenes?: Scene[];
+    scenes?: Array<{
+      id: string;
+      title: string;
+      status: "completed" | "in_progress" | "planned";
+      wordCount: number;
+      goal: string;
+      conflict: string;
+      outcome: string;
+    }>;
   }>;
-  scenes?: Scene[];
-}
-
-interface Scene {
-  id: string;
-  title: string;
-  status: "completed" | "in_progress" | "planned";
-  wordCount: number;
-  goal: string;
-  conflict: string;
-  outcome: string;
+  scenes?: Array<{
+    id: string;
+    title: string;
+    status: "completed" | "in_progress" | "planned";
+    wordCount: number;
+    goal: string;
+    conflict: string;
+    outcome: string;
+  }>;
 }
 
 export type EditorLevel = "story" | "part" | "chapter" | "scene" | "characters" | "settings";
@@ -105,7 +130,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   
   const [jsonLevel, setJsonLevel] = useState<EditorLevel>("story");
   const [isLoading, setIsLoading] = useState(false);
-  const [showThemePlanner, setShowThemePlanner] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Collapse states for YAML data displays
@@ -117,8 +141,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   
   // SWR hook for current story to track background validation and get characters and places
   const { isValidating: isValidatingCurrentStory, characters: currentStoryCharacters, places: currentStoryPlaces } = useStoryData(story.id);
-  const [themePlanned, setThemePlanned] = useState(false);
-  const [isSavingTheme, setIsSavingTheme] = useState(false);
   
   // Writing progress and session tracking
   const writingProgress = useWritingProgress(
@@ -176,8 +198,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   }, [currentSelection, writingProgress]);
 
   // Parse actual story data from database, fallback to default structure if not available
-  const parseStoryData = () => {
-    let parsedData = null;
+  const parseStoryData = (): HNSDocument => {
+    let parsedData: any = null;
 
     // Handle both JSON string and object cases
     if (story.storyData) {
@@ -192,58 +214,102 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       }
     }
 
-    // If we successfully parsed data, use it
-    if (parsedData && typeof parsedData === 'object') {
-      return {
-        title: story.title || parsedData.title || "Generated Story",
-        genre: story.genre || parsedData.genre || "General",
-        words: parsedData.words || parsedData.targetWordCount || 60000,
-        question: parsedData.question || "What is the central question of this story?",
-        goal: parsedData.goal || "Story goal not defined",
-        conflict: parsedData.conflict || "Story conflict not defined",
-        outcome: parsedData.outcome || "Story outcome not defined",
-        chars: parsedData.chars || parsedData.characters || {},
-        themes: parsedData.themes || [],
-        structure: parsedData.structure || {
-          type: "3_part",
-          parts: ["setup", "confrontation", "resolution"],
-          dist: [25, 50, 25]
-        },
-        setting: parsedData.setting || {},
-        parts: parsedData.parts || [],
-        serial: parsedData.serial || {},
-        hooks: parsedData.hooks || {}
-      };
+    // Check if parsed data is already HNSDocument format
+    if (parsedData && parsedData.story && parsedData.parts && parsedData.chapters) {
+      return parsedData as HNSDocument;
     }
 
-    // Fallback to basic story info if no parsed data available
+    // Convert legacy format to HNSDocument
+    const hnsStory: HNSStory = {
+      story_id: story.id,
+      story_title: story.title || parsedData?.title || "Generated Story",
+      genre: Array.isArray(story.genre) ? story.genre : [story.genre || parsedData?.genre || "General"],
+      premise: parsedData?.premise || "Story premise",
+      dramatic_question: parsedData?.question || parsedData?.dramatic_question || "What is the central question of this story?",
+      theme: parsedData?.theme || parsedData?.themes?.[0] || "Main theme",
+      characters: parsedData?.characters || [],
+      settings: parsedData?.settings || [],
+      parts: parsedData?.parts?.map((p: any) => `part_${p.part || p.id}`) || []
+    };
+
+    // Convert parts to HNSPart format
+    const hnsParts: HNSPart[] = story.parts.map((part, index) => ({
+      part_id: part.id,
+      part_title: part.title,
+      structural_role: index === 0 ? 'Act 1: Setup' : index === 1 ? 'Act 2: Confrontation' : 'Act 3: Resolution',
+      summary: parsedData?.parts?.[index]?.summary || `Summary for ${part.title}`,
+      key_beats: parsedData?.parts?.[index]?.key_beats || [],
+      chapters: part.chapters.map(ch => ch.id)
+    }));
+
+    // Convert chapters to HNSChapter format
+    const hnsChapters: HNSChapter[] = [];
+    story.parts.forEach((part, partIndex) => {
+      part.chapters.forEach((chapter, chapterIndex) => {
+        hnsChapters.push({
+          chapter_id: chapter.id,
+          chapter_number: chapter.orderIndex,
+          chapter_title: chapter.title,
+          part_ref: part.id,
+          summary: parsedData?.parts?.[partIndex]?.chapters?.[chapterIndex]?.summary || "",
+          pacing_goal: 'medium',
+          action_dialogue_ratio: "50:50",
+          chapter_hook: {
+            type: 'question',
+            description: parsedData?.parts?.[partIndex]?.chapters?.[chapterIndex]?.hook || "",
+            urgency_level: 'medium'
+          },
+          scenes: chapter.scenes?.map(s => s.id) || []
+        });
+      });
+    });
+
+    // Convert scenes to HNSScene format
+    const hnsScenes: HNSScene[] = [];
+    story.parts.forEach((part) => {
+      part.chapters.forEach((chapter) => {
+        chapter.scenes?.forEach((scene, sceneIndex) => {
+          hnsScenes.push({
+            scene_id: scene.id,
+            scene_number: sceneIndex + 1,
+            chapter_ref: chapter.id,
+            character_ids: [],
+            setting_id: "",
+            pov_character_id: "",
+            narrative_voice: 'third_person_limited',
+            summary: scene.title,
+            entry_hook: "",
+            goal: scene.goal,
+            conflict: scene.conflict,
+            outcome: scene.outcome as HNSScene['outcome'],
+            emotional_shift: {
+              from: "",
+              to: ""
+            }
+          });
+        });
+      });
+    });
+
+    // Create empty arrays for characters and settings if not available
+    const hnsCharacters: HNSCharacter[] = parsedData?.characters || [];
+    const hnsSettings: HNSSetting[] = parsedData?.settings || [];
+
     return {
-      title: story.title || "Generated Story",
-      genre: story.genre || "General",
-      words: 60000,
-      question: "What is the central question of this story?",
-      goal: "Story goal not defined",
-      conflict: "Story conflict not defined",
-      outcome: "Story outcome not defined",
-      chars: {},
-      themes: [],
-      structure: {
-        type: "3_part",
-        parts: ["setup", "confrontation", "resolution"],
-        dist: [25, 50, 25]
-      },
-      setting: {},
-      parts: [],
-      serial: {},
-      hooks: {}
+      story: hnsStory,
+      parts: hnsParts,
+      chapters: hnsChapters,
+      scenes: hnsScenes,
+      characters: hnsCharacters,
+      settings: hnsSettings
     };
   };
 
-  // Real story data from database
-  const [sampleStoryData, setSampleStoryData] = useState(parseStoryData());
+  // Real story data from database in HNS format
+  const [sampleStoryData, setSampleStoryData] = useState<HNSDocument>(parseStoryData());
 
   // Track changes and original data for save/cancel functionality
-  const [originalStoryData, setOriginalStoryData] = useState(sampleStoryData);
+  const [originalStoryData, setOriginalStoryData] = useState<HNSDocument>(sampleStoryData);
   const [storyPreviewData, setStoryPreviewData] = useState<any>(null);
   const [storyHasChanges, setStoryHasChanges] = useState(false);
   const [changedStoryKeys, setChangedStoryKeys] = useState<string[]>([]);
@@ -305,7 +371,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   };
 
   // Update story data and track changes
-  const handleStoryDataUpdate = (updatedData: any) => {
+  const handleStoryDataUpdate = (updatedData: HNSDocument) => {
     setSampleStoryData(updatedData);
     setStoryHasChanges(JSON.stringify(updatedData) !== JSON.stringify(originalStoryData));
 
@@ -323,19 +389,19 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   };
 
   // Helper functions for JSON conversion for StoryPromptWriter
-  const convertStoryDataToJSON = (storyData: any): string => {
+  const convertStoryDataToJSON = (storyData: HNSDocument): string => {
     try {
-      return JSON.stringify({ story: storyData }, null, 2);
+      return JSON.stringify(storyData, null, 2);
     } catch (error) {
       console.error('Error converting story data to JSON:', error);
       return '';
     }
   };
 
-  const convertJSONToStoryData = (jsonText: string): any => {
+  const convertJSONToStoryData = (jsonText: string): HNSDocument | null => {
     try {
       const parsed = JSON.parse(jsonText);
-      return parsed?.story || parsed;
+      return parsed as HNSDocument;
     } catch (error) {
       console.error('Error parsing JSON to story data:', error);
       return null;
@@ -446,24 +512,18 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   // Extract data from the actual story structure
   const extractedPartData = useMemo(() => {
     if (!currentSelection.partId || !sampleStoryData?.parts) return null;
-    const partIndex = parseInt(currentSelection.partId.replace('part', '')) - 1;
-    return sampleStoryData.parts?.[partIndex] || null;
+    return sampleStoryData.parts.find(part => part.part_id === currentSelection.partId) || null;
   }, [currentSelection.partId, sampleStoryData]);
 
   const extractedChapterData = useMemo(() => {
-    if (!currentSelection.chapterId || !sampleStoryData?.parts) return null;
-    const partIndex = parseInt(currentSelection.partId?.replace('part', '') || '1') - 1;
-    const chapterIndex = parseInt(currentSelection.chapterId.replace('chapter', '')) - 1;
-    return sampleStoryData.parts?.[partIndex]?.chapters?.[chapterIndex] || null;
-  }, [currentSelection.chapterId, currentSelection.partId, sampleStoryData]);
+    if (!currentSelection.chapterId || !sampleStoryData?.chapters) return null;
+    return sampleStoryData.chapters.find(chapter => chapter.chapter_id === currentSelection.chapterId) || null;
+  }, [currentSelection.chapterId, sampleStoryData]);
 
   const extractedSceneData = useMemo(() => {
-    if (!currentSelection.sceneId || !sampleStoryData?.parts) return null;
-    const partIndex = parseInt(currentSelection.partId?.replace('part', '') || '1') - 1;
-    const chapterIndex = parseInt(currentSelection.chapterId?.replace('chapter', '') || '1') - 1;
-    const sceneIndex = parseInt(currentSelection.sceneId.replace('scene', '')) - 1;
-    return sampleStoryData.parts?.[partIndex]?.chapters?.[chapterIndex]?.scenes?.[sceneIndex] || null;
-  }, [currentSelection.sceneId, currentSelection.chapterId, currentSelection.partId, sampleStoryData]);
+    if (!currentSelection.sceneId || !sampleStoryData?.scenes) return null;
+    return sampleStoryData.scenes.find(scene => scene.scene_id === currentSelection.sceneId) || null;
+  }, [currentSelection.sceneId, sampleStoryData]);
 
   // Helper functions for backwards compatibility
   const getPartData = () => extractedPartData;
@@ -786,114 +846,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     }
   };
 
-  const handleCreateScene = async (chapterId: string) => {
-    setIsLoading(true);
-    try {
-      // Fetch current scenes from the API to ensure we have the latest data
-      const scenesResponse = await fetch(`/api/scenes?chapterId=${chapterId}`);
-      const scenesText = await scenesResponse.text();
-      let scenesData;
-      try {
-        scenesData = JSON.parse(scenesText);
-      } catch {
-        // Fallback to JSON for backward compatibility
-        scenesData = JSON.parse(scenesText);
-      }
-      
-      // Calculate next available order index by finding the highest existing orderIndex
-      let nextOrderIndex = 1;
-      if (scenesData.scenes && scenesData.scenes.length > 0) {
-        const maxOrderIndex = Math.max(...scenesData.scenes.map((scene: any) => scene.orderIndex || 0));
-        nextOrderIndex = maxOrderIndex + 1;
-      }
-      
-      // Create the new scene using JSON
-      const newSceneData = {
-        title: `Scene ${nextOrderIndex}`,
-        chapterId: chapterId,
-        orderIndex: nextOrderIndex,
-        goal: nextOrderIndex === 1 ? 'Establish opening scene' : `Scene ${nextOrderIndex} objective`,
-        conflict: nextOrderIndex === 1 ? 'Initial obstacles' : `Scene ${nextOrderIndex} challenges`,
-        outcome: nextOrderIndex === 1 ? 'Scene conclusion' : `Scene ${nextOrderIndex} resolution`
-      };
 
-      const response = await fetch('/api/scenes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newSceneData)
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorData;
-        try {
-          errorData = JSON.parse(errorText);
-        } catch {
-          errorData = { error: errorText };
-        }
-        console.error('Scene creation failed:', errorData);
-        throw new Error(errorData.error || 'Failed to create scene');
-      }
-
-      const responseText = await response.text();
-      let responseData;
-      try {
-        responseData = JSON.parse(responseText);
-      } catch {
-        // Fallback to JSON for backward compatibility
-        responseData = JSON.parse(responseText);
-      }
-      const { scene } = responseData;
-      
-      // Navigate to the new scene editor
-      handleSelectionChange({
-        level: "scene",
-        storyId: story.id,
-        partId: currentSelection.partId,
-        chapterId: chapterId,
-        sceneId: scene.id
-      });
-
-      // Refresh the page to show the new scene
-      router.refresh();
-      
-    } catch (error) {
-      console.error('Failed to create scene:', error);
-      alert('Failed to create scene. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSaveThemePlan = async () => {
-    setIsSavingTheme(true);
-    try {
-      // Simulate saving the theme plan data to the chapter or story
-      // This would typically save the three-act structure, tension architecture, 
-      // character development, dual mandate fulfillment, and hook strategy data
-      
-      // For now, we'll just simulate an API call with a delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Here you would save the theme plan data to the database
-      // const response = await fetch(`/api/chapters/${currentSelection.chapterId}/theme`, {
-      //   method: 'PATCH',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(themePlanData)
-      // });
-      
-      // Show success feedback
-      console.log('Theme plan saved successfully');
-      
-    } catch (error) {
-      console.error('Failed to save theme plan:', error);
-      alert('Failed to save theme plan. Please try again.');
-    } finally {
-      setIsSavingTheme(false);
-    }
-  };
 
   const handleToggleSceneStatus = async (sceneId: string, currentStatus: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent scene edit navigation
@@ -947,8 +900,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   // Create part data based on actual story data
   const createPartData = (partNum: number, partTitle: string) => {
     // Get part data from actual story data if available
-    const storyParts = sampleStoryData.parts || [];
-    const currentPart = storyParts.find((p: any) => p.part === partNum) || storyParts[partNum - 1];
+    const currentPart = sampleStoryData.parts.find(p => p.part_title === partTitle || p.part_id === `part_${partNum}`);
 
     return {
       part: partNum,
@@ -957,9 +909,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       function: partNum === 1 ? "story_setup" :
                partNum === 2 ? "story_development" :
                "story_resolution",
-      goal: currentPart?.goal || `Part ${partNum} goal from ${sampleStoryData.title}`,
-      conflict: currentPart?.conflict || `Part ${partNum} conflict from ${sampleStoryData.title}`,
-      outcome: currentPart?.outcome || `Part ${partNum} outcome from ${sampleStoryData.title}`,
+      goal: currentPart?.summary || `Part ${partNum} goal from ${sampleStoryData.story.story_title}`,
+      conflict: `Part ${partNum} conflict from ${sampleStoryData.story.story_title}`,
+      outcome: `Part ${partNum} outcome from ${sampleStoryData.story.story_title}`,
       questions: {
         primary: `What is the main question for Part ${partNum} of ${sampleStoryData.title}?`,
         secondary: `What is the secondary question for Part ${partNum} of ${sampleStoryData.title}?`
@@ -1341,145 +1293,14 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                   isCollapsed={false}
                 />
               </div>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => {
-                  const newShowState = !showThemePlanner;
-                  setShowThemePlanner(newShowState);
-                  // Mark theme as planned when user first opens the planner
-                  if (newShowState && !themePlanned) {
-                    setThemePlanned(true);
-                  }
-                }}
-                className="flex items-center gap-2 ml-4"
-              >
-                <span>🎨</span>
-                {showThemePlanner ? "Hide Theme Planner" : "Create Theme"}
-              </Button>
             </div>
-
-            {/* Chapter Theme Planner - Expandable */}
-            {showThemePlanner && (
-              <div className="space-y-4">
-                <BeautifulJSONDisplay
-                  title="🎨 Chapter Theme & Structure Planner"
-                  icon="🎨"
-                  data={{
-                    three_act_structure: {
-                      act1_setup: {
-                        weight: "20%",
-                        hook_in: getChapterData()?.acts?.setup?.hook_in || "",
-                        orient: getChapterData()?.acts?.setup?.orient || "",
-                        incident: getChapterData()?.acts?.setup?.incident || ""
-                      },
-                      act2_confrontation: {
-                        weight: "60%",
-                        rising: getChapterData()?.acts?.confrontation?.rising || "",
-                        midpoint: getChapterData()?.acts?.confrontation?.midpoint || "",
-                        complicate: getChapterData()?.acts?.confrontation?.complicate || ""
-                      },
-                      act3_resolution: {
-                        weight: "20%",
-                        climax: getChapterData()?.acts?.resolution?.climax || "",
-                        resolve: getChapterData()?.acts?.resolution?.resolve || "",
-                        hook_out: getChapterData()?.acts?.resolution?.hook_out || ""
-                      }
-                    },
-                    tension_architecture: {
-                      external: getChapterData()?.tension?.external || "",
-                      internal: getChapterData()?.tension?.internal || "",
-                      interpersonal: getChapterData()?.tension?.interpersonal || "",
-                      atmospheric: getChapterData()?.tension?.atmospheric || "",
-                      peak_moment: getChapterData()?.tension?.peak || ""
-                    },
-                    character_development: {
-                      maya_pov: {
-                        start: getChapterData()?.chars?.maya?.start || "",
-                        arc: getChapterData()?.chars?.maya?.arc || "",
-                        end: getChapterData()?.chars?.maya?.end || "",
-                        motivation: getChapterData()?.chars?.maya?.motivation || "",
-                        growth: getChapterData()?.chars?.maya?.growth || ""
-                      }
-                    },
-                    dual_mandate: {
-                      episodic_satisfaction: {
-                        arc: getChapterData()?.mandate?.episodic?.arc || "",
-                        payoff: getChapterData()?.mandate?.episodic?.payoff || "",
-                        answered: getChapterData()?.mandate?.episodic?.answered || ""
-                      },
-                      serial_momentum: {
-                        complication: getChapterData()?.mandate?.serial?.complication || "",
-                        stakes: getChapterData()?.mandate?.serial?.stakes || "",
-                        compulsion: getChapterData()?.mandate?.serial?.compulsion || ""
-                      }
-                    },
-                    forward_hook: {
-                      type: getChapterData()?.hook?.type || "",
-                      reveal: getChapterData()?.hook?.reveal || "",
-                      threat: getChapterData()?.hook?.threat || "",
-                      emotion: getChapterData()?.hook?.emotion || ""
-                    }
-                  }}
-                  isCollapsed={false}
-                />
-
-                {/* Action Buttons */}
-                <Card>
-                  <CardContent className="pt-4">
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="default"
-                        className="flex items-center gap-2"
-                        onClick={handleSaveThemePlan}
-                        disabled={isSavingTheme}
-                      >
-                        {isSavingTheme ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                            Saving Theme Plan...
-                          </>
-                        ) : (
-                          <>
-                            <span>💾</span>
-                            Save Theme Plan
-                          </>
-                        )}
-                      </Button>
-                      <Button size="sm" variant="secondary" className="flex items-center gap-2">
-                        <span>🎲</span>
-                        Generate Variations
-                      </Button>
-                      <Button size="sm" variant="outline" className="flex items-center gap-2">
-                        <span>📋</span>
-                        Export JSON
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
 
             {/* Scene Overview */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <span>🎬</span>
-                  Scene Overview
-                </h3>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => handleCreateScene(currentSelection.chapterId!)}
-                  disabled={isLoading || !themePlanned}
-                  className="flex items-center gap-2"
-                  title={!themePlanned ? "Create a theme first before adding scenes" : ""}
-                >
-                  <span>🎬</span>
-                  {isLoading ? "Creating..." : "Create Scene"}
-                </Button>
-              </div>
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <span>🎬</span>
+                Scene Overview
+              </h3>
 
               {/* Display scenes as JSON if available */}
               {chapterData.scenes.length > 0 && (
@@ -1571,16 +1392,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                     ))
                   ) : (
                     <div className="text-center py-8 text-[rgb(var(--muted-foreground))]">
-                      <p className="text-sm mb-3">No scenes planned for this chapter</p>
-                      <Button 
-                        size="sm" 
-                        variant="secondary"
-                        onClick={() => handleCreateScene(currentSelection.chapterId!)}
-                        disabled={isLoading || !themePlanned}
-                        title={!themePlanned ? "Create a theme first before adding scenes" : ""}
-                      >
-                        {isLoading ? "Creating..." : !themePlanned ? "Create Theme First" : "+ Create First Scene"}
-                      </Button>
+                      <p className="text-sm">No scenes planned for this chapter</p>
                     </div>
                   )}
                 </div>
@@ -1902,19 +1714,19 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               // Scene view: Show SceneSidebar with scene controls and JSON data
               <SceneSidebar
                 sceneData={{
-                  id: getSceneData()?.id || 1,
-                  summary: getSceneData()?.summary || "",
-                  time: getSceneData()?.time || "",
-                  place: getSceneData()?.place || "",
-                  pov: getSceneData()?.pov || "",
-                  characters: getSceneData()?.characters || {},
-                  goal: getSceneData()?.goal || "",
-                  obstacle: getSceneData()?.obstacle || "",
-                  outcome: getSceneData()?.outcome || "",
-                  beats: getSceneData()?.beats || [],
-                  shift: getSceneData()?.shift || "",
-                  leads_to: getSceneData()?.leads_to || "",
-                  image_prompt: getSceneData()?.image_prompt || ""
+                  id: extractedSceneData?.scene_id || "scene_1",
+                  summary: extractedSceneData?.summary || "",
+                  time: "",
+                  place: extractedSceneData?.setting_id || "",
+                  pov: extractedSceneData?.pov_character_id || "",
+                  characters: {},
+                  goal: extractedSceneData?.goal || "",
+                  obstacle: extractedSceneData?.conflict || "",
+                  outcome: extractedSceneData?.outcome || "",
+                  beats: [],
+                  shift: extractedSceneData?.emotional_shift?.from || "",
+                  leads_to: "",
+                  image_prompt: ""
                 }}
                 chapterContext={{
                   title: "Chapter Context",
@@ -1922,8 +1734,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                   acts: getChapterData()?.acts || {}
                 }}
                 storyData={sampleStoryData}
-                partData={getPartData()}
-                chapterData={getChapterData()}
+                partData={extractedPartData}
+                chapterData={extractedChapterData}
                 onSave={handleSave}
                 onSceneDataChange={(field, value) => {
                   // Handle scene data changes
