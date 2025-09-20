@@ -27,6 +27,10 @@ import type {
   HNSDocument
 } from '@/types/hns';
 
+// Constants for story structure
+const CHAPTERS_PER_PART = 1;
+const SCENES_PER_CHAPTER = 1;
+
 // Define Zod schemas for each HNS component
 const HNSStorySchema = z.object({
   story_id: z.string().optional(),
@@ -173,7 +177,7 @@ Return a JSON object with a 'parts' array containing exactly three parts, each w
 
     return object.parts.map((part, index) => ({
       ...part,
-      part_id: part.part_id || nanoid(),
+      part_id: nanoid(), // Always use nanoid, ignore AI-generated IDs
     }));
   } catch (error) {
     console.error('Error generating story parts:', error);
@@ -280,7 +284,7 @@ For each setting provide:
  * Phase 5: Chapter Structuring (Chapter Objects)
  * Creates chapter breakdowns with hooks and arcs
  */
-export async function generateHNSChapters(story: HNSStory, part: HNSPart, chapterCount: number = 5): Promise<HNSChapter[]> {
+export async function generateHNSChapters(story: HNSStory, part: HNSPart, chapterCount: number = CHAPTERS_PER_PART): Promise<HNSChapter[]> {
   try {
     const { object } = await generateObject({
       model: AI_MODELS.writing,
@@ -312,7 +316,7 @@ Ensure chapters:
 
     return object.chapters.map((chapter, index) => ({
       ...chapter,
-      chapter_id: chapter.chapter_id || nanoid(),
+      chapter_id: nanoid(), // Always use nanoid, ignore AI-generated IDs
     }));
   } catch (error) {
     console.error('Error generating chapters:', error);
@@ -329,7 +333,7 @@ export async function generateHNSScenes(
   chapter: HNSChapter,
   characters: HNSCharacter[],
   settings: HNSSetting[],
-  sceneCount: number = 3
+  sceneCount: number = SCENES_PER_CHAPTER
 ): Promise<HNSScene[]> {
   try {
     const { object } = await generateObject({
@@ -370,7 +374,7 @@ Each scene should:
 
     return object.scenes.map((scene, index) => ({
       ...scene,
-      scene_id: scene.scene_id || nanoid(),
+      scene_id: nanoid(), // Always use nanoid, ignore AI-generated IDs
     }));
   } catch (error) {
     console.error('Error generating scenes:', error);
@@ -472,7 +476,8 @@ export async function generateCompleteHNS(
       .where(eq(stories.id, currentStoryId));
 
     // Create parts in database
-    for (const part of parts) {
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
       await db.insert(partsTable)
         .values({
           id: part.part_id,
@@ -480,7 +485,7 @@ export async function generateCompleteHNS(
           description: part.part_summary,
           storyId: currentStoryId,
           authorId: userId,
-          orderIndex: index + 1,
+          orderIndex: i + 1,
           summary: part.part_summary,
           keyBeats: part.key_beats,
           hnsData: part as Record<string, unknown>,
@@ -582,11 +587,11 @@ export async function generateCompleteHNS(
 
     const partsWithContent = await Promise.all(
       parts.map(async (part) => {
-        const chapters = await generateHNSChapters(story, part, 5);
+        const chapters = await generateHNSChapters(story, part, CHAPTERS_PER_PART);
 
         // Assign chapter IDs and part references
         chapters.forEach((chapter, index) => {
-          chapter.chapter_id = chapter.chapter_id || nanoid();
+          chapter.chapter_id = nanoid(); // Always use new nanoid
           chapter.part_ref = part.part_id;
           chapter.chapter_number = index + 1;
           allChapters.push(chapter);
@@ -594,7 +599,7 @@ export async function generateCompleteHNS(
 
         const chaptersWithScenes = await Promise.all(
           chapters.map(async (chapter) => {
-            const scenes = await generateHNSScenes(story, chapter, characters, settings, 3);
+            const scenes = await generateHNSScenes(story, chapter, characters, settings, SCENES_PER_CHAPTER);
 
             // Assign scene IDs and chapter references
             scenes.forEach((scene, index) => {
