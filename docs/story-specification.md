@@ -32,17 +32,20 @@ Before writing, you must decide how to divide your complete story into major par
 **Common Part Structures:**
 
 **Three-Part Structure (Most Common):**
+
 - **Part I - Setup (25%)**: Establish world, characters, goals, and initial conflicts
 - **Part II - Confrontation (50%)**: Escalate stakes, develop complications, build toward climax
 - **Part III - Resolution (25%)**: Resolve conflicts, complete character arcs, provide conclusion
 
 **Four-Part Structure (Epic/Complex Narratives):**
+
 - **Part I - Ordinary World**: Introduce protagonist in their normal environment
 - **Part II - Journey Begins**: Launch the adventure, establish stakes and obstacles
 - **Part III - Crisis and Transformation**: Major setbacks, character growth, pivotal revelations
 - **Part IV - Final Challenge**: Climax, resolution, return to changed world
 
 **Five-Part Structure (Classical Drama):**
+
 - **Part I - Exposition**: Introduce characters, setting, background
 - **Part II - Rising Action**: Build conflict, develop complications
 - **Part III - Climax**: Story's turning point, highest tension
@@ -54,12 +57,14 @@ Before writing, you must decide how to divide your complete story into major par
 ### 4.1. For New Serial Writers
 
 **Establish Your Serial Foundation:**
+
 1. Define your overarching story question and episodic questions
 2. Plan a sustainable publication schedule matching your writing capacity
 3. Design story structure to accommodate reader feedback
 4. Create character and world foundations supporting long-term exploration
 
 **Build Your Publication Strategy:**
+
 1. Plan compelling chapter hooks for anticipation and discussion
 2. Design cliffhangers balancing satisfaction with anticipation
 3. Establish community engagement points throughout narrative
@@ -68,6 +73,7 @@ Before writing, you must decide how to divide your complete story into major par
 ### 4.2. For Community Building
 
 **Reader Engagement Planning:**
+
 1. Design story moments to generate reader speculation
 2. Plan character interactions creating emotional investment
 3. Build mystery elements sustaining curiosity across chapters
@@ -76,6 +82,7 @@ Before writing, you must decide how to divide your complete story into major par
 ### 4.3. For Sustainable Serial Writing
 
 **Publication Rhythm Management:**
+
 1. Balance chapter complexity with publication requirements
 2. Plan story arcs aligning with writing cycles
 3. Design character development sustaining long-term interest
@@ -114,8 +121,17 @@ Before writing, you must decide how to divide your complete story into major par
     "premise": "A photographer must master shadow magic to save her sister from a supernatural realm before power corrupts her",
     "dramatic_question": "Can Maya master shadow magic before power corrupts her?",
     "theme": "The conflict between power and responsibility",
-    "characters": ["char_maya_001", "char_elena_002", "char_marcus_003", "char_void_004"],
-    "settings": ["setting_sf_001", "setting_shadow_realm_002", "setting_studio_003"],
+    "characters": [
+      "char_maya_001",
+      "char_elena_002",
+      "char_marcus_003",
+      "char_void_004"
+    ],
+    "settings": [
+      "setting_sf_001",
+      "setting_shadow_realm_002",
+      "setting_studio_003"
+    ],
     "parts": ["part_001", "part_002", "part_003"]
   }
 }
@@ -142,6 +158,7 @@ Before writing, you must decide how to divide your complete story into major par
 ## 3. Part Planning Framework
 
 **For Each Part, Define:**
+
 - **Central Question**: What major question does this part explore or answer?
 - **Character Development**: How do characters change during this section?
 - **Plot Development**: What major events or revelations occur?
@@ -203,16 +220,19 @@ The **Chapter** is the primary unit of reader consumption, especially critical i
 **Three-Act Chapter Structure:**
 
 **Setup (20%):**
+
 - Hook readers with opening line or situation
 - Establish chapter goal or question
 - Orient readers to time, place, and POV
 
 **Confrontation (60%):**
+
 - Develop conflict through escalating complications
 - Build tension toward chapter climax
 - Integrate character development moments
 
 **Resolution (20%):**
+
 - Reach chapter-level climax
 - Provide partial resolution
 - Deploy chapter-ending hook
@@ -236,6 +256,7 @@ The **Chapter** is the primary unit of reader consumption, especially critical i
 **action_dialogue_ratio**: The percentage ratio of action to dialogue (e.g., "40:60").
 
 **chapter_hook**: A structured object designed to formalize the end-of-chapter hook, a critical element for reader retention in serialized fiction. It contains:
+
 - **type**: An enum specifying the nature of the hook (e.g., "revelation", "danger", "decision", "question", "emotional_turning_point").
 - **description**: A brief sentence describing the hook itself.
 - **urgency_level**: The urgency level of the hook (e.g., "high", "medium", "low").
@@ -368,12 +389,14 @@ A **character** is the fundamental human element driving narrative engagement. C
 Characters need two types of information:
 
 ### 2.1. Fixed Identity (Who They Are)
+
 - **Personality**: Core traits driving behavior
 - **Voice**: How they speak and express themselves
 - **Background**: Essential history affecting current behavior
 - **Capabilities**: What they can and cannot do
 
 ### 2.2. Current Context (Where They Are Now)
+
 - **Knowledge**: What they know at this story point
 - **Emotional State**: Current feelings and mental condition
 - **Relationships**: Current dynamics with other characters
@@ -404,6 +427,7 @@ Characters need two types of information:
 **voice**: The character's communication style, including speech patterns, vocabulary, verbal tics, and internal voice.
 
 **physical_description**: A detailed, structured object optimized for AI image generation prompts. It contains sub-fields for:
+
 - **age**: The character's age
 - **ethnicity**: The character's ethnic background
 - **height**: Physical height
@@ -487,6 +511,7 @@ Characters need two types of information:
 **mood**: The typical atmosphere or emotional tone of the location (e.g., "ominous", "serene", "bustling").
 
 **sensory**: A structured object containing multi-sensory details:
+
 - **sight**: Visual elements and appearances
 - **sound**: Auditory elements and ambient noises
 - **smell**: Scents and aromas
@@ -521,22 +546,22 @@ Characters need two types of information:
         "Echoes that precede their sources",
         "Absolute silence in light pools"
       ],
-      "smell": [
-        "Ozone and old paper",
-        "Sweet decay beneath everything"
-      ],
+      "smell": ["Ozone and old paper", "Sweet decay beneath everything"],
       "touch": [
         "Surfaces that feel liquid but appear solid",
         "Cold that burns exposed skin",
         "Air thick like water"
       ],
-      "taste": [
-        "Metallic undertone to the air"
-      ]
+      "taste": ["Metallic undertone to the air"]
     },
     "visual_style": "dark fantasy horror",
     "visual_references": ["HR Giger", "Silent Hill", "Inception folding city"],
-    "color_palette": ["deep purples", "blacks", "silver highlights", "rare gold light"],
+    "color_palette": [
+      "deep purples",
+      "blacks",
+      "silver highlights",
+      "rare gold light"
+    ],
     "architectural_style": "Gothic mixed with non-Euclidean geometry"
   }
 }
@@ -557,12 +582,14 @@ A compelling narrative requires absolute coherence—events must follow logical 
 Tracks objective state of story entities using a key-value store:
 
 **Tracked States:**
+
 - Character States: `character_A.status = 'alive'`, `character_B.location = 'castle'`
 - Object States: `magic_sword.owner = 'character_A'`, `magic_sword.status = 'intact'`
 - Knowledge States: `character_C.knows('secret') = true`
 - Relationship States: `relationship(A, B).status = 'allies'`
 
 **Implementation:**
+
 ```yaml
 validation_checks:
   pre_conditions:
@@ -580,16 +607,19 @@ validation_checks:
 Uses AI to evaluate nuanced narrative coherence:
 
 **Causality Check:**
+
 - Evaluates logical progression between scenes
 - Identifies missing steps or logical gaps
 - Suggests bridging scenes when needed
 
 **Character Consistency Check:**
+
 - Compares character actions against established profile
 - Flags out-of-character behavior
 - Evaluates psychological plausibility
 
 **Emotional Arc Check:**
+
 - Tracks emotional progression across scenes
 - Identifies unearned emotional shifts
 - Ensures organic character development
@@ -605,30 +635,35 @@ The process breaks down novel creation into manageable, sequential steps followi
 ## 2. The AI-Augmented Snowflake Algorithm
 
 ### Step 1: Core Concept Generation
+
 - **Action**: Create one-sentence premise
 - **Target**: Story object
 - **AI Role**: Generate multiple premise variations
 - **Human Role**: Select and refine best option
 
 ### Step 2: Act-Level Structuring
+
 - **Action**: Expand premise to paragraph
 - **Target**: Part objects
 - **AI Role**: Structure into three-act format
 - **Human Role**: Segment and assign to parts
 
 ### Step 3: Character Conception
+
 - **Action**: Create character profiles
 - **Target**: Character objects
 - **AI Role**: Generate character foundations
 - **Human Role**: Add psychological depth
 
 ### Step 4: Chapter-Level Expansion
+
 - **Action**: Expand act summaries
 - **Target**: Chapter objects
 - **AI Role**: Detail plot progression
 - **Human Role**: Ensure coherence
 
 ### Step 5: Scene Breakdown
+
 - **Action**: List individual scenes
 - **Target**: Scene objects
 - **AI Role**: Break chapters into scenes
@@ -637,12 +672,14 @@ The process breaks down novel creation into manageable, sequential steps followi
 ## 3. AI Prompting Templates
 
 **Premise Generation:**
+
 ```
 Given the concept "[initial idea]", generate 5 one-sentence premises under 20 words.
 Each must introduce: protagonist, core conflict, personal stakes.
 ```
 
 **Act Expansion:**
+
 ```
 Expand premise "[premise]" into 5-sentence paragraph following three-act structure:
 - Sentence 1: Setup and ordinary world
@@ -651,6 +688,7 @@ Expand premise "[premise]" into 5-sentence paragraph following three-act structu
 ```
 
 **Scene Breakdown:**
+
 ```
 Break this chapter summary into 3-5 distinct scenes:
 "[chapter summary]"
@@ -670,21 +708,25 @@ Web novel success prioritizes sustained reader engagement over traditional liter
 ### Quantitative Metrics
 
 **Chapter Word Count:**
+
 - Target Range: 1,500-2,500 words
 - Measurement: Simple word count
 - Purpose: Optimal for single-session reading
 
 **Pacing Score:**
+
 - Formula: (Plot-Advancing Scenes) / (Word Count / 1000)
 - Measurement: Density of meaningful events
 - Purpose: Ensure appropriate narrative momentum
 
 **Hook Presence:**
+
 - Measurement: Binary check for chapter_hook
 - Target: 1 (present) for all chapters
 - Purpose: Ensure reader retention mechanism
 
 **Reader Engagement Score:**
+
 - Formula: (Comments + Likes) / Views
 - Source: Platform analytics
 - Purpose: Track audience interaction trends
@@ -692,26 +734,31 @@ Web novel success prioritizes sustained reader engagement over traditional liter
 ### Qualitative Metrics (1-5 Scale)
 
 **Plot Coherence & Progression:**
+
 - 1: Significant plot holes or contradictions
 - 3: Logically consistent but weak progression
 - 5: Compelling, logical advancement
 
 **Character Development & Believability:**
+
 - 1: Out-of-character actions
 - 3: Plausible but static
 - 5: Deep, consistent development
 
 **Pacing & Flow:**
+
 - 1: Jarringly slow/fast
 - 3: Acceptable but uneven
 - 5: Perfectly matched to content
 
 **Hook Effectiveness:**
+
 - 1: Flat ending
 - 3: Generic hook
 - 5: Compelling urgency to continue
 
 **Prose & Style:**
+
 - 1: Many errors
 - 3: Clear but generic
 - 5: Evocative and immersive
