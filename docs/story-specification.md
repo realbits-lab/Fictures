@@ -91,8 +91,6 @@ Before writing, you must decide how to divide your complete story into major par
 
 **genre**: An array specifying primary and secondary genres (e.g., ["urban_fantasy", "thriller"]), which informs stylistic choices in both text and image generation.
 
-**target_words**: The target word count for the complete story, used for planning and pacing.
-
 **premise**: A single, succinct sentence that encapsulates the entire novel. This is directly derived from the first step of the Snowflake Method and serves as the "elevator pitch" for the story. It should tie together the big-picture conflict with the personal stakes of the protagonist.
 
 **dramatic_question**: The central yes-or-no question that drives the narrative and must be answered in the climax (e.g., "Will the detective solve the mystery?"). This attribute provides a clear definition of the story's ultimate goal.
@@ -105,8 +103,6 @@ Before writing, you must decide how to divide your complete story into major par
 
 **parts**: An array of part_ids, representing the major structural divisions of the story.
 
-**structure**: An object defining the story's structural type and distribution (e.g., three-part with percentage distribution).
-
 ### Example JSON Structure
 
 ```json
@@ -115,17 +111,12 @@ Before writing, you must decide how to divide your complete story into major par
     "story_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
     "story_title": "The Shadow Keeper",
     "genre": ["urban_fantasy", "thriller"],
-    "target_words": 80000,
     "premise": "A photographer must master shadow magic to save her sister from a supernatural realm before power corrupts her",
     "dramatic_question": "Can Maya master shadow magic before power corrupts her?",
     "theme": "The conflict between power and responsibility",
     "characters": ["char_maya_001", "char_elena_002", "char_marcus_003", "char_void_004"],
     "settings": ["setting_sf_001", "setting_shadow_realm_002", "setting_studio_003"],
-    "parts": ["part_001", "part_002", "part_003"],
-    "structure": {
-      "type": "three_part",
-      "distribution": [25, 50, 25]
-    }
+    "parts": ["part_001", "part_002", "part_003"]
   }
 }
 ```
@@ -158,119 +149,35 @@ Before writing, you must decide how to divide your complete story into major par
 - **Emotional Journey**: What emotional progression do readers experience?
 - **Ending Impact**: How does this part conclude to propel the story forward?
 
-## 4. YAML Data Structure for Part Object
+## 4. JSON Data Structure for Part Object
 
-```yaml
-# ============================================
-# PART SPECIFICATION - HNS FORMAT
-# ============================================
+### Field Descriptions
 
-part:
-  # Identification
-  part_id: "part_001"
-  part_title: "Part I: Discovery"
-  part_number: 1
-  structural_role: "Act 1: Setup"
-  target_words: 20000
+**part_id**: A unique identifier for the part.
 
-  # Core dramatic movement
-  goal: "Maya accepts supernatural reality"
-  conflict: "Denial vs mounting evidence"
-  outcome: "Reluctant training commitment"
+**part_title**: A descriptive title for the act (e.g., "Part I: The Setup").
 
-  # Central questions
-  questions:
-    primary: "How will Maya react to discovering her magical abilities?"
-    secondary: "Can Maya overcome denial to accept the supernatural world?"
+**structural_role**: A string or enum that maps the part to its function within a recognized narrative framework. The most common implementation uses the Three-Act Structure: "Act 1: Setup," "Act 2: Confrontation," and "Act 3: Resolution". This ensures the story follows a proven dramatic arc.
 
-  # Part-level summary
-  summary: "Dr. Maya Chen's ordinary life shatters when her sister Elena disappears, leaving behind evidence of supernatural research. Despite her skepticism, Maya discovers she has inherited shadow manipulation abilities and must accept training from the mysterious Marcus Webb to save her sister."
+**summary**: A one-paragraph summary describing the main movements and developments within this act.
 
-  # Key narrative beats
-  key_beats:
-    - beat: "Exposition"
-      description: "Maya's normal life as photographer"
-      chapter_ref: "chap_001"
-    - beat: "Inciting Incident"
-      description: "Elena disappears mysteriously"
-      chapter_ref: "chap_001"
-    - beat: "Refusal of Call"
-      description: "Maya denies supernatural explanation"
-      chapter_ref: "chap_002"
-    - beat: "Supernatural Proof"
-      description: "Maya manifests shadow powers"
-      chapter_ref: "chap_003"
-    - beat: "Plot Point One"
-      description: "Maya accepts training from Marcus"
-      chapter_ref: "chap_005"
+**key_beats**: An array of strings identifying the crucial plot points contained within this part, based on narrative theory. For "Act 1," this might include "Exposition," "Inciting Incident," and "Plot Point One". For "Act 2," it would include "Rising Action," "Midpoint," and "Plot Point Two." This attribute allows for automated checks to ensure all critical structural elements are present.
 
-  # Character progression in this part
-  character_arcs:
-    maya:
-      start_state: "skeptical_photographer"
-      end_state: "reluctant_student"
-      key_changes:
-        - "Discovers magical heritage"
-        - "Accepts Elena is in danger"
-        - "Commits to training"
-    elena:
-      start_state: "missing_sister"
-      end_state: "revealed_as_trapped"
-      key_changes:
-        - "Backstory revealed through journal"
-        - "Connection to Shadow Realm exposed"
-    marcus:
-      start_state: "mysterious_observer"
-      end_state: "established_mentor"
-      key_changes:
-        - "Reveals knowledge of Maya's family"
-        - "Demonstrates shadow mastery"
+**chapters**: An ordered array of chapter_ids that comprise this part of the story.
 
-  # Thematic elements
-  themes:
-    primary: "Denial and acceptance"
-    supporting: ["Family responsibility", "Hidden heritage"]
-    symbolic_elements:
-      - "Shadows as manifestation of fear"
-      - "Photography as truth-seeking"
-      - "Light vs darkness duality"
+### Example JSON Structure
 
-  # Emotional progression
-  emotional_arc:
-    opening: "casual_concern"
-    development: ["growing_fear", "desperate_search", "terrifying_discovery"]
-    closing: "grim_determination"
-
-  # Part ending strategy
-  ending:
-    type: "cliffhanger_revelation"
-    resolution_elements:
-      - "Maya commits to training"
-      - "Shadow powers confirmed"
-      - "Elena's danger established"
-    setup_elements:
-      - "Marcus's dark past hinted"
-      - "Corruption risk introduced"
-      - "Time limit established"
-    hook: "Marcus reveals previous student who became the Void"
-
-  # Chapter registry
-  chapters:
-    - chapter_id: "chap_001"
-      chapter_number: 1
-      summary: "Elena disappears; Maya discovers signs of struggle"
-    - chapter_id: "chap_002"
-      chapter_number: 2
-      summary: "Maya searches for rational explanations"
-    - chapter_id: "chap_003"
-      chapter_number: 3
-      summary: "First shadow manifestation during stress"
-    - chapter_id: "chap_004"
-      chapter_number: 4
-      summary: "Marcus approaches with answers"
-    - chapter_id: "chap_005"
-      chapter_number: 5
-      summary: "Maya accepts training despite risks"
+```json
+{
+  "part": {
+    "part_id": "part_001",
+    "part_title": "Part I: Discovery",
+    "structural_role": "Act 1: Setup",
+    "summary": "Dr. Maya Chen's ordinary life shatters when her sister Elena disappears, leaving behind evidence of supernatural research. Despite her skepticism, Maya discovers she has inherited shadow manipulation abilities and must accept training from the mysterious Marcus Webb to save her sister.",
+    "key_beats": ["Exposition", "Inciting Incident", "Plot Point One"],
+    "chapters": ["chap_001", "chap_002", "chap_003", "chap_004", "chap_005"]
+  }
+}
 ```
 
 ---
