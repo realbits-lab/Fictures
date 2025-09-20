@@ -19,7 +19,7 @@ export interface Story {
   status: "draft" | "publishing" | "completed" | "published";
   wordCount: number;
   firstChapterId: string | null;
-  storyData: any;
+  hnsData: any;
 }
 
 interface StoriesResponse {

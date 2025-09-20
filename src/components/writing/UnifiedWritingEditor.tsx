@@ -13,9 +13,6 @@ import { StoryStructureSidebar } from "./StoryStructureSidebar";
 import { SceneSidebar } from "./SceneSidebar";
 import { WritingGuidelines } from "./WritingGuidelines";
 import { StoryPromptWriter } from "./StoryPromptWriter";
-import { PartPromptEditor } from "./PartPromptEditor";
-import { ChapterPromptEditor } from "./ChapterPromptEditor";
-import { ScenePromptEditor } from "./ScenePromptEditor";
 import { BeautifulJSONDisplay } from "./BeautifulJSONDisplay";
 import { CharactersDisplay } from "./CharactersDisplay";
 import { SettingsDisplay } from "./SettingsDisplay";
@@ -36,7 +33,7 @@ interface Story {
   genre: string;
   status: string;
   isPublic?: boolean;
-  storyData?: HNSDocument | Record<string, unknown>;
+  hnsData?: HNSDocument | Record<string, unknown>;
   // Database structure fields for compatibility
   parts: Array<{
     id: string;
@@ -200,15 +197,18 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const parseStoryData = (): HNSDocument => {
     let parsedData: any = null;
 
+    // Use hnsData from the story
+    const dataSource = story.hnsData;
+
     // Handle both JSON string and object cases
-    if (story.storyData) {
-      if (typeof story.storyData === 'object') {
-        parsedData = story.storyData;
-      } else if (typeof story.storyData === 'string') {
+    if (dataSource) {
+      if (typeof dataSource === 'object') {
+        parsedData = dataSource;
+      } else if (typeof dataSource === 'string') {
         try {
-          parsedData = JSON.parse(story.storyData);
+          parsedData = JSON.parse(dataSource);
         } catch (error) {
-          console.error('Failed to parse story storyData JSON:', error);
+          console.error('Failed to parse story HNS data JSON:', error);
         }
       }
     }
@@ -334,7 +334,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   // Update story data when story prop changes (for real-time updates)
   useEffect(() => {
     console.log('🔄 Story prop changed, updating story data...');
-    console.log('📦 Story storyData:', story.storyData);
+    console.log('📦 Story hnsData:', story.hnsData);
 
     const newStoryData = parseStoryData();
     console.log('📝 Parsed story data:', newStoryData);
@@ -446,10 +446,11 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   useEffect(() => {
     if (currentSelection.level === "part") {
       const selectedPart = story.parts.find(part => part.id === currentSelection.partId);
-      const partNumber = selectedPart?.orderIndex || 1;
-      const partData = selectedPart ?
-        createPartData(partNumber, `Part ${partNumber}`) :
-        createPartData(1, "Part 1");
+
+      // Use hnsData if available, otherwise create default part data
+      const partData = selectedPart?.hnsData ||
+        (selectedPart ? createPartData(selectedPart.orderIndex, `Part ${selectedPart.orderIndex}`) :
+         createPartData(1, "Part 1"));
 
       setOriginalPartData(partData);
       setCurrentPartData(partData);
@@ -460,8 +461,17 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   // Initialize chapter data when switching to chapter level or changing chapter
   useEffect(() => {
     if (currentSelection.level === "chapter") {
-      const selectedChapter = story.chapters?.find(chapter => chapter.id === currentSelection.chapterId);
-      const chapterData = selectedChapter || {
+      // Find the chapter either in parts or standalone chapters
+      let selectedChapter = null;
+      for (const part of story.parts) {
+        selectedChapter = part.chapters?.find(ch => ch.id === currentSelection.chapterId);
+        if (selectedChapter) break;
+      }
+      if (!selectedChapter) {
+        selectedChapter = story.chapters?.find(chapter => chapter.id === currentSelection.chapterId);
+      }
+      // Use hnsData if available, otherwise use the chapter data structure
+      const chapterData = selectedChapter?.hnsData || selectedChapter || {
         id: currentSelection.chapterId || 'sample-chapter',
         title: 'Chapter 1',
         summary: '',
@@ -485,8 +495,23 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   // Initialize scene data when switching to scene level or changing scene
   useEffect(() => {
     if (currentSelection.level === "scene") {
-      const selectedScene = story.scenes?.find(scene => scene.id === currentSelection.sceneId);
-      const sceneData = selectedScene || {
+      // Find the scene in chapters
+      let selectedScene = null;
+      for (const part of story.parts) {
+        for (const chapter of part.chapters || []) {
+          selectedScene = chapter.scenes?.find(scene => scene.id === currentSelection.sceneId);
+          if (selectedScene) break;
+        }
+        if (selectedScene) break;
+      }
+      if (!selectedScene) {
+        for (const chapter of story.chapters || []) {
+          selectedScene = chapter.scenes?.find(scene => scene.id === currentSelection.sceneId);
+          if (selectedScene) break;
+        }
+      }
+      // Use hnsData if available, otherwise use the scene data structure
+      const sceneData = selectedScene?.hnsData || selectedScene || {
         id: currentSelection.sceneId || 'sample-scene',
         title: 'Scene 1',
         content: '',
@@ -506,7 +531,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       setCurrentSceneData(sceneData);
       setSceneHasChanges(false);
     }
-  }, [currentSelection.level, currentSelection.sceneId, story.scenes]);
+  }, [currentSelection.level, currentSelection.sceneId, story.parts, story.chapters]);
 
   // Extract data from the actual story structure
   const extractedPartData = useMemo(() => {
@@ -616,38 +641,25 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
         console.log('Scene saved successfully');
       } else if (currentSelection.level === "chapter" && data) {
-        // Save chapter data using JSON
-        const chapterJsonData = {
-          id: data.id,
-          title: data.title,
-          purpose: data.purpose,
-          hook: data.hook,
-          characterFocus: data.characterFocus,
-          wordCount: data.wordCount,
-          targetWordCount: data.targetWordCount,
-          status: data.status
-        };
-
-        const response = await fetch(`/api/chapters/${data.id}`, {
+        // Save chapter HNS data
+        console.log('💾 Saving chapter HNS data...');
+        const response = await fetch(`/api/chapters/${currentSelection.chapterId}/write`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(chapterJsonData)
+          body: JSON.stringify({
+            hnsData: data
+          })
         });
 
         if (!response.ok) {
-          const responseText = await response.text();
-          let errorData;
-          try {
-            errorData = JSON.parse(responseText);
-          } catch {
-            errorData = { error: responseText };
-          }
+          const errorData = await response.json();
           throw new Error(`Failed to save chapter: ${errorData.error || response.statusText}`);
         }
 
-        console.log('Chapter data saved successfully');
+        const saveResult = await response.json();
+        console.log('✅ Chapter HNS data saved successfully:', saveResult);
       } else if (currentSelection.level === "story" && data) {
         // Save story data to the stories API
         console.log('💾 Saving story data to API...');
@@ -660,7 +672,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            storyData: data
+            hnsData: data
           })
         });
 
@@ -677,11 +689,31 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         console.log('🔄 Updating local story state with saved data...');
         setStory(prevStory => ({
           ...prevStory,
-          storyData: data,
+          hnsData: data,
           updatedAt: saveResult.updatedAt || new Date().toISOString()
         }));
+      } else if (currentSelection.level === "part" && data) {
+        // Save part HNS data
+        console.log('💾 Saving part HNS data...');
+        const response = await fetch(`/api/parts/${currentSelection.partId}/write`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            hnsData: data
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`Failed to save part: ${errorData.error || response.statusText}`);
+        }
+
+        const saveResult = await response.json();
+        console.log('✅ Part HNS data saved successfully:', saveResult);
       } else {
-        // For other data types (part), use the original mock behavior for now
+        // For other data types, use the original mock behavior for now
         console.log('Saving data:', data);
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
@@ -1620,30 +1652,36 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               />
             )}
 
-            {/* Part Prompt Editor - Show for part level */}
-            {currentSelection.level === "part" && (
-              <PartPromptEditor
-                partData={partPreviewData || currentPartData}
-                onPartUpdate={handlePartDataUpdate}
-                onPreviewUpdate={setPartPreviewData}
+            {/* Part HNS Data Display - Show for part level */}
+            {currentSelection.level === "part" && currentPartData && (
+              <BeautifulJSONDisplay
+                title="Part HNS Data"
+                data={partPreviewData || currentPartData}
+                icon="📚"
+                isCollapsed={false}
+                onToggleCollapse={() => {}}
               />
             )}
 
-            {/* Chapter Prompt Editor - Show for chapter level */}
-            {currentSelection.level === "chapter" && (
-              <ChapterPromptEditor
-                chapterData={chapterPreviewData || currentChapterData}
-                onChapterUpdate={handleChapterDataUpdate}
-                onPreviewUpdate={setChapterPreviewData}
+            {/* Chapter HNS Data Display - Show for chapter level */}
+            {currentSelection.level === "chapter" && currentChapterData && (
+              <BeautifulJSONDisplay
+                title="Chapter HNS Data"
+                data={chapterPreviewData || currentChapterData}
+                icon="📝"
+                isCollapsed={false}
+                onToggleCollapse={() => {}}
               />
             )}
 
-            {/* Scene Prompt Editor - Show for scene level */}
-            {currentSelection.level === "scene" && (
-              <ScenePromptEditor
-                sceneData={scenePreviewData || currentSceneData}
-                onSceneUpdate={handleSceneDataUpdate}
-                onPreviewUpdate={setScenePreviewData}
+            {/* Scene HNS Data Display - Show for scene level */}
+            {currentSelection.level === "scene" && currentSceneData && (
+              <BeautifulJSONDisplay
+                title="Scene HNS Data"
+                data={scenePreviewData || currentSceneData}
+                icon="🎬"
+                isCollapsed={false}
+                onToggleCollapse={() => {}}
               />
             )}
 

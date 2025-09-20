@@ -42,7 +42,7 @@ export interface Story {
   wordCount?: number;
   status: string;
   isPublic?: boolean;
-  storyData?: Record<string, unknown>;
+  hnsData?: Record<string, unknown>;
   parts: Part[];
   chapters: Chapter[];
   scenes?: Scene[];
