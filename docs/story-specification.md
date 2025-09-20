@@ -855,6 +855,7 @@ Google's Gemini 2.5 Flash Image model excels at natural language understanding f
 **Core Principle**: Describe the scene, don't list keywords. Use detailed narrative paragraphs rather than disconnected terms.
 
 **Effective Prompt Structure:**
+
 - Subject description with specific details
 - Action or pose (for characters)
 - Environment and setting context
@@ -870,6 +871,7 @@ Gemini maintains character consistency across multiple generations by preserving
 Transform Character.physical_description into narrative prompts:
 
 **Gemini Character Template:**
+
 ```
 A photorealistic portrait of [Character.name], a [age]-year-old [ethnicity] person with [build] build.
 They have [hair_style_color] and [eye_color] eyes with [facial_features].
@@ -882,6 +884,7 @@ Shot with an 85mm portrait lens, soft natural lighting, professional photography
 #### Maintaining Character Consistency
 
 **Best Practices:**
+
 - Establish detailed character in first prompt with all physical attributes
 - Use follow-up prompts to place same character in new contexts
 - Include phrase "same character as previously generated" in subsequent prompts
@@ -893,6 +896,7 @@ Shot with an 85mm portrait lens, soft natural lighting, professional photography
 Gemini excels at atmospheric environment generation when provided with rich sensory details from Setting objects.
 
 **Gemini Environment Template:**
+
 ```
 A [visual_style] wide establishing shot of [Setting.name]: [Setting.description].
 The architecture features [architectural_style] design elements.
@@ -904,6 +908,7 @@ Wide-angle lens perspective capturing the full environment.
 ```
 
 **Environmental Details:**
+
 - Use photographic terminology (wide-angle, macro, Dutch angle) for precise control
 - Describe lighting naturally: "illuminated by warm sunset light" rather than technical terms
 - Include sensory details as visual cues (e.g., "mist suggesting cold air")
@@ -924,24 +929,28 @@ The evaluation matrix combines objective data-driven metrics with structured qua
 #### 11.2.1 Quantitative Metrics
 
 ##### 11.2.1.1 Chapter Word Count
+
 - **Definition**: Total number of words in the chapter
 - **Measurement**: Automated word count
 - **Target Range**: 1,200-2,500 words (optimal for single-session reading and binge consumption)
 - **Purpose**: Ensure chapters are long enough to advance plot but short enough for one sitting
 
 ##### 11.2.1.2 Pacing Score
+
 - **Definition**: Density of plot-advancing events relative to chapter length
 - **Formula**: (Number of Plot-Advancing Scenes) / (Word Count / 1000)
 - **Measurement**: Plot-advancing scene = any scene where outcome is not neutral (Success, Failure, Success with cost)
 - **Target**: Evaluated against chapter's pacing_goal (Fast chapters need higher scores than Slow chapters)
 
 ##### 11.2.1.3 Hook Presence
+
 - **Definition**: Binary check ensuring chapter concludes with deliberate reader retention mechanism
 - **Measurement**: 1 if chapter_hook object exists in HNS, 0 if absent
 - **Target**: 1 for all chapters (absence is red flag for reader drop-off)
 - **Purpose**: Verify structural hook implementation
 
 ##### 11.2.1.4 Reader Engagement Score
+
 - **Definition**: Direct measure of audience interaction with published chapter
 - **Formula**: (Total Comments + Total Likes) / Total Views
 - **Source**: Platform analytics data
@@ -950,30 +959,35 @@ The evaluation matrix combines objective data-driven metrics with structured qua
 #### 11.2.2 Qualitative Metrics (1-5 Scale with Detailed Rubrics)
 
 ##### 11.2.2.1 Plot Coherence & Progression
+
 - **Definition**: Logical consistency of plot within chapter and contribution to overall arc
 - **1 (Poor)**: Contains significant plot holes or contradictions; fails to advance main plot or subplots
 - **3 (Average)**: Logically consistent but disconnected from main arc or relies on clichés; minimal progression
 - **5 (Excellent)**: Seamlessly advances main plot and subplots in logical, compelling way; events are causally linked
 
 ##### 11.2.2.2 Character Development & Believability
+
 - **Definition**: Consistency and depth of characterization, particularly for POV character
 - **1 (Poor)**: Character contradicts established personality/motivations without justification
 - **3 (Average)**: Actions are plausible but internal state unexplored; character feels static
 - **5 (Excellent)**: Actions directly result from personality and situation; reveals new depths or advances arc
 
 ##### 11.2.2.3 Pacing & Flow
+
 - **Definition**: Subjective assessment of reading rhythm and tempo, independent of calculated Pacing Score
 - **1 (Poor)**: Jarringly rushed or painfully slow; ineffective balance of action/dialogue/description
 - **3 (Average)**: Generally acceptable but has sections that drag or feel abrupt
 - **5 (Excellent)**: Perfectly matches content and pacing_goal; smooth scene flow; engaging narrative balance
 
 ##### 11.2.2.4 Hook Effectiveness
+
 - **Definition**: Compelling power of chapter-end hook to drive continued reading
 - **1 (Poor)**: Chapter ends abruptly or flat with no incentive to continue
 - **3 (Average)**: Hook present but generic or predictable; creates mild curiosity
 - **5 (Excellent)**: Surprising, specific hook creating powerful urgency or burning question; impossible not to continue
 
 ##### 11.2.2.5 Prose & Style
+
 - **Definition**: Quality of sentence-level writing and stylistic execution
 - **1 (Poor)**: Numerous grammatical errors, awkward phrasing, or inappropriate genre style
 - **3 (Average)**: Technically proficient and clear but lacks distinct voice or evocative language
@@ -981,30 +995,262 @@ The evaluation matrix combines objective data-driven metrics with structured qua
 
 ### 11.3 Diagnostic Application
 
-The evaluation matrix serves as a diagnostic tool for systematic improvement:
+#### 11.3.1 Success/Failure Thresholds
+
+**Quantitative Metric Thresholds:**
+
+1. **Chapter Word Count (Target: 3000-5000 words)**
+
+   - Critical Failure: < 2000 words (insufficient content for serial readers)
+   - Below Standard: 2000-2499 words (may feel rushed or incomplete)
+   - Acceptable: 2500-3499 words (minimum viable chapter)
+   - Target Range: 3500-4500 words (optimal reader engagement)
+   - Above Standard: 4500-5500 words (generous content, monitor pacing)
+   - Warning: > 5500 words (risk reader fatigue, consider splitting)
+
+2. **Pacing Score (Target: 3.5-4.5 plot points per chapter)**
+
+   - Critical Failure: < 2.0 (too slow, readers may abandon)
+   - Below Standard: 2.0-2.9 (sluggish progression, needs more events)
+   - Acceptable: 3.0-3.4 (adequate momentum)
+   - Target Range: 3.5-4.5 (optimal balance of action and development)
+   - Above Standard: 4.6-5.5 (fast-paced, ensure depth not sacrificed)
+   - Warning: > 5.5 (overwhelming, readers may feel exhausted)
+
+3. **Hook Presence (Binary with Quality Score)**
+
+   - Failure: No hook present (0) - Chapter must have opening engagement
+   - Success: Hook present (1) - Proceed to effectiveness scoring
+   - Quality Multiplier: 0.0-1.0 based on hook effectiveness
+
+4. **Reader Engagement Score (Target: 0.15-0.25)**
+   - Critical Failure: < 0.05 (minimal reader investment)
+   - Below Standard: 0.05-0.09 (weak engagement, high drop-off risk)
+   - Acceptable: 0.10-0.14 (baseline engagement maintained)
+   - Target Range: 0.15-0.25 (strong reader retention)
+   - Exceptional: > 0.25 (viral potential, community buzz)
+
+**Qualitative Metric Thresholds (1-5 Scale):**
+
+1. **Minimum Acceptable Standards:**
+
+   - Score 1-2: Failure - Requires major revision
+   - Score 3: Marginal - Needs improvement but publishable
+   - Score 4: Good - Meets professional standards
+   - Score 5: Excellent - Exceeds expectations
+
+2. **Critical Failure Combinations:**
+
+   - Any single metric scoring 1
+   - Two or more metrics scoring 2
+   - Average score below 2.5
+
+3. **Success Criteria:**
+   - Minimum: All metrics ≥ 3, average ≥ 3.5
+   - Target: Most metrics ≥ 4, average ≥ 4.0
+   - Excellence: All metrics ≥ 4, at least two scoring 5
+
+#### 11.3.2 Contextual Threshold Adjustments
+
+**Genre-Specific Modifications:**
+
+```json
+{
+  "genre_adjustments": {
+    "thriller": {
+      "pacing_score_minimum": 4.0,
+      "hook_effectiveness_minimum": 4,
+      "chapter_word_count_target": 3000
+    },
+    "epic_fantasy": {
+      "pacing_score_minimum": 2.5,
+      "world_building_weight": 1.5,
+      "chapter_word_count_target": 5000
+    },
+    "romance": {
+      "character_believability_minimum": 4,
+      "emotional_resonance_weight": 1.5,
+      "chapter_word_count_target": 4000
+    },
+    "litRPG": {
+      "progression_visibility_required": true,
+      "stat_consistency_critical": true,
+      "chapter_word_count_target": 4500
+    }
+  }
+}
+```
+
+**Publication Stage Adjustments:**
+
+```json
+{
+  "stage_thresholds": {
+    "first_chapter": {
+      "hook_effectiveness_minimum": 5,
+      "all_metrics_minimum": 4,
+      "critical_importance": ["hook", "character_intro", "world_establishment"]
+    },
+    "early_chapters": {
+      "reader_engagement_minimum": 0.2,
+      "consistency_critical": true,
+      "establish_patterns": true
+    },
+    "mid_story": {
+      "pacing_flexibility": 0.5,
+      "character_development_priority": true,
+      "subplot_integration_required": true
+    },
+    "climax_chapters": {
+      "pacing_score_minimum": 4.5,
+      "plot_coherence_minimum": 5,
+      "emotional_impact_critical": true
+    },
+    "final_chapter": {
+      "resolution_completeness_required": true,
+      "satisfaction_score_minimum": 4,
+      "series_hook_optional": true
+    }
+  }
+}
+```
+
+#### 11.3.3 Diagnostic Decision Matrix
+
+```json
+{
+  "evaluation_decision_tree": {
+    "critical_failures": {
+      "condition": "any_metric < 2 OR word_count < 2000 OR no_hook",
+      "action": "BLOCK_PUBLICATION",
+      "remedy": "Major revision required - address fundamental issues"
+    },
+    "major_concerns": {
+      "condition": "average_score < 3.0 OR engagement < 0.10",
+      "action": "RECOMMEND_REVISION",
+      "remedy": "Significant improvements needed before publication"
+    },
+    "minor_issues": {
+      "condition": "average_score >= 3.0 AND average_score < 3.5",
+      "action": "CONDITIONAL_APPROVAL",
+      "remedy": "Publish with commitment to improvement in next chapter"
+    },
+    "standard_quality": {
+      "condition": "average_score >= 3.5 AND average_score < 4.0",
+      "action": "APPROVE",
+      "remedy": "Good quality - note areas for enhancement"
+    },
+    "high_quality": {
+      "condition": "average_score >= 4.0 AND all_metrics >= 3",
+      "action": "APPROVE_PROMOTE",
+      "remedy": "Excellent work - consider for featured content"
+    }
+  }
+}
+```
+
+#### 11.3.4 Progressive Improvement Tracking
+
+```json
+{
+  "improvement_thresholds": {
+    "trajectory_analysis": {
+      "improving": "current_average > previous_average + 0.2",
+      "stable": "abs(current_average - previous_average) <= 0.2",
+      "declining": "current_average < previous_average - 0.2"
+    },
+    "intervention_triggers": {
+      "three_declining_chapters": "Author coaching recommended",
+      "engagement_below_0.08_twice": "Reader feedback analysis required",
+      "consistent_pacing_issues": "Structural planning assistance needed"
+    },
+    "success_indicators": {
+      "sustained_quality": "5+ chapters with average >= 4.0",
+      "reader_growth": "engagement_score increasing over 10 chapters",
+      "viral_potential": "engagement_score > 0.30 in any chapter"
+    }
+  }
+}
+```
+
+#### 11.3.5 Example Application with Thresholds
 
 ```json
 {
   "chapter_evaluation": {
     "chapter_id": "chap_001",
     "quantitative": {
-      "word_count": 2145,
-      "pacing_score": 2.8,
-      "hook_present": true,
-      "engagement_score": 0.145
+      "word_count": {
+        "value": 2145,
+        "threshold_status": "BELOW_STANDARD",
+        "target_range": "3500-4500",
+        "action": "Consider expanding scenes or adding character development"
+      },
+      "pacing_score": {
+        "value": 2.8,
+        "threshold_status": "BELOW_STANDARD",
+        "target_range": "3.5-4.5",
+        "action": "Add 1-2 more plot-advancing moments"
+      },
+      "hook_present": {
+        "value": true,
+        "threshold_status": "PASS",
+        "effectiveness_score": 0.8
+      },
+      "engagement_score": {
+        "value": 0.145,
+        "threshold_status": "ACCEPTABLE",
+        "target_range": "0.15-0.25",
+        "action": "Close to target - minor improvements needed"
+      }
     },
     "qualitative": {
-      "plot_coherence": 4,
-      "character_believability": 5,
-      "pacing_flow": 3,
-      "hook_effectiveness": 5,
-      "prose_style": 4
+      "plot_coherence": {
+        "value": 4,
+        "threshold_status": "GOOD",
+        "minimum": 3,
+        "notes": "Meets professional standards"
+      },
+      "character_believability": {
+        "value": 5,
+        "threshold_status": "EXCELLENT",
+        "minimum": 3,
+        "notes": "Exceptional character work"
+      },
+      "pacing_flow": {
+        "value": 3,
+        "threshold_status": "MARGINAL",
+        "minimum": 3,
+        "notes": "Needs smoother transitions"
+      },
+      "hook_effectiveness": {
+        "value": 5,
+        "threshold_status": "EXCELLENT",
+        "minimum": 4,
+        "notes": "First chapter requires strong hook - achieved"
+      },
+      "prose_style": {
+        "value": 4,
+        "threshold_status": "GOOD",
+        "minimum": 3,
+        "notes": "Professional quality prose"
+      }
     },
-    "recommendations": [
-      "Consider adding one more plot-advancing scene",
-      "Smooth transitions between scene 2 and 3",
-      "Strong character voice maintained throughout"
-    ]
+    "overall_assessment": {
+      "quantitative_average": "BELOW_TARGET",
+      "qualitative_average": 4.2,
+      "decision": "CONDITIONAL_APPROVAL",
+      "priority_improvements": [
+        "Increase word count to at least 3000 words",
+        "Add one more plot-advancing scene for better pacing",
+        "Smooth transitions between scenes 2 and 3"
+      ],
+      "strengths": [
+        "Excellent character believability",
+        "Very effective opening hook",
+        "Strong overall qualitative scores"
+      ]
+    }
   }
 }
 ```

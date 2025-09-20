@@ -629,6 +629,495 @@ story_consistency_verification:
 3. **Publication Readiness Assessment**: Evaluate content for both narrative quality and reader engagement potential
 4. **Community Feedback Integration**: Systematically incorporate reader response while maintaining story integrity
 
+## Part Development (Level 2)
+
+### Part Planning Framework
+
+The Part Planning Framework provides structured methodology for developing major story sections that function as self-contained arcs while serving the overall narrative. Each part contains chapters that advance both part-level and story-level goals.
+
+### Development Workflow
+
+**Part Planning Process:**
+
+```
+[Analyze Story Input] ──→ [Map Chapter Distribution] ──→ [Develop Character Arcs] ──→ [Design Tension Progression]
+```
+
+### Part Planning Elements
+
+**Six Core Elements for Part Development:**
+
+1. **Part Goal & Conflict**: Define the specific dramatic question this part must answer
+2. **Chapter Distribution**: Allocate chapters based on narrative weight and pacing needs
+3. **Character Arc Progression**: Map how characters change within this part
+4. **Tension Escalation Pattern**: Design the emotional intensity curve
+5. **Connection Points**: Establish links to previous/next parts
+6. **Reader Hook Integration**: Place engagement elements throughout the part
+
+### Part Specification Process
+
+```yaml
+part_specification:
+  input:
+    # Direct story format from story-specification output
+    story_input:
+      title: "The Shadow Keeper"
+      genre: "urban_fantasy"
+      words: 80000
+      question: "Can Maya master shadow magic before power corrupts her?"
+
+      # Universal story pattern
+      goal: "Save Elena from Shadow Realm"
+      conflict: "Shadow magic corrupts those who use it"
+      outcome: "Maya embraces darkness to save light"
+
+      # Character foundations
+      chars:
+        maya: { role: "protag", arc: "denial→acceptance", flaw: "overprotective" }
+        elena: { role: "catalyst", arc: "missing→transformed", goal: "survive_realm" }
+        marcus: { role: "mentor", arc: "guilt→redemption", secret: "previous_failure" }
+        void: { role: "antag", arc: "power→corruption", goal: "merge_worlds" }
+
+      # Core themes and structure
+      themes: ["responsibility_for_power", "love_vs_control", "inner_battles"]
+      structure:
+        type: "3_part"
+        parts: ["setup", "confrontation", "resolution"]
+        dist: [25, 50, 25]
+
+      # Part assignments
+      parts:
+        - part: 1
+          goal: "Maya accepts supernatural reality"
+          conflict: "Denial vs mounting evidence"
+          outcome: "Reluctant training commitment"
+          tension: "denial vs acceptance"
+
+  output:
+    # Part specification format using hierarchical data flow
+    part:
+      part: 1
+      title: "Discovery"
+      words: 20000
+      goal: "Maya accepts supernatural reality"
+      conflict: "Denial vs mounting evidence"
+      outcome: "Reluctant training commitment"
+
+      # Chapter distribution with narrative function
+      chapters:
+        - chap: 1
+          title: "Missing"
+          words: 3500
+          goal: "Normal coffee date with Elena"
+          conflict: "Elena missing, signs of supernatural danger"
+          outcome: "Finds journal, realizes she's also a target"
+        - chap: 2
+          title: "The Mark"
+          words: 4000
+          goal: "Understand the danger Elena faced"
+          conflict: "Cryptic warnings, reality breaking down"
+          outcome: "Shadow mark appears, Marcus arrives"
+        - chap: 3
+          title: "Shadows Move"
+          words: 4000
+          goal: "Find rational explanation for events"
+          conflict: "Marcus reveals truth, shadows attack"
+          outcome: "First power manifestation saves her life"
+        - chap: 4
+          title: "The Choice"
+          words: 4500
+          goal: "Return to normal life, pretend nothing happened"
+          conflict: "Power grows unstable, Elena appears in dreams"
+          outcome: "Accepts training to save Elena"
+        - chap: 5
+          title: "First Steps"
+          words: 4000
+          goal: "Learn basic control before powers hurt someone"
+          conflict: "Training is dangerous, corruption tempts"
+          outcome: "Basic control achieved, darker path revealed"
+
+      # Character development tracking
+      char_arcs:
+        maya:
+          start: "complete_denial"
+          middle: "forced_acknowledgment"
+          end: "reluctant_acceptance"
+          key_moments: ["Elena_disappearance", "shadow_mark_appears", "first_power_use", "training_choice"]
+
+        marcus:
+          start: "mysterious_arrival"
+          middle: "reluctant_mentor"
+          end: "guilty_teacher"
+          reveals: ["shadow_world_exists", "maya_has_power", "training_possibility"]
+
+      # Tension progression
+      tension_curve:
+        opening: 0.2  # Quiet start with growing unease
+        midpoint: 0.5  # Reality breaking down
+        climax: 0.8    # Life-threatening crisis
+        resolution: 0.4 # Temporary stability with new tension
+
+      # Reader engagement hooks
+      hooks:
+        chapter_endings: ["journal_discovery", "shadow_mark", "power_manifestation", "Elena_dream", "dark_path_hint"]
+        mysteries: ["Elena_location", "Marcus_past", "shadow_realm_nature", "maya_power_origin"]
+        revelations: ["maya_targeted", "magic_real", "maya_has_power", "training_necessary", "corruption_risk"]
+```
+
+### Part Development AI Functions
+
+**Context Building**
+- `buildPartContext(storyData, partNumber)`: Assembles complete story context for part
+- `getCharacterStates(partId)`: Retrieves character states at part boundaries
+- `mapChapterProgression(partGoal, chapterCount)`: Distributes narrative weight
+
+**Content Generation**
+- `developPartConflict(goal, obstacle, outcome)`: Creates escalating conflict pattern
+- `designTensionCurve(chapterCount, climaxPoint)`: Optimizes emotional pacing
+- `integrateCharacterArcs(characters, partProgression)`: Weaves character development
+
+**Quality Assurance**
+- `validatePartCoherence(partContent)`: Checks internal consistency
+- `verifyChapterFlow(chapters)`: Ensures smooth narrative progression
+- `assessHookEffectiveness(hooks, readerEngagement)`: Evaluates engagement elements
+
+### Part Consistency Verification
+
+```yaml
+part_consistency_verification:
+  structural_integrity:
+    goal_clarity: "Part-level dramatic question clearly defined"
+    conflict_escalation: "Obstacles progressively intensify toward climax"
+    outcome_effectiveness: "Resolution sets up next part while satisfying current arc"
+    chapter_distribution: "Narrative weight properly allocated across chapters"
+
+  character_development:
+    arc_progression: "Characters change meaningfully within part"
+    consistency: "Character behavior aligns with established traits"
+    relationship_evolution: "Interpersonal dynamics develop naturally"
+
+  reader_engagement:
+    hook_placement: "Chapter endings create anticipation"
+    mystery_management: "Questions raised and partially answered"
+    pacing_effectiveness: "Tension curve maintains reader interest"
+
+  story_integration:
+    hierarchical_compliance: "Part serves story-level goals"
+    theme_reinforcement: "Part explores assigned thematic elements"
+    continuity: "Smooth connections to previous/next parts"
+```
+
+## Chapter Development (Level 3)
+
+### Chapter Architecture Framework
+
+Chapters serve as the primary publication unit for web serials, requiring both standalone satisfaction and series continuity. The Dual Mandate framework ensures each chapter functions as both a complete reading experience and a continuation driver.
+
+### The Dual Mandate
+
+Every chapter must fulfill two essential requirements:
+
+1. **Standalone Value**: Deliver a complete micro-narrative with beginning, middle, and end
+2. **Serial Continuity**: Advance the larger story while creating anticipation for the next chapter
+
+### Three-Act Chapter Structure
+
+```
+┌─── ACT I: HOOK (20%) ───┐  ┌─── ACT II: DEVELOPMENT (60%) ───┐  ┌─── ACT III: CLIFFHANGER (20%) ───┐
+│                         │  │                                 │  │                                 │
+│ • Immediate engagement  │  │ • Central conflict unfolds      │  │ • Crisis point reached         │
+│ • Story thread pickup   │──│ • Character choices matter      │──│ • New question raised          │
+│ • Chapter goal setup    │  │ • Progressive complications     │  │ • Reader must continue         │
+│                         │  │                                 │  │                                 │
+└─────────────────────────┘  └─────────────────────────────────┘  └─────────────────────────────────┘
+```
+
+### Chapter Specification Process
+
+```yaml
+chapter_specification:
+  input:
+    # Receives part_input from part-specification output
+    part_input:
+      part: 1
+      title: "Discovery"
+      words: 20000
+      goal: "Maya accepts supernatural reality"
+      conflict: "Denial vs mounting evidence"
+      outcome: "Reluctant training commitment"
+
+      story_context:
+        title: "The Shadow Keeper"
+        genre: "urban_fantasy"
+        themes: ["responsibility_for_power", "love_vs_control"]
+
+      chapter_assignment:
+        chap: 1
+        title: "Missing"
+        words: 3500
+        goal: "Normal coffee date with Elena"
+        conflict: "Elena missing, signs of supernatural danger"
+        outcome: "Finds journal, realizes she's also a target"
+
+  output:
+    # Chapter specification with scene breakdown
+    chapter:
+      chap: 1
+      title: "Missing"
+      pov: "maya"
+      words: 3500
+
+      # Three-act structure
+      acts:
+        hook:
+          goal: "Coffee date with Elena"
+          immediate_engagement: "Empty apartment, door ajar"
+          word_count: 700
+
+        development:
+          central_conflict: "Search for Elena, find evidence of struggle"
+          complications: ["No phone", "Neighbors heard nothing", "Strange symbols"]
+          word_count: 2100
+
+        cliffhanger:
+          crisis: "Find Elena's journal with Maya's photo marked"
+          new_question: "Why is Maya also a target?"
+          word_count: 700
+
+      # Scene breakdown for detailed writing
+      scenes:
+        - scene: 1
+          summary: "Maya arrives for coffee, finds Elena missing"
+          time: "sunday_10:05am"
+          place: "elena_apartment_hallway"
+          goal: "Normal coffee date"
+          conflict: "Door unlocked, apartment silent"
+          outcome: "Realizes Elena in danger"
+          shift: "routine → urgent_fear"
+          beats:
+            - "Knock, no answer, try door"
+            - "Find unlocked, call Elena's name"
+            - "Discover overturned furniture"
+            - "Panic, decide to search"
+
+        - scene: 2
+          summary: "Search apartment for clues about Elena"
+          time: "sunday_10:20am"
+          place: "elena_apartment_interior"
+          goal: "Find Elena or explanation"
+          conflict: "Confusing evidence, no clear answers"
+          outcome: "Find strange symbols burned into wall"
+          shift: "desperate_search → supernatural_dread"
+
+        - scene: 3
+          summary: "Discover journal with marked photos"
+          time: "sunday_10:35am"
+          place: "elena_bedroom"
+          goal: "Check Elena's room for clues"
+          conflict: "Hidden journal with disturbing contents"
+          outcome: "Maya's photo marked as 'next'"
+          shift: "investigation → personal_threat"
+
+      # Reader engagement elements
+      hooks:
+        opening: "Why is Elena's door open on a Sunday morning?"
+        middle: "What do the burned symbols mean?"
+        ending: "Why is Maya marked as 'next'?"
+
+      # Character emotional journey
+      pov_journey:
+        maya:
+          emotional_arc: "anticipation → concern → fear → terror"
+          key_decisions: ["Enter apartment", "Search vs call police", "Take journal"]
+          voice_markers: ["Protective concern", "Analytical thinking", "Rising panic"]
+```
+
+### Chapter Development AI Functions
+
+**Hook Creation**
+- `generateImmediateHook(previousChapter, currentGoal)`: Creates engaging opening
+- `bridgeChapterTransition(previousEnding, currentOpening)`: Ensures smooth flow
+- `calibrateEngagementLevel(genre, targetAudience)`: Optimizes hook intensity
+
+**Development Enhancement**
+- `escalateConflict(initialProblem, complications)`: Builds tension effectively
+- `balanceChapterElements(action, dialogue, description)`: Optimizes pacing
+- `maintainCharacterVoice(povCharacter, emotionalState)`: Ensures consistency
+
+**Cliffhanger Design**
+- `createEffectiveCliffhanger(chapterConflict, nextChapter)`: Maximizes anticipation
+- `varyCliffhangerTypes(previousCliffhangers)`: Avoids repetition
+- `balanceResolutionAnticipation(satisfaction, curiosity)`: Optimizes reader experience
+
+### Chapter Consistency Verification
+
+```yaml
+chapter_consistency_verification:
+  dual_mandate:
+    standalone_value: "Chapter delivers complete micro-narrative"
+    serial_continuity: "Chapter advances larger story effectively"
+    reader_satisfaction: "Balance of resolution and anticipation achieved"
+
+  three_act_structure:
+    hook_effectiveness: "Opening engages within first paragraphs"
+    development_pacing: "Central conflict unfolds naturally"
+    cliffhanger_impact: "Ending compels continuation"
+
+  scene_integration:
+    scene_flow: "Scenes connect logically and emotionally"
+    pov_consistency: "Character voice maintained throughout"
+    emotional_journey: "Clear emotional arc for POV character"
+
+  part_alignment:
+    contributes_to_part_goal: "Chapter advances part-level objectives"
+    character_arc_progression: "Character development serves part arc"
+    theme_exploration: "Thematic elements properly integrated"
+```
+
+## Scene Development (Level 4)
+
+### Core Scene Architecture
+
+Every effective scene follows the fundamental **Goal-Conflict-Outcome** structure, creating meaningful change through a **Value Shift**:
+
+```
+┌─── THE SCENE (Action Unit) ───┐        ┌─── THE SEQUEL (Reaction Unit) ───┐
+│                               │        │                                  │
+│  GOAL ────┐                   │        │  REACTION ────┐                  │
+│           │                   │        │               │                  │
+│           ▼                   │   ──►  │               ▼                  │
+│  CONFLICT │                   │        │  DILEMMA ─────┼──► Next Scene    │
+│           │                   │        │               │                  │
+│           ▼                   │        │               ▼                  │
+│  DISASTER (Outcome)           │        │  DECISION ────┘                  │
+│                               │        │                                  │
+└───────────────────────────────┘        └──────────────────────────────────┘
+
+VALUE SHIFT: Character moves from one polarity to opposite (+ to -, - to +, or escalating)
+TURNING POINT: The specific moment that irrevocably alters the scene's direction
+```
+
+### Scene Specification Process
+
+```yaml
+scene_specification:
+  input:
+    # Receives chapter_input from chapter-specification output
+    chapter_input:
+      chapter_context:
+        chap: 1
+        title: "Missing"
+        pov: "maya"
+        words: 3500
+
+      story_context:
+        title: "The Shadow Keeper"
+        genre: "urban_fantasy"
+        themes: ["responsibility_for_power", "love_vs_control"]
+
+      scene_assignment:
+        function: "chapter_opening"
+        goal: "Establish Elena missing"
+        setting: "elena_apartment_hallway"
+        events: ["elena_disappearance", "struggle_evidence"]
+
+  output:
+    # Scene specification format
+    scene:
+      id: 1
+      summary: "Maya arrives for coffee date, finds Elena missing with signs of struggle"
+
+      # Scene context
+      time: "sunday_10:05am"
+      place: "elena_apartment_hallway"
+      pov: "maya"
+
+      # Characters present
+      characters:
+        maya: { enters: "casual_anticipation", exits: "panicked_determination" }
+        elena: { status: "absent_but_referenced", evidence: "struggle_signs" }
+
+      # Core dramatic movement
+      goal: "Normal coffee date with Elena"
+      obstacle: "Door unlocked, apartment silent, struggle evidence"
+      outcome: "Realizes Elena in danger, decides to search"
+
+      # Key beats
+      beats:
+        - "Maya knocks, no answer, tries door"
+        - "Finds apartment unlocked, calls Elena's name"
+        - "Discovers overturned table, broken coffee mug"
+        - "Maya panics, decides to search rather than call police"
+
+      # Emotional/value shift
+      shift: "routine_expectation → urgent_fear"
+
+      # Connection to chapter flow
+      leads_to: "maya_searches_apartment_for_clues"
+
+      # Visual scene description
+      image_prompt: "Young woman in casual clothes standing in dimly lit apartment hallway, face showing concern as she looks at ajar door. Early morning light filtering through windows, subtle signs of disturbance visible. Mood: tense, mysterious, domestic thriller."
+```
+
+### Motivation-Reaction Units (MRUs)
+
+Structure scene prose using the natural sequence of stimulus and response:
+
+```
+MOTIVATION (External Event) ──→ REACTION (Character Response)
+                                     │
+                                     ├── 1. Feeling (Internal/Emotional)
+                                     ├── 2. Reflex (Physical/Involuntary)
+                                     └── 3. Action/Speech (Deliberate)
+
+Example:
+Motivation: "The door slammed shut." (External, objective)
+Reaction:
+  Feeling: "Fear shot through him." (Internal response)
+  Reflex:  "He flinched." (Physical response)
+  Action:  "He reached for the doorknob. 'Who's there?'" (Deliberate response)
+```
+
+### Scene Development AI Functions
+
+**Context Building**
+- `buildSceneContext(chapterPosition)`: Assembles complete narrative context
+- `getCharacterEmotions(sceneId)`: Retrieves character emotional states
+- `getEnvironmentalDetails(setting)`: Identifies relevant atmospheric elements
+
+**Content Generation**
+- `enhanceDialogueTension(characters, conflict)`: Improves dialogue authenticity
+- `developSensoryImmersion(setting, pov)`: Enhances environmental details
+- `balanceSceneElements(dialogue, action, description)`: Optimizes distribution
+
+**Quality Assurance**
+- `validateSceneCoherence(sceneContent)`: Checks internal consistency
+- `verifyCharacterContinuity(characterStates)`: Confirms behavior authenticity
+- `assessNarrativeFlow(sceneSequence)`: Evaluates scene connections
+
+### Scene Consistency Verification
+
+```yaml
+scene_consistency_verification:
+  scene_structure:
+    goal_clarity: "Character objective clearly defined"
+    conflict_escalation: "Progressive complications prevent easy achievement"
+    disaster_outcome: "Scene ends with 'No, and...' or 'Yes, but...'"
+    value_shift: "Character moves from one polarity to opposite"
+
+  prose_quality:
+    mru_sequence: "Natural motivation-reaction flow maintained"
+    scene_summary_balance: "Appropriate pacing through dramatization"
+    character_voice: "Authentic speech patterns and personality"
+    sensory_grounding: "Environmental details filtered through POV"
+
+  story_integration:
+    chapter_flow: "Scene serves function within chapter arc"
+    character_continuity: "Behavior aligns with established traits"
+    narrative_advancement: "Scene progresses plot effectively"
+    next_scene_setup: "Clear connection to subsequent scenes"
+```
+
 ## Integration with Story Specification
 
 This development guide works in conjunction with the **Story Specification (Level 1: Overall Narrative)** document to provide a complete story creation system:
