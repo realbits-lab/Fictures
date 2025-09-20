@@ -1,142 +1,415 @@
-import { generateText } from 'ai';
-import { NextRequest, NextResponse } from 'next/server';
+import { streamText, tool, stepCountIs, generateText } from 'ai';
+import { google } from '@ai-sdk/google';
+import { gateway } from '@ai-sdk/gateway';
+import { z } from 'zod';
 import * as yaml from 'js-yaml';
-
-interface StoryData {
-  title: string;
-  genre: string;
-  words: number;
-  question: string;
-  goal: string;
-  conflict: string;
-  outcome: string;
-  chars: Record<string, { role: string; arc: string }>;
-  themes: string[];
-  structure: { type: string; parts: string[]; dist: number[] };
-  parts: Array<{ part: number; goal: string; conflict: string; outcome: string; tension: string }>;
-}
+import { NextRequest, NextResponse } from 'next/server';
+import { STORY_ANALYSIS_MODEL } from '@/lib/ai/config';
 
 export async function POST(request: NextRequest) {
   try {
-    const { storyData, userRequest } = await request.json();
+    const startTime = Date.now();
+    console.log('🔍 [STORY-ANALYZER] Starting request processing...', new Date().toISOString());
 
-    // Add null safety checks for all nested objects
-    const safeStoryData = {
-      title: storyData?.title || '',
-      genre: storyData?.genre || 'urban_fantasy',
-      words: storyData?.words || 80000,
-      question: storyData?.question || '',
-      goal: storyData?.goal || '',
-      conflict: storyData?.conflict || '',
-      outcome: storyData?.outcome || '',
-      chars: storyData?.chars || {},
-      themes: storyData?.themes || [],
-      structure: storyData?.structure || { type: '3_part', parts: ['setup', 'confrontation', 'resolution'], dist: [25, 50, 25] },
-      parts: storyData?.parts || []
+    const requestBody = await request.json();
+    console.log('🔍 [STORY-ANALYZER] Request body parsed in:', Date.now() - startTime, 'ms');
+    if (!requestBody || typeof requestBody !== 'object') {
+      throw new Error('Invalid request body');
+    }
+
+    // Extract YAML data and user request
+    const { storyYaml, userRequest } = requestBody;
+
+    if (!userRequest || typeof userRequest !== 'string') {
+      throw new Error('Missing or invalid userRequest');
+    }
+
+    if (!storyYaml || typeof storyYaml !== 'string') {
+      throw new Error('Missing or invalid storyYaml in request');
+    }
+
+    const currentStoryYAML = storyYaml;
+    console.log('🔍 [STORY-ANALYZER] Request validation completed in:', Date.now() - startTime, 'ms');
+
+    // Define tools for the AI to choose from
+    const tools = {
+      modifyStoryStructure: tool({
+        description: 'Modify the main story structure including title, genre, plot, themes, word count, and overall story elements',
+        inputSchema: z.object({
+          currentYamlData: z.string().describe('Current story data as YAML text'),
+          userRequest: z.string().describe('User request for story modifications')
+        }),
+        execute: async ({ currentYamlData, userRequest }) => {
+          const result = await generateText({
+            model: gateway(STORY_ANALYSIS_MODEL),
+            system: `You are a creative story development specialist. Follow the story specification framework and help users develop complete, engaging stories.
+
+# CORE PRINCIPLE
+When users request data completion ("complete story data", "fill missing fields", "complete all data"), your job is to replace ALL empty fields with meaningful content. Never leave empty arrays [] or empty objects {} in the output.
+
+# COMPLETION RULES
+1. Scan the entire YAML for empty structures: [], {}, "", 0
+2. Replace every empty structure with appropriate content
+3. Ensure all story elements are interconnected and coherent
+4. Generate creative, genre-appropriate content for missing fields
+
+# FIELD REQUIREMENTS
+Essential fields that must never be empty when completing data:
+- title: Story title
+- genre: Story genre
+- words: Target word count
+- goal, conflict, outcome, question: Core story elements
+- chars: Character data with roles and arcs
+- themes: Story themes
+- parts: Story parts with goals and conflicts
+- setting: Primary and secondary locations
+- serial: Publication schedule and details
+- hooks: Reader engagement elements
+
+# COMPLETION APPROACH
+- Be creative and interpretive with requests
+- Generate content that fits the story's genre and tone
+- Create interconnected elements that support the overall narrative
+- Use appropriate complexity based on the story type
+- Always provide complete, valid YAML output
+
+IMPORTANT: Return ONLY valid YAML of the updated story data, nothing else. No explanations, no markdown formatting.`,
+            prompt: `Current story YAML:
+${currentYamlData}
+
+User request: "${userRequest}"
+
+Please modify the story data according to this request and return the updated story as valid YAML.`
+          });
+
+          return {
+            type: 'story_modification',
+            updatedYamlText: result.text.trim(),
+            success: true
+          };
+        }
+      }),
+
+      modifyCharacterData: tool({
+        description: 'Add, modify, or enhance character information including character arcs, relationships, backstories, and character development',
+        inputSchema: z.object({
+          currentYamlData: z.string().describe('Current story data as YAML text'),
+          userRequest: z.string().describe('User request for character modifications')
+        }),
+        execute: async ({ currentYamlData, userRequest }) => {
+          const result = await generateText({
+            model: gateway(STORY_ANALYSIS_MODEL),
+            system: `You are a character development specialist focusing ONLY on character-related modifications.
+
+FUNDAMENTAL PRINCIPLE: ALWAYS MAKE CHARACTER CHANGES
+- Add new characters when requested
+- Enhance existing character details (backstory, motivation, relationships)
+- Develop character arcs and growth
+- Create detailed character profiles
+
+FOCUS ON CHARACTER ELEMENTS:
+- Character roles and archetypes
+- Character arcs and development
+- Relationships between characters
+- Character backstories and motivations
+- Character conflicts and goals
+
+IMPORTANT: Return ONLY valid YAML with the updated story data containing enhanced character information. No explanations, no markdown formatting.`,
+            prompt: `Current story YAML:
+${currentYamlData}
+
+User request: "${userRequest}"
+
+Add or modify characters as requested and return complete updated story YAML.`
+          });
+
+          return {
+            type: 'character_modification',
+            updatedYamlText: result.text.trim(),
+            success: true
+          };
+        }
+      }),
+
+      modifyPlaceData: tool({
+        description: 'Add, modify, or enhance place and setting information including locations, environments, world-building details',
+        inputSchema: z.object({
+          currentYamlData: z.string().describe('Current story data as YAML text'),
+          userRequest: z.string().describe('User request for place/setting modifications')
+        }),
+        execute: async ({ currentYamlData, userRequest }) => {
+          const result = await generateText({
+            model: gateway(STORY_ANALYSIS_MODEL),
+            system: `You are a world-building and setting specialist focusing ONLY on place/setting modifications.
+
+FUNDAMENTAL PRINCIPLE: ALWAYS ENHANCE SETTINGS
+- Add new locations when requested
+- Develop detailed place descriptions
+- Create immersive environments
+- Build cohesive world-building elements
+
+FOCUS ON PLACE ELEMENTS:
+- Location details and atmosphere
+- Environmental descriptions
+- World-building consistency
+- Setting mood and tone
+- Physical and cultural details
+
+IMPORTANT: Return ONLY valid YAML with updated story data containing enhanced setting information. No explanations, no markdown formatting.`,
+            prompt: `Current story YAML:
+${currentYamlData}
+
+User request: "${userRequest}"
+
+Add or modify places/settings as requested and return complete updated story YAML.`
+          });
+
+          return {
+            type: 'place_modification',
+            updatedYamlText: result.text.trim(),
+            success: true
+          };
+        }
+      }),
+
+      generateImageDescription: tool({
+        description: 'Generate actual images for characters, places, or scenes using Vercel AI Gateway with Gemini Flash Image',
+        inputSchema: z.object({
+          currentYamlData: z.string().describe('Current story data as YAML text'),
+          userRequest: z.string().describe('User request for image generation')
+        }),
+        execute: async ({ currentYamlData, userRequest }) => {
+          try {
+            // Generate image using Google Gemini 2.5 Flash Image
+            const result = await generateText({
+              model: google('gemini-2.5-flash-image-preview'),
+              system: `You are a visual art specialist. Generate a detailed image based on the story context and user request.
+
+Story Context:
+${currentYamlData}
+
+Create a beautiful, high-quality image that matches the story's genre, theme, and atmosphere. Focus on visual storytelling and artistic quality.`,
+              prompt: userRequest,
+              providerOptions: {
+                google: {
+                  responseModalities: ['TEXT', 'IMAGE']
+                }
+              }
+            });
+
+            // Extract image data from the result
+            const imageFiles = result.files?.filter(f => f.mediaType?.startsWith('image/'));
+
+            if (imageFiles && imageFiles.length > 0) {
+              // Convert the image data to a data URL for preview
+              const imageFile = imageFiles[0];
+              const base64Data = Buffer.from(imageFile.uint8Array).toString('base64');
+              const mimeType = imageFile.mediaType || 'image/png';
+              const dataUrl = `data:${mimeType};base64,${base64Data}`;
+
+              // Determine image type and subject from the request
+              const imageType = userRequest.toLowerCase().includes('character') ? 'character' :
+                               userRequest.toLowerCase().includes('place') || userRequest.toLowerCase().includes('location') ? 'place' : 'scene';
+
+              return {
+                type: 'image_generation',
+                imageDescription: result.text || userRequest,
+                suggestedPrompt: userRequest,
+                imageType: imageType,
+                subject: userRequest,
+                style: 'digital art',
+                generatedImageUrl: dataUrl,
+                requiresImageService: false,
+                isPreview: true,
+                success: true
+              };
+            } else {
+              // Fallback if no image was generated
+              return {
+                type: 'image_generation',
+                imageDescription: result.text || userRequest,
+                suggestedPrompt: userRequest,
+                imageType: 'scene',
+                subject: userRequest,
+                style: 'digital art',
+                generatedImageUrl: null,
+                requiresImageService: true,
+                error: 'No image was generated in the response',
+                success: false
+              };
+            }
+          } catch (error) {
+            console.error('Vercel AI Gateway image generation error:', error);
+            return {
+              type: 'image_generation',
+              imageDescription: userRequest,
+              suggestedPrompt: userRequest,
+              imageType: 'scene',
+              subject: userRequest,
+              style: 'digital art',
+              generatedImageUrl: null,
+              requiresImageService: true,
+              error: error instanceof Error ? error.message : 'Image generation failed',
+              success: false
+            };
+          }
+        }
+      })
     };
 
-    const currentStoryYAML = `story:
-  title: "${safeStoryData.title}"
-  genre: "${safeStoryData.genre}"
-  words: ${safeStoryData.words}
-  question: "${safeStoryData.question}"
-  goal: "${safeStoryData.goal}"
-  conflict: "${safeStoryData.conflict}"
-  outcome: "${safeStoryData.outcome}"
-  chars:${Object.entries(safeStoryData.chars).map(([name, char]: [string, any]) => `
-    ${name}: { role: "${char?.role || 'character'}", arc: "${char?.arc || 'development'}" }`).join('')}
-  themes: [${safeStoryData.themes.map((theme: string) => `"${theme}"`).join(', ')}]
-  structure:
-    type: "${safeStoryData.structure.type}"
-    parts: [${safeStoryData.structure.parts.map((part: string) => `"${part}"`).join(', ')}]
-    dist: [${safeStoryData.structure.dist.join(', ')}]
-  parts:${safeStoryData.parts.map((part: any) => `
-    - part: ${part.part}
-      goal: "${part.goal || ''}"
-      conflict: "${part.conflict || ''}"
-      tension: "${part.tension || ''}"`).join('')}`;
+    // Use AI SDK to let the model choose and execute appropriate tools
+    console.log('🔍 [STORY-ANALYZER] Starting streamText call at:', Date.now() - startTime, 'ms');
+    const result = streamText({
+      model: gateway(STORY_ANALYSIS_MODEL),
+      system: `You are a creative story development assistant. You MUST ALWAYS call one of the available tools for every user request. Never respond without using tools.
 
-    const result = await generateText({
-      model: 'gpt-4o-mini',
-      system: `You are a creative story development assistant. Your job is to:
+# MANDATORY TOOL SELECTION
+You MUST call tools for EVERY request. For ANY story modification request, you MUST use modifyStoryStructure as the default tool.
 
-1. UNDERSTAND the user's request for modifying the story
-2. CREATIVELY INTERPRET abstract requests into concrete story changes
-3. ALWAYS MAKE MEANINGFUL CHANGES when a user requests something
-4. RETURN the updated story data as valid YAML
+# TOOL SELECTION RULES (MANDATORY)
+1. **ALWAYS call modifyStoryStructure** for any story changes including:
+   - Title changes ("change title", "new title", "rename story")
+   - Genre modifications
+   - Plot, theme, goal, conflict, outcome changes
+   - Word count adjustments
+   - General story improvements
+   - ANY request that doesn't clearly specify characters, places, or images
 
-CRITICAL RULES:
-- ALWAYS apply the user's request - never return unchanged data
-- Be CREATIVE and INTERPRETIVE with abstract requests
-- When user says "add emotional depth" → enhance character arcs, add internal conflicts, deepen motivations
-- When user says "make it darker" → intensify conflicts, add tragic elements, increase stakes
-- When user says "add romance" → create romantic subplots, add relationship dynamics
-- When user says "more action" → increase physical conflicts, add chase scenes, heighten tension
-- When user says "make it longer" → expand word count, add subplots, create more detailed parts
-- When user says "add character X" → create that character with appropriate role and arc
+2. **modifyCharacterData**: ONLY for explicit character requests:
+   - "add character", "modify character", "character development"
+   - Character relationships, backstories, character arcs
 
-CREATIVE INTERPRETATION EXAMPLES:
-- "More emotional depth" = Enhance character arcs with deeper psychological motivations, add internal struggles, create more complex relationships
-- "Add suspense" = Increase unknown elements, add time pressure, create cliffhangers in parts
-- "Make it funny" = Add comedic elements to character interactions, lighten conflicts, add humorous outcomes
-- "Add mystery" = Create unknown elements, add secrets between characters, make goals more enigmatic
-- "More character development" = Expand character arcs, add character growth moments, create relationship dynamics
+3. **modifyPlaceData**: ONLY for explicit location requests:
+   - "add location", "describe setting", "world-building"
+   - Environment and place descriptions
 
-ALWAYS MAKE SUBSTANTIAL CHANGES that reflect the user's intent, even if the request is vague.
+4. **generateImageDescription**: ONLY for explicit image requests:
+   - "show me", "generate image", "what does X look like"
+   - Visual content creation
 
-YAML structure should follow this format:
-story:
-  title: "string"
-  genre: "string"
-  words: number
-  question: "string"
-  goal: "string"
-  conflict: "string"
-  outcome: "string"
-  chars:
-    character_name: { role: "string", arc: "string" }
-  themes: ["theme1", "theme2"]
-  structure:
-    type: "string"
-    parts: ["part1", "part2"]
-    dist: [number, number]
-  parts:
-    - part: number
-      goal: "string"
-      conflict: "string"
-      outcome: "string"
-      tension: "string"
+# CRITICAL INSTRUCTION
+If a user asks to "change title" or similar story modification, you MUST call modifyStoryStructure.
+If you're unsure which tool to use, DEFAULT to modifyStoryStructure.
+Never respond without calling a tool - this will cause an error.
 
-Return ONLY valid YAML of the updated story data, nothing else.`,
-      prompt: `Current story YAML:
+# RESPONSE STRATEGY
+1. Analyze the request
+2. Select the appropriate tool (default: modifyStoryStructure)
+3. Execute the tool with the story data and user request
+4. Always improve and enhance the story content creatively`,
+      prompt: `Current story data:
 ${currentStoryYAML}
 
 User request: "${userRequest}"
 
-Please modify the story data according to this request and return the updated story as valid YAML.`,
+Please analyze this request and use the appropriate tool(s) to fulfill it. Be creative and comprehensive in your modifications.`,
+      tools,
+      stopWhen: stepCountIs(3) // Allow multiple tool calls if needed
     });
 
-    // Clean the AI response by removing markdown code blocks if present
-    let cleanedResponse = result.text.trim();
+    // Collect tool results
+    const toolResults: Array<Record<string, unknown>> = [];
+    let finalText = '';
 
-    // Remove ```yaml or ```json at the beginning and ``` at the end if present
-    if (cleanedResponse.startsWith('```yaml')) {
-      cleanedResponse = cleanedResponse.replace(/^```yaml\s*/, '').replace(/\s*```$/, '');
-    } else if (cleanedResponse.startsWith('```json')) {
-      cleanedResponse = cleanedResponse.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-    } else if (cleanedResponse.startsWith('```')) {
-      cleanedResponse = cleanedResponse.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    console.log('🔍 [STORY-ANALYZER] Starting stream processing at:', Date.now() - startTime, 'ms');
+    // Process the streaming result to collect tool outputs
+    for await (const chunk of result.fullStream) {
+      if (chunk.type === 'text-delta') {
+        finalText += chunk.text;
+      }
+      if (chunk.type === 'tool-result') {
+        console.log('🔍 [STORY-ANALYZER] Tool result received at:', Date.now() - startTime, 'ms');
+        toolResults.push(chunk.output as Record<string, unknown>);
+      }
     }
 
-    // Parse the cleaned AI response as YAML and extract the story data
-    const parsedYAML = yaml.load(cleanedResponse) as any;
-    const updatedStoryData = parsedYAML.story;
+    console.log('🔍 [STORY-ANALYZER] Stream processing completed at:', Date.now() - startTime, 'ms');
 
-    return NextResponse.json({
+    // Process results based on tool outputs
+    if (toolResults.length === 0) {
+      return NextResponse.json({
+        success: false,
+        error: 'No tools were called. Please try a more specific request.'
+      });
+    }
+
+    // Combine results from multiple tools if used
+    let finalResult: Record<string, unknown> = {
       success: true,
-      updatedStoryData,
-      originalRequest: userRequest
-    });
+      originalRequest: userRequest,
+      toolsUsed: toolResults.map(r => r.type),
+      text: finalText.trim()
+    };
+
+    // Process each tool result
+    for (const toolResult of toolResults) {
+      if (toolResult.type === 'story_modification' || toolResult.type === 'character_modification' || toolResult.type === 'place_modification') {
+        // Parse the updated YAML text - simplified approach
+        console.log('🔍 [STORY-ANALYZER] Starting YAML processing at:', Date.now() - startTime, 'ms');
+        try {
+          let cleanedYaml = toolResult.updatedYamlText as string;
+          if (!cleanedYaml || typeof cleanedYaml !== 'string') {
+            throw new Error('Invalid YAML text received from tool');
+          }
+
+          // Clean markdown formatting
+          if (cleanedYaml.startsWith('```yaml')) {
+            cleanedYaml = cleanedYaml.replace(/^```yaml\s*/, '').replace(/\s*```$/, '');
+          } else if (cleanedYaml.startsWith('```')) {
+            cleanedYaml = cleanedYaml.replace(/^```\s*/, '').replace(/\s*```$/, '');
+          }
+
+          // Parse and validate YAML
+          const parsedYAML = yaml.load(cleanedYaml);
+          if (!parsedYAML || typeof parsedYAML !== 'object') {
+            throw new Error('YAML parsing returned null or invalid data');
+          }
+
+          const rawStoryData = (parsedYAML as Record<string, unknown>).story || parsedYAML;
+          if (!rawStoryData || typeof rawStoryData !== 'object') {
+            throw new Error('No valid story data found in parsed YAML');
+          }
+
+          // Simple data extraction without complex safety checks
+          const updatedStoryData = rawStoryData as Record<string, unknown>;
+
+          finalResult = {
+            ...finalResult,
+            updatedStoryData,
+            updatedYaml: cleanedYaml,
+            responseType: 'yaml',
+            requestType: toolResult.type,
+            reasoning: `AI processed ${toolResult.type.replace('_', ' ')} request`
+          };
+        } catch (error) {
+          console.error('Error parsing YAML from tool result:', error);
+          finalResult = {
+            ...finalResult,
+            responseType: 'error',
+            error: `Failed to parse updated story data: ${error instanceof Error ? error.message : 'Unknown parsing error'}`
+          };
+        }
+      }
+
+      if (toolResult.type === 'image_generation') {
+        finalResult = {
+          ...finalResult,
+          imageDescription: toolResult.imageDescription,
+          suggestedPrompt: toolResult.suggestedPrompt,
+          imageType: toolResult.imageType,
+          subject: toolResult.subject,
+          style: toolResult.style,
+          generatedImageUrl: toolResult.generatedImageUrl,
+          isImagePreview: toolResult.isPreview,
+          requiresImageService: toolResult.requiresImageService,
+          responseType: finalResult.responseType === 'yaml' ? 'mixed' : 'image',
+          imageError: toolResult.error
+        };
+      }
+    }
+
+    console.log('🔍 [STORY-ANALYZER] Total processing time:', Date.now() - startTime, 'ms');
+    return NextResponse.json(finalResult);
 
   } catch (error) {
     console.error('Story analyzer API error:', error);

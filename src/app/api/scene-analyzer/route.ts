@@ -1,4 +1,6 @@
 import { generateText } from 'ai';
+import { gateway } from '@ai-sdk/gateway';
+import { DEFAULT_MODEL } from '@/lib/ai/config';
 import yaml from 'js-yaml';
 
 export async function POST(request: Request) {
@@ -33,7 +35,7 @@ export async function POST(request: Request) {
     const currentSceneYaml = yaml.dump(sceneData);
 
     const { text } = await generateText({
-      model: 'openai/gpt-4o-mini',
+      model: gateway(DEFAULT_MODEL),
       system: `You are a creative scene writing expert. Your task is to modify a SINGLE scene data structure based on user requests.
 
 CRITICAL RULES:

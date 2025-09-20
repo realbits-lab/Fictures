@@ -24,10 +24,11 @@ interface YAMLKeyCardProps {
   columnIndex: number;
   isExpanded: boolean;
   isChanged?: boolean;
+  mounted: boolean;
   onToggleExpansion: (keyName: string) => void;
 }
 
-function YAMLKeyCard({ keyName, value, isDark, columnIndex, isExpanded, isChanged = false, onToggleExpansion }: YAMLKeyCardProps) {
+function YAMLKeyCard({ keyName, value, isDark, columnIndex, isExpanded, isChanged = false, mounted, onToggleExpansion }: YAMLKeyCardProps) {
 
   const renderValue = (val: any): string => {
     if (typeof val === 'object' && val !== null) {
@@ -88,21 +89,27 @@ function YAMLKeyCard({ keyName, value, isDark, columnIndex, isExpanded, isChange
         </div>
       ) : (
         <div className="mt-2 text-xs border-t border-gray-200 dark:border-gray-700 pt-2">
-          <SyntaxHighlighter
-            language="yaml"
-            style={isDark ? oneDark : oneLight}
-            customStyle={{
-              margin: 0,
-              padding: '8px',
-              fontSize: '11px',
-              borderRadius: '4px',
-              maxHeight: '300px',
-              overflow: 'auto'
-            }}
-            wrapLongLines={true}
-          >
-            {yaml.dump(value, { indent: 2 })}
-          </SyntaxHighlighter>
+          {mounted ? (
+            <SyntaxHighlighter
+              language="yaml"
+              style={isDark ? oneDark : oneLight}
+              customStyle={{
+                margin: 0,
+                padding: '8px',
+                fontSize: '11px',
+                borderRadius: '4px',
+                maxHeight: '300px',
+                overflow: 'auto'
+              }}
+              wrapLongLines={true}
+            >
+              {yaml.dump(value, { indent: 2 })}
+            </SyntaxHighlighter>
+          ) : (
+            <div className="bg-gray-50 dark:bg-gray-800 border rounded-md p-2 text-xs font-mono text-gray-600 dark:text-gray-400">
+              Loading...
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -119,7 +126,15 @@ export function BeautifulYAMLDisplay({
   onDataChange
 }: BeautifulYAMLDisplayProps) {
   const { theme, systemTheme } = useTheme();
-  const isDark = theme === 'dark' || (theme === 'system' && systemTheme === 'dark');
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch by ensuring client-side rendering
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Default to light theme during SSR to prevent hydration mismatch
+  const isDark = mounted ? (theme === 'dark' || (theme === 'system' && systemTheme === 'dark')) : false;
 
   // State to track which card is currently expanded (only one at a time)
   const [expandedCardKey, setExpandedCardKey] = useState<string | null>(null);
@@ -220,6 +235,7 @@ export function BeautifulYAMLDisplay({
                         columnIndex={index}
                         isExpanded={false}
                         isChanged={isChanged}
+                        mounted={mounted}
                         onToggleExpansion={handleCardToggle}
                       />
                     </div>
@@ -250,6 +266,7 @@ export function BeautifulYAMLDisplay({
                     columnIndex={keys.indexOf(expandedCardKey) % 3}
                     isExpanded={true}
                     isChanged={changedKeys.includes(expandedCardKey)}
+                    mounted={mounted}
                     onToggleExpansion={handleCardToggle}
                   />
                 </div>
@@ -265,21 +282,27 @@ export function BeautifulYAMLDisplay({
               </summary>
               <div className="mt-2">
                 <div className="relative">
-                  <SyntaxHighlighter
-                    language="yaml"
-                    style={isDark ? oneDark : oneLight}
-                    customStyle={{
-                      margin: 0,
-                      padding: '12px',
-                      fontSize: '12px',
-                      borderRadius: '6px',
-                      maxHeight: '400px',
-                      overflow: 'auto'
-                    }}
-                    wrapLongLines={true}
-                  >
-                    {typeof data === 'string' ? data : yaml.dump(parsedData, { indent: 2 })}
-                  </SyntaxHighlighter>
+                  {mounted ? (
+                    <SyntaxHighlighter
+                      language="yaml"
+                      style={isDark ? oneDark : oneLight}
+                      customStyle={{
+                        margin: 0,
+                        padding: '12px',
+                        fontSize: '12px',
+                        borderRadius: '6px',
+                        maxHeight: '400px',
+                        overflow: 'auto'
+                      }}
+                      wrapLongLines={true}
+                    >
+                      {typeof data === 'string' ? data : yaml.dump(parsedData, { indent: 2 })}
+                    </SyntaxHighlighter>
+                  ) : (
+                    <div className="bg-gray-50 dark:bg-gray-800 border rounded-md p-3 text-sm font-mono text-gray-600 dark:text-gray-400">
+                      Loading YAML viewer...
+                    </div>
+                  )}
                   {changedKeys.length > 0 && (
                     <div className="absolute top-2 right-2">
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">

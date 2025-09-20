@@ -64,9 +64,9 @@ export function PartPromptEditor({ partData, onPartUpdate, onPreviewUpdate }: Pa
       const response = await fetch('/api/part-analyzer', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/yaml',
         },
-        body: JSON.stringify({
+        body: yaml.dump({
           partData,
           userRequest: inputPrompt.trim()
         })

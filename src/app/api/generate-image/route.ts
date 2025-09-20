@@ -25,8 +25,8 @@ export async function POST(request: NextRequest) {
       return new Response('Missing required fields: prompt, type, storyId', { status: 400 });
     }
 
-    if (!['character', 'place'].includes(type)) {
-      return new Response('Type must be either "character" or "place"', { status: 400 });
+    if (!['character', 'place', 'scene', 'general'].includes(type)) {
+      return new Response('Type must be "character", "place", "scene", or "general"', { status: 400 });
     }
 
     console.log(`🎨 Generating ${type} image with prompt:`, prompt);
@@ -55,8 +55,10 @@ export async function POST(request: NextRequest) {
 
       if (type === 'character') {
         return `${placeholderService}/400/600?random=${imageId}&blur=0`;
-      } else {
+      } else if (type === 'place' || type === 'scene' || type === 'general') {
         return `${placeholderService}/600/400?random=${imageId}&blur=0`;
+      } else {
+        return `${placeholderService}/500/500?random=${imageId}&blur=0`;
       }
     };
 
