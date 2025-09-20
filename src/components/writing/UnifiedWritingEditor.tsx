@@ -1430,226 +1430,156 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             )}
 
             {/* Chapter Overview */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>📝 Chapter Overview</CardTitle>
-                <Button 
-                  size="sm" 
-                  variant="secondary"
-                  onClick={() => {
-                    const newShowState = !showThemePlanner;
-                    setShowThemePlanner(newShowState);
-                    // Mark theme as planned when user first opens the planner
-                    if (newShowState && !themePlanned) {
-                      setThemePlanned(true);
-                    }
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <BeautifulJSONDisplay
+                  title="📝 Chapter Overview"
+                  icon="📝"
+                  data={{
+                    title: chapterData.title,
+                    part: chapterData.partTitle,
+                    status: chapterData.status,
+                    progress: {
+                      current: chapterData.wordCount,
+                      target: chapterData.targetWordCount,
+                      percentage: Math.round((chapterData.wordCount / chapterData.targetWordCount) * 100)
+                    },
+                    purpose: chapterData.purpose,
+                    hook: chapterData.hook,
+                    characterFocus: chapterData.characterFocus
                   }}
-                  className="flex items-center gap-2"
-                >
-                  <span>🎨</span>
-                  {showThemePlanner ? "Hide Theme Planner" : "Create Theme"}
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <strong>📖 Title:</strong> {chapterData.title}
-                  </div>
-                  <div>
-                    <strong>📚 Part:</strong> {chapterData.partTitle}
-                  </div>
-                  <div>
-                    <strong>📊 Status:</strong> 
-                    <Badge 
-                      variant={chapterData.status === 'published' ? 'default' : 'outline'} 
-                      className={`ml-2 ${chapterData.status === 'published' ? 'bg-green-600 text-white' : ''}`}
-                    >
-                      {chapterData.status === 'published' ? '🚀' : ''} {chapterData.status}
-                    </Badge>
-                  </div>
-                  <div>
-                    <strong>📝 Progress:</strong> {chapterData.wordCount}/{chapterData.targetWordCount} words
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div>
-                    <strong>🎯 Purpose:</strong> {chapterData.purpose}
-                  </div>
-                  <div>
-                    <strong>🎬 Hook:</strong> {chapterData.hook}
-                  </div>
-                  <div>
-                    <strong>🎭 Character Focus:</strong> {chapterData.characterFocus}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                  isCollapsed={false}
+                />
+              </div>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  const newShowState = !showThemePlanner;
+                  setShowThemePlanner(newShowState);
+                  // Mark theme as planned when user first opens the planner
+                  if (newShowState && !themePlanned) {
+                    setThemePlanned(true);
+                  }
+                }}
+                className="flex items-center gap-2 ml-4"
+              >
+                <span>🎨</span>
+                {showThemePlanner ? "Hide Theme Planner" : "Create Theme"}
+              </Button>
+            </div>
 
             {/* Chapter Theme Planner - Expandable */}
             {showThemePlanner && (
-              <Card className="border-2 border-blue-200 dark:border-blue-800">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <span>🎨</span>
-                    Chapter Theme & Structure Planner
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Three-Act Structure */}
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm flex items-center gap-2">
-                      <span>🎬</span>
-                      Three-Act Chapter Structure
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="border rounded-lg p-3 bg-green-50 dark:bg-green-900/20">
-                        <h5 className="font-medium text-xs text-green-800 dark:text-green-200 mb-2">Act 1: Setup (20%)</h5>
-                        <div className="space-y-2 text-xs">
-                          <div><strong>Hook:</strong> {sampleChapterData.acts.setup.hook_in}</div>
-                          <div><strong>Orient:</strong> {sampleChapterData.acts.setup.orient}</div>
-                          <div><strong>Incident:</strong> {sampleChapterData.acts.setup.incident}</div>
-                        </div>
-                      </div>
-                      <div className="border rounded-lg p-3 bg-yellow-50 dark:bg-yellow-900/20">
-                        <h5 className="font-medium text-xs text-yellow-800 dark:text-yellow-200 mb-2">Act 2: Confrontation (60%)</h5>
-                        <div className="space-y-2 text-xs">
-                          <div><strong>Rising:</strong> {sampleChapterData.acts.confrontation.rising}</div>
-                          <div><strong>Midpoint:</strong> {sampleChapterData.acts.confrontation.midpoint}</div>
-                          <div><strong>Complicate:</strong> {sampleChapterData.acts.confrontation.complicate}</div>
-                        </div>
-                      </div>
-                      <div className="border rounded-lg p-3 bg-red-50 dark:bg-red-900/20">
-                        <h5 className="font-medium text-xs text-red-800 dark:text-red-200 mb-2">Act 3: Resolution (20%)</h5>
-                        <div className="space-y-2 text-xs">
-                          <div><strong>Climax:</strong> {sampleChapterData.acts.resolution.climax}</div>
-                          <div><strong>Resolve:</strong> {sampleChapterData.acts.resolution.resolve}</div>
-                          <div><strong>Hook Out:</strong> {sampleChapterData.acts.resolution.hook_out}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+              <div className="space-y-4">
+                <BeautifulJSONDisplay
+                  title="🎨 Chapter Theme & Structure Planner"
+                  icon="🎨"
+                  data={{
+                    three_act_structure: {
+                      act1_setup: {
+                        weight: "20%",
+                        hook_in: sampleChapterData.acts.setup.hook_in,
+                        orient: sampleChapterData.acts.setup.orient,
+                        incident: sampleChapterData.acts.setup.incident
+                      },
+                      act2_confrontation: {
+                        weight: "60%",
+                        rising: sampleChapterData.acts.confrontation.rising,
+                        midpoint: sampleChapterData.acts.confrontation.midpoint,
+                        complicate: sampleChapterData.acts.confrontation.complicate
+                      },
+                      act3_resolution: {
+                        weight: "20%",
+                        climax: sampleChapterData.acts.resolution.climax,
+                        resolve: sampleChapterData.acts.resolution.resolve,
+                        hook_out: sampleChapterData.acts.resolution.hook_out
+                      }
+                    },
+                    tension_architecture: {
+                      external: sampleChapterData.tension.external,
+                      internal: sampleChapterData.tension.internal,
+                      interpersonal: sampleChapterData.tension.interpersonal,
+                      atmospheric: sampleChapterData.tension.atmospheric,
+                      peak_moment: sampleChapterData.tension.peak
+                    },
+                    character_development: {
+                      maya_pov: {
+                        start: sampleChapterData.chars.maya.start,
+                        arc: sampleChapterData.chars.maya.arc,
+                        end: sampleChapterData.chars.maya.end,
+                        motivation: sampleChapterData.chars.maya.motivation,
+                        growth: sampleChapterData.chars.maya.growth
+                      }
+                    },
+                    dual_mandate: {
+                      episodic_satisfaction: {
+                        arc: sampleChapterData.mandate.episodic.arc,
+                        payoff: sampleChapterData.mandate.episodic.payoff,
+                        answered: sampleChapterData.mandate.episodic.answered
+                      },
+                      serial_momentum: {
+                        complication: sampleChapterData.mandate.serial.complication,
+                        stakes: sampleChapterData.mandate.serial.stakes,
+                        compulsion: sampleChapterData.mandate.serial.compulsion
+                      }
+                    },
+                    forward_hook: {
+                      type: sampleChapterData.hook.type,
+                      reveal: sampleChapterData.hook.reveal,
+                      threat: sampleChapterData.hook.threat,
+                      emotion: sampleChapterData.hook.emotion
+                    }
+                  }}
+                  isCollapsed={false}
+                />
 
-                  {/* Tension Architecture */}
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm flex items-center gap-2">
-                      <span>⚡</span>
-                      Tension Architecture
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <div className="text-xs"><strong>🏃 External:</strong> {sampleChapterData.tension.external}</div>
-                        <div className="text-xs"><strong>💭 Internal:</strong> {sampleChapterData.tension.internal}</div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="text-xs"><strong>👥 Interpersonal:</strong> {sampleChapterData.tension.interpersonal}</div>
-                        <div className="text-xs"><strong>🌫️ Atmospheric:</strong> {sampleChapterData.tension.atmospheric}</div>
-                      </div>
+                {/* Action Buttons */}
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="default"
+                        className="flex items-center gap-2"
+                        onClick={handleSaveThemePlan}
+                        disabled={isSavingTheme}
+                      >
+                        {isSavingTheme ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                            Saving Theme Plan...
+                          </>
+                        ) : (
+                          <>
+                            <span>💾</span>
+                            Save Theme Plan
+                          </>
+                        )}
+                      </Button>
+                      <Button size="sm" variant="secondary" className="flex items-center gap-2">
+                        <span>🎲</span>
+                        Generate Variations
+                      </Button>
+                      <Button size="sm" variant="outline" className="flex items-center gap-2">
+                        <span>📋</span>
+                        Export JSON
+                      </Button>
                     </div>
-                    <div className="bg-red-100 dark:bg-red-900/30 p-2 rounded text-xs">
-                      <strong>🎯 Peak:</strong> {sampleChapterData.tension.peak}
-                    </div>
-                  </div>
-
-                  {/* Character Development */}
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm flex items-center gap-2">
-                      <span>👤</span>
-                      Character Development
-                    </h4>
-                    <div className="border rounded-lg p-3 bg-blue-50 dark:bg-blue-900/20">
-                      <h5 className="font-medium text-xs text-blue-800 dark:text-blue-200 mb-2">Maya (POV)</h5>
-                      <div className="space-y-1 text-xs">
-                        <div><strong>Start:</strong> {sampleChapterData.chars.maya.start}</div>
-                        <div><strong>Arc:</strong> {sampleChapterData.chars.maya.arc}</div>
-                        <div><strong>End:</strong> {sampleChapterData.chars.maya.end}</div>
-                        <div><strong>Motivation:</strong> {sampleChapterData.chars.maya.motivation}</div>
-                        <div><strong>Growth:</strong> {sampleChapterData.chars.maya.growth}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Dual Mandate */}
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm flex items-center gap-2">
-                      <span>⚖️</span>
-                      Dual Mandate Fulfillment
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="border rounded-lg p-3 bg-purple-50 dark:bg-purple-900/20">
-                        <h5 className="font-medium text-xs text-purple-800 dark:text-purple-200 mb-2">📖 Episodic Satisfaction</h5>
-                        <div className="space-y-1 text-xs">
-                          <div><strong>Arc:</strong> {sampleChapterData.mandate.episodic.arc}</div>
-                          <div><strong>Payoff:</strong> {sampleChapterData.mandate.episodic.payoff}</div>
-                          <div><strong>Answered:</strong> {sampleChapterData.mandate.episodic.answered}</div>
-                        </div>
-                      </div>
-                      <div className="border rounded-lg p-3 bg-indigo-50 dark:bg-indigo-900/20">
-                        <h5 className="font-medium text-xs text-indigo-800 dark:text-indigo-200 mb-2">🚀 Serial Momentum</h5>
-                        <div className="space-y-1 text-xs">
-                          <div><strong>Complication:</strong> {sampleChapterData.mandate.serial.complication}</div>
-                          <div><strong>Stakes:</strong> {sampleChapterData.mandate.serial.stakes}</div>
-                          <div><strong>Compulsion:</strong> {sampleChapterData.mandate.serial.compulsion}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Forward Hook */}
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm flex items-center gap-2">
-                      <span>🪝</span>
-                      Forward Hook Strategy
-                    </h4>
-                    <div className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
-                      <div className="space-y-2 text-xs">
-                        <div><strong>Type:</strong> {sampleChapterData.hook.type} ({sampleChapterData.hook.reveal ? "revelation + " : ""}{sampleChapterData.hook.threat ? "threat + " : ""}{sampleChapterData.hook.emotion ? "emotional" : ""})</div>
-                        <div><strong>Reveal:</strong> {sampleChapterData.hook.reveal}</div>
-                        <div><strong>Threat:</strong> {sampleChapterData.hook.threat}</div>
-                        <div><strong>Emotion:</strong> {sampleChapterData.hook.emotion}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 pt-4 border-t">
-                    <Button 
-                      size="sm" 
-                      variant="default" 
-                      className="flex items-center gap-2" 
-                      onClick={handleSaveThemePlan}
-                      disabled={isSavingTheme}
-                    >
-                      {isSavingTheme ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                          Saving Theme Plan...
-                        </>
-                      ) : (
-                        <>
-                          <span>💾</span>
-                          Save Theme Plan
-                        </>
-                      )}
-                    </Button>
-                    <Button size="sm" variant="secondary" className="flex items-center gap-2">
-                      <span>🎲</span>
-                      Generate Variations
-                    </Button>
-                    <Button size="sm" variant="outline" className="flex items-center gap-2">
-                      <span>📋</span>
-                      Export JSON
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             )}
 
             {/* Scene Overview */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>🎬 Scene Overview</CardTitle>
-                <Button 
-                  size="sm" 
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <span>🎬</span>
+                  Scene Overview
+                </h3>
+                <Button
+                  size="sm"
                   variant="secondary"
                   onClick={() => handleCreateScene(currentSelection.chapterId!)}
                   disabled={isLoading || !themePlanned}
@@ -1659,11 +1589,33 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                   <span>🎬</span>
                   {isLoading ? "Creating..." : "Create Scene"}
                 </Button>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {chapterData.scenes.length > 0 ? (
-                    chapterData.scenes.map((scene, index) => (
+              </div>
+
+              {/* Display scenes as JSON if available */}
+              {chapterData.scenes.length > 0 && (
+                <BeautifulJSONDisplay
+                  title="📝 Chapter Scenes"
+                  icon="📝"
+                  data={chapterData.scenes.map((scene, index) => ({
+                    scene_number: index + 1,
+                    id: scene.id,
+                    title: scene.title,
+                    status: scene.status,
+                    wordCount: scene.wordCount,
+                    goal: scene.goal,
+                    conflict: scene.conflict,
+                    outcome: scene.outcome
+                  }))}
+                  isCollapsed={false}
+                />
+              )}
+
+              {/* Keep interactive scene cards for navigation */}
+              <Card>
+                <CardContent className="pt-4">
+                  <div className="space-y-3">
+                    {chapterData.scenes.length > 0 ? (
+                      chapterData.scenes.map((scene, index) => (
                       <div 
                         key={scene.id} 
                         className="border border-[rgb(var(--border))] rounded-[var(--radius)] p-4 bg-[rgb(var(--card)/50%)] hover:bg-[rgb(var(--primary)/8%)] cursor-pointer transition-all duration-[var(--animate-duration)] hover:border-[rgb(var(--primary)/60%)] hover:shadow-[var(--shadow)]"
@@ -1744,6 +1696,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 </div>
               </CardContent>
             </Card>
+            </div>
 
             {/* Story JSON Data Display */}
             <BeautifulJSONDisplay
