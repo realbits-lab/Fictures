@@ -229,10 +229,6 @@ The **Chapter** is the primary unit of reader consumption, especially critical i
 
 **part_ref**: Reference to the part this chapter belongs to.
 
-**pov_character_id**: The identifier of the character from whose point of view the chapter is told. This is essential for maintaining narrative voice and focus.
-
-**narrative_voice**: The narrative perspective (e.g., "third_person_limited", "first_person").
-
 **summary**: A detailed, one-paragraph summary of the chapter's events. This corresponds directly to the expanded paragraphs generated in Step 4 of the Snowflake Method, where each sentence of an act's summary is developed into a full paragraph.
 
 **pacing_goal**: An enum ('fast', 'medium', 'slow', 'reflective') that dictates the intended tempo of the chapter. This attribute can be used by a procedural text generator to modulate sentence length, paragraph structure, and the ratio of action to description, ensuring the prose style matches the narrative intent.
@@ -255,8 +251,6 @@ The **Chapter** is the primary unit of reader consumption, especially critical i
     "chapter_number": 1,
     "chapter_title": "Missing",
     "part_ref": "part_001",
-    "pov_character_id": "char_maya_001",
-    "narrative_voice": "third_person_limited",
     "summary": "Maya arrives for her weekly coffee date with Elena only to find her sister's apartment unlocked and abandoned. Signs of struggle and a mysterious journal lead Maya to discover Elena was researching something called 'Shadow Keepers' before her disappearance.",
     "pacing_goal": "medium",
     "action_dialogue_ratio": "40:60",
@@ -306,74 +300,59 @@ Scenes should be constructed using **Motivation-Reaction Units** for psychologic
   2. Reflex (involuntary action)
   3. Rational action & speech (conscious response)
 
-## 4. YAML Data Structure for Scene Object
+## 4. JSON Data Structure for Scene Object
 
-```yaml
-# ============================================
-# SCENE SPECIFICATION - HNS FORMAT
-# ============================================
+### Field Descriptions
 
-scene:
-  # Identification
-  scene_id: "scene_001"
-  scene_number: 1
-  chapter_ref: "chap_001"
+**scene_id**: A unique identifier for the scene.
 
-  # Scene context
-  setting_id: "setting_elena_apt_001"
-  time: "Sunday, 10:05 AM"
-  pov_character: "maya"
+**scene_number**: The sequential number of the scene within the chapter.
 
-  # Scene summary
-  summary: "Maya arrives for coffee date, finds Elena's door unlocked and apartment empty with signs of struggle"
+**chapter_ref**: Reference to the chapter this scene belongs to.
 
-  # Dramatic structure
-  entry_hook: "The door to Elena's apartment stood ajar, a sliver of darkness where warmth should be."
-  goal: "Have normal coffee date with Elena"
-  conflict: "Apartment unlocked, Elena missing, signs of struggle"
-  outcome: "failure_with_discovery"  # Enum: success/failure/success_with_cost/failure_with_discovery
+**character_ids**: An array of character IDs for all characters present or referenced in the scene.
 
-  # Character dynamics
-  characters_present:
-    - character_id: "char_maya_001"
-      state_entering: "casual_anticipation"
-      state_exiting: "fearful_concern"
+**setting_id**: A link to the specific Setting object where the scene takes place.
 
-  characters_referenced:
-    - character_id: "char_elena_002"
-      evidence: ["warm coffee mug", "overturned chair", "scattered papers"]
+**pov_character_id**: The identifier of the character from whose point of view the scene is told.
 
-  # Emotional value shift
-  emotional_shift:
-    from: "hopeful"
-    to: "terrified"
-    value_charge: "positive_to_negative"  # +/-
+**narrative_voice**: The narrative perspective (e.g., "third_person_limited", "first_person").
 
-  # Key scene beats
-  scene_beats:
-    - "Maya knocks, no answer"
-    - "Tries door, finds unlocked"
-    - "Calls Elena's name, silence"
-    - "Discovers overturned furniture"
-    - "Finds coffee still warm"
-    - "Realizes something terrible happened"
+**summary**: A one-sentence description of the scene's core action or purpose.
 
-  # Sensory details for immersion
-  sensory_elements:
-    sight: ["morning light through window", "overturned coffee table", "scattered papers"]
-    sound: ["eerie silence", "distant traffic", "Maya's quickening breath"]
-    smell: ["fresh coffee", "Elena's lavender perfume", "something burnt"]
-    touch: ["cold doorknob", "warm coffee mug"]
+**entry_hook**: The opening line or action designed to immediately engage the reader.
 
-  # Scene-sequel bridge
-  leads_to: "Maya searches apartment for clues"
-  sequel_elements:
-    reaction: "Panic and disbelief"
-    dilemma: "Call police or investigate herself"
-    decision: "Search for clues first"
+**goal**: A clear statement of what the point-of-view character wants to achieve in the scene.
 
-  # Visual generation support
-  visual_prompt: "Young woman in casual clothes standing in doorway of disheveled apartment, morning light streaming through windows, overturned furniture visible, coffee mug on table still steaming, atmosphere of tension and mystery"
+**conflict**: The obstacle, internal or external, that prevents the character from easily achieving their goal.
+
+**outcome**: The result of the conflict, typically an enum ('success', 'failure', 'success_with_cost', 'failure_with_discovery'). This outcome drives the plot forward into the next scene.
+
+**emotional_shift**: A description of the change in the POV character's emotional state from the beginning to the end of the scene (e.g., from "hopeful" to "terrified"). This is crucial for tracking character arcs.
+
+### Example JSON Structure
+
+```json
+{
+  "scene": {
+    "scene_id": "scene_001",
+    "scene_number": 1,
+    "chapter_ref": "chap_001",
+    "character_ids": ["char_maya_001", "char_elena_002"],
+    "setting_id": "setting_elena_apt_001",
+    "pov_character_id": "char_maya_001",
+    "narrative_voice": "third_person_limited",
+    "summary": "Maya arrives for coffee date, finds Elena's door unlocked and apartment empty with signs of struggle",
+    "entry_hook": "The door to Elena's apartment stood ajar, a sliver of darkness where warmth should be.",
+    "goal": "Have normal coffee date with Elena",
+    "conflict": "Apartment unlocked, Elena missing, signs of struggle",
+    "outcome": "failure_with_discovery",
+    "emotional_shift": {
+      "from": "hopeful",
+      "to": "terrified"
+    }
+  }
+}
 ```
 
 ---
