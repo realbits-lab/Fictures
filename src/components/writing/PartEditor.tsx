@@ -203,9 +203,11 @@ export function PartEditor({
       {/* Part Editor Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold">📚 {displayData.title}</h2>
+          <h2 className="text-xl font-bold">📚 {displayData.title || displayData.part_title || 'Part'}</h2>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Part {displayData.part} • {displayData.words.toLocaleString()} words • {displayData.function}
+            Part {displayData.part || displayData.order_index || 1} •
+            {displayData.words ? `${displayData.words.toLocaleString()} words` : 'No word count'} •
+            {displayData.function || displayData.structural_role || 'Part data'}
           </p>
         </div>
       </div>

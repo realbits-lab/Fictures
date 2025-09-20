@@ -6,7 +6,6 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/compo
 import { useStoryData } from "@/lib/hooks/useStoryData";
 import { useWritingProgress, useWritingSession } from "@/hooks/useStoryWriter";
 import { JSONDataDisplay } from "./JSONDataDisplay";
-import { PartEditor } from "./PartEditor";
 import { ChapterEditor } from "./ChapterEditor";
 import { SceneEditor, SceneData } from "./SceneEditor";
 import { StoryStructureSidebar } from "./StoryStructureSidebar";
@@ -39,6 +38,7 @@ interface Story {
     id: string;
     title: string;
     orderIndex: number;
+    hnsData?: any;
     chapters: Array<{
       id: string;
       title: string;
@@ -46,6 +46,7 @@ interface Story {
       status: string;
       wordCount: number;
       targetWordCount: number;
+      hnsData?: any;
       scenes?: Array<{
         id: string;
         title: string;
@@ -54,6 +55,7 @@ interface Story {
         goal: string;
         conflict: string;
         outcome: string;
+        hnsData?: any;
       }>;
     }>;
   }>;
@@ -64,6 +66,7 @@ interface Story {
     status: string;
     wordCount: number;
     targetWordCount: number;
+    hnsData?: any;
     scenes?: Array<{
       id: string;
       title: string;
@@ -72,6 +75,7 @@ interface Story {
       goal: string;
       conflict: string;
       outcome: string;
+      hnsData?: any;
     }>;
   }>;
   scenes?: Array<{
@@ -444,23 +448,49 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
   // Initialize part data when switching to part level or changing part
   useEffect(() => {
-    if (currentSelection.level === "part") {
+    if (currentSelection.level === "part" && currentSelection.partId) {
       const selectedPart = story.parts.find(part => part.id === currentSelection.partId);
 
-      // Use hnsData if available, otherwise create default part data
-      const partData = selectedPart?.hnsData ||
-        (selectedPart ? createPartData(selectedPart.orderIndex, `Part ${selectedPart.orderIndex}`) :
-         createPartData(1, "Part 1"));
+      console.log('🔍 Selected part:', selectedPart);
+      console.log('📦 Part hnsData:', selectedPart?.hnsData);
+      console.log('📦 Part hnsData type:', typeof selectedPart?.hnsData);
 
-      setOriginalPartData(partData);
-      setCurrentPartData(partData);
+      if (selectedPart) {
+        // If we have hnsData, use it directly
+        if (selectedPart.hnsData) {
+          setOriginalPartData(selectedPart.hnsData);
+          setCurrentPartData(selectedPart.hnsData);
+        } else {
+          // If no hnsData, show the part metadata itself as JSON
+          const partMetadata = {
+            part_id: selectedPart.id,
+            part_title: selectedPart.title || `Part ${selectedPart.orderIndex}`,
+            order_index: selectedPart.orderIndex,
+            chapters: selectedPart.chapters?.map(ch => ({
+              chapter_id: ch.id,
+              chapter_title: ch.title,
+              order_index: ch.orderIndex,
+              status: ch.status,
+              word_count: ch.wordCount
+            })) || []
+          };
+          setOriginalPartData(partMetadata);
+          setCurrentPartData(partMetadata);
+        }
+      } else {
+        // Fallback if part not found
+        const defaultData = { part_id: currentSelection.partId, message: "Part not found" };
+        setOriginalPartData(defaultData);
+        setCurrentPartData(defaultData);
+      }
+
       setPartHasChanges(false);
     }
   }, [currentSelection.level, currentSelection.partId, story.parts]);
 
   // Initialize chapter data when switching to chapter level or changing chapter
   useEffect(() => {
-    if (currentSelection.level === "chapter") {
+    if (currentSelection.level === "chapter" && currentSelection.chapterId) {
       // Find the chapter either in parts or standalone chapters
       let selectedChapter = null;
       for (const part of story.parts) {
@@ -470,31 +500,48 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       if (!selectedChapter) {
         selectedChapter = story.chapters?.find(chapter => chapter.id === currentSelection.chapterId);
       }
-      // Use hnsData if available, otherwise use the chapter data structure
-      const chapterData = selectedChapter?.hnsData || selectedChapter || {
-        id: currentSelection.chapterId || 'sample-chapter',
-        title: 'Chapter 1',
-        summary: '',
-        orderIndex: 1,
-        wordCount: 0,
-        targetWordCount: 4000,
-        status: 'draft',
-        purpose: '',
-        hook: '',
-        characterFocus: '',
-        sceneIds: [],
-        scenes: []
-      };
 
-      setOriginalChapterData(chapterData);
-      setCurrentChapterData(chapterData);
+      console.log('🔍 Selected chapter:', selectedChapter);
+      console.log('📦 Chapter hnsData:', selectedChapter?.hnsData);
+
+      if (selectedChapter) {
+        // If we have hnsData, use it directly
+        if (selectedChapter.hnsData) {
+          setOriginalChapterData(selectedChapter.hnsData);
+          setCurrentChapterData(selectedChapter.hnsData);
+        } else {
+          // If no hnsData, show the chapter metadata itself as JSON
+          const chapterMetadata = {
+            chapter_id: selectedChapter.id,
+            chapter_title: selectedChapter.title,
+            order_index: selectedChapter.orderIndex,
+            status: selectedChapter.status,
+            word_count: selectedChapter.wordCount,
+            target_word_count: selectedChapter.targetWordCount,
+            scenes: (selectedChapter.scenes || []).map(scene => ({
+              scene_id: scene.id,
+              scene_title: scene.title,
+              status: scene.status,
+              word_count: scene.wordCount
+            }))
+          };
+          setOriginalChapterData(chapterMetadata);
+          setCurrentChapterData(chapterMetadata);
+        }
+      } else {
+        // Fallback if chapter not found
+        const defaultData = { chapter_id: currentSelection.chapterId, message: "Chapter not found" };
+        setOriginalChapterData(defaultData);
+        setCurrentChapterData(defaultData);
+      }
+
       setChapterHasChanges(false);
     }
-  }, [currentSelection.level, currentSelection.chapterId, story.chapters]);
+  }, [currentSelection.level, currentSelection.chapterId, story.parts, story.chapters]);
 
   // Initialize scene data when switching to scene level or changing scene
   useEffect(() => {
-    if (currentSelection.level === "scene") {
+    if (currentSelection.level === "scene" && currentSelection.sceneId) {
       // Find the scene in chapters
       let selectedScene = null;
       for (const part of story.parts) {
@@ -510,25 +557,36 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           if (selectedScene) break;
         }
       }
-      // Use hnsData if available, otherwise use the scene data structure
-      const sceneData = selectedScene?.hnsData || selectedScene || {
-        id: currentSelection.sceneId || 'sample-scene',
-        title: 'Scene 1',
-        content: '',
-        orderIndex: 1,
-        wordCount: 0,
-        status: 'planned',
-        goal: '',
-        conflict: '',
-        outcome: '',
-        characterIds: [],
-        placeIds: [],
-        characters: [],
-        places: []
-      };
 
-      setOriginalSceneData(sceneData);
-      setCurrentSceneData(sceneData);
+      console.log('🔍 Selected scene:', selectedScene);
+      console.log('📦 Scene hnsData:', selectedScene?.hnsData);
+
+      if (selectedScene) {
+        // If we have hnsData, use it directly
+        if (selectedScene.hnsData) {
+          setOriginalSceneData(selectedScene.hnsData);
+          setCurrentSceneData(selectedScene.hnsData);
+        } else {
+          // If no hnsData, show the scene metadata itself as JSON
+          const sceneMetadata = {
+            scene_id: selectedScene.id,
+            scene_title: selectedScene.title,
+            status: selectedScene.status,
+            word_count: selectedScene.wordCount,
+            goal: selectedScene.goal,
+            conflict: selectedScene.conflict,
+            outcome: selectedScene.outcome
+          };
+          setOriginalSceneData(sceneMetadata);
+          setCurrentSceneData(sceneMetadata);
+        }
+      } else {
+        // Fallback if scene not found
+        const defaultData = { scene_id: currentSelection.sceneId, message: "Scene not found" };
+        setOriginalSceneData(defaultData);
+        setCurrentSceneData(defaultData);
+      }
+
       setSceneHasChanges(false);
     }
   }, [currentSelection.level, currentSelection.sceneId, story.parts, story.chapters]);
@@ -1118,37 +1176,17 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         );
       
       case "part":
-        // Find the selected part from the story structure
-        const selectedPart = story.parts.find(part => part.id === currentSelection.partId);
-        const partNumber = selectedPart?.orderIndex || 1;
-
+        // Display part HNS data using BeautifulJSONDisplay
         return (
-          <PartEditor
-            key={currentSelection.partId} // Force re-mount when part changes
-            partId={currentSelection.partId}
-            partNumber={partNumber}
-            initialData={currentPartData}
-            previewData={partPreviewData}
-            storyContext={{
-              title: story.title,
-              genre: story.genre,
-              themes: ["responsibility_for_power", "love_vs_control"],
-              chars: sampleStoryData.chars
-            }}
-            hasChanges={partHasChanges || !!partPreviewData}
-            onPartUpdate={handlePartDataUpdate}
-            onSave={async (data) => {
-              await handleSave(partPreviewData || data);
-              setOriginalPartData(partPreviewData || data);
-              setPartPreviewData(null);
-              setPartHasChanges(false);
-            }}
-            onCancel={() => {
-              setCurrentPartData(originalPartData);
-              setPartPreviewData(null);
-              setPartHasChanges(false);
-            }}
-          />
+          <div className="space-y-4">
+            <BeautifulJSONDisplay
+              title="Part HNS Data"
+              data={partPreviewData || currentPartData}
+              icon="📚"
+              isCollapsed={false}
+              onToggleCollapse={() => {}}
+            />
+          </div>
         );
       
       case "chapter":
