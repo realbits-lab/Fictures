@@ -474,88 +474,72 @@ Characters need two types of information:
 
 **Settings** define specific locations within the story world, providing necessary details for both descriptive prose and environmental visualization. Settings must support the narrative's dramatic needs while maintaining consistency.
 
-## 2. YAML Data Structure for Setting Object
+## 2. JSON Data Structure for Setting Object
 
-```yaml
-# ============================================
-# SETTING SPECIFICATION - HNS FORMAT
-# ============================================
+### Field Descriptions
 
-setting:
-  # Identification
-  setting_id: "setting_shadow_realm_002"
-  name: "The Shadow Realm"
-  category: "supernatural"
+**setting_id**: A unique identifier.
 
-  # Setting description
-  description: "A dark mirror dimension where shadows have substance and light is foreign. Architecture shifts based on inhabitants' fears, and time flows differently than in the material world."
+**name**: The name of the location (e.g., "The Whispering Caverns").
 
-  # Atmospheric elements
-  mood: "oppressive and surreal"
-  atmosphere_descriptors: ["ethereal", "menacing", "constantly shifting"]
+**description**: A multi-sensory description, including details for sight, sound, smell, and touch to create an immersive experience.
 
-  # Sensory details
-  sensory:
-    sight:
-      - "Inverted architecture defying gravity"
-      - "Shadows moving independently of sources"
-      - "Muted colors except for rare light sources"
-    sound:
-      - "Whispers in unknown languages"
-      - "Echoes that precede their sources"
-      - "Absolute silence in light pools"
-    smell:
-      - "Ozone and old paper"
-      - "Sweet decay beneath everything"
-    touch:
-      - "Surfaces that feel liquid but appear solid"
-      - "Cold that burns exposed skin"
-      - "Air thick like water"
-    taste:
-      - "Metallic undertone to the air"
+**mood**: The typical atmosphere or emotional tone of the location (e.g., "ominous", "serene", "bustling").
 
-  # Time and physics
-  temporal_properties:
-    time_flow: "nonlinear"
-    time_ratio: "1 hour = 3 hours material world"
+**sensory**: A structured object containing multi-sensory details:
+- **sight**: Visual elements and appearances
+- **sound**: Auditory elements and ambient noises
+- **smell**: Scents and aromas
+- **touch**: Textures and physical sensations
+- **taste**: Flavors in the air or environment
 
-  physical_laws:
-    gravity: "subjective to willpower"
-    light_behavior: "pooled rather than radiating"
-    matter_state: "semi-permeable based on intent"
+**visual_style**: The artistic style for visual generation (e.g., "dark fantasy horror").
 
-  # Narrative functions
-  story_purpose:
-    - "Prison for Elena"
-    - "Source of shadow keeper powers"
-    - "Final confrontation location"
+**visual_references**: Array of artistic references for visual consistency.
 
-  associated_characters:
-    - character_id: "char_void_004"
-      relationship: "domain ruler"
-    - character_id: "char_elena_002"
-      relationship: "prisoner"
+**color_palette**: Array of dominant colors in the setting.
 
-  # Key locations within setting
-  sub_locations:
-    - name: "The Threshold"
-      description: "Entry point between realms"
-    - name: "Memory Gardens"
-      description: "Where stolen memories take root"
-    - name: "The Void's Throne"
-      description: "Center of realm's power"
+**architectural_style**: The architectural design and structure style.
 
-  # Danger and obstacles
-  hazards:
-    - "Shadow predators hunting light-bearers"
-    - "Memory mazes that trap visitors in past"
-    - "Corruption zones accelerating shadow infection"
+### Example JSON Structure
 
-  # Visual generation parameters
-  visual_style: "dark fantasy horror"
-  visual_references: ["HR Giger", "Silent Hill", "Inception folding city"]
-  color_palette: ["deep purples", "blacks", "silver highlights", "rare gold light"]
-  architectural_style: "Gothic mixed with non-Euclidean geometry"
+```json
+{
+  "setting": {
+    "setting_id": "setting_shadow_realm_002",
+    "name": "The Shadow Realm",
+    "description": "A dark mirror dimension where shadows have substance and light is foreign. Architecture shifts based on inhabitants' fears, and time flows differently than in the material world.",
+    "mood": "oppressive and surreal",
+    "sensory": {
+      "sight": [
+        "Inverted architecture defying gravity",
+        "Shadows moving independently of sources",
+        "Muted colors except for rare light sources"
+      ],
+      "sound": [
+        "Whispers in unknown languages",
+        "Echoes that precede their sources",
+        "Absolute silence in light pools"
+      ],
+      "smell": [
+        "Ozone and old paper",
+        "Sweet decay beneath everything"
+      ],
+      "touch": [
+        "Surfaces that feel liquid but appear solid",
+        "Cold that burns exposed skin",
+        "Air thick like water"
+      ],
+      "taste": [
+        "Metallic undertone to the air"
+      ]
+    },
+    "visual_style": "dark fantasy horror",
+    "visual_references": ["HR Giger", "Silent Hill", "Inception folding city"],
+    "color_palette": ["deep purples", "blacks", "silver highlights", "rare gold light"],
+    "architectural_style": "Gothic mixed with non-Euclidean geometry"
+  }
+}
 ```
 
 ---
