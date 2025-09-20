@@ -2,7 +2,7 @@ import { pgTable, text, timestamp, integer, boolean, json, uuid, varchar, serial
 import { relations } from 'drizzle-orm';
 
 // NextAuth.js required tables
-export const accounts = pgTable('account', {
+export const accounts = pgTable('accounts', {
   userId: text('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
   type: text('type').notNull(),
   provider: text('provider').notNull(),
@@ -20,13 +20,13 @@ export const accounts = pgTable('account', {
   }),
 }));
 
-export const sessions = pgTable('session', {
+export const sessions = pgTable('sessions', {
   sessionToken: text('sessionToken').primaryKey(),
   userId: text('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
   expires: timestamp('expires', { mode: 'date' }).notNull(),
 });
 
-export const verificationTokens = pgTable('verificationToken', {
+export const verificationTokens = pgTable('verification_tokens', {
   identifier: text('identifier').notNull(),
   token: text('token').notNull(),
   expires: timestamp('expires', { mode: 'date' }).notNull(),
@@ -66,7 +66,7 @@ export const userPreferences = pgTable('user_preferences', {
   updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
 });
 
-// Stories table - Main story/book entities
+// Stories table - Main story/book entities with HNS support
 export const stories = pgTable('stories', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
@@ -83,6 +83,11 @@ export const stories = pgTable('stories', {
   rating: integer('rating').default(0), // Average rating * 10 (e.g., 47 = 4.7)
   ratingCount: integer('rating_count').default(0),
   content: text('content').default(''), // Store complete story development YAML data as text
+  // HNS fields
+  premise: text('premise'),
+  dramaticQuestion: text('dramatic_question'),
+  theme: text('theme'),
+  hnsData: json('hns_data').$type<Record<string, unknown>>(),
   // Bi-directional relationship fields
   partIds: json('part_ids').$type<string[]>().default([]).notNull(),
   chapterIds: json('chapter_ids').$type<string[]>().default([]).notNull(),
@@ -90,7 +95,7 @@ export const stories = pgTable('stories', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Parts table - Story parts/sections (optional organization layer)
+// Parts table - Story parts/sections with HNS support
 export const parts = pgTable('parts', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
@@ -102,13 +107,18 @@ export const parts = pgTable('parts', {
   currentWordCount: integer('current_word_count').default(0),
   status: varchar('status', { length: 50 }).default('planned'), // planned, in_progress, completed
   content: text('content').default(''), // Store part-specific development YAML data as text
+  // HNS fields
+  structuralRole: varchar('structural_role', { length: 50 }),
+  summary: text('summary'),
+  keyBeats: json('key_beats').$type<string[]>(),
+  hnsData: json('hns_data').$type<Record<string, unknown>>(),
   // Bi-directional relationship fields
   chapterIds: json('chapter_ids').$type<string[]>().default([]).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Chapters table - Individual chapters (content stored in scenes)
+// Chapters table - Individual chapters with HNS support
 export const chapters = pgTable('chapters', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
@@ -125,13 +135,18 @@ export const chapters = pgTable('chapters', {
   characterFocus: text('character_focus'), // Main character focus for chapter
   publishedAt: timestamp('published_at'),
   scheduledFor: timestamp('scheduled_for'),
+  // HNS fields
+  pacingGoal: varchar('pacing_goal', { length: 20 }),
+  actionDialogueRatio: varchar('action_dialogue_ratio', { length: 10 }),
+  chapterHook: json('chapter_hook').$type<{type: string; description: string; urgency_level: string}>(),
+  hnsData: json('hns_data').$type<Record<string, unknown>>(),
   // Bi-directional relationship fields
   sceneIds: json('scene_ids').$type<string[]>().default([]).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Scenes table - Chapter breakdown into scenes (for detailed planning)
+// Scenes table - Chapter breakdown with HNS support
 export const scenes = pgTable('scenes', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
@@ -143,6 +158,14 @@ export const scenes = pgTable('scenes', {
   goal: text('goal'),
   conflict: text('conflict'),
   outcome: text('outcome'),
+  // HNS fields
+  povCharacterId: text('pov_character_id'),
+  settingId: text('setting_id'),
+  narrativeVoice: varchar('narrative_voice', { length: 50 }),
+  summary: text('summary'),
+  entryHook: text('entry_hook'),
+  emotionalShift: json('emotional_shift').$type<{from: string; to: string}>(),
+  hnsData: json('hns_data').$type<Record<string, unknown>>(),
   // Character and place references for scene writing
   characterIds: json('character_ids').$type<string[]>().default([]).notNull(),
   placeIds: json('place_ids').$type<string[]>().default([]).notNull(),
@@ -150,7 +173,7 @@ export const scenes = pgTable('scenes', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Characters table - Story characters
+// Characters table - Story characters with HNS support
 export const characters = pgTable('characters', {
   id: text('id').primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
@@ -158,6 +181,18 @@ export const characters = pgTable('characters', {
   isMain: boolean('is_main').default(false),
   content: text('content').default(''), // Store all character data as YAML/JSON
   imageUrl: text('image_url'), // Store generated character image URL from Vercel Blob
+  // HNS fields
+  role: varchar('role', { length: 50 }),
+  archetype: varchar('archetype', { length: 100 }),
+  summary: text('summary'),
+  storyline: text('storyline'),
+  personality: json('personality').$type<{traits: string[]; myers_briggs: string; enneagram: string}>(),
+  backstory: json('backstory').$type<Record<string, string>>(),
+  motivations: json('motivations').$type<{primary: string; secondary: string; fear: string}>(),
+  voice: json('voice').$type<Record<string, unknown>>(),
+  physicalDescription: json('physical_description').$type<Record<string, unknown>>(),
+  visualReferenceId: text('visual_reference_id'),
+  hnsData: json('hns_data').$type<Record<string, unknown>>(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -253,6 +288,7 @@ export const storiesRelations = relations(stories, ({ one, many }) => ({
   chapters: many(chapters),
   characters: many(characters),
   places: many(places),
+  settings: many(settings),
   communityPosts: many(communityPosts),
 }));
 
@@ -290,9 +326,33 @@ export const charactersRelations = relations(characters, ({ one }) => ({
   }),
 }));
 
+// Settings table (renamed from places for HNS alignment)
+export const settings = pgTable('settings', {
+  id: text('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  storyId: text('story_id').references(() => stories.id).notNull(),
+  description: text('description'),
+  mood: text('mood'),
+  sensory: json('sensory').$type<Record<string, string[]>>(),
+  visualStyle: text('visual_style'),
+  visualReferences: json('visual_references').$type<string[]>(),
+  colorPalette: json('color_palette').$type<string[]>(),
+  architecturalStyle: text('architectural_style'),
+  imageUrl: text('image_url'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 export const placesRelations = relations(places, ({ one }) => ({
   story: one(stories, {
     fields: [places.storyId],
+    references: [stories.id],
+  }),
+}));
+
+export const settingsRelations = relations(settings, ({ one }) => ({
+  story: one(stories, {
+    fields: [settings.storyId],
     references: [stories.id],
   }),
 }));

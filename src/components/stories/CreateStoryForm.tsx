@@ -31,13 +31,14 @@ export function CreateStoryForm() {
 
   const initializeProgress = () => {
     const steps: ProgressStep[] = [
-      { phase: 'Phase 1', description: 'Story Foundation - Analyzing prompt and creating story concept', status: 'pending' },
-      { phase: 'Phase 2', description: 'Part Development - Creating detailed part structure', status: 'pending' },
-      { phase: 'Phase 3', description: 'Character Development - Building character profiles with Korean names', status: 'pending' },
-      { phase: 'Phase 4', description: 'Place Development - Creating location details and settings', status: 'pending' },
-      { phase: 'Phase 5', description: 'Character Images - Generating AI images for each character', status: 'pending' },
-      { phase: 'Phase 6', description: 'Place Images - Generating AI images for each location', status: 'pending' },
-      { phase: 'Database', description: 'Storing story, character, and place data in database', status: 'pending' },
+      { phase: 'HNS Generation', description: 'Creating complete story structure using Hierarchical Narrative Schema', status: 'pending' },
+      { phase: 'Story Foundation', description: 'Establishing premise, theme, and dramatic question', status: 'pending' },
+      { phase: 'Three-Act Structure', description: 'Developing parts with key narrative beats', status: 'pending' },
+      { phase: 'Characters', description: 'Creating detailed character profiles with psychology', status: 'pending' },
+      { phase: 'Settings', description: 'Building immersive locations with sensory details', status: 'pending' },
+      { phase: 'Chapters & Scenes', description: 'Structuring chapters with hooks and scene breakdowns', status: 'pending' },
+      { phase: 'Visual Generation', description: 'Creating AI images for characters and settings', status: 'pending' },
+      { phase: 'Database', description: 'Storing complete HNS data in database', status: 'pending' },
     ];
     setProgress(steps);
     return steps;
@@ -76,8 +77,8 @@ export function CreateStoryForm() {
     initializeProgress();
 
     try {
-      // Use fetch with streaming for POST request
-      const response = await fetch('/api/stories/generate-stream', {
+      // Use fetch with streaming for HNS generation
+      const response = await fetch('/api/stories/generate-hns', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,69 +117,33 @@ export function CreateStoryForm() {
 
               switch (data.phase) {
                 case 'progress':
-                  // Update progress step status
-                  setProgress(prev => {
-                    const stepIndex = prev.findIndex(step =>
-                      step.phase === data.data.phase
-                    );
-                    if (stepIndex !== -1) {
-                      return prev.map((step, index) =>
-                        index === stepIndex ? { ...step, status: data.data.status } : step
-                      );
+                  // Update progress based on step
+                  const stepMap: Record<string, number> = {
+                    'generating_hns': 0,
+                    'storing_database': 6,
+                    'generating_character_images': 6,
+                    'generating_setting_images': 6,
+                  };
+                  if (data.data.step && stepMap[data.data.step] !== undefined) {
+                    updateProgress(stepMap[data.data.step], 'in_progress');
+                  }
+                  break;
+
+                case 'hns_complete':
+                  // HNS structure generated - update with complete structure
+                  const hnsDoc = data.data.hnsDocument;
+                  if (hnsDoc) {
+                    setYamlData({
+                      storyYaml: JSON.stringify(hnsDoc.story, null, 2),
+                      partsYaml: JSON.stringify(hnsDoc.parts, null, 2),
+                      charactersYaml: JSON.stringify(hnsDoc.characters, null, 2),
+                      placesYaml: JSON.stringify(hnsDoc.settings, null, 2),
+                    });
+                    // Update all generation steps as complete
+                    for (let i = 0; i <= 5; i++) {
+                      updateProgress(i, 'completed');
                     }
-                    return prev;
-                  });
-                  break;
-
-                case 'phase1_complete':
-                  // Phase 1 completed - update YAML data and progress
-                  setYamlData(prev => ({
-                    ...prev,
-                    storyYaml: data.data.yamlData.storyYaml
-                  }));
-                  updateProgress(0, 'completed');
-                  break;
-
-                case 'phase2_complete':
-                  // Phase 2 completed - update parts YAML data and progress
-                  setYamlData(prev => ({
-                    ...prev,
-                    partsYaml: data.data.yamlData.partsYaml
-                  }));
-                  updateProgress(1, 'completed');
-                  break;
-
-                case 'phase3_complete':
-                  // Phase 3 completed - update characters YAML data and progress
-                  setYamlData(prev => ({
-                    ...prev,
-                    charactersYaml: data.data.yamlData.charactersYaml
-                  }));
-                  updateProgress(2, 'completed');
-                  break;
-
-                case 'phase4_complete':
-                  // Phase 4 completed - update places YAML data and progress
-                  setYamlData(prev => ({
-                    ...prev,
-                    placesYaml: data.data.yamlData.placesYaml
-                  }));
-                  updateProgress(3, 'completed');
-                  break;
-
-                case 'phase5_complete':
-                  // Phase 5 completed - character images generated
-                  updateProgress(4, 'completed');
-                  break;
-
-                case 'phase6_complete':
-                  // Phase 6 completed - place images generated
-                  updateProgress(5, 'completed');
-                  break;
-
-                case 'database_complete':
-                  // Database storage completed
-                  updateProgress(6, 'completed');
+                  }
                   break;
 
                 case 'complete':

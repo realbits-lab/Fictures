@@ -2,25 +2,28 @@
 
 ## 1. Overview
 
-The Fictures UI supports a 4-level hierarchical story development system (Story > Part > Chapter/Scene) optimized for web serial fiction creation, community engagement, and AI-assisted writing. The interface prioritizes intuitive navigation, seamless content creation, and real-time collaboration features across desktop and mobile browsers.
+Fictures is an AI-powered story writing platform built with Next.js 15 and App Router, supporting a 4-level hierarchical narrative system (Story > Part > Chapter > Scene) through the HNS (Hierarchical Narrative Schema) framework. The platform integrates Google Gemini 2.5 Flash for AI assistance, PostgreSQL (Neon) with Drizzle ORM for data management, and NextAuth.js v5 for authentication, providing comprehensive writing tools, community engagement features, and real-time AI-powered assistance across desktop and mobile browsers.
 
 ## 2. Key Design Features
 
 ### Global Navigation Bar (GNB)
 
-**Consistent Top Navigation Bar across all screens:**
+**Implemented Navigation Structure with Role-Based Access:**
 
-**GNB Menu Items:**
+**Core Navigation Items:**
 
-- **Stories**: Navigate to story dashboard and management
-- **Write**: Quick access to current writing position
-- **Community**: Reader engagement and feedback hub
-- **Publish**: Publication scheduling and management
-- **AI**: AI assistant and writing tools
-- **Analytics**: Story performance and reader metrics
-- **Settings**: Account and story configuration
-- **Profile**: User profile and public author page
-- **Notifications**: Updates, comments, and community alerts
+- **📖 Fictures Logo**: Home navigation
+- **📚 Writing** (`/stories`): Story dashboard and management - Writer/Manager only
+- **📚 Reading** (`/browse`): Public story browsing - All users
+- **💬 Community** (`/community`): Story discussions and engagement - All users
+- **📤 Publish** (`/publish`): Publication management - Writer/Manager only
+- **📊 Analytics** (`/analytics`): Writing and reader metrics - Writer/Manager only
+- **⚙️ Settings** (`/settings`): User preferences - Authenticated users only
+
+**User Menu (Avatar Dropdown):**
+- **🔔 Notifications**: Activity updates and alerts
+- **👤 Profile**: User profile management
+- **Sign Out**: Session termination
 
 **Navigation Patterns**
 
@@ -61,65 +64,67 @@ Community Hub ← Analytics ← Publication ← AI Assistant ← Scene Editor
 - Keyboard shortcuts
 - Hover states and detailed tooltips
 
-### AI Integration Points
+### AI Integration (Google Gemini 2.5 Flash via Vercel AI Gateway)
 
-**Contextual AI Assistant:**
+**Implemented AI Features:**
 
-- Always available floating button
-- Context-aware suggestions based on current level (Story/Part/Chapter/Scene)
-- Real-time writing feedback
-- Character arc analysis and suggestions
-- Plot thread tracking and recommendations
+- **AI Assistant** (`/assistant`): Dedicated AI writing assistant interface
+- **Context-Aware Suggestions**: Real-time writing assistance based on HNS structure
+- **Content Generation**: Story elements, scenes, characters, and dialogue
+- **Text Analysis**: Structure, pacing, and style analysis
+- **HNS Integration**: AI-powered story development using Hierarchical Narrative Schema
 
-**AI Features by Level:**
+**AI API Endpoints:**
 
-- **Story Level**: Theme analysis, character hierarchy optimization, plot structure suggestions
-- **Part Level**: Arc development, cliffhanger planning, pacing analysis
-- **Chapter Level**: Scene structure, dialogue enhancement, tension building
-- **Scene Level**: Goal-conflict-outcome optimization, emotional beats, sensory details
+- `/api/ai/chat`: Interactive AI conversation
+- `/api/ai/generate`: Content generation
+- `/api/ai/analyze`: Text and structure analysis
+- `/api/ai/suggestions`: Context-aware writing suggestions
+- `/api/stories/generate-hns`: HNS-based story generation
 
 ### Community Integration
 
-**Reader Engagement Tools:**
+**Implemented Community Features:**
 
-- Inline comment system with threading
-- Theory and prediction tracking
-- Fan content galleries
-- Author-reader Q&A sessions
-- Polls and community decisions
+- **Community Hub** (`/community`): Central story discussion platform
+- **Story Discussions**: Story-specific discussion threads
+- **Threaded Comments**: Reply system with nested conversations
+- **Public Reading**: No authentication required for story reading
+- **Community Stats**: Real-time engagement metrics dashboard
 
-**Feedback Integration:**
+**API Support:**
 
-- Comment sentiment analysis
-- Reader engagement metrics
-- Theory tracking and influence indicators
-- Community-driven story suggestions
+- `/api/community/stories`: Community story browsing
+- `/api/community/discussions`: Discussion thread management
+- Community posts and replies through database entities
 
-### Performance Considerations
+### Performance & Technical Architecture
 
-**Content Loading:**
+**Technology Stack:**
 
-- Lazy loading for large story hierarchies
-- Progressive enhancement for complex features
-- Offline writing capability with sync
-- Real-time collaboration with conflict resolution
+- **Frontend**: Next.js 15 with App Router, React 18, TypeScript
+- **Styling**: Tailwind CSS v4 with custom CSS variables
+- **Database**: PostgreSQL (Neon) with Drizzle ORM
+- **Authentication**: NextAuth.js v5 (beta) with Google OAuth
+- **AI Integration**: Google Gemini 2.5 Flash via Vercel AI Gateway
+- **State Management**: SWR for data fetching, localStorage for caching
 
 **Data Management:**
 
-- Incremental saves every 30 seconds while writing
-- Version history with branching for major revisions
-- Cloud sync across devices
-- Export capabilities (EPUB, PDF, etc.)
+- **Autosave**: Chapter content autosaving (`/api/chapters/[id]/autosave`)
+- **Skeleton Loading**: Comprehensive loading states across all interfaces
+- **Role-Based Access**: Server and client-side authorization
+- **Background Processing**: Development server and test runner management
 
 ## 3. Core Design Principles
 
-1. **Hierarchical Navigation**: Mirror the 4-level story structure in UI organization
-2. **Context Awareness**: Always show user's current position in hierarchy
-3. **Progressive Disclosure**: Present relevant tools and information based on current level
-4. **Community Integration**: Seamless reader engagement and feedback features
-5. **Publication Flow**: Streamlined serial publishing with scheduling and analytics
-6. **AI Assistance**: Contextual AI tools available at every level
-7. **Mobile-First Responsive**: Touch-friendly interface scaling from mobile to desktop
+1. **HNS Architecture**: Hierarchical Narrative Schema (Story > Part > Chapter > Scene) drives UI organization
+2. **Role-Based Access**: Writer/Manager/Reader roles with appropriate feature visibility
+3. **AI-First Writing**: Google Gemini integration for comprehensive writing assistance
+4. **Component Architecture**: Reusable UI components with skeleton loading states
+5. **Type Safety**: Full TypeScript implementation with strict typing
+6. **Authentication Security**: NextAuth.js v5 with Google OAuth and credentials
+7. **Mobile-Responsive Design**: Adaptive layouts with mobile navigation support
 
 ## 4. Reader Interfaces
 
@@ -178,17 +183,23 @@ Reader interfaces focus on content consumption, community engagement, and discov
 
 Writer interfaces provide comprehensive tools for content creation, story planning, and writing workflow management.
 
-### 5.1. Main Dashboard - Project Overview
+### 5.1. Main Dashboard (`/stories`)
 
-**Purpose**: Central hub displaying all user stories with quick access to writing, analytics, and management functions.
+**Purpose**: Central writing dashboard for story management, accessible to writers and managers only.
 
-**Key Components**:
+**Implemented Components**:
 
-- **Story Cards**: Display story metadata (title, genre, progress, reader stats, ratings)
-- **Recent Activity Feed**: Shows latest writing progress, comments, and reader engagement
-- **Publishing Schedule**: Upcoming publication dates and deadlines
-- **AI Assistant Panel**: Contextual writing suggestions and story development help
-- **Community Highlights**: Trending discussions and reader feedback
+- **DashboardClient**: Main dashboard wrapper with loading states
+- **CreateStoryCard**: Quick story creation with "+ New Story" interface
+- **StoryCard**: Individual story cards showing:
+  - Title, genre, and description
+  - Progress indicators (parts, chapters, word count)
+  - Last updated timestamp
+  - Quick actions (View, Edit, Delete)
+- **AIAssistantWidget**: AI writing assistant integration
+- **PublishingSchedule**: Publication timeline management
+- **RecentActivity**: Activity feed for story updates
+- **CommunityHighlights**: Featured community discussions
 
 **User Flow**: Entry point showing project overview with quick access to continue writing or view analytics. Story cards navigate to detailed story management.
 
@@ -200,18 +211,27 @@ Writer interfaces provide comprehensive tools for content creation, story planni
 - Display scheduled publication timeline
 - Integrate AI assistance for story development planning
 
-### 5.2. Story Overview and Planning Interface
+### 5.2. Story Management (`/stories/[id]`)
 
-**Purpose**: Comprehensive story management combining progress tracking, structural planning, and creative development tools.
+**Purpose**: Individual story management with HNS structure visualization and editing.
 
-**Key Components**:
+**Implemented Features**:
 
-- **Story Progress Dashboard**: Visual progress indicators for parts, chapters, and overall completion
-- **Story Foundation Panel**: Central questions, themes, genre, and target word count management
-- **Character Hierarchy Display**: Visual representation of character roles and arc progression
-- **Part Structure Overview**: Four-act structure with individual part progress and management
-- **World Building Tools**: Setting, location, and cultural element management
-- **AI Story Assistant**: Context-aware suggestions for story development and character arcs
+- **Story Details**: Title, genre, description, visibility settings
+- **HNS Structure Management**:
+  - Central theme and questions
+  - Character hierarchy with detailed profiles
+  - Part organization (Act 1, 2, 3)
+  - Chapter and scene breakdown
+- **Database Entities**:
+  - `stories` table with HNS JSON fields
+  - `parts`, `chapters`, `scenes` for hierarchy
+  - `characters` with personality and backstory
+  - `places` for setting management
+- **Quick Actions**:
+  - New Chapter creation (`/stories/[id]/new-chapter`)
+  - Edit story structure
+  - Generate HNS with AI
 
 **User Flow**: Strategic story management interface for planning and tracking overall narrative development. Users can manage story structure, continue writing, or dive into detailed part development.
 
@@ -248,18 +268,29 @@ Writer interfaces provide comprehensive tools for content creation, story planni
 - Enable quick navigation to chapter writing and scene planning
 - Support deadline management and reader anticipation tracking
 
-### 5.4. Chapter Writing Interface
+### 5.4. Unified Writing Interface (`/write/[chapterId]`)
 
-**Purpose**: Focused writing environment with comprehensive scene management, real-time AI assistance, and progress tracking.
+**Purpose**: Comprehensive writing environment with scene management and AI assistance.
 
-**Key Components**:
+**Implemented Components**:
 
-- **Chapter Status Panel**: Purpose, hook, character focus, and scene progress overview
-- **Scene Breakdown Manager**: Goal-Conflict-Outcome structure for each scene with progress tracking
-- **Primary Writing Area**: Clean, distraction-free text editor with formatting tools
-- **AI Writing Assistant**: Real-time suggestions for dialogue, pacing, character development, and narrative flow
-- **Writing Analytics Dashboard**: Pace, dialogue ratio, action balance, emotional intensity tracking
-- **Support Tools**: Auto-save, scene notes, character sheets, and research access
+- **UnifiedWritingEditor**: Main writing interface with:
+  - Rich text editor for chapter content
+  - Scene-based writing structure
+  - Character and place management panels
+  - Real-time word count tracking
+- **API Integration**:
+  - `/api/chapters/[id]/autosave`: Automatic content saving
+  - `/api/chapters/[id]/scenes`: Scene management
+  - `/api/ai/suggestions`: Context-aware AI assistance
+- **HNS Support**:
+  - Scene structure with purpose and goals
+  - Character involvement tracking
+  - Place/setting integration
+- **Publishing Controls**:
+  - Save draft functionality
+  - Publish chapter option
+  - Preview mode
 
 **User Flow**: Immersive writing interface prioritizing content creation while providing contextual assistance and progress tracking. Users focus on writing with AI and analytics support always available.
 
@@ -306,18 +337,25 @@ Writer interfaces provide comprehensive tools for content creation, story planni
 
 Manager interfaces provide comprehensive tools for publication management, community moderation, and business analytics.
 
-### 6.1. Publication Center Interface
+### 6.1. Publication Center (`/publish`)
 
-**Purpose**: Comprehensive publication management system with scheduling, analytics, and reader engagement optimization.
+**Purpose**: Publication management interface for writers and managers.
 
-**Key Components**:
+**Implemented Features**:
 
-- **Publishing Schedule Calendar**: Weekly view of planned publications with status tracking
-- **Quick Publish Panel**: Ready-to-publish content with quality checks and community feature toggles
-- **Publication Analytics Dashboard**: Performance metrics for recently published content
-- **Reader Engagement Tracker**: Pre-publication buzz monitoring and optimal timing suggestions
-- **Community Feature Controls**: Comment settings, theory enabling, subscriber notifications
-- **Publication Settings**: Global publishing preferences and subscriber management
+- **Publishing Dashboard**: Overview of publication status
+- **Chapter Publishing**:
+  - `/api/chapters/[id]/publish`: Publication API
+  - Draft to published state transition
+  - Visibility controls (public/private)
+- **Story Visibility**:
+  - `/api/stories/[id]/visibility`: Visibility management
+  - Public sharing for community access
+- **Database Support**:
+  - `isPublished` flags on chapters
+  - `visibility` field on stories
+  - Publication timestamps
+- **Publishing Schedule Component**: Timeline visualization
 
 **User Flow**: Strategic publication management interface enabling authors to schedule releases, monitor performance, and optimize reader engagement.
 
@@ -354,18 +392,31 @@ Manager interfaces provide comprehensive tools for publication management, commu
 - Facilitate author-reader communication through update posts
 - Include community moderation and management tools
 
-### 6.3. Analytics and Performance Interface
+### 6.3. Analytics Dashboard (`/analytics`)
 
-**Purpose**: Comprehensive performance tracking and business intelligence for story success optimization.
+**Purpose**: Writing and reader analytics for writers and managers.
 
-**Key Components**:
+**Implemented Features**:
 
-- **Story Performance Dashboard**: Views, engagement rates, retention metrics across all stories
-- **Reader Demographics Panel**: Audience insights, geographic distribution, reading patterns
-- **Revenue Analytics**: Monetization metrics, subscription tracking, premium content performance
-- **Community Health Metrics**: Discussion quality, moderation effectiveness, user satisfaction
-- **Competitive Analysis**: Genre trends, market positioning, reader preference shifts
-- **Predictive Insights**: AI-powered recommendations for content strategy and optimization
+- **User Statistics**:
+  - Total words written
+  - Stories published
+  - Writing streaks
+  - Progress tracking
+- **Story Analytics**:
+  - View counts
+  - Reader engagement
+  - Chapter performance
+- **API Endpoints**:
+  - `/api/analytics/readers`: Reader analytics
+  - `/api/analytics/stories`: Story performance
+- **Database Support**:
+  - `userStats` table for tracking
+  - View and engagement counting
+- **Visual Components**:
+  - Progress indicators
+  - Stats cards
+  - Activity graphs
 
 **User Flow**: Data-driven decision making interface for optimizing story performance, reader engagement, and business outcomes.
 
@@ -380,34 +431,73 @@ Manager interfaces provide comprehensive tools for publication management, commu
 
 ## 7. Implementation Specifications
 
-**Responsive Design Framework**:
+**Component Architecture**:
 
-- Mobile-first responsive design with progressive enhancement
-- Breakpoints: 320px (mobile), 768px (tablet), 1024px (desktop)
-- Touch-friendly interactions with 44px minimum touch targets
-- Adaptive layout patterns for different screen sizes
+- **UI Components**: Custom Button, Card, Input, Textarea, Badge, Progress components
+- **Layout Components**: MainLayout, GlobalNavigation, SettingsSidebar
+- **Loading States**: SkeletonLoader system across all data-fetching interfaces
+- **Theme System**: CSS variables for light/dark theme support
 
-**Navigation Architecture**:
+**Authentication & Authorization**:
 
-- Hierarchical breadcrumb navigation reflecting story structure
-- Persistent global navigation bar across all interfaces
-- Context-sensitive sidebars and tool panels
-- Quick access patterns for frequently used functions
+- **NextAuth.js v5** with Google OAuth and Credentials providers
+- **Role-Based Access**: reader, writer, manager roles
+- **Protected Routes**: Middleware-based route protection
+- **Session Management**: JWT-based sessions with automatic refresh
 
-**AI Integration Patterns**:
+**Database Architecture (PostgreSQL with Drizzle ORM)**:
 
-- Contextual AI assistance available at every interface level
-- Real-time suggestions and feedback systems
-- Progressive disclosure of AI capabilities based on user needs
-- Consistent AI interaction patterns across all writing interfaces
+- **HNS Tables**: stories, parts, chapters, scenes, characters, places
+- **User Tables**: users, userPreferences, userStats, accounts, sessions
+- **Community Tables**: communityPosts, communityReplies
+- **AI Tables**: aiInteractions for usage tracking
 
-**Community Integration**:
+**Testing Infrastructure**:
 
-- Seamless reader engagement tools integrated into writing workflow
-- Real-time community feedback and interaction systems
-- Author-reader communication channels with moderation controls
-- Fan content management and promotion features
+- **Playwright E2E Tests**: Google OAuth authentication flow
+- **Jest Unit Tests**: Component and utility testing
+- **Test Data**: `.auth/user.json` for automated authentication
 
-**Visual Mockups**: All visual interface mockups and ASCII diagrams are available in the companion [UI Development Guide](./ui-development.md) document.
+## 8. Settings System
 
-This specification provides the functional and structural foundation for implementing the Fictures platform UI across all device types and user scenarios.
+**Comprehensive Settings Pages** (`/settings/*`):
+
+- **General Settings** (`/settings`): Account basics and preferences
+- **Appearance** (`/settings/appearance`): Theme selection (light/dark/system)
+- **Writing** (`/settings/writing`): Writing goals and preferences
+- **AI Assistant** (`/settings/ai-assistant`): AI model and behavior settings
+- **Notifications** (`/settings/notifications`): Email and push preferences
+- **Privacy** (`/settings/privacy`): Profile visibility and data sharing
+- **Analytics** (`/settings/analytics`): Analytics collection preferences
+
+**Settings Implementation**:
+
+- **SettingsSidebar**: Navigation component for settings pages
+- **Database**: `userPreferences` table for persistent storage
+- **API**: `/api/settings/*` endpoints for preference management
+
+## 9. Development & Deployment
+
+**Development Commands**:
+```bash
+# Development with environment variables
+dotenv --file .env.local run pnpm dev
+
+# Database management
+pnpm db:generate  # Generate migrations
+pnpm db:migrate   # Run migrations
+pnpm db:push      # Push schema changes
+pnpm db:studio    # Open database studio
+
+# Testing
+dotenv --file .env.local run npx playwright test --headless
+dotenv --file .env.local run pnpm test
+```
+
+**Environment Configuration**:
+- NextAuth authentication with Google OAuth
+- Neon PostgreSQL database connection
+- Vercel AI Gateway for Gemini integration
+- Vercel Blob storage for assets
+
+This specification reflects the actual implementation of the Fictures platform, providing a comprehensive reference for the current UI architecture, components, and features across all device types and user roles.
