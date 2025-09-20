@@ -81,60 +81,47 @@ Before writing, you must decide how to divide your complete story into major par
 3. Design character development sustaining long-term interest
 4. Create backup content strategies for schedule maintenance
 
-## 5. YAML Data Structure for Story Object
+## 5. JSON Data Structure for Story Object
 
-```yaml
-# ============================================
-# STORY SPECIFICATION - HNS FORMAT
-# ============================================
+### Field Descriptions
 
-story:
-  # Core identification
-  story_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
-  story_title: "The Shadow Keeper"
-  genre: ["urban_fantasy", "thriller"]
-  target_words: 80000
+**story_id**: A unique identifier (e.g., UUID) for database management.
 
-  # Core narrative elements
-  premise: "A photographer must master shadow magic to save her sister from a supernatural realm before power corrupts her"
-  dramatic_question: "Can Maya master shadow magic before power corrupts her?"
-  theme: "The conflict between power and responsibility"
+**story_title**: The working or final title of the story.
 
-  # Character registry
-  characters:
-    - character_id: "char_maya_001"
-    - character_id: "char_elena_002"
-    - character_id: "char_marcus_003"
-    - character_id: "char_void_004"
+**genre**: An array specifying primary and secondary genres (e.g., ["urban_fantasy", "thriller"]), which informs stylistic choices in both text and image generation.
 
-  # Setting registry
-  settings:
-    - setting_id: "setting_sf_001"
-    - setting_id: "setting_shadow_realm_002"
-    - setting_id: "setting_studio_003"
+**target_words**: The target word count for the complete story, used for planning and pacing.
 
-  # Part-level breakdown
-  parts:
-    - part_id: "part_001"
-      part_title: "Part I: Discovery"
-      structural_role: "Act 1: Setup"
-      summary: "Maya discovers her sister Elena is missing and learns about the supernatural world"
-      key_beats: ["Exposition", "Inciting Incident", "Plot Point One"]
-      chapters: ["chap_001", "chap_002", "chap_003", "chap_004", "chap_005"]
+**premise**: A single, succinct sentence that encapsulates the entire novel. This is directly derived from the first step of the Snowflake Method and serves as the "elevator pitch" for the story. It should tie together the big-picture conflict with the personal stakes of the protagonist.
 
-    - part_id: "part_002"
-      part_title: "Part II: Confrontation"
-      structural_role: "Act 2: Confrontation"
-      summary: "Maya trains in shadow magic while searching for Elena, facing increasing corruption"
-      key_beats: ["Rising Action", "Midpoint", "Plot Point Two"]
-      chapters: ["chap_006", "chap_007", "chap_008", "chap_009", "chap_010"]
+**dramatic_question**: The central yes-or-no question that drives the narrative and must be answered in the climax (e.g., "Will the detective solve the mystery?"). This attribute provides a clear definition of the story's ultimate goal.
 
-    - part_id: "part_003"
-      part_title: "Part III: Resolution"
-      structural_role: "Act 3: Resolution"
-      summary: "Maya confronts the Void and must choose between power and family"
-      key_beats: ["Climax", "Falling Action", "Resolution"]
-      chapters: ["chap_011", "chap_012", "chap_013", "chap_014", "chap_015"]
+**theme**: A concise statement of the story's central message or underlying idea, which helps guide narrative and character decisions to ensure thematic coherence.
+
+**characters**: An array of character_ids, linking to all major and minor characters defined in the ancillary data objects.
+
+**settings**: An array of setting_ids, linking to all key locations.
+
+**parts**: An ordered array of part_ids, representing the major structural divisions of the story.
+
+### Example JSON Structure
+
+```json
+{
+  "story": {
+    "story_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "story_title": "The Shadow Keeper",
+    "genre": ["urban_fantasy", "thriller"],
+    "target_words": 80000,
+    "premise": "A photographer must master shadow magic to save her sister from a supernatural realm before power corrupts her",
+    "dramatic_question": "Can Maya master shadow magic before power corrupts her?",
+    "theme": "The conflict between power and responsibility",
+    "characters": ["char_maya_001", "char_elena_002", "char_marcus_003", "char_void_004"],
+    "settings": ["setting_sf_001", "setting_shadow_realm_002", "setting_studio_003"],
+    "parts": ["part_001", "part_002", "part_003"]
+  }
+}
 ```
 
 ---
