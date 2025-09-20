@@ -7,11 +7,11 @@ import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const treeVariants = cva(
-    'group hover:before:opacity-100 before:absolute before:rounded-lg before:left-0 px-2 before:w-full before:opacity-0 before:bg-accent/70 before:h-[2rem] before:-z-10'
+    'group hover:bg-accent/50 px-2 rounded-md relative transition-all duration-200'
 )
 
 const selectedTreeVariants = cva(
-    'before:opacity-100 before:bg-accent/70 text-accent-foreground'
+    'bg-blue-500/20 hover:bg-blue-500/30 text-blue-900 dark:text-blue-100 font-semibold border-l-2 border-blue-500'
 )
 
 const dragOverVariants = cva(
@@ -63,6 +63,11 @@ const TreeView = React.forwardRef<HTMLDivElement, TreeProps>(
 
         const [draggedItem, setDraggedItem] = React.useState<TreeDataItem | null>(null)
 
+        // Update selected item when initialSelectedItemId changes
+        React.useEffect(() => {
+            setSelectedItemId(initialSelectedItemId)
+        }, [initialSelectedItemId])
+
         const handleSelectChange = React.useCallback(
             (item: TreeDataItem | undefined) => {
                 setSelectedItemId(item?.id)
@@ -85,34 +90,59 @@ const TreeView = React.forwardRef<HTMLDivElement, TreeProps>(
         }, [draggedItem, onDocumentDrag])
 
         const expandedItemIds = React.useMemo(() => {
-            if (!initialSelectedItemId) {
+            if (expandAll) {
+                // When expandAll is true, expand all items with children
+                const ids: string[] = []
+                function collectAllParents(items: TreeDataItem[] | TreeDataItem) {
+                    const itemsArray = Array.isArray(items) ? items : [items]
+                    itemsArray.forEach(item => {
+                        if (item.children && item.children.length > 0) {
+                            ids.push(item.id)
+                            collectAllParents(item.children)
+                        }
+                    })
+                }
+                collectAllParents(data)
+                return ids
+            }
+
+            if (!selectedItemId) {
                 return [] as string[]
             }
 
+            // Expand path to selected item
             const ids: string[] = []
-
             function walkTreeItems(
                 items: TreeDataItem[] | TreeDataItem,
                 targetId: string
-            ) {
+            ): boolean {
                 if (items instanceof Array) {
                     for (let i = 0; i < items.length; i++) {
-                        ids.push(items[i]!.id)
-                        if (walkTreeItems(items[i]!, targetId) && !expandAll) {
+                        if (items[i]!.children && items[i]!.children!.length > 0) {
+                            ids.push(items[i]!.id)
+                            if (walkTreeItems(items[i]!.children!, targetId)) {
+                                return true
+                            }
+                            ids.pop()
+                        }
+                        if (items[i]!.id === targetId) {
                             return true
                         }
-                        if (!expandAll) ids.pop()
                     }
-                } else if (!expandAll && items.id === targetId) {
-                    return true
-                } else if (items.children) {
-                    return walkTreeItems(items.children, targetId)
+                } else {
+                    if (items.id === targetId) {
+                        return true
+                    }
+                    if (items.children) {
+                        return walkTreeItems(items.children, targetId)
+                    }
                 }
+                return false
             }
 
-            walkTreeItems(data, initialSelectedItemId)
+            walkTreeItems(data, selectedItemId)
             return ids
-        }, [data, expandAll, initialSelectedItemId])
+        }, [data, expandAll, selectedItemId])
 
         return (
             <div className={cn('overflow-hidden relative p-2', className)}>
@@ -270,6 +300,7 @@ const TreeNode = ({
             <AccordionPrimitive.Item value={item.id}>
                 <AccordionTrigger
                     className={cn(
+                        'flex items-center py-1',
                         treeVariants(),
                         selectedItemId === item.id && selectedTreeVariants(),
                         isDragOver && dragOverVariants()
@@ -377,7 +408,7 @@ const TreeLeaf = React.forwardRef<
             <div
                 ref={ref}
                 className={cn(
-                    'ml-5 flex text-left items-center py-2 cursor-pointer before:right-1',
+                    'ml-5 flex text-left items-center py-1 cursor-pointer rounded-md',
                     treeVariants(),
                     className,
                     selectedItemId === item.id && selectedTreeVariants(),
@@ -421,7 +452,7 @@ const AccordionTrigger = React.forwardRef<
         <AccordionPrimitive.Trigger
             ref={ref}
             className={cn(
-                'flex flex-1 w-full items-center py-2 transition-all',
+                'flex flex-1 w-full items-center transition-all rounded-md',
                 hasChildren && 'first:[&[data-state=open]>svg]:first-of-type:rotate-90',
                 className
             )}
