@@ -691,50 +691,69 @@ Maps Snowflake Method stages to HNS population with LLM assistance:
 - **Action**: Create one-sentence summary
 - **Target**: Story object fields
 - **AI Process**: Generate multiple premise variations under 20 words
-- **Human Task**: Select best premise, define dramatic_question and theme
-- **Output**: Populate premise, dramatic_question, theme, genre fields
+- **Human Curation**: Select most compelling premise, define dramatic question and thematic core
+- **Output**: Complete Story object with foundational narrative DNA and structural references
 
-**Example Prompt**: "Given the story idea 'a wizard who has lost his magic,' generate 5 one-sentence premises under 20 words with protagonist, conflict, and personal stakes."
+**Example LLM Prompt**:
+```
+Act as an expert novel outliner. Given the rough story idea "a wizard who has lost his magic," generate 5 potential one-sentence premises. Each premise must be under 20 words, introduce a clear protagonist, a core conflict, and hint at the personal stakes involved.
+```
 
 #### 8.2.2 Step 2: Act-Level Structuring (Part Objects)
 
 - **Action**: Expand premise to five-sentence paragraph
 - **Target**: Part objects (three acts)
 - **AI Process**: Structure as "three disasters plus ending"
-- **Human Task**: Review, refine, segment into three acts
-- **Output**: Create Part objects with structural_role, summary, key_beats
+- **Refinement**: Ensure dramatic flow and segment into three-act structure
+- **Output**: Three Part objects with act designations, key narrative beats, and chapter containers
 
-**Example Prompt**: "Expand premise into 5 sentences: 1) Setup/ordinary world, 2-4) Three escalating disasters, 5) Resolution."
+**Example LLM Prompt**:
+```
+Based on the premise: "[premise]", write a five-sentence summary paragraph for the novel. The first sentence should establish the setup and the protagonist's ordinary world. The next three sentences should each describe a major disaster or turning point that escalates the conflict. The final sentence should describe the story's resolution or ending.
+```
 
 #### 8.2.3 Step 3: Character Conception (Character Objects)
 
 - **Action**: Create character profiles from story summary
 - **Target**: Character objects
 - **AI Process**: Identify protagonist, antagonist, key allies with storylines
-- **Human Task**: Add psychological depth and nuance
-- **Output**: Populate character profiles with goals, conflicts, epiphanies
+- **Enhancement**: Develop psychological complexity and behavioral consistency
+- **Output**: Full Character objects with personality profiles, backstories, motivations, and physical descriptions
 
-**Profile Elements**: 1) One-sentence storyline, 2) Primary goal, 3) Main conflict, 4) Character epiphany
+**Example LLM Prompt**:
+```
+Analyze the following story summary: "[summary]". Identify the protagonist, the primary antagonist, and one key supporting character. For each character, generate a profile containing:
+1. A one-sentence summary of their storyline
+2. Their primary goal in the story
+3. Their main conflict (what prevents them from reaching their goal)
+4. Their epiphany (what they will learn or how they will change)
+```
 
 #### 8.2.4 Step 4: Chapter-Level Expansion (Chapter Objects)
 
 - **Action**: Expand each act sentence to full paragraph
 - **Target**: Chapter objects
 - **AI Process**: Generate 150-word paragraphs ending with complications
-- **Human Task**: Ensure cohesive, escalating plot progression
-- **Output**: Populate Chapter.summary fields
+- **Plot Development**: Build cohesive escalation with compelling chapter hooks
+- **Output**: Chapter objects with summaries, pacing controls, and structured cliffhangers for serialization
+
+**Example LLM Prompt**:
+```
+Take the following sentence, which represents a major story beat: "[sentence]". Expand this sentence into a full paragraph of approximately 150 words, detailing the key events that occur. The paragraph should end with a significant setback, complication, or disaster for the protagonist.
+```
 
 #### 8.2.5 Step 5: Scene Breakdown (Scene Objects)
 
 - **Action**: Break chapters into 3-5 discrete scenes
 - **Target**: Scene objects
 - **AI Process**: Generate scene descriptions with action, setting, characters
-- **Human Task**: Adjust flow and populate scene attributes
-- **Output**: Complete scene-by-scene outline with all fields populated
+- **Scene Crafting**: Establish goals, conflicts, and emotional progressions
+- **Output**: Complete scene-by-scene blueprint with character dynamics, settings, and narrative mechanics
 
-### 8.3 Implementation Summary
-
-This five-step process transforms initial concepts into detailed, machine-readable narrative blueprints ready for validation and prose generation. Each step builds on previous layers, ensuring structural coherence while maintaining creative flexibility through human curation.
+**Example LLM Prompt**:
+```
+Given the following chapter summary: "[Chapter.summary]". Break this down into a list of 3 to 5 distinct scenes required to tell this part of the story. For each scene, provide a one-sentence description of the key action, the setting, and the characters involved.
+```
 
 ---
 
