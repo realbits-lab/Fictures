@@ -232,63 +232,12 @@ export function PartEditor({
         </div>
       )}
 
-      {/* Part Progress Overview */}
-      <BeautifulJSONDisplay
-        title="📋 Part Progress Overview"
-        icon="📋"
-        data={{
-          title: displayData.title,
-          function: displayData.function,
-          word_count: displayData.words,
-          goal: displayData.goal || "Not defined",
-          conflict: displayData.conflict || "Not defined",
-          outcome: displayData.outcome || "Not defined",
-          questions: {
-            primary: displayData.questions?.primary || "Not defined",
-            secondary: displayData.questions?.secondary || "Not defined"
-          }
-        }}
-        isCollapsed={false}
-      />
-
-      {/* Part Foundation and Development */}
-      <BeautifulJSONDisplay
-        title="🎯 Part Foundation & Development"
-        icon="🎯"
-        data={{
-          foundation: {
-            primary_theme: displayData.themes?.primary || "Theme not defined",
-            function: displayData.function,
-            word_target: displayData.words,
-            climax_position: displayData.serial?.climax_at || "Not defined",
-            arc_pattern: displayData.serial?.arc || "Not defined"
-          },
-          plot_elements: {
-            events: displayData.plot?.events || [],
-            reveals: displayData.plot?.reveals || [],
-            escalation: displayData.plot?.escalation || [],
-            counts: {
-              events_count: displayData.plot?.events?.length || 0,
-              reveals_count: displayData.plot?.reveals?.length || 0,
-              escalation_points: displayData.plot?.escalation?.length || 0
-            }
-          },
-          emotional_journey: {
-            start: displayData.emotion?.start || "Not defined",
-            end: displayData.emotion?.end || "Not defined",
-            progression: displayData.emotion?.progression || [],
-            stages_count: displayData.emotion?.progression?.length || 0
-          }
-        }}
-        isCollapsed={false}
-      />
-
       {/* Part JSON Data */}
       <BeautifulJSONDisplay
-        title="📄 Complete Part Data"
+        title="📄 Part Data"
         icon="📄"
         data={displayData}
-        isCollapsed={true}
+        isCollapsed={false}
       />
     </div>
   );
