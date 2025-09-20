@@ -379,107 +379,91 @@ Characters need two types of information:
 - **Relationships**: Current dynamics with other characters
 - **Goals**: What they want right now
 
-## 3. YAML Data Structure for Character Object
+## 3. JSON Data Structure for Character Object
 
-```yaml
-# ============================================
-# CHARACTER SPECIFICATION - HNS FORMAT
-# ============================================
+### Field Descriptions
 
-character:
-  # Core identification
-  character_id: "char_maya_001"
-  name: "Maya Chen"
-  role: "protagonist"
-  archetype: "reluctant_hero"
-  age: 28
+**character_id**: A unique identifier.
 
-  # Character summary
-  summary: "Investigative photographer searching for missing sister, reluctantly learning shadow magic"
-  storyline: "Maya must overcome skepticism to master dangerous magic and save Elena"
+**name**: The character's name.
 
-  # Fixed identity traits
-  personality:
-    traits: ["analytical", "protective", "skeptical", "determined"]
-    myers_briggs: "INTJ"
-    enneagram: "Type 5 - Investigator"
+**role**: The character's narrative role (e.g., "protagonist", "antagonist", "mentor").
 
-  # Character backstory
-  backstory:
-    childhood: "Raised by grandmother after parents died mysteriously"
-    education: "Journalism degree from UC Berkeley"
-    career: "Freelance investigative photographer"
-    relationships: "Close to sister Elena, few other connections"
-    trauma: "Parents' unexplained disappearance at age 10"
+**archetype**: The character's archetype (e.g., "reluctant_hero", "trickster", "mentor").
 
-  # Core drives
-  motivations:
-    primary: "Protect Elena at all costs"
-    secondary: "Understand truth behind parents' disappearance"
-    fear: "Losing control and hurting loved ones"
+**summary**: A brief description of the character and their role in the story.
 
-  # Character arc
-  character_journey:
-    starting_point: "Skeptical rationalist denying supernatural"
-    goal: "Save Elena from Shadow Realm"
-    internal_conflict: "Fear of power vs need to be strong"
-    external_conflict: "Shadow Realm forces trying to corrupt her"
-    epiphany: "True strength comes from accepting all parts of self"
-    ending_point: "Integrated shadow keeper balancing light and dark"
+**storyline**: The character's narrative journey through the story.
 
-  # Abilities and limitations
-  capabilities:
-    skills: ["photography", "investigation", "pattern_recognition"]
-    supernatural: ["shadow_manipulation", "darkness_navigation", "void_sensing"]
-    limitations: ["corruption_susceptible", "emotionally_guarded", "trust_issues"]
+**personality**: A structured object containing personality traits, Myers-Briggs type, and Enneagram type.
 
-  # Voice and communication
-  voice:
-    speech_pattern: "Precise, questioning, measured"
-    vocabulary: "Educated, journalistic, photography metaphors"
-    verbal_tics: ["'Let me see if I understand...'", "'Picture this...'"]
-    internal_voice: "Analytical with undercurrent of worry"
+**backstory**: A summary of the character's history prior to the story's start, which informs their motivations and behavior.
 
-  # Physical description for visualization
-  physical_description:
-    ethnicity: "Chinese-American"
-    height: "5'6''"
-    build: "Athletic, runner's physique"
-    hair_style_color: "Shoulder-length black hair, usually in ponytail"
-    eye_color: "Dark brown with gold flecks when using magic"
-    facial_features: "High cheekbones, expressive eyebrows, determined jaw"
-    distinguishing_marks: "Silver star birthmark on left wrist"
-    typical_attire: "Dark jeans, comfortable boots, photographer vest, camera"
+**motivations**: A description of what drives the character's actions, including primary goals, secondary goals, and fears.
 
-  # Relationship dynamics
-  relationships:
-    elena:
-      type: "sister"
-      status: "missing"
-      dynamic: "protective_older_sister"
-      emotional_bond: "deep_love_and_responsibility"
-    marcus:
-      type: "mentor"
-      status: "complicated"
-      dynamic: "reluctant_trust"
-      emotional_bond: "growing_respect_with_suspicion"
-    void:
-      type: "antagonist"
-      status: "unknown_threat"
-      dynamic: "corrupted_predecessor"
-      emotional_bond: "fear_and_dark_recognition"
+**voice**: The character's communication style, including speech patterns, vocabulary, verbal tics, and internal voice.
 
-  # Current story context (updated as story progresses)
-  current_state:
-    location: "San Francisco"
-    emotional: "determined but afraid"
-    physical: "exhausted from training"
-    knowledge_level: "learning shadow manipulation basics"
-    immediate_goal: "Master first level of shadow walking"
+**physical_description**: A detailed, structured object optimized for AI image generation prompts. It contains sub-fields for:
+- **age**: The character's age
+- **ethnicity**: The character's ethnic background
+- **height**: Physical height
+- **build**: Body type and physique
+- **hair_style_color**: Hair style and color description
+- **eye_color**: Eye color and notable features
+- **facial_features**: Distinctive facial characteristics
+- **distinguishing_marks**: Unique physical markers or scars
+- **typical_attire**: Common clothing and accessories
 
-  # Visual reference for consistency
-  visual_reference_id: "maya_chen_ref_001.png"
-  visual_style_notes: "Realistic, cinematic lighting, film noir influences"
+**visual_reference_id**: Reference to visual asset file for consistency.
+
+### Example JSON Structure
+
+```json
+{
+  "character": {
+    "character_id": "char_maya_001",
+    "name": "Maya Chen",
+    "role": "protagonist",
+    "archetype": "reluctant_hero",
+    "summary": "Investigative photographer searching for missing sister, reluctantly learning shadow magic",
+    "storyline": "Maya must overcome skepticism to master dangerous magic and save Elena",
+    "personality": {
+      "traits": ["analytical", "protective", "skeptical", "determined"],
+      "myers_briggs": "INTJ",
+      "enneagram": "Type 5 - Investigator"
+    },
+    "backstory": {
+      "childhood": "Raised by grandmother after parents died mysteriously",
+      "education": "Journalism degree from UC Berkeley",
+      "career": "Freelance investigative photographer",
+      "relationships": "Close to sister Elena, few other connections",
+      "trauma": "Parents' unexplained disappearance at age 10"
+    },
+    "motivations": {
+      "primary": "Protect Elena at all costs",
+      "secondary": "Understand truth behind parents' disappearance",
+      "fear": "Losing control and hurting loved ones"
+    },
+    "voice": {
+      "speech_pattern": "Precise, questioning, measured",
+      "vocabulary": "Educated, journalistic, photography metaphors",
+      "verbal_tics": ["'Let me see if I understand...'", "'Picture this...'"],
+      "internal_voice": "Analytical with undercurrent of worry"
+    },
+    "physical_description": {
+      "age": 28,
+      "ethnicity": "Chinese-American",
+      "height": "5'6''",
+      "build": "Athletic, runner's physique",
+      "hair_style_color": "Shoulder-length black hair, usually in ponytail",
+      "eye_color": "Dark brown with gold flecks when using magic",
+      "facial_features": "High cheekbones, expressive eyebrows, determined jaw",
+      "distinguishing_marks": "Silver star birthmark on left wrist",
+      "typical_attire": "Dark jeans, comfortable boots, photographer vest, camera"
+    },
+    "visual_reference_id": "maya_chen_ref_001.png"
+  }
+}
 ```
 
 ---
