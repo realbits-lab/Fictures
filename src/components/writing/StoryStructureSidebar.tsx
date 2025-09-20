@@ -13,11 +13,7 @@ import {
   Maximize2,
   Minimize2,
   PanelLeftClose,
-  PanelLeftOpen,
-  CheckCircle,
-  Clock,
-  Calendar,
-  AlertCircle
+  PanelLeftOpen
 } from "lucide-react";
 
 interface Scene {
@@ -85,20 +81,6 @@ export function StoryStructureSidebar({
     onSidebarCollapse?.(newCollapsed);
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'published':
-      case 'completed':
-        return <CheckCircle className="h-3 w-3 text-green-600" />;
-      case 'in_progress':
-        return <Clock className="h-3 w-3 text-yellow-600" />;
-      case 'planned':
-        return <Calendar className="h-3 w-3 text-gray-500" />;
-      default:
-        return <AlertCircle className="h-3 w-3 text-gray-400" />;
-    }
-  };
-
   // Convert story structure to TreeDataItem format
   const treeData = useMemo<TreeDataItem[]>(() => {
     const items: TreeDataItem[] = [];
@@ -136,7 +118,6 @@ export function StoryStructureSidebar({
             id: `chapter-${chapter.id}`,
             name: `Ch ${chapter.orderIndex}: ${chapter.title}`,
             icon: Edit3,
-            actions: getStatusIcon(chapter.status),
             onClick: () => onSelectionChange?.({
               level: "chapter",
               storyId: story.id,
@@ -153,7 +134,6 @@ export function StoryStructureSidebar({
                 id: `scene-${scene.id}`,
                 name: scene.title,
                 icon: Camera,
-                actions: getStatusIcon(scene.status),
                 onClick: () => onSelectionChange?.({
                   level: "scene",
                   storyId: story.id,
@@ -177,7 +157,6 @@ export function StoryStructureSidebar({
           id: `chapter-${chapter.id}`,
           name: `Ch ${chapter.orderIndex}: ${chapter.title}`,
           icon: Edit3,
-          actions: getStatusIcon(chapter.status),
           onClick: () => onSelectionChange?.({
             level: "chapter",
             storyId: story.id,
@@ -193,7 +172,6 @@ export function StoryStructureSidebar({
               id: `scene-${scene.id}`,
               name: scene.title,
               icon: Camera,
-              actions: getStatusIcon(scene.status),
               onClick: () => onSelectionChange?.({
                 level: "scene",
                 storyId: story.id,
