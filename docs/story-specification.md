@@ -103,7 +103,9 @@ Before writing, you must decide how to divide your complete story into major par
 
 **settings**: An array of setting_ids, linking to all key locations.
 
-**parts**: An ordered array of part_ids, representing the major structural divisions of the story.
+**parts**: An array of part_ids, representing the major structural divisions of the story.
+
+**structure**: An object defining the story's structural type and distribution (e.g., three-part with percentage distribution).
 
 ### Example JSON Structure
 
@@ -119,7 +121,11 @@ Before writing, you must decide how to divide your complete story into major par
     "theme": "The conflict between power and responsibility",
     "characters": ["char_maya_001", "char_elena_002", "char_marcus_003", "char_void_004"],
     "settings": ["setting_sf_001", "setting_shadow_realm_002", "setting_studio_003"],
-    "parts": ["part_001", "part_002", "part_003"]
+    "parts": ["part_001", "part_002", "part_003"],
+    "structure": {
+      "type": "three_part",
+      "distribution": [25, 50, 25]
+    }
   }
 }
 ```
