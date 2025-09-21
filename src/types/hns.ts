@@ -155,6 +155,9 @@ export const HNSSceneSchema = z.object({
   /** Sequential number of the scene within the chapter */
   scene_number: z.number().describe("Sequential position within the chapter"),
 
+  /** Descriptive title for the scene that captures its essence or key event */
+  scene_title: z.string().describe("Descriptive title for the scene that captures its essence or key event"),
+
   /** Reference to the parent Chapter this scene belongs to */
   chapter_ref: z.string().describe("Link to parent Chapter object"),
 
@@ -206,6 +209,10 @@ export const HNSSceneSchema = z.object({
     /** POV character's emotional state at scene end */
     to: z.string().describe("Ending emotional state"),
   }).describe("Change in POV character's emotional state for arc tracking"),
+
+  /** Generated narrative content for the scene (2-3 opening paragraphs) */
+  content: z.string().optional()
+    .describe("Opening narrative content (2-3 paragraphs) written in the specified narrative voice and POV"),
 });
 
 // Cross-Level: Character Identity and Context Schema
@@ -410,6 +417,7 @@ export const HNSChapterPartialSchema = HNSChapterSchema.partial({
 export const HNSScenePartialSchema = HNSSceneSchema.partial({
   scene_id: true,
   scene_number: true,
+  scene_title: true,
   chapter_ref: true,
   setting_id: true,
   pov_character_id: true,

@@ -66,7 +66,7 @@ export function YamlDataSidebar() {
             id = item.chapter_id || `chapter-${index}`;
             break;
           case 'scenes':
-            name = item.summary || `Scene ${index + 1}`;
+            name = item.scene_title || `Scene ${index + 1}`;
             id = item.scene_id || `scene-${index}`;
             break;
           default:

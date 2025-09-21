@@ -13,11 +13,13 @@ interface ProgressStep {
   status: 'pending' | 'in_progress' | 'completed' | 'error';
 }
 
-interface YamlData {
-  storyYaml?: string;
-  charactersYaml?: string;
-  placesYaml?: string;
-  partsYaml?: string;
+interface StoryData {
+  story?: any;
+  characters?: any[];
+  places?: any[];
+  parts?: any[];
+  chapters?: any[];
+  scenes?: any[];
 }
 
 export function CreateStoryForm() {
@@ -28,19 +30,18 @@ export function CreateStoryForm() {
   const [progress, setProgress] = useState<ProgressStep[]>([]);
   const [isCompleted, setIsCompleted] = useState(false);
   const [generatedStoryId, setGeneratedStoryId] = useState<string | null>(null);
+  const [storyData, setStoryData] = useState<StoryData>({});
   const { setYamlData, clearYamlData } = useStoryCreation();
   const router = useRouter();
 
   const initializeProgress = () => {
     const steps: ProgressStep[] = [
-      { phase: 'HNS Generation', description: 'Creating complete story structure using Hierarchical Narrative Schema', status: 'pending' },
       { phase: 'Story Foundation', description: 'Establishing premise, theme, and dramatic question', status: 'pending' },
       { phase: 'Three-Act Structure', description: 'Developing parts with key narrative beats', status: 'pending' },
       { phase: 'Characters', description: 'Creating detailed character profiles with psychology', status: 'pending' },
       { phase: 'Settings', description: 'Building immersive locations with sensory details', status: 'pending' },
       { phase: 'Chapters & Scenes', description: 'Structuring chapters with hooks and scene breakdowns', status: 'pending' },
       { phase: 'Visual Generation', description: 'Creating AI images for characters and settings', status: 'pending' },
-      { phase: 'Database', description: 'Storing complete HNS data in database', status: 'pending' },
     ];
     setProgress(steps);
     return steps;
@@ -73,6 +74,7 @@ export function CreateStoryForm() {
     setIsLoading(true);
     setError('');
     setProgress([]);
+    setStoryData({});
     clearYamlData();
 
     // Initialize progress steps
@@ -121,10 +123,8 @@ export function CreateStoryForm() {
                 case 'progress':
                   // Update progress based on step
                   const stepMap: Record<string, number> = {
-                    'generating_hns': 0,
-                    'storing_database': 7,
-                    'generating_character_images': 6,
-                    'generating_setting_images': 6,
+                    'generating_character_images': 5,
+                    'generating_setting_images': 5,
                   };
                   if (data.data.step && stepMap[data.data.step] !== undefined) {
                     updateProgress(stepMap[data.data.step], 'in_progress');
@@ -132,38 +132,103 @@ export function CreateStoryForm() {
                   break;
 
                 case 'phase1_start':
-                  updateProgress(1, 'in_progress');
+                  updateProgress(0, 'in_progress');
                   break;
                 case 'phase1_complete':
-                  updateProgress(1, 'completed');
+                  updateProgress(0, 'completed');
+                  // Update sidebar with story data
+                  if (data.data.story) {
+                    setStoryData(prev => ({
+                      ...prev,
+                      story: data.data.story
+                    }));
+                    setYamlData(prev => ({
+                      ...prev,
+                      storyYaml: JSON.stringify(data.data.story, null, 2)
+                    }));
+                  }
                   break;
 
                 case 'phase2_start':
-                  updateProgress(2, 'in_progress');
+                  updateProgress(1, 'in_progress');
                   break;
                 case 'phase2_complete':
-                  updateProgress(2, 'completed');
+                  updateProgress(1, 'completed');
+                  // Update sidebar with parts data
+                  if (data.data.parts) {
+                    setStoryData(prev => ({
+                      ...prev,
+                      parts: data.data.parts
+                    }));
+                    setYamlData(prev => ({
+                      ...prev,
+                      partsYaml: JSON.stringify(data.data.parts, null, 2)
+                    }));
+                  }
                   break;
 
                 case 'phase3_start':
-                  updateProgress(3, 'in_progress');
+                  updateProgress(2, 'in_progress');
                   break;
                 case 'phase3_complete':
-                  updateProgress(3, 'completed');
+                  updateProgress(2, 'completed');
+                  // Update sidebar with characters data
+                  if (data.data.characters) {
+                    setStoryData(prev => ({
+                      ...prev,
+                      characters: data.data.characters
+                    }));
+                    setYamlData(prev => ({
+                      ...prev,
+                      charactersYaml: JSON.stringify(data.data.characters, null, 2)
+                    }));
+                  }
                   break;
 
                 case 'phase4_start':
-                  updateProgress(4, 'in_progress');
+                  updateProgress(3, 'in_progress');
                   break;
                 case 'phase4_complete':
-                  updateProgress(4, 'completed');
+                  updateProgress(3, 'completed');
+                  // Update sidebar with settings data
+                  if (data.data.settings) {
+                    setStoryData(prev => ({
+                      ...prev,
+                      places: data.data.settings
+                    }));
+                    setYamlData(prev => ({
+                      ...prev,
+                      placesYaml: JSON.stringify(data.data.settings, null, 2)
+                    }));
+                  }
                   break;
 
                 case 'phase5_6_start':
-                  updateProgress(5, 'in_progress');
+                  updateProgress(4, 'in_progress');
                   break;
                 case 'phase5_6_complete':
-                  updateProgress(5, 'completed');
+                  updateProgress(4, 'completed');
+                  // Update sidebar with chapters and scenes data
+                  if (data.data.chapters) {
+                    setStoryData(prev => ({
+                      ...prev,
+                      chapters: data.data.chapters
+                    }));
+                    setYamlData(prev => ({
+                      ...prev,
+                      chaptersYaml: JSON.stringify(data.data.chapters, null, 2)
+                    }));
+                  }
+                  if (data.data.scenes) {
+                    setStoryData(prev => ({
+                      ...prev,
+                      scenes: data.data.scenes
+                    }));
+                    setYamlData(prev => ({
+                      ...prev,
+                      scenesYaml: JSON.stringify(data.data.scenes, null, 2)
+                    }));
+                  }
                   break;
 
                 case 'hns_complete':
@@ -215,7 +280,7 @@ export function CreateStoryForm() {
                       scenesYaml: JSON.stringify(allScenes, null, 2),
                     });
                     // Update all generation steps as complete
-                    for (let i = 0; i <= 5; i++) {
+                    for (let i = 0; i <= 4; i++) {
                       updateProgress(i, 'completed');
                     }
                   }

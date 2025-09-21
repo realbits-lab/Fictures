@@ -322,20 +322,28 @@ export async function generateHNSScenes(
       schema: z.object({
         scenes: z.array(HNSScenePartialSchema).length(sceneCount),
       }),
-      system: `You are creating scene structures following the Hierarchical Narrative Schema.
+      system: `You are creating scene structures following the Hierarchical Narrative Schema and generating opening narrative content.
 
 Chapter Context:
 - Title: ${chapter.chapter_title}
 - Summary: ${chapter.summary}
 - Hook: ${chapter.chapter_hook}
+- Pacing Goal: ${chapter.pacing_goal}
+- Action/Dialogue Ratio: ${chapter.action_dialogue_ratio}
+
+Story Context:
+- Premise: ${story.premise}
+- Theme: ${story.theme}
+- Genre: ${story.genre.join(", ")}
 
 Available Characters:
-${characters.map((c) => `- ${c.name} (${c.role})`).join("\n")}
+${characters.map((c) => `- ${c.name} (${c.role}): ${c.summary}`).join("\n")}
 
 Available Settings:
-${settings.map((s) => `- ${s.name}`).join("\n")}
+${settings.map((s) => `- ${s.name}: ${s.description}`).join("\n")}
 
 Create ${sceneCount} scenes, each with:
+- scene_title: Descriptive title that captures the scene's essence or key event
 - summary: One-sentence description of the scene's core action
 - entry_hook: Opening line or action for immediate engagement
 - goal: What the POV character wants to achieve
@@ -346,13 +354,23 @@ Create ${sceneCount} scenes, each with:
 - character_ids: Array of all character IDs present
 - setting_id: ID of the setting
 - narrative_voice: One of 'third_person_limited', 'first_person', 'third_person_omniscient'
+- content: Opening narrative content (2-3 paragraphs) written in the specified narrative voice and POV
+
+For the content field:
+1. Write 2-3 well-crafted opening paragraphs (approximately 200-400 words)
+2. Use the specified narrative voice and POV character perspective
+3. Begin with the entry_hook to immediately engage readers
+4. Establish the scene's setting, mood, and character state
+5. Show the goal/conflict starting to emerge
+6. Match the chapter's pacing goal and action/dialogue ratio
+7. Reflect the story's genre, theme, and emotional tone
 
 Each scene should:
 1. Have clear cause-and-effect with other scenes
 2. Advance character arcs or plot
 3. Include conflict or tension
 4. End with a hook or question`,
-      prompt: `Create ${sceneCount} dynamic scenes that bring the chapter to life.`,
+      prompt: `Create ${sceneCount} dynamic scenes that bring the chapter to life. Include compelling opening content for each scene that immediately engages readers.`,
       temperature: 0.9,
     });
 

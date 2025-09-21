@@ -357,6 +357,8 @@ Scenes are constructed with specific data elements for consistency:
 
 **scene_number**: The sequential number of the scene within the chapter.
 
+**scene_title**: A descriptive title for the scene that captures its essence or key event.
+
 **chapter_ref**: Reference to the chapter this scene belongs to.
 
 **character_ids**: An array of character IDs for all characters present or referenced in the scene.
@@ -386,6 +388,7 @@ Scenes are constructed with specific data elements for consistency:
   "scene": {
     "scene_id": "Qp9wE3rTy5U",
     "scene_number": 1,
+    "scene_title": "The Empty Apartment",
     "chapter_ref": "Hg8jK4lZx2C",
     "character_ids": ["Hy8kL3mNp9Q", "Zx4vB7nWq2R"],
     "setting_id": "Rt5yU8iO9pA",
