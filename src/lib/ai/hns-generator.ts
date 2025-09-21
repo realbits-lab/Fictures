@@ -722,11 +722,15 @@ export async function generateCompleteHNS(
     // Save scenes to database
     console.log("💾 Saving scenes to database...");
     for (const scene of allScenes) {
-      await db
+      // Log the scene ID we're about to save
+      console.log(`Saving scene with ID: ${scene.scene_id}`);
+
+      const insertResult = await db
         .insert(scenesTable)
         .values({
           id: scene.scene_id || nanoid(),
           title: scene.scene_title || scene.summary || `Scene ${scene.scene_number}`,
+          content: scene.content || "",  // Include the content field (initially placeholder or empty)
           chapterId: scene.chapter_ref,
           orderIndex: scene.scene_number || 1,
           goal: scene.goal,
@@ -738,7 +742,14 @@ export async function generateCompleteHNS(
           hnsData: scene as any,
           status: "planned",
         })
-        .onConflictDoNothing();
+        .onConflictDoNothing()
+        .returning();
+
+      if (insertResult.length > 0) {
+        console.log(`✅ Scene ${scene.scene_id} saved to database`);
+      } else {
+        console.log(`⚠️ Scene ${scene.scene_id} might already exist (conflict)`);
+      }
     }
     console.log("✅ Scenes saved");
 

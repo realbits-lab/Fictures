@@ -179,14 +179,23 @@ export async function generateAllSceneContent(
       );
 
       // Update the scene in the database immediately
-      await db
+      console.log(`Updating scene ${scene.scene_id} with ${content.split(/\s+/).length} words...`);
+
+      const updateResult = await db
         .update(scenesTable)
         .set({
           content,
           wordCount: content.split(/\s+/).length,
           updatedAt: new Date(),
         })
-        .where(eq(scenesTable.id, scene.scene_id || ''));
+        .where(eq(scenesTable.id, scene.scene_id || ''))
+        .returning();
+
+      if (updateResult.length === 0) {
+        console.error(`❌ Failed to update scene ${scene.scene_id} - scene not found in database!`);
+      } else {
+        console.log(`✅ Scene ${scene.scene_id} updated successfully`);
+      }
 
       completedScenes++;
 
