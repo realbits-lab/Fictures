@@ -44,16 +44,24 @@ export async function generateHNSScenesFixed(
   settings: HNSSetting[],
   sceneCount: number = 3
 ): Promise<HNSScene[]> {
+  console.log(`🔄 Starting scene generation for chapter: ${chapter.chapter_title}`);
+
   try {
     // Limit scene count to prevent oversized JSON
     const actualSceneCount = Math.min(sceneCount, 3);
 
-    const { object } = await generateObject({
-      model: AI_MODELS.writing,
-      schema: z.object({
-        scenes: z.array(HNSSceneCompactSchema).length(actualSceneCount),
-      }),
-      system: `You are creating scene structures following the Hierarchical Narrative Schema.
+    // Add timeout wrapper for AI generation
+    const generateWithTimeout = () => new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error(`Scene generation timed out after 60 seconds for chapter: ${chapter.chapter_title}`));
+      }, 60000); // 60 second timeout
+
+        generateObject({
+        model: AI_MODELS.writing,
+        schema: z.object({
+          scenes: z.array(HNSSceneCompactSchema).length(actualSceneCount),
+        }),
+        system: `You are creating scene structures following the Hierarchical Narrative Schema.
 
 IMPORTANT: You must generate EXACTLY ${actualSceneCount} scenes - no more, no less.
 
@@ -88,9 +96,20 @@ Create EXACTLY ${actualSceneCount} scenes, each with:
 - narrative_voice: One of 'third_person_limited', 'first_person', 'third_person_omniscient'
 
 Each scene should advance the plot and include clear conflict.`,
-      prompt: `Generate EXACTLY ${actualSceneCount} scenes. Use the provided character and setting IDs exactly as shown.`,
-      temperature: 0.7, // Lower temperature for more consistent output
+        prompt: `Generate EXACTLY ${actualSceneCount} scenes. Use the provided character and setting IDs exactly as shown.`,
+        temperature: 0.7, // Lower temperature for more consistent output
+      }).then((result) => {
+        clearTimeout(timeout);
+        resolve(result);
+      }).catch((error) => {
+        clearTimeout(timeout);
+        reject(error);
+      });
     });
+
+    console.log(`⏳ Requesting ${actualSceneCount} scenes from AI for chapter: ${chapter.chapter_title}`);
+    const { object } = await generateWithTimeout();
+    console.log(`✅ Successfully generated ${object.scenes.length} scenes for chapter: ${chapter.chapter_title}`);
 
     return object.scenes.map((scene, index) => ({
       ...scene,
@@ -101,10 +120,8 @@ Each scene should advance the plot and include clear conflict.`,
       content: `[Scene content to be generated separately for: ${scene.scene_title}]`,
     })) as HNSScene[];
   } catch (error) {
-    console.error("Error generating scenes:", error);
-
-    // Return fallback scenes if generation fails
-    console.log("Using fallback scene generation...");
+    console.error(`❌ Error generating scenes for chapter ${chapter.chapter_title}:`, error);
+    console.log(`🔄 Using fallback scenes for chapter: ${chapter.chapter_title}`);
     return Array.from({ length: Math.min(sceneCount, 2) }, (_, i) => ({
       scene_id: nanoid(),
       scene_title: `Chapter ${chapter.chapter_number} Scene ${i + 1}`,
@@ -135,40 +152,59 @@ export async function generateHNSChaptersFixed(
   part: any,
   chapterCount: number = 3
 ): Promise<HNSChapter[]> {
+  console.log(`🔄 Starting chapter generation for part: ${part.part_title}`);
+
   try {
     // Limit chapter count to prevent oversized JSON
     const actualChapterCount = Math.min(chapterCount, 3);
 
-    const { object } = await generateObject({
-      model: AI_MODELS.writing,
-      schema: z.object({
-        chapters: z.array(z.object({
-          chapter_title: z.string(),
-          summary: z.string(),
-          pacing_goal: z.enum(["fast", "medium", "slow", "reflective"]).optional(),
-          action_dialogue_ratio: z.string().optional(),
-          chapter_hook: z.object({
-            type: z.enum([
-              "revelation",
-              "danger",
-              "decision",
-              "question",
-              "emotional_turning_point",
-            ]),
-            description: z.string(),
-            urgency_level: z.enum(["high", "medium", "low"]),
-          }),
-        })).length(actualChapterCount),
-      }),
-      system: `Create ${actualChapterCount} chapter structures for the story part.
+    // Add timeout wrapper for AI generation
+    const generateWithTimeout = () => new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error(`Chapter generation timed out after 60 seconds for part: ${part.part_title}`));
+      }, 60000); // 60 second timeout
+
+      generateObject({
+        model: AI_MODELS.writing,
+        schema: z.object({
+          chapters: z.array(z.object({
+            chapter_title: z.string(),
+            summary: z.string(),
+            pacing_goal: z.enum(["fast", "medium", "slow", "reflective"]).optional(),
+            action_dialogue_ratio: z.string().optional(),
+            chapter_hook: z.object({
+              type: z.enum([
+                "revelation",
+                "danger",
+                "decision",
+                "question",
+                "emotional_turning_point",
+              ]),
+              description: z.string(),
+              urgency_level: z.enum(["high", "medium", "low"]),
+            }),
+          })).length(actualChapterCount),
+        }),
+        system: `Create ${actualChapterCount} chapter structures for the story part.
 Story: ${story.story_title}
 Part: ${part.part_title}
 Summary: ${part.summary}
 
 Create engaging chapters that advance the plot with clear hooks and pacing.`,
-      prompt: `Generate EXACTLY ${actualChapterCount} chapters.`,
-      temperature: 0.7,
+        prompt: `Generate EXACTLY ${actualChapterCount} chapters.`,
+        temperature: 0.7,
+      }).then((result) => {
+        clearTimeout(timeout);
+        resolve(result);
+      }).catch((error) => {
+        clearTimeout(timeout);
+        reject(error);
+      });
     });
+
+    console.log(`⏳ Requesting ${actualChapterCount} chapters from AI for part: ${part.part_title}`);
+    const { object } = await generateWithTimeout();
+    console.log(`✅ Successfully generated ${object.chapters.length} chapters for part: ${part.part_title}`);
 
     return object.chapters.map((chapter, index) => ({
       ...chapter,
@@ -179,7 +215,8 @@ Create engaging chapters that advance the plot with clear hooks and pacing.`,
       scenes: [], // Will be populated separately
     })) as HNSChapter[];
   } catch (error) {
-    console.error("Error generating chapters:", error);
+    console.error(`❌ Error generating chapters for part ${part.part_title}:`, error);
+    console.log(`🔄 Using fallback chapters for part: ${part.part_title}`);
 
     // Return fallback chapters
     return Array.from({ length: Math.min(chapterCount, 2) }, (_, i) => ({

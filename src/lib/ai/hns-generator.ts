@@ -647,14 +647,18 @@ export async function generateCompleteHNS(
     const allChapters: HNSChapter[] = [];
     const allScenes: HNSScene[] = [];
 
+    console.log(`📝 Processing ${parts.length} parts for chapters and scenes...`);
     const partsWithContent = await Promise.all(
-      parts.map(async (part) => {
+      parts.map(async (part, partIndex) => {
+        console.log(`🔄 Processing part ${partIndex + 1}/${parts.length}: ${part.part_title}`);
+
         // Use the fixed version with reduced payload
         const chapters = await generateHNSChaptersFixed(
           story,
           part,
           Math.min(CHAPTERS_PER_PART, 3) // Limit to 3 chapters per part
         );
+        console.log(`✅ Generated ${chapters.length} chapters for part: ${part.part_title}`);
 
         // Assign chapter IDs and part references
         chapters.forEach((chapter, index) => {
@@ -664,8 +668,11 @@ export async function generateCompleteHNS(
           allChapters.push(chapter);
         });
 
+        console.log(`🎬 Generating scenes for ${chapters.length} chapters in part: ${part.part_title}`);
         const chaptersWithScenes = await Promise.all(
-          chapters.map(async (chapter) => {
+          chapters.map(async (chapter, chapterIndex) => {
+            console.log(`🔄 Processing chapter ${chapterIndex + 1}/${chapters.length}: ${chapter.chapter_title}`);
+
             // Use the fixed version with reduced payload
             const scenes = await generateHNSScenesFixed(
               story,
@@ -674,6 +681,7 @@ export async function generateCompleteHNS(
               settings,
               Math.min(SCENES_PER_CHAPTER, 3) // Limit to 3 scenes per chapter
             );
+            console.log(`✅ Generated ${scenes.length} scenes for chapter: ${chapter.chapter_title}`);
 
             // Assign scene IDs and chapter references
             scenes.forEach((scene, index) => {
