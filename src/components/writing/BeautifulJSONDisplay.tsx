@@ -107,9 +107,7 @@ export function BeautifulJSONDisplay({
                           margin: 0,
                           padding: '12px',
                           fontSize: '12px',
-                          borderRadius: '6px',
-                          maxHeight: '400px',
-                          overflow: 'auto'
+                          borderRadius: '6px'
                         }}
                         wrapLongLines={true}
                       >
