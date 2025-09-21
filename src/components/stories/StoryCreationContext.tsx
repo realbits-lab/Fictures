@@ -7,6 +7,8 @@ interface YamlData {
   charactersYaml?: string;
   placesYaml?: string;
   partsYaml?: string;
+  chaptersYaml?: string;
+  scenesYaml?: string;
 }
 
 interface StoryCreationContextType {

@@ -30,6 +30,7 @@ interface TreeDataItem {
     draggable?: boolean
     droppable?: boolean
     disabled?: boolean
+    data?: any
 }
 
 type TreeProps = React.HTMLAttributes<HTMLDivElement> & {

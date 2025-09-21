@@ -170,11 +170,32 @@ export function CreateStoryForm() {
                   // HNS structure generated - update with complete structure
                   const hnsDoc = data.data.hnsDocument;
                   if (hnsDoc) {
+                    // Extract chapters from all parts
+                    let allChapters = [];
+                    let allScenes = [];
+
+                    if (hnsDoc.parts && Array.isArray(hnsDoc.parts)) {
+                      hnsDoc.parts.forEach(part => {
+                        if (part.chapters && Array.isArray(part.chapters)) {
+                          allChapters = allChapters.concat(part.chapters);
+
+                          // Extract scenes from chapters
+                          part.chapters.forEach(chapter => {
+                            if (chapter.scenes && Array.isArray(chapter.scenes)) {
+                              allScenes = allScenes.concat(chapter.scenes);
+                            }
+                          });
+                        }
+                      });
+                    }
+
                     setYamlData({
                       storyYaml: JSON.stringify(hnsDoc.story, null, 2),
                       partsYaml: JSON.stringify(hnsDoc.parts, null, 2),
                       charactersYaml: JSON.stringify(hnsDoc.characters, null, 2),
                       placesYaml: JSON.stringify(hnsDoc.settings, null, 2),
+                      chaptersYaml: JSON.stringify(allChapters, null, 2),
+                      scenesYaml: JSON.stringify(allScenes, null, 2),
                     });
                     // Update all generation steps as complete
                     for (let i = 0; i <= 5; i++) {
@@ -286,7 +307,9 @@ export function CreateStoryForm() {
           {progress.length > 0 && (
             <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border">
               <div className="flex items-center space-x-2 mb-4">
-                <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                {!isCompleted && (
+                  <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                )}
                 <h3 className="font-semibold text-gray-900 dark:text-gray-100">Story Generation Progress</h3>
               </div>
               
