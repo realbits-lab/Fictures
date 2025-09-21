@@ -37,7 +37,7 @@ import {
 
 // Constants for story structure
 const CHAPTERS_PER_PART = 1;
-const SCENES_PER_CHAPTER = 1;
+const SCENES_PER_CHAPTER = 3;
 
 /**
  * Phase 1: Core Concept Generation (Story Object)
@@ -324,6 +324,8 @@ export async function generateHNSScenes(
       }),
       system: `You are creating scene structures following the Hierarchical Narrative Schema and generating opening narrative content.
 
+IMPORTANT: You must generate EXACTLY ${sceneCount} scene${sceneCount === 1 ? '' : 's'} - no more, no less.
+
 Chapter Context:
 - Title: ${chapter.chapter_title}
 - Summary: ${chapter.summary}
@@ -342,7 +344,7 @@ ${characters.map((c) => `- ${c.name} (${c.role}): ${c.summary}`).join("\n")}
 Available Settings:
 ${settings.map((s) => `- ${s.name}: ${s.description}`).join("\n")}
 
-Create ${sceneCount} scenes, each with:
+You must create EXACTLY ${sceneCount} scene${sceneCount === 1 ? '' : 's'}, each with:
 - scene_title: Descriptive title that captures the scene's essence or key event
 - summary: One-sentence description of the scene's core action
 - entry_hook: Opening line or action for immediate engagement
@@ -370,7 +372,7 @@ Each scene should:
 2. Advance character arcs or plot
 3. Include conflict or tension
 4. End with a hook or question`,
-      prompt: `Create ${sceneCount} dynamic scenes that bring the chapter to life. Include compelling opening content for each scene that immediately engages readers.`,
+      prompt: `Generate EXACTLY ${sceneCount} scene${sceneCount === 1 ? '' : 's'} for this chapter. The response must contain a 'scenes' array with exactly ${sceneCount} element${sceneCount === 1 ? '' : 's'}.`,
       temperature: 0.9,
     });
 
@@ -382,7 +384,15 @@ Each scene should:
     })) as HNSScene[];
   } catch (error) {
     console.error("Error generating scenes:", error);
-    throw new Error("Failed to generate scenes");
+
+    // Provide more detailed error information
+    if (error instanceof Error) {
+      if (error.message.includes("Array too big") || error.message.includes("Array too small")) {
+        throw new Error(`Scene generation failed: Expected exactly ${sceneCount} scene${sceneCount === 1 ? '' : 's'}, but the AI generated a different number. ${error.message}`);
+      }
+    }
+
+    throw new Error(`Failed to generate scenes: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -712,7 +722,7 @@ export async function generateCompleteHNS(
         .insert(scenesTable)
         .values({
           id: scene.scene_id || nanoid(),
-          title: scene.summary || `Scene ${scene.scene_number}`,
+          title: scene.scene_title || scene.summary || `Scene ${scene.scene_number}`,
           chapterId: scene.chapter_ref,
           orderIndex: scene.scene_number || 1,
           goal: scene.goal,

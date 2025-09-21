@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Progress, Badge } from "@/components/ui";
 import { StoryTreeArchitecture } from "./StoryTreeArchitecture";
-import { YAMLDataDisplay } from "./YAMLDataDisplay";
+import { JSONDataDisplay } from "./JSONDataDisplay";
 
 interface Scene {
   id: string;

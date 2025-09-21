@@ -6,8 +6,8 @@ import { BeautifulJSONDisplay } from '../writing/BeautifulJSONDisplay';
 import { TreeView, type TreeDataItem } from '@/components/ui/tree-view';
 import { FileText, Users, MapPin, BookOpen, ScrollText, FileIcon } from 'lucide-react';
 
-export function YamlDataSidebar() {
-  const { yamlData } = useStoryCreation();
+export function JsonDataSidebar() {
+  const { jsonData } = useStoryCreation();
   const [activeTab, setActiveTab] = useState('story');
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>();
 
@@ -22,15 +22,15 @@ export function YamlDataSidebar() {
   };
 
   const tabs = [
-    { id: 'story', label: 'Story', data: yamlData.storyYaml, icon: FileText },
-    { id: 'parts', label: 'Parts', data: yamlData.partsYaml, icon: BookOpen },
-    { id: 'characters', label: 'Characters', data: yamlData.charactersYaml, icon: Users },
-    { id: 'places', label: 'Places', data: yamlData.placesYaml, icon: MapPin },
-    { id: 'chapters', label: 'Chapters', data: yamlData.chaptersYaml, icon: ScrollText },
-    { id: 'scenes', label: 'Scenes', data: yamlData.scenesYaml, icon: FileIcon },
+    { id: 'story', label: 'Story', data: jsonData.storyJson, icon: FileText },
+    { id: 'parts', label: 'Parts', data: jsonData.partsJson, icon: BookOpen },
+    { id: 'characters', label: 'Characters', data: jsonData.charactersJson, icon: Users },
+    { id: 'places', label: 'Places', data: jsonData.placesJson, icon: MapPin },
+    { id: 'chapters', label: 'Chapters', data: jsonData.chaptersJson, icon: ScrollText },
+    { id: 'scenes', label: 'Scenes', data: jsonData.scenesJson, icon: FileIcon },
   ];
 
-  const hasAnyData = Object.values(yamlData).some(data => data && data.trim().length > 0);
+  const hasAnyData = Object.values(jsonData).some(data => data && data.trim().length > 0);
   const activeTabData = tabs.find(tab => tab.id === activeTab);
   const parsedData = parseJSONSafely(activeTabData?.data);
 

@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { Label } from '@/components/ui';
 import { useStoryCreation } from './StoryCreationContext';
+import { toast } from 'sonner';
 
 interface ProgressStep {
   phase: string;
@@ -31,7 +32,7 @@ export function CreateStoryForm() {
   const [isCompleted, setIsCompleted] = useState(false);
   const [generatedStoryId, setGeneratedStoryId] = useState<string | null>(null);
   const [storyData, setStoryData] = useState<StoryData>({});
-  const { setYamlData, clearYamlData } = useStoryCreation();
+  const { setJsonData, clearJsonData } = useStoryCreation();
   const router = useRouter();
 
   const initializeProgress = () => {
@@ -75,7 +76,7 @@ export function CreateStoryForm() {
     setError('');
     setProgress([]);
     setStoryData({});
-    clearYamlData();
+    clearJsonData();
 
     // Initialize progress steps
     initializeProgress();
@@ -142,9 +143,9 @@ export function CreateStoryForm() {
                       ...prev,
                       story: data.data.story
                     }));
-                    setYamlData(prev => ({
+                    setJsonData(prev => ({
                       ...prev,
-                      storyYaml: JSON.stringify(data.data.story, null, 2)
+                      storyJson: JSON.stringify(data.data.story, null, 2)
                     }));
                   }
                   break;
@@ -160,9 +161,9 @@ export function CreateStoryForm() {
                       ...prev,
                       parts: data.data.parts
                     }));
-                    setYamlData(prev => ({
+                    setJsonData(prev => ({
                       ...prev,
-                      partsYaml: JSON.stringify(data.data.parts, null, 2)
+                      partsJson: JSON.stringify(data.data.parts, null, 2)
                     }));
                   }
                   break;
@@ -178,9 +179,9 @@ export function CreateStoryForm() {
                       ...prev,
                       characters: data.data.characters
                     }));
-                    setYamlData(prev => ({
+                    setJsonData(prev => ({
                       ...prev,
-                      charactersYaml: JSON.stringify(data.data.characters, null, 2)
+                      charactersJson: JSON.stringify(data.data.characters, null, 2)
                     }));
                   }
                   break;
@@ -196,9 +197,9 @@ export function CreateStoryForm() {
                       ...prev,
                       places: data.data.settings
                     }));
-                    setYamlData(prev => ({
+                    setJsonData(prev => ({
                       ...prev,
-                      placesYaml: JSON.stringify(data.data.settings, null, 2)
+                      placesJson: JSON.stringify(data.data.settings, null, 2)
                     }));
                   }
                   break;
@@ -214,9 +215,9 @@ export function CreateStoryForm() {
                       ...prev,
                       chapters: data.data.chapters
                     }));
-                    setYamlData(prev => ({
+                    setJsonData(prev => ({
                       ...prev,
-                      chaptersYaml: JSON.stringify(data.data.chapters, null, 2)
+                      chaptersJson: JSON.stringify(data.data.chapters, null, 2)
                     }));
                   }
                   if (data.data.scenes) {
@@ -224,9 +225,9 @@ export function CreateStoryForm() {
                       ...prev,
                       scenes: data.data.scenes
                     }));
-                    setYamlData(prev => ({
+                    setJsonData(prev => ({
                       ...prev,
-                      scenesYaml: JSON.stringify(data.data.scenes, null, 2)
+                      scenesJson: JSON.stringify(data.data.scenes, null, 2)
                     }));
                   }
                   break;
@@ -271,13 +272,13 @@ export function CreateStoryForm() {
                       });
                     }
 
-                    setYamlData({
-                      storyYaml: JSON.stringify(hnsDoc.story, null, 2),
-                      partsYaml: JSON.stringify(hnsDoc.parts, null, 2),
-                      charactersYaml: JSON.stringify(hnsDoc.characters, null, 2),
-                      placesYaml: JSON.stringify(hnsDoc.settings, null, 2),
-                      chaptersYaml: JSON.stringify(allChapters, null, 2),
-                      scenesYaml: JSON.stringify(allScenes, null, 2),
+                    setJsonData({
+                      storyJson: JSON.stringify(hnsDoc.story, null, 2),
+                      partsJson: JSON.stringify(hnsDoc.parts, null, 2),
+                      charactersJson: JSON.stringify(hnsDoc.characters, null, 2),
+                      placesJson: JSON.stringify(hnsDoc.settings, null, 2),
+                      chaptersJson: JSON.stringify(allChapters, null, 2),
+                      scenesJson: JSON.stringify(allScenes, null, 2),
                     });
                     // Update all generation steps as complete
                     for (let i = 0; i <= 4; i++) {
@@ -309,7 +310,14 @@ export function CreateStoryForm() {
                 case 'error':
                   // Handle error
                   console.error('Story generation error:', data.error);
-                  setError(data.error || 'Failed to generate story');
+                  const errorMessage = data.error || 'Failed to generate story';
+                  setError(errorMessage);
+
+                  // Show detailed error in toast
+                  toast.error('Story Generation Error', {
+                    description: errorMessage,
+                    duration: 10000,
+                  });
 
                   // Mark current in-progress step as error
                   setProgress(prev => prev.map(step =>
@@ -326,7 +334,14 @@ export function CreateStoryForm() {
 
     } catch (error) {
       console.error('Error with streaming story generation:', error);
-      setError('Failed to generate story. Please try again.');
+      const errorMsg = error instanceof Error ? error.message : 'Failed to generate story. Please try again.';
+      setError(errorMsg);
+
+      // Show error in toast with details
+      toast.error('Story Generation Failed', {
+        description: errorMsg,
+        duration: 10000,
+      });
 
       // Mark current step as error
       setProgress(prev => prev.map(step =>
