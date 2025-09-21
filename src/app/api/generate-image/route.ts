@@ -61,24 +61,31 @@ export async function POST(request: NextRequest) {
       }
     };
 
-    // Primary: Gemini Flash Lite via AI Gateway
+    // Primary: Gemini 2.5 Flash Image Preview
     try {
-      console.log('🔄 Attempting image generation with Gemini Flash Lite via AI Gateway...');
+      console.log('🔄 Attempting image generation with Gemini 2.5 Flash Image Preview...');
       const result = await generateText({
-        model: gateway('google/gemini-2.5-flash-lite'),
+        model: google('gemini-2.5-flash-image-preview'),
         prompt: `Generate a detailed ${type} image based on this prompt: ${prompt}`,
       });
 
       modelResponse = result.text;
-      method = 'ai_gateway_gemini_lite';
+      method = 'gemini_2.5_flash_image';
 
-      // For now, use placeholder as Gemini Flash Lite doesn't generate images
-      // This is a text-only model, so we'll provide a descriptive response
-      imageUrl = generatePlaceholder();
-      console.log('✅ Gemini Flash Lite provided description, using placeholder image:', imageUrl);
+      // Check if the result contains generated image files
+      if (result.files && result.files.length > 0) {
+        console.log(`✅ Generated image for ${type}:`, result.files[0]);
+        // TODO: Upload to Vercel Blob when file handling is implemented
+        // imageUrl = await uploadToBlob(result.files[0]);
+        imageUrl = generatePlaceholder(); // Using placeholder for now
+      } else {
+        // Fallback to placeholder if no image generated
+        imageUrl = generatePlaceholder();
+        console.log('✅ Gemini 2.5 Flash Image Preview provided description, using placeholder image:', imageUrl);
+      }
 
     } catch (error) {
-      console.warn('⚠️ Gemini Flash Lite generation failed:', error instanceof Error ? error.message : 'Unknown error');
+      console.warn('⚠️ Gemini 2.5 Flash Image Preview generation failed:', error instanceof Error ? error.message : 'Unknown error');
 
       // Check if it's a quota error
       if (error instanceof Error && (error.message.includes('quota') || error.message.includes('RESOURCE_EXHAUSTED'))) {

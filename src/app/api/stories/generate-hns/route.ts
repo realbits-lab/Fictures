@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
                 // Generate image using Google Gemini
                 try {
                   const result = await generateText({
-                    model: google("gemini-2.0-flash-exp"),
+                    model: google("gemini-2.5-flash-image-preview"),
                     prompt: imagePrompt,
                   });
 
@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
                 // Generate image using Google Gemini
                 try {
                   const result = await generateText({
-                    model: google("gemini-2.0-flash-exp"),
+                    model: google("gemini-2.5-flash-image-preview"),
                     prompt: imagePrompt,
                   });
 
