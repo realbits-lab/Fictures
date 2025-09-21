@@ -17,6 +17,7 @@ import {
   settings as settingsTable,
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { generateHNSChaptersFixed, generateHNSScenesFixed } from "./hns-generator-fix";
 import {
   // Import Zod Schemas
   HNSStoryPartialSchema,
@@ -37,7 +38,7 @@ import {
 
 // Constants for story structure
 const CHAPTERS_PER_PART = 1;
-const SCENES_PER_CHAPTER = 3;
+const SCENES_PER_CHAPTER = 1;
 
 /**
  * Phase 1: Core Concept Generation (Story Object)
@@ -647,10 +648,11 @@ export async function generateCompleteHNS(
 
     const partsWithContent = await Promise.all(
       parts.map(async (part) => {
-        const chapters = await generateHNSChapters(
+        // Use the fixed version with reduced payload
+        const chapters = await generateHNSChaptersFixed(
           story,
           part,
-          CHAPTERS_PER_PART
+          Math.min(CHAPTERS_PER_PART, 3) // Limit to 3 chapters per part
         );
 
         // Assign chapter IDs and part references
@@ -663,12 +665,13 @@ export async function generateCompleteHNS(
 
         const chaptersWithScenes = await Promise.all(
           chapters.map(async (chapter) => {
-            const scenes = await generateHNSScenes(
+            // Use the fixed version with reduced payload
+            const scenes = await generateHNSScenesFixed(
               story,
               chapter,
               characters,
               settings,
-              SCENES_PER_CHAPTER
+              Math.min(SCENES_PER_CHAPTER, 3) // Limit to 3 scenes per chapter
             );
 
             // Assign scene IDs and chapter references
