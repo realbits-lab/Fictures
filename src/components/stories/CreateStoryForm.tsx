@@ -42,6 +42,7 @@ export function CreateStoryForm() {
       { phase: 'Characters', description: 'Creating detailed character profiles with psychology', status: 'pending' },
       { phase: 'Settings', description: 'Building immersive locations with sensory details', status: 'pending' },
       { phase: 'Chapters & Scenes', description: 'Structuring chapters with hooks and scene breakdowns', status: 'pending' },
+      { phase: 'Scene Content', description: 'Generating narrative content for each scene', status: 'pending' },
       { phase: 'Visual Generation', description: 'Creating AI images for characters and settings', status: 'pending' },
     ];
     setProgress(steps);
@@ -230,6 +231,48 @@ export function CreateStoryForm() {
                       scenesJson: JSON.stringify(data.data.scenes, null, 2)
                     }));
                   }
+                  break;
+
+                // Phase 7: Scene Content Generation
+                case 'phase7_start':
+                  updateProgress(5, 'in_progress');
+                  // Update phase description with progress
+                  if (data.data?.totalScenes) {
+                    setProgress(prev => prev.map((step, index) =>
+                      index === 5 ? {
+                        ...step,
+                        description: `Generating narrative content for ${data.data.totalScenes} scenes...`
+                      } : step
+                    ));
+                  }
+                  break;
+
+                case 'phase7_progress':
+                  // Update progress description with current scene
+                  if (data.data?.percentage) {
+                    setProgress(prev => prev.map((step, index) =>
+                      index === 5 ? {
+                        ...step,
+                        description: `Generating scene ${data.data.completedScenes}/${data.data.totalScenes}: ${data.data.currentScene} (${data.data.percentage}%)`
+                      } : step
+                    ));
+                  }
+                  break;
+
+                case 'phase7_warning':
+                  // Log warning but continue
+                  console.warn('Scene content generation warning:', data.data?.message);
+                  break;
+
+                case 'phase7_complete':
+                  updateProgress(5, 'completed');
+                  // Reset description
+                  setProgress(prev => prev.map((step, index) =>
+                    index === 5 ? {
+                      ...step,
+                      description: `Generated content for ${data.data?.completedScenes || 'all'} scenes`
+                    } : step
+                  ));
                   break;
 
                 case 'hns_complete':

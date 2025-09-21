@@ -18,6 +18,7 @@ import {
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { generateHNSChaptersFixed, generateHNSScenesFixed } from "./hns-generator-fix";
+import { generateAllSceneContent } from "./scene-content-generator";
 import {
   // Import Zod Schemas
   HNSStoryPartialSchema,
@@ -750,6 +751,32 @@ export async function generateCompleteHNS(
       })
       .where(eq(stories.id, currentStoryId));
     console.log("✅ Phase 5&6 marked as complete");
+
+    // Phase 7: Generate actual narrative content for each scene
+    console.log("Phase 7: Generating scene content...");
+    progressCallback?.("phase7_start", {
+      message: "Generating narrative content for scenes...",
+    });
+
+    await generateAllSceneContent(
+      currentStoryId,
+      allScenes,
+      allChapters,
+      story,
+      characters,
+      settings,
+      progressCallback
+    );
+
+    // Update status to phase 7 complete
+    await db
+      .update(stories)
+      .set({
+        status: "phase7_complete",
+        updatedAt: new Date(),
+      })
+      .where(eq(stories.id, currentStoryId));
+    console.log("✅ Phase 7 marked as complete");
 
     // Assemble complete HNS document
     const completeStory: HNSStory = {
