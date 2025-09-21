@@ -575,7 +575,7 @@ export function createEmptyScene(id: string, number: number, chapterRef: string)
 /**
  * Convert HNS schemas to JSON Schema format for AI structured output.
  * Enables integration with AI models that require JSON Schema for
- * structured generation (e.g., OpenAI's function calling, structured outputs).
+ * structured generation (e.g., Gemini's function calling, structured outputs).
  *
  * @param schema - Any Zod schema to convert
  * @returns JSON Schema representation for AI model consumption
