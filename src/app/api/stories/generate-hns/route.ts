@@ -56,7 +56,12 @@ export async function POST(request: NextRequest) {
           const hnsDoc: HNSDocument = await generateCompleteHNS(
             prompt,
             language,
-            session.user.id
+            session.user.id,
+            undefined,
+            (phase, data) => {
+              // Send progress updates via SSE
+              sendUpdate(phase, data);
+            }
           );
 
           sendUpdate("hns_complete", {

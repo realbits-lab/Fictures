@@ -391,7 +391,8 @@ export async function generateCompleteHNS(
   userPrompt: string,
   language: string = 'English',
   userId: string,
-  storyId?: string
+  storyId?: string,
+  progressCallback?: (phase: string, data: any) => void
 ): Promise<HNSDocument> {
   console.log('🚀 Starting HNS story generation with incremental saving...');
 
@@ -401,9 +402,11 @@ export async function generateCompleteHNS(
   try {
     // Phase 1: Generate core story and save immediately
     console.log('Phase 1: Generating story foundation...');
+    progressCallback?.('phase1_start', { message: 'Generating story foundation...' });
     const story = await generateHNSStory(userPrompt, language);
     story.story_id = currentStoryId; // Assign the story ID
     console.log('✅ Story foundation generated');
+    progressCallback?.('phase1_complete', { message: 'Story foundation generated', story });
 
     // Save Phase 1 data to database
     console.log('💾 Saving Phase 1 data to database...');
@@ -451,8 +454,10 @@ export async function generateCompleteHNS(
 
     // Phase 2: Generate three-act structure and save
     console.log('Phase 2: Creating three-act structure...');
+    progressCallback?.('phase2_start', { message: 'Creating three-act structure...' });
     const parts = await generateHNSParts(story);
     console.log('✅ Three-act structure created');
+    progressCallback?.('phase2_complete', { message: 'Three-act structure created', parts });
 
     // Update story with Phase 2 data
     console.log('💾 Saving Phase 2 data to database...');
@@ -498,8 +503,10 @@ export async function generateCompleteHNS(
 
     // Phase 3: Generate characters and save
     console.log('Phase 3: Developing characters...');
+    progressCallback?.('phase3_start', { message: 'Developing characters...' });
     const characters = await generateHNSCharacters(story, parts);
     console.log('✅ Characters developed');
+    progressCallback?.('phase3_complete', { message: 'Characters developed', characters });
 
     // Update story with Phase 3 data
     console.log('💾 Saving Phase 3 data to database...');
@@ -542,8 +549,10 @@ export async function generateCompleteHNS(
 
     // Phase 4: Generate settings and save
     console.log('Phase 4: Building settings...');
+    progressCallback?.('phase4_start', { message: 'Building settings...' });
     const settings = await generateHNSSettings(story, parts);
     console.log('✅ Settings built');
+    progressCallback?.('phase4_complete', { message: 'Settings built', settings });
 
     // Update story with Phase 4 data
     console.log('💾 Saving Phase 4 data to database...');
@@ -582,6 +591,7 @@ export async function generateCompleteHNS(
 
     // Phase 5 & 6: Generate chapters and scenes for each part
     console.log('Phase 5 & 6: Creating chapters and scenes...');
+    progressCallback?.('phase5_6_start', { message: 'Creating chapters and scenes...' });
     const allChapters: HNSChapter[] = [];
     const allScenes: HNSScene[] = [];
 
@@ -617,6 +627,7 @@ export async function generateCompleteHNS(
       })
     );
     console.log('✅ Chapters and scenes created');
+    progressCallback?.('phase5_6_complete', { message: 'Chapters and scenes created', chapters: allChapters, scenes: allScenes });
 
     // Save chapters to database
     console.log('💾 Saving chapters to database...');

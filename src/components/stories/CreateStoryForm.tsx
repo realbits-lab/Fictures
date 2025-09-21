@@ -120,13 +120,48 @@ export function CreateStoryForm() {
                   // Update progress based on step
                   const stepMap: Record<string, number> = {
                     'generating_hns': 0,
-                    'storing_database': 6,
+                    'storing_database': 7,
                     'generating_character_images': 6,
                     'generating_setting_images': 6,
                   };
                   if (data.data.step && stepMap[data.data.step] !== undefined) {
                     updateProgress(stepMap[data.data.step], 'in_progress');
                   }
+                  break;
+
+                case 'phase1_start':
+                  updateProgress(1, 'in_progress');
+                  break;
+                case 'phase1_complete':
+                  updateProgress(1, 'completed');
+                  break;
+
+                case 'phase2_start':
+                  updateProgress(2, 'in_progress');
+                  break;
+                case 'phase2_complete':
+                  updateProgress(2, 'completed');
+                  break;
+
+                case 'phase3_start':
+                  updateProgress(3, 'in_progress');
+                  break;
+                case 'phase3_complete':
+                  updateProgress(3, 'completed');
+                  break;
+
+                case 'phase4_start':
+                  updateProgress(4, 'in_progress');
+                  break;
+                case 'phase4_complete':
+                  updateProgress(4, 'completed');
+                  break;
+
+                case 'phase5_6_start':
+                  updateProgress(5, 'in_progress');
+                  break;
+                case 'phase5_6_complete':
+                  updateProgress(5, 'completed');
                   break;
 
                 case 'hns_complete':

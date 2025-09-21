@@ -112,24 +112,15 @@ The story structure is defined through the 'parts' array containing part_ids tha
 ```json
 {
   "story": {
-    "story_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "story_id": "Kj3_xY9Qm2pL7",
     "story_title": "The Shadow Keeper",
     "genre": ["urban_fantasy", "thriller"],
     "premise": "A photographer must master shadow magic to save her sister from a supernatural realm before power corrupts her",
     "dramatic_question": "Can Maya master shadow magic before power corrupts her?",
     "theme": "The conflict between power and responsibility",
-    "characters": [
-      "char_maya_001",
-      "char_elena_002",
-      "char_marcus_003",
-      "char_void_004"
-    ],
-    "settings": [
-      "setting_sf_001",
-      "setting_shadow_realm_002",
-      "setting_studio_003"
-    ],
-    "parts": ["part_001", "part_002", "part_003"]
+    "characters": ["Hy8kL3mNp9Q", "Zx4vB7nWq2R", "Mj9pK5sXt6Y", "Qw2eR8tYu1A"],
+    "settings": ["Bv7nM2kLp9X", "Ty6uI8oP3qW", "Nm4sK9jHg5F"],
+    "parts": ["Xc9vB3nMk7L", "Qw5eR2tYu8I", "Zx1aS4dFg6H"]
   }
 }
 ```
@@ -204,12 +195,18 @@ The story structure is defined through the 'parts' array containing part_ids tha
 ```json
 {
   "part": {
-    "part_id": "part_001",
+    "part_id": "Xc9vB3nMk7L",
     "part_title": "Part I: Discovery",
     "structural_role": "Act 1: Setup",
     "summary": "Dr. Maya Chen's ordinary life shatters when her sister Elena disappears, leaving behind evidence of supernatural research. Despite her skepticism, Maya discovers she has inherited shadow manipulation abilities and must accept training from the mysterious Marcus Webb to save her sister.",
     "key_beats": ["Exposition", "Inciting Incident", "Plot Point One"],
-    "chapters": ["chap_001", "chap_002", "chap_003", "chap_004", "chap_005"]
+    "chapters": [
+      "Hg8jK4lZx2C",
+      "Nm5bV7cXz9Q",
+      "Ty3uI1oP6wE",
+      "Bv9nM2kLp4R",
+      "Kj7xY8Qm3tA"
+    ]
   }
 }
 ```
@@ -295,10 +292,10 @@ The **Chapter** is the primary unit of reader consumption, especially critical i
 ```json
 {
   "chapter": {
-    "chapter_id": "chap_001",
+    "chapter_id": "Hg8jK4lZx2C",
     "chapter_number": 1,
     "chapter_title": "Missing",
-    "part_ref": "part_001",
+    "part_ref": "Xc9vB3nMk7L",
     "summary": "Maya arrives for her weekly coffee date with Elena only to find her sister's apartment unlocked and abandoned. Signs of struggle and a mysterious journal lead Maya to discover Elena was researching something called 'Shadow Keepers' before her disappearance.",
     "pacing_goal": "medium",
     "action_dialogue_ratio": "40:60",
@@ -307,7 +304,7 @@ The **Chapter** is the primary unit of reader consumption, especially critical i
       "description": "Journal's last entry: 'They know about Maya. She has the mark too.'",
       "urgency_level": "high"
     },
-    "scenes": ["scene_001", "scene_002", "scene_003"]
+    "scenes": ["Qp9wE3rTy5U", "Lk2mN8bVc7X", "Zx4aS6dFg1H"]
   }
 }
 ```
@@ -387,12 +384,12 @@ Scenes are constructed with specific data elements for consistency:
 ```json
 {
   "scene": {
-    "scene_id": "scene_001",
+    "scene_id": "Qp9wE3rTy5U",
     "scene_number": 1,
-    "chapter_ref": "chap_001",
-    "character_ids": ["char_maya_001", "char_elena_002"],
-    "setting_id": "setting_elena_apt_001",
-    "pov_character_id": "char_maya_001",
+    "chapter_ref": "Hg8jK4lZx2C",
+    "character_ids": ["Hy8kL3mNp9Q", "Zx4vB7nWq2R"],
+    "setting_id": "Rt5yU8iO9pA",
+    "pov_character_id": "Hy8kL3mNp9Q",
     "narrative_voice": "third_person_limited",
     "summary": "Maya arrives for coffee date, finds Elena's door unlocked and apartment empty with signs of struggle",
     "entry_hook": "The door to Elena's apartment stood ajar, a sliver of darkness where warmth should be.",
@@ -530,7 +527,7 @@ The **physical_description** object is optimized for AI image generation with sp
 ```json
 {
   "character": {
-    "character_id": "char_maya_001",
+    "character_id": "Hy8kL3mNp9Q",
     "name": "Maya Chen",
     "role": "protagonist",
     "archetype": "reluctant_hero",
@@ -570,7 +567,7 @@ The **physical_description** object is optimized for AI image generation with sp
       "distinguishing_marks": "Silver star birthmark on left wrist",
       "typical_attire": "Dark jeans, comfortable boots, photographer vest, camera"
     },
-    "visual_reference_id": "maya_chen_ref_001.png"
+    "visual_reference_id": "Gh7jK9lMn2B.png"
   }
 }
 ```
@@ -639,7 +636,7 @@ The **sensory** object contains arrays for complete environmental immersion:
 ```json
 {
   "setting": {
-    "setting_id": "setting_shadow_realm_002",
+    "setting_id": "Ty6uI8oP3qW",
     "name": "The Shadow Realm",
     "description": "A dark mirror dimension where shadows have substance and light is foreign. Architecture shifts based on inhabitants' fears, and time flows differently than in the material world.",
     "mood": "oppressive and surreal",
@@ -1178,7 +1175,7 @@ The evaluation matrix combines objective data-driven metrics with structured qua
 ```json
 {
   "chapter_evaluation": {
-    "chapter_id": "chap_001",
+    "chapter_id": "Hg8jK4lZx2C",
     "quantitative": {
       "word_count": {
         "value": 2145,
