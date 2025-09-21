@@ -170,19 +170,36 @@ export function CreateStoryForm() {
                   // HNS structure generated - update with complete structure
                   const hnsDoc = data.data.hnsDocument;
                   if (hnsDoc) {
-                    // Extract chapters from all parts
+                    // Extract chapters and scenes from the nested structure
                     let allChapters = [];
                     let allScenes = [];
 
-                    if (hnsDoc.parts && Array.isArray(hnsDoc.parts)) {
+                    // Use chapters directly if available
+                    if (hnsDoc.chapters && Array.isArray(hnsDoc.chapters)) {
+                      allChapters = hnsDoc.chapters;
+                    }
+
+                    // Use scenes directly if available
+                    if (hnsDoc.scenes && Array.isArray(hnsDoc.scenes)) {
+                      allScenes = hnsDoc.scenes;
+                    }
+
+                    // Also extract from nested parts structure for display
+                    if (!allChapters.length && hnsDoc.parts && Array.isArray(hnsDoc.parts)) {
                       hnsDoc.parts.forEach(part => {
                         if (part.chapters && Array.isArray(part.chapters)) {
-                          allChapters = allChapters.concat(part.chapters);
-
-                          // Extract scenes from chapters
                           part.chapters.forEach(chapter => {
+                            allChapters.push(chapter);
+
+                            // Extract scenes from chapters
                             if (chapter.scenes && Array.isArray(chapter.scenes)) {
-                              allScenes = allScenes.concat(chapter.scenes);
+                              // If scenes are IDs, they're already in allScenes
+                              // If scenes are objects, add them
+                              chapter.scenes.forEach(scene => {
+                                if (typeof scene === 'object' && scene !== null) {
+                                  allScenes.push(scene);
+                                }
+                              });
                             }
                           });
                         }

@@ -17,7 +17,15 @@ import {
   settings as settingsTable,
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import type {
+import {
+  // Import Zod Schemas
+  HNSStoryPartialSchema,
+  HNSPartPartialSchema,
+  HNSChapterPartialSchema,
+  HNSScenePartialSchema,
+  HNSCharacterPartialSchema,
+  HNSSettingPartialSchema,
+  // Import TypeScript Types
   HNSStory,
   HNSPart,
   HNSChapter,
@@ -31,144 +39,6 @@ import type {
 const CHAPTERS_PER_PART = 1;
 const SCENES_PER_CHAPTER = 1;
 
-// Define Zod schemas matching HNS interfaces
-const HNSStorySchema = z.object({
-  story_id: z.string().optional(),
-  story_title: z.string(),
-  genre: z.array(z.string()).min(1).max(3),
-  premise: z.string().max(200),
-  dramatic_question: z.string(),
-  theme: z.string(),
-  characters: z.array(z.string()).default([]),
-  settings: z.array(z.string()).default([]),
-  parts: z.array(z.string()).default([]),
-}) satisfies z.ZodType<Partial<HNSStory>>;
-
-const HNSPartSchema = z.object({
-  part_id: z.string().optional(),
-  part_title: z.string(),
-  structural_role: z.enum([
-    "Act 1: Setup",
-    "Act 2: Confrontation",
-    "Act 3: Resolution",
-  ]),
-  summary: z.string(),
-  key_beats: z.array(z.string()),
-  chapters: z.array(z.string()).default([]),
-}) satisfies z.ZodType<Partial<HNSPart>>;
-
-const HNSChapterSchema = z.object({
-  chapter_id: z.string().optional(),
-  chapter_number: z.number().optional(),
-  chapter_title: z.string(),
-  part_ref: z.string().optional(),
-  summary: z.string(),
-  pacing_goal: z
-    .enum(["fast", "medium", "slow", "reflective"])
-    .default("medium"),
-  action_dialogue_ratio: z.string().default("50:50"),
-  chapter_hook: z.object({
-    type: z.enum([
-      "revelation",
-      "danger",
-      "decision",
-      "question",
-      "emotional_turning_point",
-    ]),
-    description: z.string(),
-    urgency_level: z.enum(["high", "medium", "low"]),
-  }),
-  scenes: z.array(z.string()).default([]),
-}) satisfies z.ZodType<Partial<HNSChapter>>;
-
-const HNSSceneSchema = z.object({
-  scene_id: z.string().optional(),
-  scene_number: z.number().optional(),
-  chapter_ref: z.string().optional(),
-  character_ids: z.array(z.string()).default([]),
-  setting_id: z.string().optional(),
-  pov_character_id: z.string().optional(),
-  narrative_voice: z
-    .enum(["third_person_limited", "first_person", "third_person_omniscient"])
-    .default("third_person_limited"),
-  summary: z.string(),
-  entry_hook: z.string(),
-  goal: z.string(),
-  conflict: z.string(),
-  outcome: z.enum([
-    "success",
-    "failure",
-    "success_with_cost",
-    "failure_with_discovery",
-  ]),
-  emotional_shift: z.object({
-    from: z.string(),
-    to: z.string(),
-  }),
-}) satisfies z.ZodType<Partial<HNSScene>>;
-
-const HNSCharacterSchema = z.object({
-  character_id: z.string().optional(),
-  name: z.string(),
-  role: z.enum(["protagonist", "antagonist", "mentor", "ally", "neutral"]),
-  archetype: z.string(),
-  summary: z.string(),
-  storyline: z.string(),
-  personality: z.object({
-    traits: z.array(z.string()),
-    myers_briggs: z.string(),
-    enneagram: z.string(),
-  }),
-  backstory: z.object({
-    childhood: z.string(),
-    education: z.string(),
-    career: z.string(),
-    relationships: z.string(),
-    trauma: z.string(),
-  }),
-  motivations: z.object({
-    primary: z.string(),
-    secondary: z.string(),
-    fear: z.string(),
-  }),
-  voice: z.object({
-    speech_pattern: z.string(),
-    vocabulary: z.string(),
-    verbal_tics: z.array(z.string()),
-    internal_voice: z.string(),
-  }),
-  physical_description: z.object({
-    age: z.number(),
-    ethnicity: z.string(),
-    height: z.string(),
-    build: z.string(),
-    hair_style_color: z.string(),
-    eye_color: z.string(),
-    facial_features: z.string(),
-    distinguishing_marks: z.string(),
-    typical_attire: z.string(),
-  }),
-  visual_reference_id: z.string().optional(),
-}) satisfies z.ZodType<Partial<HNSCharacter>>;
-
-const HNSSettingSchema = z.object({
-  setting_id: z.string().optional(),
-  name: z.string(),
-  description: z.string(),
-  mood: z.string(),
-  sensory: z.object({
-    sight: z.array(z.string()),
-    sound: z.array(z.string()),
-    smell: z.array(z.string()),
-    touch: z.array(z.string()),
-    taste: z.array(z.string()).optional(),
-  }),
-  visual_style: z.string(),
-  visual_references: z.array(z.string()),
-  color_palette: z.array(z.string()),
-  architectural_style: z.string(),
-}) satisfies z.ZodType<Partial<HNSSetting>>;
-
 /**
  * Phase 1: Core Concept Generation (Story Object)
  * Creates one-sentence summary and foundational story elements
@@ -180,7 +50,7 @@ export async function generateHNSStory(
   try {
     const { object } = await generateObject({
       model: AI_MODELS.writing,
-      schema: HNSStorySchema,
+      schema: HNSStoryPartialSchema,
       system: `You are an expert story developer creating a story following the Hierarchical Narrative Schema (HNS).
 
 Your task is to create a comprehensive story foundation based on the user's prompt.
@@ -216,7 +86,7 @@ export async function generateHNSParts(story: HNSStory): Promise<HNSPart[]> {
     const { object } = await generateObject({
       model: AI_MODELS.writing,
       schema: z.object({
-        parts: z.array(HNSPartSchema).length(3),
+        parts: z.array(HNSPartPartialSchema).length(3),
       }),
       system: `You are structuring a story into three acts following the Hierarchical Narrative Schema.
 
@@ -282,7 +152,7 @@ export async function generateHNSCharacters(
     const { object } = await generateObject({
       model: AI_MODELS.writing,
       schema: z.object({
-        characters: z.array(HNSCharacterSchema).min(4).max(6),
+        characters: z.array(HNSCharacterPartialSchema).min(4).max(6),
       }),
       system: `You are creating detailed character profiles following the Hierarchical Narrative Schema.
 
@@ -339,7 +209,7 @@ export async function generateHNSSettings(
     const { object } = await generateObject({
       model: AI_MODELS.writing,
       schema: z.object({
-        settings: z.array(HNSSettingSchema).min(3).max(6),
+        settings: z.array(HNSSettingPartialSchema).min(3).max(6),
       }),
       system: `You are creating detailed settings following the Hierarchical Narrative Schema.
 
@@ -390,7 +260,7 @@ export async function generateHNSChapters(
     const { object } = await generateObject({
       model: AI_MODELS.writing,
       schema: z.object({
-        chapters: z.array(HNSChapterSchema).length(chapterCount),
+        chapters: z.array(HNSChapterPartialSchema).length(chapterCount),
       }),
       system: `You are creating chapter structures following the Hierarchical Narrative Schema.
 
@@ -450,7 +320,7 @@ export async function generateHNSScenes(
     const { object } = await generateObject({
       model: AI_MODELS.writing,
       schema: z.object({
-        scenes: z.array(HNSSceneSchema).length(sceneCount),
+        scenes: z.array(HNSScenePartialSchema).length(sceneCount),
       }),
       system: `You are creating scene structures following the Hierarchical Narrative Schema.
 
@@ -680,8 +550,8 @@ export async function generateCompleteHNS(
           ),
           role: character.role,
           summary: character.summary,
-          backstory: JSON.stringify(character.backstory),
-          personality: JSON.stringify(character.personality),
+          backstory: character.backstory,
+          personality: character.personality,
           hnsData: character as any,
           content: JSON.stringify(character),
         })
@@ -809,9 +679,8 @@ export async function generateCompleteHNS(
           partId: chapter.part_ref,
           authorId: userId,
           orderIndex: chapter.chapter_number || 1,
-          chapterHook: JSON.stringify(chapter.chapter_hook),
+          hook: chapter.chapter_hook.description,
           hnsData: chapter as any,
-          sceneIds: chapter.scenes || [],
           status: "draft",
         })
         .onConflictDoNothing();
@@ -831,12 +700,10 @@ export async function generateCompleteHNS(
           goal: scene.goal,
           conflict: scene.conflict,
           outcome: scene.outcome,
-          povCharacterId: scene.pov_character_id,
-          settingId: scene.setting_id,
+          povCharacterId: scene.pov_character_id || undefined,
+          settingId: scene.setting_id || undefined,
           summary: scene.summary,
           hnsData: scene as any,
-          characterIds: scene.character_ids || [],
-          placeIds: scene.setting_id ? [scene.setting_id] : [],
           status: "planned",
         })
         .onConflictDoNothing();
@@ -895,14 +762,29 @@ export async function generateCompleteHNS(
 
     console.log("✅ HNS generation complete with incremental saves!");
 
+    // Build the final HNSDocument structure with proper ID references
+    const finalParts: HNSPart[] = parts.map(part => ({
+      ...part,
+      chapters: allChapters
+        .filter(ch => ch.part_ref === part.part_id)
+        .map(ch => ch.chapter_id)
+    }));
+
+    const finalChapters: HNSChapter[] = allChapters.map(chapter => ({
+      ...chapter,
+      scenes: allScenes
+        .filter(scene => scene.chapter_ref === chapter.chapter_id)
+        .map(scene => scene.scene_id)
+    }));
+
     return {
       story: completeStory,
-      parts,
-      chapters: allChapters,
+      parts: finalParts,  // Parts with chapter ID references
+      chapters: finalChapters,  // Chapters with scene ID references
       scenes: allScenes,
       characters,
       settings,
-    } as HNSDocument;
+    };
   } catch (error) {
     console.error("❌ Error in HNS generation:", error);
 
