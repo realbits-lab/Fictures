@@ -26,6 +26,8 @@ export function CreateStoryForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [progress, setProgress] = useState<ProgressStep[]>([]);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [generatedStoryId, setGeneratedStoryId] = useState<string | null>(null);
   const { setYamlData, clearYamlData } = useStoryCreation();
   const router = useRouter();
 
@@ -185,10 +187,20 @@ export function CreateStoryForm() {
                   // All phases completed successfully
                   console.log('✅ Story generation completed:', data.storyId);
 
-                  // Wait a moment to show completion
-                  setTimeout(() => {
-                    router.push(`/stories`);
-                  }, 2000);
+                  // Mark all remaining steps as completed
+                  setProgress(prev => prev.map(step =>
+                    step.status === 'pending' || step.status === 'in_progress'
+                      ? { ...step, status: 'completed' }
+                      : step
+                  ));
+
+                  // Set completion state and store story ID
+                  setIsCompleted(true);
+                  setGeneratedStoryId(data.storyId);
+                  setIsLoading(false);
+
+                  // Show success message but don't redirect
+                  // User can manually navigate to stories when ready
                   break;
 
                 case 'error':
