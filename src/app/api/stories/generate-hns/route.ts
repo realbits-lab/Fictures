@@ -98,9 +98,19 @@ export async function POST(request: NextRequest) {
       async start(controller) {
         try {
           // Helper function to send SSE data
+          let isControllerClosed = false;
           const sendUpdate = (phase: string, data: Record<string, unknown>) => {
-            const sseData = `data: ${JSON.stringify({ phase, data })}\n\n`;
-            controller.enqueue(encoder.encode(sseData));
+            if (isControllerClosed) {
+              console.log(`Skipping SSE update (controller closed): ${phase}`);
+              return;
+            }
+            try {
+              const sseData = `data: ${JSON.stringify({ phase, data })}\n\n`;
+              controller.enqueue(encoder.encode(sseData));
+            } catch (error) {
+              console.log(`Error sending SSE update: ${error.message}`);
+              isControllerClosed = true;
+            }
           };
 
           console.log("🚀 Starting HNS story generation...");

@@ -490,18 +490,25 @@ async function improvePart(
       ...(evaluation?.suggestions || [])
     ];
 
+    // Truncate overly long titles to prevent JSON parsing issues
+    const truncateString = (str: string, maxLength: number = 500) => {
+      if (!str) return 'N/A';
+      if (str.length <= maxLength) return str;
+      return str.substring(0, maxLength) + '...';
+    };
+
     const { object } = await generateObject({
       model: AI_MODELS.generation,
       schema: ImprovedPartSchema,
       prompt: `Improve this story part based on feedback:
 
 ORIGINAL PART:
-Title: ${part.title}
-Description: ${part.description || 'N/A'}
+Title: ${truncateString(part.title, 200)}
+Description: ${truncateString(part.description || 'N/A', 500)}
 Structural Role: ${part.structuralRole || 'N/A'}
-Summary: ${part.summary || 'N/A'}
-Key Beats: ${JSON.stringify(part.keyBeats || [])}
-Current HNS Data: ${JSON.stringify(part.hnsData || {})}
+Summary: ${truncateString(part.summary || 'N/A', 1000)}
+Key Beats: ${JSON.stringify(part.keyBeats || []).substring(0, 500)}
+Current HNS Data: ${JSON.stringify(part.hnsData || {}).substring(0, 500)}
 
 ISSUES TO ADDRESS:
 ${issues.join('\n')}
@@ -519,8 +526,9 @@ Improve the part to:
 2. Enhance structural role and contribution
 3. Add comprehensive hnsData for narrative development
 4. Maintain consistency with overall story
+5. CRITICAL: Keep title concise (max 50 characters) and clear
 
-Return ONLY the fields that need updating.`
+Return ONLY the fields that need updating. Ensure all text fields are reasonable in length.`
     });
 
     const changes: string[] = [];
@@ -547,8 +555,24 @@ Return ONLY the fields that need updating.`
       improvements.push('Added HNS narrative progression data');
     }
 
+    // Validate and truncate any overly long fields in the improved data
+    const sanitizedData: any = {};
+    if (object.title && object.title.length > 200) {
+      sanitizedData.title = object.title.substring(0, 200);
+      console.log('Warning: Part title truncated from', object.title.length, 'to 200 characters');
+    } else if (object.title) {
+      sanitizedData.title = object.title;
+    }
+
+    // Copy other fields normally
+    Object.keys(object).forEach(key => {
+      if (key !== 'title') {
+        sanitizedData[key] = object[key];
+      }
+    });
+
     return {
-      data: object,
+      data: sanitizedData,
       changes,
       improvements,
       rationale: `Enhanced part structure for better narrative flow`
@@ -572,19 +596,26 @@ async function improveChapter(
       ...(evaluation?.suggestions || [])
     ];
 
+    // Truncate overly long fields to prevent JSON parsing issues
+    const truncateString = (str: string, maxLength: number = 500) => {
+      if (!str) return 'N/A';
+      if (str.length <= maxLength) return str;
+      return str.substring(0, maxLength) + '...';
+    };
+
     const { object } = await generateObject({
       model: AI_MODELS.generation,
       schema: ImprovedChapterSchema,
       prompt: `Improve this chapter based on feedback:
 
 ORIGINAL CHAPTER:
-Title: ${chapter.title}
-Summary: ${chapter.summary || 'N/A'}
-Purpose: ${chapter.purpose || 'N/A'}
-Hook: ${chapter.hook || 'N/A'}
-Pacing Goal: ${chapter.pacingGoal || 'N/A'}
-Character Focus: ${chapter.characterFocus || 'N/A'}
-Current HNS Data: ${JSON.stringify(chapter.hnsData || {})}
+Title: ${truncateString(chapter.title, 200)}
+Summary: ${truncateString(chapter.summary || 'N/A', 1000)}
+Purpose: ${truncateString(chapter.purpose || 'N/A', 500)}
+Hook: ${truncateString(chapter.hook || 'N/A', 500)}
+Pacing Goal: ${truncateString(chapter.pacingGoal || 'N/A', 200)}
+Character Focus: ${truncateString(chapter.characterFocus || 'N/A', 200)}
+Current HNS Data: ${JSON.stringify(chapter.hnsData || {}).substring(0, 500)}
 
 ISSUES TO ADDRESS:
 ${issues.join('\n')}
@@ -631,8 +662,30 @@ Return ONLY the fields that need updating.`
       improvements.push('Added HNS chapter progression data');
     }
 
+    // Validate and truncate any overly long fields in the improved data
+    const sanitizedData: any = {};
+    if (object.title && object.title.length > 200) {
+      sanitizedData.title = object.title.substring(0, 200);
+      console.log('Warning: Chapter title truncated from', object.title.length, 'to 200 characters');
+    } else if (object.title) {
+      sanitizedData.title = object.title;
+    }
+
+    // Copy other fields normally, but check for extremely long text
+    Object.keys(object).forEach(key => {
+      if (key !== 'title') {
+        const value = object[key];
+        if (typeof value === 'string' && value.length > 10000) {
+          sanitizedData[key] = value.substring(0, 10000);
+          console.log(`Warning: Chapter ${key} truncated from ${value.length} to 10000 characters`);
+        } else {
+          sanitizedData[key] = value;
+        }
+      }
+    });
+
     return {
-      data: object,
+      data: sanitizedData,
       changes,
       improvements,
       rationale: `Improved chapter structure for better reader engagement`
