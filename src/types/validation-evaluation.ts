@@ -202,3 +202,69 @@ export interface QuickEvaluationResult {
   feedback: string;
   suggestions: string[];
 }
+
+// Story Improvement Types
+export interface StoryImprovementRequest {
+  analysisResult: {
+    validation?: FullValidationResult;
+    evaluation?: StoryEvaluationResult;
+  };
+  originalData: {
+    story: any;
+    parts?: any[];
+    chapters?: any[];
+    scenes?: any[];
+    characters?: any[];
+    settings?: any[];
+  };
+  options?: {
+    updateLevel?: 'conservative' | 'moderate' | 'aggressive';
+    preserveUserContent?: boolean;
+    focusAreas?: ('structure' | 'character' | 'world' | 'pacing' | 'dialogue')[];
+    autoApply?: boolean;
+    dryRun?: boolean;
+  };
+}
+
+export interface StoryImprovementResult {
+  improved: {
+    story: any;
+    parts: any[];
+    chapters: any[];
+    scenes: any[];
+    characters: any[];
+    settings: any[];
+  };
+  changes: {
+    story: ChangeLog;
+    parts: ChangeLog[];
+    chapters: ChangeLog[];
+    scenes: ChangeLog[];
+    characters: ChangeLog[];
+    settings: ChangeLog[];
+  };
+  summary: {
+    totalChanges: number;
+    majorImprovements: string[];
+    minorAdjustments: string[];
+    preservedElements: string[];
+  };
+}
+
+export interface ChangeLog {
+  id: string;
+  fieldsUpdated: string[];
+  improvements: string[];
+  rationale: string;
+}
+
+export interface StoryAnalysisWithImprovementResponse extends StoryAnalysisResponse {
+  improvements?: {
+    enabled: boolean;
+    result?: StoryImprovementResult;
+    summary?: any;
+    message: string;
+    error?: string;
+  };
+  nextSteps?: string[];
+}

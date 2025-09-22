@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { validateStoryStructure } from '@/lib/services/validation';
 import { evaluateStoryContent } from '@/lib/services/evaluation';
+import { improveStoryContent } from '@/lib/services/story-improvement';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';
@@ -20,7 +21,9 @@ const StoryAnalysisRequestSchema = z.object({
     includeWarnings: z.boolean().optional().default(true),
     includeAIFeedback: z.boolean().optional().default(true),
     detailLevel: z.enum(['basic', 'detailed', 'comprehensive']).optional().default('detailed'),
-    generateReport: z.boolean().optional().default(false)
+    generateReport: z.boolean().optional().default(false),
+    autoImprove: z.boolean().optional().default(false),
+    improvementLevel: z.enum(['conservative', 'moderate', 'aggressive']).optional().default('moderate')
   }).optional()
 });
 
@@ -91,6 +94,46 @@ export async function POST(request: NextRequest) {
     // Generate comprehensive report if requested
     if (validatedRequest.options?.generateReport && validatedRequest.analysisType === 'both') {
       results.report = generateComprehensiveReport(results.validation, results.evaluation);
+    }
+
+    // Auto-improve if requested
+    if (validatedRequest.options?.autoImprove && validatedRequest.analysisType === 'both') {
+      try {
+        const improvementResult = await improveStoryContent({
+          analysisResult: {
+            validation: results.validation?.details,
+            evaluation: results.evaluation
+          },
+          originalData: validatedRequest.data,
+          options: {
+            updateLevel: validatedRequest.options.improvementLevel || 'moderate',
+            preserveUserContent: true,
+            autoApply: false // Don't auto-apply to DB from analysis API
+          }
+        });
+
+        results.improvements = {
+          enabled: true,
+          result: improvementResult,
+          summary: improvementResult.summary,
+          message: 'Improvements generated. Use /api/story-update with autoApply: true to apply changes.'
+        };
+
+        // Add improvement workflow instructions
+        results.nextSteps = [
+          ...(results.report?.nextSteps || []),
+          'Review the generated improvements',
+          'Call POST /api/story-update with autoApply: true to apply improvements',
+          'Or manually apply selected improvements using PATCH /api/story-update'
+        ];
+      } catch (improvementError) {
+        console.error('Auto-improvement error:', improvementError);
+        results.improvements = {
+          enabled: true,
+          error: 'Failed to generate improvements',
+          message: 'Analysis completed but improvement generation failed'
+        };
+      }
     }
 
     return NextResponse.json(results);

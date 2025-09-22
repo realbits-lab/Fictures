@@ -16,6 +16,12 @@ export const AI_MODELS = {
 
   // Fast model for quick suggestions
   quick: gateway(DEFAULT_MODEL),
+
+  // Generation model for content improvement
+  generation: gateway(DEFAULT_MODEL),
+
+  // Default model
+  default: gateway(DEFAULT_MODEL),
 } as const;
 
 // AI prompt templates
