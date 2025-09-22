@@ -327,9 +327,78 @@ export async function POST(request: NextRequest) {
                 updatedAt: new Date()
               })
               .where(eq(stories.id, storyId));
+
+            // ============= RE-ANALYSIS AFTER IMPROVEMENTS =============
+            sendUpdate("progress", {
+              step: "re_analyzing_quality",
+              message: "Re-analyzing improved story quality...",
+            });
+
+            // Fetch updated story data for re-analysis
+            const [updatedStoryData] = await db.select().from(stories).where(eq(stories.id, storyId));
+            const updatedPartsData = await db.select().from(parts).where(eq(parts.storyId, storyId));
+            const updatedChaptersData = await db.select().from(chapters).where(eq(chapters.storyId, storyId));
+            const updatedScenesData = await db.select().from(scenes)
+              .innerJoin(chapters, eq(scenes.chapterId, chapters.id))
+              .where(eq(chapters.storyId, storyId));
+            const updatedCharactersData = await db.select().from(charactersTable).where(eq(charactersTable.storyId, storyId));
+            const updatedSettingsData = await db.select().from(settingsTable).where(eq(settingsTable.storyId, storyId));
+
+            const updatedAnalysisData = {
+              story: updatedStoryData,
+              parts: updatedPartsData,
+              chapters: updatedChaptersData,
+              scenes: updatedScenesData.map(s => s.scenes),
+              characters: updatedCharactersData,
+              settings: updatedSettingsData
+            };
+
+            // Re-run analysis to verify improvements
+            const postValidationResult = validateStoryStructure(updatedAnalysisData);
+            const postEvaluationResult = await evaluateStoryContent(updatedAnalysisData);
+
+            sendUpdate("re_analysis_complete", {
+              message: "Quality re-analysis completed - Improvement verified!",
+              before: {
+                validation: {
+                  overallValid: validationResult.overallValid,
+                  totalErrors: validationResult.totalErrors,
+                  totalWarnings: validationResult.totalWarnings
+                },
+                evaluation: {
+                  overallScore: evaluationResult.storyEvaluation?.overallScore || 0
+                }
+              },
+              after: {
+                validation: {
+                  overallValid: postValidationResult.overallValid,
+                  totalErrors: postValidationResult.totalErrors,
+                  totalWarnings: postValidationResult.totalWarnings
+                },
+                evaluation: {
+                  overallScore: postEvaluationResult.storyEvaluation?.overallScore || 0
+                }
+              },
+              improvement: {
+                errorsFixed: validationResult.totalErrors - postValidationResult.totalErrors,
+                warningsReduced: validationResult.totalWarnings - postValidationResult.totalWarnings,
+                scoreImproved: (postEvaluationResult.storyEvaluation?.overallScore || 0) - (evaluationResult.storyEvaluation?.overallScore || 0)
+              }
+            });
+
           } else {
             sendUpdate("improvement_skipped", {
-              message: "Story quality is already high, skipping improvements"
+              message: "Story quality is already high, skipping improvements",
+              analysis: {
+                validation: {
+                  overallValid: validationResult.overallValid,
+                  totalErrors: validationResult.totalErrors,
+                  totalWarnings: validationResult.totalWarnings
+                },
+                evaluation: {
+                  overallScore: evaluationResult.storyEvaluation?.overallScore || 0
+                }
+              }
             });
           }
 
