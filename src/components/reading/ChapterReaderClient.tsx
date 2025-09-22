@@ -549,11 +549,9 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                     {console.log(`📖 Rendering ${chapterScenes.length} scenes for chapter: ${selectedChapter.title}`)}
                     {chapterScenes.map((scene, index) => (
                       <section key={scene.id} className="mb-8">
-                        {chapterScenes.length > 1 && (
-                          <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4 opacity-75">
-                            {scene.title}
-                          </h3>
-                        )}
+                        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4 opacity-75 border-b border-gray-200 dark:border-gray-700 pb-2">
+                          {scene.title}
+                        </h3>
                         <div className="whitespace-pre-wrap leading-relaxed">
                           {scene.content || (
                             <p className="text-gray-500 dark:text-gray-400 italic">
