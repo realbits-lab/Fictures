@@ -1,12 +1,19 @@
 #!/usr/bin/env node
 
 import { config } from 'dotenv';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
 // Load environment variables
 config({ path: '.env.local' });
 
-// API Key from setup-manager-api-key.ts
-const API_KEY = 'fic_MLB4S9xbFwZQ_MLB4S9xbFwZQ5ahw9RkkogAFdJcMnTKqgBBmoYwU79I';
+// Load API key from user.json
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const userJsonPath = join(__dirname, '..', '.auth', 'user.json');
+const userData = JSON.parse(readFileSync(userJsonPath, 'utf8'));
+const API_KEY = userData.managerCredentials.apiKey;
 
 async function createStoryViaApi() {
   try {

@@ -137,14 +137,32 @@ FORBIDDEN PRACTICES:
 ✗ Passive voice chains
 ✗ Complete resolution without hook
 
-DIALOGUE FORMATTING:
-"Dialogue." Character action.
+DIALOGUE FORMATTING REQUIREMENTS:
+• Each dialogue sentence (single or double quotes) MUST be on its own line
+• No combining multiple dialogue sentences on the same line
+• Separate action tags on their own lines
 
-"Response." Different character action.
+CORRECT FORMAT:
+"First sentence."
 
+Action beat describing character movement.
+
+"Second sentence from same character."
+
+"Different character responds."
+
+INCORRECT FORMAT:
+"First sentence." "Second sentence on same line."
+"Dialogue." Action beat. "More dialogue."
+
+PROPER DIALOGUE STRUCTURE:
 "Question?"
 
-"Answer." Action beat. "Continuation."
+"Answer."
+
+Action beat.
+
+"Continuation."
 
 PACING DYNAMICS:
 HIGH TENSION → Short. Fragments. Active verbs.
