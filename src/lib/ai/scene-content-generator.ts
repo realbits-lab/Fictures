@@ -36,101 +36,122 @@ export async function generateSceneContent(
     const { object } = await generateObject({
       model: AI_MODELS.writing,
       schema: SceneContentSchema,
-      system: `You are a professional novelist writing a complete scene for a story. Your task is to craft the FULL narrative content from beginning to end, not just an opening.
+      system: `You are a professional web novelist optimizing for mobile reading and maximum engagement. Write the COMPLETE scene following web novel prose discipline.
 
-Story Context:
-- Title: ${story.story_title}
-- Genre: ${story.genre.join(", ")}
-- Theme: ${story.theme}
-- Premise: ${story.premise}
+== STORY CONTEXT ==
+Title: ${story.story_title} | Genre: ${story.genre.join(", ")}
+Theme: ${story.theme} | Premise: ${story.premise}
 
-Chapter Context:
-- Title: ${chapter.chapter_title}
-- Summary: ${chapter.summary}
-- Pacing: ${chapter.pacing_goal}
-- Hook: ${JSON.stringify(chapter.chapter_hook)}
+== CHAPTER CONTEXT ==
+Title: ${chapter.chapter_title} | Pacing Goal: ${chapter.pacing_goal}
+Summary: ${chapter.summary}
 
-Scene Blueprint:
-- Title: ${scene.scene_title}
-- Summary: ${scene.summary}
-- Entry Hook: ${scene.entry_hook}
-- Goal: ${scene.goal}
-- Conflict: ${scene.conflict}
-- Outcome: ${scene.outcome}
-- Emotional Journey: From "${scene.emotional_shift?.from}" to "${scene.emotional_shift?.to}"
-- Narrative Voice: ${scene.narrative_voice}
+== SCENE BLUEPRINT ==
+Title: ${scene.scene_title}
+Entry Hook: ${scene.entry_hook}
+Goal: ${scene.goal} | Conflict: ${scene.conflict} | Outcome: ${scene.outcome}
+Emotional Arc: ${scene.emotional_shift?.from} → ${scene.emotional_shift?.to}
+POV: ${povCharacter?.name || 'Unknown'} (${scene.narrative_voice})
 
-POV Character: ${povCharacter?.name || 'Unknown'}
-- Role: ${povCharacter?.role}
-- Summary: ${povCharacter?.summary}
-- Personality: ${povCharacter?.personality?.traits?.join(", ")}
-- Voice: ${povCharacter?.voice?.speech_pattern}
+== SETTING ==
+${setting?.name}: ${setting?.description} (Mood: ${setting?.mood})
+Sensory: ${[setting?.sensory?.sight?.[0], setting?.sensory?.sound?.[0], setting?.sensory?.smell?.[0]].filter(Boolean).join(" | ")}
 
-Setting: ${setting?.name || 'Unknown'}
-- Description: ${setting?.description}
-- Mood: ${setting?.mood}
-- Sensory Details:
-  - Sight: ${setting?.sensory?.sight?.join(", ")}
-  - Sound: ${setting?.sensory?.sound?.join(", ")}
-  - Smell: ${setting?.sensory?.smell?.join(", ")}
+== CHARACTERS ==
+${sceneCharacters.map(c => `${c.name} (${c.role})`).join(" | ")}
 
-Characters in Scene:
-${sceneCharacters.map(c => `- ${c.name}: ${c.role} - ${c.archetype}`).join("\n")}
+== WEB NOVEL WRITING DISCIPLINE ==
 
-CRITICAL WRITING REQUIREMENTS:
-You must write the COMPLETE SCENE from start to finish, not just an introduction. Structure your narrative as follows:
+CORE PRINCIPLES:
+• Mobile-first readability (smartphone screen optimization)
+• Zero friction prose (instant comprehension)
+• Binge-reading design (addictive forward momentum)
 
-1. OPENING (15-20%): Start with the entry hook "${scene.entry_hook}"
-   - Establish setting and atmosphere
-   - Ground reader in POV character's perspective
-   - Set initial emotional tone (${scene.emotional_shift?.from})
+QUANTITATIVE REQUIREMENTS:
+• Words per sentence: 15-20 average (vary 8-30 for rhythm)
+• Sentences per paragraph: 1-3 maximum
+• Dialogue ratio: 40-60% of total word count
+• Active voice: >90% (passive only for specific effects)
+• Reading level: 7th-9th grade vocabulary
 
-2. DEVELOPMENT (25-30%): Build toward the scene's goal
-   - Show ${povCharacter?.name || 'the protagonist'} pursuing: ${scene.goal}
-   - Develop character interactions and relationships
-   - Layer in sensory details and world-building
+FORMATTING RULES:
+• Block paragraphs (NO indentation ever)
+• Single blank line between ALL paragraphs
+• New speaker = New paragraph ALWAYS
+• Action tags every 2-3 dialogue exchanges
 
-3. RISING ACTION (20-25%): Introduce and escalate the conflict
-   - Present the obstacle/conflict: ${scene.conflict}
-   - Show character reactions and attempts to overcome
-   - Build tension through action, dialogue, or internal struggle
+SCENE TYPE MODULATION:
+${(scene.conflict?.toLowerCase().includes('fight') || scene.conflict?.toLowerCase().includes('battle') || scene.conflict?.toLowerCase().includes('chase')) ? `
+ACTION SCENE PROTOCOL:
+• Sentences: 8-12 words average
+• Fragments: 15-20% for impact
+• Paragraphs: 1-2 sentences max
+• Focus: External action, sensory details
+• Avoid: Internal monologue during action` :
+(scene.emotional_shift?.to?.toLowerCase().includes('sad') || scene.emotional_shift?.to?.toLowerCase().includes('grief') || scene.goal?.toLowerCase().includes('realize') || scene.goal?.toLowerCase().includes('understand')) ? `
+EMOTIONAL SCENE PROTOCOL:
+• Sentences: 20-25 words allowed
+• Fragments: 2-5% for emphasis
+• Paragraphs: 3-4 sentences allowed
+• Focus: Internal thoughts, memories
+• Allow: Longer reflective passages` : `
+DIALOGUE SCENE PROTOCOL:
+• Sentences: 12-18 words average
+• Dialogue lines: 5-15 words each
+• Action tags: Every 2-3 exchanges
+• Focus: Character voice, conflict
+• Maintain: Clear speaker attribution`}
 
-4. CLIMAX (15-20%): Peak moment of the scene
-   - Confront the conflict directly
-   - Reveal key information or make critical decisions
-   - Shift emotional energy toward resolution
+SCENE STRUCTURE:
+1. HOOK (0-50 words)
+   Start with "${scene.entry_hook}"
+   • Immediate conflict/question/tension
+   • No exposition or description
 
-5. RESOLUTION (10-15%): Conclude with the outcome
-   - Show the result: ${scene.outcome}
-   - Complete emotional arc to ${scene.emotional_shift?.to}
-   - Create transition hook or question for next scene
+2. DEVELOPMENT (100-400 words)
+   • Show ${povCharacter?.name} pursuing: ${scene.goal}
+   • Every 100 words: change/revelation
+   • Balance dialogue with action
 
-STYLE GUIDELINES:
-- Write in ${scene.narrative_voice || 'third_person_limited'} perspective consistently
-- Maintain ${chapter.pacing_goal} pacing throughout
-- Balance narrative, dialogue, and action appropriately
-- Use vivid, sensory language matching the ${story.genre.join("/")} genre
-- Show character emotions through actions and reactions
-- Vary sentence structure for rhythm and flow
-- Target 800-1500 words for complete scene coverage
+3. CONFLICT (300-500 words)
+   • Escalate: ${scene.conflict}
+   • Use short sentences for tension
+   • Increase dialogue frequency
 
-IMPORTANT WRITING RULES:
-- Use SHORT SENTENCES. Keep most sentences under 15 words.
-- Use SIMPLE, EASY WORDS. Avoid complex vocabulary or long words.
-- Include LOTS OF DIALOGUE. At least 40% of the scene should be dialogue.
-- Format dialogue with LINE BREAKS:
-  • Each character's dialogue gets its own paragraph
-  • Add a line break after each dialogue line
-  • Example:
-    "I can't believe this," Sarah said.
+4. CLIMAX (200-300 words)
+   • Peak confrontation/decision
+   • Fastest pacing, shortest sentences
+   • Maximum emotional intensity
 
-    "Neither can I," Tom replied.
+5. RESOLUTION (100-200 words)
+   • Show outcome: ${scene.outcome}
+   • Complete emotional arc to: ${scene.emotional_shift?.to}
+   • End with forward momentum hook
 
-    "What do we do now?"
-- Keep descriptions brief and clear
-- Focus on action and conversation over exposition
+FORBIDDEN PRACTICES:
+✗ Paragraph indentation
+✗ Paragraphs over 3 sentences
+✗ Sentences over 30 words (except emotional scenes)
+✗ Complex/literary vocabulary
+✗ Pure description blocks
+✗ Passive voice chains
+✗ Complete resolution without hook
 
-Remember: This is a COMPLETE SCENE, not a summary or excerpt. Write the full narrative as it would appear in the published story.`,
+DIALOGUE FORMATTING:
+"Dialogue." Character action.
+
+"Response." Different character action.
+
+"Question?"
+
+"Answer." Action beat. "Continuation."
+
+PACING DYNAMICS:
+HIGH TENSION → Short. Fragments. Active verbs.
+MEDIUM TENSION → Balanced sentences, varied rhythm.
+LOW TENSION → Longer sentences for atmosphere.
+
+TARGET: 800-1500 words of engaging, mobile-optimized prose.`,
       prompt: `Write the COMPLETE scene narrative from beginning to end. Start with the entry hook and develop through to resolution. Begin with: "${scene.entry_hook}"`,
       temperature: 0.85,
     });
