@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { prompt, language = "English" } = body;
+    const { prompt, language = "English", enableQualityImprovement = false } = body;
 
     if (!prompt) {
       return new Response("Story prompt is required", { status: 400 });
@@ -150,13 +150,14 @@ export async function POST(request: NextRequest) {
           // with incremental saving after each phase
 
           // ============= QUALITY ANALYSIS & IMPROVEMENT PHASE =============
-          // Update status to analyzing quality
-          await db.update(stories)
-            .set({
-              status: 'analyzing_quality',
-              updatedAt: new Date()
-            })
-            .where(eq(stories.id, storyId));
+          if (enableQualityImprovement) {
+            // Update status to analyzing quality
+            await db.update(stories)
+              .set({
+                status: 'analyzing_quality',
+                updatedAt: new Date()
+              })
+              .where(eq(stories.id, storyId));
 
           sendUpdate("progress", {
             step: "analyzing_quality",
@@ -411,6 +412,7 @@ export async function POST(request: NextRequest) {
               }
             });
           }
+          } // End of enableQualityImprovement
 
           // ============= CONTINUE TO IMAGE GENERATION =============
           // Characters are already created in generateCompleteHNS
