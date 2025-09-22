@@ -14,6 +14,7 @@ interface BeautifulJSONDisplayProps {
   onToggleCollapse?: () => void;
   changedKeys?: string[];
   onDataChange?: (data: any) => void;
+  disabled?: boolean;
 }
 
 
@@ -24,7 +25,8 @@ export function BeautifulJSONDisplay({
   isCollapsed = false,
   onToggleCollapse,
   changedKeys = [],
-  onDataChange
+  onDataChange,
+  disabled = false
 }: BeautifulJSONDisplayProps) {
   const { theme, systemTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -57,13 +59,13 @@ export function BeautifulJSONDisplay({
   }
 
   return (
-    <Card className="mb-4">
+    <Card className={`mb-4 ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle
-            className="flex items-center gap-2 text-base cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-            onClick={onToggleCollapse}
-            title={isCollapsed ? 'Expand' : 'Collapse'}
+            className={`flex items-center gap-2 text-base ${disabled ? 'cursor-not-allowed' : 'cursor-pointer hover:text-gray-600 dark:hover:text-gray-300'} transition-colors`}
+            onClick={disabled ? undefined : onToggleCollapse}
+            title={disabled ? 'Editor disabled' : (isCollapsed ? 'Expand' : 'Collapse')}
           >
             <span>{icon}</span>
             {title}
@@ -74,9 +76,10 @@ export function BeautifulJSONDisplay({
           <Button
             variant="ghost"
             size="sm"
-            onClick={onToggleCollapse}
+            onClick={disabled ? undefined : onToggleCollapse}
             className="h-8 w-8 p-0"
-            title={isCollapsed ? 'Expand' : 'Collapse'}
+            title={disabled ? 'Editor disabled' : (isCollapsed ? 'Expand' : 'Collapse')}
+            disabled={disabled}
           >
             {isCollapsed ? '▶' : '▼'}
           </Button>

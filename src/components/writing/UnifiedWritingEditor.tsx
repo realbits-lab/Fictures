@@ -116,9 +116,10 @@ interface UnifiedWritingEditorProps {
   story: Story;
   allStories?: AllStoryListItem[];
   initialSelection?: Selection;
+  disabled?: boolean;
 }
 
-export function UnifiedWritingEditor({ story: initialStory, allStories, initialSelection }: UnifiedWritingEditorProps) {
+export function UnifiedWritingEditor({ story: initialStory, allStories, initialSelection, disabled = false }: UnifiedWritingEditorProps) {
   const router = useRouter();
   const [story, setStory] = useState<Story>(initialStory);
   const [currentSelection, setCurrentSelection] = useState<Selection>(
@@ -1153,6 +1154,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           setSceneHasChanges(false);
         }}
         onWrite={handleGenerate}
+        disabled={disabled}
       />
     );
   };
@@ -1171,6 +1173,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               onToggleCollapse={() => setStoryDataCollapsed(!storyDataCollapsed)}
               changedKeys={changedStoryKeys}
               onDataChange={handleStoryDataUpdate}
+              disabled={disabled}
             />
           </div>
         );
@@ -1185,6 +1188,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               icon="📚"
               isCollapsed={false}
               onToggleCollapse={() => {}}
+              disabled={disabled}
             />
           </div>
         );
@@ -1339,6 +1343,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                     characterFocus: chapterData.characterFocus
                   }}
                   isCollapsed={false}
+                  disabled={disabled}
                 />
               </div>
             </div>
@@ -1687,6 +1692,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 storyId={story.id}
                 onStoryUpdate={handleStoryJSONUpdate}
                 onPreviewUpdate={handleStoryJSONPreviewUpdate}
+                disabled={disabled}
               />
             )}
 
@@ -1698,6 +1704,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 icon="📚"
                 isCollapsed={false}
                 onToggleCollapse={() => {}}
+                disabled={disabled}
               />
             )}
 
@@ -1709,6 +1716,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 icon="📝"
                 isCollapsed={false}
                 onToggleCollapse={() => {}}
+                disabled={disabled}
               />
             )}
 
@@ -1720,6 +1728,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 icon="🎬"
                 isCollapsed={false}
                 onToggleCollapse={() => {}}
+                disabled={disabled}
               />
             )}
 

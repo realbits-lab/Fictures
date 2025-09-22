@@ -8,9 +8,10 @@ interface StoryPromptWriterProps {
   storyId?: string;
   onStoryUpdate?: (updatedJson: string) => void;
   onPreviewUpdate?: (previewJson: string | null) => void;
+  disabled?: boolean;
 }
 
-export function StoryPromptWriter({ storyJson, storyId, onStoryUpdate, onPreviewUpdate }: StoryPromptWriterProps) {
+export function StoryPromptWriter({ storyJson, storyId, onStoryUpdate, onPreviewUpdate, disabled = false }: StoryPromptWriterProps) {
   const [inputPrompt, setInputPrompt] = useState("");
   const [outputResult, setOutputResult] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -476,10 +477,10 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
   };
 
   return (
-    <Card className="h-fit" data-testid="story-prompt-writer">
+    <Card className={`h-fit ${disabled ? 'opacity-50 pointer-events-none' : ''}`} data-testid="story-prompt-writer">
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center gap-2">
-          🤖 Story Prompt Writer
+          🤖 Story Prompt Writer {disabled && '(Disabled)'}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

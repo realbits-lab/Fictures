@@ -48,6 +48,7 @@ interface SceneEditorProps {
   onSceneUpdate?: (data: SceneData) => void;
   onSave?: (data: SceneData) => Promise<void>;
   onCancel?: () => void;
+  disabled?: boolean;
   onWrite?: (data: any) => void;
 }
 
@@ -61,7 +62,8 @@ export function SceneEditor({
   onSceneUpdate,
   onSave,
   onCancel,
-  onWrite
+  onWrite,
+  disabled = false
 }: SceneEditorProps) {
   // Use the appropriate data source: previewData > initialData
   const sceneData = previewData || initialData;
@@ -129,7 +131,7 @@ export function SceneEditor({
   };
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
       {/* Cancel/Save Buttons Above YAML */}
       {externalHasChanges && (
         <div className="flex justify-center gap-2 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
