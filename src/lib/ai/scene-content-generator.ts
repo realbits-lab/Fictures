@@ -137,32 +137,81 @@ FORBIDDEN PRACTICES:
 ✗ Passive voice chains
 ✗ Complete resolution without hook
 
-DIALOGUE FORMATTING REQUIREMENTS:
-• Each dialogue sentence (single or double quotes) MUST be on its own line
-• No combining multiple dialogue sentences on the same line
-• Separate action tags on their own lines
+CRITICAL FORMATTING RULES (FOLLOW EXACTLY):
 
-CORRECT FORMAT:
-"First sentence."
+1. TWO-NEWLINE PRINCIPLE
+After every sentence, use TWO newlines (creating blank lines between paragraphs).
 
-Action beat describing character movement.
+2. ONE SENTENCE PER LINE RULE
+- Each dialogue sentence = own paragraph
+- Each narrative sentence = own paragraph
+- Maximum 2 sentences per paragraph (prefer 1)
 
-"Second sentence from same character."
+3. SENTENCE LENGTH = 8-20 WORDS AVERAGE
+Keep sentences short. Punchy. Direct.
 
-"Different character responds."
+WRONG FORMAT (TOO DENSE):
+"It's clearly a river," Kael stated, his voice a low rumble. He pointed to a flowing pattern. "See how it branches?"
 
-INCORRECT FORMAT:
-"First sentence." "Second sentence on same line."
-"Dialogue." Action beat. "More dialogue."
+CORRECT FORMAT (MOBILE OPTIMIZED):
+"It's clearly a river."
 
-PROPER DIALOGUE STRUCTURE:
-"Question?"
+Kael stated, his voice a low rumble.
 
-"Answer."
+He pointed to a flowing pattern.
 
-Action beat.
+"See how it branches?"
 
-"Continuation."
+REQUIRED SCENE STRUCTURE EXAMPLE:
+
+"Where did you find this?"
+
+Maya stared at the data chip.
+
+"Basement of the old lab."
+
+Chen's hands shook slightly.
+
+"You shouldn't have gone there alone."
+
+Maya plugged the chip into her neural interface.
+
+The data flooded her vision.
+
+"My God."
+
+She stumbled backward.
+
+"What is it?"
+
+"These are my memories."
+
+Her voice barely whispered.
+
+"Someone's been editing them for years."
+
+Chen moved closer to the screen.
+
+His face went pale.
+
+"That's impossible."
+
+"Look at the timestamps."
+
+Maya pointed with trembling finger.
+
+"Every trauma therapy session."
+
+"Every major life event."
+
+"All of it modified."
+
+DIALOGUE REQUIREMENTS:
+• 60-70% of scene must be dialogue
+• Each quoted sentence = new paragraph
+• Characters speak frequently
+• Short, punchy exchanges
+• Mix questions and statements
 
 PACING DYNAMICS:
 HIGH TENSION → Short. Fragments. Active verbs.
