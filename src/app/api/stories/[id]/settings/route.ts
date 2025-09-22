@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { places as placesTable, stories } from '@/lib/db/schema';
+import { settings as settingsTable, stories } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 
 export const runtime = 'nodejs';
@@ -33,12 +33,12 @@ export async function GET(
       return NextResponse.json({ error: 'Story not found or access denied' }, { status: 404 });
     }
 
-    // Fetch places/settings for this story
+    // Fetch settings for this story
     const settings = await db
       .select()
-      .from(placesTable)
-      .where(eq(placesTable.storyId, id))
-      .orderBy(placesTable.createdAt);
+      .from(settingsTable)
+      .where(eq(settingsTable.storyId, id))
+      .orderBy(settingsTable.createdAt);
 
     return NextResponse.json(settings);
 

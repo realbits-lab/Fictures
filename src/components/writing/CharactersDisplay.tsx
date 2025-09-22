@@ -100,13 +100,6 @@ export function CharactersDisplay({ storyData }: CharactersDisplayProps) {
         </CardContent>
       </Card>
 
-      {/* Display characters data in beautiful card format */}
-      <BeautifulJSONDisplay
-        title="Character Details (JSON)"
-        icon="👤"
-        data={allCharacters}
-      />
-
       {/* Loading state */}
       {loading && (
         <Card>
@@ -117,7 +110,7 @@ export function CharactersDisplay({ storyData }: CharactersDisplayProps) {
         </Card>
       )}
 
-      {/* Individual character cards with images */}
+      {/* Individual character cards with images - DISPLAY FIRST */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {allCharacters.map((character) => (
           <Card key={character.id} className="hover:shadow-lg transition-shadow">
@@ -130,13 +123,14 @@ export function CharactersDisplay({ storyData }: CharactersDisplayProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {/* Character Image */}
+              {/* Character Image - Full size without cropping */}
               {character.imageUrl && (
                 <div className="mb-3">
                   <img
                     src={character.imageUrl}
                     alt={character.name}
-                    className="w-full h-32 object-cover rounded-md"
+                    className="w-full h-auto rounded-md"
+                    style={{ maxHeight: '400px', objectFit: 'contain' }}
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                     }}
@@ -182,6 +176,13 @@ export function CharactersDisplay({ storyData }: CharactersDisplayProps) {
           </Card>
         ))}
       </div>
+
+      {/* Display characters JSON data - DISPLAY LAST */}
+      <BeautifulJSONDisplay
+        title="Character Details (JSON)"
+        icon="👤"
+        data={allCharacters}
+      />
     </div>
   );
 }

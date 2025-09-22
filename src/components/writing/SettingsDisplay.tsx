@@ -115,13 +115,6 @@ export function SettingsDisplay({ storyData }: SettingsDisplayProps) {
         </CardContent>
       </Card>
 
-      {/* Display settings data in beautiful card format */}
-      <BeautifulJSONDisplay
-        title="Settings Details (JSON)"
-        icon="📍"
-        data={enrichedSettings}
-      />
-
       {/* Loading state */}
       {loading && (
         <Card>
@@ -132,7 +125,7 @@ export function SettingsDisplay({ storyData }: SettingsDisplayProps) {
         </Card>
       )}
 
-      {/* Individual setting cards with images */}
+      {/* Individual setting cards with images - DISPLAY FIRST */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {allSettings.map((setting) => (
           <Card key={setting.id} className="hover:shadow-lg transition-shadow">
@@ -145,13 +138,14 @@ export function SettingsDisplay({ storyData }: SettingsDisplayProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {/* Setting Image */}
+              {/* Setting Image - Full size without cropping */}
               {setting.imageUrl && (
                 <div className="mb-3">
                   <img
                     src={setting.imageUrl}
                     alt={setting.name}
-                    className="w-full h-32 object-cover rounded-md"
+                    className="w-full h-auto rounded-md"
+                    style={{ maxHeight: '400px', objectFit: 'contain' }}
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                     }}
@@ -217,6 +211,13 @@ export function SettingsDisplay({ storyData }: SettingsDisplayProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Display settings JSON data - DISPLAY LAST */}
+      <BeautifulJSONDisplay
+        title="Settings Details (JSON)"
+        icon="📍"
+        data={enrichedSettings}
+      />
     </div>
   );
 }
