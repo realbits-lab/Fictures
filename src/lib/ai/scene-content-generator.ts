@@ -18,6 +18,58 @@ const SceneContentSchema = z.object({
 });
 
 /**
+ * Post-process scene content to ensure proper dialogue formatting
+ * Only fixes dialogue that's NOT already properly formatted with two newlines
+ */
+function formatDialogueContent(content: string): string {
+  let formattedContent = content;
+
+  // Pattern 1: Dialogue immediately followed by narrative text (no double newlines)
+  // Example: "Hello," he said. -> "Hello,"\n\nHe said.
+  // Only match if dialogue is NOT preceded by \n\n AND NOT followed by \n\n
+  const dialogueNarrativePattern = /(?<!\n\n)("([^"]|\\")*?")(\s+)([^"\n][^"]*?[.!?])(?!\n\n)/g;
+
+  formattedContent = formattedContent.replace(dialogueNarrativePattern, (match, dialogue, _, space, narrative) => {
+    return `${dialogue}\n\n${narrative.trim()}`;
+  });
+
+  // Pattern 2: Narrative followed immediately by dialogue (no double newlines)
+  // Example: He nodded. "Yes." -> He nodded.\n\n"Yes."
+  // Only match if narrative is NOT followed by \n\n before dialogue
+  const narrativeDialoguePattern = /([^"\n][^"]*?[.!?])(\s+)("([^"]|\\")*?")(?!\n\n)/g;
+
+  formattedContent = formattedContent.replace(narrativeDialoguePattern, (match, narrative, space, dialogue) => {
+    return `${narrative.trim()}\n\n${dialogue}`;
+  });
+
+  // Pattern 3: Two dialogue sentences on same line
+  // Example: "Hello." "Goodbye." -> "Hello."\n\n"Goodbye."
+  // Only match if first dialogue is NOT followed by \n\n
+  const multiDialoguePattern = /("([^"]|\\")*?")(\s+)("([^"]|\\")*?")(?!\n\n)/g;
+
+  formattedContent = formattedContent.replace(multiDialoguePattern, '$1\n\n$4');
+
+  // Pattern 4: Complex dialogue-narrative-dialogue on same line/paragraph
+  // Example: "Text," he said. "More text." -> "Text,"\n\nHe said.\n\n"More text."
+  // Only if not already properly spaced
+  const complexPattern = /(?<!\n\n)("([^"]|\\")*?")(\s+)([^"]*?)(\s+)("([^"]|\\")*?")(?!\n\n)/g;
+
+  formattedContent = formattedContent.replace(complexPattern, (match, dialogue1, _, space1, narrative, space2, dialogue2) => {
+    const cleanNarrative = narrative.trim();
+    if (cleanNarrative && !cleanNarrative.match(/^[.!?]/)) {
+      return `${dialogue1}\n\n${cleanNarrative}\n\n${dialogue2}`;
+    } else {
+      return `${dialogue1}\n\n${dialogue2}`;
+    }
+  });
+
+  // Clean up excessive newlines (more than 2) but preserve intentional double newlines
+  formattedContent = formattedContent.replace(/\n{3,}/g, '\n\n');
+
+  return formattedContent.trim();
+}
+
+/**
  * Generate narrative content for a single scene
  */
 export async function generateSceneContent(
@@ -223,7 +275,13 @@ TARGET: 800-1500 words of engaging, mobile-optimized prose.`,
       temperature: 0.85,
     });
 
-    return object;
+    // Post-process the content to ensure proper dialogue formatting
+    const formattedContent = formatDialogueContent(object.content);
+
+    return {
+      content: formattedContent,
+      writing_notes: object.writing_notes
+    };
   } catch (error) {
     console.error(`Error generating content for scene ${scene.scene_id}:`, error);
 
