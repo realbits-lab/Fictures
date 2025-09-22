@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
+import { authenticateRequest, hasRequiredScope } from '@/lib/auth/dual-auth';
 import { google } from '@ai-sdk/google';
 import { generateText } from 'ai';
 import { put } from '@vercel/blob';
@@ -14,9 +15,13 @@ export async function POST(request: NextRequest) {
 
     // Check authentication (skip for internal server-to-server calls)
     if (!internal) {
-      const session = await auth();
-      if (!session?.user?.id) {
+      const authResult = await authenticateRequest(request);
+      if (!authResult) {
         return new Response('Authentication required', { status: 401 });
+      }
+      // Check for AI usage permission
+      if (!hasRequiredScope(authResult, 'ai:use')) {
+        return new Response('Insufficient permissions. Required scope: ai:use', { status: 403 });
       }
     }
 
@@ -74,10 +79,42 @@ export async function POST(request: NextRequest) {
 
       // Check if the result contains generated image files
       if (result.files && result.files.length > 0) {
-        console.log(`✅ Generated image for ${type}:`, result.files[0]);
-        // TODO: Upload to Vercel Blob when file handling is implemented
-        // imageUrl = await uploadToBlob(result.files[0]);
-        imageUrl = generatePlaceholder(); // Using placeholder for now
+        const file = result.files[0];
+        console.log(`✅ Generated image for ${type}, processing base64 data...`);
+
+        // Check if file has base64 data
+        if (file && typeof file === 'object' && ('base64Data' in file || 'data' in file)) {
+          try {
+            // Get the base64 data from either format
+            const base64Data = (file as any).base64Data || (file as any).data;
+            const mimeType = (file as any).mediaType || (file as any).mimeType || 'image/png';
+
+            if (base64Data && typeof base64Data === 'string') {
+              // Convert base64 to Uint8Array
+              const binaryString = atob(base64Data);
+              const bytes = new Uint8Array(binaryString.length);
+              for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+              }
+
+              // Upload to Vercel Blob
+              imageUrl = await uploadToBlob(bytes, mimeType);
+              console.log('✅ Image uploaded to Vercel Blob:', imageUrl);
+              method = 'gemini_2.5_flash_image_uploaded';
+            } else {
+              console.log('⚠️ No valid base64 data found');
+              imageUrl = generatePlaceholder();
+            }
+          } catch (uploadError) {
+            console.error('❌ Failed to upload image to Blob:', uploadError);
+            imageUrl = generatePlaceholder();
+            method = 'placeholder_upload_failed';
+          }
+        } else {
+          // File format not as expected, use placeholder
+          console.log('⚠️ File format unexpected:', file);
+          imageUrl = generatePlaceholder();
+        }
       } else {
         // Fallback to placeholder if no image generated
         imageUrl = generatePlaceholder();
