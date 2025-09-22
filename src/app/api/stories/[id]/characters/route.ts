@@ -13,25 +13,6 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const session = await auth();
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Verify the user has access to this story
-    const [story] = await db
-      .select()
-      .from(stories)
-      .where(and(
-        eq(stories.id, id),
-        eq(stories.authorId, session.user.id)
-      ))
-      .limit(1);
-
-    if (!story) {
-      return NextResponse.json({ error: 'Story not found or access denied' }, { status: 404 });
-    }
 
     // Fetch characters for this story
     const characters = await db
@@ -40,7 +21,7 @@ export async function GET(
       .where(eq(charactersTable.storyId, id))
       .orderBy(charactersTable.createdAt);
 
-    return NextResponse.json(characters);
+    return NextResponse.json({ characters });
 
   } catch (error) {
     console.error('Error fetching characters:', error);
