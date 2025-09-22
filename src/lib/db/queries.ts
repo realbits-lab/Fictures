@@ -519,6 +519,7 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
     description: result.description,
     genre: result.genre || 'General',
     status: finalStoryStatus,
+    isPublic: result.isPublic || false,
     hnsData: result.hnsData || null,
     authorId: result.authorId,
     userId: result.authorId,
