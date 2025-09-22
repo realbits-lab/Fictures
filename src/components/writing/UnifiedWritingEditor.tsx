@@ -1619,7 +1619,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           {/* Left Sidebar - Story Structure Navigation */}
           {!sidebarCollapsed && (
             <div className="col-span-12 lg:col-span-3 space-y-6">
-              <StoryStructureSidebar 
+              <StoryStructureSidebar
                 story={story}
                 currentSelection={currentSelection}
                 onSidebarCollapse={setSidebarCollapsed}
@@ -1630,10 +1630,10 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             />
             </div>
           )}
-          
+
           {/* Collapsed sidebar trigger */}
           {sidebarCollapsed && (
-            <StoryStructureSidebar 
+            <StoryStructureSidebar
               story={story}
               currentSelection={currentSelection}
               onSidebarCollapse={setSidebarCollapsed}

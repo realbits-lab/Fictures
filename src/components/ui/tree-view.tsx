@@ -266,6 +266,15 @@ const TreeNode = ({
     const [isDragOver, setIsDragOver] = React.useState(false)
     const hasChildren = item.children && item.children.length > 0
 
+    // Sync accordion value with expandedItemIds changes
+    React.useEffect(() => {
+        if (expandedItemIds.includes(item.id)) {
+            setValue([item.id])
+        } else {
+            setValue([])
+        }
+    }, [expandedItemIds, item.id])
+
     const onDragStart = (e: React.DragEvent) => {
         if (!item.draggable) {
             e.preventDefault()

@@ -73,7 +73,7 @@ export function StoryStructureSidebar({
   onSidebarCollapse
 }: StoryStructureSidebarProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [expandAll, setExpandAll] = useState(false);
+  const [expandAll, setExpandAll] = useState(true);
 
   const toggleSidebar = () => {
     const newCollapsed = !sidebarCollapsed;
@@ -84,6 +84,18 @@ export function StoryStructureSidebar({
   // Convert story structure to TreeDataItem format
   const treeData = useMemo<TreeDataItem[]>(() => {
     const items: TreeDataItem[] = [];
+
+    // Debug log to check story structure
+    console.log('📊 StoryStructureSidebar - Story structure:', {
+      id: story.id,
+      title: story.title,
+      partsLength: story.parts?.length || 0,
+      chaptersLength: story.chapters?.length || 0,
+      firstPart: story.parts?.[0],
+      firstPartType: typeof story.parts?.[0],
+      hasParts: !!story.parts,
+      partsIsArray: Array.isArray(story.parts)
+    });
 
     // Add story root item
     const storyItem: TreeDataItem = {
@@ -98,8 +110,10 @@ export function StoryStructureSidebar({
     };
 
     // Add parts and chapters
-    if (story.parts.length > 0) {
+    if (story.parts && story.parts.length > 0) {
+      console.log('📚 Processing parts for tree:', story.parts);
       story.parts.forEach(part => {
+        console.log('📑 Processing part:', part);
         const partItem: TreeDataItem = {
           id: `part-${part.id}`,
           name: `Part ${part.orderIndex}`,
@@ -149,7 +163,9 @@ export function StoryStructureSidebar({
         });
 
         storyItem.children?.push(partItem);
+        console.log('✅ Added part to story children:', partItem);
       });
+      console.log('📊 Story item with parts:', storyItem);
     } else {
       // No parts, add chapters directly under story
       story.chapters.forEach(chapter => {
@@ -187,6 +203,7 @@ export function StoryStructureSidebar({
     }
 
     items.push(storyItem);
+    console.log('🌳 Final tree items before Characters/Settings:', items);
 
     // Add Characters item
     items.push({
