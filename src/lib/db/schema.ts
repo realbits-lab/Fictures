@@ -10,6 +10,10 @@ export const storyGenerationStatusEnum = pgEnum('story_generation_status', [
   'phase3_complete',     // Character development completed
   'phase4_complete',     // Place development completed
   'phase5_6_complete',   // Chapters and scenes completed
+  'analyzing_quality',   // Running validation and evaluation
+  'analysis_complete',   // Analysis completed
+  'improving_content',   // Applying AI improvements
+  'improvement_complete', // Improvements applied
   'generating_character_images', // Generating character images
   'character_images_complete',   // Character images generated
   'generating_setting_images',   // Generating setting images
