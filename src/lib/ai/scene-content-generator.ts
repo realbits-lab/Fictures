@@ -11,6 +11,7 @@ import { scenes as scenesTable } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import type { HNSScene, HNSChapter, HNSCharacter, HNSSetting, HNSStory } from "@/types/hns";
 import { formatSceneContent } from "@/lib/services/dialogue-formatter";
+import { cleanComponentHnsData } from "@/lib/utils/hns-data-cleaner";
 
 // Schema for scene content generation
 const SceneContentSchema = z.object({
@@ -330,11 +331,18 @@ export async function generateAllSceneContent(
       // Update the scene in the database immediately
       console.log(`Updating scene ${scene.scene_id} with ${formattedContent.split(/\s+/).length} words...`);
 
+      // Create updated scene object with actual content for hnsData
+      const updatedScene = {
+        ...scene,
+        content: formattedContent
+      };
+
       const updateResult = await db
         .update(scenesTable)
         .set({
           content: formattedContent,
           wordCount: formattedContent.split(/\s+/).length,
+          hnsData: cleanComponentHnsData(updatedScene),
           updatedAt: new Date(),
         })
         .where(eq(scenesTable.id, scene.scene_id || ''))
