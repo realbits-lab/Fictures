@@ -8,6 +8,7 @@ import { useWritingProgress, useWritingSession } from "@/hooks/useStoryWriter";
 import { JSONDataDisplay } from "./JSONDataDisplay";
 import { ChapterEditor } from "./ChapterEditor";
 import { SceneEditor, SceneData } from "./SceneEditor";
+import { SceneDisplay } from "./SceneDisplay";
 import { StoryStructureSidebar } from "./StoryStructureSidebar";
 import { SceneSidebar } from "./SceneSidebar";
 import { WritingGuidelines } from "./WritingGuidelines";
@@ -1125,35 +1126,13 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     return { sceneData, selectedSceneChapter, sceneNumber };
   };
 
-  const renderSceneEditor = () => {
-    const { sceneData, selectedSceneChapter, sceneNumber } = findSceneData();
+  const renderSceneDisplay = () => {
+    if (!currentSelection.sceneId) return null;
 
     return (
-      <SceneEditor
-        key={currentSelection.sceneId}
+      <SceneDisplay
         sceneId={currentSelection.sceneId}
-        sceneNumber={sceneNumber}
-        initialData={currentSceneData}
-        previewData={scenePreviewData}
-        chapterContext={{
-          title: selectedSceneChapter?.title || "Chapter",
-          pov: "maya",
-          acts: getChapterData()?.acts || {}
-        }}
-        hasChanges={sceneHasChanges || !!scenePreviewData}
-        onSceneUpdate={handleSceneDataUpdate}
-        onSave={async (data) => {
-          await handleSave(scenePreviewData || data);
-          setOriginalSceneData(scenePreviewData || data);
-          setScenePreviewData(null);
-          setSceneHasChanges(false);
-        }}
-        onCancel={() => {
-          setCurrentSceneData(originalSceneData);
-          setScenePreviewData(null);
-          setSceneHasChanges(false);
-        }}
-        onWrite={handleGenerate}
+        storyId={story.id}
         disabled={disabled}
       />
     );
@@ -1354,7 +1333,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         );
 
       case "scene":
-        return renderSceneEditor();
+        return renderSceneDisplay();
 
       case "characters":
         return (
@@ -1651,39 +1630,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
           {/* Right Sidebar */}
           <div className="col-span-12 lg:col-span-3 space-y-6">
-            {currentSelection.level === "scene" ? (
-              // Scene view: Show SceneSidebar with scene controls and JSON data
-              <SceneSidebar
-                sceneData={{
-                  id: extractedSceneData?.scene_id || "scene_1",
-                  summary: extractedSceneData?.summary || "",
-                  time: "",
-                  place: extractedSceneData?.setting_id || "",
-                  pov: extractedSceneData?.pov_character_id || "",
-                  characters: {},
-                  goal: extractedSceneData?.goal || "",
-                  obstacle: extractedSceneData?.conflict || "",
-                  outcome: extractedSceneData?.outcome || "",
-                  beats: [],
-                  shift: extractedSceneData?.emotional_shift?.from || "",
-                  leads_to: "",
-                  image_prompt: ""
-                }}
-                chapterContext={{
-                  title: "Chapter Context",
-                  pov: getChapterData()?.pov || "",
-                  acts: getChapterData()?.acts || {}
-                }}
-                storyData={sampleStoryData}
-                partData={extractedPartData}
-                chapterData={extractedChapterData}
-                onSave={handleSave}
-                onSceneDataChange={(field, value) => {
-                  // Handle scene data changes
-                  console.log(`Updating scene field ${field}:`, value);
-                }}
-              />
-            ) : null}
+            {/* Removed SceneSidebar - Scene content now handled by SceneDisplay in main area */}
             
             {/* Story Prompt Writer - Show for story level */}
             {currentSelection.level === "story" && (
