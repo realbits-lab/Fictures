@@ -10,6 +10,7 @@ import { db } from "@/lib/db";
 import { scenes as scenesTable } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import type { HNSScene, HNSChapter, HNSCharacter, HNSSetting, HNSStory } from "@/types/hns";
+import { formatSceneContent } from "@/lib/services/dialogue-formatter";
 
 // Schema for scene content generation
 const SceneContentSchema = z.object({
@@ -258,7 +259,13 @@ TARGET: 800-1500 words of engaging, mobile-optimized prose.
       temperature: 0.85,
     });
 
-    return object;
+    // Apply rule-based dialogue formatting to ensure proper isolation
+    const formattedContent = formatSceneContent(object.content);
+
+    return {
+      ...object,
+      content: formattedContent
+    };
   } catch (error) {
     console.error(`Error generating content for scene ${scene.scene_id}:`, error);
 
@@ -317,14 +324,17 @@ export async function generateAllSceneContent(
         settings
       );
 
+      // Apply formatting to ensure dialogue rules are followed
+      const formattedContent = formatSceneContent(content);
+
       // Update the scene in the database immediately
-      console.log(`Updating scene ${scene.scene_id} with ${content.split(/\s+/).length} words...`);
+      console.log(`Updating scene ${scene.scene_id} with ${formattedContent.split(/\s+/).length} words...`);
 
       const updateResult = await db
         .update(scenesTable)
         .set({
-          content,
-          wordCount: content.split(/\s+/).length,
+          content: formattedContent,
+          wordCount: formattedContent.split(/\s+/).length,
           updatedAt: new Date(),
         })
         .where(eq(scenesTable.id, scene.scene_id || ''))
