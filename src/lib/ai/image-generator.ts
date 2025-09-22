@@ -3,11 +3,128 @@ import { generateText } from 'ai';
 import { put } from '@vercel/blob';
 import { nanoid } from 'nanoid';
 
+export type AnimationStyle =
+  | 'anime'
+  | 'studio-ghibli'
+  | 'pixar'
+  | 'disney'
+  | 'cartoon'
+  | 'manga'
+  | 'chibi'
+  | 'comic-book'
+  | 'watercolor'
+  | 'pixel-art'
+  | 'claymation'
+  | 'retro-animation'
+  | 'realistic'
+  | 'fantasy-art';
+
+export interface ImageGenerationOptions {
+  style?: AnimationStyle;
+  quality?: 'standard' | 'high' | 'ultra';
+  aspectRatio?: 'portrait' | 'landscape' | 'square';
+  mood?: string;
+  lighting?: string;
+  cameraAngle?: string;
+}
+
 export interface ImageGenerationResult {
   success: boolean;
   imageUrl?: string;
   method: string;
   error?: string;
+  style?: AnimationStyle;
+}
+
+/**
+ * Get style-specific prompt enhancements
+ */
+function getStylePrompt(style: AnimationStyle = 'fantasy-art'): string {
+  const stylePrompts: Record<AnimationStyle, string> = {
+    'anime': 'anime style, large expressive eyes, Japanese animation aesthetics, vibrant colors, cel-shaded, clean lines',
+    'studio-ghibli': 'Studio Ghibli style, whimsical, soft watercolor textures, dreamy atmosphere, detailed backgrounds, hand-drawn animation feel',
+    'pixar': 'Pixar 3D animation style, rounded shapes, smooth rendering, vibrant saturated colors, expressive characters, cinematic lighting',
+    'disney': 'Disney animation style, classic fairy tale aesthetic, smooth lines, warm colors, magical atmosphere, expressive features',
+    'cartoon': 'cartoon style, bold outlines, simplified shapes, bright colors, exaggerated features, playful aesthetic',
+    'manga': 'manga style, black and white ink drawing, detailed linework, dramatic shading, Japanese comic art style',
+    'chibi': 'cute chibi style, super deformed, oversized head, small body, kawaii aesthetic, adorable expressions',
+    'comic-book': 'comic book style, bold outlines, dynamic poses, vibrant colors, ben day dots, action-oriented composition',
+    'watercolor': 'watercolor painting style, soft edges, flowing colors, artistic brushstrokes, transparent layers, dreamy quality',
+    'pixel-art': 'pixel art style, 16-bit aesthetic, limited color palette, blocky design, retro video game graphics',
+    'claymation': 'claymation style, 3D clay figures, stop-motion aesthetic, textured surfaces, Wallace and Gromit style',
+    'retro-animation': 'retro rubber hose animation style, 1930s cartoon aesthetic, flexible characters, vintage color palette',
+    'realistic': 'photorealistic style, highly detailed, natural lighting, realistic proportions and textures',
+    'fantasy-art': 'fantasy art style, magical atmosphere, detailed illustration, epic composition, rich colors, ethereal quality'
+  };
+
+  return stylePrompts[style] || stylePrompts['fantasy-art'];
+}
+
+/**
+ * Get aspect ratio dimensions for image generation
+ */
+function getImageDimensions(aspectRatio: 'portrait' | 'landscape' | 'square' = 'square', type: string): string {
+  if (type === 'character') {
+    switch (aspectRatio) {
+      case 'portrait': return '512x768';
+      case 'landscape': return '768x512';
+      case 'square': return '512x512';
+    }
+  } else {
+    switch (aspectRatio) {
+      case 'portrait': return '768x1024';
+      case 'landscape': return '1024x768';
+      case 'square': return '768x768';
+    }
+  }
+}
+
+/**
+ * Build enhanced prompt with style and options
+ */
+function buildEnhancedPrompt(
+  basePrompt: string,
+  type: 'character' | 'setting' | 'scene',
+  options: ImageGenerationOptions = {}
+): string {
+  const {
+    style = 'fantasy-art',
+    mood,
+    lighting,
+    cameraAngle
+  } = options;
+
+  let enhancedPrompt = '';
+
+  if (type === 'character') {
+    enhancedPrompt = `Create a detailed character portrait: ${basePrompt}`;
+  } else if (type === 'setting' || type === 'scene') {
+    enhancedPrompt = `Create a detailed environment scene: ${basePrompt}`;
+  }
+
+  enhancedPrompt += `, ${getStylePrompt(style)}`;
+
+  if (mood) {
+    enhancedPrompt += `, ${mood} mood`;
+  }
+
+  if (lighting) {
+    enhancedPrompt += `, ${lighting} lighting`;
+  }
+
+  if (cameraAngle && type !== 'character') {
+    enhancedPrompt += `, ${cameraAngle} camera angle`;
+  }
+
+  if (type === 'character') {
+    enhancedPrompt += ', character focus, detailed facial features';
+  } else {
+    enhancedPrompt += ', environmental storytelling, atmospheric perspective';
+  }
+
+  enhancedPrompt += ', masterpiece quality, highly detailed, professional artwork';
+
+  return enhancedPrompt;
 }
 
 /**
@@ -53,15 +170,19 @@ async function uploadToBlob(
 export async function generateImage(
   prompt: string,
   type: 'character' | 'setting' | 'scene',
-  storyId: string
+  storyId: string,
+  options: ImageGenerationOptions = {}
 ): Promise<ImageGenerationResult> {
   try {
-    console.log(`🎨 Generating ${type} image with prompt:`, prompt.substring(0, 100) + '...');
+    console.log(`🎨 Generating ${type} image with style: ${options.style || 'fantasy-art'}`);
+    console.log(`📝 Base prompt:`, prompt.substring(0, 100) + '...');
 
-    // Enhanced prompt for better image generation
-    const enhancedPrompt = type === 'character'
-      ? `Create a detailed portrait image of: ${prompt}. Fantasy character art style, high quality, detailed.`
-      : `Create a detailed landscape image of: ${prompt}. Fantasy environment art style, atmospheric, high quality.`;
+    // Build enhanced prompt with style options
+    const enhancedPrompt = buildEnhancedPrompt(prompt, type, options);
+    console.log(`✨ Enhanced prompt:`, enhancedPrompt.substring(0, 150) + '...');
+
+    const dimensions = getImageDimensions(options.aspectRatio, type);
+    const quality = options.quality || 'high';
 
     // Try Gemini 2.5 Flash Image Preview
     try {
@@ -73,8 +194,8 @@ export async function generateImage(
         providerOptions: {
           google: {
             generateImage: true,  // Enable image generation
-            imageSize: type === 'character' ? '512x512' : '768x512',
-            imageQuality: 'high',
+            imageSize: dimensions,
+            imageQuality: quality,
           }
         },
         temperature: 0.8,
@@ -98,6 +219,7 @@ export async function generateImage(
             success: true,
             imageUrl,
             method: 'gemini-2.5-flash-image',
+            style: options.style,
           };
         }
       }
@@ -119,6 +241,7 @@ export async function generateImage(
       success: true,
       imageUrl: placeholderUrl,
       method: 'placeholder',
+      style: options.style,
     };
 
   } catch (error) {
@@ -131,6 +254,7 @@ export async function generateImage(
       imageUrl: placeholderUrl,
       method: 'placeholder_error',
       error: error instanceof Error ? error.message : 'Unknown error',
+      style: options.style,
     };
   }
 }
@@ -144,8 +268,10 @@ export async function generateImagesInBatch(
     type: 'character' | 'setting' | 'scene';
     id: string;
     name: string;
+    options?: ImageGenerationOptions;
   }>,
-  storyId: string
+  storyId: string,
+  defaultOptions?: ImageGenerationOptions
 ): Promise<Map<string, ImageGenerationResult>> {
   const results = new Map<string, ImageGenerationResult>();
 
@@ -156,7 +282,8 @@ export async function generateImagesInBatch(
 
     const batchResults = await Promise.all(
       batch.map(async (item) => {
-        const result = await generateImage(item.prompt, item.type, storyId);
+        const options = { ...defaultOptions, ...item.options };
+        const result = await generateImage(item.prompt, item.type, storyId, options);
         return { id: item.id, result };
       })
     );
