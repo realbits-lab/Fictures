@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
+import { authenticateRequest, hasRequiredScope } from '@/lib/auth/dual-auth';
 import { generateStoryFromPrompt } from '@/lib/ai/story-development';
 import { db } from '@/lib/db';
 import { stories, parts, chapters, characters, places } from '@/lib/db/schema';
@@ -9,12 +10,20 @@ import { RelationshipManager } from '@/lib/db/relationships';
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await auth();
-    if (!session?.user?.id) {
+    // Check authentication (supports both session and API key)
+    const authResult = await authenticateRequest(request);
+    if (!authResult) {
       return new Response(
         JSON.stringify({ error: 'Authentication required' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check if user has permission to write stories
+    if (!hasRequiredScope(authResult, 'stories:write')) {
+      return new Response(
+        JSON.stringify({ error: 'Insufficient permissions. Required scope: stories:write' }),
+        { status: 403, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -33,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     // Generate story using AI development process with incremental saving
     // The story is now saved to database after each phase inside generateStoryFromPrompt
-    const generatedStory = await generateStoryFromPrompt(prompt, session.user.id, language);
+    const generatedStory = await generateStoryFromPrompt(prompt, authResult.user.id, language);
 
     console.log('📚 Story generation completed with incremental saving');
 

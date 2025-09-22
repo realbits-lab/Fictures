@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import type { HNSDocument } from "@/types/hns";
 import { nanoid } from "nanoid";
 import { auth } from "@/lib/auth";
+import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { db } from "@/lib/db";
 import {
   stories,
@@ -19,10 +20,15 @@ import { google } from "@ai-sdk/google";
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await auth();
-    if (!session?.user?.id) {
+    // Check authentication (supports both session and API key)
+    const authResult = await authenticateRequest(request);
+    if (!authResult) {
       return new Response("Authentication required", { status: 401 });
+    }
+
+    // Check if user has permission to write stories
+    if (!hasRequiredScope(authResult, 'stories:write')) {
+      return new Response("Insufficient permissions. Required scope: stories:write", { status: 403 });
     }
 
     // Parse request body
@@ -56,7 +62,7 @@ export async function POST(request: NextRequest) {
           const hnsDoc: HNSDocument = await generateCompleteHNS(
             prompt,
             language,
-            session.user.id,
+            authResult.user.id,
             undefined,
             (phase, data) => {
               // Send progress updates via SSE
