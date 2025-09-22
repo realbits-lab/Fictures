@@ -37,8 +37,9 @@ export function SettingsDisplay({ storyData }: SettingsDisplayProps) {
       try {
         const response = await fetch(`/api/stories/${storyId}/settings`);
         if (response.ok) {
-          const settings = await response.json();
-          setDbSettings(settings);
+          const data = await response.json();
+          // The API returns { settings: [...] }
+          setDbSettings(data.settings || []);
         } else {
           console.error('Failed to fetch settings:', response.statusText);
         }

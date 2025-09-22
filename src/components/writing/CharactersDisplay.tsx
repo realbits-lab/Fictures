@@ -38,8 +38,9 @@ export function CharactersDisplay({ storyData }: CharactersDisplayProps) {
       try {
         const response = await fetch(`/api/stories/${storyId}/characters`);
         if (response.ok) {
-          const characters = await response.json();
-          setDbCharacters(characters);
+          const data = await response.json();
+          // The API returns { characters: [...] }
+          setDbCharacters(data.characters || []);
         } else {
           console.error('Failed to fetch characters:', response.statusText);
         }
