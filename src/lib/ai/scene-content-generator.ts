@@ -114,6 +114,22 @@ STYLE GUIDELINES:
 - Vary sentence structure for rhythm and flow
 - Target 800-1500 words for complete scene coverage
 
+IMPORTANT WRITING RULES:
+- Use SHORT SENTENCES. Keep most sentences under 15 words.
+- Use SIMPLE, EASY WORDS. Avoid complex vocabulary or long words.
+- Include LOTS OF DIALOGUE. At least 40% of the scene should be dialogue.
+- Format dialogue with LINE BREAKS:
+  • Each character's dialogue gets its own paragraph
+  • Add a line break after each dialogue line
+  • Example:
+    "I can't believe this," Sarah said.
+
+    "Neither can I," Tom replied.
+
+    "What do we do now?"
+- Keep descriptions brief and clear
+- Focus on action and conversation over exposition
+
 Remember: This is a COMPLETE SCENE, not a summary or excerpt. Write the full narrative as it would appear in the published story.`,
       prompt: `Write the COMPLETE scene narrative from beginning to end. Start with the entry hook and develop through to resolution. Begin with: "${scene.entry_hook}"`,
       temperature: 0.85,
