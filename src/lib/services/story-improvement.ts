@@ -198,8 +198,27 @@ interface ChangeLog {
 export async function improveStoryContent(
   request: StoryImprovementRequest
 ): Promise<StoryImprovementResult> {
+  const improvementStartTime = Date.now();
+  console.log('🔧 =================== STORY IMPROVEMENT START ===================');
+  console.log('   Start Time:', new Date().toISOString());
+  console.log('   Request Options:', request.options);
+
   const { analysisResult, originalData, options } = request;
   const updateLevel = options?.updateLevel || 'moderate';
+
+  console.log('   Update Level:', updateLevel);
+  console.log('   Analysis Result Summary:');
+  console.log('     - Validation Errors:', analysisResult.validation?.totalErrors || 0);
+  console.log('     - Validation Warnings:', analysisResult.validation?.totalWarnings || 0);
+  console.log('     - Overall Score:', analysisResult.evaluation?.storyEvaluation?.overallScore || 0);
+
+  console.log('   Original Data Counts:');
+  console.log('     - Story:', originalData.story ? '1' : '0');
+  console.log('     - Parts:', originalData.parts?.length || 0);
+  console.log('     - Chapters:', originalData.chapters?.length || 0);
+  console.log('     - Scenes:', originalData.scenes?.length || 0);
+  console.log('     - Characters:', originalData.characters?.length || 0);
+  console.log('     - Settings:', originalData.settings?.length || 0);
 
   const result: StoryImprovementResult = {
     improved: {
@@ -227,13 +246,18 @@ export async function improveStoryContent(
   };
 
   // Improve story
+  console.log('\n📖 ============= STORY IMPROVEMENT =============');
+  const storyStartTime = Date.now();
   if (originalData.story && shouldImproveComponent(analysisResult.validation?.story, analysisResult.evaluation?.storyEvaluation)) {
+    console.log('   Story needs improvement, starting...');
     const improvedStory = await improveStory(
       originalData.story,
       analysisResult.validation?.story,
       analysisResult.evaluation?.storyEvaluation,
       updateLevel
     );
+    console.log('   Story improvement completed in', Date.now() - storyStartTime, 'ms');
+    console.log('   Changes made:', improvedStory.changes.length);
 
     if (improvedStory.changes.length > 0) {
       result.improved.story = { ...originalData.story, ...improvedStory.data };
@@ -245,16 +269,28 @@ export async function improveStoryContent(
       };
       result.summary.totalChanges += improvedStory.changes.length;
     }
+  } else {
+    console.log('   Story does not need improvement, skipping');
   }
 
   // Improve parts
+  console.log('\n📚 ============= PARTS IMPROVEMENT =============');
+  const partsStartTime = Date.now();
+  console.log('   Total parts to process:', (originalData.parts || []).length);
+
   for (let i = 0; i < (originalData.parts || []).length; i++) {
+    const partStartTime = Date.now();
     const part = originalData.parts![i];
     const partValidation = analysisResult.validation?.parts[i];
     const partEvaluation = analysisResult.evaluation?.partEvaluations.find(e => e.partId === part.id);
 
-    if (shouldImproveComponent(partValidation, partEvaluation)) {
+    console.log(`   Processing part ${i + 1}/${originalData.parts!.length}: ${part.title}`);
+
+    const priority = getImprovementPriority(partValidation, partEvaluation);
+    if (priority === 'high' || priority === 'medium') {
+      console.log(`     Part needs ${priority} priority improvement, starting AI call...`);
       const improvedPart = await improvePart(part, partValidation, partEvaluation, updateLevel);
+      console.log(`     Part ${i + 1} improved in ${Date.now() - partStartTime}ms, changes: ${improvedPart.changes.length}`);
 
       if (improvedPart.changes.length > 0) {
         result.improved.parts[i] = { ...part, ...improvedPart.data };
@@ -266,17 +302,30 @@ export async function improveStoryContent(
         });
         result.summary.totalChanges += improvedPart.changes.length;
       }
+    } else {
+      console.log('     Part skipped (low priority or no issues)');
     }
   }
+  console.log(`   All parts processed in ${Date.now() - partsStartTime}ms`);
 
   // Improve chapters
+  console.log('\n📖 ============= CHAPTERS IMPROVEMENT =============');
+  const chaptersStartTime = Date.now();
+  console.log('   Total chapters to process:', (originalData.chapters || []).length);
+
   for (let i = 0; i < (originalData.chapters || []).length; i++) {
+    const chapterStartTime = Date.now();
     const chapter = originalData.chapters![i];
     const chapterValidation = analysisResult.validation?.chapters[i];
     const chapterEvaluation = analysisResult.evaluation?.chapterEvaluations.find(e => e.chapterId === chapter.id);
 
-    if (shouldImproveComponent(chapterValidation, chapterEvaluation)) {
+    console.log(`   Processing chapter ${i + 1}/${originalData.chapters!.length}: ${chapter.title}`);
+
+    const priority = getImprovementPriority(chapterValidation, chapterEvaluation);
+    if (priority === 'high' || priority === 'medium') {
+      console.log(`     Chapter needs ${priority} priority improvement, starting AI call...`);
       const improvedChapter = await improveChapter(chapter, chapterValidation, chapterEvaluation, updateLevel);
+      console.log(`     Chapter ${i + 1} improved in ${Date.now() - chapterStartTime}ms, changes: ${improvedChapter.changes.length}`);
 
       if (improvedChapter.changes.length > 0) {
         result.improved.chapters[i] = { ...chapter, ...improvedChapter.data };
@@ -288,17 +337,30 @@ export async function improveStoryContent(
         });
         result.summary.totalChanges += improvedChapter.changes.length;
       }
+    } else {
+      console.log('     Chapter skipped (low priority or no issues)');
     }
   }
+  console.log(`   All chapters processed in ${Date.now() - chaptersStartTime}ms`);
 
   // Improve scenes
+  console.log('\n🎬 ============= SCENES IMPROVEMENT =============');
+  const scenesStartTime = Date.now();
+  console.log('   Total scenes to process:', (originalData.scenes || []).length);
+
   for (let i = 0; i < (originalData.scenes || []).length; i++) {
+    const sceneStartTime = Date.now();
     const scene = originalData.scenes![i];
     const sceneValidation = analysisResult.validation?.scenes[i];
     const sceneEvaluation = analysisResult.evaluation?.sceneEvaluations.find(e => e.sceneId === scene.id);
 
-    if (shouldImproveComponent(sceneValidation, sceneEvaluation)) {
+    console.log(`   Processing scene ${i + 1}/${originalData.scenes!.length}: ${scene.title}`);
+
+    const priority = getImprovementPriority(sceneValidation, sceneEvaluation);
+    if (priority === 'high' || priority === 'medium') {
+      console.log(`     Scene needs ${priority} priority improvement, starting AI call...`);
       const improvedScene = await improveScene(scene, sceneValidation, sceneEvaluation, updateLevel);
+      console.log(`     Scene ${i + 1} improved in ${Date.now() - sceneStartTime}ms, changes: ${improvedScene.changes.length}`);
 
       if (improvedScene.changes.length > 0) {
         result.improved.scenes[i] = { ...scene, ...improvedScene.data };
@@ -310,17 +372,30 @@ export async function improveStoryContent(
         });
         result.summary.totalChanges += improvedScene.changes.length;
       }
+    } else {
+      console.log('     Scene skipped (low priority or no issues)');
     }
   }
+  console.log(`   All scenes processed in ${Date.now() - scenesStartTime}ms`);
 
   // Improve characters
+  console.log('\n👥 ============= CHARACTERS IMPROVEMENT =============');
+  const charactersStartTime = Date.now();
+  console.log('   Total characters to process:', (originalData.characters || []).length);
+
   for (let i = 0; i < (originalData.characters || []).length; i++) {
+    const characterStartTime = Date.now();
     const character = originalData.characters![i];
     const characterValidation = analysisResult.validation?.characters[i];
     const characterEvaluation = analysisResult.evaluation?.characterEvaluations.find(e => e.characterId === character.id);
 
-    if (shouldImproveComponent(characterValidation, characterEvaluation)) {
+    console.log(`   Processing character ${i + 1}/${originalData.characters!.length}: ${character.name}`);
+
+    const priority = getImprovementPriority(characterValidation, characterEvaluation);
+    if (priority === 'high' || priority === 'medium') {
+      console.log(`     Character needs ${priority} priority improvement, starting AI call...`);
       const improvedCharacter = await improveCharacter(character, characterValidation, characterEvaluation, updateLevel);
+      console.log(`     Character ${i + 1} improved in ${Date.now() - characterStartTime}ms, changes: ${improvedCharacter.changes.length}`);
 
       if (improvedCharacter.changes.length > 0) {
         result.improved.characters[i] = { ...character, ...improvedCharacter.data };
@@ -332,17 +407,30 @@ export async function improveStoryContent(
         });
         result.summary.totalChanges += improvedCharacter.changes.length;
       }
+    } else {
+      console.log('     Character skipped (low priority or no issues)');
     }
   }
+  console.log(`   All characters processed in ${Date.now() - charactersStartTime}ms`);
 
   // Improve settings
+  console.log('\n🏙️ ============= SETTINGS IMPROVEMENT =============');
+  const settingsStartTime = Date.now();
+  console.log('   Total settings to process:', (originalData.settings || []).length);
+
   for (let i = 0; i < (originalData.settings || []).length; i++) {
+    const settingStartTime = Date.now();
     const setting = originalData.settings![i];
     const settingValidation = analysisResult.validation?.settings[i];
     const settingEvaluation = analysisResult.evaluation?.settingEvaluations.find(e => e.settingId === setting.id);
 
-    if (shouldImproveComponent(settingValidation, settingEvaluation)) {
+    console.log(`   Processing setting ${i + 1}/${originalData.settings!.length}: ${setting.name}`);
+
+    const priority = getImprovementPriority(settingValidation, settingEvaluation);
+    if (priority === 'high' || priority === 'medium') {
+      console.log(`     Setting needs ${priority} priority improvement, starting AI call...`);
       const improvedSetting = await improveSetting(setting, settingValidation, settingEvaluation, updateLevel);
+      console.log(`     Setting ${i + 1} improved in ${Date.now() - settingStartTime}ms, changes: ${improvedSetting.changes.length}`);
 
       if (improvedSetting.changes.length > 0) {
         result.improved.settings[i] = { ...setting, ...improvedSetting.data };
@@ -354,11 +442,24 @@ export async function improveStoryContent(
         });
         result.summary.totalChanges += improvedSetting.changes.length;
       }
+    } else {
+      console.log('     Setting skipped (low priority or no issues)');
     }
   }
+  console.log(`   All settings processed in ${Date.now() - settingsStartTime}ms`);
 
   // Generate summary
+  console.log('\n📊 ============= GENERATING SUMMARY =============');
+  const summaryStartTime = Date.now();
   result.summary = generateImprovementSummary(result.changes, analysisResult);
+  console.log(`   Summary generated in ${Date.now() - summaryStartTime}ms`);
+
+  console.log(`\n🎯 ============= IMPROVEMENT COMPLETE =============`);
+  console.log(`   Total improvement time: ${Date.now() - improvementStartTime}ms`);
+  console.log(`   Total changes made: ${result.summary.totalChanges}`);
+  console.log(`   Major improvements: ${result.summary.majorImprovements.length}`);
+  console.log(`   Minor adjustments: ${result.summary.minorAdjustments.length}`);
+  console.log('🔧 =================== STORY IMPROVEMENT END ===================\n');
 
   return result;
 }
@@ -388,6 +489,46 @@ function shouldImproveComponent(validation?: ValidationResult, evaluation?: any)
   }
 
   return false;
+}
+
+// Helper function to determine improvement priority (optimize for speed)
+function getImprovementPriority(validation?: ValidationResult, evaluation?: any): 'high' | 'medium' | 'low' | 'skip' {
+  const errorCount = validation?.errors?.length || 0;
+  const warningCount = validation?.warnings?.length || 0;
+
+  // Get average score for evaluation
+  let avgScore = 100;
+  if (evaluation) {
+    const scores = [
+      evaluation.overallScore,
+      evaluation.structuralEffectiveness,
+      evaluation.contributionToStory,
+      evaluation.hookEffectiveness,
+      evaluation.pacingScore,
+      evaluation.goalClarity,
+      evaluation.consistency,
+      evaluation.atmosphereScore
+    ].filter(s => s !== undefined);
+    avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 100;
+  }
+
+  console.log(`     Priority check - Errors: ${errorCount}, Warnings: ${warningCount}, Score: ${avgScore}`);
+
+  // High priority: Critical errors or very low scores
+  if (errorCount >= 5 || avgScore < 40) {
+    console.log('     → HIGH priority improvement');
+    return 'high';
+  }
+
+  // Medium priority: Some errors or low scores
+  if (errorCount >= 2 || warningCount >= 5 || avgScore < 60) {
+    console.log('     → MEDIUM priority improvement');
+    return 'medium';
+  }
+
+  // Skip low priority to save time
+  console.log('     → SKIPPING (low priority)');
+  return 'skip';
 }
 
 async function improveStory(

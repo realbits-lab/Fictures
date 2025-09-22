@@ -590,19 +590,36 @@ export async function POST(request: NextRequest) {
 
           console.log("✅ HNS story generation and storage complete");
 
-          // Close the stream
-          controller.close();
+          // Close the stream safely
+          if (!isControllerClosed) {
+            try {
+              controller.close();
+              isControllerClosed = true;
+            } catch (error) {
+              console.log(`Error closing controller: ${error.message}`);
+            }
+          } else {
+            console.log("Controller already closed, skipping close()");
+          }
         } catch (error) {
           console.error("Error in HNS generation:", error);
 
-          // Send error update
-          const errorUpdate = `data: ${JSON.stringify({
-            phase: "error",
-            error: error instanceof Error ? error.message : "Unknown error",
-          })}\n\n`;
-          controller.enqueue(encoder.encode(errorUpdate));
-
-          controller.close();
+          // Send error update if controller is still open
+          if (!isControllerClosed) {
+            try {
+              const errorUpdate = `data: ${JSON.stringify({
+                phase: "error",
+                error: error instanceof Error ? error.message : "Unknown error",
+              })}\n\n`;
+              controller.enqueue(encoder.encode(errorUpdate));
+              controller.close();
+              isControllerClosed = true;
+            } catch (closeError) {
+              console.log(`Error closing controller during error handling: ${closeError.message}`);
+            }
+          } else {
+            console.log("Controller already closed, skipping error update");
+          }
         }
       },
     });
