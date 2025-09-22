@@ -17,6 +17,55 @@ import {
 } from "@/lib/ai/hns-generator";
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
+import { put } from "@vercel/blob";
+
+// Helper function to save Gemini generated images to Vercel Blob
+async function saveImageToStorage(
+  file: any,
+  storyId: string,
+  type: string,
+  name: string
+): Promise<string | null> {
+  try {
+    if (!file || typeof file !== 'object') {
+      console.log('No valid file object provided');
+      return null;
+    }
+
+    // Get the base64 data from either format
+    const base64Data = file.base64Data || file.data;
+    const mimeType = file.mediaType || file.mimeType || 'image/png';
+
+    if (!base64Data || typeof base64Data !== 'string') {
+      console.log('No valid base64 data found in file');
+      return null;
+    }
+
+    // Convert base64 to Uint8Array
+    const binaryString = atob(base64Data);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    // Create filename with story ID and type
+    const safeName = name || 'unnamed';
+    const sanitizedName = safeName.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const imageFileName = `${storyId}/${type}s/${sanitizedName}_${nanoid()}.png`;
+
+    // Upload to Vercel Blob
+    const blob = await put(imageFileName, Buffer.from(bytes), {
+      access: 'public',
+      contentType: mimeType,
+    });
+
+    console.log(`✅ Saved ${type} image to blob storage: ${blob.url}`);
+    return blob.url;
+  } catch (error) {
+    console.error(`❌ Error saving ${type} image to storage:`, error);
+    return null;
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -101,9 +150,10 @@ export async function POST(request: NextRequest) {
             message: "Generating character images...",
           });
 
-          const characterImagePromises = hnsDoc.story.characters.map(
+          const characterImagePromises = hnsDoc.characters.map(
             async (character: any) => {
               try {
+                console.log(`🔍 Processing character:`, character);
                 const imagePrompt = generateCharacterImagePrompt(character);
 
                 let imageUrl = null;
@@ -120,15 +170,20 @@ export async function POST(request: NextRequest) {
                     const files = result.files;
                     if (files.length > 0) {
                       console.log(
-                        `Generated image for character ${character.character_name}:`,
+                        `Generated image for character ${character.name}:`,
                         files[0]
                       );
-                      // imageUrl = await saveImageToStorage(files[0]);
+                      imageUrl = await saveImageToStorage(
+                        files[0],
+                        storyId,
+                        'character',
+                        character.name
+                      );
                     }
                   }
                 } catch (imageError) {
                   console.log(
-                    `Image generation skipped for ${character.character_name}:`,
+                    `Image generation skipped for ${character.name}:`,
                     imageError.message
                   );
                 }
@@ -137,17 +192,17 @@ export async function POST(request: NextRequest) {
                 if (imageUrl) {
                   await db.update(charactersTable)
                     .set({ imageUrl })
-                    .where(eq(charactersTable.id, character.character_id));
+                    .where(eq(charactersTable.name, character.name));
                 }
 
                 return {
                   characterId: character.character_id,
-                  name: character.character_name,
+                  name: character.name,
                   imageUrl,
                 };
               } catch (error) {
                 console.error(
-                  `Error generating image for character ${character.character_name}:`,
+                  `Error generating image for character ${character.name}:`,
                   error
                 );
                 return null;
@@ -179,9 +234,10 @@ export async function POST(request: NextRequest) {
             message: "Generating setting images...",
           });
 
-          const settingImagePromises = hnsDoc.story.settings.map(
+          const settingImagePromises = hnsDoc.settings.map(
             async (setting: any) => {
               try {
+                console.log(`🔍 Processing setting:`, setting);
                 const imagePrompt = generateSettingImagePrompt(setting);
 
                 let imageUrl = null;
@@ -198,15 +254,20 @@ export async function POST(request: NextRequest) {
                     const files = result.files;
                     if (files.length > 0) {
                       console.log(
-                        `Generated image for setting ${setting.setting_name}:`,
+                        `Generated image for setting ${setting.name}:`,
                         files[0]
                       );
-                      // imageUrl = await saveImageToStorage(files[0]);
+                      imageUrl = await saveImageToStorage(
+                        files[0],
+                        storyId,
+                        'setting',
+                        setting.name
+                      );
                     }
                   }
                 } catch (imageError) {
                   console.log(
-                    `Image generation skipped for ${setting.setting_name}:`,
+                    `Image generation skipped for ${setting.name}:`,
                     imageError.message
                   );
                 }
@@ -215,16 +276,16 @@ export async function POST(request: NextRequest) {
                 if (imageUrl) {
                   await db.update(settingsTable)
                     .set({ imageUrl })
-                    .where(eq(settingsTable.id, setting.setting_id));
+                    .where(eq(settingsTable.name, setting.name));
                 }
 
                 return {
                   settingId: setting.setting_id,
-                  name: setting.setting_name,
+                  name: setting.name,
                   imageUrl,
                 };
               } catch (error) {
-                console.error(`Error generating image for setting ${setting.setting_name}:`, error);
+                console.error(`Error generating image for setting ${setting.name}:`, error);
                 return null;
               }
             }
