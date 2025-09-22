@@ -41,7 +41,7 @@ export async function PUT(
         id: stories.id,
         title: stories.title,
         authorId: stories.authorId,
-        isPublic: stories.isPublic,
+        status: stories.status,
       })
       .from(stories)
       .where(eq(stories.id, storyId))
@@ -62,28 +62,31 @@ export async function PUT(
       );
     }
 
-    // Update the story visibility
+    // Update the story status based on visibility request
+    // isPublic: true -> status = 'published' (public)
+    // isPublic: false -> status = 'completed' (private)
+    const newStatus = isPublic ? 'published' : 'completed';
     const [updatedStory] = await db
       .update(stories)
       .set({
-        isPublic,
+        status: newStatus,
         updatedAt: new Date(),
       })
       .where(eq(stories.id, storyId))
       .returning({
         id: stories.id,
         title: stories.title,
-        isPublic: stories.isPublic,
+        status: stories.status,
         updatedAt: stories.updatedAt,
       });
 
-    console.log(`📚 Story visibility updated: ${story.title} is now ${isPublic ? 'public' : 'private'}`);
+    console.log(`📚 Story visibility updated: ${story.title} status is now ${newStatus}`);
 
     return new Response(
       JSON.stringify({
         success: true,
         story: updatedStory,
-        message: `Story is now ${isPublic ? 'public' : 'private'}`,
+        message: `Story is now ${isPublic ? 'public (published)' : 'private (completed)'}`,
       }),
       {
         status: 200,
@@ -93,15 +96,15 @@ export async function PUT(
 
   } catch (error) {
     console.error('❌ Error updating story visibility:', error);
-    
+
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: 'Failed to update story visibility',
         details: error instanceof Error ? error.message : 'Unknown error'
       }),
-      { 
-        status: 500, 
-        headers: { 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
       }
     );
   }
@@ -129,7 +132,7 @@ export async function GET(
       .select({
         id: stories.id,
         title: stories.title,
-        isPublic: stories.isPublic,
+        status: stories.status,
         authorId: stories.authorId,
       })
       .from(stories)
@@ -157,7 +160,8 @@ export async function GET(
         story: {
           id: story.id,
           title: story.title,
-          isPublic: story.isPublic,
+          status: story.status,
+          isPublic: story.status === 'published', // Computed for backward compatibility
         },
       }),
       {

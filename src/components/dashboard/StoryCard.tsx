@@ -47,7 +47,7 @@ export function StoryCard({
     chapters.total > 0 ? (chapters.completed / chapters.total) * 100 : 0;
 
   const getVisibilityBadge = () => {
-    if (isPublic === true) {
+    if (status === 'published') {
       return (
         <Badge variant="success">
           Public
@@ -122,19 +122,11 @@ export function StoryCard({
       </CardContent>
 
       <CardFooter className="flex gap-2">
-        {firstChapterId ? (
-          <Link href={`/write/${firstChapterId}`} className="flex-1">
-            <Button size="sm" className="w-full">
-              📝 Write
-            </Button>
-          </Link>
-        ) : (
-          <Link href={`/stories/${id}/new-chapter`} className="flex-1">
-            <Button size="sm" className="w-full">
-              📝 Start Writing
-            </Button>
-          </Link>
-        )}
+        <Link href={`/write/story/${id}`} className="flex-1">
+          <Button size="sm" className="w-full">
+            📝 Write
+          </Button>
+        </Link>
         <Link href={`/stories/${id}/stats`} className="flex-1">
           <Button variant="secondary" size="sm" className="w-full">
             📊 Stats

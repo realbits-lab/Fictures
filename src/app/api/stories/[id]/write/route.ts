@@ -110,28 +110,109 @@ export async function GET(
 
     const allScenes = allChapters.flatMap(chapter => chapter.scenes || []);
 
-    // Parse story content JSON for storyData (note: field is named 'storyData', not 'content')
+    // Parse HNS data (Hierarchical Narrative Schema) - the primary story structure data
+    let parsedHnsData = null;
     let parsedStoryData = null;
 
-    if (storyWithStructure.storyData) {
+    // Use hnsData as the primary source (it follows the HNS schema)
+    if (storyWithStructure.hnsData) {
       try {
-        // Handle case where storyData might already be an object
-        if (typeof storyWithStructure.storyData === 'object') {
-          parsedStoryData = storyWithStructure.storyData;
-        } else if (typeof storyWithStructure.storyData === 'string') {
-          parsedStoryData = JSON.parse(storyWithStructure.storyData);
+        // Handle case where hnsData might already be an object
+        if (typeof storyWithStructure.hnsData === 'object') {
+          parsedHnsData = storyWithStructure.hnsData;
+        } else if (typeof storyWithStructure.hnsData === 'string') {
+          parsedHnsData = JSON.parse(storyWithStructure.hnsData);
         }
       } catch (error) {
-        console.error('Failed to parse story storyData JSON:', error);
-        // Keep parsedStoryData as null if parsing fails
+        console.error('Failed to parse story hnsData JSON:', error);
+        // Keep parsedHnsData as null if parsing fails
       }
     }
+
+    // storyData field has been removed - using hnsData only
+
+    // Parse HNS data for parts, chapters, and scenes
+    const partsWithHnsData = storyWithStructure.parts.map(part => {
+      let partHnsData = null;
+      if (part.hnsData) {
+        try {
+          partHnsData = typeof part.hnsData === 'object'
+            ? part.hnsData
+            : JSON.parse(part.hnsData as any);
+        } catch (error) {
+          console.error(`Failed to parse part ${part.id} hnsData:`, error);
+        }
+      }
+
+      const chaptersWithHnsData = part.chapters.map(chapter => {
+        let chapterHnsData = null;
+        if (chapter.hnsData) {
+          try {
+            chapterHnsData = typeof chapter.hnsData === 'object'
+              ? chapter.hnsData
+              : JSON.parse(chapter.hnsData as any);
+          } catch (error) {
+            console.error(`Failed to parse chapter ${chapter.id} hnsData:`, error);
+          }
+        }
+
+        const scenesWithHnsData = (chapter.scenes || []).map(scene => {
+          let sceneHnsData = null;
+          if (scene.hnsData) {
+            try {
+              sceneHnsData = typeof scene.hnsData === 'object'
+                ? scene.hnsData
+                : JSON.parse(scene.hnsData as any);
+            } catch (error) {
+              console.error(`Failed to parse scene ${scene.id} hnsData:`, error);
+            }
+          }
+          return { ...scene, hnsData: sceneHnsData };
+        });
+
+        return { ...chapter, hnsData: chapterHnsData, scenes: scenesWithHnsData };
+      });
+
+      return { ...part, hnsData: partHnsData, chapters: chaptersWithHnsData };
+    });
+
+    // Handle standalone chapters
+    const chaptersWithHnsData = storyWithStructure.chapters.map(chapter => {
+      let chapterHnsData = null;
+      if (chapter.hnsData) {
+        try {
+          chapterHnsData = typeof chapter.hnsData === 'object'
+            ? chapter.hnsData
+            : JSON.parse(chapter.hnsData as any);
+        } catch (error) {
+          console.error(`Failed to parse chapter ${chapter.id} hnsData:`, error);
+        }
+      }
+
+      const scenesWithHnsData = (chapter.scenes || []).map(scene => {
+        let sceneHnsData = null;
+        if (scene.hnsData) {
+          try {
+            sceneHnsData = typeof scene.hnsData === 'object'
+              ? scene.hnsData
+              : JSON.parse(scene.hnsData as any);
+          } catch (error) {
+            console.error(`Failed to parse scene ${scene.id} hnsData:`, error);
+          }
+        }
+        return { ...scene, hnsData: sceneHnsData };
+      });
+
+      return { ...chapter, hnsData: chapterHnsData, scenes: scenesWithHnsData };
+    });
 
     // Return story data optimized for writing with additional metadata
     const response = {
       story: {
         ...storyWithStructure,
-        storyData: parsedStoryData // Add parsed story data
+        hnsData: parsedHnsData, // HNS-formatted data
+        parts: partsWithHnsData,
+        chapters: chaptersWithHnsData
       },
       characters: storyCharacters,
       places: storyPlaces,
@@ -214,10 +295,10 @@ export async function PATCH(
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const { storyData } = await request.json();
+    const { hnsData } = await request.json();
 
-    if (!storyData) {
-      return NextResponse.json({ error: 'Story data is required' }, { status: 400 });
+    if (!hnsData) {
+      return NextResponse.json({ error: 'Story data is required (hnsData)' }, { status: 400 });
     }
 
     // First, get the story to check ownership
@@ -234,15 +315,15 @@ export async function PATCH(
       return NextResponse.json({ error: 'Access denied - you are not the owner of this story' }, { status: 403 });
     }
 
-    // Ensure storyData is properly serialized as JSON string
-    const serializedStoryData = JSON.stringify(storyData);
+    // Ensure data is properly serialized as JSON string
+    const serializedData = JSON.stringify(hnsData);
 
-    console.log('📦 Serializing storyData for database:', serializedStoryData.substring(0, 200) + '...');
+    console.log('📦 Serializing HNS data for database:', serializedData.substring(0, 200) + '...');
 
-    // Update the story with the new storyData
+    // Update the story with the new HNS data
     await db.update(stories)
       .set({
-        storyData: serializedStoryData,
+        hnsData: serializedData,
         updatedAt: new Date()
       })
       .where(eq(stories.id, id));

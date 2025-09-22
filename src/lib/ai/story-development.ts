@@ -2,6 +2,11 @@ import { generateText } from 'ai';
 import * as yaml from 'js-yaml';
 import { AI_MODELS } from './config';
 import { type Story, type PartSpecification, type ChapterSpecification, type SceneSpecification } from './schemas';
+import { db } from '@/lib/db';
+import { stories, parts, characters, places } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
+import { nanoid } from 'nanoid';
+import { RelationshipManager } from '@/lib/db/relationships';
 
 // Helper function to extract and clean YAML content from markdown code blocks
 function extractYamlFromText(text: string): string {
@@ -759,49 +764,209 @@ Generate comprehensive location details in YAML format.`
   return places;
 }
 
-// Main story development workflow
-export async function generateStoryFromPrompt(userPrompt: string, userId: string, language: string = 'English') {
+// Main story development workflow with incremental database saving
+export async function generateStoryFromPrompt(userPrompt: string, userId: string, language: string = 'English', storyId?: string) {
   console.log('🚀 Starting story development process...');
 
-  // Phase 1: Story Foundation
-  console.log('Phase 1: Story Foundation');
-  const storyConcept = await storyConceptDevelopment(userPrompt, language);
-  console.log('✅ Story concept developed');
+  // Generate story ID upfront if not provided
+  const currentStoryId = storyId || nanoid();
 
-  // Phase 2: Part Development
-  console.log('Phase 2: Part Development');
-  const partSpecs = await generatePartSpecifications(storyConcept);
-  console.log('✅ Part specifications completed');
+  try {
+    // Phase 1: Story Foundation
+    console.log('Phase 1: Story Foundation');
+    const storyConcept = await storyConceptDevelopment(userPrompt, language);
+    console.log('✅ Story concept developed');
 
-  // Phase 3: Character Development
-  console.log('Phase 3: Character Development');
-  const characters = await generateCharacterData(storyConcept, language);
-  console.log('✅ Character data generated');
+    // Save story after Phase 1 with status 'phase1_in_progress'
+    console.log('💾 Saving Phase 1 data to database...');
+    await db.insert(stories)
+      .values({
+        id: currentStoryId,
+        title: storyConcept.title || 'Generated Story',
+        description: `${storyConcept.goal} | ${storyConcept.conflict} | ${storyConcept.outcome}`,
+        genre: storyConcept.genre || 'General',
+        authorId: userId,
+        targetWordCount: storyConcept.words || 60000,
+        status: 'phase1_in_progress',
+        content: JSON.stringify({
+          phase1_story: storyConcept,
+          developmentPhases: {
+            phase1_story: storyConcept
+          }
+        }),
+        partIds: [],
+        chapterIds: [],
+      })
+      .onConflictDoUpdate({
+        target: [stories.id],
+        set: {
+          status: 'phase1_complete',
+          content: JSON.stringify({
+            phase1_story: storyConcept,
+            developmentPhases: {
+              phase1_story: storyConcept
+            }
+          }),
+          updatedAt: new Date()
+        }
+      });
+    console.log('✅ Phase 1 data saved');
 
-  // Phase 4: Place Development
-  console.log('Phase 4: Place Development');
-  const places = await generatePlaceData(storyConcept, language);
-  console.log('✅ Place data generated');
+    // Phase 2: Part Development
+    console.log('Phase 2: Part Development');
+    const partSpecs = await generatePartSpecifications(storyConcept);
+    console.log('✅ Part specifications completed');
 
-  // Add metadata and structure the complete story
-  const completeStory = {
-    ...storyConcept,
-    userId,
-    createdAt: new Date(),
-    partSpecifications: partSpecs,
-    characters,
-    places,
-    developmentPhases: {
-      phase1_story: storyConcept,
-      phase2_parts: partSpecs,
-      phase3_characters: characters,
-      phase4_places: places,
+    // Update story after Phase 2
+    console.log('💾 Saving Phase 2 data to database...');
+    const [phase2Story] = await db.select().from(stories).where(eq(stories.id, currentStoryId));
+    const phase2Content = phase2Story?.content ? JSON.parse(phase2Story.content as string) : {};
+
+    await db.update(stories)
+      .set({
+        status: 'phase2_complete',
+        content: JSON.stringify({
+          ...phase2Content,
+          phase2_parts: partSpecs,
+          developmentPhases: {
+            ...phase2Content.developmentPhases,
+            phase2_parts: partSpecs
+          }
+        }),
+        updatedAt: new Date()
+      })
+      .where(eq(stories.id, currentStoryId));
+
+    // Create parts in database
+    const createdPartIds = [];
+    for (let partIndex = 0; partIndex < partSpecs.length; partIndex++) {
+      const partSpec = partSpecs[partIndex];
+      const partWordCount = storyConcept.structure?.dist?.[partIndex]
+        ? Math.floor((storyConcept.words || 60000) * (storyConcept.structure.dist[partIndex] / 100))
+        : Math.floor((storyConcept.words || 60000) / partSpecs.length);
+
+      const partId = await RelationshipManager.addPartToStory(
+        currentStoryId,
+        {
+          title: `Part ${partSpec.part}: ${partSpec.desc || storyConcept.parts[partIndex]?.goal || 'Part ' + (partIndex + 1)}`,
+          authorId: userId,
+          orderIndex: partSpec.part,
+          targetWordCount: partWordCount,
+          status: 'planned',
+          content: JSON.stringify(partSpec),
+          chapterIds: [],
+        }
+      );
+      createdPartIds.push(partId);
     }
-  };
+    console.log('✅ Phase 2 data and parts saved');
 
-  console.log('🎉 Story development completed successfully!');
+    // Phase 3: Character Development
+    console.log('Phase 3: Character Development');
+    const characterData = await generateCharacterData(storyConcept, language);
+    console.log('✅ Character data generated');
 
-  return completeStory;
+    // Update story after Phase 3
+    console.log('💾 Saving Phase 3 data to database...');
+    const [phase3Story] = await db.select().from(stories).where(eq(stories.id, currentStoryId));
+    const phase3Content = phase3Story?.content ? JSON.parse(phase3Story.content as string) : {};
+
+    await db.update(stories)
+      .set({
+        status: 'phase3_complete',
+        content: JSON.stringify({
+          ...phase3Content,
+          phase3_characters: characterData,
+          developmentPhases: {
+            ...phase3Content.developmentPhases,
+            phase3_characters: characterData
+          }
+        }),
+        updatedAt: new Date()
+      })
+      .where(eq(stories.id, currentStoryId));
+
+    // Create characters in database
+    for (const character of characterData) {
+      const characterId = nanoid();
+      await db.insert(characters).values({
+        id: characterId,
+        name: character.parsedData?.name || character.id,
+        storyId: currentStoryId,
+        isMain: ['protag', 'antag'].includes(character.id),
+        content: character.content,
+      });
+    }
+    console.log('✅ Phase 3 data and characters saved');
+
+    // Phase 4: Place Development
+    console.log('Phase 4: Place Development');
+    const placeData = await generatePlaceData(storyConcept, language);
+    console.log('✅ Place data generated');
+
+    // Update story after Phase 4 with final status
+    console.log('💾 Saving Phase 4 data to database...');
+    const [phase4Story] = await db.select().from(stories).where(eq(stories.id, currentStoryId));
+    const phase4Content = phase4Story?.content ? JSON.parse(phase4Story.content as string) : {};
+
+    const completeStory = {
+      ...storyConcept,
+      userId,
+      createdAt: new Date(),
+      partSpecifications: partSpecs,
+      characters: characterData,
+      places: placeData,
+      developmentPhases: {
+        phase1_story: storyConcept,
+        phase2_parts: partSpecs,
+        phase3_characters: characterData,
+        phase4_places: placeData,
+      }
+    };
+
+    await db.update(stories)
+      .set({
+        status: 'completed',
+        content: JSON.stringify(completeStory),
+        updatedAt: new Date()
+      })
+      .where(eq(stories.id, currentStoryId));
+
+    // Create places in database
+    for (const place of placeData) {
+      const placeId = nanoid();
+      await db.insert(places).values({
+        id: placeId,
+        name: place.parsedData?.name || place.name,
+        storyId: currentStoryId,
+        isMain: ['primary', 'main'].some(keyword =>
+          (place.parsedData?.significance || '').toLowerCase().includes(keyword)
+        ),
+        content: place.content,
+      });
+    }
+    console.log('✅ Phase 4 data and places saved');
+    console.log('🎉 Story development completed successfully!');
+
+    // Return complete story with database ID
+    return {
+      id: currentStoryId,
+      ...completeStory
+    };
+
+  } catch (error) {
+    console.error('❌ Story generation failed:', error);
+
+    // Update story status to failed if it exists
+    await db.update(stories)
+      .set({
+        status: 'failed',
+        updatedAt: new Date()
+      })
+      .where(eq(stories.id, currentStoryId));
+
+    throw error;
+  }
 }
 
 // Helper functions for generating individual parts/chapters/scenes

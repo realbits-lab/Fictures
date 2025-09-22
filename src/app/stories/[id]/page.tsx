@@ -1,48 +1,74 @@
 import { MainLayout } from "@/components/layout";
 import { StoryOverview } from "@/components/story/StoryOverview";
-
-// Sample story data
-const sampleStory = {
-  id: "1",
-  title: "The Shadow Keeper",
-  genre: "Urban Fantasy",
-  status: "Publishing",
-  startDate: "Mar 2024",
-  wordCount: 63000,
-  targetWordCount: 80000,
-  readers: 2400,
-  rating: 4.7,
-  parts: [
-    {
-      id: "1",
-      title: "Setup",
-      completed: true,
-      chapters: 5,
-      wordCount: 20000
-    },
-    {
-      id: "2", 
-      title: "Dev",
-      completed: true,
-      chapters: 8,
-      wordCount: 35000
-    },
-    {
-      id: "3",
-      title: "Res",
-      completed: false,
-      chapters: 2,
-      wordCount: 8000
-    }
-  ]
-};
+import { auth } from "@/lib/auth";
+import { getStoryById } from "@/lib/db/queries";
+import { redirect } from "next/navigation";
 
 export default async function StoryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  
+
+  // Check authentication first
+  const session = await auth();
+  if (!session?.user) {
+    redirect('/login?callbackUrl=' + encodeURIComponent(`/stories/${id}`));
+  }
+
+  // Fetch the actual story from database
+  let story;
+  try {
+    story = await getStoryById(id);
+  } catch (error) {
+    console.error('Error fetching story:', error);
+    return (
+      <MainLayout>
+        <div className="text-center py-8">
+          <h1 className="text-2xl font-bold text-red-600">Error Loading Story</h1>
+          <p className="text-gray-600 mt-2">Unable to load the requested story.</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (!story) {
+    return (
+      <MainLayout>
+        <div className="text-center py-8">
+          <h1 className="text-2xl font-bold text-gray-800">Story Not Found</h1>
+          <p className="text-gray-600 mt-2">The story you&apos;re looking for doesn&apos;t exist.</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Check if user has access to this story (either owner or public story)
+  if (story.authorId !== session?.user?.id && !story.isPublic) {
+    return (
+      <MainLayout>
+        <div className="text-center py-8">
+          <h1 className="text-2xl font-bold text-gray-800">Access Denied</h1>
+          <p className="text-gray-600 mt-2">You don&apos;t have permission to view this story.</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Convert database story to expected format for StoryOverview component
+  const formattedStory = {
+    id: story.id,
+    title: story.title,
+    genre: story.genre,
+    status: story.status,
+    startDate: new Date(story.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+    wordCount: story.currentWordCount,
+    targetWordCount: story.targetWordCount,
+    readers: story.viewCount,
+    rating: story.rating,
+    parts: [] // TODO: Fetch actual parts/chapters data
+  };
+
   return (
     <MainLayout>
-      <StoryOverview story={sampleStory} />
+      <StoryOverview story={formattedStory} />
     </MainLayout>
   );
 }

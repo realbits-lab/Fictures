@@ -275,7 +275,6 @@ export const stories = pgTable("stories", {
 	status: varchar({ length: 50 }).default('draft'),
 	coverImage: text("cover_image"),
 	tags: json().default([]),
-	isPublic: boolean("is_public").default(false),
 	authorId: text("author_id").notNull(),
 	targetWordCount: integer("target_word_count").default(50000),
 	currentWordCount: integer("current_word_count").default(0),

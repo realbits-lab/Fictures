@@ -2,7 +2,6 @@ import { streamText, tool, stepCountIs, generateText } from 'ai';
 import { google } from '@ai-sdk/google';
 import { gateway } from '@ai-sdk/gateway';
 import { z } from 'zod';
-import * as yaml from 'js-yaml';
 import { NextRequest, NextResponse } from 'next/server';
 import { STORY_ANALYSIS_MODEL } from '@/lib/ai/config';
 
@@ -17,18 +16,18 @@ export async function POST(request: NextRequest) {
       throw new Error('Invalid request body');
     }
 
-    // Extract YAML data and user request
-    const { storyYaml, userRequest } = requestBody;
+    // Extract JSON data and user request
+    const { storyJson, userRequest } = requestBody;
 
     if (!userRequest || typeof userRequest !== 'string') {
       throw new Error('Missing or invalid userRequest');
     }
 
-    if (!storyYaml || typeof storyYaml !== 'string') {
-      throw new Error('Missing or invalid storyYaml in request');
+    if (!storyJson || typeof storyJson !== 'string') {
+      throw new Error('Missing or invalid storyJson in request');
     }
 
-    const currentStoryYAML = storyYaml;
+    const currentStoryJSON = storyJson;
     console.log('🔍 [STORY-ANALYZER] Request validation completed in:', Date.now() - startTime, 'ms');
 
     // Define tools for the AI to choose from
@@ -36,10 +35,10 @@ export async function POST(request: NextRequest) {
       modifyStoryStructure: tool({
         description: 'Modify the main story structure including title, genre, plot, themes, word count, and overall story elements',
         inputSchema: z.object({
-          currentYamlData: z.string().describe('Current story data as YAML text'),
+          currentJsonData: z.string().describe('Current story data as JSON text'),
           userRequest: z.string().describe('User request for story modifications')
         }),
-        execute: async ({ currentYamlData, userRequest }) => {
+        execute: async ({ currentJsonData, userRequest }) => {
           const result = await generateText({
             model: gateway(STORY_ANALYSIS_MODEL),
             system: `You are a creative story development specialist. Follow the story specification framework and help users develop complete, engaging stories.
@@ -48,7 +47,7 @@ export async function POST(request: NextRequest) {
 When users request data completion ("complete story data", "fill missing fields", "complete all data"), your job is to replace ALL empty fields with meaningful content. Never leave empty arrays [] or empty objects {} in the output.
 
 # COMPLETION RULES
-1. Scan the entire YAML for empty structures: [], {}, "", 0
+1. Scan the entire JSON for empty structures: [], {}, "", 0
 2. Replace every empty structure with appropriate content
 3. Ensure all story elements are interconnected and coherent
 4. Generate creative, genre-appropriate content for missing fields
@@ -71,20 +70,20 @@ Essential fields that must never be empty when completing data:
 - Generate content that fits the story's genre and tone
 - Create interconnected elements that support the overall narrative
 - Use appropriate complexity based on the story type
-- Always provide complete, valid YAML output
+- Always provide complete, valid JSON output
 
-IMPORTANT: Return ONLY valid YAML of the updated story data, nothing else. No explanations, no markdown formatting.`,
-            prompt: `Current story YAML:
-${currentYamlData}
+IMPORTANT: Return ONLY valid JSON of the updated story data, nothing else. No explanations, no markdown formatting.`,
+            prompt: `Current story JSON:
+${currentJsonData}
 
 User request: "${userRequest}"
 
-Please modify the story data according to this request and return the updated story as valid YAML.`
+Please modify the story data according to this request and return the updated story as valid JSON.`
           });
 
           return {
             type: 'story_modification',
-            updatedYamlText: result.text.trim(),
+            updatedJsonText: result.text.trim(),
             success: true
           };
         }
@@ -93,10 +92,10 @@ Please modify the story data according to this request and return the updated st
       modifyCharacterData: tool({
         description: 'Add, modify, or enhance character information including character arcs, relationships, backstories, and character development',
         inputSchema: z.object({
-          currentYamlData: z.string().describe('Current story data as YAML text'),
+          currentJsonData: z.string().describe('Current story data as JSON text'),
           userRequest: z.string().describe('User request for character modifications')
         }),
-        execute: async ({ currentYamlData, userRequest }) => {
+        execute: async ({ currentJsonData, userRequest }) => {
           const result = await generateText({
             model: gateway(STORY_ANALYSIS_MODEL),
             system: `You are a character development specialist focusing ONLY on character-related modifications.
@@ -114,18 +113,18 @@ FOCUS ON CHARACTER ELEMENTS:
 - Character backstories and motivations
 - Character conflicts and goals
 
-IMPORTANT: Return ONLY valid YAML with the updated story data containing enhanced character information. No explanations, no markdown formatting.`,
-            prompt: `Current story YAML:
-${currentYamlData}
+IMPORTANT: Return ONLY valid JSON with the updated story data containing enhanced character information. No explanations, no markdown formatting.`,
+            prompt: `Current story JSON:
+${currentJsonData}
 
 User request: "${userRequest}"
 
-Add or modify characters as requested and return complete updated story YAML.`
+Add or modify characters as requested and return complete updated story JSON.`
           });
 
           return {
             type: 'character_modification',
-            updatedYamlText: result.text.trim(),
+            updatedJsonText: result.text.trim(),
             success: true
           };
         }
@@ -134,10 +133,10 @@ Add or modify characters as requested and return complete updated story YAML.`
       modifyPlaceData: tool({
         description: 'Add, modify, or enhance place and setting information including locations, environments, world-building details',
         inputSchema: z.object({
-          currentYamlData: z.string().describe('Current story data as YAML text'),
+          currentJsonData: z.string().describe('Current story data as JSON text'),
           userRequest: z.string().describe('User request for place/setting modifications')
         }),
-        execute: async ({ currentYamlData, userRequest }) => {
+        execute: async ({ currentJsonData, userRequest }) => {
           const result = await generateText({
             model: gateway(STORY_ANALYSIS_MODEL),
             system: `You are a world-building and setting specialist focusing ONLY on place/setting modifications.
@@ -155,18 +154,18 @@ FOCUS ON PLACE ELEMENTS:
 - Setting mood and tone
 - Physical and cultural details
 
-IMPORTANT: Return ONLY valid YAML with updated story data containing enhanced setting information. No explanations, no markdown formatting.`,
-            prompt: `Current story YAML:
-${currentYamlData}
+IMPORTANT: Return ONLY valid JSON with updated story data containing enhanced setting information. No explanations, no markdown formatting.`,
+            prompt: `Current story JSON:
+${currentJsonData}
 
 User request: "${userRequest}"
 
-Add or modify places/settings as requested and return complete updated story YAML.`
+Add or modify places/settings as requested and return complete updated story JSON.`
           });
 
           return {
             type: 'place_modification',
-            updatedYamlText: result.text.trim(),
+            updatedJsonText: result.text.trim(),
             success: true
           };
         }
@@ -175,10 +174,10 @@ Add or modify places/settings as requested and return complete updated story YAM
       generateImageDescription: tool({
         description: 'Generate actual images for characters, places, or scenes using Vercel AI Gateway with Gemini Flash Image',
         inputSchema: z.object({
-          currentYamlData: z.string().describe('Current story data as YAML text'),
+          currentJsonData: z.string().describe('Current story data as JSON text'),
           userRequest: z.string().describe('User request for image generation')
         }),
-        execute: async ({ currentYamlData, userRequest }) => {
+        execute: async ({ currentJsonData, userRequest }) => {
           try {
             // Generate image using Google Gemini 2.5 Flash Image
             const result = await generateText({
@@ -298,7 +297,7 @@ Never respond without calling a tool - this will cause an error.
 3. Execute the tool with the story data and user request
 4. Always improve and enhance the story content creatively`,
       prompt: `Current story data:
-${currentStoryYAML}
+${currentStoryJSON}
 
 User request: "${userRequest}"
 
@@ -344,30 +343,30 @@ Please analyze this request and use the appropriate tool(s) to fulfill it. Be cr
     // Process each tool result
     for (const toolResult of toolResults) {
       if (toolResult.type === 'story_modification' || toolResult.type === 'character_modification' || toolResult.type === 'place_modification') {
-        // Parse the updated YAML text - simplified approach
-        console.log('🔍 [STORY-ANALYZER] Starting YAML processing at:', Date.now() - startTime, 'ms');
+        // Parse the updated JSON text - simplified approach
+        console.log('🔍 [STORY-ANALYZER] Starting JSON processing at:', Date.now() - startTime, 'ms');
         try {
-          let cleanedYaml = toolResult.updatedYamlText as string;
-          if (!cleanedYaml || typeof cleanedYaml !== 'string') {
-            throw new Error('Invalid YAML text received from tool');
+          let cleanedJson = toolResult.updatedJsonText as string;
+          if (!cleanedJson || typeof cleanedJson !== 'string') {
+            throw new Error('Invalid JSON text received from tool');
           }
 
           // Clean markdown formatting
-          if (cleanedYaml.startsWith('```yaml')) {
-            cleanedYaml = cleanedYaml.replace(/^```yaml\s*/, '').replace(/\s*```$/, '');
-          } else if (cleanedYaml.startsWith('```')) {
-            cleanedYaml = cleanedYaml.replace(/^```\s*/, '').replace(/\s*```$/, '');
+          if (cleanedJson.startsWith('```json')) {
+            cleanedJson = cleanedJson.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+          } else if (cleanedJson.startsWith('```')) {
+            cleanedJson = cleanedJson.replace(/^```\s*/, '').replace(/\s*```$/, '');
           }
 
-          // Parse and validate YAML
-          const parsedYAML = yaml.load(cleanedYaml);
-          if (!parsedYAML || typeof parsedYAML !== 'object') {
-            throw new Error('YAML parsing returned null or invalid data');
+          // Parse and validate JSON
+          const parsedJSON = JSON.parse(cleanedJson);
+          if (!parsedJSON || typeof parsedJSON !== 'object') {
+            throw new Error('JSON parsing returned null or invalid data');
           }
 
-          const rawStoryData = (parsedYAML as Record<string, unknown>).story || parsedYAML;
+          const rawStoryData = (parsedJSON as Record<string, unknown>).story || parsedJSON;
           if (!rawStoryData || typeof rawStoryData !== 'object') {
-            throw new Error('No valid story data found in parsed YAML');
+            throw new Error('No valid story data found in parsed JSON');
           }
 
           // Simple data extraction without complex safety checks
@@ -376,13 +375,13 @@ Please analyze this request and use the appropriate tool(s) to fulfill it. Be cr
           finalResult = {
             ...finalResult,
             updatedStoryData,
-            updatedYaml: cleanedYaml,
-            responseType: 'yaml',
+            updatedJson: cleanedJson,
+            responseType: 'json',
             requestType: toolResult.type,
             reasoning: `AI processed ${toolResult.type.replace('_', ' ')} request`
           };
         } catch (error) {
-          console.error('Error parsing YAML from tool result:', error);
+          console.error('Error parsing JSON from tool result:', error);
           finalResult = {
             ...finalResult,
             responseType: 'error',
@@ -402,7 +401,7 @@ Please analyze this request and use the appropriate tool(s) to fulfill it. Be cr
           generatedImageUrl: toolResult.generatedImageUrl,
           isImagePreview: toolResult.isPreview,
           requiresImageService: toolResult.requiresImageService,
-          responseType: finalResult.responseType === 'yaml' ? 'mixed' : 'image',
+          responseType: finalResult.responseType === 'json' ? 'mixed' : 'image',
           imageError: toolResult.error
         };
       }

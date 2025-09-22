@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Progress, Badge } from "@/components/ui";
 import { StoryTreeArchitecture } from "./StoryTreeArchitecture";
-import { YAMLDataDisplay } from "./YAMLDataDisplay";
+import { JSONDataDisplay } from "./JSONDataDisplay";
 
 interface Scene {
   id: string;
@@ -167,67 +167,6 @@ export function ChapterEditor({
       overarching: ["elena_fate", "maya_corruption_risk", "shadow_magic_truth"],
       mysteries: ["previous_student_identity", "marcus_secret", "realm_connection"],
       part_endings: ["mentor_secret_revealed", "elena_appears_changed"]
-    }
-  };
-
-  const sampleChapterData = {
-    chap: 1,
-    title: "Missing",
-    pov: "maya",
-    words: 3500,
-    goal: "Normal coffee date with Elena",
-    conflict: "Elena missing, signs of supernatural danger",
-    outcome: "Finds journal, realizes she's also a target",
-    acts: {
-      setup: {
-        hook_in: "Door unlocked, coffee warm, Elena gone",
-        orient: "Weekly sister ritual, Maya's skeptical nature",
-        incident: "Overturned chair, shattered mug - signs of struggle"
-      },
-      confrontation: {
-        rising: "Police dismissive, Maya searches alone",
-        midpoint: "Discovers Elena's hidden research journal",
-        complicate: "Journal reveals supernatural conspiracy, 'The Shepherd'"
-      },
-      resolution: {
-        climax: "Final journal entry: 'He looks for the mark'",
-        resolve: "Maya realizes Elena was in supernatural danger",
-        hook_out: "Knock at door, Maya has the 'mark' mentioned"
-      }
-    },
-    chars: {
-      maya: {
-        start: "casual_anticipation",
-        arc: "concern → panic → targeted_fear",
-        end: "trapped_resolve",
-        motivation: "protect_elena",
-        growth: "skeptic → reluctant_believer"
-      }
-    },
-    tension: {
-      external: "signs_struggle, mysterious_knocker",
-      internal: "maya_panic, guilt_unaware",
-      interpersonal: "dismissive_police",
-      atmospheric: "journal_warnings",
-      peak: "door_knock_connects_abstract_threat_to_immediate"
-    },
-    mandate: {
-      episodic: {
-        arc: "search_for_elena → journal_discovery → question_answered",
-        payoff: "casual_concern → urgent_fear",
-        answered: "What happened to Elena? Supernatural research gone wrong"
-      },
-      serial: {
-        complication: "The Shepherd threat established",
-        stakes: "Maya also targeted due to mark",
-        compulsion: "door_knock_immediate_danger"
-      }
-    },
-    hook: {
-      type: "compound",
-      reveal: "Maya bears the mark from journal warning",
-      threat: "Knock suggests Shepherd found Maya",
-      emotion: "protective_instincts vs newfound_vulnerability"
     }
   };
 

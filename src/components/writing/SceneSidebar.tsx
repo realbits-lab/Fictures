@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Input, Textarea } from "@/components/ui";
-import { YAMLDataDisplay } from "./YAMLDataDisplay";
+import { JSONDataDisplay } from "./JSONDataDisplay";
 
 interface SceneData {
   id: string | number;
@@ -328,8 +328,8 @@ export function SceneSidebar({
         </div>
       ))}
 
-      {/* YAML Data Hierarchy */}
-      <YAMLDataDisplay
+      {/* JSON Data Hierarchy */}
+      <JSONDataDisplay
         storyData={storyData}
         partData={partData}
         chapterData={chapterData}

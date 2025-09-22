@@ -2,39 +2,41 @@
 
 import React, { createContext, useContext, useState } from 'react';
 
-interface YamlData {
-  storyYaml?: string;
-  charactersYaml?: string;
-  placesYaml?: string;
-  partsYaml?: string;
+interface JsonData {
+  storyJson?: string;
+  charactersJson?: string;
+  placesJson?: string;
+  partsJson?: string;
+  chaptersJson?: string;
+  scenesJson?: string;
 }
 
 interface StoryCreationContextType {
-  yamlData: YamlData;
-  setYamlData: (data: YamlData) => void;
-  updateYamlData: (key: keyof YamlData, value: string) => void;
-  clearYamlData: () => void;
+  jsonData: JsonData;
+  setJsonData: (data: JsonData) => void;
+  updateJsonData: (key: keyof JsonData, value: string) => void;
+  clearJsonData: () => void;
 }
 
 const StoryCreationContext = createContext<StoryCreationContextType | undefined>(undefined);
 
 export function StoryCreationProvider({ children }: { children: React.ReactNode }) {
-  const [yamlData, setYamlData] = useState<YamlData>({});
+  const [jsonData, setJsonData] = useState<JsonData>({});
 
-  const updateYamlData = (key: keyof YamlData, value: string) => {
-    setYamlData(prev => ({ ...prev, [key]: value }));
+  const updateJsonData = (key: keyof JsonData, value: string) => {
+    setJsonData(prev => ({ ...prev, [key]: value }));
   };
 
-  const clearYamlData = () => {
-    setYamlData({});
+  const clearJsonData = () => {
+    setJsonData({});
   };
 
   return (
     <StoryCreationContext.Provider value={{
-      yamlData,
-      setYamlData,
-      updateYamlData,
-      clearYamlData
+      jsonData,
+      setJsonData,
+      updateJsonData,
+      clearJsonData
     }}>
       {children}
     </StoryCreationContext.Provider>

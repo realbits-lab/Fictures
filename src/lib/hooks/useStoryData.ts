@@ -6,6 +6,7 @@ interface Story {
   title: string;
   genre: string;
   status: string;
+  hnsData?: any;
   parts: Array<{
     id: string;
     title: string;

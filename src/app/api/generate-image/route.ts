@@ -1,11 +1,11 @@
 import type { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
+import { authenticateRequest, hasRequiredScope } from '@/lib/auth/dual-auth';
 import { google } from '@ai-sdk/google';
-import { openai } from '@ai-sdk/openai';
-import { generateText, experimental_generateImage as generateImage } from 'ai';
+import { generateText } from 'ai';
 import { put } from '@vercel/blob';
 import { nanoid } from 'nanoid';
-import OpenAI from 'openai';
+import { gateway } from '@ai-sdk/gateway';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,9 +15,13 @@ export async function POST(request: NextRequest) {
 
     // Check authentication (skip for internal server-to-server calls)
     if (!internal) {
-      const session = await auth();
-      if (!session?.user?.id) {
+      const authResult = await authenticateRequest(request);
+      if (!authResult) {
         return new Response('Authentication required', { status: 401 });
+      }
+      // Check for AI usage permission
+      if (!hasRequiredScope(authResult, 'ai:use')) {
+        return new Response('Insufficient permissions. Required scope: ai:use', { status: 403 });
       }
     }
 
@@ -31,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     console.log(`🎨 Generating ${type} image with prompt:`, prompt);
 
-    // Enhanced provider fallback chain with AI Gateway integration
+    // Gemini image generation
     let imageUrl = null;
     let modelResponse = '';
     let method = 'placeholder';
@@ -62,125 +66,71 @@ export async function POST(request: NextRequest) {
       }
     };
 
-    // Provider 1: OpenAI DALL-E via AI Gateway
+    // Primary: Gemini 2.5 Flash Image Preview
     try {
-      if (process.env.AI_GATEWAY_API_KEY) {
-        console.log('🔄 Attempting image generation with OpenAI DALL-E via AI Gateway...');
+      console.log('🔄 Attempting image generation with Gemini 2.5 Flash Image Preview...');
+      const result = await generateText({
+        model: google('gemini-2.5-flash-image-preview'),
+        prompt: `Generate a detailed ${type} image based on this prompt: ${prompt}`,
+      });
 
-        const aiGatewayClient = new OpenAI({
-          apiKey: process.env.AI_GATEWAY_API_KEY,
-          baseURL: 'https://ai-gateway.vercel.sh/v1',
-        });
+      modelResponse = result.text;
+      method = 'gemini_2.5_flash_image';
 
-        const completion = await aiGatewayClient.chat.completions.create({
-          model: 'openai/dall-e-3',
-          messages: [{ role: 'user', content: prompt }],
-          extra_body: { modalities: ['text', 'image'] },
-          stream: false,
-        } as any);
+      // Check if the result contains generated image files
+      if (result.files && result.files.length > 0) {
+        const file = result.files[0];
+        console.log(`✅ Generated image for ${type}, processing base64 data...`);
 
-        const message = completion.choices[0].message as any;
+        // Check if file has base64 data
+        if (file && typeof file === 'object' && ('base64Data' in file || 'data' in file)) {
+          try {
+            // Get the base64 data from either format
+            const base64Data = (file as any).base64Data || (file as any).data;
+            const mimeType = (file as any).mediaType || (file as any).mimeType || 'image/png';
 
-        if (message.images && Array.isArray(message.images) && message.images.length > 0) {
-          const imageData = message.images[0];
-          if (imageData.type === 'image_url' && imageData.image_url) {
-            // Convert base64 to Uint8Array and upload to blob
-            const base64Data = imageData.image_url.url.split(',')[1];
-            const binaryData = new Uint8Array(Buffer.from(base64Data, 'base64'));
+            if (base64Data && typeof base64Data === 'string') {
+              // Convert base64 to Uint8Array
+              const binaryString = atob(base64Data);
+              const bytes = new Uint8Array(binaryString.length);
+              for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+              }
 
-            imageUrl = await uploadToBlob(binaryData);
-            method = 'ai_gateway_dalle';
-            modelResponse = message.content || 'Image generated via AI Gateway with DALL-E';
-            console.log('✅ Image generated via AI Gateway (DALL-E) and uploaded to Vercel Blob:', imageUrl);
-          }
-        }
-      }
-    } catch (error) {
-      console.warn('⚠️ AI Gateway DALL-E generation failed:', error instanceof Error ? error.message : 'Unknown error');
-    }
-
-    // Provider 2: Google Gemini via AI Gateway (if DALL-E failed)
-    if (!imageUrl && process.env.AI_GATEWAY_API_KEY) {
-      try {
-        console.log('🔄 Attempting image generation with Gemini via AI Gateway...');
-
-        const aiGatewayClient = new OpenAI({
-          apiKey: process.env.AI_GATEWAY_API_KEY,
-          baseURL: 'https://ai-gateway.vercel.sh/v1',
-        });
-
-        const completion = await aiGatewayClient.chat.completions.create({
-          model: 'google/gemini-2.5-flash-image-preview',
-          messages: [{ role: 'user', content: prompt }],
-          extra_body: { modalities: ['text', 'image'] },
-          stream: false,
-        } as any);
-
-        const message = completion.choices[0].message as any;
-
-        if (message.images && Array.isArray(message.images) && message.images.length > 0) {
-          const imageData = message.images[0];
-          if (imageData.type === 'image_url' && imageData.image_url) {
-            // Convert base64 to Uint8Array and upload to blob
-            const base64Data = imageData.image_url.url.split(',')[1];
-            const binaryData = new Uint8Array(Buffer.from(base64Data, 'base64'));
-
-            imageUrl = await uploadToBlob(binaryData);
-            method = 'ai_gateway_gemini';
-            modelResponse = message.content || 'Image generated via AI Gateway with Gemini';
-            console.log('✅ Image generated via AI Gateway (Gemini) and uploaded to Vercel Blob:', imageUrl);
-          }
-        }
-      } catch (error) {
-        console.warn('⚠️ AI Gateway Gemini generation failed:', error instanceof Error ? error.message : 'Unknown error');
-      }
-    }
-
-    // Provider 3: Direct Gemini (fallback from original implementation)
-    if (!imageUrl) {
-      try {
-        console.log('🔄 Attempting image generation with direct Gemini...');
-        const result = await generateText({
-          model: google('gemini-2.5-flash-image-preview'),
-          providerOptions: {
-            google: { responseModalities: ['TEXT', 'IMAGE'] }
-          },
-          prompt: prompt,
-        });
-
-        console.log('✅ Direct Gemini response received');
-        modelResponse = result.text;
-
-        // Find the first image file in the response
-        let imageFile = null;
-        if (result.files && result.files.length > 0) {
-          for (const file of result.files) {
-            if (file.mediaType.startsWith('image/')) {
-              imageFile = file;
-              break;
+              // Upload to Vercel Blob
+              imageUrl = await uploadToBlob(bytes, mimeType);
+              console.log('✅ Image uploaded to Vercel Blob:', imageUrl);
+              method = 'gemini_2.5_flash_image_uploaded';
+            } else {
+              console.log('⚠️ No valid base64 data found');
+              imageUrl = generatePlaceholder();
             }
+          } catch (uploadError) {
+            console.error('❌ Failed to upload image to Blob:', uploadError);
+            imageUrl = generatePlaceholder();
+            method = 'placeholder_upload_failed';
           }
-        }
-
-        if (imageFile) {
-          imageUrl = await uploadToBlob(imageFile.uint8Array);
-          method = 'direct_gemini';
-          console.log('✅ Image generated via direct Gemini and uploaded to Vercel Blob:', imageUrl);
         } else {
-          throw new Error('No image file found in Gemini response');
+          // File format not as expected, use placeholder
+          console.log('⚠️ File format unexpected:', file);
+          imageUrl = generatePlaceholder();
         }
+      } else {
+        // Fallback to placeholder if no image generated
+        imageUrl = generatePlaceholder();
+        console.log('✅ Gemini 2.5 Flash Image Preview provided description, using placeholder image:', imageUrl);
+      }
 
-      } catch (error) {
-        console.warn('⚠️ Direct Gemini image generation failed:', error instanceof Error ? error.message : 'Unknown error');
+    } catch (error) {
+      console.warn('⚠️ Gemini 2.5 Flash Image Preview generation failed:', error instanceof Error ? error.message : 'Unknown error');
 
-        // Check if it's a quota error
-        if (error instanceof Error && (error.message.includes('quota') || error.message.includes('RESOURCE_EXHAUSTED'))) {
-          console.log('📦 Using placeholder image due to API quota limits');
-          method = 'placeholder_quota';
-        } else {
-          console.log('📦 Using placeholder image due to generation failure');
-          method = 'placeholder_error';
-        }
+      // Check if it's a quota error
+      if (error instanceof Error && (error.message.includes('quota') || error.message.includes('RESOURCE_EXHAUSTED'))) {
+        console.log('📦 Using placeholder image due to API quota limits');
+        method = 'placeholder_quota';
+      } else {
+        console.log('📦 Using placeholder image due to generation failure');
+        method = 'placeholder_error';
       }
     }
 

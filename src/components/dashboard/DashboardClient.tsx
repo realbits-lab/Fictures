@@ -63,7 +63,7 @@ function DashboardWidgetsSkeletonSection() {
 export function DashboardClient() {
   const { data: session } = useSession();
   const { data, isLoading, isValidating, error, mutate: refreshStories } = useUserStories();
-  
+
   // Transform data to match expected format
   const stories = data?.stories || [];
 

@@ -1,9 +1,10 @@
 import { gateway } from '@ai-sdk/gateway';
 
 // Default model configuration
-export const DEFAULT_MODEL = 'google/gemini-2.5-flash';
-export const REASONING_MODEL = 'google/gemini-2.5-flash';
-export const STORY_ANALYSIS_MODEL = 'google/gemini-2.5-flash';
+export const DEFAULT_MODEL = 'google/gemini-2.5-flash-lite';
+export const REASONING_MODEL = 'google/gemini-2.5-flash-lite';
+export const STORY_ANALYSIS_MODEL = 'google/gemini-2.5-flash-lite';
+export const IMAGE_GENERATION_MODEL = 'google/gemini-2.5-flash-image-preview';
 
 // AI models configuration using AI Gateway
 export const AI_MODELS = {

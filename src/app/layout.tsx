@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { AuthModalProvider } from '@/contexts/AuthModalContext';
 import { GlobalNavigation } from '@/components/layout/GlobalNavigation';
 import { AuthModal } from '@/components/auth/AuthModal';
+import { Toaster } from 'sonner';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -41,6 +42,7 @@ export default async function RootLayout({
               <GlobalNavigation />
               {children}
               <AuthModal />
+              <Toaster richColors position="top-center" />
             </AuthModalProvider>
           </SessionProvider>
         </ThemeProvider>

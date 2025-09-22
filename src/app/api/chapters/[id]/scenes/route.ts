@@ -44,9 +44,12 @@ export async function GET(
     }
 
     const isOwner = story.userId === session?.user?.id;
+    const isPublishedStory = story.status === 'published';
 
-    // Check permissions - only published chapters or owner access
-    if (chapter.status !== 'published' && !isOwner) {
+    // Check permissions - allow access if:
+    // 1. User is the owner, OR
+    // 2. The story is published (regardless of chapter status)
+    if (!isOwner && !isPublishedStory) {
       return NextResponse.json({ error: 'Chapter not available' }, { status: 403 });
     }
 
@@ -93,8 +96,8 @@ export async function GET(
       'Content-Type': 'application/json',
       'ETag': etag,
       // Cache for 5 minutes for published content, no cache for drafts
-      'Cache-Control': chapter.status === 'published' && !isOwner 
-        ? 'public, max-age=300, stale-while-revalidate=600' 
+      'Cache-Control': isPublishedStory && !isOwner
+        ? 'public, max-age=300, stale-while-revalidate=600'
         : 'no-cache, no-store, must-revalidate',
     });
 

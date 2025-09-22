@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { Label } from '@/components/ui';
 import { useStoryCreation } from './StoryCreationContext';
+import { toast } from 'sonner';
 
 interface ProgressStep {
   phase: string;
@@ -13,11 +14,13 @@ interface ProgressStep {
   status: 'pending' | 'in_progress' | 'completed' | 'error';
 }
 
-interface YamlData {
-  storyYaml?: string;
-  charactersYaml?: string;
-  placesYaml?: string;
-  partsYaml?: string;
+interface StoryData {
+  story?: any;
+  characters?: any[];
+  places?: any[];
+  parts?: any[];
+  chapters?: any[];
+  scenes?: any[];
 }
 
 export function CreateStoryForm() {
@@ -26,18 +29,21 @@ export function CreateStoryForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [progress, setProgress] = useState<ProgressStep[]>([]);
-  const { setYamlData, clearYamlData } = useStoryCreation();
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [generatedStoryId, setGeneratedStoryId] = useState<string | null>(null);
+  const [storyData, setStoryData] = useState<StoryData>({});
+  const { setJsonData, clearJsonData } = useStoryCreation();
   const router = useRouter();
 
   const initializeProgress = () => {
     const steps: ProgressStep[] = [
-      { phase: 'Phase 1', description: 'Story Foundation - Analyzing prompt and creating story concept', status: 'pending' },
-      { phase: 'Phase 2', description: 'Part Development - Creating detailed part structure', status: 'pending' },
-      { phase: 'Phase 3', description: 'Character Development - Building character profiles with Korean names', status: 'pending' },
-      { phase: 'Phase 4', description: 'Place Development - Creating location details and settings', status: 'pending' },
-      { phase: 'Phase 5', description: 'Character Images - Generating AI images for each character', status: 'pending' },
-      { phase: 'Phase 6', description: 'Place Images - Generating AI images for each location', status: 'pending' },
-      { phase: 'Database', description: 'Storing story, character, and place data in database', status: 'pending' },
+      { phase: 'Story Foundation', description: 'Establishing premise, theme, and dramatic question', status: 'pending' },
+      { phase: 'Three-Act Structure', description: 'Developing parts with key narrative beats', status: 'pending' },
+      { phase: 'Characters', description: 'Creating detailed character profiles with psychology', status: 'pending' },
+      { phase: 'Settings', description: 'Building immersive locations with sensory details', status: 'pending' },
+      { phase: 'Chapters & Scenes', description: 'Structuring chapters with hooks and scene breakdowns', status: 'pending' },
+      { phase: 'Scene Content', description: 'Generating narrative content for each scene', status: 'pending' },
+      { phase: 'Visual Generation', description: 'Creating AI images for characters and settings', status: 'pending' },
     ];
     setProgress(steps);
     return steps;
@@ -70,14 +76,15 @@ export function CreateStoryForm() {
     setIsLoading(true);
     setError('');
     setProgress([]);
-    clearYamlData();
+    setStoryData({});
+    clearJsonData();
 
     // Initialize progress steps
     initializeProgress();
 
     try {
-      // Use fetch with streaming for POST request
-      const response = await fetch('/api/stories/generate-stream', {
+      // Use fetch with streaming for HNS generation
+      const response = await fetch('/api/stories/generate-hns', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,85 +123,244 @@ export function CreateStoryForm() {
 
               switch (data.phase) {
                 case 'progress':
-                  // Update progress step status
-                  setProgress(prev => {
-                    const stepIndex = prev.findIndex(step =>
-                      step.phase === data.data.phase
-                    );
-                    if (stepIndex !== -1) {
-                      return prev.map((step, index) =>
-                        index === stepIndex ? { ...step, status: data.data.status } : step
-                      );
-                    }
-                    return prev;
-                  });
+                  // Update progress based on step
+                  const stepMap: Record<string, number> = {
+                    'generating_character_images': 5,
+                    'generating_setting_images': 5,
+                  };
+                  if (data.data.step && stepMap[data.data.step] !== undefined) {
+                    updateProgress(stepMap[data.data.step], 'in_progress');
+                  }
                   break;
 
+                case 'phase1_start':
+                  updateProgress(0, 'in_progress');
+                  break;
                 case 'phase1_complete':
-                  // Phase 1 completed - update YAML data and progress
-                  setYamlData(prev => ({
-                    ...prev,
-                    storyYaml: data.data.yamlData.storyYaml
-                  }));
                   updateProgress(0, 'completed');
+                  // Update sidebar with story data
+                  if (data.data.story) {
+                    setStoryData(prev => ({
+                      ...prev,
+                      story: data.data.story
+                    }));
+                    setJsonData(prev => ({
+                      ...prev,
+                      storyJson: JSON.stringify(data.data.story, null, 2)
+                    }));
+                  }
                   break;
 
+                case 'phase2_start':
+                  updateProgress(1, 'in_progress');
+                  break;
                 case 'phase2_complete':
-                  // Phase 2 completed - update parts YAML data and progress
-                  setYamlData(prev => ({
-                    ...prev,
-                    partsYaml: data.data.yamlData.partsYaml
-                  }));
                   updateProgress(1, 'completed');
+                  // Update sidebar with parts data
+                  if (data.data.parts) {
+                    setStoryData(prev => ({
+                      ...prev,
+                      parts: data.data.parts
+                    }));
+                    setJsonData(prev => ({
+                      ...prev,
+                      partsJson: JSON.stringify(data.data.parts, null, 2)
+                    }));
+                  }
                   break;
 
+                case 'phase3_start':
+                  updateProgress(2, 'in_progress');
+                  break;
                 case 'phase3_complete':
-                  // Phase 3 completed - update characters YAML data and progress
-                  setYamlData(prev => ({
-                    ...prev,
-                    charactersYaml: data.data.yamlData.charactersYaml
-                  }));
                   updateProgress(2, 'completed');
+                  // Update sidebar with characters data
+                  if (data.data.characters) {
+                    setStoryData(prev => ({
+                      ...prev,
+                      characters: data.data.characters
+                    }));
+                    setJsonData(prev => ({
+                      ...prev,
+                      charactersJson: JSON.stringify(data.data.characters, null, 2)
+                    }));
+                  }
                   break;
 
+                case 'phase4_start':
+                  updateProgress(3, 'in_progress');
+                  break;
                 case 'phase4_complete':
-                  // Phase 4 completed - update places YAML data and progress
-                  setYamlData(prev => ({
-                    ...prev,
-                    placesYaml: data.data.yamlData.placesYaml
-                  }));
                   updateProgress(3, 'completed');
+                  // Update sidebar with settings data
+                  if (data.data.settings) {
+                    setStoryData(prev => ({
+                      ...prev,
+                      places: data.data.settings
+                    }));
+                    setJsonData(prev => ({
+                      ...prev,
+                      placesJson: JSON.stringify(data.data.settings, null, 2)
+                    }));
+                  }
                   break;
 
-                case 'phase5_complete':
-                  // Phase 5 completed - character images generated
+                case 'phase5_6_start':
+                  updateProgress(4, 'in_progress');
+                  break;
+                case 'phase5_6_complete':
                   updateProgress(4, 'completed');
+                  // Update sidebar with chapters and scenes data
+                  if (data.data.chapters) {
+                    setStoryData(prev => ({
+                      ...prev,
+                      chapters: data.data.chapters
+                    }));
+                    setJsonData(prev => ({
+                      ...prev,
+                      chaptersJson: JSON.stringify(data.data.chapters, null, 2)
+                    }));
+                  }
+                  if (data.data.scenes) {
+                    setStoryData(prev => ({
+                      ...prev,
+                      scenes: data.data.scenes
+                    }));
+                    setJsonData(prev => ({
+                      ...prev,
+                      scenesJson: JSON.stringify(data.data.scenes, null, 2)
+                    }));
+                  }
                   break;
 
-                case 'phase6_complete':
-                  // Phase 6 completed - place images generated
+                // Phase 7: Scene Content Generation
+                case 'phase7_start':
+                  updateProgress(5, 'in_progress');
+                  // Update phase description with progress
+                  if (data.data?.totalScenes) {
+                    setProgress(prev => prev.map((step, index) =>
+                      index === 5 ? {
+                        ...step,
+                        description: `Generating narrative content for ${data.data.totalScenes} scenes...`
+                      } : step
+                    ));
+                  }
+                  break;
+
+                case 'phase7_progress':
+                  // Update progress description with current scene
+                  if (data.data?.percentage) {
+                    setProgress(prev => prev.map((step, index) =>
+                      index === 5 ? {
+                        ...step,
+                        description: `Generating scene ${data.data.completedScenes}/${data.data.totalScenes}: ${data.data.currentScene} (${data.data.percentage}%)`
+                      } : step
+                    ));
+                  }
+                  break;
+
+                case 'phase7_warning':
+                  // Log warning but continue
+                  console.warn('Scene content generation warning:', data.data?.message);
+                  break;
+
+                case 'phase7_complete':
                   updateProgress(5, 'completed');
+                  // Reset description
+                  setProgress(prev => prev.map((step, index) =>
+                    index === 5 ? {
+                      ...step,
+                      description: `Generated content for ${data.data?.completedScenes || 'all'} scenes`
+                    } : step
+                  ));
                   break;
 
-                case 'database_complete':
-                  // Database storage completed
-                  updateProgress(6, 'completed');
+                case 'hns_complete':
+                  // HNS structure generated - update with complete structure
+                  const hnsDoc = data.data.hnsDocument;
+                  if (hnsDoc) {
+                    // Extract chapters and scenes from the nested structure
+                    let allChapters = [];
+                    let allScenes = [];
+
+                    // Use chapters directly if available
+                    if (hnsDoc.chapters && Array.isArray(hnsDoc.chapters)) {
+                      allChapters = hnsDoc.chapters;
+                    }
+
+                    // Use scenes directly if available
+                    if (hnsDoc.scenes && Array.isArray(hnsDoc.scenes)) {
+                      allScenes = hnsDoc.scenes;
+                    }
+
+                    // Also extract from nested parts structure for display
+                    if (!allChapters.length && hnsDoc.parts && Array.isArray(hnsDoc.parts)) {
+                      hnsDoc.parts.forEach(part => {
+                        if (part.chapters && Array.isArray(part.chapters)) {
+                          part.chapters.forEach(chapter => {
+                            allChapters.push(chapter);
+
+                            // Extract scenes from chapters
+                            if (chapter.scenes && Array.isArray(chapter.scenes)) {
+                              // If scenes are IDs, they're already in allScenes
+                              // If scenes are objects, add them
+                              chapter.scenes.forEach(scene => {
+                                if (typeof scene === 'object' && scene !== null) {
+                                  allScenes.push(scene);
+                                }
+                              });
+                            }
+                          });
+                        }
+                      });
+                    }
+
+                    setJsonData({
+                      storyJson: JSON.stringify(hnsDoc.story, null, 2),
+                      partsJson: JSON.stringify(hnsDoc.parts, null, 2),
+                      charactersJson: JSON.stringify(hnsDoc.characters, null, 2),
+                      placesJson: JSON.stringify(hnsDoc.settings, null, 2),
+                      chaptersJson: JSON.stringify(allChapters, null, 2),
+                      scenesJson: JSON.stringify(allScenes, null, 2),
+                    });
+                    // Update all generation steps as complete
+                    for (let i = 0; i <= 4; i++) {
+                      updateProgress(i, 'completed');
+                    }
+                  }
                   break;
 
                 case 'complete':
                   // All phases completed successfully
                   console.log('✅ Story generation completed:', data.storyId);
 
-                  // Wait a moment to show completion
-                  setTimeout(() => {
-                    router.push(`/stories`);
-                  }, 2000);
+                  // Mark all remaining steps as completed
+                  setProgress(prev => prev.map(step =>
+                    step.status === 'pending' || step.status === 'in_progress'
+                      ? { ...step, status: 'completed' }
+                      : step
+                  ));
+
+                  // Set completion state and store story ID
+                  setIsCompleted(true);
+                  setGeneratedStoryId(data.storyId);
+                  setIsLoading(false);
+
+                  // Show success message but don't redirect
+                  // User can manually navigate to stories when ready
                   break;
 
                 case 'error':
                   // Handle error
                   console.error('Story generation error:', data.error);
-                  setError(data.error || 'Failed to generate story');
+                  const errorMessage = data.error || 'Failed to generate story';
+                  setError(errorMessage);
+
+                  // Show detailed error in toast
+                  toast.error('Story Generation Error', {
+                    description: errorMessage,
+                    duration: 10000,
+                  });
 
                   // Mark current in-progress step as error
                   setProgress(prev => prev.map(step =>
@@ -211,7 +377,14 @@ export function CreateStoryForm() {
 
     } catch (error) {
       console.error('Error with streaming story generation:', error);
-      setError('Failed to generate story. Please try again.');
+      const errorMsg = error instanceof Error ? error.message : 'Failed to generate story. Please try again.';
+      setError(errorMsg);
+
+      // Show error in toast with details
+      toast.error('Story Generation Failed', {
+        description: errorMsg,
+        duration: 10000,
+      });
 
       // Mark current step as error
       setProgress(prev => prev.map(step =>
@@ -274,7 +447,9 @@ export function CreateStoryForm() {
           {progress.length > 0 && (
             <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border">
               <div className="flex items-center space-x-2 mb-4">
-                <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                {!isCompleted && (
+                  <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                )}
                 <h3 className="font-semibold text-gray-900 dark:text-gray-100">Story Generation Progress</h3>
               </div>
               

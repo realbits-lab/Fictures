@@ -1,36 +1,45 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
-import yaml from "js-yaml";
 import { useStoryData } from "@/lib/hooks/useStoryData";
 import { useWritingProgress, useWritingSession } from "@/hooks/useStoryWriter";
-import { YAMLDataDisplay } from "./YAMLDataDisplay";
-import { StoryEditor } from "./StoryEditor";
-import { PartEditor } from "./PartEditor";
+import { JSONDataDisplay } from "./JSONDataDisplay";
 import { ChapterEditor } from "./ChapterEditor";
 import { SceneEditor, SceneData } from "./SceneEditor";
+import { SceneDisplay } from "./SceneDisplay";
 import { StoryStructureSidebar } from "./StoryStructureSidebar";
 import { SceneSidebar } from "./SceneSidebar";
 import { WritingGuidelines } from "./WritingGuidelines";
 import { StoryPromptWriter } from "./StoryPromptWriter";
-import { PartPromptEditor } from "./PartPromptEditor";
-import { ChapterPromptEditor } from "./ChapterPromptEditor";
-import { ScenePromptEditor } from "./ScenePromptEditor";
-import { BeautifulYAMLDisplay } from "./BeautifulYAMLDisplay";
+import { BeautifulJSONDisplay } from "./BeautifulJSONDisplay";
+import { CharactersDisplay } from "./CharactersDisplay";
+import { SettingsDisplay } from "./SettingsDisplay";
+import type {
+  HNSStory,
+  HNSPart,
+  HNSChapter,
+  HNSScene,
+  HNSCharacter,
+  HNSSetting,
+  HNSDocument
+} from "@/types/hns";
 
+// Extended Story interface to include database fields with HNS data
 interface Story {
   id: string;
   title: string;
   genre: string;
   status: string;
   isPublic?: boolean;
-  storyData?: Record<string, unknown>;
+  hnsData?: HNSDocument | Record<string, unknown>;
+  // Database structure fields for compatibility
   parts: Array<{
     id: string;
     title: string;
     orderIndex: number;
+    hnsData?: any;
     chapters: Array<{
       id: string;
       title: string;
@@ -38,7 +47,17 @@ interface Story {
       status: string;
       wordCount: number;
       targetWordCount: number;
-      scenes?: Scene[];
+      hnsData?: any;
+      scenes?: Array<{
+        id: string;
+        title: string;
+        status: "completed" | "in_progress" | "planned";
+        wordCount: number;
+        goal: string;
+        conflict: string;
+        outcome: string;
+        hnsData?: any;
+      }>;
     }>;
   }>;
   chapters: Array<{
@@ -48,22 +67,30 @@ interface Story {
     status: string;
     wordCount: number;
     targetWordCount: number;
-    scenes?: Scene[];
+    hnsData?: any;
+    scenes?: Array<{
+      id: string;
+      title: string;
+      status: "completed" | "in_progress" | "planned";
+      wordCount: number;
+      goal: string;
+      conflict: string;
+      outcome: string;
+      hnsData?: any;
+    }>;
   }>;
-  scenes?: Scene[];
+  scenes?: Array<{
+    id: string;
+    title: string;
+    status: "completed" | "in_progress" | "planned";
+    wordCount: number;
+    goal: string;
+    conflict: string;
+    outcome: string;
+  }>;
 }
 
-interface Scene {
-  id: string;
-  title: string;
-  status: "completed" | "in_progress" | "planned";
-  wordCount: number;
-  goal: string;
-  conflict: string;
-  outcome: string;
-}
-
-export type EditorLevel = "story" | "part" | "chapter" | "scene";
+export type EditorLevel = "story" | "part" | "chapter" | "scene" | "characters" | "settings";
 
 interface Selection {
   level: EditorLevel;
@@ -90,9 +117,10 @@ interface UnifiedWritingEditorProps {
   story: Story;
   allStories?: AllStoryListItem[];
   initialSelection?: Selection;
+  disabled?: boolean;
 }
 
-export function UnifiedWritingEditor({ story: initialStory, allStories, initialSelection }: UnifiedWritingEditorProps) {
+export function UnifiedWritingEditor({ story: initialStory, allStories, initialSelection, disabled = false }: UnifiedWritingEditorProps) {
   const router = useRouter();
   const [story, setStory] = useState<Story>(initialStory);
   const [currentSelection, setCurrentSelection] = useState<Selection>(
@@ -102,17 +130,12 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     }
   );
   
-  const [yamlLevel, setYamlLevel] = useState<EditorLevel>("story");
+  const [jsonLevel, setJsonLevel] = useState<EditorLevel>("story");
   const [isLoading, setIsLoading] = useState(false);
-  const [showThemePlanner, setShowThemePlanner] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Collapse states for YAML data displays
   const [storyDataCollapsed, setStoryDataCollapsed] = useState(false);
-  const [charactersCollapsed, setCharactersCollapsed] = useState(false);
-  const [placesCollapsed, setPlacesCollapsed] = useState(false);
-  const [characterCollapseStates, setCharacterCollapseStates] = useState<Record<string, boolean>>({});
-  const [placeCollapseStates, setPlaceCollapseStates] = useState<Record<string, boolean>>({});
 
   // SWR hook for fetching story data when switching stories
   const [targetStoryId, setTargetStoryId] = useState<string | null>(null);
@@ -120,8 +143,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   
   // SWR hook for current story to track background validation and get characters and places
   const { isValidating: isValidatingCurrentStory, characters: currentStoryCharacters, places: currentStoryPlaces } = useStoryData(story.id);
-  const [themePlanned, setThemePlanned] = useState(false);
-  const [isSavingTheme, setIsSavingTheme] = useState(false);
   
   // Writing progress and session tracking
   const writingProgress = useWritingProgress(
@@ -159,7 +180,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         level: "story",
         storyId: swrStory.id
       });
-      setYamlLevel("story");
+      setJsonLevel("story");
       // Signal to sidebar to expand the newly loaded story
       window.dispatchEvent(new CustomEvent('storyLoaded', { 
         detail: { storyId: swrStory.id }
@@ -179,74 +200,121 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   }, [currentSelection, writingProgress]);
 
   // Parse actual story data from database, fallback to default structure if not available
-  const parseStoryData = () => {
-    let parsedData = null;
+  const parseStoryData = (): HNSDocument => {
+    let parsedData: any = null;
+
+    // Use hnsData from the story
+    const dataSource = story.hnsData;
 
     // Handle both JSON string and object cases
-    if (story.storyData) {
-      if (typeof story.storyData === 'object') {
-        parsedData = story.storyData;
-      } else if (typeof story.storyData === 'string') {
+    if (dataSource) {
+      if (typeof dataSource === 'object') {
+        parsedData = dataSource;
+      } else if (typeof dataSource === 'string') {
         try {
-          parsedData = JSON.parse(story.storyData);
+          parsedData = JSON.parse(dataSource);
         } catch (error) {
-          console.error('Failed to parse story storyData JSON:', error);
+          console.error('Failed to parse story HNS data JSON:', error);
         }
       }
     }
 
-    // If we successfully parsed data, use it
-    if (parsedData && typeof parsedData === 'object') {
-      return {
-        title: story.title || parsedData.title || "Generated Story",
-        genre: story.genre || parsedData.genre || "General",
-        words: parsedData.words || parsedData.targetWordCount || 60000,
-        question: parsedData.question || "What is the central question of this story?",
-        goal: parsedData.goal || "Story goal not defined",
-        conflict: parsedData.conflict || "Story conflict not defined",
-        outcome: parsedData.outcome || "Story outcome not defined",
-        chars: parsedData.chars || parsedData.characters || {},
-        themes: parsedData.themes || [],
-        structure: parsedData.structure || {
-          type: "3_part",
-          parts: ["setup", "confrontation", "resolution"],
-          dist: [25, 50, 25]
-        },
-        setting: parsedData.setting || {},
-        parts: parsedData.parts || [],
-        serial: parsedData.serial || {},
-        hooks: parsedData.hooks || {}
-      };
+    // Check if parsed data is already HNSDocument format
+    if (parsedData && parsedData.story && parsedData.parts && parsedData.chapters) {
+      return parsedData as HNSDocument;
     }
 
-    // Fallback to basic story info if no parsed data available
+    // Convert legacy format to HNSDocument
+    const hnsStory: HNSStory = {
+      story_id: story.id,
+      story_title: story.title || parsedData?.title || "Generated Story",
+      genre: Array.isArray(story.genre) ? story.genre : [story.genre || parsedData?.genre || "General"],
+      premise: parsedData?.premise || "Story premise",
+      dramatic_question: parsedData?.question || parsedData?.dramatic_question || "What is the central question of this story?",
+      theme: parsedData?.theme || parsedData?.themes?.[0] || "Main theme",
+      characters: parsedData?.characters || [],
+      settings: parsedData?.settings || [],
+      parts: parsedData?.parts?.map((p: any) => `part_${p.part || p.id}`) || []
+    };
+
+    // Convert parts to HNSPart format
+    const hnsParts: HNSPart[] = story.parts.map((part, index) => ({
+      part_id: part.id,
+      part_title: part.title,
+      structural_role: index === 0 ? 'Act 1: Setup' : index === 1 ? 'Act 2: Confrontation' : 'Act 3: Resolution',
+      summary: parsedData?.parts?.[index]?.summary || `Summary for ${part.title}`,
+      key_beats: parsedData?.parts?.[index]?.key_beats || [],
+      chapters: part.chapters.map(ch => ch.id)
+    }));
+
+    // Convert chapters to HNSChapter format
+    const hnsChapters: HNSChapter[] = [];
+    story.parts.forEach((part, partIndex) => {
+      part.chapters.forEach((chapter, chapterIndex) => {
+        hnsChapters.push({
+          chapter_id: chapter.id,
+          chapter_number: chapter.orderIndex,
+          chapter_title: chapter.title,
+          part_ref: part.id,
+          summary: parsedData?.parts?.[partIndex]?.chapters?.[chapterIndex]?.summary || "",
+          pacing_goal: 'medium',
+          action_dialogue_ratio: "50:50",
+          chapter_hook: {
+            type: 'question',
+            description: parsedData?.parts?.[partIndex]?.chapters?.[chapterIndex]?.hook || "",
+            urgency_level: 'medium'
+          },
+          scenes: chapter.scenes?.map(s => s.id) || []
+        });
+      });
+    });
+
+    // Convert scenes to HNSScene format
+    const hnsScenes: HNSScene[] = [];
+    story.parts.forEach((part) => {
+      part.chapters.forEach((chapter) => {
+        chapter.scenes?.forEach((scene, sceneIndex) => {
+          hnsScenes.push({
+            scene_id: scene.id,
+            scene_number: sceneIndex + 1,
+            chapter_ref: chapter.id,
+            character_ids: [],
+            setting_id: "",
+            pov_character_id: "",
+            narrative_voice: 'third_person_limited',
+            summary: scene.title,
+            entry_hook: "",
+            goal: scene.goal,
+            conflict: scene.conflict,
+            outcome: scene.outcome as HNSScene['outcome'],
+            emotional_shift: {
+              from: "",
+              to: ""
+            }
+          });
+        });
+      });
+    });
+
+    // Create empty arrays for characters and settings if not available
+    const hnsCharacters: HNSCharacter[] = parsedData?.characters || [];
+    const hnsSettings: HNSSetting[] = parsedData?.settings || [];
+
     return {
-      title: story.title || "Generated Story",
-      genre: story.genre || "General",
-      words: 60000,
-      question: "What is the central question of this story?",
-      goal: "Story goal not defined",
-      conflict: "Story conflict not defined",
-      outcome: "Story outcome not defined",
-      chars: {},
-      themes: [],
-      structure: {
-        type: "3_part",
-        parts: ["setup", "confrontation", "resolution"],
-        dist: [25, 50, 25]
-      },
-      setting: {},
-      parts: [],
-      serial: {},
-      hooks: {}
+      story: hnsStory,
+      parts: hnsParts,
+      chapters: hnsChapters,
+      scenes: hnsScenes,
+      characters: hnsCharacters,
+      settings: hnsSettings
     };
   };
 
-  // Real story data from database
-  const [sampleStoryData, setSampleStoryData] = useState(parseStoryData());
+  // Real story data from database in HNS format
+  const [sampleStoryData, setSampleStoryData] = useState<HNSDocument>(parseStoryData());
 
   // Track changes and original data for save/cancel functionality
-  const [originalStoryData, setOriginalStoryData] = useState(sampleStoryData);
+  const [originalStoryData, setOriginalStoryData] = useState<HNSDocument>(sampleStoryData);
   const [storyPreviewData, setStoryPreviewData] = useState<any>(null);
   const [storyHasChanges, setStoryHasChanges] = useState(false);
   const [changedStoryKeys, setChangedStoryKeys] = useState<string[]>([]);
@@ -272,7 +340,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   // Update story data when story prop changes (for real-time updates)
   useEffect(() => {
     console.log('🔄 Story prop changed, updating story data...');
-    console.log('📦 Story storyData:', story.storyData);
+    console.log('📦 Story hnsData:', story.hnsData);
 
     const newStoryData = parseStoryData();
     console.log('📝 Parsed story data:', newStoryData);
@@ -308,7 +376,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   };
 
   // Update story data and track changes
-  const handleStoryDataUpdate = (updatedData: any) => {
+  const handleStoryDataUpdate = (updatedData: HNSDocument) => {
     setSampleStoryData(updatedData);
     setStoryHasChanges(JSON.stringify(updatedData) !== JSON.stringify(originalStoryData));
 
@@ -325,39 +393,39 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     }
   };
 
-  // Helper functions for YAML conversion for StoryPromptWriter
-  const convertStoryDataToYAML = (storyData: any): string => {
+  // Helper functions for JSON conversion for StoryPromptWriter
+  const convertStoryDataToJSON = (storyData: HNSDocument): string => {
     try {
-      return yaml.dump({ story: storyData }, { indent: 2 });
+      return JSON.stringify(storyData, null, 2);
     } catch (error) {
-      console.error('Error converting story data to YAML:', error);
+      console.error('Error converting story data to JSON:', error);
       return '';
     }
   };
 
-  const convertYAMLToStoryData = (yamlText: string): any => {
+  const convertJSONToStoryData = (jsonText: string): HNSDocument | null => {
     try {
-      const parsed = yaml.load(yamlText) as any;
-      return parsed?.story || parsed;
+      const parsed = JSON.parse(jsonText);
+      return parsed as HNSDocument;
     } catch (error) {
-      console.error('Error parsing YAML to story data:', error);
+      console.error('Error parsing JSON to story data:', error);
       return null;
     }
   };
 
-  // Wrapper handlers for StoryPromptWriter that work with YAML
-  const handleStoryYAMLUpdate = (updatedYaml: string) => {
-    const storyData = convertYAMLToStoryData(updatedYaml);
+  // Wrapper handlers for StoryPromptWriter that work with JSON
+  const handleStoryJSONUpdate = (updatedJson: string) => {
+    const storyData = convertJSONToStoryData(updatedJson);
     if (storyData) {
       handleStoryDataUpdate(storyData);
     }
   };
 
-  const handleStoryYAMLPreviewUpdate = (previewYaml: string | null) => {
-    if (previewYaml === null) {
+  const handleStoryJSONPreviewUpdate = (previewJson: string | null) => {
+    if (previewJson === null) {
       setStoryPreviewData(null);
     } else {
-      const storyData = convertYAMLToStoryData(previewYaml);
+      const storyData = convertJSONToStoryData(previewJson);
       if (storyData) {
         setStoryPreviewData(storyData);
       }
@@ -368,7 +436,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const handleChapterDataUpdate = (updatedData: any) => {
     setCurrentChapterData(updatedData);
     if (originalChapterData) {
-      setChapterHasChanges(yaml.dump(updatedData) !== yaml.dump(originalChapterData));
+      setChapterHasChanges(JSON.stringify(updatedData) !== JSON.stringify(originalChapterData));
     }
   };
 
@@ -376,217 +444,175 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const handleSceneDataUpdate = (updatedData: any) => {
     setCurrentSceneData(updatedData);
     if (originalSceneData) {
-      setSceneHasChanges(yaml.dump(updatedData) !== yaml.dump(originalSceneData));
+      setSceneHasChanges(JSON.stringify(updatedData) !== JSON.stringify(originalSceneData));
     }
   };
 
   // Initialize part data when switching to part level or changing part
   useEffect(() => {
-    if (currentSelection.level === "part") {
+    if (currentSelection.level === "part" && currentSelection.partId) {
       const selectedPart = story.parts.find(part => part.id === currentSelection.partId);
-      const partNumber = selectedPart?.orderIndex || 1;
-      const partData = selectedPart ?
-        createPartData(partNumber, `Part ${partNumber}`) :
-        createPartData(1, "Part 1");
 
-      setOriginalPartData(partData);
-      setCurrentPartData(partData);
+      console.log('🔍 Selected part:', selectedPart);
+      console.log('📦 Part hnsData:', selectedPart?.hnsData);
+      console.log('📦 Part hnsData type:', typeof selectedPart?.hnsData);
+
+      if (selectedPart) {
+        // If we have hnsData, use it directly
+        if (selectedPart.hnsData) {
+          setOriginalPartData(selectedPart.hnsData);
+          setCurrentPartData(selectedPart.hnsData);
+        } else {
+          // If no hnsData, show the part metadata itself as JSON
+          const partMetadata = {
+            part_id: selectedPart.id,
+            part_title: selectedPart.title || `Part ${selectedPart.orderIndex}`,
+            order_index: selectedPart.orderIndex,
+            chapters: selectedPart.chapters?.map(ch => ({
+              chapter_id: ch.id,
+              chapter_title: ch.title,
+              order_index: ch.orderIndex,
+              status: ch.status,
+              word_count: ch.wordCount
+            })) || []
+          };
+          setOriginalPartData(partMetadata);
+          setCurrentPartData(partMetadata);
+        }
+      } else {
+        // Fallback if part not found
+        const defaultData = { part_id: currentSelection.partId, message: "Part not found" };
+        setOriginalPartData(defaultData);
+        setCurrentPartData(defaultData);
+      }
+
       setPartHasChanges(false);
     }
   }, [currentSelection.level, currentSelection.partId, story.parts]);
 
   // Initialize chapter data when switching to chapter level or changing chapter
   useEffect(() => {
-    if (currentSelection.level === "chapter") {
-      const selectedChapter = story.chapters?.find(chapter => chapter.id === currentSelection.chapterId);
-      const chapterData = selectedChapter || {
-        id: currentSelection.chapterId || 'sample-chapter',
-        title: 'Chapter 1',
-        summary: '',
-        orderIndex: 1,
-        wordCount: 0,
-        targetWordCount: 4000,
-        status: 'draft',
-        purpose: '',
-        hook: '',
-        characterFocus: '',
-        sceneIds: [],
-        scenes: []
-      };
+    if (currentSelection.level === "chapter" && currentSelection.chapterId) {
+      // Find the chapter either in parts or standalone chapters
+      let selectedChapter = null;
+      for (const part of story.parts) {
+        selectedChapter = part.chapters?.find(ch => ch.id === currentSelection.chapterId);
+        if (selectedChapter) break;
+      }
+      if (!selectedChapter) {
+        selectedChapter = story.chapters?.find(chapter => chapter.id === currentSelection.chapterId);
+      }
 
-      setOriginalChapterData(chapterData);
-      setCurrentChapterData(chapterData);
+      console.log('🔍 Selected chapter:', selectedChapter);
+      console.log('📦 Chapter hnsData:', selectedChapter?.hnsData);
+
+      if (selectedChapter) {
+        // If we have hnsData, use it directly
+        if (selectedChapter.hnsData) {
+          setOriginalChapterData(selectedChapter.hnsData);
+          setCurrentChapterData(selectedChapter.hnsData);
+        } else {
+          // If no hnsData, show the chapter metadata itself as JSON
+          const chapterMetadata = {
+            chapter_id: selectedChapter.id,
+            chapter_title: selectedChapter.title,
+            order_index: selectedChapter.orderIndex,
+            status: selectedChapter.status,
+            word_count: selectedChapter.wordCount,
+            target_word_count: selectedChapter.targetWordCount,
+            scenes: (selectedChapter.scenes || []).map(scene => ({
+              scene_id: scene.id,
+              scene_title: scene.title,
+              status: scene.status,
+              word_count: scene.wordCount
+            }))
+          };
+          setOriginalChapterData(chapterMetadata);
+          setCurrentChapterData(chapterMetadata);
+        }
+      } else {
+        // Fallback if chapter not found
+        const defaultData = { chapter_id: currentSelection.chapterId, message: "Chapter not found" };
+        setOriginalChapterData(defaultData);
+        setCurrentChapterData(defaultData);
+      }
+
       setChapterHasChanges(false);
     }
-  }, [currentSelection.level, currentSelection.chapterId, story.chapters]);
+  }, [currentSelection.level, currentSelection.chapterId, story.parts, story.chapters]);
 
   // Initialize scene data when switching to scene level or changing scene
   useEffect(() => {
-    if (currentSelection.level === "scene") {
-      const selectedScene = story.scenes?.find(scene => scene.id === currentSelection.sceneId);
-      const sceneData = selectedScene || {
-        id: currentSelection.sceneId || 'sample-scene',
-        title: 'Scene 1',
-        content: '',
-        orderIndex: 1,
-        wordCount: 0,
-        status: 'planned',
-        goal: '',
-        conflict: '',
-        outcome: '',
-        characterIds: [],
-        placeIds: [],
-        characters: [],
-        places: []
-      };
+    if (currentSelection.level === "scene" && currentSelection.sceneId) {
+      // Find the scene in chapters
+      let selectedScene = null;
+      for (const part of story.parts) {
+        for (const chapter of part.chapters || []) {
+          selectedScene = chapter.scenes?.find(scene => scene.id === currentSelection.sceneId);
+          if (selectedScene) break;
+        }
+        if (selectedScene) break;
+      }
+      if (!selectedScene) {
+        for (const chapter of story.chapters || []) {
+          selectedScene = chapter.scenes?.find(scene => scene.id === currentSelection.sceneId);
+          if (selectedScene) break;
+        }
+      }
 
-      setOriginalSceneData(sceneData);
-      setCurrentSceneData(sceneData);
+      console.log('🔍 Selected scene:', selectedScene);
+      console.log('📦 Scene hnsData:', selectedScene?.hnsData);
+
+      if (selectedScene) {
+        // If we have hnsData, use it directly
+        if (selectedScene.hnsData) {
+          setOriginalSceneData(selectedScene.hnsData);
+          setCurrentSceneData(selectedScene.hnsData);
+        } else {
+          // If no hnsData, show the scene metadata itself as JSON
+          const sceneMetadata = {
+            scene_id: selectedScene.id,
+            scene_title: selectedScene.title,
+            status: selectedScene.status,
+            word_count: selectedScene.wordCount,
+            goal: selectedScene.goal,
+            conflict: selectedScene.conflict,
+            outcome: selectedScene.outcome
+          };
+          setOriginalSceneData(sceneMetadata);
+          setCurrentSceneData(sceneMetadata);
+        }
+      } else {
+        // Fallback if scene not found
+        const defaultData = { scene_id: currentSelection.sceneId, message: "Scene not found" };
+        setOriginalSceneData(defaultData);
+        setCurrentSceneData(defaultData);
+      }
+
       setSceneHasChanges(false);
     }
-  }, [currentSelection.level, currentSelection.sceneId, story.scenes]);
+  }, [currentSelection.level, currentSelection.sceneId, story.parts, story.chapters]);
 
-  const samplePartData = {
-    part: 1,
-    title: "Discovery",
-    words: 20000,
-    function: "story_setup",
-    goal: "Maya accepts supernatural reality",
-    conflict: "Denial vs mounting evidence",
-    outcome: "Reluctant training commitment",
-    questions: {
-      primary: "How will Maya react when she discovers her magical abilities?",
-      secondary: "Can Maya overcome denial to accept the supernatural world?"
-    },
-    chars: {
-      maya: {
-        start: "denial_normalcy",
-        end: "reluctant_acceptance",
-        arc: ["normal_routine", "strange_discoveries", "power_manifestation", "training_acceptance"],
-        conflict: "safety_vs_responsibility",
-        transforms: ["magical_manifestation", "mentor_acceptance"]
-      }
-    },
-    plot: {
-      events: ["elena_disappearance", "journal_discovery", "shadow_manifestation", "marcus_introduction"],
-      reveals: ["elena_research", "maya_abilities", "shadow_keeper_legacy"],
-      escalation: ["personal_loss", "reality_challenge", "power_responsibility"]
-    },
-    themes: {
-      primary: "denial_and_acceptance",
-      elements: ["denial_vs_truth", "family_responsibility"],
-      moments: ["photograph_evidence", "power_manifestation", "training_decision"],
-      symbols: ["shadows_as_fears", "photography_as_truth"]
-    },
-    emotion: {
-      start: "casual_family_concern",
-      progression: ["growing_fear", "supernatural_terror", "determined_resolution"],
-      end: "grim_commitment"
-    },
-    ending: {
-      resolution: ["training_commitment", "moral_conflict_established"],
-      setup: ["power_development_phase", "mentor_relationship"],
-      hooks: ["elena_time_pressure", "corruption_risk"],
-      hook_out: "Maya accepts training but discovers mentor's dark secret"
-    },
-    serial: {
-      arc: "Setup → Rising Tension → Part Climax → Transition Hook",
-      climax_at: "85%",
-      satisfaction: ["elena_fate_revealed", "maya_abilities_confirmed", "mentor_established"],
-      anticipation: ["corruption_risk", "training_challenges", "time_pressure"]
-    },
-    engagement: {
-      discussions: ["maya_moral_choices", "elena_true_situation", "marcus_hidden_past"],
-      speculation: ["marcus_previous_student", "elena_still_herself"],
-      debates: ["trust_marcus_completely", "elena_worth_corruption_risk"],
-      feedback: ["character_dynamics", "magic_complexity", "pacing"]
-    }
-  };
+  // Extract data from the actual story structure
+  const extractedPartData = useMemo(() => {
+    if (!currentSelection.partId || !sampleStoryData?.parts) return null;
+    return sampleStoryData.parts.find(part => part.part_id === currentSelection.partId) || null;
+  }, [currentSelection.partId, sampleStoryData]);
 
-  const sampleChapterData = {
-    chap: 1,
-    title: "Missing",
-    pov: "maya",
-    words: 3500,
-    goal: "Normal coffee date with Elena",
-    conflict: "Elena missing, signs of supernatural danger",
-    outcome: "Finds journal, realizes she's also a target",
-    acts: {
-      setup: {
-        hook_in: "Door unlocked, coffee warm, Elena gone",
-        orient: "Weekly sister ritual, Maya's skeptical nature",
-        incident: "Overturned chair, shattered mug - signs of struggle"
-      },
-      confrontation: {
-        rising: "Police dismissive, Maya searches alone",
-        midpoint: "Discovers Elena's hidden research journal",
-        complicate: "Journal reveals supernatural conspiracy, 'The Shepherd'"
-      },
-      resolution: {
-        climax: "Final journal entry: 'He looks for the mark'",
-        resolve: "Maya realizes Elena was in supernatural danger",
-        hook_out: "Knock at door, Maya has the 'mark' mentioned"
-      }
-    },
-    chars: {
-      maya: {
-        start: "casual_anticipation",
-        arc: "concern → panic → targeted_fear",
-        end: "trapped_resolve",
-        motivation: "protect_elena",
-        growth: "skeptic → reluctant_believer"
-      }
-    },
-    tension: {
-      external: "signs_struggle, mysterious_knocker",
-      internal: "maya_panic, guilt_unaware",
-      interpersonal: "dismissive_police",
-      atmospheric: "journal_warnings",
-      peak: "door_knock_connects_abstract_threat_to_immediate"
-    },
-    mandate: {
-      episodic: {
-        arc: "search_for_elena → journal_discovery → question_answered",
-        payoff: "casual_concern → urgent_fear",
-        answered: "What happened to Elena? Supernatural research gone wrong"
-      },
-      serial: {
-        complication: "The Shepherd threat established",
-        stakes: "Maya also targeted due to mark",
-        compulsion: "door_knock_immediate_danger"
-      }
-    },
-    hook: {
-      type: "compound",
-      reveal: "Maya bears the mark from journal warning",
-      threat: "Knock suggests Shepherd found Maya",
-      emotion: "protective_instincts vs newfound_vulnerability"
-    }
-  };
+  const extractedChapterData = useMemo(() => {
+    if (!currentSelection.chapterId || !sampleStoryData?.chapters) return null;
+    return sampleStoryData.chapters.find(chapter => chapter.chapter_id === currentSelection.chapterId) || null;
+  }, [currentSelection.chapterId, sampleStoryData]);
 
-  const sampleSceneData = {
-    id: 1,
-    summary: "Maya arrives for coffee date, finds Elena missing with signs of struggle",
-    time: "sunday_10:05am",
-    place: "elena_apartment_hallway",
-    pov: "maya",
-    characters: {
-      maya: { enters: "casual_anticipation", exits: "panicked_determination" },
-      elena: { status: "absent_but_referenced", evidence: "struggle_signs" }
-    },
-    goal: "Normal coffee date with Elena",
-    obstacle: "Door unlocked, apartment silent, struggle evidence",
-    outcome: "Realizes Elena in danger, decides to search",
-    beats: [
-      "Maya knocks, no answer, tries door",
-      "Finds apartment unlocked, calls Elena's name",
-      "Discovers overturned table, broken coffee mug",
-      "Maya panics, decides to search rather than call police"
-    ],
-    shift: "routine_expectation → urgent_fear",
-    leads_to: "maya_searches_apartment_for_clues",
-    image_prompt: "Young woman in casual clothes standing in a dimly lit apartment hallway, her face showing concern as she looks at an ajar door. The scene suggests early morning light filtering through windows, with subtle signs of disturbance visible - an overturned coffee table and scattered items in the background. Mood: tense, mysterious, domestic thriller atmosphere."
-  };
+  const extractedSceneData = useMemo(() => {
+    if (!currentSelection.sceneId || !sampleStoryData?.scenes) return null;
+    return sampleStoryData.scenes.find(scene => scene.scene_id === currentSelection.sceneId) || null;
+  }, [currentSelection.sceneId, sampleStoryData]);
+
+  // Helper functions for backwards compatibility
+  const getPartData = () => extractedPartData;
+  const getChapterData = () => extractedChapterData;
+  const getSceneData = () => extractedSceneData;
 
   const handleSelectionChange = async (selection: Selection) => {
     // If switching to a different story, trigger SWR fetch
@@ -598,7 +624,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     // If clicking on the current story (level === "story"), show the story editor
     if (selection.level === "story" && selection.storyId === story.id) {
       setCurrentSelection(selection);
-      setYamlLevel(selection.level);
+      setJsonLevel(selection.level);
       return;
     }
     
@@ -608,7 +634,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       if (selection.chapterId !== currentSelection.chapterId || currentSelection.level !== "chapter") {
         console.log('Switching to chapter:', selection.chapterId, 'from current:', currentSelection.chapterId);
         setCurrentSelection(selection);
-        setYamlLevel(selection.level);
+        setJsonLevel(selection.level);
         return;
       }
     }
@@ -618,10 +644,24 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       router.push(`/write/${selection.chapterId}`);
       return;
     }
-    
+
+    // Handle Characters selection
+    if (selection.level === "characters" && selection.storyId === story.id) {
+      setCurrentSelection(selection);
+      setJsonLevel(selection.level);
+      return;
+    }
+
+    // Handle Settings selection
+    if (selection.level === "settings" && selection.storyId === story.id) {
+      setCurrentSelection(selection);
+      setJsonLevel(selection.level);
+      return;
+    }
+
     // Otherwise, just update the current selection for the same story
     setCurrentSelection(selection);
-    setYamlLevel(selection.level);
+    setJsonLevel(selection.level);
   };
 
   const handleSave = async (data: any) => {
@@ -629,8 +669,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     try {
       // Check if this is scene data (has content and wordCount) and we have a sceneId
       if (data.content !== undefined && data.wordCount !== undefined && currentSelection.sceneId) {
-        // Save scene content and metadata to the scene API using YAML
-        const sceneYamlData = {
+        // Save scene content and metadata to the scene API using JSON
+        const sceneJsonData = {
           title: data.summary || `Scene ${data.id}`,
           content: data.content,
           wordCount: data.wordCount,
@@ -643,16 +683,16 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         const response = await fetch(`/api/scenes/${currentSelection.sceneId}`, {
           method: 'PATCH',
           headers: {
-            'Content-Type': 'application/yaml',
+            'Content-Type': 'application/json',
           },
-          body: yaml.dump(sceneYamlData)
+          body: JSON.stringify(sceneJsonData)
         });
 
         if (!response.ok) {
           const responseText = await response.text();
           let errorData;
           try {
-            errorData = yaml.load(responseText) as any;
+            errorData = JSON.parse(responseText);
           } catch {
             errorData = { error: responseText };
           }
@@ -661,38 +701,25 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
         console.log('Scene saved successfully');
       } else if (currentSelection.level === "chapter" && data) {
-        // Save chapter data using YAML
-        const chapterYamlData = {
-          id: data.id,
-          title: data.title,
-          purpose: data.purpose,
-          hook: data.hook,
-          characterFocus: data.characterFocus,
-          wordCount: data.wordCount,
-          targetWordCount: data.targetWordCount,
-          status: data.status
-        };
-
-        const response = await fetch(`/api/chapters/${data.id}`, {
+        // Save chapter HNS data
+        console.log('💾 Saving chapter HNS data...');
+        const response = await fetch(`/api/chapters/${currentSelection.chapterId}/write`, {
           method: 'PATCH',
           headers: {
-            'Content-Type': 'application/yaml',
+            'Content-Type': 'application/json',
           },
-          body: yaml.dump(chapterYamlData)
+          body: JSON.stringify({
+            hnsData: data
+          })
         });
 
         if (!response.ok) {
-          const responseText = await response.text();
-          let errorData;
-          try {
-            errorData = yaml.load(responseText) as any;
-          } catch {
-            errorData = { error: responseText };
-          }
+          const errorData = await response.json();
           throw new Error(`Failed to save chapter: ${errorData.error || response.statusText}`);
         }
 
-        console.log('Chapter data saved successfully');
+        const saveResult = await response.json();
+        console.log('✅ Chapter HNS data saved successfully:', saveResult);
       } else if (currentSelection.level === "story" && data) {
         // Save story data to the stories API
         console.log('💾 Saving story data to API...');
@@ -705,7 +732,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            storyData: data
+            hnsData: data
           })
         });
 
@@ -722,11 +749,31 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         console.log('🔄 Updating local story state with saved data...');
         setStory(prevStory => ({
           ...prevStory,
-          storyData: data,
+          hnsData: data,
           updatedAt: saveResult.updatedAt || new Date().toISOString()
         }));
+      } else if (currentSelection.level === "part" && data) {
+        // Save part HNS data
+        console.log('💾 Saving part HNS data...');
+        const response = await fetch(`/api/parts/${currentSelection.partId}/write`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            hnsData: data
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`Failed to save part: ${errorData.error || response.statusText}`);
+        }
+
+        const saveResult = await response.json();
+        console.log('✅ Part HNS data saved successfully:', saveResult);
       } else {
-        // For other data types (part), use the original mock behavior for now
+        // For other data types, use the original mock behavior for now
         console.log('Saving data:', data);
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
@@ -851,7 +898,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   };
 
   const handleVisibilityToggle = async () => {
-    const currentVisibility = story.isPublic || false;
+    const currentVisibility = story.status === 'published';
     const newVisibility = !currentVisibility;
     
     setIsLoading(true);
@@ -875,7 +922,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       // Update the story data to reflect the new visibility
       setStory(prevStory => ({
         ...prevStory,
-        isPublic: newVisibility,
+        status: newVisibility ? 'published' : 'completed',
       }));
       
       // Show confirmation message
@@ -890,114 +937,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     }
   };
 
-  const handleCreateScene = async (chapterId: string) => {
-    setIsLoading(true);
-    try {
-      // Fetch current scenes from the API to ensure we have the latest data
-      const scenesResponse = await fetch(`/api/scenes?chapterId=${chapterId}`);
-      const scenesText = await scenesResponse.text();
-      let scenesData;
-      try {
-        scenesData = yaml.load(scenesText) as any;
-      } catch {
-        // Fallback to JSON for backward compatibility
-        scenesData = JSON.parse(scenesText);
-      }
-      
-      // Calculate next available order index by finding the highest existing orderIndex
-      let nextOrderIndex = 1;
-      if (scenesData.scenes && scenesData.scenes.length > 0) {
-        const maxOrderIndex = Math.max(...scenesData.scenes.map((scene: any) => scene.orderIndex || 0));
-        nextOrderIndex = maxOrderIndex + 1;
-      }
-      
-      // Create the new scene using YAML
-      const newSceneData = {
-        title: `Scene ${nextOrderIndex}`,
-        chapterId: chapterId,
-        orderIndex: nextOrderIndex,
-        goal: nextOrderIndex === 1 ? 'Establish opening scene' : `Scene ${nextOrderIndex} objective`,
-        conflict: nextOrderIndex === 1 ? 'Initial obstacles' : `Scene ${nextOrderIndex} challenges`,
-        outcome: nextOrderIndex === 1 ? 'Scene conclusion' : `Scene ${nextOrderIndex} resolution`
-      };
 
-      const response = await fetch('/api/scenes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/yaml',
-        },
-        body: yaml.dump(newSceneData)
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorData;
-        try {
-          errorData = yaml.load(errorText) as any;
-        } catch {
-          errorData = { error: errorText };
-        }
-        console.error('Scene creation failed:', errorData);
-        throw new Error(errorData.error || 'Failed to create scene');
-      }
-
-      const responseText = await response.text();
-      let responseData;
-      try {
-        responseData = yaml.load(responseText) as any;
-      } catch {
-        // Fallback to JSON for backward compatibility
-        responseData = JSON.parse(responseText);
-      }
-      const { scene } = responseData;
-      
-      // Navigate to the new scene editor
-      handleSelectionChange({
-        level: "scene",
-        storyId: story.id,
-        partId: currentSelection.partId,
-        chapterId: chapterId,
-        sceneId: scene.id
-      });
-
-      // Refresh the page to show the new scene
-      router.refresh();
-      
-    } catch (error) {
-      console.error('Failed to create scene:', error);
-      alert('Failed to create scene. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSaveThemePlan = async () => {
-    setIsSavingTheme(true);
-    try {
-      // Simulate saving the theme plan data to the chapter or story
-      // This would typically save the three-act structure, tension architecture, 
-      // character development, dual mandate fulfillment, and hook strategy data
-      
-      // For now, we'll just simulate an API call with a delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Here you would save the theme plan data to the database
-      // const response = await fetch(`/api/chapters/${currentSelection.chapterId}/theme`, {
-      //   method: 'PATCH',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(themePlanData)
-      // });
-      
-      // Show success feedback
-      console.log('Theme plan saved successfully');
-      
-    } catch (error) {
-      console.error('Failed to save theme plan:', error);
-      alert('Failed to save theme plan. Please try again.');
-    } finally {
-      setIsSavingTheme(false);
-    }
-  };
 
   const handleToggleSceneStatus = async (sceneId: string, currentStatus: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent scene edit navigation
@@ -1014,13 +954,13 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         nextStatus = 'in_progress';
       }
       
-      // Update scene status via API using YAML
+      // Update scene status via API using JSON
       const response = await fetch(`/api/scenes/${sceneId}`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/yaml',
+          'Content-Type': 'application/json',
         },
-        body: yaml.dump({
+        body: JSON.stringify({
           status: nextStatus
         })
       });
@@ -1029,7 +969,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         const responseText = await response.text();
         let errorData;
         try {
-          errorData = yaml.load(responseText) as any;
+          errorData = JSON.parse(responseText);
         } catch {
           errorData = { error: responseText };
         }
@@ -1051,8 +991,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   // Create part data based on actual story data
   const createPartData = (partNum: number, partTitle: string) => {
     // Get part data from actual story data if available
-    const storyParts = sampleStoryData.parts || [];
-    const currentPart = storyParts.find((p: any) => p.part === partNum) || storyParts[partNum - 1];
+    const currentPart = sampleStoryData.parts.find(p => p.part_title === partTitle || p.part_id === `part_${partNum}`);
 
     return {
       part: partNum,
@@ -1061,9 +1000,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       function: partNum === 1 ? "story_setup" :
                partNum === 2 ? "story_development" :
                "story_resolution",
-      goal: currentPart?.goal || `Part ${partNum} goal from ${sampleStoryData.title}`,
-      conflict: currentPart?.conflict || `Part ${partNum} conflict from ${sampleStoryData.title}`,
-      outcome: currentPart?.outcome || `Part ${partNum} outcome from ${sampleStoryData.title}`,
+      goal: currentPart?.summary || `Part ${partNum} goal from ${sampleStoryData.story.story_title}`,
+      conflict: `Part ${partNum} conflict from ${sampleStoryData.story.story_title}`,
+      outcome: `Part ${partNum} outcome from ${sampleStoryData.story.story_title}`,
       questions: {
         primary: `What is the main question for Part ${partNum} of ${sampleStoryData.title}?`,
         secondary: `What is the secondary question for Part ${partNum} of ${sampleStoryData.title}?`
@@ -1187,35 +1126,14 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     return { sceneData, selectedSceneChapter, sceneNumber };
   };
 
-  const renderSceneEditor = () => {
-    const { sceneData, selectedSceneChapter, sceneNumber } = findSceneData();
+  const renderSceneDisplay = () => {
+    if (!currentSelection.sceneId) return null;
 
     return (
-      <SceneEditor
-        key={currentSelection.sceneId}
+      <SceneDisplay
         sceneId={currentSelection.sceneId}
-        sceneNumber={sceneNumber}
-        initialData={currentSceneData}
-        previewData={scenePreviewData}
-        chapterContext={{
-          title: selectedSceneChapter?.title || "Chapter",
-          pov: "maya",
-          acts: sampleChapterData.acts
-        }}
-        hasChanges={sceneHasChanges || !!scenePreviewData}
-        onSceneUpdate={handleSceneDataUpdate}
-        onSave={async (data) => {
-          await handleSave(scenePreviewData || data);
-          setOriginalSceneData(scenePreviewData || data);
-          setScenePreviewData(null);
-          setSceneHasChanges(false);
-        }}
-        onCancel={() => {
-          setCurrentSceneData(originalSceneData);
-          setScenePreviewData(null);
-          setSceneHasChanges(false);
-        }}
-        onWrite={handleGenerate}
+        storyId={story.id}
+        disabled={disabled}
       />
     );
   };
@@ -1225,321 +1143,33 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       case "story":
         return (
           <div className="space-y-6">
-            <StoryEditor
-              storyId={story.id}
-              storyData={sampleStoryData}
-              characters={currentStoryCharacters}
-              places={currentStoryPlaces}
-              hasChanges={storyHasChanges}
-              onStoryUpdate={handleStoryDataUpdate}
-              onSave={async (data) => {
-                await handleSave(data);
-                setOriginalStoryData(data);
-                setStoryHasChanges(false);
-                setChangedStoryKeys([]);
-              }}
-              onCancel={() => {
-                setSampleStoryData(originalStoryData);
-                setStoryHasChanges(false);
-                setChangedStoryKeys([]);
-              }}
-              onGenerate={handleGenerate}
-            />
-
-            {/* Story YAML Data Display */}
-            <BeautifulYAMLDisplay
-              title="Story YAML Data"
+            {/* Story JSON Data Display */}
+            <BeautifulJSONDisplay
+              title="Story JSON Data"
               icon="📖"
               data={sampleStoryData}
-              isCollapsed={storyDataCollapsed}
+              isCollapsed={false}
               onToggleCollapse={() => setStoryDataCollapsed(!storyDataCollapsed)}
               changedKeys={changedStoryKeys}
               onDataChange={handleStoryDataUpdate}
+              disabled={disabled}
             />
-
-            {/* Characters Grid Display */}
-            {currentStoryCharacters && currentStoryCharacters.length > 0 && (
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <span>🎭</span>
-                    Characters ({currentStoryCharacters.length})
-                  </CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setCharactersCollapsed(!charactersCollapsed)}
-                    className="flex items-center gap-1"
-                  >
-                    <span className="text-xs">
-                      {charactersCollapsed ? 'Show' : 'Hide'}
-                    </span>
-                    <svg
-                      className={`w-4 h-4 transition-transform ${charactersCollapsed ? 'rotate-0' : 'rotate-180'}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </Button>
-                </CardHeader>
-                {!charactersCollapsed && (
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {currentStoryCharacters.map((character: any) => (
-                        <div
-                          key={character.id}
-                          className="group relative bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer"
-                          onClick={() => setCharacterCollapseStates(prev => ({
-                            ...prev,
-                            [character.id]: !prev[character.id]
-                          }))}
-                        >
-                          {/* Character Image */}
-                          <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
-                            {character.imageUrl ? (
-                              <img
-                                src={character.imageUrl}
-                                alt={character.name}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.style.display = 'none';
-                                  target.nextElementSibling?.classList.remove('hidden');
-                                }}
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-600">
-                                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                              </div>
-                            )}
-
-                            {/* Character Badge */}
-                            {character.isMain && (
-                              <div className="absolute top-2 right-2">
-                                <Badge variant="default" size="sm" className="bg-blue-600 text-white text-xs px-1 py-0">
-                                  Main
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Character Info */}
-                          <div className="p-3">
-                            <h4 className="font-medium text-sm text-[rgb(var(--card-foreground))] truncate">
-                              {character.name}
-                            </h4>
-                            {character.role && (
-                              <p className="text-xs text-[rgb(var(--muted-foreground))] truncate mt-1">
-                                {character.role}
-                              </p>
-                            )}
-                          </div>
-
-                          {/* Expanded Content */}
-                          {characterCollapseStates[character.id] && (
-                            <div className="absolute inset-0 bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg p-4 z-10 shadow-xl max-h-[300px] overflow-y-auto">
-                              <div className="flex items-center justify-between mb-3">
-                                <h4 className="font-medium text-[rgb(var(--card-foreground))]">
-                                  {character.name}
-                                </h4>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setCharacterCollapseStates(prev => ({
-                                      ...prev,
-                                      [character.id]: false
-                                    }));
-                                  }}
-                                  className="h-auto p-1"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </Button>
-                              </div>
-                              {character.content && (
-                                <div className="text-xs text-[rgb(var(--muted-foreground))] space-y-2">
-                                  {typeof character.content === 'object' ? (
-                                    <pre className="whitespace-pre-wrap font-mono text-xs">
-                                      {JSON.stringify(character.content, null, 2)}
-                                    </pre>
-                                  ) : (
-                                    <p>{character.content}</p>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            )}
-
-            {/* Places Grid Display */}
-            {currentStoryPlaces && currentStoryPlaces.length > 0 && (
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <span>🏞️</span>
-                    Places ({currentStoryPlaces.length})
-                  </CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setPlacesCollapsed(!placesCollapsed)}
-                    className="flex items-center gap-1"
-                  >
-                    <span className="text-xs">
-                      {placesCollapsed ? 'Show' : 'Hide'}
-                    </span>
-                    <svg
-                      className={`w-4 h-4 transition-transform ${placesCollapsed ? 'rotate-0' : 'rotate-180'}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </Button>
-                </CardHeader>
-                {!placesCollapsed && (
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {currentStoryPlaces.map((place: any) => (
-                        <div
-                          key={place.id}
-                          className="group relative bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer"
-                          onClick={() => setPlaceCollapseStates(prev => ({
-                            ...prev,
-                            [place.id]: !prev[place.id]
-                          }))}
-                        >
-                          {/* Place Image */}
-                          <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
-                            {place.imageUrl ? (
-                              <img
-                                src={place.imageUrl}
-                                alt={place.name}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.style.display = 'none';
-                                  target.nextElementSibling?.classList.remove('hidden');
-                                }}
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-600">
-                                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                </svg>
-                              </div>
-                            )}
-
-                            {/* Place Badge */}
-                            {place.isMain && (
-                              <div className="absolute top-2 right-2">
-                                <Badge variant="default" size="sm" className="bg-green-600 text-white text-xs px-1 py-0">
-                                  Main
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Place Info */}
-                          <div className="p-3">
-                            <h4 className="font-medium text-sm text-[rgb(var(--card-foreground))] truncate">
-                              {place.name}
-                            </h4>
-                          </div>
-
-                          {/* Expanded Content */}
-                          {placeCollapseStates[place.id] && (
-                            <div className="absolute inset-0 bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg p-4 z-10 shadow-xl max-h-[300px] overflow-y-auto">
-                              <div className="flex items-center justify-between mb-3">
-                                <h4 className="font-medium text-[rgb(var(--card-foreground))]">
-                                  {place.name}
-                                </h4>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setPlaceCollapseStates(prev => ({
-                                      ...prev,
-                                      [place.id]: false
-                                    }));
-                                  }}
-                                  className="h-auto p-1"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </Button>
-                              </div>
-                              {place.content && (
-                                <div className="text-xs text-[rgb(var(--muted-foreground))] space-y-2">
-                                  {typeof place.content === 'object' ? (
-                                    <pre className="whitespace-pre-wrap font-mono text-xs">
-                                      {JSON.stringify(place.content, null, 2)}
-                                    </pre>
-                                  ) : (
-                                    <p>{place.content}</p>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            )}
           </div>
         );
       
       case "part":
-        // Find the selected part from the story structure
-        const selectedPart = story.parts.find(part => part.id === currentSelection.partId);
-        const partNumber = selectedPart?.orderIndex || 1;
-
+        // Display part HNS data using BeautifulJSONDisplay
         return (
-          <PartEditor
-            key={currentSelection.partId} // Force re-mount when part changes
-            partId={currentSelection.partId}
-            partNumber={partNumber}
-            initialData={currentPartData}
-            previewData={partPreviewData}
-            storyContext={{
-              title: story.title,
-              genre: story.genre,
-              themes: ["responsibility_for_power", "love_vs_control"],
-              chars: sampleStoryData.chars
-            }}
-            hasChanges={partHasChanges || !!partPreviewData}
-            onPartUpdate={handlePartDataUpdate}
-            onSave={async (data) => {
-              await handleSave(partPreviewData || data);
-              setOriginalPartData(partPreviewData || data);
-              setPartPreviewData(null);
-              setPartHasChanges(false);
-            }}
-            onCancel={() => {
-              setCurrentPartData(originalPartData);
-              setPartPreviewData(null);
-              setPartHasChanges(false);
-            }}
-          />
+          <div className="space-y-4">
+            <BeautifulJSONDisplay
+              title="Part HNS Data"
+              data={partPreviewData || currentPartData}
+              icon="📚"
+              isCollapsed={false}
+              onToggleCollapse={() => {}}
+              disabled={disabled}
+            />
+          </div>
         );
       
       case "chapter":
@@ -1556,9 +1186,14 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             selectedPartTitle = part.title;
             // Create part data based on the part information
             selectedPartData = {
-              ...samplePartData,
               part: part.orderIndex,
-              title: part.title
+              title: part.title,
+              words: part.targetWordCount || 20000,
+              function: part.function || "story_setup",
+              goal: part.goal || "",
+              conflict: part.conflict || "",
+              outcome: part.outcome || "",
+              ...part
             };
             break;
           }
@@ -1668,583 +1303,51 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             )}
 
             {/* Chapter Overview */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>📝 Chapter Overview</CardTitle>
-                <Button 
-                  size="sm" 
-                  variant="secondary"
-                  onClick={() => {
-                    const newShowState = !showThemePlanner;
-                    setShowThemePlanner(newShowState);
-                    // Mark theme as planned when user first opens the planner
-                    if (newShowState && !themePlanned) {
-                      setThemePlanned(true);
-                    }
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <BeautifulJSONDisplay
+                  title="📝 Chapter Overview"
+                  icon="📝"
+                  data={{
+                    title: chapterData.title,
+                    part: chapterData.partTitle,
+                    status: chapterData.status,
+                    progress: {
+                      current: chapterData.wordCount,
+                      target: chapterData.targetWordCount,
+                      percentage: Math.round((chapterData.wordCount / chapterData.targetWordCount) * 100)
+                    },
+                    purpose: chapterData.purpose,
+                    hook: chapterData.hook,
+                    characterFocus: chapterData.characterFocus
                   }}
-                  className="flex items-center gap-2"
-                >
-                  <span>🎨</span>
-                  {showThemePlanner ? "Hide Theme Planner" : "Create Theme"}
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <strong>📖 Title:</strong> {chapterData.title}
-                  </div>
-                  <div>
-                    <strong>📚 Part:</strong> {chapterData.partTitle}
-                  </div>
-                  <div>
-                    <strong>📊 Status:</strong> 
-                    <Badge 
-                      variant={chapterData.status === 'published' ? 'default' : 'outline'} 
-                      className={`ml-2 ${chapterData.status === 'published' ? 'bg-green-600 text-white' : ''}`}
-                    >
-                      {chapterData.status === 'published' ? '🚀' : ''} {chapterData.status}
-                    </Badge>
-                  </div>
-                  <div>
-                    <strong>📝 Progress:</strong> {chapterData.wordCount}/{chapterData.targetWordCount} words
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div>
-                    <strong>🎯 Purpose:</strong> {chapterData.purpose}
-                  </div>
-                  <div>
-                    <strong>🎬 Hook:</strong> {chapterData.hook}
-                  </div>
-                  <div>
-                    <strong>🎭 Character Focus:</strong> {chapterData.characterFocus}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                  isCollapsed={false}
+                  disabled={disabled}
+                />
+              </div>
+            </div>
 
-            {/* Chapter Theme Planner - Expandable */}
-            {showThemePlanner && (
-              <Card className="border-2 border-blue-200 dark:border-blue-800">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <span>🎨</span>
-                    Chapter Theme & Structure Planner
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Three-Act Structure */}
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm flex items-center gap-2">
-                      <span>🎬</span>
-                      Three-Act Chapter Structure
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="border rounded-lg p-3 bg-green-50 dark:bg-green-900/20">
-                        <h5 className="font-medium text-xs text-green-800 dark:text-green-200 mb-2">Act 1: Setup (20%)</h5>
-                        <div className="space-y-2 text-xs">
-                          <div><strong>Hook:</strong> {sampleChapterData.acts.setup.hook_in}</div>
-                          <div><strong>Orient:</strong> {sampleChapterData.acts.setup.orient}</div>
-                          <div><strong>Incident:</strong> {sampleChapterData.acts.setup.incident}</div>
-                        </div>
-                      </div>
-                      <div className="border rounded-lg p-3 bg-yellow-50 dark:bg-yellow-900/20">
-                        <h5 className="font-medium text-xs text-yellow-800 dark:text-yellow-200 mb-2">Act 2: Confrontation (60%)</h5>
-                        <div className="space-y-2 text-xs">
-                          <div><strong>Rising:</strong> {sampleChapterData.acts.confrontation.rising}</div>
-                          <div><strong>Midpoint:</strong> {sampleChapterData.acts.confrontation.midpoint}</div>
-                          <div><strong>Complicate:</strong> {sampleChapterData.acts.confrontation.complicate}</div>
-                        </div>
-                      </div>
-                      <div className="border rounded-lg p-3 bg-red-50 dark:bg-red-900/20">
-                        <h5 className="font-medium text-xs text-red-800 dark:text-red-200 mb-2">Act 3: Resolution (20%)</h5>
-                        <div className="space-y-2 text-xs">
-                          <div><strong>Climax:</strong> {sampleChapterData.acts.resolution.climax}</div>
-                          <div><strong>Resolve:</strong> {sampleChapterData.acts.resolution.resolve}</div>
-                          <div><strong>Hook Out:</strong> {sampleChapterData.acts.resolution.hook_out}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Tension Architecture */}
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm flex items-center gap-2">
-                      <span>⚡</span>
-                      Tension Architecture
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <div className="text-xs"><strong>🏃 External:</strong> {sampleChapterData.tension.external}</div>
-                        <div className="text-xs"><strong>💭 Internal:</strong> {sampleChapterData.tension.internal}</div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="text-xs"><strong>👥 Interpersonal:</strong> {sampleChapterData.tension.interpersonal}</div>
-                        <div className="text-xs"><strong>🌫️ Atmospheric:</strong> {sampleChapterData.tension.atmospheric}</div>
-                      </div>
-                    </div>
-                    <div className="bg-red-100 dark:bg-red-900/30 p-2 rounded text-xs">
-                      <strong>🎯 Peak:</strong> {sampleChapterData.tension.peak}
-                    </div>
-                  </div>
 
-                  {/* Character Development */}
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm flex items-center gap-2">
-                      <span>👤</span>
-                      Character Development
-                    </h4>
-                    <div className="border rounded-lg p-3 bg-blue-50 dark:bg-blue-900/20">
-                      <h5 className="font-medium text-xs text-blue-800 dark:text-blue-200 mb-2">Maya (POV)</h5>
-                      <div className="space-y-1 text-xs">
-                        <div><strong>Start:</strong> {sampleChapterData.chars.maya.start}</div>
-                        <div><strong>Arc:</strong> {sampleChapterData.chars.maya.arc}</div>
-                        <div><strong>End:</strong> {sampleChapterData.chars.maya.end}</div>
-                        <div><strong>Motivation:</strong> {sampleChapterData.chars.maya.motivation}</div>
-                        <div><strong>Growth:</strong> {sampleChapterData.chars.maya.growth}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Dual Mandate */}
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm flex items-center gap-2">
-                      <span>⚖️</span>
-                      Dual Mandate Fulfillment
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="border rounded-lg p-3 bg-purple-50 dark:bg-purple-900/20">
-                        <h5 className="font-medium text-xs text-purple-800 dark:text-purple-200 mb-2">📖 Episodic Satisfaction</h5>
-                        <div className="space-y-1 text-xs">
-                          <div><strong>Arc:</strong> {sampleChapterData.mandate.episodic.arc}</div>
-                          <div><strong>Payoff:</strong> {sampleChapterData.mandate.episodic.payoff}</div>
-                          <div><strong>Answered:</strong> {sampleChapterData.mandate.episodic.answered}</div>
-                        </div>
-                      </div>
-                      <div className="border rounded-lg p-3 bg-indigo-50 dark:bg-indigo-900/20">
-                        <h5 className="font-medium text-xs text-indigo-800 dark:text-indigo-200 mb-2">🚀 Serial Momentum</h5>
-                        <div className="space-y-1 text-xs">
-                          <div><strong>Complication:</strong> {sampleChapterData.mandate.serial.complication}</div>
-                          <div><strong>Stakes:</strong> {sampleChapterData.mandate.serial.stakes}</div>
-                          <div><strong>Compulsion:</strong> {sampleChapterData.mandate.serial.compulsion}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Forward Hook */}
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm flex items-center gap-2">
-                      <span>🪝</span>
-                      Forward Hook Strategy
-                    </h4>
-                    <div className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
-                      <div className="space-y-2 text-xs">
-                        <div><strong>Type:</strong> {sampleChapterData.hook.type} ({sampleChapterData.hook.reveal ? "revelation + " : ""}{sampleChapterData.hook.threat ? "threat + " : ""}{sampleChapterData.hook.emotion ? "emotional" : ""})</div>
-                        <div><strong>Reveal:</strong> {sampleChapterData.hook.reveal}</div>
-                        <div><strong>Threat:</strong> {sampleChapterData.hook.threat}</div>
-                        <div><strong>Emotion:</strong> {sampleChapterData.hook.emotion}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 pt-4 border-t">
-                    <Button 
-                      size="sm" 
-                      variant="default" 
-                      className="flex items-center gap-2" 
-                      onClick={handleSaveThemePlan}
-                      disabled={isSavingTheme}
-                    >
-                      {isSavingTheme ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                          Saving Theme Plan...
-                        </>
-                      ) : (
-                        <>
-                          <span>💾</span>
-                          Save Theme Plan
-                        </>
-                      )}
-                    </Button>
-                    <Button size="sm" variant="secondary" className="flex items-center gap-2">
-                      <span>🎲</span>
-                      Generate Variations
-                    </Button>
-                    <Button size="sm" variant="outline" className="flex items-center gap-2">
-                      <span>📋</span>
-                      Export YAML
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Scene Overview */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>🎬 Scene Overview</CardTitle>
-                <Button 
-                  size="sm" 
-                  variant="secondary"
-                  onClick={() => handleCreateScene(currentSelection.chapterId!)}
-                  disabled={isLoading || !themePlanned}
-                  className="flex items-center gap-2"
-                  title={!themePlanned ? "Create a theme first before adding scenes" : ""}
-                >
-                  <span>🎬</span>
-                  {isLoading ? "Creating..." : "Create Scene"}
-                </Button>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {chapterData.scenes.length > 0 ? (
-                    chapterData.scenes.map((scene, index) => (
-                      <div 
-                        key={scene.id} 
-                        className="border border-[rgb(var(--border))] rounded-[var(--radius)] p-4 bg-[rgb(var(--card)/50%)] hover:bg-[rgb(var(--primary)/8%)] cursor-pointer transition-all duration-[var(--animate-duration)] hover:border-[rgb(var(--primary)/60%)] hover:shadow-[var(--shadow)]"
-                        onClick={() => handleSelectionChange({
-                          level: "scene",
-                          storyId: story.id,
-                          partId: selectedPartData ? `part-${selectedPartData.part}` : undefined,
-                          chapterId: currentSelection.chapterId,
-                          sceneId: scene.id
-                        })}
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <h4 className="text-sm font-medium text-[rgb(var(--card-foreground))] flex items-center gap-2">
-                            <span>{scene.status === "completed" ? "✅" : scene.status === "in_progress" ? "⏳" : "📝"}</span>
-                            Scene {index + 1}: {scene.title}
-                          </h4>
-                          <span className="text-xs text-[rgb(var(--muted-foreground))] bg-[rgb(var(--muted))] px-2 py-1 rounded-[var(--radius-sm)]">                          
-                            {scene.wordCount}w
-                          </span>
-                        </div>
-                        <div className="space-y-1 text-xs text-[rgb(var(--muted-foreground))]">
-                          <div><strong>Goal:</strong> {scene.goal}</div>
-                          <div><strong>Conflict:</strong> {scene.conflict}</div>
-                          <div><strong>Outcome:</strong> {scene.outcome}</div>
-                        </div>
-                        <div className="mt-2 flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Badge 
-                              variant={scene.status === "completed" ? "success" : scene.status === "in_progress" ? "warning" : "secondary"}
-                              size="sm"
-                            >
-                              {scene.status.replace('_', ' ')}
-                            </Badge>
-                            <Button
-                              size="sm"
-                              variant={scene.status === "completed" ? "secondary" : "default"}
-                              onClick={(e) => handleToggleSceneStatus(scene.id, scene.status, e)}
-                              disabled={isLoading}
-                              className="text-xs px-2 py-1 h-auto"
-                              title={
-                                scene.status === 'planned' ? 'Start working on scene' :
-                                scene.status === 'in_progress' ? 'Mark scene as complete' :
-                                'Mark scene as in progress'
-                              }
-                            >
-                              <div className="flex items-center gap-1">
-                                <span>
-                                  {scene.status === 'planned' ? '▶️ Start' :
-                                   scene.status === 'in_progress' ? '✅ Complete' :
-                                   '🔄 Resume'}
-                                </span>
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" opacity="0.6">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                                </svg>
-                              </div>
-                            </Button>
-                          </div>
-                          <span className="text-xs text-[rgb(var(--primary))] hover:underline">
-                            Click to edit scene →
-                          </span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8 text-[rgb(var(--muted-foreground))]">
-                      <p className="text-sm mb-3">No scenes planned for this chapter</p>
-                      <Button 
-                        size="sm" 
-                        variant="secondary"
-                        onClick={() => handleCreateScene(currentSelection.chapterId!)}
-                        disabled={isLoading || !themePlanned}
-                        title={!themePlanned ? "Create a theme first before adding scenes" : ""}
-                      >
-                        {isLoading ? "Creating..." : !themePlanned ? "Create Theme First" : "+ Create First Scene"}
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Story YAML Data Display */}
-            <BeautifulYAMLDisplay
-              title="Story YAML Data"
-              icon="📖"
-              data={sampleStoryData}
-              isCollapsed={storyDataCollapsed}
-              onToggleCollapse={() => setStoryDataCollapsed(!storyDataCollapsed)}
-            />
-
-            {/* Characters Grid Display */}
-            {currentStoryCharacters && currentStoryCharacters.length > 0 && (
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <span>🎭</span>
-                    Characters ({currentStoryCharacters.length})
-                  </CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setCharactersCollapsed(!charactersCollapsed)}
-                    className="flex items-center gap-1"
-                  >
-                    <span className="text-xs">
-                      {charactersCollapsed ? 'Show' : 'Hide'}
-                    </span>
-                    <svg
-                      className={`w-4 h-4 transition-transform ${charactersCollapsed ? 'rotate-0' : 'rotate-180'}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </Button>
-                </CardHeader>
-                {!charactersCollapsed && (
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {currentStoryCharacters.map((character: any) => (
-                        <div
-                          key={character.id}
-                          className="group relative bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer"
-                          onClick={() => setCharacterCollapseStates(prev => ({
-                            ...prev,
-                            [character.id]: !prev[character.id]
-                          }))}
-                        >
-                          {/* Character Image */}
-                          <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
-                            {character.imageUrl ? (
-                              <img
-                                src={character.imageUrl}
-                                alt={character.name}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.style.display = 'none';
-                                  target.nextElementSibling?.classList.remove('hidden');
-                                }}
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-600">
-                                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                              </div>
-                            )}
-
-                            {/* Character Badge */}
-                            {character.isMain && (
-                              <div className="absolute top-2 right-2">
-                                <Badge variant="default" size="sm" className="bg-blue-600 text-white text-xs px-1 py-0">
-                                  Main
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Character Info */}
-                          <div className="p-3">
-                            <h4 className="font-medium text-sm text-[rgb(var(--card-foreground))] truncate">
-                              {character.name}
-                            </h4>
-                            {character.role && (
-                              <p className="text-xs text-[rgb(var(--muted-foreground))] truncate mt-1">
-                                {character.role}
-                              </p>
-                            )}
-                          </div>
-
-                          {/* Expanded Content */}
-                          {characterCollapseStates[character.id] && (
-                            <div className="absolute inset-0 bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg p-4 z-10 shadow-xl max-h-[300px] overflow-y-auto">
-                              <div className="flex items-center justify-between mb-3">
-                                <h4 className="font-medium text-[rgb(var(--card-foreground))]">
-                                  {character.name}
-                                </h4>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setCharacterCollapseStates(prev => ({
-                                      ...prev,
-                                      [character.id]: false
-                                    }));
-                                  }}
-                                  className="h-auto p-1"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </Button>
-                              </div>
-                              {character.content && (
-                                <div className="text-xs text-[rgb(var(--muted-foreground))] space-y-2">
-                                  {typeof character.content === 'object' ? (
-                                    <pre className="whitespace-pre-wrap font-mono text-xs">
-                                      {JSON.stringify(character.content, null, 2)}
-                                    </pre>
-                                  ) : (
-                                    <p>{character.content}</p>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            )}
-
-            {/* Places Grid Display */}
-            {currentStoryPlaces && currentStoryPlaces.length > 0 && (
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <span>🏞️</span>
-                    Places ({currentStoryPlaces.length})
-                  </CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setPlacesCollapsed(!placesCollapsed)}
-                    className="flex items-center gap-1"
-                  >
-                    <span className="text-xs">
-                      {placesCollapsed ? 'Show' : 'Hide'}
-                    </span>
-                    <svg
-                      className={`w-4 h-4 transition-transform ${placesCollapsed ? 'rotate-0' : 'rotate-180'}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </Button>
-                </CardHeader>
-                {!placesCollapsed && (
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {currentStoryPlaces.map((place: any) => (
-                        <div
-                          key={place.id}
-                          className="group relative bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer"
-                          onClick={() => setPlaceCollapseStates(prev => ({
-                            ...prev,
-                            [place.id]: !prev[place.id]
-                          }))}
-                        >
-                          {/* Place Image */}
-                          <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
-                            {place.imageUrl ? (
-                              <img
-                                src={place.imageUrl}
-                                alt={place.name}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.style.display = 'none';
-                                  target.nextElementSibling?.classList.remove('hidden');
-                                }}
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-600">
-                                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                </svg>
-                              </div>
-                            )}
-
-                            {/* Place Badge */}
-                            {place.isMain && (
-                              <div className="absolute top-2 right-2">
-                                <Badge variant="default" size="sm" className="bg-green-600 text-white text-xs px-1 py-0">
-                                  Main
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Place Info */}
-                          <div className="p-3">
-                            <h4 className="font-medium text-sm text-[rgb(var(--card-foreground))] truncate">
-                              {place.name}
-                            </h4>
-                          </div>
-
-                          {/* Expanded Content */}
-                          {placeCollapseStates[place.id] && (
-                            <div className="absolute inset-0 bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-lg p-4 z-10 shadow-xl max-h-[300px] overflow-y-auto">
-                              <div className="flex items-center justify-between mb-3">
-                                <h4 className="font-medium text-[rgb(var(--card-foreground))]">
-                                  {place.name}
-                                </h4>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setPlaceCollapseStates(prev => ({
-                                      ...prev,
-                                      [place.id]: false
-                                    }));
-                                  }}
-                                  className="h-auto p-1"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </Button>
-                              </div>
-                              {place.content && (
-                                <div className="text-xs text-[rgb(var(--muted-foreground))] space-y-2">
-                                  {typeof place.content === 'object' ? (
-                                    <pre className="whitespace-pre-wrap font-mono text-xs">
-                                      {JSON.stringify(place.content, null, 2)}
-                                    </pre>
-                                  ) : (
-                                    <p>{place.content}</p>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            )}
           </div>
         );
 
       case "scene":
-        return renderSceneEditor();
+        return renderSceneDisplay();
+
+      case "characters":
+        return (
+          <div className="space-y-6">
+            <CharactersDisplay storyData={sampleStoryData} />
+          </div>
+        );
+
+      case "settings":
+        return (
+          <div className="space-y-6">
+            <SettingsDisplay storyData={sampleStoryData} />
+          </div>
+        );
 
       default:
         return <div>Unknown editor level</div>;
@@ -2271,9 +1374,11 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               </Button>
               <div className="w-px h-6 bg-[rgb(var(--border))] hidden sm:block"></div>
               <h1 className="text-lg md:text-xl font-semibold text-[rgb(var(--foreground))] truncate font-[var(--font-heading)]">
-                {currentSelection.level === "story" ? "📖" : 
+                {currentSelection.level === "story" ? "📖" :
                  currentSelection.level === "part" ? "📚" :
-                 currentSelection.level === "chapter" ? "📝" : "🎬"} {story.title}
+                 currentSelection.level === "chapter" ? "📝" :
+                 currentSelection.level === "characters" ? "👥" :
+                 currentSelection.level === "settings" ? "🗺️" : "🎬"} {story.title}
               </h1>
               <Badge variant="outline">{currentSelection.level}</Badge>
               
@@ -2291,9 +1396,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                   size="sm" 
                   onClick={handleVisibilityToggle} 
                   disabled={isLoading}
-                  className={story.isPublic ? 'bg-[rgb(var(--primary))] hover:bg-[rgb(var(--primary)/90%)] text-[rgb(var(--primary-foreground))]' : 'bg-[rgb(var(--muted))] hover:bg-[rgb(var(--muted)/80%)] text-[rgb(var(--muted-foreground))]'}
+                  className={story.status === 'published' ? 'bg-[rgb(var(--primary))] hover:bg-[rgb(var(--primary)/90%)] text-[rgb(var(--primary-foreground))]' : 'bg-[rgb(var(--muted))] hover:bg-[rgb(var(--muted)/80%)] text-[rgb(var(--muted-foreground))]'}
                   title={
-                    story.isPublic 
+                    story.status === 'published'
                       ? 'Story is public - visible in community hub. Click to make private.'
                       : 'Story is private - not visible in community hub. Click to make public.'
                   }
@@ -2305,9 +1410,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                     </>
                   ) : (
                     <>
-                      <span>{story.isPublic ? '🌍' : '🔒'}</span>
+                      <span>{story.status === 'published' ? '🌍' : '🔒'}</span>
                       <span className="hidden sm:inline ml-1">
-                        {story.isPublic ? 'Public' : 'Private'}
+                        {story.status === 'published' ? 'Public' : 'Private'}
                       </span>
                       <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" opacity="0.6">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
@@ -2428,9 +1533,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                       const response = await fetch(`/api/scenes/${currentScene.id}`, {
                         method: 'PATCH',
                         headers: {
-                          'Content-Type': 'application/yaml',
+                          'Content-Type': 'application/json',
                         },
-                        body: yaml.dump({
+                        body: JSON.stringify({
                           status: newStatus
                         })
                       });
@@ -2439,7 +1544,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                         const responseText = await response.text();
                         let errorData;
                         try {
-                          errorData = yaml.load(responseText) as any;
+                          errorData = JSON.parse(responseText);
                         } catch {
                           errorData = { error: responseText };
                         }
@@ -2493,7 +1598,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           {/* Left Sidebar - Story Structure Navigation */}
           {!sidebarCollapsed && (
             <div className="col-span-12 lg:col-span-3 space-y-6">
-              <StoryStructureSidebar 
+              <StoryStructureSidebar
                 story={story}
                 currentSelection={currentSelection}
                 onSidebarCollapse={setSidebarCollapsed}
@@ -2504,10 +1609,10 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             />
             </div>
           )}
-          
+
           {/* Collapsed sidebar trigger */}
           {sidebarCollapsed && (
-            <StoryStructureSidebar 
+            <StoryStructureSidebar
               story={story}
               currentSelection={currentSelection}
               onSidebarCollapse={setSidebarCollapsed}
@@ -2525,74 +1630,52 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
           {/* Right Sidebar */}
           <div className="col-span-12 lg:col-span-3 space-y-6">
-            {currentSelection.level === "scene" ? (
-              // Scene view: Show SceneSidebar with scene controls and YAML data
-              <SceneSidebar
-                sceneData={{
-                  id: sampleSceneData.id,
-                  summary: sampleSceneData.summary,
-                  time: sampleSceneData.time,
-                  place: sampleSceneData.place,
-                  pov: sampleSceneData.pov,
-                  characters: sampleSceneData.characters,
-                  goal: sampleSceneData.goal,
-                  obstacle: sampleSceneData.obstacle,
-                  outcome: sampleSceneData.outcome,
-                  beats: sampleSceneData.beats,
-                  shift: sampleSceneData.shift,
-                  leads_to: sampleSceneData.leads_to,
-                  image_prompt: sampleSceneData.image_prompt
-                }}
-                chapterContext={{
-                  title: "Chapter Context",
-                  pov: sampleChapterData.pov,
-                  acts: sampleChapterData.acts
-                }}
-                storyData={sampleStoryData}
-                partData={samplePartData}
-                chapterData={sampleChapterData}
-                onSave={handleSave}
-                onSceneDataChange={(field, value) => {
-                  // Handle scene data changes
-                  console.log(`Updating scene field ${field}:`, value);
-                }}
-              />
-            ) : null}
+            {/* Removed SceneSidebar - Scene content now handled by SceneDisplay in main area */}
             
             {/* Story Prompt Writer - Show for story level */}
             {currentSelection.level === "story" && (
               <StoryPromptWriter
-                storyYaml={convertStoryDataToYAML(storyPreviewData || sampleStoryData)}
+                storyJson={convertStoryDataToJSON(storyPreviewData || sampleStoryData)}
                 storyId={story.id}
-                onStoryUpdate={handleStoryYAMLUpdate}
-                onPreviewUpdate={handleStoryYAMLPreviewUpdate}
+                onStoryUpdate={handleStoryJSONUpdate}
+                onPreviewUpdate={handleStoryJSONPreviewUpdate}
+                disabled={disabled}
               />
             )}
 
-            {/* Part Prompt Editor - Show for part level */}
-            {currentSelection.level === "part" && (
-              <PartPromptEditor
-                partData={partPreviewData || currentPartData}
-                onPartUpdate={handlePartDataUpdate}
-                onPreviewUpdate={setPartPreviewData}
+            {/* Part HNS Data Display - Show for part level */}
+            {currentSelection.level === "part" && currentPartData && (
+              <BeautifulJSONDisplay
+                title="Part HNS Data"
+                data={partPreviewData || currentPartData}
+                icon="📚"
+                isCollapsed={false}
+                onToggleCollapse={() => {}}
+                disabled={disabled}
               />
             )}
 
-            {/* Chapter Prompt Editor - Show for chapter level */}
-            {currentSelection.level === "chapter" && (
-              <ChapterPromptEditor
-                chapterData={chapterPreviewData || currentChapterData}
-                onChapterUpdate={handleChapterDataUpdate}
-                onPreviewUpdate={setChapterPreviewData}
+            {/* Chapter HNS Data Display - Show for chapter level */}
+            {currentSelection.level === "chapter" && currentChapterData && (
+              <BeautifulJSONDisplay
+                title="Chapter HNS Data"
+                data={chapterPreviewData || currentChapterData}
+                icon="📝"
+                isCollapsed={false}
+                onToggleCollapse={() => {}}
+                disabled={disabled}
               />
             )}
 
-            {/* Scene Prompt Editor - Show for scene level */}
-            {currentSelection.level === "scene" && (
-              <ScenePromptEditor
-                sceneData={scenePreviewData || currentSceneData}
-                onSceneUpdate={handleSceneDataUpdate}
-                onPreviewUpdate={setScenePreviewData}
+            {/* Scene HNS Data Display - Show for scene level */}
+            {currentSelection.level === "scene" && currentSceneData && (
+              <BeautifulJSONDisplay
+                title="Scene HNS Data"
+                data={scenePreviewData || currentSceneData}
+                icon="🎬"
+                isCollapsed={false}
+                onToggleCollapse={() => {}}
+                disabled={disabled}
               />
             )}
 

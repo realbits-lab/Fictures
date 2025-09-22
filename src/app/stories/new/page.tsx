@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { CreateStoryForm } from '@/components/stories/CreateStoryForm';
 import { StoryCreationProvider } from '@/components/stories/StoryCreationContext';
-import { YamlDataSidebar } from '@/components/stories/YamlDataSidebar';
+import { JsonDataSidebar } from '@/components/stories/JsonDataSidebar';
 
 export default async function NewStoryPage() {
   const session = await auth();
@@ -30,9 +30,9 @@ export default async function NewStoryPage() {
               <CreateStoryForm />
             </div>
 
-            {/* YAML Data Sidebar */}
+            {/* JSON Data Sidebar */}
             <div className="lg:col-span-1">
-              <YamlDataSidebar />
+              <JsonDataSidebar />
             </div>
           </div>
         </main>

@@ -1,14 +1,14 @@
 "use client";
 
-import { signIn } from 'next-auth/react';
+import Link from 'next/link';
 import { Button } from '@/components/ui';
 
 export function SignInButton() {
   return (
-    <Button
-      onClick={() => signIn('google')}
-    >
-      Sign In
-    </Button>
+    <Link href="/login">
+      <Button>
+        Sign In
+      </Button>
+    </Link>
   );
 }

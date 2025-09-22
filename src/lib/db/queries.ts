@@ -1,9 +1,11 @@
 import { db } from './index';
-import { stories, chapters, users, userStats, parts, scenes } from './schema';
+import { stories, chapters, users, userStats, parts, scenes, apiKeys } from './schema';
 import { eq, desc, and, inArray } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { RelationshipManager } from './relationships';
 import { hashPassword } from '../auth/password';
+import { generateApiKeyId } from '../auth/api-keys';
+import type { ApiScope } from '../auth/api-keys';
 
 // User authentication queries
 export async function findUserByEmail(email: string) {
@@ -84,7 +86,6 @@ export async function createStory(authorId: string, data: {
     authorId,
     targetWordCount: data.targetWordCount || 50000,
     status: 'draft',
-    isPublic: false,
     // Initialize bi-directional arrays
     partIds: [],
     chapterIds: [],
@@ -147,9 +148,9 @@ export async function getUserStoriesWithFirstChapter(userId: string) {
     
     // Check if story is actually published (has published chapters AND is public)
     const hasPublishedChapters = storyChapters.some(chapter => chapter.status === 'published');
-    const actualStatus = (story.isPublic && story.status === 'published' && hasPublishedChapters) 
-      ? 'published' 
-      : story.status;
+    const actualStatus = (story.status === 'published' && hasPublishedChapters)
+      ? 'published' as const
+      : story.status as any;
     
     return {
       ...story,
@@ -174,8 +175,8 @@ export async function getStoryById(storyId: string, userId?: string) {
 
   if (!story[0]) return null;
 
-  // Check if user has access (public stories or user's own stories)
-  if (!story[0].isPublic && story[0].authorId !== userId) {
+  // Check if user has access (published stories or user's own stories)
+  if (story[0].status !== 'published' && story[0].authorId !== userId) {
     return null;
   }
 
@@ -187,7 +188,6 @@ export async function updateStory(storyId: string, userId: string, data: Partial
   description: string;
   genre: string;
   status: string;
-  isPublic: boolean;
   targetWordCount: number;
 }>) {
   const [updatedStory] = await db
@@ -259,7 +259,7 @@ export async function getChapterById(chapterId: string, userId?: string) {
   if (!chapter) return null;
 
   // Check access permissions
-  if (!chapter.stories?.isPublic && chapter.stories?.authorId !== userId) {
+  if (chapter.stories?.status !== 'published' && chapter.stories?.authorId !== userId) {
     return null;
   }
 
@@ -416,7 +416,7 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
   if (!result) return null;
   
   // Check user access
-  if (userId && result.authorId !== userId && !result.isPublic) {
+  if (userId && result.authorId !== userId && result.status !== 'published') {
     return null;
   }
   
@@ -517,7 +517,8 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
     description: result.description,
     genre: result.genre || 'General',
     status: finalStoryStatus,
-    storyData: result.content || null,
+    isPublic: result.status === 'published',
+    hnsData: result.hnsData || null,
     authorId: result.authorId,
     userId: result.authorId,
     parts: structuredParts,
@@ -562,7 +563,7 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
   if (!result) return null;
 
   // Check access permissions
-  if (!result.story?.isPublic && result.story?.authorId !== userId) {
+  if (result.story?.status !== 'published' && result.story?.authorId !== userId) {
     return null;
   }
 
@@ -618,7 +619,6 @@ export async function getPublishedStories() {
       description: stories.description,
       genre: stories.genre,
       status: stories.status,
-      isPublic: stories.isPublic,
       viewCount: stories.viewCount,
       rating: stories.rating,
       currentWordCount: stories.currentWordCount,
@@ -628,10 +628,7 @@ export async function getPublishedStories() {
     })
     .from(stories)
     .leftJoin(users, eq(stories.authorId, users.id))
-    .where(and(
-      eq(stories.isPublic, true), 
-      eq(stories.status, 'published')
-    ))
+    .where(eq(stories.status, 'published'))
     .orderBy(desc(stories.updatedAt));
 
   if (publishedStories.length === 0) return [];
@@ -705,7 +702,7 @@ export async function getPublishedStories() {
     description: story.description || '',
     genre: story.genre || 'Fiction',
     status: story.status,
-    isPublic: story.isPublic,
+    isPublic: true,
     viewCount: story.viewCount || 0,
     rating: story.rating || 0,
     currentWordCount: story.currentWordCount || 0,
@@ -715,4 +712,122 @@ export async function getPublishedStories() {
       name: story.authorName || 'Anonymous'
     }
   }));
+}
+
+// API Keys queries
+export async function createApiKey(data: {
+  userId: string;
+  name: string;
+  keyHash: string;
+  keyPrefix: string;
+  scopes: ApiScope[];
+  expiresAt?: Date | null;
+}) {
+  const apiKeyId = generateApiKeyId();
+
+  const [apiKey] = await db.insert(apiKeys).values({
+    id: apiKeyId,
+    userId: data.userId,
+    name: data.name,
+    keyHash: data.keyHash,
+    keyPrefix: data.keyPrefix,
+    scopes: data.scopes,
+    expiresAt: data.expiresAt,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }).returning();
+
+  return apiKey;
+}
+
+export async function getUserApiKeys(userId: string) {
+  return await db
+    .select({
+      id: apiKeys.id,
+      name: apiKeys.name,
+      keyPrefix: apiKeys.keyPrefix,
+      scopes: apiKeys.scopes,
+      lastUsedAt: apiKeys.lastUsedAt,
+      expiresAt: apiKeys.expiresAt,
+      isActive: apiKeys.isActive,
+      createdAt: apiKeys.createdAt,
+      updatedAt: apiKeys.updatedAt,
+    })
+    .from(apiKeys)
+    .where(eq(apiKeys.userId, userId))
+    .orderBy(desc(apiKeys.createdAt));
+}
+
+export async function findApiKeyByHash(keyHash: string) {
+  const [apiKey] = await db
+    .select()
+    .from(apiKeys)
+    .where(and(
+      eq(apiKeys.keyHash, keyHash),
+      eq(apiKeys.isActive, true)
+    ))
+    .limit(1);
+
+  return apiKey || null;
+}
+
+export async function updateApiKeyLastUsed(apiKeyId: string) {
+  await db
+    .update(apiKeys)
+    .set({
+      lastUsedAt: new Date(),
+      updatedAt: new Date()
+    })
+    .where(eq(apiKeys.id, apiKeyId));
+}
+
+export async function updateApiKey(apiKeyId: string, data: {
+  name?: string;
+  scopes?: ApiScope[];
+  expiresAt?: Date | null;
+  isActive?: boolean;
+}) {
+  const [apiKey] = await db
+    .update(apiKeys)
+    .set({
+      ...data,
+      updatedAt: new Date()
+    })
+    .where(eq(apiKeys.id, apiKeyId))
+    .returning();
+
+  return apiKey;
+}
+
+export async function deleteApiKey(apiKeyId: string) {
+  await db
+    .delete(apiKeys)
+    .where(eq(apiKeys.id, apiKeyId));
+}
+
+export async function revokeApiKey(apiKeyId: string) {
+  return await updateApiKey(apiKeyId, { isActive: false });
+}
+
+export async function getApiKeyWithUser(keyHash: string) {
+  const result = await db
+    .select({
+      apiKey: apiKeys,
+      user: {
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        role: users.role,
+      }
+    })
+    .from(apiKeys)
+    .innerJoin(users, eq(apiKeys.userId, users.id))
+    .where(and(
+      eq(apiKeys.keyHash, keyHash),
+      eq(apiKeys.isActive, true)
+    ))
+    .limit(1);
+
+  return result[0] || null;
 }

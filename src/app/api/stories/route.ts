@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
+import { authenticateRequest, hasRequiredScope } from '@/lib/auth/dual-auth';
 import { createStory, getUserStories, getUserStoriesWithFirstChapter } from '@/lib/db/queries';
 import { z } from 'zod';
 import { createHash } from 'crypto';
@@ -16,13 +17,21 @@ const createStorySchema = z.object({
 // GET /api/stories - Get user's stories with detailed data for dashboard
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-    
-    if (!session?.user?.id) {
+    const authResult = await authenticateRequest(request);
+
+    if (!authResult) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const stories = await getUserStoriesWithFirstChapter(session.user.id);
+    // Check if user has permission to read stories
+    if (!hasRequiredScope(authResult, 'stories:read')) {
+      return NextResponse.json(
+        { error: 'Insufficient permissions. Required scope: stories:read' },
+        { status: 403 }
+      );
+    }
+
+    const stories = await getUserStoriesWithFirstChapter(authResult.user.id);
     
     // Transform the data to match the Dashboard component expectations
     const transformedStories = stories.map((story) => ({
@@ -42,15 +51,15 @@ export async function GET(request: NextRequest) {
       status: story.status as "draft" | "publishing" | "completed" | "published",
       wordCount: story.currentWordCount || 0,
       firstChapterId: story.firstChapterId,
-      storyData: story.content || null,
-      isPublic: story.isPublic || false,
+      hnsData: story.hnsData || null,
+      isPublic: story.status === 'published',
     }));
 
     const response = {
       stories: transformedStories,
       metadata: {
         fetchedAt: new Date().toISOString(),
-        userId: session.user.id,
+        userId: authResult.user.id,
         totalStories: transformedStories.length,
         lastUpdated: stories.length > 0
           ? stories.reduce((latest, story) =>
@@ -63,7 +72,7 @@ export async function GET(request: NextRequest) {
 
     // Generate ETag based on user stories data
     const contentForHash = JSON.stringify({
-      userId: session.user.id,
+      userId: authResult.user.id,
       storiesData: stories.map(story => ({
         id: story.id,
         title: story.title,
@@ -93,7 +102,8 @@ export async function GET(request: NextRequest) {
       // Medium cache for user dashboard - changes when user modifies stories
       'Cache-Control': 'private, max-age=900, stale-while-revalidate=1800', // 15min cache, 30min stale
       'X-Content-Type': 'user-dashboard',
-      'X-User-Id': session.user.id,
+      'X-User-Id': authResult.user.id,
+      'X-Auth-Type': authResult.type,
       'X-Last-Modified': response.metadata.lastUpdated || new Date().toISOString()
     });
 
@@ -110,16 +120,24 @@ export async function GET(request: NextRequest) {
 // POST /api/stories - Create a new story
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    
-    if (!session?.user?.id) {
+    const authResult = await authenticateRequest(request);
+
+    if (!authResult) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if user has permission to write stories
+    if (!hasRequiredScope(authResult, 'stories:write')) {
+      return NextResponse.json(
+        { error: 'Insufficient permissions. Required scope: stories:write' },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();
     const validatedData = createStorySchema.parse(body);
 
-    const story = await createStory(session.user.id, validatedData);
+    const story = await createStory(authResult.user.id, validatedData);
     return NextResponse.json({ story }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
