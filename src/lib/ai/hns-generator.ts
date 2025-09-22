@@ -761,6 +761,33 @@ export async function generateCompleteHNS(
     }
     console.log("✅ Scenes saved");
 
+    // Update chapters with their scene IDs and HNS data
+    console.log("💾 Updating chapters with scene IDs...");
+    for (const chapter of allChapters) {
+      const chapterSceneIds = allScenes
+        .filter(scene => scene.chapter_ref === chapter.chapter_id)
+        .map(scene => scene.scene_id || nanoid());
+
+      if (chapterSceneIds.length > 0) {
+        // Update the chapter object with scenes for HNS data
+        const updatedChapterHnsData = {
+          ...chapter,
+          scenes: chapterSceneIds
+        };
+
+        await db
+          .update(chaptersTable)
+          .set({
+            sceneIds: chapterSceneIds,
+            hnsData: updatedChapterHnsData as any,
+            updatedAt: new Date(),
+          })
+          .where(eq(chaptersTable.id, chapter.chapter_id || ''));
+        console.log(`✅ Chapter ${chapter.chapter_id} updated with ${chapterSceneIds.length} scene IDs`);
+      }
+    }
+    console.log("✅ Chapters updated with scene IDs and HNS data");
+
     // Update status to phase 5&6 complete
     await db
       .update(stories)
@@ -787,15 +814,15 @@ export async function generateCompleteHNS(
       progressCallback
     );
 
-    // Update status to phase 7 complete
+    // Update status to completed
     await db
       .update(stories)
       .set({
-        status: "phase7_complete",
+        status: "completed",
         updatedAt: new Date(),
       })
       .where(eq(stories.id, currentStoryId));
-    console.log("✅ Phase 7 marked as complete");
+    console.log("✅ Story marked as completed");
 
     // Assemble complete HNS document
     const completeStory: HNSStory = {
@@ -804,6 +831,21 @@ export async function generateCompleteHNS(
       settings: settings.map((s) => s.setting_id || nanoid()),
       parts: partsWithContent.map((p) => p.part_id),
     };
+
+    // Build the final data structures with proper scene references BEFORE saving
+    const finalChapters: HNSChapter[] = allChapters.map(chapter => ({
+      ...chapter,
+      scenes: allScenes
+        .filter(scene => scene.chapter_ref === chapter.chapter_id)
+        .map(scene => scene.scene_id)
+    }));
+
+    const finalParts: HNSPart[] = parts.map(part => ({
+      ...part,
+      chapters: allChapters
+        .filter(ch => ch.part_ref === part.part_id)
+        .map(ch => ch.chapter_id)
+    }));
 
     // Final update with complete HNS data (but not marking as fully completed yet)
     console.log("💾 Saving complete HNS data to database...");
@@ -822,11 +864,11 @@ export async function generateCompleteHNS(
           },
           phases: {
             phase1_story: story,
-            phase2_parts: parts,
+            phase2_parts: finalParts,
             phase3_characters: characters,
             phase4_settings: settings,
             phase5_6_chapters_scenes: {
-              chapters: allChapters,
+              chapters: finalChapters,
               scenes: allScenes,
               partsWithContent,
             },
@@ -838,21 +880,6 @@ export async function generateCompleteHNS(
       .where(eq(stories.id, currentStoryId));
 
     console.log("✅ HNS generation complete with incremental saves!");
-
-    // Build the final HNSDocument structure with proper ID references
-    const finalParts: HNSPart[] = parts.map(part => ({
-      ...part,
-      chapters: allChapters
-        .filter(ch => ch.part_ref === part.part_id)
-        .map(ch => ch.chapter_id)
-    }));
-
-    const finalChapters: HNSChapter[] = allChapters.map(chapter => ({
-      ...chapter,
-      scenes: allScenes
-        .filter(scene => scene.chapter_ref === chapter.chapter_id)
-        .map(scene => scene.scene_id)
-    }));
 
     return {
       story: completeStory,

@@ -1,9 +1,10 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { sql as sqlQuery } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { scenes, chapters, stories } from '../src/lib/db/schema.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '../.env.local') });
@@ -11,80 +12,69 @@ dotenv.config({ path: path.join(__dirname, '../.env.local') });
 const sql = postgres(process.env.POSTGRES_URL);
 const db = drizzle(sql);
 
-async function checkScenes() {
-  try {
-    // Try specific story ID first (from our recent generation)
-    let storyId = 'o3U938eUZzC6ix1otydmd';
-    let storyTitle = 'Echoes of Self';
+console.log('Checking scene and chapter relationships...\n');
 
-    // Check if this story exists
-    const story = await db.execute(sqlQuery`
-      SELECT id, title FROM stories
-      WHERE id = ${storyId}
-    `);
+// Get a story
+const allStories = await db.select().from(stories).limit(1);
+if (allStories.length === 0) {
+  console.log('No stories found');
+  process.exit(0);
+}
 
-    if (story.rows.length === 0) {
-      console.log('Story not found, checking for most recent story...');
-      // Get the most recent story
-      const recentStory = await db.execute(sqlQuery`
-        SELECT id, title FROM stories
-        ORDER BY created_at DESC
-        LIMIT 1
-      `);
+const story = allStories[0];
+console.log(`Story: ${story.title} (ID: ${story.id})`);
+console.log(`Chapter IDs in story: ${story.chapterIds.length} chapters`);
 
-      if (recentStory.rows.length === 0) {
-        console.log('No stories found in database');
-        return;
-      }
+// Get chapters for this story
+const allChapters = await db.select().from(chapters)
+  .where(eq(chapters.storyId, story.id))
+  .limit(3);
 
-      storyId = recentStory.rows[0].id;
-      storyTitle = recentStory.rows[0].title;
-    } else {
-      storyTitle = story.rows[0].title;
+console.log(`\nFound ${allChapters.length} chapters:`);
+for (const chapter of allChapters) {
+  console.log(`  - ${chapter.title} (ID: ${chapter.id})`);
+  console.log(`    Scene IDs: ${chapter.sceneIds?.length || 0} scenes - [${(chapter.sceneIds || []).join(', ')}]`);
+  console.log(`    Part ID: ${chapter.partId || 'none'}`);
+}
+
+// Get scenes
+const allScenes = await db.select().from(scenes).limit(3);
+console.log(`\nFound ${allScenes.length} scenes:`);
+for (const scene of allScenes) {
+  console.log(`  - ${scene.title} (ID: ${scene.id})`);
+  console.log(`    Chapter ID: ${scene.chapterId || 'MISSING!'}`);
+  console.log(`    Order Index: ${scene.orderIndex}`);
+}
+
+// Check if scenes have chapterId field populated
+const scenesWithoutChapterId = await db.select().from(scenes)
+  .where(eq(scenes.chapterId, null))
+  .limit(5);
+
+if (scenesWithoutChapterId.length > 0) {
+  console.log(`\n⚠️  WARNING: Found ${scenesWithoutChapterId.length} scenes without chapterId!`);
+  console.log('This is likely the issue - scenes need their chapterId field populated.');
+}
+
+// Check a specific chapter's scenes
+if (allChapters.length > 0 && allChapters[0].sceneIds?.length > 0) {
+  const firstChapter = allChapters[0];
+  const firstSceneId = firstChapter.sceneIds[0];
+
+  const [scene] = await db.select().from(scenes)
+    .where(eq(scenes.id, firstSceneId))
+    .limit(1);
+
+  if (scene) {
+    console.log(`\n✓ Scene ${scene.id} exists`);
+    console.log(`  Chapter ID on scene: ${scene.chapterId || 'MISSING!'}`);
+    console.log(`  Expected chapter ID: ${firstChapter.id}`);
+
+    if (scene.chapterId !== firstChapter.id) {
+      console.log('  ⚠️  MISMATCH: Scene chapterId does not match expected chapter!');
     }
-
-    console.log(`Checking story: "${storyTitle}" (ID: ${storyId})`);
-
-    // Get scenes for this story
-    const scenes = await db.execute(sqlQuery`
-      SELECT id, title, content, word_count, created_at, updated_at, scene_number
-      FROM scenes
-      WHERE story_id = ${storyId}
-      ORDER BY scene_number
-    `);
-
-    console.log(`\nFound ${scenes.rows.length} scenes:`);
-
-    if (scenes.rows.length === 0) {
-      console.log('No scenes found for this story.');
-
-      // Let's check if there are any scenes at all
-      const allScenes = await db.execute(sqlQuery`
-        SELECT id, title, story_id, scene_number
-        FROM scenes
-        ORDER BY created_at DESC
-        LIMIT 5
-      `);
-
-      console.log(`\nTotal scenes in database: ${allScenes.rows.length}`);
-      allScenes.rows.forEach((scene) => {
-        console.log(`  - ${scene.title} (Story: ${scene.story_id}, Scene #${scene.scene_number})`);
-      });
-    } else {
-      scenes.rows.forEach((scene, index) => {
-        console.log(`\nScene ${scene.scene_number || index + 1}: ${scene.title}`);
-        console.log(`  ID: ${scene.id}`);
-        console.log(`  Content: ${scene.content ? scene.content.substring(0, 200) + '...' : 'NULL or EMPTY'}`);
-        console.log(`  Word Count: ${scene.word_count || 0}`);
-        console.log(`  Created: ${scene.created_at}`);
-        console.log(`  Updated: ${scene.updated_at}`);
-      });
-    }
-  } catch (error) {
-    console.error('Error:', error);
-  } finally {
-    await sql.end();
   }
 }
 
-checkScenes();
+await sql.end();
+process.exit(0);
