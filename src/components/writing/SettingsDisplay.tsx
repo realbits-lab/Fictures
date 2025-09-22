@@ -1,24 +1,85 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui";
 import { BeautifulJSONDisplay } from "./BeautifulJSONDisplay";
+
+interface Setting {
+  id: string;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  type?: string;
+  significance?: string;
+  atmosphere?: string;
+  timeOfDay?: string;
+}
 
 interface SettingsDisplayProps {
   storyData: any;
 }
 
 export function SettingsDisplay({ storyData }: SettingsDisplayProps) {
-  // Extract settings from story data
-  const settings = storyData?.setting || storyData?.settings || {
+  const [dbSettings, setDbSettings] = useState<Setting[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Get story ID from the storyData
+  const storyId = storyData?.story?.story_id || storyData?.story_id;
+
+  // Fetch settings from database
+  useEffect(() => {
+    const fetchSettings = async () => {
+      if (!storyId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/stories/${storyId}/settings`);
+        if (response.ok) {
+          const settings = await response.json();
+          setDbSettings(settings);
+        } else {
+          console.error('Failed to fetch settings:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSettings();
+  }, [storyId]);
+
+  // Extract settings from story data (HNS format)
+  const hnsSettings = storyData?.setting || storyData?.settings || {
     primary: [],
     secondary: []
   };
 
+  // Combine database settings with HNS settings for display
+  const allSettings = [...dbSettings];
+
+  // Add HNS settings that might not be in database yet
+  const allHnsLocations = (hnsSettings.primary || []).concat(hnsSettings.secondary || []);
+  allHnsLocations.forEach((location: string, index: number) => {
+    const existingSetting = dbSettings.find(setting => setting.name.toLowerCase() === location.toLowerCase());
+    if (!existingSetting) {
+      allSettings.push({
+        id: `hns-${location}-${index}`,
+        name: location.charAt(0).toUpperCase() + location.slice(1),
+        description: "To be detailed",
+        type: (hnsSettings.primary || []).includes(location) ? "Primary Location" : "Secondary Location",
+        significance: "To be defined"
+      });
+    }
+  });
+
   // Create enriched settings data
   const enrichedSettings = {
-    primary_locations: settings.primary || [],
-    secondary_locations: settings.secondary || [],
+    primary_locations: hnsSettings.primary || [],
+    secondary_locations: hnsSettings.secondary || [],
     time_period: storyData?.time_period || "Contemporary",
     atmosphere: storyData?.atmosphere || "To be defined",
     world_building: {
@@ -27,12 +88,7 @@ export function SettingsDisplay({ storyData }: SettingsDisplayProps) {
       technology: storyData?.technology || "Modern day",
       society: storyData?.society || "To be explored"
     },
-    key_locations: (settings.primary || []).concat(settings.secondary || []).map((location: string) => ({
-      name: location,
-      description: "To be detailed",
-      significance: "To be defined",
-      scenes: []
-    }))
+    all_settings: allSettings
   };
 
   return (
@@ -48,14 +104,12 @@ export function SettingsDisplay({ storyData }: SettingsDisplayProps) {
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             Define and manage the settings and locations in your story. This includes primary and secondary locations, atmosphere, and world-building details.
           </p>
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-2 gap-4 text-sm text-gray-500">
             <div>
-              <span className="text-gray-500">Primary Locations:</span>
-              <span className="font-semibold ml-2">{settings.primary?.length || 0}</span>
+              Total Settings: <span className="font-semibold">{allSettings.length}</span>
             </div>
             <div>
-              <span className="text-gray-500">Secondary Locations:</span>
-              <span className="font-semibold ml-2">{settings.secondary?.length || 0}</span>
+              With Images: <span className="font-semibold">{allSettings.filter(setting => setting.imageUrl).length}</span>
             </div>
           </div>
         </CardContent>
@@ -63,64 +117,78 @@ export function SettingsDisplay({ storyData }: SettingsDisplayProps) {
 
       {/* Display settings data in beautiful card format */}
       <BeautifulJSONDisplay
-        title="Settings Details"
+        title="Settings Details (JSON)"
         icon="📍"
         data={enrichedSettings}
       />
 
-      {/* Location cards */}
-      <div className="space-y-4">
-        {/* Primary Locations */}
-        {settings.primary && settings.primary.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Primary Locations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {settings.primary.map((location: string, index: number) => (
-                  <Card key={`primary-${index}`} className="hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">🏛️</span>
-                        <h4 className="text-sm font-medium">{location}</h4>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-xs text-gray-500">Primary setting location</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+      {/* Loading state */}
+      {loading && (
+        <Card>
+          <CardContent className="text-center py-8">
+            <div className="animate-spin h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+            <p className="text-sm text-gray-500">Loading settings...</p>
+          </CardContent>
+        </Card>
+      )}
 
-        {/* Secondary Locations */}
-        {settings.secondary && settings.secondary.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Secondary Locations</CardTitle>
+      {/* Individual setting cards with images */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {allSettings.map((setting) => (
+          <Card key={setting.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center justify-between">
+                <span>{setting.name}</span>
+                <span className="text-xs font-normal text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                  {setting.type || "Location"}
+                </span>
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {settings.secondary.map((location: string, index: number) => (
-                  <Card key={`secondary-${index}`} className="hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">🏠</span>
-                        <h4 className="text-sm font-medium">{location}</h4>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-xs text-gray-500">Secondary setting location</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+            <CardContent className="space-y-3">
+              {/* Setting Image */}
+              {setting.imageUrl && (
+                <div className="mb-3">
+                  <img
+                    src={setting.imageUrl}
+                    alt={setting.name}
+                    className="w-full h-32 object-cover rounded-md"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
+
+              {setting.description && (
+                <div>
+                  <h4 className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Description</h4>
+                  <p className="text-sm">{setting.description}</p>
+                </div>
+              )}
+
+              {setting.significance && (
+                <div>
+                  <h4 className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Significance</h4>
+                  <p className="text-sm">{setting.significance}</p>
+                </div>
+              )}
+
+              {setting.atmosphere && (
+                <div>
+                  <h4 className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Atmosphere</h4>
+                  <p className="text-sm">{setting.atmosphere}</p>
+                </div>
+              )}
+
+              {setting.timeOfDay && (
+                <div>
+                  <h4 className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Time of Day</h4>
+                  <p className="text-sm italic">{setting.timeOfDay}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
-        )}
+        ))}
       </div>
 
       {/* World Building Details */}
