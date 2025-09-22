@@ -72,22 +72,6 @@ export const authConfig = {
     error: '/auth/error',
   },
   callbacks: {
-    authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user;
-      const isOnProtectedRoute = 
-        nextUrl.pathname.startsWith('/write') ||
-        nextUrl.pathname.startsWith('/publish') ||
-        nextUrl.pathname.startsWith('/settings') ||
-        nextUrl.pathname.startsWith('/assistant');
-      
-      if (isOnProtectedRoute) {
-        if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
-      } else if (isLoggedIn && nextUrl.pathname === '/login') {
-        return Response.redirect(new URL('/', nextUrl));
-      }
-      return true;
-    },
     async signIn({ account, profile, user }) {
       // Allow credentials sign-ins (handled by authorize function)
       if (account?.provider === 'credentials') {
