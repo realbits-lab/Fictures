@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
       wordCount: story.currentWordCount || 0,
       firstChapterId: story.firstChapterId,
       hnsData: story.hnsData || null,
-      isPublic: story.isPublic || false,
+      isPublic: story.status === 'published',
     }));
 
     const response = {

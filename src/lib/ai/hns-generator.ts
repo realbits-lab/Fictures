@@ -440,7 +440,6 @@ export async function generateCompleteHNS(
         genre: story.genre.join(", "),
         authorId: userId,
         status: "phase1_in_progress",
-        isPublic: false,
         premise: story.premise,
         dramaticQuestion: story.dramatic_question,
         theme: story.theme,

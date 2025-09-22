@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       })
       .from(stories)
       .leftJoin(users, eq(stories.authorId, users.id))
-      .where(eq(stories.isPublic, true))
+      .where(eq(stories.status, 'published'))
       .orderBy(desc(stories.updatedAt));
 
     // Add mock community stats for now (since community_posts table doesn't exist yet)

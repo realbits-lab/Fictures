@@ -47,7 +47,7 @@ export function StoryCard({
     chapters.total > 0 ? (chapters.completed / chapters.total) * 100 : 0;
 
   const getVisibilityBadge = () => {
-    if (isPublic === true) {
+    if (status === 'published') {
       return (
         <Badge variant="success">
           Public

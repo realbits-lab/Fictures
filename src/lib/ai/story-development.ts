@@ -788,7 +788,6 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
         authorId: userId,
         targetWordCount: storyConcept.words || 60000,
         status: 'phase1_in_progress',
-        isPublic: false,
         content: JSON.stringify({
           phase1_story: storyConcept,
           developmentPhases: {

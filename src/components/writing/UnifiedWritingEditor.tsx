@@ -898,7 +898,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   };
 
   const handleVisibilityToggle = async () => {
-    const currentVisibility = story.isPublic || false;
+    const currentVisibility = story.status === 'published';
     const newVisibility = !currentVisibility;
     
     setIsLoading(true);
@@ -922,7 +922,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       // Update the story data to reflect the new visibility
       setStory(prevStory => ({
         ...prevStory,
-        isPublic: newVisibility,
+        status: newVisibility ? 'published' : 'completed',
       }));
       
       // Show confirmation message
@@ -1396,9 +1396,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                   size="sm" 
                   onClick={handleVisibilityToggle} 
                   disabled={isLoading}
-                  className={story.isPublic ? 'bg-[rgb(var(--primary))] hover:bg-[rgb(var(--primary)/90%)] text-[rgb(var(--primary-foreground))]' : 'bg-[rgb(var(--muted))] hover:bg-[rgb(var(--muted)/80%)] text-[rgb(var(--muted-foreground))]'}
+                  className={story.status === 'published' ? 'bg-[rgb(var(--primary))] hover:bg-[rgb(var(--primary)/90%)] text-[rgb(var(--primary-foreground))]' : 'bg-[rgb(var(--muted))] hover:bg-[rgb(var(--muted)/80%)] text-[rgb(var(--muted-foreground))]'}
                   title={
-                    story.isPublic 
+                    story.status === 'published'
                       ? 'Story is public - visible in community hub. Click to make private.'
                       : 'Story is private - not visible in community hub. Click to make public.'
                   }
@@ -1410,9 +1410,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                     </>
                   ) : (
                     <>
-                      <span>{story.isPublic ? '🌍' : '🔒'}</span>
+                      <span>{story.status === 'published' ? '🌍' : '🔒'}</span>
                       <span className="hidden sm:inline ml-1">
-                        {story.isPublic ? 'Public' : 'Private'}
+                        {story.status === 'published' ? 'Public' : 'Private'}
                       </span>
                       <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" opacity="0.6">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />

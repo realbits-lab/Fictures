@@ -95,7 +95,6 @@ export const stories = pgTable('stories', {
   status: storyGenerationStatusEnum('status').default('draft').notNull(),
   coverImage: text('cover_image'),
   tags: json('tags').$type<string[]>().default([]),
-  isPublic: boolean('is_public').default(false),
   authorId: text('author_id').references(() => users.id).notNull(),
   targetWordCount: integer('target_word_count').default(50000),
   currentWordCount: integer('current_word_count').default(0),

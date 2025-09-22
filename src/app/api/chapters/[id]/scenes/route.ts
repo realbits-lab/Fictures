@@ -35,8 +35,7 @@ export async function GET(
       columns: {
         id: true,
         userId: true,
-        status: true,
-        isPublic: true
+        status: true
       }
     });
 
@@ -45,11 +44,11 @@ export async function GET(
     }
 
     const isOwner = story.userId === session?.user?.id;
-    const isPublishedStory = story.status === 'published' && story.isPublic;
+    const isPublishedStory = story.status === 'published';
 
     // Check permissions - allow access if:
     // 1. User is the owner, OR
-    // 2. The story is published and public (regardless of chapter status)
+    // 2. The story is published (regardless of chapter status)
     if (!isOwner && !isPublishedStory) {
       return NextResponse.json({ error: 'Chapter not available' }, { status: 403 });
     }
