@@ -36,6 +36,7 @@ import {
   HNSSetting,
   HNSDocument,
 } from "@/types/hns";
+import { cleanStoryHnsData, cleanComponentHnsData } from "@/lib/utils/hns-data-cleaner";
 
 // Constants for story structure
 const CHAPTERS_PER_PART = 1;
@@ -443,15 +444,13 @@ export async function generateCompleteHNS(
         premise: story.premise,
         dramaticQuestion: story.dramatic_question,
         theme: story.theme,
-        hnsData: {
-          phase1_story: story,
+        hnsData: cleanStoryHnsData({
           metadata: {
             version: "1.0.0",
             language,
             generation_prompt: userPrompt,
-            phase: "phase1_complete",
           },
-        },
+        }),
         partIds: [],
         chapterIds: [],
       })
@@ -459,15 +458,13 @@ export async function generateCompleteHNS(
         target: [stories.id],
         set: {
           status: "phase1_complete",
-          hnsData: {
-            phase1_story: story,
+          hnsData: cleanStoryHnsData({
             metadata: {
               version: "1.0.0",
               language,
               generation_prompt: userPrompt,
-              phase: "phase1_complete",
             },
-          },
+          }),
           updatedAt: new Date(),
         },
       });
@@ -497,14 +494,12 @@ export async function generateCompleteHNS(
       .update(stories)
       .set({
         status: "phase2_complete",
-        hnsData: {
+        hnsData: cleanStoryHnsData({
           ...phase2HnsData,
-          phase2_parts: parts,
           metadata: {
             ...phase2HnsData.metadata,
-            phase: "phase2_complete",
           },
-        },
+        }),
         partIds: parts.map((p) => p.part_id),
         updatedAt: new Date(),
       })
@@ -524,7 +519,7 @@ export async function generateCompleteHNS(
           orderIndex: i + 1,
           summary: part.summary,
           keyBeats: part.key_beats,
-          hnsData: part as any,
+          hnsData: cleanComponentHnsData(part),
           chapterIds: [],
           status: "planned",
         })
@@ -554,14 +549,12 @@ export async function generateCompleteHNS(
       .update(stories)
       .set({
         status: "phase3_complete",
-        hnsData: {
+        hnsData: cleanStoryHnsData({
           ...phase3HnsData,
-          phase3_characters: characters,
           metadata: {
             ...phase3HnsData.metadata,
-            phase: "phase3_complete",
           },
-        },
+        }),
         updatedAt: new Date(),
       })
       .where(eq(stories.id, currentStoryId));
@@ -581,7 +574,7 @@ export async function generateCompleteHNS(
           summary: character.summary,
           backstory: character.backstory,
           personality: character.personality,
-          hnsData: character as any,
+          hnsData: cleanComponentHnsData(character),
           content: JSON.stringify(character),
         })
         .onConflictDoNothing();
@@ -610,14 +603,12 @@ export async function generateCompleteHNS(
       .update(stories)
       .set({
         status: "phase4_complete",
-        hnsData: {
+        hnsData: cleanStoryHnsData({
           ...phase4HnsData,
-          phase4_settings: settings,
           metadata: {
             ...phase4HnsData.metadata,
-            phase: "phase4_complete",
           },
-        },
+        }),
         updatedAt: new Date(),
       })
       .where(eq(stories.id, currentStoryId));
@@ -719,7 +710,7 @@ export async function generateCompleteHNS(
           authorId: userId,
           orderIndex: chapter.chapter_number || 1,
           hook: chapter.chapter_hook.description,
-          hnsData: chapter as any,
+          hnsData: cleanComponentHnsData(chapter),
           status: "draft",
         })
         .onConflictDoNothing();
@@ -746,7 +737,7 @@ export async function generateCompleteHNS(
           povCharacterId: scene.pov_character_id || undefined,
           settingId: scene.setting_id || undefined,
           summary: scene.summary,
-          hnsData: scene as any,
+          hnsData: cleanComponentHnsData(scene),
           status: "planned",
         })
         .onConflictDoNothing()
@@ -778,7 +769,7 @@ export async function generateCompleteHNS(
           .update(chaptersTable)
           .set({
             sceneIds: chapterSceneIds,
-            hnsData: updatedChapterHnsData as any,
+            hnsData: cleanComponentHnsData(updatedChapterHnsData),
             updatedAt: new Date(),
           })
           .where(eq(chaptersTable.id, chapter.chapter_id || ''));
@@ -852,27 +843,15 @@ export async function generateCompleteHNS(
       .update(stories)
       .set({
         status: "phase5_6_complete", // Keep at phase5_6 since images aren't generated yet
-        hnsData: {
+        hnsData: cleanStoryHnsData({
           story: completeStory,
           metadata: {
             version: "1.0.0",
             created_at: new Date().toISOString(),
             language,
             generation_prompt: userPrompt,
-            phase: "completed",
           },
-          phases: {
-            phase1_story: story,
-            phase2_parts: finalParts,
-            phase3_characters: characters,
-            phase4_settings: settings,
-            phase5_6_chapters_scenes: {
-              chapters: finalChapters,
-              scenes: allScenes,
-              partsWithContent,
-            },
-          },
-        },
+        }),
         chapterIds: allChapters.map((c) => c.chapter_id || nanoid()),
         updatedAt: new Date(),
       })
