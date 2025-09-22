@@ -1,9 +1,11 @@
 import { db } from './index';
-import { stories, chapters, users, userStats, parts, scenes } from './schema';
+import { stories, chapters, users, userStats, parts, scenes, apiKeys } from './schema';
 import { eq, desc, and, inArray } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { RelationshipManager } from './relationships';
 import { hashPassword } from '../auth/password';
+import { generateApiKeyId } from '../auth/api-keys';
+import type { ApiScope } from '../auth/api-keys';
 
 // User authentication queries
 export async function findUserByEmail(email: string) {
@@ -715,4 +717,122 @@ export async function getPublishedStories() {
       name: story.authorName || 'Anonymous'
     }
   }));
+}
+
+// API Keys queries
+export async function createApiKey(data: {
+  userId: string;
+  name: string;
+  keyHash: string;
+  keyPrefix: string;
+  scopes: ApiScope[];
+  expiresAt?: Date | null;
+}) {
+  const apiKeyId = generateApiKeyId();
+
+  const [apiKey] = await db.insert(apiKeys).values({
+    id: apiKeyId,
+    userId: data.userId,
+    name: data.name,
+    keyHash: data.keyHash,
+    keyPrefix: data.keyPrefix,
+    scopes: data.scopes,
+    expiresAt: data.expiresAt,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }).returning();
+
+  return apiKey;
+}
+
+export async function getUserApiKeys(userId: string) {
+  return await db
+    .select({
+      id: apiKeys.id,
+      name: apiKeys.name,
+      keyPrefix: apiKeys.keyPrefix,
+      scopes: apiKeys.scopes,
+      lastUsedAt: apiKeys.lastUsedAt,
+      expiresAt: apiKeys.expiresAt,
+      isActive: apiKeys.isActive,
+      createdAt: apiKeys.createdAt,
+      updatedAt: apiKeys.updatedAt,
+    })
+    .from(apiKeys)
+    .where(eq(apiKeys.userId, userId))
+    .orderBy(desc(apiKeys.createdAt));
+}
+
+export async function findApiKeyByHash(keyHash: string) {
+  const [apiKey] = await db
+    .select()
+    .from(apiKeys)
+    .where(and(
+      eq(apiKeys.keyHash, keyHash),
+      eq(apiKeys.isActive, true)
+    ))
+    .limit(1);
+
+  return apiKey || null;
+}
+
+export async function updateApiKeyLastUsed(apiKeyId: string) {
+  await db
+    .update(apiKeys)
+    .set({
+      lastUsedAt: new Date(),
+      updatedAt: new Date()
+    })
+    .where(eq(apiKeys.id, apiKeyId));
+}
+
+export async function updateApiKey(apiKeyId: string, data: {
+  name?: string;
+  scopes?: ApiScope[];
+  expiresAt?: Date | null;
+  isActive?: boolean;
+}) {
+  const [apiKey] = await db
+    .update(apiKeys)
+    .set({
+      ...data,
+      updatedAt: new Date()
+    })
+    .where(eq(apiKeys.id, apiKeyId))
+    .returning();
+
+  return apiKey;
+}
+
+export async function deleteApiKey(apiKeyId: string) {
+  await db
+    .delete(apiKeys)
+    .where(eq(apiKeys.id, apiKeyId));
+}
+
+export async function revokeApiKey(apiKeyId: string) {
+  return await updateApiKey(apiKeyId, { isActive: false });
+}
+
+export async function getApiKeyWithUser(keyHash: string) {
+  const result = await db
+    .select({
+      apiKey: apiKeys,
+      user: {
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        role: users.role,
+      }
+    })
+    .from(apiKeys)
+    .innerJoin(users, eq(apiKeys.userId, users.id))
+    .where(and(
+      eq(apiKeys.keyHash, keyHash),
+      eq(apiKeys.isActive, true)
+    ))
+    .limit(1);
+
+  return result[0] || null;
 }

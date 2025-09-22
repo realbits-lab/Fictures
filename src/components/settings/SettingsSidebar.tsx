@@ -16,6 +16,7 @@ const settingsNavItems: SettingsNavItem[] = [
   { href: "/settings", label: "Account", icon: "👤" },
   { href: "/settings/writing", label: "Writing Preferences", icon: "✏️" },
   { href: "/settings/ai-assistant", label: "AI Assistant", icon: "🤖" },
+  { href: "/settings/api-keys", label: "API Keys", icon: "🔑" },
   { href: "/settings/appearance", label: "Appearance", icon: "🎨" },
   { href: "/settings/notifications", label: "Notifications", icon: "🔔" },
   { href: "/settings/privacy", label: "Privacy & Security", icon: "🔒" },

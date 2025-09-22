@@ -259,6 +259,21 @@ export const userStats = pgTable('user_stats', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// API Keys table - User-generated API keys for external authentication
+export const apiKeys = pgTable('api_keys', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  name: varchar('name', { length: 255 }).notNull().default('API Key'),
+  keyHash: varchar('key_hash', { length: 64 }).notNull().unique(), // SHA-256 hash
+  keyPrefix: varchar('key_prefix', { length: 16 }).notNull(), // First 16 chars for UI display
+  scopes: json('scopes').$type<string[]>().default([]).notNull(), // Permissions array
+  lastUsedAt: timestamp('last_used_at'),
+  expiresAt: timestamp('expires_at'),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 // Community posts table - Story-specific community discussions
 export const communityPosts = pgTable('community_posts', {
   id: text('id').primaryKey(),
@@ -297,6 +312,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   preferences: one(userPreferences),
   communityPosts: many(communityPosts),
   communityReplies: many(communityReplies),
+  apiKeys: many(apiKeys),
 }));
 
 export const storiesRelations = relations(stories, ({ one, many }) => ({
@@ -416,6 +432,13 @@ export const communityRepliesRelations = relations(communityReplies, ({ one, man
 export const userPreferencesRelations = relations(userPreferences, ({ one }) => ({
   user: one(users, {
     fields: [userPreferences.userId],
+    references: [users.id],
+  }),
+}));
+
+export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
+  user: one(users, {
+    fields: [apiKeys.userId],
     references: [users.id],
   }),
 }));
