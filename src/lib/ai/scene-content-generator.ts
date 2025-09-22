@@ -17,57 +17,6 @@ const SceneContentSchema = z.object({
   writing_notes: z.string().optional().describe("Brief notes about the scene's purpose and flow"),
 });
 
-/**
- * Post-process scene content to ensure proper dialogue formatting
- * Only fixes dialogue that's NOT already properly formatted with two newlines
- */
-function formatDialogueContent(content: string): string {
-  let formattedContent = content;
-
-  // Pattern 1: Dialogue immediately followed by narrative text (no double newlines)
-  // Example: "Hello," he said. -> "Hello,"\n\nHe said.
-  // Only match if dialogue is NOT preceded by \n\n AND NOT followed by \n\n
-  const dialogueNarrativePattern = /(?<!\n\n)("([^"]|\\")*?")(\s+)([^"\n][^"]*?[.!?])(?!\n\n)/g;
-
-  formattedContent = formattedContent.replace(dialogueNarrativePattern, (match, dialogue, _, space, narrative) => {
-    return `${dialogue}\n\n${narrative.trim()}`;
-  });
-
-  // Pattern 2: Narrative followed immediately by dialogue (no double newlines)
-  // Example: He nodded. "Yes." -> He nodded.\n\n"Yes."
-  // Only match if narrative is NOT followed by \n\n before dialogue
-  const narrativeDialoguePattern = /([^"\n][^"]*?[.!?])(\s+)("([^"]|\\")*?")(?!\n\n)/g;
-
-  formattedContent = formattedContent.replace(narrativeDialoguePattern, (match, narrative, space, dialogue) => {
-    return `${narrative.trim()}\n\n${dialogue}`;
-  });
-
-  // Pattern 3: Two dialogue sentences on same line
-  // Example: "Hello." "Goodbye." -> "Hello."\n\n"Goodbye."
-  // Only match if first dialogue is NOT followed by \n\n
-  const multiDialoguePattern = /("([^"]|\\")*?")(\s+)("([^"]|\\")*?")(?!\n\n)/g;
-
-  formattedContent = formattedContent.replace(multiDialoguePattern, '$1\n\n$4');
-
-  // Pattern 4: Complex dialogue-narrative-dialogue on same line/paragraph
-  // Example: "Text," he said. "More text." -> "Text,"\n\nHe said.\n\n"More text."
-  // Only if not already properly spaced
-  const complexPattern = /(?<!\n\n)("([^"]|\\")*?")(\s+)([^"]*?)(\s+)("([^"]|\\")*?")(?!\n\n)/g;
-
-  formattedContent = formattedContent.replace(complexPattern, (match, dialogue1, _, space1, narrative, space2, dialogue2) => {
-    const cleanNarrative = narrative.trim();
-    if (cleanNarrative && !cleanNarrative.match(/^[.!?]/)) {
-      return `${dialogue1}\n\n${cleanNarrative}\n\n${dialogue2}`;
-    } else {
-      return `${dialogue1}\n\n${dialogue2}`;
-    }
-  });
-
-  // Clean up excessive newlines (more than 2) but preserve intentional double newlines
-  formattedContent = formattedContent.replace(/\n{3,}/g, '\n\n');
-
-  return formattedContent.trim();
-}
 
 /**
  * Generate narrative content for a single scene
@@ -89,6 +38,8 @@ export async function generateSceneContent(
       model: AI_MODELS.writing,
       schema: SceneContentSchema,
       system: `You are a professional web novelist optimizing for mobile reading and maximum engagement. Write the COMPLETE scene following web novel prose discipline.
+
+🚨 CRITICAL: EVERY DIALOGUE SENTENCE WITH QUOTES MUST BE ISOLATED WITH DOUBLE NEWLINES 🚨
 
 == STORY CONTEXT ==
 Title: ${story.story_title} | Genre: ${story.genre.join(", ")}
@@ -114,10 +65,13 @@ ${sceneCharacters.map(c => `${c.name} (${c.role})`).join(" | ")}
 
 == WEB NOVEL WRITING DISCIPLINE ==
 
+🚨 DIALOGUE ISOLATION IS MANDATORY - NO EXCEPTIONS 🚨
+
 CORE PRINCIPLES:
 • Mobile-first readability (smartphone screen optimization)
 • Zero friction prose (instant comprehension)
 • Binge-reading design (addictive forward momentum)
+• DIALOGUE ISOLATION: Every "quote" surrounded by blank lines
 
 QUANTITATIVE REQUIREMENTS:
 • Words per sentence: 15-20 average (vary 8-30 for rhythm)
@@ -188,24 +142,33 @@ FORBIDDEN PRACTICES:
 ✗ Pure description blocks
 ✗ Passive voice chains
 ✗ Complete resolution without hook
+🚨 ✗ DIALOGUE TOUCHING NARRATIVE TEXT (INSTANT FAILURE) ✗ 🚨
 
 CRITICAL FORMATTING RULES (FOLLOW EXACTLY):
+
+🚨 RULE #1: DIALOGUE ISOLATION (MOST IMPORTANT) 🚨
 
 1. TWO-NEWLINE PRINCIPLE
 After every sentence, use TWO newlines (creating blank lines between paragraphs).
 
-2. ONE SENTENCE PER LINE RULE
+2. DIALOGUE ISOLATION RULE (MANDATORY)
+Every dialogue sentence with double quotation marks MUST:
+- START with two newlines before the opening quote
+- END with two newlines after the closing quote
+- Never have dialogue touching narrative text
+
+3. ONE SENTENCE PER LINE RULE
 - Each dialogue sentence = own paragraph
 - Each narrative sentence = own paragraph
-- Maximum 2 sentences per paragraph (prefer 1)
+- Maximum 3 sentences per paragraph (prefer 1 or 2)
 
-3. SENTENCE LENGTH = 8-20 WORDS AVERAGE
+4. SENTENCE LENGTH = 8-20 WORDS AVERAGE
 Keep sentences short. Punchy. Direct.
 
-WRONG FORMAT (TOO DENSE):
+WRONG FORMAT (DIALOGUE TOUCHING TEXT):
 "It's clearly a river," Kael stated, his voice a low rumble. He pointed to a flowing pattern. "See how it branches?"
 
-CORRECT FORMAT (MOBILE OPTIMIZED):
+CORRECT FORMAT (DIALOGUE ISOLATED):
 "It's clearly a river."
 
 Kael stated, his voice a low rumble.
@@ -213,6 +176,22 @@ Kael stated, his voice a low rumble.
 He pointed to a flowing pattern.
 
 "See how it branches?"
+
+DIALOGUE ISOLATION EXAMPLES:
+
+WRONG: Maya nodded. "I understand." She walked away.
+CORRECT: Maya nodded.
+
+"I understand."
+
+She walked away.
+
+WRONG: "No one was," Valerius replied grimly. "Prepare for evasive maneuvers."
+CORRECT: "No one was,"
+
+Valerius replied grimly.
+
+"Prepare for evasive maneuvers."
 
 REQUIRED SCENE STRUCTURE EXAMPLE:
 
@@ -258,30 +237,28 @@ Maya pointed with trembling finger.
 
 "All of it modified."
 
-DIALOGUE REQUIREMENTS:
+🚨 DIALOGUE REQUIREMENTS (CRITICAL): 🚨
 • 60-70% of scene must be dialogue
-• Each quoted sentence = new paragraph
+• EVERY "quoted sentence" = isolated paragraph with blank lines above and below
 • Characters speak frequently
 • Short, punchy exchanges
 • Mix questions and statements
+🚨 REMEMBER: NO DIALOGUE TOUCHING NARRATIVE EVER 🚨
 
 PACING DYNAMICS:
 HIGH TENSION → Short. Fragments. Active verbs.
 MEDIUM TENSION → Balanced sentences, varied rhythm.
 LOW TENSION → Longer sentences for atmosphere.
 
-TARGET: 800-1500 words of engaging, mobile-optimized prose.`,
+TARGET: 800-1500 words of engaging, mobile-optimized prose.
+
+🚨 FINAL REMINDER: ISOLATE ALL DIALOGUE WITH BLANK LINES 🚨
+🚨 CHECK EVERY "QUOTE" - MUST HAVE BLANK LINES BEFORE AND AFTER 🚨`,
       prompt: `Write the COMPLETE scene narrative from beginning to end. Start with the entry hook and develop through to resolution. Begin with: "${scene.entry_hook}"`,
       temperature: 0.85,
     });
 
-    // Post-process the content to ensure proper dialogue formatting
-    const formattedContent = formatDialogueContent(object.content);
-
-    return {
-      content: formattedContent,
-      writing_notes: object.writing_notes
-    };
+    return object;
   } catch (error) {
     console.error(`Error generating content for scene ${scene.scene_id}:`, error);
 
