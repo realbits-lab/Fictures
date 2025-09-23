@@ -38,10 +38,6 @@ import {
 } from "@/types/hns";
 import { cleanStoryHnsData, cleanComponentHnsData } from "@/lib/utils/hns-data-cleaner";
 
-// Constants for story structure
-const CHAPTERS_PER_PART = 1;
-const SCENES_PER_CHAPTER = 1;
-
 /**
  * Phase 1: Core Concept Generation (Story Object)
  * Creates one-sentence summary and foundational story elements
@@ -105,38 +101,62 @@ Act 1 (Setup):
 - Introduces characters and ordinary world
 - Contains inciting incident
 - Key beats: ["Exposition", "Inciting Incident", "Plot Point One"]
+- Chapter count: Determine 1-3 chapters based on complexity
+- Scene counts: Determine 1-3 scenes per chapter
 
 Act 2 (Confrontation):
 - Develops rising action and obstacles
 - Contains midpoint reversal
 - Key beats: ["Rising Action", "Midpoint", "Plot Point Two"]
+- Chapter count: Determine 1-3 chapters (usually more than Act 1)
+- Scene counts: Determine 1-3 scenes per chapter
 
 Act 3 (Resolution):
 - Resolves conflicts and completes arcs
 - Key beats: ["Climax", "Falling Action", "Resolution"]
+- Chapter count: Determine 1-3 chapters
+- Scene counts: Determine 1-3 scenes per chapter
 
 Return a JSON object with a 'parts' array containing exactly three parts, each with:
 - part_title: A descriptive title for the part
 - structural_role: Must be exactly one of "Act 1: Setup", "Act 2: Confrontation", or "Act 3: Resolution"
 - summary: One paragraph describing main movements and developments
 - key_beats: Array of narrative beats for this act
-- chapters: Empty array (will be populated later)`,
+- chapters: Empty array (will be populated later)
+- chapter_count: Number of chapters for this part (1-3), based on narrative complexity
+- scene_counts: Array of scene counts, one per chapter (each 1-3)
+
+IMPORTANT:
+- chapter_count determines how many chapters this part will have
+- scene_counts must be an array with exactly chapter_count elements
+- Each element in scene_counts should be 1-3 based on chapter complexity
+- Act 2 typically needs more chapters/scenes than Acts 1 and 3`,
       prompt:
-        "Generate three-act structure with proper narrative beats and development.",
+        "Generate three-act structure with dynamic chapter and scene counts based on narrative needs.",
       temperature: 0.8,
     });
 
-    return object.parts.map((part, index) => ({
-      ...part,
-      part_id: nanoid(),
-      structural_role:
-        part.structural_role ||
-        ((index === 0
-          ? "Act 1: Setup"
-          : index === 1
-          ? "Act 2: Confrontation"
-          : "Act 3: Resolution") as HNSPart["structural_role"]),
-    }));
+    return object.parts.map((part, index) => {
+      // Ensure chapter_count and scene_counts are valid
+      const chapterCount = part.chapter_count || (index === 1 ? 2 : 1); // Default Act 2 to 2 chapters
+      const sceneCounts = part.scene_counts?.length === chapterCount
+        ? part.scene_counts
+        : Array(chapterCount).fill(index === 1 ? 2 : 1); // Default to 2 scenes for Act 2, 1 for others
+
+      return {
+        ...part,
+        part_id: nanoid(),
+        structural_role:
+          part.structural_role ||
+          ((index === 0
+            ? "Act 1: Setup"
+            : index === 1
+            ? "Act 2: Confrontation"
+            : "Act 3: Resolution") as HNSPart["structural_role"]),
+        chapter_count: chapterCount,
+        scene_counts: sceneCounts,
+      };
+    });
   } catch (error) {
     console.error("Error generating story parts:", error);
     throw new Error("Failed to generate story parts");
@@ -257,7 +277,7 @@ For each setting provide:
 export async function generateHNSChapters(
   story: HNSStory,
   part: HNSPart,
-  chapterCount: number = CHAPTERS_PER_PART
+  chapterCount: number = 1
 ): Promise<HNSChapter[]> {
   try {
     const { object } = await generateObject({
@@ -317,7 +337,7 @@ export async function generateHNSScenes(
   chapter: HNSChapter,
   characters: HNSCharacter[],
   settings: HNSSetting[],
-  sceneCount: number = SCENES_PER_CHAPTER
+  sceneCount: number = 1
 ): Promise<HNSScene[]> {
   try {
     const { object } = await generateObject({
@@ -642,11 +662,15 @@ export async function generateCompleteHNS(
       parts.map(async (part, partIndex) => {
         console.log(`🔄 Processing part ${partIndex + 1}/${parts.length}: ${part.part_title}`);
 
+        // Use dynamic chapter count from part
+        const chapterCount = part.chapter_count || 1;
+        console.log(`📖 Generating ${chapterCount} chapters for part: ${part.part_title}`);
+
         // Use the fixed version with reduced payload
         const chapters = await generateHNSChaptersFixed(
           story,
           part,
-          Math.min(CHAPTERS_PER_PART, 3) // Limit to 3 chapters per part
+          chapterCount // Use dynamic chapter count
         );
         console.log(`✅ Generated ${chapters.length} chapters for part: ${part.part_title}`);
 
@@ -663,13 +687,17 @@ export async function generateCompleteHNS(
           chapters.map(async (chapter, chapterIndex) => {
             console.log(`🔄 Processing chapter ${chapterIndex + 1}/${chapters.length}: ${chapter.chapter_title}`);
 
+            // Use dynamic scene count from part's scene_counts array
+            const sceneCount = part.scene_counts?.[chapterIndex] || 1;
+            console.log(`🎭 Generating ${sceneCount} scenes for chapter: ${chapter.chapter_title}`);
+
             // Use the fixed version with reduced payload
             const scenes = await generateHNSScenesFixed(
               story,
               chapter,
               characters,
               settings,
-              Math.min(SCENES_PER_CHAPTER, 3) // Limit to 3 scenes per chapter
+              sceneCount // Use dynamic scene count
             );
             console.log(`✅ Generated ${scenes.length} scenes for chapter: ${chapter.chapter_title}`);
 

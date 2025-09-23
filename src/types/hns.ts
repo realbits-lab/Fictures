@@ -83,6 +83,14 @@ export const HNSPartSchema = z.object({
   /** Ordered array of chapter_ids comprising this part */
   chapters: z.array(z.string()).default([])
     .describe("Ordered references to Chapter objects that comprise this part"),
+
+  /** Number of chapters to generate for this part (1-3) */
+  chapter_count: z.number().min(1).max(3).default(1)
+    .describe("Number of chapters to generate for this part"),
+
+  /** Number of scenes to generate per chapter (array with one value per chapter, 1-3 each) */
+  scene_counts: z.array(z.number().min(1).max(3)).default([1])
+    .describe("Number of scenes per chapter in this part"),
 });
 
 // Level 3: Reading Units Schema
@@ -525,7 +533,9 @@ export function createEmptyPart(id: string, role: HNSPart['structural_role']): H
     key_beats: role === 'Act 1: Setup' ? [...ACT1_BEATS] :
                 role === 'Act 2: Confrontation' ? [...ACT2_BEATS] :
                 [...ACT3_BEATS],
-    chapters: []
+    chapters: [],
+    chapter_count: 1,
+    scene_counts: [1]
   };
 }
 
