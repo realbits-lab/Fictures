@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
 import { useStoryData } from "@/lib/hooks/useStoryData";
 import { useWritingProgress, useWritingSession } from "@/hooks/useStoryWriter";
@@ -925,13 +926,26 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         status: newVisibility ? 'published' : 'completed',
       }));
       
-      // Show confirmation message
+      // Show confirmation toast
       const action = newVisibility ? 'public' : 'private';
-      alert(`Story is now ${action}! ${newVisibility ? 'It will appear in the community hub for discussions.' : 'It has been removed from the community hub.'}`);
+      const message = newVisibility
+        ? 'Story is now public! It will appear in the community hub for discussions.'
+        : 'Story is now private! It has been removed from the community hub.';
+
+      toast.success(message, {
+        duration: 5000,
+        icon: newVisibility ? '🌍' : '🔒',
+        position: 'top-right',
+        closeButton: true,
+      });
       
     } catch (error) {
       console.error('Visibility toggle error:', error);
-      alert(`Failed to update story visibility. Please try again.`);
+      toast.error('Failed to update story visibility. Please try again.', {
+        duration: 5000,
+        position: 'top-right',
+        closeButton: true,
+      });
     } finally {
       setIsLoading(false);
     }

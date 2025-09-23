@@ -7,6 +7,7 @@ import { stories, parts, characters, places } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { RelationshipManager } from '@/lib/db/relationships';
+import { generateImage } from './image-generator';
 
 // Helper function to extract and clean YAML content from markdown code blocks
 function extractYamlFromText(text: string): string {
@@ -777,6 +778,38 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
     const storyConcept = await storyConceptDevelopment(userPrompt, language);
     console.log('✅ Story concept developed');
 
+    // Generate story cover image
+    console.log('🎨 Generating story cover image...');
+    let storyImageUrl = null;
+    let storyImageData = null;
+    try {
+      const storyImagePrompt = `${storyConcept.title}: ${storyConcept.genre} story. ${storyConcept.question}. ${storyConcept.goal}. Key themes: ${storyConcept.themes?.join(', ')}. Setting: ${storyConcept.setting?.primary?.join(', ')}`;
+      const imageResult = await generateImage(
+        storyImagePrompt,
+        'story',
+        currentStoryId,
+        {
+          style: 'fantasy-art',
+          aspectRatio: 'portrait',
+          quality: 'high',
+          mood: 'epic and dramatic',
+          lighting: 'cinematic'
+        }
+      );
+      storyImageUrl = imageResult.imageUrl;
+      storyImageData = {
+        url: imageResult.imageUrl,
+        method: imageResult.method,
+        style: imageResult.style,
+        generatedAt: new Date().toISOString(),
+        prompt: storyImagePrompt
+      };
+      console.log('✅ Story image generated:', storyImageUrl);
+    } catch (error) {
+      console.error('⚠️ Failed to generate story image:', error);
+      // Continue without image if generation fails
+    }
+
     // Save story after Phase 1 with status 'phase1_in_progress'
     console.log('💾 Saving Phase 1 data to database...');
     await db.insert(stories)
@@ -788,6 +821,8 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
         authorId: userId,
         targetWordCount: storyConcept.words || 60000,
         status: 'phase1_in_progress',
+        coverImage: storyImageUrl,
+        hnsData: storyImageData ? { storyImage: storyImageData } : {},
         content: JSON.stringify({
           phase1_story: storyConcept,
           developmentPhases: {
@@ -801,6 +836,8 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
         target: [stories.id],
         set: {
           status: 'phase1_complete',
+          coverImage: storyImageUrl,
+          hnsData: storyImageData ? { storyImage: storyImageData } : {},
           content: JSON.stringify({
             phase1_story: storyConcept,
             developmentPhases: {

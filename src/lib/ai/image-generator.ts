@@ -72,6 +72,13 @@ function getImageDimensions(aspectRatio: 'portrait' | 'landscape' | 'square' = '
       case 'landscape': return '768x512';
       case 'square': return '512x512';
     }
+  } else if (type === 'story') {
+    // Story images are typically book covers, use portrait
+    switch (aspectRatio) {
+      case 'portrait': return '768x1152';  // Book cover ratio
+      case 'landscape': return '1152x768';
+      case 'square': return '1024x1024';
+    }
   } else {
     switch (aspectRatio) {
       case 'portrait': return '768x1024';
@@ -86,7 +93,7 @@ function getImageDimensions(aspectRatio: 'portrait' | 'landscape' | 'square' = '
  */
 function buildEnhancedPrompt(
   basePrompt: string,
-  type: 'character' | 'setting' | 'scene',
+  type: 'character' | 'setting' | 'scene' | 'story',
   options: ImageGenerationOptions = {}
 ): string {
   const {
@@ -102,6 +109,8 @@ function buildEnhancedPrompt(
     enhancedPrompt = `Create a detailed character portrait: ${basePrompt}`;
   } else if (type === 'setting' || type === 'scene') {
     enhancedPrompt = `Create a detailed environment scene: ${basePrompt}`;
+  } else if (type === 'story') {
+    enhancedPrompt = `Create an epic story cover art illustration: ${basePrompt}`;
   }
 
   enhancedPrompt += `, ${getStylePrompt(style)}`;
@@ -120,6 +129,8 @@ function buildEnhancedPrompt(
 
   if (type === 'character') {
     enhancedPrompt += ', character focus, detailed facial features';
+  } else if (type === 'story') {
+    enhancedPrompt += ', cinematic composition, book cover style, dramatic lighting, storytelling atmosphere';
   } else {
     enhancedPrompt += ', environmental storytelling, atmospheric perspective';
   }
@@ -145,6 +156,8 @@ function generatePlaceholder(prompt: string, type: string): string {
     return `${placeholderService}/400/600?random=${imageId}&blur=0`;
   } else if (type === 'place' || type === 'setting' || type === 'scene') {
     return `${placeholderService}/600/400?random=${imageId}&blur=0`;
+  } else if (type === 'story') {
+    return `${placeholderService}/600/900?random=${imageId}&blur=0`;
   } else {
     return `${placeholderService}/500/500?random=${imageId}&blur=0`;
   }
@@ -171,7 +184,7 @@ async function uploadToBlob(
  */
 export async function generateImage(
   prompt: string,
-  type: 'character' | 'setting' | 'scene',
+  type: 'character' | 'setting' | 'scene' | 'story',
   storyId: string,
   options: ImageGenerationOptions = {}
 ): Promise<ImageGenerationResult> {
@@ -262,7 +275,7 @@ export async function generateImage(
 export async function generateImagesInBatch(
   items: Array<{
     prompt: string;
-    type: 'character' | 'setting' | 'scene';
+    type: 'character' | 'setting' | 'scene' | 'story';
     id: string;
     name: string;
     options?: ImageGenerationOptions;

@@ -1,34 +1,10 @@
 import { pgTable, text, timestamp, integer, boolean, json, uuid, varchar, serial, primaryKey, pgEnum } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
-// Story generation status enum
-export const storyGenerationStatusEnum = pgEnum('story_generation_status', [
-  'draft',
-  'phase1_in_progress',  // Generating story concept
-  'phase1_complete',     // Story concept completed
-  'phase2_complete',     // Parts development completed
-  'phase3_complete',     // Character development completed
-  'phase4_complete',     // Place development completed
-  'phase5_6_complete',   // Chapters and scenes completed
-  'analyzing_quality',   // Running validation and evaluation
-  'analysis_complete',   // Analysis completed
-  'improving_content',   // Applying AI improvements
-  'improvement_complete', // Improvements applied
-  'generating_character_images', // Generating character images
-  'character_images_complete',   // Character images generated
-  'generating_setting_images',   // Generating setting images
-  'setting_images_complete',     // Setting images generated
-  'completed',           // All phases completed
-  'failed',             // Generation failed
-  'active',             // Active story
-  'hiatus',             // Story on hiatus
-  'archived'            // Archived story
-]);
-
-// Chapter status enum
-export const chapterStatusEnum = pgEnum('chapter_status', [
-  'writing',        // Chapter is being written
-  'completed'       // Chapter writing is completed
+// Status enum for stories and chapters
+export const statusEnum = pgEnum('status', [
+  'writing',     // Content is being written/drafted
+  'published'    // Content is published and available
 ]);
 
 // NextAuth.js required tables
@@ -102,7 +78,7 @@ export const stories = pgTable('stories', {
   title: varchar('title', { length: 255 }).notNull(),
   description: text('description'),
   genre: varchar('genre', { length: 100 }),
-  status: storyGenerationStatusEnum('status').default('draft').notNull(),
+  status: statusEnum('status').default('writing').notNull(),
   coverImage: text('cover_image'),
   tags: json('tags').$type<string[]>().default([]),
   authorId: text('author_id').references(() => users.id).notNull(),
@@ -134,7 +110,6 @@ export const parts = pgTable('parts', {
   orderIndex: integer('order_index').notNull(),
   targetWordCount: integer('target_word_count').default(0),
   currentWordCount: integer('current_word_count').default(0),
-  status: varchar('status', { length: 50 }).default('planned'), // planned, in_progress, completed
   content: text('content').default(''), // Store part-specific development YAML data as text
   // HNS fields
   structuralRole: varchar('structural_role', { length: 50 }),
@@ -158,7 +133,7 @@ export const chapters = pgTable('chapters', {
   orderIndex: integer('order_index').notNull(),
   wordCount: integer('word_count').default(0),
   targetWordCount: integer('target_word_count').default(4000),
-  status: chapterStatusEnum('status').default('writing').notNull(),
+  status: statusEnum('status').default('writing').notNull(),
   purpose: text('purpose'), // Chapter purpose from story development
   hook: text('hook'), // Chapter hook from story development
   characterFocus: text('character_focus'), // Main character focus for chapter
@@ -183,7 +158,6 @@ export const scenes = pgTable('scenes', {
   chapterId: text('chapter_id').references(() => chapters.id).notNull(),
   orderIndex: integer('order_index').notNull(),
   wordCount: integer('word_count').default(0),
-  status: varchar('status', { length: 50 }).default('planned'), // planned, in_progress, completed
   goal: text('goal'),
   conflict: text('conflict'),
   outcome: text('outcome'),

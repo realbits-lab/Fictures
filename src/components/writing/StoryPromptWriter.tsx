@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent, Button } from "@/components/ui";
+import Image from "next/image";
 
 interface StoryPromptWriterProps {
   storyJson: string;
@@ -15,6 +16,29 @@ export function StoryPromptWriter({ storyJson, storyId, onStoryUpdate, onPreview
   const [inputPrompt, setInputPrompt] = useState("");
   const [outputResult, setOutputResult] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [storyImage, setStoryImage] = useState<string | null>(null);
+  const [storyTitle, setStoryTitle] = useState<string>("");
+  const [storyGenre, setStoryGenre] = useState<string>("");
+
+  // Extract story image and details from JSON
+  useEffect(() => {
+    try {
+      const parsed = typeof storyJson === 'string' ? JSON.parse(storyJson) : storyJson;
+      const story = parsed?.story || parsed;
+
+      // Get story image from multiple possible locations
+      const imageUrl = story?.coverImage ||
+                      story?.hnsData?.storyImage?.url ||
+                      story?.hnsData?.coverImage ||
+                      null;
+
+      setStoryImage(imageUrl);
+      setStoryTitle(story?.title || "Untitled Story");
+      setStoryGenre(story?.genre || "Fiction");
+    } catch (error) {
+      console.error('Failed to parse story data for image:', error);
+    }
+  }, [storyJson]);
 
   // Image preview functionality
   const [previewImageData, setPreviewImageData] = useState<{
@@ -484,6 +508,27 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Story Image Display */}
+        {storyImage && (
+          <div className="relative w-full rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 mb-4">
+            <div className="aspect-[3/4] relative max-h-[300px] mx-auto">
+              <Image
+                src={storyImage}
+                alt={`Cover image for ${storyTitle}`}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                <h3 className="text-lg font-bold">{storyTitle}</h3>
+                <p className="text-sm opacity-90">{storyGenre}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Input Section */}
         <div className="space-y-2">
           <label htmlFor="prompt-input" className="text-xs font-medium text-gray-700 dark:text-gray-300">

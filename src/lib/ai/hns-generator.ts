@@ -15,7 +15,6 @@ import {
   scenes as scenesTable,
   characters as charactersTable,
   settings as settingsTable,
-  chapterStatusEnum,
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { generateHNSChaptersFixed, generateHNSScenesFixed } from "./hns-generator-fix";
@@ -476,7 +475,7 @@ export async function generateCompleteHNS(
         description: story.premise,
         genre: story.genre.join(", "),
         authorId: userId,
-        status: "phase1_in_progress",
+        status: "writing",
         premise: story.premise,
         dramaticQuestion: story.dramatic_question,
         theme: story.theme,
@@ -493,7 +492,7 @@ export async function generateCompleteHNS(
       .onConflictDoUpdate({
         target: [stories.id],
         set: {
-          status: "phase1_complete",
+          status: "writing",
           hnsData: cleanStoryHnsData({
             metadata: {
               version: "1.0.0",
@@ -529,7 +528,7 @@ export async function generateCompleteHNS(
     await db
       .update(stories)
       .set({
-        status: "phase2_complete",
+        status: "writing",
         hnsData: cleanStoryHnsData({
           ...phase2HnsData,
           metadata: {
@@ -557,7 +556,6 @@ export async function generateCompleteHNS(
           keyBeats: part.key_beats,
           hnsData: cleanComponentHnsData(part),
           chapterIds: [],
-          status: "planned",
         })
         .onConflictDoNothing();
     }
@@ -584,7 +582,7 @@ export async function generateCompleteHNS(
     await db
       .update(stories)
       .set({
-        status: "phase3_complete",
+        status: "writing",
         hnsData: cleanStoryHnsData({
           ...phase3HnsData,
           metadata: {
@@ -638,7 +636,7 @@ export async function generateCompleteHNS(
     await db
       .update(stories)
       .set({
-        status: "phase4_complete",
+        status: "writing",
         hnsData: cleanStoryHnsData({
           ...phase4HnsData,
           metadata: {
@@ -789,7 +787,6 @@ export async function generateCompleteHNS(
           settingId: scene.setting_id || undefined,
           summary: scene.summary,
           hnsData: cleanComponentHnsData(sceneWithActualContent),
-          status: "planned",
         })
         .onConflictDoNothing()
         .returning();
@@ -821,7 +818,7 @@ export async function generateCompleteHNS(
           .set({
             sceneIds: chapterSceneIds,
             hnsData: cleanComponentHnsData(updatedChapterHnsData),
-            status: "completed",
+            status: "published",
             updatedAt: new Date(),
           })
           .where(eq(chaptersTable.id, chapter.chapter_id || ''));
@@ -834,7 +831,7 @@ export async function generateCompleteHNS(
     await db
       .update(stories)
       .set({
-        status: "phase5_6_complete",
+        status: "writing",
         updatedAt: new Date(),
       })
       .where(eq(stories.id, currentStoryId));
@@ -878,7 +875,7 @@ export async function generateCompleteHNS(
     await db
       .update(stories)
       .set({
-        status: "completed",
+        status: "published",
         updatedAt: new Date(),
       })
       .where(eq(stories.id, currentStoryId));
@@ -912,7 +909,7 @@ export async function generateCompleteHNS(
     await db
       .update(stories)
       .set({
-        status: "phase5_6_complete", // Keep at phase5_6 since images aren't generated yet
+        status: "writing", // Keep at writing since images aren't generated yet
         hnsData: cleanStoryHnsData({
           story: completeStory,
           metadata: {
@@ -944,7 +941,7 @@ export async function generateCompleteHNS(
     await db
       .update(stories)
       .set({
-        status: "failed",
+        status: "writing",
         updatedAt: new Date(),
       })
       .where(eq(stories.id, currentStoryId));

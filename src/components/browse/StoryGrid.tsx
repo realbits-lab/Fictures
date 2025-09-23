@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui";
 
 interface Story {
@@ -15,6 +16,12 @@ interface Story {
   rating: number;
   currentWordCount: number;
   createdAt: Date;
+  coverImage?: string | null;
+  hnsData?: {
+    storyImage?: {
+      url: string;
+    };
+  };
   author: {
     id: string;
     name: string;
@@ -95,12 +102,33 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
       {/* Story Grid */}
       {sortedStories.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {sortedStories.map((story) => (
+          {sortedStories.map((story) => {
+            const imageUrl = story.coverImage || story.hnsData?.storyImage?.url;
+
+            return (
             <div
               key={story.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow flex flex-col h-[270px]"
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow flex flex-col overflow-hidden"
             >
-              <div className="flex justify-between items-start mb-2 flex-shrink-0">
+              {/* Story Image */}
+              {imageUrl ? (
+                <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-800">
+                  <Image
+                    src={imageUrl}
+                    alt={story.title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                  />
+                </div>
+              ) : (
+                <div className="w-full h-48 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 flex items-center justify-center">
+                  <div className="text-6xl">📖</div>
+                </div>
+              )}
+
+              <div className="p-4 flex flex-col flex-grow">
+                <div className="flex justify-between items-start mb-2 flex-shrink-0">
                 <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 truncate max-w-16">
                   {story.genre}
                 </span>
@@ -147,8 +175,10 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
                   📖 Read Story
                 </Button>
               </Link>
+              </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-12">

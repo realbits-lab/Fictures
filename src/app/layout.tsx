@@ -42,7 +42,12 @@ export default async function RootLayout({
               <GlobalNavigation />
               {children}
               <AuthModal />
-              <Toaster richColors position="top-center" />
+              <Toaster
+                richColors
+                position="top-right"
+                closeButton
+                duration={5000}
+              />
             </AuthModalProvider>
           </SessionProvider>
         </ThemeProvider>
