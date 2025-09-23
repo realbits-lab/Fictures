@@ -476,19 +476,10 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
         >
           {selectedChapter ? (
             <article className="max-w-4xl mx-auto px-8 py-8">
-              {/* Chapter Header */}
+              {/* Scene Header */}
               <header className="mb-8 border-b border-gray-200 dark:border-gray-800 pb-6">
-                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-3">
-                  <span>{getStatusIcon(selectedChapter.status)}</span>
-                  <span>Chapter {getGlobalChapterNumber(selectedChapter.id)}</span>
-                  {selectedChapter.status !== 'published' && (
-                    <span className="px-2 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 text-xs">
-                      {selectedChapter.status}
-                    </span>
-                  )}
-                </div>
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-                  {selectedChapter.title}
+                  {selectedScene ? selectedScene.title : selectedChapter.title}
                 </h1>
               </header>
 
