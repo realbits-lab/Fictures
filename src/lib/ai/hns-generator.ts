@@ -15,6 +15,7 @@ import {
   scenes as scenesTable,
   characters as charactersTable,
   settings as settingsTable,
+  chapterStatusEnum,
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { generateHNSChaptersFixed, generateHNSScenesFixed } from "./hns-generator-fix";
@@ -37,6 +38,7 @@ import {
   HNSDocument,
 } from "@/types/hns";
 import { cleanStoryHnsData, cleanComponentHnsData } from "@/lib/utils/hns-data-cleaner";
+import { generateSceneImages, updateSceneWithImage } from "./scene-image-generator";
 
 /**
  * Phase 1: Core Concept Generation (Story Object)
@@ -380,6 +382,10 @@ You must create EXACTLY ${sceneCount} scene${sceneCount === 1 ? '' : 's'}, each 
 - setting_id: ID of the setting
 - narrative_voice: One of 'third_person_limited', 'first_person', 'third_person_omniscient'
 - content: Opening narrative content (2-3 paragraphs) written in the specified narrative voice and POV
+- scene_image: Object with:
+  - prompt: Detailed visual description of the scene's key moment
+  - style: 'cinematic'
+  - mood: The emotional atmosphere of the scene
 
 For the content field:
 1. Write 2-3 well-crafted opening paragraphs (approximately 200-400 words)
@@ -389,6 +395,16 @@ For the content field:
 5. Show the goal/conflict starting to emerge
 6. Match the chapter's pacing goal and action/dialogue ratio
 7. Reflect the story's genre, theme, and emotional tone
+
+For the scene_image field (REQUIRED for each scene):
+- prompt: A 2-3 sentence visual description capturing the scene's dramatic moment, including:
+  * The main action or emotional beat
+  * Character positions and appearances
+  * Setting details and atmosphere
+  * Lighting and visual mood
+  * Example: "A lone explorer in a spacesuit stands before a massive obsidian artifact floating in a cavern. Blue energy pulses from ancient symbols on its surface, casting eerie shadows. The explorer reaches out tentatively as holographic visions shimmer in the air."
+- style: Always set to 'cinematic'
+- mood: Describe the emotional atmosphere (e.g., "mysterious and awe-inspiring", "tense and foreboding")
 
 Each scene should:
 1. Have clear cause-and-effect with other scenes
@@ -739,7 +755,7 @@ export async function generateCompleteHNS(
           orderIndex: chapter.chapter_number || 1,
           hook: chapter.chapter_hook.description,
           hnsData: cleanComponentHnsData(chapter),
-          status: "draft",
+          status: "writing",
         })
         .onConflictDoNothing();
     }
@@ -805,10 +821,11 @@ export async function generateCompleteHNS(
           .set({
             sceneIds: chapterSceneIds,
             hnsData: cleanComponentHnsData(updatedChapterHnsData),
+            status: "completed",
             updatedAt: new Date(),
           })
           .where(eq(chaptersTable.id, chapter.chapter_id || ''));
-        console.log(`✅ Chapter ${chapter.chapter_id} updated with ${chapterSceneIds.length} scene IDs`);
+        console.log(`✅ Chapter ${chapter.chapter_id} updated with ${chapterSceneIds.length} scene IDs and marked as completed`);
       }
     }
     console.log("✅ Chapters updated with scene IDs and HNS data");
@@ -839,7 +856,25 @@ export async function generateCompleteHNS(
       progressCallback
     );
 
-    // Update status to completed
+    // Phase 8: Generate mandatory images for all scenes
+    console.log("Phase 8: Generating mandatory scene images...");
+    progressCallback?.("phase8_start", {
+      message: `Generating images for ${allScenes.length} scenes (mandatory)...`,
+    });
+
+    const scenesWithImages = await generateSceneImagesForStory(
+      currentStoryId,
+      allScenes,
+      story,
+      characters,
+      settings,
+      progressCallback
+    );
+
+    // Update allScenes with image data
+    allScenes.splice(0, allScenes.length, ...scenesWithImages);
+
+    // Update status to completed with images
     await db
       .update(stories)
       .set({
@@ -847,7 +882,7 @@ export async function generateCompleteHNS(
         updatedAt: new Date(),
       })
       .where(eq(stories.id, currentStoryId));
-    console.log("✅ Story marked as completed");
+    console.log("✅ Story marked as completed with mandatory images");
 
     // Assemble complete HNS document
     const completeStory: HNSStory = {
@@ -916,6 +951,86 @@ export async function generateCompleteHNS(
 
     throw error;
   }
+}
+
+/**
+ * Phase 8: Generate Mandatory Images for Scenes
+ * Generates images for all scenes using Gemini as part of the story generation pipeline
+ */
+export async function generateSceneImagesForStory(
+  storyId: string,
+  scenes: HNSScene[],
+  story: HNSStory,
+  characters: HNSCharacter[],
+  settings: HNSSetting[],
+  progressCallback?: (phase: string, data: any) => void
+): Promise<HNSScene[]> {
+  console.log("Phase 8: Generating mandatory scene images...");
+  progressCallback?.("phase8_start", {
+    message: `Generating mandatory images for ${scenes.length} scenes...`,
+  });
+
+  const updatedScenes: HNSScene[] = [];
+
+  try {
+    // Generate images with progress tracking (mandatory)
+    const imageResults = await generateSceneImages(
+      scenes,
+      story,
+      characters,
+      settings,
+      storyId,
+      (current, total) => {
+        progressCallback?.("phase8_progress", {
+          message: `Generating scene image ${current} of ${total}...`,
+          current,
+          total,
+        });
+      }
+    );
+
+    // Update scenes with image data
+    for (const scene of scenes) {
+      const imageData = imageResults.get(scene.scene_id);
+      if (imageData) {
+        const updatedScene = updateSceneWithImage(scene, imageData);
+        updatedScenes.push(updatedScene);
+
+        // Update scene in database with image data
+        if (scene.scene_id) {
+          await db
+            .update(scenesTable)
+            .set({
+              hnsData: cleanComponentHnsData(updatedScene),
+              updatedAt: new Date(),
+            })
+            .where(eq(scenesTable.id, scene.scene_id));
+        }
+      } else {
+        // This should not happen since images are mandatory
+        console.error(`⚠️ Missing mandatory image for scene ${scene.scene_id}`);
+        updatedScenes.push(scene);
+      }
+    }
+
+    console.log("✅ All mandatory scene images generated successfully!");
+    progressCallback?.("phase8_complete", {
+      message: "All mandatory scene images generated successfully",
+      scenes: updatedScenes,
+    });
+
+  } catch (error) {
+    console.error("❌ Critical error generating mandatory scene images:", error);
+    progressCallback?.("phase8_error", {
+      message: "Critical error: Failed to generate mandatory scene images",
+      error,
+    });
+    // Since images are mandatory, we should handle this error appropriately
+    // For now, we'll continue with the scenes but log the critical error
+    throw new Error(`Failed to generate mandatory scene images: ${error}`);
+  }
+
+  return updatedScenes;
 }
 
 /**

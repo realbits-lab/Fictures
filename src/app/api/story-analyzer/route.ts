@@ -1,9 +1,8 @@
 import { streamText, tool, stepCountIs, generateText } from 'ai';
-import { google } from '@ai-sdk/google';
 import { gateway } from '@ai-sdk/gateway';
 import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
-import { STORY_ANALYSIS_MODEL } from '@/lib/ai/config';
+import { STORY_ANALYSIS_MODEL, IMAGE_GENERATION_MODEL } from '@/lib/ai/config';
 
 export async function POST(request: NextRequest) {
   try {
@@ -181,7 +180,7 @@ Add or modify places/settings as requested and return complete updated story JSO
           try {
             // Generate image using Google Gemini 2.5 Flash Image
             const result = await generateText({
-              model: google('gemini-2.5-flash-image-preview'),
+              model: gateway(IMAGE_GENERATION_MODEL),
               system: `You are a visual art specialist. Generate a detailed image based on the story context and user request.
 
 Story Context:

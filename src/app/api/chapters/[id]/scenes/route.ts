@@ -64,12 +64,20 @@ export async function GET(
     // Sort scenes by order index
     chapterScenes.sort((a, b) => a.orderIndex - b.orderIndex);
 
+    // Extract scene images from HNS data
+    const scenesWithImages = chapterScenes.map(scene => ({
+      ...scene,
+      sceneImage: scene.hnsData && typeof scene.hnsData === 'object'
+        ? (scene.hnsData as any).scene_image
+        : null
+    }));
+
     const response = {
-      scenes: chapterScenes,
+      scenes: scenesWithImages,
       metadata: {
         fetchedAt: new Date().toISOString(),
         chapterId,
-        totalScenes: chapterScenes.length
+        totalScenes: scenesWithImages.length
       }
     };
 

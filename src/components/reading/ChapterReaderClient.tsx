@@ -13,8 +13,49 @@ interface ChapterReaderClientProps {
 
 export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
+  const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
+  const [isScrollRestored, setIsScrollRestored] = useState<boolean>(false);
   const sidebarScrollRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
+
+  // Scene scroll position management - moved outside useEffect dependencies
+  const scrollPositionKey = React.useCallback((sceneId: string) => `fictures_scene_scroll_${storyId}_${sceneId}`, [storyId]);
+
+  const saveScrollPosition = React.useCallback((sceneId: string, position: number) => {
+    try {
+      localStorage.setItem(scrollPositionKey(sceneId), position.toString());
+      console.log(`💾 Saved scroll position for scene ${sceneId}: ${position}px`);
+    } catch (error) {
+      console.warn('Failed to save scroll position:', error);
+    }
+  }, [scrollPositionKey]);
+
+  const getScrollPosition = React.useCallback((sceneId: string): number => {
+    try {
+      const saved = localStorage.getItem(scrollPositionKey(sceneId));
+      const position = saved ? parseInt(saved, 10) : 0;
+      console.log(`📖 Retrieved scroll position for scene ${sceneId}: ${position}px`);
+      return position;
+    } catch (error) {
+      console.warn('Failed to get scroll position:', error);
+      return 0;
+    }
+  }, [scrollPositionKey]);
+
+  const handleSceneSelect = React.useCallback((sceneId: string) => {
+    console.log(`🎬 Switching to scene: ${sceneId}`);
+
+    // Save current scroll position before switching
+    if (selectedSceneId && mainContentRef.current) {
+      const currentScrollTop = mainContentRef.current.scrollTop;
+      saveScrollPosition(selectedSceneId, currentScrollTop);
+      console.log(`💾 Saved current scene ${selectedSceneId} position: ${currentScrollTop}px`);
+    }
+
+    // Reset scroll restoration state and switch scene
+    setIsScrollRestored(false);
+    setSelectedSceneId(sceneId);
+  }, [selectedSceneId, saveScrollPosition]);
 
   // Use the new SWR hook for data fetching with caching
   const {
@@ -44,12 +85,72 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
       // Check if we have a saved reading position
       const savedPosition = readingProgress.getPosition();
       const targetChapterId = savedPosition?.chapterId || availableChapters.find(ch => ch.status === 'published')?.id || availableChapters[0]?.id;
-      
+
       if (targetChapterId) {
         setSelectedChapterId(targetChapterId);
       }
     }
   }, [selectedChapterId, availableChapters, readingProgress]);
+
+  // Auto-select first scene when chapter changes
+  useEffect(() => {
+    if (selectedChapterId && chapterScenes.length > 0 && !selectedSceneId) {
+      setIsScrollRestored(false);
+      handleSceneSelect(chapterScenes[0].id);
+    }
+  }, [selectedChapterId, chapterScenes, selectedSceneId]);
+
+  // Restore scroll position when scene changes
+  useEffect(() => {
+    if (selectedSceneId && !isScrollRestored) {
+      const savedPosition = getScrollPosition(selectedSceneId);
+      console.log(`🔄 Attempting to restore scroll position for scene ${selectedSceneId}: ${savedPosition}px`);
+
+      // Wait for content to render before restoring scroll position
+      const restoreScrollPosition = () => {
+        if (mainContentRef.current) {
+          console.log(`📦 Restoring scroll position to: ${savedPosition}px`);
+          mainContentRef.current.scrollTop = savedPosition;
+          setIsScrollRestored(true);
+        } else {
+          console.warn('⚠️ mainContentRef.current is null, retrying...');
+          // Retry after a short delay if ref is not ready
+          setTimeout(restoreScrollPosition, 50);
+        }
+      };
+
+      // Use multiple async methods to ensure content is ready
+      requestAnimationFrame(() => {
+        setTimeout(restoreScrollPosition, 10);
+      });
+    }
+  }, [selectedSceneId, isScrollRestored, getScrollPosition]);
+
+  // Save scroll position during scrolling
+  useEffect(() => {
+    const mainContentElement = mainContentRef.current;
+    if (!mainContentElement || !selectedSceneId || !isScrollRestored) return;
+
+    const handleScroll = () => {
+      if (selectedSceneId && mainContentElement && isScrollRestored) {
+        const currentScrollTop = mainContentElement.scrollTop;
+        saveScrollPosition(selectedSceneId, currentScrollTop);
+      }
+    };
+
+    // Throttle scroll events for performance
+    let scrollTimeout: NodeJS.Timeout;
+    const throttledScroll = () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(handleScroll, 150);
+    };
+
+    mainContentElement.addEventListener('scroll', throttledScroll, { passive: true });
+    return () => {
+      mainContentElement.removeEventListener('scroll', throttledScroll);
+      clearTimeout(scrollTimeout);
+    };
+  }, [selectedSceneId, isScrollRestored, saveScrollPosition]);
 
   // Setup non-passive wheel event listeners for independent scrolling
   useEffect(() => {
@@ -96,6 +197,13 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
   }, [selectedChapterId, readingProgress]);
 
   const selectedChapter = availableChapters.find(ch => ch.id === selectedChapterId);
+  const selectedScene = chapterScenes.find(scene => scene.id === selectedSceneId);
+
+  // Handler for chapter selection
+  const handleChapterSelect = (chapterId: string) => {
+    setSelectedChapterId(chapterId);
+    setSelectedSceneId(null); // Reset scene selection when chapter changes
+  };
 
   // Calculate global chapter number
   const getGlobalChapterNumber = (chapterId: string) => {
@@ -261,99 +369,16 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                 <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" title="Updating..."></div>
               )}
             </div>
-            {selectedChapter && (
+            {selectedScene && (
               <div className="flex items-center gap-2">
                 <span className="text-gray-300 dark:text-gray-600">/</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">{getStatusIcon(selectedChapter.status)}</span>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate max-w-sm">
-                    Ch {getGlobalChapterNumber(selectedChapter.id)}: {selectedChapter.title}
-                  </span>
-                </div>
+                <span className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-xs">
+                  🎬 {selectedScene.title}
+                </span>
               </div>
             )}
           </div>
 
-          {/* Right: Reading Controls */}
-          <div className="flex items-center gap-3">
-            {/* Progress Indicator */}
-            <ProgressIndicator 
-              isLoading={isLoading || scenesLoading} 
-              isValidating={isValidating || scenesValidating}
-              className="shrink-0"
-            />
-            {/* Chapter Navigation */}
-            {(() => {
-              const currentIndex = availableChapters.findIndex(ch => ch.id === selectedChapterId);
-              const prevChapter = currentIndex > 0 ? availableChapters[currentIndex - 1] : null;
-              const nextChapter = currentIndex < availableChapters.length - 1 ? availableChapters[currentIndex + 1] : null;
-              
-              return (
-                <>
-                  <button
-                    onClick={() => prevChapter && setSelectedChapterId(prevChapter.id)}
-                    disabled={!prevChapter}
-                    className="h-10 p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    title={prevChapter ? `Previous: ${prevChapter.title}` : 'No previous chapter'}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  
-                  <span className="text-sm text-gray-500 dark:text-gray-400 px-2 h-10 flex items-center">
-                    {currentIndex + 1} of {availableChapters.length}
-                  </span>
-                  
-                  <button
-                    onClick={() => nextChapter && setSelectedChapterId(nextChapter.id)}
-                    disabled={!nextChapter}
-                    className="h-10 p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    title={nextChapter ? `Next: ${nextChapter.title}` : 'No next chapter'}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </>
-              );
-            })()}
-
-            {/* Reading Progress */}
-            {selectedChapter && (
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-xs text-gray-600 dark:text-gray-400 h-10">
-                <span>📖</span>
-                <span>{selectedChapter.wordCount || 0} words</span>
-              </div>
-            )}
-
-            {/* Refresh Button */}
-            <button
-              onClick={() => refreshStory()}
-              disabled={isValidating}
-              className="h-10 p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
-              title="Refresh story content"
-            >
-              <svg className={`w-4 h-4 ${isValidating ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-
-            {/* Share Button */}
-            <button
-              onClick={() => {
-                if (typeof window !== 'undefined' && selectedChapter) {
-                  navigator.clipboard.writeText(window.location.href);
-                }
-              }}
-              className="h-10 p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              title="Copy chapter link"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-              </svg>
-            </button>
-          </div>
         </div>
       </div>
 
@@ -374,9 +399,6 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
             <div className="flex flex-wrap gap-2 text-xs">
               <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                 {story.genre || 'No genre'}
-              </span>
-              <span className="text-gray-500 dark:text-gray-400">
-                📚 {availableChapters.length} chapters
               </span>
             </div>
           </div>
@@ -406,28 +428,54 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                     </div>
                     {partChapters.map((chapter) => {
                       const globalChapterNumber = getGlobalChapterNumber(chapter.id);
-                      const isSelected = selectedChapterId === chapter.id;
-                      
+                      const isChapterSelected = selectedChapterId === chapter.id;
+
                       return (
-                        <button
-                          key={chapter.id}
-                          onClick={() => setSelectedChapterId(chapter.id)}
-                          className={`w-full text-left p-3 rounded-lg mb-1 transition-colors ${
-                            isSelected
-                              ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100'
-                              : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm">{getStatusIcon(chapter.status)}</span>
-                            <span className="font-medium text-sm truncate">
-                              Ch {globalChapterNumber}: {chapter.title}
-                            </span>
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {chapter.wordCount || 0} words
-                          </div>
-                        </button>
+                        <div key={chapter.id} className="mb-1">
+                          <button
+                            onClick={() => handleChapterSelect(chapter.id)}
+                            className={`w-full text-left p-3 rounded-lg transition-colors ${
+                              isChapterSelected
+                                ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100'
+                                : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">{getStatusIcon(chapter.status)}</span>
+                              <span className="font-medium text-sm truncate">
+                                Ch {globalChapterNumber}: {chapter.title}
+                              </span>
+                            </div>
+                          </button>
+
+                          {/* Scene List for Selected Chapter */}
+                          {isChapterSelected && chapterScenes.length > 0 && (
+                            <div className="ml-4 mt-2 space-y-1">
+                              {chapterScenes.map((scene, sceneIndex) => {
+                                const isSceneSelected = selectedSceneId === scene.id;
+
+                                return (
+                                  <button
+                                    key={scene.id}
+                                    onClick={() => handleSceneSelect(scene.id)}
+                                    className={`w-full text-left p-2 rounded-md text-xs transition-colors ${
+                                      isSceneSelected
+                                        ? 'bg-blue-50 dark:bg-blue-900/10 text-blue-800 dark:text-blue-200 border-l-2 border-blue-400'
+                                        : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-600 dark:text-gray-400'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-gray-400 dark:text-gray-500">🎬</span>
+                                      <span className="truncate">
+                                        Scene {sceneIndex + 1}: {scene.title}
+                                      </span>
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
                       );
                     })}
                   </div>
@@ -444,28 +492,54 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                     .filter(chapter => isOwner || chapter.status === 'published')
                     .map((chapter) => {
                       const globalChapterNumber = getGlobalChapterNumber(chapter.id);
-                      const isSelected = selectedChapterId === chapter.id;
-                      
+                      const isChapterSelected = selectedChapterId === chapter.id;
+
                       return (
-                        <button
-                          key={chapter.id}
-                          onClick={() => setSelectedChapterId(chapter.id)}
-                          className={`w-full text-left p-3 rounded-lg mb-1 transition-colors ${
-                            isSelected
-                              ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100'
-                              : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm">{getStatusIcon(chapter.status)}</span>
-                            <span className="font-medium text-sm truncate">
-                              Ch {globalChapterNumber}: {chapter.title}
-                            </span>
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {chapter.wordCount || 0} words
-                          </div>
-                        </button>
+                        <div key={chapter.id} className="mb-1">
+                          <button
+                            onClick={() => handleChapterSelect(chapter.id)}
+                            className={`w-full text-left p-3 rounded-lg transition-colors ${
+                              isChapterSelected
+                                ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100'
+                                : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">{getStatusIcon(chapter.status)}</span>
+                              <span className="font-medium text-sm truncate">
+                                Ch {globalChapterNumber}: {chapter.title}
+                              </span>
+                            </div>
+                          </button>
+
+                          {/* Scene List for Selected Chapter */}
+                          {isChapterSelected && chapterScenes.length > 0 && (
+                            <div className="ml-4 mt-2 space-y-1">
+                              {chapterScenes.map((scene, sceneIndex) => {
+                                const isSceneSelected = selectedSceneId === scene.id;
+
+                                return (
+                                  <button
+                                    key={scene.id}
+                                    onClick={() => handleSceneSelect(scene.id)}
+                                    className={`w-full text-left p-2 rounded-md text-xs transition-colors ${
+                                      isSceneSelected
+                                        ? 'bg-blue-50 dark:bg-blue-900/10 text-blue-800 dark:text-blue-200 border-l-2 border-blue-400'
+                                        : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-600 dark:text-gray-400'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-gray-400 dark:text-gray-500">🎬</span>
+                                      <span className="truncate">
+                                        Scene {sceneIndex + 1}: {scene.title}
+                                      </span>
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
                       );
                     })}
                 </div>
@@ -495,26 +569,14 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
         >
           {selectedChapter ? (
             <article className="max-w-4xl mx-auto px-8 py-8">
-              {/* Chapter Header */}
+              {/* Scene Header */}
               <header className="mb-8 border-b border-gray-200 dark:border-gray-800 pb-6">
-                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-3">
-                  <span>{getStatusIcon(selectedChapter.status)}</span>
-                  <span>Chapter {getGlobalChapterNumber(selectedChapter.id)}</span>
-                  {selectedChapter.status !== 'published' && (
-                    <span className="px-2 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 text-xs">
-                      {selectedChapter.status}
-                    </span>
-                  )}
-                </div>
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-                  {selectedChapter.title}
+                  {selectedScene ? selectedScene.title : selectedChapter.title}
                 </h1>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  {selectedChapter.wordCount || 0} words
-                </div>
               </header>
 
-              {/* Chapter Content */}
+              {/* Scene Content */}
               <div className="prose prose-lg max-w-none" style={{ color: 'rgb(var(--foreground))' }}>
                 {scenesError ? (
                   <div className="text-center py-12 text-red-500 dark:text-red-400">
@@ -541,35 +603,65 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                         <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
                         <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
                       </div>
-                      <p className="text-sm mt-4">Loading scenes...</p>
+                      <p className="text-sm mt-4">Loading scene...</p>
+                    </div>
+                  </div>
+                ) : selectedScene && isScrollRestored ? (
+                  <>
+                    {console.log(`📖 Rendering selected scene: ${selectedScene.title}`)}
+                    {/* Scene Image - Sticky */}
+                    {selectedScene.sceneImage?.url && (
+                      <div className="sticky top-0 z-10 mb-6 bg-white dark:bg-gray-900 pb-4">
+                        <div className="rounded-lg overflow-hidden shadow-lg">
+                          <img
+                            src={selectedScene.sceneImage.url}
+                            alt={`Scene: ${selectedScene.title}`}
+                            className="w-full h-auto max-h-64 object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Scene Content */}
+                    <div className="whitespace-pre-wrap leading-relaxed">
+                      {selectedScene.content || (
+                        <p className="text-gray-500 dark:text-gray-400 italic">
+                          This scene is empty.
+                        </p>
+                      )}
+                    </div>
+                  </>
+                ) : selectedScene ? (
+                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                    <div className="max-w-md mx-auto">
+                      <div className="animate-pulse">
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-4 w-3/4 mx-auto"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-5/6"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
+                      </div>
+                      <p className="text-sm mt-4">Preparing scene...</p>
                     </div>
                   </div>
                 ) : chapterScenes.length > 0 ? (
-                  <>
-                    {console.log(`📖 Rendering ${chapterScenes.length} scenes for chapter: ${selectedChapter.title}`)}
-                    {chapterScenes.map((scene, index) => (
-                      <section key={scene.id} className="mb-8">
-                        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4 opacity-75 border-b border-gray-200 dark:border-gray-700 pb-2">
-                          {scene.title}
-                        </h3>
-                        <div className="whitespace-pre-wrap leading-relaxed">
-                          {scene.content || (
-                            <p className="text-gray-500 dark:text-gray-400 italic">
-                              This scene is empty.
-                            </p>
-                          )}
-                        </div>
-                      </section>
-                    ))}
-                  </>
+                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                    <div className="max-w-md mx-auto">
+                      <h3 className="text-lg font-semibold mb-4">🎬 Select a Scene</h3>
+                      <p className="text-sm mb-4">
+                        Choose a scene from the left sidebar to start reading.
+                      </p>
+                    </div>
+                  </div>
                 ) : (
                   <>
-                    {console.log(`⚠️  Chapter has no scenes: ${selectedChapter.title} - Architecture violation!`)}
+                    {console.log(`⚠️  Chapter has no scenes: ${selectedChapter?.title} - Architecture violation!`)}
                     <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                       <div className="max-w-md mx-auto">
                         <h3 className="text-lg font-semibold mb-4">📝 Chapter Not Ready</h3>
                         <p className="text-sm mb-4">
-                          This chapter hasn&apos;t been structured into scenes yet. 
+                          This chapter hasn&apos;t been structured into scenes yet.
                           Chapters must be organized into scenes to be readable.
                         </p>
                         {isOwner && (
@@ -583,33 +675,41 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                 )}
               </div>
 
-              {/* Navigation */}
+              {/* Scene Navigation */}
               <div className="mt-12 pt-6 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center">
                 {(() => {
-                  const currentIndex = availableChapters.findIndex(ch => ch.id === selectedChapterId);
-                  const prevChapter = currentIndex > 0 ? availableChapters[currentIndex - 1] : null;
-                  const nextChapter = currentIndex < availableChapters.length - 1 ? availableChapters[currentIndex + 1] : null;
-                  
+                  const currentSceneIndex = chapterScenes.findIndex(scene => scene.id === selectedSceneId);
+                  const prevScene = currentSceneIndex > 0 ? chapterScenes[currentSceneIndex - 1] : null;
+                  const nextScene = currentSceneIndex < chapterScenes.length - 1 ? chapterScenes[currentSceneIndex + 1] : null;
+
                   return (
                     <>
                       <div>
-                        {prevChapter && (
+                        {prevScene && (
                           <button
-                            onClick={() => setSelectedChapterId(prevChapter.id)}
+                            onClick={() => handleSceneSelect(prevScene.id)}
                             className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                           >
-                            ← Previous: {prevChapter.title}
+                            ← Previous Scene: {prevScene.title}
                           </button>
                         )}
                       </div>
-                      
+
+                      <div className="text-center">
+                        {chapterScenes.length > 0 && selectedSceneId && (
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            Scene {currentSceneIndex + 1} of {chapterScenes.length}
+                          </span>
+                        )}
+                      </div>
+
                       <div>
-                        {nextChapter && (
+                        {nextScene && (
                           <button
-                            onClick={() => setSelectedChapterId(nextChapter.id)}
+                            onClick={() => handleSceneSelect(nextScene.id)}
                             className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                           >
-                            Next: {nextChapter.title} →
+                            Next Scene: {nextScene.title} →
                           </button>
                         )}
                       </div>

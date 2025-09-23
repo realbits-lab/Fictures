@@ -10,6 +10,13 @@ export interface Scene {
   orderIndex: number;
   wordCount: number;
   status: string;
+  sceneImage?: {
+    url?: string;
+    prompt?: string;
+    style?: string;
+    mood?: string;
+    generated_at?: string;
+  };
 }
 
 export interface ChapterScenesResponse {
