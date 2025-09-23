@@ -7,6 +7,17 @@ const nextConfig: NextConfig = {
       static: 0,
     },
   },
+  // Configure image domains for Vercel Blob storage
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.public.blob.vercel-storage.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  },
   // Disable all caching
   headers: async () => {
     return [

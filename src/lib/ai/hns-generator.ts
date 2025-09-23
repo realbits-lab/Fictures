@@ -38,6 +38,7 @@ import {
 } from "@/types/hns";
 import { cleanStoryHnsData, cleanComponentHnsData } from "@/lib/utils/hns-data-cleaner";
 import { generateSceneImages, updateSceneWithImage } from "./scene-image-generator";
+import { generateImage } from "./image-generator";
 
 /**
  * Phase 1: Core Concept Generation (Story Object)
@@ -505,6 +506,59 @@ export async function generateCompleteHNS(
       });
     console.log("✅ Phase 1 data saved");
 
+    // Generate story cover image after Phase 1
+    console.log("🎨 Generating story cover image...");
+    let storyImageData = null;
+    try {
+      const storyImagePrompt = `${story.story_title}: ${story.genre.join(", ")} story. ${story.dramatic_question}. ${story.premise}. Key themes: ${story.theme}`;
+      const imageResult = await generateImage(
+        storyImagePrompt,
+        'story',
+        currentStoryId,
+        {
+          style: 'fantasy-art',
+          aspectRatio: 'portrait',
+          quality: 'high',
+          mood: 'epic and dramatic',
+          lighting: 'cinematic'
+        }
+      );
+      storyImageData = {
+        url: imageResult.imageUrl,
+        method: imageResult.method,
+        style: imageResult.style,
+        generatedAt: new Date().toISOString(),
+        prompt: storyImagePrompt
+      };
+      console.log('✅ Story cover image generated:', imageResult.imageUrl);
+      progressCallback?.("story_image_generated", {
+        message: `Story cover image generated: ${imageResult.imageUrl}`,
+      });
+    } catch (error) {
+      console.error('⚠️ Failed to generate story cover image:', error);
+      // Continue without image if generation fails
+    }
+
+    // Update story with cover image
+    if (storyImageData) {
+      console.log("💾 Saving story cover image to database...");
+      await db
+        .update(stories)
+        .set({
+          hnsData: cleanStoryHnsData({
+            storyImage: storyImageData,
+            metadata: {
+              version: "1.0.0",
+              language,
+              generation_prompt: userPrompt,
+            },
+          }),
+          updatedAt: new Date(),
+        })
+        .where(eq(stories.id, currentStoryId));
+      console.log("✅ Story cover image saved");
+    }
+
     // Phase 2: Generate three-act structure and save
     console.log("Phase 2: Creating three-act structure...");
     progressCallback?.("phase2_start", {
@@ -934,6 +988,14 @@ export async function generateCompleteHNS(
 
     // Final update with complete HNS data (but not marking as fully completed yet)
     console.log("💾 Saving complete HNS data to database...");
+
+    // Get existing hnsData to preserve storyImage
+    const existingStoryData = await db
+      .select({ hnsData: stories.hnsData })
+      .from(stories)
+      .where(eq(stories.id, currentStoryId))
+      .limit(1);
+
     await db
       .update(stories)
       .set({
@@ -946,7 +1008,7 @@ export async function generateCompleteHNS(
             language,
             generation_prompt: userPrompt,
           },
-        }),
+        }, existingStoryData[0]?.hnsData),
         chapterIds: allChapters.map((c) => c.chapter_id || nanoid()),
         updatedAt: new Date(),
       })

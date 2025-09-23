@@ -624,7 +624,8 @@ export async function getPublishedStories() {
       currentWordCount: stories.currentWordCount,
       createdAt: stories.createdAt,
       authorId: stories.authorId,
-      authorName: users.name
+      authorName: users.name,
+      hnsData: stories.hnsData
     })
     .from(stories)
     .leftJoin(users, eq(stories.authorId, users.id))
@@ -707,6 +708,7 @@ export async function getPublishedStories() {
     rating: story.rating || 0,
     currentWordCount: story.currentWordCount || 0,
     createdAt: story.createdAt,
+    hnsData: story.hnsData,
     author: {
       id: story.authorId,
       name: story.authorName || 'Anonymous'
