@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { scenes, chapters, stories } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { z } from 'zod';
 import { RelationshipManager } from '@/lib/db/relationships';
 
@@ -113,7 +113,37 @@ export async function PATCH(
       .where(eq(scenes.id, id))
       .returning();
 
-    return NextResponse.json({ scene: updatedScene });
+    // Check if all scenes in the chapter have content
+    // If so, automatically update chapter status to 'published'
+    if (validatedData.content && validatedData.content.trim().length > 0) {
+      // Get all scenes for this chapter
+      const chapterScenes = await db.select()
+        .from(scenes)
+        .where(eq(scenes.chapterId, chapter.id));
+
+      // Check if all scenes have content
+      const allScenesHaveContent = chapterScenes.every(scene =>
+        scene.content && scene.content.trim().length > 0
+      );
+
+      if (allScenesHaveContent && chapter.status === 'writing') {
+        // Update chapter status to published
+        await db.update(chapters)
+          .set({
+            status: 'published',
+            publishedAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(eq(chapters.id, chapter.id));
+
+        console.log(`🎉 Chapter "${chapter.title}" automatically published - all scenes have content`);
+      }
+    }
+
+    return NextResponse.json({
+      scene: updatedScene,
+      chapterAutoPublished: validatedData.content && validatedData.content.trim().length > 0
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

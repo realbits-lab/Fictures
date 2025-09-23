@@ -759,6 +759,26 @@ export async function generateCompleteHNS(
     }
     console.log("✅ Chapters saved");
 
+    // Update parts with their chapter IDs
+    console.log("💾 Updating parts with chapter IDs...");
+    for (const part of parts) {
+      const partChapterIds = allChapters
+        .filter(chapter => chapter.part_ref === part.part_id)
+        .map(chapter => chapter.chapter_id || nanoid());
+
+      if (partChapterIds.length > 0) {
+        await db
+          .update(partsTable)
+          .set({
+            chapterIds: partChapterIds,
+            updatedAt: new Date(),
+          })
+          .where(eq(partsTable.id, part.part_id));
+        console.log(`✅ Part ${part.part_id} updated with ${partChapterIds.length} chapter IDs`);
+      }
+    }
+    console.log("✅ Parts updated with chapter IDs");
+
     // Save scenes to database
     console.log("💾 Saving scenes to database...");
     for (const scene of allScenes) {

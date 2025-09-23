@@ -123,13 +123,7 @@ export function StoryTreeArchitecture({
   };
 
   const getProgressPercentage = (wordCount: number, targetWordCount: number, chapter?: Chapter) => {
-    // If chapter has scenes, calculate progress based on completed scenes
-    if (chapter && chapter.scenes && chapter.scenes.length > 0) {
-      const completedScenes = chapter.scenes.filter(scene => scene.status === 'completed').length;
-      const totalScenes = chapter.scenes.length;
-      return Math.round((completedScenes / totalScenes) * 100);
-    }
-    
+    // Since scenes no longer have status, use word count progress
     // Fallback to word count progress
     if (targetWordCount === 0) return 0;
     return Math.round((wordCount / targetWordCount) * 100);
@@ -356,7 +350,6 @@ export function StoryTreeArchitecture({
                                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                                   }`}
                                 >
-                                  <span>{getStatusIcon(scene.status)}</span>
                                   <span className="text-purple-600 dark:text-purple-400 truncate">
                                     Scene {sceneIndex + 1}: {scene.title}
                                   </span>
