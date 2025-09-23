@@ -14,8 +14,48 @@ interface ChapterReaderClientProps {
 export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
+  const [isScrollRestored, setIsScrollRestored] = useState<boolean>(false);
   const sidebarScrollRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
+
+  // Scene scroll position management - moved outside useEffect dependencies
+  const scrollPositionKey = React.useCallback((sceneId: string) => `fictures_scene_scroll_${storyId}_${sceneId}`, [storyId]);
+
+  const saveScrollPosition = React.useCallback((sceneId: string, position: number) => {
+    try {
+      localStorage.setItem(scrollPositionKey(sceneId), position.toString());
+      console.log(`💾 Saved scroll position for scene ${sceneId}: ${position}px`);
+    } catch (error) {
+      console.warn('Failed to save scroll position:', error);
+    }
+  }, [scrollPositionKey]);
+
+  const getScrollPosition = React.useCallback((sceneId: string): number => {
+    try {
+      const saved = localStorage.getItem(scrollPositionKey(sceneId));
+      const position = saved ? parseInt(saved, 10) : 0;
+      console.log(`📖 Retrieved scroll position for scene ${sceneId}: ${position}px`);
+      return position;
+    } catch (error) {
+      console.warn('Failed to get scroll position:', error);
+      return 0;
+    }
+  }, [scrollPositionKey]);
+
+  const handleSceneSelect = React.useCallback((sceneId: string) => {
+    console.log(`🎬 Switching to scene: ${sceneId}`);
+
+    // Save current scroll position before switching
+    if (selectedSceneId && mainContentRef.current) {
+      const currentScrollTop = mainContentRef.current.scrollTop;
+      saveScrollPosition(selectedSceneId, currentScrollTop);
+      console.log(`💾 Saved current scene ${selectedSceneId} position: ${currentScrollTop}px`);
+    }
+
+    // Reset scroll restoration state and switch scene
+    setIsScrollRestored(false);
+    setSelectedSceneId(sceneId);
+  }, [selectedSceneId, saveScrollPosition]);
 
   // Use the new SWR hook for data fetching with caching
   const {
@@ -55,9 +95,62 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
   // Auto-select first scene when chapter changes
   useEffect(() => {
     if (selectedChapterId && chapterScenes.length > 0 && !selectedSceneId) {
-      setSelectedSceneId(chapterScenes[0].id);
+      setIsScrollRestored(false);
+      handleSceneSelect(chapterScenes[0].id);
     }
   }, [selectedChapterId, chapterScenes, selectedSceneId]);
+
+  // Restore scroll position when scene changes
+  useEffect(() => {
+    if (selectedSceneId && !isScrollRestored) {
+      const savedPosition = getScrollPosition(selectedSceneId);
+      console.log(`🔄 Attempting to restore scroll position for scene ${selectedSceneId}: ${savedPosition}px`);
+
+      // Wait for content to render before restoring scroll position
+      const restoreScrollPosition = () => {
+        if (mainContentRef.current) {
+          console.log(`📦 Restoring scroll position to: ${savedPosition}px`);
+          mainContentRef.current.scrollTop = savedPosition;
+          setIsScrollRestored(true);
+        } else {
+          console.warn('⚠️ mainContentRef.current is null, retrying...');
+          // Retry after a short delay if ref is not ready
+          setTimeout(restoreScrollPosition, 50);
+        }
+      };
+
+      // Use multiple async methods to ensure content is ready
+      requestAnimationFrame(() => {
+        setTimeout(restoreScrollPosition, 10);
+      });
+    }
+  }, [selectedSceneId, isScrollRestored, getScrollPosition]);
+
+  // Save scroll position during scrolling
+  useEffect(() => {
+    const mainContentElement = mainContentRef.current;
+    if (!mainContentElement || !selectedSceneId || !isScrollRestored) return;
+
+    const handleScroll = () => {
+      if (selectedSceneId && mainContentElement && isScrollRestored) {
+        const currentScrollTop = mainContentElement.scrollTop;
+        saveScrollPosition(selectedSceneId, currentScrollTop);
+      }
+    };
+
+    // Throttle scroll events for performance
+    let scrollTimeout: NodeJS.Timeout;
+    const throttledScroll = () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(handleScroll, 150);
+    };
+
+    mainContentElement.addEventListener('scroll', throttledScroll, { passive: true });
+    return () => {
+      mainContentElement.removeEventListener('scroll', throttledScroll);
+      clearTimeout(scrollTimeout);
+    };
+  }, [selectedSceneId, isScrollRestored, saveScrollPosition]);
 
   // Setup non-passive wheel event listeners for independent scrolling
   useEffect(() => {
@@ -364,7 +457,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                                 return (
                                   <button
                                     key={scene.id}
-                                    onClick={() => setSelectedSceneId(scene.id)}
+                                    onClick={() => handleSceneSelect(scene.id)}
                                     className={`w-full text-left p-2 rounded-md text-xs transition-colors ${
                                       isSceneSelected
                                         ? 'bg-blue-50 dark:bg-blue-900/10 text-blue-800 dark:text-blue-200 border-l-2 border-blue-400'
@@ -428,7 +521,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                                 return (
                                   <button
                                     key={scene.id}
-                                    onClick={() => setSelectedSceneId(scene.id)}
+                                    onClick={() => handleSceneSelect(scene.id)}
                                     className={`w-full text-left p-2 rounded-md text-xs transition-colors ${
                                       isSceneSelected
                                         ? 'bg-blue-50 dark:bg-blue-900/10 text-blue-800 dark:text-blue-200 border-l-2 border-blue-400'
@@ -513,7 +606,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                       <p className="text-sm mt-4">Loading scene...</p>
                     </div>
                   </div>
-                ) : selectedScene ? (
+                ) : selectedScene && isScrollRestored ? (
                   <>
                     {console.log(`📖 Rendering selected scene: ${selectedScene.title}`)}
                     {/* Scene Image - Sticky */}
@@ -539,6 +632,19 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                       )}
                     </div>
                   </>
+                ) : selectedScene ? (
+                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                    <div className="max-w-md mx-auto">
+                      <div className="animate-pulse">
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-4 w-3/4 mx-auto"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-5/6"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
+                      </div>
+                      <p className="text-sm mt-4">Preparing scene...</p>
+                    </div>
+                  </div>
                 ) : chapterScenes.length > 0 ? (
                   <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                     <div className="max-w-md mx-auto">
@@ -581,7 +687,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                       <div>
                         {prevScene && (
                           <button
-                            onClick={() => setSelectedSceneId(prevScene.id)}
+                            onClick={() => handleSceneSelect(prevScene.id)}
                             className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                           >
                             ← Previous Scene: {prevScene.title}
@@ -600,7 +706,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                       <div>
                         {nextScene && (
                           <button
-                            onClick={() => setSelectedSceneId(nextScene.id)}
+                            onClick={() => handleSceneSelect(nextScene.id)}
                             className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                           >
                             Next Scene: {nextScene.title} →
