@@ -516,20 +516,17 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                 ) : selectedScene ? (
                   <>
                     {console.log(`📖 Rendering selected scene: ${selectedScene.title}`)}
-                    {/* Scene Image */}
+                    {/* Scene Image - Sticky */}
                     {selectedScene.sceneImage?.url && (
-                      <div className="mb-6 rounded-lg overflow-hidden">
-                        <img
-                          src={selectedScene.sceneImage.url}
-                          alt={`Scene: ${selectedScene.title}`}
-                          className="w-full h-auto max-h-96 object-cover"
-                          loading="lazy"
-                        />
-                        {selectedScene.sceneImage.style && (
-                          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
-                            Style: {selectedScene.sceneImage.style} • {selectedScene.sceneImage.mood || 'No mood'}
-                          </div>
-                        )}
+                      <div className="sticky top-0 z-10 mb-6 bg-white dark:bg-gray-900 pb-4">
+                        <div className="rounded-lg overflow-hidden shadow-lg">
+                          <img
+                            src={selectedScene.sceneImage.url}
+                            alt={`Scene: ${selectedScene.title}`}
+                            className="w-full h-auto max-h-64 object-cover"
+                            loading="lazy"
+                          />
+                        </div>
                       </div>
                     )}
 
