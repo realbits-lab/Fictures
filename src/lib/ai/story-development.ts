@@ -821,7 +821,6 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
         authorId: userId,
         targetWordCount: storyConcept.words || 60000,
         status: 'phase1_in_progress',
-        coverImage: storyImageUrl,
         hnsData: storyImageData ? { storyImage: storyImageData } : {},
         content: JSON.stringify({
           phase1_story: storyConcept,
@@ -836,8 +835,7 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
         target: [stories.id],
         set: {
           status: 'phase1_complete',
-          coverImage: storyImageUrl,
-          hnsData: storyImageData ? { storyImage: storyImageData } : {},
+            hnsData: storyImageData ? { storyImage: storyImageData } : {},
           content: JSON.stringify({
             phase1_story: storyConcept,
             developmentPhases: {

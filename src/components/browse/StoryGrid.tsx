@@ -16,7 +16,6 @@ interface Story {
   rating: number;
   currentWordCount: number;
   createdAt: Date;
-  coverImage?: string | null;
   hnsData?: {
     storyImage?: {
       url: string;
@@ -103,7 +102,7 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
       {sortedStories.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {sortedStories.map((story) => {
-            const imageUrl = story.coverImage || story.hnsData?.storyImage?.url;
+            const imageUrl = story.hnsData?.storyImage?.url;
 
             return (
             <div

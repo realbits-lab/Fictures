@@ -891,12 +891,20 @@ export async function generateCompleteHNS(
     // Update allScenes with image data
     allScenes.splice(0, allScenes.length, ...scenesWithImages);
 
-    // Update status to completed with images
+    // Update status to completed with images (preserve existing hnsData with story image)
+    const existingStory = await db
+      .select({ hnsData: stories.hnsData })
+      .from(stories)
+      .where(eq(stories.id, currentStoryId))
+      .limit(1);
+
     await db
       .update(stories)
       .set({
         status: "published",
         updatedAt: new Date(),
+        // Preserve existing hnsData which contains the story image
+        hnsData: existingStory[0]?.hnsData || {},
       })
       .where(eq(stories.id, currentStoryId));
     console.log("✅ Story marked as completed with mandatory images");
