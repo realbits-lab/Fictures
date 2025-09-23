@@ -19,7 +19,8 @@ import {
   generateSettingImagePrompt,
 } from "@/lib/ai/hns-generator";
 import { generateText } from "ai";
-import { google } from "@ai-sdk/google";
+import { gateway } from "@ai-sdk/gateway";
+import { IMAGE_GENERATION_MODEL } from "@/lib/ai/config";
 import { put } from "@vercel/blob";
 
 // Helper function to save Gemini generated images to Vercel Blob
@@ -440,7 +441,7 @@ export async function POST(request: NextRequest) {
                 // Generate image using Google Gemini
                 try {
                   const result = await generateText({
-                    model: google("gemini-2.5-flash-image-preview"),
+                    model: gateway(IMAGE_GENERATION_MODEL),
                     prompt: imagePrompt,
                   });
 
@@ -524,7 +525,7 @@ export async function POST(request: NextRequest) {
                 // Generate image using Google Gemini
                 try {
                   const result = await generateText({
-                    model: google("gemini-2.5-flash-image-preview"),
+                    model: gateway(IMAGE_GENERATION_MODEL),
                     prompt: imagePrompt,
                   });
 

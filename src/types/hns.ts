@@ -221,6 +221,15 @@ export const HNSSceneSchema = z.object({
   /** Generated narrative content for the scene (2-3 opening paragraphs) */
   content: z.string().optional()
     .describe("Opening narrative content (2-3 paragraphs) written in the specified narrative voice and POV"),
+
+  /** Scene visualization data */
+  scene_image: z.object({
+    prompt: z.string().describe("Image generation prompt based on scene content"),
+    url: z.string().optional().describe("URL of generated image stored in Vercel Blob"),
+    style: z.string().default("cinematic").describe("Visual style for the scene image"),
+    mood: z.string().describe("Visual mood/atmosphere for the scene"),
+    generated_at: z.string().optional().describe("Timestamp of image generation")
+  }).optional().describe("Scene visualization data for image generation"),
 });
 
 // Cross-Level: Character Identity and Context Schema
@@ -429,6 +438,7 @@ export const HNSScenePartialSchema = HNSSceneSchema.partial({
   chapter_ref: true,
   setting_id: true,
   pov_character_id: true,
+  scene_image: true,
 });
 
 export const HNSCharacterPartialSchema = HNSCharacterSchema.partial({

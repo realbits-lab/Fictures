@@ -1,7 +1,8 @@
-import { google } from '@ai-sdk/google';
+import { gateway } from '@ai-sdk/gateway';
 import { generateText } from 'ai';
 import { put } from '@vercel/blob';
 import { nanoid } from 'nanoid';
+import { IMAGE_GENERATION_MODEL } from './config';
 
 export type AnimationStyle =
   | 'anime'
@@ -189,7 +190,7 @@ export async function generateImage(
       console.log('🔄 Attempting Gemini 2.5 Flash Image generation...');
 
       const result = await generateText({
-        model: google('gemini-2.5-flash-image-preview'),
+        model: gateway(IMAGE_GENERATION_MODEL),
         prompt: enhancedPrompt,
         providerOptions: {
           google: {
