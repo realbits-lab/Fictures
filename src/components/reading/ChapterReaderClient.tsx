@@ -548,10 +548,30 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                   <>
                     {console.log(`📖 Rendering ${chapterScenes.length} scenes for chapter: ${selectedChapter.title}`)}
                     {chapterScenes.map((scene, index) => (
-                      <section key={scene.id} className="mb-8">
+                      <section key={scene.id} className="mb-12">
+                        {/* Scene Image */}
+                        {scene.sceneImage?.url && (
+                          <div className="mb-6 rounded-lg overflow-hidden">
+                            <img
+                              src={scene.sceneImage.url}
+                              alt={`Scene: ${scene.title}`}
+                              className="w-full h-auto max-h-96 object-cover"
+                              loading="lazy"
+                            />
+                            {scene.sceneImage.style && (
+                              <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
+                                Style: {scene.sceneImage.style} • {scene.sceneImage.mood || 'No mood'}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Scene Title */}
                         <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4 opacity-75 border-b border-gray-200 dark:border-gray-700 pb-2">
                           {scene.title}
                         </h3>
+
+                        {/* Scene Content */}
                         <div className="whitespace-pre-wrap leading-relaxed">
                           {scene.content || (
                             <p className="text-gray-500 dark:text-gray-400 italic">

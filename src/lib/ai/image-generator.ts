@@ -1,4 +1,5 @@
 import { gateway } from '@ai-sdk/gateway';
+import { google } from '@ai-sdk/google';
 import { generateText } from 'ai';
 import { put } from '@vercel/blob';
 import { nanoid } from 'nanoid';
@@ -176,41 +177,36 @@ export async function generateImage(
 ): Promise<ImageGenerationResult> {
   try {
     console.log(`🎨 Generating ${type} image with style: ${options.style || 'fantasy-art'}`);
-    console.log(`📝 Base prompt:`, prompt.substring(0, 100) + '...');
+    console.log(`📝 Base prompt: ${prompt.substring(0, 100)}...`);
 
     // Build enhanced prompt with style options
     const enhancedPrompt = buildEnhancedPrompt(prompt, type, options);
-    console.log(`✨ Enhanced prompt:`, enhancedPrompt.substring(0, 150) + '...');
+    console.log(`✨ Enhanced prompt: ${enhancedPrompt.substring(0, 150)}...`);
 
     const dimensions = getImageDimensions(options.aspectRatio, type);
     const quality = options.quality || 'high';
 
-    // Try Gemini 2.5 Flash Image Preview
+    // Try Gemini 2.5 Flash Image Preview with proper files API
     try {
       console.log('🔄 Attempting Gemini 2.5 Flash Image generation...');
 
+      // Use google directly for image generation instead of gateway
       const result = await generateText({
-        model: gateway(IMAGE_GENERATION_MODEL),
+        model: google('gemini-2.5-flash-image-preview'),
         prompt: enhancedPrompt,
-        providerOptions: {
-          google: {
-            generateImage: true,  // Enable image generation
-            imageSize: dimensions,
-            imageQuality: quality,
-          }
-        },
-        temperature: 0.8,
-        maxTokens: 1500,
       });
 
-      // Check if result contains generated image
-      if (result.experimental_media?.length > 0) {
-        const generatedMedia = result.experimental_media[0];
+      // Check if result contains generated image files
+      if (result.files && result.files.length > 0) {
+        // Find the first image file
+        const imageFile = result.files.find(file =>
+          file.mediaType?.startsWith('image/')
+        );
 
-        if (generatedMedia.data) {
+        if (imageFile && imageFile.uint8Array) {
           // Upload to Vercel Blob
           const imageUrl = await uploadToBlob(
-            Buffer.from(generatedMedia.data, 'base64'),
+            Buffer.from(imageFile.uint8Array),
             storyId,
             type
           );
