@@ -25,6 +25,12 @@ export const storyGenerationStatusEnum = pgEnum('story_generation_status', [
   'archived'            // Archived story
 ]);
 
+// Chapter status enum
+export const chapterStatusEnum = pgEnum('chapter_status', [
+  'writing',        // Chapter is being written
+  'completed'       // Chapter writing is completed
+]);
+
 // NextAuth.js required tables
 export const accounts = pgTable('accounts', {
   userId: text('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
@@ -152,7 +158,7 @@ export const chapters = pgTable('chapters', {
   orderIndex: integer('order_index').notNull(),
   wordCount: integer('word_count').default(0),
   targetWordCount: integer('target_word_count').default(4000),
-  status: varchar('status', { length: 50 }).default('draft'), // draft, in_progress, completed, published
+  status: chapterStatusEnum('status').default('writing').notNull(),
   purpose: text('purpose'), // Chapter purpose from story development
   hook: text('hook'), // Chapter hook from story development
   characterFocus: text('character_focus'), // Main character focus for chapter

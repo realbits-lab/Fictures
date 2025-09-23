@@ -15,6 +15,7 @@ import {
   scenes as scenesTable,
   characters as charactersTable,
   settings as settingsTable,
+  chapterStatusEnum,
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { generateHNSChaptersFixed, generateHNSScenesFixed } from "./hns-generator-fix";
@@ -754,7 +755,7 @@ export async function generateCompleteHNS(
           orderIndex: chapter.chapter_number || 1,
           hook: chapter.chapter_hook.description,
           hnsData: cleanComponentHnsData(chapter),
-          status: "draft",
+          status: "writing",
         })
         .onConflictDoNothing();
     }
@@ -820,10 +821,11 @@ export async function generateCompleteHNS(
           .set({
             sceneIds: chapterSceneIds,
             hnsData: cleanComponentHnsData(updatedChapterHnsData),
+            status: "completed",
             updatedAt: new Date(),
           })
           .where(eq(chaptersTable.id, chapter.chapter_id || ''));
-        console.log(`✅ Chapter ${chapter.chapter_id} updated with ${chapterSceneIds.length} scene IDs`);
+        console.log(`✅ Chapter ${chapter.chapter_id} updated with ${chapterSceneIds.length} scene IDs and marked as completed`);
       }
     }
     console.log("✅ Chapters updated with scene IDs and HNS data");
