@@ -156,7 +156,11 @@ jobs:
               }
 
               if (projects.length === 0) {
-                console.log("No projects found for this user");
+                console.log(`No GitHub Projects found for '${projectOwner}'.`);
+                console.log(`To enable project automation:`);
+                console.log(`1. Create a new project at https://github.com/${projectOwner}?tab=projects`);
+                console.log(`2. Name it '${repoName}' to match this repository`);
+                console.log(`3. Add PAT token with 'project' scope to repository secrets as 'ADD_TO_PROJECT_PAT'`);
                 return;
               }
 
@@ -175,8 +179,15 @@ jobs:
 
               // Strategy 3: If still no match, skip project assignment
               if (!targetProject) {
-                console.log(`No project matching repository name '${repoName}' found. Skipping project assignment.`);
-                console.log(`Available projects: ${projects.map(p => p.title).join(', ')}`);
+                if (projects.length > 0) {
+                  console.log(`No project matching repository name '${repoName}' found. Skipping project assignment.`);
+                  console.log(`Available projects: ${projects.map(p => p.title).join(', ')}`);
+                } else {
+                  console.log(`No GitHub Projects found. To enable project automation:`);
+                  console.log(`1. Create a new project at https://github.com/${projectOwner}?tab=projects`);
+                  console.log(`2. Name it '${repoName}' to match this repository`);
+                  console.log(`3. Add PAT token with 'project' scope to repository secrets as 'ADD_TO_PROJECT_PAT'`);
+                }
                 return;
               }
 
