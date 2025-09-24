@@ -15,7 +15,6 @@ import {
   scenes as scenesTable,
   characters as charactersTable,
   settings as settingsTable,
-  chapterStatusEnum,
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { generateHNSChaptersFixed, generateHNSScenesFixed } from "./hns-generator-fix";
@@ -39,6 +38,7 @@ import {
 } from "@/types/hns";
 import { cleanStoryHnsData, cleanComponentHnsData } from "@/lib/utils/hns-data-cleaner";
 import { generateSceneImages, updateSceneWithImage } from "./scene-image-generator";
+import { generateImage } from "./image-generator";
 
 /**
  * Phase 1: Core Concept Generation (Story Object)
@@ -476,7 +476,7 @@ export async function generateCompleteHNS(
         description: story.premise,
         genre: story.genre.join(", "),
         authorId: userId,
-        status: "phase1_in_progress",
+        status: "writing",
         premise: story.premise,
         dramaticQuestion: story.dramatic_question,
         theme: story.theme,
@@ -493,7 +493,7 @@ export async function generateCompleteHNS(
       .onConflictDoUpdate({
         target: [stories.id],
         set: {
-          status: "phase1_complete",
+          status: "writing",
           hnsData: cleanStoryHnsData({
             metadata: {
               version: "1.0.0",
@@ -505,6 +505,59 @@ export async function generateCompleteHNS(
         },
       });
     console.log("✅ Phase 1 data saved");
+
+    // Generate story cover image after Phase 1
+    console.log("🎨 Generating story cover image...");
+    let storyImageData = null;
+    try {
+      const storyImagePrompt = `${story.story_title}: ${story.genre.join(", ")} story. ${story.dramatic_question}. ${story.premise}. Key themes: ${story.theme}`;
+      const imageResult = await generateImage(
+        storyImagePrompt,
+        'story',
+        currentStoryId,
+        {
+          style: 'fantasy-art',
+          aspectRatio: 'portrait',
+          quality: 'high',
+          mood: 'epic and dramatic',
+          lighting: 'cinematic'
+        }
+      );
+      storyImageData = {
+        url: imageResult.imageUrl,
+        method: imageResult.method,
+        style: imageResult.style,
+        generatedAt: new Date().toISOString(),
+        prompt: storyImagePrompt
+      };
+      console.log('✅ Story cover image generated:', imageResult.imageUrl);
+      progressCallback?.("story_image_generated", {
+        message: `Story cover image generated: ${imageResult.imageUrl}`,
+      });
+    } catch (error) {
+      console.error('⚠️ Failed to generate story cover image:', error);
+      // Continue without image if generation fails
+    }
+
+    // Update story with cover image
+    if (storyImageData) {
+      console.log("💾 Saving story cover image to database...");
+      await db
+        .update(stories)
+        .set({
+          hnsData: cleanStoryHnsData({
+            storyImage: storyImageData,
+            metadata: {
+              version: "1.0.0",
+              language,
+              generation_prompt: userPrompt,
+            },
+          }),
+          updatedAt: new Date(),
+        })
+        .where(eq(stories.id, currentStoryId));
+      console.log("✅ Story cover image saved");
+    }
 
     // Phase 2: Generate three-act structure and save
     console.log("Phase 2: Creating three-act structure...");
@@ -529,7 +582,7 @@ export async function generateCompleteHNS(
     await db
       .update(stories)
       .set({
-        status: "phase2_complete",
+        status: "writing",
         hnsData: cleanStoryHnsData({
           ...phase2HnsData,
           metadata: {
@@ -557,7 +610,6 @@ export async function generateCompleteHNS(
           keyBeats: part.key_beats,
           hnsData: cleanComponentHnsData(part),
           chapterIds: [],
-          status: "planned",
         })
         .onConflictDoNothing();
     }
@@ -584,7 +636,7 @@ export async function generateCompleteHNS(
     await db
       .update(stories)
       .set({
-        status: "phase3_complete",
+        status: "writing",
         hnsData: cleanStoryHnsData({
           ...phase3HnsData,
           metadata: {
@@ -638,7 +690,7 @@ export async function generateCompleteHNS(
     await db
       .update(stories)
       .set({
-        status: "phase4_complete",
+        status: "writing",
         hnsData: cleanStoryHnsData({
           ...phase4HnsData,
           metadata: {
@@ -761,6 +813,26 @@ export async function generateCompleteHNS(
     }
     console.log("✅ Chapters saved");
 
+    // Update parts with their chapter IDs
+    console.log("💾 Updating parts with chapter IDs...");
+    for (const part of parts) {
+      const partChapterIds = allChapters
+        .filter(chapter => chapter.part_ref === part.part_id)
+        .map(chapter => chapter.chapter_id || nanoid());
+
+      if (partChapterIds.length > 0) {
+        await db
+          .update(partsTable)
+          .set({
+            chapterIds: partChapterIds,
+            updatedAt: new Date(),
+          })
+          .where(eq(partsTable.id, part.part_id));
+        console.log(`✅ Part ${part.part_id} updated with ${partChapterIds.length} chapter IDs`);
+      }
+    }
+    console.log("✅ Parts updated with chapter IDs");
+
     // Save scenes to database
     console.log("💾 Saving scenes to database...");
     for (const scene of allScenes) {
@@ -789,7 +861,6 @@ export async function generateCompleteHNS(
           settingId: scene.setting_id || undefined,
           summary: scene.summary,
           hnsData: cleanComponentHnsData(sceneWithActualContent),
-          status: "planned",
         })
         .onConflictDoNothing()
         .returning();
@@ -821,7 +892,7 @@ export async function generateCompleteHNS(
           .set({
             sceneIds: chapterSceneIds,
             hnsData: cleanComponentHnsData(updatedChapterHnsData),
-            status: "completed",
+            status: "published",
             updatedAt: new Date(),
           })
           .where(eq(chaptersTable.id, chapter.chapter_id || ''));
@@ -834,7 +905,7 @@ export async function generateCompleteHNS(
     await db
       .update(stories)
       .set({
-        status: "phase5_6_complete",
+        status: "writing",
         updatedAt: new Date(),
       })
       .where(eq(stories.id, currentStoryId));
@@ -874,12 +945,20 @@ export async function generateCompleteHNS(
     // Update allScenes with image data
     allScenes.splice(0, allScenes.length, ...scenesWithImages);
 
-    // Update status to completed with images
+    // Update status to completed with images (preserve existing hnsData with story image)
+    const existingStory = await db
+      .select({ hnsData: stories.hnsData })
+      .from(stories)
+      .where(eq(stories.id, currentStoryId))
+      .limit(1);
+
     await db
       .update(stories)
       .set({
-        status: "completed",
+        status: "published",
         updatedAt: new Date(),
+        // Preserve existing hnsData which contains the story image
+        hnsData: existingStory[0]?.hnsData || {},
       })
       .where(eq(stories.id, currentStoryId));
     console.log("✅ Story marked as completed with mandatory images");
@@ -909,10 +988,18 @@ export async function generateCompleteHNS(
 
     // Final update with complete HNS data (but not marking as fully completed yet)
     console.log("💾 Saving complete HNS data to database...");
+
+    // Get existing hnsData to preserve storyImage
+    const existingStoryData = await db
+      .select({ hnsData: stories.hnsData })
+      .from(stories)
+      .where(eq(stories.id, currentStoryId))
+      .limit(1);
+
     await db
       .update(stories)
       .set({
-        status: "phase5_6_complete", // Keep at phase5_6 since images aren't generated yet
+        status: "writing", // Keep at writing since images aren't generated yet
         hnsData: cleanStoryHnsData({
           story: completeStory,
           metadata: {
@@ -921,7 +1008,7 @@ export async function generateCompleteHNS(
             language,
             generation_prompt: userPrompt,
           },
-        }),
+        }, existingStoryData[0]?.hnsData),
         chapterIds: allChapters.map((c) => c.chapter_id || nanoid()),
         updatedAt: new Date(),
       })
@@ -944,7 +1031,7 @@ export async function generateCompleteHNS(
     await db
       .update(stories)
       .set({
-        status: "failed",
+        status: "writing",
         updatedAt: new Date(),
       })
       .where(eq(stories.id, currentStoryId));

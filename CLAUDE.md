@@ -64,9 +64,10 @@ This file provides guidance to Claude Code when working with this repository.
 
 **Google OAuth Authentication Setup for Playwright:**
 1. **Initial Capture**: Run `dotenv --file .env.local run node scripts/capture-auth-manual.mjs`
-   - Opens browser for manual Google login with test.user@example.com
+   - Opens browser for manual Google login with manager@fictures.xyz account
    - Automatically captures authentication state to `.auth/user.json`
    - Includes NextAuth.js session cookies and Google OAuth tokens
+   - **Testing Account**: Always use manager@fictures.xyz from `.auth/user.json` for web API and UI testing
 
 2. **Testing Automatic Login**: Run `dotenv --file .env.local run node scripts/test-auto-login.mjs`
    - Verifies stored credentials work for automatic authentication

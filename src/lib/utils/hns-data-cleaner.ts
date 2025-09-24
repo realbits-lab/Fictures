@@ -3,9 +3,9 @@
  * Removes phase-specific information and keeps only story structure data
  */
 
-export function cleanStoryHnsData(hnsData: any): Record<string, unknown> {
+export function cleanStoryHnsData(hnsData: any, existingHnsData?: any): Record<string, unknown> {
   if (!hnsData || typeof hnsData !== 'object') {
-    return {};
+    return existingHnsData || {};
   }
 
   const cleaned = { ...hnsData };
@@ -38,6 +38,11 @@ export function cleanStoryHnsData(hnsData: any): Record<string, unknown> {
       generation_prompt: cleanedMetadata.generation_prompt,
       created_at: cleanedMetadata.created_at || new Date().toISOString()
     };
+  }
+
+  // Preserve storyImage from existing data if it exists
+  if (existingHnsData?.storyImage) {
+    cleaned.storyImage = existingHnsData.storyImage;
   }
 
   return cleaned;

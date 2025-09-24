@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Card, CardContent, Badge } from "@/components/ui";
 
 interface CommunityStoryCardProps {
@@ -26,16 +27,25 @@ export function CommunityStoryCard({ story }: CommunityStoryCardProps) {
         <CardContent className="p-0">
           {/* Cover Image */}
           <div className="relative aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-t-lg overflow-hidden">
-            
-            {/* Placeholder Cover */}
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
-              <div className="text-center">
-                <div className="text-6xl mb-2">📖</div>
-                <div className="text-sm font-medium text-gray-600 dark:text-gray-400 px-4">
-                  {story.title}
+
+            {story.coverImage ? (
+              <Image
+                src={story.coverImage}
+                alt={story.title}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
+                <div className="text-center">
+                  <div className="text-6xl mb-2">📖</div>
+                  <div className="text-sm font-medium text-gray-600 dark:text-gray-400 px-4">
+                    {story.title}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
             
             {/* Overlay on hover */}
             <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">

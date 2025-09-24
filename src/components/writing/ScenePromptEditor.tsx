@@ -319,7 +319,6 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
           <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
             <div className="text-xs text-gray-500 dark:text-gray-400">
               <div className="font-medium mb-1">Current Scene:</div>
-              <div>Status: <Badge variant="outline" className="text-xs">{sceneData.status || 'Not set'}</Badge></div>
               <div>Characters: {sceneData.characters?.length || 0}</div>
               <div>Locations: {sceneData.places?.length || 0}</div>
               <div>Word Count: {sceneData.wordCount?.toLocaleString() || '0'}</div>
