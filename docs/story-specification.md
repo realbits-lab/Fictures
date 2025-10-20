@@ -143,18 +143,9 @@ The story structure is defined through the 'parts' array containing part_ids tha
 - **Narrative Framework**: Ensure parts follow recognized dramatic structures for automated validation
 - **Arc Completion**: Structure each part as a satisfying mini-arc within the larger story
 
-### 3.3 Part Planning Framework
+### 3.3 JSON Data Structure for Part Object
 
-**Required Part Elements (per JSON structure):**
-
-- **part_id**: Unique identifier (e.g., "part_001")
-- **part_title**: Descriptive name (e.g., "Part I: Discovery")
-- **structural_role**: Act designation ("Act 1: Setup", "Act 2: Confrontation", "Act 3: Resolution")
-- **summary**: One-paragraph description of main movements and developments
-- **key_beats**: Array of critical plot points for this act
-- **chapters**: Ordered array of chapter_ids
-
-**Key Beats by Act:**
+#### Key Beats by Act
 
 **Act 1 Required Beats:**
 
@@ -173,8 +164,6 @@ The story structure is defined through the 'parts' array containing part_ids tha
 - "Climax" - Peak conflict resolution
 - "Falling Action" - Immediate aftermath
 - "Resolution" - Final outcome
-
-### 3.4 JSON Data Structure for Part Object
 
 #### Field Descriptions
 
@@ -229,21 +218,9 @@ The **Chapter** is the primary unit of reader consumption, especially critical i
 - **Sequential Numbering**: Track chapter position within overall story structure
 - **Part Reference**: Link each chapter to its parent part through part_ref field
 
-### 4.3 Chapter Structure Framework
+### 4.3 JSON Data Structure for Chapter Object
 
-**Required Chapter Components (per JSON structure):**
-
-- **chapter_id**: Unique identifier (e.g., "chap_001")
-- **chapter_number**: Sequential position in story
-- **chapter_title**: Descriptive name (e.g., "Missing")
-- **part_ref**: Link to parent part (e.g., "part_001")
-- **summary**: Detailed paragraph of chapter events
-- **pacing_goal**: Tempo control ('fast', 'medium', 'slow', 'reflective')
-- **action_dialogue_ratio**: Balance specification (e.g., "40:60")
-- **chapter_hook**: Structured ending for reader retention
-- **scenes**: Ordered array of scene_ids
-
-**Chapter Hook Structure:**
+#### Chapter Hook Structure
 
 ```json
 "chapter_hook": {
@@ -260,8 +237,6 @@ The **Chapter** is the primary unit of reader consumption, especially critical i
 - **decision**: Critical choice point
 - **question**: Mystery or uncertainty
 - **emotional_turning_point**: Major character moment
-
-### 4.4 JSON Data Structure for Chapter Object
 
 #### Field Descriptions
 
