@@ -89,9 +89,11 @@ Paragraph Structure:
 
 Dialogue Parameters:
 • Dialogue ratio: 40-60% by word count
-• Speaker format: New speaker = New paragraph
+• Speaker format: New speaker = New paragraph with blank line separation
 • Action tags: Every 2-3 dialogue lines
 • Action separation: NEVER combine dialogue + action in same line
+• Multi-sentence dialogue: Use single newlines within same speaker's continuous dialogue
+• Speaker changes: Use blank lines (double newlines) between different speakers
 
 SCENE TYPE PROTOCOLS:
 
@@ -180,6 +182,7 @@ FORBIDDEN PRACTICES (NEVER USE):
 
 CRITICAL DIALOGUE FORMATTING:
 
+RULE 1: Dialogue vs Action Separation
 ✗ WRONG (dialogue and action combined):
 "You can't be serious." Sarah crossed her arms.
 
@@ -188,15 +191,30 @@ CRITICAL DIALOGUE FORMATTING:
 
 Sarah crossed her arms.
 
-✗ WRONG (multiple sentences in one line):
-"It's clearly a river," Kael stated. "See how it branches?"
+RULE 2: Multi-Sentence Dialogue
+When a single character speaks multiple sentences continuously:
+✗ WRONG (double newlines between dialogue sentences):
+"You cannot stop them, Detective.
 
-✓ CORRECT (each sentence on separate line):
+Only observe.
+
+And perhaps, if you are very lucky, survive."
+
+✓ CORRECT (single newlines within same speaker's dialogue):
+"You cannot stop them, Detective.
+Only observe.
+And perhaps, if you are very lucky, survive."
+
+RULE 3: Different Speakers
+When speakers change, use blank line separation:
+✓ CORRECT:
 "It's clearly a river."
 
 Kael stated, his voice a low rumble.
 
 "See how it branches?"
+
+Sarah nodded slowly.
 
 DYNAMIC STYLE MODULATION (Pacing Through Prose):
 • HIGH TENSION → Short sentences. Fragments. Active verbs.
@@ -219,6 +237,8 @@ IMPLEMENTATION CHECKLIST:
 ✓ Forward momentum sustained
 ✓ Ending creates pull to continue
 ✓ All dialogue separated from action tags
+✓ Multi-sentence dialogue uses single newlines within same speaker
+✓ Different speakers separated by blank lines
 
 TARGET: 800-1500 words of engaging, mobile-optimized prose following these discipline principles.`,
       prompt: `Write the COMPLETE scene narrative from beginning to end. Start with the entry hook and develop through to resolution. Begin with: "${scene.entry_hook}"`,
