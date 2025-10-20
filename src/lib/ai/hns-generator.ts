@@ -933,48 +933,11 @@ export async function generateCompleteHNS(
         .map(ch => ch.chapter_id)
     }));
 
-    // Update parts with chapters in hnsData
-    console.log("💾 Updating parts with chapters in hnsData...");
-    for (const finalPart of finalParts) {
-      await db
-        .update(partsTable)
-        .set({
-          hnsData: cleanComponentHnsData(finalPart),
-          updatedAt: new Date(),
-        })
-        .where(eq(partsTable.id, finalPart.part_id));
-    }
-    console.log("✅ Parts hnsData updated with chapters");
-
-    // Final update with complete HNS data (but not marking as fully completed yet)
-    console.log("💾 Saving complete HNS data to database...");
-
-    // Get existing hnsData to preserve storyImage
-    const existingStoryData = await db
-      .select({ hnsData: stories.hnsData })
-      .from(stories)
-      .where(eq(stories.id, currentStoryId))
-      .limit(1);
-
-    await db
-      .update(stories)
-      .set({
-        status: "writing", // Keep at writing since images aren't generated yet
-        hnsData: cleanStoryHnsData({
-          story: completeStory,
-          metadata: {
-            version: "1.0.0",
-            created_at: new Date().toISOString(),
-            language,
-            generation_prompt: userPrompt,
-          },
-        }, existingStoryData[0]?.hnsData),
-        chapterIds: allChapters.map((c) => c.chapter_id || nanoid()),
-        updatedAt: new Date(),
-      })
-      .where(eq(stories.id, currentStoryId));
-
-    console.log("✅ HNS generation complete with incremental saves!");
+    // NOTE: Final database updates (parts hnsData and story hnsData) are now deferred
+    // to happen AFTER the UI has been updated with the image generation progress
+    // This prevents blocking the UI update with database operations
+    console.log(`⏱️ [${new Date().toISOString()}] ⚡ Skipping final DB updates to avoid UI blocking`);
+    console.log(`⏱️ [${new Date().toISOString()}] ✅ HNS generation complete - returning data for UI update!`);
 
     return {
       story: completeStory,
@@ -1134,12 +1097,13 @@ export async function generateSceneImagesForStory(
       }
     }
 
-    console.log("✅ Story cover and all mandatory scene images generated successfully!");
+    console.log(`⏱️ [${new Date().toISOString()}] ✅ Story cover and all mandatory scene images generated successfully!`);
     progressCallback?.("phase8_complete", {
       message: "Story cover and all mandatory scene images generated successfully",
       scenes: updatedScenes,
       totalImages,
     });
+    console.log(`⏱️ [${new Date().toISOString()}] 📤 Sent phase8_complete callback`);
 
   } catch (error) {
     console.error("❌ Critical error generating mandatory scene images:", error);

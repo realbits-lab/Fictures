@@ -147,6 +147,7 @@ export function CreateStoryForm() {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
+              console.log(`⏱️ [${new Date().toISOString()}] Frontend received SSE event: ${data.phase}`);
 
               switch (data.phase) {
                 case 'progress':
@@ -156,10 +157,12 @@ export function CreateStoryForm() {
                     'generating_setting_images': 6,
                   };
                   if (data.data.step && stepMap[data.data.step] !== undefined) {
+                    console.log(`⏱️ [${new Date().toISOString()}] 🎨 ${data.data.step} - marking step ${stepMap[data.data.step]} as in_progress`);
                     updateProgress(stepMap[data.data.step], 'in_progress');
 
                     // Update the description to show current activity
                     if (data.data.step === 'generating_character_images') {
+                      console.log(`⏱️ [${new Date().toISOString()}] 🖼️ VISUAL GENERATION STARTED - updating UI`);
                       setProgress(prev => prev.map((step, index) =>
                         index === 6 ? {
                           ...step,
@@ -309,6 +312,7 @@ export function CreateStoryForm() {
                   break;
 
                 case 'phase7_complete':
+                  console.log(`⏱️ [${new Date().toISOString()}] 🎬 Scene Content COMPLETED - marking step 5 as completed`);
                   updateProgress(5, 'completed');
                   // Reset description
                   setProgress(prev => prev.map((step, index) =>
@@ -320,6 +324,7 @@ export function CreateStoryForm() {
                   break;
 
                 case 'hns_complete':
+                  console.log(`⏱️ [${new Date().toISOString()}] 📚 HNS Complete - processing document`);
                   // HNS structure generated - update with complete structure
                   const hnsDoc = data.data.hnsDocument;
                   if (hnsDoc) {
@@ -372,6 +377,7 @@ export function CreateStoryForm() {
                       updateProgress(i, 'completed');
                     }
                   }
+                  console.log(`⏱️ [${new Date().toISOString()}] 📚 HNS Complete processing finished`);
                   break;
 
 

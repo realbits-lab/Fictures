@@ -126,28 +126,89 @@ export async function POST(request: NextRequest) {
             undefined,
             (phase, data) => {
               // Send progress updates via SSE
+              console.log(`⏱️ [${new Date().toISOString()}] Sending SSE event: ${phase}`);
               sendUpdate(phase, data);
             }
           );
 
-          sendUpdate("hns_complete", {
-            message: "HNS structure generated successfully",
-            hnsDocument: hnsDoc,
-          });
-
-          // Story is already created in generateCompleteHNS with incremental saves
-          const storyId = hnsDoc.story.story_id || nanoid();
-
-          // Parts, chapters, and scenes are already created in generateCompleteHNS
-          // with incremental saving after each phase
+          console.log(`⏱️ [${new Date().toISOString()}] generateCompleteHNS returned`);
 
           // ============= IMAGE GENERATION =============
-          // Characters are already created in generateCompleteHNS
-          // Send progress update for generating character images
+          // CRITICAL: Send image generation start event FIRST, before hns_complete
+          // This ensures the UI updates immediately without waiting for hns_complete processing
           sendUpdate("progress", {
             step: "generating_character_images",
             message: "Generating character images...",
           });
+          console.log(`⏱️ [${new Date().toISOString()}] Sent generating_character_images event`);
+
+          // Now send hns_complete with the full document
+          // This can take time to serialize/send/parse, but UI is already updated
+          sendUpdate("hns_complete", {
+            message: "HNS structure generated successfully",
+            hnsDocument: hnsDoc,
+          });
+          console.log(`⏱️ [${new Date().toISOString()}] Sent hns_complete event`);
+
+          // Story is already created in generateCompleteHNS with incremental saves
+          const storyId = hnsDoc.story.story_id || nanoid();
+
+          // Now do the final database updates that were deferred from generateCompleteHNS
+          // We do them here AFTER sending the UI update to avoid blocking the progress indicator
+          console.log(`⏱️ [${new Date().toISOString()}] 💾 Starting deferred database updates...`);
+          const dbUpdateStart = Date.now();
+
+          // Update parts with chapters in hnsData
+          const parts = hnsDoc.parts;
+          const allChapters = hnsDoc.chapters;
+          const completeStory = hnsDoc.story;
+
+          if (parts && parts.length > 0) {
+            console.log(`⏱️ [${new Date().toISOString()}] 💾 Updating ${parts.length} parts with chapters...`);
+            for (const part of parts) {
+              await db
+                .update(partsTable)
+                .set({
+                  hnsData: part, // Already cleaned by generateCompleteHNS
+                  updatedAt: new Date(),
+                })
+                .where(eq(partsTable.id, part.part_id));
+            }
+          }
+
+          // Get existing hnsData to preserve storyImage
+          const { stories: storiesTable } = await import("@/lib/db/schema");
+          const existingStoryData = await db
+            .select({ hnsData: storiesTable.hnsData })
+            .from(storiesTable)
+            .where(eq(storiesTable.id, storyId))
+            .limit(1);
+
+          // Final update with complete HNS data
+          await db
+            .update(storiesTable)
+            .set({
+              status: "writing", // Keep at writing since character/setting images aren't generated yet
+              hnsData: {
+                ...existingStoryData[0]?.hnsData,
+                story: completeStory,
+                parts: parts,
+                chapters: allChapters,
+                characters: hnsDoc.characters,
+                settings: hnsDoc.settings,
+              },
+              chapterIds: allChapters?.map((c: any) => c.chapter_id) || [],
+              updatedAt: new Date(),
+            })
+            .where(eq(storiesTable.id, storyId));
+
+          console.log(`⏱️ [${new Date().toISOString()}] ✅ Deferred database updates complete (${Date.now() - dbUpdateStart}ms)`);
+
+          // Parts, chapters, and scenes are already created in generateCompleteHNS
+          // with incremental saving after each phase
+
+          // Characters are already created in generateCompleteHNS
+          // Now generate images for them
 
           const characterImagePromises = hnsDoc.characters.map(
             async (character: any) => {
