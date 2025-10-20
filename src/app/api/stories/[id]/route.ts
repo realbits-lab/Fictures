@@ -174,31 +174,46 @@ export async function DELETE(
       }
     }
 
-    // Get all community posts for this story
-    const storyCommunityPosts = await db
-      .select()
-      .from(communityPosts)
-      .where(eq(communityPosts.storyId, id));
+    // Get all community posts for this story (optional - table may not exist)
+    let storyCommunityPosts: any[] = [];
+    let postIds: string[] = [];
 
-    const postIds = storyCommunityPosts.map(p => p.id);
-    console.log(`Found ${postIds.length} community posts to delete`);
+    try {
+      storyCommunityPosts = await db
+        .select()
+        .from(communityPosts)
+        .where(eq(communityPosts.storyId, id));
+
+      postIds = storyCommunityPosts.map(p => p.id);
+      console.log(`Found ${postIds.length} community posts to delete`);
+    } catch (error) {
+      console.log('⚠️ Community posts table not found - skipping community data deletion');
+    }
 
     // Delete all related data in correct order (respecting foreign key constraints)
 
     // 1. Delete community replies (depends on posts)
     if (postIds.length > 0) {
-      await db
-        .delete(communityReplies)
-        .where(inArray(communityReplies.postId, postIds));
-      console.log('✓ Deleted community replies');
+      try {
+        await db
+          .delete(communityReplies)
+          .where(inArray(communityReplies.postId, postIds));
+        console.log('✓ Deleted community replies');
+      } catch (error) {
+        console.log('⚠️ Could not delete community replies:', error instanceof Error ? error.message : 'Unknown error');
+      }
     }
 
     // 2. Delete community posts
     if (postIds.length > 0) {
-      await db
-        .delete(communityPosts)
-        .where(eq(communityPosts.storyId, id));
-      console.log('✓ Deleted community posts');
+      try {
+        await db
+          .delete(communityPosts)
+          .where(eq(communityPosts.storyId, id));
+        console.log('✓ Deleted community posts');
+      } catch (error) {
+        console.log('⚠️ Could not delete community posts:', error instanceof Error ? error.message : 'Unknown error');
+      }
     }
 
     // 3. Delete scenes (depends on chapters)

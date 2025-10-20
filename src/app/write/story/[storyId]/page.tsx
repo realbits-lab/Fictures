@@ -34,7 +34,7 @@ export default async function WriteStoryPage({ params }: { params: Promise<{ sto
     <UnifiedWritingEditor
       story={storyStructure}
       initialSelection={initialSelection}
-      disabled={true}
+      disabled={false}
     />
   );
 }
