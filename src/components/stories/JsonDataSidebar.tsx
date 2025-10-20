@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useStoryCreation } from './StoryCreationContext';
 import { BeautifulJSONDisplay } from '../writing/BeautifulJSONDisplay';
 import { TreeView, type TreeDataItem } from '@/components/ui/tree-view';
-import { FileText, Users, MapPin, BookOpen, ScrollText, FileIcon, BarChart3 } from 'lucide-react';
+import { FileText, Users, MapPin, BookOpen, ScrollText, FileIcon } from 'lucide-react';
 
 export function JsonDataSidebar() {
   const { jsonData } = useStoryCreation();
@@ -28,7 +28,6 @@ export function JsonDataSidebar() {
     { id: 'places', label: 'Places', data: jsonData.placesJson, icon: MapPin },
     { id: 'chapters', label: 'Chapters', data: jsonData.chaptersJson, icon: ScrollText },
     { id: 'scenes', label: 'Scenes', data: jsonData.scenesJson, icon: FileIcon },
-    { id: 'analysis', label: 'Analysis', data: jsonData.analysisJson, icon: BarChart3 },
   ];
 
   const hasAnyData = Object.values(jsonData).some(data => data && data.trim().length > 0);
@@ -39,8 +38,8 @@ export function JsonDataSidebar() {
   const buildTreeData = (data: any, tabId: string): TreeDataItem[] | null => {
     if (!data) return null;
 
-    if (tabId === 'story' || tabId === 'analysis') {
-      // Story and Analysis are single objects, not arrays
+    if (tabId === 'story') {
+      // Story is a single object, not an array
       return null;
     }
 
@@ -171,13 +170,12 @@ export function JsonDataSidebar() {
                 </div>
               </div>
             ) : (
-              // Single object display (like story and analysis)
+              // Single object display (like story)
               parsedData ? (
                 <BeautifulJSONDisplay
                   title={activeTabData?.label || 'Data'}
                   icon={
                     activeTab === 'story' ? '📖' :
-                    activeTab === 'analysis' ? '📊' :
                     activeTab === 'parts' ? '📚' :
                     '📄'
                   }

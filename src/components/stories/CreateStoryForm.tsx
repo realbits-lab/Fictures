@@ -21,21 +21,6 @@ interface StoryData {
   parts?: any[];
   chapters?: any[];
   scenes?: any[];
-  analysis?: {
-    validation?: {
-      overallValid?: boolean;
-      totalErrors?: number;
-      totalWarnings?: number;
-    };
-    evaluation?: {
-      overallScore?: number;
-    };
-  };
-  improvement?: {
-    errorsFixed?: number;
-    warningsReduced?: number;
-    scoreImproved?: number;
-  };
 }
 
 export function CreateStoryForm() {
@@ -57,7 +42,6 @@ export function CreateStoryForm() {
     { phase: 'Settings', description: 'Building immersive locations with sensory details', status: 'pending' },
     { phase: 'Chapters & Scenes', description: 'Structuring chapters with hooks and scene breakdowns', status: 'pending' },
     { phase: 'Scene Content', description: 'Generating narrative content for each scene', status: 'pending' },
-    { phase: 'Quality Analysis', description: 'Analyzing story quality and structure', status: 'pending' },
     { phase: 'Visual Generation', description: 'Creating AI images for characters and settings', status: 'pending' },
   ];
 
@@ -131,8 +115,7 @@ export function CreateStoryForm() {
         },
         body: JSON.stringify({
           prompt: prompt.trim(),
-          language,
-          enableQualityImprovement: true
+          language
         }),
       });
 
@@ -169,39 +152,23 @@ export function CreateStoryForm() {
                 case 'progress':
                   // Update progress based on step
                   const stepMap: Record<string, number> = {
-                    'analyzing_quality': 6,
-                    'improving_content': 6,
-                    'generating_character_images': 7,
-                    'generating_setting_images': 7,
+                    'generating_character_images': 6,
+                    'generating_setting_images': 6,
                   };
                   if (data.data.step && stepMap[data.data.step] !== undefined) {
                     updateProgress(stepMap[data.data.step], 'in_progress');
 
                     // Update the description to show current activity
-                    if (data.data.step === 'analyzing_quality') {
+                    if (data.data.step === 'generating_character_images') {
                       setProgress(prev => prev.map((step, index) =>
                         index === 6 ? {
-                          ...step,
-                          description: data.data.message || 'Analyzing story quality and structure...'
-                        } : step
-                      ));
-                    } else if (data.data.step === 'improving_content') {
-                      setProgress(prev => prev.map((step, index) =>
-                        index === 6 ? {
-                          ...step,
-                          description: data.data.message || 'Applying AI-powered improvements...'
-                        } : step
-                      ));
-                    } else if (data.data.step === 'generating_character_images') {
-                      setProgress(prev => prev.map((step, index) =>
-                        index === 7 ? {
                           ...step,
                           description: data.data.message || 'Generating character images...'
                         } : step
                       ));
                     } else if (data.data.step === 'generating_setting_images') {
                       setProgress(prev => prev.map((step, index) =>
-                        index === 7 ? {
+                        index === 6 ? {
                           ...step,
                           description: data.data.message || 'Generating setting images...'
                         } : step
@@ -407,108 +374,6 @@ export function CreateStoryForm() {
                   }
                   break;
 
-                case 'analysis_complete':
-                  // Store analysis results
-                  if (data.data.validation && data.data.evaluation) {
-                    const analysisData = {
-                      validation: data.data.validation,
-                      evaluation: data.data.evaluation,
-                      timestamp: new Date().toISOString()
-                    };
-                    setStoryData(prev => ({
-                      ...prev,
-                      analysis: {
-                        validation: data.data.validation,
-                        evaluation: data.data.evaluation
-                      }
-                    }));
-                    // Update JSON sidebar
-                    setJsonData(prev => ({
-                      ...prev,
-                      analysisJson: JSON.stringify(analysisData, null, 2)
-                    }));
-                  }
-                  // Mark quality analysis step as completed
-                  updateProgress(6, 'completed');
-                  setProgress(prev => prev.map((step, index) =>
-                    index === 6 ? {
-                      ...step,
-                      description: `Analysis complete - Score: ${data.data.evaluation?.overallScore || 0}/100`
-                    } : step
-                  ));
-                  break;
-
-                case 'improvement_skipped':
-                  // Store analysis results
-                  if (data.data.analysis) {
-                    const analysisData = {
-                      validation: data.data.analysis.validation,
-                      evaluation: data.data.analysis.evaluation,
-                      status: 'quality_verified',
-                      timestamp: new Date().toISOString()
-                    };
-                    setStoryData(prev => ({
-                      ...prev,
-                      analysis: {
-                        validation: data.data.analysis.validation,
-                        evaluation: data.data.analysis.evaluation
-                      }
-                    }));
-                    // Update JSON sidebar
-                    setJsonData(prev => ({
-                      ...prev,
-                      analysisJson: JSON.stringify(analysisData, null, 2)
-                    }));
-                  }
-                  // Mark quality analysis step as completed
-                  updateProgress(6, 'completed');
-                  setProgress(prev => prev.map((step, index) =>
-                    index === 6 ? {
-                      ...step,
-                      description: `Quality verified - Score: ${data.data.analysis?.evaluation?.overallScore || 0}/100`
-                    } : step
-                  ));
-                  break;
-
-                case 're_analysis_complete':
-                  // Store improvement results
-                  if (data.data.improvement) {
-                    const analysisData = {
-                      before: {
-                        validation: data.data.before?.validation,
-                        evaluation: data.data.before?.evaluation
-                      },
-                      after: {
-                        validation: data.data.after?.validation,
-                        evaluation: data.data.after?.evaluation
-                      },
-                      improvement: data.data.improvement,
-                      status: 'improved',
-                      timestamp: new Date().toISOString()
-                    };
-                    setStoryData(prev => ({
-                      ...prev,
-                      improvement: data.data.improvement,
-                      analysis: {
-                        validation: data.data.after?.validation,
-                        evaluation: data.data.after?.evaluation
-                      }
-                    }));
-                    // Update JSON sidebar
-                    setJsonData(prev => ({
-                      ...prev,
-                      analysisJson: JSON.stringify(analysisData, null, 2)
-                    }));
-                  }
-                  // Mark quality analysis step as completed
-                  updateProgress(6, 'completed');
-                  setProgress(prev => prev.map((step, index) =>
-                    index === 6 ? {
-                      ...step,
-                      description: `Improvements applied - Score: ${data.data.after?.evaluation?.overallScore || 0}/100`
-                    } : step
-                  ));
-                  break;
 
                 case 'complete':
                   // All phases completed successfully

@@ -4,15 +4,11 @@ import { nanoid } from "nanoid";
 import { auth } from "@/lib/auth";
 import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { db } from "@/lib/db";
+import { eq } from "drizzle-orm";
 import {
-  stories,
-  parts,
-  chapters,
-  scenes,
   characters as charactersTable,
   settings as settingsTable,
 } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 import {
   generateCharacterImagePrompt,
   generateCompleteHNS,
@@ -86,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { prompt, language = "English", enableQualityImprovement = false } = body;
+    const { prompt, language = "English" } = body;
 
     if (!prompt) {
       return new Response("Story prompt is required", { status: 400 });
@@ -139,254 +135,13 @@ export async function POST(request: NextRequest) {
             hnsDocument: hnsDoc,
           });
 
-          // Store in database
-          sendUpdate("progress", {
-            step: "storing_database",
-            message: "Storing story data in database...",
-          });
-
           // Story is already created in generateCompleteHNS with incremental saves
           const storyId = hnsDoc.story.story_id || nanoid();
 
           // Parts, chapters, and scenes are already created in generateCompleteHNS
           // with incremental saving after each phase
 
-          // ============= QUALITY ANALYSIS & IMPROVEMENT PHASE =============
-          if (enableQualityImprovement) {
-            // Send progress update for analyzing quality
-          sendUpdate("progress", {
-            step: "analyzing_quality",
-            message: "Analyzing story quality and structure...",
-          });
-
-          // Fetch all story data for analysis
-          const [storyData] = await db.select().from(stories).where(eq(stories.id, storyId));
-          const partsData = await db.select().from(parts).where(eq(parts.storyId, storyId));
-          const chaptersData = await db.select().from(chapters).where(eq(chapters.storyId, storyId));
-          const scenesData = await db.select().from(scenes)
-            .innerJoin(chapters, eq(scenes.chapterId, chapters.id))
-            .where(eq(chapters.storyId, storyId));
-          const charactersData = await db.select().from(charactersTable).where(eq(charactersTable.storyId, storyId));
-          const settingsData = await db.select().from(settingsTable).where(eq(settingsTable.storyId, storyId));
-
-          // Prepare data for analysis
-          const analysisData = {
-            story: storyData,
-            parts: partsData,
-            chapters: chaptersData,
-            scenes: scenesData.map(s => s.scenes),
-            characters: charactersData,
-            settings: settingsData
-          };
-
-          // Call story-analysis API internally
-          const { validateStoryStructure } = await import('@/lib/services/validation');
-          const { evaluateStoryContent } = await import('@/lib/services/evaluation');
-
-          const validationResult = validateStoryStructure(analysisData);
-          const evaluationResult = await evaluateStoryContent(analysisData);
-
-          sendUpdate("analysis_complete", {
-            message: "Quality analysis completed",
-            validation: {
-              overallValid: validationResult.overallValid,
-              totalErrors: validationResult.totalErrors,
-              totalWarnings: validationResult.totalWarnings
-            },
-            evaluation: {
-              overallScore: evaluationResult.storyEvaluation?.overallScore || 0
-            }
-          });
-
-          // ============= IMPROVEMENT PHASE =============
-          // Only run improvements if there are issues to fix
-          if (validationResult.totalErrors > 0 || validationResult.totalWarnings > 5 ||
-              (evaluationResult.storyEvaluation?.overallScore || 0) < 75) {
-
-            sendUpdate("progress", {
-              step: "improving_content",
-              message: "Applying AI-powered improvements...",
-            });
-
-            // Call story-improvement service internally
-            const { improveStoryContent } = await import('@/lib/services/story-improvement');
-
-            const improvementResult = await improveStoryContent({
-              analysisResult: {
-                validation: validationResult,
-                evaluation: evaluationResult
-              },
-              originalData: analysisData,
-              options: {
-                updateLevel: 'moderate',
-                preserveUserContent: false, // Since it's initial generation, we can be more aggressive
-                autoApply: false // We'll apply manually to have control
-              }
-            });
-
-            sendUpdate("improvement_progress", {
-              message: "Improvements generated",
-              totalChanges: improvementResult.summary.totalChanges,
-              majorImprovements: improvementResult.summary.majorImprovements
-            });
-
-            // Apply improvements to database
-            // Story improvements
-            if (improvementResult.changes.story.fieldsUpdated.length > 0) {
-              await db.update(stories)
-                .set({
-                  ...improvementResult.improved.story,
-                  updatedAt: new Date()
-                })
-                .where(eq(stories.id, storyId));
-            }
-
-            // Parts improvements
-            for (const part of improvementResult.improved.parts) {
-              const changeLog = improvementResult.changes.parts.find(c => c.id === part.id);
-              if (changeLog && changeLog.fieldsUpdated.length > 0) {
-                await db.update(parts)
-                  .set({
-                    ...part,
-                    updatedAt: new Date()
-                  })
-                  .where(eq(parts.id, part.id));
-              }
-            }
-
-            // Chapters improvements
-            for (const chapter of improvementResult.improved.chapters) {
-              const changeLog = improvementResult.changes.chapters.find(c => c.id === chapter.id);
-              if (changeLog && changeLog.fieldsUpdated.length > 0) {
-                await db.update(chapters)
-                  .set({
-                    ...chapter,
-                    updatedAt: new Date()
-                  })
-                  .where(eq(chapters.id, chapter.id));
-              }
-            }
-
-            // Scenes improvements
-            for (const scene of improvementResult.improved.scenes) {
-              const changeLog = improvementResult.changes.scenes.find(c => c.id === scene.id);
-              if (changeLog && changeLog.fieldsUpdated.length > 0) {
-                await db.update(scenes)
-                  .set({
-                    ...scene,
-                    updatedAt: new Date()
-                  })
-                  .where(eq(scenes.id, scene.id));
-              }
-            }
-
-            // Characters improvements
-            for (const character of improvementResult.improved.characters) {
-              const changeLog = improvementResult.changes.characters.find(c => c.id === character.id);
-              if (changeLog && changeLog.fieldsUpdated.length > 0) {
-                await db.update(charactersTable)
-                  .set({
-                    ...character,
-                    updatedAt: new Date()
-                  })
-                  .where(eq(charactersTable.id, character.id));
-              }
-            }
-
-            // Settings improvements
-            for (const setting of improvementResult.improved.settings) {
-              const changeLog = improvementResult.changes.settings.find(c => c.id === setting.id);
-              if (changeLog && changeLog.fieldsUpdated.length > 0) {
-                await db.update(settingsTable)
-                  .set({
-                    ...setting,
-                    updatedAt: new Date()
-                  })
-                  .where(eq(settingsTable.id, setting.id));
-              }
-            }
-
-            sendUpdate("improvement_complete", {
-              message: "Story improvements applied successfully",
-              summary: improvementResult.summary
-            });
-
-            // ============= RE-ANALYSIS AFTER IMPROVEMENTS =============
-            sendUpdate("progress", {
-              step: "re_analyzing_quality",
-              message: "Re-analyzing improved story quality...",
-            });
-
-            // Fetch updated story data for re-analysis
-            const [updatedStoryData] = await db.select().from(stories).where(eq(stories.id, storyId));
-            const updatedPartsData = await db.select().from(parts).where(eq(parts.storyId, storyId));
-            const updatedChaptersData = await db.select().from(chapters).where(eq(chapters.storyId, storyId));
-            const updatedScenesData = await db.select().from(scenes)
-              .innerJoin(chapters, eq(scenes.chapterId, chapters.id))
-              .where(eq(chapters.storyId, storyId));
-            const updatedCharactersData = await db.select().from(charactersTable).where(eq(charactersTable.storyId, storyId));
-            const updatedSettingsData = await db.select().from(settingsTable).where(eq(settingsTable.storyId, storyId));
-
-            const updatedAnalysisData = {
-              story: updatedStoryData,
-              parts: updatedPartsData,
-              chapters: updatedChaptersData,
-              scenes: updatedScenesData.map(s => s.scenes),
-              characters: updatedCharactersData,
-              settings: updatedSettingsData
-            };
-
-            // Re-run analysis to verify improvements
-            const postValidationResult = validateStoryStructure(updatedAnalysisData);
-            const postEvaluationResult = await evaluateStoryContent(updatedAnalysisData);
-
-            sendUpdate("re_analysis_complete", {
-              message: "Quality re-analysis completed - Improvement verified!",
-              before: {
-                validation: {
-                  overallValid: validationResult.overallValid,
-                  totalErrors: validationResult.totalErrors,
-                  totalWarnings: validationResult.totalWarnings
-                },
-                evaluation: {
-                  overallScore: evaluationResult.storyEvaluation?.overallScore || 0
-                }
-              },
-              after: {
-                validation: {
-                  overallValid: postValidationResult.overallValid,
-                  totalErrors: postValidationResult.totalErrors,
-                  totalWarnings: postValidationResult.totalWarnings
-                },
-                evaluation: {
-                  overallScore: postEvaluationResult.storyEvaluation?.overallScore || 0
-                }
-              },
-              improvement: {
-                errorsFixed: validationResult.totalErrors - postValidationResult.totalErrors,
-                warningsReduced: validationResult.totalWarnings - postValidationResult.totalWarnings,
-                scoreImproved: (postEvaluationResult.storyEvaluation?.overallScore || 0) - (evaluationResult.storyEvaluation?.overallScore || 0)
-              }
-            });
-
-          } else {
-            sendUpdate("improvement_skipped", {
-              message: "Story quality is already high, skipping improvements",
-              analysis: {
-                validation: {
-                  overallValid: validationResult.overallValid,
-                  totalErrors: validationResult.totalErrors,
-                  totalWarnings: validationResult.totalWarnings
-                },
-                evaluation: {
-                  overallScore: evaluationResult.storyEvaluation?.overallScore || 0
-                }
-              }
-            });
-          }
-          } // End of enableQualityImprovement
-
-          // ============= CONTINUE TO IMAGE GENERATION =============
+          // ============= IMAGE GENERATION =============
           // Characters are already created in generateCompleteHNS
           // Send progress update for generating character images
           sendUpdate("progress", {
