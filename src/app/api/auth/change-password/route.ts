@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import bcrypt from 'bcryptjs';
+import { hashPassword, verifyPassword } from '@/lib/auth/password';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';
@@ -45,13 +45,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify current password
-    const isPasswordValid = await bcrypt.compare(validatedData.currentPassword, user.password);
+    const isPasswordValid = await verifyPassword(validatedData.currentPassword, user.password);
     if (!isPasswordValid) {
       return NextResponse.json({ error: 'Current password is incorrect' }, { status: 400 });
     }
 
     // Check if new password is same as current
-    const isSamePassword = await bcrypt.compare(validatedData.newPassword, user.password);
+    const isSamePassword = await verifyPassword(validatedData.newPassword, user.password);
     if (isSamePassword) {
       return NextResponse.json(
         { error: 'New password must be different from current password' },
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash new password
-    const hashedPassword = await bcrypt.hash(validatedData.newPassword, 10);
+    const hashedPassword = await hashPassword(validatedData.newPassword);
 
     // Update password in database
     await db
