@@ -933,6 +933,19 @@ export async function generateCompleteHNS(
         .map(ch => ch.chapter_id)
     }));
 
+    // Update parts with chapters in hnsData
+    console.log("💾 Updating parts with chapters in hnsData...");
+    for (const finalPart of finalParts) {
+      await db
+        .update(partsTable)
+        .set({
+          hnsData: cleanComponentHnsData(finalPart),
+          updatedAt: new Date(),
+        })
+        .where(eq(partsTable.id, finalPart.part_id));
+    }
+    console.log("✅ Parts hnsData updated with chapters");
+
     // Final update with complete HNS data (but not marking as fully completed yet)
     console.log("💾 Saving complete HNS data to database...");
 
