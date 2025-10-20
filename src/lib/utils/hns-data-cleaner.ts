@@ -63,8 +63,9 @@ export function cleanComponentHnsData(componentData: any): Record<string, unknow
   delete cleaned.phase_timestamp;
   delete cleaned.generation_phase;
 
-  // Remove any internal processing fields
-  delete cleaned.id; // Don't duplicate the ID in hnsData
+  // Remove any internal ID fields that duplicate database primary keys
+  // These are redundant with the database table's ID field
+  delete cleaned.id;
   delete cleaned.story_id;
   delete cleaned.part_id;
   delete cleaned.chapter_id;
@@ -72,28 +73,10 @@ export function cleanComponentHnsData(componentData: any): Record<string, unknow
   delete cleaned.character_id;
   delete cleaned.setting_id;
 
-  // Remove ID arrays from objects - these are managed in database fields
-  // Note: We only remove the ID reference arrays, not the actual character/setting data objects
-  if (cleaned.parts && Array.isArray(cleaned.parts)) {
-    // If parts is an array of strings (IDs), remove it
-    if (cleaned.parts.length > 0 && typeof cleaned.parts[0] === 'string') {
-      delete cleaned.parts;
-    }
-  }
-
-  if (cleaned.chapters && Array.isArray(cleaned.chapters)) {
-    // If chapters is an array of strings (IDs), remove it
-    if (cleaned.chapters.length > 0 && typeof cleaned.chapters[0] === 'string') {
-      delete cleaned.chapters;
-    }
-  }
-
-  if (cleaned.scenes && Array.isArray(cleaned.scenes)) {
-    // If scenes is an array of strings (IDs), remove it
-    if (cleaned.scenes.length > 0 && typeof cleaned.scenes[0] === 'string') {
-      delete cleaned.scenes;
-    }
-  }
+  // NOTE: We KEEP the relationship arrays (parts, chapters, scenes) in hnsData
+  // because they represent narrative structure and ordering, not just database relationships.
+  // The database fields (partIds, chapterIds, sceneIds) are used for queries,
+  // while hnsData preserves the complete hierarchical narrative structure.
 
   return cleaned;
 }
