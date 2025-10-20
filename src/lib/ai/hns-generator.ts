@@ -506,59 +506,6 @@ export async function generateCompleteHNS(
       });
     console.log("✅ Phase 1 data saved");
 
-    // Generate story cover image after Phase 1
-    console.log("🎨 Generating story cover image...");
-    let storyImageData = null;
-    try {
-      const storyImagePrompt = `${story.story_title}: ${story.genre.join(", ")} story. ${story.dramatic_question}. ${story.premise}. Key themes: ${story.theme}`;
-      const imageResult = await generateImage(
-        storyImagePrompt,
-        'story',
-        currentStoryId,
-        {
-          style: 'fantasy-art',
-          aspectRatio: 'portrait',
-          quality: 'high',
-          mood: 'epic and dramatic',
-          lighting: 'cinematic'
-        }
-      );
-      storyImageData = {
-        url: imageResult.imageUrl,
-        method: imageResult.method,
-        style: imageResult.style,
-        generatedAt: new Date().toISOString(),
-        prompt: storyImagePrompt
-      };
-      console.log('✅ Story cover image generated:', imageResult.imageUrl);
-      progressCallback?.("story_image_generated", {
-        message: `Story cover image generated: ${imageResult.imageUrl}`,
-      });
-    } catch (error) {
-      console.error('⚠️ Failed to generate story cover image:', error);
-      // Continue without image if generation fails
-    }
-
-    // Update story with cover image
-    if (storyImageData) {
-      console.log("💾 Saving story cover image to database...");
-      await db
-        .update(stories)
-        .set({
-          hnsData: cleanStoryHnsData({
-            storyImage: storyImageData,
-            metadata: {
-              version: "1.0.0",
-              language,
-              generation_prompt: userPrompt,
-            },
-          }),
-          updatedAt: new Date(),
-        })
-        .where(eq(stories.id, currentStoryId));
-      console.log("✅ Story cover image saved");
-    }
-
     // Phase 2: Generate three-act structure and save
     console.log("Phase 2: Creating three-act structure...");
     progressCallback?.("phase2_start", {
@@ -927,10 +874,11 @@ export async function generateCompleteHNS(
       progressCallback
     );
 
-    // Phase 8: Generate mandatory images for all scenes
-    console.log("Phase 8: Generating mandatory scene images...");
+    // Phase 8: Generate story cover image and mandatory scene images
+    console.log("Phase 8: Generating story cover image and mandatory scene images...");
     progressCallback?.("phase8_start", {
-      message: `Generating images for ${allScenes.length} scenes (mandatory)...`,
+      message: `Generating story cover image and images for ${allScenes.length} scenes...`,
+      totalImages: allScenes.length + 1,
     });
 
     const scenesWithImages = await generateSceneImagesForStory(
@@ -939,7 +887,9 @@ export async function generateCompleteHNS(
       story,
       characters,
       settings,
-      progressCallback
+      progressCallback,
+      language,
+      userPrompt
     );
 
     // Update allScenes with image data
@@ -1041,8 +991,8 @@ export async function generateCompleteHNS(
 }
 
 /**
- * Phase 8: Generate Mandatory Images for Scenes
- * Generates images for all scenes using Gemini as part of the story generation pipeline
+ * Phase 8: Generate Mandatory Images for Story and Scenes
+ * Generates story cover image first, then scene images using Gemini as part of the story generation pipeline
  */
 export async function generateSceneImagesForStory(
   storyId: string,
@@ -1050,17 +1000,88 @@ export async function generateSceneImagesForStory(
   story: HNSStory,
   characters: HNSCharacter[],
   settings: HNSSetting[],
-  progressCallback?: (phase: string, data: any) => void
+  progressCallback?: (phase: string, data: any) => void,
+  language: string = "English",
+  userPrompt: string = ""
 ): Promise<HNSScene[]> {
-  console.log("Phase 8: Generating mandatory scene images...");
+  console.log("Phase 8: Generating story cover image and mandatory scene images...");
+  const totalImages = scenes.length + 1; // +1 for story cover
   progressCallback?.("phase8_start", {
-    message: `Generating mandatory images for ${scenes.length} scenes...`,
+    message: `Generating story cover image and images for ${scenes.length} scenes...`,
+    totalImages,
   });
 
   const updatedScenes: HNSScene[] = [];
 
   try {
-    // Generate images with progress tracking (mandatory)
+    // Step 1: Generate story cover image
+    console.log("🎨 Generating story cover image...");
+    progressCallback?.("phase8_progress", {
+      message: "Generating story cover image...",
+      current: 0,
+      total: totalImages,
+      currentItem: "Story Cover",
+      percentage: 0,
+    });
+
+    let storyImageData = null;
+    try {
+      const storyImagePrompt = `${story.story_title}: ${story.genre.join(", ")} story. ${story.dramatic_question}. ${story.premise}. Key themes: ${story.theme}`;
+      const imageResult = await generateImage(
+        storyImagePrompt,
+        'story',
+        storyId,
+        {
+          style: 'fantasy-art',
+          aspectRatio: 'portrait',
+          quality: 'high',
+          mood: 'epic and dramatic',
+          lighting: 'cinematic'
+        }
+      );
+      storyImageData = {
+        url: imageResult.imageUrl,
+        method: imageResult.method,
+        style: imageResult.style,
+        generatedAt: new Date().toISOString(),
+        prompt: storyImagePrompt
+      };
+      console.log('✅ Story cover image generated:', imageResult.imageUrl);
+      progressCallback?.("phase8_progress", {
+        message: `Story cover image generated`,
+        current: 1,
+        total: totalImages,
+        currentItem: "Story Cover",
+        percentage: Math.round((1 / totalImages) * 100),
+      });
+
+      // Save story cover image to database
+      console.log("💾 Saving story cover image to database...");
+      await db
+        .update(stories)
+        .set({
+          hnsData: cleanStoryHnsData({
+            storyImage: storyImageData,
+            metadata: {
+              version: "1.0.0",
+              language,
+              generation_prompt: userPrompt,
+            },
+          }),
+          updatedAt: new Date(),
+        })
+        .where(eq(stories.id, storyId));
+      console.log("✅ Story cover image saved");
+    } catch (error) {
+      console.error('⚠️ Failed to generate story cover image:', error);
+      progressCallback?.("phase8_warning", {
+        message: "Failed to generate story cover image, continuing with scenes...",
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+
+    // Step 2: Generate scene images with progress tracking (mandatory)
+    console.log(`🎬 Generating images for ${scenes.length} scenes...`);
     const imageResults = await generateSceneImages(
       scenes,
       story,
@@ -1068,10 +1089,13 @@ export async function generateSceneImagesForStory(
       settings,
       storyId,
       (current, total) => {
+        const overallCurrent = current + 1; // +1 to account for story cover image
         progressCallback?.("phase8_progress", {
-          message: `Generating scene image ${current} of ${total}...`,
-          current,
-          total,
+          message: `Generating scene image ${current} of ${total}: Scene ${current}`,
+          current: overallCurrent,
+          total: totalImages,
+          currentItem: `Scene ${current}`,
+          percentage: Math.round((overallCurrent / totalImages) * 100),
         });
       }
     );
@@ -1100,10 +1124,11 @@ export async function generateSceneImagesForStory(
       }
     }
 
-    console.log("✅ All mandatory scene images generated successfully!");
+    console.log("✅ Story cover and all mandatory scene images generated successfully!");
     progressCallback?.("phase8_complete", {
-      message: "All mandatory scene images generated successfully",
+      message: "Story cover and all mandatory scene images generated successfully",
       scenes: updatedScenes,
+      totalImages,
     });
 
   } catch (error) {
