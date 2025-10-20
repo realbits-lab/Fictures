@@ -9,6 +9,7 @@ interface JsonData {
   partsJson?: string;
   chaptersJson?: string;
   scenesJson?: string;
+  analysisJson?: string;
 }
 
 interface StoryCreationContextType {
