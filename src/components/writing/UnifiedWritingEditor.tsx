@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { mutate } from "swr";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
 import { useStoryData } from "@/lib/hooks/useStoryData";
 import { useWritingProgress, useWritingSession } from "@/hooks/useStoryWriter";
@@ -1576,8 +1577,21 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                               position: 'top-right',
                             });
 
-                            // Redirect to stories page
-                            router.push('/stories');
+                            // Invalidate SWR cache for stories list
+                            await mutate('/api/stories');
+
+                            // Clear localStorage cache for stories
+                            if (typeof window !== 'undefined') {
+                              const storiesCacheKey = 'swr-cache-/api/stories';
+                              localStorage.removeItem(storiesCacheKey);
+                              localStorage.removeItem(`${storiesCacheKey}-timestamp`);
+                              localStorage.removeItem(`${storiesCacheKey}-version`);
+                            }
+
+                            // Clear cache and redirect to stories page
+                            // Use replace to avoid keeping deleted story in browser history
+                            router.replace('/stories');
+                            router.refresh();
                           } catch (error) {
                             console.error('Delete failed:', error);
                             toast.error(error instanceof Error ? error.message : 'Failed to delete story', {

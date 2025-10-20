@@ -125,11 +125,28 @@ export function CreateStoryForm() {
                 case 'progress':
                   // Update progress based on step
                   const stepMap: Record<string, number> = {
-                    'generating_character_images': 5,
-                    'generating_setting_images': 5,
+                    'generating_character_images': 6,
+                    'generating_setting_images': 6,
                   };
                   if (data.data.step && stepMap[data.data.step] !== undefined) {
                     updateProgress(stepMap[data.data.step], 'in_progress');
+
+                    // Update the description to show which images are being generated
+                    if (data.data.step === 'generating_character_images') {
+                      setProgress(prev => prev.map((step, index) =>
+                        index === 6 ? {
+                          ...step,
+                          description: data.data.message || 'Generating character images...'
+                        } : step
+                      ));
+                    } else if (data.data.step === 'generating_setting_images') {
+                      setProgress(prev => prev.map((step, index) =>
+                        index === 6 ? {
+                          ...step,
+                          description: data.data.message || 'Generating setting images...'
+                        } : step
+                      ));
+                    }
                   }
                   break;
 
@@ -332,7 +349,8 @@ export function CreateStoryForm() {
 
                 case 'complete':
                   // All phases completed successfully
-                  console.log('✅ Story generation completed:', data.storyId);
+                  const completedStoryId = data.data?.storyId || data.storyId;
+                  console.log('✅ Story generation completed:', completedStoryId);
 
                   // Mark all remaining steps as completed
                   setProgress(prev => prev.map(step =>
@@ -343,7 +361,7 @@ export function CreateStoryForm() {
 
                   // Set completion state and store story ID
                   setIsCompleted(true);
-                  setGeneratedStoryId(data.storyId);
+                  setGeneratedStoryId(completedStoryId);
                   setIsLoading(false);
 
                   // Show success message but don't redirect
