@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth';
 import { getStoryById, updateStory, getStoryChapters } from '@/lib/db/queries';
 import { z } from 'zod';
 import { db } from '@/lib/db';
-import { stories, parts, chapters, scenes, characters, places, communityPosts, communityReplies } from '@/lib/db/schema';
+import { stories, parts, chapters, scenes, characters, places, settings, communityPosts, communityReplies } from '@/lib/db/schema';
 import { eq, inArray } from 'drizzle-orm';
 import { del } from '@vercel/blob';
 
@@ -174,6 +174,19 @@ export async function DELETE(
       }
     }
 
+    // Get all settings and their images
+    const storySettings = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.storyId, id));
+
+    console.log(`Found ${storySettings.length} settings to delete`);
+    for (const setting of storySettings) {
+      if (setting.imageUrl) {
+        imageUrls.push(setting.imageUrl);
+      }
+    }
+
     // Get all community posts for this story (optional - table may not exist)
     let storyCommunityPosts: any[] = [];
     let postIds: string[] = [];
@@ -250,13 +263,19 @@ export async function DELETE(
       .where(eq(places.storyId, id));
     console.log('✓ Deleted places');
 
-    // 8. Delete the story itself
+    // 8. Delete settings (depends on story)
+    await db
+      .delete(settings)
+      .where(eq(settings.storyId, id));
+    console.log('✓ Deleted settings');
+
+    // 9. Delete the story itself
     await db
       .delete(stories)
       .where(eq(stories.id, id));
     console.log('✓ Deleted story');
 
-    // 9. Delete all images from Vercel Blob
+    // 10. Delete all images from Vercel Blob
     console.log(`Deleting ${imageUrls.length} images from Vercel Blob...`);
     const deletionResults = await Promise.allSettled(
       imageUrls.map(url => del(url).catch(err => {

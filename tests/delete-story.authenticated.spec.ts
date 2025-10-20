@@ -7,7 +7,7 @@ test.describe('Delete Story Feature Tests', () => {
     console.log('🧪 Starting delete story test');
 
     // Navigate to the story writing page
-    const storyId = 'gJhNINCcQ8cScGSNKwCCU';
+    const storyId = 'Fi9gm6jANplB5yIVLe2Mp';
     await page.goto(`http://localhost:3000/write/story/${storyId}`);
     await page.waitForLoadState('networkidle');
 
@@ -73,9 +73,9 @@ test.describe('Delete Story Feature Tests', () => {
     console.log('🖱️  Clicking delete button...');
     await deleteButton.click();
 
-    // Wait for the API call to complete
-    console.log('⏳ Waiting for deletion to complete...');
-    await page.waitForTimeout(3000);
+    // Wait for navigation to /stories page
+    console.log('⏳ Waiting for deletion and navigation...');
+    await page.waitForURL('**/stories', { timeout: 10000 });
 
     // Check if we were redirected to /stories
     console.log('📍 Current URL after deletion:', page.url());
@@ -107,7 +107,7 @@ test.describe('Delete Story Feature Tests', () => {
     console.log('🧪 Starting delete story cancellation test');
 
     // Navigate to the story writing page
-    const storyId = 'gJhNINCcQ8cScGSNKwCCU';
+    const storyId = 'story_test_1758642206635';
     await page.goto(`http://localhost:3000/write/story/${storyId}`);
     await page.waitForLoadState('networkidle');
 
