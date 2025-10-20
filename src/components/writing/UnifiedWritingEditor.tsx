@@ -1541,7 +1541,70 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           {/* Right Sidebar */}
           <div className="col-span-12 lg:col-span-3 space-y-6">
             {/* Removed SceneSidebar - Scene content now handled by SceneDisplay in main area */}
-            
+
+            {/* Delete Story Button - Show for story level */}
+            {currentSelection.level === "story" && (
+              <Card className="border-red-200 dark:border-red-800">
+                <CardHeader>
+                  <CardTitle className="text-red-600 dark:text-red-400">⚠️ Danger Zone</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-[rgb(var(--muted-foreground))]">
+                    Permanently delete this story and all associated content.
+                  </p>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="w-full"
+                    onClick={async () => {
+                      if (confirm(`Are you sure you want to delete "${story.title}"? This action cannot be undone and will delete:\n\n• Story and all metadata\n• All parts, chapters, and scenes\n• All characters and settings\n• All images from storage\n\nType DELETE to confirm.`)) {
+                        const userConfirmation = prompt('Type DELETE to confirm deletion:');
+                        if (userConfirmation === 'DELETE') {
+                          setIsLoading(true);
+                          try {
+                            const response = await fetch(`/api/stories/${story.id}`, {
+                              method: 'DELETE',
+                            });
+
+                            if (!response.ok) {
+                              const error = await response.json();
+                              throw new Error(error.error || 'Failed to delete story');
+                            }
+
+                            toast.success('Story deleted successfully', {
+                              duration: 3000,
+                              position: 'top-right',
+                            });
+
+                            // Redirect to stories page
+                            router.push('/stories');
+                          } catch (error) {
+                            console.error('Delete failed:', error);
+                            toast.error(error instanceof Error ? error.message : 'Failed to delete story', {
+                              duration: 5000,
+                              position: 'top-right',
+                            });
+                          } finally {
+                            setIsLoading(false);
+                          }
+                        }
+                      }
+                    }}
+                    disabled={disabled || isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        Deleting...
+                      </>
+                    ) : (
+                      <>🗑️ Delete Story</>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Story Prompt Writer - Show for story level */}
             {currentSelection.level === "story" && (
               <StoryPromptWriter
