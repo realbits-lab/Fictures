@@ -63,13 +63,20 @@ export function cleanComponentHnsData(componentData: any): Record<string, unknow
   delete cleaned.phase_timestamp;
   delete cleaned.generation_phase;
 
-  // Remove any internal processing fields
-  delete cleaned.id; // Don't duplicate the ID in hnsData
+  // Remove any internal ID fields that duplicate database primary keys
+  // These are redundant with the database table's ID field
+  delete cleaned.id;
   delete cleaned.story_id;
   delete cleaned.part_id;
   delete cleaned.chapter_id;
+  delete cleaned.scene_id;
   delete cleaned.character_id;
   delete cleaned.setting_id;
+
+  // NOTE: We KEEP the relationship arrays (parts, chapters, scenes) in hnsData
+  // because they represent narrative structure and ordering, not just database relationships.
+  // The database fields (partIds, chapterIds, sceneIds) are used for queries,
+  // while hnsData preserves the complete hierarchical narrative structure.
 
   return cleaned;
 }

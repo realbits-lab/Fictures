@@ -103,21 +103,21 @@ Act 1 (Setup):
 - Introduces characters and ordinary world
 - Contains inciting incident
 - Key beats: ["Exposition", "Inciting Incident", "Plot Point One"]
-- Chapter count: Determine 1-3 chapters based on complexity
-- Scene counts: Determine 1-3 scenes per chapter
+- Chapter count: 1 chapter
+- Scene count: 1 scene per chapter
 
 Act 2 (Confrontation):
 - Develops rising action and obstacles
 - Contains midpoint reversal
 - Key beats: ["Rising Action", "Midpoint", "Plot Point Two"]
-- Chapter count: Determine 1-3 chapters (usually more than Act 1)
-- Scene counts: Determine 1-3 scenes per chapter
+- Chapter count: 1 chapter
+- Scene count: 1 scene per chapter
 
 Act 3 (Resolution):
 - Resolves conflicts and completes arcs
 - Key beats: ["Climax", "Falling Action", "Resolution"]
-- Chapter count: Determine 1-3 chapters
-- Scene counts: Determine 1-3 scenes per chapter
+- Chapter count: 1 chapter
+- Scene count: 1 scene per chapter
 
 Return a JSON object with a 'parts' array containing exactly three parts, each with:
 - part_title: A descriptive title for the part
@@ -125,25 +125,22 @@ Return a JSON object with a 'parts' array containing exactly three parts, each w
 - summary: One paragraph describing main movements and developments
 - key_beats: Array of narrative beats for this act
 - chapters: Empty array (will be populated later)
-- chapter_count: Number of chapters for this part (1-3), based on narrative complexity
-- scene_counts: Array of scene counts, one per chapter (each 1-3)
+- chapter_count: Always 1 (one chapter per part)
+- scene_counts: Always [1] (one scene per chapter)
 
 IMPORTANT:
-- chapter_count determines how many chapters this part will have
-- scene_counts must be an array with exactly chapter_count elements
-- Each element in scene_counts should be 1-3 based on chapter complexity
-- Act 2 typically needs more chapters/scenes than Acts 1 and 3`,
+- chapter_count must always be 1
+- scene_counts must always be [1]
+- Each part has exactly one chapter with exactly one scene`,
       prompt:
-        "Generate three-act structure with dynamic chapter and scene counts based on narrative needs.",
+        "Generate three-act structure with 1 chapter per part and 1 scene per chapter.",
       temperature: 0.8,
     });
 
     return object.parts.map((part, index) => {
-      // Ensure chapter_count and scene_counts are valid
-      const chapterCount = part.chapter_count || (index === 1 ? 2 : 1); // Default Act 2 to 2 chapters
-      const sceneCounts = part.scene_counts?.length === chapterCount
-        ? part.scene_counts
-        : Array(chapterCount).fill(index === 1 ? 2 : 1); // Default to 2 scenes for Act 2, 1 for others
+      // Force chapter_count to 1 and scene_counts to [1]
+      const chapterCount = 1;
+      const sceneCounts = [1];
 
       return {
         ...part,
@@ -295,9 +292,9 @@ Story Context:
 - Part Summary: ${part.summary}
 - Key Beats: ${part.key_beats.join(", ")}
 
-Create ${chapterCount} chapters for this part, each with:
+Create exactly 1 chapter for this part with:
 - chapter_title: Engaging, descriptive title
-- summary: What happens in this chapter (1-2 paragraphs)
+- summary: What happens in this chapter (1-2 paragraphs covering all key beats)
 - pacing_goal: One of 'fast', 'medium', 'slow', or 'reflective'
 - action_dialogue_ratio: String like '40:60' or '50:50'
 - chapter_hook: Object with:
@@ -306,12 +303,12 @@ Create ${chapterCount} chapters for this part, each with:
   - urgency_level: One of 'high', 'medium', 'low'
 - scenes: Empty array (will be populated later)
 
-Ensure chapters:
-1. Flow naturally from one to the next
-2. Each advances the plot meaningfully
-3. Include the key beats at appropriate points
-4. Build tension toward the part's climax`,
-      prompt: `Create ${chapterCount} compelling chapters that develop the narrative beats: ${part.key_beats.join(
+IMPORTANT:
+- Generate exactly 1 chapter that encompasses all key beats for this part
+- The chapter should advance the plot meaningfully
+- Include all key beats within this single chapter
+- Build tension appropriately for the part's role in the story`,
+      prompt: `Create exactly 1 compelling chapter that develops all narrative beats: ${part.key_beats.join(
         ", "
       )}`,
       temperature: 0.8,
@@ -349,7 +346,7 @@ export async function generateHNSScenes(
       }),
       system: `You are creating scene structures following the Hierarchical Narrative Schema and generating opening narrative content.
 
-IMPORTANT: You must generate EXACTLY ${sceneCount} scene${sceneCount === 1 ? '' : 's'} - no more, no less.
+IMPORTANT: You must generate EXACTLY 1 scene for this chapter - no more, no less.
 
 Chapter Context:
 - Title: ${chapter.chapter_title}
@@ -369,7 +366,7 @@ ${characters.map((c) => `- ${c.name} (${c.role}): ${c.summary}`).join("\n")}
 Available Settings:
 ${settings.map((s) => `- ${s.name}: ${s.description}`).join("\n")}
 
-You must create EXACTLY ${sceneCount} scene${sceneCount === 1 ? '' : 's'}, each with:
+You must create EXACTLY 1 scene with:
 - scene_title: Descriptive title that captures the scene's essence or key event
 - summary: One-sentence description of the scene's core action
 - entry_hook: Opening line or action for immediate engagement
@@ -406,12 +403,12 @@ For the scene_image field (REQUIRED for each scene):
 - style: Always set to 'cinematic'
 - mood: Describe the emotional atmosphere (e.g., "mysterious and awe-inspiring", "tense and foreboding")
 
-Each scene should:
-1. Have clear cause-and-effect with other scenes
-2. Advance character arcs or plot
-3. Include conflict or tension
-4. End with a hook or question`,
-      prompt: `Generate EXACTLY ${sceneCount} scene${sceneCount === 1 ? '' : 's'} for this chapter. The response must contain a 'scenes' array with exactly ${sceneCount} element${sceneCount === 1 ? '' : 's'}.`,
+The scene should:
+1. Encompass the entire chapter content
+2. Advance character arcs or plot meaningfully
+3. Include conflict or tension throughout
+4. End with the chapter hook: ${JSON.stringify(chapter.chapter_hook)}`,
+      prompt: `Generate EXACTLY 1 scene for this chapter. The response must contain a 'scenes' array with exactly 1 element.`,
       temperature: 0.9,
     });
 
@@ -505,59 +502,6 @@ export async function generateCompleteHNS(
         },
       });
     console.log("✅ Phase 1 data saved");
-
-    // Generate story cover image after Phase 1
-    console.log("🎨 Generating story cover image...");
-    let storyImageData = null;
-    try {
-      const storyImagePrompt = `${story.story_title}: ${story.genre.join(", ")} story. ${story.dramatic_question}. ${story.premise}. Key themes: ${story.theme}`;
-      const imageResult = await generateImage(
-        storyImagePrompt,
-        'story',
-        currentStoryId,
-        {
-          style: 'fantasy-art',
-          aspectRatio: 'portrait',
-          quality: 'high',
-          mood: 'epic and dramatic',
-          lighting: 'cinematic'
-        }
-      );
-      storyImageData = {
-        url: imageResult.imageUrl,
-        method: imageResult.method,
-        style: imageResult.style,
-        generatedAt: new Date().toISOString(),
-        prompt: storyImagePrompt
-      };
-      console.log('✅ Story cover image generated:', imageResult.imageUrl);
-      progressCallback?.("story_image_generated", {
-        message: `Story cover image generated: ${imageResult.imageUrl}`,
-      });
-    } catch (error) {
-      console.error('⚠️ Failed to generate story cover image:', error);
-      // Continue without image if generation fails
-    }
-
-    // Update story with cover image
-    if (storyImageData) {
-      console.log("💾 Saving story cover image to database...");
-      await db
-        .update(stories)
-        .set({
-          hnsData: cleanStoryHnsData({
-            storyImage: storyImageData,
-            metadata: {
-              version: "1.0.0",
-              language,
-              generation_prompt: userPrompt,
-            },
-          }),
-          updatedAt: new Date(),
-        })
-        .where(eq(stories.id, currentStoryId));
-      console.log("✅ Story cover image saved");
-    }
 
     // Phase 2: Generate three-act structure and save
     console.log("Phase 2: Creating three-act structure...");
@@ -927,10 +871,11 @@ export async function generateCompleteHNS(
       progressCallback
     );
 
-    // Phase 8: Generate mandatory images for all scenes
-    console.log("Phase 8: Generating mandatory scene images...");
+    // Phase 8: Generate story cover image and mandatory scene images
+    console.log("Phase 8: Generating story cover image and mandatory scene images...");
     progressCallback?.("phase8_start", {
-      message: `Generating images for ${allScenes.length} scenes (mandatory)...`,
+      message: `Generating story cover image and images for ${allScenes.length} scenes...`,
+      totalImages: allScenes.length + 1,
     });
 
     const scenesWithImages = await generateSceneImagesForStory(
@@ -939,7 +884,9 @@ export async function generateCompleteHNS(
       story,
       characters,
       settings,
-      progressCallback
+      progressCallback,
+      language,
+      userPrompt
     );
 
     // Update allScenes with image data
@@ -986,35 +933,11 @@ export async function generateCompleteHNS(
         .map(ch => ch.chapter_id)
     }));
 
-    // Final update with complete HNS data (but not marking as fully completed yet)
-    console.log("💾 Saving complete HNS data to database...");
-
-    // Get existing hnsData to preserve storyImage
-    const existingStoryData = await db
-      .select({ hnsData: stories.hnsData })
-      .from(stories)
-      .where(eq(stories.id, currentStoryId))
-      .limit(1);
-
-    await db
-      .update(stories)
-      .set({
-        status: "writing", // Keep at writing since images aren't generated yet
-        hnsData: cleanStoryHnsData({
-          story: completeStory,
-          metadata: {
-            version: "1.0.0",
-            created_at: new Date().toISOString(),
-            language,
-            generation_prompt: userPrompt,
-          },
-        }, existingStoryData[0]?.hnsData),
-        chapterIds: allChapters.map((c) => c.chapter_id || nanoid()),
-        updatedAt: new Date(),
-      })
-      .where(eq(stories.id, currentStoryId));
-
-    console.log("✅ HNS generation complete with incremental saves!");
+    // NOTE: Final database updates (parts hnsData and story hnsData) are now deferred
+    // to happen AFTER the UI has been updated with the image generation progress
+    // This prevents blocking the UI update with database operations
+    console.log(`⏱️ [${new Date().toISOString()}] ⚡ Skipping final DB updates to avoid UI blocking`);
+    console.log(`⏱️ [${new Date().toISOString()}] ✅ HNS generation complete - returning data for UI update!`);
 
     return {
       story: completeStory,
@@ -1041,8 +964,8 @@ export async function generateCompleteHNS(
 }
 
 /**
- * Phase 8: Generate Mandatory Images for Scenes
- * Generates images for all scenes using Gemini as part of the story generation pipeline
+ * Phase 8: Generate Mandatory Images for Story and Scenes
+ * Generates story cover image first, then scene images using Gemini as part of the story generation pipeline
  */
 export async function generateSceneImagesForStory(
   storyId: string,
@@ -1050,17 +973,88 @@ export async function generateSceneImagesForStory(
   story: HNSStory,
   characters: HNSCharacter[],
   settings: HNSSetting[],
-  progressCallback?: (phase: string, data: any) => void
+  progressCallback?: (phase: string, data: any) => void,
+  language: string = "English",
+  userPrompt: string = ""
 ): Promise<HNSScene[]> {
-  console.log("Phase 8: Generating mandatory scene images...");
+  console.log("Phase 8: Generating story cover image and mandatory scene images...");
+  const totalImages = scenes.length + 1; // +1 for story cover
   progressCallback?.("phase8_start", {
-    message: `Generating mandatory images for ${scenes.length} scenes...`,
+    message: `Generating story cover image and images for ${scenes.length} scenes...`,
+    totalImages,
   });
 
   const updatedScenes: HNSScene[] = [];
 
   try {
-    // Generate images with progress tracking (mandatory)
+    // Step 1: Generate story cover image
+    console.log("🎨 Generating story cover image...");
+    progressCallback?.("phase8_progress", {
+      message: "Generating story cover image...",
+      current: 0,
+      total: totalImages,
+      currentItem: "Story Cover",
+      percentage: 0,
+    });
+
+    let storyImageData = null;
+    try {
+      const storyImagePrompt = `${story.story_title}: ${story.genre.join(", ")} story. ${story.dramatic_question}. ${story.premise}. Key themes: ${story.theme}`;
+      const imageResult = await generateImage(
+        storyImagePrompt,
+        'story',
+        storyId,
+        {
+          style: 'fantasy-art',
+          aspectRatio: 'portrait',
+          quality: 'high',
+          mood: 'epic and dramatic',
+          lighting: 'cinematic'
+        }
+      );
+      storyImageData = {
+        url: imageResult.imageUrl,
+        method: imageResult.method,
+        style: imageResult.style,
+        generatedAt: new Date().toISOString(),
+        prompt: storyImagePrompt
+      };
+      console.log('✅ Story cover image generated:', imageResult.imageUrl);
+      progressCallback?.("phase8_progress", {
+        message: `Story cover image generated`,
+        current: 1,
+        total: totalImages,
+        currentItem: "Story Cover",
+        percentage: Math.round((1 / totalImages) * 100),
+      });
+
+      // Save story cover image to database
+      console.log("💾 Saving story cover image to database...");
+      await db
+        .update(stories)
+        .set({
+          hnsData: cleanStoryHnsData({
+            storyImage: storyImageData,
+            metadata: {
+              version: "1.0.0",
+              language,
+              generation_prompt: userPrompt,
+            },
+          }),
+          updatedAt: new Date(),
+        })
+        .where(eq(stories.id, storyId));
+      console.log("✅ Story cover image saved");
+    } catch (error) {
+      console.error('⚠️ Failed to generate story cover image:', error);
+      progressCallback?.("phase8_warning", {
+        message: "Failed to generate story cover image, continuing with scenes...",
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+
+    // Step 2: Generate scene images with progress tracking (mandatory)
+    console.log(`🎬 Generating images for ${scenes.length} scenes...`);
     const imageResults = await generateSceneImages(
       scenes,
       story,
@@ -1068,10 +1062,13 @@ export async function generateSceneImagesForStory(
       settings,
       storyId,
       (current, total) => {
+        const overallCurrent = current + 1; // +1 to account for story cover image
         progressCallback?.("phase8_progress", {
-          message: `Generating scene image ${current} of ${total}...`,
-          current,
-          total,
+          message: `Generating scene image ${current} of ${total}: Scene ${current}`,
+          current: overallCurrent,
+          total: totalImages,
+          currentItem: `Scene ${current}`,
+          percentage: Math.round((overallCurrent / totalImages) * 100),
         });
       }
     );
@@ -1100,11 +1097,13 @@ export async function generateSceneImagesForStory(
       }
     }
 
-    console.log("✅ All mandatory scene images generated successfully!");
+    console.log(`⏱️ [${new Date().toISOString()}] ✅ Story cover and all mandatory scene images generated successfully!`);
     progressCallback?.("phase8_complete", {
-      message: "All mandatory scene images generated successfully",
+      message: "Story cover and all mandatory scene images generated successfully",
       scenes: updatedScenes,
+      totalImages,
     });
+    console.log(`⏱️ [${new Date().toISOString()}] 📤 Sent phase8_complete callback`);
 
   } catch (error) {
     console.error("❌ Critical error generating mandatory scene images:", error);

@@ -16,6 +16,7 @@ export const API_SCOPES = {
   'community:write': 'Create community posts and replies',
   'settings:read': 'Read user settings and preferences',
   'settings:write': 'Modify user settings and preferences',
+  'admin:all': 'Full administrative access to all resources',
 } as const;
 
 export type ApiScope = keyof typeof API_SCOPES;

@@ -89,6 +89,91 @@ export function ChapterEditor({
   // Use the appropriate data source: previewData > initialData > chapter
   const chapterData = previewData || initialData || chapter;
 
+  // Initialize all hooks BEFORE any conditional returns
+  const [content, setContent] = useState(`  The Shadow Realm pulsed around Maya like a living thing, its twisted architecture bending reality with each heartbeat. She could feel Elena's presence—faint but unmistakable—calling to her from the void-touched spire ahead.
+
+  "You feel it, don't you?" The Void Collector's voice echoed from everywhere and nowhere. "The pull of true power. The freedom from restraint."
+
+  Maya's shadows writhed, responding to her emotional turmoil. Part of her—the part she'd been fighting since this began—whispered that he was right. Why should she hold back? Elena was dying. The world was at stake.`);
+
+  const [currentWordCount, setCurrentWordCount] = useState(chapterData?.wordCount || 0);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [yamlLevel, setYamlLevel] = useState<"story" | "part" | "chapter" | "scene">("chapter");
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Initialize lastSaved date on client side to prevent hydration mismatch
+  useEffect(() => {
+    setLastSaved(new Date());
+  }, []);
+
+  // Auto-save functionality
+  useEffect(() => {
+    if (!chapterData) return;
+
+    const autoSaveInterval = setInterval(() => {
+      if (hasUnsavedChanges) {
+        handleAutoSave();
+      }
+    }, 30000); // Auto-save every 30 seconds
+
+    return () => clearInterval(autoSaveInterval);
+  }, [hasUnsavedChanges, chapterData]);
+
+  // Word count calculation
+  useEffect(() => {
+    if (!chapterData) return;
+
+    const words = content.trim().split(/\s+/).filter(word => word.length > 0);
+    setCurrentWordCount(words.length);
+    setHasUnsavedChanges(true);
+
+    // Basic validation
+    const errors = [];
+    if (words.length < 100) {
+      errors.push("Chapter should have at least 100 words");
+    }
+    if (words.length > chapterData.targetWordCount * 1.5) {
+      errors.push("Chapter exceeds recommended length");
+    }
+    setValidationErrors(errors);
+  }, [content, chapterData]);
+
+  // Auto-save handler (must be defined after state)
+  const handleAutoSave = async () => {
+    if (!chapterData) return;
+
+    setIsAutoSaving(true);
+    try {
+      const response = await fetch(`/api/chapters/${chapterData.id}/autosave`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content,
+          wordCount: currentWordCount,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Auto-save failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      setLastSaved(new Date(result.savedAt));
+      setHasUnsavedChanges(false);
+      console.log('Chapter auto-saved successfully');
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+    } finally {
+      setIsAutoSaving(false);
+    }
+  };
+
+  // Check for chapterData AFTER all hooks
   if (!chapterData) {
     return (
       <div className="space-y-6">
@@ -107,20 +192,6 @@ export function ChapterEditor({
       </div>
     );
   }
-
-  const [content, setContent] = useState(`  The Shadow Realm pulsed around Maya like a living thing, its twisted architecture bending reality with each heartbeat. She could feel Elena's presence—faint but unmistakable—calling to her from the void-touched spire ahead.
-
-  "You feel it, don't you?" The Void Collector's voice echoed from everywhere and nowhere. "The pull of true power. The freedom from restraint."
-
-  Maya's shadows writhed, responding to her emotional turmoil. Part of her—the part she'd been fighting since this began—whispered that he was right. Why should she hold back? Elena was dying. The world was at stake.`);
-
-  const [currentWordCount, setCurrentWordCount] = useState(chapterData.wordCount);
-  const [isAutoSaving, setIsAutoSaving] = useState(false);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const [yamlLevel, setYamlLevel] = useState<"story" | "part" | "chapter" | "scene">("chapter");
-  const [isSaving, setIsSaving] = useState(false);
 
   // Sample YAML data based on documentation
   const sampleStoryData = {
@@ -167,68 +238,6 @@ export function ChapterEditor({
       overarching: ["elena_fate", "maya_corruption_risk", "shadow_magic_truth"],
       mysteries: ["previous_student_identity", "marcus_secret", "realm_connection"],
       part_endings: ["mentor_secret_revealed", "elena_appears_changed"]
-    }
-  };
-
-  // Initialize lastSaved date on client side to prevent hydration mismatch
-  useEffect(() => {
-    setLastSaved(new Date());
-  }, []);
-
-  // Auto-save functionality
-  useEffect(() => {
-    const autoSaveInterval = setInterval(() => {
-      if (hasUnsavedChanges) {
-        handleAutoSave();
-      }
-    }, 30000); // Auto-save every 30 seconds
-
-    return () => clearInterval(autoSaveInterval);
-  }, [hasUnsavedChanges]);
-
-  // Word count calculation
-  useEffect(() => {
-    const words = content.trim().split(/\s+/).filter(word => word.length > 0);
-    setCurrentWordCount(words.length);
-    setHasUnsavedChanges(true);
-    
-    // Basic validation
-    const errors = [];
-    if (words.length < 100) {
-      errors.push("Chapter should have at least 100 words");
-    }
-    if (words.length > chapterData.targetWordCount * 1.5) {
-      errors.push("Chapter exceeds recommended length");
-    }
-    setValidationErrors(errors);
-  }, [content, chapterData.targetWordCount]);
-
-  const handleAutoSave = async () => {
-    setIsAutoSaving(true);
-    try {
-      const response = await fetch(`/api/chapters/${chapterData.id}/autosave`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content,
-          wordCount: currentWordCount,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Auto-save failed: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      setLastSaved(new Date(result.savedAt));
-      setHasUnsavedChanges(false);
-      console.log('Chapter auto-saved successfully');
-    } catch (error) {
-      console.error('Auto-save failed:', error);
-    } finally {
-      setIsAutoSaving(false);
     }
   };
 

@@ -49,7 +49,7 @@ export async function POST(
     }
 
     // Get the story structure to check if story should also be published
-    const storyStructure = await getStoryWithStructure(updatedChapter.storyId, session.user.id);
+    const storyStructure = await getStoryWithStructure(updatedChapter.storyId, true, session.user.id);
     
     if (storyStructure) {
       // Check if all chapters in the story are completed/published

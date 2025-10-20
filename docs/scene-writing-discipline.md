@@ -35,6 +35,7 @@
 | Dialogue Ratio | 40-60% by word count | Balance with narration |
 | Speaker Format | New speaker = New paragraph | Always maintain clarity |
 | Action Tags | Every 2-3 dialogue lines | Ground characters in scene |
+| Action Separation | Action on new line | NEVER combine dialogue + action in same line |
 
 ## Scene Type Protocols
 
@@ -57,11 +58,11 @@ The enemy stumbled backward, gasping.
 ### Emotional/Introspective Scenes
 ```
 PARAMETERS:
-- Words per Sentence: 20-25 average
+- Words per Sentence: 15-20 average
 - Sentence Fragments: 2-5%
 - Paragraph Length: 3-4 sentences
 - Focus: Internal thoughts, memories, feelings
-- Allow: Longer sentences for reflection
+- Allow: Moderate sentence length for reflection
 
 EXAMPLE RHYTHM:
 The weight of the decision pressed down on her shoulders like a physical burden she couldn't shake. Every option led to pain—for her, for them, for everyone she'd sworn to protect. She closed her eyes and let herself remember the promise she'd made all those years ago.
@@ -78,13 +79,23 @@ PARAMETERS:
 - Focus: Character voice, conflict, information
 
 EXAMPLE RHYTHM:
-"You can't be serious." Sarah crossed her arms.
+"You can't be serious."
 
-"Dead serious." Marcus didn't look up from the map. "We leave at dawn."
+Sarah crossed her arms.
+
+"Dead serious."
+
+Marcus didn't look up from the map.
+
+"We leave at dawn."
 
 "That's suicide."
 
-"That's our only chance." He finally met her gaze. "Unless you have a better idea?"
+"That's our only chance."
+
+He finally met her gaze.
+
+"Unless you have a better idea?"
 
 She didn't.
 ```
@@ -123,7 +134,7 @@ She didn't.
 ```
 HIGH TENSION → Short sentences. Fragments. Active verbs.
 MEDIUM TENSION → Balanced sentences, mixing lengths for rhythm.
-LOW TENSION → Longer sentences allowing for reflection and atmosphere.
+LOW TENSION → Moderate sentences allowing for reflection and atmosphere.
 ```
 
 ### Emotional Intensity Mapping
@@ -131,7 +142,7 @@ LOW TENSION → Longer sentences allowing for reflection and atmosphere.
 CRISIS: 8-10 word sentences, heavy fragments
 CONFLICT: 12-15 word sentences, occasional fragments
 TENSION: 15-18 word sentences, standard structure
-CALM: 18-22 word sentences, complex allowed
+CALM: 15-20 word sentences, moderate complexity
 ```
 
 ## Implementation Checklist
@@ -168,8 +179,8 @@ STRUCTURAL REQUIREMENTS:
 
 STYLE MODULATION:
 [IF action]: Reduce to 8-12 WPS, increase fragments to 15%
-[IF emotional]: Increase to 20-25 WPS, allow 3-4 sentence paragraphs
-[IF dialogue]: Maintain speaker clarity, add action tags every 2-3 lines
+[IF emotional]: Maintain 15-20 WPS, allow 3-4 sentence paragraphs
+[IF dialogue]: Maintain speaker clarity, add action tags every 2-3 lines on separate lines
 
 PACING:
 - Hook in first 30 words

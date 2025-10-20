@@ -34,7 +34,7 @@ export async function GET(
       where: (stories, { eq }) => eq(stories.id, chapter.storyId),
       columns: {
         id: true,
-        userId: true,
+        authorId: true,
         status: true
       }
     });
@@ -43,7 +43,7 @@ export async function GET(
       return NextResponse.json({ error: 'Story not found' }, { status: 404 });
     }
 
-    const isOwner = story.userId === session?.user?.id;
+    const isOwner = story.authorId === session?.user?.id;
     const isPublishedStory = story.status === 'published';
 
     // Check permissions - allow access if:

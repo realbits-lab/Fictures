@@ -112,7 +112,9 @@ export function StoryStructureSidebar({
     // Add parts and chapters
     if (story.parts && story.parts.length > 0) {
       console.log('📚 Processing parts for tree:', story.parts);
-      story.parts.forEach(part => {
+      // Sort parts by orderIndex before processing
+      const sortedParts = [...story.parts].sort((a, b) => a.orderIndex - b.orderIndex);
+      sortedParts.forEach(part => {
         console.log('📑 Processing part:', part);
         const partItem: TreeDataItem = {
           id: `part-${part.id}`,
@@ -126,8 +128,9 @@ export function StoryStructureSidebar({
           children: []
         };
 
-        // Add chapters under part
-        part.chapters.forEach(chapter => {
+        // Add chapters under part - sort by orderIndex
+        const sortedChapters = [...part.chapters].sort((a, b) => a.orderIndex - b.orderIndex);
+        sortedChapters.forEach(chapter => {
           const chapterItem: TreeDataItem = {
             id: `chapter-${chapter.id}`,
             name: `Ch ${chapter.orderIndex}: ${chapter.title}`,
@@ -141,9 +144,15 @@ export function StoryStructureSidebar({
             children: []
           };
 
-          // Add scenes under chapter
+          // Add scenes under chapter - sort by orderIndex if available
           if (chapter.scenes && chapter.scenes.length > 0) {
-            chapter.scenes.forEach(scene => {
+            const sortedScenes = [...chapter.scenes].sort((a, b) => {
+              // Use orderIndex if available, otherwise maintain original order
+              const aIndex = (a as any).orderIndex ?? 999;
+              const bIndex = (b as any).orderIndex ?? 999;
+              return aIndex - bIndex;
+            });
+            sortedScenes.forEach(scene => {
               chapterItem.children?.push({
                 id: `scene-${scene.id}`,
                 name: scene.title,
@@ -167,8 +176,9 @@ export function StoryStructureSidebar({
       });
       console.log('📊 Story item with parts:', storyItem);
     } else {
-      // No parts, add chapters directly under story
-      story.chapters.forEach(chapter => {
+      // No parts, add chapters directly under story - sort by orderIndex
+      const sortedChapters = [...story.chapters].sort((a, b) => a.orderIndex - b.orderIndex);
+      sortedChapters.forEach(chapter => {
         const chapterItem: TreeDataItem = {
           id: `chapter-${chapter.id}`,
           name: `Ch ${chapter.orderIndex}: ${chapter.title}`,
@@ -181,9 +191,15 @@ export function StoryStructureSidebar({
           children: []
         };
 
-        // Add scenes under chapter
+        // Add scenes under chapter - sort by orderIndex if available
         if (chapter.scenes && chapter.scenes.length > 0) {
-          chapter.scenes.forEach(scene => {
+          const sortedScenes = [...chapter.scenes].sort((a, b) => {
+            // Use orderIndex if available, otherwise maintain original order
+            const aIndex = (a as any).orderIndex ?? 999;
+            const bIndex = (b as any).orderIndex ?? 999;
+            return aIndex - bIndex;
+          });
+          sortedScenes.forEach(scene => {
             chapterItem.children?.push({
               id: `scene-${scene.id}`,
               name: scene.title,

@@ -414,17 +414,17 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
               </h2>
               
               {/* Chapters in Parts */}
-              {story.parts.map((part) => {
-                const partChapters = part.chapters.filter(chapter => 
-                  isOwner || chapter.status === 'published'
-                );
-                
+              {[...story.parts].sort((a, b) => a.orderIndex - b.orderIndex).map((part) => {
+                const partChapters = part.chapters
+                  .filter(chapter => isOwner || chapter.status === 'published')
+                  .sort((a, b) => a.orderIndex - b.orderIndex);
+
                 if (partChapters.length === 0) return null;
-                
+
                 return (
                   <div key={part.id} className="mb-4">
                     <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-2">
-                      Part {part.orderIndex}: {part.title}
+                      {part.title}
                     </div>
                     {partChapters.map((chapter) => {
                       const globalChapterNumber = getGlobalChapterNumber(chapter.id);
@@ -443,7 +443,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                             <div className="flex items-center gap-2">
                               <span className="text-sm">{getStatusIcon(chapter.status)}</span>
                               <span className="font-medium text-sm truncate">
-                                Ch {globalChapterNumber}: {chapter.title}
+                                {chapter.title}
                               </span>
                             </div>
                           </button>
@@ -451,7 +451,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                           {/* Scene List for Selected Chapter */}
                           {isChapterSelected && chapterScenes.length > 0 && (
                             <div className="ml-4 mt-2 space-y-1">
-                              {chapterScenes.map((scene, sceneIndex) => {
+                              {[...chapterScenes].sort((a, b) => a.orderIndex - b.orderIndex).map((scene, sceneIndex) => {
                                 const isSceneSelected = selectedSceneId === scene.id;
 
                                 return (
@@ -467,7 +467,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                                     <div className="flex items-center gap-2">
                                       <span className="text-gray-400 dark:text-gray-500">🎬</span>
                                       <span className="truncate">
-                                        Scene {sceneIndex + 1}: {scene.title}
+                                        {scene.title}
                                       </span>
                                     </div>
                                   </button>
@@ -482,14 +482,15 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                 );
               })}
               
-              {/* Standalone Chapters */}
-              {story.chapters.length > 0 && (
+              {/* Standalone Chapters - Only show if story has no parts structure */}
+              {story.chapters.length > 0 && story.parts.length === 0 && (
                 <div className="mb-4">
                   <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-2">
-                    Standalone Chapters
+                    Chapters
                   </div>
-                  {story.chapters
+                  {[...story.chapters]
                     .filter(chapter => isOwner || chapter.status === 'published')
+                    .sort((a, b) => a.orderIndex - b.orderIndex)
                     .map((chapter) => {
                       const globalChapterNumber = getGlobalChapterNumber(chapter.id);
                       const isChapterSelected = selectedChapterId === chapter.id;
@@ -507,7 +508,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                             <div className="flex items-center gap-2">
                               <span className="text-sm">{getStatusIcon(chapter.status)}</span>
                               <span className="font-medium text-sm truncate">
-                                Ch {globalChapterNumber}: {chapter.title}
+                                {chapter.title}
                               </span>
                             </div>
                           </button>
@@ -515,7 +516,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                           {/* Scene List for Selected Chapter */}
                           {isChapterSelected && chapterScenes.length > 0 && (
                             <div className="ml-4 mt-2 space-y-1">
-                              {chapterScenes.map((scene, sceneIndex) => {
+                              {[...chapterScenes].sort((a, b) => a.orderIndex - b.orderIndex).map((scene, sceneIndex) => {
                                 const isSceneSelected = selectedSceneId === scene.id;
 
                                 return (
@@ -531,7 +532,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                                     <div className="flex items-center gap-2">
                                       <span className="text-gray-400 dark:text-gray-500">🎬</span>
                                       <span className="truncate">
-                                        Scene {sceneIndex + 1}: {scene.title}
+                                        {scene.title}
                                       </span>
                                     </div>
                                   </button>
@@ -609,14 +610,14 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                 ) : selectedScene && isScrollRestored ? (
                   <>
                     {console.log(`📖 Rendering selected scene: ${selectedScene.title}`)}
-                    {/* Scene Image - Sticky */}
+                    {/* Scene Image */}
                     {selectedScene.sceneImage?.url && (
-                      <div className="sticky top-0 z-10 mb-6 bg-white dark:bg-gray-900 pb-4">
+                      <div className="mb-6">
                         <div className="rounded-lg overflow-hidden shadow-lg">
                           <img
                             src={selectedScene.sceneImage.url}
                             alt={`Scene: ${selectedScene.title}`}
-                            className="w-full h-auto max-h-64 object-cover"
+                            className="w-full h-auto object-contain"
                             loading="lazy"
                           />
                         </div>

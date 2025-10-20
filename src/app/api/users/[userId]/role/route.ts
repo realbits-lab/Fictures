@@ -3,7 +3,7 @@ import { updateUser, findUserByEmail } from '@/lib/db/queries';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     const body = await request.json();
@@ -16,7 +16,10 @@ export async function PATCH(
       );
     }
 
-    const updatedUser = await updateUser(params.userId, { role });
+    // Await params in Next.js 15
+    const { userId } = await params;
+
+    const updatedUser = await updateUser(userId, { role });
 
     if (!updatedUser) {
       return NextResponse.json(

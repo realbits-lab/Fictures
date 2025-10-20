@@ -28,31 +28,55 @@ export function CreateStoryForm() {
   const [language, setLanguage] = useState('English');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [progress, setProgress] = useState<ProgressStep[]>([]);
   const [isCompleted, setIsCompleted] = useState(false);
   const [generatedStoryId, setGeneratedStoryId] = useState<string | null>(null);
   const [storyData, setStoryData] = useState<StoryData>({});
   const { setJsonData, clearJsonData } = useStoryCreation();
   const router = useRouter();
 
+  // Define the default progress steps
+  const getDefaultProgressSteps = (): ProgressStep[] => [
+    { phase: 'Story Foundation', description: 'Establishing premise, theme, and dramatic question', status: 'pending' },
+    { phase: 'Three-Act Structure', description: 'Developing parts with key narrative beats', status: 'pending' },
+    { phase: 'Characters', description: 'Creating detailed character profiles with psychology', status: 'pending' },
+    { phase: 'Settings', description: 'Building immersive locations with sensory details', status: 'pending' },
+    { phase: 'Chapters & Scenes', description: 'Structuring chapters with hooks and scene breakdowns', status: 'pending' },
+    { phase: 'Scene Content', description: 'Generating narrative content for each scene', status: 'pending' },
+    { phase: 'Visual Generation', description: 'Creating AI images for characters and settings', status: 'pending' },
+  ];
+
+  // Initialize progress steps on component mount to show them by default
+  const [progress, setProgress] = useState<ProgressStep[]>(getDefaultProgressSteps);
+
   const initializeProgress = () => {
-    const steps: ProgressStep[] = [
-      { phase: 'Story Foundation', description: 'Establishing premise, theme, and dramatic question', status: 'pending' },
-      { phase: 'Three-Act Structure', description: 'Developing parts with key narrative beats', status: 'pending' },
-      { phase: 'Characters', description: 'Creating detailed character profiles with psychology', status: 'pending' },
-      { phase: 'Settings', description: 'Building immersive locations with sensory details', status: 'pending' },
-      { phase: 'Chapters & Scenes', description: 'Structuring chapters with hooks and scene breakdowns', status: 'pending' },
-      { phase: 'Scene Content', description: 'Generating narrative content for each scene', status: 'pending' },
-      { phase: 'Visual Generation', description: 'Creating AI images for characters and settings', status: 'pending' },
-    ];
+    const steps = getDefaultProgressSteps();
     setProgress(steps);
     return steps;
   };
 
   const updateProgress = (stepIndex: number, status: ProgressStep['status']) => {
-    setProgress(prev => prev.map((step, index) => 
+    setProgress(prev => prev.map((step, index) =>
       index === stepIndex ? { ...step, status } : step
     ));
+  };
+
+  const resetForm = () => {
+    // Reset all form state
+    setPrompt('');
+    setLanguage('English');
+    setIsLoading(false);
+    setError('');
+    setIsCompleted(false);
+    setGeneratedStoryId(null);
+    setStoryData({});
+
+    // Reset progress to initial state
+    setProgress(getDefaultProgressSteps());
+
+    // Clear JSON data in sidebar
+    clearJsonData();
+
+    console.log('✨ Form reset - ready for new story generation');
   };
 
   const simulateProgress = async (totalDuration: number) => {
@@ -89,7 +113,10 @@ export function CreateStoryForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt: prompt.trim(), language }),
+        body: JSON.stringify({
+          prompt: prompt.trim(),
+          language
+        }),
       });
 
       if (!response.ok) {
@@ -120,16 +147,36 @@ export function CreateStoryForm() {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
+              console.log(`⏱️ [${new Date().toISOString()}] Frontend received SSE event: ${data.phase}`);
 
               switch (data.phase) {
                 case 'progress':
                   // Update progress based on step
                   const stepMap: Record<string, number> = {
-                    'generating_character_images': 5,
-                    'generating_setting_images': 5,
+                    'generating_character_images': 6,
+                    'generating_setting_images': 6,
                   };
                   if (data.data.step && stepMap[data.data.step] !== undefined) {
+                    console.log(`⏱️ [${new Date().toISOString()}] 🎨 ${data.data.step} - marking step ${stepMap[data.data.step]} as in_progress`);
                     updateProgress(stepMap[data.data.step], 'in_progress');
+
+                    // Update the description to show current activity
+                    if (data.data.step === 'generating_character_images') {
+                      console.log(`⏱️ [${new Date().toISOString()}] 🖼️ VISUAL GENERATION STARTED - updating UI`);
+                      setProgress(prev => prev.map((step, index) =>
+                        index === 6 ? {
+                          ...step,
+                          description: data.data.message || 'Generating character images...'
+                        } : step
+                      ));
+                    } else if (data.data.step === 'generating_setting_images') {
+                      setProgress(prev => prev.map((step, index) =>
+                        index === 6 ? {
+                          ...step,
+                          description: data.data.message || 'Generating setting images...'
+                        } : step
+                      ));
+                    }
                   }
                   break;
 
@@ -265,6 +312,7 @@ export function CreateStoryForm() {
                   break;
 
                 case 'phase7_complete':
+                  console.log(`⏱️ [${new Date().toISOString()}] 🎬 Scene Content COMPLETED - marking step 5 as completed`);
                   updateProgress(5, 'completed');
                   // Reset description
                   setProgress(prev => prev.map((step, index) =>
@@ -276,6 +324,7 @@ export function CreateStoryForm() {
                   break;
 
                 case 'hns_complete':
+                  console.log(`⏱️ [${new Date().toISOString()}] 📚 HNS Complete - processing document`);
                   // HNS structure generated - update with complete structure
                   const hnsDoc = data.data.hnsDocument;
                   if (hnsDoc) {
@@ -328,11 +377,14 @@ export function CreateStoryForm() {
                       updateProgress(i, 'completed');
                     }
                   }
+                  console.log(`⏱️ [${new Date().toISOString()}] 📚 HNS Complete processing finished`);
                   break;
+
 
                 case 'complete':
                   // All phases completed successfully
-                  console.log('✅ Story generation completed:', data.storyId);
+                  const completedStoryId = data.data?.storyId || data.storyId;
+                  console.log('✅ Story generation completed:', completedStoryId);
 
                   // Mark all remaining steps as completed
                   setProgress(prev => prev.map(step =>
@@ -343,7 +395,7 @@ export function CreateStoryForm() {
 
                   // Set completion state and store story ID
                   setIsCompleted(true);
-                  setGeneratedStoryId(data.storyId);
+                  setGeneratedStoryId(completedStoryId);
                   setIsLoading(false);
 
                   // Show success message but don't redirect
@@ -447,7 +499,7 @@ export function CreateStoryForm() {
           {progress.length > 0 && (
             <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border">
               <div className="flex items-center space-x-2 mb-4">
-                {!isCompleted && (
+                {isLoading && !isCompleted && (
                   <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
                 )}
                 <h3 className="font-semibold text-gray-900 dark:text-gray-100">Story Generation Progress</h3>
@@ -497,6 +549,35 @@ export function CreateStoryForm() {
             </div>
           )}
 
+          {isCompleted && generatedStoryId && (
+            <div className="p-4 rounded-md bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+              <div className="flex items-center space-x-2 mb-2">
+                <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <p className="text-sm font-medium text-green-800 dark:text-green-300">
+                  Story generated successfully!
+                </p>
+              </div>
+              <div className="flex space-x-2 mt-3">
+                <Button
+                  type="button"
+                  onClick={() => router.push(`/write/story/${generatedStoryId}`)}
+                  className="flex-1"
+                >
+                  Open Story
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={resetForm}
+                >
+                  Generate Another Story
+                </Button>
+              </div>
+            </div>
+          )}
+
           <div className="flex space-x-4">
             <Button
               type="button"
@@ -508,7 +589,7 @@ export function CreateStoryForm() {
             </Button>
             <Button
               type="submit"
-              disabled={isLoading || !prompt.trim()}
+              disabled={isLoading || !prompt.trim() || isCompleted}
               className="flex-1"
             >
               {isLoading ? 'Generating Story...' : 'Generate Story'}

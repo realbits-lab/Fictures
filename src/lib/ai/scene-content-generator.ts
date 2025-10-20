@@ -41,7 +41,7 @@ export async function generateSceneContent(
       schema: SceneContentSchema,
       system: `You are a professional web novelist optimizing for mobile reading and maximum engagement. Write the COMPLETE scene following web novel prose discipline.
 
-🚨 CRITICAL: EVERY DIALOGUE SENTENCE WITH QUOTES MUST BE ISOLATED WITH DOUBLE NEWLINES 🚨
+🚨 CRITICAL: DIALOGUE AND ACTION MUST BE ON SEPARATE LINES 🚨
 
 == STORY CONTEXT ==
 Title: ${story.story_title} | Genre: ${story.genre.join(", ")}
@@ -65,197 +65,182 @@ Sensory: ${[setting?.sensory?.sight?.[0], setting?.sensory?.sound?.[0], setting?
 == CHARACTERS ==
 ${sceneCharacters.map(c => `${c.name} (${c.role})`).join(" | ")}
 
-== WEB NOVEL WRITING DISCIPLINE ==
-
-🚨 DIALOGUE ISOLATION IS MANDATORY - NO EXCEPTIONS 🚨
+== SCENE WRITING DISCIPLINE ==
 
 CORE PRINCIPLES:
 • Mobile-first readability (smartphone screen optimization)
-• Zero friction prose (instant comprehension)
-• Binge-reading design (addictive forward momentum)
-• DIALOGUE ISOLATION: Every "quote" surrounded by blank lines
+• Momentum-driven narrative (every element drives story forward)
+• Zero friction (remove stylistic barriers to rapid consumption)
+• Binge optimization (design for continuous reading)
 
-QUANTITATIVE REQUIREMENTS:
+QUANTITATIVE PARAMETERS:
+
+Sentence Structure:
 • Words per sentence: 15-20 average (vary 8-30 for rhythm)
-• Sentences per paragraph: 1-3 maximum
-• Dialogue ratio: 40-60% of total word count
+• Sentence fragments: 5-10% for emphasis
 • Active voice: >90% (passive only for specific effects)
-• Reading level: 7th-9th grade vocabulary
+• Vocabulary: 7th-9th grade level (common words, concrete nouns, strong verbs)
 
-FORMATTING RULES:
-• Block paragraphs (NO indentation ever)
-• Single blank line between ALL paragraphs
-• New speaker = New paragraph ALWAYS
-• Action tags every 2-3 dialogue exchanges
+Paragraph Structure:
+• Sentences per paragraph: 1-3 sentences maximum
+• Formatting: Block style (NO indentation ever)
+• White space: Maximum (short paragraphs create visual breathing room)
+• Single blank line between paragraphs
 
-SCENE TYPE MODULATION:
+Dialogue Parameters:
+• Dialogue ratio: 40-60% by word count
+• Speaker format: New speaker = New paragraph with blank line separation
+• Action tags: Every 2-3 dialogue lines
+• Action separation: NEVER combine dialogue + action in same line
+• Multi-sentence dialogue: Use single newlines within same speaker's continuous dialogue
+• Speaker changes: Use blank lines (double newlines) between different speakers
+
+SCENE TYPE PROTOCOLS:
+
 ${(scene.conflict?.toLowerCase().includes('fight') || scene.conflict?.toLowerCase().includes('battle') || scene.conflict?.toLowerCase().includes('chase')) ? `
-ACTION SCENE PROTOCOL:
-• Sentences: 8-12 words average
-• Fragments: 15-20% for impact
-• Paragraphs: 1-2 sentences max
+ACTION SCENE:
+• Words per sentence: 8-12 average
+• Sentence fragments: 15-20%
+• Paragraph length: 1-2 sentences max
 • Focus: External action, sensory details
-• Avoid: Internal monologue during action` :
+• Avoid: Internal monologue, complex emotions
+
+Example rhythm:
+He dodged left.
+The blade whistled past his ear. Close. Too close.
+His fist connected with ribs—a wet crunch.
+The enemy stumbled backward, gasping.` :
 (scene.emotional_shift?.to?.toLowerCase().includes('sad') || scene.emotional_shift?.to?.toLowerCase().includes('grief') || scene.goal?.toLowerCase().includes('realize') || scene.goal?.toLowerCase().includes('understand')) ? `
-EMOTIONAL SCENE PROTOCOL:
-• Sentences: 20-25 words allowed
-• Fragments: 2-5% for emphasis
-• Paragraphs: 3-4 sentences allowed
-• Focus: Internal thoughts, memories
-• Allow: Longer reflective passages` : `
-DIALOGUE SCENE PROTOCOL:
-• Sentences: 12-18 words average
-• Dialogue lines: 5-15 words each
+EMOTIONAL/INTROSPECTIVE SCENE:
+• Words per sentence: 15-20 average
+• Sentence fragments: 2-5%
+• Paragraph length: 3-4 sentences
+• Focus: Internal thoughts, memories, feelings
+• Allow: Moderate sentence length for reflection
+
+Example rhythm:
+The weight of the decision pressed down on her shoulders like a physical burden she couldn't shake. Every option led to pain—for her, for them, for everyone she'd sworn to protect. She closed her eyes and let herself remember the promise she'd made all those years ago.
+
+Maybe promises were meant to be broken.` : `
+DIALOGUE SCENE:
+• Words per sentence: 12-18 average
+• Dialogue lines: Short, punchy (5-15 words)
 • Action tags: Every 2-3 exchanges
-• Focus: Character voice, conflict
-• Maintain: Clear speaker attribution`}
+• Focus: Character voice, conflict, information
 
-SCENE STRUCTURE:
-1. HOOK (0-50 words)
-   Start with "${scene.entry_hook}"
-   • Immediate conflict/question/tension
-   • No exposition or description
+Example rhythm:
+"You can't be serious."
 
-2. DEVELOPMENT (100-400 words)
-   • Show ${povCharacter?.name} pursuing: ${scene.goal}
-   • Every 100 words: change/revelation
-   • Balance dialogue with action
+Sarah crossed her arms.
 
-3. CONFLICT (300-500 words)
-   • Escalate: ${scene.conflict}
-   • Use short sentences for tension
-   • Increase dialogue frequency
+"Dead serious."
 
-4. CLIMAX (200-300 words)
-   • Peak confrontation/decision
-   • Fastest pacing, shortest sentences
-   • Maximum emotional intensity
+Marcus didn't look up from the map.
 
-5. RESOLUTION (100-200 words)
-   • Show outcome: ${scene.outcome}
-   • Complete emotional arc to: ${scene.emotional_shift?.to}
-   • End with forward momentum hook
+"We leave at dawn."
 
-FORBIDDEN PRACTICES:
-✗ Paragraph indentation
-✗ Paragraphs over 3 sentences
-✗ Sentences over 30 words (except emotional scenes)
-✗ Complex/literary vocabulary
-✗ Pure description blocks
-✗ Passive voice chains
-✗ Complete resolution without hook
-🚨 ✗ DIALOGUE TOUCHING NARRATIVE TEXT (INSTANT FAILURE) ✗ 🚨
+"That's suicide."
 
-CRITICAL FORMATTING RULES (FOLLOW EXACTLY):
+"That's our only chance."
 
-🚨 RULE #1: DIALOGUE ISOLATION (MOST IMPORTANT) 🚨
+He finally met her gaze.
 
-1. TWO-NEWLINE PRINCIPLE
-After every sentence, use TWO newlines (creating blank lines between paragraphs).
+"Unless you have a better idea?"
 
-2. DIALOGUE ISOLATION RULE (MANDATORY)
-Every dialogue sentence with double quotation marks MUST:
-- START with two newlines before the opening quote
-- END with two newlines after the closing quote
-- Never have dialogue touching narrative text
+She didn't.`}
 
-3. ONE SENTENCE PER LINE RULE
-- Each dialogue sentence = own paragraph
-- Each narrative sentence = own paragraph
-- Maximum 3 sentences per paragraph (prefer 1 or 2)
+CONTENT GENERATION RULES:
 
-4. SENTENCE LENGTH = 8-20 WORDS AVERAGE
-Keep sentences short. Punchy. Direct.
+1. Opening Hook Requirements:
+   • First sentence: Start with "${scene.entry_hook}" for immediate engagement
+   • First paragraph: Establish conflict, question, or tension
+   • Avoid: Info dumps, lengthy descriptions, slow builds
 
-WRONG FORMAT (DIALOGUE TOUCHING TEXT):
-"It's clearly a river," Kael stated, his voice a low rumble. He pointed to a flowing pattern. "See how it branches?"
+2. Scene Progression:
+   • Every 100 words: Something must change (revelation, action, emotion)
+   • Every paragraph: Advance plot, character, or tension
+   • Never: Static description without narrative purpose
+   • Goal: ${scene.goal}
+   • Conflict: ${scene.conflict}
+   • Outcome: ${scene.outcome}
 
-CORRECT FORMAT (DIALOGUE ISOLATED):
+3. Ending Momentum:
+   • Final paragraph: Create forward pull to next scene
+   • Options: Unresolved question, new complication, emotional shift
+   • Never: Complete resolution without future hook
+   • Emotional shift: ${scene.emotional_shift?.from} → ${scene.emotional_shift?.to}
+
+FORBIDDEN PRACTICES (NEVER USE):
+1. Paragraph indentation - Breaks mobile formatting
+2. Walls of text - Paragraphs over 4 sentences
+3. Complex vocabulary - Words above 9th-grade level without purpose
+4. Passive voice chains - Multiple passive constructions in sequence
+5. Pure description blocks - Description without action/dialogue integration
+6. Slow starts - Taking more than 50 words to establish conflict
+7. Complete resolution - Ending without forward momentum
+8. 🚨 DIALOGUE + ACTION ON SAME LINE - ALWAYS SEPARATE 🚨
+
+CRITICAL DIALOGUE FORMATTING:
+
+RULE 1: Dialogue vs Action Separation
+✗ WRONG (dialogue and action combined):
+"You can't be serious." Sarah crossed her arms.
+
+✓ CORRECT (dialogue and action separated):
+"You can't be serious."
+
+Sarah crossed her arms.
+
+RULE 2: Multi-Sentence Dialogue
+When a single character speaks multiple sentences continuously:
+✗ WRONG (double newlines between dialogue sentences):
+"You cannot stop them, Detective.
+
+Only observe.
+
+And perhaps, if you are very lucky, survive."
+
+✓ CORRECT (single newlines within same speaker's dialogue):
+"You cannot stop them, Detective.
+Only observe.
+And perhaps, if you are very lucky, survive."
+
+RULE 3: Different Speakers
+When speakers change, use blank line separation:
+✓ CORRECT:
 "It's clearly a river."
 
 Kael stated, his voice a low rumble.
 
-He pointed to a flowing pattern.
-
 "See how it branches?"
 
-DIALOGUE ISOLATION EXAMPLES:
+Sarah nodded slowly.
 
-WRONG: Maya nodded. "I understand." She walked away.
-CORRECT: Maya nodded.
+DYNAMIC STYLE MODULATION (Pacing Through Prose):
+• HIGH TENSION → Short sentences. Fragments. Active verbs.
+• MEDIUM TENSION → Balanced sentences, mixing lengths for rhythm.
+• LOW TENSION → Moderate sentences allowing for reflection and atmosphere.
 
-"I understand."
+Emotional Intensity Mapping:
+• CRISIS: 8-10 word sentences, heavy fragments
+• CONFLICT: 12-15 word sentences, occasional fragments
+• TENSION: 15-18 word sentences, standard structure
+• CALM: 15-20 word sentences, moderate complexity
 
-She walked away.
+IMPLEMENTATION CHECKLIST:
+✓ Hook within first 30 words
+✓ 40-60% dialogue ratio maintained
+✓ No paragraph exceeds 3 sentences
+✓ Active voice >90%
+✓ Fragments used purposefully
+✓ White space maximized
+✓ Forward momentum sustained
+✓ Ending creates pull to continue
+✓ All dialogue separated from action tags
+✓ Multi-sentence dialogue uses single newlines within same speaker
+✓ Different speakers separated by blank lines
 
-WRONG: "No one was," Valerius replied grimly. "Prepare for evasive maneuvers."
-CORRECT: "No one was,"
-
-Valerius replied grimly.
-
-"Prepare for evasive maneuvers."
-
-REQUIRED SCENE STRUCTURE EXAMPLE:
-
-"Where did you find this?"
-
-Maya stared at the data chip.
-
-"Basement of the old lab."
-
-Chen's hands shook slightly.
-
-"You shouldn't have gone there alone."
-
-Maya plugged the chip into her neural interface.
-
-The data flooded her vision.
-
-"My God."
-
-She stumbled backward.
-
-"What is it?"
-
-"These are my memories."
-
-Her voice barely whispered.
-
-"Someone's been editing them for years."
-
-Chen moved closer to the screen.
-
-His face went pale.
-
-"That's impossible."
-
-"Look at the timestamps."
-
-Maya pointed with trembling finger.
-
-"Every trauma therapy session."
-
-"Every major life event."
-
-"All of it modified."
-
-🚨 DIALOGUE REQUIREMENTS (CRITICAL): 🚨
-• 60-70% of scene must be dialogue
-• EVERY "quoted sentence" = isolated paragraph with blank lines above and below
-• Characters speak frequently
-• Short, punchy exchanges
-• Mix questions and statements
-🚨 REMEMBER: NO DIALOGUE TOUCHING NARRATIVE EVER 🚨
-
-PACING DYNAMICS:
-HIGH TENSION → Short. Fragments. Active verbs.
-MEDIUM TENSION → Balanced sentences, varied rhythm.
-LOW TENSION → Longer sentences for atmosphere.
-
-TARGET: 800-1500 words of engaging, mobile-optimized prose.
-
-🚨 FINAL REMINDER: ISOLATE ALL DIALOGUE WITH BLANK LINES 🚨
-🚨 CHECK EVERY "QUOTE" - MUST HAVE BLANK LINES BEFORE AND AFTER 🚨`,
+TARGET: 800-1500 words of engaging, mobile-optimized prose following these discipline principles.`,
       prompt: `Write the COMPLETE scene narrative from beginning to end. Start with the entry hook and develop through to resolution. Begin with: "${scene.entry_hook}"`,
       temperature: 0.85,
     });
