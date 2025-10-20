@@ -482,11 +482,11 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                 );
               })}
               
-              {/* Standalone Chapters */}
-              {story.chapters.length > 0 && (
+              {/* Standalone Chapters - Only show if story has no parts structure */}
+              {story.chapters.length > 0 && story.parts.length === 0 && (
                 <div className="mb-4">
                   <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-2">
-                    Standalone Chapters
+                    Chapters
                   </div>
                   {story.chapters
                     .filter(chapter => isOwner || chapter.status === 'published')

@@ -8,6 +8,8 @@ import { eq } from "drizzle-orm";
 import {
   characters as charactersTable,
   settings as settingsTable,
+  parts as partsTable,
+  stories as storiesTable,
 } from "@/lib/db/schema";
 import {
   generateCharacterImagePrompt,
@@ -177,7 +179,6 @@ export async function POST(request: NextRequest) {
           }
 
           // Get existing hnsData to preserve storyImage
-          const { stories: storiesTable } = await import("@/lib/db/schema");
           const existingStoryData = await db
             .select({ hnsData: storiesTable.hnsData })
             .from(storiesTable)
