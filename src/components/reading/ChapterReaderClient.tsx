@@ -414,13 +414,13 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
               </h2>
               
               {/* Chapters in Parts */}
-              {story.parts.map((part) => {
-                const partChapters = part.chapters.filter(chapter => 
-                  isOwner || chapter.status === 'published'
-                );
-                
+              {[...story.parts].sort((a, b) => a.orderIndex - b.orderIndex).map((part) => {
+                const partChapters = part.chapters
+                  .filter(chapter => isOwner || chapter.status === 'published')
+                  .sort((a, b) => a.orderIndex - b.orderIndex);
+
                 if (partChapters.length === 0) return null;
-                
+
                 return (
                   <div key={part.id} className="mb-4">
                     <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-2">
@@ -451,7 +451,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                           {/* Scene List for Selected Chapter */}
                           {isChapterSelected && chapterScenes.length > 0 && (
                             <div className="ml-4 mt-2 space-y-1">
-                              {chapterScenes.map((scene, sceneIndex) => {
+                              {[...chapterScenes].sort((a, b) => a.orderIndex - b.orderIndex).map((scene, sceneIndex) => {
                                 const isSceneSelected = selectedSceneId === scene.id;
 
                                 return (
@@ -488,8 +488,9 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                   <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-2">
                     Chapters
                   </div>
-                  {story.chapters
+                  {[...story.chapters]
                     .filter(chapter => isOwner || chapter.status === 'published')
+                    .sort((a, b) => a.orderIndex - b.orderIndex)
                     .map((chapter) => {
                       const globalChapterNumber = getGlobalChapterNumber(chapter.id);
                       const isChapterSelected = selectedChapterId === chapter.id;
@@ -515,7 +516,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                           {/* Scene List for Selected Chapter */}
                           {isChapterSelected && chapterScenes.length > 0 && (
                             <div className="ml-4 mt-2 space-y-1">
-                              {chapterScenes.map((scene, sceneIndex) => {
+                              {[...chapterScenes].sort((a, b) => a.orderIndex - b.orderIndex).map((scene, sceneIndex) => {
                                 const isSceneSelected = selectedSceneId === scene.id;
 
                                 return (
