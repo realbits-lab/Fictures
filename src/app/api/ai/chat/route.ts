@@ -72,7 +72,6 @@ export async function POST(request: NextRequest) {
           const interactionData = {
             id: interactionId,
             userId: session.user.id,
-            sessionId: sessionId || undefined,
             type: 'chat_assistance' as const,
             prompt: lastUserMessage.content,
             response: completion.text,

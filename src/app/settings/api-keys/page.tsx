@@ -45,11 +45,6 @@ export default function ApiKeysPage() {
   const [selectedScopes, setSelectedScopes] = useState<string[]>(['stories:read', 'chapters:read', 'analytics:read']);
   const [expirationOption, setExpirationOption] = useState<string>('never');
 
-  // Show loading state for unauthenticated users
-  if (!session?.user?.id) {
-    return <div>Please sign in to manage your API keys.</div>;
-  }
-
   // Fetch API keys
   const fetchApiKeys = async () => {
     try {
@@ -70,9 +65,17 @@ export default function ApiKeysPage() {
     }
   };
 
+  // Initialize hooks BEFORE conditional returns
   useEffect(() => {
-    fetchApiKeys();
-  }, []);
+    if (session?.user?.id) {
+      fetchApiKeys();
+    }
+  }, [session?.user?.id]);
+
+  // Show loading state for unauthenticated users AFTER all hooks
+  if (!session?.user?.id) {
+    return <div>Please sign in to manage your API keys.</div>;
+  }
 
   // Create new API key
   const handleCreateApiKey = async () => {
@@ -220,7 +223,7 @@ export default function ApiKeysPage() {
           <CardContent>
             <div className="space-y-4">
               <p className="text-sm text-green-700 dark:text-green-300">
-                ⚠️ Save this API key now. You won't be able to see it again.
+                ⚠️ Save this API key now. You won&apos;t be able to see it again.
               </p>
               <div className="bg-white dark:bg-gray-800 p-3 rounded border border-green-300 dark:border-green-700">
                 <code className="text-sm font-mono break-all text-gray-900 dark:text-gray-100">

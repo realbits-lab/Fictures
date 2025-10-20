@@ -10,7 +10,7 @@ interface RouteParams {
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: RouteParams }
+  { params }: { params: Promise<RouteParams> }
 ) {
   try {
     // Check authentication
@@ -33,7 +33,8 @@ export async function PUT(
       );
     }
 
-    const { id: storyId } = params;
+    // Await params in Next.js 15
+    const { id: storyId } = await params;
 
     // Check if story exists and belongs to the authenticated user
     const [story] = await db
@@ -113,7 +114,7 @@ export async function PUT(
 // GET endpoint to check current visibility status
 export async function GET(
   request: NextRequest,
-  { params }: { params: RouteParams }
+  { params }: { params: Promise<RouteParams> }
 ) {
   try {
     // Check authentication
@@ -125,7 +126,8 @@ export async function GET(
       );
     }
 
-    const { id: storyId } = params;
+    // Await params in Next.js 15
+    const { id: storyId } = await params;
 
     // Get story visibility status
     const [story] = await db

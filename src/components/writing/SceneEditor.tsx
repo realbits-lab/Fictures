@@ -68,6 +68,10 @@ export function SceneEditor({
   // Use the appropriate data source: previewData > initialData
   const sceneData = previewData || initialData;
 
+  // Initialize hooks BEFORE conditional returns
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Check for sceneData AFTER all hooks
   if (!sceneData) {
     return (
       <div className="space-y-6">
@@ -86,8 +90,6 @@ export function SceneEditor({
       </div>
     );
   }
-
-  const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
     if (!onSave || !externalHasChanges) return;

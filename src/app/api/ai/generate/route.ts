@@ -71,7 +71,6 @@ Requirements:
     await db.insert(aiInteractions).values({
       id: interactionId,
       userId: session.user.id,
-      sessionId: sessionId || null,
       type: `generate_${type}`,
       prompt: userPrompt,
       response: generatedContent,

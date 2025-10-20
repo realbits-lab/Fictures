@@ -28,7 +28,7 @@ async function analyzeAndCompleteStories() {
     // Process each story
     for (const story of allStories) {
       console.log(`\n📖 Story: "${story.title}" (ID: ${story.id})`);
-      console.log(`   Status: ${story.status}, Public: ${story.isPublic}`);
+      console.log(`   Status: ${story.status}`);
       console.log(`   Word Count: ${story.currentWordCount}/${story.targetWordCount}`);
       
       // Get parts for this story
@@ -82,8 +82,7 @@ async function createSampleStory() {
     description: 'A thrilling sci-fi adventure about AI and human consciousness',
     genre: 'Science Fiction',
     authorId: userId,
-    status: 'draft',
-    isPublic: true,
+    status: 'writing',
     targetWordCount: 50000,
   }).returning();
 

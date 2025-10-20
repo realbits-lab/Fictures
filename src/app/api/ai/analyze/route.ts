@@ -83,7 +83,6 @@ Be specific and actionable in your feedback.`;
     await db.insert(aiInteractions).values({
       id: interactionId,
       userId: session.user.id,
-      sessionId: sessionId || null,
       type: `analysis_${analysisType}`,
       prompt: userPrompt,
       response: JSON.stringify(analysis),

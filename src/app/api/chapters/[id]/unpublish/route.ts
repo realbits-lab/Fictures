@@ -17,7 +17,7 @@ export async function POST(
     // Update the chapter status to completed (unpublished)
     const updatedChapter = await updateChapter(chapterId, session.user.id, {
       status: 'completed',
-      publishedAt: null
+      publishedAt: undefined
     });
 
     if (!updatedChapter) {

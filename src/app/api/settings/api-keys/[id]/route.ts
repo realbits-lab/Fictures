@@ -23,7 +23,7 @@ const updateApiKeySchema = z.object({
 // GET /api/settings/api-keys/[id] - Get specific API key
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await authenticateRequest(request);
@@ -43,9 +43,12 @@ export async function GET(
       );
     }
 
+    // Await params in Next.js 15
+    const { id } = await params;
+
     // Get user's API keys and find the specific one
     const apiKeys = await getUserApiKeys(authResult.user.id);
-    const apiKey = apiKeys.find(key => key.id === params.id);
+    const apiKey = apiKeys.find(key => key.id === id);
 
     if (!apiKey) {
       return NextResponse.json(
@@ -81,7 +84,7 @@ export async function GET(
 // PATCH /api/settings/api-keys/[id] - Update specific API key
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await authenticateRequest(request);
@@ -101,9 +104,12 @@ export async function PATCH(
       );
     }
 
+    // Await params in Next.js 15
+    const { id } = await params;
+
     // Verify the API key belongs to the user
     const userApiKeys = await getUserApiKeys(authResult.user.id);
-    const existingKey = userApiKeys.find(key => key.id === params.id);
+    const existingKey = userApiKeys.find(key => key.id === id);
 
     if (!existingKey) {
       return NextResponse.json(
@@ -144,7 +150,7 @@ export async function PATCH(
     }
 
     // Update the API key
-    const updatedApiKey = await updateApiKey(params.id, updateData);
+    const updatedApiKey = await updateApiKey(id, updateData);
 
     if (!updatedApiKey) {
       return NextResponse.json(
@@ -194,7 +200,7 @@ export async function PATCH(
 // DELETE /api/settings/api-keys/[id] - Delete specific API key
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await authenticateRequest(request);
@@ -214,9 +220,12 @@ export async function DELETE(
       );
     }
 
+    // Await params in Next.js 15
+    const { id } = await params;
+
     // Verify the API key belongs to the user
     const userApiKeys = await getUserApiKeys(authResult.user.id);
-    const existingKey = userApiKeys.find(key => key.id === params.id);
+    const existingKey = userApiKeys.find(key => key.id === id);
 
     if (!existingKey) {
       return NextResponse.json(
@@ -226,11 +235,11 @@ export async function DELETE(
     }
 
     // Delete the API key
-    await deleteApiKey(params.id);
+    await deleteApiKey(id);
 
     return NextResponse.json({
       message: 'API key deleted successfully',
-      deletedKeyId: params.id
+      deletedKeyId: id
     });
 
   } catch (error) {

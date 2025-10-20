@@ -88,7 +88,7 @@ export function CharactersDisplay({ storyData }: CharactersDisplayProps) {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            Manage and develop your story's characters. Each character card shows their role, arc, and key attributes.
+            Manage and develop your story&apos;s characters. Each character card shows their role, arc, and key attributes.
           </p>
           <div className="grid grid-cols-2 gap-4 text-sm text-gray-500">
             <div>

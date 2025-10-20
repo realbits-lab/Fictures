@@ -70,7 +70,6 @@ Provide 2-3 concrete, actionable suggestions with specific examples where possib
     await db.insert(aiInteractions).values({
       id: interactionId,
       userId: session.user.id,
-      sessionId: sessionId || null,
       type: `suggestion_${type}`,
       prompt: userPrompt,
       response: suggestion,

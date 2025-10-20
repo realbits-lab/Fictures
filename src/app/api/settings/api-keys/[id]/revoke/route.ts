@@ -8,7 +8,7 @@ export const runtime = 'nodejs';
 // POST /api/settings/api-keys/[id]/revoke - Revoke (deactivate) specific API key
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await authenticateRequest(request);
@@ -28,9 +28,12 @@ export async function POST(
       );
     }
 
+    // Await params in Next.js 15
+    const { id } = await params;
+
     // Verify the API key belongs to the user
     const userApiKeys = await getUserApiKeys(authResult.user.id);
-    const existingKey = userApiKeys.find(key => key.id === params.id);
+    const existingKey = userApiKeys.find(key => key.id === id);
 
     if (!existingKey) {
       return NextResponse.json(
@@ -47,7 +50,7 @@ export async function POST(
     }
 
     // Revoke the API key (set isActive to false)
-    const revokedApiKey = await revokeApiKey(params.id);
+    const revokedApiKey = await revokeApiKey(id);
 
     if (!revokedApiKey) {
       return NextResponse.json(
