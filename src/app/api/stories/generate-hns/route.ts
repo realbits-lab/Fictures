@@ -97,9 +97,10 @@ export async function POST(request: NextRequest) {
 
     const stream = new ReadableStream({
       async start(controller) {
+        // Helper function to send SSE data
+        let isControllerClosed = false;
+
         try {
-          // Helper function to send SSE data
-          let isControllerClosed = false;
           const sendUpdate = (phase: string, data: Record<string, unknown>) => {
             if (isControllerClosed) {
               console.log(`Skipping SSE update (controller closed): ${phase}`);
@@ -152,14 +153,7 @@ export async function POST(request: NextRequest) {
 
           // ============= QUALITY ANALYSIS & IMPROVEMENT PHASE =============
           if (enableQualityImprovement) {
-            // Update status to analyzing quality
-            await db.update(stories)
-              .set({
-                status: 'analyzing_quality',
-                updatedAt: new Date()
-              })
-              .where(eq(stories.id, storyId));
-
+            // Send progress update for analyzing quality
           sendUpdate("progress", {
             step: "analyzing_quality",
             message: "Analyzing story quality and structure...",
@@ -204,25 +198,10 @@ export async function POST(request: NextRequest) {
             }
           });
 
-          // Update status to analysis complete
-          await db.update(stories)
-            .set({
-              status: 'analysis_complete',
-              updatedAt: new Date()
-            })
-            .where(eq(stories.id, storyId));
-
           // ============= IMPROVEMENT PHASE =============
           // Only run improvements if there are issues to fix
           if (validationResult.totalErrors > 0 || validationResult.totalWarnings > 5 ||
               (evaluationResult.storyEvaluation?.overallScore || 0) < 75) {
-
-            await db.update(stories)
-              .set({
-                status: 'improving_content',
-                updatedAt: new Date()
-              })
-              .where(eq(stories.id, storyId));
 
             sendUpdate("progress", {
               step: "improving_content",
@@ -332,14 +311,6 @@ export async function POST(request: NextRequest) {
               summary: improvementResult.summary
             });
 
-            // Update status to improvement complete
-            await db.update(stories)
-              .set({
-                status: 'improvement_complete',
-                updatedAt: new Date()
-              })
-              .where(eq(stories.id, storyId));
-
             // ============= RE-ANALYSIS AFTER IMPROVEMENTS =============
             sendUpdate("progress", {
               step: "re_analyzing_quality",
@@ -417,14 +388,7 @@ export async function POST(request: NextRequest) {
 
           // ============= CONTINUE TO IMAGE GENERATION =============
           // Characters are already created in generateCompleteHNS
-          // Update status to generating character images
-          await db.update(stories)
-            .set({
-              status: 'generating_character_images',
-              updatedAt: new Date()
-            })
-            .where(eq(stories.id, storyId));
-
+          // Send progress update for generating character images
           sendUpdate("progress", {
             step: "generating_character_images",
             message: "Generating character images...",
@@ -492,22 +456,8 @@ export async function POST(request: NextRequest) {
 
           const characterResults = await Promise.all(characterImagePromises);
 
-          // Update status to character images complete
-          await db.update(stories)
-            .set({
-              status: 'character_images_complete',
-              updatedAt: new Date()
-            })
-            .where(eq(stories.id, storyId));
-
           // Settings are already created in generateCompleteHNS
-          // Update status to generating setting images
-          await db.update(stories)
-            .set({
-              status: 'generating_setting_images',
-              updatedAt: new Date()
-            })
-            .where(eq(stories.id, storyId));
+          // Continue to generate setting images
 
           sendUpdate("progress", {
             step: "generating_setting_images",
@@ -573,14 +523,7 @@ export async function POST(request: NextRequest) {
 
           const settingResults = await Promise.all(settingImagePromises);
 
-          // Update status to all complete
-          await db.update(stories)
-            .set({
-              status: 'completed',
-              updatedAt: new Date()
-            })
-            .where(eq(stories.id, storyId));
-
+          // Story generation is complete, keep status as 'writing' for editing
           // Send completion
           sendUpdate("complete", {
             message: "Story generation completed successfully!",
