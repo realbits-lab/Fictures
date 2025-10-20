@@ -6,8 +6,8 @@ test.describe('Caching and Reading Page Tests', () => {
   test('should navigate to stories and test reading page with caching', async ({ page }) => {
     console.log('🧪 Starting caching and reading page test');
 
-    // Navigate to stories page (using port 3001 where dev server is running)
-    await page.goto('http://localhost:3001/stories');
+    // Navigate to stories page (using port 3000 where dev server is running)
+    await page.goto('http://localhost:3000/stories');
     await page.waitForLoadState('networkidle');
 
     // Look for a story to read
@@ -105,7 +105,7 @@ test.describe('Caching and Reading Page Tests', () => {
     console.log('🧪 Starting chapter navigation test');
 
     // Navigate directly to a reading page (assuming we have stories)
-    await page.goto('http://localhost:3001/stories');
+    await page.goto('http://localhost:3000/stories');
     await page.waitForLoadState('networkidle');
 
     // Find and click on a story
