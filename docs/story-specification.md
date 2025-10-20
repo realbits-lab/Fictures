@@ -673,14 +673,13 @@ Maps Snowflake Method stages to HNS population with LLM assistance:
 
 - **Action**: Create one-sentence summary
 - **Target**: Story object fields
-- **AI Process**: Generate multiple premise variations under 20 words
-- **Human Curation**: Select most compelling premise, define dramatic question and thematic core
+- **AI Process**: Generate premise under 20 words, define dramatic question and thematic core
 - **Output**: Complete Story object with foundational narrative DNA and structural references
 
 **Example LLM Prompt**:
 
 ```
-Act as an expert novel outliner. Given the rough story idea "a wizard who has lost his magic," generate 5 potential one-sentence premises. Each premise must be under 20 words, introduce a clear protagonist, a core conflict, and hint at the personal stakes involved.
+Act as an expert novel outliner. Given the rough story idea "a wizard who has lost his magic," generate a one-sentence premise under 20 words that introduces a clear protagonist, a core conflict, and hints at the personal stakes involved. Also define the dramatic question and thematic core.
 ```
 
 #### 8.2.2 Step 2: Act-Level Structuring (Part Objects)
@@ -715,7 +714,35 @@ Analyze the following story summary: "[summary]". Identify the protagonist, the 
 4. Their epiphany (what they will learn or how they will change)
 ```
 
-#### 8.2.4 Step 4: Chapter-Level Expansion (Chapter Objects)
+#### 8.2.4 Step 4: Setting Generation (Setting Objects)
+
+- **Action**: Create setting profiles from story summary and character context
+- **Target**: Setting objects
+- **AI Process**: Identify key locations where story events occur, develop sensory details and visual characteristics
+- **Enhancement**: Develop comprehensive sensory arrays (sight, sound, smell, touch, taste) and visual generation fields
+- **Output**: Full Setting objects with descriptions, mood, sensory details, visual style, color palette, and architectural style
+
+**Example LLM Prompt**:
+
+```
+Based on the story summary: "[summary]" and the characters involved, identify 3-5 key locations where significant events will occur. For each setting, generate:
+1. A name and comprehensive description
+2. The mood and atmosphere
+3. Sensory details (sight, sound, smell, touch, taste)
+4. Visual style, color palette, and architectural characteristics suitable for image generation
+```
+
+#### 8.2.5 Step 5: Chapter-Level Expansion (Chapter Objects) - OPTIONAL
+
+**Generation Mode Selection:**
+
+The framework supports two distinct generation modes depending on your workflow:
+
+1. **One-Shot Generation Mode**: Generate complete story structure including all chapters and scenes upfront. Use this mode when you want to plan the entire narrative before writing any prose, ensuring complete story coherence and arc planning.
+
+2. **Serial Generation Mode**: Generate only through Step 4 (Story, Parts, Characters, Settings), then create chapters and scenes iteratively as you write. Use this mode for web serial fiction where you develop the story progressively, allowing flexibility to incorporate reader feedback and organic story evolution.
+
+**For One-Shot Generation Mode:**
 
 - **Action**: Expand each act sentence to full paragraph
 - **Target**: Chapter objects
@@ -729,7 +756,9 @@ Analyze the following story summary: "[summary]". Identify the protagonist, the 
 Take the following sentence, which represents a major story beat: "[sentence]". Expand this sentence into a full paragraph of approximately 150 words, detailing the key events that occur. The paragraph should end with a significant setback, complication, or disaster for the protagonist.
 ```
 
-#### 8.2.5 Step 5: Scene Breakdown (Scene Objects)
+#### 8.2.6 Step 6: Scene Breakdown (Scene Objects) - OPTIONAL
+
+**For One-Shot Generation Mode:**
 
 - **Action**: Break chapters into 3-5 discrete scenes
 - **Target**: Scene objects
@@ -742,6 +771,10 @@ Take the following sentence, which represents a major story beat: "[sentence]". 
 ```
 Given the following chapter summary: "[Chapter.summary]". Break this down into a list of 3 to 5 distinct scenes required to tell this part of the story. For each scene, provide a one-sentence description of the key action, the setting, and the characters involved.
 ```
+
+**For Serial Generation Mode:**
+
+Skip this step initially. Generate scenes one at a time as you write each chapter, allowing for organic story development and integration of reader feedback.
 
 ---
 
