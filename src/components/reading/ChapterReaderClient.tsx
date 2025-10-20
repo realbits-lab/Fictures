@@ -424,7 +424,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                 return (
                   <div key={part.id} className="mb-4">
                     <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-2">
-                      Part {part.orderIndex}: {part.title}
+                      {part.title}
                     </div>
                     {partChapters.map((chapter) => {
                       const globalChapterNumber = getGlobalChapterNumber(chapter.id);
@@ -443,7 +443,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                             <div className="flex items-center gap-2">
                               <span className="text-sm">{getStatusIcon(chapter.status)}</span>
                               <span className="font-medium text-sm truncate">
-                                Ch {globalChapterNumber}: {chapter.title}
+                                {chapter.title}
                               </span>
                             </div>
                           </button>
@@ -467,7 +467,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                                     <div className="flex items-center gap-2">
                                       <span className="text-gray-400 dark:text-gray-500">🎬</span>
                                       <span className="truncate">
-                                        Scene {sceneIndex + 1}: {scene.title}
+                                        {scene.title}
                                       </span>
                                     </div>
                                   </button>
@@ -508,7 +508,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                             <div className="flex items-center gap-2">
                               <span className="text-sm">{getStatusIcon(chapter.status)}</span>
                               <span className="font-medium text-sm truncate">
-                                Ch {globalChapterNumber}: {chapter.title}
+                                {chapter.title}
                               </span>
                             </div>
                           </button>
@@ -532,7 +532,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                                     <div className="flex items-center gap-2">
                                       <span className="text-gray-400 dark:text-gray-500">🎬</span>
                                       <span className="truncate">
-                                        Scene {sceneIndex + 1}: {scene.title}
+                                        {scene.title}
                                       </span>
                                     </div>
                                   </button>
@@ -610,14 +610,14 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                 ) : selectedScene && isScrollRestored ? (
                   <>
                     {console.log(`📖 Rendering selected scene: ${selectedScene.title}`)}
-                    {/* Scene Image - Sticky */}
+                    {/* Scene Image */}
                     {selectedScene.sceneImage?.url && (
-                      <div className="sticky top-0 z-10 mb-6 bg-white dark:bg-gray-900 pb-4">
+                      <div className="mb-6">
                         <div className="rounded-lg overflow-hidden shadow-lg">
                           <img
                             src={selectedScene.sceneImage.url}
                             alt={`Scene: ${selectedScene.title}`}
-                            className="w-full h-auto max-h-64 object-cover"
+                            className="w-full h-auto object-contain"
                             loading="lazy"
                           />
                         </div>

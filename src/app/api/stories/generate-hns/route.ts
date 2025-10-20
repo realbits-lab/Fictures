@@ -219,11 +219,12 @@ export async function POST(request: NextRequest) {
 
                 let imageUrl = null;
 
-                // Generate image using Google Gemini
+                // Generate image using Google Gemini with 16:9 aspect ratio
+                // Note: aspectRatio needs to be specified in the prompt for gateway models
                 try {
                   const result = await generateText({
                     model: gateway(IMAGE_GENERATION_MODEL),
-                    prompt: imagePrompt,
+                    prompt: `${imagePrompt}\n\nGenerate the image in 16:9 aspect ratio (widescreen format).`,
                   });
 
                   // Check if the result contains generated image files
@@ -289,11 +290,12 @@ export async function POST(request: NextRequest) {
 
                 let imageUrl = null;
 
-                // Generate image using Google Gemini
+                // Generate image using Google Gemini with 16:9 aspect ratio
+                // Note: aspectRatio needs to be specified in the prompt for gateway models
                 try {
                   const result = await generateText({
                     model: gateway(IMAGE_GENERATION_MODEL),
-                    prompt: imagePrompt,
+                    prompt: `${imagePrompt}\n\nGenerate the image in 16:9 aspect ratio (widescreen format).`,
                   });
 
                   // Check if the result contains generated image files
