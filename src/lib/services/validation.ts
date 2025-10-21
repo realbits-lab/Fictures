@@ -95,14 +95,14 @@ export const CharacterValidationSchema = z.object({
     myers_briggs: z.string(),
     enneagram: z.string()
   }).optional(),
-  backstory: z.record(z.string()).optional(),
+  backstory: z.record(z.string(), z.string()).optional(),
   motivations: z.object({
     primary: z.string(),
     secondary: z.string(),
     fear: z.string()
   }).optional(),
-  voice: z.record(z.unknown()).optional(),
-  physicalDescription: z.record(z.unknown()).optional(),
+  voice: z.record(z.string(), z.unknown()).optional(),
+  physicalDescription: z.record(z.string(), z.unknown()).optional(),
   visualReferenceId: z.string().optional(),
 });
 
@@ -112,7 +112,7 @@ export const SettingValidationSchema = z.object({
   storyId: z.string().min(1, "Story ID is required"),
   description: z.string().optional(),
   mood: z.string().optional(),
-  sensory: z.record(z.array(z.string())).optional(),
+  sensory: z.record(z.string(), z.array(z.string())).optional(),
   visualStyle: z.string().optional(),
   visualReferences: z.array(z.string()).optional(),
   colorPalette: z.array(z.string()).optional(),

@@ -25,7 +25,6 @@ export class RelationshipManager {
         orderIndex: partData.orderIndex!,
         targetWordCount: partData.targetWordCount,
         currentWordCount: partData.currentWordCount,
-        status: partData.status,
         content: partData.content,
         chapterIds: partData.chapterIds || [],
       });
@@ -105,7 +104,6 @@ export class RelationshipManager {
         chapterId,
         title: sceneData.title!,
         orderIndex: sceneData.orderIndex!,
-        status: sceneData.status,
         content: sceneData.content,
         characterIds: sceneData.characterIds || [],
         placeIds: sceneData.placeIds || [],

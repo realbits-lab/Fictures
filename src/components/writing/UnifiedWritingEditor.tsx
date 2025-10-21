@@ -177,7 +177,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   // Handle SWR story data loading
   useEffect(() => {
     if (swrStory && !isLoadingStory) {
-      setStory(swrStory);
+      setStory(swrStory as any);
       setCurrentSelection({
         level: "story",
         storyId: swrStory.id

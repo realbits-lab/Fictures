@@ -402,12 +402,12 @@ export function usePersistedSWR<Data = any, Error = any>(
       fallbackData,
       onSuccess: (data, key) => {
         // Save successful responses to localStorage
-        cache.setCachedData(key, data, cacheConfig);
-        swrConfig?.onSuccess?.(data, key, swrConfig);
+        if (key) cache.setCachedData(key, data, cacheConfig);
+        swrConfig?.onSuccess?.(data, key, swrConfig as any);
       },
       onError: (error, key) => {
         console.warn(`SWR error for key ${key}:`, error);
-        swrConfig?.onError?.(error, key, swrConfig);
+        swrConfig?.onError?.(error, key, swrConfig as any);
       }
     }
   );

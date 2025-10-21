@@ -278,6 +278,7 @@ export async function generateImage(
         model: openai.image('dall-e-3'),
         prompt: enhancedPrompt,
         size: '1792x1024',
+        // @ts-ignore - quality property may not be in type definition
         quality: options.quality === 'ultra' ? 'hd' : 'standard',
       });
 

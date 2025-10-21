@@ -820,7 +820,7 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
         genre: storyConcept.genre || 'General',
         authorId: userId,
         targetWordCount: storyConcept.words || 60000,
-        status: 'phase1_in_progress',
+        status: 'writing',
         hnsData: storyImageData ? { storyImage: storyImageData } : {},
         content: JSON.stringify({
           phase1_story: storyConcept,
@@ -834,7 +834,7 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
       .onConflictDoUpdate({
         target: [stories.id],
         set: {
-          status: 'phase1_complete',
+          status: 'writing',
             hnsData: storyImageData ? { storyImage: storyImageData } : {},
           content: JSON.stringify({
             phase1_story: storyConcept,
@@ -859,7 +859,7 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
 
     await db.update(stories)
       .set({
-        status: 'phase2_complete',
+        status: 'writing',
         content: JSON.stringify({
           ...phase2Content,
           phase2_parts: partSpecs,
@@ -883,11 +883,10 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
       const partId = await RelationshipManager.addPartToStory(
         currentStoryId,
         {
-          title: `Part ${partSpec.part}: ${partSpec.desc || storyConcept.parts[partIndex]?.goal || 'Part ' + (partIndex + 1)}`,
+          title: `Part ${partSpec.part}: ${(partSpec as any).desc || storyConcept.parts[partIndex]?.goal || 'Part ' + (partIndex + 1)}`,
           authorId: userId,
           orderIndex: partSpec.part,
           targetWordCount: partWordCount,
-          status: 'planned',
           content: JSON.stringify(partSpec),
           chapterIds: [],
         }
@@ -908,7 +907,7 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
 
     await db.update(stories)
       .set({
-        status: 'phase3_complete',
+        status: 'writing',
         content: JSON.stringify({
           ...phase3Content,
           phase3_characters: characterData,
@@ -961,7 +960,7 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
 
     await db.update(stories)
       .set({
-        status: 'completed',
+        status: 'published',
         content: JSON.stringify(completeStory),
         updatedAt: new Date()
       })
@@ -995,7 +994,7 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
     // Update story status to failed if it exists
     await db.update(stories)
       .set({
-        status: 'failed',
+        status: 'writing',
         updatedAt: new Date()
       })
       .where(eq(stories.id, currentStoryId));

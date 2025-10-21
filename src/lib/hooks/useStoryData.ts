@@ -75,17 +75,17 @@ export function useStoryData(storyId: string | null) {
         console.error(`Story data error for ID ${storyId}:`, error);
       },
       onSuccess: (data) => {
-        console.log(`Story writing data cached for: ${data?.story?.title}`);
+        console.log(`Story writing data cached for: ${data?.title}`);
       }
     }
   );
 
   return {
-    story: data?.story,
-    characters: data?.characters,
-    places: data?.places,
-    isOwner: data?.isOwner ?? false,
-    metadata: data?.metadata,
+    story: data,
+    characters: (data as any)?.characters,
+    places: (data as any)?.places,
+    isOwner: (data as any)?.isOwner ?? false,
+    metadata: (data as any)?.metadata,
     isLoading: sessionStatus === 'loading' || isLoading,
     isValidating, // Background revalidation indicator
     error,
@@ -101,13 +101,13 @@ export function useStoriesData(storyIds: string[]) {
   const shouldFetch = storyIds.length > 0 && sessionStatus !== 'loading';
   
   const { data, error, isLoading } = usePersistedSWR(
-    shouldFetch ? ['stories', ...storyIds] : null,
+    shouldFetch ? `stories-${storyIds.join(',')}` : null,
     async () => {
-      const promises = storyIds.map(id => 
+      const promises = storyIds.map(id =>
         fetcher(`/api/stories/${id}/write`)
       );
       const results = await Promise.all(promises);
-      return results.map(result => result?.story).filter(Boolean);
+      return results.filter(Boolean);
     },
     {
       ...CACHE_CONFIGS.writing,
