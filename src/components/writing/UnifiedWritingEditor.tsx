@@ -246,7 +246,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       structural_role: index === 0 ? 'Act 1: Setup' : index === 1 ? 'Act 2: Confrontation' : 'Act 3: Resolution',
       summary: parsedData?.parts?.[index]?.summary || `Summary for ${part.title}`,
       key_beats: parsedData?.parts?.[index]?.key_beats || [],
-      chapters: part.chapters.map(ch => ch.id)
+      chapters: part.chapters.map(ch => ch.id),
+      chapter_count: part.chapters.length,
+      scene_counts: part.chapters.map(ch => ch.scenes?.length || 0)
     }));
 
     // Convert chapters to HNSChapter format
@@ -279,6 +281,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           hnsScenes.push({
             scene_id: scene.id,
             scene_number: sceneIndex + 1,
+            scene_title: scene.title,
             chapter_ref: chapter.id,
             character_ids: [],
             setting_id: "",
@@ -828,9 +831,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     // If chapter is marked as published but has no content, force it to draft status
     if (currentChapter && currentChapterStatus === 'published') {
       const hasScenes = currentChapter.scenes && currentChapter.scenes.length > 0;
-      const hasContent = currentChapter.purpose || currentChapter.hook || currentChapter.characterFocus || (currentChapter.wordCount && currentChapter.wordCount > 0);
-      const scenesWithContent = hasScenes ? currentChapter.scenes.filter((scene: any) => scene.wordCount > 0) : [];
-      
+      const hasContent = (currentChapter as any).purpose || (currentChapter as any).hook || (currentChapter as any).characterFocus || (currentChapter.wordCount && currentChapter.wordCount > 0);
+      const scenesWithContent = hasScenes && currentChapter.scenes ? currentChapter.scenes.filter((scene: any) => scene.wordCount > 0) : [];
+
       if (!hasContent && scenesWithContent.length === 0) {
         currentChapterStatus = 'draft';
       }
@@ -1020,10 +1023,10 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       conflict: `Part ${partNum} conflict from ${sampleStoryData.story.story_title}`,
       outcome: `Part ${partNum} outcome from ${sampleStoryData.story.story_title}`,
       questions: {
-        primary: `What is the main question for Part ${partNum} of ${sampleStoryData.title}?`,
-        secondary: `What is the secondary question for Part ${partNum} of ${sampleStoryData.title}?`
+        primary: `What is the main question for Part ${partNum} of ${sampleStoryData.story.story_title}?`,
+        secondary: `What is the secondary question for Part ${partNum} of ${sampleStoryData.story.story_title}?`
       },
-      chars: sampleStoryData.chars || {},
+      chars: (sampleStoryData as any).chars || {},
       plot: {
         events: [],
         reveals: [],
@@ -1202,14 +1205,13 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             selectedPartTitle = part.title;
             // Create part data based on the part information
             selectedPartData = {
+              ...part,
               part: part.orderIndex,
-              title: part.title,
-              words: part.targetWordCount || 20000,
-              function: part.function || "story_setup",
-              goal: part.goal || "",
-              conflict: part.conflict || "",
-              outcome: part.outcome || "",
-              ...part
+              words: (part as any).targetWordCount || 20000,
+              function: (part as any).function || "story_setup",
+              goal: (part as any).goal || "",
+              conflict: (part as any).conflict || "",
+              outcome: (part as any).outcome || ""
             };
             break;
           }
@@ -1396,7 +1398,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                  currentSelection.level === "characters" ? "👥" :
                  currentSelection.level === "settings" ? "🗺️" : "🎬"} {story.title}
               </h1>
-              <Badge variant="outline">{currentSelection.level}</Badge>
+              <Badge variant="default">{currentSelection.level}</Badge>
               
               {/* Cache Status Indicators */}
               {(isValidatingCurrentStory || isValidatingStory) && (
@@ -1465,9 +1467,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                   // If chapter is marked as published but has no content, force it to draft status
                   if (currentChapter && currentChapterStatus === 'published') {
                     const hasScenes = currentChapter.scenes && currentChapter.scenes.length > 0;
-                    const hasContent = currentChapter.purpose || currentChapter.hook || currentChapter.characterFocus || (currentChapter.wordCount && currentChapter.wordCount > 0);
-                    const scenesWithContent = hasScenes ? currentChapter.scenes.filter((scene: any) => scene.wordCount > 0) : [];
-                    
+                    const hasContent = (currentChapter as any).purpose || (currentChapter as any).hook || (currentChapter as any).characterFocus || (currentChapter.wordCount && currentChapter.wordCount > 0);
+                    const scenesWithContent = hasScenes && currentChapter.scenes ? currentChapter.scenes.filter((scene: any) => scene.wordCount > 0) : [];
+
                     if (!hasContent && scenesWithContent.length === 0) {
                       currentChapterStatus = 'draft';
                     }
@@ -1669,7 +1671,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
 
             {/* Writing Guidelines - Show for scene editing */}
-            <WritingGuidelines currentLevel={currentSelection.level} />
+            <WritingGuidelines currentLevel={currentSelection.level === 'characters' ? 'story' : currentSelection.level as "story" | "part" | "chapter" | "scene"} />
           </div>
         </div>
       </div>

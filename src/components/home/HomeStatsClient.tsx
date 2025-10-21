@@ -43,7 +43,7 @@ export function HomeStatsClient() {
   // Show skeleton loading while fetching
   if (isLoading) {
     return (
-      <SkeletonLoader theme="light">
+      <SkeletonLoader>
         <StatsSkeletonSection />
       </SkeletonLoader>
     );

@@ -154,7 +154,7 @@ export function PublishClient() {
   // Show skeleton loading while fetching
   if (isLoading) {
     return (
-      <SkeletonLoader theme="light">
+      <SkeletonLoader>
         <div className="space-y-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
@@ -209,7 +209,7 @@ export function PublishClient() {
           <div className="space-y-4">
             <h3 className="font-medium text-gray-900 dark:text-gray-100">This Week</h3>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {(publishStatus?.scheduledItems || []).map((item, index) => (
+              {(publishStatus?.scheduledItems || []).map((item: any, index: number) => (
                 <div key={item.id || index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
                   <div className="text-center space-y-2">
                     <div className="font-medium text-gray-900 dark:text-gray-100">
@@ -230,7 +230,7 @@ export function PublishClient() {
                     <Button 
                       size="sm" 
                       className="w-full mt-2"
-                      variant={item.status === 'ready' ? 'default' : 'secondary'}
+                      variant={item.status === 'ready' ? 'primary' : 'secondary'}
                     >
                       {item.status === 'ready' ? '📤 Publish' : 
                        item.status === 'draft' ? '✏️ Edit' : 

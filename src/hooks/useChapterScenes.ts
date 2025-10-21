@@ -97,7 +97,9 @@ function cacheSceneData(url: string, data: ChapterScenesResponse, etag: string) 
   // Limit cache size
   if (sceneETagCache.size > 50) {
     const oldestKey = sceneETagCache.keys().next().value;
-    sceneETagCache.delete(oldestKey);
+    if (oldestKey !== undefined) {
+      sceneETagCache.delete(oldestKey);
+    }
   }
 }
 

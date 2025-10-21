@@ -107,7 +107,7 @@ export function SceneWriting({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h2 className="text-xl font-bold">✍️ Scene Writing</h2>
-          <Badge variant="outline" className="flex items-center gap-1">
+          <Badge variant="default" className="flex items-center gap-1">
             <span>{wordCount}</span> words
           </Badge>
           {lastSaved && (

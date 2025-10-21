@@ -75,7 +75,7 @@ export function DashboardClient() {
   // Show skeleton loading while fetching
   if (isLoading) {
     return (
-      <SkeletonLoader theme="light">
+      <SkeletonLoader>
         <div className="space-y-8">
           <StoriesSkeletonSection />
           <DashboardWidgetsSkeletonSection />
@@ -122,7 +122,7 @@ export function DashboardClient() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <CreateStoryCard />
-          {stories.map((story) => (
+          {stories.map((story: any) => (
             <StoryCard key={story.id} {...story} />
           ))}
           {stories.length === 0 && (

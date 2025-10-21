@@ -265,7 +265,7 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
           </Button>
           <Button
             onClick={clearAll}
-            variant="outline"
+            variant="primary"
             size="sm"
           >
             Clear
@@ -277,7 +277,7 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
           <div className="flex gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
             <Button
               onClick={handleCancel}
-              variant="outline"
+              variant="primary"
               size="sm"
               className="flex-1"
             >
@@ -316,7 +316,7 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
           <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
             <div className="text-xs text-gray-500 dark:text-gray-400">
               <div className="font-medium mb-1">Current Chapter:</div>
-              <div>Status: <Badge variant="outline" className="text-xs">{chapterData.status || 'Not set'}</Badge></div>
+              <div>Status: <Badge variant="default" className="text-xs">{chapterData.status || 'Not set'}</Badge></div>
               <div>Scenes: {chapterData.scenes?.length || 0}</div>
               <div>Character Focus: {chapterData.characterFocus || 'Not set'}</div>
               <div>Target Words: {chapterData.targetWordCount?.toLocaleString() || '0'}</div>

@@ -342,7 +342,7 @@ const TreeNode = ({
                 {hasChildren && (
                     <AccordionContent className="ml-4 pl-1 border-l">
                         <TreeItem
-                            data={item.children}
+                            data={item.children || []}
                             selectedItemId={selectedItemId}
                             handleSelectChange={handleSelectChange}
                             expandedItemIds={expandedItemIds}

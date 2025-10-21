@@ -90,7 +90,9 @@ function cacheStoryData(url: string, data: StoryReaderResponse, etag: string) {
   // Limit cache size
   if (storyETagCache.size > 20) {
     const oldestKey = storyETagCache.keys().next().value;
-    storyETagCache.delete(oldestKey);
+    if (oldestKey !== undefined) {
+      storyETagCache.delete(oldestKey);
+    }
   }
 }
 

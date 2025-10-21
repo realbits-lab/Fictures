@@ -227,7 +227,7 @@ export function StoryTreeArchitecture({
           >
             <div className="font-semibold truncate">{story.title}</div>
             <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-              <Badge variant="secondary" size="sm">{story.genre}</Badge>
+              <Badge variant="info" size="sm">{story.genre}</Badge>
               <Badge variant={story.status === 'publishing' ? 'success' : 'default'} size="sm">
                 {story.status}
               </Badge>
@@ -275,7 +275,7 @@ export function StoryTreeArchitecture({
                         <span className="text-sm font-medium text-green-600 dark:text-green-400 truncate">
                           {getStatusIcon(part.status || 'draft')} Part {part.orderIndex}: {part.title}
                         </span>
-                        <Badge variant="secondary" size="sm">
+                        <Badge variant="info" size="sm">
                           {part.chapters.length}
                         </Badge>
                       </div>

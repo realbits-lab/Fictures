@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Progress, Badge } from "@/components/ui";
 import { StoryTreeArchitecture } from "./StoryTreeArchitecture";
 import { JSONDataDisplay } from "./JSONDataDisplay";
+import * as yaml from "js-yaml";
 
 interface Scene {
   id: string;
@@ -109,6 +110,38 @@ export function ChapterEditor({
     setLastSaved(new Date());
   }, []);
 
+  // Auto-save handler (defined before useEffects that use it)
+  const handleAutoSave = useCallback(async () => {
+    if (!chapterData) return;
+
+    setIsAutoSaving(true);
+    try {
+      const response = await fetch(`/api/chapters/${chapterData.id}/autosave`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content,
+          wordCount: currentWordCount,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Auto-save failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      setLastSaved(new Date(result.savedAt));
+      setHasUnsavedChanges(false);
+      console.log('Chapter auto-saved successfully');
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+    } finally {
+      setIsAutoSaving(false);
+    }
+  }, [chapterData, content, currentWordCount]);
+
   // Auto-save functionality
   useEffect(() => {
     if (!chapterData) return;
@@ -140,38 +173,6 @@ export function ChapterEditor({
     }
     setValidationErrors(errors);
   }, [content, chapterData]);
-
-  // Auto-save handler (must be defined after state)
-  const handleAutoSave = useCallback(async () => {
-    if (!chapterData) return;
-
-    setIsAutoSaving(true);
-    try {
-      const response = await fetch(`/api/chapters/${chapterData.id}/autosave`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content,
-          wordCount: currentWordCount,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Auto-save failed: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      setLastSaved(new Date(result.savedAt));
-      setHasUnsavedChanges(false);
-      console.log('Chapter auto-saved successfully');
-    } catch (error) {
-      console.error('Auto-save failed:', error);
-    } finally {
-      setIsAutoSaving(false);
-    }
-  }, [chapterData, content, currentWordCount]);
 
   // Check for chapterData AFTER all hooks
   if (!chapterData) {
@@ -336,7 +337,7 @@ export function ChapterEditor({
           {!hideSidebar && (
             <div className="space-y-6">
               <StoryTreeArchitecture
-                story={story}
+                story={story as any}
                 currentChapterId={chapterData.id}
                 currentSceneId={undefined}
               />
