@@ -82,8 +82,8 @@ export function CacheManagerWidget() {
     switch (health) {
       case 'fresh': return 'success';
       case 'stale': return 'warning';
-      case 'expired': return 'destructive';
-      default: return 'secondary';
+      case 'expired': return 'danger';
+      default: return 'default';
     }
   };
 
@@ -238,7 +238,7 @@ export function CacheManagerWidget() {
           
           <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
             <div className="flex items-center gap-2 font-medium text-red-800 dark:text-red-200 mb-1">
-              <Badge variant="destructive" size="sm">Expired</Badge>
+              <Badge variant="danger" size="sm">Expired</Badge>
               Needs refresh
             </div>
             <div className="text-red-700 dark:text-red-300">

@@ -42,7 +42,7 @@ export default async function WritePage({ params }: { params: Promise<{ chapterI
       story={{
         ...storyStructure,
         hnsData: storyStructure.hnsData || {}
-      }}
+      } as any}
       initialSelection={initialSelection}
     />
   );

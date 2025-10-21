@@ -242,7 +242,7 @@ export function CommunityPostsList({ posts }: CommunityPostsListProps) {
             ].map((option) => (
               <Button
                 key={option.key}
-                variant={sortBy === option.key ? 'default' : 'ghost'}
+                variant={sortBy === option.key ? 'primary' : 'ghost'}
                 size="sm"
                 onClick={() => setSortBy(option.key as typeof sortBy)}
                 title={option.desc}
