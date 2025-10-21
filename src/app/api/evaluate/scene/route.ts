@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { openai } from '@ai-sdk/openai';
+import { gateway } from '@ai-sdk/gateway';
 import { generateObject } from 'ai';
-import { auth } from '@/lib/auth/config';
+import { authenticateRequest, hasRequiredScope } from '@/lib/auth/dual-auth';
 import { db } from '@/lib/db';
 import { scenes, sceneEvaluations } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
@@ -18,12 +18,20 @@ import { buildEvaluationPrompt } from '@/lib/evaluation/prompts';
  */
 export async function POST(request: NextRequest) {
   try {
-    // 1. Authenticate user
-    const session = await auth();
-    if (!session?.user?.id) {
+    // 1. Authenticate user (supports both session and API key)
+    const authResult = await authenticateRequest(request);
+    if (!authResult) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Authentication required' },
         { status: 401 }
+      );
+    }
+
+    // Check if user has required scope
+    if (!hasRequiredScope(authResult, 'stories:read')) {
+      return NextResponse.json(
+        { error: 'Insufficient permissions. Required scope: stories:read' },
+        { status: 403 }
       );
     }
 
@@ -59,7 +67,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (scene.chapter.story.authorId !== session.user.id) {
+    if (scene.chapter.story.authorId !== authResult.user.id) {
       return NextResponse.json(
         { error: 'Forbidden: You do not have access to this scene' },
         { status: 403 }
@@ -69,10 +77,10 @@ export async function POST(request: NextRequest) {
     // 4. Build evaluation prompt
     const prompt = buildEvaluationPrompt(content, context);
 
-    // 5. Generate evaluation using OpenAI via Vercel AI SDK
+    // 5. Generate evaluation using AI Gateway (OpenAI GPT-4o-mini)
     const startTime = Date.now();
     const result = await generateObject({
-      model: openai('gpt-4o-mini'),
+      model: gateway('openai/gpt-4o-mini'),
       schema: evaluationResultSchema,
       prompt: prompt,
       temperature: 0.3, // Lower temperature for more consistent evaluations
