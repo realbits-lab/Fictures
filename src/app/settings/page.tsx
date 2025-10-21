@@ -154,6 +154,7 @@ export default function AccountSettingsPage() {
             </label>
             <div className="flex items-center gap-4">
               {session?.user?.image && !imageError ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={session.user.image}
                   alt={session.user.name || 'Profile'}

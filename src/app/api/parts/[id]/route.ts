@@ -39,7 +39,8 @@ export async function GET(
     }
 
     // Check access permissions
-    if (!session?.user?.id || (story.authorId !== session.user.id && !story.isPublic)) {
+    // Allow access if user is the author or story is published
+    if (!session?.user?.id || (story.authorId !== session.user.id && story.status !== 'published')) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 

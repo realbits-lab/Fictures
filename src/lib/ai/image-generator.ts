@@ -1,8 +1,10 @@
 import { gateway } from '@ai-sdk/gateway';
 import { google } from '@ai-sdk/google';
-import { generateText } from 'ai';
+import { openai } from '@ai-sdk/openai';
+import { generateImage as generateAIImage } from 'ai';
 import { put } from '@vercel/blob';
 import { nanoid } from 'nanoid';
+import sharp from 'sharp';
 import { IMAGE_GENERATION_MODEL } from './config';
 
 export type AnimationStyle =
@@ -212,6 +214,19 @@ function generatePlaceholder(
 }
 
 /**
+ * Resize image to 640x360 (16:9 ratio) using Sharp
+ */
+async function resizeImageTo640x360(imageBuffer: Buffer): Promise<Buffer> {
+  return await sharp(imageBuffer)
+    .resize(640, 360, {
+      fit: 'cover',
+      position: 'center'
+    })
+    .png()
+    .toBuffer();
+}
+
+/**
  * Upload image data to Vercel Blob storage
  */
 async function uploadToBlob(
@@ -228,23 +243,12 @@ async function uploadToBlob(
 }
 
 /**
- * Generate an image using Gemini 2.5 Flash Image Preview or fallback to placeholder.
+ * Generate an image using DALL-E 3 and resize to 640x360.
  *
- * IMAGE SIZE/ASPECT RATIO LIMITATIONS:
- * - Gemini does NOT support explicit size or aspect ratio parameters
- * - Images are generated at model's default resolution
- * - The aspectRatio option only affects:
- *   1. Prompt composition guidance (e.g., "landscape orientation")
- *   2. Placeholder dimensions if generation fails
- *
- * For 16:9 ratio images:
- * - Use aspectRatio: 'landscape' to guide composition
- * - Model will attempt landscape orientation but not exact 16:9
- * - Post-processing may be needed for exact 16:9 ratio
- *
- * Alternative for exact 16:9:
- * - Switch to DALL-E 3 with size: '1792x1024'
- * - Implement post-processing to crop Gemini output
+ * IMAGE GENERATION PROCESS:
+ * 1. Generate image using DALL-E 3 at 1792x1024 (16:9 ratio)
+ * 2. Resize/crop to 640x360 using Sharp
+ * 3. Upload resized image to Vercel Blob storage
  *
  * @param prompt - Image generation prompt
  * @param type - Image type (character/setting/scene/story)
@@ -266,52 +270,44 @@ export async function generateImage(
     const enhancedPrompt = buildEnhancedPrompt(prompt, type, options);
     console.log(`✨ Enhanced prompt: ${enhancedPrompt.substring(0, 150)}...`);
 
-    // NOTE: dimensions and quality are NOT used with Gemini - kept for potential DALL-E migration
-    // const dimensions = getImageDimensions(options.aspectRatio, type);
-    // const quality = options.quality || 'high';
-
-    // Try Gemini 2.5 Flash Image Preview with proper files API
+    // Try DALL-E 3 with 16:9 ratio (1792x1024)
     try {
-      console.log('🔄 Attempting Gemini 2.5 Flash Image generation...');
+      console.log('🔄 Attempting DALL-E 3 image generation at 1792x1024...');
 
-      // Use google directly for image generation instead of gateway
-      const result = await generateText({
-        model: google('gemini-2.5-flash-image-preview'),
+      const result = await generateAIImage({
+        model: openai.image('dall-e-3'),
         prompt: enhancedPrompt,
+        size: '1792x1024',
+        quality: options.quality === 'ultra' ? 'hd' : 'standard',
       });
 
-      // Check if result contains generated image files
-      if (result.files && result.files.length > 0) {
-        // Find the first image file
-        const imageFile = result.files.find(file =>
-          file.mediaType?.startsWith('image/')
+      if (result.image) {
+        console.log('✅ DALL-E 3 image generated, resizing to 640x360...');
+
+        // Convert base64 to buffer
+        const imageBuffer = Buffer.from(result.image.base64, 'base64');
+
+        // Resize to 640x360
+        const resizedBuffer = await resizeImageTo640x360(imageBuffer);
+
+        // Upload resized image to Vercel Blob
+        const imageUrl = await uploadToBlob(
+          resizedBuffer,
+          storyId,
+          type
         );
 
-        if (imageFile && imageFile.uint8Array) {
-          // Upload to Vercel Blob
-          const imageUrl = await uploadToBlob(
-            Buffer.from(imageFile.uint8Array),
-            storyId,
-            type
-          );
-
-          console.log('✅ Image generated and uploaded:', imageUrl);
-          return {
-            success: true,
-            imageUrl,
-            method: 'gemini-2.5-flash-image',
-            style: options.style,
-          };
-        }
-      }
-
-      // If no image was generated but we got text, log it
-      if (result.text) {
-        console.log('📝 Gemini provided description instead of image:', result.text.substring(0, 200));
+        console.log('✅ Image resized and uploaded:', imageUrl);
+        return {
+          success: true,
+          imageUrl,
+          method: 'dall-e-3-resized',
+          style: options.style,
+        };
       }
 
     } catch (error) {
-      console.warn('⚠️ Gemini image generation failed:', error instanceof Error ? error.message : 'Unknown error');
+      console.warn('⚠️ DALL-E 3 image generation failed:', error instanceof Error ? error.message : 'Unknown error');
     }
 
     // Fallback to placeholder

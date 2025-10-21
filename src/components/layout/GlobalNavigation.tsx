@@ -140,6 +140,7 @@ function AuthSection() {
         className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-[rgb(var(--muted-foreground))] hover:bg-[rgb(var(--muted))]"
       >
         {session.user?.image && !imageError ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={session.user.image}
             alt={session.user.name || 'User'}

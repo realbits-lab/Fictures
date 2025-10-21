@@ -34,6 +34,7 @@ export function ProfileClient({ user }: ProfileClientProps) {
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
           <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-3xl font-bold">
             {user.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img src={user.image} alt={user.name || "Profile"} className="w-24 h-24 rounded-full" />
             ) : (
               getInitials(user.name)

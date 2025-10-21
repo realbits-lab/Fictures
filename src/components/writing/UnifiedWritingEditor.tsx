@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { mutate } from "swr";
@@ -167,7 +167,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         console.log(`✅ Writing session ended: ${result.duration}ms, ${result.wordsWritten} words written`);
       }
     };
-  }, [story.id]);
+  }, [story.id, story.title, writingSession]);
 
   // Sync story state when prop changes
   useEffect(() => {
@@ -353,6 +353,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     setChangedStoryKeys([]);
 
     console.log('✅ Story data state updated');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [story]);
 
   // Helper function to find changed keys between two objects

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { parts, stories } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { z } from 'zod';
 import { RelationshipManager } from '@/lib/db/relationships';
@@ -36,7 +36,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Check access permissions
-    if (!session?.user?.id || (story.authorId !== session.user.id && !story.isPublic)) {
+    // Allow access if user is the author or story is published
+    if (!session?.user?.id || (story.authorId !== session.user.id && story.status !== 'published')) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -81,8 +82,7 @@ export async function POST(request: NextRequest) {
 
     // Check if orderIndex is unique for this story
     const existingPart = await db.select().from(parts)
-      .where(eq(parts.storyId, validatedData.storyId))
-      .where(eq(parts.orderIndex, validatedData.orderIndex));
+      .where(and(eq(parts.storyId, validatedData.storyId), eq(parts.orderIndex, validatedData.orderIndex)));
 
     if (existingPart.length > 0) {
       return NextResponse.json(
@@ -100,7 +100,6 @@ export async function POST(request: NextRequest) {
         authorId: session.user.id,
         orderIndex: validatedData.orderIndex,
         targetWordCount: validatedData.targetWordCount || 20000,
-        status: 'planned',
         content: validatedData.content || '',
         chapterIds: [], // Initialize empty chapter IDs
       }

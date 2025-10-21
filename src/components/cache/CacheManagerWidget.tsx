@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
 import { useCacheManagement } from "@/lib/hooks/use-page-cache";
 import { CACHE_CONFIGS } from "@/lib/hooks/use-persisted-swr";
@@ -16,13 +16,13 @@ export function CacheManagerWidget() {
   const [cacheStats, setCacheStats] = useState<CacheStats>({ totalSize: 0, totalEntries: 0 });
   const [isLoading, setIsLoading] = useState(false);
 
-  const refreshStats = () => {
+  const refreshStats = useCallback(() => {
     setCacheStats(getCacheStats());
-  };
+  }, [getCacheStats]);
 
   useEffect(() => {
     refreshStats();
-  }, []);
+  }, [refreshStats]);
 
   const handleClearAll = async () => {
     if (window.confirm('Are you sure you want to clear all cached data? This will refresh the page.')) {

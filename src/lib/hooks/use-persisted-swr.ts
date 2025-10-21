@@ -392,7 +392,7 @@ export function usePersistedSWR<Data = any, Error = any>(
       }
       setHasSetFallback(true);
     }
-  }, [key, hasSetFallback]);
+  }, [key, hasSetFallback, cache, cacheConfig]);
 
   const swr = useSWR<Data, Error>(
     key,

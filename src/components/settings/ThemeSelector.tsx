@@ -298,7 +298,7 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
 		if (mounted && session?.user?.id) {
 			loadUserTheme();
 		}
-	}, [session?.user?.id, mounted]);
+	}, [session?.user?.id, mounted, theme, setTheme]);
 
 	// Avoid hydration mismatch
 	useEffect(() => {

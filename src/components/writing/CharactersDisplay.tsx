@@ -127,6 +127,7 @@ export function CharactersDisplay({ storyData }: CharactersDisplayProps) {
               {/* Character Image - Full size without cropping */}
               {character.imageUrl && (
                 <div className="mb-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={character.imageUrl}
                     alt={character.name}

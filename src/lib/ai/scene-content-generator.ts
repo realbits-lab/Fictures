@@ -246,19 +246,40 @@ RULE 1: Dialogue vs Action Separation
 
 Sarah crossed her arms.
 
-RULE 2: Multi-Sentence Dialogue
-When a single character speaks multiple sentences continuously:
-✗ WRONG (double newlines between dialogue sentences):
+RULE 2: Multi-Sentence Dialogue (CRITICAL - MOST COMMON ERROR)
+🚨 When a SINGLE character speaks MULTIPLE sentences continuously, use SINGLE newline (NOT double) 🚨
+
+THE GOLDEN RULE: Same speaker = Single newlines. Different speakers = Blank line separation.
+
+✗ WRONG FORMAT (double newlines between sentences of SAME speaker):
 "You cannot stop them, Detective.
 
 Only observe.
 
 And perhaps, if you are very lucky, survive."
 
-✓ CORRECT (single newlines within same speaker's dialogue):
+✓ CORRECT FORMAT (single newlines within same speaker's continuous dialogue):
 "You cannot stop them, Detective.
 Only observe.
 And perhaps, if you are very lucky, survive."
+
+✗ ALSO WRONG (no newlines - run-on sentence):
+"You cannot stop them, Detective. Only observe. And perhaps, if you are very lucky, survive."
+
+CRITICAL UNDERSTANDING:
+- One speaker speaking multiple sentences → Use SINGLE newlines (\n) between sentences
+- This creates ONE paragraph block of dialogue from one character
+- The dialogue stays within the quotes as a unified speech
+- Different speakers → Separate with BLANK line (\n\n)
+
+FORMATTING EXAMPLE WITH CONTEXT:
+The stranger leaned against the wall.
+
+"You cannot stop them, Detective.
+Only observe.
+And perhaps, if you are very lucky, survive."
+
+Sarah's hands trembled.
 
 RULE 3: Different Speakers
 When speakers change, use blank line separation:

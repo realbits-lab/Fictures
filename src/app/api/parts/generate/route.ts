@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth';
 import { generatePartSpecifications } from '@/lib/ai/story-development';
 import { db } from '@/lib/db';
 import { stories, parts } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { RelationshipManager } from '@/lib/db/relationships';
 
@@ -79,8 +79,7 @@ export async function POST(request: NextRequest) {
       
       // Get existing part by order index
       const [existingPart] = await db.select().from(parts)
-        .where(eq(parts.storyId, storyId))
-        .where(eq(parts.orderIndex, partSpec.part));
+        .where(and(eq(parts.storyId, storyId), eq(parts.orderIndex, partSpec.part)));
       
       if (existingPart) {
         // Update existing part
@@ -88,7 +87,6 @@ export async function POST(request: NextRequest) {
           .set({
             title: partSpec.title,
             targetWordCount: partSpec.words,
-            status: 'planned',
             content: JSON.stringify(partSpec),
             updatedAt: new Date(),
           })
@@ -105,7 +103,6 @@ export async function POST(request: NextRequest) {
             authorId: session.user.id,
             orderIndex: partSpec.part,
             targetWordCount: partSpec.words,
-            status: 'planned',
             content: JSON.stringify(partSpec),
             chapterIds: [], // Initialize empty chapter IDs
           }

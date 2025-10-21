@@ -109,7 +109,7 @@ export function StoryTreeArchitecture({
       setExpandedParts(newExpandedParts);
       setExpandedChapters(newExpandedChapters);
     }
-  }, [currentSelection, story.parts]);
+  }, [currentSelection, story.parts, expandedParts, expandedChapters]);
 
   // Unified status icons across all levels (parts, chapters, scenes)
   const getStatusIcon = (status: string) => {

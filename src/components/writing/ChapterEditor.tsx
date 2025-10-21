@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Progress, Badge } from "@/components/ui";
 import { StoryTreeArchitecture } from "./StoryTreeArchitecture";
@@ -120,7 +120,7 @@ export function ChapterEditor({
     }, 30000); // Auto-save every 30 seconds
 
     return () => clearInterval(autoSaveInterval);
-  }, [hasUnsavedChanges, chapterData]);
+  }, [hasUnsavedChanges, chapterData, handleAutoSave]);
 
   // Word count calculation
   useEffect(() => {
@@ -142,7 +142,7 @@ export function ChapterEditor({
   }, [content, chapterData]);
 
   // Auto-save handler (must be defined after state)
-  const handleAutoSave = async () => {
+  const handleAutoSave = useCallback(async () => {
     if (!chapterData) return;
 
     setIsAutoSaving(true);
@@ -171,7 +171,7 @@ export function ChapterEditor({
     } finally {
       setIsAutoSaving(false);
     }
-  };
+  }, [chapterData, content, currentWordCount]);
 
   // Check for chapterData AFTER all hooks
   if (!chapterData) {

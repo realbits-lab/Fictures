@@ -244,7 +244,7 @@ export function StoryStructureSidebar({
     });
 
     return items;
-  }, [story, currentSelection, onSelectionChange]);
+  }, [story, onSelectionChange]);
 
   // Get initial selected item ID
   const initialSelectedItemId = useMemo(() => {
