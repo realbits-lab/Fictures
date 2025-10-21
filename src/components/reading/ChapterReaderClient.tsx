@@ -98,7 +98,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
       setIsScrollRestored(false);
       handleSceneSelect(chapterScenes[0].id);
     }
-  }, [selectedChapterId, chapterScenes, selectedSceneId]);
+  }, [selectedChapterId, chapterScenes, selectedSceneId, handleSceneSelect]);
 
   // Restore scroll position when scene changes
   useEffect(() => {
@@ -614,6 +614,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                     {selectedScene.sceneImage?.url && (
                       <div className="mb-6">
                         <div className="rounded-lg overflow-hidden shadow-lg">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={selectedScene.sceneImage.url}
                             alt={`Scene: ${selectedScene.title}`}

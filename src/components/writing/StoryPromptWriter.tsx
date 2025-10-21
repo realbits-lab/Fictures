@@ -601,6 +601,7 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
 
             {/* Generated Image Display */}
             <div className="space-y-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewImageData.url}
                 alt={previewImageData.description}

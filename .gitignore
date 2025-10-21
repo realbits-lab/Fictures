@@ -76,3 +76,9 @@ scripts/*credential*.ts
 
 # Output directory
 @output/
+
+# Downloads directory
+downloads/
+
+# VS Code settings
+.vscode/

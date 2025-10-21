@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
 
 interface SceneWritingProps {
@@ -28,25 +28,10 @@ export function SceneWriting({
   // Calculate word count
   const wordCount = sceneContent.trim() ? sceneContent.trim().split(/\s+/).length : 0;
 
-  // Auto-save functionality
-  useEffect(() => {
-    const autoSaveTimer = setTimeout(() => {
-      if (sceneContent !== initialContent && sceneContent.trim() !== '') {
-        handleAutoSave();
-      }
-    }, 5000); // Auto-save after 5 seconds of inactivity
-
-    return () => clearTimeout(autoSaveTimer);
-  }, [sceneContent, initialContent]);
-
-  // Update content when initialContent changes
-  useEffect(() => {
-    setSceneContent(initialContent);
-  }, [initialContent]);
-
-  const handleAutoSave = async () => {
+  // Define handleAutoSave before using it in useEffect
+  const handleAutoSave = useCallback(async () => {
     if (disabled) return;
-    
+
     setIsSaving(true);
     try {
       await onSave({
@@ -59,7 +44,23 @@ export function SceneWriting({
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [disabled, onSave, sceneContent, wordCount]);
+
+  // Auto-save functionality
+  useEffect(() => {
+    const autoSaveTimer = setTimeout(() => {
+      if (sceneContent !== initialContent && sceneContent.trim() !== '') {
+        handleAutoSave();
+      }
+    }, 5000); // Auto-save after 5 seconds of inactivity
+
+    return () => clearTimeout(autoSaveTimer);
+  }, [sceneContent, initialContent, handleAutoSave]);
+
+  // Update content when initialContent changes
+  useEffect(() => {
+    setSceneContent(initialContent);
+  }, [initialContent]);
 
   const handleManualSave = async () => {
     if (disabled) return;
@@ -106,7 +107,7 @@ export function SceneWriting({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h2 className="text-xl font-bold">✍️ Scene Writing</h2>
-          <Badge variant="outline" className="flex items-center gap-1">
+          <Badge variant="default" className="flex items-center gap-1">
             <span>{wordCount}</span> words
           </Badge>
           {lastSaved && (

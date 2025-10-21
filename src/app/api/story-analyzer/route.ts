@@ -184,7 +184,7 @@ Add or modify places/settings as requested and return complete updated story JSO
               system: `You are a visual art specialist. Generate a detailed image based on the story context and user request.
 
 Story Context:
-${currentYamlData}
+${currentJsonData}
 
 Create a beautiful, high-quality image that matches the story's genre, theme, and atmosphere. Focus on visual storytelling and artistic quality.`,
               prompt: userRequest,

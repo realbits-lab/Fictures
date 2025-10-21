@@ -5,27 +5,27 @@ import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
 
 // Simple SVG icon components
-const ChevronRight = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+const ChevronRight = ({ size = 16, className }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={className}>
     <path d="M9 18l6-6-6-6" />
   </svg>
 );
 
-const ChevronDown = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+const ChevronDown = ({ size = 16, className }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={className}>
     <path d="M6 9l6 6 6-6" />
   </svg>
 );
 
-const BookOpen = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+const BookOpen = ({ size = 16, className }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={className}>
     <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
     <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
   </svg>
 );
 
-const FileText = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+const FileText = ({ size = 16, className }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={className}>
     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
     <path d="M14 2v6h6" />
     <path d="M16 13H8" />
@@ -34,8 +34,8 @@ const FileText = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-const Edit3 = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+const Edit3 = ({ size = 16, className }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={className}>
     <path d="M12 20h9" />
     <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
   </svg>
@@ -288,7 +288,7 @@ export function StoryListSidebar({
                   </Button>
                   
                   <Button
-                    variant={isCurrentStory ? "default" : "ghost"}
+                    variant={isCurrentStory ? "primary" : "ghost"}
                     size="sm"
                     className="flex-1 justify-start h-8 text-xs"
                     onClick={() => handleStorySelect(story.id)}
@@ -314,7 +314,7 @@ export function StoryListSidebar({
 
                 {/* Story Details */}
                 <div className="ml-8 mt-1 flex items-center gap-2 text-xs text-gray-500">
-                  <Badge variant="secondary" className={`text-xs ${getStatusColor(story.status)}`}>
+                  <Badge variant="info" className={`text-xs ${getStatusColor(story.status)}`}>
                     {getStatusIcon(story.status)} {story.status}
                   </Badge>
                   <span>{story.genre}</span>

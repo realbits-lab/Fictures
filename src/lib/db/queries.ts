@@ -85,7 +85,7 @@ export async function createStory(authorId: string, data: {
     genre: data.genre,
     authorId,
     targetWordCount: data.targetWordCount || 50000,
-    status: 'draft',
+    status: 'writing',
     // Initialize bi-directional arrays
     partIds: [],
     chapterIds: [],
@@ -143,7 +143,7 @@ export async function getUserStoriesWithFirstChapter(userId: string) {
     
     // Count completed chapters
     const completedChapters = storyChapters.filter(ch => 
-      ch.status === 'completed' || ch.status === 'published'
+      ch.status === 'published'
     ).length;
     
     // Check if story is actually published (has published chapters AND is public)
@@ -187,7 +187,7 @@ export async function updateStory(storyId: string, userId: string, data: Partial
   title: string;
   description: string;
   genre: string;
-  status: string;
+  status: 'writing' | 'published';
   targetWordCount: number;
 }>) {
   const [updatedStory] = await db
@@ -214,7 +214,7 @@ export async function createChapter(storyId: string, authorId: string, data: {
       authorId,
       orderIndex: data.orderIndex,
       targetWordCount: data.targetWordCount || 4000,
-      status: 'draft',
+      status: 'writing',
       sceneIds: [], // Initialize empty scene IDs
     },
     data.partId
@@ -269,7 +269,7 @@ export async function getChapterById(chapterId: string, userId?: string) {
 export async function updateChapter(chapterId: string, userId: string, data: Partial<{
   title: string;
   content: string;
-  status: string;
+  status: 'writing' | 'published';
   wordCount: number;
   publishedAt: Date;
   scheduledFor: Date;
@@ -428,7 +428,7 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
         const dynamicSceneStatus = calculateSceneStatus({
           content: scene.content || '',
           wordCount: scene.wordCount || 0,
-          status: scene.status || ''
+          status: (scene as any).status || ''
         });
         
         return {
@@ -477,7 +477,7 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
       const dynamicSceneStatus = calculateSceneStatus({
         content: scene.content || '',
         wordCount: scene.wordCount || 0,
-        status: scene.status || ''
+        status: (scene as any).status || ''
       });
       
       return {
@@ -578,7 +578,7 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
   const scenesWithStatus = chapterScenes.map(scene => {
     const sceneContent = scene.content || '';
     const sceneWordCount = scene.wordCount || 0;
-    const dbStatus = scene.status || '';
+    const dbStatus = (scene as any).status || '';
     
     const dynamicSceneStatus = calculateSceneStatus({ 
       content: sceneContent, 

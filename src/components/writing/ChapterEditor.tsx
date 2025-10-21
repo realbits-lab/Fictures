@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Button, Progress, Badge } from "@/components/ui";
 import { StoryTreeArchitecture } from "./StoryTreeArchitecture";
 import { JSONDataDisplay } from "./JSONDataDisplay";
+import * as yaml from "js-yaml";
 
 interface Scene {
   id: string;
@@ -109,40 +110,8 @@ export function ChapterEditor({
     setLastSaved(new Date());
   }, []);
 
-  // Auto-save functionality
-  useEffect(() => {
-    if (!chapterData) return;
-
-    const autoSaveInterval = setInterval(() => {
-      if (hasUnsavedChanges) {
-        handleAutoSave();
-      }
-    }, 30000); // Auto-save every 30 seconds
-
-    return () => clearInterval(autoSaveInterval);
-  }, [hasUnsavedChanges, chapterData]);
-
-  // Word count calculation
-  useEffect(() => {
-    if (!chapterData) return;
-
-    const words = content.trim().split(/\s+/).filter(word => word.length > 0);
-    setCurrentWordCount(words.length);
-    setHasUnsavedChanges(true);
-
-    // Basic validation
-    const errors = [];
-    if (words.length < 100) {
-      errors.push("Chapter should have at least 100 words");
-    }
-    if (words.length > chapterData.targetWordCount * 1.5) {
-      errors.push("Chapter exceeds recommended length");
-    }
-    setValidationErrors(errors);
-  }, [content, chapterData]);
-
-  // Auto-save handler (must be defined after state)
-  const handleAutoSave = async () => {
+  // Auto-save handler (defined before useEffects that use it)
+  const handleAutoSave = useCallback(async () => {
     if (!chapterData) return;
 
     setIsAutoSaving(true);
@@ -171,7 +140,39 @@ export function ChapterEditor({
     } finally {
       setIsAutoSaving(false);
     }
-  };
+  }, [chapterData, content, currentWordCount]);
+
+  // Auto-save functionality
+  useEffect(() => {
+    if (!chapterData) return;
+
+    const autoSaveInterval = setInterval(() => {
+      if (hasUnsavedChanges) {
+        handleAutoSave();
+      }
+    }, 30000); // Auto-save every 30 seconds
+
+    return () => clearInterval(autoSaveInterval);
+  }, [hasUnsavedChanges, chapterData, handleAutoSave]);
+
+  // Word count calculation
+  useEffect(() => {
+    if (!chapterData) return;
+
+    const words = content.trim().split(/\s+/).filter(word => word.length > 0);
+    setCurrentWordCount(words.length);
+    setHasUnsavedChanges(true);
+
+    // Basic validation
+    const errors = [];
+    if (words.length < 100) {
+      errors.push("Chapter should have at least 100 words");
+    }
+    if (words.length > chapterData.targetWordCount * 1.5) {
+      errors.push("Chapter exceeds recommended length");
+    }
+    setValidationErrors(errors);
+  }, [content, chapterData]);
 
   // Check for chapterData AFTER all hooks
   if (!chapterData) {
@@ -336,7 +337,7 @@ export function ChapterEditor({
           {!hideSidebar && (
             <div className="space-y-6">
               <StoryTreeArchitecture
-                story={story}
+                story={story as any}
                 currentChapterId={chapterData.id}
                 currentSceneId={undefined}
               />

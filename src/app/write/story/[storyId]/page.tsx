@@ -32,7 +32,10 @@ export default async function WriteStoryPage({ params }: { params: Promise<{ sto
 
   return (
     <UnifiedWritingEditor
-      story={storyStructure}
+      story={{
+        ...storyStructure,
+        hnsData: storyStructure.hnsData || {}
+      } as any}
       initialSelection={initialSelection}
       disabled={false}
     />

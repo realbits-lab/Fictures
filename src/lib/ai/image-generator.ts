@@ -1,8 +1,10 @@
 import { gateway } from '@ai-sdk/gateway';
 import { google } from '@ai-sdk/google';
-import { generateText } from 'ai';
+import { openai } from '@ai-sdk/openai';
+import { experimental_generateImage } from 'ai';
 import { put } from '@vercel/blob';
 import { nanoid } from 'nanoid';
+import sharp from 'sharp';
 import { IMAGE_GENERATION_MODEL } from './config';
 
 export type AnimationStyle =
@@ -24,6 +26,24 @@ export type AnimationStyle =
 export interface ImageGenerationOptions {
   style?: AnimationStyle;
   quality?: 'standard' | 'high' | 'ultra';
+  /**
+   * Aspect ratio preference for image generation.
+   *
+   * NOTE: With Gemini 2.5 Flash Image Preview, this parameter is used for:
+   * - Placeholder image dimensions (if generation fails)
+   * - Prompt enhancement to guide composition
+   *
+   * Gemini does NOT support explicit size/aspect ratio control through the API.
+   * Images are generated at the model's default resolution.
+   *
+   * For 16:9 ratio images, use 'landscape' which will:
+   * - Guide the model to create landscape-oriented compositions via prompt
+   * - Generate 1024x768 placeholders (closest to 16:9 available)
+   *
+   * If you need exact 16:9 (1792x1024), consider:
+   * - Switching to DALL-E 3 (supports 1792x1024, 1024x1792, 1024x1024)
+   * - Post-processing Gemini images to crop/resize to desired ratio
+   */
   aspectRatio?: 'portrait' | 'landscape' | 'square';
   mood?: string;
   lighting?: string;
@@ -63,7 +83,23 @@ function getStylePrompt(style: AnimationStyle = 'fantasy-art'): string {
 }
 
 /**
- * Get aspect ratio dimensions for image generation
+ * Get aspect ratio dimensions for image generation.
+ *
+ * IMPORTANT: These dimensions are currently used ONLY for placeholder images.
+ * Gemini 2.5 Flash Image Preview does not support explicit size/aspect ratio parameters.
+ *
+ * For 16:9 ratio images:
+ * - Landscape setting (1024x768) is closest available for placeholders
+ * - Actual ratio: ~1.33:1 (not true 16:9 which is 1.78:1)
+ * - True 16:9 would be 1792x1008 or 1024x576
+ *
+ * If exact 16:9 is required, consider:
+ * - DALL-E 3: Supports 1792x1024 (~1.75:1, closest to 16:9)
+ * - Post-processing: Crop Gemini output to exact 16:9
+ *
+ * @param aspectRatio - Desired aspect ratio (portrait/landscape/square)
+ * @param type - Image type (character/setting/scene/story)
+ * @returns Dimension string in format "WIDTHxHEIGHT" (used for placeholders only)
  */
 function getImageDimensions(aspectRatio: 'portrait' | 'landscape' | 'square' = 'square', type: string): string {
   if (type === 'character') {
@@ -82,14 +118,17 @@ function getImageDimensions(aspectRatio: 'portrait' | 'landscape' | 'square' = '
   } else {
     switch (aspectRatio) {
       case 'portrait': return '768x1024';
-      case 'landscape': return '1024x768';
+      case 'landscape': return '1024x768';  // Closest to 16:9 available (~1.33:1)
       case 'square': return '768x768';
     }
   }
 }
 
 /**
- * Build enhanced prompt with style and options
+ * Build enhanced prompt with style and options.
+ *
+ * Adds aspect ratio guidance to help Gemini generate images closer to desired composition.
+ * Note: This is guidance only - Gemini does not guarantee exact aspect ratios.
  */
 function buildEnhancedPrompt(
   basePrompt: string,
@@ -100,7 +139,8 @@ function buildEnhancedPrompt(
     style = 'fantasy-art',
     mood,
     lighting,
-    cameraAngle
+    cameraAngle,
+    aspectRatio = 'square'
   } = options;
 
   let enhancedPrompt = '';
@@ -114,6 +154,15 @@ function buildEnhancedPrompt(
   }
 
   enhancedPrompt += `, ${getStylePrompt(style)}`;
+
+  // Add aspect ratio guidance to prompt (for composition, not exact dimensions)
+  if (aspectRatio === 'landscape') {
+    enhancedPrompt += ', wide landscape orientation, horizontal composition, 16:9 cinematic aspect ratio';
+  } else if (aspectRatio === 'portrait') {
+    enhancedPrompt += ', vertical portrait orientation, tall composition';
+  } else {
+    enhancedPrompt += ', square composition, balanced framing';
+  }
 
   if (mood) {
     enhancedPrompt += `, ${mood} mood`;
@@ -141,9 +190,14 @@ function buildEnhancedPrompt(
 }
 
 /**
- * Generate a placeholder image URL based on the type and prompt
+ * Generate a placeholder image URL based on the type and prompt.
+ * Uses getImageDimensions to respect aspectRatio preference.
  */
-function generatePlaceholder(prompt: string, type: string): string {
+function generatePlaceholder(
+  prompt: string,
+  type: string,
+  aspectRatio: 'portrait' | 'landscape' | 'square' = 'square'
+): string {
   const placeholderService = 'https://picsum.photos';
   const uniqueString = `${prompt}_${type}_${Date.now()}`;
   const hash = uniqueString.split('').reduce((a, b) => {
@@ -152,15 +206,24 @@ function generatePlaceholder(prompt: string, type: string): string {
   }, 0);
   const imageId = Math.abs(hash) % 1000 + 100; // Range 100-1099
 
-  if (type === 'character') {
-    return `${placeholderService}/400/600?random=${imageId}&blur=0`;
-  } else if (type === 'place' || type === 'setting' || type === 'scene') {
-    return `${placeholderService}/600/400?random=${imageId}&blur=0`;
-  } else if (type === 'story') {
-    return `${placeholderService}/600/900?random=${imageId}&blur=0`;
-  } else {
-    return `${placeholderService}/500/500?random=${imageId}&blur=0`;
-  }
+  // Get dimensions based on type and aspect ratio
+  const dimensions = getImageDimensions(aspectRatio, type);
+  const [width, height] = dimensions.split('x');
+
+  return `${placeholderService}/${width}/${height}?random=${imageId}&blur=0`;
+}
+
+/**
+ * Resize image to 640x360 (16:9 ratio) using Sharp
+ */
+async function resizeImageTo640x360(imageBuffer: Buffer): Promise<Buffer> {
+  return await sharp(imageBuffer)
+    .resize(640, 360, {
+      fit: 'cover',
+      position: 'center'
+    })
+    .png()
+    .toBuffer();
 }
 
 /**
@@ -180,7 +243,18 @@ async function uploadToBlob(
 }
 
 /**
- * Generate an image using Gemini or fallback to placeholder
+ * Generate an image using DALL-E 3 and resize to 640x360.
+ *
+ * IMAGE GENERATION PROCESS:
+ * 1. Generate image using DALL-E 3 at 1792x1024 (16:9 ratio)
+ * 2. Resize/crop to 640x360 using Sharp
+ * 3. Upload resized image to Vercel Blob storage
+ *
+ * @param prompt - Image generation prompt
+ * @param type - Image type (character/setting/scene/story)
+ * @param storyId - Story ID for blob storage path
+ * @param options - Generation options (style, aspectRatio, quality, etc.)
+ * @returns Promise with generation result including imageUrl
  */
 export async function generateImage(
   prompt: string,
@@ -196,56 +270,50 @@ export async function generateImage(
     const enhancedPrompt = buildEnhancedPrompt(prompt, type, options);
     console.log(`✨ Enhanced prompt: ${enhancedPrompt.substring(0, 150)}...`);
 
-    const dimensions = getImageDimensions(options.aspectRatio, type);
-    const quality = options.quality || 'high';
-
-    // Try Gemini 2.5 Flash Image Preview with proper files API
+    // Try DALL-E 3 with 16:9 ratio (1792x1024)
     try {
-      console.log('🔄 Attempting Gemini 2.5 Flash Image generation...');
+      console.log('🔄 Attempting DALL-E 3 image generation at 1792x1024...');
 
-      // Use google directly for image generation instead of gateway
-      const result = await generateText({
-        model: google('gemini-2.5-flash-image-preview'),
+      const result = await experimental_generateImage({
+        model: openai.image('dall-e-3'),
         prompt: enhancedPrompt,
+        size: '1792x1024',
+        // @ts-ignore - quality property may not be in type definition
+        quality: options.quality === 'ultra' ? 'hd' : 'standard',
       });
 
-      // Check if result contains generated image files
-      if (result.files && result.files.length > 0) {
-        // Find the first image file
-        const imageFile = result.files.find(file =>
-          file.mediaType?.startsWith('image/')
+      if (result.image) {
+        console.log('✅ DALL-E 3 image generated, resizing to 640x360...');
+
+        // Convert base64 to buffer
+        const imageBuffer = Buffer.from(result.image.base64, 'base64');
+
+        // Resize to 640x360
+        const resizedBuffer = await resizeImageTo640x360(imageBuffer);
+
+        // Upload resized image to Vercel Blob
+        const imageUrl = await uploadToBlob(
+          resizedBuffer,
+          storyId,
+          type
         );
 
-        if (imageFile && imageFile.uint8Array) {
-          // Upload to Vercel Blob
-          const imageUrl = await uploadToBlob(
-            Buffer.from(imageFile.uint8Array),
-            storyId,
-            type
-          );
-
-          console.log('✅ Image generated and uploaded:', imageUrl);
-          return {
-            success: true,
-            imageUrl,
-            method: 'gemini-2.5-flash-image',
-            style: options.style,
-          };
-        }
-      }
-
-      // If no image was generated but we got text, log it
-      if (result.text) {
-        console.log('📝 Gemini provided description instead of image:', result.text.substring(0, 200));
+        console.log('✅ Image resized and uploaded:', imageUrl);
+        return {
+          success: true,
+          imageUrl,
+          method: 'dall-e-3-resized',
+          style: options.style,
+        };
       }
 
     } catch (error) {
-      console.warn('⚠️ Gemini image generation failed:', error instanceof Error ? error.message : 'Unknown error');
+      console.warn('⚠️ DALL-E 3 image generation failed:', error instanceof Error ? error.message : 'Unknown error');
     }
 
     // Fallback to placeholder
     console.log('📦 Using placeholder image as fallback');
-    const placeholderUrl = generatePlaceholder(prompt, type);
+    const placeholderUrl = generatePlaceholder(prompt, type, options.aspectRatio);
 
     return {
       success: true,
@@ -258,7 +326,7 @@ export async function generateImage(
     console.error(`❌ Error in image generation:`, error);
 
     // Return placeholder on any error
-    const placeholderUrl = generatePlaceholder(prompt, type);
+    const placeholderUrl = generatePlaceholder(prompt, type, options.aspectRatio);
     return {
       success: false,
       imageUrl: placeholderUrl,

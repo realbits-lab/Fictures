@@ -70,7 +70,7 @@ export function PublishingSchedule() {
             </div>
           ) : (
             // Display data
-            (publishStatus?.upcomingSchedule || fallbackSchedule).map((item) => (
+            (publishStatus?.upcomingSchedule || fallbackSchedule).map((item: any) => (
               <div key={item.id} className="space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="font-medium text-sm text-[rgb(var(--foreground))]">

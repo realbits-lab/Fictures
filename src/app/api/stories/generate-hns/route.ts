@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
               const sseData = `data: ${JSON.stringify({ phase, data })}\n\n`;
               controller.enqueue(encoder.encode(sseData));
             } catch (error) {
-              console.log(`Error sending SSE update: ${error.message}`);
+              console.log(`Error sending SSE update: ${error instanceof Error ? error.message : String(error)}`);
               isControllerClosed = true;
             }
           };
@@ -246,7 +246,7 @@ export async function POST(request: NextRequest) {
                 } catch (imageError) {
                   console.log(
                     `Image generation skipped for ${character.name}:`,
-                    imageError.message
+                    imageError instanceof Error ? imageError.message : String(imageError)
                   );
                 }
 
@@ -317,7 +317,7 @@ export async function POST(request: NextRequest) {
                 } catch (imageError) {
                   console.log(
                     `Image generation skipped for ${setting.name}:`,
-                    imageError.message
+                    imageError instanceof Error ? imageError.message : String(imageError)
                   );
                 }
 
@@ -361,7 +361,7 @@ export async function POST(request: NextRequest) {
               controller.close();
               isControllerClosed = true;
             } catch (error) {
-              console.log(`Error closing controller: ${error.message}`);
+              console.log(`Error closing controller: ${error instanceof Error ? error.message : String(error)}`);
             }
           } else {
             console.log("Controller already closed, skipping close()");
@@ -380,7 +380,7 @@ export async function POST(request: NextRequest) {
               controller.close();
               isControllerClosed = true;
             } catch (closeError) {
-              console.log(`Error closing controller during error handling: ${closeError.message}`);
+              console.log(`Error closing controller during error handling: ${closeError instanceof Error ? closeError.message : String(closeError)}`);
             }
           } else {
             console.log("Controller already closed, skipping error update");

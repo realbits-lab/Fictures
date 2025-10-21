@@ -61,12 +61,7 @@ export async function GET(request: NextRequest) {
         fetchedAt: new Date().toISOString(),
         userId: authResult.user.id,
         totalStories: transformedStories.length,
-        lastUpdated: stories.length > 0
-          ? stories.reduce((latest, story) =>
-              !latest || (story.updatedAt && story.updatedAt > latest) ? story.updatedAt : latest,
-              null
-            )
-          : new Date().toISOString()
+        lastUpdated: new Date().toISOString()
       }
     };
 

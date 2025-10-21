@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
           authorId: session.user.id,
           orderIndex: chapterSpec.chap,
           targetWordCount: chapterSpec.words,
-          status: 'draft',
+          status: 'writing',
           purpose: `Chapter ${chapterSpec.chap} - ${chapterSpec.goal}`,
           characterFocus: chapterSpec.pov,
           sceneIds: [], // Initialize empty scene IDs

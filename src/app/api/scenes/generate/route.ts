@@ -79,7 +79,6 @@ export async function POST(request: NextRequest) {
           title: `Scene ${sceneSpec.id}: ${sceneSpec.summary}`,
           content: '', // Empty content initially
           orderIndex: sceneSpec.id,
-          status: 'planned',
           goal: sceneSpec.goal,
           conflict: sceneSpec.obstacle,
           outcome: sceneSpec.outcome,

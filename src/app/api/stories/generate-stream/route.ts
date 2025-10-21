@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
                   const imageResult = await response.json();
                   console.log(`✅ Generated image for place: ${placeName}`);
                   return {
-                    placeId: place.id,
+                    placeId: placeName, // Use name as identifier since place doesn't have id yet
                     name: placeName,
                     imageUrl: imageResult.imageUrl
                   };
@@ -253,8 +253,7 @@ export async function POST(request: NextRequest) {
             genre: storyConcept.genre || 'General',
             authorId: session.user.id,
             targetWordCount: storyConcept.words || 60000,
-            status: 'draft',
-            isPublic: false,
+            status: 'writing',
             content: JSON.stringify(storyConcept),
             partIds: [],
             chapterIds: [],
@@ -276,7 +275,6 @@ export async function POST(request: NextRequest) {
                   authorId: session.user.id,
                   orderIndex: storyPart.part,
                   targetWordCount: partWordCount,
-                  status: 'planned',
                   content: JSON.stringify(storyPart),
                   chapterIds: [],
                 }
@@ -328,8 +326,9 @@ export async function POST(request: NextRequest) {
               const placeId = nanoid();
               const parsedData = place.parsedData as Record<string, unknown>;
 
-              // Find corresponding generated image
-              const placeImage = placeImages.find(img => img.placeId === place.id);
+              // Find corresponding generated image by matching name
+              const placeName = (parsedData?.name as string) || place.name;
+              const placeImage = placeImages.find(img => img.name === placeName);
 
               await db.insert(placesTable).values({
                 id: placeId,

@@ -112,7 +112,7 @@ This scene should advance the plot and include clear conflict.`,
           });
         });
 
-        const { object: scene } = await generateSceneWithTimeout();
+        const { object: scene } = await generateSceneWithTimeout() as { object: any };
 
         // Add the generated scene to our array
         const processedScene = {
@@ -131,7 +131,9 @@ This scene should advance the plot and include clear conflict.`,
         // Create fallback scene for this iteration
         const fallbackScene: HNSScene = {
           scene_id: nanoid(),
+          scene_number: i + 1,
           scene_title: `Chapter ${chapter.chapter_number} Scene ${i + 1}`,
+          chapter_ref: chapter.chapter_id,
           summary: `Scene ${i + 1} of ${chapter.chapter_title}`,
           entry_hook: "The scene begins...",
           goal: "Advance the plot",
@@ -144,7 +146,6 @@ This scene should advance the plot and include clear conflict.`,
           pov_character_id: characters[0]?.character_id || "unknown",
           character_ids: characters.slice(0, 2).map(c => c.character_id || "unknown"),
           setting_id: settings[0]?.setting_id || "unknown",
-          scene_number: i + 1,
           narrative_voice: "third_person_limited" as const,
           content: "[Scene content pending]",
         };
@@ -160,7 +161,9 @@ This scene should advance the plot and include clear conflict.`,
     console.log(`🔄 Using fallback scenes for chapter: ${chapter.chapter_title}`);
     return Array.from({ length: Math.min(sceneCount, 2) }, (_, i) => ({
       scene_id: nanoid(),
+      scene_number: i + 1,
       scene_title: `Chapter ${chapter.chapter_number} Scene ${i + 1}`,
+      chapter_ref: chapter.chapter_id,
       summary: `Scene ${i + 1} of ${chapter.chapter_title}`,
       entry_hook: "The scene begins...",
       goal: "Advance the plot",
@@ -173,7 +176,6 @@ This scene should advance the plot and include clear conflict.`,
       pov_character_id: characters[0]?.character_id || "unknown",
       character_ids: characters.slice(0, 2).map(c => c.character_id || "unknown"),
       setting_id: settings[0]?.setting_id || "unknown",
-      scene_number: i + 1,
       narrative_voice: "third_person_limited" as const,
       content: "[Scene content pending]",
     }));
@@ -250,7 +252,7 @@ This chapter should build on previous chapters and contribute to the overall par
           });
         });
 
-        const { object: chapter } = await generateChapterWithTimeout();
+        const { object: chapter } = await generateChapterWithTimeout() as { object: any };
 
         // Add the generated chapter to our array
         const processedChapter = {
@@ -270,9 +272,10 @@ This chapter should build on previous chapters and contribute to the overall par
         // Create fallback chapter for this iteration
         const fallbackChapter: HNSChapter = {
           chapter_id: nanoid(),
-          chapter_title: `Part ${part.part_number} Chapter ${i + 1}`,
-          summary: `Chapter ${i + 1} of ${part.part_title}`,
           chapter_number: i + 1,
+          chapter_title: `Part ${part.part_number} Chapter ${i + 1}`,
+          part_ref: part.part_id,
+          summary: `Chapter ${i + 1} of ${part.part_title}`,
           pacing_goal: "medium" as const,
           action_dialogue_ratio: "50:50",
           chapter_hook: {
@@ -296,9 +299,10 @@ This chapter should build on previous chapters and contribute to the overall par
     // Return fallback chapters
     return Array.from({ length: Math.min(chapterCount, 2) }, (_, i) => ({
       chapter_id: nanoid(),
-      chapter_title: `Part ${part.part_number} Chapter ${i + 1}`,
-      summary: `Chapter ${i + 1} of ${part.part_title}`,
       chapter_number: i + 1,
+      chapter_title: `Part ${part.part_number} Chapter ${i + 1}`,
+      part_ref: part.part_id,
+      summary: `Chapter ${i + 1} of ${part.part_title}`,
       pacing_goal: "medium" as const,
       action_dialogue_ratio: "50:50",
       chapter_hook: {

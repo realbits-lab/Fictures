@@ -571,6 +571,7 @@ export function createEmptyScene(id: string, number: number, chapterRef: string)
   return {
     scene_id: id,
     scene_number: number,
+    scene_title: `Scene ${number}`,
     chapter_ref: chapterRef,
     character_ids: [],
     setting_id: '',

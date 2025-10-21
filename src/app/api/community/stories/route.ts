@@ -14,8 +14,6 @@ export async function GET(request: NextRequest) {
         description: stories.description,
         genre: stories.genre,
         status: stories.status,
-        coverImage: stories.coverImage,
-        isPublic: stories.isPublic,
         viewCount: stories.viewCount,
         rating: stories.rating,
         ratingCount: stories.ratingCount,
@@ -37,7 +35,7 @@ export async function GET(request: NextRequest) {
     const storiesWithStats = publicStories.map((story) => {
       // Generate realistic mock stats based on story data
       const mockPosts = Math.floor(Math.random() * 50) + 10; // 10-60 posts
-      const mockMembers = Math.floor(story.viewCount * 0.1) || Math.floor(Math.random() * 500) + 100; // 100-600 members
+      const mockMembers = Math.floor((story.viewCount ?? 0) * 0.1) || Math.floor(Math.random() * 500) + 100; // 100-600 members
       const isRecent = (new Date().getTime() - new Date(story.updatedAt).getTime()) < (7 * 24 * 60 * 60 * 1000);
       
       return {
@@ -58,7 +56,7 @@ export async function GET(request: NextRequest) {
         lastUpdated: publicStories.length > 0
           ? publicStories.reduce((latest, story) =>
               !latest || (story.updatedAt && story.updatedAt > latest) ? story.updatedAt : latest,
-              null
+              null as Date | null
             )
           : new Date().toISOString()
       }
@@ -94,7 +92,9 @@ export async function GET(request: NextRequest) {
       // Medium cache for community content since it changes moderately
       'Cache-Control': 'public, max-age=1200, stale-while-revalidate=2400', // 20min cache, 40min stale
       'X-Content-Type': 'community-stories',
-      'X-Last-Modified': response.metadata.lastUpdated || new Date().toISOString()
+      'X-Last-Modified': (response.metadata.lastUpdated instanceof Date
+        ? response.metadata.lastUpdated.toISOString()
+        : response.metadata.lastUpdated) || new Date().toISOString()
     };
 
     return new Response(JSON.stringify(response), {

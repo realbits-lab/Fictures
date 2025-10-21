@@ -103,16 +103,16 @@ export const authConfig = {
           if (existingUser) {
             // Update existing user with latest info from OAuth profile
             await updateUser(existingUser.id, {
-              name: profile.name,
-              image: profile.image,
+              name: profile.name ?? undefined,
+              image: typeof profile.image === 'string' ? profile.image : undefined,
               emailVerified: new Date(), // Mark as verified since they just signed in via OAuth
             });
           } else {
             // Create new user in database
             await createUser({
               email: profile.email,
-              name: profile.name,
-              image: profile.image,
+              name: profile.name ?? undefined,
+              image: typeof profile.image === 'string' ? profile.image : undefined,
             });
           }
           

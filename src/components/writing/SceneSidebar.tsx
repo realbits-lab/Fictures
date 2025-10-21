@@ -334,7 +334,7 @@ export function SceneSidebar({
         partData={partData}
         chapterData={chapterData}
         sceneData={{
-          id: sceneData.id,
+          id: typeof sceneData.id === 'string' ? parseInt(sceneData.id, 10) : sceneData.id,
           summary: sceneData.summary,
           time: sceneData.time,
           place: sceneData.place,

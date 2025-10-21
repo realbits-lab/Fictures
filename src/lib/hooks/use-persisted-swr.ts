@@ -372,7 +372,7 @@ class CacheManager {
 
 // Main hook for persisted SWR
 export function usePersistedSWR<Data = any, Error = any>(
-  key: string,
+  key: string | null,
   fetcher: ((key: string) => Data | Promise<Data>) | null,
   cacheConfig: CacheConfig,
   swrConfig?: SWRConfiguration<Data, Error>
@@ -385,14 +385,14 @@ export function usePersistedSWR<Data = any, Error = any>(
 
   // Use useEffect to set fallback data after hydration (only once)
   useEffect(() => {
-    if (!hasSetFallback) {
+    if (!hasSetFallback && key) {
       const cachedData = cache.getCachedData<Data>(key, cacheConfig);
       if (cachedData) {
         setFallbackData(cachedData);
       }
       setHasSetFallback(true);
     }
-  }, [key, hasSetFallback]);
+  }, [key, hasSetFallback, cache, cacheConfig]);
 
   const swr = useSWR<Data, Error>(
     key,
@@ -402,12 +402,12 @@ export function usePersistedSWR<Data = any, Error = any>(
       fallbackData,
       onSuccess: (data, key) => {
         // Save successful responses to localStorage
-        cache.setCachedData(key, data, cacheConfig);
-        swrConfig?.onSuccess?.(data, key, swrConfig);
+        if (key) cache.setCachedData(key, data, cacheConfig);
+        swrConfig?.onSuccess?.(data, key, swrConfig as any);
       },
       onError: (error, key) => {
         console.warn(`SWR error for key ${key}:`, error);
-        swrConfig?.onError?.(error, key, swrConfig);
+        swrConfig?.onError?.(error, key, swrConfig as any);
       }
     }
   );

@@ -87,11 +87,10 @@ export async function PATCH(
     }
 
     // Update part with new HNS data
-    const serializedData = JSON.stringify(hnsData);
-
+    // Drizzle ORM will handle JSON serialization automatically
     await db.update(parts)
       .set({
-        hnsData: serializedData,
+        hnsData: hnsData,
         updatedAt: new Date()
       })
       .where(eq(parts.id, id));

@@ -135,6 +135,7 @@ export function SceneDisplay({ sceneId, storyId, disabled = false }: SceneDispla
                 <h4 className="font-semibold">{character.name}</h4>
                 {character.imageUrl && (
                   <div className="mb-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={character.imageUrl}
                       alt={character.name}
@@ -164,6 +165,7 @@ export function SceneDisplay({ sceneId, storyId, disabled = false }: SceneDispla
                 <h4 className="font-semibold">{setting.name}</h4>
                 {setting.imageUrl && (
                   <div className="mb-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={setting.imageUrl}
                       alt={setting.name}

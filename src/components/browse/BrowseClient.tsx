@@ -147,7 +147,7 @@ export function BrowseClient() {
 
         {/* Show skeleton loading while fetching */}
         {isLoading ? (
-          <SkeletonLoader theme="light">
+          <SkeletonLoader>
             <StoriesSkeleton />
           </SkeletonLoader>
         ) : error ? (

@@ -229,11 +229,11 @@ export function HierarchicalDataSidebar({
                   <div className="flex items-center gap-2">
                     {section.icon}
                     <span className="text-xs font-medium">{section.title}</span>
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="default" className="text-xs">
                       {section.id === currentLevel ? "Current" : "Context"}
                     </Badge>
                     {section.editable && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="info" className="text-xs">
                         Editable
                       </Badge>
                     )}

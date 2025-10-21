@@ -40,7 +40,8 @@ export async function GET(request: NextRequest) {
       status: ['ready', 'draft', 'planned', 'idea'][index]
     }));
 
-    const readyToPublish = userChapters.find(chapter => chapter.status === 'completed') || userChapters[0];
+    // For now, just use the first chapter since there's no 'completed' status
+    const readyToPublish = userChapters[0];
 
     const publishStatus = {
       scheduledItems,
@@ -50,11 +51,11 @@ export async function GET(request: NextRequest) {
         wordCount: readyToPublish.wordCount || 0,
         targetWordCount: 4000,
         shortTitle: readyToPublish.title?.substring(0, 20) || 'Untitled',
-        preview: readyToPublish.content?.substring(0, 150) + '...' || 'No preview available',
+        preview: readyToPublish.summary?.substring(0, 150) + '...' || 'No preview available',
         scheduledTime: 'Tomorrow at 2:00 PM',
         communityPoll: '"What happens next?"'
       } : null,
-      pending: userChapters.filter(c => c.status === 'draft').length
+      pending: userChapters.filter(c => c.status === 'writing').length
     };
 
     return NextResponse.json(publishStatus);

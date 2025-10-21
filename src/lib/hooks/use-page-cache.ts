@@ -22,7 +22,7 @@ export function useUserStories() {
       revalidateOnReconnect: true,
       refreshInterval: 10 * 60 * 1000, // Optimized: Refresh every 10 minutes instead of default
       dedupingInterval: 60 * 1000, // Optimized: Extended to 1 minute for better deduplication
-      staleTime: 5 * 60 * 1000, // Keep data fresh for 5 minutes before considering stale
+      // staleTime: 5 * 60 * 1000, // Keep data fresh for 5 minutes before considering stale
       errorRetryCount: 3,
       errorRetryInterval: 1000,
       onSuccess: (data) => {
@@ -74,7 +74,7 @@ export function usePublishedStories() {
       revalidateOnReconnect: true,
       refreshInterval: 30 * 60 * 1000, // Optimized: Refresh every 30 minutes (published stories don't change frequently)
       dedupingInterval: 5 * 60 * 1000, // Optimized: Extended to 5 minutes for better deduplication
-      staleTime: 15 * 60 * 1000, // Keep data fresh for 15 minutes before considering stale
+      // staleTime: 15 * 60 * 1000, // Keep data fresh for 15 minutes before considering stale
       onSuccess: (data) => {
         console.log('✅ Published stories loaded from', data?.fromCache ? 'localStorage cache' : 'API:', data?.stories?.length || 0, 'stories');
       },
@@ -93,7 +93,7 @@ export function useFeaturedStories() {
     {
       revalidateOnFocus: false,
       refreshInterval: 10 * 60 * 1000, // Refresh every 10 minutes
-      staleTime: 2 * 60 * 1000, // Consider stale after 2 minutes
+      // staleTime: 2 * 60 * 1000, // Consider stale after 2 minutes
       onSuccess: (data) => {
         console.log('✅ Featured stories loaded:', data?.stories?.length || 0, 'featured');
       }
@@ -125,7 +125,7 @@ export function useCommunityStories() {
       revalidateOnReconnect: true,
       refreshInterval: 5 * 60 * 1000, // Optimized: Refresh every 5 minutes instead of 30 seconds
       dedupingInterval: 30 * 1000, // Optimized: Extended to 30 seconds for better deduplication
-      staleTime: 2 * 60 * 1000, // Keep data fresh for 2 minutes before considering stale
+      // staleTime: 2 * 60 * 1000, // Keep data fresh for 2 minutes before considering stale
       errorRetryCount: 3,
       errorRetryInterval: 1000,
       onSuccess: (data) => {
@@ -146,7 +146,7 @@ export function useCommunityStats() {
     {
       revalidateOnFocus: false,
       refreshInterval: 60 * 1000, // Refresh every minute
-      staleTime: 30 * 1000
+      // staleTime: 30 * 1000
     }
   );
 }
@@ -203,7 +203,7 @@ export function usePublishAnalytics() {
     {
       revalidateOnFocus: false,
       refreshInterval: 2 * 60 * 1000, // Refresh every 2 minutes
-      staleTime: 30 * 1000
+      // staleTime: 30 * 1000
     }
   );
 }
@@ -305,7 +305,7 @@ export function useAppStats() {
     {
       revalidateOnFocus: false,
       refreshInterval: 5 * 60 * 1000, // Refresh every 5 minutes
-      staleTime: 2 * 60 * 1000,
+      // staleTime: 2 * 60 * 1000,
       onSuccess: (data) => {
         console.log('✅ App stats loaded:', data);
       }

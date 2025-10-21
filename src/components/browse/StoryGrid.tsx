@@ -63,7 +63,7 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
           {genres.map((genre) => (
             <Button
               key={genre}
-              variant={selectedGenre === genre ? "default" : "secondary"}
+              variant={selectedGenre === genre ? "primary" : "secondary"}
               size="sm"
               onClick={() => setSelectedGenre(genre)}
             >
@@ -75,21 +75,21 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
         <div className="flex gap-2">
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300 self-center">Sort by:</span>
           <Button
-            variant={sortBy === "latest" ? "default" : "secondary"}
+            variant={sortBy === "latest" ? "primary" : "secondary"}
             size="sm"
             onClick={() => setSortBy("latest")}
           >
             Latest
           </Button>
           <Button
-            variant={sortBy === "popular" ? "default" : "secondary"}
+            variant={sortBy === "popular" ? "primary" : "secondary"}
             size="sm"
             onClick={() => setSortBy("popular")}
           >
             Most Popular
           </Button>
           <Button
-            variant={sortBy === "rating" ? "default" : "secondary"}
+            variant={sortBy === "rating" ? "primary" : "secondary"}
             size="sm"
             onClick={() => setSortBy("rating")}
           >

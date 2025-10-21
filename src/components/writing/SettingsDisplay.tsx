@@ -142,6 +142,7 @@ export function SettingsDisplay({ storyData }: SettingsDisplayProps) {
               {/* Setting Image - Full size without cropping */}
               {setting.imageUrl && (
                 <div className="mb-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={setting.imageUrl}
                     alt={setting.name}

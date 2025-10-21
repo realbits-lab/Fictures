@@ -278,7 +278,7 @@ export function useWritingProgress(storyId: string, chapterId: string | null, sc
       }
       return [];
     }
-  }), [storyId, chapterId, sceneId]);
+  }), [storyId]);
 }
 
 /**

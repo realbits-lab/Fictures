@@ -94,7 +94,7 @@ const ImprovedCharacterSchema = z.object({
     myers_briggs: z.string(),
     enneagram: z.string()
   }).optional(),
-  backstory: z.record(z.string()).optional(),
+  backstory: z.record(z.string(), z.string()).optional(),
   motivations: z.object({
     primary: z.string(),
     secondary: z.string(),
@@ -113,7 +113,7 @@ const ImprovedCharacterSchema = z.object({
   }).optional(),
   hnsData: z.object({
     character_arc: z.string().optional(),
-    relationships: z.record(z.string()).optional(),
+    relationships: z.record(z.string(), z.string()).optional(),
     internal_conflict: z.string().optional(),
     external_conflict: z.string().optional(),
     growth_trajectory: z.string().optional(),
@@ -125,7 +125,7 @@ const ImprovedSettingSchema = z.object({
   name: z.string().optional(),
   description: z.string().optional(),
   mood: z.string().optional(),
-  sensory: z.record(z.array(z.string())).optional(),
+  sensory: z.record(z.string(), z.array(z.string())).optional(),
   visualStyle: z.string().optional(),
   visualReferences: z.array(z.string()).optional(),
   colorPalette: z.array(z.string()).optional(),
@@ -708,7 +708,7 @@ Return ONLY the fields that need updating. Ensure all text fields are reasonable
     // Copy other fields normally
     Object.keys(object).forEach(key => {
       if (key !== 'title') {
-        sanitizedData[key] = object[key];
+        sanitizedData[key] = (object as any)[key];
       }
     });
 
@@ -815,7 +815,7 @@ Return ONLY the fields that need updating.`
     // Copy other fields normally, but check for extremely long text
     Object.keys(object).forEach(key => {
       if (key !== 'title') {
-        const value = object[key];
+        const value = (object as any)[key];
         if (typeof value === 'string' && value.length > 10000) {
           sanitizedData[key] = value.substring(0, 10000);
           console.log(`Warning: Chapter ${key} truncated from ${value.length} to 10000 characters`);
