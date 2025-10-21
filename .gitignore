@@ -79,3 +79,6 @@ scripts/*credential*.ts
 
 # Downloads directory
 downloads/
+
+# VS Code settings
+.vscode/

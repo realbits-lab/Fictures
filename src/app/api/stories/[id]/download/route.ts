@@ -93,41 +93,209 @@ export async function GET(
       zip.file('hns_data/story_hns.json', JSON.stringify(story.hnsData, null, 2));
     }
 
-    // Create markdown file with all content
-    let markdown = `# ${story.title}\n\n`;
+    // Create HTML file with all content
+    let html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${story.title}</title>
+  <style>
+    body {
+      font-family: 'Georgia', serif;
+      line-height: 1.8;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: #f5f5f5;
+      color: #333;
+    }
+    .story-container {
+      background: white;
+      padding: 60px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+    }
+    h1 {
+      font-size: 2.5em;
+      color: #1a1a1a;
+      margin-bottom: 30px;
+      border-bottom: 3px solid #333;
+      padding-bottom: 20px;
+    }
+    h2 {
+      font-size: 2em;
+      color: #2a2a2a;
+      margin-top: 50px;
+      margin-bottom: 20px;
+      border-left: 5px solid #666;
+      padding-left: 20px;
+    }
+    h3 {
+      font-size: 1.5em;
+      color: #3a3a3a;
+      margin-top: 40px;
+      margin-bottom: 15px;
+    }
+    h4 {
+      font-size: 1.2em;
+      color: #4a4a4a;
+      margin-top: 30px;
+      margin-bottom: 10px;
+      font-style: italic;
+    }
+    .metadata {
+      background: #f9f9f9;
+      padding: 30px;
+      border-radius: 5px;
+      margin-bottom: 40px;
+      border-left: 4px solid #333;
+    }
+    .metadata h2 {
+      margin-top: 0;
+      font-size: 1.3em;
+      border-left: none;
+      padding-left: 0;
+    }
+    .metadata p {
+      margin: 10px 0;
+    }
+    .part {
+      margin-top: 60px;
+      page-break-before: always;
+    }
+    .chapter {
+      margin-top: 50px;
+    }
+    .scene {
+      margin-top: 40px;
+    }
+    .scene-image {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      margin: 30px 0;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .summary {
+      font-style: italic;
+      color: #555;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f0f0f0;
+      border-radius: 5px;
+    }
+    .divider {
+      border: 0;
+      height: 2px;
+      background: linear-gradient(to right, transparent, #ccc, transparent);
+      margin: 50px 0;
+    }
+    p {
+      margin-bottom: 1.2em;
+      text-align: justify;
+    }
+    .reference-section {
+      margin-top: 60px;
+      page-break-before: always;
+    }
+    .reference-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-top: 30px;
+    }
+    .reference-item {
+      background: #f9f9f9;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .reference-image {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+    }
+    .reference-title {
+      padding: 20px;
+      font-size: 1.2em;
+      font-weight: bold;
+      text-align: center;
+      background: white;
+    }
+    @media print {
+      body {
+        background: white;
+      }
+      .story-container {
+        box-shadow: none;
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="story-container">
+    <h1>${story.title}</h1>
+
+    <div class="metadata">`;
 
     if (story.description) {
-      markdown += `## Description\n\n${story.description}\n\n`;
+      html += `
+      <h2>Description</h2>
+      <p>${story.description}</p>`;
     }
 
     if (story.premise) {
-      markdown += `## Premise\n\n${story.premise}\n\n`;
+      html += `
+      <h2>Premise</h2>
+      <p>${story.premise}</p>`;
     }
 
     if (story.dramaticQuestion) {
-      markdown += `## Dramatic Question\n\n${story.dramaticQuestion}\n\n`;
+      html += `
+      <h2>Dramatic Question</h2>
+      <p>${story.dramaticQuestion}</p>`;
     }
 
     if (story.theme) {
-      markdown += `## Theme\n\n${story.theme}\n\n`;
+      html += `
+      <h2>Theme</h2>
+      <p>${story.theme}</p>`;
     }
 
-    markdown += `---\n\n`;
+    html += `
+    </div>
+    <hr class="divider">`;
 
     // Sort parts, chapters, and scenes by orderIndex
     const sortedParts = [...storyParts].sort((a, b) => a.orderIndex - b.orderIndex);
     const sortedChapters = [...storyChapters].sort((a, b) => a.orderIndex - b.orderIndex);
 
-    // Add parts and chapters to markdown
+    // Helper function to convert text content to HTML paragraphs
+    const formatContent = (content: string) => {
+      if (!content) return '';
+      return content
+        .split('\n\n')
+        .filter(p => p.trim())
+        .map(p => `<p>${p.trim()}</p>`)
+        .join('\n');
+    };
+
+    // Add parts and chapters to HTML
     if (sortedParts.length > 0) {
       // Story has parts structure
       // Use 1-based indices for display and file names
       sortedParts.forEach((part, partIndex) => {
         const partNum = partIndex + 1;
-        markdown += `# Part ${partNum}: ${part.title}\n\n`;
+        html += `
+    <div class="part">
+      <h2>Part ${partNum}: ${part.title}</h2>`;
 
         if (part.description) {
-          markdown += `${part.description}\n\n`;
+          html += `
+      <div class="summary">${part.description}</div>`;
         }
 
         // Add part HNS data
@@ -140,10 +308,13 @@ export async function GET(
 
         partChapters.forEach((chapter, chapterIndex) => {
           const chapterNum = chapterIndex + 1;
-          markdown += `## Chapter ${chapterNum}: ${chapter.title}\n\n`;
+          html += `
+      <div class="chapter">
+        <h3>Chapter ${chapterNum}: ${chapter.title}</h3>`;
 
           if (chapter.summary) {
-            markdown += `**Summary:** ${chapter.summary}\n\n`;
+            html += `
+        <div class="summary">${chapter.summary}</div>`;
           }
 
           // Add chapter HNS data
@@ -161,10 +332,22 @@ export async function GET(
 
           chapterScenes.forEach((scene, sceneIndex) => {
             const sceneNum = sceneIndex + 1;
-            markdown += `### Scene ${sceneNum}: ${scene.title}\n\n`;
+            html += `
+        <div class="scene">
+          <h4>Scene ${sceneNum}: ${scene.title}</h4>`;
+
+            // Add scene image if available
+            if (scene.hnsData && typeof scene.hnsData === 'object' && 'scene_image' in scene.hnsData) {
+              const sceneImage = (scene.hnsData as any).scene_image;
+              if (sceneImage && sceneImage.url) {
+                html += `
+          <img src="${sceneImage.url}" alt="Scene ${sceneNum}: ${scene.title}" class="scene-image" />`;
+              }
+            }
 
             if (scene.content) {
-              markdown += `${scene.content}\n\n`;
+              html += `
+          ${formatContent(scene.content)}`;
             }
 
             // Add scene HNS data
@@ -174,19 +357,30 @@ export async function GET(
                 JSON.stringify(scene.hnsData, null, 2)
               );
             }
+
+            html += `
+        </div>`;
           });
 
-          markdown += `\n---\n\n`;
+          html += `
+        <hr class="divider">
+      </div>`;
         });
+
+        html += `
+    </div>`;
       });
     } else {
       // Story has no parts, just chapters
       sortedChapters.forEach((chapter, chapterIndex) => {
         const chapterNum = chapterIndex + 1;
-        markdown += `## Chapter ${chapterNum}: ${chapter.title}\n\n`;
+        html += `
+    <div class="chapter">
+      <h2>Chapter ${chapterNum}: ${chapter.title}</h2>`;
 
         if (chapter.summary) {
-          markdown += `**Summary:** ${chapter.summary}\n\n`;
+          html += `
+      <div class="summary">${chapter.summary}</div>`;
         }
 
         // Add chapter HNS data
@@ -204,10 +398,22 @@ export async function GET(
 
         chapterScenes.forEach((scene, sceneIndex) => {
           const sceneNum = sceneIndex + 1;
-          markdown += `### Scene ${sceneNum}: ${scene.title}\n\n`;
+          html += `
+      <div class="scene">
+        <h4>Scene ${sceneNum}: ${scene.title}</h4>`;
+
+          // Add scene image if available
+          if (scene.hnsData && typeof scene.hnsData === 'object' && 'scene_image' in scene.hnsData) {
+            const sceneImage = (scene.hnsData as any).scene_image;
+            if (sceneImage && sceneImage.url) {
+              html += `
+        <img src="${sceneImage.url}" alt="Scene ${sceneNum}: ${scene.title}" class="scene-image" />`;
+            }
+          }
 
           if (scene.content) {
-            markdown += `${scene.content}\n\n`;
+            html += `
+        ${formatContent(scene.content)}`;
           }
 
           // Add scene HNS data
@@ -217,14 +423,69 @@ export async function GET(
               JSON.stringify(scene.hnsData, null, 2)
             );
           }
+
+          html += `
+      </div>`;
         });
 
-        markdown += `\n---\n\n`;
+        html += `
+      <hr class="divider">
+    </div>`;
       });
     }
 
-    // Add complete story markdown
-    zip.file(`${story.title.replace(/[^a-zA-Z0-9]/g, '_')}.md`, markdown);
+    // Add Characters section
+    if (storyCharacters.length > 0) {
+      html += `
+    <div class="reference-section">
+      <h2>Characters</h2>
+      <div class="reference-grid">`;
+
+      storyCharacters.forEach((character) => {
+        if (character.imageUrl) {
+          html += `
+        <div class="reference-item">
+          <img src="${character.imageUrl}" alt="${character.name}" class="reference-image" />
+          <div class="reference-title">${character.name}</div>
+        </div>`;
+        }
+      });
+
+      html += `
+      </div>
+    </div>`;
+    }
+
+    // Add Settings section
+    if (storySettings.length > 0) {
+      html += `
+    <div class="reference-section">
+      <h2>Settings</h2>
+      <div class="reference-grid">`;
+
+      storySettings.forEach((setting) => {
+        if (setting.imageUrl) {
+          html += `
+        <div class="reference-item">
+          <img src="${setting.imageUrl}" alt="${setting.name}" class="reference-image" />
+          <div class="reference-title">${setting.name}</div>
+        </div>`;
+        }
+      });
+
+      html += `
+      </div>
+    </div>`;
+    }
+
+    // Close HTML document
+    html += `
+  </div>
+</body>
+</html>`;
+
+    // Add complete story HTML file
+    zip.file(`${story.title.replace(/[^a-zA-Z0-9]/g, '_')}.html`, html);
 
     // Add characters data and images
     if (storyCharacters.length > 0) {
