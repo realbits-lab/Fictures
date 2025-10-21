@@ -121,8 +121,10 @@ export async function GET(
     // Add parts and chapters to markdown
     if (sortedParts.length > 0) {
       // Story has parts structure
-      for (const part of sortedParts) {
-        markdown += `# Part ${part.orderIndex + 1}: ${part.title}\n\n`;
+      // Use 1-based indices for display and file names
+      sortedParts.forEach((part, partIndex) => {
+        const partNum = partIndex + 1;
+        markdown += `# Part ${partNum}: ${part.title}\n\n`;
 
         if (part.description) {
           markdown += `${part.description}\n\n`;
@@ -130,14 +132,15 @@ export async function GET(
 
         // Add part HNS data
         if (part.hnsData) {
-          zip.file(`hns_data/parts/part_${part.orderIndex + 1}_hns.json`, JSON.stringify(part.hnsData, null, 2));
+          zip.file(`hns_data/parts/part_${partNum}_hns.json`, JSON.stringify(part.hnsData, null, 2));
         }
 
         // Get chapters for this part
         const partChapters = sortedChapters.filter(c => c.partId === part.id);
 
-        for (const chapter of partChapters) {
-          markdown += `## Chapter ${chapter.orderIndex + 1}: ${chapter.title}\n\n`;
+        partChapters.forEach((chapter, chapterIndex) => {
+          const chapterNum = chapterIndex + 1;
+          markdown += `## Chapter ${chapterNum}: ${chapter.title}\n\n`;
 
           if (chapter.summary) {
             markdown += `**Summary:** ${chapter.summary}\n\n`;
@@ -146,7 +149,7 @@ export async function GET(
           // Add chapter HNS data
           if (chapter.hnsData) {
             zip.file(
-              `hns_data/chapters/part_${part.orderIndex + 1}_chapter_${chapter.orderIndex + 1}_hns.json`,
+              `hns_data/chapters/part_${partNum}_chapter_${chapterNum}_hns.json`,
               JSON.stringify(chapter.hnsData, null, 2)
             );
           }
@@ -156,8 +159,9 @@ export async function GET(
             .filter(s => s.chapterId === chapter.id)
             .sort((a, b) => a.orderIndex - b.orderIndex);
 
-          for (const scene of chapterScenes) {
-            markdown += `### Scene ${scene.orderIndex + 1}: ${scene.title}\n\n`;
+          chapterScenes.forEach((scene, sceneIndex) => {
+            const sceneNum = sceneIndex + 1;
+            markdown += `### Scene ${sceneNum}: ${scene.title}\n\n`;
 
             if (scene.content) {
               markdown += `${scene.content}\n\n`;
@@ -166,19 +170,20 @@ export async function GET(
             // Add scene HNS data
             if (scene.hnsData) {
               zip.file(
-                `hns_data/scenes/part_${part.orderIndex + 1}_chapter_${chapter.orderIndex + 1}_scene_${scene.orderIndex + 1}_hns.json`,
+                `hns_data/scenes/part_${partNum}_chapter_${chapterNum}_scene_${sceneNum}_hns.json`,
                 JSON.stringify(scene.hnsData, null, 2)
               );
             }
-          }
+          });
 
           markdown += `\n---\n\n`;
-        }
-      }
+        });
+      });
     } else {
       // Story has no parts, just chapters
-      for (const chapter of sortedChapters) {
-        markdown += `## Chapter ${chapter.orderIndex + 1}: ${chapter.title}\n\n`;
+      sortedChapters.forEach((chapter, chapterIndex) => {
+        const chapterNum = chapterIndex + 1;
+        markdown += `## Chapter ${chapterNum}: ${chapter.title}\n\n`;
 
         if (chapter.summary) {
           markdown += `**Summary:** ${chapter.summary}\n\n`;
@@ -187,7 +192,7 @@ export async function GET(
         // Add chapter HNS data
         if (chapter.hnsData) {
           zip.file(
-            `hns_data/chapters/chapter_${chapter.orderIndex + 1}_hns.json`,
+            `hns_data/chapters/chapter_${chapterNum}_hns.json`,
             JSON.stringify(chapter.hnsData, null, 2)
           );
         }
@@ -197,8 +202,9 @@ export async function GET(
           .filter(s => s.chapterId === chapter.id)
           .sort((a, b) => a.orderIndex - b.orderIndex);
 
-        for (const scene of chapterScenes) {
-          markdown += `### Scene ${scene.orderIndex + 1}: ${scene.title}\n\n`;
+        chapterScenes.forEach((scene, sceneIndex) => {
+          const sceneNum = sceneIndex + 1;
+          markdown += `### Scene ${sceneNum}: ${scene.title}\n\n`;
 
           if (scene.content) {
             markdown += `${scene.content}\n\n`;
@@ -207,14 +213,14 @@ export async function GET(
           // Add scene HNS data
           if (scene.hnsData) {
             zip.file(
-              `hns_data/scenes/chapter_${chapter.orderIndex + 1}_scene_${scene.orderIndex + 1}_hns.json`,
+              `hns_data/scenes/chapter_${chapterNum}_scene_${sceneNum}_hns.json`,
               JSON.stringify(scene.hnsData, null, 2)
             );
           }
-        }
+        });
 
         markdown += `\n---\n\n`;
-      }
+      });
     }
 
     // Add complete story markdown

@@ -14,7 +14,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-const API_KEY = process.env.TEST_API_KEY || '';
+
+// Load API key from .auth/user.json
+let API_KEY = '';
+try {
+  const authFile = path.join(__dirname, '..', '.auth', 'user.json');
+  if (fs.existsSync(authFile)) {
+    const authData = JSON.parse(fs.readFileSync(authFile, 'utf-8'));
+    API_KEY = authData.apiKey || '';
+  }
+} catch (error) {
+  console.error('Warning: Could not load API key from .auth/user.json:', error.message);
+}
 
 async function downloadStory(storyId) {
   console.log(`📦 Downloading story package for: ${storyId}`);

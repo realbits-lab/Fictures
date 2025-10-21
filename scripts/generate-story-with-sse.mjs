@@ -14,7 +14,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-const API_KEY = process.env.TEST_API_KEY || '';
+
+// Load API key from .auth/user.json
+let API_KEY = '';
+try {
+  const authFile = path.join(__dirname, '..', '.auth', 'user.json');
+  if (fs.existsSync(authFile)) {
+    const authData = JSON.parse(fs.readFileSync(authFile, 'utf-8'));
+    API_KEY = authData.apiKey || '';
+  }
+} catch (error) {
+  console.error('Warning: Could not load API key from .auth/user.json:', error.message);
+}
 
 // Story prompt
 const STORY_PROMPT = process.argv[2] || `I want to write a science fiction story about a Mars colony in 2157. The protagonist, Dr. Elena Martinez, is a xenobiologist who discovers mysterious underground structures that suggest Mars was inhabited millions of years ago. As she investigates deeper, she uncovers a warning left by an ancient civilization about a cosmic threat that's returning.`;
