@@ -87,43 +87,99 @@ Paragraph Structure:
 • White space: Maximum (short paragraphs create visual breathing room)
 • Single blank line between paragraphs
 
+🚨 UNIVERSAL DIALOGUE REQUIREMENT (APPLIES TO ALL SCENE TYPES) 🚨
+
+MANDATORY: Every scene MUST contain minimum 40% dialogue by word count, regardless of scene type.
+
+This is NON-NEGOTIABLE. Even in:
+• Action scenes → Characters shout warnings, give orders, exchange terse updates
+• Chase scenes → Characters yell, communicate while running, make split-second decisions verbally
+• Solo scenes → Character talks to themselves, inner dialogue as spoken thoughts, phone calls, recordings
+• Introspective scenes → Memories replayed as dialogue, internal arguments verbalized, conversations with imagined figures
+
 Dialogue Parameters:
-• Dialogue ratio: TARGET 50% by word count (45-55% acceptable range)
-• Dialogue length: Aim for substantial exchanges (3-5 dialogue lines per character minimum before speaker change)
+• Dialogue ratio: TARGET 50% by word count (minimum 40%, maximum 60%)
+• Dialogue length: Substantial exchanges (3-5 dialogue lines per character minimum)
 • Speaker format: New speaker = New paragraph with blank line separation
 • Action tags: Every 3-4 dialogue lines (not every line - let dialogue breathe)
 • Action separation: NEVER combine dialogue + action in same line
 • Multi-sentence dialogue: Use single newlines within same speaker's continuous dialogue
 • Speaker changes: Use blank lines (double newlines) between different speakers
-• Dialogue substance: Each character should speak 2-4 sentences when they have the floor (avoid single-sentence ping-pong)
+• Dialogue substance: Each character should speak 2-4 sentences when they have the floor (avoid ping-pong)
 
-SCENE TYPE PROTOCOLS:
+HOW TO ACHIEVE DIALOGUE IN EVERY SCENE TYPE:
+• 2+ characters present → Direct conversation (primary method)
+• Solo character → Phone calls, video messages, talking to self, inner dialogue as speech
+• Action sequences → Integrate urgent verbal exchanges during action
+• Flashbacks → Show conversations from the past
+• Technology → Voice AI, recordings, intercepted communications
+
+SCENE TYPE PROTOCOLS (ALL MUST MAINTAIN 40%+ DIALOGUE):
 
 ${(scene.conflict?.toLowerCase().includes('fight') || scene.conflict?.toLowerCase().includes('battle') || scene.conflict?.toLowerCase().includes('chase')) ? `
-ACTION SCENE:
+ACTION SCENE (MUST INCLUDE 40%+ DIALOGUE):
 • Words per sentence: 8-12 average
 • Sentence fragments: 15-20%
 • Paragraph length: 1-2 sentences max
-• Focus: External action, sensory details
-• Avoid: Internal monologue, complex emotions
+• Dialogue: Short, urgent exchanges integrated into action
+• Focus: External action + verbal communication
+• Method: Characters shout warnings, give orders, exchange status updates
 
-Example rhythm:
-He dodged left.
-The blade whistled past his ear. Close. Too close.
-His fist connected with ribs—a wet crunch.
-The enemy stumbled backward, gasping.` :
+Example rhythm (WITH DIALOGUE):
+"Behind you!"
+
+Sarah ducked.
+
+The blade whistled past her ear.
+
+"How many?" Marcus shouted from across the room.
+
+"Three—no, four!" She rolled left, came up firing.
+
+The first attacker stumbled backward, gasping.
+
+"Exit's blocked!"
+
+"Then we make one!" Marcus slammed his shoulder into the wall panel.
+
+Sparks showered down.
+
+"Is that your plan? Really?"
+
+"You got a better idea?"
+
+She didn't. She never did.` :
 (scene.emotional_shift?.to?.toLowerCase().includes('sad') || scene.emotional_shift?.to?.toLowerCase().includes('grief') || scene.goal?.toLowerCase().includes('realize') || scene.goal?.toLowerCase().includes('understand')) ? `
-EMOTIONAL/INTROSPECTIVE SCENE:
+EMOTIONAL/INTROSPECTIVE SCENE (MUST INCLUDE 40%+ DIALOGUE):
 • Words per sentence: 15-20 average
 • Sentence fragments: 2-5%
-• Paragraph length: 3-4 sentences
-• Focus: Internal thoughts, memories, feelings
-• Allow: Moderate sentence length for reflection
+• Paragraph length: 2-3 sentences
+• Dialogue: Internal spoken thoughts, phone calls, voice messages, talking to self
+• Focus: Internal conflict EXPRESSED through speech
+• Method: Character verbalizes thoughts, remembers conversations, leaves voice messages
 
-Example rhythm:
-The weight of the decision pressed down on her shoulders like a physical burden she couldn't shake. Every option led to pain—for her, for them, for everyone she'd sworn to protect. She closed her eyes and let herself remember the promise she'd made all those years ago.
+Example rhythm (WITH DIALOGUE):
+"I can't do this."
 
-Maybe promises were meant to be broken.` : `
+The words escaped before she could stop them. Her own voice, small and broken in the empty apartment.
+
+"You promised them. You swore you'd protect them."
+
+She closed her eyes, and her mother's voice echoed in memory:
+
+"Promises are what make us human, Elena. They're the only thing that separates us from chaos."
+
+"But what if keeping the promise destroys me?" she whispered to the darkness.
+
+No answer came. There never was an answer.
+
+She pulled out her phone, hands trembling, and started recording.
+
+"Marcus, if you're listening to this... I need you to know why I did what I did. The choice wasn't mine anymore. They forced my hand."
+
+Her voice cracked.
+
+"Maybe promises were meant to be broken. Maybe that's the only way to survive."` : `
 DIALOGUE SCENE:
 • Words per sentence: 12-18 average
 • Dialogue exchanges: Substantial (each character speaks 2-4 sentences before speaker change)
@@ -228,7 +284,10 @@ Emotional Intensity Mapping:
 
 IMPLEMENTATION CHECKLIST:
 ✓ Hook within first 30 words
-✓ 50% dialogue ratio maintained (45-55% acceptable)
+✓ 🚨 MINIMUM 40% dialogue by word count (TARGET 50%, absolute minimum 40%) 🚨
+✓ Dialogue present in EVERY scene type (action, introspective, dialogue)
+✓ If solo scene: Use phone calls, self-talk, voice recordings, memory dialogue
+✓ If action scene: Characters communicate during action (warnings, orders, updates)
 ✓ Dialogue exchanges are substantial (2-4 sentences per speaker turn)
 ✓ No paragraph exceeds 3 sentences
 ✓ Active voice >90%
@@ -241,8 +300,22 @@ IMPLEMENTATION CHECKLIST:
 ✓ Different speakers separated by blank lines
 ✓ Action tags spaced out (every 3-4 dialogue lines, not every line)
 
-TARGET: 800-1500 words of engaging, mobile-optimized prose following these discipline principles.`,
-      prompt: `Write the COMPLETE scene narrative from beginning to end. Start with the entry hook and develop through to resolution. Begin with: "${scene.entry_hook}"`,
+TARGET: 800-1500 words of engaging, mobile-optimized prose following these discipline principles.
+
+🚨 FINAL DIALOGUE REQUIREMENT REMINDER 🚨
+Before you begin writing, plan how you will achieve minimum 40% dialogue:
+• Multiple characters present? → Direct conversation
+• Single character alone? → Phone call, voice message, talking to self, remembered dialogue
+• Action sequence? → Urgent verbal exchanges during action
+• Data/research scene? → Character talks through discoveries aloud, calls colleague
+• Any scene can have dialogue if you're creative with the method
+
+DO NOT write a scene without substantial dialogue. This is MANDATORY.`,
+      prompt: `Write the COMPLETE scene narrative from beginning to end. Start with the entry hook and develop through to resolution.
+
+CRITICAL: This scene MUST contain minimum 40% dialogue by word count. Plan dialogue integration before writing.
+
+Begin with: "${scene.entry_hook}"`,
       temperature: 0.85,
     });
 
