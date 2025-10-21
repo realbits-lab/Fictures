@@ -88,12 +88,14 @@ Paragraph Structure:
 • Single blank line between paragraphs
 
 Dialogue Parameters:
-• Dialogue ratio: 40-60% by word count
+• Dialogue ratio: TARGET 50% by word count (45-55% acceptable range)
+• Dialogue length: Aim for substantial exchanges (3-5 dialogue lines per character minimum before speaker change)
 • Speaker format: New speaker = New paragraph with blank line separation
-• Action tags: Every 2-3 dialogue lines
+• Action tags: Every 3-4 dialogue lines (not every line - let dialogue breathe)
 • Action separation: NEVER combine dialogue + action in same line
 • Multi-sentence dialogue: Use single newlines within same speaker's continuous dialogue
 • Speaker changes: Use blank lines (double newlines) between different speakers
+• Dialogue substance: Each character should speak 2-4 sentences when they have the floor (avoid single-sentence ping-pong)
 
 SCENE TYPE PROTOCOLS:
 
@@ -124,30 +126,27 @@ The weight of the decision pressed down on her shoulders like a physical burden 
 Maybe promises were meant to be broken.` : `
 DIALOGUE SCENE:
 • Words per sentence: 12-18 average
-• Dialogue lines: Short, punchy (5-15 words)
-• Action tags: Every 2-3 exchanges
+• Dialogue exchanges: Substantial (each character speaks 2-4 sentences before speaker change)
+• Action tags: Every 3-4 dialogue lines (let conversations flow)
 • Focus: Character voice, conflict, information
+• Target: 50% dialogue by word count
 
-Example rhythm:
-"You can't be serious."
+Example rhythm (LONGER EXCHANGES):
+"You can't be serious about this plan. We'd be walking straight into a trap, Marcus. Every instinct I have is screaming that this is wrong."
 
-Sarah crossed her arms.
+Sarah crossed her arms and stepped closer to the table.
 
-"Dead serious."
+"Dead serious. Look at the intel—the facility is only lightly guarded on the third shift. We hit them at 0400, extract the data, and we're out before dawn. It's our best shot, maybe our only shot."
 
-Marcus didn't look up from the map.
+Marcus finally looked up from the map, his jaw set.
 
-"We leave at dawn."
+"Best shot at what? Getting killed? They'll see us coming a mile away. This isn't just about the data anymore—you know that. This is personal for you, and it's clouding your judgment."
 
-"That's suicide."
+"My judgment is fine. What's clouding yours is fear. We've been planning this for three months. Every variable accounted for, every contingency mapped. Unless you have a better idea, we move at dawn."
 
-"That's our only chance."
+She held his gaze, unflinching.
 
-He finally met her gaze.
-
-"Unless you have a better idea?"
-
-She didn't.`}
+He didn't have a better idea. She knew it. He knew it. The silence stretched between them.`}
 
 CONTENT GENERATION RULES:
 
@@ -229,7 +228,8 @@ Emotional Intensity Mapping:
 
 IMPLEMENTATION CHECKLIST:
 ✓ Hook within first 30 words
-✓ 40-60% dialogue ratio maintained
+✓ 50% dialogue ratio maintained (45-55% acceptable)
+✓ Dialogue exchanges are substantial (2-4 sentences per speaker turn)
 ✓ No paragraph exceeds 3 sentences
 ✓ Active voice >90%
 ✓ Fragments used purposefully
@@ -239,6 +239,7 @@ IMPLEMENTATION CHECKLIST:
 ✓ All dialogue separated from action tags
 ✓ Multi-sentence dialogue uses single newlines within same speaker
 ✓ Different speakers separated by blank lines
+✓ Action tags spaced out (every 3-4 dialogue lines, not every line)
 
 TARGET: 800-1500 words of engaging, mobile-optimized prose following these discipline principles.`,
       prompt: `Write the COMPLETE scene narrative from beginning to end. Start with the entry hook and develop through to resolution. Begin with: "${scene.entry_hook}"`,
