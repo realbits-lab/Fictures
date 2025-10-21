@@ -425,3 +425,33 @@ export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
   }),
 }));
 
+// Scene evaluations table - Store AI-powered scene evaluations
+export const sceneEvaluations = pgTable('scene_evaluations', {
+  id: text('id').primaryKey(),
+  sceneId: text('scene_id').references(() => scenes.id, { onDelete: 'cascade' }).notNull(),
+
+  // Store full evaluation as JSON (complete evaluation object)
+  evaluation: json('evaluation').notNull(),
+
+  // Indexed scores for querying (stored as numeric strings for precision)
+  overallScore: varchar('overall_score', { length: 10 }).notNull(),
+  plotScore: varchar('plot_score', { length: 10 }).notNull(),
+  characterScore: varchar('character_score', { length: 10 }).notNull(),
+  pacingScore: varchar('pacing_score', { length: 10 }).notNull(),
+  proseScore: varchar('prose_score', { length: 10 }).notNull(),
+  worldBuildingScore: varchar('world_building_score', { length: 10 }).notNull(),
+
+  // Metadata
+  modelVersion: varchar('model_version', { length: 50 }).default('gpt-4o-mini'),
+  tokenUsage: integer('token_usage'),
+  evaluationTimeMs: integer('evaluation_time_ms'),
+  evaluatedAt: timestamp('evaluated_at').defaultNow().notNull(),
+});
+
+export const sceneEvaluationsRelations = relations(sceneEvaluations, ({ one }) => ({
+  scene: one(scenes, {
+    fields: [sceneEvaluations.sceneId],
+    references: [scenes.id],
+  }),
+}));
+
