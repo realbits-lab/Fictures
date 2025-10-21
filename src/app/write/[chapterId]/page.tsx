@@ -38,8 +38,11 @@ export default async function WritePage({ params }: { params: Promise<{ chapterI
   };
   
   return (
-    <UnifiedWritingEditor 
-      story={storyStructure} 
+    <UnifiedWritingEditor
+      story={{
+        ...storyStructure,
+        hnsData: storyStructure.hnsData || {}
+      }}
       initialSelection={initialSelection}
     />
   );

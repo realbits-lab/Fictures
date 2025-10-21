@@ -14,12 +14,7 @@ export async function GET(request: NextRequest) {
       count: publishedStories.length,
       metadata: {
         fetchedAt: new Date().toISOString(),
-        lastUpdated: publishedStories.length > 0 
-          ? publishedStories.reduce((latest, story) => 
-              !latest || (story.updatedAt && story.updatedAt > latest) ? story.updatedAt : latest, 
-              null
-            )
-          : new Date().toISOString()
+        lastUpdated: new Date().toISOString()
       }
     };
 
@@ -28,9 +23,8 @@ export async function GET(request: NextRequest) {
       storiesData: publishedStories.map(story => ({
         id: story.id,
         title: story.title,
-        updatedAt: story.updatedAt,
         status: story.status,
-        wordCount: story.wordCount,
+        currentWordCount: story.currentWordCount,
         rating: story.rating,
         viewCount: story.viewCount
       })),

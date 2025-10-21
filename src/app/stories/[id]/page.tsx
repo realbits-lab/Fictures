@@ -40,8 +40,8 @@ export default async function StoryPage({ params }: { params: Promise<{ id: stri
     );
   }
 
-  // Check if user has access to this story (either owner or public story)
-  if (story.authorId !== session?.user?.id && !story.isPublic) {
+  // Check if user has access to this story (either owner or published story)
+  if (story.authorId !== session?.user?.id && story.status !== 'published') {
     return (
       <MainLayout>
         <div className="text-center py-8">
@@ -56,13 +56,13 @@ export default async function StoryPage({ params }: { params: Promise<{ id: stri
   const formattedStory = {
     id: story.id,
     title: story.title,
-    genre: story.genre,
+    genre: story.genre || 'General',
     status: story.status,
     startDate: new Date(story.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-    wordCount: story.currentWordCount,
-    targetWordCount: story.targetWordCount,
-    readers: story.viewCount,
-    rating: story.rating,
+    wordCount: story.currentWordCount || 0,
+    targetWordCount: story.targetWordCount || 0,
+    readers: story.viewCount || 0,
+    rating: story.rating || 0,
     parts: [] // TODO: Fetch actual parts/chapters data
   };
 

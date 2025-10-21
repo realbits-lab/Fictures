@@ -35,7 +35,7 @@ export async function GET(
 
     // Parse character content data
     const storyCharacters = rawCharacters.map(character => {
-      let parsedContent = {};
+      let parsedContent: Record<string, any> = {};
       if (character.content) {
         try {
           if (typeof character.content === 'string') {
@@ -132,41 +132,16 @@ export async function GET(
     // storyData field has been removed - using hnsData only
 
     // Parse HNS data for parts, chapters, and scenes
+    // Note: getStoryWithStructure doesn't return hnsData, so we set to null
     const partsWithHnsData = storyWithStructure.parts.map(part => {
-      let partHnsData = null;
-      if (part.hnsData) {
-        try {
-          partHnsData = typeof part.hnsData === 'object'
-            ? part.hnsData
-            : JSON.parse(part.hnsData as any);
-        } catch (error) {
-          console.error(`Failed to parse part ${part.id} hnsData:`, error);
-        }
-      }
+      const partHnsData = null;
 
       const chaptersWithHnsData = part.chapters.map(chapter => {
-        let chapterHnsData = null;
-        if (chapter.hnsData) {
-          try {
-            chapterHnsData = typeof chapter.hnsData === 'object'
-              ? chapter.hnsData
-              : JSON.parse(chapter.hnsData as any);
-          } catch (error) {
-            console.error(`Failed to parse chapter ${chapter.id} hnsData:`, error);
-          }
-        }
+        const chapterHnsData = null;
 
         const scenesWithHnsData = (chapter.scenes || []).map(scene => {
-          let sceneHnsData = null;
-          if (scene.hnsData) {
-            try {
-              sceneHnsData = typeof scene.hnsData === 'object'
-                ? scene.hnsData
-                : JSON.parse(scene.hnsData as any);
-            } catch (error) {
-              console.error(`Failed to parse scene ${scene.id} hnsData:`, error);
-            }
-          }
+          const sceneHnsData = null;
+          // scene.hnsData not available in getStoryWithStructure query result
           return { ...scene, hnsData: sceneHnsData };
         });
 
@@ -178,28 +153,12 @@ export async function GET(
 
     // Handle standalone chapters
     const chaptersWithHnsData = storyWithStructure.chapters.map(chapter => {
-      let chapterHnsData = null;
-      if (chapter.hnsData) {
-        try {
-          chapterHnsData = typeof chapter.hnsData === 'object'
-            ? chapter.hnsData
-            : JSON.parse(chapter.hnsData as any);
-        } catch (error) {
-          console.error(`Failed to parse chapter ${chapter.id} hnsData:`, error);
-        }
-      }
+      const chapterHnsData = null;
+      // hnsData not available in getStoryWithStructure query result
 
       const scenesWithHnsData = (chapter.scenes || []).map(scene => {
-        let sceneHnsData = null;
-        if (scene.hnsData) {
-          try {
-            sceneHnsData = typeof scene.hnsData === 'object'
-              ? scene.hnsData
-              : JSON.parse(scene.hnsData as any);
-          } catch (error) {
-            console.error(`Failed to parse scene ${scene.id} hnsData:`, error);
-          }
-        }
+        const sceneHnsData = null;
+        // hnsData not available in getStoryWithStructure query result
         return { ...scene, hnsData: sceneHnsData };
       });
 
@@ -221,10 +180,10 @@ export async function GET(
         fetchedAt: new Date().toISOString(),
         totalChapters: allChapters.length,
         totalScenes: allScenes.length,
-        lastModified: storyWithStructure.updatedAt || new Date().toISOString(),
+        lastModified: new Date().toISOString(),
         writingContext: {
-          draftsCount: allChapters.filter(ch => ch.status === 'draft').length,
-          completedChapters: allChapters.filter(ch => ch.status === 'completed').length,
+          draftsCount: allChapters.filter(ch => ch.status === 'writing').length,
+          completedChapters: allChapters.filter(ch => ch.status === 'published').length,
           totalWordCount: allChapters.reduce((sum, ch) => sum + (ch.wordCount || 0), 0),
           averageChapterLength: allChapters.length > 0
             ? Math.round(allChapters.reduce((sum, ch) => sum + (ch.wordCount || 0), 0) / allChapters.length)
@@ -233,19 +192,16 @@ export async function GET(
       }
     };
 
-    // Generate ETag based on story, chapters, and scenes modification times
+    // Generate ETag based on story, chapters, and scenes
     const contentForHash = JSON.stringify({
       storyId: storyWithStructure.id,
-      storyUpdatedAt: storyWithStructure.updatedAt,
       chaptersData: allChapters.map(ch => ({
         id: ch.id,
-        updatedAt: ch.updatedAt,
         wordCount: ch.wordCount,
         status: ch.status
       })),
       scenesData: allScenes.map(sc => ({
         id: sc.id,
-        updatedAt: sc.updatedAt,
         wordCount: sc.wordCount,
         status: sc.status
       })),
@@ -315,15 +271,13 @@ export async function PATCH(
       return NextResponse.json({ error: 'Access denied - you are not the owner of this story' }, { status: 403 });
     }
 
-    // Ensure data is properly serialized as JSON string
-    const serializedData = JSON.stringify(hnsData);
-
-    console.log('📦 Serializing HNS data for database:', serializedData.substring(0, 200) + '...');
+    console.log('📦 Saving HNS data for database:', JSON.stringify(hnsData).substring(0, 200) + '...');
 
     // Update the story with the new HNS data
+    // Note: Drizzle ORM automatically handles JSON serialization
     await db.update(stories)
       .set({
-        hnsData: serializedData,
+        hnsData: hnsData,
         updatedAt: new Date()
       })
       .where(eq(stories.id, id));

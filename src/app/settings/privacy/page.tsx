@@ -170,7 +170,7 @@ export default function PrivacySecurityPage() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">Add an extra layer of security to your account</p>
               </div>
               <div className="flex items-center gap-3">
-                <Badge variant="secondary">Disabled</Badge>
+                <Badge variant="warning">Disabled</Badge>
                 <Button size="sm">Enable 2FA</Button>
               </div>
             </div>

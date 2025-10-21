@@ -74,7 +74,6 @@ export async function POST(request: NextRequest) {
       JSON.stringify({
         success: true,
         story: {
-          id: generatedStory.id,
           ...generatedStory,
           databaseStory: story,
           parts: createdParts,
