@@ -21,7 +21,7 @@ export async function GET(
 
 
     // Get story with full structure (parts, chapters, scenes)
-    const storyWithStructure = await getStoryWithStructure(id, session?.user?.id);
+    const storyWithStructure = await getStoryWithStructure(id, true);
 
 
     if (!storyWithStructure) {

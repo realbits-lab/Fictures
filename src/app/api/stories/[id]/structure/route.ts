@@ -25,7 +25,7 @@ export async function GET(
       metadata: {
         fetchedAt: new Date().toISOString(),
         structureVersion: 'full-with-scenes',
-        lastModified: storyWithStructure.updatedAt || new Date().toISOString()
+        lastModified: new Date().toISOString()
       }
     };
 
@@ -38,24 +38,20 @@ export async function GET(
 
     const contentForHash = JSON.stringify({
       storyId: storyWithStructure.id,
-      storyUpdatedAt: storyWithStructure.updatedAt,
       partsData: storyWithStructure.parts.map(part => ({
         id: part.id,
         title: part.title,
-        orderIndex: part.orderIndex,
-        updatedAt: part.updatedAt
+        orderIndex: part.orderIndex
       })),
       chaptersData: allChapters.map(ch => ({
         id: ch.id,
         title: ch.title,
-        updatedAt: ch.updatedAt,
         orderIndex: ch.orderIndex,
         status: ch.status
       })),
       scenesData: allScenes.map(sc => ({
         id: sc.id,
         title: sc.title,
-        updatedAt: sc.updatedAt,
         orderIndex: sc.orderIndex,
         status: sc.status
       }))

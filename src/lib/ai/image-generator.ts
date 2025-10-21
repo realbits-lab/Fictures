@@ -1,7 +1,7 @@
 import { gateway } from '@ai-sdk/gateway';
 import { google } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
-import { generateImage as generateAIImage } from 'ai';
+import { experimental_generateImage } from 'ai';
 import { put } from '@vercel/blob';
 import { nanoid } from 'nanoid';
 import sharp from 'sharp';
@@ -274,7 +274,7 @@ export async function generateImage(
     try {
       console.log('🔄 Attempting DALL-E 3 image generation at 1792x1024...');
 
-      const result = await generateAIImage({
+      const result = await experimental_generateImage({
         model: openai.image('dall-e-3'),
         prompt: enhancedPrompt,
         size: '1792x1024',

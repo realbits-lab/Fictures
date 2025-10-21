@@ -573,7 +573,8 @@ export async function GET(
     // Return ZIP file as download
     const fileName = `${story.title.replace(/[^a-zA-Z0-9]/g, '_')}_${storyId}.zip`;
 
-    return new NextResponse(zipBuffer, {
+    // Convert Buffer to Uint8Array for NextResponse
+    return new NextResponse(new Uint8Array(zipBuffer), {
       headers: {
         'Content-Type': 'application/zip',
         'Content-Disposition': `attachment; filename="${fileName}"`,

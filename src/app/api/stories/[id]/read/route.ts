@@ -42,14 +42,13 @@ export async function GET(
       }
     };
 
-    // Generate ETag based on story structure and modification times
+    // Generate ETag based on story structure
     const contentForHash = JSON.stringify({
       storyId: storyWithStructure.id,
-      storyUpdatedAt: storyWithStructure.updatedAt,
-      chapters: [
+      chapterIds: [
         ...storyWithStructure.parts.flatMap(part => part.chapters),
         ...storyWithStructure.chapters
-      ].map(ch => ({ id: ch.id, updatedAt: ch.updatedAt })),
+      ].map(ch => ch.id),
       totalChapters: response.metadata.totalChapters,
       publishedChapters: response.metadata.publishedChapters
     });
