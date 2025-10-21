@@ -272,9 +272,10 @@ This chapter should build on previous chapters and contribute to the overall par
         // Create fallback chapter for this iteration
         const fallbackChapter: HNSChapter = {
           chapter_id: nanoid(),
-          chapter_title: `Part ${part.part_number} Chapter ${i + 1}`,
-          summary: `Chapter ${i + 1} of ${part.part_title}`,
           chapter_number: i + 1,
+          chapter_title: `Part ${part.part_number} Chapter ${i + 1}`,
+          part_ref: part.part_id,
+          summary: `Chapter ${i + 1} of ${part.part_title}`,
           pacing_goal: "medium" as const,
           action_dialogue_ratio: "50:50",
           chapter_hook: {
@@ -298,9 +299,10 @@ This chapter should build on previous chapters and contribute to the overall par
     // Return fallback chapters
     return Array.from({ length: Math.min(chapterCount, 2) }, (_, i) => ({
       chapter_id: nanoid(),
-      chapter_title: `Part ${part.part_number} Chapter ${i + 1}`,
-      summary: `Chapter ${i + 1} of ${part.part_title}`,
       chapter_number: i + 1,
+      chapter_title: `Part ${part.part_number} Chapter ${i + 1}`,
+      part_ref: part.part_id,
+      summary: `Chapter ${i + 1} of ${part.part_title}`,
       pacing_goal: "medium" as const,
       action_dialogue_ratio: "50:50",
       chapter_hook: {
