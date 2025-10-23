@@ -6,3 +6,4 @@ export { Input } from "./Input";
 export { Textarea } from "./Textarea";
 export { Label } from "./Label";
 export { SkeletonLoader, Skeleton, StoryCardSkeleton, DashboardWidgetSkeleton, ListItemSkeleton, TextBlockSkeleton, ButtonSkeleton, ImageSkeleton, Shimmer, ShimmerPulse, ShimmerFast, ShimmerDiagonal } from "./SkeletonLoader";
+export { StoryImage } from "./story-image";
