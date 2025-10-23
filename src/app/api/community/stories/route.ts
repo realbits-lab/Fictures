@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
-import { stories, users } from '@/lib/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { stories, users, communityPosts } from '@/lib/db/schema';
+import { eq, desc, sql, and } from 'drizzle-orm';
 import { createHash } from 'crypto';
 
 export async function GET(request: NextRequest) {
@@ -31,21 +31,54 @@ export async function GET(request: NextRequest) {
       .where(eq(stories.status, 'published'))
       .orderBy(desc(stories.updatedAt));
 
-    // Add mock community stats for now (since community_posts table doesn't exist yet)
-    const storiesWithStats = publicStories.map((story) => {
-      // Generate realistic mock stats based on story data
-      const mockPosts = Math.floor(Math.random() * 50) + 10; // 10-60 posts
-      const mockMembers = Math.floor((story.viewCount ?? 0) * 0.1) || Math.floor(Math.random() * 500) + 100; // 100-600 members
-      const isRecent = (new Date().getTime() - new Date(story.updatedAt).getTime()) < (7 * 24 * 60 * 60 * 1000);
-      
-      return {
-        ...story,
-        totalPosts: mockPosts,
-        totalMembers: mockMembers,
-        isActive: isRecent && Math.random() > 0.3, // 70% chance of being active if recent
-        lastActivity: story.updatedAt,
-      };
-    });
+    // Get real community stats from database
+    const storiesWithStats = await Promise.all(
+      publicStories.map(async (story) => {
+        // Count total posts for this story (excluding deleted)
+        const postCountResult = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(communityPosts)
+          .where(and(
+            eq(communityPosts.storyId, story.id),
+            eq(communityPosts.isDeleted, false)
+          ));
+        const totalPosts = Number(postCountResult[0]?.count || 0);
+
+        // Get last activity from most recent post
+        const lastPostResult = await db
+          .select({ lastActivityAt: communityPosts.lastActivityAt })
+          .from(communityPosts)
+          .where(and(
+            eq(communityPosts.storyId, story.id),
+            eq(communityPosts.isDeleted, false)
+          ))
+          .orderBy(desc(communityPosts.lastActivityAt))
+          .limit(1);
+        const lastActivity = lastPostResult[0]?.lastActivityAt || story.updatedAt;
+
+        // Count unique members (authors who posted)
+        const memberCountResult = await db
+          .selectDistinct({ authorId: communityPosts.authorId })
+          .from(communityPosts)
+          .where(and(
+            eq(communityPosts.storyId, story.id),
+            eq(communityPosts.isDeleted, false)
+          ));
+        const totalMembers = memberCountResult.length;
+
+        // Determine if active (has posts in last 7 days)
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const isActive = lastActivity > sevenDaysAgo;
+
+        return {
+          ...story,
+          totalPosts,
+          totalMembers,
+          isActive,
+          lastActivity,
+        };
+      })
+    );
 
     const response = {
       success: true,

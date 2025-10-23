@@ -3,7 +3,7 @@ import { gateway } from '@ai-sdk/gateway';
 import { generateObject } from 'ai';
 import { authenticateRequest, hasRequiredScope } from '@/lib/auth/dual-auth';
 import { db } from '@/lib/db';
-import { scenes, sceneEvaluations } from '@/lib/db/schema';
+import { scenes, chapters, stories, sceneEvaluations } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import {
   evaluationRequestSchema,
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     if (!validationResult.success) {
       return NextResponse.json(
-        { error: 'Invalid request', details: validationResult.error.errors },
+        { error: 'Invalid request', details: validationResult.error.issues },
         { status: 400 }
       );
     }
@@ -49,25 +49,30 @@ export async function POST(request: NextRequest) {
     const { sceneId, content, context, options } = validationResult.data;
 
     // 3. Verify scene exists and user has access
-    const scene = await db.query.scenes.findFirst({
-      where: eq(scenes.id, sceneId),
-      with: {
-        chapter: {
-          with: {
-            story: true
-          }
-        }
-      }
-    });
+    const sceneData = await db
+      .select({
+        sceneId: scenes.id,
+        sceneContent: scenes.content,
+        chapterId: chapters.id,
+        storyId: stories.id,
+        authorId: stories.authorId,
+      })
+      .from(scenes)
+      .innerJoin(chapters, eq(scenes.chapterId, chapters.id))
+      .innerJoin(stories, eq(chapters.storyId, stories.id))
+      .where(eq(scenes.id, sceneId))
+      .limit(1);
 
-    if (!scene) {
+    if (sceneData.length === 0) {
       return NextResponse.json(
         { error: 'Scene not found' },
         { status: 404 }
       );
     }
 
-    if (scene.chapter.story.authorId !== authResult.user.id) {
+    const scene = sceneData[0];
+
+    if (scene.authorId !== authResult.user.id) {
       return NextResponse.json(
         { error: 'Forbidden: You do not have access to this scene' },
         { status: 403 }

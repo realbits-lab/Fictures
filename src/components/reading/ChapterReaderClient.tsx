@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { useStoryReader, useReadingProgress } from '@/hooks/useStoryReader';
 import { useChapterScenes } from '@/hooks/useChapterScenes';
 import { ProgressIndicator } from './ProgressIndicator';
+import { CommentSection } from './CommentSection';
 import type { Chapter } from '@/hooks/useStoryReader';
 
 interface ChapterReaderClientProps {
@@ -12,6 +14,7 @@ interface ChapterReaderClientProps {
 }
 
 export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
+  const { data: session } = useSession();
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
   const [isScrollRestored, setIsScrollRestored] = useState<boolean>(false);
@@ -719,6 +722,18 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                   );
                 })()}
               </div>
+
+              {/* Comments Section */}
+              {selectedSceneId && (
+                <div className="mt-12 pt-6">
+                  <CommentSection
+                    storyId={storyId}
+                    chapterId={selectedChapterId || undefined}
+                    sceneId={selectedSceneId}
+                    currentUserId={session?.user?.id}
+                  />
+                </div>
+              )}
             </article>
           ) : (
             <div className="h-full flex items-center justify-center">

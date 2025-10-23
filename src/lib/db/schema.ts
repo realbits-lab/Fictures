@@ -1,10 +1,85 @@
-import { pgTable, text, timestamp, integer, boolean, json, uuid, varchar, serial, primaryKey, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, integer, boolean, json, uuid, varchar, serial, primaryKey, pgEnum, decimal } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Status enum for stories and chapters
 export const statusEnum = pgEnum('status', [
   'writing',     // Content is being written/drafted
   'published'    // Content is published and available
+]);
+
+// Content type enum for community posts and replies
+export const contentTypeEnum = pgEnum('content_type', [
+  'markdown',
+  'html',
+  'plain'
+]);
+
+// Moderation status enum for community posts
+export const moderationStatusEnum = pgEnum('moderation_status', [
+  'approved',
+  'pending',
+  'flagged',
+  'rejected'
+]);
+
+// Event type enum for analytics
+export const eventTypeEnum = pgEnum('event_type', [
+  'page_view',
+  'story_view',
+  'chapter_read_start',
+  'chapter_read_complete',
+  'scene_read',
+  'comment_created',
+  'comment_liked',
+  'story_liked',
+  'chapter_liked',
+  'post_created',
+  'post_viewed',
+  'share',
+  'bookmark'
+]);
+
+// Session type enum for reading sessions
+export const sessionTypeEnum = pgEnum('session_type', [
+  'continuous',
+  'interrupted',
+  'partial'
+]);
+
+// Insight type enum for story insights
+export const insightTypeEnum = pgEnum('insight_type', [
+  'quality_improvement',
+  'engagement_drop',
+  'reader_feedback',
+  'pacing_issue',
+  'character_development',
+  'plot_consistency',
+  'trending_up',
+  'publishing_opportunity',
+  'audience_mismatch'
+]);
+
+// Visibility enum for scenes and content
+export const visibilityEnum = pgEnum('visibility', [
+  'private',
+  'unlisted',
+  'public'
+]);
+
+// Schedule type enum for publishing schedules
+export const scheduleTypeEnum = pgEnum('schedule_type', [
+  'daily',
+  'weekly',
+  'custom',
+  'one-time'
+]);
+
+// Publication status enum for scheduled publications
+export const publicationStatusEnum = pgEnum('publication_status', [
+  'pending',
+  'published',
+  'failed',
+  'cancelled'
 ]);
 
 // NextAuth.js required tables
@@ -149,7 +224,7 @@ export const chapters = pgTable('chapters', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Scenes table - Chapter breakdown with HNS support
+// Scenes table - Chapter breakdown with HNS support and publishing
 export const scenes = pgTable('scenes', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
@@ -171,6 +246,14 @@ export const scenes = pgTable('scenes', {
   // Character and place references for scene writing
   characterIds: json('character_ids').$type<string[]>().default([]).notNull(),
   placeIds: json('place_ids').$type<string[]>().default([]).notNull(),
+  // Publishing fields
+  publishedAt: timestamp('published_at'),
+  scheduledFor: timestamp('scheduled_for'),
+  visibility: visibilityEnum('visibility').default('private').notNull(),
+  autoPublish: boolean('auto_publish').default(false),
+  publishedBy: text('published_by').references(() => users.id),
+  unpublishedAt: timestamp('unpublished_at'),
+  unpublishedBy: text('unpublished_by').references(() => users.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -261,29 +344,89 @@ export const communityPosts = pgTable('community_posts', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
   content: text('content').notNull(),
-  storyId: text('story_id').references(() => stories.id).notNull(),
-  authorId: text('author_id').references(() => users.id).notNull(),
+  contentType: contentTypeEnum('content_type').default('markdown').notNull(),
+  contentHtml: text('content_html'),
+  contentImages: json('content_images').$type<Array<{ url: string; alt?: string; }>>().default([]),
+  storyId: text('story_id').references(() => stories.id, { onDelete: 'cascade' }).notNull(),
+  authorId: text('author_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
   type: varchar('type', { length: 50 }).default('discussion'), // discussion, theory, review, question
   isPinned: boolean('is_pinned').default(false),
   isLocked: boolean('is_locked').default(false),
+  isEdited: boolean('is_edited').default(false),
+  editCount: integer('edit_count').default(0),
+  lastEditedAt: timestamp('last_edited_at'),
+  isDeleted: boolean('is_deleted').default(false),
+  deletedAt: timestamp('deleted_at'),
   likes: integer('likes').default(0),
   replies: integer('replies').default(0),
   views: integer('views').default(0),
+  moderationStatus: moderationStatusEnum('moderation_status').default('approved'),
+  moderationReason: text('moderation_reason'),
+  moderatedBy: text('moderated_by').references(() => users.id),
+  moderatedAt: timestamp('moderated_at'),
+  tags: json('tags').$type<string[]>().default([]),
+  mentions: json('mentions').$type<Array<{ userId: string; username: string; }>>().default([]),
   lastActivityAt: timestamp('last_activity_at').defaultNow().notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 // Community replies table - Threaded replies to posts
-export const communityReplies = pgTable('community_replies', {
+export const communityReplies: any = pgTable('community_replies', {
   id: text('id').primaryKey(),
   content: text('content').notNull(),
-  postId: text('post_id').references(() => communityPosts.id).notNull(),
-  authorId: text('author_id').references(() => users.id).notNull(),
-  parentReplyId: text('parent_reply_id'), // For nested replies
+  contentType: contentTypeEnum('content_type').default('markdown').notNull(),
+  contentHtml: text('content_html'),
+  contentImages: json('content_images').$type<Array<{ url: string; alt?: string; }>>().default([]),
+  postId: text('post_id').references(() => communityPosts.id, { onDelete: 'cascade' }).notNull(),
+  authorId: text('author_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  parentReplyId: text('parent_reply_id').references(() => communityReplies.id, { onDelete: 'cascade' }), // For nested replies
+  depth: integer('depth').default(0).notNull(),
+  isEdited: boolean('is_edited').default(false),
+  editCount: integer('edit_count').default(0),
+  lastEditedAt: timestamp('last_edited_at'),
+  isDeleted: boolean('is_deleted').default(false),
+  deletedAt: timestamp('deleted_at'),
   likes: integer('likes').default(0),
+  mentions: json('mentions').$type<Array<{ userId: string; username: string; }>>().default([]),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Post images table - Store image metadata for community posts
+export const postImages = pgTable('post_images', {
+  id: text('id').primaryKey(),
+  postId: text('post_id').references(() => communityPosts.id, { onDelete: 'cascade' }).notNull(),
+  url: text('url').notNull(),
+  filename: varchar('filename', { length: 255 }).notNull(),
+  mimeType: varchar('mime_type', { length: 100 }).notNull(),
+  size: integer('size').notNull(), // File size in bytes
+  width: integer('width'),
+  height: integer('height'),
+  caption: text('caption'),
+  orderIndex: integer('order_index').default(0).notNull(),
+  uploadedBy: text('uploaded_by').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Post likes table - Track likes on community posts
+export const postLikes = pgTable('post_likes', {
+  id: text('id').primaryKey(),
+  postId: text('post_id').notNull().references(() => communityPosts.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  uniqueUserPost: primaryKey({ columns: [table.postId, table.userId], name: 'post_user_unique' }),
+}));
+
+// Post views table - Track views on community posts
+export const postViews = pgTable('post_views', {
+  id: text('id').primaryKey(),
+  postId: text('post_id').notNull().references(() => communityPosts.id, { onDelete: 'cascade' }),
+  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }), // Nullable for anonymous views
+  sessionId: varchar('session_id', { length: 255 }), // Browser session ID
+  ipHash: varchar('ip_hash', { length: 64 }), // Hashed IP address for privacy
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 // Define relations
@@ -391,7 +534,14 @@ export const communityPostsRelations = relations(communityPosts, ({ one, many })
     fields: [communityPosts.authorId],
     references: [users.id],
   }),
+  moderator: one(users, {
+    fields: [communityPosts.moderatedBy],
+    references: [users.id],
+  }),
   replies: many(communityReplies),
+  images: many(postImages),
+  likes: many(postLikes),
+  views: many(postViews),
 }));
 
 export const communityRepliesRelations = relations(communityReplies, ({ one, many }) => ({
@@ -425,6 +575,40 @@ export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
   }),
 }));
 
+// Relations for new community tables
+export const postImagesRelations = relations(postImages, ({ one }) => ({
+  post: one(communityPosts, {
+    fields: [postImages.postId],
+    references: [communityPosts.id],
+  }),
+  uploadedByUser: one(users, {
+    fields: [postImages.uploadedBy],
+    references: [users.id],
+  }),
+}));
+
+export const postLikesRelations = relations(postLikes, ({ one }) => ({
+  post: one(communityPosts, {
+    fields: [postLikes.postId],
+    references: [communityPosts.id],
+  }),
+  user: one(users, {
+    fields: [postLikes.userId],
+    references: [users.id],
+  }),
+}));
+
+export const postViewsRelations = relations(postViews, ({ one }) => ({
+  post: one(communityPosts, {
+    fields: [postViews.postId],
+    references: [communityPosts.id],
+  }),
+  user: one(users, {
+    fields: [postViews.userId],
+    references: [users.id],
+  }),
+}));
+
 // Scene evaluations table - Store AI-powered scene evaluations
 export const sceneEvaluations = pgTable('scene_evaluations', {
   id: text('id').primaryKey(),
@@ -451,6 +635,328 @@ export const sceneEvaluations = pgTable('scene_evaluations', {
 export const sceneEvaluationsRelations = relations(sceneEvaluations, ({ one }) => ({
   scene: one(scenes, {
     fields: [sceneEvaluations.sceneId],
+    references: [scenes.id],
+  }),
+}));
+
+// Comments table - Scene-level comments for reading page
+export const comments: any = pgTable('comments', {
+  id: text('id').primaryKey(),
+  content: text('content').notNull(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  storyId: text('story_id').notNull().references(() => stories.id, { onDelete: 'cascade' }),
+  chapterId: text('chapter_id').references(() => chapters.id, { onDelete: 'cascade' }),
+  sceneId: text('scene_id').references(() => scenes.id, { onDelete: 'cascade' }),
+  parentCommentId: text('parent_comment_id').references(() => comments.id, { onDelete: 'cascade' }),
+  depth: integer('depth').default(0).notNull(),
+  likeCount: integer('like_count').default(0).notNull(),
+  replyCount: integer('reply_count').default(0).notNull(),
+  isEdited: boolean('is_edited').default(false).notNull(),
+  isDeleted: boolean('is_deleted').default(false).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Comment likes table
+export const commentLikes = pgTable('comment_likes', {
+  id: text('id').primaryKey(),
+  commentId: text('comment_id').notNull().references(() => comments.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  uniqueUserComment: primaryKey({ columns: [table.commentId, table.userId], name: 'comment_user_unique' }),
+}));
+
+// Story likes table
+export const storyLikes = pgTable('story_likes', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  storyId: text('story_id').notNull().references(() => stories.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  uniqueUserStory: primaryKey({ columns: [table.userId, table.storyId], name: 'story_user_unique' }),
+}));
+
+// Chapter likes table
+export const chapterLikes = pgTable('chapter_likes', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  chapterId: text('chapter_id').notNull().references(() => chapters.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  uniqueUserChapter: primaryKey({ columns: [table.userId, table.chapterId], name: 'chapter_user_unique' }),
+}));
+
+// Scene likes table
+export const sceneLikes = pgTable('scene_likes', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  sceneId: text('scene_id').notNull().references(() => scenes.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  uniqueUserScene: primaryKey({ columns: [table.userId, table.sceneId], name: 'scene_user_unique' }),
+}));
+
+// Relations for comments
+export const commentsRelations = relations(comments, ({ one, many }) => ({
+  user: one(users, {
+    fields: [comments.userId],
+    references: [users.id],
+  }),
+  story: one(stories, {
+    fields: [comments.storyId],
+    references: [stories.id],
+  }),
+  chapter: one(chapters, {
+    fields: [comments.chapterId],
+    references: [chapters.id],
+  }),
+  scene: one(scenes, {
+    fields: [comments.sceneId],
+    references: [scenes.id],
+  }),
+  parentComment: one(comments, {
+    fields: [comments.parentCommentId],
+    references: [comments.id],
+    relationName: 'parentChild',
+  }),
+  childComments: many(comments, { relationName: 'parentChild' }),
+  likes: many(commentLikes),
+}));
+
+// Relations for likes
+export const commentLikesRelations = relations(commentLikes, ({ one }) => ({
+  comment: one(comments, {
+    fields: [commentLikes.commentId],
+    references: [comments.id],
+  }),
+  user: one(users, {
+    fields: [commentLikes.userId],
+    references: [users.id],
+  }),
+}));
+
+export const storyLikesRelations = relations(storyLikes, ({ one }) => ({
+  story: one(stories, {
+    fields: [storyLikes.storyId],
+    references: [stories.id],
+  }),
+  user: one(users, {
+    fields: [storyLikes.userId],
+    references: [users.id],
+  }),
+}));
+
+export const chapterLikesRelations = relations(chapterLikes, ({ one }) => ({
+  chapter: one(chapters, {
+    fields: [chapterLikes.chapterId],
+    references: [chapters.id],
+  }),
+  user: one(users, {
+    fields: [chapterLikes.userId],
+    references: [users.id],
+  }),
+}));
+
+export const sceneLikesRelations = relations(sceneLikes, ({ one }) => ({
+  scene: one(scenes, {
+    fields: [sceneLikes.sceneId],
+    references: [scenes.id],
+  }),
+  user: one(users, {
+    fields: [sceneLikes.userId],
+    references: [users.id],
+  }),
+}));
+
+// Analytics events table - Track all user interactions
+export const analyticsEvents = pgTable('analytics_events', {
+  id: text('id').primaryKey(),
+  eventType: eventTypeEnum('event_type').notNull(),
+  userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
+  sessionId: text('session_id').notNull(),
+  storyId: text('story_id').references(() => stories.id, { onDelete: 'cascade' }),
+  chapterId: text('chapter_id').references(() => chapters.id, { onDelete: 'cascade' }),
+  sceneId: text('scene_id').references(() => scenes.id, { onDelete: 'cascade' }),
+  postId: text('post_id').references(() => communityPosts.id, { onDelete: 'cascade' }),
+  metadata: json('metadata').$type<Record<string, unknown>>().default({}),
+  timestamp: timestamp('timestamp').defaultNow().notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Reading sessions table - Track reading sessions
+export const readingSessions = pgTable('reading_sessions', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  sessionId: text('session_id').notNull(),
+  storyId: text('story_id').references(() => stories.id, { onDelete: 'cascade' }),
+  startTime: timestamp('start_time').notNull(),
+  endTime: timestamp('end_time'),
+  durationSeconds: integer('duration_seconds'),
+  chaptersRead: integer('chapters_read').default(0),
+  scenesRead: integer('scenes_read').default(0),
+  charactersRead: integer('characters_read').default(0),
+  sessionType: sessionTypeEnum('session_type').default('continuous'),
+  deviceType: varchar('device_type', { length: 20 }),
+  completedStory: boolean('completed_story').default(false),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Story insights table - AI-generated insights
+export const storyInsights = pgTable('story_insights', {
+  id: text('id').primaryKey(),
+  storyId: text('story_id').references(() => stories.id, { onDelete: 'cascade' }).notNull(),
+  insightType: insightTypeEnum('insight_type').notNull(),
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description').notNull(),
+  severity: varchar('severity', { length: 20 }).default('info'),
+  actionItems: json('action_items').$type<string[]>().default([]),
+  metrics: json('metrics').$type<Record<string, unknown>>().default({}),
+  aiModel: varchar('ai_model', { length: 50 }),
+  confidenceScore: varchar('confidence_score', { length: 10 }),
+  isRead: boolean('is_read').default(false),
+  isDismissed: boolean('is_dismissed').default(false),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  expiresAt: timestamp('expires_at'),
+});
+
+// Recommendation feedback table
+export const recommendationFeedback = pgTable('recommendation_feedback', {
+  id: text('id').primaryKey(),
+  insightId: text('insight_id').references(() => storyInsights.id, { onDelete: 'cascade' }).notNull(),
+  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  actionTaken: varchar('action_taken', { length: 50 }).notNull(),
+  feedbackText: text('feedback_text'),
+  wasHelpful: boolean('was_helpful'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Relations for analytics tables
+export const analyticsEventsRelations = relations(analyticsEvents, ({ one }) => ({
+  user: one(users, {
+    fields: [analyticsEvents.userId],
+    references: [users.id],
+  }),
+  story: one(stories, {
+    fields: [analyticsEvents.storyId],
+    references: [stories.id],
+  }),
+  chapter: one(chapters, {
+    fields: [analyticsEvents.chapterId],
+    references: [chapters.id],
+  }),
+  scene: one(scenes, {
+    fields: [analyticsEvents.sceneId],
+    references: [scenes.id],
+  }),
+  post: one(communityPosts, {
+    fields: [analyticsEvents.postId],
+    references: [communityPosts.id],
+  }),
+}));
+
+export const readingSessionsRelations = relations(readingSessions, ({ one }) => ({
+  user: one(users, {
+    fields: [readingSessions.userId],
+    references: [users.id],
+  }),
+  story: one(stories, {
+    fields: [readingSessions.storyId],
+    references: [stories.id],
+  }),
+}));
+
+export const storyInsightsRelations = relations(storyInsights, ({ one, many }) => ({
+  story: one(stories, {
+    fields: [storyInsights.storyId],
+    references: [stories.id],
+  }),
+  feedback: many(recommendationFeedback),
+}));
+
+export const recommendationFeedbackRelations = relations(recommendationFeedback, ({ one }) => ({
+  insight: one(storyInsights, {
+    fields: [recommendationFeedback.insightId],
+    references: [storyInsights.id],
+  }),
+  user: one(users, {
+    fields: [recommendationFeedback.userId],
+    references: [users.id],
+  }),
+}));
+
+// Publishing schedules table - Automated publishing schedules
+export const publishingSchedules = pgTable('publishing_schedules', {
+  id: text('id').primaryKey(),
+  storyId: text('story_id').references(() => stories.id, { onDelete: 'cascade' }).notNull(),
+  chapterId: text('chapter_id').references(() => chapters.id, { onDelete: 'cascade' }),
+  createdBy: text('created_by').references(() => users.id).notNull(),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  scheduleType: scheduleTypeEnum('schedule_type').notNull(),
+  startDate: text('start_date').notNull(),
+  endDate: text('end_date'),
+  publishTime: text('publish_time').default('09:00:00').notNull(),
+  intervalDays: integer('interval_days'),
+  daysOfWeek: json('days_of_week').$type<number[]>(),
+  scenesPerPublish: integer('scenes_per_publish').default(1),
+  isActive: boolean('is_active').default(true),
+  isCompleted: boolean('is_completed').default(false),
+  lastPublishedAt: timestamp('last_published_at'),
+  nextPublishAt: timestamp('next_publish_at'),
+  totalPublished: integer('total_published').default(0),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Scheduled publications table - Queue of publications
+export const scheduledPublications = pgTable('scheduled_publications', {
+  id: text('id').primaryKey(),
+  scheduleId: text('schedule_id').references(() => publishingSchedules.id, { onDelete: 'cascade' }),
+  storyId: text('story_id').references(() => stories.id, { onDelete: 'cascade' }).notNull(),
+  chapterId: text('chapter_id').references(() => chapters.id, { onDelete: 'cascade' }),
+  sceneId: text('scene_id').references(() => scenes.id, { onDelete: 'cascade' }),
+  scheduledFor: timestamp('scheduled_for').notNull(),
+  publishedAt: timestamp('published_at'),
+  status: publicationStatusEnum('status').default('pending').notNull(),
+  errorMessage: text('error_message'),
+  retryCount: integer('retry_count').default(0),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Relations for publishing tables
+export const publishingSchedulesRelations = relations(publishingSchedules, ({ one, many }) => ({
+  story: one(stories, {
+    fields: [publishingSchedules.storyId],
+    references: [stories.id],
+  }),
+  chapter: one(chapters, {
+    fields: [publishingSchedules.chapterId],
+    references: [chapters.id],
+  }),
+  creator: one(users, {
+    fields: [publishingSchedules.createdBy],
+    references: [users.id],
+  }),
+  publications: many(scheduledPublications),
+}));
+
+export const scheduledPublicationsRelations = relations(scheduledPublications, ({ one }) => ({
+  schedule: one(publishingSchedules, {
+    fields: [scheduledPublications.scheduleId],
+    references: [publishingSchedules.id],
+  }),
+  story: one(stories, {
+    fields: [scheduledPublications.storyId],
+    references: [stories.id],
+  }),
+  chapter: one(chapters, {
+    fields: [scheduledPublications.chapterId],
+    references: [chapters.id],
+  }),
+  scene: one(scenes, {
+    fields: [scheduledPublications.sceneId],
     references: [scenes.id],
   }),
 }));
