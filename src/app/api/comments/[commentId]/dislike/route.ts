@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { comments, commentLikes, commentDislikes } from '@/lib/db/schema';
+import { comments, commentDislikes, commentLikes } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
 export const runtime = 'nodejs';
 
-// POST /api/comments/[commentId]/like - Toggle like on a comment
+// POST /api/comments/[commentId]/dislike - Toggle dislike on a comment
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ commentId: string }> }
@@ -37,19 +37,7 @@ export async function POST(
       );
     }
 
-    // Check if user has already liked this comment
-    const [existingLike] = await db
-      .select()
-      .from(commentLikes)
-      .where(
-        and(
-          eq(commentLikes.commentId, commentId),
-          eq(commentLikes.userId, session.user.id)
-        )
-      )
-      .limit(1);
-
-    // Check if user has disliked this comment (remove dislike if liking)
+    // Check if user has already disliked this comment
     const [existingDislike] = await db
       .select()
       .from(commentDislikes)
@@ -61,45 +49,57 @@ export async function POST(
       )
       .limit(1);
 
-    if (existingLike) {
-      // Unlike: Remove the like
-      await db
-        .delete(commentLikes)
-        .where(eq(commentLikes.id, existingLike.id));
+    // Check if user has liked this comment (remove like if disliking)
+    const [existingLike] = await db
+      .select()
+      .from(commentLikes)
+      .where(
+        and(
+          eq(commentLikes.commentId, commentId),
+          eq(commentLikes.userId, session.user.id)
+        )
+      )
+      .limit(1);
 
-      // Decrement like count
+    if (existingDislike) {
+      // Remove dislike
+      await db
+        .delete(commentDislikes)
+        .where(eq(commentDislikes.id, existingDislike.id));
+
+      // Decrement dislike count
       await db
         .update(comments)
         .set({
-          likeCount: Math.max(0, comment.likeCount - 1),
+          dislikeCount: Math.max(0, comment.dislikeCount - 1),
           updatedAt: new Date(),
         })
         .where(eq(comments.id, commentId));
 
       return NextResponse.json({
-        liked: false,
-        disliked: !!existingDislike,
-        likeCount: Math.max(0, comment.likeCount - 1),
-        dislikeCount: comment.dislikeCount,
+        liked: !!existingLike,
+        disliked: false,
+        likeCount: comment.likeCount,
+        dislikeCount: Math.max(0, comment.dislikeCount - 1),
       });
     } else {
-      // Remove dislike if exists
-      if (existingDislike) {
+      // Add dislike and remove like if exists
+      if (existingLike) {
         await db
-          .delete(commentDislikes)
-          .where(eq(commentDislikes.id, existingDislike.id));
+          .delete(commentLikes)
+          .where(eq(commentLikes.id, existingLike.id));
 
         await db
           .update(comments)
           .set({
-            dislikeCount: Math.max(0, comment.dislikeCount - 1),
+            likeCount: Math.max(0, comment.likeCount - 1),
           })
           .where(eq(comments.id, commentId));
       }
 
-      // Like: Add a like
+      // Add dislike
       await db
-        .insert(commentLikes)
+        .insert(commentDislikes)
         .values({
           id: nanoid(),
           commentId,
@@ -107,26 +107,26 @@ export async function POST(
           createdAt: new Date(),
         });
 
-      // Increment like count
+      // Increment dislike count
       await db
         .update(comments)
         .set({
-          likeCount: comment.likeCount + 1,
+          dislikeCount: comment.dislikeCount + 1,
           updatedAt: new Date(),
         })
         .where(eq(comments.id, commentId));
 
       return NextResponse.json({
-        liked: true,
-        disliked: false,
-        likeCount: comment.likeCount + 1,
-        dislikeCount: existingDislike ? Math.max(0, comment.dislikeCount - 1) : comment.dislikeCount,
+        liked: false,
+        disliked: true,
+        likeCount: existingLike ? Math.max(0, comment.likeCount - 1) : comment.likeCount,
+        dislikeCount: comment.dislikeCount + 1,
       });
     }
   } catch (error) {
-    console.error('Error toggling comment like:', error);
+    console.error('Error toggling comment dislike:', error);
     return NextResponse.json(
-      { error: 'Failed to toggle like' },
+      { error: 'Failed to toggle dislike' },
       { status: 500 }
     );
   }

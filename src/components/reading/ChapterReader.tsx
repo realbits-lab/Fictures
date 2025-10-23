@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { LikeDislikeButton } from './LikeDislikeButton';
 
 interface Scene {
   id: string;
@@ -431,6 +432,15 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
                               This scene is empty.
                             </p>
                           )}
+                        </div>
+                        <div className="mt-4 flex items-center justify-end">
+                          <LikeDislikeButton
+                            entityId={scene.id}
+                            entityType="scene"
+                            initialLikeCount={0}
+                            initialDislikeCount={0}
+                            size="md"
+                          />
                         </div>
                       </section>
                     ))}

@@ -650,6 +650,7 @@ export const comments: any = pgTable('comments', {
   parentCommentId: text('parent_comment_id').references(() => comments.id, { onDelete: 'cascade' }),
   depth: integer('depth').default(0).notNull(),
   likeCount: integer('like_count').default(0).notNull(),
+  dislikeCount: integer('dislike_count').default(0).notNull(),
   replyCount: integer('reply_count').default(0).notNull(),
   isEdited: boolean('is_edited').default(false).notNull(),
   isDeleted: boolean('is_deleted').default(false).notNull(),
@@ -697,6 +698,26 @@ export const sceneLikes = pgTable('scene_likes', {
   uniqueUserScene: primaryKey({ columns: [table.userId, table.sceneId], name: 'scene_user_unique' }),
 }));
 
+// Comment dislikes table
+export const commentDislikes = pgTable('comment_dislikes', {
+  id: text('id').primaryKey(),
+  commentId: text('comment_id').notNull().references(() => comments.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  uniqueUserCommentDislike: primaryKey({ columns: [table.commentId, table.userId], name: 'comment_dislike_user_unique' }),
+}));
+
+// Scene dislikes table
+export const sceneDislikes = pgTable('scene_dislikes', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  sceneId: text('scene_id').notNull().references(() => scenes.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  uniqueUserSceneDislike: primaryKey({ columns: [table.userId, table.sceneId], name: 'scene_dislike_user_unique' }),
+}));
+
 // Relations for comments
 export const commentsRelations = relations(comments, ({ one, many }) => ({
   user: one(users, {
@@ -722,6 +743,7 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
   }),
   childComments: many(comments, { relationName: 'parentChild' }),
   likes: many(commentLikes),
+  dislikes: many(commentDislikes),
 }));
 
 // Relations for likes
@@ -765,6 +787,28 @@ export const sceneLikesRelations = relations(sceneLikes, ({ one }) => ({
   }),
   user: one(users, {
     fields: [sceneLikes.userId],
+    references: [users.id],
+  }),
+}));
+
+export const commentDislikesRelations = relations(commentDislikes, ({ one }) => ({
+  comment: one(comments, {
+    fields: [commentDislikes.commentId],
+    references: [comments.id],
+  }),
+  user: one(users, {
+    fields: [commentDislikes.userId],
+    references: [users.id],
+  }),
+}));
+
+export const sceneDislikesRelations = relations(sceneDislikes, ({ one }) => ({
+  scene: one(scenes, {
+    fields: [sceneDislikes.sceneId],
+    references: [scenes.id],
+  }),
+  user: one(users, {
+    fields: [sceneDislikes.userId],
     references: [users.id],
   }),
 }));

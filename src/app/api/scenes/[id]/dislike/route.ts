@@ -7,7 +7,7 @@ import { nanoid } from 'nanoid';
 
 export const runtime = 'nodejs';
 
-// POST /api/scenes/[id]/like - Toggle like on a scene
+// POST /api/scenes/[id]/dislike - Toggle dislike on a scene
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -60,11 +60,11 @@ export async function POST(
       )
       .limit(1);
 
-    if (existingLike) {
-      // Remove like
+    if (existingDislike) {
+      // Remove dislike
       await db
-        .delete(sceneLikes)
-        .where(eq(sceneLikes.id, existingLike.id));
+        .delete(sceneDislikes)
+        .where(eq(sceneDislikes.id, existingDislike.id));
 
       // Get updated counts
       const [likeCount] = await db
@@ -78,22 +78,22 @@ export async function POST(
         .where(eq(sceneDislikes.sceneId, sceneId));
 
       return NextResponse.json({
-        liked: false,
-        disliked: !!existingDislike,
+        liked: !!existingLike,
+        disliked: false,
         likeCount: Number(likeCount.count),
         dislikeCount: Number(dislikeCount.count),
       });
     } else {
-      // Remove dislike if exists
-      if (existingDislike) {
+      // Remove like if exists
+      if (existingLike) {
         await db
-          .delete(sceneDislikes)
-          .where(eq(sceneDislikes.id, existingDislike.id));
+          .delete(sceneLikes)
+          .where(eq(sceneLikes.id, existingLike.id));
       }
 
-      // Add like
+      // Add dislike
       await db
-        .insert(sceneLikes)
+        .insert(sceneDislikes)
         .values({
           id: nanoid(),
           sceneId,
@@ -113,16 +113,16 @@ export async function POST(
         .where(eq(sceneDislikes.sceneId, sceneId));
 
       return NextResponse.json({
-        liked: true,
-        disliked: false,
+        liked: false,
+        disliked: true,
         likeCount: Number(likeCount.count),
         dislikeCount: Number(dislikeCount.count),
       });
     }
   } catch (error) {
-    console.error('Error toggling scene like:', error);
+    console.error('Error toggling scene dislike:', error);
     return NextResponse.json(
-      { error: 'Failed to toggle like' },
+      { error: 'Failed to toggle dislike' },
       { status: 500 }
     );
   }

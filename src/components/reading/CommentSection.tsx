@@ -82,18 +82,35 @@ export function CommentSection({
     if (newComment.parentCommentId) {
       setComments((prev) => {
         const updatedComments = [...prev];
-        const parentIndex = updatedComments.findIndex(
-          (c) => c.id === newComment.parentCommentId
-        );
 
-        if (parentIndex !== -1) {
-          if (!updatedComments[parentIndex].replies) {
-            updatedComments[parentIndex].replies = [];
+        // Recursive function to find and update parent comment at any depth
+        const addReplyToParent = (comments: Comment[]): boolean => {
+          for (let i = 0; i < comments.length; i++) {
+            if (comments[i].id === newComment.parentCommentId) {
+              // Found the parent - add the reply
+              if (!comments[i].replies) {
+                comments[i].replies = [];
+              }
+              // Check if reply already exists to prevent duplicates
+              const alreadyExists = comments[i].replies!.some(r => r.id === newComment.id);
+              if (!alreadyExists) {
+                comments[i].replies!.push(newComment);
+                comments[i].replyCount += 1;
+              }
+              return true;
+            }
+
+            // Search in nested replies
+            if (comments[i].replies && comments[i].replies!.length > 0) {
+              if (addReplyToParent(comments[i].replies!)) {
+                return true;
+              }
+            }
           }
-          updatedComments[parentIndex].replies!.push(newComment);
-          updatedComments[parentIndex].replyCount += 1;
-        }
+          return false;
+        };
 
+        addReplyToParent(updatedComments);
         return updatedComments;
       });
     } else {
@@ -110,13 +127,23 @@ export function CommentSection({
   };
 
   const handleCommentDeleted = (commentId: string) => {
-    setComments((prev) =>
-      prev.map((comment) =>
-        comment.id === commentId
-          ? { ...comment, content: '[deleted]', isDeleted: true }
-          : comment
-      )
-    );
+    setComments((prev) => {
+      // Recursive function to remove comment at any depth
+      const removeComment = (comments: Comment[]): Comment[] => {
+        return comments.filter(comment => {
+          if (comment.id === commentId) {
+            return false; // Remove this comment
+          }
+          // Check nested replies
+          if (comment.replies && comment.replies.length > 0) {
+            comment.replies = removeComment(comment.replies);
+          }
+          return true;
+        });
+      };
+
+      return removeComment(prev);
+    });
   };
 
   return (

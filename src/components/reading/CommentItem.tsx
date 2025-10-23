@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition } from 'react';
 import { cn } from '@/lib/utils/cn';
-import { LikeButton } from './LikeButton';
+import { LikeDislikeButton } from './LikeDislikeButton';
 import { CommentForm } from './CommentForm';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -15,6 +15,7 @@ interface Comment {
   parentCommentId: string | null;
   depth: number;
   likeCount: number;
+  dislikeCount: number;
   replyCount: number;
   isEdited: boolean;
   isDeleted: boolean;
@@ -86,14 +87,6 @@ export function CommentItem({
     onCommentUpdated?.(updatedComment);
   };
 
-  if (comment.isDeleted) {
-    return (
-      <div className={cn('p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg', className)}>
-        <p className="text-sm text-gray-500 italic">[Comment deleted]</p>
-      </div>
-    );
-  }
-
   return (
     <div className={cn('space-y-3', className)}>
       <div className="flex gap-3">
@@ -144,10 +137,12 @@ export function CommentItem({
 
               {/* Actions */}
               <div className="flex items-center gap-2 mt-2">
-                <LikeButton
+                <LikeDislikeButton
                   entityId={comment.id}
                   entityType="comment"
-                  initialCount={comment.likeCount}
+                  initialLikeCount={comment.likeCount}
+                  initialDislikeCount={comment.dislikeCount}
+                  size="sm"
                 />
 
                 {canReply && (

@@ -6,7 +6,7 @@ import { createHash } from 'crypto';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get only public stories with their authors
+    // Get only public stories with their authors and story images
     const publicStories = await db
       .select({
         id: stories.id,
@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
         currentWordCount: stories.currentWordCount,
         createdAt: stories.createdAt,
         updatedAt: stories.updatedAt,
+        hnsData: stories.hnsData,
         author: {
           id: users.id,
           name: users.name,
