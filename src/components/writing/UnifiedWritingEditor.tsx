@@ -647,7 +647,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     
     // If switching to a chapter in a different story, navigate to it
     if (selection.level === "chapter" && selection.chapterId && selection.storyId !== story.id) {
-      router.push(`/write/${selection.chapterId}`);
+      router.push(`/writing/edit/${selection.chapterId}`);
       return;
     }
 

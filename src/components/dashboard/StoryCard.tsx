@@ -122,7 +122,7 @@ export function StoryCard({
       </CardContent>
 
       <CardFooter className="flex gap-2">
-        <Link href={`/write/story/${id}`} className="flex-1">
+        <Link href={`/writing/edit/story/${id}`} className="flex-1">
           <Button size="sm" className="w-full">
             ✏️ Edit
           </Button>

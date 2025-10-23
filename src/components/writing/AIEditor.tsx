@@ -34,7 +34,7 @@ export function AIEditor({ storyData, onStoryUpdate }: AIEditorProps) {
     setOutputResult("Processing your request with AI...");
 
     try {
-      const response = await fetch('/api/story-analyzer', {
+      const response = await fetch('/writing/api/story-analyzer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

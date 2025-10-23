@@ -54,7 +54,7 @@ export function StoryNavigationSidebar({ story, currentChapterId }: StoryNavigat
   };
 
   const isCurrentChapter = (chapterId: string) => {
-    return pathname === `/write/${chapterId}` || currentChapterId === chapterId;
+    return pathname === `/writing/edit/${chapterId}` || currentChapterId === chapterId;
   };
 
   return (
@@ -101,7 +101,7 @@ export function StoryNavigationSidebar({ story, currentChapterId }: StoryNavigat
                   {part.chapters.map((chapter) => (
                     <Link
                       key={chapter.id}
-                      href={`/write/${chapter.id}`}
+                      href={`/writing/edit/${chapter.id}`}
                       className={`block px-3 py-2 rounded text-sm transition-colors ${
                         isCurrentChapter(chapter.id)
                           ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/20 dark:text-blue-100 font-medium'
@@ -132,7 +132,7 @@ export function StoryNavigationSidebar({ story, currentChapterId }: StoryNavigat
               {story.chapters.map((chapter) => (
                 <Link
                   key={chapter.id}
-                  href={`/write/${chapter.id}`}
+                  href={`/writing/edit/${chapter.id}`}
                   className={`block px-3 py-2 rounded text-sm transition-colors ${
                     isCurrentChapter(chapter.id)
                       ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/20 dark:text-blue-100 font-medium'

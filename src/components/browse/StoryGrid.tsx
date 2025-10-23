@@ -169,7 +169,7 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
                 </div>
               </div>
 
-              <Link href={`/read/${story.id}`} className="w-full flex-shrink-0">
+              <Link href={`/reading/${story.id}`} className="w-full flex-shrink-0">
                 <Button size="sm" className="w-full text-xs py-1.5">
                   📖 Read Story
                 </Button>

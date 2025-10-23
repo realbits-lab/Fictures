@@ -569,7 +569,7 @@ export function CreateStoryForm() {
               <div className="flex space-x-2 mt-3">
                 <Button
                   type="button"
-                  onClick={() => router.push(`/write/story/${generatedStoryId}`)}
+                  onClick={() => router.push(`/writing/edit/story/${generatedStoryId}`)}
                   className="flex-1"
                 >
                   Open Story
