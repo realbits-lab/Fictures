@@ -2,11 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { comments, users } from '@/lib/db/schema';
-import { eq, and, isNull, desc } from 'drizzle-orm';
+import { eq, and, isNull, desc, not } from 'drizzle-orm';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
 
 export const runtime = 'nodejs';
+
+interface Comment {
+  id: string;
+  content: string;
+  userId: string;
+  userName: string | null;
+  userImage: string | null;
+  storyId: string;
+  chapterId: string | null;
+  sceneId: string | null;
+  parentCommentId: string | null;
+  depth: number;
+  likeCount: number;
+  replyCount: number;
+  isEdited: boolean;
+  isDeleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  replies?: Comment[];
+}
 
 const createCommentSchema = z.object({
   content: z.string().min(1).max(5000),
@@ -35,7 +55,7 @@ export async function GET(
       whereClause = and(whereClause, eq(comments.chapterId, chapterId))!;
     }
 
-    // Fetch top-level comments (no parent) with user information
+    // Fetch top-level comments (no parent) with user information, excluding deleted comments
     const topLevelComments = await db
       .select({
         id: comments.id,
@@ -57,13 +77,16 @@ export async function GET(
       })
       .from(comments)
       .leftJoin(users, eq(comments.userId, users.id))
-      .where(and(whereClause, isNull(comments.parentCommentId))!)
+      .where(and(whereClause, isNull(comments.parentCommentId), eq(comments.isDeleted, false))!)
       .orderBy(desc(comments.createdAt));
 
-    // Fetch all replies for these comments
+    // Fetch all non-deleted replies for these comments recursively
     if (topLevelComments.length > 0) {
       const commentIds = topLevelComments.map(c => c.id);
-      const replies = await db
+
+      // Fetch all replies recursively by querying for all replies in the story
+      // that belong to the current scene/chapter and are not deleted
+      const allReplies = await db
         .select({
           id: comments.id,
           content: comments.content,
@@ -87,15 +110,24 @@ export async function GET(
         .where(
           and(
             eq(comments.storyId, storyId),
-            eq(comments.parentCommentId, commentIds[0])
+            not(isNull(comments.parentCommentId)),
+            eq(comments.isDeleted, false)
           )!
         )
         .orderBy(comments.createdAt);
 
-      // Build a nested structure
+      // Build nested structure recursively
+      const buildNestedReplies = (parentId: string): Comment[] => {
+        const directReplies = allReplies.filter(r => r.parentCommentId === parentId);
+        return directReplies.map(reply => ({
+          ...reply,
+          replies: buildNestedReplies(reply.id)
+        }));
+      };
+
       const commentsWithReplies = topLevelComments.map(comment => ({
         ...comment,
-        replies: replies.filter(r => r.parentCommentId === comment.id),
+        replies: buildNestedReplies(comment.id),
       }));
 
       return NextResponse.json({ comments: commentsWithReplies });

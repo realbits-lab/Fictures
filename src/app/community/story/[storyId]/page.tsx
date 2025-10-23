@@ -209,7 +209,7 @@ export default function StoryCommunityPage() {
           )}
 
           {/* Posts List */}
-          <CommunityPostsList posts={posts} />
+          <CommunityPostsList posts={posts} onPostDeleted={fetchPosts} />
 
           {/* Anonymous User CTA */}
           {!session && (
