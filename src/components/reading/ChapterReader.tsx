@@ -48,6 +48,7 @@ interface ChapterReaderProps {
 
 export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarScrollRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
 
@@ -164,23 +165,37 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
     <div data-testid="chapter-reader" className="absolute inset-0 top-16 bg-white dark:bg-gray-900 flex flex-col">
       {/* Second GNB - Reading Navigation Header */}
       <div className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between px-6 py-3">
-          {/* Left: Story Info & Chapter Navigation */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between px-4 md:px-6 py-3">
+          {/* Left: Hamburger Menu (Mobile) + Story Info & Chapter Navigation */}
+          <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+            {/* Hamburger Menu Button - Mobile Only */}
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="md:hidden p-2 -ml-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0"
+              aria-label="Toggle chapter navigation"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isSidebarOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+            <div className="flex items-center gap-2 min-w-0 overflow-hidden">
               <Link
                 href="/reading"
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                className="hidden sm:inline text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors whitespace-nowrap"
               >
                 ← Browse
               </Link>
-              <span className="text-gray-300 dark:text-gray-600">/</span>
-              <span className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-xs">
+              <span className="hidden sm:inline text-gray-300 dark:text-gray-600">/</span>
+              <span className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[120px] sm:max-w-xs">
                 {story.title}
               </span>
             </div>
             {selectedChapter && (
-              <div className="flex items-center gap-2">
+              <div className="hidden lg:flex items-center gap-2">
                 <span className="text-gray-300 dark:text-gray-600">/</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm">{getStatusIcon(selectedChapter.status)}</span>
@@ -193,13 +208,13 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
           </div>
 
           {/* Right: Reading Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             {/* Chapter Navigation */}
             {(() => {
               const currentIndex = availableChapters.findIndex(ch => ch.id === selectedChapterId);
               const prevChapter = currentIndex > 0 ? availableChapters[currentIndex - 1] : null;
               const nextChapter = currentIndex < availableChapters.length - 1 ? availableChapters[currentIndex + 1] : null;
-              
+
               return (
                 <>
                   <button
@@ -212,11 +227,11 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
-                  
-                  <span className="text-sm text-gray-500 dark:text-gray-400 px-2">
+
+                  <span className="hidden sm:inline text-sm text-gray-500 dark:text-gray-400 px-2">
                     {currentIndex + 1} of {availableChapters.length}
                   </span>
-                  
+
                   <button
                     onClick={() => nextChapter && setSelectedChapterId(nextChapter.id)}
                     disabled={!nextChapter}
@@ -231,22 +246,22 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
               );
             })()}
 
-            {/* Reading Progress */}
+            {/* Reading Progress - Hidden on mobile */}
             {selectedChapter && (
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-xs text-gray-600 dark:text-gray-400">
+              <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-xs text-gray-600 dark:text-gray-400">
                 <span>📖</span>
                 <span>{selectedChapter.wordCount || 0} words</span>
               </div>
             )}
 
-            {/* Share Button */}
+            {/* Share Button - Hidden on mobile */}
             <button
               onClick={() => {
                 if (typeof window !== 'undefined' && selectedChapter) {
                   navigator.clipboard.writeText(window.location.href);
                 }
               }}
-              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="hidden sm:flex p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               title="Copy chapter link"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -257,10 +272,30 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
         </div>
       </div>
 
+      {/* Backdrop Overlay - Mobile Only */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Main Content Container */}
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 relative">
         {/* Left Sidebar - Chapter Navigation */}
-        <div className="w-80 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col h-full">
+        <div className={`
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+          md:translate-x-0
+          fixed md:relative
+          inset-y-0 left-0
+          z-50 md:z-0
+          w-80 bg-gray-50 dark:bg-gray-800
+          border-r border-gray-200 dark:border-gray-700
+          flex flex-col h-full
+          transition-transform duration-300 ease-in-out
+          top-0 md:top-auto
+        `}>
           {/* Story Header */}
           <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
             <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
@@ -311,7 +346,10 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
                     return (
                       <button
                         key={chapter.id}
-                        onClick={() => setSelectedChapterId(chapter.id)}
+                        onClick={() => {
+                          setSelectedChapterId(chapter.id);
+                          setIsSidebarOpen(false); // Close sidebar on mobile after selection
+                        }}
                         className={`w-full text-left p-3 rounded-lg mb-1 transition-colors ${
                           isSelected
                             ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100'
@@ -349,7 +387,10 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
                     return (
                       <button
                         key={chapter.id}
-                        onClick={() => setSelectedChapterId(chapter.id)}
+                        onClick={() => {
+                          setSelectedChapterId(chapter.id);
+                          setIsSidebarOpen(false); // Close sidebar on mobile after selection
+                        }}
                         className={`w-full text-left p-3 rounded-lg mb-1 transition-colors ${
                           isSelected
                             ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100'
@@ -394,9 +435,9 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
           }}
         >
           {selectedChapter ? (
-            <article className="max-w-4xl mx-auto px-8 py-8">
+            <article className="max-w-4xl mx-auto px-4 md:px-8 py-6 md:py-8">
               {/* Chapter Header */}
-              <header className="mb-8 border-b border-gray-200 dark:border-gray-800 pb-6">
+              <header className="mb-6 md:mb-8 border-b border-gray-200 dark:border-gray-800 pb-4 md:pb-6">
                 <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-3">
                   <span>{getStatusIcon(selectedChapter.status)}</span>
                   <span>Chapter {getGlobalChapterNumber(selectedChapter.id)}</span>

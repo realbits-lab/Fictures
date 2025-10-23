@@ -269,7 +269,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
               Try Again
             </button>
             <Link
-              href="/browse"
+              href="/reading"
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               Back to Browse
@@ -358,7 +358,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <Link 
-                href="/browse"
+                href="/reading"
                 className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
               >
                 ← Browse
@@ -554,7 +554,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
           {/* Footer */}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <Link 
-              href="/browse"
+              href="/reading"
               className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
             >
               ← Back to Browse
