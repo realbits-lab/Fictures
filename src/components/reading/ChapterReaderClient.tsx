@@ -101,11 +101,11 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
 
   // Auto-select first scene when chapter changes
   useEffect(() => {
-    if (selectedChapterId && chapterScenes.length > 0 && !selectedSceneId) {
+    if (selectedChapterId && chapterScenes.length > 0 && !selectedSceneId && !scenesLoading) {
       setIsScrollRestored(false);
       handleSceneSelect(chapterScenes[0].id);
     }
-  }, [selectedChapterId, chapterScenes, selectedSceneId, handleSceneSelect]);
+  }, [selectedChapterId, chapterScenes, selectedSceneId, scenesLoading, handleSceneSelect]);
 
   // Restore scroll position when scene changes
   useEffect(() => {
@@ -726,6 +726,13 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                   const prevScene = currentSceneIndex > 0 ? chapterScenes[currentSceneIndex - 1] : null;
                   const nextScene = currentSceneIndex < chapterScenes.length - 1 ? chapterScenes[currentSceneIndex + 1] : null;
 
+                  // Find next chapter for navigation when at last scene
+                  const currentChapterIndex = availableChapters.findIndex(ch => ch.id === selectedChapterId);
+                  const nextChapter = currentChapterIndex >= 0 && currentChapterIndex < availableChapters.length - 1
+                    ? availableChapters[currentChapterIndex + 1]
+                    : null;
+                  const isLastScene = currentSceneIndex === chapterScenes.length - 1;
+
                   return (
                     <>
                       <div>
@@ -748,14 +755,21 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                       </div>
 
                       <div>
-                        {nextScene && (
+                        {nextScene ? (
                           <button
                             onClick={() => handleSceneSelect(nextScene.id)}
                             className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                           >
                             Next Scene: {nextScene.title} →
                           </button>
-                        )}
+                        ) : isLastScene && nextChapter ? (
+                          <button
+                            onClick={() => handleChapterSelect(nextChapter.id)}
+                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                          >
+                            Next Chapter: {nextChapter.title} →
+                          </button>
+                        ) : null}
                       </div>
                     </>
                   );

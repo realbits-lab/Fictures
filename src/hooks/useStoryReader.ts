@@ -181,16 +181,26 @@ export function useStoryReader(storyId: string | null): UseStoryReaderReturn {
   // Calculate available chapters (memoized for performance)
   const availableChapters = useMemo(() => {
     if (!data?.story) return [];
-    
+
     const allChapters = [
       ...data.story.parts.flatMap(part => part.chapters),
       ...data.story.chapters
     ];
 
     // Filter to only published chapters (or all if owner)
-    return allChapters.filter(chapter => 
+    const filteredChapters = allChapters.filter(chapter =>
       data.isOwner || chapter.status === 'published'
     );
+
+    // Deduplicate by chapter ID (in case same chapter appears in both parts and root chapters)
+    const seenIds = new Set<string>();
+    return filteredChapters.filter(chapter => {
+      if (seenIds.has(chapter.id)) {
+        return false;
+      }
+      seenIds.add(chapter.id);
+      return true;
+    });
   }, [data?.story, data?.isOwner]);
 
   return {
