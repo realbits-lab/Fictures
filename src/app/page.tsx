@@ -5,8 +5,8 @@ export default function Home() {
   return (
     <MainLayout>
       <div className="min-h-screen">
-        <HomeHero />
         <FeaturedStory />
+        <HomeHero />
         <HomeFeatures />
       </div>
     </MainLayout>

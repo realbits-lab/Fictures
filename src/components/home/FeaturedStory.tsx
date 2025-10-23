@@ -66,15 +66,15 @@ export function FeaturedStory() {
   }
 
   return (
-    <section className="py-20 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <section className="pt-24 pb-20 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <h2 className="text-sm font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-2">
-            Featured Story
-          </h2>
-          <p className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-gray-100 mb-4">
             Start Reading Today
+          </h1>
+          <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400">
+            Dive into our featured story and begin your adventure
           </p>
         </div>
 
