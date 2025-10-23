@@ -7,13 +7,13 @@ import { nanoid } from 'nanoid';
 
 export const runtime = 'nodejs';
 
-// POST /api/chapters/[chapterId]/like - Toggle like on a chapter
+// POST /api/chapters/[id]/like - Toggle like on a chapter
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ chapterId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { chapterId } = await params;
+    const { id: chapterId } = await params;
     const session = await auth();
 
     if (!session?.user?.id) {

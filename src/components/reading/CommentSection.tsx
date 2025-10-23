@@ -46,7 +46,7 @@ export function CommentSection({
       setLoading(true);
       setError('');
 
-      let url = `/api/stories/${storyId}/comments`;
+      let url = `/writing/api/stories/${storyId}/comments`;
       const params = new URLSearchParams();
 
       if (sceneId) {

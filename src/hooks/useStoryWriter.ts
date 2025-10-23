@@ -106,7 +106,7 @@ export function useStoryWriter(storyId: string | null): UseStoryWriterReturn {
     isValidating,
     mutate
   } = usePersistedSWR<StoryWriterResponse>(
-    shouldFetch ? `/api/stories/${storyId}/write` : null,
+    shouldFetch ? `/writing/api/stories/${storyId}/write` : null,
     fetcher,
     {
       ...CACHE_CONFIGS.writing, // 30min TTL + compression for frequent updates
@@ -169,7 +169,7 @@ export function usePrefetchStoryWriter() {
   return {
     prefetch: async (storyId: string) => {
       try {
-        await fetch(`/api/stories/${storyId}/write`, {
+        await fetch(`/writing/api/stories/${storyId}/write`, {
           credentials: 'include',
         });
       } catch (error) {

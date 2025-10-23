@@ -17,8 +17,8 @@ interface NavItem {
 }
 
 const gnbMenuItems: NavItem[] = [
-  { href: "/stories", label: "Writing", icon: "✍️" },
-  { href: "/browse", label: "Reading", icon: "📚" },
+  { href: "/writing", label: "Writing", icon: "✍️" },
+  { href: "/reading", label: "Reading", icon: "📚" },
   { href: "/community", label: "Community", icon: "💬" },
   { href: "/publish", label: "Publish", icon: "📤" },
   { href: "/analytics", label: "Analytics", icon: "📊" },
@@ -42,15 +42,15 @@ export function GlobalNavigation() {
   // Filter navigation items based on user role
   const visibleGnbItems = gnbMenuItems.filter((item) => {
     // Writing, Publish, and Analytics are writer/manager specific
-    if (item.href === '/stories' || item.href === '/publish' || item.href === '/analytics') {
+    if (item.href === '/writing' || item.href === '/publish' || item.href === '/analytics') {
       return session?.user?.role === 'writer' || session?.user?.role === 'manager';
     }
-    
+
     // Reading and Community are visible to all users (authenticated or anonymous)
-    if (item.href === '/browse' || item.href === '/community') {
+    if (item.href === '/reading' || item.href === '/community') {
       return true;
     }
-    
+
     // Settings requires authentication
     return !!session;
   });

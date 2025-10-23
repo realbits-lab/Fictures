@@ -48,7 +48,7 @@ export function CommentForm({
 
     startTransition(async () => {
       try {
-        const endpoint = `/api/stories/${storyId}/comments`;
+        const endpoint = `/writing/api/stories/${storyId}/comments`;
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: {

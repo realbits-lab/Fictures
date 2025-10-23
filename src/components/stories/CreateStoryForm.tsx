@@ -108,7 +108,7 @@ export function CreateStoryForm() {
 
     try {
       // Use fetch with streaming for HNS generation
-      const response = await fetch('/api/stories/generate-hns', {
+      const response = await fetch('/writing/api/stories/generate-hns', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

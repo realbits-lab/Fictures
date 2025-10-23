@@ -48,7 +48,7 @@ export default function ApiKeysPage() {
   // Fetch API keys
   const fetchApiKeys = async () => {
     try {
-      const response = await fetch('/api/settings/api-keys');
+      const response = await fetch('/settings/api/api-keys');
       if (response.ok) {
         const data: ApiKeyResponse = await response.json();
         setApiKeys(data.apiKeys);
@@ -93,7 +93,7 @@ export default function ApiKeysPage() {
     try {
       const expiresAt = expirationOption === 'never' ? null : getExpirationDate(expirationOption);
 
-      const response = await fetch('/api/settings/api-keys', {
+      const response = await fetch('/settings/api/api-keys', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -131,7 +131,7 @@ export default function ApiKeysPage() {
     }
 
     try {
-      const response = await fetch(`/api/settings/api-keys/${keyId}/revoke`, {
+      const response = await fetch(`/settings/api/api-keys/${keyId}/revoke`, {
         method: 'POST',
       });
 
@@ -154,7 +154,7 @@ export default function ApiKeysPage() {
     }
 
     try {
-      const response = await fetch(`/api/settings/api-keys/${keyId}`, {
+      const response = await fetch(`/settings/api/api-keys/${keyId}`, {
         method: 'DELETE',
       });
 

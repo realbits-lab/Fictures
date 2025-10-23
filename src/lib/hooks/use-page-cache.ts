@@ -14,7 +14,7 @@ const fetcher = async (url: string) => {
 // Writing page hooks
 export function useUserStories() {
   return usePersistedSWR(
-    '/api/stories',
+    '/writing/api/stories',
     fetcher,
     CACHE_CONFIGS.writing,
     {
@@ -37,7 +37,7 @@ export function useUserStories() {
 
 export function useStoryDrafts() {
   return usePersistedSWR(
-    '/api/stories/drafts',
+    '/writing/api/stories/drafts',
     fetcher,
     CACHE_CONFIGS.writing,
     {
@@ -52,7 +52,7 @@ export function useStoryDrafts() {
 
 export function useStoryStats(storyId: string | null) {
   return usePersistedSWR(
-    storyId ? `/api/stories/${storyId}/stats` : null,
+    storyId ? `/writing/api/stories/${storyId}/stats` : null,
     fetcher,
     CACHE_CONFIGS.analytics,
     {
@@ -63,10 +63,10 @@ export function useStoryStats(storyId: string | null) {
   );
 }
 
-// Reading page hooks  
+// Reading page hooks
 export function usePublishedStories() {
   return usePersistedSWR(
-    '/api/stories/published',
+    '/reading/api/published',
     fetcher,
     CACHE_CONFIGS.reading,
     {
@@ -87,7 +87,7 @@ export function usePublishedStories() {
 
 export function useFeaturedStories() {
   return usePersistedSWR(
-    '/api/stories/featured',
+    '/reading/api/stories/featured',
     fetcher,
     CACHE_CONFIGS.reading,
     {
@@ -103,7 +103,7 @@ export function useFeaturedStories() {
 
 export function useGenreStories(genre: string | null) {
   return usePersistedSWR(
-    genre ? `/api/stories/genre/${genre}` : null,
+    genre ? `/reading/api/stories/genre/${genre}` : null,
     fetcher,
     CACHE_CONFIGS.reading,
     {
@@ -117,7 +117,7 @@ export function useGenreStories(genre: string | null) {
 // Community page hooks (optimized)
 export function useCommunityStories() {
   return usePersistedSWR(
-    '/api/community/stories',
+    '/community/api/stories',
     fetcher,
     CACHE_CONFIGS.community,
     {
@@ -140,7 +140,7 @@ export function useCommunityStories() {
 
 export function useCommunityStats() {
   return usePersistedSWR(
-    '/api/community/stats',
+    '/community/api/stats',
     fetcher,
     CACHE_CONFIGS.community,
     {
@@ -153,7 +153,7 @@ export function useCommunityStats() {
 
 export function useStoryDiscussion(storyId: string | null) {
   return usePersistedSWR(
-    storyId ? `/api/community/story/${storyId}/posts` : null,
+    storyId ? `/community/api/story/${storyId}/posts` : null,
     fetcher,
     { ...CACHE_CONFIGS.community, ttl: 1 * 60 * 1000 }, // 1 minute TTL for discussions
     {
@@ -167,7 +167,7 @@ export function useStoryDiscussion(storyId: string | null) {
 // Publish page hooks
 export function usePublishStatus() {
   return usePersistedSWR(
-    '/api/publish/status',
+    '/publish/api/status',
     fetcher,
     CACHE_CONFIGS.publish,
     {
@@ -182,7 +182,7 @@ export function usePublishStatus() {
 
 export function usePublishHistory() {
   return usePersistedSWR(
-    '/api/publish/history',
+    '/publish/api/history',
     fetcher,
     CACHE_CONFIGS.publish,
     {
@@ -197,7 +197,7 @@ export function usePublishHistory() {
 
 export function usePublishAnalytics() {
   return usePersistedSWR(
-    '/api/publish/analytics',
+    '/publish/api/analytics',
     fetcher,
     CACHE_CONFIGS.analytics,
     {
@@ -211,7 +211,7 @@ export function usePublishAnalytics() {
 // Analytics page hooks
 export function useStoryAnalytics(timeRange: string = '7d') {
   return usePersistedSWR(
-    `/api/analytics/stories?range=${timeRange}`,
+    `/analytics/api/stories?range=${timeRange}`,
     fetcher,
     CACHE_CONFIGS.analytics,
     {
@@ -228,7 +228,7 @@ export function useStoryAnalytics(timeRange: string = '7d') {
 
 export function useReaderAnalytics(timeRange: string = '7d') {
   return usePersistedSWR(
-    `/api/analytics/readers?range=${timeRange}`,
+    `/analytics/api/readers?range=${timeRange}`,
     fetcher,
     CACHE_CONFIGS.analytics,
     {
@@ -241,7 +241,7 @@ export function useReaderAnalytics(timeRange: string = '7d') {
 
 export function usePerformanceMetrics(storyId: string | null) {
   return usePersistedSWR(
-    storyId ? `/api/analytics/performance/${storyId}` : null,
+    storyId ? `/analytics/api/performance/${storyId}` : null,
     fetcher,
     CACHE_CONFIGS.analytics,
     {
@@ -255,7 +255,7 @@ export function usePerformanceMetrics(storyId: string | null) {
 // Settings page hooks
 export function useUserSettings() {
   return usePersistedSWR(
-    '/api/settings/user',
+    '/settings/api/user',
     fetcher,
     CACHE_CONFIGS.settings,
     {
@@ -274,7 +274,7 @@ export function useUserSettings() {
 
 export function useNotificationSettings() {
   return usePersistedSWR(
-    '/api/settings/notifications',
+    '/settings/api/notifications',
     fetcher,
     CACHE_CONFIGS.settings,
     {
@@ -286,7 +286,7 @@ export function useNotificationSettings() {
 
 export function usePrivacySettings() {
   return usePersistedSWR(
-    '/api/settings/privacy',
+    '/settings/api/privacy',
     fetcher,
     CACHE_CONFIGS.settings,
     {

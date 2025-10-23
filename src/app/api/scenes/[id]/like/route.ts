@@ -7,13 +7,13 @@ import { nanoid } from 'nanoid';
 
 export const runtime = 'nodejs';
 
-// POST /api/scenes/[sceneId]/like - Toggle like on a scene
+// POST /api/scenes/[id]/like - Toggle like on a scene
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ sceneId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { sceneId } = await params;
+    const { id: sceneId } = await params;
     const session = await auth();
 
     if (!session?.user?.id) {
