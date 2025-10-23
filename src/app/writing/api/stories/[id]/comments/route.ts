@@ -55,8 +55,9 @@ export async function GET(
       whereClause = and(whereClause, eq(comments.chapterId, chapterId))!;
     }
 
-    // Fetch top-level comments (no parent) with user information, excluding deleted comments
-    const topLevelComments = await db
+    // Fetch ALL comments (both deleted and non-deleted) to preserve thread structure
+    // Deleted comments will be shown as "[deleted]" placeholders in the UI
+    const allComments = await db
       .select({
         id: comments.id,
         content: comments.content,
@@ -77,63 +78,40 @@ export async function GET(
       })
       .from(comments)
       .leftJoin(users, eq(comments.userId, users.id))
-      .where(and(whereClause, isNull(comments.parentCommentId), eq(comments.isDeleted, false))!)
-      .orderBy(desc(comments.createdAt));
+      .where(whereClause)
+      .orderBy(comments.createdAt);
 
-    // Fetch all non-deleted replies for these comments recursively
-    if (topLevelComments.length > 0) {
-      const commentIds = topLevelComments.map(c => c.id);
-
-      // Fetch all replies recursively by querying for all replies in the story
-      // that belong to the current scene/chapter and are not deleted
-      const allReplies = await db
-        .select({
-          id: comments.id,
-          content: comments.content,
-          userId: comments.userId,
-          userName: users.name,
-          userImage: users.image,
-          storyId: comments.storyId,
-          chapterId: comments.chapterId,
-          sceneId: comments.sceneId,
-          parentCommentId: comments.parentCommentId,
-          depth: comments.depth,
-          likeCount: comments.likeCount,
-          replyCount: comments.replyCount,
-          isEdited: comments.isEdited,
-          isDeleted: comments.isDeleted,
-          createdAt: comments.createdAt,
-          updatedAt: comments.updatedAt,
-        })
-        .from(comments)
-        .leftJoin(users, eq(comments.userId, users.id))
-        .where(
-          and(
-            eq(comments.storyId, storyId),
-            not(isNull(comments.parentCommentId)),
-            eq(comments.isDeleted, false)
-          )!
-        )
-        .orderBy(comments.createdAt);
-
-      // Build nested structure recursively
-      const buildNestedReplies = (parentId: string): Comment[] => {
-        const directReplies = allReplies.filter(r => r.parentCommentId === parentId);
-        return directReplies.map(reply => ({
-          ...reply,
-          replies: buildNestedReplies(reply.id)
-        }));
-      };
-
-      const commentsWithReplies = topLevelComments.map(comment => ({
-        ...comment,
-        replies: buildNestedReplies(comment.id),
-      }));
-
-      return NextResponse.json({ comments: commentsWithReplies });
+    if (allComments.length === 0) {
+      return NextResponse.json({ comments: [] });
     }
 
-    return NextResponse.json({ comments: topLevelComments });
+    // Separate top-level comments and replies
+    const topLevelComments = allComments.filter(c => !c.parentCommentId);
+    const replies = allComments.filter(c => c.parentCommentId);
+
+    // Build a map of comment ID to comment for quick lookups
+    const commentMap = new Map<string, Comment>();
+    allComments.forEach(comment => {
+      commentMap.set(comment.id, { ...comment, replies: [] });
+    });
+
+    // Build nested structure: attach replies to their parents
+    replies.forEach(reply => {
+      const parent = commentMap.get(reply.parentCommentId!);
+      if (parent) {
+        if (!parent.replies) {
+          parent.replies = [];
+        }
+        parent.replies.push(commentMap.get(reply.id)!);
+      }
+    });
+
+    // Get top-level comments with their nested replies, sorted by creation date (newest first)
+    const result = topLevelComments
+      .map(c => commentMap.get(c.id)!)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    return NextResponse.json({ comments: result });
   } catch (error) {
     console.error('Error fetching comments:', error);
     return NextResponse.json(

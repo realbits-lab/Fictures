@@ -1,7 +1,18 @@
 import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
-import { comments } from '../src/lib/db/schema.js';
+import { pgTable, text, timestamp, integer, boolean } from 'drizzle-orm/pg-core';
 import { eq } from 'drizzle-orm';
+
+// Define minimal schema
+const comments = pgTable('comments', {
+  id: text('id').primaryKey(),
+  content: text('content').notNull(),
+  parentCommentId: text('parent_comment_id'),
+  sceneId: text('scene_id'),
+  isDeleted: boolean('is_deleted').default(false).notNull(),
+  depth: integer('depth').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
 
 const sql = neon(process.env.POSTGRES_URL);
 const db = drizzle(sql);

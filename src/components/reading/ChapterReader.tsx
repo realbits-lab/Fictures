@@ -168,8 +168,8 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
           {/* Left: Story Info & Chapter Navigation */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Link 
-                href="/browse"
+              <Link
+                href="/reading"
                 className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
               >
                 ← Browse
@@ -375,8 +375,8 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
 
           {/* Footer */}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <Link 
-              href="/browse"
+            <Link
+              href="/reading"
               className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
             >
               ← Back to Browse

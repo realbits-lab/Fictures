@@ -67,17 +67,9 @@ export function CommentSection({
 
       const data = await response.json();
 
-      // Filter out deleted comments and replies recursively
-      const filterDeletedComments = (comments: Comment[]): Comment[] => {
-        return comments
-          .filter(comment => !comment.isDeleted)
-          .map(comment => ({
-            ...comment,
-            replies: comment.replies ? filterDeletedComments(comment.replies) : []
-          }));
-      };
-
-      setComments(filterDeletedComments(data.comments || []));
+      // Keep deleted comments to preserve thread structure
+      // They will be displayed as "[deleted]" placeholders in CommentItem
+      setComments(data.comments || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load comments');
     } finally {

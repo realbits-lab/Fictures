@@ -131,48 +131,55 @@ export function CommentItem({
             />
           ) : (
             <>
-              <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
+              <p className={cn(
+                "text-sm whitespace-pre-wrap break-words",
+                comment.isDeleted
+                  ? "text-gray-500 dark:text-gray-500 italic"
+                  : "text-gray-700 dark:text-gray-300"
+              )}>
                 {comment.content}
               </p>
 
-              {/* Actions */}
-              <div className="flex items-center gap-2 mt-2">
-                <LikeDislikeButton
-                  entityId={comment.id}
-                  entityType="comment"
-                  initialLikeCount={comment.likeCount}
-                  initialDislikeCount={comment.dislikeCount}
-                  size="sm"
-                />
+              {/* Actions - hide for deleted comments */}
+              {!comment.isDeleted && (
+                <div className="flex items-center gap-2 mt-2">
+                  <LikeDislikeButton
+                    entityId={comment.id}
+                    entityType="comment"
+                    initialLikeCount={comment.likeCount}
+                    initialDislikeCount={comment.dislikeCount}
+                    size="sm"
+                  />
 
-                {canReply && (
-                  <button
-                    onClick={() => setShowReplyForm(!showReplyForm)}
-                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 font-medium"
-                  >
-                    Reply {comment.replyCount > 0 && `(${comment.replyCount})`}
-                  </button>
-                )}
-
-                {isOwner && (
-                  <>
+                  {canReply && (
                     <button
-                      onClick={() => setShowEditForm(true)}
+                      onClick={() => setShowReplyForm(!showReplyForm)}
                       className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 font-medium"
                     >
-                      Edit
+                      Reply {comment.replyCount > 0 && `(${comment.replyCount})`}
                     </button>
+                  )}
 
-                    <button
-                      onClick={handleDelete}
-                      disabled={isPending}
-                      className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium disabled:opacity-50"
-                    >
-                      Delete
-                    </button>
-                  </>
-                )}
-              </div>
+                  {isOwner && (
+                    <>
+                      <button
+                        onClick={() => setShowEditForm(true)}
+                        className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 font-medium"
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        onClick={handleDelete}
+                        disabled={isPending}
+                        className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium disabled:opacity-50"
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
             </>
           )}
 
