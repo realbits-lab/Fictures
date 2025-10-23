@@ -182,10 +182,21 @@ export function useStoryReader(storyId: string | null): UseStoryReaderReturn {
   const availableChapters = useMemo(() => {
     if (!data?.story) return [];
 
-    const allChapters = [
-      ...data.story.parts.flatMap(part => part.chapters),
-      ...data.story.chapters
-    ];
+    // Create chapters with part context for proper sorting
+    const chaptersWithPartOrder = data.story.parts.flatMap(part =>
+      part.chapters.map(chapter => ({
+        ...chapter,
+        partOrderIndex: part.orderIndex
+      }))
+    );
+
+    // Add root-level chapters (no part)
+    const rootChapters = data.story.chapters.map(chapter => ({
+      ...chapter,
+      partOrderIndex: 0 // Root chapters come first
+    }));
+
+    const allChapters = [...chaptersWithPartOrder, ...rootChapters];
 
     // Filter to only published chapters (or all if owner)
     const filteredChapters = allChapters.filter(chapter =>
@@ -194,12 +205,20 @@ export function useStoryReader(storyId: string | null): UseStoryReaderReturn {
 
     // Deduplicate by chapter ID (in case same chapter appears in both parts and root chapters)
     const seenIds = new Set<string>();
-    return filteredChapters.filter(chapter => {
+    const uniqueChapters = filteredChapters.filter(chapter => {
       if (seenIds.has(chapter.id)) {
         return false;
       }
       seenIds.add(chapter.id);
       return true;
+    });
+
+    // Sort by part orderIndex first, then chapter orderIndex within that part
+    return uniqueChapters.sort((a, b) => {
+      if (a.partOrderIndex !== b.partOrderIndex) {
+        return a.partOrderIndex - b.partOrderIndex;
+      }
+      return a.orderIndex - b.orderIndex;
     });
   }, [data?.story, data?.isOwner]);
 
