@@ -10,6 +10,7 @@ import { CommunityPostsList } from '@/components/community/CommunityPostsList';
 import { CreatePostForm } from '@/components/community/CreatePostForm';
 import { useProtectedAction } from '@/hooks/useProtectedAction';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 // Mock data - replace with real API calls
 const getStoryData = (storyId: string) => ({
@@ -86,17 +87,41 @@ export default function StoryCommunityPage() {
   const { data: session } = useSession();
   const storyId = params.storyId as string;
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const story = getStoryData(storyId);
-  const posts = getMockPosts(storyId);
 
   const { executeAction: handleCreatePost } = useProtectedAction(() => {
     setShowCreateForm(true);
   });
 
+  const fetchPosts = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/community/stories/${storyId}/posts`);
+      const data = await response.json();
+
+      if (data.success) {
+        setPosts(data.posts);
+      } else {
+        toast.error('Failed to load posts');
+      }
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      toast.error('Failed to load posts');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, [storyId]);
+
   const handlePostCreated = () => {
     setShowCreateForm(false);
-    // Refresh posts list
+    fetchPosts();
   };
 
   return (
