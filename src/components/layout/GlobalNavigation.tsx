@@ -26,7 +26,6 @@ const gnbMenuItems: NavItem[] = [
 ];
 
 const profileMenuItems: NavItem[] = [
-  { href: "/notifications", label: "Notifications", icon: "🔔" },
   { href: "/profile", label: "Profile", icon: "👤" }
 ];
 

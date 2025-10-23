@@ -272,18 +272,6 @@ export function useUserSettings() {
   );
 }
 
-export function useNotificationSettings() {
-  return usePersistedSWR(
-    '/settings/api/notifications',
-    fetcher,
-    CACHE_CONFIGS.settings,
-    {
-      revalidateOnFocus: false,
-      errorRetryCount: 2
-    }
-  );
-}
-
 export function usePrivacySettings() {
   return usePersistedSWR(
     '/settings/api/privacy',

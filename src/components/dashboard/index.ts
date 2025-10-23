@@ -1,4 +1,3 @@
-export { AIAssistantWidget } from "./AIAssistantWidget";
 export { CommunityHighlights } from "./CommunityHighlights";
 export { CreateStoryCard } from "./CreateStoryCard";
 export { Dashboard } from "./Dashboard";
