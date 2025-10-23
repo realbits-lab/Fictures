@@ -1,0 +1,319 @@
+# Authentication Profiles
+
+This document describes the authentication system for testing with multiple user accounts.
+
+## Available Profiles
+
+### Manager Profile
+- **Email**: Stored in `.auth/user.json` under `profiles.manager.email`
+- **Role**: manager
+- **User ID**: Stored in `.auth/user.json` under `profiles.manager.userId`
+- **API Key ID**: Stored in `.auth/user.json` under `profiles.manager.apiKeyId`
+- **Scopes**: stories:read, stories:write
+- **Features**: Full access to manage stories, chapters, and publishing
+
+**Note**: All credentials are stored securely in `.auth/user.json` which is gitignored and should never be committed.
+
+### Reader Profile
+- **Email**: Stored in `.auth/user.json` under `profiles.reader.email`
+- **Password**: Stored in `.auth/user.json` under `profiles.reader.password`
+- **Role**: reader
+- **User ID**: Stored in `.auth/user.json` under `profiles.reader.userId`
+- **API Key ID**: Stored in `.auth/user.json` under `profiles.reader.apiKeyId`
+- **Scopes**: stories:read, stories:write
+- **Features**: Basic reader access for testing reading functionality
+
+**Note**: All credentials are stored securely in `.auth/user.json` which is gitignored and should never be committed.
+
+## File Structure
+
+The `.auth/user.json` file contains authentication data structured as follows:
+
+```json
+{
+  "profiles": {
+    "manager": {
+      "userId": "usr_XXXXXXXXXXXXX",
+      "email": "manager@fictures.xyz",
+      "name": "Fictures Manager",
+      "role": "manager",
+      "apiKey": "fic_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "apiKeyId": "XXXXXXXXXXXXXXXXXXXXX",
+      "apiKeyScopes": ["stories:read", "stories:write"],
+      "cookies": [...],
+      "origins": [...]
+    },
+    "reader": {
+      "userId": "usr_XXXXXXXXXXXXX",
+      "email": "reader@fictures.xyz",
+      "password": "[SECURE_PASSWORD_HERE]",
+      "name": "Reader User",
+      "username": "reader",
+      "role": "reader",
+      "apiKey": "fic_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "apiKeyId": "XXXXXXXXXXXXXXXXXXXXX",
+      "apiKeyScopes": ["stories:read", "stories:write"],
+      "cookies": [],
+      "origins": []
+    }
+  },
+  "defaultProfile": "manager"
+}
+```
+
+## Helper Scripts
+
+### Get Current Profile
+
+```bash
+node scripts/get-auth-profile.mjs
+```
+
+Shows the currently active authentication profile with full details including:
+- User ID, email, name, and role
+- API key information
+- Available profiles list
+
+**Example Output:**
+```
+=== Current Authentication Profile ===
+
+Active Profile: manager
+Email: manager@fictures.xyz
+Name: Fictures Manager
+Role: manager
+User ID: [FROM .auth/user.json]
+API Key: [FROM .auth/user.json]
+API Key ID: [FROM .auth/user.json]
+API Scopes: stories:read, stories:write
+
+Available Profiles: manager, reader
+```
+
+### Switch Profile
+
+```bash
+# Switch to manager
+node scripts/switch-auth-profile.mjs manager
+
+# Switch to reader
+node scripts/switch-auth-profile.mjs reader
+```
+
+Changes the default authentication profile for testing. The script will:
+1. Update the `defaultProfile` field in `.auth/user.json`
+2. Display the switched profile's details
+3. Show credentials if available (password for reader profile)
+
+**Example Output:**
+```
+✓ Switched to profile: reader
+
+Profile Details:
+  Email: reader@fictures.xyz
+  Name: Reader User
+  Role: reader
+  User ID: [FROM .auth/user.json]
+  Password: [FROM .auth/user.json]
+  API Key: [FROM .auth/user.json]
+  API Scopes: stories:read, stories:write
+```
+
+## Using with Playwright
+
+The profile structure is compatible with Playwright's `storageState` option:
+
+```javascript
+const { test } = require('@playwright/test');
+const fs = require('fs');
+
+// Load authentication profiles
+const authData = JSON.parse(fs.readFileSync('.auth/user.json', 'utf-8'));
+const profile = authData.profiles[authData.defaultProfile];
+
+// Use the profile's authentication state
+test.use({
+  storageState: {
+    cookies: profile.cookies,
+    origins: profile.origins
+  }
+});
+
+test('authenticated user can access stories', async ({ page }) => {
+  await page.goto('http://localhost:3000/stories');
+  // Test runs with the default profile's authentication
+});
+```
+
+### Testing with Different Profiles
+
+You can test different user roles by switching profiles:
+
+```javascript
+// Test as manager
+const managerProfile = authData.profiles.manager;
+test.use({
+  storageState: {
+    cookies: managerProfile.cookies,
+    origins: managerProfile.origins
+  }
+});
+
+// Test as reader
+const readerProfile = authData.profiles.reader;
+test.use({
+  storageState: {
+    cookies: readerProfile.cookies,
+    origins: readerProfile.origins
+  }
+});
+```
+
+## Security Notes
+
+- **DO NOT commit credentials to public repositories**
+- The `.auth/` directory should be included in `.gitignore`
+- API keys are rotated regularly and can be regenerated
+- Passwords are hashed in the database using SHA-256
+- Session cookies have expiration times and need periodic refresh
+
+## Creating New Profiles
+
+To add a new user profile:
+
+1. **Create the user in the database**
+   ```bash
+   dotenv --file .env.local run node scripts/create-user.mjs
+   ```
+
+2. **Generate an API key for the user**
+   ```bash
+   dotenv --file .env.local run node scripts/create-api-key.mjs
+   ```
+
+3. **Add the profile to `.auth/user.json`**
+   ```json
+   {
+     "profiles": {
+       "existing-profile": { ... },
+       "new-profile": {
+         "userId": "usr_...",
+         "email": "newuser@fictures.xyz",
+         "name": "New User",
+         "role": "reader",
+         "apiKey": "fic_...",
+         "apiKeyId": "...",
+         "apiKeyScopes": ["stories:read", "stories:write"],
+         "cookies": [],
+         "origins": []
+       }
+     },
+     "defaultProfile": "manager"
+   }
+   ```
+
+4. **Set `defaultProfile` to the new profile name if needed**
+   ```bash
+   node scripts/switch-auth-profile.mjs new-profile
+   ```
+
+## Example Scripts
+
+The following scripts are available in `/scripts/` directory:
+
+- **`create-reader-user.mjs`** - Creates the reader@fictures.xyz user account
+- **`create-reader-api-key.mjs`** - Generates an API key for the reader account
+- **`get-manager-account.mjs`** - Fetches manager account information from database
+- **`switch-auth-profile.mjs`** - Profile switcher utility
+- **`get-auth-profile.mjs`** - Current profile viewer and information display
+
+## Testing Workflow
+
+### 1. Running Tests with Manager Profile
+
+```bash
+# Switch to manager profile
+node scripts/switch-auth-profile.mjs manager
+
+# Run Playwright tests
+dotenv --file .env.local run npx playwright test --headless
+```
+
+### 2. Running Tests with Reader Profile
+
+```bash
+# Switch to reader profile
+node scripts/switch-auth-profile.mjs reader
+
+# Run Playwright tests
+dotenv --file .env.local run npx playwright test --headless
+```
+
+### 3. Manual Testing with Browser
+
+```bash
+# Start development server
+dotenv --file .env.local run pnpm dev > logs/dev-server.log 2>&1 &
+
+# Switch to desired profile
+node scripts/switch-auth-profile.mjs reader
+
+# Capture authentication manually
+dotenv --file .env.local run node scripts/capture-auth-manual.mjs
+
+# Test automatic login
+dotenv --file .env.local run node scripts/test-auto-login.mjs
+```
+
+## API Key Scopes
+
+Current API key scopes available:
+
+- `stories:read` - Read story data
+- `stories:write` - Create and update stories
+- `stories:delete` - Delete stories
+- `stories:publish` - Publish stories
+- `chapters:read` - Read chapter data
+- `chapters:write` - Create and update chapters
+- `chapters:delete` - Delete chapters
+- `analytics:read` - View analytics data
+- `ai:use` - Use AI features
+- `community:read` - Read community posts
+- `community:write` - Create community posts
+- `settings:read` - Read user settings
+- `settings:write` - Update user settings
+
+## Troubleshooting
+
+### Session Expired
+
+If authentication fails with "session expired":
+
+1. Recapture authentication state:
+   ```bash
+   dotenv --file .env.local run node scripts/capture-auth-manual.mjs
+   ```
+
+2. Update the profile's cookies and origins in `.auth/user.json`
+
+### Invalid API Key
+
+If API requests fail with "invalid API key":
+
+1. Generate a new API key:
+   ```bash
+   dotenv --file .env.local run node scripts/create-api-key.mjs
+   ```
+
+2. Update the profile's `apiKey` and `apiKeyId` in `.auth/user.json`
+
+### Profile Not Found
+
+If switching profiles fails:
+
+1. Check available profiles:
+   ```bash
+   node scripts/get-auth-profile.mjs
+   ```
+
+2. Verify the profile name matches exactly (case-sensitive)

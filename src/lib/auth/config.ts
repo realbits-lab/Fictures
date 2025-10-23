@@ -31,28 +31,45 @@ export const authConfig = {
         }
       },
       async authorize(credentials) {
+        console.log('[AUTH] Authorize called with email:', credentials?.email);
+
         if (!credentials?.email || !credentials?.password) {
+          console.log('[AUTH] Missing credentials');
           return null;
         }
 
         try {
           // Find user by email
+          console.log('[AUTH] Finding user by email:', credentials.email);
           const user = await findUserByEmail(credentials.email as string);
 
-          if (!user || !user.password) {
+          if (!user) {
+            console.log('[AUTH] User not found');
+            return null;
+          }
+
+          console.log('[AUTH] User found:', user.email, 'Has password:', !!user.password);
+
+          if (!user.password) {
+            console.log('[AUTH] User has no password set');
             return null;
           }
 
           // Verify password
+          console.log('[AUTH] Verifying password...');
           const isPasswordValid = await verifyPassword(
             credentials.password as string,
             user.password
           );
 
+          console.log('[AUTH] Password valid:', isPasswordValid);
+
           if (!isPasswordValid) {
+            console.log('[AUTH] Invalid password');
             return null;
           }
 
+          console.log('[AUTH] Authorization successful for:', user.email);
           // Return user object that will be used in JWT
           return {
             id: user.id,
@@ -62,7 +79,7 @@ export const authConfig = {
             role: user.role,
           };
         } catch (error) {
-          console.error('Authorization error:', error);
+          console.error('[AUTH] Authorization error:', error);
           return null;
         }
       }
