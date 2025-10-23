@@ -9,7 +9,9 @@ On mobile devices (375px width), the left sidebar takes up most of the screen wi
 - **Mobile (<768px)**: Sidebar hidden by default, accessible via hamburger menu
 - **Desktop (≥768px)**: Sidebar always visible (unchanged from original)
 
-### 2. Key Changes in `src/components/reading/ChapterReader.tsx`
+### 2. Key Changes in `src/components/reading/ChapterReaderClient.tsx`
+
+**Note:** The reading page at `/reading/[id]` uses `ChapterReaderClient.tsx`, not `ChapterReader.tsx`.
 
 #### Added State Management
 ```typescript
@@ -18,11 +20,12 @@ const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
 #### Hamburger Menu Button
 Added to the reading navigation header (visible only on mobile):
-- Location: Line 172-184
+- Location: Lines 361-373
 - Toggles between hamburger (☰) and close (✕) icons
 - onClick toggles `isSidebarOpen` state
 
 #### Responsive Sidebar Classes
+Location: Lines 415-426
 ```typescript
 className={`
   ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}  // Hidden by default on mobile
@@ -32,23 +35,37 @@ className={`
   z-50 md:z-0                                               // High z-index for overlay
   w-80                                                       // Width unchanged
   transition-transform duration-300 ease-in-out              // Smooth animation
+  top-0 md:top-auto                                         // Full height on mobile
 `}
 ```
 
 #### Backdrop Overlay
 Added dark overlay when sidebar is open on mobile:
-- Location: Line 276-282
+- Location: Lines 403-410
 - Only renders when `isSidebarOpen` is true
 - Only visible on mobile (md:hidden)
 - Clicking backdrop closes sidebar
 
-#### Auto-Close on Chapter Selection
-Modified chapter selection buttons to automatically close sidebar on mobile:
+#### Auto-Close on Chapter and Scene Selection
+Modified selection handlers to automatically close sidebar on mobile:
+
+**Chapter Selection (Line 213):**
 ```typescript
-onClick={() => {
-  setSelectedChapterId(chapter.id);
-  setIsSidebarOpen(false); // Close sidebar after selection
-}}
+const handleChapterSelect = (chapterId: string) => {
+  setSelectedChapterId(chapterId);
+  setSelectedSceneId(null);
+  setIsSidebarOpen(false); // Close sidebar after chapter selection
+};
+```
+
+**Scene Selection (Line 64):**
+```typescript
+const handleSceneSelect = React.useCallback((sceneId: string) => {
+  // ... scroll position logic ...
+  setIsScrollRestored(false);
+  setSelectedSceneId(sceneId);
+  setIsSidebarOpen(false); // Close sidebar after scene selection
+}, [selectedSceneId, saveScrollPosition]);
 ```
 
 #### Responsive Header Elements
@@ -93,7 +110,12 @@ className="mb-6 md:mb-8 border-b border-gray-200 dark:border-gray-800 pb-4 md:pb
   5. Click backdrop to close sidebar
 
 ## Files Modified
-- `src/components/reading/ChapterReader.tsx` (primary changes)
+- `src/components/reading/ChapterReaderClient.tsx` (primary changes)
+  - Added mobile sidebar state management
+  - Implemented hamburger menu button
+  - Added responsive sidebar with slide animation
+  - Added backdrop overlay for mobile
+  - Modified chapter and scene selection handlers for auto-close
 
 ## Technical Notes
 - Uses Tailwind CSS responsive breakpoints (`md:` prefix for ≥768px)
@@ -101,3 +123,36 @@ className="mb-6 md:mb-8 border-b border-gray-200 dark:border-gray-800 pb-4 md:pb
 - No JavaScript animations, all CSS-based
 - State management with React useState
 - Compatible with dark mode
+
+## Test Results (Playwright)
+
+### Mobile Testing (375x667px viewport)
+**Test Date:** 2025-01-24
+
+✅ **All tests passed:**
+1. Sidebar hidden by default on mobile load
+2. Hamburger button visible and functional in header
+3. Sidebar slides in smoothly with 300ms animation
+4. Backdrop overlay appears when sidebar open
+5. Clicking backdrop closes sidebar
+6. Clicking chapter button closes sidebar automatically
+7. Clicking scene button closes sidebar automatically
+8. Reading content gets full width when sidebar closed
+9. Text is perfectly readable on mobile
+10. Scroll position persisted correctly (4048.5px saved)
+
+### Desktop Testing (1280x720px viewport)
+✅ **Desktop experience unchanged:**
+1. Sidebar always visible (no hamburger button)
+2. "Browse" link visible in header
+3. All navigation controls visible
+4. Chapter and scene navigation fully functional
+5. Reading content has appropriate width with sidebar
+
+### Screenshots
+- `mobile-reading-before-sidebar.png` - Mobile view with sidebar hidden
+- `mobile-reading-sidebar-open.png` - Mobile view with sidebar open
+- `mobile-reading-after-chapter-select.png` - Auto-close after selection
+- `mobile-reading-after-backdrop-click.png` - Backdrop click closes sidebar
+- `mobile-reading-content-scrolled.png` - Readable content on mobile
+- `desktop-reading-sidebar-visible.png` - Desktop unchanged
