@@ -98,8 +98,15 @@ dotenv --file .env.local run node scripts/verify-reader-password.mjs
 - **Role**: manager
 - **User ID**: Stored in `.auth/user.json` under `profiles.manager.userId`
 - **API Key ID**: Stored in `.auth/user.json` under `profiles.manager.apiKeyId`
-- **Scopes**: stories:read, stories:write
-- **Features**: Full access to manage stories, chapters, and publishing
+- **Scopes** (14 total):
+  - **Stories**: read, write, delete, publish
+  - **Chapters**: read, write, delete
+  - **Analytics**: read
+  - **AI**: use
+  - **Community**: read, write
+  - **Settings**: read, write
+  - **Admin**: all (wildcard permission)
+- **Features**: Full administrative access to all resources and features
 
 **Note**: All credentials are stored securely in `.auth/user.json` which is gitignored and should never be committed.
 
@@ -109,8 +116,14 @@ dotenv --file .env.local run node scripts/verify-reader-password.mjs
 - **Role**: reader
 - **User ID**: Stored in `.auth/user.json` under `profiles.reader.userId`
 - **API Key ID**: Stored in `.auth/user.json` under `profiles.reader.apiKeyId`
-- **Scopes**: stories:read, stories:write
-- **Features**: Basic reader access for testing reading functionality
+- **Scopes** (5 total - Read-only):
+  - **Stories**: read
+  - **Chapters**: read
+  - **Analytics**: read
+  - **Community**: read
+  - **Settings**: read
+- **Features**: Read-only access for viewing content and analytics
+- **Restrictions**: Cannot write, delete, or publish any content
 
 ### Writer Profile
 - **Email**: Stored in `.auth/user.json` under `profiles.writer.email`
@@ -118,8 +131,15 @@ dotenv --file .env.local run node scripts/verify-reader-password.mjs
 - **Role**: writer
 - **User ID**: Stored in `.auth/user.json` under `profiles.writer.userId`
 - **API Key ID**: Stored in `.auth/user.json` under `profiles.writer.apiKeyId`
-- **Scopes**: stories:read, stories:write, stories:delete
-- **Features**: Writer access for creating and managing stories with delete permissions
+- **Scopes** (9 total - Read/Write only):
+  - **Stories**: read, write
+  - **Chapters**: read, write
+  - **Analytics**: read
+  - **AI**: use
+  - **Community**: read, write
+  - **Settings**: read
+- **Features**: Read and write access for creating and editing stories, chapters, and community content
+- **Restrictions**: Cannot delete or publish stories
 
 **Note**: All credentials are stored securely in `.auth/user.json` which is gitignored and should never be committed.
 
@@ -397,19 +417,53 @@ dotenv --file .env.local run node scripts/test-auto-login.mjs
 
 Current API key scopes available:
 
+### Story Scopes
 - `stories:read` - Read story data
 - `stories:write` - Create and update stories
-- `stories:delete` - Delete stories
-- `stories:publish` - Publish stories
-- `chapters:read` - Read chapter data
-- `chapters:write` - Create and update chapters
-- `chapters:delete` - Delete chapters
-- `analytics:read` - View analytics data
-- `ai:use` - Use AI features
-- `community:read` - Read community posts
-- `community:write` - Create community posts
-- `settings:read` - Read user settings
-- `settings:write` - Update user settings
+- `stories:delete` - Delete stories (Manager only)
+- `stories:publish` - Publish and unpublish stories (Manager only)
+
+### Chapter Scopes
+- `chapters:read` - Read chapters and scenes
+- `chapters:write` - Create and edit chapters and scenes
+- `chapters:delete` - Delete chapters and scenes (Manager only)
+
+### Analytics Scope
+- `analytics:read` - View analytics and statistics (All roles)
+
+### AI Scope
+- `ai:use` - Use AI writing assistance features (Manager, Writer)
+
+### Community Scopes
+- `community:read` - Read community posts and discussions (All roles)
+- `community:write` - Create community posts and replies (Manager, Writer)
+
+### Settings Scopes
+- `settings:read` - Read user settings and preferences (All roles)
+- `settings:write` - Modify user settings and preferences (Manager only)
+
+### Admin Scope
+- `admin:all` - Full administrative access to all resources (Manager only)
+
+## RBAC (Role-Based Access Control) Summary
+
+### Manager Role
+- **Total Scopes**: 14
+- **Access Level**: Full administrative access
+- **Can**: Read, write, delete, publish all content; use all features; manage settings
+- **Includes**: `admin:all` wildcard permission
+
+### Writer Role
+- **Total Scopes**: 9
+- **Access Level**: Read/Write access only
+- **Can**: Read and write stories/chapters; use AI; participate in community
+- **Cannot**: Delete or publish stories; modify settings
+
+### Reader Role
+- **Total Scopes**: 5
+- **Access Level**: Read-only access
+- **Can**: View stories, chapters, analytics, and community content
+- **Cannot**: Write, delete, publish, or modify any content
 
 ## Troubleshooting
 
