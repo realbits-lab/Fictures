@@ -50,7 +50,8 @@ export function FeaturedStory({ initialStory }: FeaturedStoryProps) {
           <div className="grid md:grid-cols-2 gap-8 p-8 md:p-12">
             {/* Left: Story Info */}
             <div className="flex flex-col justify-center">
-              <div className="mb-6">
+              {/* Genre Badge and Title */}
+              <div className="mb-4">
                 <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium mb-4">
                   <span>📖</span>
                   <span>{story.genre}</span>
@@ -58,6 +59,25 @@ export function FeaturedStory({ initialStory }: FeaturedStoryProps) {
                 <h3 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                   {story.title}
                 </h3>
+              </div>
+
+              {/* CTA Buttons - MOVED TO TOP */}
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <Link href={`/reading/${story.id}`} className="flex-1">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition-all hover:scale-105">
+                    <span className="mr-2">📚</span>
+                    Start Reading
+                  </Button>
+                </Link>
+                <Link href="/reading" className="flex-1">
+                  <Button variant="outline" className="w-full py-3 px-6 rounded-lg">
+                    Browse More Stories
+                  </Button>
+                </Link>
+              </div>
+
+              {/* Description and Author */}
+              <div className="mb-6">
                 <p className="text-gray-600 dark:text-gray-400 text-lg mb-4">
                   {story.description}
                 </p>
@@ -67,7 +87,7 @@ export function FeaturedStory({ initialStory }: FeaturedStoryProps) {
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
                   <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {story.stats.chapterCount}
@@ -100,21 +120,6 @@ export function FeaturedStory({ initialStory }: FeaturedStoryProps) {
                     Rating {story.stats.ratingCount > 0 && `(${story.stats.ratingCount})`}
                   </div>
                 </div>
-              </div>
-
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link href={`/reading/${story.id}`} className="flex-1">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition-all hover:scale-105">
-                    <span className="mr-2">📚</span>
-                    Start Reading
-                  </Button>
-                </Link>
-                <Link href="/reading" className="flex-1">
-                  <Button variant="outline" className="w-full py-3 px-6 rounded-lg">
-                    Browse More Stories
-                  </Button>
-                </Link>
               </div>
             </div>
 
