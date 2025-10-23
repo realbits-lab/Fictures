@@ -1,4 +1,4 @@
-import { HomeFeatures, HomeHero } from "@/components/home";
+import { HomeFeatures, HomeHero, FeaturedStory } from "@/components/home";
 import { MainLayout } from "@/components/layout";
 
 export default function Home() {
@@ -6,6 +6,7 @@ export default function Home() {
     <MainLayout>
       <div className="min-h-screen">
         <HomeHero />
+        <FeaturedStory />
         <HomeFeatures />
       </div>
     </MainLayout>
