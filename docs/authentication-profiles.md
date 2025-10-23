@@ -1,6 +1,95 @@
 # Authentication Profiles
 
-This document describes the authentication system for testing with multiple user accounts.
+This document describes the authentication system for testing with multiple user accounts, including password hashing algorithms and verification methods.
+
+## Password Verification Algorithm
+
+### Overview
+
+The application uses **PBKDF2 (Password-Based Key Derivation Function 2)** with the Web Crypto API for password hashing and verification. This approach provides strong security while being compatible with Edge Runtime environments.
+
+**Implementation Location**: `src/lib/auth/password.ts`
+
+### Algorithm Details
+
+- **Hashing Function**: PBKDF2
+- **Hash Algorithm**: SHA-256
+- **Iterations**: 100,000
+- **Salt Length**: 16 bytes (randomly generated per password)
+- **Derived Key Length**: 256 bits (32 bytes)
+- **Output Format**: Base64-encoded string containing salt + derived key
+
+### How Password Hashing Works
+
+**Hashing Process** (`hashPassword` function):
+1. Generate random 16-byte salt using `crypto.getRandomValues()`
+2. Derive 256-bit key using PBKDF2 with 100,000 iterations and SHA-256
+3. Combine salt (first 16 bytes) + derived key (remaining 32 bytes)
+4. Encode combined array as Base64 string
+5. Return Base64 string for storage in database
+
+**Verification Process** (`verifyPassword` function):
+1. Decode Base64 hash from database
+2. Extract salt (first 16 bytes) and stored hash (remaining bytes)
+3. Derive new key using provided password, extracted salt, and same parameters
+4. Compare derived key with stored hash byte-by-byte
+5. Return `true` if all bytes match, `false` otherwise
+
+### Important Notes
+
+- **NEVER use bcrypt** for password hashing in this project - it's incompatible with PBKDF2
+- Always use the functions in `src/lib/auth/password.ts` for password operations
+- Password hashes start with Base64 characters, NOT `$2b$` (bcrypt format)
+- The Web Crypto API ensures compatibility with Edge Runtime and serverless environments
+
+### Example Password Hash Format
+
+```
+Base64 encoded: 8bvPT4m72pRgc5sppAsG... (salt + derived key)
+Length: ~60-70 characters
+Character set: A-Za-z0-9+/=
+```
+
+### Resetting User Passwords
+
+Use the correct script for resetting passwords:
+
+**Correct Script** (uses PBKDF2):
+```bash
+dotenv --file .env.local run node scripts/reset-reader-password-pbkdf2.mjs "new-password"
+```
+
+**Deprecated Script** (uses bcrypt - DO NOT USE):
+```bash
+# DO NOT USE - Incompatible with the application
+node scripts/reset-reader-password.mjs
+```
+
+### Verifying Password Hashes
+
+To check if a user's password is correctly hashed:
+
+```bash
+# Check user exists and has password
+dotenv --file .env.local run node scripts/check-reader-user.mjs
+
+# Verify specific password
+dotenv --file .env.local run node scripts/verify-reader-password.mjs
+```
+
+### Troubleshooting Password Issues
+
+**Login fails with correct password:**
+1. Check password hash format in database
+2. If hash starts with `$2b$`, it's bcrypt (incorrect)
+3. Reset password using `reset-reader-password-pbkdf2.mjs`
+4. Verify with `verify-reader-password.mjs`
+
+**CredentialsSignin error:**
+- User not found in database
+- User has no password set (OAuth-only account)
+- Password hash uses incompatible algorithm
+- Check server logs for `[AUTH]` debug messages
 
 ## Available Profiles
 
@@ -22,6 +111,15 @@ This document describes the authentication system for testing with multiple user
 - **API Key ID**: Stored in `.auth/user.json` under `profiles.reader.apiKeyId`
 - **Scopes**: stories:read, stories:write
 - **Features**: Basic reader access for testing reading functionality
+
+### Writer Profile
+- **Email**: Stored in `.auth/user.json` under `profiles.writer.email`
+- **Password**: Stored in `.auth/user.json` under `profiles.writer.password`
+- **Role**: writer
+- **User ID**: Stored in `.auth/user.json` under `profiles.writer.userId`
+- **API Key ID**: Stored in `.auth/user.json` under `profiles.writer.apiKeyId`
+- **Scopes**: stories:read, stories:write, stories:delete
+- **Features**: Writer access for creating and managing stories with delete permissions
 
 **Note**: All credentials are stored securely in `.auth/user.json` which is gitignored and should never be committed.
 
@@ -53,6 +151,19 @@ The `.auth/user.json` file contains authentication data structured as follows:
       "apiKey": "fic_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
       "apiKeyId": "XXXXXXXXXXXXXXXXXXXXX",
       "apiKeyScopes": ["stories:read", "stories:write"],
+      "cookies": [],
+      "origins": []
+    },
+    "writer": {
+      "userId": "usr_XXXXXXXXXXXXX",
+      "email": "writer@fictures.xyz",
+      "password": "[SECURE_PASSWORD_HERE]",
+      "name": "Writer User",
+      "username": "writer",
+      "role": "writer",
+      "apiKey": "fic_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "apiKeyId": "XXXXXXXXXXXXXXXXXXXXX",
+      "apiKeyScopes": ["stories:read", "stories:write", "stories:delete"],
       "cookies": [],
       "origins": []
     }
@@ -87,7 +198,7 @@ API Key: [FROM .auth/user.json]
 API Key ID: [FROM .auth/user.json]
 API Scopes: stories:read, stories:write
 
-Available Profiles: manager, reader
+Available Profiles: manager, reader, writer
 ```
 
 ### Switch Profile
@@ -98,6 +209,9 @@ node scripts/switch-auth-profile.mjs manager
 
 # Switch to reader
 node scripts/switch-auth-profile.mjs reader
+
+# Switch to writer
+node scripts/switch-auth-profile.mjs writer
 ```
 
 Changes the default authentication profile for testing. The script will:
@@ -174,8 +288,10 @@ test.use({
 - **DO NOT commit credentials to public repositories**
 - The `.auth/` directory should be included in `.gitignore`
 - API keys are rotated regularly and can be regenerated
-- Passwords are hashed in the database using SHA-256
+- Passwords are hashed in the database using **PBKDF2 with SHA-256** (100,000 iterations)
 - Session cookies have expiration times and need periodic refresh
+- Never store raw passwords in database or code
+- Password hashes should be Base64 encoded (PBKDF2), not bcrypt format
 
 ## Creating New Profiles
 
@@ -223,6 +339,8 @@ The following scripts are available in `/scripts/` directory:
 
 - **`create-reader-user.mjs`** - Creates the reader@fictures.xyz user account
 - **`create-reader-api-key.mjs`** - Generates an API key for the reader account
+- **`create-writer-user.mjs`** - Creates the writer@fictures.xyz user account with API key
+- **`check-writer-user.mjs`** - Verifies writer account exists and shows details
 - **`get-manager-account.mjs`** - Fetches manager account information from database
 - **`switch-auth-profile.mjs`** - Profile switcher utility
 - **`get-auth-profile.mjs`** - Current profile viewer and information display
@@ -249,7 +367,17 @@ node scripts/switch-auth-profile.mjs reader
 dotenv --file .env.local run npx playwright test --headless
 ```
 
-### 3. Manual Testing with Browser
+### 3. Running Tests with Writer Profile
+
+```bash
+# Switch to writer profile
+node scripts/switch-auth-profile.mjs writer
+
+# Run Playwright tests
+dotenv --file .env.local run npx playwright test --headless
+```
+
+### 4. Manual Testing with Browser
 
 ```bash
 # Start development server
