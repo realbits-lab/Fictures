@@ -57,19 +57,19 @@ export function SceneDisplay({ sceneId, storyId, disabled = false }: SceneDispla
 
   // Fetch scene data
   const { data: sceneData } = useSWR(
-    `/api/stories/${storyId}/scenes/${sceneId}`,
+    `/writing/api/stories/${storyId}/scenes/${sceneId}`,
     fetcher
   );
 
   // Fetch characters data
   const { data: charactersData } = useSWR(
-    `/api/stories/${storyId}/characters`,
+    `/writing/api/stories/${storyId}/characters`,
     fetcher
   );
 
   // Fetch settings data
   const { data: settingsData } = useSWR(
-    `/api/stories/${storyId}/settings`,
+    `/writing/api/stories/${storyId}/settings`,
     fetcher
   );
 

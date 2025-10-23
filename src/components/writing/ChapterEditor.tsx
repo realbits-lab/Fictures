@@ -116,7 +116,7 @@ export function ChapterEditor({
 
     setIsAutoSaving(true);
     try {
-      const response = await fetch(`/api/chapters/${chapterData.id}/autosave`, {
+      const response = await fetch(`/writing/api/chapters/${chapterData.id}/autosave`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

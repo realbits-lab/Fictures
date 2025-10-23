@@ -1,7 +1,6 @@
 import { auth } from "@/lib/auth";
 import { getUserStoriesWithFirstChapter } from "@/lib/db/queries";
 
-import { AIAssistantWidget } from "./AIAssistantWidget";
 import { CommunityHighlights } from "./CommunityHighlights";
 import { CreateStoryCard } from "./CreateStoryCard";
 import { PublishingSchedule } from "./PublishingSchedule";
@@ -75,7 +74,6 @@ export async function Dashboard() {
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
           <RecentActivity />
-          <AIAssistantWidget />
         </div>
         <div className="space-y-6">
           <PublishingSchedule />

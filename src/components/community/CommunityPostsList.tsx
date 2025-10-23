@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent, Badge, Button } from '@/components/ui';
 import { useProtectedAction } from '@/hooks/useProtectedAction';
+import { toast } from 'sonner';
 
 interface Post {
   id: string;
@@ -25,6 +26,7 @@ interface Post {
 
 interface CommunityPostsListProps {
   posts: Post[];
+  onPostDeleted?: () => void;
 }
 
 const getPostTypeConfig = (type: string) => {
@@ -55,13 +57,16 @@ const formatRelativeTime = (dateString: string) => {
   return `${Math.floor(diffInHours / 24)} days ago`;
 };
 
-function CommunityPost({ post }: { post: Post }) {
+function CommunityPost({ post, onDelete }: { post: Post; onDelete?: () => void }) {
   const { data: session } = useSession();
   const [likes, setLikes] = useState(post.likes);
   const [isLiked, setIsLiked] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const typeConfig = getPostTypeConfig(post.type);
+  const isAuthor = session?.user?.id === post.author.id;
 
   const { executeAction: handleLike, requiresAuth: likeRequiresAuth } = useProtectedAction(() => {
     setLikes(prev => isLiked ? prev - 1 : prev + 1);
@@ -71,6 +76,40 @@ function CommunityPost({ post }: { post: Post }) {
   const { executeAction: handleReply, requiresAuth: replyRequiresAuth } = useProtectedAction(() => {
     setShowReplies(true);
   });
+
+  const handleDelete = async () => {
+    if (!showDeleteConfirm) {
+      setShowDeleteConfirm(true);
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch(`/api/community/posts/${post.id}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to delete post');
+      }
+
+      toast.success('Post deleted successfully');
+      if (onDelete) {
+        onDelete();
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to delete post. Please try again.'
+      );
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
 
   return (
     <Card className={`${post.isPinned ? 'border-yellow-300 dark:border-yellow-600' : ''}`}>
@@ -169,12 +208,50 @@ function CommunityPost({ post }: { post: Post }) {
 
           {/* Report/More Actions */}
           <div className="flex items-center gap-2">
-            {session && (
+            {isAuthor && (
+              <>
+                {showDeleteConfirm ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                      Are you sure?
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? '⏳ Deleting...' : '✓ Yes, Delete'}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs text-gray-400 hover:text-gray-600"
+                      onClick={() => setShowDeleteConfirm(false)}
+                      disabled={isDeleting}
+                    >
+                      ✗ Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    onClick={handleDelete}
+                  >
+                    🗑️ Delete
+                  </Button>
+                )}
+              </>
+            )}
+            {session && !isAuthor && (
               <Button
                 variant="ghost"
                 size="sm"
                 className="text-xs text-gray-400 hover:text-gray-600"
-                onClick={() => alert('Reporting functionality would be here')}
+                onClick={() => toast.info('Reporting functionality would be here')}
               >
                 ⚠️ Report
               </Button>
@@ -208,7 +285,7 @@ function CommunityPost({ post }: { post: Post }) {
   );
 }
 
-export function CommunityPostsList({ posts }: CommunityPostsListProps) {
+export function CommunityPostsList({ posts, onPostDeleted }: CommunityPostsListProps) {
   const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'replies'>('recent');
 
   const sortedPosts = [...posts].sort((a, b) => {
@@ -274,7 +351,7 @@ export function CommunityPostsList({ posts }: CommunityPostsListProps) {
           </Card>
         ) : (
           finalPosts.map((post) => (
-            <CommunityPost key={post.id} post={post} />
+            <CommunityPost key={post.id} post={post} onDelete={onPostDeleted} />
           ))
         )}
       </div>

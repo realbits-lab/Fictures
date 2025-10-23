@@ -61,7 +61,7 @@ export function PartPromptEditor({ partData, onPartUpdate, onPreviewUpdate }: Pa
     setOriginalPartData(partData);
 
     try {
-      const response = await fetch('/api/part-analyzer', {
+      const response = await fetch('/writing/api/part-analyzer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/yaml',

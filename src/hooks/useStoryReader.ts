@@ -155,7 +155,7 @@ export function useStoryReader(storyId: string | null): UseStoryReaderReturn {
     isValidating,
     mutate
   } = usePersistedSWR<StoryReaderResponse>(
-    shouldFetch ? `/api/stories/${storyId}/read` : null,
+    shouldFetch ? `/writing/api/stories/${storyId}/read` : null,
     fetcher,
     {
       ...CACHE_CONFIGS.reading, // 1hr TTL + compression
@@ -181,16 +181,45 @@ export function useStoryReader(storyId: string | null): UseStoryReaderReturn {
   // Calculate available chapters (memoized for performance)
   const availableChapters = useMemo(() => {
     if (!data?.story) return [];
-    
-    const allChapters = [
-      ...data.story.parts.flatMap(part => part.chapters),
-      ...data.story.chapters
-    ];
+
+    // Create chapters with part context for proper sorting
+    const chaptersWithPartOrder = data.story.parts.flatMap(part =>
+      part.chapters.map(chapter => ({
+        ...chapter,
+        partOrderIndex: part.orderIndex
+      }))
+    );
+
+    // Add root-level chapters (no part)
+    const rootChapters = data.story.chapters.map(chapter => ({
+      ...chapter,
+      partOrderIndex: 0 // Root chapters come first
+    }));
+
+    const allChapters = [...chaptersWithPartOrder, ...rootChapters];
 
     // Filter to only published chapters (or all if owner)
-    return allChapters.filter(chapter => 
+    const filteredChapters = allChapters.filter(chapter =>
       data.isOwner || chapter.status === 'published'
     );
+
+    // Deduplicate by chapter ID (in case same chapter appears in both parts and root chapters)
+    const seenIds = new Set<string>();
+    const uniqueChapters = filteredChapters.filter(chapter => {
+      if (seenIds.has(chapter.id)) {
+        return false;
+      }
+      seenIds.add(chapter.id);
+      return true;
+    });
+
+    // Sort by part orderIndex first, then chapter orderIndex within that part
+    return uniqueChapters.sort((a, b) => {
+      if (a.partOrderIndex !== b.partOrderIndex) {
+        return a.partOrderIndex - b.partOrderIndex;
+      }
+      return a.orderIndex - b.orderIndex;
+    });
   }, [data?.story, data?.isOwner]);
 
   return {
@@ -213,7 +242,7 @@ export function usePrefetchStory() {
     prefetch: async (storyId: string) => {
       try {
         // Prefetch story data but don't cache it yet
-        await fetch(`/api/stories/${storyId}/read`, {
+        await fetch(`/writing/api/stories/${storyId}/read`, {
           credentials: 'include',
         });
       } catch (error) {

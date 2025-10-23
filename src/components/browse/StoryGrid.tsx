@@ -2,8 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { Button } from "@/components/ui";
+import { Button, StoryImage } from "@/components/ui";
 
 interface Story {
   id: string;
@@ -110,21 +109,15 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
               className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow flex flex-col overflow-hidden"
             >
               {/* Story Image */}
-              {imageUrl ? (
-                <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-800">
-                  <Image
-                    src={imageUrl}
-                    alt={story.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                  />
-                </div>
-              ) : (
-                <div className="w-full h-48 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 flex items-center justify-center">
-                  <div className="text-6xl">📖</div>
-                </div>
-              )}
+              <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-800">
+                <StoryImage
+                  src={imageUrl || ''}
+                  alt={story.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                />
+              </div>
 
               <div className="p-4 flex flex-col flex-grow">
                 <div className="flex justify-between items-start mb-2 flex-shrink-0">
@@ -169,7 +162,7 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
                 </div>
               </div>
 
-              <Link href={`/read/${story.id}`} className="w-full flex-shrink-0">
+              <Link href={`/reading/${story.id}`} className="w-full flex-shrink-0">
                 <Button size="sm" className="w-full text-xs py-1.5">
                   📖 Read Story
                 </Button>

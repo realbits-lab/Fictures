@@ -7,12 +7,18 @@ const nextConfig: NextConfig = {
       static: 0,
     },
   },
-  // Configure image domains for Vercel Blob storage
+  // Configure image domains for Vercel Blob storage and placeholder images
   images: {
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '*.public.blob.vercel-storage.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
         port: '',
         pathname: '/**',
       },

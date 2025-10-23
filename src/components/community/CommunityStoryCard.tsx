@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import { Card, CardContent, Badge } from "@/components/ui";
+import { Card, CardContent, Badge, StoryImage } from "@/components/ui";
 
 interface CommunityStoryCardProps {
   story: {
@@ -26,29 +25,17 @@ export function CommunityStoryCard({ story }: CommunityStoryCardProps) {
       <Card className="h-full transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer border-2 hover:border-blue-300 dark:hover:border-blue-600">
         <CardContent className="p-0">
           {/* Cover Image */}
-          <div className="relative aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-t-lg overflow-hidden">
+          <div className="relative w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-t-lg overflow-hidden">
+            <StoryImage
+              src={story.coverImage || ''}
+              alt={story.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+            />
 
-            {story.coverImage ? (
-              <Image
-                src={story.coverImage}
-                alt={story.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
-                <div className="text-center">
-                  <div className="text-6xl mb-2">📖</div>
-                  <div className="text-sm font-medium text-gray-600 dark:text-gray-400 px-4">
-                    {story.title}
-                  </div>
-                </div>
-              </div>
-            )}
-            
             {/* Overlay on hover */}
-            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center z-10">
               <div className="text-white font-semibold text-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 💬 Join Discussion
               </div>

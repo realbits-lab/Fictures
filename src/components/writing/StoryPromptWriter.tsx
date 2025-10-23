@@ -170,7 +170,7 @@ Please try:
         jsonPreview: jsonToSend?.substring(0, 200) + '...'
       });
 
-      const response = await fetch('/api/story-analyzer', {
+      const response = await fetch('/writing/api/story-analyzer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -449,7 +449,7 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
       console.log('📸 Saving coverImage to storyData field:', previewImageData.url);
 
       // Update story cover image via write endpoint to save in storyData field
-      const response = await fetch(`/api/stories/${effectiveStoryId}/write`, {
+      const response = await fetch(`/writing/api/stories/${effectiveStoryId}/write`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

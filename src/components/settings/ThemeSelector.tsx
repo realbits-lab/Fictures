@@ -255,7 +255,7 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
 		if (!session?.user?.id) return;
 
 		try {
-			await fetch('/api/settings/user', {
+			await fetch('/settings/api/user', {
 				method: 'PUT',
 				headers: {
 					'Content-Type': 'application/json',
@@ -283,7 +283,7 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
 			if (!session?.user?.id) return;
 
 			try {
-				const response = await fetch('/api/settings/user');
+				const response = await fetch('/settings/api/user');
 				if (response.ok) {
 					const settings = await response.json();
 					if (settings.preferences?.theme && settings.preferences.theme !== theme) {

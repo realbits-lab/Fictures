@@ -118,7 +118,7 @@ export function useChapterScenes(chapterId: string | null) {
     isValidating,
     mutate
   } = usePersistedSWR<ChapterScenesResponse>(
-    shouldFetch ? `/api/chapters/${chapterId}/scenes` : null,
+    shouldFetch ? `/writing/api/chapters/${chapterId}/scenes` : null,
     fetcher,
     {
       ...CACHE_CONFIGS.reading,
@@ -140,8 +140,13 @@ export function useChapterScenes(chapterId: string | null) {
     }
   );
 
+  // Sort scenes by orderIndex to ensure correct reading order
+  const sortedScenes = data?.scenes
+    ? [...data.scenes].sort((a, b) => a.orderIndex - b.orderIndex)
+    : [];
+
   return {
-    scenes: data?.scenes || [],
+    scenes: sortedScenes,
     isLoading: sessionStatus === 'loading' || isLoading,
     isValidating,
     error,

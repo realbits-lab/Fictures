@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { useStoryReader, useReadingProgress } from '@/hooks/useStoryReader';
 import { useChapterScenes } from '@/hooks/useChapterScenes';
 import { ProgressIndicator } from './ProgressIndicator';
+import { CommentSection } from './CommentSection';
 import type { Chapter } from '@/hooks/useStoryReader';
 
 interface ChapterReaderClientProps {
@@ -12,9 +14,11 @@ interface ChapterReaderClientProps {
 }
 
 export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
+  const { data: session } = useSession();
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
   const [isScrollRestored, setIsScrollRestored] = useState<boolean>(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarScrollRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
 
@@ -55,6 +59,9 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
     // Reset scroll restoration state and switch scene
     setIsScrollRestored(false);
     setSelectedSceneId(sceneId);
+
+    // Close sidebar on mobile after scene selection
+    setIsSidebarOpen(false);
   }, [selectedSceneId, saveScrollPosition]);
 
   // Use the new SWR hook for data fetching with caching
@@ -94,11 +101,11 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
 
   // Auto-select first scene when chapter changes
   useEffect(() => {
-    if (selectedChapterId && chapterScenes.length > 0 && !selectedSceneId) {
+    if (selectedChapterId && chapterScenes.length > 0 && !selectedSceneId && !scenesLoading) {
       setIsScrollRestored(false);
       handleSceneSelect(chapterScenes[0].id);
     }
-  }, [selectedChapterId, chapterScenes, selectedSceneId, handleSceneSelect]);
+  }, [selectedChapterId, chapterScenes, selectedSceneId, scenesLoading, handleSceneSelect]);
 
   // Restore scroll position when scene changes
   useEffect(() => {
@@ -203,6 +210,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
   const handleChapterSelect = (chapterId: string) => {
     setSelectedChapterId(chapterId);
     setSelectedSceneId(null); // Reset scene selection when chapter changes
+    setIsSidebarOpen(false); // Close sidebar on mobile after chapter selection
   };
 
   // Calculate global chapter number
@@ -266,7 +274,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
               Try Again
             </button>
             <Link
-              href="/browse"
+              href="/reading"
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               Back to Browse
@@ -350,18 +358,32 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
     <div data-testid="chapter-reader" className="absolute inset-0 top-16 bg-white dark:bg-gray-900 flex flex-col">
       {/* Second GNB - Reading Navigation Header */}
       <div className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between px-6 py-3">
-          {/* Left: Story Info & Chapter Navigation */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Link 
-                href="/browse"
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+        <div className="flex items-center justify-between px-4 md:px-6 py-3">
+          {/* Left: Hamburger Menu (Mobile) + Story Info & Chapter Navigation */}
+          <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+            {/* Hamburger Menu Button - Mobile Only */}
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="md:hidden p-2 -ml-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0"
+              aria-label="Toggle chapter navigation"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isSidebarOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+            <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+              <Link
+                href="/reading"
+                className="hidden sm:inline text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors whitespace-nowrap"
               >
                 ← Browse
               </Link>
-              <span className="text-gray-300 dark:text-gray-600">/</span>
-              <span className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-xs">
+              <span className="hidden sm:inline text-gray-300 dark:text-gray-600">/</span>
+              <span className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[120px] sm:max-w-xs">
                 {story.title}
               </span>
               {/* Cache status indicator */}
@@ -370,7 +392,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
               )}
             </div>
             {selectedScene && (
-              <div className="flex items-center gap-2">
+              <div className="hidden lg:flex items-center gap-2">
                 <span className="text-gray-300 dark:text-gray-600">/</span>
                 <span className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-xs">
                   🎬 {selectedScene.title}
@@ -382,10 +404,30 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
         </div>
       </div>
 
+      {/* Backdrop Overlay - Mobile Only */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Main Content Container */}
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 relative">
         {/* Left Sidebar - Chapter Navigation */}
-        <div className="w-80 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col h-full">
+        <div className={`
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+          md:translate-x-0
+          fixed md:relative
+          inset-y-0 left-0
+          z-50 md:z-0
+          w-80 bg-gray-50 dark:bg-gray-800
+          border-r border-gray-200 dark:border-gray-700
+          flex flex-col h-full
+          transition-transform duration-300 ease-in-out
+          top-0 md:top-auto
+        `}>
           {/* Story Header */}
           <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
             <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
@@ -551,7 +593,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
           {/* Footer */}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <Link 
-              href="/browse"
+              href="/reading"
               className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
             >
               ← Back to Browse
@@ -684,6 +726,13 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                   const prevScene = currentSceneIndex > 0 ? chapterScenes[currentSceneIndex - 1] : null;
                   const nextScene = currentSceneIndex < chapterScenes.length - 1 ? chapterScenes[currentSceneIndex + 1] : null;
 
+                  // Find next chapter for navigation when at last scene
+                  const currentChapterIndex = availableChapters.findIndex(ch => ch.id === selectedChapterId);
+                  const nextChapter = currentChapterIndex >= 0 && currentChapterIndex < availableChapters.length - 1
+                    ? availableChapters[currentChapterIndex + 1]
+                    : null;
+                  const isLastScene = currentSceneIndex === chapterScenes.length - 1;
+
                   return (
                     <>
                       <div>
@@ -706,19 +755,38 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                       </div>
 
                       <div>
-                        {nextScene && (
+                        {nextScene ? (
                           <button
                             onClick={() => handleSceneSelect(nextScene.id)}
                             className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                           >
                             Next Scene: {nextScene.title} →
                           </button>
-                        )}
+                        ) : isLastScene && nextChapter ? (
+                          <button
+                            onClick={() => handleChapterSelect(nextChapter.id)}
+                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                          >
+                            Next Chapter: {nextChapter.title} →
+                          </button>
+                        ) : null}
                       </div>
                     </>
                   );
                 })()}
               </div>
+
+              {/* Comments Section */}
+              {selectedSceneId && (
+                <div className="mt-12 pt-6">
+                  <CommentSection
+                    storyId={storyId}
+                    chapterId={selectedChapterId || undefined}
+                    sceneId={selectedSceneId}
+                    currentUserId={session?.user?.id}
+                  />
+                </div>
+              )}
             </article>
           ) : (
             <div className="h-full flex items-center justify-center">

@@ -55,7 +55,7 @@ export default function CommunityPage() {
     ...story,
     author: story.author?.name || story.author || 'Unknown Author',
     description: story.description || 'No description available',
-    coverImage: story.coverImage || "/api/placeholder/200/300",
+    coverImage: story.hnsData?.storyImage?.url || story.coverImage || '',
     lastActivity: formatRelativeTime(story.lastActivity),
   })) : [];
 

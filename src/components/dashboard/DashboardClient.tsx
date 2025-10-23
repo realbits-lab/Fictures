@@ -4,7 +4,6 @@ import { useSession } from 'next-auth/react';
 import { SkeletonLoader, Skeleton, StoryCardSkeleton, DashboardWidgetSkeleton } from "@/components/ui";
 import { useUserStories } from "@/lib/hooks/use-page-cache";
 
-import { AIAssistantWidget } from "./AIAssistantWidget";
 import { CommunityHighlights } from "./CommunityHighlights";
 import { CreateStoryCard } from "./CreateStoryCard";
 import { PublishingSchedule } from "./PublishingSchedule";
@@ -141,7 +140,6 @@ export function DashboardClient() {
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
           <RecentActivity />
-          <AIAssistantWidget />
         </div>
         <div className="space-y-6">
           <PublishingSchedule />

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label } from '@/components/ui';
+import { toast } from 'sonner';
 
 interface CreatePostFormProps {
   storyId: string;
@@ -48,28 +49,41 @@ export function CreatePostForm({ storyId, onPostCreated, onCancel }: CreatePostF
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.title.trim() || !formData.content.trim()) {
-      alert('Please fill in both title and content');
+      toast.warning('Please fill in both title and content');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log('Creating post:', {
-        storyId,
-        ...formData,
-        authorId: session.user?.id,
+      const response = await fetch('/api/community/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          storyId,
+          title: formData.title,
+          content: formData.content,
+          type: formData.type,
+        }),
       });
-      
-      alert('Post created successfully! (This is a demo - no actual post was created)');
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create post');
+      }
+
+      toast.success('Post created successfully!');
       onPostCreated();
     } catch (error) {
-      alert('Failed to create post. Please try again.');
+      console.error('Error creating post:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to create post. Please try again.'
+      );
     } finally {
       setIsSubmitting(false);
     }

@@ -10,94 +10,112 @@ import { CommunityPostsList } from '@/components/community/CommunityPostsList';
 import { CreatePostForm } from '@/components/community/CreatePostForm';
 import { useProtectedAction } from '@/hooks/useProtectedAction';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
-// Mock data - replace with real API calls
-const getStoryData = (storyId: string) => ({
-  id: storyId,
-  title: storyId === 'yWzfrPc85xT0SfF3rzxjU' ? 'Digital Nexus: The Code Between Worlds' : 'The Last Guardian',
-  genre: storyId === 'yWzfrPc85xT0SfF3rzxjU' ? 'Science Fiction/Fantasy' : 'Epic Fantasy',
-  author: 'Thomas Jeon',
-  description: storyId === 'yWzfrPc85xT0SfF3rzxjU' ? 
-    'A gripping tale of virtual reality, shadow magic, and the thin line between code and reality.' :
-    'An epic journey through mystical realms where ancient guardians protect the balance of magic.',
-  status: 'published',
-  totalPosts: 89,
-  totalMembers: 1247,
-  totalViews: 45892,
-  averageRating: 4.7,
-});
-
-const getMockPosts = (storyId: string) => [
-  {
-    id: '1',
-    title: '🤔 Theory: Maya\'s Shadow Powers Connection to the Digital Realm',
-    content: 'I\'ve been analyzing the latest chapters and I think Maya\'s shadow powers aren\'t just magic - they\'re somehow connected to the digital simulation. Notice how her abilities glitch when she\'s stressed? What if the shadow realm is actually a deeper layer of the simulation?',
-    author: {
-      id: 'user1',
-      name: 'TheoryMaster',
-      avatar: null,
-    },
-    type: 'theory',
-    likes: 47,
-    replies: 23,
-    views: 156,
-    isPinned: true,
-    createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4 hours ago
-    lastActivity: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
-  },
-  {
-    id: '2', 
-    title: '💭 Discussion: What do you think will happen to Elena?',
-    content: 'After Chapter 15, I\'m really worried about Elena. She seemed to know something about Maya\'s power limits. Do you think she\'ll survive the shadow realm transformation? I have a feeling she might become the key to understanding the connection between both worlds.',
-    author: {
-      id: 'user2',
-      name: 'ShadowFan2024',
-      avatar: null,
-    },
-    type: 'discussion',
-    likes: 32,
-    replies: 18,
-    views: 203,
-    isPinned: false,
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
-    lastActivity: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-  },
-  {
-    id: '3',
-    title: '🎨 Fan Art: Maya vs The Void Collector',
-    content: 'I drew Maya facing off against the Void Collector from Chapter 14! I imagined her shadow powers manifesting as code streams. Hope you like it! The way the author describes the battle scenes is so cinematic.',
-    author: {
-      id: 'user3', 
-      name: 'ArtistPro',
-      avatar: null,
-    },
-    type: 'fan-content',
-    likes: 89,
-    replies: 12,
-    views: 341,
-    isPinned: false,
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
-    lastActivity: new Date(Date.now() - 45 * 60 * 1000).toISOString(), // 45 minutes ago
-  },
-];
+interface StoryData {
+  id: string;
+  title: string;
+  description: string;
+  genre: string;
+  status: string;
+  author: {
+    id: string;
+    name: string;
+    username: string | null;
+    image: string | null;
+  };
+  stats: {
+    totalPosts: number;
+    totalMembers: number;
+    totalViews: number;
+    averageRating: number;
+    ratingCount: number;
+  };
+}
 
 export default function StoryCommunityPage() {
   const params = useParams();
   const { data: session } = useSession();
   const storyId = params.storyId as string;
   const [showCreateForm, setShowCreateForm] = useState(false);
-
-  const story = getStoryData(storyId);
-  const posts = getMockPosts(storyId);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [story, setStory] = useState<StoryData | null>(null);
+  const [isLoadingStory, setIsLoadingStory] = useState(true);
 
   const { executeAction: handleCreatePost } = useProtectedAction(() => {
     setShowCreateForm(true);
   });
 
+  const fetchStory = async () => {
+    try {
+      setIsLoadingStory(true);
+      const response = await fetch(`/api/community/stories/${storyId}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setStory(data.story);
+      } else {
+        toast.error('Failed to load story data');
+      }
+    } catch (error) {
+      console.error('Error fetching story:', error);
+      toast.error('Failed to load story data');
+    } finally {
+      setIsLoadingStory(false);
+    }
+  };
+
+  const fetchPosts = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/community/stories/${storyId}/posts`);
+      const data = await response.json();
+
+      if (data.success) {
+        setPosts(data.posts);
+      } else {
+        toast.error('Failed to load posts');
+      }
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      toast.error('Failed to load posts');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStory();
+    fetchPosts();
+  }, [storyId]);
+
   const handlePostCreated = () => {
     setShowCreateForm(false);
-    // Refresh posts list
+    fetchPosts();
+    fetchStory(); // Refresh story stats to update post count
   };
+
+  if (isLoadingStory || !story) {
+    return (
+      <MainLayout>
+        <div className="flex gap-6">
+          <aside className="w-80 flex-shrink-0">
+            <CommunityStorySidebar currentStoryId={storyId} />
+          </aside>
+          <main className="flex-1 space-y-6">
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-6">
+              <div className="animate-pulse">
+                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -122,7 +140,7 @@ export default function StoryCommunityPage() {
                   📖 {story.title}
                 </h1>
                 <p className="text-blue-600 dark:text-blue-400 font-medium mb-3">
-                  {story.genre} • by {story.author}
+                  {story.genre} • by {story.author.name}
                 </p>
                 <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                   {story.description}
@@ -136,20 +154,24 @@ export default function StoryCommunityPage() {
             {/* Community Stats */}
             <div className="grid grid-cols-4 gap-4">
               <div className="text-center bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
-                <div className="text-xl font-bold text-green-600">{story.totalPosts}</div>
+                <div className="text-xl font-bold text-green-600">{story.stats.totalPosts}</div>
                 <div className="text-xs text-gray-600 dark:text-gray-400">Posts</div>
               </div>
               <div className="text-center bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
-                <div className="text-xl font-bold text-purple-600">{story.totalMembers.toLocaleString()}</div>
+                <div className="text-xl font-bold text-purple-600">{story.stats.totalMembers.toLocaleString()}</div>
                 <div className="text-xs text-gray-600 dark:text-gray-400">Members</div>
               </div>
               <div className="text-center bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
-                <div className="text-xl font-bold text-blue-600">{story.totalViews.toLocaleString()}</div>
+                <div className="text-xl font-bold text-blue-600">{story.stats.totalViews.toLocaleString()}</div>
                 <div className="text-xs text-gray-600 dark:text-gray-400">Views</div>
               </div>
               <div className="text-center bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
-                <div className="text-xl font-bold text-yellow-600">{story.averageRating}</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">Rating</div>
+                <div className="text-xl font-bold text-yellow-600">
+                  {story.stats.averageRating > 0 ? story.stats.averageRating.toFixed(1) : 'N/A'}
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">
+                  Rating {story.stats.ratingCount > 0 && `(${story.stats.ratingCount})`}
+                </div>
               </div>
             </div>
           </div>
@@ -184,7 +206,7 @@ export default function StoryCommunityPage() {
           )}
 
           {/* Posts List */}
-          <CommunityPostsList posts={posts} />
+          <CommunityPostsList posts={posts} onPostDeleted={fetchPosts} />
 
           {/* Anonymous User CTA */}
           {!session && (

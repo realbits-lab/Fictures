@@ -46,7 +46,7 @@ export function useStories() {
     isValidating,
     mutate
   } = useSWR<StoriesResponse>(
-    session?.user?.id ? '/api/stories' : null,
+    session?.user?.id ? '/writing/api/stories' : null,
     fetcher,
     {
       revalidateOnFocus: false,
