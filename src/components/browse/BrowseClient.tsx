@@ -164,7 +164,9 @@ export function BrowseClient() {
         )}
 
         {/* Show skeleton loading while fetching */}
-        {isLoading ? (
+        {/* ⚡ OPTIMIZATION: Only show skeleton if NO data exists (not cached, not fresh) */}
+        {/* If cached data exists, show it immediately even while revalidating */}
+        {(isLoading && stories.length === 0) ? (
           <SkeletonLoader>
             <StoriesSkeleton />
           </SkeletonLoader>

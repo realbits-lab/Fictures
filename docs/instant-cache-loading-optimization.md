@@ -2,11 +2,11 @@
 
 ## Summary
 
-**Problem:** Scene content was showing loading skeleton even when cached data existed in localStorage, creating unnecessary loading flash.
+**Problem:** Both scene content and story lists were showing loading skeletons even when cached data existed in localStorage, creating unnecessary loading flashes throughout the app.
 
-**Solution:** Optimized cache loading to show cached content **instantly** on first render, then update with fresh data in background.
+**Solution:** Optimized cache loading to show cached content **instantly** on first render, then update with fresh data in background. Applied to both reading scenes and story list pages.
 
-**Result:** ⚡ **Instant perceived performance** - users see content immediately when revisiting scenes.
+**Result:** ⚡ **Instant perceived performance** - users see content immediately when revisiting scenes and browsing stories.
 
 ---
 
@@ -137,7 +137,7 @@ const swr = useSWR<Data, Error>(
 - Smooth transition from cached to fresh data
 - No loading states during background fetches
 
-### 3. Show Content Whenever Data Exists
+### 3. Show Content Whenever Data Exists (Scene Content)
 
 **File:** `src/components/reading/ChapterReaderClient.tsx` (line 836)
 
@@ -164,6 +164,50 @@ const swr = useSWR<Data, Error>(
 - Changed from `scenesLoading` to `scenesLoading && chapterScenes.length === 0`
 - Shows content whenever `chapterScenes` has data
 - Only shows skeleton when truly no data exists
+
+### 4. Show Content Whenever Data Exists (Story List)
+
+**File:** `src/components/browse/BrowseClient.tsx` (line 169)
+
+**Before:**
+```typescript
+// ❌ Shows skeleton whenever loading, even if cached data exists
+{isLoading ? (
+  <SkeletonLoader>
+    <StoriesSkeleton />
+  </SkeletonLoader>
+) : error ? (
+  <ErrorState />
+) : (
+  <StoryGrid stories={stories} />
+)}
+```
+
+**After:**
+```typescript
+// ✅ Only shows skeleton if NO data exists (not cached, not fresh)
+// If cached data exists, show it immediately even while revalidating
+{(isLoading && stories.length === 0) ? (
+  <SkeletonLoader>
+    <StoriesSkeleton />
+  </SkeletonLoader>
+) : error ? (
+  <ErrorState />
+) : (
+  <StoryGrid stories={stories} />
+)}
+```
+
+**Key Change:**
+- Changed from `isLoading` to `(isLoading && stories.length === 0)`
+- Shows story grid whenever `stories` array has data
+- Only shows skeleton when truly no data exists
+- Complements the synchronous cache loading in `usePersistedSWR`
+
+**User Experience Impact:**
+- **First visit to /reading**: Shows skeleton → Loads stories → Caches
+- **Return visits**: Shows cached stories instantly → Updates in background
+- **Navigation between pages**: Instant story list display (no loading flash)
 
 ---
 
@@ -324,6 +368,39 @@ Reading Scene 10 → Cache to localStorage
 Reload page
 → Instant (4ms) from localStorage ⚡ ✅ Persists across reloads
 → Update with fresh data in background
+```
+
+### Scenario 4: Story List Browsing
+
+**Before:**
+```
+Visit /reading → Load (800ms) → Browse stories
+Navigate to /write
+Return to /reading → Load (800ms again!) ❌ Shows skeleton every time
+```
+
+**After:**
+```
+Visit /reading → Load (800ms) → Browse stories → Cache
+Navigate to /write
+Return to /reading → Instant (4ms) ⚡ ✅ Stories appear immediately
+→ Background refresh if needed
+```
+
+### Scenario 5: Story Discovery Flow
+
+**Before:**
+```
+Browse /reading → Skeleton (800ms)
+Click story → Read chapter → Skeleton (800ms)
+Back to /reading → Skeleton (800ms) ❌ Re-loads everything
+```
+
+**After:**
+```
+Browse /reading → Skeleton (800ms first time)
+Click story → Read chapter → Instant cached scenes ⚡
+Back to /reading → Instant cached story list ⚡ ✅ Seamless navigation
 ```
 
 ---
@@ -529,7 +606,8 @@ useEffect(() => {
 ## Files Modified
 
 1. ✅ `src/lib/hooks/use-persisted-swr.ts` - Synchronous cache loading
-2. ✅ `src/components/reading/ChapterReaderClient.tsx` - Show cached content immediately
+2. ✅ `src/components/reading/ChapterReaderClient.tsx` - Show cached scene content immediately
+3. ✅ `src/components/browse/BrowseClient.tsx` - Show cached story list immediately
 
 ## Files Created
 
