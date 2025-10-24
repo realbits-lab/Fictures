@@ -358,7 +358,7 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
                   {/* In-Feed Ad - Insert after every 8 cards */}
                   {shouldShowAd && (
                     <InFeedAd
-                      slot="5555555555" // Replace with your actual In-feed AdSense slot ID
+                      slot="1781061545" // Replace with your actual In-feed AdSense slot ID
                       layoutKey="-fb+5w+4e-db+86" // Get from AdSense dashboard
                       className="col-span-1"
                     />
