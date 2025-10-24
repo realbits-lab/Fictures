@@ -564,9 +564,9 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
   }
 
   return (
-    <div data-testid="chapter-reader" className={`absolute inset-0 ${isUIVisible ? 'top-16' : 'top-0'} bg-white dark:bg-gray-900 flex flex-col transition-[top] duration-300 ease-in-out`}>
+    <div data-testid="chapter-reader" className={`absolute inset-0 ${isUIVisible ? 'top-16 z-auto' : 'top-0 z-[70]'} bg-white dark:bg-gray-900 flex flex-col transition-[top] duration-300 ease-in-out`}>
       {/* Second GNB - Reading Navigation Header */}
-      <div className={`sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-transform duration-300 ease-in-out ${
+      <div className={`${isUIVisible ? 'sticky' : 'fixed'} top-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-transform duration-300 ease-in-out ${
         isUIVisible ? 'translate-y-0' : '-translate-y-full'
       }`}>
         <div className="flex items-center justify-between px-4 md:px-6 py-3">
