@@ -3,6 +3,13 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Button, StoryImage } from "@/components/ui";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Story {
   id: string;
@@ -55,45 +62,40 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
 
   return (
     <div>
-      {/* Filters */}
-      <div className="mb-8 space-y-4">
-        <div className="flex flex-wrap gap-2">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 self-center">Genre:</span>
-          {genres.map((genre) => (
-            <Button
-              key={genre}
-              variant={selectedGenre === genre ? "primary" : "secondary"}
-              size="sm"
-              onClick={() => setSelectedGenre(genre)}
-            >
-              {genre}
-            </Button>
-          ))}
-        </div>
+      {/* Filters - Top Right Position */}
+      <div className="mb-8 flex justify-end">
+        <div className="flex items-center gap-3">
+          {/* Genre Select */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Genre:</span>
+            <Select value={selectedGenre} onValueChange={setSelectedGenre}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select genre" />
+              </SelectTrigger>
+              <SelectContent>
+                {genres.map((genre) => (
+                  <SelectItem key={genre} value={genre}>
+                    {genre}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div className="flex gap-2">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 self-center">Sort by:</span>
-          <Button
-            variant={sortBy === "latest" ? "primary" : "secondary"}
-            size="sm"
-            onClick={() => setSortBy("latest")}
-          >
-            Latest
-          </Button>
-          <Button
-            variant={sortBy === "popular" ? "primary" : "secondary"}
-            size="sm"
-            onClick={() => setSortBy("popular")}
-          >
-            Most Popular
-          </Button>
-          <Button
-            variant={sortBy === "rating" ? "primary" : "secondary"}
-            size="sm"
-            onClick={() => setSortBy("rating")}
-          >
-            Highest Rated
-          </Button>
+          {/* Sort By Select */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Sort by:</span>
+            <Select value={sortBy} onValueChange={(value) => setSortBy(value as "latest" | "popular" | "rating")}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select sort order" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="latest">Latest</SelectItem>
+                <SelectItem value="popular">Most Popular</SelectItem>
+                <SelectItem value="rating">Highest Rated</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 

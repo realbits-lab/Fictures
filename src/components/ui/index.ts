@@ -8,3 +8,4 @@ export { Label } from "./Label";
 export { SkeletonLoader, Skeleton, StoryCardSkeleton, DashboardWidgetSkeleton, ListItemSkeleton, TextBlockSkeleton, ButtonSkeleton, ImageSkeleton, Shimmer, ShimmerPulse, ShimmerFast, ShimmerDiagonal } from "./SkeletonLoader";
 export { StoryImage } from "./story-image";
 export { ToastProvider, useToast } from "./toast";
+export { Select, SelectGroup, SelectValue, SelectTrigger, SelectContent, SelectLabel, SelectItem, SelectSeparator, SelectScrollUpButton, SelectScrollDownButton } from "./select";

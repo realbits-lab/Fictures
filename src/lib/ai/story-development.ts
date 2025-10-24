@@ -77,7 +77,7 @@ Create a story concept in YAML format following this EXACT structure (use only k
 
 ---
 title: [story title derived from user prompt]
-genre: [genre that matches the story]
+genre: [MUST be ONE of: Fantasy, Science Fiction, Romance, Mystery, Thriller, Detective, Adventure]
 words: [target word count]
 question: [central dramatic question]
 goal: [protagonist overall goal]
