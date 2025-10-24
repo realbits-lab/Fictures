@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react';
 import { mutate } from 'swr';
+import { cacheManager, CACHE_CONFIGS } from '@/lib/hooks/use-persisted-swr';
 
 /**
  * Hook for prefetching adjacent scenes to improve navigation performance
@@ -18,18 +19,36 @@ export function useScenePrefetch() {
     console.log(`[${prefetchId}] 🔮 PREFETCH START for chapter: ${chapterId}`);
 
     try {
-      // Check if already in cache
+      // Check if already in cache (check BOTH localStorage and SWR in-memory cache)
       const cacheCheckStartTime = performance.now();
-      const cachedData = await mutate(url, undefined, { revalidate: false });
+
+      // First check localStorage (persistent cache)
+      const localStorageData = cacheManager.getCachedData(url, {
+        ...CACHE_CONFIGS.reading,
+        ttl: 5 * 60 * 1000  // 5min cache for scenes
+      });
+
+      // Then check SWR in-memory cache
+      const swrData = await mutate(url, undefined, { revalidate: false });
+
       const cacheCheckDuration = performance.now() - cacheCheckStartTime;
 
-      if (cachedData) {
+      // If data exists in EITHER cache, consider it a hit
+      if (localStorageData || swrData) {
         const totalDuration = performance.now() - prefetchStartTime;
-        console.log(`[${prefetchId}] ✅ Cache HIT - Already cached (${cacheCheckDuration.toFixed(2)}ms, Total: ${totalDuration.toFixed(2)}ms)`);
+        const cacheSource = localStorageData ? 'localStorage' : 'SWR in-memory';
+        console.log(`[${prefetchId}] ✅ Cache HIT - Already in ${cacheSource} (${cacheCheckDuration.toFixed(2)}ms, Total: ${totalDuration.toFixed(2)}ms)`);
+
+        // If only in localStorage, populate SWR cache for instant access
+        if (localStorageData && !swrData) {
+          await mutate(url, localStorageData, { revalidate: false });
+          console.log(`[${prefetchId}] 🔄 Populated SWR cache from localStorage`);
+        }
+
         return;
       }
 
-      console.log(`[${prefetchId}] ❌ Cache MISS - Fetching... (Cache check: ${cacheCheckDuration.toFixed(2)}ms)`);
+      console.log(`[${prefetchId}] ❌ Cache MISS - Not in localStorage or SWR cache (Cache check: ${cacheCheckDuration.toFixed(2)}ms)`);
 
       // Prefetch with low priority
       const fetchStartTime = performance.now();

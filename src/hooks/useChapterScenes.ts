@@ -143,13 +143,14 @@ export function useChapterScenes(chapterId: string | null) {
     fetcher,
     {
       ...CACHE_CONFIGS.reading,
-      ttl: 5 * 60 * 1000  // 5min cache for scenes
+      ttl: 5 * 60 * 1000  // 5min localStorage cache for scenes
     },
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
       refreshInterval: 0,
-      dedupingInterval: 10 * 1000, // 10 seconds deduplication
+      dedupingInterval: 30 * 60 * 1000, // ⚡ OPTIMIZED: 30 minutes - keeps scene data in SWR memory cache for extended reading sessions
+      keepPreviousData: true, // ⚡ OPTIMIZED: Keep previous scene data in memory when navigating between scenes
       errorRetryCount: 3,
       errorRetryInterval: 1000,
       onError: (error) => {

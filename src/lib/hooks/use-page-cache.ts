@@ -111,7 +111,8 @@ export function usePublishedStories() {
       revalidateOnFocus: false, // Optimized: Don't revalidate on tab focus since data is static
       revalidateOnReconnect: true,
       refreshInterval: 30 * 60 * 1000, // Optimized: Refresh every 30 minutes (published stories don't change frequently)
-      dedupingInterval: 5 * 60 * 1000, // Optimized: Extended to 5 minutes for better deduplication
+      dedupingInterval: 30 * 60 * 1000, // ⚡ OPTIMIZED: 30 minutes - keeps story list in SWR memory cache for extended browsing sessions
+      keepPreviousData: true, // ⚡ OPTIMIZED: Keep previous data in memory when navigating
       // staleTime: 15 * 60 * 1000, // Keep data fresh for 15 minutes before considering stale
       onSuccess: (data, key) => {
         const hookEndTime = performance.now();

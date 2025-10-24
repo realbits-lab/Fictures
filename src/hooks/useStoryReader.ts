@@ -159,14 +159,14 @@ export function useStoryReader(storyId: string | null): UseStoryReaderReturn {
     fetcher,
     {
       ...CACHE_CONFIGS.reading, // 1hr TTL + compression
-      // Use default TTL - will be optimized after data is available
-      ttl: 10 * 60 * 1000  // 10min default
+      ttl: 10 * 60 * 1000  // 10min localStorage cache
     },
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
       refreshInterval: 0, // No automatic polling
-      dedupingInterval: 30 * 1000, // 30 seconds deduplication
+      dedupingInterval: 30 * 60 * 1000, // ⚡ OPTIMIZED: 30 minutes - keeps story structure in SWR memory cache for extended reading sessions
+      keepPreviousData: true, // ⚡ OPTIMIZED: Keep story data in memory when navigating
       errorRetryCount: 3,
       errorRetryInterval: 1000,
       onError: (error) => {
