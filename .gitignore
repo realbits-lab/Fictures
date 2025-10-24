@@ -53,6 +53,9 @@ playwright/.auth/
 .auth/
 tests/@playwright/.auth/
 
+# Playwright test screenshots
+tests/screenshots/
+
 # Playwright MCP
 .playwright-mcp/
 
