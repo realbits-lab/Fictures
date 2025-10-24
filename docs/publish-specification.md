@@ -2268,73 +2268,6 @@ export async function processScheduledPublications(): Promise<{
     failed,
   };
 }
-
-// This should be called by a cron job or background worker
-// Example: Run every 5 minutes
-export async function publishingCronJob() {
-  console.log('[Publishing] Starting automated publishing job...');
-
-  try {
-    const result = await processScheduledPublications();
-
-    console.log('[Publishing] Job completed:', result);
-
-    return result;
-  } catch (error) {
-    console.error('[Publishing] Job failed:', error);
-    throw error;
-  }
-}
-```
-
-### Vercel Cron Configuration
-
-**Location:** `vercel.json`
-
-```json
-{
-  "crons": [
-    {
-      "path": "/api/cron/publish",
-      "schedule": "*/5 * * * *"
-    }
-  ]
-}
-```
-
-### Cron API Endpoint
-
-**Location:** `src/app/api/cron/publish/route.ts`
-
-```typescript
-import { NextRequest, NextResponse } from 'next/server';
-import { publishingCronJob } from '@/lib/services/publish-automation';
-
-export async function GET(request: NextRequest) {
-  // Verify cron secret
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
-
-  try {
-    const result = await publishingCronJob();
-
-    return NextResponse.json({
-      success: true,
-      ...result,
-    });
-  } catch (error) {
-    console.error('Cron job failed:', error);
-    return NextResponse.json(
-      { error: 'Cron job failed' },
-      { status: 500 }
-    );
-  }
-}
 ```
 
 ---
@@ -2362,14 +2295,12 @@ export async function GET(request: NextRequest) {
 2. Build schedule builder UI component
 3. Create schedule management API
 4. Implement publication automation service
-5. Set up Vercel cron job
-6. Test automated publishing
-7. Add error handling and retries
+5. Test automated publishing
+6. Add error handling and retries
 
 **Deliverables:**
 - Schedule creation working
 - Automated publishing functional
-- Cron job running
 
 ### Phase 3: Timeline Visualization (Week 3)
 **Tasks:**
@@ -2433,7 +2364,6 @@ export async function GET(request: NextRequest) {
 - **Reschedule Rate:** % of publications that get rescheduled
 
 ### Technical Metrics
-- **Cron Reliability:** 99.9% uptime for automated publishing
 - **API Response Time:** < 500ms for publish actions
 - **Timeline Load Time:** < 2s on mobile
 - **Background Job Lag:** < 5 minutes from scheduled time
@@ -2465,7 +2395,6 @@ export async function GET(request: NextRequest) {
 ## References
 
 ### Technical Documentation
-- [Vercel Cron Jobs](https://vercel.com/docs/cron-jobs)
 - [Date-fns Documentation](https://date-fns.org/docs/Getting-Started)
 - [React DnD](https://react-dnd.github.io/react-dnd/about)
 - [Drizzle ORM Queries](https://orm.drizzle.team/docs/select)

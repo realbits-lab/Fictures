@@ -2200,9 +2200,8 @@ export function CollapsibleSection({
 1. Implement analytics service functions
 2. Update story analytics API to use real data
 3. Update reader analytics API to use real data
-4. Create data aggregation cron jobs
-5. Test data accuracy
-6. Performance optimization
+4. Test data accuracy
+5. Performance optimization
 
 **Deliverables:**
 - Real analytics data flowing
