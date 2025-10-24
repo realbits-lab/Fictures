@@ -2,13 +2,48 @@
 
 import { usePersistedSWR, CACHE_CONFIGS } from './use-persisted-swr';
 
-// Shared fetcher function
+// Shared fetcher function with timing
 const fetcher = async (url: string) => {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  const fetchStart = performance.now();
+  console.log(`[fetcher] 🌐 Starting fetch: ${url}`);
+
+  try {
+    const response = await fetch(url);
+    const fetchEnd = performance.now();
+    const fetchDuration = Math.round(fetchEnd - fetchStart);
+
+    console.log(`[fetcher] 📥 Response received in ${fetchDuration}ms:`, {
+      url,
+      status: response.status,
+      ok: response.ok,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const parseStart = performance.now();
+    const data = await response.json();
+    const parseEnd = performance.now();
+    const parseDuration = Math.round(parseEnd - parseStart);
+    const totalDuration = Math.round(parseEnd - fetchStart);
+
+    console.log(`[fetcher] ✅ Data parsed in ${parseDuration}ms (total: ${totalDuration}ms):`, {
+      url,
+      hasData: !!data,
+      dataKeys: data ? Object.keys(data) : [],
+    });
+
+    return data;
+  } catch (error) {
+    const errorTime = performance.now();
+    const duration = Math.round(errorTime - fetchStart);
+    console.error(`[fetcher] ❌ Fetch failed after ${duration}ms:`, {
+      url,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+    throw error;
   }
-  return response.json();
 };
 
 // Writing page hooks
@@ -65,7 +100,10 @@ export function useStoryStats(storyId: string | null) {
 
 // Reading page hooks
 export function usePublishedStories() {
-  return usePersistedSWR(
+  const hookStartTime = performance.now();
+  console.log(`[usePublishedStories] 🎣 Hook called at ${new Date().toISOString()}`);
+
+  const result = usePersistedSWR(
     '/reading/api/published',
     fetcher,
     CACHE_CONFIGS.reading,
@@ -75,14 +113,65 @@ export function usePublishedStories() {
       refreshInterval: 30 * 60 * 1000, // Optimized: Refresh every 30 minutes (published stories don't change frequently)
       dedupingInterval: 5 * 60 * 1000, // Optimized: Extended to 5 minutes for better deduplication
       // staleTime: 15 * 60 * 1000, // Keep data fresh for 15 minutes before considering stale
-      onSuccess: (data) => {
-        console.log('✅ Published stories loaded from', data?.fromCache ? 'localStorage cache' : 'API:', data?.stories?.length || 0, 'stories');
+      onSuccess: (data, key) => {
+        const hookEndTime = performance.now();
+        const totalHookTime = Math.round(hookEndTime - hookStartTime);
+
+        const source = data?.fromCache ? 'localStorage cache' : 'API fetch';
+        const storiesCount = data?.stories?.length || 0;
+        const totalCount = data?.count || 0;
+
+        console.log(`[usePublishedStories] ✅ Stories loaded from ${source} in ${totalHookTime}ms:`, {
+          storiesCount,
+          totalCount,
+          fromCache: data?.fromCache,
+          key,
+          cacheConfig: {
+            ttl: '1 hour',
+            version: CACHE_CONFIGS.reading.version,
+            compress: CACHE_CONFIGS.reading.compress,
+          },
+        });
+
+        // Log story details for debugging
+        if (storiesCount > 0) {
+          console.log(`[usePublishedStories] 📚 Story list details:`, {
+            firstStory: data.stories[0]?.title,
+            lastStory: data.stories[storiesCount - 1]?.title,
+            genres: [...new Set(data.stories.map((s: any) => s.genre))],
+            totalWordCount: data.stories.reduce((sum: number, s: any) => sum + (s.wordCount || 0), 0),
+          });
+        }
       },
-      onError: (error) => {
-        console.error('❌ Published stories fetch failed:', error);
-      }
+      onError: (error, key) => {
+        const hookEndTime = performance.now();
+        const totalHookTime = Math.round(hookEndTime - hookStartTime);
+
+        console.error(`[usePublishedStories] ❌ Fetch failed after ${totalHookTime}ms:`, {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+          key,
+        });
+      },
+      onLoadingSlow: (key) => {
+        console.warn(`[usePublishedStories] ⏳ Loading is taking longer than expected for: ${key}`);
+      },
     }
   );
+
+  const { data, error, isLoading, isValidating } = result;
+
+  // Log hook state on every call
+  console.log(`[usePublishedStories] 📊 Hook state:`, {
+    isLoading,
+    isValidating,
+    hasData: !!data,
+    hasError: !!error,
+    storiesCount: data?.stories?.length || 0,
+    fromCache: data?.fromCache,
+  });
+
+  return result;
 }
 
 export function useFeaturedStories() {
