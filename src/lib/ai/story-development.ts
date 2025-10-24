@@ -828,8 +828,6 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
             phase1_story: storyConcept
           }
         }),
-        partIds: [],
-        chapterIds: [],
       })
       .onConflictDoUpdate({
         target: [stories.id],
@@ -888,7 +886,6 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
           orderIndex: partSpec.part,
           targetWordCount: partWordCount,
           content: JSON.stringify(partSpec),
-          chapterIds: [],
         }
       );
       createdPartIds.push(partId);

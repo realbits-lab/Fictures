@@ -62,7 +62,7 @@ export function StoryTableView({ stories }: StoryTableViewProps) {
     return (
       <div className="text-center py-12 text-[rgb(var(--muted-foreground))]">
         <p className="text-xl mb-2">📝 Ready to start writing?</p>
-        <p>Click the "Create New Story" button above to begin your first story!</p>
+        <p>Click the &ldquo;Create New Story&rdquo; button above to begin your first story!</p>
       </div>
     );
   }

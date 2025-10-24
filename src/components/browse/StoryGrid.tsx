@@ -64,7 +64,7 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
         const response = await fetch('/reading/api/history');
         if (response.ok) {
           const data = await response.json();
-          const storyIds = new Set(data.history.map((h: any) => h.storyId));
+          const storyIds = new Set<string>(data.history.map((h: any) => h.storyId as string));
           setReadingHistory(storyIds);
         }
       } catch (error) {

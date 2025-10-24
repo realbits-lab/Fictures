@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
+import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { readingHistory } from '@/lib/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
@@ -9,7 +8,7 @@ import { nanoid } from 'nanoid';
 // GET /reading/api/history - Fetch user's reading history
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -41,7 +40,7 @@ export async function GET(request: NextRequest) {
 // POST /reading/api/history - Record a story view
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.id) {
       return NextResponse.json(

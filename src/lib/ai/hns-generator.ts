@@ -484,8 +484,6 @@ export async function generateCompleteHNS(
             generation_prompt: userPrompt,
           },
         }),
-        partIds: [],
-        chapterIds: [],
       })
       .onConflictDoUpdate({
         target: [stories.id],
@@ -533,7 +531,6 @@ export async function generateCompleteHNS(
             ...phase2HnsData.metadata,
           },
         }),
-        partIds: parts.map((p) => p.part_id),
         updatedAt: new Date(),
       })
       .where(eq(stories.id, currentStoryId));
@@ -553,7 +550,6 @@ export async function generateCompleteHNS(
           summary: part.summary,
           keyBeats: part.key_beats,
           hnsData: cleanComponentHnsData(part),
-          chapterIds: [],
         })
         .onConflictDoNothing();
     }
@@ -759,23 +755,9 @@ export async function generateCompleteHNS(
 
     // Update parts with their chapter IDs
     console.log("💾 Updating parts with chapter IDs...");
-    for (const part of parts) {
-      const partChapterIds = allChapters
-        .filter(chapter => chapter.part_ref === part.part_id)
-        .map(chapter => chapter.chapter_id || nanoid());
-
-      if (partChapterIds.length > 0) {
-        await db
-          .update(partsTable)
-          .set({
-            chapterIds: partChapterIds,
-            updatedAt: new Date(),
-          })
-          .where(eq(partsTable.id, part.part_id));
-        console.log(`✅ Part ${part.part_id} updated with ${partChapterIds.length} chapter IDs`);
-      }
-    }
-    console.log("✅ Parts updated with chapter IDs");
+    // Parts are automatically linked to chapters through the partId foreign key
+    // No need to maintain a separate chapterIds array
+    console.log("✅ Parts linked to chapters via foreign keys");
 
     // Save scenes to database
     console.log("💾 Saving scenes to database...");
@@ -817,8 +799,9 @@ export async function generateCompleteHNS(
     }
     console.log("✅ Scenes saved");
 
-    // Update chapters with their scene IDs and HNS data
-    console.log("💾 Updating chapters with scene IDs...");
+    // Update chapters with HNS data
+    // Scenes are automatically linked to chapters through the chapterId foreign key
+    console.log("💾 Updating chapters with HNS data...");
     for (const chapter of allChapters) {
       const chapterSceneIds = allScenes
         .filter(scene => scene.chapter_ref === chapter.chapter_id)
@@ -834,16 +817,15 @@ export async function generateCompleteHNS(
         await db
           .update(chaptersTable)
           .set({
-            sceneIds: chapterSceneIds,
             hnsData: cleanComponentHnsData(updatedChapterHnsData),
             status: "published",
             updatedAt: new Date(),
           })
           .where(eq(chaptersTable.id, chapter.chapter_id || ''));
-        console.log(`✅ Chapter ${chapter.chapter_id} updated with ${chapterSceneIds.length} scene IDs and marked as completed`);
+        console.log(`✅ Chapter ${chapter.chapter_id} updated with HNS data and marked as completed`);
       }
     }
-    console.log("✅ Chapters updated with scene IDs and HNS data");
+    console.log("✅ Chapters updated with HNS data");
 
     // Update status to phase 5&6 complete
     await db

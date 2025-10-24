@@ -104,7 +104,6 @@ export async function POST(request: NextRequest) {
           status: 'writing',
           purpose: `Chapter ${chapterSpec.chap} - ${chapterSpec.goal}`,
           characterFocus: chapterSpec.pov,
-          sceneIds: [], // Initialize empty scene IDs
         },
         part.id // partId parameter
       );

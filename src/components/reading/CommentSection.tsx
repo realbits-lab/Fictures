@@ -14,6 +14,7 @@ interface Comment {
   parentCommentId: string | null;
   depth: number;
   likeCount: number;
+  dislikeCount: number;
   replyCount: number;
   isEdited: boolean;
   isDeleted: boolean;

@@ -34,7 +34,7 @@ export function LoginForm() {
         // Try to store credentials using Credential Management API if available
         if ('credentials' in navigator && 'PasswordCredential' in window) {
           try {
-            const credential = new PasswordCredential(e.currentTarget);
+            const credential = new (window as any).PasswordCredential(e.currentTarget);
             await navigator.credentials.store(credential);
           } catch (err) {
             // Silently fail if credential storage is not supported or fails

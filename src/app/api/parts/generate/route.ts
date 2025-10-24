@@ -104,7 +104,6 @@ export async function POST(request: NextRequest) {
             orderIndex: partSpec.part,
             targetWordCount: partSpec.words,
             content: JSON.stringify(partSpec),
-            chapterIds: [], // Initialize empty chapter IDs
           }
         );
 
