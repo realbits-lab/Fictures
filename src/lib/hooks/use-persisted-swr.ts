@@ -397,30 +397,34 @@ export function usePersistedSWR<Data = any, Error = any>(
 ): SWRResponse<Data, Error> {
   const cache = CacheManager.getInstance();
 
-  // Get initial data from localStorage only on client side to prevent hydration mismatch
-  const [fallbackData, setFallbackData] = useState<Data | undefined>(undefined);
-  const [hasSetFallback, setHasSetFallback] = useState(false);
+  // ⚡ OPTIMIZATION: Read cache SYNCHRONOUSLY on first render (no flash!)
+  // Using useMemo ensures this only runs once per key change
+  const [fallbackData] = useState<Data | undefined>(() => {
+    // Only read cache on client-side to prevent hydration mismatch
+    if (typeof window === 'undefined' || !key) return undefined;
 
-  // Use useEffect to set fallback data after hydration (only once)
-  useEffect(() => {
-    if (!hasSetFallback && key) {
-      const cachedData = cache.getCachedData<Data>(key, cacheConfig);
-      if (cachedData) {
-        setFallbackData(cachedData);
-      }
-      setHasSetFallback(true);
+    const cachedData = cache.getCachedData<Data>(key, cacheConfig);
+    if (cachedData) {
+      console.log(`[Cache] ⚡ INSTANT load from cache for: ${key}`);
     }
-  }, [key, hasSetFallback, cache, cacheConfig]);
+    return cachedData;
+  });
 
   const swr = useSWR<Data, Error>(
     key,
     fetcher,
     {
       ...swrConfig,
+      // Provide fallbackData immediately - SWR will show this while fetching
       fallbackData,
+      // Keep cache data on screen while revalidating
+      keepPreviousData: true,
       onSuccess: (data, key) => {
         // Save successful responses to localStorage
-        if (key) cache.setCachedData(key, data, cacheConfig);
+        if (key) {
+          cache.setCachedData(key, data, cacheConfig);
+          console.log(`[Cache] 💾 Saved fresh data for: ${key}`);
+        }
         swrConfig?.onSuccess?.(data, key, swrConfig as any);
       },
       onError: (error, key) => {

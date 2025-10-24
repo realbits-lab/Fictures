@@ -752,6 +752,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
               </h2>
 
               {/* Flat Scene List */}
+              {/* ⚡ OPTIMIZATION: Show loading only if truly no data (not even cached) */}
               {allScenes.length === 0 ? (
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400 text-sm">
                   Loading scenes...
@@ -833,7 +834,9 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                       </button>
                     </div>
                   </div>
-                ) : scenesLoading ? (
+                ) : (scenesLoading && chapterScenes.length === 0) ? (
+                  {/* ⚡ OPTIMIZATION: Only show skeleton if NO data exists (not cached, not fresh) */}
+                  {/* If cached data exists, show it immediately even while revalidating */}
                   <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                     <div className="max-w-md mx-auto">
                       <div className="animate-pulse">
