@@ -2,7 +2,8 @@
 # Replace pub-XXXXXXXXXXXXXXXX with your actual AdSense publisher ID
 # Get this from your AdSense dashboard under Account > Account Information
 
-google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
+google.com, pub-2061272981996983, DIRECT, f08c47fec0942fa0
+
 
 # Additional ad networks can be added below
 # Format: domain, publisher_id, RELATIONSHIP_TYPE, TAG_ID
