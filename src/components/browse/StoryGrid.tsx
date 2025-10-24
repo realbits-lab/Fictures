@@ -31,7 +31,7 @@ interface StoryGridProps {
   currentUserId?: string;
 }
 
-const genres = ["All", "Fantasy", "Science Fiction", "Romance", "Mystery", "Thriller", "Horror", "Adventure"];
+const genres = ["All", "Fantasy", "Science Fiction", "Romance", "Mystery", "Thriller", "Detective", "Adventure"];
 
 export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
   const [selectedGenre, setSelectedGenre] = useState("All");

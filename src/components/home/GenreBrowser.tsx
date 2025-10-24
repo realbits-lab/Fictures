@@ -4,13 +4,12 @@ import Link from 'next/link';
 
 const genres = [
   { name: 'Fantasy', icon: '🧙', gradient: 'from-purple-500 to-pink-500', count: 0 },
-  { name: 'Sci-Fi', icon: '🚀', gradient: 'from-blue-500 to-cyan-500', count: 0 },
+  { name: 'Science Fiction', icon: '🚀', gradient: 'from-blue-500 to-cyan-500', count: 0 },
   { name: 'Romance', icon: '💖', gradient: 'from-pink-500 to-rose-500', count: 0 },
   { name: 'Mystery', icon: '🔍', gradient: 'from-indigo-500 to-purple-500', count: 0 },
-  { name: 'Horror', icon: '👻', gradient: 'from-gray-700 to-gray-900', count: 0 },
+  { name: 'Detective', icon: '🕵️', gradient: 'from-gray-700 to-gray-900', count: 0 },
   { name: 'Adventure', icon: '🗺️', gradient: 'from-green-500 to-emerald-500', count: 0 },
   { name: 'Thriller', icon: '⚡', gradient: 'from-red-500 to-orange-500', count: 0 },
-  { name: 'Drama', icon: '🎭', gradient: 'from-yellow-500 to-orange-500', count: 0 },
 ];
 
 interface GenreBrowserProps {
