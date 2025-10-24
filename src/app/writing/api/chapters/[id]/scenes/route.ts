@@ -9,11 +9,21 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const session = await auth();
-    const { id: chapterId } = await params;
+  const apiStartTime = performance.now();
+  const requestId = Math.random().toString(36).substring(7);
 
-    // Get chapter to verify access
+  try {
+    const { id: chapterId } = await params;
+    console.log(`[${requestId}] 🚀 API Request START for chapter: ${chapterId}`);
+
+    // 1. Authentication
+    const authStartTime = performance.now();
+    const session = await auth();
+    const authDuration = performance.now() - authStartTime;
+    console.log(`[${requestId}] 🔐 Auth completed: ${authDuration.toFixed(2)}ms`);
+
+    // 2. Get chapter to verify access
+    const chapterQueryStartTime = performance.now();
     const [chapter] = await db
       .select({
         id: chapters.id,
@@ -23,12 +33,16 @@ export async function GET(
       .from(chapters)
       .where(eq(chapters.id, chapterId))
       .limit(1);
+    const chapterQueryDuration = performance.now() - chapterQueryStartTime;
+    console.log(`[${requestId}] 📖 Chapter query completed: ${chapterQueryDuration.toFixed(2)}ms`);
 
     if (!chapter) {
+      console.log(`[${requestId}] ❌ Chapter not found`);
       return NextResponse.json({ error: 'Chapter not found' }, { status: 404 });
     }
 
-    // Get story to check permissions
+    // 3. Get story to check permissions
+    const storyQueryStartTime = performance.now();
     const story = await db.query.stories.findFirst({
       where: (stories, { eq }) => eq(stories.id, chapter.storyId),
       columns: {
@@ -37,8 +51,11 @@ export async function GET(
         status: true
       }
     });
+    const storyQueryDuration = performance.now() - storyQueryStartTime;
+    console.log(`[${requestId}] 📚 Story query completed: ${storyQueryDuration.toFixed(2)}ms`);
 
     if (!story) {
+      console.log(`[${requestId}] ❌ Story not found`);
       return NextResponse.json({ error: 'Story not found' }, { status: 404 });
     }
 
@@ -49,23 +66,30 @@ export async function GET(
     // 1. User is the owner, OR
     // 2. The story is published (regardless of chapter status)
     if (!isOwner && !isPublishedStory) {
+      console.log(`[${requestId}] 🚫 Permission denied`);
       return NextResponse.json({ error: 'Chapter not available' }, { status: 403 });
     }
 
-    // Get scenes for this chapter using foreign key, ordered by orderIndex
+    // 4. Get scenes for this chapter using foreign key, ordered by orderIndex
+    const scenesQueryStartTime = performance.now();
     const chapterScenes = await db
       .select()
       .from(scenes)
       .where(eq(scenes.chapterId, chapterId))
       .orderBy(asc(scenes.orderIndex));
+    const scenesQueryDuration = performance.now() - scenesQueryStartTime;
+    console.log(`[${requestId}] 🎬 Scenes query completed: ${scenesQueryDuration.toFixed(2)}ms (${chapterScenes.length} scenes)`);
 
-    // Extract scene images from HNS data
+    // 5. Extract scene images from HNS data
+    const processingStartTime = performance.now();
     const scenesWithImages = chapterScenes.map(scene => ({
       ...scene,
       sceneImage: scene.hnsData && typeof scene.hnsData === 'object'
         ? (scene.hnsData as any).scene_image
         : null
     }));
+    const processingDuration = performance.now() - processingStartTime;
+    console.log(`[${requestId}] 🖼️  Scene image processing: ${processingDuration.toFixed(2)}ms`);
 
     const response = {
       scenes: scenesWithImages,
@@ -76,7 +100,8 @@ export async function GET(
       }
     };
 
-    // Generate ETag based on scene content and modification times
+    // 6. Generate ETag based on scene content and modification times
+    const etagStartTime = performance.now();
     const contentForHash = JSON.stringify({
       scenes: chapterScenes.map(scene => ({
         id: scene.id,
@@ -87,10 +112,15 @@ export async function GET(
       totalScenes: chapterScenes.length
     });
     const etag = createHash('md5').update(contentForHash).digest('hex');
+    const etagDuration = performance.now() - etagStartTime;
+    console.log(`[${requestId}] 🏷️  ETag generation: ${etagDuration.toFixed(2)}ms`);
 
     // Check if client has the same version
     const clientETag = request.headers.get('if-none-match');
     if (clientETag === etag) {
+      const totalDuration = performance.now() - apiStartTime;
+      console.log(`[${requestId}] ✅ 304 Not Modified - Total: ${totalDuration.toFixed(2)}ms`);
+      console.log(`[${requestId}] 📊 Breakdown: Auth=${authDuration.toFixed(0)}ms, Chapter=${chapterQueryDuration.toFixed(0)}ms, Story=${storyQueryDuration.toFixed(0)}ms, Scenes=${scenesQueryDuration.toFixed(0)}ms, ETag=${etagDuration.toFixed(0)}ms`);
       return new NextResponse(null, { status: 304 });
     }
 
@@ -104,15 +134,20 @@ export async function GET(
         : 'no-cache, no-store, must-revalidate',
     });
 
+    const totalDuration = performance.now() - apiStartTime;
+    console.log(`[${requestId}] ✅ 200 OK - Total: ${totalDuration.toFixed(2)}ms`);
+    console.log(`[${requestId}] 📊 Breakdown: Auth=${authDuration.toFixed(0)}ms, Chapter=${chapterQueryDuration.toFixed(0)}ms, Story=${storyQueryDuration.toFixed(0)}ms, Scenes=${scenesQueryDuration.toFixed(0)}ms, Processing=${processingDuration.toFixed(0)}ms, ETag=${etagDuration.toFixed(0)}ms`);
+
     return new NextResponse(JSON.stringify(response), {
       status: 200,
       headers
     });
 
   } catch (error) {
-    console.error('Error fetching chapter scenes:', error);
+    const totalDuration = performance.now() - apiStartTime;
+    console.error(`[${requestId}] ❌ Error after ${totalDuration.toFixed(2)}ms:`, error);
     return NextResponse.json(
-      { error: 'Internal server error' }, 
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

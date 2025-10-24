@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSession } from 'next-auth/react';
 import { SkeletonLoader, Skeleton } from "@/components/ui";
 import { usePublishedStories } from "@/lib/hooks/use-page-cache";
@@ -86,12 +86,97 @@ export function BrowseClient() {
   const { data: session } = useSession();
   const { data, isLoading, isValidating, error, mutate } = usePublishedStories();
   const [showCacheInfo, setShowCacheInfo] = useState(false);
-  
+
+  // Performance tracking
+  const mountTimeRef = useRef<number>(Date.now());
+  const firstDataTimeRef = useRef<number | null>(null);
+  const renderCountRef = useRef<number>(0);
+
   const stories = data?.stories || [];
   const count = data?.count || 0;
-  
+
   // Get cache health status
   const cacheHealth = cacheManager.getCacheHealth('reading');
+
+  // Track component lifecycle
+  useEffect(() => {
+    const mountTime = mountTimeRef.current;
+    console.log(`[BrowseClient] 🎬 Component mounted at ${new Date().toISOString()}`);
+    console.log(`[BrowseClient] 📊 Initial state:`, {
+      isLoading,
+      isValidating,
+      hasData: !!data,
+      storiesCount: stories.length,
+      hasError: !!error,
+      cacheHealth,
+    });
+
+    return () => {
+      const totalTime = Date.now() - mountTime;
+      console.log(`[BrowseClient] 👋 Component unmounted after ${totalTime}ms`);
+    };
+  }, []);
+
+  // Track data loading stages
+  useEffect(() => {
+    renderCountRef.current++;
+    const renderNum = renderCountRef.current;
+    const timeSinceMount = Date.now() - mountTimeRef.current;
+
+    console.log(`[BrowseClient] 🔄 Render #${renderNum} (${timeSinceMount}ms since mount):`, {
+      isLoading,
+      isValidating,
+      storiesCount: stories.length,
+      hasError: !!error,
+      fromCache: data?.fromCache,
+      cacheHealth,
+    });
+
+    // Track first data appearance
+    if (stories.length > 0 && !firstDataTimeRef.current) {
+      firstDataTimeRef.current = Date.now();
+      const timeToFirstData = firstDataTimeRef.current - mountTimeRef.current;
+      console.log(`[BrowseClient] ⚡ First data appeared in ${timeToFirstData}ms:`, {
+        storiesCount: stories.length,
+        fromCache: data?.fromCache,
+        source: data?.fromCache ? 'localStorage cache' : 'API fetch',
+      });
+    }
+
+    // Track loading state changes
+    if (!isLoading && !isValidating && stories.length > 0) {
+      const totalTime = Date.now() - mountTimeRef.current;
+      console.log(`[BrowseClient] ✅ Loading complete in ${totalTime}ms:`, {
+        storiesCount: stories.length,
+        totalCount: count,
+        cacheHealth,
+      });
+    }
+  }, [isLoading, isValidating, stories.length, data?.fromCache, error, cacheHealth, count]);
+
+  // Track validation cycles
+  useEffect(() => {
+    if (isValidating && !isLoading) {
+      console.log(`[BrowseClient] 🔄 Background revalidation started (${stories.length} stories visible)`);
+      const startTime = Date.now();
+
+      return () => {
+        const duration = Date.now() - startTime;
+        console.log(`[BrowseClient] ✅ Background revalidation completed in ${duration}ms`);
+      };
+    }
+  }, [isValidating, isLoading, stories.length]);
+
+  // Track errors
+  useEffect(() => {
+    if (error) {
+      console.error(`[BrowseClient] ❌ Error occurred:`, {
+        message: error.message,
+        timeSinceMount: Date.now() - mountTimeRef.current,
+        hadPreviousData: stories.length > 0,
+      });
+    }
+  }, [error, stories.length]);
 
   return (
     <div className="min-h-screen bg-[rgb(var(--background))]">      
@@ -164,7 +249,9 @@ export function BrowseClient() {
         )}
 
         {/* Show skeleton loading while fetching */}
-        {isLoading ? (
+        {/* ⚡ OPTIMIZATION: Only show skeleton if NO data exists (not cached, not fresh) */}
+        {/* If cached data exists, show it immediately even while revalidating */}
+        {(isLoading && stories.length === 0) ? (
           <SkeletonLoader>
             <StoriesSkeleton />
           </SkeletonLoader>

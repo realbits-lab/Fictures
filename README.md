@@ -1,201 +1,595 @@
 <a href="https://github.com/realbits-lab/Fictures">
-  <img alt="Fictures - AI-powered web novel platform with community features." src="app/(chat)/opengraph-image.png">
+  <img alt="Fictures - AI-powered story writing and reading platform" src="app/(chat)/opengraph-image.png">
   <h1 align="center">Fictures</h1>
 </a>
 
 <p align="center">
-    Fictures is an AI-powered web novel platform that combines content creation with vibrant community engagement features including forums, groups, contests, and gamification.
+  An AI-powered story writing and reading platform that helps authors create structured, compelling narratives with intelligent assistance.
 </p>
 
 <p align="center">
   <a href="#features"><strong>Features</strong></a> ·
-  <a href="#community-features"><strong>Community</strong></a> ·
-  <a href="#model-providers"><strong>AI Models</strong></a> ·
-  <a href="#deploy-your-own"><strong>Deploy</strong></a> ·
-  <a href="#running-locally"><strong>Local Setup</strong></a>
+  <a href="#tech-stack"><strong>Tech Stack</strong></a> ·
+  <a href="#getting-started"><strong>Getting Started</strong></a> ·
+  <a href="#usage"><strong>Usage</strong></a> ·
+  <a href="#api-documentation"><strong>API</strong></a> ·
+  <a href="#testing"><strong>Testing</strong></a> ·
+  <a href="#roadmap"><strong>Roadmap</strong></a>
 </p>
+
 <br/>
+
+## Overview
+
+Fictures is a full-stack web application built with Next.js 15 that provides a comprehensive platform for story writing and reading. It combines advanced AI assistance with a hierarchical story structure (Stories → Parts → Chapters → Scenes) to help authors craft better narratives.
+
+**Current Status**: Production-ready for writing, reading, and community discussion features. See [Roadmap](#roadmap) for planned features.
 
 ## Features
 
-### Core Platform
-- [Next.js 15](https://nextjs.org) App Router with experimental PPR
-  - Advanced routing for seamless navigation and performance
-  - React Server Components (RSCs) and Server Actions for server-side rendering
-- **AI Integration**: Powered by [Vercel AI SDK](https://sdk.vercel.ai/docs)
-  - Unified API for generating text, structured objects, and tool calls with LLMs
-  - Hooks for building dynamic chat and generative user interfaces
-  - Supports xAI (default), OpenAI, Fireworks, and other model providers
-- [shadcn/ui](https://ui.shadcn.com)
-  - Styling with [Tailwind CSS](https://tailwindcss.com)
-  - Component primitives from [Radix UI](https://radix-ui.com) for accessibility and flexibility
+### 📝 Story Writing & Creation
 
-### Content Creation
-- **Bimodal Interface**: Chat conversations alongside interactive artifact canvas
-- **Document Types**: Text, code, image, and sheet editors with real-time collaboration
-- **Version Control**: Document versioning with visual diff modes
-- **AI-Powered Writing**: Story generation, editing assistance, and creative tools
-- **Rich Text Editor**: ProseMirror-based editor with advanced formatting
+- **Hierarchical Story Structure**: Organize your story into Parts → Chapters → Scenes
+- **AI-Powered Writing Assistant**:
+  - Story generation with HNS (Hierarchical Narrative Schema) framework support
+  - Scene content generation (dialogue, description, action)
+  - Character development suggestions
+  - Story analysis and improvement recommendations
+  - Dialogue formatting and enhancement
+  - AI-generated scene images
+- **Rich Text Editor**: ProseMirror/TipTap-based editor with advanced formatting
+- **Character & Setting Management**: Visual character grid with AI-generated images
+- **Auto-save & Version Control**: Never lose your work
+- **Writing Analytics**: Word count tracking, scene evaluation scores
+- **Story Export**: Download your complete story
 
-### Data & Authentication
-- **Database**: [PostgreSQL](https://postgresql.org) with [Drizzle ORM](https://orm.drizzle.team)
-- **File Storage**: [Vercel Blob](https://vercel.com/storage/blob) for efficient file storage
-- **Authentication**: [NextAuth.js v5](https://authjs.dev) with Google OAuth authentication
-- **Caching**: Redis for session storage and performance optimization
+### 📚 Reading & Discovery
 
-## Community Features
+- **Genre-Based Discovery**: Browse stories across 7 genres (Fantasy, Science Fiction, Romance, Mystery, Thriller, Horror, Adventure)
+- **Advanced Reading Interface**:
+  - Scene-by-scene navigation with sidebar
+  - Independent scroll areas for content and navigation
+  - Reading progress tracking
+  - Cross-device history synchronization
+  - **Immersive Reading Mode**: Auto-hide UI on scroll, tap-to-toggle visibility, sticky bottom navigation
+- **Trending & Featured Stories**: Discover popular content
+- **Story Statistics**: View counts, ratings, word counts
+- **Engagement**: Comment, rate, and like stories/chapters/scenes
 
-### Forum System
-- **Categories & Threads**: Organized discussion spaces with hierarchical structure
-- **Posts & Replies**: Rich text posting with threading and real-time updates
-- **Moderation Tools**: AI-powered content moderation with human oversight
-- **Search & Filtering**: Advanced search across all forum content
+### 💬 Community Discussions
 
-### Group Management
-- **Public & Private Groups**: Create communities around genres, interests, or projects
-- **Member Roles**: Flexible permission system with admin, moderator, and member roles
-- **Group Activities**: Shared discussions, events, and collaborative projects
-- **Discovery System**: Find groups based on interests and activity levels
+- **Story-Specific Forums**: Discussion boards for each story
+- **Post Types**: Discussion, Theory, Review, Question
+- **Threaded Replies**: Nested comment system
+- **Content Moderation**: Approved, pending, flagged, rejected status
+- **Post Management**: Pin, lock, and moderate posts
+- **Engagement Metrics**: Likes, views, and activity tracking
 
-### Contest System
-- **Multi-Phase Contests**: Submission, voting, judging, and results phases
-- **Automated Management**: Phase transitions and result calculations
-- **Public & Judge Voting**: Community participation with expert judging options
-- **Prize Distribution**: Automated badge and reward systems
+### 🚀 Publishing & Automation
 
-### Gamification Engine
-- **Achievement System**: 100+ achievements across writing, community, and platform activities
-- **Experience & Levels**: XP earning system with level progression and unlocks
-- **Leaderboards**: Multiple ranking systems (daily, weekly, monthly, category-specific)
-- **Badges & Recognition**: Visual progression indicators and community status
+- **Automated Publishing**: Schedule releases for stories, chapters, and scenes
+- **Schedule Types**: Daily, weekly, custom intervals, one-time
+- **Smart Scheduling**: Set specific publish times and days
+- **Timeline View**: Visual publication schedule
+- **Status Tracking**: Monitor pending, published, failed publications
 
-### Collaboration Tools
-- **Beta Reader Marketplace**: Match authors with qualified beta readers
-- **Co-Authoring Projects**: Collaborative writing tools with shared editing
-- **Writing Workshops**: Scheduled events with expert facilitators
-- **Peer Review System**: Structured feedback and critique exchange
+### 📊 Analytics & Insights
 
-### Engagement Features
-- **Notification System**: Real-time updates for all community activities
-- **Following System**: Connect with other users and track their activities
-- **Content Reporting**: Community-driven content moderation and safety
-- **Mobile Responsive**: Full-featured mobile experience for all community tools
+- **Story Performance**: Views, engagement metrics, reader analytics
+- **AI-Generated Insights**: Automated recommendations for story improvement
+- **Session Tracking**: Detailed reading session analytics
+- **Event Tracking**: 11 event types including page views, likes, comments
 
-## Model Providers
+## Tech Stack
 
-Fictures ships with [xAI](https://x.ai) `grok-2-1212` as the default AI model for content generation. However, with the [Vercel AI SDK](https://sdk.vercel.ai/docs), you can switch LLM providers to [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [many more](https://sdk.vercel.ai/providers/ai-sdk-providers) with just a few lines of code.
+### Core Framework
+- **[Next.js 15](https://nextjs.org)** - React framework with App Router and Server Components
+- **[React 19](https://react.dev)** - Latest React with Server Components
+- **[TypeScript](https://www.typescriptlang.org)** - Type-safe development
 
-## Deploy Your Own
+### AI Integration
+- **[Vercel AI SDK](https://sdk.vercel.ai)** - Unified AI interface
+- **Support for**: OpenAI, Anthropic, Google, Fireworks, and more
+- **[Vercel AI Gateway](https://vercel.com/docs/ai-gateway)** - Centralized AI request management
 
-You can deploy your own version of Fictures to Vercel with one click:
+### Database & Storage
+- **[PostgreSQL](https://postgresql.org)** - Primary database (via Neon)
+- **[Drizzle ORM](https://orm.drizzle.team)** - Type-safe database access
+- **[Vercel Blob](https://vercel.com/storage/blob)** - File storage for images
+- **[Redis](https://redis.io)** (Upstash) - Session storage and caching
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fai-chatbot&env=AUTH_SECRET&envDescription=Learn+more+about+how+to+get+the+API+Keys+for+the+application&envLink=https%3A%2F%2Fgithub.com%2Fvercel%2Fai-chatbot%2Fblob%2Fmain%2F.env.example&demo-title=AI+Chatbot&demo-description=An+Open-Source+AI+Chatbot+Template+Built+With+Next.js+and+the+AI+SDK+by+Vercel.&demo-url=https%3A%2F%2Fchat.vercel.ai&products=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22ai%22%2C%22productSlug%22%3A%22grok%22%2C%22integrationSlug%22%3A%22xai%22%7D%2C%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22upstash-kv%22%2C%22integrationSlug%22%3A%22upstash%22%7D%2C%7B%22type%22%3A%22blob%22%7D%5D)
+### Authentication
+- **[NextAuth.js v5](https://authjs.dev)** - Authentication framework
+- **Google OAuth** - Primary authentication method
+- **Credentials Provider** - Email/password authentication
+- **API Key Authentication** - Scope-based authorization
 
-## Running locally
+### UI & Styling
+- **[Tailwind CSS v4](https://tailwindcss.com)** - Utility-first CSS
+- **[shadcn/ui](https://ui.shadcn.com)** - Component library
+- **[Radix UI](https://radix-ui.com)** - Accessible primitives
+- **[TipTap](https://tiptap.dev)** - Rich text editor
 
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Fictures locally. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
+### Analytics & Monitoring
+- **[Vercel Analytics](https://vercel.com/analytics)** - Performance monitoring
+- **Google Analytics 4** - User analytics
+- **Custom Event Tracking** - In-app analytics system
 
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various AI and authentication provider accounts.
+## Getting Started
 
-1. Install Vercel CLI: `npm i -g vercel`
-2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
-3. Download your environment variables: `vercel env pull`
+### Prerequisites
+
+- Node.js 18+ and pnpm
+- PostgreSQL database (we recommend [Neon](https://neon.tech))
+- Redis instance (we recommend [Upstash](https://upstash.com))
+- Google OAuth credentials
+- AI provider API key (xAI, OpenAI, etc.)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/realbits-lab/Fictures.git
+   cd Fictures
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
+
+3. **Set up environment variables**
+
+   Copy `.env.example` to `.env.local` and configure:
+
+   ```bash
+   # Authentication
+   AUTH_SECRET=your-auth-secret
+   GOOGLE_CLIENT_ID=your-google-client-id
+   GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+   # AI Integration (use AI Gateway key instead of provider key)
+   AI_GATEWAY_API_KEY=your-ai-gateway-key
+
+   # Database
+   POSTGRES_URL=your-neon-postgres-url
+
+   # Storage
+   BLOB_READ_WRITE_TOKEN=your-vercel-blob-token
+   REDIS_URL=your-upstash-redis-url
+   ```
+
+4. **Set up the database**
+   ```bash
+   pnpm db:generate  # Generate migrations
+   pnpm db:migrate   # Run migrations
+   ```
+
+5. **Run the development server**
+   ```bash
+   dotenv --file .env.local run pnpm dev
+   ```
+
+   Your application will be running at [http://localhost:3000](http://localhost:3000)
+
+### Database Commands
 
 ```bash
-pnpm install
-pnpm dev
+pnpm db:generate  # Generate new migrations from schema changes
+pnpm db:migrate   # Apply migrations to database
+pnpm db:push      # Push schema directly to database (dev only)
+pnpm db:studio    # Open Drizzle Studio to browse data
 ```
 
-Your Fictures application should now be running on [localhost:3000](http://localhost:3000).
+## Usage
+
+### For Writers
+
+1. **Create a Story**: Navigate to `/writing` and click "New Story"
+2. **Define Structure**: Add Parts, Chapters, and Scenes to organize your narrative
+3. **Use AI Assistance**: Click the AI button to generate content, get suggestions, or improve your writing
+4. **Manage Characters**: Use the Character Grid to track your cast
+5. **Schedule Publishing**: Set up automated publishing schedules
+6. **Monitor Performance**: Check analytics to see how readers engage with your work
+
+### For Readers
+
+1. **Browse Stories**: Visit `/reading` to discover stories by genre
+2. **Read Stories**: Click any story to start reading scene-by-scene
+3. **Immersive Reading**: Scroll down to hide UI, scroll up or tap to show it again
+4. **Engage**: Leave comments, rate scenes, and like your favorite stories
+5. **Track Progress**: Your reading history syncs across all your devices
+
+### For Community Members
+
+1. **Join Discussions**: Visit `/community` to see community posts
+2. **Create Posts**: Share theories, reviews, or ask questions about stories
+3. **Reply to Others**: Engage in threaded discussions
+4. **Like & Share**: Support your favorite posts and authors
+
+## Architecture
+
+### Story Hierarchy
+
+```
+Story (top-level container)
+├── Part (optional story section)
+│   ├── Chapter (story chapter)
+│   │   ├── Scene (smallest content unit)
+│   │   ├── Scene
+│   │   └── Scene
+│   └── Chapter
+│       └── Scene
+└── Chapter (standalone chapter, no part)
+    └── Scene
+```
+
+### Database Schema
+
+The application uses 40+ database tables organized into:
+
+- **Core Content**: stories, parts, chapters, scenes, characters, places
+- **Authentication**: users, accounts, sessions, apiKeys
+- **Community**: communityPosts, communityReplies, comments
+- **Engagement**: likes, views, ratings (for stories, chapters, scenes, posts)
+- **Publishing**: publishingSchedules, scheduledPublications
+- **Analytics**: analyticsEvents, readingSessions, readingHistory
+- **AI**: aiInteractions, sceneEvaluations, storyInsights
+
+Full schema: [`src/lib/db/schema.ts`](src/lib/db/schema.ts)
+
+## API Documentation
+
+### REST API Endpoints
+
+The application provides comprehensive REST APIs:
+
+**Stories** (`/api/stories`)
+- `GET /api/stories` - List stories
+- `POST /api/stories` - Create story
+- `GET /api/stories/[id]` - Get story details
+- `PUT /api/stories/[id]` - Update story
+- `DELETE /api/stories/[id]` - Delete story
+- `GET /api/stories/[id]/structure` - Get story hierarchy
+- `POST /api/stories/[id]/like` - Like/unlike story
+- `GET /api/stories/[id]/characters` - Get story characters
+- `POST /api/stories/generate` - AI story generation
+
+**Chapters** (`/api/chapters`)
+- Standard CRUD operations
+- `POST /api/chapters/[id]/publish` - Publish chapter
+- `POST /api/chapters/[id]/unpublish` - Unpublish chapter
+- `POST /api/chapters/generate` - AI chapter generation
+
+**Scenes** (`/api/scenes`)
+- Standard CRUD operations
+- `POST /api/scenes/[id]/like` - Like scene
+- `POST /api/scenes/[id]/dislike` - Dislike scene
+- `POST /api/scenes/generate` - AI scene generation
+
+**AI** (`/api/ai`)
+- `POST /api/ai/generate` - Content generation
+- `POST /api/ai/chat` - Conversational assistance
+- `POST /api/ai/analyze` - Content analysis
+- `POST /api/ai/suggestions` - Writing suggestions
+
+**Community** (`/api/community`)
+- `GET /api/community/posts` - List posts
+- `POST /api/community/posts` - Create post
+- `POST /api/community/posts/[postId]/like` - Like post
+- `POST /api/community/posts/[postId]/replies` - Reply to post
+
+**Publishing** (`/publish/api`)
+- `GET /publish/api/timeline` - Publication timeline
+- `POST /publish/api/schedules` - Create schedule
+- `GET /publish/api/status` - Schedule status
+
+**Analytics** (`/analytics/api`)
+- `GET /analytics/api/insights` - Story insights
+- `POST /analytics/api/insights/generate` - Generate insights
+- `GET /analytics/api/stories` - Story performance
+
+Full API documentation: See [`src/app/api`](src/app/api) directory
+
+### Authentication
+
+The API supports three authentication methods:
+
+1. **Session-based** (NextAuth.js): Automatic with cookies
+2. **API Keys**: Include `X-API-Key` header
+3. **Credentials**: Email/password via NextAuth
 
 ## Testing
 
-### Authentication Testing Setup
+### End-to-End Testing with Playwright
 
-This project uses Playwright for testing with Google OAuth authentication. Follow these steps to set up authenticated testing:
+The project uses [Playwright](https://playwright.dev) for comprehensive E2E testing across all major features.
 
-**Method 1: Manual Capture (Recommended)**
+#### Test Coverage
 
-**Step 1: Capture Authentication State**
-Run the interactive authentication capture tool:
+The current test suite includes:
+
+**Global Navigation Bar (GNB) Tests** - 5 test suites covering:
+- **Home Page** (`gnb-home.e2e.spec.ts`) - Landing page navigation and redirects
+- **Reading** (`gnb-reading.e2e.spec.ts`) - Story browsing, genre filtering, story cards
+- **Writing** (`gnb-writing.e2e.spec.ts`) - Story creation, editing interface
+- **Community** (`gnb-community.e2e.spec.ts`) - Discussion posts, threaded replies
+- **Publishing/Analytics/Settings** (`gnb-publish-analytics-settings.e2e.spec.ts`) - Schedule management, insights, preferences
+
+Each test suite covers:
+- ✅ Access control (authenticated vs anonymous)
+- ✅ Navigation functionality
+- ✅ Page loading and content visibility
+- ✅ Menu item highlighting
+- ✅ Core feature interactions
+
+#### Quick Start
+
+**Prerequisites**: Development server must be running
+```bash
+# Start dev server (required for tests)
+dotenv --file .env.local run pnpm dev
+```
+
+**Run All Tests**:
+```bash
+# Run all E2E tests
+pnpm test
+
+# Run with browser visible
+npx playwright test --headed
+
+# Run in interactive UI mode
+npx playwright test --ui
+```
+
+**Run Specific Tests**:
+```bash
+# Test specific page
+npx playwright test tests/gnb-reading.e2e.spec.ts
+
+# Test specific test case
+npx playwright test tests/gnb-reading.e2e.spec.ts:16
+
+# Run tests matching pattern
+npx playwright test --grep "anonymous"
+```
+
+#### Test Projects
+
+The Playwright configuration defines multiple test projects:
+
+- **`e2e`** (Desktop Chrome) - Current GNB test suites
+- **`authenticated`** (Desktop Chrome with auth) - Tests requiring login (`.auth/user.json`)
+- **`api`** (Desktop Chrome) - API endpoint tests (not yet implemented)
+- **`mobile`** (iPhone 12) - Mobile-specific tests (not yet implemented)
+- **`setup`** - Authentication setup project
+
+#### Debugging Tests
+
+```bash
+# Debug mode with inspector
+npx playwright test --debug
+
+# Debug specific test
+npx playwright test tests/gnb-writing.e2e.spec.ts --debug
+
+# Show browser during execution
+npx playwright test --headed
+
+# Generate trace for analysis
+npx playwright test --trace on
+npx playwright show-report
+```
+
+#### Authentication Setup (For Authenticated Tests)
+
+For tests requiring authentication (`.authenticated.spec.ts` files):
+
+**Step 1: Capture Authentication**
 ```bash
 dotenv --file .env.local run node scripts/capture-auth-manual.mjs
 ```
+This opens a browser for manual Google login and saves credentials to `.auth/user.json`
 
-This command will:
-- Open a browser window for manual Google login
-- Wait for you to complete authentication with test.user@example.com
-- Automatically detect when login is complete
-- Save authentication cookies to `.auth/user.json`
-- Capture NextAuth.js session data and Google OAuth tokens
-
-**Step 2: Test Automatic Login**
-Verify the captured credentials work:
+**Step 2: Verify Setup**
 ```bash
 dotenv --file .env.local run node scripts/test-auto-login.mjs
 ```
 
-**Step 3: Use in Playwright Tests**
-```javascript
-// In your Playwright test files
-const { test, expect } = require('@playwright/test');
-
-test.use({
-  storageState: '.auth/user.json'
-});
-
-test('authenticated user can access stories', async ({ page }) => {
-  await page.goto('http://localhost:3000/stories');
-  // Test runs with Google authentication
-});
-```
-
-**Method 2: Legacy Configuration**
-
-**Step 1: Environment Configuration**
-Create a `.env.test` file with your Google test credentials:
-```bash
-GOOGLE_TEST_EMAIL=your.email@gmail.com
-GOOGLE_TEST_PASSWORD=your_password
-```
-
-**Step 2: Create Authentication State**
-Generate the `user.json` file containing Google OAuth cookies:
-```bash
-# Interactive setup - opens browser and automates Google login
-npx playwright test --project=manual-setup --headed
-```
-
 **Step 3: Run Authenticated Tests**
 ```bash
-# Run tests using saved authentication state
-npx playwright test --project=authenticated --headed
-
-# Test specific authenticated features
-npx playwright test tests/auth/storage-state-demo.test.ts --project=authenticated --headed
-
-# Run all test projects
-npx playwright test
+npx playwright test --project=authenticated
 ```
 
-### Test Projects
+#### Test Configuration
 
-- **`manual-setup`**: Creates `user.json` with Google OAuth authentication  
-- **`authenticated`**: Tests that use saved authentication from `user.json`
-- **`e2e`**: End-to-end application tests
-- **`routes`**: Route-specific functionality tests
+Key settings in `playwright.config.ts`:
 
-### Test Commands
-```bash  
-# Basic test commands
-pnpm test                           # Run all tests
-npx playwright test --headed        # Run with browser visible
-npx playwright test --debug         # Debug mode with inspector
-npx playwright test --ui            # Interactive UI mode
+- **Timeout**: 240s per test (4 minutes)
+- **Retries**: 2 retries in CI, 0 locally
+- **Base URL**: http://localhost:3000
+- **Screenshots**: Captured on failure
+- **Video**: Retained on failure
+- **Reporter**: HTML report (view with `npx playwright show-report`)
 
-# Authentication-specific commands  
-npx playwright test --project=manual-setup --headed    # Create user.json
-npx playwright test --project=authenticated --headed   # Use user.json
+#### Writing New Tests
+
+Create test files following the naming convention:
+
+- `*.e2e.spec.ts` - End-to-end tests (no auth required)
+- `*.authenticated.spec.ts` - Tests requiring authentication
+- `*.api.spec.ts` - API endpoint tests
+- `*.mobile.spec.ts` - Mobile-specific tests
+- `*.setup.ts` - Setup/configuration tests
+
+Example test structure:
+```typescript
+import { test, expect } from '@playwright/test';
+
+test.describe('Feature Tests', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/your-page');
+    await page.waitForLoadState('networkidle');
+  });
+
+  test('TC-FEATURE-001: Test description', async ({ page }) => {
+    console.log('📖 Testing...');
+
+    // Your test code here
+
+    console.log('✅ Test passed');
+  });
+});
 ```
 
-The authentication system bypasses Google's "browser not secure" detection using specialized Chrome configurations and automated form filling.
+#### CI/CD Integration
+
+Tests are configured for CI environments:
+- Runs in headless mode
+- 2 automatic retries on failure
+- Single worker for stability
+- Generates HTML report artifact
+
+## Deployment
+
+### Deploy to Vercel (Recommended)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Frealbits-lab%2FFictures&env=AUTH_SECRET,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,AI_GATEWAY_API_KEY&project-name=fictures&repository-name=fictures)
+
+### Environment Variables
+
+Configure these in your Vercel project or `.env.local`:
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `AUTH_SECRET` | NextAuth secret | Yes |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID | Yes |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth secret | Yes |
+| `AI_GATEWAY_API_KEY` | Vercel AI Gateway key | Yes |
+| `POSTGRES_URL` | PostgreSQL connection string | Yes |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob storage token | Yes |
+| `REDIS_URL` | Redis connection string | Yes |
+
+### Required Vercel Integrations
+
+When deploying, add these integrations:
+- **Neon** (PostgreSQL database)
+- **Upstash** (Redis for sessions)
+- **Vercel Blob** (File storage)
+- **AI Gateway** (AI request management)
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes
+│   ├── writing/           # Story writing interface
+│   ├── reading/           # Story reading interface
+│   ├── community/         # Community features
+│   ├── publish/           # Publishing automation
+│   ├── analytics/         # Analytics dashboard
+│   └── settings/          # User settings
+├── components/            # React components
+│   ├── writing/           # Writing interface components
+│   ├── reading/           # Reading interface components
+│   ├── community/         # Community components
+│   ├── publish/           # Publishing components
+│   └── ui/               # Shared UI components
+├── lib/                   # Shared utilities
+│   ├── db/               # Database schema and client
+│   ├── auth/             # Authentication config
+│   └── ai/               # AI integration
+└── types/                # TypeScript type definitions
+```
+
+## Roadmap
+
+### Planned Features (Not Yet Implemented)
+
+We're actively working on these features:
+
+#### Community & Social
+- [ ] **Contest System**: Writing contests with submission, voting, and judging
+- [ ] **Group Management**: Create and join writing groups
+- [ ] **Following System**: Follow authors and get updates
+- [ ] **User Profiles**: Public author profiles with bio and story portfolio
+
+#### Gamification
+- [ ] **Achievement System**: Unlock achievements for writing milestones
+- [ ] **Experience & Levels**: XP system with level progression
+- [ ] **Leaderboards**: Daily, weekly, monthly rankings
+- [ ] **Badges**: Visual recognition for accomplishments
+
+#### Collaboration Tools
+- [ ] **Beta Reader Marketplace**: Connect with beta readers
+- [ ] **Co-Authoring**: Collaborative writing with shared editing
+- [ ] **Writing Workshops**: Scheduled events with facilitators
+- [ ] **Peer Review System**: Structured feedback exchange
+
+#### Writing Enhancements
+- [ ] **Version Control**: Visual diff and rollback for chapters
+- [ ] **Writing Goals**: Daily/weekly word count goals
+- [ ] **Outline Mode**: Dedicated outline editor
+- [ ] **Research Notes**: Integrated note-taking system
+
+See our [GitHub Issues](https://github.com/realbits-lab/Fictures/issues) for detailed feature requests and discussions.
+
+## Contributing
+
+We welcome contributions! Here's how to get started:
+
+1. **Fork the repository**
+2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
+3. **Make your changes**
+4. **Run tests**: `pnpm test`
+5. **Commit your changes**: `git commit -m 'Add amazing feature'`
+6. **Push to your fork**: `git push origin feature/amazing-feature`
+7. **Open a Pull Request**
+
+### Development Guidelines
+
+- Follow the existing code style (TypeScript, React Server Components)
+- Write tests for new features
+- Update documentation as needed
+- Keep commits focused and atomic
+- Use conventional commit messages
+
+### Code Style
+
+- Use TypeScript for type safety
+- Prefer Server Components over Client Components
+- Use Server Actions for mutations
+- Follow Next.js 15 App Router patterns
+- Use Tailwind CSS for styling
+- Component names use PascalCase
+- Use pnpm for package management
+
+## Support
+
+- **Issues**: [GitHub Issues](https://github.com/realbits-lab/Fictures/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/realbits-lab/Fictures/discussions)
+- **Documentation**: [Project Wiki](https://github.com/realbits-lab/Fictures/wiki)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+Built with:
+- [Next.js](https://nextjs.org) by Vercel
+- [Vercel AI SDK](https://sdk.vercel.ai) for AI integration
+- [Drizzle ORM](https://orm.drizzle.team) for database access
+- [NextAuth.js](https://authjs.dev) for authentication
+- [shadcn/ui](https://ui.shadcn.com) for UI components
+- [TipTap](https://tiptap.dev) for rich text editing
+
+## Authors
+
+- **Realbits Lab** - [GitHub](https://github.com/realbits-lab)
+
+---
+
+Made with ❤️ for writers and readers everywhere
