@@ -357,27 +357,38 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
         <div className="absolute inset-0 top-16 flex flex-col">
           {/* Loading GNB */}
           <div className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between px-6 py-3">
-              <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between px-4 md:px-6 py-3">
+              <div className="flex items-center gap-3 md:gap-4">
+                {/* Hamburger menu skeleton - mobile only */}
+                <div className="md:hidden h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-20"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-32"></div>
+                <div className="hidden md:block h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-32"></div>
               </div>
               <div className="flex items-center gap-3">
                 <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-16"></div>
+                <div className="hidden md:block h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-16"></div>
                 <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-1 min-h-0">
-            {/* Sidebar Loading */}
-            <div className="w-80 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
+          <div className="flex flex-1 min-h-0 relative">
+            {/* Sidebar Loading - Hidden on mobile, visible on desktop */}
+            <div className="hidden md:block w-80 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
+              {/* Story header skeleton */}
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700 animate-pulse">
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-1"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-3"></div>
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+              </div>
+
+              {/* Scene list skeleton */}
               <div className="p-4 animate-pulse">
                 {/* "Scenes" header skeleton */}
                 <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 mb-3"></div>
 
-                {/* Scene list skeleton */}
+                {/* Scene items skeleton */}
                 <div className="space-y-1">
                   {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
                     <div key={i} className="p-3 rounded-lg bg-gray-100 dark:bg-gray-700/50">
@@ -397,13 +408,18 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
               </div>
             </div>
 
-            {/* Main Content Loading */}
-            <div className="flex-1 p-8">
+            {/* Main Content Loading - Full width on mobile, flex-1 on desktop */}
+            <div className="flex-1 p-4 md:p-8 overflow-y-auto">
               <div className="max-w-4xl mx-auto space-y-6 animate-pulse">
-                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                {/* Scene title skeleton */}
+                <div className="h-8 md:h-10 bg-gray-200 dark:bg-gray-700 rounded w-4/5 md:w-2/3"></div>
+
+                {/* Scene metadata skeleton */}
+                <div className="h-3 md:h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 md:w-1/4"></div>
+
+                {/* Content skeleton */}
                 <div className="space-y-3 mt-8">
-                  {[1, 2, 3, 4, 5, 6].map(i => (
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(i => (
                     <div key={i} className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
                   ))}
                 </div>
@@ -674,10 +690,14 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                 ) : chapterScenes.length > 0 ? (
                   <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                     <div className="max-w-md mx-auto">
-                      <h3 className="text-lg font-semibold mb-4">🎬 Select a Scene</h3>
-                      <p className="text-sm mb-4">
-                        Choose a scene from the left sidebar to start reading.
-                      </p>
+                      <div className="animate-pulse">
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-4 w-3/4 mx-auto"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-5/6"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
+                      </div>
+                      <p className="text-sm mt-4">Preparing content...</p>
                     </div>
                   </div>
                 ) : (
@@ -757,8 +777,17 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
               )}
             </article>
           ) : (
-            <div className="h-full flex items-center justify-center">
-              <p className="text-gray-500 dark:text-gray-400">Select a chapter to start reading</p>
+            <div className="h-full flex items-center justify-center p-8">
+              <div className="max-w-md mx-auto text-center">
+                <div className="animate-pulse">
+                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-4 w-3/4 mx-auto"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-5/6 mx-auto"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5 mx-auto"></div>
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">Loading content...</p>
+              </div>
             </div>
           )}
         </div>
