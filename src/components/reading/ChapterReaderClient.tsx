@@ -877,49 +877,6 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                 )}
               </div>
 
-              {/* Scene Navigation */}
-              <div className="mt-12 pt-6 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center">
-                {(() => {
-                  const currentSceneIndex = allScenes.findIndex(item => item.scene.id === selectedSceneId);
-                  const prevSceneItem = currentSceneIndex > 0 ? allScenes[currentSceneIndex - 1] : null;
-                  const nextSceneItem = currentSceneIndex < allScenes.length - 1 ? allScenes[currentSceneIndex + 1] : null;
-
-                  return (
-                    <>
-                      <div>
-                        {prevSceneItem && (
-                          <button
-                            onClick={() => handleSceneSelect(prevSceneItem.scene.id, prevSceneItem.chapterId)}
-                            className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-                          >
-                            ← Previous Scene: {prevSceneItem.scene.title}
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="text-center">
-                        {allScenes.length > 0 && selectedSceneId && currentSceneIndex >= 0 && (
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                            Scene {currentSceneIndex + 1} of {allScenes.length}
-                          </span>
-                        )}
-                      </div>
-
-                      <div>
-                        {nextSceneItem && (
-                          <button
-                            onClick={() => handleSceneSelect(nextSceneItem.scene.id, nextSceneItem.chapterId)}
-                            className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-                          >
-                            Next Scene: {nextSceneItem.scene.title} →
-                          </button>
-                        )}
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
-
               {/* Comments Section */}
               {selectedSceneId && (
                 <div className="mt-12 pt-6">
@@ -950,16 +907,14 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
       </div>
 
       {/* Sticky Bottom Navigation - Previous/Next Buttons */}
-      {/* Mobile: Always visible for easy navigation | Desktop: Hides with immersive mode */}
+      {/* Always visible on all screen sizes for easy navigation */}
       {(() => {
         const currentSceneIndex = allScenes.findIndex(item => item.scene.id === selectedSceneId);
         const prevSceneItem = currentSceneIndex > 0 ? allScenes[currentSceneIndex - 1] : null;
         const nextSceneItem = currentSceneIndex < allScenes.length - 1 ? allScenes[currentSceneIndex + 1] : null;
 
         return (
-          <div className={`fixed bottom-0 left-0 right-0 z-30 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 transition-transform duration-300 ease-in-out ${
-            isUIVisible ? 'translate-y-0' : 'translate-y-0 md:translate-y-full'
-          }`}>
+          <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
               {/* Previous Button - Left (Thumb Zone) */}
               <div className="flex-1">
