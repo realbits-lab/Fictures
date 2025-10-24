@@ -489,18 +489,66 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
                 ) : (
                   <>
                     {console.log(`⚠️  Chapter has no scenes: ${selectedChapter.title} - Architecture violation!`)}
-                    <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                      <div className="max-w-md mx-auto">
-                        <h3 className="text-lg font-semibold mb-4">📝 Chapter Not Ready</h3>
-                        <p className="text-sm mb-4">
-                          This chapter hasn&apos;t been structured into scenes yet. 
-                          Chapters must be organized into scenes to be readable.
-                        </p>
-                        {isOwner && (
-                          <p className="text-xs text-gray-400">
-                            As the author, please use the writing interface to create scenes for this chapter.
-                          </p>
-                        )}
+                    {/* Skeleton Loading State for Empty Chapter */}
+                    <div className="max-w-4xl mx-auto">
+                      {/* Scene Title Skeleton */}
+                      <div className="animate-pulse mb-8">
+                        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded-lg w-2/3 mb-6"></div>
+                      </div>
+
+                      {/* Scene Image Skeleton */}
+                      <div className="animate-pulse mb-8">
+                        <div className="aspect-video bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                      </div>
+
+                      {/* Scene Content Skeleton - Multiple paragraphs */}
+                      <div className="animate-pulse space-y-6">
+                        {/* Paragraph 1 */}
+                        <div className="space-y-3">
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-11/12"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-10/12"></div>
+                        </div>
+
+                        {/* Paragraph 2 */}
+                        <div className="space-y-3">
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-9/12"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                        </div>
+
+                        {/* Paragraph 3 */}
+                        <div className="space-y-3">
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-8/12"></div>
+                        </div>
+
+                        {/* Paragraph 4 */}
+                        <div className="space-y-3">
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-11/12"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-9/12"></div>
+                        </div>
+                      </div>
+
+                      {/* Status Message */}
+                      <div className="mt-12 text-center">
+                        <div className="inline-flex items-center gap-3 px-6 py-3 bg-gray-100 dark:bg-gray-800 rounded-full">
+                          <div className="flex gap-1">
+                            <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                            <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                            <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                          </div>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            {isOwner ? 'Create scenes to publish this chapter' : 'Content being prepared...'}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </>

@@ -16,6 +16,11 @@ interface ChapterReaderClientProps {
 }
 
 export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
+  const componentMountTime = useRef(performance.now());
+  const componentId = useRef(Math.random().toString(36).substring(7));
+
+  console.log(`[${componentId.current}] 🎭 ChapterReaderClient MOUNT - Story: ${storyId}`);
+
   const { data: session } = useSession();
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
@@ -102,31 +107,38 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
   }, [storyId]);
 
   const handleSceneSelect = React.useCallback((sceneId: string, chapterId: string) => {
-    console.log(`🎬 Switching to scene: ${sceneId} in chapter: ${chapterId}`);
+    const navStartTime = performance.now();
+    const navId = Math.random().toString(36).substring(7);
+
+    console.log(`[${navId}] 🧭 NAVIGATION START - Scene: ${sceneId}, Chapter: ${chapterId}`);
 
     // Save current scroll position before switching
     if (selectedSceneId && mainContentRef.current) {
+      const saveStartTime = performance.now();
       const currentScrollTop = mainContentRef.current.scrollTop;
       saveScrollPosition(selectedSceneId, currentScrollTop);
-      console.log(`💾 Saved current scene ${selectedSceneId} position: ${currentScrollTop}px`);
+      const saveDuration = performance.now() - saveStartTime;
+      console.log(`[${navId}] 💾 Saved scroll position (${currentScrollTop}px) in ${saveDuration.toFixed(2)}ms`);
     }
 
     // Reset scroll restoration state and switch scene
+    const stateUpdateStartTime = performance.now();
     setIsScrollRestored(false);
     setSelectedChapterId(chapterId);
     setSelectedSceneId(sceneId);
-
-    // Close sidebar on mobile after scene selection
     setIsSidebarOpen(false);
-
-    // Show UI when switching scenes
     setIsUIVisible(true);
+    const stateUpdateDuration = performance.now() - stateUpdateStartTime;
+    console.log(`[${navId}] 🔄 State updates: ${stateUpdateDuration.toFixed(2)}ms`);
 
     // ⚡ Prefetch adjacent scenes in background for instant navigation
+    const prefetchStartTime = performance.now();
     const currentIndex = allScenes.findIndex(item => item.scene.id === sceneId);
     if (currentIndex >= 0) {
       const prevScene = currentIndex > 0 ? allScenes[currentIndex - 1] : null;
       const nextScene = currentIndex < allScenes.length - 1 ? allScenes[currentIndex + 1] : null;
+
+      console.log(`[${navId}] 🔮 Triggering prefetch - Prev: ${prevScene?.chapterId || 'none'}, Next: ${nextScene?.chapterId || 'none'}`);
 
       prefetchAdjacentScenes(
         chapterId,
@@ -134,6 +146,11 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
         nextScene?.chapterId
       );
     }
+    const prefetchTriggerDuration = performance.now() - prefetchStartTime;
+
+    const totalNavDuration = performance.now() - navStartTime;
+    console.log(`[${navId}] ✅ Navigation sync operations: ${totalNavDuration.toFixed(2)}ms`);
+    console.log(`[${navId}] 📊 Breakdown: Save=${stateUpdateDuration.toFixed(0)}ms, StateUpdate=${stateUpdateDuration.toFixed(0)}ms, PrefetchTrigger=${prefetchTriggerDuration.toFixed(0)}ms`);
   }, [selectedSceneId, saveScrollPosition, allScenes, prefetchAdjacentScenes]);
 
   // Toggle UI visibility on tap/click
@@ -285,6 +302,11 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
   // Auto-select first scene on load
   useEffect(() => {
     if (!selectedSceneId && allScenes.length > 0) {
+      const autoSelectStartTime = performance.now();
+      const selectId = Math.random().toString(36).substring(7);
+
+      console.log(`[${selectId}] 🎯 AUTO-SELECT first scene - ${allScenes.length} scenes available`);
+
       const firstScene = allScenes[0];
       if (firstScene) {
         setSelectedChapterId(firstScene.chapterId);
@@ -292,6 +314,11 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
 
         // Track reading start
         trackReading.startReading(storyId, firstScene.chapterId);
+
+        const autoSelectDuration = performance.now() - autoSelectStartTime;
+        const timeSinceMount = performance.now() - componentMountTime.current;
+        console.log(`[${selectId}] ✅ First scene selected: ${autoSelectDuration.toFixed(2)}ms`);
+        console.log(`[${selectId}] ⏱️  Time from mount to first scene: ${timeSinceMount.toFixed(2)}ms`);
       }
     }
   }, [selectedSceneId, allScenes, storyId]);
@@ -299,15 +326,25 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
   // ⚡ OPTIMIZED: Async scroll restoration (non-blocking, happens in background)
   useEffect(() => {
     if (selectedSceneId && !isScrollRestored) {
+      const scrollRestoreStartTime = performance.now();
+      const scrollId = Math.random().toString(36).substring(7);
+
       const savedPosition = getScrollPosition(selectedSceneId);
-      console.log(`🔄 Restoring scroll position for scene ${selectedSceneId}: ${savedPosition}px`);
+      console.log(`[${scrollId}] 📜 SCROLL RESTORE START - Scene: ${selectedSceneId}, Saved position: ${savedPosition}px`);
 
       // Restore scroll position asynchronously without blocking content display
       requestAnimationFrame(() => {
+        const rafStartTime = performance.now();
+
         if (mainContentRef.current && savedPosition > 0) {
           // Directly set scroll position (instant, no smooth scroll for performance)
           mainContentRef.current.scrollTop = savedPosition;
-          console.log(`✅ Scroll position restored to ${savedPosition}px`);
+          const scrollSetDuration = performance.now() - rafStartTime;
+          const totalDuration = performance.now() - scrollRestoreStartTime;
+          console.log(`[${scrollId}] ✅ Scroll restored to ${savedPosition}px - RAF: ${scrollSetDuration.toFixed(2)}ms, Total: ${totalDuration.toFixed(2)}ms`);
+        } else {
+          const totalDuration = performance.now() - scrollRestoreStartTime;
+          console.log(`[${scrollId}] ℹ️  No scroll to restore - Total: ${totalDuration.toFixed(2)}ms`);
         }
         setIsScrollRestored(true);
       });
@@ -852,18 +889,66 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
                 ) : (
                   <>
                     {console.log(`⚠️  Chapter has no scenes: ${selectedChapter?.title} - Architecture violation!`)}
-                    <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                      <div className="max-w-md mx-auto">
-                        <h3 className="text-lg font-semibold mb-4">📝 Chapter Not Ready</h3>
-                        <p className="text-sm mb-4">
-                          This chapter hasn&apos;t been structured into scenes yet.
-                          Chapters must be organized into scenes to be readable.
-                        </p>
-                        {isOwner && (
-                          <p className="text-xs text-gray-400">
-                            As the author, please use the writing interface to create scenes for this chapter.
-                          </p>
-                        )}
+                    {/* Skeleton Loading State for Empty Chapter */}
+                    <div className="max-w-4xl mx-auto">
+                      {/* Scene Title Skeleton */}
+                      <div className="animate-pulse mb-8">
+                        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded-lg w-2/3 mb-6"></div>
+                      </div>
+
+                      {/* Scene Image Skeleton */}
+                      <div className="animate-pulse mb-8">
+                        <div className="aspect-video bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                      </div>
+
+                      {/* Scene Content Skeleton - Multiple paragraphs */}
+                      <div className="animate-pulse space-y-6">
+                        {/* Paragraph 1 */}
+                        <div className="space-y-3">
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-11/12"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-10/12"></div>
+                        </div>
+
+                        {/* Paragraph 2 */}
+                        <div className="space-y-3">
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-9/12"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                        </div>
+
+                        {/* Paragraph 3 */}
+                        <div className="space-y-3">
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-8/12"></div>
+                        </div>
+
+                        {/* Paragraph 4 */}
+                        <div className="space-y-3">
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-11/12"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-9/12"></div>
+                        </div>
+                      </div>
+
+                      {/* Status Message */}
+                      <div className="mt-12 text-center">
+                        <div className="inline-flex items-center gap-3 px-6 py-3 bg-gray-100 dark:bg-gray-800 rounded-full">
+                          <div className="flex gap-1">
+                            <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                            <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                            <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                          </div>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            {isOwner ? 'Create scenes to publish this chapter' : 'Content being prepared...'}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </>
