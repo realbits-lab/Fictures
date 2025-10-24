@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { mutate } from 'swr';
-import { cacheManager, CACHE_CONFIGS } from '@/lib/hooks/use-persisted-swr';
+import { CACHE_CONFIGS, cacheManager } from '@/lib/hooks/use-persisted-swr';
 
 /**
  * Hook for prefetching adjacent scenes to improve navigation performance
@@ -48,7 +48,7 @@ export function useScenePrefetch() {
         return;
       }
 
-      console.log(`[${prefetchId}] ❌ Cache MISS - Not in localStorage or SWR cache (Cache check: ${cacheCheckDuration.toFixed(2)}ms)`);
+      console.log(`[${prefetchId}] 🔮 Prefetching uncached scene - Not yet cached (Cache check: ${cacheCheckDuration.toFixed(2)}ms)`);
 
       // Prefetch with low priority
       const fetchStartTime = performance.now();
