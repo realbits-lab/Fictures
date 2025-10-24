@@ -620,9 +620,9 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
               )}
             </div>
             {selectedScene && (
-              <div className="hidden lg:flex items-center gap-2">
-                <span className="text-gray-300 dark:text-gray-600">/</span>
-                <span className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-xs">
+              <div className="flex items-center gap-2 min-w-0 flex-1 md:flex-initial">
+                <span className="hidden md:inline text-gray-300 dark:text-gray-600">/</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-[150px] sm:max-w-xs">
                   🎬 {selectedScene.title}
                 </span>
               </div>
