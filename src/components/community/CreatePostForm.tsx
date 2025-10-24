@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label } from '@/components/ui';
 import { toast } from 'sonner';
+import { trackCommunity } from '@/lib/analytics/google-analytics';
 
 interface CreatePostFormProps {
   storyId: string;
@@ -75,6 +76,11 @@ export function CreatePostForm({ storyId, onPostCreated, onCancel }: CreatePostF
 
       if (!response.ok) {
         throw new Error(data.message || 'Failed to create post');
+      }
+
+      // Track post creation
+      if (data.id) {
+        trackCommunity.createPost(data.id);
       }
 
       toast.success('Post created successfully!');

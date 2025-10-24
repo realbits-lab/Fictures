@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { InFeedAd } from "@/components/ads";
+import { trackSearch, trackStoryEvent } from '@/lib/analytics/google-analytics';
 
 interface Story {
   id: string;
@@ -79,10 +80,13 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
   }, [session?.user?.id]);
 
   // Record story view
-  const recordStoryView = async (storyId: string) => {
+  const recordStoryView = async (storyId: string, storyTitle?: string) => {
     if (!session?.user?.id) return;
 
     try {
+      // Track story view in GA
+      trackStoryEvent.view(storyId, storyTitle);
+
       const response = await fetch('/reading/api/history', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -248,7 +252,13 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
           <div className="flex items-center justify-between md:justify-end gap-3">
             {/* Genre Select */}
             <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] flex-1 md:flex-initial">
-              <Select value={selectedGenre} onValueChange={setSelectedGenre}>
+              <Select value={selectedGenre} onValueChange={(genre) => {
+                setSelectedGenre(genre);
+                // Track genre filter
+                if (genre !== 'All') {
+                  trackSearch.filterByGenre(genre);
+                }
+              }}>
                 <SelectTrigger className="border-0 bg-transparent hover:bg-[rgb(var(--muted))] focus:ring-0 focus:ring-offset-0 w-full">
                   <SelectValue placeholder="Select genre" />
                 </SelectTrigger>
@@ -294,7 +304,7 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
               <div
                 key={story.id}
                 onClick={async () => {
-                  await recordStoryView(story.id);
+                  await recordStoryView(story.id, story.title);
                   router.push(`/reading/${story.id}`);
                 }}
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-[1.02] hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 flex flex-col overflow-hidden cursor-pointer"
@@ -391,7 +401,7 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
                     <TableRow
                       key={story.id}
                       onClick={async () => {
-                        await recordStoryView(story.id);
+                        await recordStoryView(story.id, story.title);
                         router.push(`/reading/${story.id}`);
                       }}
                       className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150"

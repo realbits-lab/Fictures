@@ -2,6 +2,7 @@
 
 import React, { useState, useTransition } from 'react';
 import { cn } from '@/lib/utils/cn';
+import { trackReading, trackCommunity } from '@/lib/analytics/google-analytics';
 
 interface LikeButtonProps {
   entityId: string;
@@ -61,6 +62,15 @@ export function LikeButton({
 
         if (entityType === 'comment' && data.likeCount !== undefined) {
           setLikeCount(data.likeCount);
+        }
+
+        // Track like action
+        if (data.liked) {
+          if (entityType === 'story') {
+            trackReading.bookmark(entityId);
+          } else if (entityType === 'comment') {
+            trackCommunity.like(entityId);
+          }
         }
 
         onLikeToggle?.(data.liked, entityType === 'comment' ? data.likeCount : likeCount);

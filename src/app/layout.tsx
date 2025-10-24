@@ -9,6 +9,8 @@ import { AuthModal } from '@/components/auth/AuthModal';
 import { AdSenseScript } from '@/components/ads';
 import { Toaster } from 'sonner';
 import { Analytics } from '@vercel/analytics/next';
+import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
+import { PageViewTracker } from '@/components/analytics/PageViewTracker';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -37,6 +39,7 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <AdSenseScript />
+        <GoogleAnalytics />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -44,6 +47,7 @@ export default async function RootLayout({
         <ThemeProvider>
           <SessionProvider session={session}>
             <AuthModalProvider>
+              <PageViewTracker />
               <GlobalNavigation />
               {children}
               <AuthModal />

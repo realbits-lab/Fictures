@@ -8,6 +8,7 @@ import { useChapterScenes } from '@/hooks/useChapterScenes';
 import { ProgressIndicator } from './ProgressIndicator';
 import { CommentSection } from './CommentSection';
 import type { Chapter } from '@/hooks/useStoryReader';
+import { trackReading } from '@/lib/analytics/google-analytics';
 
 interface ChapterReaderClientProps {
   storyId: string;
@@ -95,9 +96,12 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
 
       if (targetChapterId) {
         setSelectedChapterId(targetChapterId);
+
+        // Track reading start
+        trackReading.startReading(storyId, targetChapterId);
       }
     }
-  }, [selectedChapterId, availableChapters, readingProgress]);
+  }, [selectedChapterId, availableChapters, readingProgress, storyId]);
 
   // Auto-select first scene when chapter changes
   useEffect(() => {
