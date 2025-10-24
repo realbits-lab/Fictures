@@ -11,6 +11,7 @@ import { Toaster } from 'sonner';
 import { Analytics } from '@vercel/analytics/next';
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
 import { PageViewTracker } from '@/components/analytics/PageViewTracker';
+import { ReadingHistorySync } from '@/components/analytics/ReadingHistorySync';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -48,6 +49,7 @@ export default async function RootLayout({
           <SessionProvider session={session}>
             <AuthModalProvider>
               <PageViewTracker />
+              <ReadingHistorySync />
               <GlobalNavigation />
               {children}
               <AuthModal />
