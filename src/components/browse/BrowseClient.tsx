@@ -174,7 +174,7 @@ export function BrowseClient() {
           <>
             {/* Above-the-fold ad - Highest priority placement */}
             <AdUnit
-              slot="1234567890" // Replace with your actual AdSense slot ID
+              slot="3378048398" // Replace with your actual AdSense slot ID
               format="horizontal"
               responsive={true}
               className="mb-8"
@@ -185,7 +185,7 @@ export function BrowseClient() {
 
             {/* End-of-content ad - Medium priority placement */}
             <AdUnit
-              slot="0987654321" // Replace with your actual AdSense slot ID
+              slot="9841145270" // Replace with your actual AdSense slot ID
               format="rectangle"
               responsive={true}
               className="mt-12 mx-auto max-w-sm"
