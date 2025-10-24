@@ -8,6 +8,7 @@ import { GlobalNavigation } from '@/components/layout/GlobalNavigation';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { AdSenseScript } from '@/components/ads';
 import { Toaster } from 'sonner';
+import { Analytics } from '@vercel/analytics/next';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -55,6 +56,7 @@ export default async function RootLayout({
             </AuthModalProvider>
           </SessionProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
