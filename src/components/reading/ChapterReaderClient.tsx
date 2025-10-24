@@ -542,7 +542,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
             </div>
 
             {/* Main Content Loading - Full width on mobile, flex-1 on desktop */}
-            <div className="flex-1 p-4 md:p-8 overflow-y-auto">
+            <div className="flex-1 p-4 md:p-8 pb-24 md:pb-8 overflow-y-auto">
               <div className="max-w-4xl mx-auto space-y-6 animate-pulse">
                 {/* Scene title skeleton */}
                 <div className="h-8 md:h-10 bg-gray-200 dark:bg-gray-700 rounded w-4/5 md:w-2/3"></div>
@@ -745,7 +745,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
         >
           {selectedChapter ? (
             <article
-              className="max-w-4xl mx-auto px-8 py-8 cursor-pointer"
+              className="max-w-4xl mx-auto px-8 py-8 pb-24 md:pb-8 cursor-pointer"
               onClick={handleContentTap}
             >
               {/* Scene Header */}
@@ -902,7 +902,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
               )}
             </article>
           ) : (
-            <div className="h-full flex items-center justify-center p-8">
+            <div className="h-full flex items-center justify-center p-8 pb-24 md:pb-8">
               <div className="max-w-md mx-auto text-center">
                 <div className="animate-pulse">
                   <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-4 w-3/4 mx-auto"></div>
@@ -919,6 +919,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
       </div>
 
       {/* Sticky Bottom Navigation - Previous/Next Buttons */}
+      {/* Mobile: Always visible for easy navigation | Desktop: Hides with immersive mode */}
       {(() => {
         const currentSceneIndex = allScenes.findIndex(item => item.scene.id === selectedSceneId);
         const prevSceneItem = currentSceneIndex > 0 ? allScenes[currentSceneIndex - 1] : null;
@@ -926,7 +927,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
 
         return (
           <div className={`fixed bottom-0 left-0 right-0 z-30 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 transition-transform duration-300 ease-in-out ${
-            isUIVisible ? 'translate-y-0' : 'translate-y-full'
+            isUIVisible ? 'translate-y-0' : 'translate-y-0 md:translate-y-full'
           }`}>
             <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
               {/* Previous Button - Left (Thumb Zone) */}
