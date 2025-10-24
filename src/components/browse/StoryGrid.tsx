@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { StoryImage, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui";
 import {
   Select,
@@ -43,18 +44,65 @@ const genres = ["All", "Fantasy", "Science Fiction", "Romance", "Mystery", "Thri
 
 export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [selectedGenre, setSelectedGenre] = useState("All");
   const [sortBy, setSortBy] = useState<"latest" | "popular" | "rating">("latest");
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const [filterMode, setFilterMode] = useState<"all" | "history">("all");
+  const [readingHistory, setReadingHistory] = useState<Set<string>>(new Set());
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+
+  // Fetch reading history when component mounts
+  useEffect(() => {
+    async function fetchHistory() {
+      if (!session?.user?.id) {
+        setIsLoadingHistory(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/reading/api/history');
+        if (response.ok) {
+          const data = await response.json();
+          const storyIds = new Set(data.history.map((h: any) => h.storyId));
+          setReadingHistory(storyIds);
+        }
+      } catch (error) {
+        console.error('Error fetching reading history:', error);
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    }
+
+    fetchHistory();
+  }, [session?.user?.id]);
+
+  // Record story view
+  const recordStoryView = async (storyId: string) => {
+    if (!session?.user?.id) return;
+
+    try {
+      const response = await fetch('/reading/api/history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storyId }),
+      });
+
+      if (response.ok) {
+        // Add to local history state
+        setReadingHistory(prev => new Set([...prev, storyId]));
+      }
+    } catch (error) {
+      console.error('Error recording story view:', error);
+    }
+  };
 
   const filteredStories = stories.filter(story => {
     // Genre filter
     const matchesGenre = selectedGenre === "All" || story.genre === selectedGenre;
 
-    // History filter (placeholder - would need backend support to track viewed stories)
-    // For now, showing all stories in both modes
-    const matchesHistory = filterMode === "all" ? true : true;
+    // History filter - only show stories in reading history when "history" mode is selected
+    const matchesHistory = filterMode === "all" ? true : readingHistory.has(story.id);
 
     return matchesGenre && matchesHistory;
   });
@@ -230,9 +278,12 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
               const imageUrl = story.hnsData?.storyImage?.url;
 
               return (
-              <Link
+              <div
                 key={story.id}
-                href={`/reading/${story.id}`}
+                onClick={async () => {
+                  await recordStoryView(story.id);
+                  router.push(`/reading/${story.id}`);
+                }}
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-[1.02] hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 flex flex-col overflow-hidden cursor-pointer"
               >
                 {/* Story Image */}
@@ -289,7 +340,7 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
                   </div>
                 </div>
                 </div>
-              </Link>
+              </div>
               );
             })}
           </div>
@@ -316,7 +367,10 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
                   return (
                     <TableRow
                       key={story.id}
-                      onClick={() => router.push(`/reading/${story.id}`)}
+                      onClick={async () => {
+                        await recordStoryView(story.id);
+                        router.push(`/reading/${story.id}`);
+                      }}
                       className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150"
                     >
                       <TableCell>

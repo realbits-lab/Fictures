@@ -167,9 +167,6 @@ export const stories = pgTable('stories', {
   dramaticQuestion: text('dramatic_question'),
   theme: text('theme'),
   hnsData: json('hns_data').$type<Record<string, unknown>>(),
-  // Bi-directional relationship fields
-  partIds: json('part_ids').$type<string[]>().default([]).notNull(),
-  chapterIds: json('chapter_ids').$type<string[]>().default([]).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -190,8 +187,6 @@ export const parts = pgTable('parts', {
   summary: text('summary'),
   keyBeats: json('key_beats').$type<string[]>(),
   hnsData: json('hns_data').$type<Record<string, unknown>>(),
-  // Bi-directional relationship fields
-  chapterIds: json('chapter_ids').$type<string[]>().default([]).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -218,8 +213,6 @@ export const chapters = pgTable('chapters', {
   actionDialogueRatio: varchar('action_dialogue_ratio', { length: 10 }),
   chapterHook: json('chapter_hook').$type<{type: string; description: string; urgency_level: string}>(),
   hnsData: json('hns_data').$type<Record<string, unknown>>(),
-  // Bi-directional relationship fields
-  sceneIds: json('scene_ids').$type<string[]>().default([]).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -429,6 +422,18 @@ export const postViews = pgTable('post_views', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// Reading history table - Track user's story reading history
+export const readingHistory = pgTable('reading_history', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  storyId: text('story_id').notNull().references(() => stories.id, { onDelete: 'cascade' }),
+  lastReadAt: timestamp('last_read_at').defaultNow().notNull(),
+  readCount: integer('read_count').default(1).notNull(), // Track how many times user viewed this story
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  uniqueUserStory: primaryKey({ columns: [table.userId, table.storyId], name: 'user_story_unique' }),
+}));
+
 // Define relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   stories: many(stories),
@@ -438,6 +443,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   communityPosts: many(communityPosts),
   communityReplies: many(communityReplies),
   apiKeys: many(apiKeys),
+  readingHistory: many(readingHistory),
 }));
 
 export const storiesRelations = relations(stories, ({ one, many }) => ({
@@ -451,6 +457,7 @@ export const storiesRelations = relations(stories, ({ one, many }) => ({
   places: many(places),
   settings: many(settings),
   communityPosts: many(communityPosts),
+  readingHistory: many(readingHistory),
 }));
 
 export const partsRelations = relations(parts, ({ one, many }) => ({

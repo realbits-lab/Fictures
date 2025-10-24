@@ -50,6 +50,13 @@
       "when": 1758006055161,
       "tag": "0006_woozy_lake",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1729770000000,
+      "tag": "0023_remove_redundant_id_arrays",
+      "breakpoints": true
     }
   ]
 }
