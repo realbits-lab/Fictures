@@ -20,6 +20,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
   const [isScrollRestored, setIsScrollRestored] = useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [allScenes, setAllScenes] = useState<Array<{ scene: any; chapterId: string; chapterTitle: string; partTitle?: string }>>([]);
   const sidebarScrollRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
 
@@ -47,8 +48,8 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
     }
   }, [scrollPositionKey]);
 
-  const handleSceneSelect = React.useCallback((sceneId: string) => {
-    console.log(`🎬 Switching to scene: ${sceneId}`);
+  const handleSceneSelect = React.useCallback((sceneId: string, chapterId: string) => {
+    console.log(`🎬 Switching to scene: ${sceneId} in chapter: ${chapterId}`);
 
     // Save current scroll position before switching
     if (selectedSceneId && mainContentRef.current) {
@@ -59,6 +60,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
 
     // Reset scroll restoration state and switch scene
     setIsScrollRestored(false);
+    setSelectedChapterId(chapterId);
     setSelectedSceneId(sceneId);
 
     // Close sidebar on mobile after scene selection
@@ -87,29 +89,94 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
     error: scenesError
   } = useChapterScenes(selectedChapterId);
 
-  // Auto-select first published chapter on load
+  // Fetch all scenes from all chapters and create a flat ordered list
   useEffect(() => {
-    if (!selectedChapterId && availableChapters.length > 0) {
-      // Check if we have a saved reading position
-      const savedPosition = readingProgress.getPosition();
-      const targetChapterId = savedPosition?.chapterId || availableChapters.find(ch => ch.status === 'published')?.id || availableChapters[0]?.id;
+    const fetchAllScenes = async () => {
+      if (!story || availableChapters.length === 0) return;
 
-      if (targetChapterId) {
-        setSelectedChapterId(targetChapterId);
+      const scenesList: Array<{ scene: any; chapterId: string; chapterTitle: string; partTitle?: string; globalOrder: number }> = [];
+      let globalOrder = 0;
+
+      // Process parts and their chapters in order
+      for (const part of [...story.parts].sort((a, b) => a.orderIndex - b.orderIndex)) {
+        const partChapters = part.chapters
+          .filter(chapter => isOwner || chapter.status === 'published')
+          .sort((a, b) => a.orderIndex - b.orderIndex);
+
+        for (const chapter of partChapters) {
+          try {
+            const response = await fetch(`/writing/api/chapters/${chapter.id}/scenes`, {
+              credentials: 'include',
+            });
+            if (response.ok) {
+              const data = await response.json();
+              const sortedScenes = [...data.scenes].sort((a, b) => a.orderIndex - b.orderIndex);
+
+              sortedScenes.forEach((scene) => {
+                scenesList.push({
+                  scene,
+                  chapterId: chapter.id,
+                  chapterTitle: chapter.title,
+                  partTitle: part.title,
+                  globalOrder: globalOrder++
+                });
+              });
+            }
+          } catch (error) {
+            console.error(`Error fetching scenes for chapter ${chapter.id}:`, error);
+          }
+        }
+      }
+
+      // Process standalone chapters if story has no parts
+      if (story.chapters.length > 0 && story.parts.length === 0) {
+        const standaloneChapters = [...story.chapters]
+          .filter(chapter => isOwner || chapter.status === 'published')
+          .sort((a, b) => a.orderIndex - b.orderIndex);
+
+        for (const chapter of standaloneChapters) {
+          try {
+            const response = await fetch(`/writing/api/chapters/${chapter.id}/scenes`, {
+              credentials: 'include',
+            });
+            if (response.ok) {
+              const data = await response.json();
+              const sortedScenes = [...data.scenes].sort((a, b) => a.orderIndex - b.orderIndex);
+
+              sortedScenes.forEach((scene) => {
+                scenesList.push({
+                  scene,
+                  chapterId: chapter.id,
+                  chapterTitle: chapter.title,
+                  globalOrder: globalOrder++
+                });
+              });
+            }
+          } catch (error) {
+            console.error(`Error fetching scenes for chapter ${chapter.id}:`, error);
+          }
+        }
+      }
+
+      setAllScenes(scenesList);
+    };
+
+    fetchAllScenes();
+  }, [story, availableChapters, isOwner]);
+
+  // Auto-select first scene on load
+  useEffect(() => {
+    if (!selectedSceneId && allScenes.length > 0) {
+      const firstScene = allScenes[0];
+      if (firstScene) {
+        setSelectedChapterId(firstScene.chapterId);
+        setSelectedSceneId(firstScene.scene.id);
 
         // Track reading start
-        trackReading.startReading(storyId, targetChapterId);
+        trackReading.startReading(storyId, firstScene.chapterId);
       }
     }
-  }, [selectedChapterId, availableChapters, readingProgress, storyId]);
-
-  // Auto-select first scene when chapter changes
-  useEffect(() => {
-    if (selectedChapterId && chapterScenes.length > 0 && !selectedSceneId && !scenesLoading) {
-      setIsScrollRestored(false);
-      handleSceneSelect(chapterScenes[0].id);
-    }
-  }, [selectedChapterId, chapterScenes, selectedSceneId, scenesLoading, handleSceneSelect]);
+  }, [selectedSceneId, allScenes, storyId]);
 
   // Restore scroll position when scene changes
   useEffect(() => {
@@ -209,13 +276,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
 
   const selectedChapter = availableChapters.find(ch => ch.id === selectedChapterId);
   const selectedScene = chapterScenes.find(scene => scene.id === selectedSceneId);
-
-  // Handler for chapter selection
-  const handleChapterSelect = (chapterId: string) => {
-    setSelectedChapterId(chapterId);
-    setSelectedSceneId(null); // Reset scene selection when chapter changes
-    setIsSidebarOpen(false); // Close sidebar on mobile after chapter selection
-  };
+  const selectedSceneData = allScenes.find(item => item.scene.id === selectedSceneId);
 
   // Calculate global chapter number
   const getGlobalChapterNumber = (chapterId: string) => {
@@ -449,146 +510,51 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
             </div>
           </div>
 
-          {/* Chapter List */}
-          <div 
+          {/* Scene List */}
+          <div
             ref={sidebarScrollRef}
             className="flex-1 overflow-y-auto min-h-0"
           >
             <div className="p-4">
               <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">
-                Chapters
+                Scenes
               </h2>
-              
-              {/* Chapters in Parts */}
-              {[...story.parts].sort((a, b) => a.orderIndex - b.orderIndex).map((part) => {
-                const partChapters = part.chapters
-                  .filter(chapter => isOwner || chapter.status === 'published')
-                  .sort((a, b) => a.orderIndex - b.orderIndex);
 
-                if (partChapters.length === 0) return null;
+              {/* Flat Scene List */}
+              {allScenes.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400 text-sm">
+                  Loading scenes...
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {allScenes.map((item, index) => {
+                    const isSceneSelected = selectedSceneId === item.scene.id;
 
-                return (
-                  <div key={part.id} className="mb-4">
-                    <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-2">
-                      {part.title}
-                    </div>
-                    {partChapters.map((chapter) => {
-                      const globalChapterNumber = getGlobalChapterNumber(chapter.id);
-                      const isChapterSelected = selectedChapterId === chapter.id;
-
-                      return (
-                        <div key={chapter.id} className="mb-1">
-                          <button
-                            onClick={() => handleChapterSelect(chapter.id)}
-                            className={`w-full text-left p-3 rounded-lg transition-colors ${
-                              isChapterSelected
-                                ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100'
-                                : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm">{getStatusIcon(chapter.status)}</span>
-                              <span className="font-medium text-sm truncate">
-                                {chapter.title}
-                              </span>
+                    return (
+                      <button
+                        key={item.scene.id}
+                        onClick={() => handleSceneSelect(item.scene.id, item.chapterId)}
+                        className={`w-full text-left p-3 rounded-lg transition-colors ${
+                          isSceneSelected
+                            ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100'
+                            : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                        }`}
+                      >
+                        <div className="flex items-start gap-2">
+                          <span className="text-gray-400 dark:text-gray-500 flex-shrink-0 mt-0.5">🎬</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm truncate">
+                              {item.scene.title}
                             </div>
-                          </button>
-
-                          {/* Scene List for Selected Chapter */}
-                          {isChapterSelected && chapterScenes.length > 0 && (
-                            <div className="ml-4 mt-2 space-y-1">
-                              {[...chapterScenes].sort((a, b) => a.orderIndex - b.orderIndex).map((scene, sceneIndex) => {
-                                const isSceneSelected = selectedSceneId === scene.id;
-
-                                return (
-                                  <button
-                                    key={scene.id}
-                                    onClick={() => handleSceneSelect(scene.id)}
-                                    className={`w-full text-left p-2 rounded-md text-xs transition-colors ${
-                                      isSceneSelected
-                                        ? 'bg-blue-50 dark:bg-blue-900/10 text-blue-800 dark:text-blue-200 border-l-2 border-blue-400'
-                                        : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-600 dark:text-gray-400'
-                                    }`}
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-gray-400 dark:text-gray-500">🎬</span>
-                                      <span className="truncate">
-                                        {scene.title}
-                                      </span>
-                                    </div>
-                                  </button>
-                                );
-                              })}
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                              {item.partTitle && <span>{item.partTitle} • </span>}
+                              {item.chapterTitle}
                             </div>
-                          )}
+                          </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-              
-              {/* Standalone Chapters - Only show if story has no parts structure */}
-              {story.chapters.length > 0 && story.parts.length === 0 && (
-                <div className="mb-4">
-                  <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-2">
-                    Chapters
-                  </div>
-                  {[...story.chapters]
-                    .filter(chapter => isOwner || chapter.status === 'published')
-                    .sort((a, b) => a.orderIndex - b.orderIndex)
-                    .map((chapter) => {
-                      const globalChapterNumber = getGlobalChapterNumber(chapter.id);
-                      const isChapterSelected = selectedChapterId === chapter.id;
-
-                      return (
-                        <div key={chapter.id} className="mb-1">
-                          <button
-                            onClick={() => handleChapterSelect(chapter.id)}
-                            className={`w-full text-left p-3 rounded-lg transition-colors ${
-                              isChapterSelected
-                                ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100'
-                                : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm">{getStatusIcon(chapter.status)}</span>
-                              <span className="font-medium text-sm truncate">
-                                {chapter.title}
-                              </span>
-                            </div>
-                          </button>
-
-                          {/* Scene List for Selected Chapter */}
-                          {isChapterSelected && chapterScenes.length > 0 && (
-                            <div className="ml-4 mt-2 space-y-1">
-                              {[...chapterScenes].sort((a, b) => a.orderIndex - b.orderIndex).map((scene, sceneIndex) => {
-                                const isSceneSelected = selectedSceneId === scene.id;
-
-                                return (
-                                  <button
-                                    key={scene.id}
-                                    onClick={() => handleSceneSelect(scene.id)}
-                                    className={`w-full text-left p-2 rounded-md text-xs transition-colors ${
-                                      isSceneSelected
-                                        ? 'bg-blue-50 dark:bg-blue-900/10 text-blue-800 dark:text-blue-200 border-l-2 border-blue-400'
-                                        : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-600 dark:text-gray-400'
-                                    }`}
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-gray-400 dark:text-gray-500">🎬</span>
-                                      <span className="truncate">
-                                        {scene.title}
-                                      </span>
-                                    </div>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -726,54 +692,40 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
               {/* Scene Navigation */}
               <div className="mt-12 pt-6 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center">
                 {(() => {
-                  const currentSceneIndex = chapterScenes.findIndex(scene => scene.id === selectedSceneId);
-                  const prevScene = currentSceneIndex > 0 ? chapterScenes[currentSceneIndex - 1] : null;
-                  const nextScene = currentSceneIndex < chapterScenes.length - 1 ? chapterScenes[currentSceneIndex + 1] : null;
-
-                  // Find next chapter for navigation when at last scene
-                  const currentChapterIndex = availableChapters.findIndex(ch => ch.id === selectedChapterId);
-                  const nextChapter = currentChapterIndex >= 0 && currentChapterIndex < availableChapters.length - 1
-                    ? availableChapters[currentChapterIndex + 1]
-                    : null;
-                  const isLastScene = currentSceneIndex === chapterScenes.length - 1;
+                  const currentSceneIndex = allScenes.findIndex(item => item.scene.id === selectedSceneId);
+                  const prevSceneItem = currentSceneIndex > 0 ? allScenes[currentSceneIndex - 1] : null;
+                  const nextSceneItem = currentSceneIndex < allScenes.length - 1 ? allScenes[currentSceneIndex + 1] : null;
 
                   return (
                     <>
                       <div>
-                        {prevScene && (
+                        {prevSceneItem && (
                           <button
-                            onClick={() => handleSceneSelect(prevScene.id)}
+                            onClick={() => handleSceneSelect(prevSceneItem.scene.id, prevSceneItem.chapterId)}
                             className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                           >
-                            ← Previous Scene: {prevScene.title}
+                            ← Previous Scene: {prevSceneItem.scene.title}
                           </button>
                         )}
                       </div>
 
                       <div className="text-center">
-                        {chapterScenes.length > 0 && selectedSceneId && (
+                        {allScenes.length > 0 && selectedSceneId && currentSceneIndex >= 0 && (
                           <span className="text-xs text-gray-500 dark:text-gray-400">
-                            Scene {currentSceneIndex + 1} of {chapterScenes.length}
+                            Scene {currentSceneIndex + 1} of {allScenes.length}
                           </span>
                         )}
                       </div>
 
                       <div>
-                        {nextScene ? (
+                        {nextSceneItem && (
                           <button
-                            onClick={() => handleSceneSelect(nextScene.id)}
+                            onClick={() => handleSceneSelect(nextSceneItem.scene.id, nextSceneItem.chapterId)}
                             className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                           >
-                            Next Scene: {nextScene.title} →
+                            Next Scene: {nextSceneItem.scene.title} →
                           </button>
-                        ) : isLastScene && nextChapter ? (
-                          <button
-                            onClick={() => handleChapterSelect(nextChapter.id)}
-                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-                          >
-                            Next Chapter: {nextChapter.title} →
-                          </button>
-                        ) : null}
+                        )}
                       </div>
                     </>
                   );
