@@ -5,6 +5,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { Button } from '@/components/ui';
+import { trackEngagement } from '@/lib/analytics/google-analytics';
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -31,6 +32,9 @@ export function LoginForm() {
       if (result?.error) {
         setError('Invalid email or password');
       } else if (result?.ok) {
+        // Track successful sign in
+        trackEngagement.signIn('email');
+
         // Try to store credentials using Credential Management API if available
         if ('credentials' in navigator && 'PasswordCredential' in window) {
           try {
@@ -65,6 +69,9 @@ export function LoginForm() {
       if (result?.error) {
         setError('Failed to sign in with Google');
       } else if (result?.ok) {
+        // Track successful sign in
+        trackEngagement.signIn('google');
+
         router.push('/');
         router.refresh();
       }

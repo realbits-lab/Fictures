@@ -7,6 +7,7 @@ import { Button } from '@/components/ui';
 import { Label } from '@/components/ui';
 import { useStoryCreation } from './StoryCreationContext';
 import { toast } from 'sonner';
+import { trackStoryEvent } from '@/lib/analytics/google-analytics';
 
 interface ProgressStep {
   phase: string;
@@ -392,6 +393,11 @@ export function CreateStoryForm() {
                   // All phases completed successfully
                   const completedStoryId = data.data?.storyId || data.storyId;
                   console.log('✅ Story generation completed:', completedStoryId);
+
+                  // Track story creation
+                  if (completedStoryId) {
+                    trackStoryEvent.create(completedStoryId);
+                  }
 
                   // Mark all remaining steps as completed
                   setProgress(prev => prev.map(step =>

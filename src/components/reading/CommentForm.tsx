@@ -4,6 +4,7 @@ import React, { useState, useTransition } from 'react';
 import { cn } from '@/lib/utils/cn';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
+import { trackCommunity } from '@/lib/analytics/google-analytics';
 
 interface CommentFormProps {
   storyId: string;
@@ -68,6 +69,11 @@ export function CommentForm({
         }
 
         const data = await response.json();
+
+        // Track comment creation
+        if (data.comment?.id) {
+          trackCommunity.comment(storyId);
+        }
 
         setContent('');
         onSuccess?.(data.comment);
