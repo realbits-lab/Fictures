@@ -319,29 +319,60 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
     const mainContentElement = mainContentRef.current;
     if (!mainContentElement || !selectedSceneId || !isScrollRestored) return;
 
+    let isHandlingScroll = false; // Prevent rapid toggling
+
     const handleScroll = () => {
-      if (selectedSceneId && mainContentElement && isScrollRestored) {
+      if (selectedSceneId && mainContentElement && isScrollRestored && !isHandlingScroll) {
         const currentScrollTop = mainContentElement.scrollTop;
+        const scrollHeight = mainContentElement.scrollHeight;
+        const clientHeight = mainContentElement.clientHeight;
+
+        // Calculate distances from top and bottom
+        const distanceFromTop = currentScrollTop;
+        const distanceFromBottom = scrollHeight - (currentScrollTop + clientHeight);
 
         // Save scroll position
         saveScrollPosition(selectedSceneId, currentScrollTop);
 
         // Handle immersive reading mode (auto-hide/show UI)
-        const scrollThreshold = 50; // Minimum scroll to trigger hide/show
+        const scrollThreshold = 80; // Increased threshold to reduce sensitivity
         const scrollDifference = currentScrollTop - lastScrollY;
+        const boundaryThreshold = 50; // Distance from top/bottom to ignore UI toggling
 
+        // Prevent UI toggling near boundaries (top or bottom)
+        const isNearTop = distanceFromTop < boundaryThreshold;
+        const isNearBottom = distanceFromBottom < boundaryThreshold;
+
+        if (isNearTop || isNearBottom) {
+          // Near boundaries - don't toggle UI, but show UI at top
+          if (isNearTop && !isUIVisible) {
+            isHandlingScroll = true;
+            setIsUIVisible(true);
+            console.log('📖 Near top: Showing UI');
+            setTimeout(() => { isHandlingScroll = false; }, 300);
+          }
+          // Don't hide/show UI when near bottom to prevent flickering
+          setLastScrollY(currentScrollTop);
+          return;
+        }
+
+        // Only toggle UI when in the middle of content with significant scroll
         // Scrolling down - hide UI
         if (scrollDifference > scrollThreshold && currentScrollTop > 100) {
           if (isUIVisible) {
+            isHandlingScroll = true;
             setIsUIVisible(false);
             console.log('📖 Immersive mode: Hiding UI');
+            setTimeout(() => { isHandlingScroll = false; }, 300);
           }
         }
         // Scrolling up - show UI
         else if (scrollDifference < -scrollThreshold) {
           if (!isUIVisible) {
+            isHandlingScroll = true;
             setIsUIVisible(true);
             console.log('📖 Immersive mode: Showing UI');
+            setTimeout(() => { isHandlingScroll = false; }, 300);
           }
         }
 
@@ -349,11 +380,11 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
       }
     };
 
-    // Throttle scroll events for performance
+    // Throttle scroll events for performance (increased to reduce sensitivity)
     let scrollTimeout: NodeJS.Timeout;
     const throttledScroll = () => {
       clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(handleScroll, 150);
+      scrollTimeout = setTimeout(handleScroll, 200); // Increased from 150ms
     };
 
     mainContentElement.addEventListener('scroll', throttledScroll, { passive: true });
