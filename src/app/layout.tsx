@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { AuthModalProvider } from '@/contexts/AuthModalContext';
 import { GlobalNavigation } from '@/components/layout/GlobalNavigation';
 import { AuthModal } from '@/components/auth/AuthModal';
+import { AdSenseScript } from '@/components/ads';
 import { Toaster } from 'sonner';
 import "./globals.css";
 
@@ -33,6 +34,9 @@ export default async function RootLayout({
  
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <AdSenseScript />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

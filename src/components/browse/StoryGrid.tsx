@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { InFeedAd } from "@/components/ads";
 
 interface Story {
   id: string;
@@ -281,12 +282,15 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
       {/* Story Display - Card or Table View */}
       {sortedStories.length > 0 ? (
         viewMode === "card" ? (
-          /* Card View */
+          /* Card View with In-Feed Ads */
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {sortedStories.map((story) => {
+            {sortedStories.map((story, index) => {
               const imageUrl = story.hnsData?.storyImage?.url;
+              const shouldShowAd = (index + 1) % 8 === 0 && index !== sortedStories.length - 1;
 
               return (
+                <React.Fragment key={story.id}>
+                  {/* Story Card */}
               <div
                 key={story.id}
                 onClick={async () => {
@@ -350,6 +354,16 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
                 </div>
                 </div>
               </div>
+
+                  {/* In-Feed Ad - Insert after every 8 cards */}
+                  {shouldShowAd && (
+                    <InFeedAd
+                      slot="5555555555" // Replace with your actual In-feed AdSense slot ID
+                      layoutKey="-fb+5w+4e-db+86" // Get from AdSense dashboard
+                      className="col-span-1"
+                    />
+                  )}
+                </React.Fragment>
               );
             })}
           </div>
