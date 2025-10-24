@@ -29,10 +29,23 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
 
   const saveScrollPosition = React.useCallback((sceneId: string, position: number) => {
     try {
-      localStorage.setItem(scrollPositionKey(sceneId), position.toString());
-      console.log(`💾 Saved scroll position for scene ${sceneId}: ${position}px`);
+      // Only save if position is meaningful (not at top, not undefined)
+      if (position > 0 && !isNaN(position)) {
+        localStorage.setItem(scrollPositionKey(sceneId), position.toString());
+        console.log(`💾 Saved scroll position for scene ${sceneId}: ${position}px`);
+      } else if (position === 0) {
+        // Remove saved position if user scrolled back to top
+        localStorage.removeItem(scrollPositionKey(sceneId));
+        console.log(`🗑️ Cleared scroll position for scene ${sceneId} (at top)`);
+      }
     } catch (error) {
       console.warn('Failed to save scroll position:', error);
+
+      // If quota exceeded, try to clean up old scroll positions
+      if (error instanceof Error && error.name === 'QuotaExceededError') {
+        console.log('Attempting to clear old scroll positions due to quota...');
+        clearOldScrollPositions();
+      }
     }
   }, [scrollPositionKey]);
 
@@ -47,6 +60,27 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
       return 0;
     }
   }, [scrollPositionKey]);
+
+  // Clear old scroll positions to free up localStorage space
+  const clearOldScrollPositions = React.useCallback(() => {
+    try {
+      const keys = Object.keys(localStorage);
+      const scrollKeys = keys.filter(key => key.startsWith('fictures_scene_scroll_'));
+
+      // Keep only the last 50 scroll positions (most recent story)
+      const currentStoryKeys = scrollKeys.filter(key => key.includes(storyId));
+      const otherStoryKeys = scrollKeys.filter(key => !key.includes(storyId));
+
+      // Remove scroll positions from other stories
+      otherStoryKeys.forEach(key => {
+        localStorage.removeItem(key);
+      });
+
+      console.log(`🧹 Cleaned up ${otherStoryKeys.length} old scroll positions`);
+    } catch (error) {
+      console.warn('Failed to clear old scroll positions:', error);
+    }
+  }, [storyId]);
 
   const handleSceneSelect = React.useCallback((sceneId: string, chapterId: string) => {
     console.log(`🎬 Switching to scene: ${sceneId} in chapter: ${chapterId}`);
@@ -185,15 +219,58 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
       console.log(`🔄 Attempting to restore scroll position for scene ${selectedSceneId}: ${savedPosition}px`);
 
       // Wait for content to render before restoring scroll position
+      let retryCount = 0;
+      const maxRetries = 10;
+
       const restoreScrollPosition = () => {
         if (mainContentRef.current) {
-          console.log(`📦 Restoring scroll position to: ${savedPosition}px`);
-          mainContentRef.current.scrollTop = savedPosition;
-          setIsScrollRestored(true);
+          // Check if content is actually rendered by checking scrollHeight
+          const hasContent = mainContentRef.current.scrollHeight > mainContentRef.current.clientHeight;
+
+          if (hasContent || retryCount >= maxRetries) {
+            console.log(`📦 Restoring scroll position to: ${savedPosition}px (attempt ${retryCount + 1})`);
+
+            // Use smooth scroll for better UX if position is not too far
+            const shouldSmoothScroll = savedPosition > 0 && savedPosition < 3000;
+
+            if (shouldSmoothScroll) {
+              mainContentRef.current.scrollTo({
+                top: savedPosition,
+                behavior: 'smooth'
+              });
+            } else {
+              mainContentRef.current.scrollTop = savedPosition;
+            }
+
+            setIsScrollRestored(true);
+
+            // Verify restoration after smooth scroll completes
+            if (shouldSmoothScroll) {
+              setTimeout(() => {
+                if (mainContentRef.current) {
+                  const actualPosition = mainContentRef.current.scrollTop;
+                  if (Math.abs(actualPosition - savedPosition) > 10) {
+                    console.log(`📌 Fine-tuning scroll position: ${actualPosition}px → ${savedPosition}px`);
+                    mainContentRef.current.scrollTop = savedPosition;
+                  }
+                }
+              }, 300);
+            }
+          } else {
+            // Content not ready yet, retry
+            retryCount++;
+            console.log(`⏳ Content not ready, retrying... (${retryCount}/${maxRetries})`);
+            setTimeout(restoreScrollPosition, 50);
+          }
         } else {
           console.warn('⚠️ mainContentRef.current is null, retrying...');
-          // Retry after a short delay if ref is not ready
-          setTimeout(restoreScrollPosition, 50);
+          retryCount++;
+          if (retryCount < maxRetries) {
+            setTimeout(restoreScrollPosition, 50);
+          } else {
+            console.error('❌ Failed to restore scroll position after max retries');
+            setIsScrollRestored(true); // Give up and mark as restored
+          }
         }
       };
 
