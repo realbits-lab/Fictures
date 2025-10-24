@@ -80,7 +80,6 @@ export function StoryTableView({ stories }: StoryTableViewProps) {
             <TableHead>Progress</TableHead>
             <TableHead className="text-center">Readers</TableHead>
             <TableHead className="text-center">Rating</TableHead>
-            <TableHead className="text-center">Words</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -93,7 +92,7 @@ export function StoryTableView({ stories }: StoryTableViewProps) {
             return (
               <TableRow
                 key={story.id}
-                className="cursor-pointer transition-all duration-200 hover:bg-[rgb(var(--accent)/70%)] hover:scale-[1.01]"
+                className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150"
                 onClick={() => router.push(`/writing/edit/story/${story.id}`)}
               >
                 <TableCell className="font-medium">
@@ -136,11 +135,6 @@ export function StoryTableView({ stories }: StoryTableViewProps) {
                 </TableCell>
                 <TableCell className="text-center">
                   <span className="text-sm">⭐ {story.rating.toFixed(1)}</span>
-                </TableCell>
-                <TableCell className="text-center">
-                  <span className="text-sm text-[rgb(var(--muted-foreground))]">
-                    {story.wordCount ? story.wordCount.toLocaleString() : "-"}
-                  </span>
                 </TableCell>
               </TableRow>
             );

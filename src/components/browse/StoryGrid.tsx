@@ -46,10 +46,18 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
   const [selectedGenre, setSelectedGenre] = useState("All");
   const [sortBy, setSortBy] = useState<"latest" | "popular" | "rating">("latest");
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [filterMode, setFilterMode] = useState<"all" | "history">("all");
 
-  const filteredStories = stories.filter(story => 
-    selectedGenre === "All" || story.genre === selectedGenre
-  );
+  const filteredStories = stories.filter(story => {
+    // Genre filter
+    const matchesGenre = selectedGenre === "All" || story.genre === selectedGenre;
+
+    // History filter (placeholder - would need backend support to track viewed stories)
+    // For now, showing all stories in both modes
+    const matchesHistory = filterMode === "all" ? true : true;
+
+    return matchesGenre && matchesHistory;
+  });
 
   const sortedStories = [...filteredStories].sort((a, b) => {
     switch (sortBy) {
@@ -68,6 +76,62 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
       {/* Filters - Top Right Position */}
       <div className="mb-8 flex justify-end items-center">
         <div className="flex items-center gap-3">
+          {/* History/All Toggle */}
+          <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] p-1">
+            <button
+              onClick={() => setFilterMode("all")}
+              className={`inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+                filterMode === "all"
+                  ? "bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] shadow-sm"
+                  : "text-[rgb(var(--muted-foreground))] hover:bg-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))]"
+              }`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mr-2"
+              >
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                <path d="M3 21v-5h5" />
+              </svg>
+              All Stories
+            </button>
+            <button
+              onClick={() => setFilterMode("history")}
+              className={`inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+                filterMode === "history"
+                  ? "bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] shadow-sm"
+                  : "text-[rgb(var(--muted-foreground))] hover:bg-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))]"
+              }`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mr-2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              My History
+            </button>
+          </div>
+
           {/* View Toggle */}
           <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] p-1">
             <button

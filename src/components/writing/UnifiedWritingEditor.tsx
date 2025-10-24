@@ -1383,7 +1383,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => router.push('/stories')}
+                onClick={() => router.push('/writing')}
                 className="flex items-center gap-2 text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))]"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
