@@ -44,35 +44,87 @@ class CacheManager {
 
   // Get cached data with TTL validation
   getCachedData<T>(key: string, config: CacheConfig): T | undefined {
-    if (!this.isBrowser()) return undefined;
+    if (!this.isBrowser()) {
+      console.log(`[CacheManager] 🚫 getCachedData called on server for: ${key}`);
+      return undefined;
+    }
+
+    console.log(`[CacheManager] 🔍 getCachedData called for: ${key}`);
+    console.log(`[CacheManager] 📋 Cache config:`, config);
 
     try {
       const dataKey = this.getCacheKey(key);
       const timestampKey = this.getCacheKey(key, 'timestamp');
       const versionKey = this.getCacheKey(key, 'version');
 
+      console.log(`[CacheManager] 🔑 Cache keys:`, {
+        dataKey,
+        timestampKey,
+        versionKey,
+      });
+
       const data = localStorage.getItem(dataKey);
       const timestamp = localStorage.getItem(timestampKey);
       const version = localStorage.getItem(versionKey);
 
-      // Check version compatibility
-      if (config.version && version !== config.version) {
+      console.log(`[CacheManager] 📦 localStorage lookup result:`, {
+        hasData: !!data,
+        dataLength: data?.length || 0,
+        timestamp,
+        version,
+        expectedVersion: config.version,
+      });
+
+      // If no data exists, no need to check version
+      if (!data) {
+        console.log(`[CacheManager] ❌ Cache MISS for ${key}: No data in localStorage`);
+        return undefined;
+      }
+
+      // Check version compatibility only if data exists
+      if (config.version && version && version !== config.version) {
+        console.warn(`[CacheManager] ⚠️ Version mismatch for ${key}:`, {
+          cached: version,
+          expected: config.version,
+          clearing: true,
+        });
         this.clearCachedData(key);
         return undefined;
       }
 
-      // Check TTL
-      if (data && timestamp) {
-        const age = Date.now() - parseInt(timestamp);
-        if (!config.ttl || age < config.ttl) {
-          return JSON.parse(data);
-        }
+      // Check TTL (data exists at this point)
+      if (!timestamp) {
+        console.warn(`[CacheManager] ⚠️ Cache entry missing timestamp for ${key}, clearing...`);
+        this.clearCachedData(key);
+        return undefined;
       }
 
-      // Clear expired data
+      const age = Date.now() - parseInt(timestamp);
+      const isExpired = config.ttl && age >= config.ttl;
+
+      console.log(`[CacheManager] ⏰ TTL check for ${key}:`, {
+        age: `${Math.round(age / 1000)}s`,
+        ttl: config.ttl ? `${Math.round(config.ttl / 1000)}s` : 'unlimited',
+        isExpired,
+      });
+
+      if (!config.ttl || age < config.ttl) {
+        const parsedData = JSON.parse(data);
+        console.log(`[CacheManager] ✅ Cache HIT for ${key}:`, {
+          age: `${Math.round(age / 1000)}s`,
+          dataSize: `${(data.length / 1024).toFixed(2)} KB`,
+        });
+        return parsedData;
+      }
+
+      // Cache expired
+      console.warn(`[CacheManager] ⏰ Cache EXPIRED for ${key}:`, {
+        age: `${Math.round(age / 1000)}s`,
+        ttl: `${Math.round(config.ttl / 1000)}s`,
+      });
       this.clearCachedData(key);
     } catch (error) {
-      console.warn(`Failed to read cache for key: ${key}`, error);
+      console.error(`[CacheManager] ❌ Failed to read cache for key: ${key}`, error);
       this.clearCachedData(key);
     }
 
@@ -81,25 +133,63 @@ class CacheManager {
 
   // Set cached data with metadata
   setCachedData<T>(key: string, data: T, config: CacheConfig): void {
-    if (!this.isBrowser()) return;
+    if (!this.isBrowser()) {
+      console.log(`[CacheManager] 🚫 setCachedData called on server for: ${key}`);
+      return;
+    }
+
+    console.log(`[CacheManager] 💾 setCachedData called for: ${key}`);
+    console.log(`[CacheManager] 📋 Save config:`, config);
 
     try {
       const dataKey = this.getCacheKey(key);
       const timestampKey = this.getCacheKey(key, 'timestamp');
       const versionKey = this.getCacheKey(key, 'version');
 
+      const serialized = JSON.stringify(data);
+      const timestamp = Date.now().toString();
+
+      console.log(`[CacheManager] 🔑 Cache keys for save:`, {
+        dataKey,
+        timestampKey,
+        versionKey,
+      });
+
+      console.log(`[CacheManager] 📊 Data to save:`, {
+        dataSize: `${(serialized.length / 1024).toFixed(2)} KB`,
+        timestamp: new Date(parseInt(timestamp)).toISOString(),
+        version: config.version,
+        ttl: config.ttl ? `${Math.round(config.ttl / 1000)}s` : 'unlimited',
+      });
+
       // Store data with metadata
-      localStorage.setItem(dataKey, JSON.stringify(data));
-      localStorage.setItem(timestampKey, Date.now().toString());
-      
+      localStorage.setItem(dataKey, serialized);
+      localStorage.setItem(timestampKey, timestamp);
+
       if (config.version) {
         localStorage.setItem(versionKey, config.version);
       }
 
+      // Verify the save
+      const verifyData = localStorage.getItem(dataKey);
+      const verifyTimestamp = localStorage.getItem(timestampKey);
+      const verifyVersion = localStorage.getItem(versionKey);
+
+      console.log(`[CacheManager] ✅ Cache save verification:`, {
+        dataSaved: !!verifyData && verifyData === serialized,
+        timestampSaved: !!verifyTimestamp && verifyTimestamp === timestamp,
+        versionSaved: !config.version || verifyVersion === config.version,
+        key,
+      });
+
       // Trigger cache cleanup if needed
       this.cleanupCache();
     } catch (error) {
-      console.warn(`Failed to cache data for key: ${key}`, error);
+      console.error(`[CacheManager] ❌ Failed to cache data for key: ${key}`, error);
+      if (error instanceof Error && error.name === 'QuotaExceededError') {
+        console.error(`[CacheManager] 💥 localStorage quota exceeded! Attempting cleanup...`);
+        this.cleanupCache();
+      }
     }
   }
 
