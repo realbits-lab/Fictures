@@ -86,9 +86,6 @@ export async function createStory(authorId: string, data: {
     authorId,
     targetWordCount: data.targetWordCount || 50000,
     status: 'writing',
-    // Initialize bi-directional arrays
-    partIds: [],
-    chapterIds: [],
   }).returning();
 
   return story;
@@ -215,7 +212,6 @@ export async function createChapter(storyId: string, authorId: string, data: {
       orderIndex: data.orderIndex,
       targetWordCount: data.targetWordCount || 4000,
       status: 'writing',
-      sceneIds: [], // Initialize empty scene IDs
     },
     data.partId
   );
@@ -231,15 +227,12 @@ export async function createChapter(storyId: string, authorId: string, data: {
 
 // Create the first chapter for a story
 export async function createFirstChapter(storyId: string, authorId: string) {
-  // Use bi-directional lookup for faster chapter count
-  const [story] = await db.select()
-    .from(stories)
-    .where(eq(stories.id, storyId))
-    .limit(1);
-    
-  if (!story) throw new Error('Story not found');
-  
-  const nextOrderIndex = story.chapterIds.length + 1;
+  // Get current chapter count using foreign key relationship
+  const existingChapters = await db.select()
+    .from(chapters)
+    .where(eq(chapters.storyId, storyId));
+
+  const nextOrderIndex = existingChapters.length + 1;
 
   return createChapter(storyId, authorId, {
     title: `Chapter ${nextOrderIndex}`,

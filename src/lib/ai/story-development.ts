@@ -77,7 +77,7 @@ Create a story concept in YAML format following this EXACT structure (use only k
 
 ---
 title: [story title derived from user prompt]
-genre: [genre that matches the story]
+genre: [MUST be ONE of: Fantasy, Science Fiction, Romance, Mystery, Thriller, Detective, Adventure]
 words: [target word count]
 question: [central dramatic question]
 goal: [protagonist overall goal]
@@ -828,8 +828,6 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
             phase1_story: storyConcept
           }
         }),
-        partIds: [],
-        chapterIds: [],
       })
       .onConflictDoUpdate({
         target: [stories.id],
@@ -888,7 +886,6 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
           orderIndex: partSpec.part,
           targetWordCount: partWordCount,
           content: JSON.stringify(partSpec),
-          chapterIds: [],
         }
       );
       createdPartIds.push(partId);

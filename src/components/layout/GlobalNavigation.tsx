@@ -25,10 +25,6 @@ const gnbMenuItems: NavItem[] = [
   { href: "/settings", label: "Settings", icon: "⚙️" }
 ];
 
-const profileMenuItems: NavItem[] = [
-  { href: "/profile", label: "Profile", icon: "👤" }
-];
-
 export function GlobalNavigation() {
   const pathname = usePathname();
   const { data: session } = useSession();
@@ -165,25 +161,8 @@ function AuthSection() {
       
       {isDropdownOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-[rgb(var(--popover))] border border-[rgb(var(--border))] rounded-lg shadow-lg z-[70]">
-          {profileMenuItems.map((item, index) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center px-4 py-2 text-sm text-[rgb(var(--popover-foreground))] hover:bg-[rgb(var(--muted))]",
-                index === 0 && "rounded-t-lg",
-                index === profileMenuItems.length - 1 && "rounded-b-lg"
-              )}
-              onClick={() => setIsDropdownOpen(false)}
-            >
-              <span className="mr-2">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
-          <div className="border-t border-[rgb(var(--border))]">
-            <div className="px-4 py-2">
-              <SignOutButton />
-            </div>
+          <div className="px-4 py-2">
+            <SignOutButton />
           </div>
         </div>
       )}

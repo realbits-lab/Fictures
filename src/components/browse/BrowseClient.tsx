@@ -6,6 +6,7 @@ import { SkeletonLoader, Skeleton } from "@/components/ui";
 import { usePublishedStories } from "@/lib/hooks/use-page-cache";
 import { StoryGrid } from "./StoryGrid";
 import { cacheManager } from "@/lib/hooks/use-persisted-swr";
+import { AdUnit } from "@/components/ads";
 
 // Skeleton component for story cards
 function StoryCardSkeleton() {
@@ -169,8 +170,28 @@ export function BrowseClient() {
             </button>
           </div>
         ) : (
-          /* Success state with story grid */
-          <StoryGrid stories={stories} currentUserId={session?.user?.id} />
+          /* Success state with ads and story grid */
+          <>
+            {/* Above-the-fold ad - Highest priority placement */}
+            <AdUnit
+              slot="1234567890" // Replace with your actual AdSense slot ID
+              format="horizontal"
+              responsive={true}
+              className="mb-8"
+              style={{ minHeight: '90px' }} // Prevent layout shift
+            />
+
+            <StoryGrid stories={stories} currentUserId={session?.user?.id} />
+
+            {/* End-of-content ad - Medium priority placement */}
+            <AdUnit
+              slot="0987654321" // Replace with your actual AdSense slot ID
+              format="rectangle"
+              responsive={true}
+              className="mt-12 mx-auto max-w-sm"
+              style={{ minHeight: '250px' }} // Prevent layout shift
+            />
+          </>
         )}
       </div>
     </div>

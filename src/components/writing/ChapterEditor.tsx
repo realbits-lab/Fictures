@@ -298,7 +298,7 @@ export function ChapterEditor({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => router.push('/stories')}
+                  onClick={() => router.push('/writing')}
                   className="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { MainLayout } from '@/components/layout';
@@ -47,7 +47,7 @@ export default function StoryCommunityPage() {
     setShowCreateForm(true);
   });
 
-  const fetchStory = async () => {
+  const fetchStory = useCallback(async () => {
     try {
       setIsLoadingStory(true);
       const response = await fetch(`/api/community/stories/${storyId}`);
@@ -64,9 +64,9 @@ export default function StoryCommunityPage() {
     } finally {
       setIsLoadingStory(false);
     }
-  };
+  }, [storyId]);
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch(`/api/community/stories/${storyId}/posts`);
@@ -83,12 +83,12 @@ export default function StoryCommunityPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [storyId]);
 
   useEffect(() => {
     fetchStory();
     fetchPosts();
-  }, [storyId]);
+  }, [storyId, fetchStory, fetchPosts]);
 
   const handlePostCreated = () => {
     setShowCreateForm(false);

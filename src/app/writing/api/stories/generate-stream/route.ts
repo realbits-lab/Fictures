@@ -255,8 +255,6 @@ export async function POST(request: NextRequest) {
             targetWordCount: storyConcept.words || 60000,
             status: 'writing',
             content: JSON.stringify(storyConcept),
-            partIds: [],
-            chapterIds: [],
           }).returning();
 
           // Create parts
@@ -276,7 +274,6 @@ export async function POST(request: NextRequest) {
                   orderIndex: storyPart.part,
                   targetWordCount: partWordCount,
                   content: JSON.stringify(storyPart),
-                  chapterIds: [],
                 }
               );
 

@@ -86,20 +86,3 @@ export async function processScheduledPublications(): Promise<{
     failed,
   };
 }
-
-// This should be called by a cron job or background worker
-// Example: Run every 5 minutes
-export async function publishingCronJob() {
-  console.log('[Publishing] Starting automated publishing job...');
-
-  try {
-    const result = await processScheduledPublications();
-
-    console.log('[Publishing] Job completed:', result);
-
-    return result;
-  } catch (error) {
-    console.error('[Publishing] Job failed:', error);
-    throw error;
-  }
-}

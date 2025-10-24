@@ -198,7 +198,6 @@ export async function POST(request: NextRequest) {
                 characters: hnsDoc.characters,
                 settings: hnsDoc.settings,
               },
-              chapterIds: allChapters?.map((c: any) => c.chapter_id) || [],
               updatedAt: new Date(),
             })
             .where(eq(storiesTable.id, storyId));

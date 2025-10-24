@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
+import Image from 'next/image';
 import { cn } from '@/lib/utils/cn';
 import { LikeDislikeButton } from './LikeDislikeButton';
 import { CommentForm } from './CommentForm';
@@ -93,9 +94,11 @@ export function CommentItem({
         {/* User Avatar */}
         <div className="flex-shrink-0">
           {comment.userImage ? (
-            <img
+            <Image
               src={comment.userImage}
               alt={comment.userName || 'User'}
+              width={32}
+              height={32}
               className="w-8 h-8 rounded-full"
             />
           ) : (

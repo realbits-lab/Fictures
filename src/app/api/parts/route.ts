@@ -101,7 +101,6 @@ export async function POST(request: NextRequest) {
         orderIndex: validatedData.orderIndex,
         targetWordCount: validatedData.targetWordCount || 20000,
         content: validatedData.content || '',
-        chapterIds: [], // Initialize empty chapter IDs
       }
     );
 

@@ -3,10 +3,8 @@
 import Link from "next/link";
 import {
   Badge,
-  Button,
   Card,
   CardContent,
-  CardFooter,
   Progress,
 } from "@/components/ui";
 
@@ -70,8 +68,9 @@ export function StoryCard({
   };
 
   return (
-    <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1">
-      <CardContent className="space-y-4">
+    <Link href={`/writing/edit/story/${id}`} className="block h-full">
+      <Card className="h-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] hover:border-blue-400 dark:hover:border-blue-500 cursor-pointer">
+        <CardContent className="space-y-4">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <h3 className="text-lg font-semibold text-[rgb(var(--foreground))]">
@@ -120,19 +119,7 @@ export function StoryCard({
 
         </div>
       </CardContent>
-
-      <CardFooter className="flex gap-2">
-        <Link href={`/writing/edit/story/${id}`} className="flex-1">
-          <Button size="sm" className="w-full">
-            ✏️ Edit
-          </Button>
-        </Link>
-        <Link href={`/stories/${id}/stats`} className="flex-1">
-          <Button variant="secondary" size="sm" className="w-full">
-            📊 Stats
-          </Button>
-        </Link>
-      </CardFooter>
     </Card>
+    </Link>
   );
 }

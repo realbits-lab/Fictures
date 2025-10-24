@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils/cn';
 import { CommentItem } from './CommentItem';
 import { CommentForm } from './CommentForm';
@@ -14,6 +14,7 @@ interface Comment {
   parentCommentId: string | null;
   depth: number;
   likeCount: number;
+  dislikeCount: number;
   replyCount: number;
   isEdited: boolean;
   isDeleted: boolean;
@@ -41,7 +42,7 @@ export function CommentSection({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -75,11 +76,11 @@ export function CommentSection({
     } finally {
       setLoading(false);
     }
-  };
+  }, [storyId, chapterId, sceneId]);
 
   useEffect(() => {
     fetchComments();
-  }, [storyId, chapterId, sceneId]);
+  }, [fetchComments]);
 
   const handleCommentAdded = (newComment: Comment) => {
     if (newComment.parentCommentId) {

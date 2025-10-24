@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { chapters, scenes } from '@/lib/db/schema';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, asc } from 'drizzle-orm';
 import { createHash } from 'crypto';
 
 export async function GET(
@@ -18,13 +18,12 @@ export async function GET(
       .select({
         id: chapters.id,
         storyId: chapters.storyId,
-        sceneIds: chapters.sceneIds,
         status: chapters.status
       })
       .from(chapters)
       .where(eq(chapters.id, chapterId))
       .limit(1);
-    
+
     if (!chapter) {
       return NextResponse.json({ error: 'Chapter not found' }, { status: 404 });
     }
@@ -53,16 +52,12 @@ export async function GET(
       return NextResponse.json({ error: 'Chapter not available' }, { status: 403 });
     }
 
-    // Get scenes for this chapter
-    const chapterScenes = chapter.sceneIds.length > 0
-      ? await db
-          .select()
-          .from(scenes)
-          .where(inArray(scenes.id, chapter.sceneIds))
-      : [];
-
-    // Sort scenes by order index
-    chapterScenes.sort((a, b) => a.orderIndex - b.orderIndex);
+    // Get scenes for this chapter using foreign key, ordered by orderIndex
+    const chapterScenes = await db
+      .select()
+      .from(scenes)
+      .where(eq(scenes.chapterId, chapterId))
+      .orderBy(asc(scenes.orderIndex));
 
     // Extract scene images from HNS data
     const scenesWithImages = chapterScenes.map(scene => ({
