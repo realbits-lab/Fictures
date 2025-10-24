@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { InFeedAd } from "@/components/ads";
 import { trackSearch, trackStoryEvent } from '@/lib/analytics/google-analytics';
+import { readingHistoryManager } from '@/lib/storage/reading-history-manager';
 
 interface Story {
   id: string;
@@ -58,19 +59,30 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
   useEffect(() => {
     async function fetchHistory() {
       if (!session?.user?.id) {
+        // Anonymous user - use localStorage
+        const localHistory = readingHistoryManager.getHistory();
+        setReadingHistory(localHistory);
         setIsLoadingHistory(false);
         return;
       }
 
+      // Authenticated user - use API and sync with localStorage
       try {
         const response = await fetch('/reading/api/history');
         if (response.ok) {
           const data = await response.json();
           const storyIds = new Set<string>(data.history.map((h: any) => h.storyId as string));
           setReadingHistory(storyIds);
+        } else {
+          // API failed, fallback to localStorage
+          const localHistory = readingHistoryManager.getHistory();
+          setReadingHistory(localHistory);
         }
       } catch (error) {
         console.error('Error fetching reading history:', error);
+        // Fallback to localStorage
+        const localHistory = readingHistoryManager.getHistory();
+        setReadingHistory(localHistory);
       } finally {
         setIsLoadingHistory(false);
       }
@@ -81,12 +93,18 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
 
   // Record story view
   const recordStoryView = async (storyId: string, storyTitle?: string) => {
-    if (!session?.user?.id) return;
+    // Track story view in GA (always track, regardless of auth)
+    trackStoryEvent.view(storyId, storyTitle);
 
+    if (!session?.user?.id) {
+      // Anonymous user - use localStorage only
+      readingHistoryManager.addToHistory(storyId);
+      setReadingHistory(prev => new Set([...prev, storyId]));
+      return;
+    }
+
+    // Authenticated user - use API + localStorage as backup
     try {
-      // Track story view in GA
-      trackStoryEvent.view(storyId, storyTitle);
-
       const response = await fetch('/reading/api/history', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -94,11 +112,19 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
       });
 
       if (response.ok) {
-        // Add to local history state
+        // Also update localStorage as backup/cache
+        readingHistoryManager.addToHistory(storyId);
+        setReadingHistory(prev => new Set([...prev, storyId]));
+      } else {
+        // API failed, fallback to localStorage
+        readingHistoryManager.addToHistory(storyId);
         setReadingHistory(prev => new Set([...prev, storyId]));
       }
     } catch (error) {
       console.error('Error recording story view:', error);
+      // Fallback to localStorage
+      readingHistoryManager.addToHistory(storyId);
+      setReadingHistory(prev => new Set([...prev, storyId]));
     }
   };
 

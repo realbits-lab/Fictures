@@ -39,19 +39,36 @@ function StoryCardSkeleton() {
 function StoriesSkeleton() {
   return (
     <div>
-      {/* Filter Skeletons - immediately at the top */}
-      <div className="mb-8 space-y-4">
-        <div className="flex flex-wrap gap-2">
-          <Skeleton className="h-8 w-12 mr-2" />
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-8 w-20 rounded" />
-          ))}
-        </div>
-        <div className="flex gap-2">
-          <Skeleton className="h-8 w-15 mr-2" />
-          <Skeleton className="h-8 w-15" />
-          <Skeleton className="h-8 w-25" />
-          <Skeleton className="h-8 w-30" />
+      {/* Filter Skeletons - matching current responsive layout */}
+      <div className="mb-8">
+        <div className="flex flex-col md:flex-row md:justify-end items-stretch md:items-center gap-3">
+          {/* First row on mobile: History/All + View toggles */}
+          <div className="flex items-center justify-between md:justify-end gap-3">
+            {/* History/All Toggle Skeleton */}
+            <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] p-1 flex-1 md:flex-initial">
+              <Skeleton className="h-8 w-20 md:w-24 rounded" />
+              <Skeleton className="h-8 w-20 md:w-24 rounded ml-1" />
+            </div>
+
+            {/* View Toggle Skeleton */}
+            <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] p-1 flex-1 md:flex-initial">
+              <Skeleton className="h-8 w-16 md:w-20 rounded" />
+              <Skeleton className="h-8 w-16 md:w-20 rounded ml-1" />
+            </div>
+          </div>
+
+          {/* Second row on mobile: Genre + Sort selects */}
+          <div className="flex items-center justify-between md:justify-end gap-3">
+            {/* Genre Select Skeleton */}
+            <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] flex-1 md:flex-initial">
+              <Skeleton className="h-9 w-32 rounded" />
+            </div>
+
+            {/* Sort Select Skeleton */}
+            <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] flex-1 md:flex-initial">
+              <Skeleton className="h-9 w-32 rounded" />
+            </div>
+          </div>
         </div>
       </div>
 
