@@ -21,6 +21,11 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
   const [isScrollRestored, setIsScrollRestored] = useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [allScenes, setAllScenes] = useState<Array<{ scene: any; chapterId: string; chapterTitle: string; partTitle?: string }>>([]);
+
+  // Immersive reading mode state
+  const [isUIVisible, setIsUIVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
   const sidebarScrollRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
 
@@ -99,7 +104,18 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
 
     // Close sidebar on mobile after scene selection
     setIsSidebarOpen(false);
+
+    // Show UI when switching scenes
+    setIsUIVisible(true);
   }, [selectedSceneId, saveScrollPosition]);
+
+  // Toggle UI visibility on tap/click
+  const handleContentTap = React.useCallback(() => {
+    setIsUIVisible(prev => {
+      console.log(`👆 Content tapped: ${prev ? 'Hiding' : 'Showing'} UI`);
+      return !prev;
+    });
+  }, []);
 
   // Use the new SWR hook for data fetching with caching
   const {
@@ -281,7 +297,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
     }
   }, [selectedSceneId, isScrollRestored, getScrollPosition]);
 
-  // Save scroll position during scrolling
+  // Save scroll position during scrolling + Handle scroll direction for immersive mode
   useEffect(() => {
     const mainContentElement = mainContentRef.current;
     if (!mainContentElement || !selectedSceneId || !isScrollRestored) return;
@@ -289,7 +305,30 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
     const handleScroll = () => {
       if (selectedSceneId && mainContentElement && isScrollRestored) {
         const currentScrollTop = mainContentElement.scrollTop;
+
+        // Save scroll position
         saveScrollPosition(selectedSceneId, currentScrollTop);
+
+        // Handle immersive reading mode (auto-hide/show UI)
+        const scrollThreshold = 50; // Minimum scroll to trigger hide/show
+        const scrollDifference = currentScrollTop - lastScrollY;
+
+        // Scrolling down - hide UI
+        if (scrollDifference > scrollThreshold && currentScrollTop > 100) {
+          if (isUIVisible) {
+            setIsUIVisible(false);
+            console.log('📖 Immersive mode: Hiding UI');
+          }
+        }
+        // Scrolling up - show UI
+        else if (scrollDifference < -scrollThreshold) {
+          if (!isUIVisible) {
+            setIsUIVisible(true);
+            console.log('📖 Immersive mode: Showing UI');
+          }
+        }
+
+        setLastScrollY(currentScrollTop);
       }
     };
 
@@ -305,7 +344,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
       mainContentElement.removeEventListener('scroll', throttledScroll);
       clearTimeout(scrollTimeout);
     };
-  }, [selectedSceneId, isScrollRestored, saveScrollPosition]);
+  }, [selectedSceneId, isScrollRestored, saveScrollPosition, lastScrollY, isUIVisible]);
 
   // Setup non-passive wheel event listeners for independent scrolling
   useEffect(() => {
@@ -527,7 +566,9 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
   return (
     <div data-testid="chapter-reader" className="absolute inset-0 top-16 bg-white dark:bg-gray-900 flex flex-col">
       {/* Second GNB - Reading Navigation Header */}
-      <div className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+      <div className={`sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-transform duration-300 ease-in-out ${
+        isUIVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}>
         <div className="flex items-center justify-between px-4 md:px-6 py-3">
           {/* Left: Hamburger Menu (Mobile) + Story Info & Chapter Navigation */}
           <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
@@ -588,7 +629,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
         {/* Left Sidebar - Chapter Navigation */}
         <div className={`
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-          md:translate-x-0
+          ${isUIVisible ? 'md:translate-x-0' : 'md:-translate-x-full'}
           fixed md:relative
           inset-y-0 left-0
           z-50 md:z-0
@@ -686,7 +727,10 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
           }}
         >
           {selectedChapter ? (
-            <article className="max-w-4xl mx-auto px-8 py-8">
+            <article
+              className="max-w-4xl mx-auto px-8 py-8 cursor-pointer"
+              onClick={handleContentTap}
+            >
               {/* Scene Header */}
               <header className="mb-8 border-b border-gray-200 dark:border-gray-800 pb-6">
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
@@ -869,6 +913,66 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
           )}
         </div>
       </div>
+
+      {/* Sticky Bottom Navigation - Previous/Next Buttons */}
+      {(() => {
+        const currentSceneIndex = allScenes.findIndex(item => item.scene.id === selectedSceneId);
+        const prevSceneItem = currentSceneIndex > 0 ? allScenes[currentSceneIndex - 1] : null;
+        const nextSceneItem = currentSceneIndex < allScenes.length - 1 ? allScenes[currentSceneIndex + 1] : null;
+
+        return (
+          <div className={`fixed bottom-0 left-0 right-0 z-30 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 transition-transform duration-300 ease-in-out ${
+            isUIVisible ? 'translate-y-0' : 'translate-y-full'
+          }`}>
+            <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
+              {/* Previous Button - Left (Thumb Zone) */}
+              <div className="flex-1">
+                {prevSceneItem ? (
+                  <button
+                    onClick={() => handleSceneSelect(prevSceneItem.scene.id, prevSceneItem.chapterId)}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm font-medium"
+                    aria-label="Previous scene"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <span className="hidden sm:inline">Previous</span>
+                  </button>
+                ) : (
+                  <div></div>
+                )}
+              </div>
+
+              {/* Scene Counter - Center */}
+              <div className="flex-shrink-0 text-center px-4">
+                {allScenes.length > 0 && selectedSceneId && currentSceneIndex >= 0 && (
+                  <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                    {currentSceneIndex + 1} / {allScenes.length}
+                  </span>
+                )}
+              </div>
+
+              {/* Next Button - Right (Thumb Zone) */}
+              <div className="flex-1 flex justify-end">
+                {nextSceneItem ? (
+                  <button
+                    onClick={() => handleSceneSelect(nextSceneItem.scene.id, nextSceneItem.chapterId)}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors text-sm font-medium"
+                    aria-label="Next scene"
+                  >
+                    <span className="hidden sm:inline">Next</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                ) : (
+                  <div></div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
