@@ -779,13 +779,6 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
               className="max-w-4xl mx-auto px-8 py-8 pb-24 md:pb-8 cursor-pointer"
               onClick={handleContentTap}
             >
-              {/* Scene Header */}
-              <header className="mb-8 border-b border-gray-200 dark:border-gray-800 pb-6">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-                  {selectedScene ? selectedScene.title : selectedChapter.title}
-                </h1>
-              </header>
-
               {/* Scene Content */}
               <div className="prose prose-lg max-w-none" style={{ color: 'rgb(var(--foreground))' }}>
                 {scenesError ? (
