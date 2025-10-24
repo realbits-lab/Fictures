@@ -1,23 +1,14 @@
 "use client";
 
+import { useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { SkeletonLoader, Skeleton, StoryCardSkeleton } from "@/components/ui";
+import Link from 'next/link';
+import { SkeletonLoader, Skeleton, StoryCardSkeleton, Button } from "@/components/ui";
 import { useUserStories } from "@/lib/hooks/use-page-cache";
 
-import { CreateStoryCard } from "./CreateStoryCard";
 import { StoryCard } from "./StoryCard";
-
-function CreateStoryCardSkeleton() {
-  return (
-    <div className="bg-gradient-to-br from-[rgb(var(--primary)/10%)] to-[rgb(var(--primary)/15%)] rounded-xl border-2 border-dashed border-[rgb(var(--primary)/30%)] p-6">
-      <div className="text-center">
-        <Skeleton className="h-12 w-12 mx-auto mb-4 rounded-full" />
-        <Skeleton className="h-5 w-3/5 mx-auto mb-2" />
-        <Skeleton className="h-4 w-4/5 mx-auto" />
-      </div>
-    </div>
-  );
-}
+import { ViewToggle } from "./view-toggle";
+import { StoryTableView } from "./story-table-view";
 
 function StoriesSkeletonSection() {
   return (
@@ -33,7 +24,7 @@ function StoriesSkeletonSection() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <CreateStoryCardSkeleton />
+        <StoryCardSkeleton />
         <StoryCardSkeleton />
         <StoryCardSkeleton />
       </div>
@@ -43,6 +34,7 @@ function StoriesSkeletonSection() {
 
 
 export function DashboardClient() {
+  const [view, setView] = useState<"card" | "table">("card");
   const { data: session } = useSession();
   const { data, isLoading, isValidating, error, mutate: refreshStories } = useUserStories();
 
@@ -99,23 +91,35 @@ export function DashboardClient() {
               Manage and organize all your creative works
             </p>
           </div>
+          <div className="flex items-center gap-3">
+            <ViewToggle view={view} onViewChange={setView} />
+            <Link href="/writing/new">
+              <Button>
+                <span className="mr-2">📖</span>
+                Create New Story
+              </Button>
+            </Link>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <CreateStoryCard />
-          {stories.map((story: any) => (
-            <StoryCard key={story.id} {...story} />
-          ))}
-          {stories.length === 0 && (
-            <div className="col-span-full text-center py-12 text-[rgb(var(--muted-foreground))]">
-              <p className="text-xl mb-2">📝 Ready to start writing?</p>
-              <p>
-                Click the &quot;Create New Story&quot; card above to begin your
-                first story!
-              </p>
-            </div>
-          )}
-        </div>
+        {view === "card" ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {stories.map((story: any) => (
+              <StoryCard key={story.id} {...story} />
+            ))}
+            {stories.length === 0 && (
+              <div className="col-span-full text-center py-12 text-[rgb(var(--muted-foreground))]">
+                <p className="text-xl mb-2">📝 Ready to start writing?</p>
+                <p>
+                  Click the &quot;Create New Story&quot; button above to begin your
+                  first story!
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <StoryTableView stories={stories} />
+        )}
       </section>
     </div>
   );
