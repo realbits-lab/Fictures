@@ -77,9 +77,6 @@ scripts/*credential*.ts
 # Test scripts directory
 test-scripts/
 
-# Claude Code settings (local configuration)
-.claude/
-
 # Output directory
 @output/
 
