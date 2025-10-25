@@ -66,7 +66,6 @@ Extract from output and present:
 - Story ID and title
 - Genre and status (Draft/Published)
 - Structure statistics (parts, chapters, scenes, characters, settings)
-- Direct navigation links
 
 ## Response Templates
 
@@ -95,11 +94,6 @@ Generating complete story structure with:
 - 🎬 Scenes: Z
 - 👥 Characters: N (M with images)
 - 🏞️ Settings: P (Q with images)
-
-**Direct Links:**
-- 📝 Edit: http://localhost:3000/writing/[ID]
-- 📖 Read: http://localhost:3000/reading/[ID]
-- 📋 All stories: http://localhost:3000/writing
 
 The story is saved as a draft. You can edit it and publish when ready.
 ```
@@ -131,12 +125,6 @@ Generating complete story with:
 - 🎬 Scenes: Z
 - 👥 Characters: N (M with images)
 - 🏞️ Settings: P (Q with images)
-
-**Direct Links:**
-- 📝 Edit: http://localhost:3000/writing/[ID]
-- 📖 Read: http://localhost:3000/reading/[ID]
-- 🌐 Community: http://localhost:3000/community/story/[ID]
-- 📋 All stories: http://localhost:3000/writing
 
 The story is now live and visible to the community!
 ```
@@ -235,8 +223,7 @@ Response: Use detailed prompt to generate comprehensive fantasy story as draft.
 2. **Progress monitoring**: Report generation milestones
 3. **Actionable errors**: Provide solutions, not just error messages
 4. **Intent confirmation**: Clarify "create" vs "generate" if ambiguous
-5. **Complete links**: Include all relevant navigation links
-6. **Concise output**: Summarize results clearly
+5. **Concise output**: Summarize results clearly
 
 ## Advanced Prompting
 
@@ -264,18 +251,8 @@ A: Check dev server is running, verify credentials in .auth/user.json, review lo
 **Q: Images didn't generate**
 A: Image generation can fail but story still completes. Check OPENAI_API_KEY and AI_GATEWAY_API_KEY in .env.local
 
-**Q: Where can I edit the story?**
-A: Use the Edit link: http://localhost:3000/writing/{storyId}
-
 **Q: How do I publish a draft later?**
-A: Visit /writing/{storyId} and use the publish button, or run script with --publish flag
-
-## Routes Reference
-
-- **All stories**: `/writing`
-- **Edit story**: `/writing/{storyId}`
-- **Read story**: `/reading/{storyId}`
-- **Community**: `/community/story/{storyId}` (published only)
+A: Run script with --publish flag or use the publish button in the web interface
 
 ## Notes
 
