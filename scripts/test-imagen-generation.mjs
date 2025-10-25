@@ -52,7 +52,7 @@ async function testImagenGeneration() {
       providerOptions: {
         openai: {
           style: 'vivid', // 'vivid' or 'natural'
-          quality: 'hd', // 'standard' or 'hd'
+          quality: 'standard', // 'standard' or 'hd'
         },
       },
     });

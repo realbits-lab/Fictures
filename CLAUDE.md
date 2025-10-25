@@ -204,7 +204,7 @@ const result = await generateStoryImage({
   prompt: 'A mysterious forest at twilight, cinematic widescreen',
   storyId: 'story_123',
   style: 'vivid',
-  quality: 'hd',
+  quality: 'standard',
 });
 // result.url contains the Vercel Blob URL
 ```

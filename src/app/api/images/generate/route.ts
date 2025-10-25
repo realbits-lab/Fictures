@@ -154,7 +154,7 @@ export async function GET() {
         quality: {
           type: 'string',
           required: false,
-          default: 'hd',
+          default: 'standard',
           options: ['standard', 'hd'],
           description: 'Image quality level',
         },
@@ -182,7 +182,7 @@ export async function GET() {
         prompt: 'A cyberpunk city street at night with neon signs, rain-soaked pavement, cinematic widescreen composition',
         storyId: 'story_abc123',
         style: 'vivid',
-        quality: 'hd',
+        quality: 'standard',
       },
     }),
     {

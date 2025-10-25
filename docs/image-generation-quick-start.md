@@ -22,7 +22,7 @@ curl -X POST http://localhost:3000/api/images/generate \
   -d '{
     "prompt": "A mysterious forest at twilight with ancient trees, cinematic widescreen composition",
     "style": "vivid",
-    "quality": "hd"
+    "quality": "standard"
   }'
 ```
 
@@ -38,7 +38,7 @@ const response = await fetch('/api/images/generate', {
     prompt: 'Your image description here',
     storyId: 'story_123',
     style: 'vivid',
-    quality: 'hd',
+    quality: 'standard',
   }),
 });
 
@@ -86,7 +86,7 @@ const response = await fetch('/api/images/generate', {
 | `chapterId` | string | No | - | Chapter ID |
 | `sceneId` | string | No | - | Scene ID |
 | `style` | string | No | `vivid` | `vivid` or `natural` |
-| `quality` | string | No | `hd` | `hd` or `standard` |
+| `quality` | string | No | `standard` | `standard` or `hd` |
 | `autoPrompt` | boolean | No | `false` | Auto-generate prompt |
 
 *Required if `autoPrompt` is false
@@ -96,7 +96,7 @@ const response = await fetch('/api/images/generate', {
 - **Size**: 1792x1024 pixels (fixed)
 - **Aspect Ratio**: 16:9 (widescreen)
 - **Format**: PNG
-- **Quality**: HD (default) or Standard
+- **Quality**: Standard (default) or HD
 - **Storage**: Vercel Blob (public access)
 - **Generation Time**: 10-30 seconds
 

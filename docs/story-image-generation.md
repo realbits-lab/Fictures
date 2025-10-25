@@ -30,7 +30,7 @@ Generate a story illustration using DALL-E 3.
   chapterId?: string;           // Chapter ID for organization
   sceneId?: string;             // Scene ID for organization
   style?: 'vivid' | 'natural';  // Image style (default: 'vivid')
-  quality?: 'standard' | 'hd';  // Image quality (default: 'hd')
+  quality?: 'standard' | 'hd';  // Image quality (default: 'standard')
   autoPrompt?: boolean;         // Auto-generate from story (default: false)
 }
 ```
@@ -67,7 +67,7 @@ const response = await fetch('/api/images/generate', {
     prompt: 'A mysterious forest at twilight with ancient trees and glowing mushrooms, cinematic widescreen composition',
     storyId: 'story_abc123',
     style: 'vivid',
-    quality: 'hd',
+    quality: 'standard',
   }),
 });
 
@@ -109,7 +109,7 @@ const response = await fetch('/api/images/generate', {
     chapterId: 'chapter_def456',
     sceneId: 'scene_ghi789',
     style: 'vivid',
-    quality: 'hd',
+    quality: 'standard',
   }),
 });
 
@@ -185,15 +185,17 @@ console.log('Generated prompt:', prompt);
 
 ## Quality Options
 
-### HD Quality (Default)
-- Higher resolution and detail
-- Better for hero images and key scenes
-- ~2-3 MB file size
-
-### Standard Quality
+### Standard Quality (Default)
 - Good quality, faster generation
-- Suitable for secondary illustrations
+- Suitable for most illustrations
 - ~1-2 MB file size
+- Cost-effective at ~$0.04 per image
+
+### HD Quality
+- Higher resolution and detail
+- Better for hero images and key cover art
+- ~2-3 MB file size
+- Premium quality at ~$0.08 per image
 
 ## Best Practices
 

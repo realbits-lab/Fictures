@@ -28,7 +28,7 @@ export function SimpleImageGenerator({ storyId }: { storyId: string }) {
           prompt,
           storyId,
           style: 'vivid',
-          quality: 'hd',
+          quality: 'standard',
         }),
       });
 
@@ -111,7 +111,7 @@ export function AutoImageGenerator({ storyId }: { storyId: string }) {
           storyId,
           autoPrompt: true,
           style: 'vivid',
-          quality: 'hd',
+          quality: 'standard',
         }),
       });
 
@@ -180,7 +180,7 @@ export function SceneImageGenerator({
           chapterId,
           sceneId,
           style,
-          quality: 'hd',
+          quality: 'standard',
         }),
       });
 
@@ -297,7 +297,7 @@ export function QuickImageButton({ storyId }: { storyId: string }) {
           storyId,
           autoPrompt: true,
           style: 'vivid',
-          quality: 'hd',
+          quality: 'standard',
         }),
       });
 
