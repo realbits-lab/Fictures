@@ -124,7 +124,7 @@ test.describe('GNB - Home Page Tests', () => {
       await page.waitForLoadState('networkidle');
 
       // Reading menu should be visible to all
-      const readingLink = await page.locator('a[href="/reading"]').count();
+      const readingLink = await page.locator('a[href="/writing"]').count();
       expect(readingLink).toBeGreaterThan(0);
 
       // Community menu should be visible to all

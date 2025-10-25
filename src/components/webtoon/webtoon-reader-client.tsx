@@ -129,7 +129,7 @@ export function WebtoonReaderClient({ storyId, initialData }: WebtoonReaderClien
             {/* Story Info */}
             <div className="flex items-center gap-3 min-w-0 flex-1">
               <Link
-                href="/webtoon"
+                href="/comics"
                 className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 text-sm font-medium whitespace-nowrap"
               >
                 ← Back

@@ -112,7 +112,7 @@ export function WebtoonBrowse() {
         {storiesWithWebtoons.map((story) => (
           <Link
             key={story.id}
-            href={`/webtoon/${story.id}`}
+            href={`/comics/${story.id}`}
             className="group bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow"
           >
             {/* Cover Image */}

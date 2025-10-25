@@ -18,7 +18,7 @@ test.describe('GNB - Writing Page Tests', () => {
 
   test.describe('Access Control Tests', () => {
     test('TC-WRITING-AUTH-003: Writer/Manager can access page', async ({ page }) => {
-      console.log('📖 Testing writer/manager access to writing page...');
+      console.log('📖 Testing writer/manager access to novels page...');
 
       await page.goto('/writing');
       await page.waitForLoadState('networkidle');
@@ -30,7 +30,7 @@ test.describe('GNB - Writing Page Tests', () => {
       // Page should load successfully
       await expect(page.locator('body')).toBeVisible();
 
-      console.log('✅ Writer/Manager can access writing page');
+      console.log('✅ Writer/Manager can access novels page');
     });
 
     test('TC-WRITING-AUTH-005: Menu item visible for authorized users', async ({ page }) => {
@@ -42,11 +42,11 @@ test.describe('GNB - Writing Page Tests', () => {
       await page.waitForTimeout(2000);
 
       // Look for Writing menu item in navigation
-      const writingMenuItem = await page.locator('a[href="/writing"]').count();
+      const novelsMenuItem = await page.locator('a[href="/writing"]').count();
 
       // For authenticated writer/manager users, Writing menu should be visible
       // If not visible, check if user is properly authenticated
-      if (writingMenuItem > 0) {
+      if (novelsMenuItem > 0) {
         console.log('✅ Writing menu item is visible');
       } else {
         // Check what menu items are visible to help debug
@@ -68,10 +68,10 @@ test.describe('GNB - Writing Page Tests', () => {
       await page.waitForLoadState('networkidle');
 
       // Find the Writing menu link
-      const writingLink = page.locator('a[href="/writing"]').first();
+      const novelsLink = page.locator('a[href="/writing"]').first();
 
       // Check if it has active styling
-      const hasActiveClass = await writingLink.evaluate((el) => {
+      const hasActiveClass = await novelsLink.evaluate((el) => {
         const classList = Array.from(el.classList);
         const computedStyle = window.getComputedStyle(el);
         const bgColor = computedStyle.backgroundColor;
@@ -213,7 +213,7 @@ test.describe('GNB - Writing Page Tests', () => {
 
   test.describe('Performance Tests', () => {
     test('TC-WRITING-PERF-001: Page loads in under 3 seconds', async ({ page }) => {
-      console.log('📖 Testing writing page load time...');
+      console.log('📖 Testing novels page load time...');
 
       const startTime = Date.now();
       await page.goto('/writing');

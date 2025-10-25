@@ -103,6 +103,17 @@ This file provides guidance to Claude Code when working with this repository.
 
 **Next.js 15 Story Writing Platform** with the following stack:
 
+### Navigation Menu Structure
+
+**Global Navigation (GNB) Menu Items:**
+- **Writing** (✍️) - `/writing` - Story creation and management dashboard (writers/managers only)
+- **Novels** (📖) - `/novels` - Browse and read text-based stories (all users)
+- **Comics** (🎨) - `/comics` - Browse and read visual/webtoon format stories (all users)
+- **Community** (💬) - `/community` - Story sharing and discussion (all users)
+- **Publish** (📤) - `/publish` - Publish stories to community (writers/managers only)
+- **Analytics** (📊) - `/analytics` - Story performance metrics (writers/managers only)
+- **Settings** (⚙️) - `/settings` - User preferences (authenticated users)
+
 ### Core Technologies
 - **Framework**: Next.js 15 with App Router
 - **Database**: PostgreSQL (Neon) with Drizzle ORM
@@ -215,9 +226,12 @@ dotenv --file .env.local run node scripts/generate-complete-story.mjs --publish 
 - Settings (with AI-generated environment images in 16:9, 1792x1024)
 
 **Routes:**
-- All stories: `/writing`
-- Edit story: `/writing/{storyId}`
-- Read story: `/reading/{storyId}`
+- All stories (management): `/writing`
+- Edit story: `/writing/edit/story/{storyId}`
+- Browse novels (reading): `/novels`
+- Read novel: `/novels/{storyId}`
+- Browse comics (webtoon format): `/comics`
+- Read comic: `/comics/{storyId}`
 - Community view: `/community/story/{storyId}` (published stories only)
 
 **Generation Time:** 4-20 minutes depending on story size and complexity

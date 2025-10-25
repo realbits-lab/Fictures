@@ -42,7 +42,7 @@ test.describe('GNB - Reading Page Tests', () => {
       await page.waitForTimeout(1000);
 
       // Reading menu should be visible
-      const readingMenuItem = await page.locator('a[href="/reading"]:visible').count();
+      const readingMenuItem = await page.locator('a[href="/novels"]:visible').count();
       expect(readingMenuItem).toBeGreaterThan(0);
 
       console.log('✅ Reading menu item is visible');
@@ -57,7 +57,7 @@ test.describe('GNB - Reading Page Tests', () => {
       await page.waitForLoadState('networkidle');
 
       // Find the Reading menu link
-      const readingLink = page.locator('a[href="/reading"]').first();
+      const readingLink = page.locator('a[href="/novels"]').first();
 
       // Check if it has active styling
       const hasActiveClass = await readingLink.evaluate((el) => {

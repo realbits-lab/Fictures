@@ -18,8 +18,8 @@ interface NavItem {
 
 const gnbMenuItems: NavItem[] = [
   { href: "/writing", label: "Writing", icon: "✍️" },
-  { href: "/reading", label: "Reading", icon: "📚" },
-  { href: "/webtoon", label: "Webtoon", icon: "🎨" },
+  { href: "/novels", label: "Novels", icon: "📖" },
+  { href: "/comics", label: "Comics", icon: "🎨" },
   { href: "/community", label: "Community", icon: "💬" },
   { href: "/publish", label: "Publish", icon: "📤" },
   { href: "/analytics", label: "Analytics", icon: "📊" },
@@ -42,8 +42,8 @@ export function GlobalNavigation() {
       return session?.user?.role === 'writer' || session?.user?.role === 'manager';
     }
 
-    // Reading, Webtoon, and Community are visible to all users (authenticated or anonymous)
-    if (item.href === '/reading' || item.href === '/webtoon' || item.href === '/community') {
+    // Novels, Comics, and Community are visible to all users (authenticated or anonymous)
+    if (item.href === '/novels' || item.href === '/comics' || item.href === '/community') {
       return true;
     }
 
