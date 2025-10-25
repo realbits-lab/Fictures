@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { stories, parts, chapters, scenes } from '@/lib/db/schema';
-import { eq, and, asc, desc } from 'drizzle-orm';
+import { eq, and, asc, desc, inArray } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
 /**
@@ -329,21 +329,26 @@ export class RelationshipManager {
     }
 
     // For writing mode - load all scenes
+    // OPTIMIZATION: Fetch all scenes in a SINGLE query using inArray() instead of looping (fixes N+1 query problem)
     const chapterIds = allChapters.map(c => c.id);
+
+    const sceneQueryStart = Date.now();
     const allScenes = chapterIds.length > 0
       ? await db.select()
           .from(scenes)
-          .where(eq(scenes.chapterId, chapterIds[0])) // Need to use inArray for multiple IDs
-          .orderBy(asc(scenes.orderIndex))
+          .where(inArray(scenes.chapterId, chapterIds))
+          .orderBy(asc(scenes.chapterId), asc(scenes.orderIndex))
       : [];
+    const sceneQueryDuration = Date.now() - sceneQueryStart;
+    console.log(`[DB] ✅ Fetched ${allScenes.length} scenes for ${chapterIds.length} chapters in ${sceneQueryDuration}ms (single query)`);
 
-    // Get scenes for all chapters
+    // Group scenes by chapter in memory (fast in-memory operation)
     const scenesByChapter: Record<string, typeof allScenes> = {};
-    for (const chapterId of chapterIds) {
-      scenesByChapter[chapterId] = await db.select()
-        .from(scenes)
-        .where(eq(scenes.chapterId, chapterId))
-        .orderBy(asc(scenes.orderIndex));
+    for (const scene of allScenes) {
+      if (!scenesByChapter[scene.chapterId]) {
+        scenesByChapter[scene.chapterId] = [];
+      }
+      scenesByChapter[scene.chapterId].push(scene);
     }
 
     const result = {
