@@ -723,7 +723,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
         {/* Clickable overlay for hidden sidebar space on desktop */}
         {!isUIVisible && (
           <div
-            className="hidden md:block md:relative w-80 flex-shrink-0 cursor-pointer"
+            className="hidden md:block absolute inset-y-0 left-0 w-80 cursor-pointer z-10"
             onClick={handleContentTap}
             aria-label="Click to show menu"
           />
@@ -734,9 +734,9 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
           className={`
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           ${isUIVisible ? 'md:translate-x-0' : 'md:-translate-x-full'}
-          fixed md:absolute
+          fixed md:relative
           inset-y-0 left-0
-          z-50 md:z-0
+          z-50 md:z-20
           w-80 bg-gray-50 dark:bg-gray-800
           border-r border-gray-200 dark:border-gray-700
           flex flex-col h-full
