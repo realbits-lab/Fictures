@@ -8,6 +8,7 @@ import { useChapterScenes } from '@/hooks/useChapterScenes';
 import { useScenePrefetch } from '@/hooks/useScenePrefetch';
 import { ProgressIndicator } from './ProgressIndicator';
 import { CommentSection } from './CommentSection';
+import { ComicViewer } from '@/components/comic/comic-viewer';
 import type { Chapter } from '@/hooks/useStoryReader';
 import { trackReading } from '@/lib/analytics/google-analytics';
 
@@ -28,6 +29,9 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
   const [isScrollRestored, setIsScrollRestored] = useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [allScenes, setAllScenes] = useState<Array<{ scene: any; chapterId: string; chapterTitle: string; partTitle?: string }>>([]);
+
+  // View mode state (text or comic)
+  const [viewMode, setViewMode] = useState<'text' | 'comic'>('text');
 
   // Immersive reading mode state
   const [isUIVisible, setIsUIVisible] = useState(true);
@@ -561,7 +565,7 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
               Try Again
             </button>
             <Link
-              href="/reading"
+              href="/novels"
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               Back to Browse
@@ -694,7 +698,7 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
             </button>
             <div className="flex items-center gap-2 min-w-0 overflow-hidden">
               <Link
-                href="/reading"
+                href="/novels"
                 className="hidden sm:inline text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors whitespace-nowrap"
               >
                 ← Browse
@@ -714,6 +718,34 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
                 <span className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-[150px] sm:max-w-xs">
                   🎬 {selectedScene.title}
                 </span>
+              </div>
+            )}
+
+            {/* View Mode Toggle */}
+            {selectedScene && (
+              <div className="flex items-center gap-1 ml-auto">
+                <button
+                  onClick={() => setViewMode('text')}
+                  className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+                    viewMode === 'text'
+                      ? 'bg-gray-700 dark:bg-gray-600 text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                  title="Text View"
+                >
+                  📝 Text
+                </button>
+                <button
+                  onClick={() => setViewMode('comic')}
+                  className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+                    viewMode === 'comic'
+                      ? 'bg-gray-700 dark:bg-gray-600 text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                  title="Comic View"
+                >
+                  🎨 Comic
+                </button>
               </div>
             )}
           </div>
@@ -827,7 +859,7 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
           {/* Footer */}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <Link 
-              href="/reading"
+              href="/novels"
               className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
             >
               ← Back to Browse
@@ -884,29 +916,41 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
                 ) : selectedScene ? (
                   <>
                     {console.log(`📖 Rendering selected scene: ${selectedScene.title}`)}
-                    {/* Scene Image */}
-                    {selectedScene.sceneImage?.url && (
-                      <div className="mb-6">
-                        <div className="rounded-lg overflow-hidden shadow-lg">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={selectedScene.sceneImage.url}
-                            alt={`Scene: ${selectedScene.title}`}
-                            className="w-full h-auto object-contain"
-                            loading="lazy"
-                          />
-                        </div>
-                      </div>
-                    )}
 
-                    {/* Scene Content - ⚡ RENDERS IMMEDIATELY (no waiting for scroll restoration) */}
-                    <div className="whitespace-pre-wrap leading-relaxed">
-                      {selectedScene.content || (
-                        <p className="text-gray-500 dark:text-gray-400 italic">
-                          This scene is empty.
-                        </p>
-                      )}
-                    </div>
+                    {/* Conditional View Rendering */}
+                    {viewMode === 'text' ? (
+                      <>
+                        {/* Scene Image */}
+                        {selectedScene.sceneImage?.url && (
+                          <div className="mb-6">
+                            <div className="rounded-lg overflow-hidden shadow-lg">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={selectedScene.sceneImage.url}
+                                alt={`Scene: ${selectedScene.title}`}
+                                className="w-full h-auto object-contain"
+                                loading="lazy"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Scene Content - ⚡ RENDERS IMMEDIATELY (no waiting for scroll restoration) */}
+                        <div className="whitespace-pre-wrap leading-relaxed">
+                          {selectedScene.content || (
+                            <p className="text-gray-500 dark:text-gray-400 italic">
+                              This scene is empty.
+                            </p>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      /* Comic View */
+                      <ComicViewer
+                        sceneId={selectedScene.id}
+                        className="w-full"
+                      />
+                    )}
                   </>
                 ) : chapterScenes.length > 0 ? (
                   <div className="text-center py-12 text-gray-500 dark:text-gray-400">

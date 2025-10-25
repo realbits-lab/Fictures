@@ -1,177 +1,52 @@
 #!/usr/bin/env node
 
+/**
+ * Test Story Image Generation with 16:9 Ratio
+ *
+ * This script tests the story image generation with DALL-E 3 at 1792x1024 (16:9)
+ */
+
 import { config } from 'dotenv';
-import pkg from '../node_modules/@neondatabase/serverless/index.mjs';
-const { neon } = pkg;
+import { generateImage } from '../src/lib/ai/image-generator.js';
 
 // Load environment variables
 config({ path: '.env.local' });
 
-const STORY_ID = 'DvivaQJdvv8hekcrK93Pe'; // The Midnight Library of Whispers
+const testStoryId = 'test-story-' + Date.now();
+const testPrompt = 'A heartwarming story about two dogs who become best friends: Adventure, Friendship. Two dogs from different backgrounds meeting at a park and forming an unlikely bond. Themes of friendship, loyalty, and acceptance.';
 
-async function generateImagesForStory() {
-  try {
-    console.log('📚 Generating images for "The Midnight Library of Whispers"');
-    console.log('=====================================\n');
+console.log('🎨 Testing Story Image Generation with 16:9 Ratio\n');
+console.log('Story ID:', testStoryId);
+console.log('Prompt:', testPrompt.substring(0, 100) + '...\n');
 
-    // Get story data from database
-    const client = neon(process.env.POSTGRES_URL);
-
-    const story = await client`
-      SELECT * FROM stories WHERE id = ${STORY_ID}
-    `.then(res => res[0]);
-
-    if (!story) {
-      console.error('❌ Story not found');
-      return;
+try {
+  const result = await generateImage(
+    testPrompt,
+    'story',
+    testStoryId,
+    {
+      style: 'fantasy-art',
+      aspectRatio: 'landscape',
+      quality: 'high',
+      mood: 'epic and dramatic',
+      lighting: 'cinematic'
     }
+  );
 
-    console.log(`📖 Story: ${story.title}`);
-    console.log(`📝 Description: ${story.synopsis}\n`);
+  console.log('\n✅ Image Generation Result:');
+  console.log('Success:', result.success);
+  console.log('Method:', result.method);
+  console.log('Style:', result.style);
+  console.log('Image URL:', result.imageUrl);
 
-    // Get characters and settings
-    const characters = await client`
-      SELECT id, name, description FROM characters
-      WHERE story_id = ${STORY_ID}
-    `;
-
-    const settings = await client`
-      SELECT id, name, description FROM settings
-      WHERE story_id = ${STORY_ID}
-    `;
-
-    console.log(`👥 Found ${characters.length} characters`);
-    console.log(`📍 Found ${settings.length} settings\n`);
-
-    const API_KEY = 'fic_g3Nmd7FfNoDS_g3Nmd7FfNoDSCuEV3e3QhhE6yu9mRML3Gm-bGcwBA2A';
-
-    // Generate images for characters
-    for (const character of characters) {
-      console.log(`\n🎭 Generating image for character: ${character.name}`);
-      console.log(`   Description: ${character.description?.substring(0, 100)}...`);
-
-      const startTime = Date.now();
-
-      try {
-        const response = await fetch('http://localhost:3000/api/generate-image', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-API-Key': API_KEY
-          },
-          body: JSON.stringify({
-            prompt: character.description || character.name,
-            type: 'character',
-            storyId: STORY_ID,
-            internal: false
-          })
-        });
-
-        const result = await response.json();
-        const elapsed = Date.now() - startTime;
-
-        if (result.success) {
-          console.log(`   ✅ Success! (${elapsed}ms)`);
-          console.log(`   📍 Method: ${result.method}`);
-          console.log(`   🔗 Image URL: ${result.imageUrl}`);
-
-          // Update character with image URL
-          if (result.imageUrl && !result.imageUrl.includes('picsum')) {
-            await client`
-              UPDATE characters
-              SET image_url = ${result.imageUrl}
-              WHERE id = ${character.id}
-            `;
-            console.log(`   💾 Saved to database`);
-          }
-        } else {
-          console.log(`   ❌ Failed: ${result.error}`);
-        }
-      } catch (error) {
-        console.error(`   ❌ Error:`, error.message);
-      }
-    }
-
-    // Generate images for settings
-    for (const setting of settings) {
-      console.log(`\n🏛️ Generating image for setting: ${setting.name}`);
-      console.log(`   Description: ${setting.description?.substring(0, 100)}...`);
-
-      const startTime = Date.now();
-
-      try {
-        const response = await fetch('http://localhost:3000/api/generate-image', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-API-Key': API_KEY
-          },
-          body: JSON.stringify({
-            prompt: setting.description || setting.name,
-            type: 'place',
-            storyId: STORY_ID,
-            internal: false
-          })
-        });
-
-        const result = await response.json();
-        const elapsed = Date.now() - startTime;
-
-        if (result.success) {
-          console.log(`   ✅ Success! (${elapsed}ms)`);
-          console.log(`   📍 Method: ${result.method}`);
-          console.log(`   🔗 Image URL: ${result.imageUrl}`);
-
-          // Update setting with image URL
-          if (result.imageUrl && !result.imageUrl.includes('picsum')) {
-            await client`
-              UPDATE settings
-              SET image_url = ${result.imageUrl}
-              WHERE id = ${setting.id}
-            `;
-            console.log(`   💾 Saved to database`);
-          }
-        } else {
-          console.log(`   ❌ Failed: ${result.error}`);
-        }
-      } catch (error) {
-        console.error(`   ❌ Error:`, error.message);
-      }
-    }
-
-    // Check Vercel Blob storage
-    console.log('\n\n📦 Checking Vercel Blob Storage');
-    console.log('=====================================');
-
-    const updatedCharacters = await client`
-      SELECT name, image_url FROM characters
-      WHERE story_id = ${STORY_ID} AND image_url IS NOT NULL
-    `;
-
-    const updatedSettings = await client`
-      SELECT name, image_url FROM settings
-      WHERE story_id = ${STORY_ID} AND image_url IS NOT NULL
-    `;
-
-    const blobImages = [...updatedCharacters, ...updatedSettings].filter(
-      item => item.image_url && item.image_url.includes('blob.vercel-storage.com')
-    );
-
-    console.log(`✅ ${blobImages.length} images stored in Vercel Blob`);
-
-    if (blobImages.length > 0) {
-      console.log('\n📸 Generated Blob URLs:');
-      blobImages.forEach(item => {
-        console.log(`   ${item.name}: ${item.image_url}`);
-      });
-    }
-
-    console.log('\n✅ Image generation completed for "The Midnight Library of Whispers"!');
-
-  } catch (error) {
-    console.error('❌ Fatal error:', error);
-    process.exit(1);
+  if (result.method === 'dall-e-3-resized') {
+    console.log('\n✅ Image generated with DALL-E 3 at 1792x1024 and resized to 640x360 (16:9 ratio)');
+  } else if (result.method === 'placeholder') {
+    console.log('\n⚠️ Placeholder image used. This may indicate an API issue.');
   }
-}
 
-generateImagesForStory();
+  process.exit(0);
+} catch (error) {
+  console.error('❌ Error:', error.message);
+  process.exit(1);
+}

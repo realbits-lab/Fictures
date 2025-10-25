@@ -7,6 +7,7 @@ import { stories, parts, chapters, scenes, characters, places, settings, communi
 import { eq, inArray } from 'drizzle-orm';
 import { del } from '@vercel/blob';
 import { getPerformanceLogger } from '@/lib/cache/performance-logger';
+import { publishEvent, CHANNELS, type StoryDeletedEvent } from '@/lib/redis/client';
 
 export const runtime = 'nodejs';
 
@@ -110,7 +111,7 @@ export async function DELETE(
     }
 
     // Verify story exists and user owns it
-    const story = await getStoryById(id, session.user.id);
+    const story: any = await getStoryById(id, session.user.id);
     if (!story) {
       return NextResponse.json({ error: 'Story not found or access denied' }, { status: 404 });
     }
@@ -294,20 +295,43 @@ export async function DELETE(
       .where(eq(stories.id, id));
     console.log('✓ Deleted story');
 
-    // 10. Delete all images from Vercel Blob
+    // 10. Delete all images from Vercel Blob using batch deletion
     console.log(`Deleting ${imageUrls.length} images from Vercel Blob...`);
-    const deletionResults = await Promise.allSettled(
-      imageUrls.map(url => del(url).catch(err => {
-        console.error(`Failed to delete image ${url}:`, err);
-        return null;
-      }))
-    );
 
-    const successfulDeletions = deletionResults.filter(r => r.status === 'fulfilled').length;
-    const failedDeletions = deletionResults.filter(r => r.status === 'rejected').length;
-    console.log(`✓ Deleted ${successfulDeletions} images (${failedDeletions} failed)`);
+    let successfulDeletions = 0;
+    let failedDeletions = 0;
+
+    try {
+      // Batch delete all URLs at once for efficiency
+      // Vercel Blob's del() supports array of URLs
+      await del(imageUrls);
+      successfulDeletions = imageUrls.length;
+      console.log(`✓ Batch deleted ${successfulDeletions} images`);
+    } catch (error) {
+      // If batch delete fails, fall back to individual deletion
+      console.warn(`⚠️ Batch delete failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.log('🔄 Falling back to individual deletion...');
+
+      const deletionResults = await Promise.allSettled(
+        imageUrls.map(url => del(url).catch(err => {
+          console.error(`Failed to delete image ${url}:`, err);
+          return null;
+        }))
+      );
+
+      successfulDeletions = deletionResults.filter(r => r.status === 'fulfilled').length;
+      failedDeletions = deletionResults.filter(r => r.status === 'rejected').length;
+      console.log(`✓ Deleted ${successfulDeletions} images (${failedDeletions} failed)`);
+    }
 
     console.log(`✅ Successfully deleted story ${id} and all related data`);
+
+    // Publish deletion event for real-time UI updates
+    await publishEvent<StoryDeletedEvent>(CHANNELS.STORY_DELETED, {
+      storyId: id,
+      timestamp: new Date().toISOString(),
+    });
+    console.log(`📢 Published STORY_DELETED event for story ${id}`);
 
     return NextResponse.json({
       message: 'Story deleted successfully',

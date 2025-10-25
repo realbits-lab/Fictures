@@ -4,7 +4,15 @@
  */
 
 import { HNSScene, HNSStory, HNSCharacter, HNSSetting } from '@/types/hns';
-import { generateImage, type AnimationStyle, type ImageGenerationOptions } from './image-generator';
+import { generateStoryImage } from '@/lib/services/image-generation';
+
+// Animation styles compatible with DALL-E 3
+export type AnimationStyle =
+  | 'fantasy-art'
+  | 'realistic'
+  | 'watercolor'
+  | 'pixar'
+  | 'disney';
 
 /**
  * Generate an image prompt for a scene based on its content
@@ -56,32 +64,28 @@ Dramatic scene capturing the emotional peak of the moment.`;
 /**
  * Get appropriate animation style based on genre
  */
-function getStyleForGenre(genres: string[]): AnimationStyle {
+function getStyleForGenre(genre: string): AnimationStyle {
   const genreStyles: Record<string, AnimationStyle> = {
     'fantasy': 'fantasy-art',
+    'science_fiction': 'realistic',
     'sci-fi': 'realistic',
     'horror': 'realistic',
     'romance': 'watercolor',
     'thriller': 'realistic',
     'mystery': 'realistic',
+    'detective': 'realistic',
     'adventure': 'pixar',
+    'historical_fiction': 'realistic',
     'historical': 'realistic',
-    'dystopian': 'realistic',
-    'urban_fantasy': 'comic-book',
-    'anime': 'anime',
+    'contemporary': 'realistic',
+    'young_adult': 'disney',
     'children': 'disney',
-    'comedy': 'cartoon',
+    'childrens_literature': 'disney',
   };
 
   // Find matching style or default
-  for (const genre of genres) {
-    const lowerGenre = genre.toLowerCase().replace(/[- ]/g, '_');
-    if (genreStyles[lowerGenre]) {
-      return genreStyles[lowerGenre];
-    }
-  }
-
-  return 'fantasy-art';
+  const lowerGenre = genre.toLowerCase().replace(/[- ']/g, '_');
+  return genreStyles[lowerGenre] || 'fantasy-art';
 }
 
 /**
@@ -105,36 +109,22 @@ export async function generateSceneImage(
     console.log(`   Style: ${style}`);
     console.log(`   Prompt: ${prompt.substring(0, 100)}...`);
 
-    // Prepare image options based on scene
-    const imageOptions: ImageGenerationOptions = {
-      style: style,
-      quality: 'high',
-      aspectRatio: 'landscape', // Cinematic wide format for scenes
-      mood: scene.emotional_shift ?
-        `transitioning from ${scene.emotional_shift.from} to ${scene.emotional_shift.to}` :
-        'dramatic',
-      lighting: getSceneLighting(scene),
-      cameraAngle: 'wide establishing shot'
-    };
-
-    // Use the existing Gemini image generator
-    const result = await generateImage(
+    // Generate image with DALL-E 3 and optimization
+    const result = await generateStoryImage({
       prompt,
-      'scene',
       storyId,
-      imageOptions
-    );
+      imageType: 'scene',
+      style: style === 'fantasy-art' ? 'vivid' : 'natural',
+      quality: 'standard',
+    });
 
-    if (result.success && result.imageUrl) {
-      console.log(`   ✅ Scene image generated: ${result.imageUrl}`);
-      return {
-        url: result.imageUrl,
-        prompt,
-        style
-      };
-    } else {
-      throw new Error(result.error || 'Failed to generate image');
-    }
+    console.log(`   ✅ Scene image generated: ${result.url}`);
+    console.log(`   ✅ Optimized variants: ${result.optimizedSet?.variants.length || 0}`);
+    return {
+      url: result.url,
+      prompt,
+      style
+    };
 
   } catch (error) {
     console.error(`❌ Failed to generate image for scene ${scene.scene_id}:`, error);

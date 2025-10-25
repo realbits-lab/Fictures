@@ -69,7 +69,7 @@ export function FeaturedStory({ initialStory }: FeaturedStoryProps) {
                     Start Reading
                   </Button>
                 </Link>
-                <Link href="/reading" className="flex-1">
+                <Link href="/novels" className="flex-1">
                   <Button variant="outline" className="w-full py-3 px-6 rounded-lg">
                     Browse More Stories
                   </Button>

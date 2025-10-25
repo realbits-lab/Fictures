@@ -45,7 +45,7 @@ export async function GET(
     }
 
     // Check access permissions (already handled in cached query, but verify)
-    if (!session?.user?.id || (sceneData.story?.authorId !== session.user.id && sceneData.story?.status !== 'published')) {
+    if (!session?.user?.id || ((sceneData as any).story?.authorId !== session.user.id && (sceneData as any).story?.status !== 'published')) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -62,15 +62,15 @@ export async function GET(
     return new NextResponse(JSON.stringify({
       scene: {
         ...sceneData,
-        chapter: sceneData.chapter ? {
-          id: sceneData.chapter.id,
-          title: sceneData.chapter.title,
-          storyId: sceneData.chapter.storyId
+        chapter: (sceneData as any).chapter ? {
+          id: (sceneData as any).chapter.id,
+          title: (sceneData as any).chapter.title,
+          storyId: (sceneData as any).chapter.storyId
         } : undefined,
-        story: sceneData.story ? {
-          id: sceneData.story.id,
-          title: sceneData.story.title,
-          authorId: sceneData.story.authorId
+        story: (sceneData as any).story ? {
+          id: (sceneData as any).story.id,
+          title: (sceneData as any).story.title,
+          authorId: (sceneData as any).story.authorId
         } : undefined
       }
     }), { status: 200, headers });

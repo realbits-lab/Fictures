@@ -1,16 +1,14 @@
 "use client";
 
 import Link from 'next/link';
+import { STORY_GENRES, getGenreMetadata } from '@/lib/constants/genres';
 
-const genres = [
-  { name: 'Fantasy', icon: '🧙', gradient: 'from-purple-500 to-pink-500', count: 0 },
-  { name: 'Science Fiction', icon: '🚀', gradient: 'from-blue-500 to-cyan-500', count: 0 },
-  { name: 'Romance', icon: '💖', gradient: 'from-pink-500 to-rose-500', count: 0 },
-  { name: 'Mystery', icon: '🔍', gradient: 'from-indigo-500 to-purple-500', count: 0 },
-  { name: 'Detective', icon: '🕵️', gradient: 'from-gray-700 to-gray-900', count: 0 },
-  { name: 'Adventure', icon: '🗺️', gradient: 'from-green-500 to-emerald-500', count: 0 },
-  { name: 'Thriller', icon: '⚡', gradient: 'from-red-500 to-orange-500', count: 0 },
-];
+const genres = STORY_GENRES.map(name => ({
+  name,
+  icon: getGenreMetadata(name).icon,
+  gradient: getGenreMetadata(name).gradient,
+  count: 0
+}));
 
 interface GenreBrowserProps {
   genreCounts?: Record<string, number>;
@@ -70,7 +68,7 @@ export function GenreBrowser({ genreCounts = {} }: GenreBrowserProps) {
         {/* Browse All Link */}
         <div className="text-center mt-10">
           <Link
-            href="/reading"
+            href="/novels"
             className="inline-flex items-center text-[rgb(var(--primary))] hover:underline text-lg font-medium"
           >
             Browse All Stories

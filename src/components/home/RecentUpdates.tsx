@@ -97,7 +97,7 @@ export function RecentUpdates({ updates }: RecentUpdatesProps) {
         {/* View All Updates Link */}
         <div className="text-center mt-10">
           <Link
-            href="/reading"
+            href="/novels"
             className="inline-flex items-center text-[rgb(var(--primary))] hover:underline text-lg font-medium"
           >
             See All Updates

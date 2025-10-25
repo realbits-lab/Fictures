@@ -5,6 +5,7 @@
  */
 
 import { z } from "zod";
+import { STORY_GENRES } from "@/lib/constants/genres";
 
 // ============================================
 // ZOD SCHEMAS - Single Source of Truth
@@ -23,9 +24,9 @@ export const HNSStorySchema = z.object({
   /** The working or final title of the story */
   story_title: z.string().describe("The working or final title of the story"),
 
-  /** Array specifying primary and secondary genres (e.g., ['urban_fantasy', 'thriller']) */
-  genre: z.array(z.string()).min(1).max(3)
-    .describe("Primary and secondary genres informing stylistic choices in text and image generation"),
+  /** Single genre classification from predefined list (e.g., 'Fantasy', 'Science Fiction') */
+  genre: z.enum(STORY_GENRES)
+    .describe("Single genre classification informing stylistic choices in text and image generation"),
 
   /** Single succinct sentence (under 20 words) encapsulating the entire novel */
   premise: z.string().max(200)
@@ -524,7 +525,7 @@ export function createEmptyStory(id: string): HNSStory {
   return {
     story_id: id,
     story_title: '',
-    genre: [],
+    genre: [] as any,
     premise: '',
     dramatic_question: '',
     theme: '',

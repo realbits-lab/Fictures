@@ -214,19 +214,6 @@ function generatePlaceholder(
 }
 
 /**
- * Resize image to 640x360 (16:9 ratio) using Sharp
- */
-async function resizeImageTo640x360(imageBuffer: Buffer): Promise<Buffer> {
-  return await sharp(imageBuffer)
-    .resize(640, 360, {
-      fit: 'cover',
-      position: 'center'
-    })
-    .png()
-    .toBuffer();
-}
-
-/**
  * Upload image data to Vercel Blob storage
  */
 async function uploadToBlob(
@@ -234,7 +221,7 @@ async function uploadToBlob(
   storyId: string,
   type: string
 ): Promise<string> {
-  const imageFileName = `stories/${storyId}/${type}s/${nanoid()}.png`;
+  const imageFileName = `stories/${storyId}/${type}/${nanoid()}.png`;
   const blob = await put(imageFileName, imageData, {
     access: 'public',
     contentType: 'image/png',
@@ -243,12 +230,11 @@ async function uploadToBlob(
 }
 
 /**
- * Generate an image using DALL-E 3 and resize to 640x360.
+ * Generate an image using DALL-E 3 at 16:9 ratio (1792x1024).
  *
  * IMAGE GENERATION PROCESS:
  * 1. Generate image using DALL-E 3 at 1792x1024 (16:9 ratio)
- * 2. Resize/crop to 640x360 using Sharp
- * 3. Upload resized image to Vercel Blob storage
+ * 2. Upload original high-quality image to Vercel Blob storage
  *
  * @param prompt - Image generation prompt
  * @param type - Image type (character/setting/scene/story)
@@ -272,37 +258,34 @@ export async function generateImage(
 
     // Try DALL-E 3 with 16:9 ratio (1792x1024)
     try {
-      console.log('🔄 Attempting DALL-E 3 image generation at 1792x1024...');
+      console.log('🔄 Attempting DALL-E 3 image generation at 1792x1024 (16:9)...');
 
       const result = await experimental_generateImage({
         model: openai.image('dall-e-3'),
         prompt: enhancedPrompt,
         size: '1792x1024',
         // @ts-ignore - quality property may not be in type definition
-        quality: options.quality === 'ultra' ? 'hd' : 'standard',
+        quality: 'standard',
       });
 
       if (result.image) {
-        console.log('✅ DALL-E 3 image generated, resizing to 640x360...');
+        console.log('✅ DALL-E 3 image generated at 1792x1024, uploading...');
 
         // Convert base64 to buffer
         const imageBuffer = Buffer.from(result.image.base64, 'base64');
 
-        // Resize to 640x360
-        const resizedBuffer = await resizeImageTo640x360(imageBuffer);
-
-        // Upload resized image to Vercel Blob
+        // Upload original high-quality image to Vercel Blob (no resizing)
         const imageUrl = await uploadToBlob(
-          resizedBuffer,
+          imageBuffer,
           storyId,
           type
         );
 
-        console.log('✅ Image resized and uploaded:', imageUrl);
+        console.log('✅ Image uploaded at original 16:9 ratio (1792x1024):', imageUrl);
         return {
           success: true,
           imageUrl,
-          method: 'dall-e-3-resized',
+          method: 'dall-e-3',
           style: options.style,
         };
       }

@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       if (story) {
         finalPrompt = buildStoryImagePrompt({
           title: story.title,
-          description: story.logline || story.description || undefined,
+          description: story.description || undefined,
           genre: story.genre || undefined,
         });
 

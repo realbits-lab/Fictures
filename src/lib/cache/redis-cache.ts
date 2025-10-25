@@ -122,7 +122,9 @@ class RedisCache {
 
         if (this.memoryCache.size > 1000) {
           const firstKey = this.memoryCache.keys().next().value;
-          this.memoryCache.delete(firstKey);
+          if (firstKey) {
+            this.memoryCache.delete(firstKey);
+          }
         }
       }
 

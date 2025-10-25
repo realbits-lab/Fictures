@@ -16,9 +16,7 @@ import {
   generateCompleteHNS,
   generateSettingImagePrompt,
 } from "@/lib/ai/hns-generator";
-import { generateText } from "ai";
-import { gateway } from "@ai-sdk/gateway";
-import { IMAGE_GENERATION_MODEL } from "@/lib/ai/config";
+import { generateStoryImage } from "@/lib/services/image-generation";
 import { put } from "@vercel/blob";
 
 // Helper function to save Gemini generated images to Vercel Blob
@@ -53,7 +51,7 @@ async function saveImageToStorage(
     // Create filename with story ID and type
     const safeName = name || 'unnamed';
     const sanitizedName = safeName.replace(/[^a-zA-Z0-9_-]/g, '_');
-    const imageFileName = `${storyId}/${type}s/${sanitizedName}_${nanoid()}.png`;
+    const imageFileName = `stories/${storyId}/${type}/${sanitizedName}_${nanoid()}.png`;
 
     // Upload to Vercel Blob
     const blob = await put(imageFileName, Buffer.from(bytes), {
@@ -216,57 +214,65 @@ export async function POST(request: NextRequest) {
                 console.log(`🔍 Processing character:`, character);
                 const imagePrompt = generateCharacterImagePrompt(character);
 
-                let imageUrl = null;
+                // Generate image with automatic fallback to placeholder on failure
+                const result = await generateStoryImage({
+                  prompt: imagePrompt,
+                  storyId: storyId,
+                  imageType: 'character',
+                  style: 'vivid',
+                  quality: 'standard',
+                });
 
-                // Generate image using Google Gemini with 16:9 aspect ratio
-                // Note: aspectRatio needs to be specified in the prompt for gateway models
-                try {
-                  const result = await generateText({
-                    model: gateway(IMAGE_GENERATION_MODEL),
-                    prompt: `${imagePrompt}\n\nGenerate the image in 16:9 aspect ratio (widescreen format).`,
-                  });
+                // generateStoryImage now ALWAYS returns a valid result (real or placeholder)
+                const imageUrl = result.url;
+                const optimizedSet = result.optimizedSet;
+                const isPlaceholder = result.isPlaceholder || false;
 
-                  // Check if the result contains generated image files
-                  if (result.files) {
-                    const files = result.files;
-                    if (files.length > 0) {
-                      console.log(
-                        `Generated image for character ${character.name}:`,
-                        files[0]
-                      );
-                      imageUrl = await saveImageToStorage(
-                        files[0],
-                        storyId,
-                        'character',
-                        character.name
-                      );
-                    }
-                  }
-                } catch (imageError) {
-                  console.log(
-                    `Image generation skipped for ${character.name}:`,
-                    imageError instanceof Error ? imageError.message : String(imageError)
-                  );
+                console.log(`✅ Image for character ${character.name}:`, imageUrl);
+                if (optimizedSet) {
+                  console.log(`✅ Optimized variants: ${optimizedSet.variants.length}`);
+                } else if (isPlaceholder) {
+                  console.log(`⚠️  Using placeholder image (generation failed)`);
                 }
 
-                // Update existing character with image URL if generated
-                if (imageUrl) {
-                  await db.update(charactersTable)
-                    .set({ imageUrl })
-                    .where(eq(charactersTable.name, character.name));
-                }
+                // CRITICAL: ALWAYS update database with valid imageUrl (never null)
+                await db.update(charactersTable)
+                  .set({
+                    imageUrl,                          // Never null - always real or placeholder
+                    imageVariants: (optimizedSet as unknown as Record<string, unknown>) || null,  // May be null for placeholders
+                  })
+                  .where(eq(charactersTable.name, character.name));
 
                 return {
                   characterId: character.character_id,
                   name: character.name,
                   imageUrl,
+                  isPlaceholder,  // Flag to identify placeholders for later regeneration
                 };
               } catch (error) {
+                // This should rarely happen now (generateStoryImage handles errors internally)
+                // But keep as safety net - return a result with hardcoded placeholder
                 console.error(
-                  `Error generating image for character ${character.name}:`,
+                  `Unexpected error processing character ${character.name}:`,
                   error
                 );
-                return null;
+
+                const fallbackUrl = 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/character-default.png';
+
+                // Even in catastrophic failure, ensure database gets a valid URL
+                await db.update(charactersTable)
+                  .set({
+                    imageUrl: fallbackUrl,
+                    imageVariants: null,
+                  })
+                  .where(eq(charactersTable.name, character.name));
+
+                return {
+                  characterId: character.character_id,
+                  name: character.name,
+                  imageUrl: fallbackUrl,
+                  isPlaceholder: true,
+                };
               }
             }
           );
@@ -287,54 +293,62 @@ export async function POST(request: NextRequest) {
                 console.log(`🔍 Processing setting:`, setting);
                 const imagePrompt = generateSettingImagePrompt(setting);
 
-                let imageUrl = null;
+                // Generate image with automatic fallback to placeholder on failure
+                const result = await generateStoryImage({
+                  prompt: imagePrompt,
+                  storyId: storyId,
+                  imageType: 'setting',
+                  style: 'vivid',
+                  quality: 'standard',
+                });
 
-                // Generate image using Google Gemini with 16:9 aspect ratio
-                // Note: aspectRatio needs to be specified in the prompt for gateway models
-                try {
-                  const result = await generateText({
-                    model: gateway(IMAGE_GENERATION_MODEL),
-                    prompt: `${imagePrompt}\n\nGenerate the image in 16:9 aspect ratio (widescreen format).`,
-                  });
+                // generateStoryImage now ALWAYS returns a valid result (real or placeholder)
+                const imageUrl = result.url;
+                const optimizedSet = result.optimizedSet;
+                const isPlaceholder = result.isPlaceholder || false;
 
-                  // Check if the result contains generated image files
-                  if (result.files) {
-                    const files = result.files;
-                    if (files.length > 0) {
-                      console.log(
-                        `Generated image for setting ${setting.name}:`,
-                        files[0]
-                      );
-                      imageUrl = await saveImageToStorage(
-                        files[0],
-                        storyId,
-                        'setting',
-                        setting.name
-                      );
-                    }
-                  }
-                } catch (imageError) {
-                  console.log(
-                    `Image generation skipped for ${setting.name}:`,
-                    imageError instanceof Error ? imageError.message : String(imageError)
-                  );
+                console.log(`✅ Image for setting ${setting.name}:`, imageUrl);
+                if (optimizedSet) {
+                  console.log(`✅ Optimized variants: ${optimizedSet.variants.length}`);
+                } else if (isPlaceholder) {
+                  console.log(`⚠️  Using placeholder image (generation failed)`);
                 }
 
-                // Update existing setting with image URL if generated
-                if (imageUrl) {
-                  await db.update(settingsTable)
-                    .set({ imageUrl })
-                    .where(eq(settingsTable.name, setting.name));
-                }
+                // CRITICAL: ALWAYS update database with valid imageUrl (never null)
+                await db.update(settingsTable)
+                  .set({
+                    imageUrl,                          // Never null - always real or placeholder
+                    imageVariants: (optimizedSet as unknown as Record<string, unknown>) || null,  // May be null for placeholders
+                  })
+                  .where(eq(settingsTable.name, setting.name));
 
                 return {
                   settingId: setting.setting_id,
                   name: setting.name,
                   imageUrl,
+                  isPlaceholder,  // Flag to identify placeholders for later regeneration
                 };
               } catch (error) {
-                console.error(`Error generating image for setting ${setting.name}:`, error);
-                return null;
+                // This should rarely happen now (generateStoryImage handles errors internally)
+                // But keep as safety net - return a result with hardcoded placeholder
+                console.error(`Unexpected error processing setting ${setting.name}:`, error);
+
+                const fallbackUrl = 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/setting-visual.png';
+
+                // Even in catastrophic failure, ensure database gets a valid URL
+                await db.update(settingsTable)
+                  .set({
+                    imageUrl: fallbackUrl,
+                    imageVariants: null,
+                  })
+                  .where(eq(settingsTable.name, setting.name));
+
+                return {
+                  settingId: setting.setting_id,
+                  name: setting.name,
+                  imageUrl: fallbackUrl,
+                  isPlaceholder: true,
+                };
               }
             }
           );

@@ -27,10 +27,10 @@ test.describe('GNB - Home Page Tests', () => {
         await page.waitForLoadState('networkidle');
         await page.waitForTimeout(500);
 
-        // Home page (/) redirects to /reading, so verify we end up there
+        // Home page (/) redirects to /novels, so verify we end up there
         const currentUrl = page.url();
-        expect(currentUrl.includes('/reading')).toBe(true);
-        console.log('✅ Logo navigation works correctly (redirects to /reading)');
+        expect(currentUrl.includes('/novels')).toBe(true);
+        console.log('✅ Logo navigation works correctly (redirects to /novels)');
       } else {
         console.log('ℹ️  Home link not found, skipping test');
       }
@@ -43,15 +43,15 @@ test.describe('GNB - Home Page Tests', () => {
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(500);
 
-      // Home page redirects to /reading for anonymous users
-      // Verify we end up on a valid page (reading)
+      // Home page redirects to /novels for anonymous users
+      // Verify we end up on a valid page (novels)
       const currentUrl = page.url();
-      expect(currentUrl.includes('/reading')).toBe(true);
+      expect(currentUrl.includes('/novels')).toBe(true);
 
       // Check page loads successfully
       await expect(page.locator('body')).toBeVisible();
 
-      console.log('✅ Home page loads without authentication (redirects to /reading)');
+      console.log('✅ Home page loads without authentication (redirects to /novels)');
     });
 
     test('TC-HOME-NAV-003: Logo is highlighted when on home page', async ({ page }) => {
@@ -124,7 +124,7 @@ test.describe('GNB - Home Page Tests', () => {
       await page.waitForLoadState('networkidle');
 
       // Reading menu should be visible to all
-      const readingLink = await page.locator('a[href="/reading"]').count();
+      const readingLink = await page.locator('a[href="/studio"]').count();
       expect(readingLink).toBeGreaterThan(0);
 
       // Community menu should be visible to all
@@ -143,13 +143,13 @@ test.describe('GNB - Home Page Tests', () => {
       // Wait a bit for menu to fully render
       await page.waitForTimeout(1000);
 
-      // Check that Writing, Publish, Analytics are NOT visible
-      const writingVisible = await page.locator('a[href="/writing"]:visible').count();
+      // Check that Studio, Publish, Analytics are NOT visible
+      const writingVisible = await page.locator('a[href="/studio"]:visible').count();
       const publishVisible = await page.locator('a[href="/publish"]:visible').count();
       const analyticsVisible = await page.locator('a[href="/analytics"]:visible').count();
 
       // These should be 0 for anonymous users
-      console.log(`Writing links visible: ${writingVisible}`);
+      console.log(`Studio links visible: ${writingVisible}`);
       console.log(`Publish links visible: ${publishVisible}`);
       console.log(`Analytics links visible: ${analyticsVisible}`);
 

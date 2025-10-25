@@ -6,7 +6,6 @@ import { SkeletonLoader, Skeleton } from "@/components/ui";
 import { usePublishedStories } from "@/lib/hooks/use-page-cache";
 import { StoryGrid } from "./StoryGrid";
 import { cacheManager } from "@/lib/hooks/use-persisted-swr";
-import { AdUnit } from "@/components/ads";
 
 // Skeleton component for story cards
 function StoryCardSkeleton() {
@@ -40,7 +39,7 @@ function StoriesSkeleton() {
   return (
     <div>
       {/* Filter Skeletons - matching current responsive layout */}
-      <div className="mb-8">
+      <div className="mb-10">
         <div className="flex flex-col md:flex-row md:justify-end items-stretch md:items-center gap-3">
           {/* First row on mobile: History/All + View toggles */}
           <div className="flex items-center justify-between md:justify-end gap-3">
@@ -86,6 +85,7 @@ export function BrowseClient() {
   const { data: session } = useSession();
   const { data, isLoading, isValidating, error, mutate } = usePublishedStories();
   const [showCacheInfo, setShowCacheInfo] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
 
   // Performance tracking
   const mountTimeRef = useRef<number>(Date.now());
@@ -97,6 +97,11 @@ export function BrowseClient() {
 
   // Get cache health status
   const cacheHealth = cacheManager.getCacheHealth('reading');
+
+  // Fix hydration mismatch by ensuring first render matches server
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   // Track component lifecycle
   useEffect(() => {
@@ -179,8 +184,8 @@ export function BrowseClient() {
   }, [error, stories.length]);
 
   return (
-    <div className="min-h-screen bg-[rgb(var(--background))]">      
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-[rgb(var(--background))]">
+      <div className="container mx-auto px-4 pt-1 pb-8">
         {/* Background validation indicator in top right */}
         {isValidating && !isLoading && (
           <div className="fixed top-20 right-4 z-50 bg-[rgb(var(--background))] rounded-lg shadow-lg border border-[rgb(var(--border))] px-3 py-2">
@@ -251,7 +256,8 @@ export function BrowseClient() {
         {/* Show skeleton loading while fetching */}
         {/* ⚡ OPTIMIZATION: Only show skeleton if NO data exists (not cached, not fresh) */}
         {/* If cached data exists, show it immediately even while revalidating */}
-        {(isLoading && stories.length === 0) ? (
+        {/* Fix hydration: always show skeleton on first render if no data */}
+        {(!hasMounted || (isLoading && stories.length === 0)) ? (
           <SkeletonLoader>
             <StoriesSkeleton />
           </SkeletonLoader>
@@ -274,28 +280,8 @@ export function BrowseClient() {
             </button>
           </div>
         ) : (
-          /* Success state with ads and story grid */
-          <>
-            {/* Above-the-fold ad - Highest priority placement */}
-            <AdUnit
-              slot="3378048398" // Replace with your actual AdSense slot ID
-              format="horizontal"
-              responsive={true}
-              className="mb-8"
-              style={{ minHeight: '90px' }} // Prevent layout shift
-            />
-
-            <StoryGrid stories={stories} currentUserId={session?.user?.id} />
-
-            {/* End-of-content ad - Medium priority placement */}
-            <AdUnit
-              slot="9841145270" // Replace with your actual AdSense slot ID
-              format="rectangle"
-              responsive={true}
-              className="mt-12 mx-auto max-w-sm"
-              style={{ minHeight: '250px' }} // Prevent layout shift
-            />
-          </>
+          /* Success state with story grid */
+          <StoryGrid stories={stories} currentUserId={session?.user?.id} />
         )}
       </div>
     </div>

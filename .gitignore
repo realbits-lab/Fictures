@@ -74,8 +74,8 @@ auth-data.json
 scripts/*password*.ts
 scripts/*credential*.ts
 
-# Claude Code settings (local configuration)
-.claude/
+# Test scripts directory
+test-scripts/
 
 # Output directory
 @output/

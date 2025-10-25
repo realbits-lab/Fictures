@@ -332,11 +332,49 @@ const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 - Shows: [Chapter X of Y] [Page scroll %]
 - Minimal, non-intrusive design
 
-#### 2. Bottom Action Bar (Mobile Only)
-Fixed bottom bar with key actions:
+#### 2. Bottom Navigation Bar
+**Status:** ✅ IMPLEMENTED
+
+**Implementation:** Bottom navigation bar is always visible on ALL screen sizes (not just mobile).
+
+**Design Decision:**
+- Originally spec'd as "Mobile Only"
+- Implemented as "Always Visible" for consistent UX across devices
+- Provides persistent access to navigation controls
+
+**Current Behavior:**
 ```
-[← Prev Chapter] [Comments (5)] [Next Chapter →]
+[← Prev Scene] [Scene 1 / 5] [Next Scene →]
 ```
+
+**Key Features:**
+- **Position:** Fixed at bottom, translucent background with backdrop blur
+- **Visibility:** Always visible, does not hide on scroll (unlike top GNB)
+- **Desktop:** Always visible (changed from original immersive mode behavior)
+- **Mobile:** Always visible (unchanged)
+- **Touch targets:** Optimized for mobile (44x44px minimum)
+
+**Rationale for Always-Visible:**
+1. **Consistent experience** across all devices
+2. **Always accessible** - no scroll/tap needed
+3. **Bottom position** doesn't obstruct content
+4. **Essential navigation** controls always available
+
+**Immersive Mode:**
+- Top GNB (story/scene title bar): Hides on scroll down, shows on scroll up
+- Bottom Navigation: Always visible regardless of scroll
+- This provides reading focus while maintaining navigation access
+
+**Implementation Details:**
+- File: `src/components/reading/ChapterReaderClient.tsx:917`
+- Removed conditional `isUIVisible` logic for bottom nav
+- Simplified to static fixed positioning
+- z-index layering ensures proper stacking with sidebar
+
+**Test Coverage:**
+- Automated test: `scripts/test-bottom-nav-always-visible.mjs`
+- Verified: Visible on desktop/mobile, before/after scroll
+- No flickering or visual glitches
 
 #### 3. Gesture Support
 - Swipe left/right: Navigate between chapters

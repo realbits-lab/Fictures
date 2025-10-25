@@ -6,6 +6,10 @@ import Link from "next/link";
 import { CommunityStoryCard } from "@/components/community/CommunityStoryCard";
 import { Skeleton } from "@/components/ui";
 import { useCommunityStories } from '@/lib/hooks/use-page-cache';
+import { useCommunityEvents } from '@/lib/hooks/use-community-events';
+import { toast } from 'sonner';
+import { useCallback, useState } from 'react';
+import type { StoryPublishedEvent, StoryUpdatedEvent, PostCreatedEvent } from '@/lib/redis/client';
 
 interface CommunityStory {
   id: string;
@@ -35,12 +39,15 @@ interface CommunityStats {
 }
 
 export default function CommunityPage() {
+  const [newStoryCount, setNewStoryCount] = useState(0);
+  const [recentlyPublishedStories, setRecentlyPublishedStories] = useState<string[]>([]);
+
   // Helper function for formatting relative time
   const formatRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
+
     if (diffInHours < 1) return 'Just now';
     if (diffInHours < 24) return `${diffInHours}h ago`;
     if (diffInHours < 48) return '1 day ago';
@@ -49,6 +56,52 @@ export default function CommunityPage() {
 
   // Enhanced SWR hook with localStorage caching
   const { data, error, isLoading, isValidating } = useCommunityStories();
+
+  // Handle real-time story published events
+  const handleStoryPublished = useCallback((event: StoryPublishedEvent) => {
+    console.log('📚 New story published in real-time:', event.title);
+
+    // Show toast notification with action
+    toast.success(`New story published: ${event.title}`, {
+      description: event.genre ? `Genre: ${event.genre}` : undefined,
+      duration: 5000,
+      action: {
+        label: 'View',
+        onClick: () => {
+          window.location.href = `/community/story/${event.storyId}`;
+        },
+      },
+    });
+
+    // Increment new story counter
+    setNewStoryCount(prev => prev + 1);
+
+    // Add to recently published list
+    setRecentlyPublishedStories(prev => [event.storyId, ...prev].slice(0, 5));
+  }, []);
+
+  // Handle story updated events
+  const handleStoryUpdated = useCallback((event: StoryUpdatedEvent) => {
+    console.log('📝 Story updated in real-time:', event.storyId);
+  }, []);
+
+  // Handle post created events
+  const handlePostCreated = useCallback((event: PostCreatedEvent) => {
+    console.log('💬 New post created:', event.title);
+
+    // Show subtle notification for new posts
+    toast.info(`New discussion: ${event.title}`, {
+      duration: 3000,
+    });
+  }, []);
+
+  // Connect to SSE for real-time updates
+  const { isConnected, error: sseError } = useCommunityEvents({
+    onStoryPublished: handleStoryPublished,
+    onStoryUpdated: handleStoryUpdated,
+    onPostCreated: handlePostCreated,
+    autoRevalidate: true,
+  });
 
   // Transform data when available
   const stories = data?.success ? data.stories.map((story: any) => ({
@@ -80,10 +133,19 @@ export default function CommunityPage() {
       <div className="space-y-8">
         {/* Page Header */}
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 flex items-center justify-center gap-3 mb-4">
-            <span>💬</span>
-            Community Hub
-          </h1>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+              <span>💬</span>
+              Community Hub
+            </h1>
+            {/* Real-time connection indicator */}
+            {isConnected && (
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-full text-xs text-green-700 dark:text-green-400">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span>Live</span>
+              </div>
+            )}
+          </div>
           <p className="text-xl text-gray-600 dark:text-gray-400 mb-2">
             Connect with readers and fellow writers through story discussions
           </p>
@@ -91,6 +153,39 @@ export default function CommunityPage() {
             Choose a story below to join the conversation • No login required to read • Sign in to participate
           </p>
         </div>
+
+        {/* New stories notification banner */}
+        {newStoryCount > 0 && (
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 animate-in fade-in slide-in-from-top duration-300">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                    {newStoryCount}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                    {newStoryCount === 1 ? 'New story published!' : `${newStoryCount} new stories published!`}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Scroll down to see the latest additions to our community
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setNewStoryCount(0);
+                  setRecentlyPublishedStories([]);
+                  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                }}
+                className="flex-shrink-0 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+              >
+                View Now
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Loading State */}
         {isLoading && (
@@ -237,16 +332,28 @@ export default function CommunityPage() {
             {/* Story Grid */}
             {stories.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {stories.map((story: CommunityStory) => (
-                  <CommunityStoryCard
-                    key={story.id}
-                    story={{
-                      ...story,
-                      author: story.author.name,
-                      coverImage: story.coverImage || ''
-                    }}
-                  />
-                ))}
+                {stories.map((story: CommunityStory) => {
+                  const isNewlyPublished = recentlyPublishedStories.includes(story.id);
+                  return (
+                    <div
+                      key={story.id}
+                      className={isNewlyPublished ? 'relative animate-in fade-in slide-in-from-bottom duration-500' : ''}
+                    >
+                      {isNewlyPublished && (
+                        <div className="absolute -top-2 -right-2 z-10 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg animate-pulse">
+                          NEW
+                        </div>
+                      )}
+                      <CommunityStoryCard
+                        story={{
+                          ...story,
+                          author: story.author.name,
+                          coverImage: story.coverImage || ''
+                        }}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <Card>

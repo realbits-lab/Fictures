@@ -116,7 +116,7 @@ export function ChapterEditor({
 
     setIsAutoSaving(true);
     try {
-      const response = await fetch(`/writing/api/chapters/${chapterData.id}/autosave`, {
+      const response = await fetch(`/studio/api/chapters/${chapterData.id}/autosave`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -298,7 +298,7 @@ export function ChapterEditor({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => router.push('/writing')}
+                  onClick={() => router.push('/studio')}
                   className="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

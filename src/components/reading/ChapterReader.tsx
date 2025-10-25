@@ -184,7 +184,7 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
             </button>
             <div className="flex items-center gap-2 min-w-0 overflow-hidden">
               <Link
-                href="/reading"
+                href="/novels"
                 className="hidden sm:inline text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors whitespace-nowrap"
               >
                 ← Browse
@@ -417,7 +417,7 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
           {/* Footer */}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <Link
-              href="/reading"
+              href="/novels"
               className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
             >
               ← Back to Browse

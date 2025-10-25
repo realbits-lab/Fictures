@@ -130,7 +130,7 @@ export function StoryTreeArchitecture({
   };
 
   const isCurrentChapter = (chapterId: string) => {
-    return pathname === `/writing/edit/${chapterId}` || currentChapterId === chapterId;
+    return pathname === `/studio/edit/${chapterId}` || currentChapterId === chapterId;
   };
 
   const isCurrentScene = (sceneId: string) => {
@@ -325,7 +325,7 @@ export function StoryTreeArchitecture({
                             </button>
                           </div>
                           <Link
-                            href={`/writing/edit/${chapter.id}`}
+                            href={`/studio/edit/${chapter.id}`}
                             className={`px-2 py-1 rounded text-xs transition-colors ${
                               isCurrentChapter(chapter.id)
                                 ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/20 dark:text-blue-100 font-medium'
@@ -410,7 +410,7 @@ export function StoryTreeArchitecture({
                         </button>
                       </div>
                       <Link
-                        href={`/writing/edit/${chapter.id}`}
+                        href={`/studio/edit/${chapter.id}`}
                         className={`px-2 py-1 rounded text-xs transition-colors ${
                           isCurrentChapter(chapter.id)
                             ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/20 dark:text-blue-100 font-medium'

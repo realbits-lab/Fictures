@@ -82,38 +82,23 @@ export const publicationStatusEnum = pgEnum('publication_status', [
   'cancelled'
 ]);
 
-// NextAuth.js required tables
-export const accounts = pgTable('accounts', {
-  userId: text('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  type: text('type').notNull(),
-  provider: text('provider').notNull(),
-  providerAccountId: text('providerAccountId').notNull(),
-  refresh_token: text('refresh_token'),
-  access_token: text('access_token'),
-  expires_at: integer('expires_at'),
-  token_type: text('token_type'),
-  scope: text('scope'),
-  id_token: text('id_token'),
-  session_state: text('session_state'),
-}, (account) => ({
-  compoundKey: primaryKey({
-    columns: [account.provider, account.providerAccountId],
-  }),
-}));
+// Shot type enum for comic panels
+export const shotTypeEnum = pgEnum('shot_type', [
+  'establishing_shot',
+  'wide_shot',
+  'medium_shot',
+  'close_up',
+  'extreme_close_up',
+  'over_shoulder',
+  'dutch_angle'
+]);
 
-export const sessions = pgTable('sessions', {
-  sessionToken: text('sessionToken').primaryKey(),
-  userId: text('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  expires: timestamp('expires', { mode: 'date' }).notNull(),
-});
-
-export const verificationTokens = pgTable('verification_tokens', {
-  identifier: text('identifier').notNull(),
-  token: text('token').notNull(),
-  expires: timestamp('expires', { mode: 'date' }).notNull(),
-}, (vt) => ({
-  compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-}));
+// SFX emphasis enum for comic sound effects
+export const sfxEmphasisEnum = pgEnum('sfx_emphasis', [
+  'normal',
+  'large',
+  'dramatic'
+]);
 
 // Users table - Core user authentication and profile
 export const users = pgTable('users', {
@@ -162,6 +147,9 @@ export const stories = pgTable('stories', {
   rating: integer('rating').default(0), // Average rating * 10 (e.g., 47 = 4.7)
   ratingCount: integer('rating_count').default(0),
   content: text('content').default(''), // Store complete story development YAML data as text
+  // Image fields
+  imageUrl: text('image_url'), // Original/cover image URL from Vercel Blob
+  imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
   // HNS fields
   premise: text('premise'),
   dramaticQuestion: text('dramatic_question'),
@@ -228,6 +216,9 @@ export const scenes = pgTable('scenes', {
   goal: text('goal'),
   conflict: text('conflict'),
   outcome: text('outcome'),
+  // Image fields
+  imageUrl: text('image_url'), // Original scene image URL from Vercel Blob
+  imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
   // HNS fields
   povCharacterId: text('pov_character_id'),
   settingId: text('setting_id'),
@@ -251,6 +242,37 @@ export const scenes = pgTable('scenes', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// Comic Panels table - Panel-by-panel storyboard for scenes
+export const comicPanels = pgTable('comic_panels', {
+  id: text('id').primaryKey(),
+  sceneId: text('scene_id').references(() => scenes.id, { onDelete: 'cascade' }).notNull(),
+  panelNumber: integer('panel_number').notNull(),
+  shotType: shotTypeEnum('shot_type').notNull(),
+
+  // Image data
+  imageUrl: text('image_url').notNull(),
+  imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized variants (AVIF, WebP, JPEG)
+
+  // Content overlays
+  dialogue: json('dialogue').$type<Array<{character_id: string; text: string; tone?: string}>>(),
+  sfx: json('sfx').$type<Array<{text: string; emphasis: 'normal' | 'large' | 'dramatic'}>>(),
+
+  // Layout
+  gutterAfter: integer('gutter_after').default(200), // Vertical space after this panel in pixels
+
+  // Metadata
+  metadata: json('metadata').$type<{
+    prompt: string;
+    characters_visible: string[];
+    camera_angle: string;
+    mood: string;
+    generated_at: string;
+  }>(),
+
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 // Characters table - Story characters with HNS support
 export const characters = pgTable('characters', {
   id: text('id').primaryKey(),
@@ -258,7 +280,8 @@ export const characters = pgTable('characters', {
   storyId: text('story_id').references(() => stories.id).notNull(),
   isMain: boolean('is_main').default(false),
   content: text('content').default(''), // Store all character data as YAML/JSON
-  imageUrl: text('image_url'), // Store generated character image URL from Vercel Blob
+  imageUrl: text('image_url'), // Original character image URL from Vercel Blob
+  imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
   // HNS fields
   role: varchar('role', { length: 50 }),
   archetype: varchar('archetype', { length: 100 }),
@@ -282,7 +305,8 @@ export const places = pgTable('places', {
   storyId: text('story_id').references(() => stories.id).notNull(),
   isMain: boolean('is_main').default(false), // is this a main location?
   content: text('content').default(''), // Store all place data as YAML/JSON
-  imageUrl: text('image_url'), // Store generated place image URL from Vercel Blob
+  imageUrl: text('image_url'), // Original place image URL from Vercel Blob
+  imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -386,21 +410,6 @@ export const communityReplies: any = pgTable('community_replies', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Post images table - Store image metadata for community posts
-export const postImages = pgTable('post_images', {
-  id: text('id').primaryKey(),
-  postId: text('post_id').references(() => communityPosts.id, { onDelete: 'cascade' }).notNull(),
-  url: text('url').notNull(),
-  filename: varchar('filename', { length: 255 }).notNull(),
-  mimeType: varchar('mime_type', { length: 100 }).notNull(),
-  size: integer('size').notNull(), // File size in bytes
-  width: integer('width'),
-  height: integer('height'),
-  caption: text('caption'),
-  orderIndex: integer('order_index').default(0).notNull(),
-  uploadedBy: text('uploaded_by').references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
 
 // Post likes table - Track likes on community posts
 export const postLikes = pgTable('post_likes', {
@@ -480,10 +489,18 @@ export const chaptersRelations = relations(chapters, ({ one, many }) => ({
   scenes: many(scenes),
 }));
 
-export const scenesRelations = relations(scenes, ({ one }) => ({
+export const scenesRelations = relations(scenes, ({ one, many }) => ({
   chapter: one(chapters, {
     fields: [scenes.chapterId],
     references: [chapters.id],
+  }),
+  comicPanels: many(comicPanels),
+}));
+
+export const comicPanelsRelations = relations(comicPanels, ({ one }) => ({
+  scene: one(scenes, {
+    fields: [comicPanels.sceneId],
+    references: [scenes.id],
   }),
 }));
 
@@ -506,7 +523,8 @@ export const settings = pgTable('settings', {
   visualReferences: json('visual_references').$type<string[]>(),
   colorPalette: json('color_palette').$type<string[]>(),
   architecturalStyle: text('architectural_style'),
-  imageUrl: text('image_url'),
+  imageUrl: text('image_url'), // Original setting image URL from Vercel Blob
+  imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -546,7 +564,6 @@ export const communityPostsRelations = relations(communityPosts, ({ one, many })
     references: [users.id],
   }),
   replies: many(communityReplies),
-  images: many(postImages),
   likes: many(postLikes),
   views: many(postViews),
 }));
@@ -583,17 +600,6 @@ export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
 }));
 
 // Relations for new community tables
-export const postImagesRelations = relations(postImages, ({ one }) => ({
-  post: one(communityPosts, {
-    fields: [postImages.postId],
-    references: [communityPosts.id],
-  }),
-  uploadedByUser: one(users, {
-    fields: [postImages.uploadedBy],
-    references: [users.id],
-  }),
-}));
-
 export const postLikesRelations = relations(postLikes, ({ one }) => ({
   post: one(communityPosts, {
     fields: [postLikes.postId],
@@ -871,16 +877,6 @@ export const storyInsights = pgTable('story_insights', {
   expiresAt: timestamp('expires_at'),
 });
 
-// Recommendation feedback table
-export const recommendationFeedback = pgTable('recommendation_feedback', {
-  id: text('id').primaryKey(),
-  insightId: text('insight_id').references(() => storyInsights.id, { onDelete: 'cascade' }).notNull(),
-  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  actionTaken: varchar('action_taken', { length: 50 }).notNull(),
-  feedbackText: text('feedback_text'),
-  wasHelpful: boolean('was_helpful'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
 
 // Relations for analytics tables
 export const analyticsEventsRelations = relations(analyticsEvents, ({ one }) => ({
@@ -917,22 +913,10 @@ export const readingSessionsRelations = relations(readingSessions, ({ one }) => 
   }),
 }));
 
-export const storyInsightsRelations = relations(storyInsights, ({ one, many }) => ({
+export const storyInsightsRelations = relations(storyInsights, ({ one }) => ({
   story: one(stories, {
     fields: [storyInsights.storyId],
     references: [stories.id],
-  }),
-  feedback: many(recommendationFeedback),
-}));
-
-export const recommendationFeedbackRelations = relations(recommendationFeedback, ({ one }) => ({
-  insight: one(storyInsights, {
-    fields: [recommendationFeedback.insightId],
-    references: [storyInsights.id],
-  }),
-  user: one(users, {
-    fields: [recommendationFeedback.userId],
-    references: [users.id],
   }),
 }));
 

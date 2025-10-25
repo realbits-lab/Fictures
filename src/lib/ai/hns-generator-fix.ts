@@ -76,7 +76,7 @@ Chapter Context:
 Story Context:
 - Premise: ${story.premise}
 - Theme: ${story.theme}
-- Genre: ${story.genre.join(", ")}
+- Genre: ${story.genre}
 
 Available Characters (use these IDs):
 ${characters.slice(0, 5).map((c) => `- ID: "${c.character_id}" - ${c.name} (${c.role})`).join("\n")}

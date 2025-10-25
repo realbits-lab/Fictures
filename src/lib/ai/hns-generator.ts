@@ -38,7 +38,7 @@ import {
 } from "@/types/hns";
 import { cleanStoryHnsData, cleanComponentHnsData } from "@/lib/utils/hns-data-cleaner";
 import { generateSceneImages, updateSceneWithImage } from "./scene-image-generator";
-import { generateImage } from "./image-generator";
+import { generateStoryImage } from "@/lib/services/image-generation";
 
 /**
  * Phase 1: Core Concept Generation (Story Object)
@@ -60,7 +60,7 @@ Requirements:
 1. Premise must be under 20 words - a single succinct sentence that encapsulates the entire novel
 2. Dramatic question must be a yes/no question that drives the narrative
 3. Theme should be a concise statement of the story's central message
-4. Genre should be an array of 1-3 relevant genres
+4. Genre must be ONE genre selected from the following list: Fantasy, Science Fiction, Romance, Mystery, Thriller, Detective, Adventure, Horror, Historical Fiction, Contemporary, Young Adult, Children's Literature
 5. Create placeholder empty arrays for characters, settings, and parts (will be populated later)
 
 Language preference: ${language}`,
@@ -182,7 +182,7 @@ Story Context:
 - Title: ${story.story_title}
 - Premise: ${story.premise}
 - Theme: ${story.theme}
-- Genre: ${story.genre.join(", ")}
+- Genre: ${story.genre}
 
 Act Summaries:
 ${parts.map((p) => `${p.part_title}: ${p.summary}`).join("\n")}
@@ -237,7 +237,7 @@ export async function generateHNSSettings(
 
 Story Context:
 - Title: ${story.story_title}
-- Genre: ${story.genre.join(", ")}
+- Genre: ${story.genre}
 - Theme: ${story.theme}
 
 Create 3-6 key settings where the story unfolds. Include:
@@ -358,7 +358,7 @@ Chapter Context:
 Story Context:
 - Premise: ${story.premise}
 - Theme: ${story.theme}
-- Genre: ${story.genre.join(", ")}
+- Genre: ${story.genre}
 
 Available Characters:
 ${characters.map((c) => `- ${c.name} (${c.role}): ${c.summary}`).join("\n")}
@@ -471,7 +471,7 @@ export async function generateCompleteHNS(
         id: currentStoryId,
         title: story.story_title,
         description: story.premise,
-        genre: story.genre.join(", "),
+        genre: story.genre,
         authorId: userId,
         status: "writing",
         premise: story.premise,
@@ -981,27 +981,23 @@ export async function generateSceneImagesForStory(
 
     let storyImageData = null;
     try {
-      const storyImagePrompt = `${story.story_title}: ${story.genre.join(", ")} story. ${story.dramatic_question}. ${story.premise}. Key themes: ${story.theme}`;
-      const imageResult = await generateImage(
-        storyImagePrompt,
-        'story',
-        storyId,
-        {
-          style: 'fantasy-art',
-          aspectRatio: 'portrait',
-          quality: 'high',
-          mood: 'epic and dramatic',
-          lighting: 'cinematic'
-        }
-      );
+      const storyImagePrompt = `${story.story_title}: ${story.genre} story. ${story.dramatic_question}. ${story.premise}. Key themes: ${story.theme}`;
+      const imageResult = await generateStoryImage({
+        prompt: storyImagePrompt,
+        storyId: storyId,
+        imageType: 'story',
+        style: 'vivid',
+        quality: 'standard',
+      });
       storyImageData = {
-        url: imageResult.imageUrl,
-        method: imageResult.method,
-        style: imageResult.style,
+        url: imageResult.url,
+        method: 'dall-e-3-optimized',
+        style: 'vivid',
         generatedAt: new Date().toISOString(),
-        prompt: storyImagePrompt
+        prompt: storyImagePrompt,
+        optimizedSet: imageResult.optimizedSet,
       };
-      console.log('✅ Story cover image generated:', imageResult.imageUrl);
+      console.log('✅ Story cover image generated:', imageResult.url);
       progressCallback?.("phase8_progress", {
         message: `Story cover image generated`,
         current: 1,

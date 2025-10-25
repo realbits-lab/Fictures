@@ -15,6 +15,7 @@ import {
 import { InFeedAd } from "@/components/ads";
 import { trackSearch, trackStoryEvent } from '@/lib/analytics/google-analytics';
 import { readingHistoryManager } from '@/lib/storage/reading-history-manager';
+import { STORY_GENRES } from '@/lib/constants/genres';
 
 interface Story {
   id: string;
@@ -43,7 +44,7 @@ interface StoryGridProps {
   currentUserId?: string;
 }
 
-const genres = ["All", "Fantasy", "Science Fiction", "Romance", "Mystery", "Thriller", "Detective", "Adventure"];
+const genres = ["All", ...STORY_GENRES];
 
 export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
   const router = useRouter();
@@ -153,7 +154,7 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
   return (
     <div>
       {/* Filters - Responsive Layout */}
-      <div className="mb-8">
+      <div className="mb-10">
         {/* Mobile: 2 rows, Desktop: 1 row */}
         <div className="flex flex-col md:flex-row md:justify-end items-stretch md:items-center gap-3">
           {/* First row on mobile: History/All + View toggles */}
@@ -343,8 +344,8 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
                 }}
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-[1.02] hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 flex flex-col overflow-hidden cursor-pointer"
               >
-                {/* Story Image */}
-                <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-800">
+                {/* Story Image - 16:9 Aspect Ratio */}
+                <div className="relative w-full aspect-video bg-gray-100 dark:bg-gray-800">
                   <StoryImage
                     src={imageUrl || ''}
                     alt={story.title}
@@ -392,7 +393,7 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
                     </span>
                     <span className="flex items-center gap-1 flex-shrink-0">
                       <span>📝</span>
-                      <span className="truncate">{(story.currentWordCount || 0).toLocaleString()}w</span>
+                      <span className="truncate">{(story.currentWordCount || 0).toLocaleString()} {story.currentWordCount === 1 ? 'word' : 'words'}</span>
                     </span>
                   </div>
                 </div>
@@ -501,7 +502,7 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
                       <TableCell className="text-center text-gray-600 dark:text-gray-400">
                         <span className="flex items-center justify-center gap-1">
                           <span>📝</span>
-                          <span>{(story.currentWordCount || 0).toLocaleString()}</span>
+                          <span>{(story.currentWordCount || 0).toLocaleString()} {story.currentWordCount === 1 ? 'word' : 'words'}</span>
                         </span>
                       </TableCell>
                     </TableRow>

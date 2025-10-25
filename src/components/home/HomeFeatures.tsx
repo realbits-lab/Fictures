@@ -103,7 +103,7 @@ export function HomeFeatures() {
           </div>
 
           <div className="text-center">
-            <Link href="/writing">
+            <Link href="/novels">
               <Button size="lg" className="text-lg px-8 py-4">
                 ✍️ Start Writing Your Story
               </Button>
