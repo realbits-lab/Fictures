@@ -53,7 +53,7 @@ async function saveImageToStorage(
     // Create filename with story ID and type
     const safeName = name || 'unnamed';
     const sanitizedName = safeName.replace(/[^a-zA-Z0-9_-]/g, '_');
-    const imageFileName = `${storyId}/${type}s/${sanitizedName}_${nanoid()}.png`;
+    const imageFileName = `stories/${storyId}/${type}/${sanitizedName}_${nanoid()}.png`;
 
     // Upload to Vercel Blob
     const blob = await put(imageFileName, Buffer.from(bytes), {

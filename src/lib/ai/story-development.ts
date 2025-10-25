@@ -7,7 +7,7 @@ import { stories, parts, characters, places } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { RelationshipManager } from '@/lib/db/relationships';
-import { generateImage } from './image-generator';
+import { generateStoryImage } from '@/lib/services/image-generation';
 
 // Helper function to extract and clean YAML content from markdown code blocks
 function extractYamlFromText(text: string): string {
@@ -784,27 +784,24 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
     let storyImageData = null;
     try {
       const storyImagePrompt = `${storyConcept.title}: ${storyConcept.genre} story. ${storyConcept.question}. ${storyConcept.goal}. Key themes: ${storyConcept.themes?.join(', ')}. Setting: ${storyConcept.setting?.primary?.join(', ')}`;
-      const imageResult = await generateImage(
-        storyImagePrompt,
-        'story',
-        currentStoryId,
-        {
-          style: 'fantasy-art',
-          aspectRatio: 'landscape',
-          quality: 'high',
-          mood: 'epic and dramatic',
-          lighting: 'cinematic'
-        }
-      );
-      storyImageUrl = imageResult.imageUrl;
+      const imageResult = await generateStoryImage({
+        prompt: storyImagePrompt,
+        storyId: currentStoryId,
+        imageType: 'story',
+        style: 'vivid',
+        quality: 'standard',
+      });
+      storyImageUrl = imageResult.url;
       storyImageData = {
-        url: imageResult.imageUrl,
-        method: imageResult.method,
-        style: imageResult.style,
+        url: imageResult.url,
+        method: 'dall-e-3-optimized',
+        style: 'vivid',
         generatedAt: new Date().toISOString(),
-        prompt: storyImagePrompt
+        prompt: storyImagePrompt,
+        optimizedSet: imageResult.optimizedSet,
       };
       console.log('✅ Story image generated:', storyImageUrl);
+      console.log('✅ Optimized variants:', imageResult.optimizedSet?.variants.length || 0);
     } catch (error) {
       console.error('⚠️ Failed to generate story image:', error);
       // Continue without image if generation fails

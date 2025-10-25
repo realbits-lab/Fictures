@@ -38,7 +38,7 @@ import {
 } from "@/types/hns";
 import { cleanStoryHnsData, cleanComponentHnsData } from "@/lib/utils/hns-data-cleaner";
 import { generateSceneImages, updateSceneWithImage } from "./scene-image-generator";
-import { generateImage } from "./image-generator";
+import { generateStoryImage } from "@/lib/services/image-generation";
 
 /**
  * Phase 1: Core Concept Generation (Story Object)
@@ -982,26 +982,22 @@ export async function generateSceneImagesForStory(
     let storyImageData = null;
     try {
       const storyImagePrompt = `${story.story_title}: ${story.genre} story. ${story.dramatic_question}. ${story.premise}. Key themes: ${story.theme}`;
-      const imageResult = await generateImage(
-        storyImagePrompt,
-        'story',
-        storyId,
-        {
-          style: 'fantasy-art',
-          aspectRatio: 'landscape',
-          quality: 'high',
-          mood: 'epic and dramatic',
-          lighting: 'cinematic'
-        }
-      );
+      const imageResult = await generateStoryImage({
+        prompt: storyImagePrompt,
+        storyId: storyId,
+        imageType: 'story',
+        style: 'vivid',
+        quality: 'standard',
+      });
       storyImageData = {
-        url: imageResult.imageUrl,
-        method: imageResult.method,
-        style: imageResult.style,
+        url: imageResult.url,
+        method: 'dall-e-3-optimized',
+        style: 'vivid',
         generatedAt: new Date().toISOString(),
-        prompt: storyImagePrompt
+        prompt: storyImagePrompt,
+        optimizedSet: imageResult.optimizedSet,
       };
-      console.log('✅ Story cover image generated:', imageResult.imageUrl);
+      console.log('✅ Story cover image generated:', imageResult.url);
       progressCallback?.("phase8_progress", {
         message: `Story cover image generated`,
         current: 1,

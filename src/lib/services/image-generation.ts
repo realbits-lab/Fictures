@@ -78,9 +78,7 @@ export async function generateStoryImage({
 
   // Generate unique image ID
   const imageId = nanoid();
-  const timestamp = Date.now();
-  const context = [storyId, chapterId, sceneId].filter(Boolean).join('-');
-  const filename = `story-images/${imageType}/${context}-${timestamp}-${imageId}.png`;
+  const filename = `stories/${storyId}/${imageType}/${imageId}.png`;
 
   console.log(`[Image Generation] Uploading original image to Vercel Blob...`);
 
