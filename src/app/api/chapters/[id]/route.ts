@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { getChapterById, updateChapter, updateUserStats } from '@/lib/db/queries';
+import { getChapterById, updateChapter } from '@/lib/db/cached-queries';
+import { updateUserStats } from '@/lib/db/queries';
+import { getPerformanceLogger } from '@/lib/cache/performance-logger';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';
@@ -19,17 +21,35 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const perfLogger = getPerformanceLogger();
+  const operationId = `get-chapter-${Date.now()}`;
+
   try {
+    perfLogger.start(operationId, 'GET /api/chapters/[id]', { apiRoute: true });
+
     const { id } = await params;
     const session = await auth();
-    
+
     const chapter = await getChapterById(id, session?.user?.id);
     if (!chapter) {
+      perfLogger.end(operationId, { notFound: true });
       return NextResponse.json({ error: 'Chapter not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ chapter });
+    const totalDuration = perfLogger.end(operationId);
+
+    const headers = new Headers({
+      'Content-Type': 'application/json',
+      'X-Server-Timing': `total;dur=${totalDuration}`,
+      'X-Server-Cache': 'ENABLED'
+    });
+
+    return new NextResponse(
+      JSON.stringify({ chapter }),
+      { status: 200, headers }
+    );
   } catch (error) {
+    perfLogger.end(operationId, { error: true });
     console.error('Error fetching chapter:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
