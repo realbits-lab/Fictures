@@ -5,6 +5,8 @@ import { scenes, chapters, stories } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { z } from 'zod';
 import { RelationshipManager } from '@/lib/db/relationships';
+import { getSceneById } from '@/lib/db/cached-queries';
+import { getPerformanceLogger } from '@/lib/cache/performance-logger';
 
 export const runtime = 'nodejs';
 
@@ -25,45 +27,53 @@ export async function GET(
   try {
     const { id } = await params;
     const session = await auth();
-    
-    // Get scene details
-    const [scene] = await db.select().from(scenes).where(eq(scenes.id, id));
-    if (!scene) {
+
+    const perfLogger = getPerformanceLogger();
+    const operationId = `get-scene-${Date.now()}`;
+
+    perfLogger.start(operationId, 'GET /api/scenes/[id]', { apiRoute: true, sceneId: id });
+
+    const dbQueryStart = Date.now();
+
+    // Use cached query
+    const sceneData = await getSceneById(id, session?.user?.id);
+
+    const dbQueryDuration = Date.now() - dbQueryStart;
+
+    if (!sceneData) {
       return NextResponse.json({ error: 'Scene not found' }, { status: 404 });
     }
 
-    // Get chapter details for access control
-    const [chapter] = await db.select().from(chapters).where(eq(chapters.id, scene.chapterId));
-    if (!chapter) {
-      return NextResponse.json({ error: 'Chapter not found' }, { status: 404 });
-    }
-
-    // Get story details for access control
-    const [story] = await db.select().from(stories).where(eq(stories.id, chapter.storyId));
-    if (!story) {
-      return NextResponse.json({ error: 'Story not found' }, { status: 404 });
-    }
-
-    // Check access permissions
-    if (!session?.user?.id || (story.authorId !== session.user.id && story.status !== 'published')) {
+    // Check access permissions (already handled in cached query, but verify)
+    if (!session?.user?.id || (sceneData.story?.authorId !== session.user.id && sceneData.story?.status !== 'published')) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
-    return NextResponse.json({ 
-      scene: {
-        ...scene,
-        chapter: {
-          id: chapter.id,
-          title: chapter.title,
-          storyId: chapter.storyId
-        },
-        story: {
-          id: story.id,
-          title: story.title,
-          authorId: story.authorId
-        }
-      }
+    const totalDuration = perfLogger.end(operationId, {
+      sceneId: id,
+      cached: true
     });
+
+    const headers = new Headers({
+      'X-Server-Timing': `total;dur=${totalDuration},db;dur=${dbQueryDuration}`,
+      'X-Server-Cache': 'ENABLED'
+    });
+
+    return new NextResponse(JSON.stringify({
+      scene: {
+        ...sceneData,
+        chapter: sceneData.chapter ? {
+          id: sceneData.chapter.id,
+          title: sceneData.chapter.title,
+          storyId: sceneData.chapter.storyId
+        } : undefined,
+        story: sceneData.story ? {
+          id: sceneData.story.id,
+          title: sceneData.story.title,
+          authorId: sceneData.story.authorId
+        } : undefined
+      }
+    }), { status: 200, headers });
   } catch (error) {
     console.error('Error fetching scene:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
