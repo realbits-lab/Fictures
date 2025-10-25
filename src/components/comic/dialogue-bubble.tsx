@@ -1,7 +1,7 @@
 /**
  * DialogueBubble Component
  *
- * Renders a dialogue bubble for webtoon panels with character name and text.
+ * Renders a dialogue bubble for comic panels with character name and text.
  * Supports different tones and positioning.
  */
 

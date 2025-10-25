@@ -1,7 +1,7 @@
 /**
- * WebtoonViewer Component
+ * ComicViewer Component
  *
- * Main container for viewing webtoon panels in vertical scroll format.
+ * Main container for viewing comic panels in vertical scroll format.
  * Handles data fetching, loading states, and gutter spacing.
  */
 
@@ -37,7 +37,7 @@ interface PanelData {
   };
 }
 
-interface WebtoonViewerData {
+interface ComicViewerData {
   sceneId: string;
   sceneTitle: string;
   panels: PanelData[];
@@ -52,20 +52,20 @@ interface WebtoonViewerData {
   };
 }
 
-interface WebtoonViewerProps {
+interface ComicViewerProps {
   sceneId: string;
   characterNames?: Record<string, string>; // Map of character_id to character name
   className?: string;
   onComplete?: () => void;
 }
 
-export function WebtoonViewer({
+export function ComicViewer({
   sceneId,
   characterNames = {},
   className,
   onComplete,
-}: WebtoonViewerProps) {
-  const [data, setData] = useState<WebtoonViewerData | null>(null);
+}: ComicViewerProps) {
+  const [data, setData] = useState<ComicViewerData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loadedPanels, setLoadedPanels] = useState<Set<number>>(new Set());
@@ -77,7 +77,7 @@ export function WebtoonViewer({
         setLoading(true);
         setError(null);
 
-        const response = await fetch(`/api/webtoon/${sceneId}/panels`);
+        const response = await fetch(`/api/comic/${sceneId}/panels`);
 
         if (!response.ok) {
           throw new Error(`Failed to fetch panels: ${response.statusText}`);
@@ -87,8 +87,8 @@ export function WebtoonViewer({
         setData(result);
 
       } catch (err) {
-        console.error('Error fetching webtoon panels:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load webtoon panels');
+        console.error('Error fetching comic panels:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load comic panels');
       } finally {
         setLoading(false);
       }
@@ -141,7 +141,7 @@ export function WebtoonViewer({
       <div className={className}>
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error Loading Webtoon</AlertTitle>
+          <AlertTitle>Error Loading Comic</AlertTitle>
           <AlertDescription className="mt-2">
             {error}
           </AlertDescription>
@@ -167,7 +167,7 @@ export function WebtoonViewer({
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>No Panels Available</AlertTitle>
           <AlertDescription>
-            This scene has not been converted to webtoon format yet.
+            This scene has not been converted to comic format yet.
           </AlertDescription>
         </Alert>
       </div>
@@ -189,7 +189,7 @@ export function WebtoonViewer({
         </div>
       </div>
 
-      {/* Webtoon panels container */}
+      {/* Comic panels container */}
       <div className="mx-auto max-w-[1792px]">
         {data.panels.map((panel, index) => (
           <div key={panel.id}>

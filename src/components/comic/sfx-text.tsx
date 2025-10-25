@@ -1,7 +1,7 @@
 /**
  * SFXText Component
  *
- * Renders sound effects (SFX) text for webtoon panels with emphasis styling.
+ * Renders sound effects (SFX) text for comic panels with emphasis styling.
  * Supports normal, large, and dramatic emphasis levels.
  */
 

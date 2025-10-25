@@ -82,7 +82,7 @@ export const publicationStatusEnum = pgEnum('publication_status', [
   'cancelled'
 ]);
 
-// Shot type enum for webtoon panels
+// Shot type enum for comic panels
 export const shotTypeEnum = pgEnum('shot_type', [
   'establishing_shot',
   'wide_shot',
@@ -93,7 +93,7 @@ export const shotTypeEnum = pgEnum('shot_type', [
   'dutch_angle'
 ]);
 
-// SFX emphasis enum for webtoon sound effects
+// SFX emphasis enum for comic sound effects
 export const sfxEmphasisEnum = pgEnum('sfx_emphasis', [
   'normal',
   'large',
@@ -242,8 +242,8 @@ export const scenes = pgTable('scenes', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Webtoon Panels table - Panel-by-panel storyboard for scenes
-export const webtoonPanels = pgTable('webtoon_panels', {
+// Comic Panels table - Panel-by-panel storyboard for scenes
+export const comicPanels = pgTable('comic_panels', {
   id: text('id').primaryKey(),
   sceneId: text('scene_id').references(() => scenes.id, { onDelete: 'cascade' }).notNull(),
   panelNumber: integer('panel_number').notNull(),
@@ -494,12 +494,12 @@ export const scenesRelations = relations(scenes, ({ one, many }) => ({
     fields: [scenes.chapterId],
     references: [chapters.id],
   }),
-  webtoonPanels: many(webtoonPanels),
+  comicPanels: many(comicPanels),
 }));
 
-export const webtoonPanelsRelations = relations(webtoonPanels, ({ one }) => ({
+export const comicPanelsRelations = relations(comicPanels, ({ one }) => ({
   scene: one(scenes, {
-    fields: [webtoonPanels.sceneId],
+    fields: [comicPanels.sceneId],
     references: [scenes.id],
   }),
 }));

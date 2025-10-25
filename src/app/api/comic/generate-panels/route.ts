@@ -1,18 +1,18 @@
 /**
- * Webtoon Panel Generation API Endpoint
+ * Comic Panel Generation API Endpoint
  *
- * POST /api/webtoon/generate-panels
+ * POST /api/comic/generate-panels
  *
- * Generates webtoon panels for a scene using AI-powered screenplay conversion
+ * Generates comic panels for a scene using AI-powered screenplay conversion
  * and image generation. Streams progress updates via Server-Sent Events (SSE).
  */
 
 import { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { scenes, chapters, stories, characters, settings, webtoonPanels } from '@/lib/db/schema';
+import { scenes, chapters, stories, characters, settings, comicPanels } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { generateWebtoonPanels } from '@/lib/ai/webtoon-panel-generator';
+import { generateComicPanels } from '@/lib/ai/comic-panel-generator';
 import type { HNSScene, HNSCharacter, HNSSetting } from '@/types/hns';
 
 export const maxDuration = 300; // 5 minutes
@@ -82,8 +82,8 @@ export async function POST(request: NextRequest) {
 
     // Check if panels already exist
     if (!regenerate) {
-      const existingPanels = await db.query.webtoonPanels.findFirst({
-        where: eq(webtoonPanels.sceneId, sceneId),
+      const existingPanels = await db.query.comicPanels.findFirst({
+        where: eq(comicPanels.sceneId, sceneId),
       });
 
       if (existingPanels) {
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Delete existing panels if regenerating
-      await db.delete(webtoonPanels).where(eq(webtoonPanels.sceneId, sceneId));
+      await db.delete(comicPanels).where(eq(comicPanels.sceneId, sceneId));
     }
 
     // Fetch characters for this story
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
           sendEvent({ type: 'start', message: 'Starting panel generation...' });
 
           // Generate panels with progress callback
-          const result = await generateWebtoonPanels({
+          const result = await generateComicPanels({
             sceneId,
             scene: scene as unknown as HNSScene,
             characters: storyCharacters as unknown as HNSCharacter[],

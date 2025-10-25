@@ -1,17 +1,17 @@
 /**
- * Webtoon Panels Retrieval API Endpoint
+ * Comic Panels Retrieval API Endpoint
  *
- * GET /api/webtoon/{sceneId}/panels
+ * GET /api/comic/{sceneId}/panels
  *
- * Retrieves all webtoon panels for a specific scene, including layout information.
+ * Retrieves all comic panels for a specific scene, including layout information.
  */
 
 import { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { webtoonPanels, scenes, chapters, stories } from '@/lib/db/schema';
+import { comicPanels, scenes, chapters, stories } from '@/lib/db/schema';
 import { eq, asc } from 'drizzle-orm';
-import { calculateVerticalLayout, estimateReadingTime, calculatePanelDensity } from '@/lib/services/webtoon-layout';
+import { calculateVerticalLayout, estimateReadingTime, calculatePanelDensity } from '@/lib/services/comic-layout';
 
 interface RouteContext {
   params: Promise<{
@@ -58,9 +58,9 @@ export async function GET(
     }
 
     // Fetch all panels for this scene, ordered by panel number
-    const panels = await db.query.webtoonPanels.findMany({
-      where: eq(webtoonPanels.sceneId, sceneId),
-      orderBy: [asc(webtoonPanels.panelNumber)],
+    const panels = await db.query.comicPanels.findMany({
+      where: eq(comicPanels.sceneId, sceneId),
+      orderBy: [asc(comicPanels.panelNumber)],
     });
 
     if (panels.length === 0) {

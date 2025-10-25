@@ -108,7 +108,7 @@ This file provides guidance to Claude Code when working with this repository.
 **Global Navigation (GNB) Menu Items:**
 - **Studio** (🎬) - `/studio` - Story creation and management workspace (writers/managers only)
 - **Novels** (📖) - `/novels` - Browse and read text-based stories (all users)
-- **Comics** (🎨) - `/comics` - Browse and read visual/webtoon format stories (all users)
+- **Comics** (🎨) - `/comics` - Browse and read visual/comic format stories (all users)
 - **Community** (💬) - `/community` - Story sharing and discussion (all users)
 - **Publish** (📤) - `/publish` - Publish stories to community (writers/managers only)
 - **Analytics** (📊) - `/analytics` - Story performance metrics (writers/managers only)
@@ -231,7 +231,7 @@ dotenv --file .env.local run node scripts/generate-complete-story.mjs --publish 
 - Edit chapter: `/studio/edit/{chapterId}`
 - Browse novels (reading): `/novels`
 - Read novel: `/novels/{storyId}`
-- Browse comics (webtoon format): `/comics`
+- Browse comics (comic format): `/comics`
 - Read comic: `/comics/{storyId}`
 - Community view: `/community/story/{storyId}` (published stories only)
 

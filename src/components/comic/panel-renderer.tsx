@@ -1,7 +1,7 @@
 /**
  * PanelRenderer Component
  *
- * Renders a single webtoon panel with background image, dialogue bubbles,
+ * Renders a single comic panel with background image, dialogue bubbles,
  * and SFX text overlays. Supports responsive sizing and lazy loading.
  */
 

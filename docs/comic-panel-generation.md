@@ -1,4 +1,4 @@
-# Webtoon Panel Generation from Scene Text
+# Comic Panel Generation from Scene Text
 
 **Version**: 1.0
 **Date**: 2025-10-25
@@ -6,14 +6,14 @@
 
 ## Executive Summary
 
-This document specifies a comprehensive system for converting narrative scene text into visually compelling webtoon panels. The system integrates with Fictures' existing HNS (Hierarchical Narrative Schema) architecture to transform prose-based scenes into panel-by-panel storyboards with AI-generated images optimized for vertical-scroll webtoon format.
+This document specifies a comprehensive system for converting narrative scene text into visually compelling comic panels. The system integrates with Fictures' existing HNS (Hierarchical Narrative Schema) architecture to transform prose-based scenes into panel-by-panel storyboards with AI-generated images optimized for vertical-scroll comic format.
 
 ### Key Innovation
 
 Rather than generating a single scene image, this system:
 1. **Decomposes** scene narrative into discrete visual panels using AI
 2. **Generates** consistent character images across all panels
-3. **Formats** output for vertical-scroll webtoon consumption
+3. **Formats** output for vertical-scroll comic consumption
 4. **Maintains** narrative quality through integration with the scene evaluation system
 
 ---
@@ -57,7 +57,7 @@ Rather than generating a single scene image, this system:
 │  • Convert narrative to panel-by-panel screenplay                   │
 │  • Determine camera angles, character poses                         │
 │  • Calculate optimal panel count (1-3 panels per scene, MAX 3)      │
-│  • Apply webtoon pacing rules (vertical scroll rhythm)              │
+│  • Apply comic pacing rules (vertical scroll rhythm)              │
 └────────────────────┬────────────────────────────────────────────────┘
                      │
                      ▼
@@ -81,7 +81,7 @@ Rather than generating a single scene image, this system:
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                PHASE 5: Webtoon Layout Assembly                      │
+│                PHASE 5: Comic Layout Assembly                      │
 │  • Calculate gutter spacing (200-1000px)                            │
 │  • Add speech bubbles and text overlays                             │
 │  • Apply SFX (sound effects) lettering                              │
@@ -90,8 +90,8 @@ Rather than generating a single scene image, this system:
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    OUTPUT: Webtoon Panels                            │
-│  • Array of WebtoonPanel objects                                    │
+│                    OUTPUT: Comic Panels                            │
+│  • Array of ComicPanel objects                                    │
 │  • Images stored in Vercel Blob                                     │
 │  • Layout metadata for rendering                                    │
 └─────────────────────────────────────────────────────────────────────┘
@@ -106,7 +106,7 @@ Rather than generating a single scene image, this system:
 | **Character Manager** | Database + AI | Maintain visual consistency |
 | **Image Generator** | OpenAI DALL-E 3 | Create panel artwork (16:9, 1792x1024) |
 | **Image Optimizer** | Sharp.js | Generate 18 optimized variants |
-| **Layout Engine** | Next.js Component | Assemble vertical webtoon layout |
+| **Layout Engine** | Next.js Component | Assemble vertical comic layout |
 | **Storage** | Vercel Blob | Store panel images and metadata |
 
 ---
@@ -115,7 +115,7 @@ Rather than generating a single scene image, this system:
 
 ### Overview
 
-Before scene content is converted to webtoon panels, it undergoes **automated rule-based formatting** to ensure optimal readability for mobile-first webtoon consumption. This formatting is applied deterministically after AI generation but before quality evaluation.
+Before scene content is converted to comic panels, it undergoes **automated rule-based formatting** to ensure optimal readability for mobile-first comic consumption. This formatting is applied deterministically after AI generation but before quality evaluation.
 
 ### Why Automated Formatting?
 
@@ -134,7 +134,7 @@ AI language models (even advanced ones like GPT-4) struggle to consistently foll
 **Rationale**:
 - Mobile screens require short, digestible paragraphs
 - Long paragraphs create "walls of text" that reduce engagement
-- Optimal reading experience on vertical-scroll webtoons
+- Optimal reading experience on vertical-scroll comics
 
 **Implementation**:
 ```typescript
@@ -154,7 +154,7 @@ The window overlooked a busy street, and she could hear the sounds of traffic be
 **Rationale**:
 - Clear visual separation improves readability
 - Prevents confusion between narrative and dialogue
-- Standard practice in webtoon formatting
+- Standard practice in comic formatting
 
 **Implementation**:
 ```typescript
@@ -529,7 +529,7 @@ interface HNSScene {
 **AI Prompt Structure**:
 
 ```typescript
-const SCENE_TO_SCREENPLAY_PROMPT = `You are an expert webtoon storyboard artist. Convert this narrative scene into a panel-by-panel screenplay optimized for vertical-scroll webtoons.
+const SCENE_TO_SCREENPLAY_PROMPT = `You are an expert comic storyboard artist. Convert this narrative scene into a panel-by-panel screenplay optimized for vertical-scroll comics.
 
 SCENE INFORMATION:
 Title: {scene.scene_title}
@@ -603,12 +603,12 @@ interface CharacterVisualProfile {
   physical_traits: string[];    // ["sharp green eyes", "short auburn hair", "athletic build"]
   typical_attire: string;       // "dark blue detective's coat, white shirt, black slacks"
   distinguishing_features: string; // "small scar above left eyebrow"
-  art_style_notes: string;      // "webtoon style, clean linework, semi-realistic proportions"
+  art_style_notes: string;      // "comic style, clean linework, semi-realistic proportions"
 }
 
 // Prompt Construction with Character Consistency
 function buildPanelPrompt(
-  panel: WebtoonPanel,
+  panel: ComicPanel,
   characters: CharacterVisualProfile[],
   setting: HNSSetting
 ): string {
@@ -620,7 +620,7 @@ function buildPanelPrompt(
     wearing ${char.typical_attire}, ${char.distinguishing_features}): ${pose}`;
   }).join('. ');
 
-  return `Professional webtoon panel, ${panel.shot_type}, ${panel.camera_angle}.
+  return `Professional comic panel, ${panel.shot_type}, ${panel.camera_angle}.
 
 SCENE: ${panel.setting_focus}. ${setting.description}.
 
@@ -632,8 +632,8 @@ COMPOSITION: ${panel.description}
 
 MOOD: ${panel.mood}
 
-Style: Clean webtoon linework, vibrant colors, semi-realistic proportions, 16:9 widescreen format,
-cinematic composition, similar to popular Naver WEBTOON series.
+Style: Clean comic linework, vibrant colors, semi-realistic proportions, 16:9 widescreen format,
+cinematic composition, similar to popular Naver COMIC series.
 
 IMPORTANT: Maintain exact character appearance across all panels - ${char.physical_traits.join(', ')}`;
 }
@@ -642,13 +642,13 @@ IMPORTANT: Maintain exact character appearance across all panels - ${char.physic
 ### 4. Panel Generation Loop
 
 ```typescript
-async function generateWebtoonPanels(
+async function generateComicPanels(
   sceneId: string,
-  screenplay: WebtoonScreenplay,
+  screenplay: ComicScreenplay,
   storyContext: StoryContext
-): Promise<WebtoonPanelSet> {
+): Promise<ComicPanelSet> {
 
-  const panels: WebtoonPanel[] = [];
+  const panels: ComicPanel[] = [];
 
   for (let i = 0; i < screenplay.panels.length; i++) {
     const panelSpec = screenplay.panels[i];
@@ -666,8 +666,8 @@ async function generateWebtoonPanels(
     const imageResult = await generateStoryImage({
       prompt: prompt,
       storyId: storyContext.storyId,
-      imageType: 'webtoon-panel',
-      style: 'vivid',    // For vibrant webtoon colors
+      imageType: 'comic-panel',
+      style: 'vivid',    // For vibrant comic colors
       quality: 'standard',
       aspectRatio: '16:9'
     });
@@ -718,34 +718,34 @@ async function generateWebtoonPanels(
 src/
 ├── lib/
 │   ├── ai/
-│   │   ├── webtoon-panel-generator.ts    # Main panel generation orchestrator
+│   │   ├── comic-panel-generator.ts    # Main panel generation orchestrator
 │   │   ├── screenplay-converter.ts       # Scene → Screenplay conversion
 │   │   └── panel-prompt-builder.ts       # DALL-E 3 prompt construction
 │   ├── services/
-│   │   ├── webtoon-layout.ts             # Vertical scroll layout calculator
+│   │   ├── comic-layout.ts             # Vertical scroll layout calculator
 │   │   └── character-consistency.ts      # Character visual profile manager
 │   └── db/
 │       └── schema/
-│           └── webtoon-panels.ts         # Database schema for panels
+│           └── comic-panels.ts         # Database schema for panels
 ├── app/
 │   └── api/
-│       └── webtoon/
+│       └── comic/
 │           ├── generate-panels/route.ts  # API endpoint for panel generation
 │           └── [sceneId]/panels/route.ts # Get panels for a scene
 └── components/
-    └── webtoon/
-        ├── WebtoonViewer.tsx             # Vertical scroll reader
+    └── comic/
+        ├── ComicViewer.tsx             # Vertical scroll reader
         ├── PanelRenderer.tsx             # Individual panel component
         └── DialogueBubble.tsx            # Speech bubble overlay
 ```
 
-### Core Service: `webtoon-panel-generator.ts`
+### Core Service: `comic-panel-generator.ts`
 
 ```typescript
 /**
- * Webtoon Panel Generator
+ * Comic Panel Generator
  *
- * Converts HNS scene narrative into visually compelling webtoon panels
+ * Converts HNS scene narrative into visually compelling comic panels
  * with AI-generated images optimized for vertical scroll consumption.
  */
 
@@ -755,14 +755,14 @@ import { z } from 'zod';
 import { HNSScene, HNSCharacter, HNSSetting } from '@/types/hns';
 import { generateStoryImage } from '@/lib/services/image-generation';
 import { db } from '@/lib/db';
-import { webtoonPanels } from '@/lib/db/schema';
+import { comicPanels } from '@/lib/db/schema';
 import { nanoid } from 'nanoid';
 
 // ============================================
 // SCHEMA DEFINITIONS
 // ============================================
 
-export const WebtoonPanelSpecSchema = z.object({
+export const ComicPanelSpecSchema = z.object({
   panel_number: z.number().min(1),
   shot_type: z.enum([
     'establishing_shot',
@@ -792,17 +792,17 @@ export const WebtoonPanelSpecSchema = z.object({
   mood: z.string().describe('Overall emotional tone of the panel')
 });
 
-export const WebtoonScreenplaySchema = z.object({
+export const ComicScreenplaySchema = z.object({
   scene_id: z.string(),
   scene_title: z.string(),
   total_panels: z.number().min(1).max(3),
-  panels: z.array(WebtoonPanelSpecSchema),
+  panels: z.array(ComicPanelSpecSchema),
   pacing_notes: z.string().optional(),
   narrative_arc: z.string().describe('How the panels collectively tell the scene story')
 });
 
-export type WebtoonPanelSpec = z.infer<typeof WebtoonPanelSpecSchema>;
-export type WebtoonScreenplay = z.infer<typeof WebtoonScreenplaySchema>;
+export type ComicPanelSpec = z.infer<typeof ComicPanelSpecSchema>;
+export type ComicScreenplay = z.infer<typeof ComicScreenplaySchema>;
 
 // ============================================
 // CHARACTER CONSISTENCY MANAGER
@@ -849,7 +849,7 @@ function buildCharacterPromptFragment(
 // MAIN GENERATION FUNCTION
 // ============================================
 
-export interface GenerateWebtoonPanelsOptions {
+export interface GenerateComicPanelsOptions {
   sceneId: string;
   scene: HNSScene;
   characters: HNSCharacter[];
@@ -859,10 +859,10 @@ export interface GenerateWebtoonPanelsOptions {
   progressCallback?: (current: number, total: number, status: string) => void;
 }
 
-export async function generateWebtoonPanels(
-  options: GenerateWebtoonPanelsOptions
+export async function generateComicPanels(
+  options: GenerateComicPanelsOptions
 ): Promise<{
-  screenplay: WebtoonScreenplay;
+  screenplay: ComicScreenplay;
   panels: any[];
   metadata: {
     total_generation_time: number;
@@ -874,7 +874,7 @@ export async function generateWebtoonPanels(
   const startTime = Date.now();
   const { scene, characters, setting, story, progressCallback } = options;
 
-  console.log(`\n🎬 ============= WEBTOON PANEL GENERATION START =============`);
+  console.log(`\n🎬 ============= COMIC PANEL GENERATION START =============`);
   console.log(`   Scene: ${scene.scene_title}`);
   console.log(`   Scene ID: ${scene.scene_id}`);
 
@@ -888,7 +888,7 @@ export async function generateWebtoonPanels(
     .map(c => `${c.name} - ${c.role}: ${c.motivation}`)
     .join('\n');
 
-  const screenplayPrompt = `You are an expert webtoon storyboard artist. Convert this narrative scene into a panel-by-panel screenplay optimized for vertical-scroll webtoons.
+  const screenplayPrompt = `You are an expert comic storyboard artist. Convert this narrative scene into a panel-by-panel screenplay optimized for vertical-scroll comics.
 
 SCENE INFORMATION:
 Title: ${scene.scene_title}
@@ -922,7 +922,7 @@ IMPORTANT: This is for a ${story.genre} story. Match the visual style and tone a
 
   const screenplayResult = await generateObject({
     model: gateway('openai/gpt-4o-mini'),
-    schema: WebtoonScreenplaySchema,
+    schema: ComicScreenplaySchema,
     prompt: screenplayPrompt,
     temperature: 0.7,
   });
@@ -964,7 +964,7 @@ IMPORTANT: This is for a ${story.genre} story. Match the visual style and tone a
       .join('. ');
 
     // Construct full image prompt
-    const imagePrompt = `Professional ${story.genre} webtoon panel, ${panelSpec.shot_type}, ${panelSpec.camera_angle}.
+    const imagePrompt = `Professional ${story.genre} comic panel, ${panelSpec.shot_type}, ${panelSpec.camera_angle}.
 
 SCENE: ${panelSpec.setting_focus}. ${setting.atmosphere || ''}.
 
@@ -976,8 +976,8 @@ ACTION: ${panelSpec.description}
 
 MOOD: ${panelSpec.mood}
 
-Style: Clean webtoon linework, vibrant colors, semi-realistic proportions, 16:9 widescreen format,
-professional ${story.genre} webtoon art style, cinematic composition, similar to Naver WEBTOON quality.
+Style: Clean comic linework, vibrant colors, semi-realistic proportions, 16:9 widescreen format,
+professional ${story.genre} comic art style, cinematic composition, similar to Naver COMIC quality.
 
 CRITICAL: Maintain exact character appearances - ${characterPrompts}`;
 
@@ -987,7 +987,7 @@ CRITICAL: Maintain exact character appearances - ${characterPrompts}`;
     const imageResult = await generateStoryImage({
       prompt: imagePrompt,
       storyId: story.story_id,
-      imageType: 'webtoon-panel',
+      imageType: 'comic-panel',
       style: 'vivid',
       quality: 'standard',
     });
@@ -997,7 +997,7 @@ CRITICAL: Maintain exact character appearances - ${characterPrompts}`;
 
     // Store panel in database
     const panelId = nanoid();
-    await db.insert(webtoonPanels).values({
+    await db.insert(comicPanels).values({
       id: panelId,
       sceneId: scene.scene_id,
       panelNumber: panelSpec.panel_number,
@@ -1033,7 +1033,7 @@ CRITICAL: Maintain exact character appearances - ${characterPrompts}`;
   progressCallback?.(100, 100, 'Panel generation complete!');
 
   const totalTime = Date.now() - startTime;
-  console.log(`\n✅ ============= WEBTOON PANEL GENERATION COMPLETE =============`);
+  console.log(`\n✅ ============= COMIC PANEL GENERATION COMPLETE =============`);
   console.log(`   Total Time: ${(totalTime / 1000).toFixed(2)}s`);
   console.log(`   Panels Generated: ${generatedPanels.length}`);
   console.log(`   Images Generated: ${generatedPanels.length}`);
@@ -1066,10 +1066,10 @@ export function calculateVerticalHeight(panels: any[]): number {
 
 ## Database Schema
 
-### New Table: `webtoon_panels`
+### New Table: `comic_panels`
 
 ```sql
-CREATE TABLE webtoon_panels (
+CREATE TABLE comic_panels (
   id VARCHAR(21) PRIMARY KEY,
   scene_id VARCHAR(21) NOT NULL REFERENCES scenes(id) ON DELETE CASCADE,
   panel_number INTEGER NOT NULL,
@@ -1093,20 +1093,20 @@ CREATE TABLE webtoon_panels (
   updated_at TIMESTAMPTZ DEFAULT NOW(),
 
   -- Indexes
-  INDEX idx_webtoon_panels_scene (scene_id),
-  INDEX idx_webtoon_panels_order (scene_id, panel_number)
+  INDEX idx_comic_panels_scene (scene_id),
+  INDEX idx_comic_panels_order (scene_id, panel_number)
 );
 ```
 
 ### Migration File
 
 ```typescript
-// src/lib/db/migrations/YYYYMMDDHHMMSS_add_webtoon_panels.ts
+// src/lib/db/migrations/YYYYMMDDHHMMSS_add_comic_panels.ts
 
 import { sql } from 'drizzle-orm';
 import { pgTable, varchar, integer, text, jsonb, timestamp, index } from 'drizzle-orm/pg-core';
 
-export const webtoonPanels = pgTable('webtoon_panels', {
+export const comicPanels = pgTable('comic_panels', {
   id: varchar('id', { length: 21 }).primaryKey(),
   sceneId: varchar('scene_id', { length: 21 }).notNull(),
   panelNumber: integer('panel_number').notNull(),
@@ -1125,8 +1125,8 @@ export const webtoonPanels = pgTable('webtoon_panels', {
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 }, (table) => ({
-  sceneIdx: index('idx_webtoon_panels_scene').on(table.sceneId),
-  orderIdx: index('idx_webtoon_panels_order').on(table.sceneId, table.panelNumber),
+  sceneIdx: index('idx_comic_panels_scene').on(table.sceneId),
+  orderIdx: index('idx_comic_panels_order').on(table.sceneId, table.panelNumber),
 }));
 ```
 
@@ -1134,9 +1134,9 @@ export const webtoonPanels = pgTable('webtoon_panels', {
 
 ## API Specification
 
-### Endpoint: `POST /api/webtoon/generate-panels`
+### Endpoint: `POST /api/comic/generate-panels`
 
-**Purpose**: Generate webtoon panels for a scene
+**Purpose**: Generate comic panels for a scene
 
 **Request**:
 ```typescript
@@ -1156,8 +1156,8 @@ export const webtoonPanels = pgTable('webtoon_panels', {
 // Final event
 {
   phase: 'complete',
-  screenplay: WebtoonScreenplay,
-  panels: WebtoonPanel[],
+  screenplay: ComicScreenplay,
+  panels: ComicPanel[],
   metadata: {
     total_generation_time: 45000,
     total_panels: 6,
@@ -1169,14 +1169,14 @@ export const webtoonPanels = pgTable('webtoon_panels', {
 **Implementation**:
 
 ```typescript
-// src/app/api/webtoon/generate-panels/route.ts
+// src/app/api/comic/generate-panels/route.ts
 
 import { NextRequest } from 'next/server';
 import { authenticateRequest, hasRequiredScope } from '@/lib/auth/dual-auth';
 import { db } from '@/lib/db';
 import { scenes, characters, settings, stories } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { generateWebtoonPanels } from '@/lib/ai/webtoon-panel-generator';
+import { generateComicPanels } from '@/lib/ai/comic-panel-generator';
 
 export async function POST(request: NextRequest) {
   try {
@@ -1235,7 +1235,7 @@ export async function POST(request: NextRequest) {
 
         try {
           // Generate panels with progress callbacks
-          const result = await generateWebtoonPanels({
+          const result = await generateComicPanels({
             sceneId,
             scene: scene as any,
             characters: sceneCharacters as any,
@@ -1273,7 +1273,7 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-### Endpoint: `GET /api/webtoon/[sceneId]/panels`
+### Endpoint: `GET /api/comic/[sceneId]/panels`
 
 **Purpose**: Retrieve generated panels for a scene
 
@@ -1301,26 +1301,26 @@ export async function POST(request: NextRequest) {
 
 ## UI/UX Considerations
 
-### Webtoon Viewer Component
+### Comic Viewer Component
 
 ```tsx
-// src/components/webtoon/WebtoonViewer.tsx
+// src/components/comic/ComicViewer.tsx
 
 'use client';
 
 import { useEffect, useState } from 'react';
 import { PanelRenderer } from './PanelRenderer';
 
-interface WebtoonViewerProps {
+interface ComicViewerProps {
   sceneId: string;
 }
 
-export function WebtoonViewer({ sceneId }: WebtoonViewerProps) {
+export function ComicViewer({ sceneId }: ComicViewerProps) {
   const [panels, setPanels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/webtoon/${sceneId}/panels`)
+    fetch(`/api/comic/${sceneId}/panels`)
       .then(res => res.json())
       .then(data => {
         setPanels(data.panels);
@@ -1333,7 +1333,7 @@ export function WebtoonViewer({ sceneId }: WebtoonViewerProps) {
   }
 
   return (
-    <div className="webtoon-container max-w-[1792px] mx-auto">
+    <div className="comic-container max-w-[1792px] mx-auto">
       {panels.map((panel, index) => (
         <div key={panel.id}>
           <PanelRenderer panel={panel} />
@@ -1355,7 +1355,7 @@ export function WebtoonViewer({ sceneId }: WebtoonViewerProps) {
 ### Panel Renderer with Dialogue Overlays
 
 ```tsx
-// src/components/webtoon/PanelRenderer.tsx
+// src/components/comic/PanelRenderer.tsx
 
 'use client';
 
@@ -1427,12 +1427,12 @@ function calculateSFXPosition(index: number) {
 ### Unit Tests
 
 ```typescript
-// __tests__/webtoon-panel-generator.test.ts
+// __tests__/comic-panel-generator.test.ts
 
 import { describe, it, expect } from '@jest/globals';
-import { generateWebtoonPanels } from '@/lib/ai/webtoon-panel-generator';
+import { generateComicPanels } from '@/lib/ai/comic-panel-generator';
 
-describe('Webtoon Panel Generator', () => {
+describe('Comic Panel Generator', () => {
   it('should generate 1-3 panels for standard scene', async () => {
     const mockScene = {
       scene_id: 'test-scene-1',
@@ -1441,7 +1441,7 @@ describe('Webtoon Panel Generator', () => {
       // ... full scene data
     };
 
-    const result = await generateWebtoonPanels({
+    const result = await generateComicPanels({
       sceneId: mockScene.scene_id,
       scene: mockScene,
       // ... other required params
@@ -1465,16 +1465,16 @@ describe('Webtoon Panel Generator', () => {
 ### Integration Tests
 
 ```typescript
-// __tests__/api/webtoon-generation.spec.ts
+// __tests__/api/comic-generation.spec.ts
 
 import { test, expect } from '@playwright/test';
 
-test.describe('Webtoon Panel Generation API', () => {
+test.describe('Comic Panel Generation API', () => {
   test('should generate panels via API', async ({ page }) => {
     // Navigate to scene
     await page.goto('/writing/test-story-id/scene/test-scene-id');
 
-    // Click "Generate Webtoon Panels" button
+    // Click "Generate Comic Panels" button
     await page.click('button:has-text("Generate Panels")');
 
     // Wait for SSE completion
@@ -1513,8 +1513,8 @@ test.describe('Webtoon Panel Generation API', () => {
 
 1. **Batch Generation**: Generate all panels for a story in one session to reduce API overhead
 2. **Caching**: Cache character visual descriptions to avoid regenerating prompts
-3. **Optional Feature**: Make webtoon panel generation opt-in (default to single scene image)
-4. **Progressive Enhancement**: Generate panels on-demand when user views scene in "webtoon mode"
+3. **Optional Feature**: Make comic panel generation opt-in (default to single scene image)
+4. **Progressive Enhancement**: Generate panels on-demand when user views scene in "comic mode"
 
 ---
 
@@ -1549,7 +1549,7 @@ test.describe('Webtoon Panel Generation API', () => {
 
 ### Phase 3: Platform Features
 
-1. **Webtoon Episode Builder**
+1. **Comic Episode Builder**
    - Combine multiple scenes into a single episode
    - Automatic chapter breaks and cliffhangers
    - Episode thumbnail generation
@@ -1574,9 +1574,9 @@ test.describe('Webtoon Panel Generation API', () => {
    - Perchance AI Script Generator: https://perchance.org/ai-script-generator
    - Squibler Free AI Script Generator: https://www.squibler.io/ai-script-generator/
 
-2. **Webtoon Storyboarding**:
+2. **Comic Storyboarding**:
    - LTX Studio AI Storyboard Generator: https://ltx.studio/platform/ai-storyboard-generator
-   - Medium: "Team BEIAI and how to make an AI webcomic/webtoon": https://medium.com/loool/team-beiai-and-how-to-make-an-ai-webcomic-webtoon-7b55e2aa55a
+   - Medium: "Team BEIAI and how to make an AI webcomic/comic": https://medium.com/loool/team-beiai-and-how-to-make-an-ai-webcomic-comic-7b55e2aa55a
 
 3. **Technical Implementation**:
    - MIT Technology Review: "Lore Machine's generative AI to turn story into comic": https://www.technologyreview.com/2024/03/05/1089458/
@@ -1594,7 +1594,7 @@ test.describe('Webtoon Panel Generation API', () => {
 
 ## Appendix: Example Workflow
 
-### Complete Example: From Scene Text to Webtoon Panels
+### Complete Example: From Scene Text to Comic Panels
 
 **Input Scene** (HNSScene):
 ```
@@ -1699,27 +1699,27 @@ Outcome: failure_with_discovery (Sarah doesn't get a confession, but confirms hi
 
 **Generated Images**: 3 DALL-E 3 images (1792x1024 each) with consistent character appearances
 
-**Final Output**: Vertical-scroll webtoon ready for reading with automatic speech bubble overlays and SFX text
+**Final Output**: Vertical-scroll comic ready for reading with automatic speech bubble overlays and SFX text
 
 ---
 
 ## Conclusion
 
-This specification provides a complete roadmap for implementing webtoon panel generation from narrative scene text. The system leverages existing Fictures infrastructure (HNS schema, image generation, evaluation) while introducing new capabilities specifically optimized for the vertical-scroll webtoon format.
+This specification provides a complete roadmap for implementing comic panel generation from narrative scene text. The system leverages existing Fictures infrastructure (HNS schema, image generation, evaluation) while introducing new capabilities specifically optimized for the vertical-scroll comic format.
 
 **Key Advantages**:
 - ✅ Fully automated scene-to-panel conversion
 - ✅ Character consistency through detailed prompt engineering
-- ✅ Professional webtoon formatting (gutters, pacing, shot variety)
+- ✅ Professional comic formatting (gutters, pacing, shot variety)
 - ✅ Integration with existing story generation pipeline
 - ✅ Cost-effective (~$0.41 per scene)
 - ✅ Extensible for future enhancements (animation, interactivity)
 
 **Next Steps**:
-1. Implement core `webtoon-panel-generator.ts` service
+1. Implement core `comic-panel-generator.ts` service
 2. Create database schema and migration
 3. Build API endpoints
-4. Develop WebtoonViewer UI component
+4. Develop ComicViewer UI component
 5. Test with sample scenes
 6. Deploy and iterate based on user feedback
 

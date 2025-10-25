@@ -1,7 +1,7 @@
 /**
- * Webtoon Panel Generator Button Component
+ * Comic Panel Generator Button Component
  *
- * Provides a UI for generating webtoon panels from a scene.
+ * Provides a UI for generating comic panels from a scene.
  * Shows progress during generation and displays results.
  */
 
@@ -14,7 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/Progress';
 import { Wand2, CheckCircle2, AlertCircle, Image as ImageIcon } from 'lucide-react';
 
-interface WebtoonPanelGeneratorButtonProps {
+interface ComicPanelGeneratorButtonProps {
   sceneId: string;
   sceneTitle?: string;
   disabled?: boolean;
@@ -42,12 +42,12 @@ interface GenerationResult {
   };
 }
 
-export function WebtoonPanelGeneratorButton({
+export function ComicPanelGeneratorButton({
   sceneId,
   sceneTitle = 'Scene',
   disabled = false,
   onComplete,
-}: WebtoonPanelGeneratorButtonProps) {
+}: ComicPanelGeneratorButtonProps) {
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
   const [result, setResult] = useState<GenerationResult | null>(null);
@@ -60,7 +60,7 @@ export function WebtoonPanelGeneratorButton({
     setError(null);
 
     try {
-      const response = await fetch('/api/webtoon/generate-panels', {
+      const response = await fetch('/api/comic/generate-panels', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -115,8 +115,8 @@ export function WebtoonPanelGeneratorButton({
       }
 
     } catch (err) {
-      console.error('Webtoon generation error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to generate webtoon panels');
+      console.error('Comic generation error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to generate comic panels');
     } finally {
       setGenerating(false);
     }
@@ -129,12 +129,12 @@ export function WebtoonPanelGeneratorButton({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <ImageIcon className="h-5 w-5" />
-          Webtoon Panel Generation
+          Comic Panel Generation
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Convert this scene into a visual webtoon format with AI-generated panels,
+          Convert this scene into a visual comic format with AI-generated panels,
           dialogue bubbles, and sound effects.
         </p>
 
@@ -148,7 +148,7 @@ export function WebtoonPanelGeneratorButton({
             className="w-full"
           >
             <Wand2 className="mr-2 h-5 w-5" />
-            Generate Webtoon Panels
+            Generate Comic Panels
           </Button>
         )}
 
@@ -188,11 +188,11 @@ export function WebtoonPanelGeneratorButton({
                 size="sm"
                 className="mt-4"
                 onClick={() => {
-                  // Navigate to webtoon view or reload
+                  // Navigate to comic view or reload
                   window.location.reload();
                 }}
               >
-                View Webtoon
+                View Comic
               </Button>
             </AlertDescription>
           </Alert>

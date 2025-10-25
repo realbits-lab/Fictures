@@ -1,24 +1,24 @@
 /**
- * Webtoon Panel Generator
+ * Comic Panel Generator
  *
  * Main orchestrator for converting HNS scene narrative into visually compelling
- * webtoon panels with AI-generated images optimized for vertical scroll.
+ * comic panels with AI-generated images optimized for vertical scroll.
  */
 
 import { nanoid } from 'nanoid';
 import type { HNSScene, HNSCharacter, HNSSetting } from '@/types/hns';
 import { generateStoryImage } from '@/lib/services/image-generation';
 import { db } from '@/lib/db';
-import { webtoonPanels } from '@/lib/db/schema';
-import { convertSceneToScreenplay, type WebtoonScreenplay } from './screenplay-converter';
+import { comicPanels } from '@/lib/db/schema';
+import { convertSceneToScreenplay, type ComicScreenplay } from './screenplay-converter';
 import { buildPanelCharacterPrompts, extractKeyPhysicalTraits } from '@/lib/services/character-consistency';
-import { calculateTotalHeight, estimateReadingTime } from '@/lib/services/webtoon-layout';
+import { calculateTotalHeight, estimateReadingTime } from '@/lib/services/comic-layout';
 
 // ============================================
 // TYPE DEFINITIONS
 // ============================================
 
-export interface GenerateWebtoonPanelsOptions {
+export interface GenerateComicPanelsOptions {
   sceneId: string;
   scene: HNSScene;
   characters: HNSCharacter[];
@@ -40,8 +40,8 @@ export interface GeneratedPanel {
   metadata: any;
 }
 
-export interface WebtoonPanelGenerationResult {
-  screenplay: WebtoonScreenplay;
+export interface ComicPanelGenerationResult {
+  screenplay: ComicScreenplay;
   panels: GeneratedPanel[];
   metadata: {
     total_generation_time: number;
@@ -56,14 +56,14 @@ export interface WebtoonPanelGenerationResult {
 // MAIN GENERATION FUNCTION
 // ============================================
 
-export async function generateWebtoonPanels(
-  options: GenerateWebtoonPanelsOptions
-): Promise<WebtoonPanelGenerationResult> {
+export async function generateComicPanels(
+  options: GenerateComicPanelsOptions
+): Promise<ComicPanelGenerationResult> {
 
   const startTime = Date.now();
   const { scene, characters, setting, story, targetPanelCount, progressCallback } = options;
 
-  console.log(`\n🎬 ============= WEBTOON PANEL GENERATION START =============`);
+  console.log(`\n🎬 ============= COMIC PANEL GENERATION START =============`);
   console.log(`   Scene: ${scene.scene_title || scene.title}`);
   console.log(`   Scene ID: ${scene.scene_id || scene.id}`);
   console.log(`   Genre: ${story.genre}`);
@@ -141,7 +141,7 @@ export async function generateWebtoonPanels(
     const imageResult = await generateStoryImage({
       prompt: imagePrompt,
       storyId: story.story_id,
-      imageType: 'webtoon-panel',
+      imageType: 'comic-panel',
       style: 'vivid',
       quality: 'standard',
     });
@@ -151,7 +151,7 @@ export async function generateWebtoonPanels(
 
     // Store panel in database
     const panelId = nanoid();
-    await db.insert(webtoonPanels).values({
+    await db.insert(comicPanels).values({
       id: panelId,
       sceneId: scene.scene_id || scene.id,
       panelNumber: panelSpec.panel_number,
@@ -203,7 +203,7 @@ export async function generateWebtoonPanels(
   const readingTime = estimateReadingTime(generatedPanels);
   const totalTime = Date.now() - startTime;
 
-  console.log(`\n✅ ============= WEBTOON PANEL GENERATION COMPLETE =============`);
+  console.log(`\n✅ ============= COMIC PANEL GENERATION COMPLETE =============`);
   console.log(`   Total Time: ${(totalTime / 1000).toFixed(2)}s`);
   console.log(`   Panels Generated: ${generatedPanels.length}`);
   console.log(`   Images Generated: ${generatedPanels.length}`);
@@ -254,7 +254,7 @@ function buildPanelImagePrompt(options: BuildPanelImagePromptOptions): string {
     mood,
   } = options;
 
-  const prompt = `Professional ${genre} webtoon panel, ${shotType}, ${cameraAngle}.
+  const prompt = `Professional ${genre} comic panel, ${shotType}, ${cameraAngle}.
 
 SCENE: ${settingFocus}${settingAtmosphere ? `. ${settingAtmosphere}` : ''}.
 
@@ -266,8 +266,8 @@ ACTION: ${description}
 
 MOOD: ${mood}
 
-Style: Clean webtoon linework, vibrant colors, semi-realistic proportions, 16:9 widescreen format,
-professional ${genre} webtoon art style, cinematic composition, similar to Naver WEBTOON quality.
+Style: Clean comic linework, vibrant colors, semi-realistic proportions, 16:9 widescreen format,
+professional ${genre} comic art style, cinematic composition, similar to Naver COMIC quality.
 
 CRITICAL: Maintain exact character appearances - ${keyTraits}`;
 

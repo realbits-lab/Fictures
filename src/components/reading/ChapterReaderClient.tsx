@@ -8,7 +8,7 @@ import { useChapterScenes } from '@/hooks/useChapterScenes';
 import { useScenePrefetch } from '@/hooks/useScenePrefetch';
 import { ProgressIndicator } from './ProgressIndicator';
 import { CommentSection } from './CommentSection';
-import { WebtoonViewer } from '@/components/webtoon/webtoon-viewer';
+import { ComicViewer } from '@/components/comic/comic-viewer';
 import type { Chapter } from '@/hooks/useStoryReader';
 import { trackReading } from '@/lib/analytics/google-analytics';
 
@@ -30,8 +30,8 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [allScenes, setAllScenes] = useState<Array<{ scene: any; chapterId: string; chapterTitle: string; partTitle?: string }>>([]);
 
-  // View mode state (text or webtoon)
-  const [viewMode, setViewMode] = useState<'text' | 'webtoon'>('text');
+  // View mode state (text or comic)
+  const [viewMode, setViewMode] = useState<'text' | 'comic'>('text');
 
   // Immersive reading mode state
   const [isUIVisible, setIsUIVisible] = useState(true);
@@ -736,15 +736,15 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
                   📝 Text
                 </button>
                 <button
-                  onClick={() => setViewMode('webtoon')}
+                  onClick={() => setViewMode('comic')}
                   className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
-                    viewMode === 'webtoon'
+                    viewMode === 'comic'
                       ? 'bg-gray-700 dark:bg-gray-600 text-white'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                   }`}
-                  title="Webtoon View"
+                  title="Comic View"
                 >
-                  🎨 Webtoon
+                  🎨 Comic
                 </button>
               </div>
             )}
@@ -945,8 +945,8 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
                         </div>
                       </>
                     ) : (
-                      /* Webtoon View */
-                      <WebtoonViewer
+                      /* Comic View */
+                      <ComicViewer
                         sceneId={selectedScene.id}
                         className="w-full"
                       />

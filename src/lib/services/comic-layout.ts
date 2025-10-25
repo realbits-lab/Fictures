@@ -1,20 +1,20 @@
 /**
- * Webtoon Layout Calculator
+ * Comic Layout Calculator
  *
  * Calculates vertical scroll layout dimensions and provides
- * utilities for webtoon panel positioning and spacing.
+ * utilities for comic panel positioning and spacing.
  */
 
 // ============================================
 // CONSTANTS
 // ============================================
 
-export const WEBTOON_CONSTANTS = {
+export const COMIC_CONSTANTS = {
   // Standard DALL-E 3 16:9 dimensions
   PANEL_WIDTH: 1792,
   PANEL_HEIGHT: 1024,
 
-  // Gutter spacing guidelines (WEBTOON platform standards)
+  // Gutter spacing guidelines (COMIC platform standards)
   GUTTER_MIN: 200,           // Minimum space between panels
   GUTTER_BEAT_CHANGE: 400,   // Space for beat/moment changes
   GUTTER_SCENE_TRANSITION: 800, // Space for major scene transitions
@@ -50,15 +50,15 @@ export function calculateVerticalLayout(
   const layoutPanels: PanelLayoutInfo[] = [];
 
   for (const panel of panels) {
-    const gutterAfter = panel.gutter_after || WEBTOON_CONSTANTS.GUTTER_MIN;
+    const gutterAfter = panel.gutter_after || COMIC_CONSTANTS.GUTTER_MIN;
 
     const layoutInfo: PanelLayoutInfo = {
       panel_id: panel.id,
       panel_number: panel.panel_number,
       y_position: currentY,
-      height: WEBTOON_CONSTANTS.PANEL_HEIGHT,
+      height: COMIC_CONSTANTS.PANEL_HEIGHT,
       gutter_after: gutterAfter,
-      total_height: currentY + WEBTOON_CONSTANTS.PANEL_HEIGHT + gutterAfter,
+      total_height: currentY + COMIC_CONSTANTS.PANEL_HEIGHT + gutterAfter,
     };
 
     layoutPanels.push(layoutInfo);
@@ -78,8 +78,8 @@ export function calculateTotalHeight(
   panels: Array<{ gutter_after?: number }>
 ): number {
   return panels.reduce((total, panel) => {
-    const gutterAfter = panel.gutter_after || WEBTOON_CONSTANTS.GUTTER_MIN;
-    return total + WEBTOON_CONSTANTS.PANEL_HEIGHT + gutterAfter;
+    const gutterAfter = panel.gutter_after || COMIC_CONSTANTS.GUTTER_MIN;
+    return total + COMIC_CONSTANTS.PANEL_HEIGHT + gutterAfter;
   }, 0);
 }
 
@@ -91,19 +91,19 @@ export function validateGutterSpacing(gutterAfter: number): {
   adjustedValue: number;
   warning?: string;
 } {
-  if (gutterAfter < WEBTOON_CONSTANTS.GUTTER_MIN) {
+  if (gutterAfter < COMIC_CONSTANTS.GUTTER_MIN) {
     return {
       valid: false,
-      adjustedValue: WEBTOON_CONSTANTS.GUTTER_MIN,
-      warning: `Gutter ${gutterAfter}px is below minimum. Adjusted to ${WEBTOON_CONSTANTS.GUTTER_MIN}px.`
+      adjustedValue: COMIC_CONSTANTS.GUTTER_MIN,
+      warning: `Gutter ${gutterAfter}px is below minimum. Adjusted to ${COMIC_CONSTANTS.GUTTER_MIN}px.`
     };
   }
 
-  if (gutterAfter > WEBTOON_CONSTANTS.GUTTER_MAX) {
+  if (gutterAfter > COMIC_CONSTANTS.GUTTER_MAX) {
     return {
       valid: false,
-      adjustedValue: WEBTOON_CONSTANTS.GUTTER_MAX,
-      warning: `Gutter ${gutterAfter}px exceeds maximum. Adjusted to ${WEBTOON_CONSTANTS.GUTTER_MAX}px.`
+      adjustedValue: COMIC_CONSTANTS.GUTTER_MAX,
+      warning: `Gutter ${gutterAfter}px exceeds maximum. Adjusted to ${COMIC_CONSTANTS.GUTTER_MAX}px.`
     };
   }
 
@@ -123,7 +123,7 @@ export function suggestGutterSpacing(context: {
   is_climactic_moment?: boolean;
 }): number {
   if (context.is_scene_transition) {
-    return WEBTOON_CONSTANTS.GUTTER_SCENE_TRANSITION;
+    return COMIC_CONSTANTS.GUTTER_SCENE_TRANSITION;
   }
 
   if (context.is_climactic_moment) {
@@ -132,11 +132,11 @@ export function suggestGutterSpacing(context: {
   }
 
   if (context.is_beat_change) {
-    return WEBTOON_CONSTANTS.GUTTER_BEAT_CHANGE;
+    return COMIC_CONSTANTS.GUTTER_BEAT_CHANGE;
   }
 
   if (context.is_continuous_action) {
-    return WEBTOON_CONSTANTS.GUTTER_MIN;
+    return COMIC_CONSTANTS.GUTTER_MIN;
   }
 
   // Default: moderate spacing
@@ -151,12 +151,12 @@ export function calculateResponsiveDimensions(viewportWidth: number): {
   panel_height: number;
   scale: number;
 } {
-  const maxWidth = Math.min(viewportWidth, WEBTOON_CONSTANTS.MAX_CONTAINER_WIDTH);
-  const scale = maxWidth / WEBTOON_CONSTANTS.PANEL_WIDTH;
+  const maxWidth = Math.min(viewportWidth, COMIC_CONSTANTS.MAX_CONTAINER_WIDTH);
+  const scale = maxWidth / COMIC_CONSTANTS.PANEL_WIDTH;
 
   return {
     panel_width: maxWidth,
-    panel_height: WEBTOON_CONSTANTS.PANEL_HEIGHT * scale,
+    panel_height: COMIC_CONSTANTS.PANEL_HEIGHT * scale,
     scale: scale,
   };
 }

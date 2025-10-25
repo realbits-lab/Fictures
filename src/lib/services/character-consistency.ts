@@ -2,7 +2,7 @@
  * Character Consistency Service
  *
  * Manages character visual profiles to ensure consistent appearance
- * across all webtoon panels, working within DALL-E 3's constraints
+ * across all comic panels, working within DALL-E 3's constraints
  * (no reference image support).
  */
 

@@ -1,18 +1,18 @@
 import { MainLayout } from '@/components/layout';
-import { WebtoonReaderClient } from '@/components/webtoon/webtoon-reader-client';
+import { ComicReaderClient } from '@/components/comic/comic-reader-client';
 import { getStoryWithStructure } from '@/lib/db/cached-queries';
 import { notFound } from 'next/navigation';
 
-interface WebtoonPageProps {
+interface ComicPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function WebtoonPage({ params }: WebtoonPageProps) {
+export default async function ComicPage({ params }: ComicPageProps) {
   const pageLoadStart = Date.now();
-  console.log('\n🎨 [SSR] WebtoonPage loading started');
+  console.log('\n🎨 [SSR] ComicPage loading started');
 
   const { id } = await params;
-  console.log(`🎨 [SSR] Loading story for webtoon: ${id}`);
+  console.log(`🎨 [SSR] Loading story for comic: ${id}`);
 
   // Fetch story structure from Redis cache (SSR)
   const ssrFetchStart = Date.now();
@@ -30,11 +30,11 @@ export default async function WebtoonPage({ params }: WebtoonPageProps) {
   }
 
   const pageLoadDuration = Date.now() - pageLoadStart;
-  console.log(`🏁 [SSR] WebtoonPage rendering complete in ${pageLoadDuration}ms\n`);
+  console.log(`🏁 [SSR] ComicPage rendering complete in ${pageLoadDuration}ms\n`);
 
   return (
     <MainLayout>
-      <WebtoonReaderClient storyId={id} initialData={story} />
+      <ComicReaderClient storyId={id} initialData={story} />
     </MainLayout>
   );
 }

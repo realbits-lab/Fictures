@@ -2,7 +2,7 @@
  * Screenplay Converter Service
  *
  * Converts narrative scene text into panel-by-panel screenplay format
- * optimized for vertical-scroll webtoons.
+ * optimized for vertical-scroll comics.
  */
 
 import { generateObject } from 'ai';
@@ -14,7 +14,7 @@ import type { HNSScene, HNSCharacter, HNSSetting } from '@/types/hns';
 // SCHEMA DEFINITIONS
 // ============================================
 
-export const WebtoonPanelSpecSchema = z.object({
+export const ComicPanelSpecSchema = z.object({
   panel_number: z.number().min(1),
   shot_type: z.enum([
     'establishing_shot',
@@ -44,17 +44,17 @@ export const WebtoonPanelSpecSchema = z.object({
   mood: z.string().describe('Overall emotional tone of the panel')
 });
 
-export const WebtoonScreenplaySchema = z.object({
+export const ComicScreenplaySchema = z.object({
   scene_id: z.string(),
   scene_title: z.string(),
   total_panels: z.number().min(1).max(3),
-  panels: z.array(WebtoonPanelSpecSchema),
+  panels: z.array(ComicPanelSpecSchema),
   pacing_notes: z.string().optional(),
   narrative_arc: z.string().describe('How the panels collectively tell the scene story')
 });
 
-export type WebtoonPanelSpec = z.infer<typeof WebtoonPanelSpecSchema>;
-export type WebtoonScreenplay = z.infer<typeof WebtoonScreenplaySchema>;
+export type ComicPanelSpec = z.infer<typeof ComicPanelSpecSchema>;
+export type ComicScreenplay = z.infer<typeof ComicScreenplaySchema>;
 
 // ============================================
 // SCREENPLAY CONVERSION
@@ -70,7 +70,7 @@ export interface ConvertToScreenplayOptions {
 
 export async function convertSceneToScreenplay(
   options: ConvertToScreenplayOptions
-): Promise<WebtoonScreenplay> {
+): Promise<ComicScreenplay> {
 
   const { scene, characters, setting, storyGenre, targetPanelCount } = options;
 
@@ -82,7 +82,7 @@ export async function convertSceneToScreenplay(
     .join('\n');
 
   // Build screenplay prompt
-  const screenplayPrompt = `You are an expert webtoon storyboard artist. Convert this narrative scene into a panel-by-panel screenplay optimized for vertical-scroll webtoons.
+  const screenplayPrompt = `You are an expert comic storyboard artist. Convert this narrative scene into a panel-by-panel screenplay optimized for vertical-scroll comics.
 
 SCENE INFORMATION:
 Title: ${scene.scene_title || scene.title}
@@ -140,13 +140,13 @@ CAMERA ANGLE GUIDANCE:
 
 IMPORTANT: This is for a ${storyGenre} story. Match the visual style and tone accordingly.
 
-Return your response as a valid JSON object matching the WebtoonScreenplay schema.`;
+Return your response as a valid JSON object matching the ComicScreenplay schema.`;
 
   console.log(`   Sending screenplay generation request...`);
 
   const result = await generateObject({
     model: gateway('openai/gpt-4o-mini'),
-    schema: WebtoonScreenplaySchema,
+    schema: ComicScreenplaySchema,
     prompt: screenplayPrompt,
     temperature: 0.7,
   });

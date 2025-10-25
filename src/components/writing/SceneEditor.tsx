@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent, Button } from "@/components/ui";
 import { SceneWriting } from "./SceneWriting";
-import { WebtoonPanelGeneratorButton } from "@/components/webtoon/webtoon-panel-generator-button";
+import { ComicPanelGeneratorButton } from "@/components/comic/comic-panel-generator-button";
 import yaml from "js-yaml";
 
 export interface SceneData {
@@ -207,9 +207,9 @@ export function SceneEditor({
         </CardContent>
       </Card>
 
-      {/* Webtoon Panel Generation */}
+      {/* Comic Panel Generation */}
       {sceneId && (
-        <WebtoonPanelGeneratorButton
+        <ComicPanelGeneratorButton
           sceneId={sceneId}
           sceneTitle={sceneData.summary}
           disabled={disabled}

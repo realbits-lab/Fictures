@@ -1,10 +1,10 @@
 import { MainLayout } from "@/components/layout";
-import { WebtoonBrowse } from "@/components/webtoon/webtoon-browse";
+import { ComicBrowse } from "@/components/comic/comic-browse";
 
-export default function WebtoonBrowsePage() {
+export default function ComicBrowsePage() {
   return (
     <MainLayout>
-      <WebtoonBrowse />
+      <ComicBrowse />
     </MainLayout>
   );
 }

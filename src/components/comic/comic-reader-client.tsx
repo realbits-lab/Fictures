@@ -1,7 +1,7 @@
 /**
- * Webtoon Reader Client Component
+ * Comic Reader Client Component
  *
- * Dedicated webtoon reading interface that displays scenes as webtoon panels
+ * Dedicated comic reading interface that displays scenes as comic panels
  * instead of text. Optimized for vertical scroll reading experience.
  */
 
@@ -11,23 +11,23 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useStoryReader } from '@/hooks/useStoryReader';
 import { useChapterScenes } from '@/hooks/useChapterScenes';
-import { WebtoonViewer } from '@/components/webtoon/webtoon-viewer';
+import { ComicViewer } from '@/components/comic/comic-viewer';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
-interface WebtoonReaderClientProps {
+interface ComicReaderClientProps {
   storyId: string;
   initialData?: any;
 }
 
-export function WebtoonReaderClient({ storyId, initialData }: WebtoonReaderClientProps) {
+export function ComicReaderClient({ storyId, initialData }: ComicReaderClientProps) {
   const componentId = useRef(Math.random().toString(36).substring(7));
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [allScenes, setAllScenes] = useState<Array<{ scene: any; chapterId: string; chapterTitle: string; partTitle?: string }>>([]);
 
-  console.log(`[${componentId.current}] 🎨 WebtoonReaderClient MOUNT - Story: ${storyId}`);
+  console.log(`[${componentId.current}] 🎨 ComicReaderClient MOUNT - Story: ${storyId}`);
 
   // Fetch story data
   const {
@@ -114,7 +114,7 @@ export function WebtoonReaderClient({ storyId, initialData }: WebtoonReaderClien
       <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading webtoon...</p>
+          <p className="text-gray-600 dark:text-gray-400">Loading comic...</p>
         </div>
       </div>
     );
@@ -217,12 +217,12 @@ export function WebtoonReaderClient({ storyId, initialData }: WebtoonReaderClien
           />
         )}
 
-        {/* Webtoon Content */}
+        {/* Comic Content */}
         <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
           {selectedScene ? (
             <div className="max-w-[1792px] mx-auto">
-              {/* Webtoon Viewer */}
-              <WebtoonViewer
+              {/* Comic Viewer */}
+              <ComicViewer
                 sceneId={selectedScene.id}
                 className="pb-8"
               />

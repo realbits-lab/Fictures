@@ -1,8 +1,8 @@
 /**
- * Webtoon Browse Component
+ * Comic Browse Component
  *
- * Displays a list of stories that have webtoon panels available.
- * Similar to the regular Browse component but filtered for webtoon content.
+ * Displays a list of stories that have comic panels available.
+ * Similar to the regular Browse component but filtered for comic content.
  */
 
 "use client";
@@ -12,7 +12,7 @@ import { usePublishedStories } from "@/lib/hooks/use-page-cache";
 import { Skeleton } from "@/components/ui/SkeletonLoader";
 import Link from "next/link";
 
-function WebtoonCardSkeleton() {
+function ComicCardSkeleton() {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
       <Skeleton className="h-48 w-full rounded-t-lg" />
@@ -26,23 +26,23 @@ function WebtoonCardSkeleton() {
   );
 }
 
-export function WebtoonBrowse() {
+export function ComicBrowse() {
   const { data, isLoading, error } = usePublishedStories();
-  const [storiesWithWebtoons, setStoriesWithWebtoons] = useState<any[]>([]);
+  const [storiesWithComics, setStoriesWithComics] = useState<any[]>([]);
 
   const stories = data?.stories || [];
 
-  // Filter stories that have webtoon panels
+  // Filter stories that have comic panels
   useEffect(() => {
-    const fetchWebtoonAvailability = async () => {
+    const fetchComicAvailability = async () => {
       if (!stories.length) return;
 
       // For now, show all published stories
-      // In production, you'd check which stories have webtoon panels
-      setStoriesWithWebtoons(stories);
+      // In production, you'd check which stories have comic panels
+      setStoriesWithComics(stories);
     };
 
-    fetchWebtoonAvailability();
+    fetchComicAvailability();
   }, [stories]);
 
   // Loading state
@@ -55,7 +55,7 @@ export function WebtoonBrowse() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
-            <WebtoonCardSkeleton key={i} />
+            <ComicCardSkeleton key={i} />
           ))}
         </div>
       </div>
@@ -68,10 +68,10 @@ export function WebtoonBrowse() {
       <div className="container mx-auto px-4 py-8">
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
           <h2 className="text-xl font-bold text-red-900 dark:text-red-100 mb-2">
-            Failed to Load Webtoons
+            Failed to Load Comics
           </h2>
           <p className="text-red-700 dark:text-red-300">
-            {error.message || 'An error occurred while loading webtoons.'}
+            {error.message || 'An error occurred while loading comics.'}
           </p>
         </div>
       </div>
@@ -79,16 +79,16 @@ export function WebtoonBrowse() {
   }
 
   // Empty state
-  if (storiesWithWebtoons.length === 0) {
+  if (storiesWithComics.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-20">
           <div className="text-6xl mb-4">🎨</div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            No Webtoons Available Yet
+            No Comics Available Yet
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            Check back soon for webtoon adaptations of your favorite stories!
+            Check back soon for comic adaptations of your favorite stories!
           </p>
         </div>
       </div>
@@ -100,16 +100,16 @@ export function WebtoonBrowse() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-          🎨 Webtoon Gallery
+          🎨 Comic Gallery
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Experience stories in stunning visual webtoon format
+          Experience stories in stunning visual comic format
         </p>
       </div>
 
-      {/* Webtoon Grid */}
+      {/* Comic Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {storiesWithWebtoons.map((story) => (
+        {storiesWithComics.map((story) => (
           <Link
             key={story.id}
             href={`/comics/${story.id}`}
@@ -129,9 +129,9 @@ export function WebtoonBrowse() {
                   📖
                 </div>
               )}
-              {/* Webtoon Badge */}
+              {/* Comic Badge */}
               <div className="absolute top-2 right-2 bg-purple-600 text-white text-xs font-bold px-2 py-1 rounded">
-                WEBTOON
+                COMIC
               </div>
             </div>
 
@@ -158,7 +158,7 @@ export function WebtoonBrowse() {
 
               {/* Read Button */}
               <div className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded text-center transition-colors">
-                Read Webtoon
+                Read Comic
               </div>
             </div>
           </Link>
@@ -166,9 +166,9 @@ export function WebtoonBrowse() {
       </div>
 
       {/* Count */}
-      {storiesWithWebtoons.length > 0 && (
+      {storiesWithComics.length > 0 && (
         <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-          Showing {storiesWithWebtoons.length} webtoon{storiesWithWebtoons.length !== 1 ? 's' : ''}
+          Showing {storiesWithComics.length} comic{storiesWithComics.length !== 1 ? 's' : ''}
         </div>
       )}
     </div>
