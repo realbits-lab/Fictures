@@ -38,6 +38,7 @@ This file provides guidance to Claude Code when working with this repository.
 - **Claude Code Skills**: Project-specific skills in `.claude/skills/{skill-name}/` directories
   - Each skill has `SKILL.md` with YAML frontmatter
   - `story-generator/SKILL.md`: Complete story generation with HNS methodology
+  - `story-remover/SKILL.md`: Complete story removal with database and Blob cleanup
   - Skills are model-invoked (Claude activates automatically based on request)
 
 ## Database Management
@@ -225,6 +226,53 @@ dotenv --file .env.local run node scripts/generate-complete-story.mjs --publish 
 - User says "create" → auto-publish
 - User says "generate" or "write" → draft only
 - Provides real-time progress updates and final summary with links
+
+## Story Removal
+
+**Complete Story Removal Scripts:**
+- **Single story**: `scripts/remove-story.mjs`
+- **All stories**: `scripts/remove-all-stories.mjs`
+- **Authentication**: Uses writer@fictures.xyz from `.auth/user.json`
+- **API Endpoint**: `DELETE /api/stories/{id}` (cascading deletion)
+
+**Usage:**
+```bash
+# Remove single story
+dotenv --file .env.local run node scripts/remove-story.mjs STORY_ID
+
+# Dry run to preview deletion
+dotenv --file .env.local run node scripts/remove-story.mjs STORY_ID --dry-run
+
+# Remove all stories (requires confirmation)
+dotenv --file .env.local run node scripts/remove-all-stories.mjs --confirm
+
+# Dry run for all stories
+dotenv --file .env.local run node scripts/remove-all-stories.mjs --dry-run
+
+# Background execution with logging
+dotenv --file .env.local run node scripts/remove-story.mjs STORY_ID > logs/story-removal.log 2>&1 &
+```
+
+**What Gets Removed:**
+- **Database records**: story, parts, chapters, scenes, characters, settings
+- **Vercel Blob images**: character portraits (1024x1024), setting visuals (1792x1024)
+- **Community data**: posts, likes, replies, bookmarks
+- **Analytics data**: reading sessions, insights, events
+
+**Safety Features:**
+- Confirmation prompts for bulk operations
+- Dry-run mode to preview deletions
+- Transaction-based for atomicity
+- Audit logging of deletions
+- Owner verification (only story owner or admin can delete)
+
+**Claude Code Skill:**
+- Use the `story-remover` skill in `.claude/skills/story-remover.md`
+- Skill handles complete workflow: identification, confirmation, execution, and cleanup reporting
+- Automatically uses writer@fictures.xyz credentials
+- Supports single and bulk story removal
+- Always confirms before permanent deletion
+- Reports detailed cleanup summary with counts
 
 ## Code Guidelines
 
