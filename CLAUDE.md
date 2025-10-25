@@ -34,6 +34,9 @@ This file provides guidance to Claude Code when working with this repository.
 - **Script Files**: Always write script files in `scripts/` directory
   - Example: `scripts/capture-auth-manual.mjs` for authentication capture
   - Example: `scripts/test-auto-login.mjs` for testing automated login
+  - Main script: `scripts/generate-complete-story.mjs` for full story generation
+- **Claude Code Skills**: Project-specific skills in `.claude/skills/` directory
+  - `story-generator.md`: Complete story generation with HNS methodology
 
 ## Database Management
 
@@ -171,6 +174,55 @@ REDIS_URL=***                      # Session storage
 2. **Development**: `dotenv --file .env.local run pnpm dev` (background process)
 3. **Testing**: `dotenv --file .env.local run npx playwright test --headless`
 4. **Building**: `pnpm build` (includes type checking)
+
+## Story Generation
+
+**Complete Story Generation Script:**
+- **Location**: `scripts/generate-complete-story.mjs`
+- **Authentication**: Uses writer@fictures.xyz from `.auth/user.json`
+- **API Endpoints**:
+  - `POST /api/stories/generate-hns` (story generation with SSE streaming)
+  - `PUT /api/stories/{id}/visibility` (publishing)
+
+**Usage:**
+```bash
+# Default prompt (draft)
+dotenv --file .env.local run node scripts/generate-complete-story.mjs
+
+# Custom prompt (draft)
+dotenv --file .env.local run node scripts/generate-complete-story.mjs "Your story idea here"
+
+# Custom prompt with auto-publish
+dotenv --file .env.local run node scripts/generate-complete-story.mjs --publish "Your story idea here"
+
+# Background execution with logging
+dotenv --file .env.local run node scripts/generate-complete-story.mjs --publish "Story prompt" > logs/story-generation.log 2>&1 &
+```
+
+**What It Generates:**
+- Story metadata (title, genre, premise, dramatic question, theme)
+- Parts (3-act structure)
+- Chapters (detailed chapter specifications)
+- Scenes (full scene content)
+- Characters (with AI-generated portrait images)
+- Settings (with AI-generated environment images)
+
+**Routes:**
+- All stories: `/writing`
+- Edit story: `/writing/{storyId}`
+- Read story: `/reading/{storyId}`
+- Community view: `/community/story/{storyId}` (published stories only)
+
+**Generation Time:** 3-15 minutes depending on story size
+
+**Claude Code Skill:**
+- Use the `story-generator` skill in `.claude/skills/story-generator.md`
+- Skill handles complete workflow: prompt gathering, execution, monitoring, and reporting
+- Automatically uses writer@fictures.xyz credentials
+- Supports both draft and published story generation
+- User says "create" → auto-publish
+- User says "generate" or "write" → draft only
+- Provides real-time progress updates and final summary with links
 
 ## Code Guidelines
 

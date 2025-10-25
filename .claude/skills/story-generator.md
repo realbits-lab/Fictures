@@ -1,136 +1,161 @@
-# Story Generator Skill
+# Story Generator
 
-Generate and publish complete AI stories with full structure including parts, chapters, scenes, characters, and settings.
+Generate complete AI-powered stories with full structure (parts, chapters, scenes, characters, settings) and optionally publish them to the community.
 
-## Purpose
+## When to Use This Skill
 
-This skill uses the `scripts/generate-complete-story.mjs` script to generate complete stories for the Fictures platform. It automates the entire story creation process using the HNS (Hook, Need, Setup) methodology.
+Use this skill when the user asks to:
+- **Generate** a story ("generate a story about...", "generate fiction...")
+- **Create** a story ("create a story about...", "create a new story...")
+- **Write** a story ("write a story about...", "write fiction...")
+- **Make** a story ("make a story about...", "make fiction...")
+
+**Important:** If the user says "create" or requests publishing, automatically publish the story after generation.
 
 ## What This Skill Does
 
-When invoked, this skill will:
-
-1. **Generate Story Structure** - Creates complete story with:
+1. **Asks for story prompt** if not provided
+2. **Generates complete story** using HNS (Hook, Need, Setup) methodology:
    - Story metadata (title, genre, premise, dramatic question, theme)
-   - Parts (story sections following 3-act structure)
-   - Chapters (within each part)
-   - Scenes (detailed scenes within chapters with full content)
-   - Characters (with AI-generated portraits)
+   - Parts (3-act structure)
+   - Chapters (detailed specifications)
+   - Scenes (complete content)
+   - Characters (with AI-generated portrait images)
    - Settings (with AI-generated environment images)
+3. **Saves to database** automatically
+4. **Publishes story** (if requested with "create" or "--publish" flag)
+5. **Reports results** with direct links
 
-2. **Publish to Database** - Automatically saves all content to the database
+## Usage Instructions
 
-3. **Provide URLs** - Returns direct links to view, edit, and read the story
+### Step 1: Determine If Publishing Is Needed
 
-## Authentication
+Check the user's request:
+- Contains "create"? → Auto-publish
+- Contains "generate" or "write" without "create"? → Generate only (draft)
+- User explicitly mentions "publish"? → Auto-publish
 
-The skill uses the **writer@fictures.xyz** account from `.auth/user.json`. This account has the following scopes:
-- stories:read
-- stories:write
-- chapters:read
-- chapters:write
-- analytics:read
-- ai:use
-- community:read
-- community:write
-- settings:read
+### Step 2: Get Story Prompt
 
-## How to Use This Skill
-
-### Step 1: Ask User for Story Prompt
-
-Always start by asking the user what kind of story they want to generate:
-
-**Example Questions:**
-- "What kind of story would you like to generate?"
-- "Describe the story you want me to create"
-- "What's your story idea?"
-
-### Step 2: Run the Script
-
-Execute the story generation script with the user's prompt:
-
-```bash
-dotenv --file .env.local run node scripts/generate-complete-story.mjs "USER_STORY_PROMPT"
+If the user hasn't provided a story idea, ask:
+```
+What kind of story would you like me to create?
 ```
 
-**Important**: Run as a background process with output redirection to monitor progress:
+Be specific about what makes a good prompt:
+- Genre (mystery, sci-fi, fantasy, etc.)
+- Setting (where the story takes place)
+- Main conflict or theme
+- Characters (optional but helpful)
 
+### Step 3: Run Generation Script
+
+**For draft (generate/write):**
 ```bash
 dotenv --file .env.local run node scripts/generate-complete-story.mjs "USER_STORY_PROMPT" > logs/story-generation.log 2>&1 &
 ```
 
-### Step 3: Monitor Progress
+**For published (create):**
+```bash
+dotenv --file .env.local run node scripts/generate-complete-story.mjs --publish "USER_STORY_PROMPT" > logs/story-generation.log 2>&1 &
+```
 
-The script provides real-time progress updates:
-- 🧠 Generating HNS structure
+### Step 4: Monitor Progress
+
+The script provides real-time updates. Monitor the log file and report key milestones:
+- 🧠 Generating story structure
 - 🎨 Generating character images
 - 🖼️ Generating setting images
-- ✅ Story generation complete
+- ✅ Story complete
+- 📤 Publishing (if requested)
 
-### Step 4: Report Results
+### Step 5: Report Final Results
 
-After completion, inform the user with:
+Extract from the output:
 - Story ID
-- Story title and genre
-- Structure statistics (parts, chapters, scenes)
-- Character count (with/without images)
-- Setting count (with/without images)
-- Direct links to:
-  - View story: `http://localhost:3000/stories/{storyId}`
-  - Edit story: `http://localhost:3000/write/{storyId}`
-  - Read story: `http://localhost:3000/read/{storyId}`
+- Title and genre
+- Structure stats (parts, chapters, scenes, characters, settings)
+- Publication status
+- Direct links
 
-## Example Usage
+## Response Template
 
-### User Request Examples:
-
-1. **Simple prompt:**
-   ```
-   User: "Generate a science fiction story about space exploration"
-   ```
-
-2. **Detailed prompt:**
-   ```
-   User: "Create a mystery thriller about a detective investigating a series of art thefts in Paris. Include themes of deception and redemption."
-   ```
-
-3. **Quick generation:**
-   ```
-   User: "Write a short fantasy story"
-   ```
-
-### Skill Response Pattern:
+### For "Generate" Requests (Draft)
 
 ```
-I'll generate a [genre] story for you with the following structure:
-- Complete HNS story development
+I'll generate a [genre] story for you.
+
+Generating complete story structure with:
 - Parts, chapters, and scenes
-- Character profiles with AI-generated images
-- Setting descriptions with AI-generated visuals
+- Character profiles with AI images
+- Setting descriptions with AI visuals
 
-Running story generation...
-
-[Monitor and report progress]
+[Monitor progress...]
 
 ✅ Story generated successfully!
 
-Story ID: [ID]
-Title: [Title]
-Genre: [Genre]
+**Story Details:**
+- Title: [Title]
+- Genre: [Genre]
+- Status: ✏️ Draft (not published)
 
-Structure:
+**Structure:**
 - 📚 Parts: X
 - 📝 Chapters: Y
 - 🎬 Scenes: Z
 - 👥 Characters: N (M with images)
 - 🏞️ Settings: P (Q with images)
 
-Links:
-- View: http://localhost:3000/stories/[ID]
-- Edit: http://localhost:3000/write/[ID]
-- Read: http://localhost:3000/read/[ID]
+**Direct Links:**
+- 📝 Edit: http://localhost:3000/writing/[ID]
+- 📖 Read: http://localhost:3000/reading/[ID]
+- 📋 All stories: http://localhost:3000/writing
+
+The story is saved as a draft. You can edit it and publish when ready.
 ```
+
+### For "Create" Requests (Published)
+
+```
+I'll create and publish a [genre] story for you.
+
+Generating complete story structure with:
+- Parts, chapters, and scenes
+- Character profiles with AI images
+- Setting descriptions with AI visuals
+
+[Monitor progress...]
+
+✅ Story generated successfully!
+📤 Publishing to community...
+✅ Story published!
+
+**Story Details:**
+- Title: [Title]
+- Genre: [Genre]
+- Status: 📢 Published
+
+**Structure:**
+- 📚 Parts: X
+- 📝 Chapters: Y
+- 🎬 Scenes: Z
+- 👥 Characters: N (M with images)
+- 🏞️ Settings: P (Q with images)
+
+**Direct Links:**
+- 📝 Edit: http://localhost:3000/writing/[ID]
+- 📖 Read: http://localhost:3000/reading/[ID]
+- 🌐 Community: http://localhost:3000/community/story/[ID]
+- 📋 All stories: http://localhost:3000/writing
+
+The story is now live and visible to the community!
+```
+
+## Authentication
+
+- Uses **writer@fictures.xyz** credentials from `.auth/user.json`
+- API key loaded automatically by the script
+- Required scopes: stories:write, chapters:write, ai:use
 
 ## Expected Generation Time
 
@@ -138,101 +163,151 @@ Links:
 - **Medium stories** (5-10 chapters): 5-8 minutes
 - **Large stories** (10+ chapters): 8-15 minutes
 
-Generation time includes:
-- AI text generation for story structure
-- AI image generation for characters and settings
-- Database operations
+Most time is spent on AI image generation for characters and settings.
+
+## Example Interactions
+
+### Example 1: Simple Generate
+
+**User:** "Generate a mystery story"
+
+**Assistant:**
+```
+I'll generate a mystery story for you.
+
+What kind of mystery would you like? For example:
+- A detective investigating a crime
+- An amateur sleuth solving a puzzle
+- A locked-room mystery
+- A historical mystery
+
+Or describe your own mystery story idea.
+```
+
+**User:** "A detective story set in 1920s New York"
+
+**Assistant:** [Runs script without --publish, monitors, reports draft]
+
+### Example 2: Create and Publish
+
+**User:** "Create a sci-fi story about time travel"
+
+**Assistant:**
+```
+I'll create and publish a science fiction story about time travel.
+
+Generating complete story with:
+- Time travel plot and paradoxes
+- Futuristic settings
+- Complex characters
+- AI-generated visuals
+
+[Monitors progress and reports published story with community link]
+```
+
+### Example 3: Detailed Request
+
+**User:** "Write a fantasy adventure about a young wizard discovering forbidden magic"
+
+**Assistant:**
+```
+I'll generate a fantasy adventure story for you.
+
+Creating story with:
+- Young wizard protagonist
+- Forbidden magic discovery
+- Magical academy setting
+- Epic conflict themes
+
+[Monitors progress and reports draft story]
+```
 
 ## Error Handling
 
-If generation fails:
+### Server Not Running
 
-1. **Server not running**: Ensure dev server is running on port 3000
-   ```bash
-   dotenv --file .env.local run pnpm dev
-   ```
+```
+❌ The development server isn't running.
 
-2. **Authentication error**: Check `.auth/user.json` has valid writer credentials
+Please start it with:
+dotenv --file .env.local run pnpm dev
 
-3. **API key issues**: Verify `AI_GATEWAY_API_KEY` and `OPENAI_API_KEY` in `.env.local`
+Then I'll try generating the story again.
+```
 
-4. **Timeout**: Large stories may take longer - check logs for progress
+### Authentication Error
 
-## Advanced Options
+```
+❌ Authentication failed.
+
+The writer credentials in .auth/user.json may be invalid.
+Please check the file and ensure writer profile has a valid API key.
+```
+
+### Generation Timeout
+
+```
+⏱️ Story generation is taking longer than usual (10+ minutes).
+
+This can happen with complex stories. The generation is still running.
+Check logs/story-generation.log for current progress.
+```
+
+## Advanced Features
 
 ### Custom Story Prompts
 
-For best results, include in the prompt:
-- **Genre**: Science fiction, mystery, fantasy, thriller, etc.
-- **Theme**: Core message or moral
-- **Setting**: Where the story takes place
-- **Characters**: Main character descriptions
-- **Conflict**: Central problem or challenge
+Encourage users to include:
+- **Genre:** Mystery, sci-fi, fantasy, thriller, romance
+- **Theme:** Core message or moral
+- **Setting:** Time period and location
+- **Characters:** Protagonist description
+- **Conflict:** Central problem
 
-### Example Advanced Prompt:
+### Example Advanced Prompt
 
 ```
-"Create an epic fantasy story set in a magical academy where students learn to control elemental powers. The main character is a young scholar who discovers a forbidden magic that could save or destroy the world. Include themes of power, responsibility, and friendship. Generate vivid magical settings and diverse characters with unique abilities."
+"Create an epic fantasy story set in a magical academy where students learn elemental magic. The protagonist is a young scholar who discovers forbidden necromancy that could save or destroy the kingdom. Include themes of power, responsibility, and moral ambiguity. Generate vivid magical settings and diverse characters with unique abilities."
 ```
 
-## Integration with Other Skills
+## Best Practices (Following Claude Code Standards)
 
-This skill can be combined with:
-- **Publishing skills**: Automatically publish generated stories
-- **Testing skills**: Verify story structure and content
-- **Analytics skills**: Track story performance
+1. **Clear Descriptions:** Always explain what you're doing
+2. **Progress Updates:** Monitor and report generation progress
+3. **Error Handling:** Provide actionable error messages
+4. **User Confirmation:** Clarify "create" vs "generate" intent if ambiguous
+5. **Links:** Always include direct navigation links
+6. **Concise Output:** Summarize results, don't dump raw output
 
 ## Technical Details
 
-- **Script**: `scripts/generate-complete-story.mjs`
-- **API Endpoint**: `POST /api/stories/generate-hns`
-- **Authentication**: Bearer token from `.auth/user.json`
-- **Method**: Server-Sent Events (SSE) streaming
-- **AI Models**:
-  - Text: OpenAI GPT-4o-mini via Vercel AI Gateway
+- **Script:** `scripts/generate-complete-story.mjs`
+- **API:** POST `/api/stories/generate-hns` (SSE streaming)
+- **Publishing:** PUT `/api/stories/{id}/visibility` with `{isPublic: true}`
+- **AI Models:**
+  - Text: OpenAI GPT-4o-mini (via Vercel AI Gateway)
   - Images: Google Gemini 2.5 Flash
-- **Image Storage**: Vercel Blob
-- **Database**: Neon PostgreSQL via Drizzle ORM
+- **Storage:** Vercel Blob (images), Neon PostgreSQL (data)
+- **Format:** Images are 16:9 (1792x1024) PNG
 
-## Output Format
+## Troubleshooting
 
-The script outputs:
-- Real-time progress updates
-- Story structure details
-- Character and setting information
-- Direct navigation links
-- Error messages (if any)
+**Q: Story generation failed**
+A: Check dev server is running, verify credentials, review logs
 
-All output is formatted with emoji icons for easy reading.
+**Q: Images didn't generate**
+A: Image generation can fail but story still completes. Check API keys.
+
+**Q: Where can I edit the story?**
+A: Use the "Edit" link: `/writing/{storyId}`
+
+**Q: How do I publish a draft later?**
+A: Go to `/writing/{storyId}` and use the publish button, or run the script again with `--publish`
 
 ## Notes
 
-- Stories are created in "writing" status (not published)
-- All images are stored in Vercel Blob with public access
-- Character and setting images are 16:9 aspect ratio (1792x1024)
-- Story data follows HNS methodology for structured storytelling
-- Database entries are created incrementally during generation
-
-## Best Practices
-
-1. **Always ask for user's story idea** - Don't assume a default prompt
-2. **Run in background** - Use background execution for long-running generations
-3. **Monitor progress** - Check output periodically to show user progress
-4. **Provide links** - Always share view/edit/read URLs with the user
-5. **Handle errors gracefully** - Provide helpful debugging tips if generation fails
-
-## Skill Invocation
-
-This skill should be invoked when the user wants to:
-- Generate a new story
-- Create story content
-- Publish a story with AI
-- Generate a complete narrative
-- Create fiction content
-
-**Trigger phrases:**
-- "Generate a story about..."
-- "Create a story..."
-- "Write a story about..."
-- "Make a story..."
-- "Generate fiction..."
+- Stories use HNS (Hook, Need, Setup) methodology for structured storytelling
+- Generated stories are production-ready with complete content
+- All images are stored permanently in Vercel Blob
+- Database entries include full relationships (story → parts → chapters → scenes)
+- Published stories appear in `/community` and `/reading` pages

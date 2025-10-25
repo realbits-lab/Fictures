@@ -218,7 +218,7 @@ async function generateCompleteStory(storyPrompt) {
 
     // Print final summary
     if (storyId && finalResult && hnsDocument) {
-      printFinalSummary(storyId, finalResult, hnsDocument, stats, apiUrl);
+      printFinalSummary(storyId, finalResult, hnsDocument, stats, apiUrl, false);
       return { storyId, finalResult, hnsDocument, stats };
     } else {
       throw new Error('Story generation incomplete - missing data');
@@ -267,9 +267,39 @@ function getStepIcon(step) {
 }
 
 /**
+ * Publish the generated story
+ */
+async function publishStory(storyId, apiUrl) {
+  try {
+    console.log(`\n📤 Publishing story ${storyId}...`);
+
+    const response = await fetch(`${apiUrl}/api/stories/${storyId}/visibility`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`
+      },
+      body: JSON.stringify({ isPublic: true })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to publish story: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log(`✅ Story published successfully! Status: ${result.story.status}`);
+    return true;
+  } catch (error) {
+    console.error(`❌ Error publishing story: ${error.message}`);
+    return false;
+  }
+}
+
+/**
  * Print comprehensive final summary
  */
-function printFinalSummary(storyId, finalResult, hnsDocument, stats, apiUrl) {
+function printFinalSummary(storyId, finalResult, hnsDocument, stats, apiUrl, isPublished = false) {
   const story = hnsDocument.story;
   const parts = hnsDocument.parts || [];
   const chapters = hnsDocument.chapters || [];
@@ -285,6 +315,7 @@ function printFinalSummary(storyId, finalResult, hnsDocument, stats, apiUrl) {
   console.log(`   ID: ${storyId}`);
   console.log(`   Title: ${story.story_title}`);
   console.log(`   Genre: ${story.genre?.join(', ') || 'N/A'}`);
+  console.log(`   Status: ${isPublished ? '📢 Published' : '✏️  Draft (Writing)'}`);
   console.log(`   Premise: ${story.premise}`);
   console.log(`   Dramatic Question: ${story.dramatic_question}`);
   console.log(`   Theme: ${story.theme}`);
@@ -327,10 +358,13 @@ function printFinalSummary(storyId, finalResult, hnsDocument, stats, apiUrl) {
   }
 
   // Next Steps
-  console.log('\n🔗 NEXT STEPS:');
-  console.log(`   📖 View story: ${apiUrl}/stories/${storyId}`);
-  console.log(`   ✍️  Edit story: ${apiUrl}/write/${storyId}`);
-  console.log(`   📚 Read story: ${apiUrl}/read/${storyId}`);
+  console.log('\n🔗 DIRECT LINKS:');
+  console.log(`   📝 Edit story: ${apiUrl}/writing/${storyId}`);
+  console.log(`   📖 Read story: ${apiUrl}/reading/${storyId}`);
+  if (isPublished) {
+    console.log(`   🌐 Community: ${apiUrl}/community/story/${storyId}`);
+  }
+  console.log(`   📋 All stories: ${apiUrl}/writing`);
 
   console.log('\n' + '='.repeat(80));
   console.log('✨ Story generation completed successfully!');
@@ -339,12 +373,28 @@ function printFinalSummary(storyId, finalResult, hnsDocument, stats, apiUrl) {
 
 // Main execution
 const args = process.argv.slice(2);
-const storyPrompt = args.length > 0 ? args.join(' ') : DEFAULT_PROMPT;
+
+// Check for --publish flag
+const publishFlag = args.includes('--publish');
+const filteredArgs = args.filter(arg => arg !== '--publish');
+const storyPrompt = filteredArgs.length > 0 ? filteredArgs.join(' ') : DEFAULT_PROMPT;
 
 generateCompleteStory(storyPrompt)
-  .then(({ storyId, stats }) => {
+  .then(async ({ storyId, stats }) => {
     console.log(`\n✅ Success! Story ID: ${storyId}`);
-    console.log(`📊 Generated ${stats.partsCount} parts, ${stats.chaptersCount} chapters, ${stats.scenesCount} scenes\n`);
+    console.log(`📊 Generated ${stats.partsCount} parts, ${stats.chaptersCount} chapters, ${stats.scenesCount} scenes`);
+
+    // Publish if --publish flag is present
+    if (publishFlag) {
+      const apiUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000';
+      const published = await publishStory(storyId, apiUrl);
+      if (published) {
+        console.log(`\n🎉 Story published and available to the community!\n`);
+      }
+    } else {
+      console.log(`\n💡 Tip: Use --publish flag to auto-publish the story\n`);
+    }
+
     process.exit(0);
   })
   .catch((error) => {
