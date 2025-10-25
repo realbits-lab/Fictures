@@ -47,7 +47,7 @@ export const WebtoonPanelSpecSchema = z.object({
 export const WebtoonScreenplaySchema = z.object({
   scene_id: z.string(),
   scene_title: z.string(),
-  total_panels: z.number().min(3).max(12),
+  total_panels: z.number().min(1).max(3),
   panels: z.array(WebtoonPanelSpecSchema),
   pacing_notes: z.string().optional(),
   narrative_arc: z.string().describe('How the panels collectively tell the scene story')
@@ -103,7 +103,7 @@ ${setting.name}: ${setting.description}
 GENRE: ${storyGenre}
 
 INSTRUCTIONS:
-1. Break the narrative into ${targetPanelCount || '4-6'} visual panels
+1. Break the narrative into ${targetPanelCount || '1-3'} visual panels (MAXIMUM 3 PANELS)
 2. Each panel must SHOW the action, not tell (minimize narration)
 3. Use varied camera angles for visual interest:
    - Use establishing_shot for opening or location changes

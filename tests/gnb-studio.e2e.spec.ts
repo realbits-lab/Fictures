@@ -1,16 +1,16 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * E2E Tests for Writing Page (/writing)
+ * E2E Tests for Studio Page (/studio)
  * Tests story management dashboard - restricted to writers and managers
  */
 
-test.describe('GNB - Writing Page Tests', () => {
+test.describe('GNB - Studio Page Tests', () => {
   // Use authenticated state
   test.use({ storageState: '.auth/user.json' });
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/writing');
+    await page.goto('/studio');
     await page.waitForLoadState('networkidle');
     // Wait a bit for dynamic content
     await page.waitForTimeout(1500);
@@ -20,7 +20,7 @@ test.describe('GNB - Writing Page Tests', () => {
     test('TC-WRITING-AUTH-003: Writer/Manager can access page', async ({ page }) => {
       console.log('📖 Testing writer/manager access to novels page...');
 
-      await page.goto('/writing');
+      await page.goto('/studio');
       await page.waitForLoadState('networkidle');
 
       // Should not see access denied
@@ -34,25 +34,25 @@ test.describe('GNB - Writing Page Tests', () => {
     });
 
     test('TC-WRITING-AUTH-005: Menu item visible for authorized users', async ({ page }) => {
-      console.log('📖 Testing Writing menu item visible...');
+      console.log('📖 Testing Studio menu item visible...');
 
       // Navigate to reading page (where home redirects)
       await page.goto('/reading');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(2000);
 
-      // Look for Writing menu item in navigation
-      const novelsMenuItem = await page.locator('a[href="/writing"]').count();
+      // Look for Studio menu item in navigation
+      const novelsMenuItem = await page.locator('a[href="/studio"]').count();
 
-      // For authenticated writer/manager users, Writing menu should be visible
+      // For authenticated writer/manager users, Studio menu should be visible
       // If not visible, check if user is properly authenticated
       if (novelsMenuItem > 0) {
-        console.log('✅ Writing menu item is visible');
+        console.log('✅ Studio menu item is visible');
       } else {
         // Check what menu items are visible to help debug
         const allLinks = await page.locator('nav a').count();
         console.log(`ℹ️  Total navigation links visible: ${allLinks}`);
-        console.log('ℹ️  Writing menu not visible - user may not have writer/manager role');
+        console.log('ℹ️  Studio menu not visible - user may not have writer/manager role');
 
         // This is expected behavior if user doesn't have the right role
         // Don't fail the test - just log the finding
@@ -61,14 +61,14 @@ test.describe('GNB - Writing Page Tests', () => {
   });
 
   test.describe('Navigation Tests', () => {
-    test('TC-WRITING-NAV-001: Writing menu item highlighted when active', async ({ page }) => {
-      console.log('📖 Testing Writing menu item highlight...');
+    test('TC-WRITING-NAV-001: Studio menu item highlighted when active', async ({ page }) => {
+      console.log('📖 Testing Studio menu item highlight...');
 
-      await page.goto('/writing');
+      await page.goto('/studio');
       await page.waitForLoadState('networkidle');
 
-      // Find the Writing menu link
-      const novelsLink = page.locator('a[href="/writing"]').first();
+      // Find the Studio menu link
+      const novelsLink = page.locator('a[href="/studio"]').first();
 
       // Check if it has active styling
       const hasActiveClass = await novelsLink.evaluate((el) => {
@@ -82,23 +82,23 @@ test.describe('GNB - Writing Page Tests', () => {
       });
 
       expect(hasActiveClass).toBe(true);
-      console.log('✅ Writing menu item is highlighted');
+      console.log('✅ Studio menu item is highlighted');
     });
 
-    test('TC-WRITING-NAV-002: Clicking Writing navigates correctly', async ({ page }) => {
-      console.log('📖 Testing Writing navigation...');
+    test('TC-WRITING-NAV-002: Clicking Studio navigates correctly', async ({ page }) => {
+      console.log('📖 Testing Studio navigation...');
 
       await page.goto('/');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(1000);
 
-      // Click Writing menu item
-      await page.click('a[href="/writing"]');
+      // Click Studio menu item
+      await page.click('a[href="/studio"]');
       await page.waitForLoadState('networkidle');
 
       // Verify URL
-      expect(page.url()).toContain('/writing');
-      console.log('✅ Writing navigation works');
+      expect(page.url()).toContain('/studio');
+      console.log('✅ Studio navigation works');
     });
   });
 
@@ -106,7 +106,7 @@ test.describe('GNB - Writing Page Tests', () => {
     test('TC-WRITING-CONTENT-001: Story list or empty state displays', async ({ page }) => {
       console.log('📖 Testing story list displays...');
 
-      await page.goto('/writing');
+      await page.goto('/studio');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(2000);
 
@@ -124,7 +124,7 @@ test.describe('GNB - Writing Page Tests', () => {
     test('TC-WRITING-CONTENT-002: "Create New Story" button visible', async ({ page }) => {
       console.log('📖 Testing Create New Story button...');
 
-      await page.goto('/writing');
+      await page.goto('/studio');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(1500);
 
@@ -138,7 +138,7 @@ test.describe('GNB - Writing Page Tests', () => {
     test('TC-WRITING-CONTENT-005: View toggle (card/table) visible if stories exist', async ({ page }) => {
       console.log('📖 Testing view toggle...');
 
-      await page.goto('/writing');
+      await page.goto('/studio');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(1500);
 
@@ -163,7 +163,7 @@ test.describe('GNB - Writing Page Tests', () => {
     test('TC-WRITING-FUNC-001: Create new story button is clickable', async ({ page }) => {
       console.log('📖 Testing create story button click...');
 
-      await page.goto('/writing');
+      await page.goto('/studio');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(1500);
 
@@ -175,7 +175,7 @@ test.describe('GNB - Writing Page Tests', () => {
         await page.waitForTimeout(1000);
 
         // Should navigate or open modal
-        const urlChanged = page.url() !== 'http://localhost:3000/writing';
+        const urlChanged = page.url() !== 'http://localhost:3000/studio';
         const hasModal = await page.locator('[role="dialog"], .modal, [data-testid="modal"]').count() > 0;
 
         expect(urlChanged || hasModal).toBe(true);
@@ -188,7 +188,7 @@ test.describe('GNB - Writing Page Tests', () => {
     test('TC-WRITING-FUNC-002: Story card is clickable if stories exist', async ({ page }) => {
       console.log('📖 Testing story card click...');
 
-      await page.goto('/writing');
+      await page.goto('/studio');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(2000);
 
@@ -216,7 +216,7 @@ test.describe('GNB - Writing Page Tests', () => {
       console.log('📖 Testing novels page load time...');
 
       const startTime = Date.now();
-      await page.goto('/writing');
+      await page.goto('/studio');
       await page.waitForLoadState('networkidle');
       const loadTime = Date.now() - startTime;
 
@@ -231,7 +231,7 @@ test.describe('GNB - Writing Page Tests', () => {
     test('TC-WRITING-ERROR-001: No error messages displayed', async ({ page }) => {
       console.log('📖 Testing no error messages...');
 
-      await page.goto('/writing');
+      await page.goto('/studio');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(2000);
 

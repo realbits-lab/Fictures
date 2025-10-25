@@ -124,7 +124,7 @@ test.describe('GNB - Home Page Tests', () => {
       await page.waitForLoadState('networkidle');
 
       // Reading menu should be visible to all
-      const readingLink = await page.locator('a[href="/writing"]').count();
+      const readingLink = await page.locator('a[href="/studio"]').count();
       expect(readingLink).toBeGreaterThan(0);
 
       // Community menu should be visible to all
@@ -143,13 +143,13 @@ test.describe('GNB - Home Page Tests', () => {
       // Wait a bit for menu to fully render
       await page.waitForTimeout(1000);
 
-      // Check that Writing, Publish, Analytics are NOT visible
-      const writingVisible = await page.locator('a[href="/writing"]:visible').count();
+      // Check that Studio, Publish, Analytics are NOT visible
+      const writingVisible = await page.locator('a[href="/studio"]:visible').count();
       const publishVisible = await page.locator('a[href="/publish"]:visible').count();
       const analyticsVisible = await page.locator('a[href="/analytics"]:visible').count();
 
       // These should be 0 for anonymous users
-      console.log(`Writing links visible: ${writingVisible}`);
+      console.log(`Studio links visible: ${writingVisible}`);
       console.log(`Publish links visible: ${publishVisible}`);
       console.log(`Analytics links visible: ${analyticsVisible}`);
 

@@ -93,7 +93,7 @@ export function DashboardClient() {
           </div>
           <div className="flex items-center gap-3">
             <ViewToggle view={view} onViewChange={setView} />
-            <Link href="/writing/new">
+            <Link href="/studio/new">
               <Button>
                 <span className="mr-2">📖</span>
                 Create New Story

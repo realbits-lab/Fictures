@@ -17,7 +17,7 @@ interface NavItem {
 }
 
 const gnbMenuItems: NavItem[] = [
-  { href: "/writing", label: "Writing", icon: "✍️" },
+  { href: "/studio", label: "Studio", icon: "🎬" },
   { href: "/novels", label: "Novels", icon: "📖" },
   { href: "/comics", label: "Comics", icon: "🎨" },
   { href: "/community", label: "Community", icon: "💬" },
@@ -37,8 +37,8 @@ export function GlobalNavigation() {
 
   // Filter navigation items based on user role
   const visibleGnbItems = gnbMenuItems.filter((item) => {
-    // Writing, Publish, and Analytics are writer/manager specific
-    if (item.href === '/writing' || item.href === '/publish' || item.href === '/analytics') {
+    // Studio, Publish, and Analytics are writer/manager specific
+    if (item.href === '/studio' || item.href === '/publish' || item.href === '/analytics') {
       return session?.user?.role === 'writer' || session?.user?.role === 'manager';
     }
 

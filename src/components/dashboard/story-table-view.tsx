@@ -93,7 +93,7 @@ export function StoryTableView({ stories }: StoryTableViewProps) {
               <TableRow
                 key={story.id}
                 className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150"
-                onClick={() => router.push(`/writing/edit/story/${story.id}`)}
+                onClick={() => router.push(`/studio/edit/story/${story.id}`)}
               >
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">

@@ -45,6 +45,14 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Validate targetPanelCount (maximum 3 panels per scene)
+    if (targetPanelCount !== undefined && (targetPanelCount < 1 || targetPanelCount > 3)) {
+      return new Response(JSON.stringify({ error: 'targetPanelCount must be between 1 and 3' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // Fetch scene with chapter and story
     const scene = await db.query.scenes.findFirst({
       where: eq(scenes.id, sceneId),

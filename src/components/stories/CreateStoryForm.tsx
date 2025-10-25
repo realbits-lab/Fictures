@@ -109,7 +109,7 @@ export function CreateStoryForm() {
 
     try {
       // Use fetch with streaming for HNS generation
-      const response = await fetch('/writing/api/stories/generate-hns', {
+      const response = await fetch('/studio/api/stories/generate-hns', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -575,7 +575,7 @@ export function CreateStoryForm() {
               <div className="flex space-x-2 mt-3">
                 <Button
                   type="button"
-                  onClick={() => router.push(`/writing/edit/story/${generatedStoryId}`)}
+                  onClick={() => router.push(`/studio/edit/story/${generatedStoryId}`)}
                   className="flex-1"
                 >
                   Open Story

@@ -665,7 +665,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     
     // If switching to a chapter in a different story, navigate to it
     if (selection.level === "chapter" && selection.chapterId && selection.storyId !== story.id) {
-      router.push(`/writing/edit/${selection.chapterId}`);
+      router.push(`/studio/edit/${selection.chapterId}`);
       return;
     }
 
@@ -704,7 +704,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           status: data.content && data.content.trim() ? 'in_progress' : 'draft'
         };
 
-        const response = await fetch(`/writing/api/scenes/${currentSelection.sceneId}`, {
+        const response = await fetch(`/studio/api/scenes/${currentSelection.sceneId}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -727,7 +727,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       } else if (currentSelection.level === "chapter" && data) {
         // Save chapter HNS data
         console.log('💾 Saving chapter HNS data...');
-        const response = await fetch(`/writing/api/chapters/${currentSelection.chapterId}/write`, {
+        const response = await fetch(`/studio/api/chapters/${currentSelection.chapterId}/write`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -750,7 +750,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         console.log('📝 Data being saved:', data);
         console.log('🎯 Story ID:', story.id);
 
-        const response = await fetch(`/writing/api/stories/${story.id}/write`, {
+        const response = await fetch(`/studio/api/stories/${story.id}/write`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -779,7 +779,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       } else if (currentSelection.level === "part" && data) {
         // Save part HNS data
         console.log('💾 Saving part HNS data...');
-        const response = await fetch(`/writing/api/parts/${currentSelection.partId}/write`, {
+        const response = await fetch(`/studio/api/parts/${currentSelection.partId}/write`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -878,7 +878,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     
     setIsLoading(true);
     try {
-      const response = await fetch(`/writing/api/chapters/${currentSelection.chapterId}/${endpoint}`, {
+      const response = await fetch(`/studio/api/chapters/${currentSelection.chapterId}/${endpoint}`, {
         method: 'POST',
       });
       
@@ -927,7 +927,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     
     setIsLoading(true);
     try {
-      const response = await fetch(`/writing/api/stories/${story.id}/visibility`, {
+      const response = await fetch(`/studio/api/stories/${story.id}/visibility`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -992,7 +992,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       }
       
       // Update scene status via API using JSON
-      const response = await fetch(`/writing/api/scenes/${sceneId}`, {
+      const response = await fetch(`/studio/api/scenes/${sceneId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -1400,7 +1400,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => router.push('/writing')}
+                onClick={() => router.push('/studio')}
                 className="flex items-center gap-2 text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))]"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1584,7 +1584,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                         if (userConfirmation === 'DELETE') {
                           setIsLoading(true);
                           try {
-                            const response = await fetch(`/writing/api/stories/${story.id}`, {
+                            const response = await fetch(`/studio/api/stories/${story.id}`, {
                               method: 'DELETE',
                             });
 
@@ -1599,7 +1599,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                             });
 
                             // Invalidate SWR cache for stories list
-                            await mutate('/writing/api/stories');
+                            await mutate('/studio/api/stories');
 
                             // Clear localStorage cache for stories
                             if (typeof window !== 'undefined') {

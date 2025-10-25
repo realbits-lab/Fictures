@@ -56,7 +56,7 @@ Rather than generating a single scene image, this system:
 │              PHASE 2: Storyboard/Screenplay Generation               │
 │  • Convert narrative to panel-by-panel screenplay                   │
 │  • Determine camera angles, character poses                         │
-│  • Calculate optimal panel count (3-8 panels per scene)             │
+│  • Calculate optimal panel count (1-3 panels per scene, MAX 3)      │
 │  • Apply webtoon pacing rules (vertical scroll rhythm)              │
 └────────────────────┬────────────────────────────────────────────────┘
                      │
@@ -548,7 +548,7 @@ SETTING:
 {settingDescription}
 
 INSTRUCTIONS:
-1. Break the narrative into 3-8 visual panels
+1. Break the narrative into 1-3 visual panels (MAXIMUM 3 PANELS)
 2. Each panel must show, not tell (avoid narration boxes where possible)
 3. Use varied camera angles (wide, medium, close-up, extreme close-up)
 4. Maintain character consistency - reference the same visual traits
@@ -795,7 +795,7 @@ export const WebtoonPanelSpecSchema = z.object({
 export const WebtoonScreenplaySchema = z.object({
   scene_id: z.string(),
   scene_title: z.string(),
-  total_panels: z.number().min(3).max(12),
+  total_panels: z.number().min(1).max(3),
   panels: z.array(WebtoonPanelSpecSchema),
   pacing_notes: z.string().optional(),
   narrative_arc: z.string().describe('How the panels collectively tell the scene story')
@@ -909,7 +909,7 @@ ${setting.name}: ${setting.description}
 GENRE: ${story.genre}
 
 INSTRUCTIONS:
-1. Break the narrative into ${options.targetPanelCount || '4-6'} visual panels
+1. Break the narrative into ${options.targetPanelCount || '1-3'} visual panels (MAXIMUM 3 PANELS)
 2. Each panel must SHOW the action, not tell (minimize narration)
 3. Use varied camera angles for visual interest
 4. Maintain character consistency - reference same physical traits
@@ -1142,7 +1142,7 @@ export const webtoonPanels = pgTable('webtoon_panels', {
 ```typescript
 {
   sceneId: string;               // Required
-  targetPanelCount?: number;     // Optional: 3-12, default 4-6
+  targetPanelCount?: number;     // Optional: 1-3 (MAXIMUM 3), default 1-3
   regenerate?: boolean;          // Optional: regenerate if panels exist
 }
 ```
@@ -1433,7 +1433,7 @@ import { describe, it, expect } from '@jest/globals';
 import { generateWebtoonPanels } from '@/lib/ai/webtoon-panel-generator';
 
 describe('Webtoon Panel Generator', () => {
-  it('should generate 4-6 panels for standard scene', async () => {
+  it('should generate 1-3 panels for standard scene', async () => {
     const mockScene = {
       scene_id: 'test-scene-1',
       scene_title: 'The Confrontation',
@@ -1447,8 +1447,8 @@ describe('Webtoon Panel Generator', () => {
       // ... other required params
     });
 
-    expect(result.screenplay.total_panels).toBeGreaterThanOrEqual(4);
-    expect(result.screenplay.total_panels).toBeLessThanOrEqual(6);
+    expect(result.screenplay.total_panels).toBeGreaterThanOrEqual(1);
+    expect(result.screenplay.total_panels).toBeLessThanOrEqual(3);
     expect(result.panels.length).toBe(result.screenplay.total_panels);
   });
 
@@ -1496,18 +1496,18 @@ test.describe('Webtoon Panel Generation API', () => {
 
 ## Cost Estimation
 
-### Per Scene (4-6 panels average)
+### Per Scene (1-3 panels, average 2 panels)
 
 | Component | Cost per Unit | Units per Scene | Total |
 |-----------|---------------|-----------------|-------|
 | Screenplay Generation (GPT-4o-mini) | ~$0.005 | 1 | $0.005 |
-| Panel Image Generation (DALL-E 3, 1792x1024) | $0.080 | 5 | $0.400 |
-| Image Optimization (Sharp.js, 18 variants) | $0.001 | 5 | $0.005 |
-| Vercel Blob Storage (1GB) | $0.15/month | ~5MB | ~$0.001 |
-| **TOTAL PER SCENE** | | | **~$0.41** |
+| Panel Image Generation (DALL-E 3, 1792x1024) | $0.080 | 2 | $0.160 |
+| Image Optimization (Sharp.js, 18 variants) | $0.001 | 2 | $0.002 |
+| Vercel Blob Storage (1GB) | $0.15/month | ~2MB | ~$0.0005 |
+| **TOTAL PER SCENE** | | | **~$0.17** |
 
-**For a 10-scene story**: ~$4.10
-**For a 50-scene story**: ~$20.50
+**For a 10-scene story**: ~$1.70
+**For a 50-scene story**: ~$8.50
 
 ### Optimization Strategies
 
@@ -1627,13 +1627,13 @@ Conflict: Marcus is skilled at deflecting questions and maintaining composure
 Outcome: failure_with_discovery (Sarah doesn't get a confession, but confirms his emotional connection)
 ```
 
-**Generated Screenplay** (6 panels):
+**Generated Screenplay** (3 panels):
 
 ```json
 {
   "scene_id": "scene_12345",
   "scene_title": "The Interrogation",
-  "total_panels": 6,
+  "total_panels": 3,
   "panels": [
     {
       "panel_number": 1,
@@ -1654,67 +1654,6 @@ Outcome: failure_with_discovery (Sarah doesn't get a confession, but confirms hi
     },
     {
       "panel_number": 2,
-      "shot_type": "medium_shot",
-      "description": "Medium shot of Sarah placing the manila folder on the table, focus on the folder hitting the metal surface",
-      "characters_visible": ["detective_sarah", "marcus_bell"],
-      "character_poses": {
-        "detective_sarah": "standing, leaning slightly forward, placing folder down with deliberate motion",
-        "marcus_bell": "seated, eyes locked on the folder, subtle tension in shoulders"
-      },
-      "setting_focus": "The metal interrogation table, cold and reflective",
-      "lighting": "harsh overhead light creating strong contrast, shadows under eyes",
-      "camera_angle": "eye level, slightly favoring Sarah's perspective",
-      "dialogue": [],
-      "sfx": [{ "text": "THUD", "emphasis": "large" }],
-      "gutter_after": 200,
-      "mood": "confrontational, building tension"
-    },
-    {
-      "panel_number": 3,
-      "shot_type": "close_up",
-      "description": "Close-up on Sarah's face as she speaks, professional but intense",
-      "characters_visible": ["detective_sarah"],
-      "character_poses": {
-        "detective_sarah": "speaking, eyes focused, jaw set with determination"
-      },
-      "setting_focus": "Blurred background of interrogation room wall",
-      "lighting": "harsh side lighting emphasizing her determined expression",
-      "camera_angle": "straight on, eye level",
-      "dialogue": [
-        {
-          "character_id": "detective_sarah",
-          "text": "We have footage placing you at the gallery fifteen minutes before the alarm.",
-          "tone": "level, professional"
-        }
-      ],
-      "sfx": [],
-      "gutter_after": 200,
-      "mood": "accusatory, controlled intensity"
-    },
-    {
-      "panel_number": 4,
-      "shot_type": "close_up",
-      "description": "Close-up on Marcus's face showing his slight, confident smile",
-      "characters_visible": ["marcus_bell"],
-      "character_poses": {
-        "marcus_bell": "slight smile, eyes calm and calculating"
-      },
-      "setting_focus": "Dark background, focus entirely on his face",
-      "lighting": "dramatic side lighting creating mystery and intrigue",
-      "camera_angle": "straight on, eye level, intimate",
-      "dialogue": [
-        {
-          "character_id": "marcus_bell",
-          "text": "I was admiring the art, Detective. Is that a crime?",
-          "tone": "smooth, deflecting"
-        }
-      ],
-      "sfx": [],
-      "gutter_after": 300,
-      "mood": "smug, controlled, deflective"
-    },
-    {
-      "panel_number": 5,
       "shot_type": "medium_shot",
       "description": "Medium shot showing Sarah leaning forward, fingers drumming once on the folder, Marcus watching from across table",
       "characters_visible": ["detective_sarah", "marcus_bell"],
@@ -1737,7 +1676,7 @@ Outcome: failure_with_discovery (Sarah doesn't get a confession, but confirms hi
       "mood": "pressure building, psychological warfare"
     },
     {
-      "panel_number": 6,
+      "panel_number": 3,
       "shot_type": "extreme_close_up",
       "description": "Extreme close-up on Marcus's eyes showing the momentary crack in his composure, widening slightly",
       "characters_visible": ["marcus_bell"],
@@ -1754,11 +1693,11 @@ Outcome: failure_with_discovery (Sarah doesn't get a confession, but confirms hi
     }
   ],
   "pacing_notes": "Build from establishing wide shot to increasing intimacy and psychological pressure, culminating in extreme close-up revelation. Large gutter before final panel creates suspenseful pause.",
-  "narrative_arc": "Visual progression from cold institutional setting → direct confrontation → psychological pressure → momentary victory for Sarah as she sees through Marcus's facade"
+  "narrative_arc": "Visual progression from cold institutional setting → psychological pressure → momentary victory for Sarah as she sees through Marcus's facade"
 }
 ```
 
-**Generated Images**: 6 DALL-E 3 images (1792x1024 each) with consistent character appearances
+**Generated Images**: 3 DALL-E 3 images (1792x1024 each) with consistent character appearances
 
 **Final Output**: Vertical-scroll webtoon ready for reading with automatic speech bubble overlays and SFX text
 
