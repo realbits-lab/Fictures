@@ -27,13 +27,26 @@ export async function GET(request: Request) {
         // Create a dedicated subscriber for this connection
         const subscriber = getRedisSubscriber();
 
+        // Track if connection is still active
+        let isConnected = true;
+
         // Helper function to send SSE events
         const sendEvent = (event: string, data: unknown) => {
+          // Only send if connection is still active
+          if (!isConnected) {
+            return;
+          }
+
           try {
             const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
             controller.enqueue(encoder.encode(message));
           } catch (error) {
-            console.error('[SSE] Error sending event:', error);
+            // If controller is closed, mark connection as inactive
+            if (error instanceof TypeError && error.message.includes('Controller is already closed')) {
+              isConnected = false;
+            } else {
+              console.error('[SSE] Error sending event:', error);
+            }
           }
         };
 
@@ -131,6 +144,7 @@ export async function GET(request: Request) {
         // Clean up when client disconnects
         request.signal.addEventListener('abort', async () => {
           console.log('[SSE] Client disconnected');
+          isConnected = false; // Mark connection as inactive
           activeConnections--;
           console.log(`[SSE] Active connections: ${activeConnections}`);
 

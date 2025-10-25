@@ -20,37 +20,18 @@ const __dirname = path.dirname(__filename);
 // ========================================
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-const AUTH_FILE = path.join(__dirname, '..', '.auth', 'user.json');
+const API_KEY = 'fic_Sh7a4nYARGmJ_Sh7a4nYARGmJ5N2NAHUvlQ7QnQsqFsYPr5VbWf6pVaU'; // Writer API key from test-api-direct.mjs
 
 // ========================================
 // HELPER FUNCTIONS
 // ========================================
 
-function loadAuthData() {
-  try {
-    const authData = JSON.parse(fs.readFileSync(AUTH_FILE, 'utf8'));
-    return authData;
-  } catch (error) {
-    console.error('❌ Failed to load authentication data from .auth/user.json');
-    console.error('   Run: dotenv --file .env.local run node scripts/capture-auth-manual.mjs');
-    process.exit(1);
-  }
-}
-
 async function makeAuthenticatedRequest(url, options = {}) {
-  const authData = loadAuthData();
-
-  // Extract session cookie
-  const sessionCookie = authData.cookies?.find(c => c.name.includes('session'));
-
   const headers = {
     'Content-Type': 'application/json',
+    'x-api-key': API_KEY,
     ...(options.headers || {}),
   };
-
-  if (sessionCookie) {
-    headers['Cookie'] = `${sessionCookie.name}=${sessionCookie.value}`;
-  }
 
   const response = await fetch(url, {
     ...options,
@@ -69,7 +50,8 @@ async function getRandomScene() {
     throw new Error(`Failed to fetch stories: ${response.status} ${response.statusText}`);
   }
 
-  const stories = await response.json();
+  const data = await response.json();
+  const stories = data.stories || [];
 
   if (!stories || stories.length === 0) {
     throw new Error('No stories found. Generate a story first.');

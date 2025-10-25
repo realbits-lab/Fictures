@@ -22,7 +22,7 @@ test.describe('GNB - Community Page Tests', () => {
       await page.context().clearCookies();
 
       await page.goto('/community');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
 
       // Should not require authentication to view
       const hasAuthError = await page.locator('text=/sign in required|must be logged in/i').count();
@@ -38,7 +38,7 @@ test.describe('GNB - Community Page Tests', () => {
       console.log('📖 Testing Community menu item visible...');
 
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       await page.waitForTimeout(1000);
 
       // Community menu should be visible
@@ -54,7 +54,7 @@ test.describe('GNB - Community Page Tests', () => {
       console.log('📖 Testing Community menu item highlight...');
 
       await page.goto('/community');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
 
       // Find the Community menu link
       const communityLink = page.locator('a[href="/community"]').first();
@@ -77,7 +77,7 @@ test.describe('GNB - Community Page Tests', () => {
       console.log('📖 Testing post categories navigation...');
 
       await page.goto('/community');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       await page.waitForTimeout(1500);
 
       // Look for category filters/tabs
@@ -98,7 +98,7 @@ test.describe('GNB - Community Page Tests', () => {
       console.log('📖 Testing individual post click...');
 
       await page.goto('/community');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       await page.waitForTimeout(2000);
 
       // Find first post
@@ -123,7 +123,7 @@ test.describe('GNB - Community Page Tests', () => {
       console.log('📖 Testing community posts display...');
 
       await page.goto('/community');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       await page.waitForTimeout(2000);
 
       // Should have either posts or empty state
@@ -140,7 +140,7 @@ test.describe('GNB - Community Page Tests', () => {
       console.log('📖 Testing post card metadata...');
 
       await page.goto('/community');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       await page.waitForTimeout(2000);
 
       const posts = await page.locator('[data-testid="community-post"], .post-card, article').count();
@@ -162,7 +162,7 @@ test.describe('GNB - Community Page Tests', () => {
       console.log('📖 Testing category filter...');
 
       await page.goto('/community');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       await page.waitForTimeout(1500);
 
       // Look for category filters
@@ -183,7 +183,7 @@ test.describe('GNB - Community Page Tests', () => {
       console.log('📖 Testing create post button for auth users...');
 
       await page.goto('/community');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       await page.waitForTimeout(1500);
 
       // Look for create/new post button
@@ -200,7 +200,7 @@ test.describe('GNB - Community Page Tests', () => {
       console.log('📖 Testing like/dislike system...');
 
       await page.goto('/community');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       await page.waitForTimeout(2000);
 
       const posts = await page.locator('[data-testid="community-post"], .post-card, article').count();
@@ -226,7 +226,7 @@ test.describe('GNB - Community Page Tests', () => {
 
       const startTime = Date.now();
       await page.goto('/community');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       const loadTime = Date.now() - startTime;
 
       console.log(`⏱️  Page load time: ${loadTime}ms`);
@@ -239,7 +239,7 @@ test.describe('GNB - Community Page Tests', () => {
       console.log('📖 Testing post list scrolling...');
 
       await page.goto('/community');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       await page.waitForTimeout(1500);
 
       const posts = await page.locator('[data-testid="community-post"], .post-card, article').count();
@@ -263,7 +263,7 @@ test.describe('GNB - Community Page Tests', () => {
       console.log('📖 Testing no error messages...');
 
       await page.goto('/community');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       await page.waitForTimeout(2000);
 
       // Check for error messages

@@ -104,7 +104,7 @@ export function usePublishedStories() {
   console.log(`[usePublishedStories] 🎣 Hook called at ${new Date().toISOString()}`);
 
   const result = usePersistedSWR(
-    '/reading/api/published',
+    '/novels/api/published',
     fetcher,
     CACHE_CONFIGS.reading,
     {
