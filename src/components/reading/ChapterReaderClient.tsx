@@ -154,7 +154,16 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
   }, [selectedSceneId, saveScrollPosition, allScenes, prefetchAdjacentScenes]);
 
   // Toggle UI visibility on tap/click
-  const handleContentTap = React.useCallback(() => {
+  const handleContentTap = React.useCallback((e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+
+    // Don't toggle if clicking on interactive elements
+    const isInteractive = target.closest('button, a, input, textarea, select, img, video, [role="button"]');
+    if (isInteractive) {
+      console.log('👆 Clicked interactive element, not toggling UI');
+      return;
+    }
+
     setIsUIVisible(prev => {
       console.log(`👆 Content tapped: ${prev ? 'Hiding' : 'Showing'} UI`);
       return !prev;
@@ -711,11 +720,21 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
 
       {/* Main Content Container */}
       <div className="flex flex-1 min-h-0 relative">
+        {/* Clickable overlay for hidden sidebar space on desktop */}
+        {!isUIVisible && (
+          <div
+            className="hidden md:block md:relative w-80 flex-shrink-0 cursor-pointer"
+            onClick={handleContentTap}
+            aria-label="Click to show menu"
+          />
+        )}
+
         {/* Left Sidebar - Chapter Navigation */}
-        <div className={`
+        <div
+          className={`
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           ${isUIVisible ? 'md:translate-x-0' : 'md:-translate-x-full'}
-          fixed md:relative
+          fixed md:absolute
           inset-y-0 left-0
           z-50 md:z-0
           w-80 bg-gray-50 dark:bg-gray-800
@@ -723,7 +742,8 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
           flex flex-col h-full
           transition-transform duration-300 ease-in-out
           top-0 md:top-auto
-        `}>
+        `}
+        >
           {/* Story Header */}
           <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
             <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
@@ -804,18 +824,18 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
         </div>
 
         {/* Main Content Area */}
-        <div 
+        <div
           ref={mainContentRef}
-          className="flex-1 h-full overflow-y-auto min-h-0"
+          className="flex-1 h-full overflow-y-auto min-h-0 cursor-pointer"
           style={{
             overscrollBehavior: 'contain',
             WebkitOverflowScrolling: 'auto'
           }}
+          onClick={handleContentTap}
         >
           {selectedChapter ? (
             <article
-              className="max-w-4xl mx-auto px-8 py-8 pb-24 md:pb-8 cursor-pointer"
-              onClick={handleContentTap}
+              className="max-w-4xl mx-auto px-8 py-8 pb-24 md:pb-8"
             >
               {/* Scene Content */}
               <div className="prose prose-lg max-w-none" style={{ color: 'rgb(var(--foreground))' }}>

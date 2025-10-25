@@ -3,9 +3,9 @@ import { measureAsync } from '../cache/performance-logger';
 import * as queries from './queries';
 
 const CACHE_TTL = {
-  PUBLISHED_CONTENT: 600,   // 10 minutes for published (shared by all users)
+  PUBLISHED_CONTENT: 3600,   // 1 hour for published (shared by all users) - Extended from 10min for better performance
   PRIVATE_CONTENT: 180,      // 3 minutes for private (user-specific)
-  LIST: 300,                 // 5 minutes for lists
+  LIST: 600,                 // 10 minutes for lists - Extended from 5min
 };
 
 /**
