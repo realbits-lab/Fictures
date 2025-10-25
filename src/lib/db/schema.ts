@@ -82,6 +82,24 @@ export const publicationStatusEnum = pgEnum('publication_status', [
   'cancelled'
 ]);
 
+// Shot type enum for webtoon panels
+export const shotTypeEnum = pgEnum('shot_type', [
+  'establishing_shot',
+  'wide_shot',
+  'medium_shot',
+  'close_up',
+  'extreme_close_up',
+  'over_shoulder',
+  'dutch_angle'
+]);
+
+// SFX emphasis enum for webtoon sound effects
+export const sfxEmphasisEnum = pgEnum('sfx_emphasis', [
+  'normal',
+  'large',
+  'dramatic'
+]);
+
 // Users table - Core user authentication and profile
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
@@ -220,6 +238,37 @@ export const scenes = pgTable('scenes', {
   publishedBy: text('published_by').references(() => users.id),
   unpublishedAt: timestamp('unpublished_at'),
   unpublishedBy: text('unpublished_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Webtoon Panels table - Panel-by-panel storyboard for scenes
+export const webtoonPanels = pgTable('webtoon_panels', {
+  id: text('id').primaryKey(),
+  sceneId: text('scene_id').references(() => scenes.id, { onDelete: 'cascade' }).notNull(),
+  panelNumber: integer('panel_number').notNull(),
+  shotType: shotTypeEnum('shot_type').notNull(),
+
+  // Image data
+  imageUrl: text('image_url').notNull(),
+  imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized variants (AVIF, WebP, JPEG)
+
+  // Content overlays
+  dialogue: json('dialogue').$type<Array<{character_id: string; text: string; tone?: string}>>(),
+  sfx: json('sfx').$type<Array<{text: string; emphasis: 'normal' | 'large' | 'dramatic'}>>(),
+
+  // Layout
+  gutterAfter: integer('gutter_after').default(200), // Vertical space after this panel in pixels
+
+  // Metadata
+  metadata: json('metadata').$type<{
+    prompt: string;
+    characters_visible: string[];
+    camera_angle: string;
+    mood: string;
+    generated_at: string;
+  }>(),
+
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -440,10 +489,18 @@ export const chaptersRelations = relations(chapters, ({ one, many }) => ({
   scenes: many(scenes),
 }));
 
-export const scenesRelations = relations(scenes, ({ one }) => ({
+export const scenesRelations = relations(scenes, ({ one, many }) => ({
   chapter: one(chapters, {
     fields: [scenes.chapterId],
     references: [chapters.id],
+  }),
+  webtoonPanels: many(webtoonPanels),
+}));
+
+export const webtoonPanelsRelations = relations(webtoonPanels, ({ one }) => ({
+  scene: one(scenes, {
+    fields: [webtoonPanels.sceneId],
+    references: [scenes.id],
   }),
 }));
 

@@ -2,73 +2,94 @@
 
 /**
  * Publish Story Script
- *
- * Publishes a story by updating its status and isPublic fields in the database
+ * Updates a story status from 'writing' to 'published'
  */
 
-import { config } from 'dotenv';
-import { drizzle } from 'drizzle-orm/neon-http';
-import { neon } from '@neondatabase/serverless';
-import { eq } from 'drizzle-orm';
-import { pgTable, text, timestamp, boolean, integer, jsonb } from 'drizzle-orm/pg-core';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Define stories table schema inline
-const stories = pgTable('stories', {
-  id: text('id').primaryKey(),
-  title: text('title').notNull(),
-  genre: text('genre'),
-  status: text('status'),
-  isPublic: boolean('is_public').default(false),
-  updatedAt: timestamp('updated_at').defaultNow()
-});
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Load environment variables
-config({ path: '.env.local' });
+// Load authentication
+async function loadAuth() {
+  const authPath = path.join(__dirname, '../.auth/user.json');
+  try {
+    const authData = await fs.readFile(authPath, 'utf-8');
+    const auth = JSON.parse(authData);
 
-const storyId = process.argv[2];
+    const profileName = auth.defaultProfile || 'manager';
+    const profile = auth.profiles?.[profileName];
 
-if (!storyId) {
-  console.error('Usage: node scripts/publish-story.mjs <story-id>');
-  process.exit(1);
+    if (!profile) {
+      throw new Error(`Profile "${profileName}" not found in .auth/user.json`);
+    }
+
+    const sessionCookie = profile.cookies?.find(c =>
+      c.name === 'authjs.session-token' || c.name === '__Secure-authjs.session-token'
+    );
+
+    if (!sessionCookie) {
+      throw new Error('No session cookie found in .auth/user.json');
+    }
+
+    return sessionCookie.value;
+  } catch (error) {
+    console.error('❌ Failed to load authentication:', error.message);
+    throw error;
+  }
 }
 
-// Setup database connection
-const sql = neon(process.env.POSTGRES_URL);
-const db = drizzle(sql);
+// Publish story
+async function publishStory(storyId, sessionToken) {
+  const url = `http://localhost:3000/api/stories/${storyId}`;
 
-console.log(`📤 Publishing story: ${storyId}\n`);
+  const response = await fetch(url, {
+    method: 'PATCH',
+    headers: {
+      'Cookie': `authjs.session-token=${sessionToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      status: 'published'
+    }),
+  });
 
-try {
-  const result = await db
-    .update(stories)
-    .set({
-      status: 'published',
-      isPublic: true,
-      updatedAt: new Date()
-    })
-    .where(eq(stories.id, storyId))
-    .returning();
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Failed to publish story: ${error}`);
+  }
 
-  if (result.length === 0) {
-    console.error('❌ Story not found');
+  return await response.json();
+}
+
+// Main execution
+async function main() {
+  const storyId = process.argv[2];
+
+  if (!storyId) {
+    console.error('❌ Usage: node scripts/publish-story.mjs STORY_ID');
     process.exit(1);
   }
 
-  const story = result[0];
+  try {
+    console.log('🔐 Loading authentication...');
+    const sessionToken = await loadAuth();
 
-  console.log('✅ Story published successfully!\n');
-  console.log('**Story Details:**');
-  console.log(`- Title: ${story.title}`);
-  console.log(`- Genre: ${story.genre}`);
-  console.log(`- Status: 📢 Published`);
-  console.log(`- Now visible to the community\n`);
-  console.log('**Navigation:**');
-  console.log(`- Community page: http://localhost:3000/community/story/${storyId}`);
-  console.log(`- Edit at: http://localhost:3000/writing/${storyId}`);
-  console.log(`- Read at: http://localhost:3000/reading/${storyId}`);
+    console.log(`📤 Publishing story: ${storyId}...`);
+    const story = await publishStory(storyId, sessionToken);
 
-  process.exit(0);
-} catch (error) {
-  console.error('❌ Error publishing story:', error.message);
-  process.exit(1);
+    console.log('\n✅ Story published successfully!\n');
+    console.log(`📖 Title: ${story.title}`);
+    console.log(`🆔 ID: ${story.id}`);
+    console.log(`📊 Status: ${story.status}`);
+    console.log(`\n🔗 View at: http://localhost:3000/community/story/${story.id}`);
+
+  } catch (error) {
+    console.error('\n❌ Error:', error.message);
+    process.exit(1);
+  }
 }
+
+main();

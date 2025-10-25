@@ -1,29 +1,51 @@
-import { neon } from '@neondatabase/serverless';
+#!/usr/bin/env node
 
-const sql = neon(process.env.POSTGRES_URL);
-const storyId = '55vnp7_fxk5rE7-VQWXIF';
+import 'dotenv/config';
+import postgres from 'postgres';
 
-try {
-  console.log(`📤 Publishing story ${storyId} in database...`);
+const sql = postgres(process.env.POSTGRES_URL, {
+  ssl: 'require'
+});
 
-  const result = await sql`
-    UPDATE stories
-    SET status = 'published', updated_at = NOW()
-    WHERE id = ${storyId}
-    RETURNING id, title, status
-  `;
+async function main() {
+  const storyId = process.argv[2];
 
-  if (result.length === 0) {
-    console.log('❌ Story not found');
+  if (!storyId) {
+    console.error('❌ Usage: node scripts/publish-story-db.mjs STORY_ID');
     process.exit(1);
   }
 
-  const story = result[0];
-  console.log(`✅ Story published successfully!`);
-  console.log(`   ID: ${story.id}`);
-  console.log(`   Title: ${story.title}`);
-  console.log(`   Status: ${story.status}`);
-} catch (error) {
-  console.error('❌ Error publishing story:', error.message);
-  process.exit(1);
+  try {
+    console.log(`📤 Publishing story: ${storyId}...`);
+
+    const result = await sql`
+      UPDATE stories 
+      SET status = 'published', updated_at = NOW()
+      WHERE id = ${storyId}
+      RETURNING id, title, status, genre
+    `;
+
+    if (result.length === 0) {
+      throw new Error('Story not found');
+    }
+
+    const story = result[0];
+    
+    console.log('\n✅ Story published successfully!\n');
+    console.log(`📖 Title: ${story.title}`);
+    console.log(`🆔 ID: ${story.id}`);
+    console.log(`📊 Status: ${story.status}`);
+    console.log(`🎭 Genre: ${story.genre}`);
+    console.log(`\n🔗 View at: http://localhost:3000/community/story/${story.id}`);
+    console.log(`📝 Edit at: http://localhost:3000/writing/${story.id}`);
+    console.log(`📖 Read at: http://localhost:3000/reading/${story.id}`);
+
+  } catch (error) {
+    console.error('\n❌ Error:', error.message);
+    process.exit(1);
+  } finally {
+    await sql.end();
+  }
 }
+
+main();

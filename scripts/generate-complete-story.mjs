@@ -181,7 +181,7 @@ async function generateCompleteStory(storyPrompt) {
 
                   console.log('\n📊 Story Structure:');
                   console.log(`   📖 Title: ${story.story_title}`);
-                  console.log(`   🎭 Genre: ${story.genre?.join(', ') || 'N/A'}`);
+                  console.log(`   🎭 Genre: ${Array.isArray(story.genre) ? story.genre.join(', ') : (story.genre || 'N/A')}`);
                   console.log(`   📚 Parts: ${stats.partsCount}`);
                   console.log(`   📝 Chapters: ${stats.chaptersCount}`);
                   console.log(`   🎬 Scenes: ${stats.scenesCount}`);
@@ -314,7 +314,7 @@ function printFinalSummary(storyId, finalResult, hnsDocument, stats, apiUrl, isP
   console.log('\n📖 STORY DETAILS:');
   console.log(`   ID: ${storyId}`);
   console.log(`   Title: ${story.story_title}`);
-  console.log(`   Genre: ${story.genre?.join(', ') || 'N/A'}`);
+  console.log(`   Genre: ${Array.isArray(story.genre) ? story.genre.join(', ') : (story.genre || 'N/A')}`);
   console.log(`   Status: ${isPublished ? '📢 Published' : '✏️  Draft (Writing)'}`);
   console.log(`   Premise: ${story.premise}`);
   console.log(`   Dramatic Question: ${story.dramatic_question}`);

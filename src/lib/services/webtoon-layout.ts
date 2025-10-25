@@ -1,0 +1,227 @@
+/**
+ * Webtoon Layout Calculator
+ *
+ * Calculates vertical scroll layout dimensions and provides
+ * utilities for webtoon panel positioning and spacing.
+ */
+
+// ============================================
+// CONSTANTS
+// ============================================
+
+export const WEBTOON_CONSTANTS = {
+  // Standard DALL-E 3 16:9 dimensions
+  PANEL_WIDTH: 1792,
+  PANEL_HEIGHT: 1024,
+
+  // Gutter spacing guidelines (WEBTOON platform standards)
+  GUTTER_MIN: 200,           // Minimum space between panels
+  GUTTER_BEAT_CHANGE: 400,   // Space for beat/moment changes
+  GUTTER_SCENE_TRANSITION: 800, // Space for major scene transitions
+  GUTTER_MAX: 1000,          // Maximum recommended gutter
+
+  // Container max width for desktop
+  MAX_CONTAINER_WIDTH: 1792,
+};
+
+// ============================================
+// LAYOUT CALCULATIONS
+// ============================================
+
+export interface PanelLayoutInfo {
+  panel_id: string;
+  panel_number: number;
+  y_position: number;        // Vertical position from top
+  height: number;            // Panel height in pixels
+  gutter_after: number;      // Space after this panel
+  total_height: number;      // Cumulative height up to and including this panel
+}
+
+/**
+ * Calculate vertical layout for a set of panels
+ */
+export function calculateVerticalLayout(
+  panels: Array<{ id: string; panel_number: number; gutter_after: number }>
+): {
+  panels: PanelLayoutInfo[];
+  total_height: number;
+} {
+  let currentY = 0;
+  const layoutPanels: PanelLayoutInfo[] = [];
+
+  for (const panel of panels) {
+    const gutterAfter = panel.gutter_after || WEBTOON_CONSTANTS.GUTTER_MIN;
+
+    const layoutInfo: PanelLayoutInfo = {
+      panel_id: panel.id,
+      panel_number: panel.panel_number,
+      y_position: currentY,
+      height: WEBTOON_CONSTANTS.PANEL_HEIGHT,
+      gutter_after: gutterAfter,
+      total_height: currentY + WEBTOON_CONSTANTS.PANEL_HEIGHT + gutterAfter,
+    };
+
+    layoutPanels.push(layoutInfo);
+    currentY = layoutInfo.total_height;
+  }
+
+  return {
+    panels: layoutPanels,
+    total_height: currentY,
+  };
+}
+
+/**
+ * Calculate total vertical height for panels
+ */
+export function calculateTotalHeight(
+  panels: Array<{ gutter_after?: number }>
+): number {
+  return panels.reduce((total, panel) => {
+    const gutterAfter = panel.gutter_after || WEBTOON_CONSTANTS.GUTTER_MIN;
+    return total + WEBTOON_CONSTANTS.PANEL_HEIGHT + gutterAfter;
+  }, 0);
+}
+
+/**
+ * Validate gutter spacing
+ */
+export function validateGutterSpacing(gutterAfter: number): {
+  valid: boolean;
+  adjustedValue: number;
+  warning?: string;
+} {
+  if (gutterAfter < WEBTOON_CONSTANTS.GUTTER_MIN) {
+    return {
+      valid: false,
+      adjustedValue: WEBTOON_CONSTANTS.GUTTER_MIN,
+      warning: `Gutter ${gutterAfter}px is below minimum. Adjusted to ${WEBTOON_CONSTANTS.GUTTER_MIN}px.`
+    };
+  }
+
+  if (gutterAfter > WEBTOON_CONSTANTS.GUTTER_MAX) {
+    return {
+      valid: false,
+      adjustedValue: WEBTOON_CONSTANTS.GUTTER_MAX,
+      warning: `Gutter ${gutterAfter}px exceeds maximum. Adjusted to ${WEBTOON_CONSTANTS.GUTTER_MAX}px.`
+    };
+  }
+
+  return {
+    valid: true,
+    adjustedValue: gutterAfter
+  };
+}
+
+/**
+ * Suggest gutter spacing based on context
+ */
+export function suggestGutterSpacing(context: {
+  is_scene_transition?: boolean;
+  is_beat_change?: boolean;
+  is_continuous_action?: boolean;
+  is_climactic_moment?: boolean;
+}): number {
+  if (context.is_scene_transition) {
+    return WEBTOON_CONSTANTS.GUTTER_SCENE_TRANSITION;
+  }
+
+  if (context.is_climactic_moment) {
+    // Large gutter before big reveal or climax
+    return 800;
+  }
+
+  if (context.is_beat_change) {
+    return WEBTOON_CONSTANTS.GUTTER_BEAT_CHANGE;
+  }
+
+  if (context.is_continuous_action) {
+    return WEBTOON_CONSTANTS.GUTTER_MIN;
+  }
+
+  // Default: moderate spacing
+  return 300;
+}
+
+/**
+ * Calculate responsive panel dimensions for different devices
+ */
+export function calculateResponsiveDimensions(viewportWidth: number): {
+  panel_width: number;
+  panel_height: number;
+  scale: number;
+} {
+  const maxWidth = Math.min(viewportWidth, WEBTOON_CONSTANTS.MAX_CONTAINER_WIDTH);
+  const scale = maxWidth / WEBTOON_CONSTANTS.PANEL_WIDTH;
+
+  return {
+    panel_width: maxWidth,
+    panel_height: WEBTOON_CONSTANTS.PANEL_HEIGHT * scale,
+    scale: scale,
+  };
+}
+
+/**
+ * Calculate reading time estimate
+ */
+export function estimateReadingTime(
+  panels: Array<{
+    dialogue?: Array<{ text: string }>;
+    sfx?: Array<{ text: string }>;
+  }>
+): {
+  total_seconds: number;
+  formatted: string;
+} {
+  let totalSeconds = 0;
+
+  for (const panel of panels) {
+    // Base time to view panel: 3 seconds
+    totalSeconds += 3;
+
+    // Add time for dialogue (average reading speed: 200 words per minute)
+    if (panel.dialogue) {
+      const dialogueWords = panel.dialogue.reduce((count, d) => {
+        return count + d.text.split(/\s+/).length;
+      }, 0);
+      totalSeconds += (dialogueWords / 200) * 60;
+    }
+
+    // Add 1 second for SFX processing
+    if (panel.sfx && panel.sfx.length > 0) {
+      totalSeconds += 1;
+    }
+  }
+
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = Math.round(totalSeconds % 60);
+
+  return {
+    total_seconds: totalSeconds,
+    formatted: minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`,
+  };
+}
+
+/**
+ * Calculate panel density (panels per 1000px)
+ */
+export function calculatePanelDensity(
+  totalPanels: number,
+  totalHeight: number
+): {
+  density: number;
+  pacing: 'slow' | 'moderate' | 'fast';
+} {
+  const density = (totalPanels / totalHeight) * 1000;
+
+  let pacing: 'slow' | 'moderate' | 'fast';
+  if (density < 0.5) {
+    pacing = 'slow';  // Spacious, contemplative
+  } else if (density < 0.8) {
+    pacing = 'moderate'; // Balanced pacing
+  } else {
+    pacing = 'fast';  // Dense, rapid action
+  }
+
+  return { density, pacing };
+}
