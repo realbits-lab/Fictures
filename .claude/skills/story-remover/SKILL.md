@@ -85,9 +85,12 @@ Extract from output and present:
 14. **storyInsights** - Analytics insights
 
 **Vercel Blob Storage:**
+- Story cover images (1792x1024 PNG, 16:9)
+- Scene images (1792x1024 PNG, 16:9)
 - Character portrait images (1024x1024 PNG)
 - Setting environment images (1792x1024 PNG, 16:9)
-- Any other story-related images
+- All optimized image variants (AVIF, WebP, JPEG in multiple sizes)
+- **Uses Vercel Blob list API** to find ALL images by prefix `stories/{storyId}/`
 
 ## Response Templates
 
@@ -170,8 +173,10 @@ All data has been permanently removed.
 - Foreign key constraints respected
 
 **Blob Storage:**
-- Extracts image URLs from character/setting records
-- Deletes from Vercel Blob using blob IDs
+- **Uses Vercel Blob `list()` API** to find all images by prefix `stories/{storyId}/`
+- This ensures ALL images are found (story cover, scenes, characters, settings, variants)
+- No longer relies on database records (catches orphaned images)
+- Deletes from Vercel Blob using blob URLs
 - Handles missing/already-deleted images gracefully
 
 ## Safety Features

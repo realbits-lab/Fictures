@@ -16,7 +16,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { del } from '@vercel/blob';
+import { del, list } from '@vercel/blob';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,8 +28,16 @@ async function loadAuth() {
     const authData = await fs.readFile(authPath, 'utf-8');
     const auth = JSON.parse(authData);
 
+    // Get default profile or use manager
+    const profileName = auth.defaultProfile || 'manager';
+    const profile = auth.profiles?.[profileName];
+
+    if (!profile) {
+      throw new Error(`Profile "${profileName}" not found in .auth/user.json`);
+    }
+
     // Extract session cookie
-    const sessionCookie = auth.cookies?.find(c =>
+    const sessionCookie = profile.cookies?.find(c =>
       c.name === 'authjs.session-token' || c.name === '__Secure-authjs.session-token'
     );
 
@@ -101,29 +109,16 @@ async function getRelatedData(storyId, sessionToken) {
   return data;
 }
 
-// Extract blob URLs from data
-function extractBlobUrls(data) {
-  const urls = [];
-
-  // Characters with images
-  if (data.characters) {
-    for (const char of data.characters) {
-      if (char.imageUrl) {
-        urls.push(char.imageUrl);
-      }
-    }
+// Get all blobs for a story using list API
+async function getStoryBlobs(storyId) {
+  try {
+    const prefix = `stories/${storyId}/`;
+    const { blobs } = await list({ prefix });
+    return blobs.map(blob => blob.url);
+  } catch (error) {
+    console.warn('⚠️  Failed to list blobs:', error.message);
+    return [];
   }
-
-  // Settings with images
-  if (data.settings) {
-    for (const setting of data.settings) {
-      if (setting.imageUrl) {
-        urls.push(setting.imageUrl);
-      }
-    }
-  }
-
-  return urls;
 }
 
 // Delete blob images
@@ -224,7 +219,9 @@ async function main() {
     console.log(`   👥 Characters: ${relatedData.characters.length} (${charactersWithImages} with images)`);
     console.log(`   🏞️  Settings: ${relatedData.settings.length} (${settingsWithImages} with images)`);
 
-    const blobUrls = extractBlobUrls(relatedData);
+    console.log('\n🔍 Finding Vercel Blob images...');
+    const blobUrls = await getStoryBlobs(storyId);
+    console.log(`   Found ${blobUrls.length} blob image(s)`);
 
     if (!dryRun) {
       console.log('\n⚠️  This will permanently delete all story data and images.');

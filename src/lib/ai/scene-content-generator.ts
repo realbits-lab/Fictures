@@ -432,20 +432,89 @@ export async function generateAllSceneContent(
         console.error(`❌ Failed to update scene ${scene.scene_id} - scene not found in database!`);
       } else {
         console.log(`✅ Scene ${scene.scene_id} updated successfully`);
+
+        // PHASE 7.5: Evaluate and improve scene
+        try {
+          console.log(`🔄 Starting evaluation loop for scene: ${scene.scene_title}`);
+          progressCallback?.("phase7_evaluation", {
+            message: `Evaluating and improving scene: ${scene.scene_title}`,
+            completedScenes,
+            totalScenes,
+            currentScene: scene.scene_title,
+          });
+
+          const { evaluateAndImproveScene } = await import('@/lib/services/scene-evaluation-loop');
+
+          // Determine arc position based on scene index
+          const sceneIndex = allScenes.indexOf(scene);
+          const totalScenesCount = allScenes.length;
+          let arcPosition: 'beginning' | 'middle' | 'end';
+          if (sceneIndex < totalScenesCount / 3) {
+            arcPosition = 'beginning';
+          } else if (sceneIndex < (totalScenesCount * 2) / 3) {
+            arcPosition = 'middle';
+          } else {
+            arcPosition = 'end';
+          }
+
+          const evalResult = await evaluateAndImproveScene(
+            scene.scene_id || '',
+            formattedContent,
+            {
+              maxIterations: 2,           // Limit to 2 iterations to control time/cost
+              passingScore: 3.0,          // Effective level (3.0 out of 4.0)
+              improvementLevel: 'moderate',
+              storyContext: {
+                storyGenre: story.genre,
+                arcPosition,
+                chapterNumber: chapter.order_index || 1,
+                characterContext: scene.character_ids?.map(charId => {
+                  const char = characters.find(c => c.character_id === charId);
+                  return char ? `${char.name} - ${char.role}` : '';
+                }).filter(Boolean),
+              }
+            }
+          );
+
+          console.log(`✅ Evaluation complete for scene: ${scene.scene_title}`);
+          console.log(`   Final Score: ${evalResult.finalScore}/4.0 (${evalResult.passed ? 'PASSED' : 'NEEDS WORK'})`);
+          console.log(`   Iterations: ${evalResult.iterations}`);
+          console.log(`   Improvements: ${evalResult.improvements.join(', ') || 'None'}`);
+
+          progressCallback?.("phase7_evaluation_complete", {
+            message: `Scene evaluated: ${scene.scene_title} (Score: ${evalResult.finalScore}/4.0)`,
+            completedScenes,
+            totalScenes,
+            currentScene: scene.scene_title,
+            evaluation: {
+              score: evalResult.finalScore,
+              passed: evalResult.passed,
+              iterations: evalResult.iterations,
+              improvements: evalResult.improvements
+            }
+          });
+        } catch (evalError) {
+          console.error(`⚠️ Evaluation failed for scene ${scene.scene_id}:`, evalError);
+          // Continue even if evaluation fails - we still have the generated content
+          progressCallback?.("phase7_evaluation_warning", {
+            message: `Evaluation skipped for scene: ${scene.scene_title}`,
+            error: evalError instanceof Error ? evalError.message : "Unknown error",
+          });
+        }
       }
 
       completedScenes++;
 
       // Send progress update
       progressCallback?.("phase7_progress", {
-        message: `Generated content for scene ${completedScenes}/${totalScenes}: ${scene.scene_title}`,
+        message: `Generated and evaluated scene ${completedScenes}/${totalScenes}: ${scene.scene_title}`,
         completedScenes,
         totalScenes,
         currentScene: scene.scene_title,
         percentage: Math.round((completedScenes / totalScenes) * 100),
       });
 
-      console.log(`✅ Scene ${completedScenes}/${totalScenes} content generated: ${scene.scene_title}`);
+      console.log(`✅ Scene ${completedScenes}/${totalScenes} complete: ${scene.scene_title}`);
 
       // Small delay to prevent rate limiting
       if (completedScenes < totalScenes) {

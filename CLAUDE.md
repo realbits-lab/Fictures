@@ -256,7 +256,12 @@ dotenv --file .env.local run node scripts/remove-story.mjs STORY_ID > logs/story
 
 **What Gets Removed:**
 - **Database records**: story, parts, chapters, scenes, characters, settings
-- **Vercel Blob images**: All images at 1792x1024 (16:9 ratio) - character portraits, setting visuals, scene images
+- **Vercel Blob images**: ALL images found using Vercel Blob list API by prefix `stories/{storyId}/`
+  - Story cover images (1792x1024, 16:9)
+  - Scene images (1792x1024, 16:9)
+  - Character portraits (1024x1024)
+  - Setting visuals (1792x1024, 16:9)
+  - All optimized variants (AVIF, WebP, JPEG in multiple sizes)
 - **Community data**: posts, likes, replies, bookmarks
 - **Analytics data**: reading sessions, insights, events
 
