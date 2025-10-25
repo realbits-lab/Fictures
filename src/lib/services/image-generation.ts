@@ -1,14 +1,18 @@
 import { experimental_generateImage as generateImage } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { put } from '@vercel/blob';
+import { optimizeImage, type OptimizedImageSet } from './image-optimization';
+import { nanoid } from 'nanoid';
 
 export interface GenerateStoryImageParams {
   prompt: string;
-  storyId?: string;
+  storyId: string;
+  imageType?: 'story' | 'scene' | 'character' | 'setting';
   chapterId?: string;
   sceneId?: string;
   style?: 'vivid' | 'natural';
   quality?: 'standard' | 'hd';
+  skipOptimization?: boolean; // For testing or special cases
 }
 
 export interface GenerateStoryImageResult {
@@ -17,30 +21,45 @@ export interface GenerateStoryImageResult {
   width: number;
   height: number;
   size: number;
+  imageId: string;
+  optimizedSet?: OptimizedImageSet;
 }
 
 /**
- * Generate a story illustration using DALL-E 3
- * Always generates 1792x1024 (16:9) widescreen images
+ * Generate a story illustration using DALL-E 3 and create optimized variants
+ *
+ * Process:
+ * 1. Generate 1792x1024 (16:9) image with DALL-E 3
+ * 2. Upload original to Vercel Blob
+ * 3. Create optimized variants (AVIF, WebP, JPEG in multiple sizes)
+ * 4. Return all URLs and metadata
+ *
+ * @param params - Image generation parameters
+ * @returns Original image URL and optimized variants
  */
 export async function generateStoryImage({
   prompt,
   storyId,
+  imageType = 'story',
   chapterId,
   sceneId,
   style = 'vivid',
   quality = 'standard',
+  skipOptimization = false,
 }: GenerateStoryImageParams): Promise<GenerateStoryImageResult> {
   const apiKey = process.env.OPENAI_API_KEY || process.env.AI_GATEWAY_API_KEY;
   if (!apiKey) {
     throw new Error('Missing OPENAI_API_KEY in environment variables');
   }
 
+  console.log(`[Image Generation] Starting ${imageType} image generation for story ${storyId}`);
+
   const openaiProvider = createOpenAI({
     apiKey: apiKey,
   });
 
   // Generate image with DALL-E 3
+  console.log(`[Image Generation] Calling DALL-E 3...`);
   const { image } = await generateImage({
     model: openaiProvider.image('dall-e-3'),
     prompt: prompt,
@@ -57,24 +76,53 @@ export async function generateStoryImage({
   const base64Data = image.base64.replace(/^data:image\/\w+;base64,/, '');
   const buffer = Buffer.from(base64Data, 'base64');
 
-  // Generate filename
+  // Generate unique image ID
+  const imageId = nanoid();
   const timestamp = Date.now();
   const context = [storyId, chapterId, sceneId].filter(Boolean).join('-');
-  const filename = `story-images/${context || 'general'}-${timestamp}.png`;
+  const filename = `story-images/${imageType}/${context}-${timestamp}-${imageId}.png`;
 
-  // Upload to Vercel Blob
+  console.log(`[Image Generation] Uploading original image to Vercel Blob...`);
+
+  // Upload original to Vercel Blob
   const blob = await put(filename, buffer, {
     access: 'public',
     contentType: 'image/png',
   });
 
-  return {
+  console.log(`[Image Generation] ✓ Original uploaded: ${blob.url}`);
+
+  const result: GenerateStoryImageResult = {
     url: blob.url,
     blobUrl: blob.url,
     width: 1792,
     height: 1024,
     size: buffer.length,
+    imageId,
   };
+
+  // Create optimized variants (unless skipped for testing)
+  if (!skipOptimization) {
+    try {
+      console.log(`[Image Generation] Creating optimized variants...`);
+      const optimizedSet = await optimizeImage(
+        blob.url,
+        imageId,
+        storyId,
+        imageType
+      );
+      result.optimizedSet = optimizedSet;
+      console.log(`[Image Generation] ✓ Complete! Generated ${optimizedSet.variants.length} optimized variants`);
+    } catch (error) {
+      console.error('[Image Generation] ✗ Failed to create optimized variants:', error);
+      // Continue without optimization rather than failing entirely
+      console.warn('[Image Generation] Continuing with original image only');
+    }
+  } else {
+    console.log(`[Image Generation] Skipping optimization (skipOptimization=true)`);
+  }
+
+  return result;
 }
 
 /**

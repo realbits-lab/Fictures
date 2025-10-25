@@ -129,6 +129,9 @@ export const stories = pgTable('stories', {
   rating: integer('rating').default(0), // Average rating * 10 (e.g., 47 = 4.7)
   ratingCount: integer('rating_count').default(0),
   content: text('content').default(''), // Store complete story development YAML data as text
+  // Image fields
+  imageUrl: text('image_url'), // Original/cover image URL from Vercel Blob
+  imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
   // HNS fields
   premise: text('premise'),
   dramaticQuestion: text('dramatic_question'),
@@ -195,6 +198,9 @@ export const scenes = pgTable('scenes', {
   goal: text('goal'),
   conflict: text('conflict'),
   outcome: text('outcome'),
+  // Image fields
+  imageUrl: text('image_url'), // Original scene image URL from Vercel Blob
+  imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
   // HNS fields
   povCharacterId: text('pov_character_id'),
   settingId: text('setting_id'),
@@ -225,7 +231,8 @@ export const characters = pgTable('characters', {
   storyId: text('story_id').references(() => stories.id).notNull(),
   isMain: boolean('is_main').default(false),
   content: text('content').default(''), // Store all character data as YAML/JSON
-  imageUrl: text('image_url'), // Store generated character image URL from Vercel Blob
+  imageUrl: text('image_url'), // Original character image URL from Vercel Blob
+  imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
   // HNS fields
   role: varchar('role', { length: 50 }),
   archetype: varchar('archetype', { length: 100 }),
@@ -249,7 +256,8 @@ export const places = pgTable('places', {
   storyId: text('story_id').references(() => stories.id).notNull(),
   isMain: boolean('is_main').default(false), // is this a main location?
   content: text('content').default(''), // Store all place data as YAML/JSON
-  imageUrl: text('image_url'), // Store generated place image URL from Vercel Blob
+  imageUrl: text('image_url'), // Original place image URL from Vercel Blob
+  imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -458,7 +466,8 @@ export const settings = pgTable('settings', {
   visualReferences: json('visual_references').$type<string[]>(),
   colorPalette: json('color_palette').$type<string[]>(),
   architecturalStyle: text('architectural_style'),
-  imageUrl: text('image_url'),
+  imageUrl: text('image_url'), // Original setting image URL from Vercel Blob
+  imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

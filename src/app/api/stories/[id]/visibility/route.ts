@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { stories } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
+import { publishEvent, CHANNELS, type StoryPublishedEvent, type StoryUpdatedEvent } from '@/lib/redis/client';
 
 interface RouteParams {
   id: string;
@@ -43,6 +44,7 @@ export async function PUT(
         title: stories.title,
         authorId: stories.authorId,
         status: stories.status,
+        genre: stories.genre,
       })
       .from(stories)
       .where(eq(stories.id, storyId))
@@ -82,6 +84,24 @@ export async function PUT(
       });
 
     console.log(`📚 Story visibility updated: ${story.title} status is now ${newStatus}`);
+
+    // Publish Redis event for real-time updates
+    if (newStatus === 'published' && story.status !== 'published') {
+      // Story just got published
+      await publishEvent<StoryPublishedEvent>(CHANNELS.STORY_PUBLISHED, {
+        storyId: story.id,
+        title: story.title,
+        authorId: story.authorId,
+        genre: story.genre,
+        timestamp: new Date().toISOString(),
+      });
+    } else if (newStatus === 'published' || story.status === 'published') {
+      // Story was updated (either it's published now or was published before)
+      await publishEvent<StoryUpdatedEvent>(CHANNELS.STORY_UPDATED, {
+        storyId: story.id,
+        timestamp: new Date().toISOString(),
+      });
+    }
 
     return new Response(
       JSON.stringify({
