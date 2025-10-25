@@ -11,8 +11,14 @@
 import { db } from '@/lib/db';
 import { scenes as scenesTable } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { evaluateScene } from '@/lib/evaluation';
-import type { SceneEvaluationResult } from '@/types/validation-evaluation';
+import { gateway } from '@ai-sdk/gateway';
+import { generateObject } from 'ai';
+import {
+  evaluationResultSchema,
+  type EvaluationResult,
+  type EvaluationContext
+} from '@/lib/evaluation/schemas';
+import { buildEvaluationPrompt } from '@/lib/evaluation/prompts';
 
 export interface SceneEvaluationLoopOptions {
   maxIterations?: number;        // Default: 3
@@ -29,11 +35,102 @@ export interface SceneEvaluationLoopOptions {
 
 export interface SceneEvaluationLoopResult {
   scene: any;
-  evaluations: SceneEvaluationResult[];
+  evaluations: Array<{
+    evaluation: EvaluationResult;
+    categoryScores: {
+      plot: number;
+      character: number;
+      pacing: number;
+      prose: number;
+      worldBuilding: number;
+    };
+    overallScore: number;
+  }>;
   iterations: number;
   finalScore: number;
   passed: boolean;
   improvements: string[];
+}
+
+/**
+ * Helper function to calculate category score from individual metrics
+ */
+function calculateCategoryScore(scores: number[]): number {
+  return Number((scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(2));
+}
+
+/**
+ * Evaluate a scene using AI
+ */
+async function evaluateSceneContent(
+  content: string,
+  context?: EvaluationContext
+): Promise<{
+  evaluation: EvaluationResult;
+  categoryScores: {
+    plot: number;
+    character: number;
+    pacing: number;
+    prose: number;
+    worldBuilding: number;
+  };
+  overallScore: number;
+}> {
+  // Build evaluation prompt
+  const prompt = buildEvaluationPrompt(content, context);
+
+  // Generate evaluation using AI
+  const result = await generateObject({
+    model: gateway('openai/gpt-4o-mini'),
+    schema: evaluationResultSchema,
+    prompt: prompt,
+    temperature: 0.3,
+  });
+
+  const evaluation = result.object as EvaluationResult;
+
+  // Calculate category scores
+  const categoryScores = {
+    plot: calculateCategoryScore([
+      evaluation.metrics.plot.hookEffectiveness.score,
+      evaluation.metrics.plot.goalClarity.score,
+      evaluation.metrics.plot.conflictEngagement.score,
+      evaluation.metrics.plot.cliffhangerTransition.score,
+    ]),
+    character: calculateCategoryScore([
+      evaluation.metrics.character.agency.score,
+      evaluation.metrics.character.voiceDistinction.score,
+      evaluation.metrics.character.emotionalDepth.score,
+      evaluation.metrics.character.relationshipDynamics.score,
+    ]),
+    pacing: calculateCategoryScore([
+      evaluation.metrics.pacing.microPacing.score,
+      evaluation.metrics.pacing.tensionManagement.score,
+      evaluation.metrics.pacing.sceneEconomy.score,
+    ]),
+    prose: calculateCategoryScore([
+      evaluation.metrics.prose.clarity.score,
+      evaluation.metrics.prose.showDontTell.score,
+      evaluation.metrics.prose.voiceConsistency.score,
+      evaluation.metrics.prose.technicalQuality.score,
+    ]),
+    worldBuilding: calculateCategoryScore([
+      evaluation.metrics.worldBuilding.integration.score,
+      evaluation.metrics.worldBuilding.consistency.score,
+      evaluation.metrics.worldBuilding.mysteryGeneration.score,
+    ]),
+  };
+
+  // Calculate overall score
+  const overallScore = Number((
+    (categoryScores.plot +
+     categoryScores.character +
+     categoryScores.pacing +
+     categoryScores.prose +
+     categoryScores.worldBuilding) / 5
+  ).toFixed(2));
+
+  return { evaluation, categoryScores, overallScore };
 }
 
 /**
@@ -71,7 +168,11 @@ export async function evaluateAndImproveScene(
 
   let currentScene = sceneRecords[0];
   let currentContent = content;
-  const evaluations: SceneEvaluationResult[] = [];
+  const evaluations: Array<{
+    evaluation: EvaluationResult;
+    categoryScores: any;
+    overallScore: number;
+  }> = [];
   const improvements: string[] = [];
   let iteration = 0;
 
@@ -83,40 +184,32 @@ export async function evaluateAndImproveScene(
     console.log(`📊 Evaluating scene "${currentScene.title}"...`);
     const startTime = Date.now();
 
-    const evaluation = await evaluateScene({
-      sceneId: currentScene.id,
-      content: currentContent,
-      context: storyContext,
-      options: {
-        detailedFeedback: true,
-        includeExamples: true
-      }
-    });
+    const evaluationResult = await evaluateSceneContent(currentContent, storyContext);
 
-    evaluations.push(evaluation);
+    evaluations.push(evaluationResult);
     const evalTime = Date.now() - startTime;
     console.log(`✓ Evaluation complete in ${evalTime}ms`);
-    console.log(`   Overall Score: ${evaluation.evaluation.overallScore}/4.0`);
+    console.log(`   Overall Score: ${evaluationResult.overallScore}/4.0`);
     console.log(`   Category Scores:`);
-    console.log(`     - Plot: ${evaluation.evaluation.categoryScores.plot}/4.0`);
-    console.log(`     - Character: ${evaluation.evaluation.categoryScores.character}/4.0`);
-    console.log(`     - Pacing: ${evaluation.evaluation.categoryScores.pacing}/4.0`);
-    console.log(`     - Prose: ${evaluation.evaluation.categoryScores.prose}/4.0`);
-    console.log(`     - World Building: ${evaluation.evaluation.categoryScores.worldBuilding}/4.0`);
+    console.log(`     - Plot: ${evaluationResult.categoryScores.plot}/4.0`);
+    console.log(`     - Character: ${evaluationResult.categoryScores.character}/4.0`);
+    console.log(`     - Pacing: ${evaluationResult.categoryScores.pacing}/4.0`);
+    console.log(`     - Prose: ${evaluationResult.categoryScores.prose}/4.0`);
+    console.log(`     - World Building: ${evaluationResult.categoryScores.worldBuilding}/4.0`);
 
     // Step 2: Check if scene passes
-    const passed = evaluation.evaluation.overallScore >= passingScore;
+    const passed = evaluationResult.overallScore >= passingScore;
 
     if (passed) {
       console.log(`✅ Scene "${currentScene.title}" PASSED evaluation!`);
-      console.log(`   Score: ${evaluation.evaluation.overallScore} >= ${passingScore}`);
+      console.log(`   Score: ${evaluationResult.overallScore} >= ${passingScore}`);
       break;
     }
 
     // Step 3: Identify areas for improvement
-    console.log(`⚠️ Scene needs improvement (score: ${evaluation.evaluation.overallScore} < ${passingScore})`);
+    console.log(`⚠️ Scene needs improvement (score: ${evaluationResult.overallScore} < ${passingScore})`);
     console.log(`   Key improvements needed:`);
-    evaluation.evaluation.actionableFeedback
+    evaluationResult.evaluation.actionableFeedback
       .filter(f => f.priority === 'high')
       .forEach(feedback => {
         console.log(`     - ${feedback.category}: ${feedback.diagnosis}`);
@@ -136,7 +229,7 @@ export async function evaluateAndImproveScene(
     const improved = await improveSceneWithEvaluation(
       currentScene,
       currentContent,
-      evaluation,
+      evaluationResult,
       improvementLevel
     );
 
@@ -170,8 +263,8 @@ export async function evaluateAndImproveScene(
     scene: currentScene,
     evaluations,
     iterations: iteration,
-    finalScore: finalEvaluation.evaluation.overallScore,
-    passed: finalEvaluation.evaluation.overallScore >= passingScore,
+    finalScore: finalEvaluation.overallScore,
+    passed: finalEvaluation.overallScore >= passingScore,
     improvements
   };
 
@@ -193,7 +286,11 @@ export async function evaluateAndImproveScene(
 async function improveSceneWithEvaluation(
   scene: any,
   content: string,
-  evaluation: SceneEvaluationResult,
+  evaluationResult: {
+    evaluation: EvaluationResult;
+    categoryScores: any;
+    overallScore: number;
+  },
   improvementLevel: 'conservative' | 'moderate' | 'aggressive'
 ): Promise<{
   content: string;
@@ -206,31 +303,33 @@ async function improveSceneWithEvaluation(
   const { generateText } = await import('ai');
   const { AI_MODELS } = await import('@/lib/ai/config');
 
+  const { evaluation, categoryScores, overallScore } = evaluationResult;
+
   // Collect high-priority feedback
-  const highPriorityFeedback = evaluation.evaluation.actionableFeedback
+  const highPriorityFeedback = evaluation.actionableFeedback
     .filter(f => f.priority === 'high')
     .map(f => `${f.category}: ${f.diagnosis} → ${f.suggestion}`)
     .join('\n');
 
-  const mediumPriorityFeedback = evaluation.evaluation.actionableFeedback
+  const mediumPriorityFeedback = evaluation.actionableFeedback
     .filter(f => f.priority === 'medium')
     .map(f => `${f.category}: ${f.diagnosis} → ${f.suggestion}`)
     .join('\n');
 
   // Get category-specific improvements
-  const plotImprovements = evaluation.evaluation.analysis.plot.improvements
+  const plotImprovements = evaluation.analysis.plot.improvements
     .map(i => `${i.point}: ${i.evidence}`)
     .join('\n');
 
-  const characterImprovements = evaluation.evaluation.analysis.character.improvements
+  const characterImprovements = evaluation.analysis.character.improvements
     .map(i => `${i.point}: ${i.evidence}`)
     .join('\n');
 
-  const pacingImprovements = evaluation.evaluation.analysis.pacing.improvements
+  const pacingImprovements = evaluation.analysis.pacing.improvements
     .map(i => `${i.point}: ${i.evidence}`)
     .join('\n');
 
-  const proseImprovements = evaluation.evaluation.analysis.prose.improvements
+  const proseImprovements = evaluation.analysis.prose.improvements
     .map(i => `${i.point}: ${i.evidence}`)
     .join('\n');
 
@@ -248,12 +347,12 @@ Content (${content.split(/\s+/).length} words):
 ${content}
 
 EVALUATION SCORES:
-- Overall: ${evaluation.evaluation.overallScore}/4.0
-- Plot: ${evaluation.evaluation.categoryScores.plot}/4.0
-- Character: ${evaluation.evaluation.categoryScores.character}/4.0
-- Pacing: ${evaluation.evaluation.categoryScores.pacing}/4.0
-- Prose: ${evaluation.evaluation.categoryScores.prose}/4.0
-- World Building: ${evaluation.evaluation.categoryScores.worldBuilding}/4.0
+- Overall: ${overallScore}/4.0
+- Plot: ${categoryScores.plot}/4.0
+- Character: ${categoryScores.character}/4.0
+- Pacing: ${categoryScores.pacing}/4.0
+- Prose: ${categoryScores.prose}/4.0
+- World Building: ${categoryScores.worldBuilding}/4.0
 
 HIGH PRIORITY IMPROVEMENTS:
 ${highPriorityFeedback || 'None'}
@@ -276,7 +375,7 @@ PROSE:
 ${proseImprovements || 'No issues'}
 
 KEY STRENGTHS TO PRESERVE:
-${evaluation.evaluation.summary.keyStrengths.join('\n')}
+${evaluation.summary.keyStrengths.join('\n')}
 
 IMPROVEMENT LEVEL: ${improvementLevel}
 
@@ -308,13 +407,13 @@ Return ONLY the improved scene content. Do not include any explanations or metad
   const structuralChanges: any = {};
 
   // Check if goal clarity was an issue
-  if (evaluation.evaluation.metrics.plot.goalClarity.score < 3.0 && scene.goal) {
+  if (evaluation.metrics.plot.goalClarity.score < 3.0 && scene.goal) {
     // Goal needs clarification - this would need additional AI call
     changes.push('goal');
   }
 
   // Check if conflict needed work
-  if (evaluation.evaluation.metrics.plot.conflictEngagement.score < 3.0 && scene.conflict) {
+  if (evaluation.metrics.plot.conflictEngagement.score < 3.0 && scene.conflict) {
     changes.push('conflict');
   }
 

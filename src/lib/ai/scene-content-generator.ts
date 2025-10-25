@@ -467,7 +467,7 @@ export async function generateAllSceneContent(
               storyContext: {
                 storyGenre: story.genre,
                 arcPosition,
-                chapterNumber: chapter.order_index || 1,
+                chapterNumber: chapter.chapter_number || 1,
                 characterContext: scene.character_ids?.map(charId => {
                   const char = characters.find(c => c.character_id === charId);
                   return char ? `${char.name} - ${char.role}` : '';
