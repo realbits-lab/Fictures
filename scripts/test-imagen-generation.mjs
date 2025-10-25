@@ -25,10 +25,10 @@ async function testImagenGeneration() {
   console.log('🎨 Starting AI image generation test (OpenAI DALL-E 3)...\n');
 
   try {
-    // Validate environment variables
-    const apiKey = process.env.AI_GATEWAY_API_KEY || process.env.OPENAI_API_KEY;
+    // Validate environment variables - prioritize OPENAI_API_KEY for DALL-E
+    const apiKey = process.env.OPENAI_API_KEY || process.env.AI_GATEWAY_API_KEY;
     if (!apiKey) {
-      throw new Error('Missing required API key. Set AI_GATEWAY_API_KEY or OPENAI_API_KEY in .env.local');
+      throw new Error('Missing required API key. Set OPENAI_API_KEY or AI_GATEWAY_API_KEY in .env.local');
     }
 
     // Configure OpenAI provider with custom API key
@@ -42,7 +42,7 @@ async function testImagenGeneration() {
     console.log(`📝 Prompt: "${prompt}"`);
     console.log(`📐 Size: 1792x1024 (landscape - approximately 16:9)`);
     console.log(`🤖 Model: OpenAI DALL-E 3`);
-    console.log(`🔑 API Key: ${process.env.AI_GATEWAY_API_KEY ? 'AI Gateway' : 'Direct OpenAI'}\n`);
+    console.log(`🔑 API Key: ${process.env.OPENAI_API_KEY ? 'OpenAI API Key' : 'AI Gateway'}\n`);
 
     // Generate image with DALL-E 3
     const { image } = await generateImage({

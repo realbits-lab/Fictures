@@ -13,13 +13,14 @@ import { trackReading } from '@/lib/analytics/google-analytics';
 
 interface ChapterReaderClientProps {
   storyId: string;
+  initialData?: any; // SSR data from server
 }
 
-export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
+export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClientProps) {
   const componentMountTime = useRef(performance.now());
   const componentId = useRef(Math.random().toString(36).substring(7));
 
-  console.log(`[${componentId.current}] 🎭 ChapterReaderClient MOUNT - Story: ${storyId}`);
+  console.log(`[${componentId.current}] 🎭 ChapterReaderClient MOUNT - Story: ${storyId}${initialData ? ' (with SSR data)' : ' (client-side only)'}`);
 
   const { data: session } = useSession();
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
@@ -171,6 +172,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
   }, []);
 
   // Use the new SWR hook for data fetching with caching
+  // Pass SSR data as fallback for instant hydration
   const {
     story,
     isOwner,
@@ -179,7 +181,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
     isValidating,
     error,
     refreshStory
-  } = useStoryReader(storyId);
+  } = useStoryReader(storyId, initialData);
 
   // Reading progress management
   const readingProgress = useReadingProgress(storyId, selectedChapterId);
@@ -243,21 +245,29 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
       }
 
       // ⚡ PARALLEL FETCH - Fire all requests simultaneously
+      const fetchStartTimes = new Map();
       const fetchPromises = chaptersToFetch.map(async (chapter) => {
+        const chapterFetchStart = performance.now();
+        fetchStartTimes.set(chapter.id, chapterFetchStart);
+        console.log(`🚀 [PARALLEL] Starting fetch for chapter: ${chapter.title} (${chapter.id})`);
+
         try {
           const response = await fetch(`/writing/api/chapters/${chapter.id}/scenes`, {
             credentials: 'include',
           });
 
+          const fetchDuration = performance.now() - chapterFetchStart;
+
           if (response.ok) {
             const data = await response.json();
+            console.log(`✅ [PARALLEL] Chapter fetch completed: ${chapter.title} in ${fetchDuration.toFixed(0)}ms (${data.scenes?.length || 0} scenes)`);
             return {
               chapter,
               scenes: data.scenes || [],
               success: true
             };
           } else {
-            console.warn(`Failed to fetch scenes for chapter ${chapter.id}: ${response.status}`);
+            console.warn(`❌ [PARALLEL] Failed fetch: ${chapter.title} - ${response.status} in ${fetchDuration.toFixed(0)}ms`);
             return {
               chapter,
               scenes: [],
@@ -265,7 +275,8 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
             };
           }
         } catch (error) {
-          console.error(`Error fetching scenes for chapter ${chapter.id}:`, error);
+          const fetchDuration = performance.now() - chapterFetchStart;
+          console.error(`❌ [PARALLEL] Error fetching ${chapter.title} after ${fetchDuration.toFixed(0)}ms:`, error);
           return {
             chapter,
             scenes: [],
@@ -274,7 +285,8 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
         }
       });
 
-      // Wait for all fetches to complete
+      // Wait for all fetches to complete (truly parallel execution)
+      console.log(`⏳ [PARALLEL] Waiting for ${fetchPromises.length} chapter fetches to complete...`);
       const results = await Promise.all(fetchPromises);
 
       // Build flat scene list with proper ordering

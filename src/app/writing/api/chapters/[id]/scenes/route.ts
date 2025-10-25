@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { db } from '@/lib/db';
-import { chapters, scenes } from '@/lib/db/schema';
-import { eq, asc } from 'drizzle-orm';
+import { getChapterById, getChapterScenes } from '@/lib/db/cached-queries';
+import { getStoryById } from '@/lib/db/cached-queries';
 import { createHash } from 'crypto';
 
 export async function GET(
@@ -22,37 +21,22 @@ export async function GET(
     const authDuration = performance.now() - authStartTime;
     console.log(`[${requestId}] 🔐 Auth completed: ${authDuration.toFixed(2)}ms`);
 
-    // 2. Get chapter to verify access
+    // 2. Get chapter using cached query
     const chapterQueryStartTime = performance.now();
-    const [chapter] = await db
-      .select({
-        id: chapters.id,
-        storyId: chapters.storyId,
-        status: chapters.status
-      })
-      .from(chapters)
-      .where(eq(chapters.id, chapterId))
-      .limit(1);
+    const chapter = await getChapterById(chapterId, session?.user?.id);
     const chapterQueryDuration = performance.now() - chapterQueryStartTime;
-    console.log(`[${requestId}] 📖 Chapter query completed: ${chapterQueryDuration.toFixed(2)}ms`);
+    console.log(`[${requestId}] 📖 Chapter query completed: ${chapterQueryDuration.toFixed(2)}ms (${chapter ? 'cached' : 'not found'})`);
 
     if (!chapter) {
       console.log(`[${requestId}] ❌ Chapter not found`);
       return NextResponse.json({ error: 'Chapter not found' }, { status: 404 });
     }
 
-    // 3. Get story to check permissions
+    // 3. Get story using cached query
     const storyQueryStartTime = performance.now();
-    const story = await db.query.stories.findFirst({
-      where: (stories, { eq }) => eq(stories.id, chapter.storyId),
-      columns: {
-        id: true,
-        authorId: true,
-        status: true
-      }
-    });
+    const story = await getStoryById(chapter.storyId, session?.user?.id);
     const storyQueryDuration = performance.now() - storyQueryStartTime;
-    console.log(`[${requestId}] 📚 Story query completed: ${storyQueryDuration.toFixed(2)}ms`);
+    console.log(`[${requestId}] 📚 Story query completed: ${storyQueryDuration.toFixed(2)}ms (${story ? 'cached' : 'not found'})`);
 
     if (!story) {
       console.log(`[${requestId}] ❌ Story not found`);
@@ -70,26 +54,13 @@ export async function GET(
       return NextResponse.json({ error: 'Chapter not available' }, { status: 403 });
     }
 
-    // 4. Get scenes for this chapter using foreign key, ordered by orderIndex
+    // 4. Get scenes using cached query (with scene images already extracted)
     const scenesQueryStartTime = performance.now();
-    const chapterScenes = await db
-      .select()
-      .from(scenes)
-      .where(eq(scenes.chapterId, chapterId))
-      .orderBy(asc(scenes.orderIndex));
+    const scenesWithImages = await getChapterScenes(chapterId, session?.user?.id, isPublishedStory);
     const scenesQueryDuration = performance.now() - scenesQueryStartTime;
-    console.log(`[${requestId}] 🎬 Scenes query completed: ${scenesQueryDuration.toFixed(2)}ms (${chapterScenes.length} scenes)`);
+    console.log(`[${requestId}] 🎬 Scenes query completed: ${scenesQueryDuration.toFixed(2)}ms (${scenesWithImages.length} scenes) - CACHED`);
 
-    // 5. Extract scene images from HNS data
-    const processingStartTime = performance.now();
-    const scenesWithImages = chapterScenes.map(scene => ({
-      ...scene,
-      sceneImage: scene.hnsData && typeof scene.hnsData === 'object'
-        ? (scene.hnsData as any).scene_image
-        : null
-    }));
-    const processingDuration = performance.now() - processingStartTime;
-    console.log(`[${requestId}] 🖼️  Scene image processing: ${processingDuration.toFixed(2)}ms`);
+    // No additional processing needed - scene images already extracted in cached function
 
     const response = {
       scenes: scenesWithImages,
@@ -100,16 +71,16 @@ export async function GET(
       }
     };
 
-    // 6. Generate ETag based on scene content and modification times
+    // 5. Generate ETag based on scene content and modification times
     const etagStartTime = performance.now();
     const contentForHash = JSON.stringify({
-      scenes: chapterScenes.map(scene => ({
+      scenes: scenesWithImages.map(scene => ({
         id: scene.id,
         content: scene.content,
         updatedAt: scene.updatedAt
       })),
       chapterId,
-      totalScenes: chapterScenes.length
+      totalScenes: scenesWithImages.length
     });
     const etag = createHash('md5').update(contentForHash).digest('hex');
     const etagDuration = performance.now() - etagStartTime;
@@ -136,7 +107,7 @@ export async function GET(
 
     const totalDuration = performance.now() - apiStartTime;
     console.log(`[${requestId}] ✅ 200 OK - Total: ${totalDuration.toFixed(2)}ms`);
-    console.log(`[${requestId}] 📊 Breakdown: Auth=${authDuration.toFixed(0)}ms, Chapter=${chapterQueryDuration.toFixed(0)}ms, Story=${storyQueryDuration.toFixed(0)}ms, Scenes=${scenesQueryDuration.toFixed(0)}ms, Processing=${processingDuration.toFixed(0)}ms, ETag=${etagDuration.toFixed(0)}ms`);
+    console.log(`[${requestId}] 📊 Breakdown: Auth=${authDuration.toFixed(0)}ms, Chapter=${chapterQueryDuration.toFixed(0)}ms, Story=${storyQueryDuration.toFixed(0)}ms, Scenes=${scenesQueryDuration.toFixed(0)}ms, ETag=${etagDuration.toFixed(0)}ms`);
 
     return new NextResponse(JSON.stringify(response), {
       status: 200,

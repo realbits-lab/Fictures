@@ -1,6 +1,9 @@
 import { withCache, invalidateCache, getCache } from '../cache/redis-cache';
 import { measureAsync } from '../cache/performance-logger';
 import * as queries from './queries';
+import { db } from './index';
+import * as schema from './schema';
+import { eq, asc } from 'drizzle-orm';
 
 const CACHE_TTL = {
   PUBLISHED_CONTENT: 3600,   // 1 hour for published (shared by all users) - Extended from 10min for better performance
@@ -109,6 +112,55 @@ export async function getChapterById(chapterId: string, userId?: string) {
       return chapter;
     },
     { chapterId, userId, cached: true }
+  ).then(r => r.result);
+}
+
+export async function getChapterScenes(chapterId: string, userId?: string, isPublishedStory: boolean = false) {
+  return measureAsync(
+    'getChapterScenes',
+    async () => {
+      // Use appropriate cache based on story publish status
+      const cacheKey = isPublishedStory
+        ? `chapter:${chapterId}:scenes:public`
+        : userId
+        ? `chapter:${chapterId}:scenes:user:${userId}`
+        : null;
+
+      // Try cache first
+      if (cacheKey) {
+        const cached = await getCache().get(cacheKey);
+        if (cached) {
+          console.log(`[Cache] HIT ${isPublishedStory ? 'public' : 'user-specific'} chapter scenes: ${chapterId}`);
+          return cached;
+        }
+      }
+
+      // Cache miss - fetch from database
+      console.log(`[Cache] MISS chapter scenes: ${chapterId}`);
+      const scenes = await db
+        .select()
+        .from(schema.scenes)
+        .where(eq(schema.scenes.chapterId, chapterId))
+        .orderBy(asc(schema.scenes.orderIndex));
+
+      // Extract scene images from HNS data
+      const scenesWithImages = scenes.map(scene => ({
+        ...scene,
+        sceneImage: scene.hnsData && typeof scene.hnsData === 'object'
+          ? (scene.hnsData as any).scene_image
+          : null
+      }));
+
+      // Cache the result
+      if (cacheKey) {
+        const ttl = isPublishedStory ? CACHE_TTL.PUBLISHED_CONTENT : CACHE_TTL.PRIVATE_CONTENT;
+        await getCache().set(cacheKey, scenesWithImages, ttl);
+        console.log(`[Cache] SET ${isPublishedStory ? 'public' : 'user-specific'} chapter scenes: ${chapterId}`);
+      }
+
+      return scenesWithImages;
+    },
+    { chapterId, userId, isPublishedStory, cached: true }
   ).then(r => r.result);
 }
 
