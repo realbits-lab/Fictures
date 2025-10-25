@@ -16,7 +16,21 @@ interface Character {
   id: string;
   name: string;
   role: string | null;
+  archetype: string | null;
   summary: string | null;
+  storyline: string | null;
+  personality: {
+    traits?: string[];
+    myers_briggs?: string;
+    enneagram?: string;
+  } | null;
+  backstory: Record<string, string> | null;
+  motivations: {
+    primary?: string;
+    secondary?: string;
+    fear?: string;
+  } | null;
+  physicalDescription: Record<string, unknown> | null;
   imageUrl: string | null;
   isMain: boolean | null;
 }
@@ -26,6 +40,10 @@ interface Setting {
   name: string;
   description: string | null;
   mood: string | null;
+  sensory: Record<string, string[]> | null;
+  visualStyle: string | null;
+  architecturalStyle: string | null;
+  colorPalette: string[] | null;
   imageUrl: string | null;
 }
 

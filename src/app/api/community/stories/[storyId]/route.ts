@@ -71,26 +71,36 @@ export async function GET(
     // In a real system, you'd want a separate table for story followers/members
     const totalMembers = Math.floor((story.viewCount || 0) * 0.1); // Estimate 10% of viewers become members
 
-    // Fetch characters for this story
+    // Fetch characters for this story with full details
     const storyCharacters = await db
       .select({
         id: characters.id,
         name: characters.name,
         role: characters.role,
+        archetype: characters.archetype,
         summary: characters.summary,
+        storyline: characters.storyline,
+        personality: characters.personality,
+        backstory: characters.backstory,
+        motivations: characters.motivations,
+        physicalDescription: characters.physicalDescription,
         imageUrl: characters.imageUrl,
         isMain: characters.isMain,
       })
       .from(characters)
       .where(eq(characters.storyId, storyId));
 
-    // Fetch settings for this story
+    // Fetch settings for this story with full details
     const storySettings = await db
       .select({
         id: settings.id,
         name: settings.name,
         description: settings.description,
         mood: settings.mood,
+        sensory: settings.sensory,
+        visualStyle: settings.visualStyle,
+        architecturalStyle: settings.architecturalStyle,
+        colorPalette: settings.colorPalette,
         imageUrl: settings.imageUrl,
       })
       .from(settings)

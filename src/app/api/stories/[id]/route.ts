@@ -7,6 +7,7 @@ import { stories, parts, chapters, scenes, characters, places, settings, communi
 import { eq, inArray } from 'drizzle-orm';
 import { del } from '@vercel/blob';
 import { getPerformanceLogger } from '@/lib/cache/performance-logger';
+import { publishEvent, CHANNELS, type StoryDeletedEvent } from '@/lib/redis/client';
 
 export const runtime = 'nodejs';
 
@@ -308,6 +309,13 @@ export async function DELETE(
     console.log(`✓ Deleted ${successfulDeletions} images (${failedDeletions} failed)`);
 
     console.log(`✅ Successfully deleted story ${id} and all related data`);
+
+    // Publish deletion event for real-time UI updates
+    await publishEvent<StoryDeletedEvent>(CHANNELS.STORY_DELETED, {
+      storyId: id,
+      timestamp: new Date().toISOString(),
+    });
+    console.log(`📢 Published STORY_DELETED event for story ${id}`);
 
     return NextResponse.json({
       message: 'Story deleted successfully',
