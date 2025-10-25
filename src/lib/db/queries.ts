@@ -300,6 +300,30 @@ export async function getStoryChapters(storyId: string, userId?: string) {
     .orderBy(chapters.orderIndex);
 }
 
+// Scenes queries
+export async function getSceneById(sceneId: string, userId?: string) {
+  const [scene] = await db
+    .select()
+    .from(scenes)
+    .leftJoin(chapters, eq(scenes.chapterId, chapters.id))
+    .leftJoin(stories, eq(chapters.storyId, stories.id))
+    .where(eq(scenes.id, sceneId))
+    .limit(1);
+
+  if (!scene) return null;
+
+  // Check access permissions
+  if (scene.stories?.status !== 'published' && scene.stories?.authorId !== userId) {
+    return null;
+  }
+
+  return {
+    ...scene.scenes,
+    chapter: scene.chapters,
+    story: scene.stories
+  };
+}
+
 // User stats helpers
 export async function updateUserStats(userId: string, updates: Partial<{
   totalWordsWritten: number;

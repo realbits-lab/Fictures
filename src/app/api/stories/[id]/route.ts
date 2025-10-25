@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { getStoryById, updateStory, getStoryChapters } from '@/lib/db/queries';
+import { getStoryById, updateStory, getStoryChapters } from '@/lib/db/cached-queries';
 import { z } from 'zod';
 import { db } from '@/lib/db';
 import { stories, parts, chapters, scenes, characters, places, settings, communityPosts, communityReplies } from '@/lib/db/schema';
 import { eq, inArray } from 'drizzle-orm';
 import { del } from '@vercel/blob';
+import { getPerformanceLogger } from '@/lib/cache/performance-logger';
 
 export const runtime = 'nodejs';
 
@@ -24,10 +25,16 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const requestStart = Date.now();
+  const perfLogger = getPerformanceLogger();
+  const operationId = `get-story-${Date.now()}`;
+
   try {
+    perfLogger.start(operationId, 'GET /api/stories/[id]', { apiRoute: true });
+
     const { id } = await params;
     const session = await auth();
-    
+
     const story = await getStoryById(id, session?.user?.id);
     if (!story) {
       return NextResponse.json({ error: 'Story not found' }, { status: 404 });
@@ -35,8 +42,20 @@ export async function GET(
 
     const chapters = await getStoryChapters(id, session?.user?.id);
 
-    return NextResponse.json({ story, chapters });
+    const totalDuration = perfLogger.end(operationId);
+
+    const headers = new Headers({
+      'Content-Type': 'application/json',
+      'X-Server-Timing': `total;dur=${totalDuration}`,
+      'X-Cache-Status': 'HIT'
+    });
+
+    return new NextResponse(
+      JSON.stringify({ story, chapters }),
+      { status: 200, headers }
+    );
   } catch (error) {
+    perfLogger.end(operationId, { error: true });
     console.error('Error fetching story:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

@@ -51,33 +51,68 @@ interface SceneDisplayProps {
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export function SceneDisplay({ sceneId, storyId, disabled = false }: SceneDisplayProps) {
+  const componentMountTime = Date.now();
+  console.log(`\n📺 [CLIENT] SceneDisplay component mounting for scene: ${sceneId}`);
+
   const [scene, setScene] = useState<Scene | null>(null);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [settings, setSettings] = useState<Setting[]>([]);
 
   // Fetch scene data
-  const { data: sceneData } = useSWR(
+  console.log(`🔄 [CLIENT] SWR: Initiating scene data fetch from /writing/api/stories/${storyId}/scenes/${sceneId}`);
+  const swrSceneStart = Date.now();
+  const { data: sceneData, isLoading: isLoadingScene } = useSWR(
     `/writing/api/stories/${storyId}/scenes/${sceneId}`,
-    fetcher
+    fetcher,
+    {
+      onSuccess: (data) => {
+        const duration = Date.now() - swrSceneStart;
+        console.log(`✅ [CLIENT] SWR: Scene data fetched in ${duration}ms`);
+      },
+      onError: (error) => {
+        const duration = Date.now() - swrSceneStart;
+        console.log(`❌ [CLIENT] SWR: Scene data fetch failed after ${duration}ms:`, error);
+      }
+    }
   );
 
   // Fetch characters data
+  console.log(`🔄 [CLIENT] SWR: Initiating characters fetch from /writing/api/stories/${storyId}/characters`);
+  const swrCharactersStart = Date.now();
   const { data: charactersData } = useSWR(
     `/writing/api/stories/${storyId}/characters`,
-    fetcher
+    fetcher,
+    {
+      onSuccess: (data) => {
+        const duration = Date.now() - swrCharactersStart;
+        console.log(`✅ [CLIENT] SWR: Characters fetched in ${duration}ms`);
+      }
+    }
   );
 
   // Fetch settings data
+  console.log(`🔄 [CLIENT] SWR: Initiating settings fetch from /writing/api/stories/${storyId}/settings`);
+  const swrSettingsStart = Date.now();
   const { data: settingsData } = useSWR(
     `/writing/api/stories/${storyId}/settings`,
-    fetcher
+    fetcher,
+    {
+      onSuccess: (data) => {
+        const duration = Date.now() - swrSettingsStart;
+        console.log(`✅ [CLIENT] SWR: Settings fetched in ${duration}ms`);
+      }
+    }
   );
 
   useEffect(() => {
     if (sceneData?.scene) {
+      console.log(`💾 [CLIENT] SceneDisplay: Scene state updated with SWR data`);
+      console.log(`📝 [CLIENT] Scene: "${sceneData.scene.title}", Content length: ${sceneData.scene.content?.length || 0} chars`);
       setScene(sceneData.scene);
+      const mountDuration = Date.now() - componentMountTime;
+      console.log(`⏱️  [CLIENT] Total time from mount to scene render: ${mountDuration}ms`);
     }
-  }, [sceneData]);
+  }, [sceneData, componentMountTime]);
 
   useEffect(() => {
     if (charactersData?.characters && scene) {
@@ -85,6 +120,7 @@ export function SceneDisplay({ sceneId, storyId, disabled = false }: SceneDispla
       const sceneCharacters = charactersData.characters.filter((char: Character) =>
         scene.characterIds?.includes(char.id) || scene.povCharacterId === char.id
       );
+      console.log(`👥 [CLIENT] SceneDisplay: Loaded ${sceneCharacters.length} characters for scene`);
       setCharacters(sceneCharacters);
     }
   }, [charactersData, scene]);
@@ -95,6 +131,7 @@ export function SceneDisplay({ sceneId, storyId, disabled = false }: SceneDispla
       const sceneSettings = settingsData.settings.filter((setting: Setting) =>
         scene.placeIds?.includes(setting.id) || scene.settingId === setting.id
       );
+      console.log(`📍 [CLIENT] SceneDisplay: Loaded ${sceneSettings.length} settings for scene`);
       setSettings(sceneSettings);
     }
   }, [settingsData, scene]);

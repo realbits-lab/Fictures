@@ -13,13 +13,14 @@ import { trackReading } from '@/lib/analytics/google-analytics';
 
 interface ChapterReaderClientProps {
   storyId: string;
+  initialData?: any; // SSR data from server
 }
 
-export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
+export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClientProps) {
   const componentMountTime = useRef(performance.now());
   const componentId = useRef(Math.random().toString(36).substring(7));
 
-  console.log(`[${componentId.current}] 🎭 ChapterReaderClient MOUNT - Story: ${storyId}`);
+  console.log(`[${componentId.current}] 🎭 ChapterReaderClient MOUNT - Story: ${storyId}${initialData ? ' (with SSR data)' : ' (client-side only)'}`);
 
   const { data: session } = useSession();
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
@@ -154,7 +155,16 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
   }, [selectedSceneId, saveScrollPosition, allScenes, prefetchAdjacentScenes]);
 
   // Toggle UI visibility on tap/click
-  const handleContentTap = React.useCallback(() => {
+  const handleContentTap = React.useCallback((e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+
+    // Don't toggle if clicking on interactive elements
+    const isInteractive = target.closest('button, a, input, textarea, select, img, video, [role="button"]');
+    if (isInteractive) {
+      console.log('👆 Clicked interactive element, not toggling UI');
+      return;
+    }
+
     setIsUIVisible(prev => {
       console.log(`👆 Content tapped: ${prev ? 'Hiding' : 'Showing'} UI`);
       return !prev;
@@ -162,6 +172,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
   }, []);
 
   // Use the new SWR hook for data fetching with caching
+  // Pass SSR data as fallback for instant hydration
   const {
     story,
     isOwner,
@@ -170,7 +181,7 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
     isValidating,
     error,
     refreshStory
-  } = useStoryReader(storyId);
+  } = useStoryReader(storyId, initialData);
 
   // Reading progress management
   const readingProgress = useReadingProgress(storyId, selectedChapterId);
@@ -234,21 +245,29 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
       }
 
       // ⚡ PARALLEL FETCH - Fire all requests simultaneously
+      const fetchStartTimes = new Map();
       const fetchPromises = chaptersToFetch.map(async (chapter) => {
+        const chapterFetchStart = performance.now();
+        fetchStartTimes.set(chapter.id, chapterFetchStart);
+        console.log(`🚀 [PARALLEL] Starting fetch for chapter: ${chapter.title} (${chapter.id})`);
+
         try {
           const response = await fetch(`/writing/api/chapters/${chapter.id}/scenes`, {
             credentials: 'include',
           });
 
+          const fetchDuration = performance.now() - chapterFetchStart;
+
           if (response.ok) {
             const data = await response.json();
+            console.log(`✅ [PARALLEL] Chapter fetch completed: ${chapter.title} in ${fetchDuration.toFixed(0)}ms (${data.scenes?.length || 0} scenes)`);
             return {
               chapter,
               scenes: data.scenes || [],
               success: true
             };
           } else {
-            console.warn(`Failed to fetch scenes for chapter ${chapter.id}: ${response.status}`);
+            console.warn(`❌ [PARALLEL] Failed fetch: ${chapter.title} - ${response.status} in ${fetchDuration.toFixed(0)}ms`);
             return {
               chapter,
               scenes: [],
@@ -256,7 +275,8 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
             };
           }
         } catch (error) {
-          console.error(`Error fetching scenes for chapter ${chapter.id}:`, error);
+          const fetchDuration = performance.now() - chapterFetchStart;
+          console.error(`❌ [PARALLEL] Error fetching ${chapter.title} after ${fetchDuration.toFixed(0)}ms:`, error);
           return {
             chapter,
             scenes: [],
@@ -265,7 +285,8 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
         }
       });
 
-      // Wait for all fetches to complete
+      // Wait for all fetches to complete (truly parallel execution)
+      console.log(`⏳ [PARALLEL] Waiting for ${fetchPromises.length} chapter fetches to complete...`);
       const results = await Promise.all(fetchPromises);
 
       // Build flat scene list with proper ordering
@@ -711,19 +732,30 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
 
       {/* Main Content Container */}
       <div className="flex flex-1 min-h-0 relative">
+        {/* Clickable overlay for hidden sidebar space on desktop */}
+        {!isUIVisible && (
+          <div
+            className="hidden md:block absolute inset-y-0 left-0 w-80 cursor-pointer z-10"
+            onClick={handleContentTap}
+            aria-label="Click to show menu"
+          />
+        )}
+
         {/* Left Sidebar - Chapter Navigation */}
-        <div className={`
+        <div
+          className={`
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           ${isUIVisible ? 'md:translate-x-0' : 'md:-translate-x-full'}
           fixed md:relative
           inset-y-0 left-0
-          z-50 md:z-0
+          z-50 md:z-20
           w-80 bg-gray-50 dark:bg-gray-800
           border-r border-gray-200 dark:border-gray-700
           flex flex-col h-full
           transition-transform duration-300 ease-in-out
           top-0 md:top-auto
-        `}>
+        `}
+        >
           {/* Story Header */}
           <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
             <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
@@ -804,18 +836,18 @@ export function ChapterReaderClient({ storyId }: ChapterReaderClientProps) {
         </div>
 
         {/* Main Content Area */}
-        <div 
+        <div
           ref={mainContentRef}
-          className="flex-1 h-full overflow-y-auto min-h-0"
+          className="flex-1 h-full overflow-y-auto min-h-0 cursor-pointer"
           style={{
             overscrollBehavior: 'contain',
             WebkitOverflowScrolling: 'auto'
           }}
+          onClick={handleContentTap}
         >
           {selectedChapter ? (
             <article
-              className="max-w-4xl mx-auto px-8 py-8 pb-24 md:pb-8 cursor-pointer"
-              onClick={handleContentTap}
+              className="max-w-4xl mx-auto px-8 py-8 pb-24 md:pb-8"
             >
               {/* Scene Content */}
               <div className="prose prose-lg max-w-none" style={{ color: 'rgb(var(--foreground))' }}>

@@ -333,6 +333,14 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
                   await recordStoryView(story.id, story.title);
                   router.push(`/reading/${story.id}`);
                 }}
+                onMouseEnter={() => {
+                  // Prefetch story data on hover for instant navigation
+                  fetch(`/writing/api/stories/${story.id}/read`, {
+                    credentials: 'include',
+                  }).catch(() => {
+                    // Silently fail - prefetch is optional
+                  });
+                }}
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-[1.02] hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 flex flex-col overflow-hidden cursor-pointer"
               >
                 {/* Story Image */}
@@ -429,6 +437,14 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
                       onClick={async () => {
                         await recordStoryView(story.id, story.title);
                         router.push(`/reading/${story.id}`);
+                      }}
+                      onMouseEnter={() => {
+                        // Prefetch story data on hover for instant navigation
+                        fetch(`/writing/api/stories/${story.id}/read`, {
+                          credentials: 'include',
+                        }).catch(() => {
+                          // Silently fail - prefetch is optional
+                        });
                       }}
                       className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150"
                     >

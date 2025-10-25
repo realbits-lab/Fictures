@@ -101,7 +101,10 @@ This file provides guidance to Claude Code when working with this repository.
 - **Framework**: Next.js 15 with App Router
 - **Database**: PostgreSQL (Neon) with Drizzle ORM
 - **Authentication**: NextAuth.js v5 with Google OAuth
-- **AI Integration**: OpenAI GPT-4o-mini via Vercel AI Gateway
+- **AI Integration**:
+  - OpenAI GPT-4o-mini via Vercel AI Gateway (text generation)
+  - OpenAI DALL-E 3 (image generation - 16:9, 1792x1024)
+- **Storage**: Vercel Blob for generated images
 - **Styling**: Tailwind CSS v4
 
 ### Project Structure
@@ -139,6 +142,7 @@ src/
 - **Hierarchical Writing**: Stories → Parts → Chapters → Scenes
 - **Character Management**: Detailed character profiles and tracking
 - **AI Writing Assistant**: OpenAI GPT-4o-mini integration for writing help
+- **AI Image Generation**: DALL-E 3 for story illustrations (16:9, 1792x1024)
 - **Community Sharing**: Basic story publication and discovery
 - **Progress Tracking**: Word counts and writing statistics
 
@@ -151,12 +155,13 @@ AUTH_SECRET=***
 GOOGLE_CLIENT_ID=***
 GOOGLE_CLIENT_SECRET=***
 
-# AI Integration  
+# AI Integration
 AI_GATEWAY_API_KEY=***             # Vercel AI Gateway for OpenAI GPT-4o-mini
+OPENAI_API_KEY=***                 # OpenAI API key for DALL-E 3 image generation
 
 # Database & Storage
 POSTGRES_URL=***                   # Neon PostgreSQL
-BLOB_READ_WRITE_TOKEN=***          # Vercel Blob storage
+BLOB_READ_WRITE_TOKEN=***          # Vercel Blob storage for generated images
 REDIS_URL=***                      # Session storage
 ```
 
@@ -171,12 +176,43 @@ REDIS_URL=***                      # Session storage
 
 **Core Development Practices:**
 - **Package Manager**: Use pnpm instead of npm for all operations
-- **Environment Variables**: Always prefix commands with `dotenv --file .env.local run` 
+- **Environment Variables**: Always prefix commands with `dotenv --file .env.local run`
 - **Authentication**: Use NextAuth.js session management throughout
 - **Database**: All operations through Drizzle ORM - see `src/lib/db/`
-- **AI Integration**: Use OpenAI GPT-4o-mini via Vercel AI Gateway with AI_GATEWAY_API_KEY
+- **AI Integration**:
+  - Text Generation: Use OpenAI GPT-4o-mini via Vercel AI Gateway with AI_GATEWAY_API_KEY
+  - Image Generation: Use OpenAI DALL-E 3 with OPENAI_API_KEY (16:9, 1792x1024)
+- **Image Storage**: Generated images stored in Vercel Blob with public access
 - **Error Handling**: Implement proper error boundaries and loading states
 - **Performance**: Optimize for story writing workflow and database queries
+
+## Image Generation
+
+**AI-Powered Story Illustrations:**
+- **Service**: `src/lib/services/image-generation.ts` - Core image generation logic
+- **API Endpoint**: POST `/api/images/generate` - Generate story illustrations
+- **Model**: OpenAI DALL-E 3
+- **Format**: 1792x1024 pixels (16:9 widescreen)
+- **Storage**: Vercel Blob (automatic upload)
+- **Documentation**: See `docs/story-image-generation.md` for full API docs
+
+**Quick Usage:**
+```typescript
+import { generateStoryImage } from '@/lib/services/image-generation';
+
+const result = await generateStoryImage({
+  prompt: 'A mysterious forest at twilight, cinematic widescreen',
+  storyId: 'story_123',
+  style: 'vivid',
+  quality: 'standard',
+});
+// result.url contains the Vercel Blob URL
+```
+
+**Test Image Generation:**
+```bash
+dotenv --file .env.local run node scripts/test-imagen-generation.mjs
+```
 
 **Code Completion Standards:**
 - NEVER use ellipsis ("...") as placeholders in code

@@ -124,6 +124,11 @@ interface UnifiedWritingEditorProps {
 }
 
 export function UnifiedWritingEditor({ story: initialStory, allStories, initialSelection, disabled = false }: UnifiedWritingEditorProps) {
+  const componentMountTime = Date.now();
+  console.log('\n🎨 [CLIENT] UnifiedWritingEditor component mounting');
+  console.log(`📦 [CLIENT] Received story prop: ${initialStory.title} (ID: ${initialStory.id})`);
+  console.log(`📊 [CLIENT] Story has ${initialStory.parts?.length || 0} parts`);
+
   const router = useRouter();
   const [story, setStory] = useState<Story>(initialStory);
   const [currentSelection, setCurrentSelection] = useState<Selection>(
@@ -132,7 +137,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       storyId: story.id
     }
   );
-  
+
+  console.log(`🎯 [CLIENT] Initial selection: ${initialSelection?.level || 'story'}`);
+
   const [jsonLevel, setJsonLevel] = useState<EditorLevel>("story");
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -551,6 +558,10 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   // Initialize scene data when switching to scene level or changing scene
   useEffect(() => {
     if (currentSelection.level === "scene" && currentSelection.sceneId) {
+      const sceneLoadStart = Date.now();
+      console.log(`\n🎬 [CLIENT] Scene selection changed to: ${currentSelection.sceneId}`);
+      console.log('🔍 [CLIENT] Searching for scene in story structure...');
+
       // Find the scene in chapters
       let selectedScene = null;
       for (const part of story.parts) {
@@ -567,10 +578,14 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         }
       }
 
-      console.log('🔍 Selected scene:', selectedScene);
-      console.log('📦 Scene hnsData:', selectedScene?.hnsData);
+      const sceneLoadDuration = Date.now() - sceneLoadStart;
 
       if (selectedScene) {
+        console.log(`✅ [CLIENT] Scene found in ${sceneLoadDuration}ms`);
+        console.log(`📝 [CLIENT] Scene title: "${selectedScene.title}"`);
+        console.log(`📊 [CLIENT] Scene has content: ${!!selectedScene.content}, wordCount: ${selectedScene.wordCount || 0}`);
+        console.log(`📦 [CLIENT] Scene hnsData available: ${!!selectedScene.hnsData}`);
+
         // If we have hnsData, use it directly
         if (selectedScene.hnsData) {
           setOriginalSceneData(selectedScene.hnsData);
@@ -589,7 +604,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           setOriginalSceneData(sceneMetadata);
           setCurrentSceneData(sceneMetadata);
         }
+        console.log('💾 [CLIENT] Scene data loaded into component state');
       } else {
+        console.log(`❌ [CLIENT] Scene NOT found in story structure after ${sceneLoadDuration}ms`);
         // Fallback if scene not found
         const defaultData = { scene_id: currentSelection.sceneId, message: "Scene not found" };
         setOriginalSceneData(defaultData);

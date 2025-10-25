@@ -275,34 +275,6 @@ export default function CommunityPage() {
             )}
           </div>
         )}
-
-        {/* Quick Actions */}
-        {!isLoading && !error && (
-          <Card>
-            <CardContent className="py-6">
-              <div className="text-center space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                  💡 Want to start discussions for your story?
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Make your story public to enable community discussions and connect with readers
-                </p>
-                <div className="flex justify-center gap-3">
-                  <Link href="/stories">
-                    <Button variant="outline">
-                      📝 Manage Stories
-                    </Button>
-                  </Link>
-                  <Link href="/stories/new">
-                    <Button>
-                      ✍️ Write New Story
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </MainLayout>
   );
