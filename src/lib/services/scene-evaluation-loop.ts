@@ -21,6 +21,7 @@ import {
 } from '@/lib/evaluation/schemas';
 import { buildEvaluationPrompt } from '@/lib/evaluation/prompts';
 import { formatSceneContent, type FormatResult } from '@/lib/services/scene-formatter';
+import { validateSceneImage, type ImageValidationResult } from '@/lib/services/image-validator';
 
 export interface SceneEvaluationLoopOptions {
   maxIterations?: number;        // Default: 3
@@ -56,6 +57,11 @@ export interface SceneEvaluationLoopResult {
     totalChanges: number;
     paragraphsSplit: number;
     spacingFixed: number;
+  };
+  imageValidation: {
+    validated: boolean;
+    regenerated: boolean;
+    issues: number;
   };
 }
 
@@ -185,12 +191,15 @@ export async function evaluateAndImproveScene(
   let totalFormattingChanges = 0;
   let totalParagraphsSplit = 0;
   let totalSpacingFixed = 0;
+  let imageValidated = false;
+  let imageRegenerated = false;
+  let imageIssuesFound = 0;
 
   while (iteration < maxIterations) {
     iteration++;
     console.log(`\n--- Iteration ${iteration}/${maxIterations} ---`);
 
-    // Step 0: Apply rule-based formatting BEFORE evaluation
+    // Step 0A: Apply rule-based formatting BEFORE evaluation
     console.log(`📝 Applying rule-based formatting...`);
     const formatStartTime = Date.now();
 
@@ -219,6 +228,55 @@ export async function evaluateAndImproveScene(
       });
     } else {
       console.log(`✓ No formatting changes needed (${Date.now() - formatStartTime}ms)`);
+    }
+
+    // Step 0B: Validate scene image (only on first iteration)
+    if (iteration === 1) {
+      console.log(`🖼️ Validating scene image...`);
+      const imageStartTime = Date.now();
+
+      const imageValidation = await validateSceneImage(
+        sceneId,
+        currentScene.imageUrl,
+        currentScene.imageVariants,
+        {
+          sceneTitle: currentScene.title,
+          sceneContent: currentContent,
+          storyId: currentScene.storyId,
+        },
+        {
+          checkAccessibility: true,
+          regenerateIfMissing: true,
+          timeout: 5000,
+        }
+      );
+
+      imageValidated = true;
+      imageRegenerated = imageValidation.regenerated;
+      imageIssuesFound = imageValidation.issues.length;
+
+      if (imageValidation.regenerated) {
+        console.log(`✓ Image validated and regenerated in ${Date.now() - imageStartTime}ms`);
+
+        // Update database with new image URLs
+        await db.update(scenesTable)
+          .set({
+            imageUrl: imageValidation.imageUrl,
+            imageVariants: imageValidation.imageVariants,
+          })
+          .where(eq(scenesTable.id, sceneId));
+
+        // Refresh scene data
+        const updated = await db.select().from(scenesTable).where(eq(scenesTable.id, sceneId));
+        currentScene = updated[0];
+      } else if (imageValidation.issues.length > 0) {
+        console.log(`⚠️ Image validation found ${imageValidation.issues.length} issues (${Date.now() - imageStartTime}ms)`);
+        imageValidation.issues.forEach(issue => {
+          console.log(`     - ${issue.type}: ${issue.description}`);
+        });
+      } else {
+        console.log(`✓ Image validated successfully (${Date.now() - imageStartTime}ms)`);
+      }
     }
 
     // Step 1: Evaluate the scene
@@ -311,6 +369,11 @@ export async function evaluateAndImproveScene(
       totalChanges: totalFormattingChanges,
       paragraphsSplit: totalParagraphsSplit,
       spacingFixed: totalSpacingFixed,
+    },
+    imageValidation: {
+      validated: imageValidated,
+      regenerated: imageRegenerated,
+      issues: imageIssuesFound,
     }
   };
 
@@ -326,6 +389,10 @@ export async function evaluateAndImproveScene(
   console.log(`     - Total formatting changes: ${totalFormattingChanges}`);
   console.log(`     - Paragraphs split: ${totalParagraphsSplit}`);
   console.log(`     - Spacing fixes: ${totalSpacingFixed}`);
+  console.log(`   Image Validation:`);
+  console.log(`     - Validated: ${imageValidated ? 'Yes' : 'No'}`);
+  console.log(`     - Regenerated: ${imageRegenerated ? 'Yes' : 'No'}`);
+  console.log(`     - Issues found: ${imageIssuesFound}`);
 
   return result;
 }

@@ -287,6 +287,219 @@ The scene generator system prompt now includes explicit formatting rules:
 
 ---
 
+## Image Validation and Regeneration
+
+### Overview
+
+All scenes must have valid, accessible images. The image validation system automatically checks image URLs and regenerates missing or broken images during the evaluation phase.
+
+### Why Image Validation?
+
+Images can become invalid for several reasons:
+- Image URL was never generated (missing data)
+- Image was deleted from Vercel Blob storage
+- Image URL returns 404 or other error
+- Network issues prevent access
+- Optimized variants are missing
+
+**Solution**: Automated image validation runs during scene evaluation, detecting and fixing image issues.
+
+### Validation Checks
+
+#### Check 1: Image URL Exists
+
+**Requirement**: Scene must have a non-null, non-empty `imageUrl` field.
+
+**Action if Missing**: Automatically regenerate image from scene content.
+
+#### Check 2: Image URL is Accessible
+
+**Requirement**: Image URL must return HTTP 200 OK when accessed.
+
+**Method**: HEAD request to verify accessibility (5-second timeout).
+
+**Action if Inaccessible**: Automatically regenerate image from scene content.
+
+#### Check 3: Optimized Variants Exist
+
+**Requirement**: Scene must have `imageVariants` with at least one optimized format.
+
+**Expected Variants**: 18 variants (AVIF, WebP, JPEG × 6 sizes)
+
+**Action if Missing**: Variants are generated automatically when image is regenerated.
+
+### Regeneration Process
+
+When an image issue is detected and `regenerateIfMissing: true`:
+
+1. **Extract Visual Description**: Parse first 2-3 description paragraphs from scene content
+2. **Build Image Prompt**: Combine scene title, setting, characters, and visual description
+3. **Generate Image**: Call DALL-E 3 with cinematic 16:9 prompt
+4. **Optimize**: Automatically create 18 variants
+5. **Update Database**: Save new `imageUrl` and `imageVariants`
+
+**Example Regeneration**:
+```typescript
+// Detected: Scene has no image URL
+console.log('⚠️ Scene scene_123 is missing image URL');
+console.log('🔄 Regenerating missing image for scene: "The Interrogation"');
+
+// Extracts visual description from content:
+// "Detective Sarah stepped into the interrogation room,
+//  the fluorescent lights casting harsh shadows..."
+
+// Builds prompt:
+// "Professional cinematic scene illustration for 'The Interrogation'.
+//  Setting: Interrogation room. Small, stark space with metal table.
+//  Characters: Sarah Chen (detective), Marcus Bell (suspect).
+//  Scene description: Detective Sarah stepped into the interrogation room..."
+
+// Generates image (1792×1024, 16:9)
+console.log('✅ Image regenerated successfully');
+```
+
+### Integration in Evaluation Loop
+
+Image validation runs **once per scene**, during the first iteration of the evaluation loop:
+
+```typescript
+// Step 0A: Format scene content
+const formatResult = formatSceneContent(content);
+
+// Step 0B: Validate scene image (first iteration only)
+if (iteration === 1) {
+  const imageValidation = await validateSceneImage(
+    sceneId,
+    scene.imageUrl,
+    scene.imageVariants,
+    {
+      sceneTitle: scene.title,
+      sceneContent: content,
+      storyId: scene.storyId,
+    },
+    {
+      checkAccessibility: true,
+      regenerateIfMissing: true,
+      timeout: 5000,
+    }
+  );
+
+  if (imageValidation.regenerated) {
+    // Update database with new image
+    await db.update(scenes).set({
+      imageUrl: imageValidation.imageUrl,
+      imageVariants: imageValidation.imageVariants,
+    });
+  }
+}
+
+// Step 1: Evaluate scene content
+const evaluation = await evaluateScene(content);
+```
+
+### Validation Statistics
+
+The evaluation loop reports image validation results:
+
+```
+🖼️ Validating scene image...
+✓ Image validated and regenerated in 2340ms
+
+Image Validation:
+  - Validated: Yes
+  - Regenerated: Yes
+  - Issues found: 1
+```
+
+### Batch Validation
+
+For validating multiple scenes (e.g., entire story):
+
+```typescript
+import { validateSceneImages } from '@/lib/services/image-validator';
+
+const results = await validateSceneImages(
+  scenes.map(scene => ({
+    sceneId: scene.id,
+    imageUrl: scene.imageUrl,
+    imageVariants: scene.imageVariants,
+    sceneTitle: scene.title,
+    sceneContent: scene.content,
+    storyId: scene.storyId,
+  })),
+  {
+    checkAccessibility: true,
+    regenerateIfMissing: true,
+  }
+);
+
+// Results: Map<sceneId, ImageValidationResult>
+for (const [sceneId, result] of results) {
+  if (result.regenerated) {
+    console.log(`Regenerated: ${sceneId}`);
+  }
+}
+```
+
+**Output**:
+```
+🖼️ ============= BATCH IMAGE VALIDATION START =============
+   Total Scenes: 10
+
+📸 Validating image 1/10: Scene 1
+✓ Image validated successfully (156ms)
+
+📸 Validating image 2/10: Scene 2
+⚠️ Scene scene_2 image is not accessible: https://blob.../broken.png
+🔄 Regenerating inaccessible image for scene: Scene 2
+✅ Image regenerated successfully
+
+...
+
+✅ ============= BATCH IMAGE VALIDATION COMPLETE =============
+   Total Scenes: 10
+   Valid Images: 10
+   Regenerated: 3
+   Issues: 0
+```
+
+### Configuration Options
+
+```typescript
+interface ImageValidationOptions {
+  checkAccessibility?: boolean;  // Default: true
+  regenerateIfMissing?: boolean; // Default: true
+  timeout?: number;              // Default: 5000ms
+}
+```
+
+### Performance Impact
+
+- **Validation Time**: ~50-200ms per scene (network request)
+- **Regeneration Time**: ~2-4 seconds per scene (when needed)
+- **Cost**: $0.08 per regenerated image (DALL-E 3 standard quality)
+- **Expected Regeneration Rate**: 1-5% of scenes (mostly new or corrupted data)
+
+### Testing
+
+Comprehensive Jest tests ensure validator reliability:
+
+```bash
+dotenv --file .env.local run pnpm test -- __tests__/image-validator.test.ts
+```
+
+**Test Coverage**:
+- ✅ Detect missing image URL
+- ✅ Detect inaccessible image URL (404)
+- ✅ Detect missing optimized variants
+- ✅ Regenerate missing images
+- ✅ Regenerate inaccessible images
+- ✅ Handle network timeouts
+- ✅ Batch validation
+- ✅ Edge cases (empty content, malformed variants)
+
+---
+
 ## Workflow Overview
 
 ### 1. Input Processing

@@ -362,11 +362,65 @@ const result = await generateStoryImage({
 dotenv --file .env.local run node scripts/test-imagen-generation.mjs
 ```
 
-## Scene Quality Evaluation
+## Scene Quality Evaluation and Validation
 
-**Automated Scene Evaluation and Improvement:**
+**Automated Scene Evaluation, Formatting, and Image Validation:**
 
-Every scene generated through the story generation pipeline is automatically evaluated for quality and improved iteratively until it meets professional standards.
+Every scene generated through the story generation pipeline is automatically:
+1. **Formatted** - Rule-based text formatting for optimal mobile readability
+2. **Validated** - Image existence and accessibility checking with auto-regeneration
+3. **Evaluated** - Quality assessment using "Architectonics of Engagement" framework
+4. **Improved** - Iterative refinement until professional quality standards are met
+
+### Automated Formatting Rules
+
+**Text Formatting** (`src/lib/services/scene-formatter.ts`):
+
+Every scene undergoes deterministic rule-based formatting BEFORE evaluation:
+
+1. **Description Paragraph Length**: Max 3 sentences per description paragraph
+   - Long paragraphs are automatically split for mobile readability
+   - Example: 5-sentence paragraph → split into 2 paragraphs (3 + 2)
+
+2. **Spacing Between Description and Dialogue**: Blank line (2 newlines) required
+   - Ensures visual separation between narrative and dialogue
+   - Automatically inserted if missing
+
+**Why Automated?** AI models struggle to consistently follow exact formatting rules. Post-processing ensures 100% compliance.
+
+**Performance**: ~10-50ms per scene, negligible cost
+
+**Testing**:
+```bash
+dotenv --file .env.local run pnpm test -- __tests__/scene-formatter.test.ts
+```
+
+### Automated Image Validation
+
+**Image Validation** (`src/lib/services/image-validator.ts`):
+
+Every scene's image is validated during the first evaluation iteration:
+
+1. **Image URL Exists**: Scene must have non-null `imageUrl`
+2. **Image URL Accessible**: HEAD request verifies image returns HTTP 200
+3. **Optimized Variants Exist**: 18 variants (AVIF, WebP, JPEG × 6 sizes)
+
+**Auto-Regeneration**: If any check fails and `regenerateIfMissing: true`:
+- Extract visual description from scene content (first 2-3 paragraphs)
+- Build cinematic image prompt with scene title, setting, characters
+- Generate new image via DALL-E 3 (1792×1024, 16:9)
+- Create 18 optimized variants automatically
+- Update database with new URLs
+
+**Performance**:
+- Validation: ~50-200ms per scene (network request)
+- Regeneration: ~2-4 seconds per scene (when needed)
+- Expected regeneration rate: 1-5% of scenes
+
+**Testing**:
+```bash
+dotenv --file .env.local run pnpm test -- __tests__/image-validator.test.ts
+```
 
 ### Evaluation Framework
 
