@@ -988,7 +988,7 @@ export async function generateSceneImagesForStory(
         storyId,
         {
           style: 'fantasy-art',
-          aspectRatio: 'portrait',
+          aspectRatio: 'landscape',
           quality: 'high',
           mood: 'epic and dramatic',
           lighting: 'cinematic'

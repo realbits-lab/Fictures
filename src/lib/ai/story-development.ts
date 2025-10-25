@@ -790,7 +790,7 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
         currentStoryId,
         {
           style: 'fantasy-art',
-          aspectRatio: 'portrait',
+          aspectRatio: 'landscape',
           quality: 'high',
           mood: 'epic and dramatic',
           lighting: 'cinematic'
