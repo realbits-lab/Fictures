@@ -142,12 +142,30 @@ const fetcher = async (url: string): Promise<StoryReaderResponse> => {
  * Custom hook for reading story data with SWR caching
  * Provides cached access to story structure, chapters, and scenes
  */
-export function useStoryReader(storyId: string | null): UseStoryReaderReturn {
+export function useStoryReader(
+  storyId: string | null,
+  initialData?: Story | null
+): UseStoryReaderReturn {
   const { data: session, status: sessionStatus } = useSession();
-  
+
   // Only fetch if we have a story ID and session is loaded
   const shouldFetch = storyId && sessionStatus !== 'loading';
-  
+
+  // Transform initial SSR data to match SWR expected format
+  const fallbackData = useMemo(() => {
+    if (!initialData) return undefined;
+
+    return {
+      story: initialData,
+      isOwner: session?.user?.id === initialData.userId,
+      metadata: {
+        fetchedAt: new Date().toISOString(),
+        totalChapters: initialData.parts.reduce((sum, part) => sum + part.chapters.length, 0) + initialData.chapters.length,
+        publishedChapters: initialData.parts.reduce((sum, part) => sum + part.chapters.filter(ch => ch.status === 'published').length, 0) + initialData.chapters.filter(ch => ch.status === 'published').length
+      }
+    };
+  }, [initialData, session?.user?.id]);
+
   const {
     data,
     error,
@@ -162,6 +180,7 @@ export function useStoryReader(storyId: string | null): UseStoryReaderReturn {
       ttl: 10 * 60 * 1000  // 10min localStorage cache
     },
     {
+      fallbackData, // ⚡ SSR data hydration - instant display
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
       refreshInterval: 0, // No automatic polling
