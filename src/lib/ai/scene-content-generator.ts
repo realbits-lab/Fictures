@@ -44,7 +44,7 @@ export async function generateSceneContent(
 🚨 CRITICAL: DIALOGUE AND ACTION MUST BE ON SEPARATE LINES 🚨
 
 == STORY CONTEXT ==
-Title: ${story.story_title} | Genre: ${story.genre.join(", ")}
+Title: ${story.story_title} | Genre: ${story.genre}
 Theme: ${story.theme} | Premise: ${story.premise}
 
 == CHAPTER CONTEXT ==

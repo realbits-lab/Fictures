@@ -12,6 +12,23 @@ import { useProtectedAction } from '@/hooks/useProtectedAction';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
+interface Character {
+  id: string;
+  name: string;
+  role: string | null;
+  summary: string | null;
+  imageUrl: string | null;
+  isMain: boolean | null;
+}
+
+interface Setting {
+  id: string;
+  name: string;
+  description: string | null;
+  mood: string | null;
+  imageUrl: string | null;
+}
+
 interface StoryData {
   id: string;
   title: string;
@@ -31,6 +48,8 @@ interface StoryData {
     averageRating: number;
     ratingCount: number;
   };
+  characters: Character[];
+  settings: Setting[];
 }
 
 export default function StoryCommunityPage() {
@@ -101,7 +120,11 @@ export default function StoryCommunityPage() {
       <MainLayout>
         <div className="flex gap-6">
           <aside className="w-80 flex-shrink-0">
-            <CommunityStorySidebar currentStoryId={storyId} />
+            <CommunityStorySidebar
+              currentStoryId={storyId}
+              characters={[]}
+              settings={[]}
+            />
           </aside>
           <main className="flex-1 space-y-6">
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-6">
@@ -122,7 +145,11 @@ export default function StoryCommunityPage() {
       <div className="flex gap-6">
         {/* Sidebar */}
         <aside className="w-80 flex-shrink-0">
-          <CommunityStorySidebar currentStoryId={storyId} />
+          <CommunityStorySidebar
+            currentStoryId={storyId}
+            characters={story.characters}
+            settings={story.settings}
+          />
         </aside>
 
         {/* Main Content */}

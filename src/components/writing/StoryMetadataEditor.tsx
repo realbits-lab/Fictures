@@ -3,16 +3,9 @@
 import React, { useState } from "react";
 import { Button, Card, CardHeader, CardTitle, CardContent } from "@/components/ui";
 import { toast } from "sonner";
+import { STORY_GENRES } from "@/lib/constants/genres";
 
-const VALID_GENRES = [
-  "Fantasy",
-  "Science Fiction",
-  "Romance",
-  "Mystery",
-  "Thriller",
-  "Detective",
-  "Adventure"
-];
+const VALID_GENRES = STORY_GENRES;
 
 interface StoryMetadataEditorProps {
   storyId: string;

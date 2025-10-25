@@ -56,32 +56,28 @@ Dramatic scene capturing the emotional peak of the moment.`;
 /**
  * Get appropriate animation style based on genre
  */
-function getStyleForGenre(genres: string[]): AnimationStyle {
+function getStyleForGenre(genre: string): AnimationStyle {
   const genreStyles: Record<string, AnimationStyle> = {
     'fantasy': 'fantasy-art',
+    'science_fiction': 'realistic',
     'sci-fi': 'realistic',
     'horror': 'realistic',
     'romance': 'watercolor',
     'thriller': 'realistic',
     'mystery': 'realistic',
+    'detective': 'realistic',
     'adventure': 'pixar',
+    'historical_fiction': 'realistic',
     'historical': 'realistic',
-    'dystopian': 'realistic',
-    'urban_fantasy': 'comic-book',
-    'anime': 'anime',
+    'contemporary': 'realistic',
+    'young_adult': 'disney',
     'children': 'disney',
-    'comedy': 'cartoon',
+    'childrens_literature': 'disney',
   };
 
   // Find matching style or default
-  for (const genre of genres) {
-    const lowerGenre = genre.toLowerCase().replace(/[- ]/g, '_');
-    if (genreStyles[lowerGenre]) {
-      return genreStyles[lowerGenre];
-    }
-  }
-
-  return 'fantasy-art';
+  const lowerGenre = genre.toLowerCase().replace(/[- ']/g, '_');
+  return genreStyles[lowerGenre] || 'fantasy-art';
 }
 
 /**

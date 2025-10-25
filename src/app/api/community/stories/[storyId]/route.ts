@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { stories, users, communityPosts } from '@/lib/db/schema';
+import { stories, users, communityPosts, characters, settings } from '@/lib/db/schema';
 import { eq, and, count } from 'drizzle-orm';
 
 /**
@@ -71,6 +71,31 @@ export async function GET(
     // In a real system, you'd want a separate table for story followers/members
     const totalMembers = Math.floor((story.viewCount || 0) * 0.1); // Estimate 10% of viewers become members
 
+    // Fetch characters for this story
+    const storyCharacters = await db
+      .select({
+        id: characters.id,
+        name: characters.name,
+        role: characters.role,
+        summary: characters.summary,
+        imageUrl: characters.imageUrl,
+        isMain: characters.isMain,
+      })
+      .from(characters)
+      .where(eq(characters.storyId, storyId));
+
+    // Fetch settings for this story
+    const storySettings = await db
+      .select({
+        id: settings.id,
+        name: settings.name,
+        description: settings.description,
+        mood: settings.mood,
+        imageUrl: settings.imageUrl,
+      })
+      .from(settings)
+      .where(eq(settings.storyId, storyId));
+
     return NextResponse.json({
       success: true,
       story: {
@@ -87,6 +112,8 @@ export async function GET(
           averageRating: story.rating ? story.rating / 10 : 0, // Convert from integer to decimal (47 -> 4.7)
           ratingCount: story.ratingCount || 0,
         },
+        characters: storyCharacters,
+        settings: storySettings,
       },
     });
 
