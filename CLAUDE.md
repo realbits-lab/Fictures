@@ -35,8 +35,10 @@ This file provides guidance to Claude Code when working with this repository.
   - Example: `scripts/capture-auth-manual.mjs` for authentication capture
   - Example: `scripts/test-auto-login.mjs` for testing automated login
   - Main script: `scripts/generate-complete-story.mjs` for full story generation
-- **Claude Code Skills**: Project-specific skills in `.claude/skills/` directory
-  - `story-generator.md`: Complete story generation with HNS methodology
+- **Claude Code Skills**: Project-specific skills in `.claude/skills/{skill-name}/` directories
+  - Each skill has `SKILL.md` with YAML frontmatter
+  - `story-generator/SKILL.md`: Complete story generation with HNS methodology
+  - Skills are model-invoked (Claude activates automatically based on request)
 
 ## Database Management
 
