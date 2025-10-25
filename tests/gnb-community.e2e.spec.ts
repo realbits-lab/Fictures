@@ -8,7 +8,9 @@ import { test, expect } from '@playwright/test';
 test.describe('GNB - Community Page Tests', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/community');
-    await page.waitForLoadState('networkidle');
+    // Changed from 'networkidle' to 'load' because community page uses SSE (Server-Sent Events)
+    // for real-time updates, which keeps network perpetually active
+    await page.waitForLoadState('load');
     await page.waitForTimeout(1500);
   });
 
