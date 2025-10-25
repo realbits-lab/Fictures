@@ -82,39 +82,6 @@ export const publicationStatusEnum = pgEnum('publication_status', [
   'cancelled'
 ]);
 
-// NextAuth.js required tables
-export const accounts = pgTable('accounts', {
-  userId: text('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  type: text('type').notNull(),
-  provider: text('provider').notNull(),
-  providerAccountId: text('providerAccountId').notNull(),
-  refresh_token: text('refresh_token'),
-  access_token: text('access_token'),
-  expires_at: integer('expires_at'),
-  token_type: text('token_type'),
-  scope: text('scope'),
-  id_token: text('id_token'),
-  session_state: text('session_state'),
-}, (account) => ({
-  compoundKey: primaryKey({
-    columns: [account.provider, account.providerAccountId],
-  }),
-}));
-
-export const sessions = pgTable('sessions', {
-  sessionToken: text('sessionToken').primaryKey(),
-  userId: text('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  expires: timestamp('expires', { mode: 'date' }).notNull(),
-});
-
-export const verificationTokens = pgTable('verification_tokens', {
-  identifier: text('identifier').notNull(),
-  token: text('token').notNull(),
-  expires: timestamp('expires', { mode: 'date' }).notNull(),
-}, (vt) => ({
-  compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-}));
-
 // Users table - Core user authentication and profile
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
@@ -386,21 +353,6 @@ export const communityReplies: any = pgTable('community_replies', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Post images table - Store image metadata for community posts
-export const postImages = pgTable('post_images', {
-  id: text('id').primaryKey(),
-  postId: text('post_id').references(() => communityPosts.id, { onDelete: 'cascade' }).notNull(),
-  url: text('url').notNull(),
-  filename: varchar('filename', { length: 255 }).notNull(),
-  mimeType: varchar('mime_type', { length: 100 }).notNull(),
-  size: integer('size').notNull(), // File size in bytes
-  width: integer('width'),
-  height: integer('height'),
-  caption: text('caption'),
-  orderIndex: integer('order_index').default(0).notNull(),
-  uploadedBy: text('uploaded_by').references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
 
 // Post likes table - Track likes on community posts
 export const postLikes = pgTable('post_likes', {
@@ -546,7 +498,6 @@ export const communityPostsRelations = relations(communityPosts, ({ one, many })
     references: [users.id],
   }),
   replies: many(communityReplies),
-  images: many(postImages),
   likes: many(postLikes),
   views: many(postViews),
 }));
@@ -583,17 +534,6 @@ export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
 }));
 
 // Relations for new community tables
-export const postImagesRelations = relations(postImages, ({ one }) => ({
-  post: one(communityPosts, {
-    fields: [postImages.postId],
-    references: [communityPosts.id],
-  }),
-  uploadedByUser: one(users, {
-    fields: [postImages.uploadedBy],
-    references: [users.id],
-  }),
-}));
-
 export const postLikesRelations = relations(postLikes, ({ one }) => ({
   post: one(communityPosts, {
     fields: [postLikes.postId],
@@ -871,16 +811,6 @@ export const storyInsights = pgTable('story_insights', {
   expiresAt: timestamp('expires_at'),
 });
 
-// Recommendation feedback table
-export const recommendationFeedback = pgTable('recommendation_feedback', {
-  id: text('id').primaryKey(),
-  insightId: text('insight_id').references(() => storyInsights.id, { onDelete: 'cascade' }).notNull(),
-  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  actionTaken: varchar('action_taken', { length: 50 }).notNull(),
-  feedbackText: text('feedback_text'),
-  wasHelpful: boolean('was_helpful'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
 
 // Relations for analytics tables
 export const analyticsEventsRelations = relations(analyticsEvents, ({ one }) => ({
@@ -917,22 +847,10 @@ export const readingSessionsRelations = relations(readingSessions, ({ one }) => 
   }),
 }));
 
-export const storyInsightsRelations = relations(storyInsights, ({ one, many }) => ({
+export const storyInsightsRelations = relations(storyInsights, ({ one }) => ({
   story: one(stories, {
     fields: [storyInsights.storyId],
     references: [stories.id],
-  }),
-  feedback: many(recommendationFeedback),
-}));
-
-export const recommendationFeedbackRelations = relations(recommendationFeedback, ({ one }) => ({
-  insight: one(storyInsights, {
-    fields: [recommendationFeedback.insightId],
-    references: [storyInsights.id],
-  }),
-  user: one(users, {
-    fields: [recommendationFeedback.userId],
-    references: [users.id],
   }),
 }));
 
