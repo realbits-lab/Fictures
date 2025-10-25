@@ -27,7 +27,7 @@ export const ComicPanelSpecSchema = z.object({
   ]),
   description: z.string().describe('Detailed visual description for image generation'),
   characters_visible: z.array(z.string()).describe('Array of character IDs visible in panel'),
-  character_poses: z.record(z.string()).describe('Map of character_id to pose description'),
+  character_poses: z.record(z.string(), z.string()).describe('Map of character_id to pose description'),
   setting_focus: z.string().describe('Which part of the setting is emphasized'),
   lighting: z.string().describe('Lighting setup and mood'),
   camera_angle: z.string().describe('Camera positioning (e.g., low angle, eye level, birds eye)'),
@@ -85,7 +85,7 @@ export async function convertSceneToScreenplay(
   const screenplayPrompt = `You are an expert comic storyboard artist. Convert this narrative scene into a panel-by-panel screenplay optimized for vertical-scroll comics.
 
 SCENE INFORMATION:
-Title: ${scene.scene_title || scene.title}
+Title: ${scene.scene_title || (scene as any).title}
 Goal: ${scene.goal || 'Advance the story'}
 Conflict: ${scene.conflict || 'Tension and obstacles'}
 Outcome: ${scene.outcome || 'Resolution'}

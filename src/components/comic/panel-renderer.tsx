@@ -70,26 +70,7 @@ export function PanelRenderer({
     character_name: characterNames[d.character_id] || 'Unknown',
   }));
 
-  // Get optimized image sources for responsive loading
-  const getImageSrcSet = () => {
-    if (!imageVariants?.variants) {
-      return undefined;
-    }
-
-    // Use AVIF variants for best quality/size ratio, fallback to WebP
-    const avifVariants = imageVariants.variants
-      .filter(v => v.format === 'avif')
-      .sort((a, b) => a.width - b.width);
-
-    if (avifVariants.length === 0) {
-      return undefined;
-    }
-
-    return avifVariants
-      .map(v => `${v.url} ${v.width}w`)
-      .join(', ');
-  };
-
+  // Get responsive image sizes for Next.js Image component
   const getImageSizes = () => {
     return '(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1792px';
   };
@@ -116,7 +97,6 @@ export function PanelRenderer({
           alt={`Panel ${panelNumber}${shotType ? ` - ${shotType}` : ''}`}
           fill
           sizes={getImageSizes()}
-          srcSet={getImageSrcSet()}
           className={cn(
             'object-cover transition-opacity duration-300',
             imageLoaded ? 'opacity-100' : 'opacity-0'

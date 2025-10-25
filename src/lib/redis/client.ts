@@ -165,17 +165,17 @@ export async function closeRedisConnections(): Promise<void> {
   const promises: Promise<void>[] = [];
 
   if (redisClient) {
-    promises.push(redisClient.quit());
+    promises.push(redisClient.quit().then(() => {}));
     redisClient = null;
   }
 
   if (redisPublisher) {
-    promises.push(redisPublisher.quit());
+    promises.push(redisPublisher.quit().then(() => {}));
     redisPublisher = null;
   }
 
   if (redisSubscriber) {
-    promises.push(redisSubscriber.quit());
+    promises.push(redisSubscriber.quit().then(() => {}));
     redisSubscriber = null;
   }
 

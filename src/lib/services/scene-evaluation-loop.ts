@@ -242,7 +242,7 @@ export async function evaluateAndImproveScene(
         {
           sceneTitle: currentScene.title,
           sceneContent: currentContent,
-          storyId: currentScene.storyId,
+          storyId: (currentScene as any).storyId || (storyContext as any).storyId || '',
         },
         {
           checkAccessibility: true,

@@ -238,7 +238,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     const hnsStory: HNSStory = {
       story_id: story.id,
       story_title: story.title || parsedData?.title || "Generated Story",
-      genre: Array.isArray(story.genre) ? story.genre : [story.genre || parsedData?.genre || "General"],
+      genre: (Array.isArray(story.genre) ? story.genre : [story.genre || parsedData?.genre || "General"]) as any,
       premise: parsedData?.premise || "Story premise",
       dramatic_question: parsedData?.question || parsedData?.dramatic_question || "What is the central question of this story?",
       theme: parsedData?.theme || parsedData?.themes?.[0] || "Main theme",
@@ -583,7 +583,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       if (selectedScene) {
         console.log(`✅ [CLIENT] Scene found in ${sceneLoadDuration}ms`);
         console.log(`📝 [CLIENT] Scene title: "${selectedScene.title}"`);
-        console.log(`📊 [CLIENT] Scene has content: ${!!selectedScene.content}, wordCount: ${selectedScene.wordCount || 0}`);
+        console.log(`📊 [CLIENT] Scene has content: ${!!(selectedScene as any).content}, wordCount: ${selectedScene.wordCount || 0}`);
         console.log(`📦 [CLIENT] Scene hnsData available: ${!!selectedScene.hnsData}`);
 
         // If we have hnsData, use it directly

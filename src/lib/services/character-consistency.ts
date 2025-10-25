@@ -51,7 +51,7 @@ export function buildCharacterPromptFragment(
  * Create a detailed base prompt for a character
  */
 function createCharacterBasePrompt(character: HNSCharacter): string {
-  const physicalDesc = character.physicalDescription as any;
+  const physicalDesc = (character as any).physical_description;
 
   // Build detailed physical description
   const parts: string[] = [character.name];
@@ -141,7 +141,7 @@ export function getCharacterFromCache(characterId: string): CharacterVisualProfi
  * Extract key physical traits for emphasis in prompts
  */
 export function extractKeyPhysicalTraits(character: HNSCharacter): string[] {
-  const physicalDesc = character.physicalDescription as any;
+  const physicalDesc = (character as any).physical_description;
   const traits: string[] = [];
 
   if (!physicalDesc) return traits;

@@ -58,7 +58,7 @@ export function ComicReaderClient({ storyId, initialData }: ComicReaderClientPro
             scene,
             chapterId: chapter.id,
             chapterTitle: chapter.title,
-            partTitle: chapter.partTitle
+            partTitle: (chapter as any).partTitle
           }));
         } catch (error) {
           console.error(`Failed to fetch scenes for chapter ${chapter.id}:`, error);

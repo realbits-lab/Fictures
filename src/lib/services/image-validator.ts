@@ -89,7 +89,7 @@ export async function validateSceneImage(
       const regenerationResult = await regenerateSceneImage(sceneId, sceneContext);
 
       if (regenerationResult.success) {
-        validImageUrl = regenerationResult.imageUrl;
+        validImageUrl = regenerationResult.imageUrl ?? null;
         validImageVariants = regenerationResult.imageVariants;
         regenerated = true;
         console.log(`✅ Image regenerated successfully`);
@@ -116,7 +116,7 @@ export async function validateSceneImage(
         const regenerationResult = await regenerateSceneImage(sceneId, sceneContext);
 
         if (regenerationResult.success) {
-          validImageUrl = regenerationResult.imageUrl;
+          validImageUrl = regenerationResult.imageUrl ?? null;
           validImageVariants = regenerationResult.imageVariants;
           regenerated = true;
           console.log(`✅ Image regenerated successfully`);

@@ -72,7 +72,7 @@ export async function getStoryChapters(storyId: string, userId?: string) {
     'getStoryChapters',
     async () => {
       // First check if story is published (from cache or DB)
-      const story = await getStoryById(storyId, userId);
+      const story: any = await getStoryById(storyId, userId);
       if (!story) return [];
 
       const isPublished = story.status === 'published';
@@ -222,7 +222,7 @@ export async function getStoryWithStructure(
     'getStoryWithStructure',
     async () => {
       // Check story status first
-      const story = await getStoryById(storyId, userId);
+      const story: any = await getStoryById(storyId, userId);
       if (!story) return null;
 
       const isPublished = story.status === 'published';

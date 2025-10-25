@@ -239,7 +239,7 @@ export async function POST(request: NextRequest) {
                 await db.update(charactersTable)
                   .set({
                     imageUrl,                          // Never null - always real or placeholder
-                    imageVariants: optimizedSet || null,  // May be null for placeholders
+                    imageVariants: (optimizedSet as unknown as Record<string, unknown>) || null,  // May be null for placeholders
                   })
                   .where(eq(charactersTable.name, character.name));
 
@@ -318,7 +318,7 @@ export async function POST(request: NextRequest) {
                 await db.update(settingsTable)
                   .set({
                     imageUrl,                          // Never null - always real or placeholder
-                    imageVariants: optimizedSet || null,  // May be null for placeholders
+                    imageVariants: (optimizedSet as unknown as Record<string, unknown>) || null,  // May be null for placeholders
                   })
                   .where(eq(settingsTable.name, setting.name));
 

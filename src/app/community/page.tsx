@@ -9,6 +9,7 @@ import { useCommunityStories } from '@/lib/hooks/use-page-cache';
 import { useCommunityEvents } from '@/lib/hooks/use-community-events';
 import { toast } from 'sonner';
 import { useCallback, useState } from 'react';
+import type { StoryPublishedEvent, StoryUpdatedEvent, PostCreatedEvent } from '@/lib/redis/client';
 
 interface CommunityStory {
   id: string;
@@ -57,7 +58,7 @@ export default function CommunityPage() {
   const { data, error, isLoading, isValidating } = useCommunityStories();
 
   // Handle real-time story published events
-  const handleStoryPublished = useCallback((event) => {
+  const handleStoryPublished = useCallback((event: StoryPublishedEvent) => {
     console.log('📚 New story published in real-time:', event.title);
 
     // Show toast notification with action
@@ -80,12 +81,12 @@ export default function CommunityPage() {
   }, []);
 
   // Handle story updated events
-  const handleStoryUpdated = useCallback((event) => {
+  const handleStoryUpdated = useCallback((event: StoryUpdatedEvent) => {
     console.log('📝 Story updated in real-time:', event.storyId);
   }, []);
 
   // Handle post created events
-  const handlePostCreated = useCallback((event) => {
+  const handlePostCreated = useCallback((event: PostCreatedEvent) => {
     console.log('💬 New post created:', event.title);
 
     // Show subtle notification for new posts

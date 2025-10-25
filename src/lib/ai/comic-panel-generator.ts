@@ -64,8 +64,8 @@ export async function generateComicPanels(
   const { scene, characters, setting, story, targetPanelCount, progressCallback } = options;
 
   console.log(`\n🎬 ============= COMIC PANEL GENERATION START =============`);
-  console.log(`   Scene: ${scene.scene_title || scene.title}`);
-  console.log(`   Scene ID: ${scene.scene_id || scene.id}`);
+  console.log(`   Scene: ${scene.scene_title || (scene as any).title}`);
+  console.log(`   Scene ID: ${scene.scene_id || (scene as any).id}`);
   console.log(`   Genre: ${story.genre}`);
 
   // ========================================
@@ -109,7 +109,7 @@ export async function generateComicPanels(
     const characterPrompts = buildPanelCharacterPrompts(
       panelSpec.characters_visible,
       characters,
-      panelSpec.character_poses
+      panelSpec.character_poses as Record<string, string>
     );
 
     // Extract key traits for emphasis
@@ -127,7 +127,7 @@ export async function generateComicPanels(
       shotType: panelSpec.shot_type,
       cameraAngle: panelSpec.camera_angle,
       settingFocus: panelSpec.setting_focus,
-      settingAtmosphere: setting.atmosphere,
+      settingAtmosphere: (setting as any).atmosphere || setting.mood,
       characterPrompts,
       keyTraits,
       lighting: panelSpec.lighting,
@@ -141,7 +141,7 @@ export async function generateComicPanels(
     const imageResult = await generateStoryImage({
       prompt: imagePrompt,
       storyId: story.story_id,
-      imageType: 'comic-panel',
+      imageType: 'scene',
       style: 'vivid',
       quality: 'standard',
     });
@@ -153,7 +153,7 @@ export async function generateComicPanels(
     const panelId = nanoid();
     await db.insert(comicPanels).values({
       id: panelId,
-      sceneId: scene.scene_id || scene.id,
+      sceneId: scene.scene_id || (scene as any).id,
       panelNumber: panelSpec.panel_number,
       shotType: panelSpec.shot_type,
       imageUrl: imageResult.url,

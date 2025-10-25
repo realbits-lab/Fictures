@@ -23,7 +23,7 @@ export async function GET(
 
     // 2. Get chapter using cached query
     const chapterQueryStartTime = performance.now();
-    const chapter = await getChapterById(chapterId, session?.user?.id);
+    const chapter: any = await getChapterById(chapterId, session?.user?.id);
     const chapterQueryDuration = performance.now() - chapterQueryStartTime;
     console.log(`[${requestId}] 📖 Chapter query completed: ${chapterQueryDuration.toFixed(2)}ms (${chapter ? 'cached' : 'not found'})`);
 
@@ -34,7 +34,7 @@ export async function GET(
 
     // 3. Get story using cached query
     const storyQueryStartTime = performance.now();
-    const story = await getStoryById(chapter.storyId, session?.user?.id);
+    const story: any = await getStoryById(chapter.storyId, session?.user?.id);
     const storyQueryDuration = performance.now() - storyQueryStartTime;
     console.log(`[${requestId}] 📚 Story query completed: ${storyQueryDuration.toFixed(2)}ms (${story ? 'cached' : 'not found'})`);
 
@@ -56,7 +56,7 @@ export async function GET(
 
     // 4. Get scenes using cached query (with scene images already extracted)
     const scenesQueryStartTime = performance.now();
-    const scenesWithImages = await getChapterScenes(chapterId, session?.user?.id, isPublishedStory);
+    const scenesWithImages: any = await getChapterScenes(chapterId, session?.user?.id, isPublishedStory);
     const scenesQueryDuration = performance.now() - scenesQueryStartTime;
     console.log(`[${requestId}] 🎬 Scenes query completed: ${scenesQueryDuration.toFixed(2)}ms (${scenesWithImages.length} scenes) - CACHED`);
 
@@ -74,7 +74,7 @@ export async function GET(
     // 5. Generate ETag based on scene content and modification times
     const etagStartTime = performance.now();
     const contentForHash = JSON.stringify({
-      scenes: scenesWithImages.map(scene => ({
+      scenes: scenesWithImages.map((scene: any) => ({
         id: scene.id,
         content: scene.content,
         updatedAt: scene.updatedAt

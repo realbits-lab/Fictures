@@ -525,7 +525,7 @@ export function createEmptyStory(id: string): HNSStory {
   return {
     story_id: id,
     story_title: '',
-    genre: [],
+    genre: [] as any,
     premise: '',
     dramatic_question: '',
     theme: '',
