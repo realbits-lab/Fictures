@@ -74,6 +74,9 @@ auth-data.json
 scripts/*password*.ts
 scripts/*credential*.ts
 
+# Test scripts directory
+test-scripts/
+
 # Claude Code settings (local configuration)
 .claude/
 
