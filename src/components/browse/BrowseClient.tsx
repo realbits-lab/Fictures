@@ -178,8 +178,8 @@ export function BrowseClient() {
   }, [error, stories.length]);
 
   return (
-    <div className="min-h-screen bg-[rgb(var(--background))]">      
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-[rgb(var(--background))]">
+      <div className="container mx-auto px-4 pt-1 pb-8">
         {/* Background validation indicator in top right */}
         {isValidating && !isLoading && (
           <div className="fixed top-20 right-4 z-50 bg-[rgb(var(--background))] rounded-lg shadow-lg border border-[rgb(var(--border))] px-3 py-2">

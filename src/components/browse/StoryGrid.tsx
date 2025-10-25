@@ -154,7 +154,7 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
   return (
     <div>
       {/* Filters - Responsive Layout */}
-      <div className="mb-8">
+      <div className="mb-10">
         {/* Mobile: 2 rows, Desktop: 1 row */}
         <div className="flex flex-col md:flex-row md:justify-end items-stretch md:items-center gap-3">
           {/* First row on mobile: History/All + View toggles */}
