@@ -39,7 +39,7 @@ function StoriesSkeleton() {
   return (
     <div>
       {/* Filter Skeletons - matching current responsive layout */}
-      <div className="mb-8">
+      <div className="mb-10">
         <div className="flex flex-col md:flex-row md:justify-end items-stretch md:items-center gap-3">
           {/* First row on mobile: History/All + View toggles */}
           <div className="flex items-center justify-between md:justify-end gap-3">
@@ -85,6 +85,7 @@ export function BrowseClient() {
   const { data: session } = useSession();
   const { data, isLoading, isValidating, error, mutate } = usePublishedStories();
   const [showCacheInfo, setShowCacheInfo] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
 
   // Performance tracking
   const mountTimeRef = useRef<number>(Date.now());
@@ -96,6 +97,11 @@ export function BrowseClient() {
 
   // Get cache health status
   const cacheHealth = cacheManager.getCacheHealth('reading');
+
+  // Fix hydration mismatch by ensuring first render matches server
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   // Track component lifecycle
   useEffect(() => {
@@ -250,7 +256,8 @@ export function BrowseClient() {
         {/* Show skeleton loading while fetching */}
         {/* ⚡ OPTIMIZATION: Only show skeleton if NO data exists (not cached, not fresh) */}
         {/* If cached data exists, show it immediately even while revalidating */}
-        {(isLoading && stories.length === 0) ? (
+        {/* Fix hydration: always show skeleton on first render if no data */}
+        {(!hasMounted || (isLoading && stories.length === 0)) ? (
           <SkeletonLoader>
             <StoriesSkeleton />
           </SkeletonLoader>

@@ -578,6 +578,77 @@ curl -X POST http://localhost:3000/api/evaluation/scene \
 - **Implementation**: `src/lib/services/scene-evaluation-loop.ts`
 - **Evaluation Service**: `src/lib/evaluation/index.ts`
 
+---
+
+## Documentation
+
+**Complete Documentation Index:** See `docs/README.md` for full documentation catalog
+
+### Essential Documentation
+
+**For New Developers:**
+- **[docs/README.md](docs/README.md)** - Complete documentation index (start here!)
+- **[CLAUDE.md](CLAUDE.md)** - This file - Project overview and guidelines
+
+**Core Feature Specifications:**
+- **[docs/story-specification.md](docs/story-specification.md)** - Story structure and HNS methodology
+- **[docs/reading-specification.md](docs/reading-specification.md)** - Reading UX, mobile nav, comments, likes
+- **[docs/community-specification.md](docs/community-specification.md)** - Community features and sharing
+
+**Performance & Optimization:**
+- **[docs/caching-strategy.md](docs/caching-strategy.md)** - ⭐ Complete 3-layer caching guide (SWR, localStorage, Redis)
+  - Consolidates: 30min cache retention, Redis optimization, cache key strategies
+- **[docs/database-optimization-strategy.md](docs/database-optimization-strategy.md)** - PostgreSQL indexes, N+1 fixes, query optimization
+
+**AI & Image Generation:**
+- **[docs/image-system-guide.md](docs/image-system-guide.md)** - ⭐ Complete image system overview
+  - Links: image-generation-guide.md, story-image-generation.md, image-optimization.md
+- **[docs/image-optimization.md](docs/image-optimization.md)** - 18-variant optimization system (AVIF/WebP/JPEG)
+- **[docs/scene-evaluation-api.md](docs/scene-evaluation-api.md)** - Automated scene quality evaluation
+
+**Story Generation & Removal:**
+- **[docs/story-generator-skill.md](docs/story-generator-skill.md)** - Complete story generation via Claude Code skill
+- **[docs/story-removal.md](docs/story-removal.md)** - Story removal with database and Blob cleanup (10-25x faster batch deletion)
+
+### Documentation Organization
+
+**By Category:**
+- **Setup & Configuration:** Authentication, analytics, AdSense setup
+- **Feature Specs:** Story, reading, community, analytics, publish
+- **AI & Images:** Generation, optimization, evaluation, prompts
+- **Performance:** Caching, database, loading optimizations
+- **Bug Fixes:** Navigation, mobile, data loading fixes
+- **Testing:** E2E test specifications
+
+**By Status:**
+- ✅ **Implemented:** caching-strategy, image-optimization, database-optimization-strategy
+- 🚧 **Partial:** community-specification, analytics-specification
+- 📋 **Spec Only:** publish-specification, ui-specification
+
+### Quick Navigation
+
+**"I want to..."**
+- **Generate images** → Start: `docs/image-system-guide.md`
+- **Improve performance** → Start: `docs/caching-strategy.md`
+- **Understand story system** → Start: `docs/story-specification.md`
+- **Set up project** → Start: `CLAUDE.md` (this file) + `docs/README.md`
+
+### Recent Documentation Consolidation (2025-10-25)
+
+**Consolidated Files:**
+- ✅ Created `docs/caching-strategy.md` - Merged 3 cache-related files into complete guide
+- ✅ Created `docs/image-system-guide.md` - Overview linking 3 image-related files
+- ✅ Created `docs/README.md` - Master documentation index
+- ✅ Updated `docs/reading-specification.md` - Added bottom navigation implementation details
+
+**Removed Files (Superseded):**
+- ~~30min-cache-retention.md~~ → Merged into caching-strategy.md
+- ~~cache-optimization-report.md~~ → Merged into caching-strategy.md
+- ~~bottom-nav-always-visible.md~~ → Merged into reading-specification.md
+- ~~api-key-generation.md~~ → Removed (generic content)
+
+---
+
 **Code Completion Standards:**
 - NEVER use ellipsis ("...") as placeholders in code
 - Always write complete, explicit code with all parameters, imports, and statements

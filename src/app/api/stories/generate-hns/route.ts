@@ -214,52 +214,65 @@ export async function POST(request: NextRequest) {
                 console.log(`🔍 Processing character:`, character);
                 const imagePrompt = generateCharacterImagePrompt(character);
 
-                let imageUrl = null;
-                let optimizedSet = null;
+                // Generate image with automatic fallback to placeholder on failure
+                const result = await generateStoryImage({
+                  prompt: imagePrompt,
+                  storyId: storyId,
+                  imageType: 'character',
+                  style: 'vivid',
+                  quality: 'standard',
+                });
 
-                // Generate image using DALL-E 3 with optimization (16:9 aspect ratio)
-                try {
-                  const result = await generateStoryImage({
-                    prompt: imagePrompt,
-                    storyId: storyId,
-                    imageType: 'character',
-                    style: 'vivid',
-                    quality: 'standard',
-                  });
+                // generateStoryImage now ALWAYS returns a valid result (real or placeholder)
+                const imageUrl = result.url;
+                const optimizedSet = result.optimizedSet;
+                const isPlaceholder = result.isPlaceholder || false;
 
-                  imageUrl = result.url;
-                  optimizedSet = result.optimizedSet;
-
-                  console.log(`✅ Generated image for character ${character.name}:`, imageUrl);
-                  console.log(`✅ Optimized variants: ${optimizedSet?.variants.length || 0}`);
-                } catch (imageError) {
-                  console.log(
-                    `Image generation skipped for ${character.name}:`,
-                    imageError instanceof Error ? imageError.message : String(imageError)
-                  );
+                console.log(`✅ Image for character ${character.name}:`, imageUrl);
+                if (optimizedSet) {
+                  console.log(`✅ Optimized variants: ${optimizedSet.variants.length}`);
+                } else if (isPlaceholder) {
+                  console.log(`⚠️  Using placeholder image (generation failed)`);
                 }
 
-                // Update existing character with image URL and variants if generated
-                if (imageUrl) {
-                  await db.update(charactersTable)
-                    .set({
-                      imageUrl,
-                      imageVariants: optimizedSet,
-                    })
-                    .where(eq(charactersTable.name, character.name));
-                }
+                // CRITICAL: ALWAYS update database with valid imageUrl (never null)
+                await db.update(charactersTable)
+                  .set({
+                    imageUrl,                          // Never null - always real or placeholder
+                    imageVariants: optimizedSet || null,  // May be null for placeholders
+                  })
+                  .where(eq(charactersTable.name, character.name));
 
                 return {
                   characterId: character.character_id,
                   name: character.name,
                   imageUrl,
+                  isPlaceholder,  // Flag to identify placeholders for later regeneration
                 };
               } catch (error) {
+                // This should rarely happen now (generateStoryImage handles errors internally)
+                // But keep as safety net - return a result with hardcoded placeholder
                 console.error(
-                  `Error generating image for character ${character.name}:`,
+                  `Unexpected error processing character ${character.name}:`,
                   error
                 );
-                return null;
+
+                const fallbackUrl = 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/character-default.png';
+
+                // Even in catastrophic failure, ensure database gets a valid URL
+                await db.update(charactersTable)
+                  .set({
+                    imageUrl: fallbackUrl,
+                    imageVariants: null,
+                  })
+                  .where(eq(charactersTable.name, character.name));
+
+                return {
+                  characterId: character.character_id,
+                  name: character.name,
+                  imageUrl: fallbackUrl,
+                  isPlaceholder: true,
+                };
               }
             }
           );
@@ -280,49 +293,62 @@ export async function POST(request: NextRequest) {
                 console.log(`🔍 Processing setting:`, setting);
                 const imagePrompt = generateSettingImagePrompt(setting);
 
-                let imageUrl = null;
-                let optimizedSet = null;
+                // Generate image with automatic fallback to placeholder on failure
+                const result = await generateStoryImage({
+                  prompt: imagePrompt,
+                  storyId: storyId,
+                  imageType: 'setting',
+                  style: 'vivid',
+                  quality: 'standard',
+                });
 
-                // Generate image using DALL-E 3 with optimization (16:9 aspect ratio)
-                try {
-                  const result = await generateStoryImage({
-                    prompt: imagePrompt,
-                    storyId: storyId,
-                    imageType: 'setting',
-                    style: 'vivid',
-                    quality: 'standard',
-                  });
+                // generateStoryImage now ALWAYS returns a valid result (real or placeholder)
+                const imageUrl = result.url;
+                const optimizedSet = result.optimizedSet;
+                const isPlaceholder = result.isPlaceholder || false;
 
-                  imageUrl = result.url;
-                  optimizedSet = result.optimizedSet;
-
-                  console.log(`✅ Generated image for setting ${setting.name}:`, imageUrl);
-                  console.log(`✅ Optimized variants: ${optimizedSet?.variants.length || 0}`);
-                } catch (imageError) {
-                  console.log(
-                    `Image generation skipped for ${setting.name}:`,
-                    imageError instanceof Error ? imageError.message : String(imageError)
-                  );
+                console.log(`✅ Image for setting ${setting.name}:`, imageUrl);
+                if (optimizedSet) {
+                  console.log(`✅ Optimized variants: ${optimizedSet.variants.length}`);
+                } else if (isPlaceholder) {
+                  console.log(`⚠️  Using placeholder image (generation failed)`);
                 }
 
-                // Update existing setting with image URL and variants if generated
-                if (imageUrl) {
-                  await db.update(settingsTable)
-                    .set({
-                      imageUrl,
-                      imageVariants: optimizedSet,
-                    })
-                    .where(eq(settingsTable.name, setting.name));
-                }
+                // CRITICAL: ALWAYS update database with valid imageUrl (never null)
+                await db.update(settingsTable)
+                  .set({
+                    imageUrl,                          // Never null - always real or placeholder
+                    imageVariants: optimizedSet || null,  // May be null for placeholders
+                  })
+                  .where(eq(settingsTable.name, setting.name));
 
                 return {
                   settingId: setting.setting_id,
                   name: setting.name,
                   imageUrl,
+                  isPlaceholder,  // Flag to identify placeholders for later regeneration
                 };
               } catch (error) {
-                console.error(`Error generating image for setting ${setting.name}:`, error);
-                return null;
+                // This should rarely happen now (generateStoryImage handles errors internally)
+                // But keep as safety net - return a result with hardcoded placeholder
+                console.error(`Unexpected error processing setting ${setting.name}:`, error);
+
+                const fallbackUrl = 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/setting-visual.png';
+
+                // Even in catastrophic failure, ensure database gets a valid URL
+                await db.update(settingsTable)
+                  .set({
+                    imageUrl: fallbackUrl,
+                    imageVariants: null,
+                  })
+                  .where(eq(settingsTable.name, setting.name));
+
+                return {
+                  settingId: setting.setting_id,
+                  name: setting.name,
+                  imageUrl: fallbackUrl,
+                  isPlaceholder: true,
+                };
               }
             }
           );

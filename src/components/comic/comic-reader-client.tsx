@@ -274,7 +274,7 @@ export function ComicReaderClient({ storyId, initialData }: ComicReaderClientPro
                   No Scenes Available
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400">
-                  This story doesn't have any scenes yet.
+                  This story doesn&apos;t have any scenes yet.
                 </p>
               </div>
             </div>

@@ -65,15 +65,18 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (!scene || !scene.chapter || !scene.chapter.story) {
+    if (!scene || !scene.chapter || !('story' in scene.chapter) || !scene.chapter.story) {
       return new Response(JSON.stringify({ error: 'Scene not found' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
+    // Extract story for type safety
+    const story = scene.chapter.story;
+
     // Verify ownership
-    if (scene.chapter.story.userId !== session.user.email) {
+    if (story.userId !== session.user.email) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), {
         status: 403,
         headers: { 'Content-Type': 'application/json' },
@@ -102,22 +105,26 @@ export async function POST(request: NextRequest) {
 
     // Fetch characters for this story
     const storyCharacters = await db.query.characters.findMany({
-      where: eq(characters.storyId, scene.chapter.story.id),
+      where: eq(characters.storyId, story.id),
     });
 
     // Fetch settings for this story
     const storySettings = await db.query.settings.findMany({
-      where: eq(settings.storyId, scene.chapter.story.id),
+      where: eq(settings.storyId, story.id),
     });
 
     // Use the first setting or create a default one
-    const primarySetting: HNSSetting = storySettings[0] || {
-      setting_id: 'default',
+    const primarySetting = storySettings[0] || {
       id: 'default',
       name: 'Default Setting',
       description: 'A generic setting',
+      imageUrl: null,
+      imageVariants: null,
+      storyId: story.id,
+      settingType: 'location',
       atmosphere: 'neutral',
-      setting_type: 'location',
+      timeOfDay: null,
+      weather: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -138,10 +145,10 @@ export async function POST(request: NextRequest) {
             sceneId,
             scene: scene as unknown as HNSScene,
             characters: storyCharacters as unknown as HNSCharacter[],
-            setting: primarySetting,
+            setting: primarySetting as unknown as HNSSetting,
             story: {
-              story_id: scene.chapter.story.id,
-              genre: scene.chapter.story.genre || 'drama',
+              story_id: story.id,
+              genre: story.genre || 'drama',
             },
             targetPanelCount,
             progressCallback: (current: number, total: number, status: string) => {

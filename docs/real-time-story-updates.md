@@ -1,7 +1,16 @@
-# Real-Time Story Updates Implementation Guide
+# Real-Time Story Updates Implementation
+
+**Status:** ✅ IMPLEMENTED
+**Implementation Date:** 2025-10-25
 
 ## Overview
-This document outlines how to implement real-time story list updates using Redis Pub/Sub + Server-Sent Events (SSE) in the Fictures application.
+This document describes the real-time story list updates implementation using Redis Pub/Sub + Server-Sent Events (SSE) in the Fictures application.
+
+**Key Files:**
+- Server: `src/app/api/community/events/route.ts`
+- Client Hook: `src/lib/hooks/use-community-events.ts`
+- Redis Client: `src/lib/redis/client.ts`
+- Usage: `src/app/community/page.tsx`
 
 ## Architecture
 

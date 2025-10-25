@@ -113,7 +113,7 @@ function extractBlobUrls(data) {
   return urls;
 }
 
-// Delete blob images
+// Delete blob images in batches
 async function deleteBlobImages(urls, dryRun = false) {
   if (urls.length === 0) return { deleted: 0, failed: [] };
 
@@ -124,12 +124,27 @@ async function deleteBlobImages(urls, dryRun = false) {
 
   const results = { deleted: 0, failed: [] };
 
-  for (const url of urls) {
-    try {
-      await del(url);
-      results.deleted++;
-    } catch (error) {
-      results.failed.push({ url, error: error.message });
+  // Delete all URLs in a single batch operation for efficiency
+  // Vercel Blob's del() supports array of URLs
+  const startTime = Date.now();
+
+  try {
+    await del(urls);
+    results.deleted = urls.length;
+    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+    console.log(`   ⚡ Batch deleted ${urls.length} images in ${duration}s`);
+  } catch (error) {
+    // If batch delete fails, fall back to individual deletion
+    console.warn(`   ⚠️  Batch delete failed: ${error.message}`);
+    console.log(`   🔄 Falling back to individual deletion...`);
+
+    for (const url of urls) {
+      try {
+        await del(url);
+        results.deleted++;
+      } catch (err) {
+        results.failed.push({ url, error: err.message });
+      }
     }
   }
 

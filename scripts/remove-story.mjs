@@ -121,7 +121,7 @@ async function getStoryBlobs(storyId) {
   }
 }
 
-// Delete blob images
+// Delete blob images in batches
 async function deleteBlobImages(urls, dryRun = false) {
   if (urls.length === 0) {
     console.log('📦 No blob images to delete');
@@ -141,14 +141,30 @@ async function deleteBlobImages(urls, dryRun = false) {
     failed: [],
   };
 
-  for (const url of urls) {
-    try {
-      await del(url);
-      results.deleted++;
-      console.log(`   ✓ Deleted: ${url}`);
-    } catch (error) {
-      results.failed.push({ url, error: error.message });
-      console.warn(`   ✗ Failed to delete: ${url} (${error.message})`);
+  // Delete all URLs in a single batch operation
+  // Vercel Blob's del() supports array of URLs for efficient batch deletion
+  const startTime = Date.now();
+  console.log(`   ⚡ Batch deleting ${urls.length} images...`);
+
+  try {
+    await del(urls);
+    results.deleted = urls.length;
+    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+    console.log(`   ✅ Batch deleted ${urls.length} images in ${duration}s`);
+  } catch (error) {
+    // If batch delete fails, fall back to individual deletion
+    console.warn(`   ⚠️  Batch delete failed: ${error.message}`);
+    console.log(`   🔄 Falling back to individual deletion...`);
+
+    for (const url of urls) {
+      try {
+        await del(url);
+        results.deleted++;
+        console.log(`   ✓ Deleted: ${url}`);
+      } catch (err) {
+        results.failed.push({ url, error: err.message });
+        console.warn(`   ✗ Failed to delete: ${url} (${err.message})`);
+      }
     }
   }
 

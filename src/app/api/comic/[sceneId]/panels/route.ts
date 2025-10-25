@@ -38,7 +38,7 @@ export async function GET(
       },
     });
 
-    if (!scene || !scene.chapter || !scene.chapter.story) {
+    if (!scene || !scene.chapter || !('story' in scene.chapter) || !scene.chapter.story) {
       return new Response(JSON.stringify({ error: 'Scene not found' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
@@ -106,7 +106,7 @@ export async function GET(
     // Prepare response
     const response = {
       sceneId,
-      sceneTitle: scene.sceneTitle || scene.title,
+      sceneTitle: scene.title,
       panels: panels.map((panel, index) => ({
         id: panel.id,
         panel_number: panel.panelNumber,

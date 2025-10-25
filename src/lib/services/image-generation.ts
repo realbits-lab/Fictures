@@ -4,6 +4,14 @@ import { put } from '@vercel/blob';
 import { optimizeImage, type OptimizedImageSet } from './image-optimization';
 import { nanoid } from 'nanoid';
 
+// Placeholder images for fallback when generation fails
+const PLACEHOLDER_IMAGES = {
+  character: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/character-default.png',
+  setting: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/setting-visual.png',
+  scene: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/scene-illustration.png',
+  story: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/story-cover.png',
+} as const;
+
 export interface GenerateStoryImageParams {
   prompt: string;
   storyId: string;
@@ -23,6 +31,7 @@ export interface GenerateStoryImageResult {
   size: number;
   imageId: string;
   optimizedSet?: OptimizedImageSet;
+  isPlaceholder?: boolean; // Flag to identify placeholder images
 }
 
 /**
@@ -49,10 +58,12 @@ export async function generateStoryImage({
 }: GenerateStoryImageParams): Promise<GenerateStoryImageResult> {
   const apiKey = process.env.OPENAI_API_KEY || process.env.AI_GATEWAY_API_KEY;
   if (!apiKey) {
-    throw new Error('Missing OPENAI_API_KEY in environment variables');
+    console.warn('[Image Generation] Missing API key - using placeholder');
+    return createPlaceholderImageResult(imageType);
   }
 
-  console.log(`[Image Generation] Starting ${imageType} image generation for story ${storyId}`);
+  try {
+    console.log(`[Image Generation] Starting ${imageType} image generation for story ${storyId}`);
 
   const openaiProvider = createOpenAI({
     apiKey: apiKey,
@@ -120,7 +131,38 @@ export async function generateStoryImage({
     console.log(`[Image Generation] Skipping optimization (skipOptimization=true)`);
   }
 
-  return result;
+    return result;
+  } catch (error) {
+    // CRITICAL: Don't throw - return placeholder instead to prevent database corruption
+    console.error(`[Image Generation] ✗ DALL-E generation failed - using placeholder:`, error);
+    console.error(`Error details:`, error instanceof Error ? error.message : String(error));
+
+    return createPlaceholderImageResult(imageType);
+  }
+}
+
+/**
+ * Create a fallback result using placeholder image
+ * Used when DALL-E generation fails (API errors, rate limits, network issues)
+ */
+function createPlaceholderImageResult(
+  imageType: 'story' | 'scene' | 'character' | 'setting'
+): GenerateStoryImageResult {
+  const placeholderUrl = PLACEHOLDER_IMAGES[imageType];
+  const imageId = `placeholder-${imageType}-${nanoid()}`;
+
+  console.log(`[Image Generation] ⚠️  Using placeholder for ${imageType}: ${placeholderUrl}`);
+
+  return {
+    url: placeholderUrl,
+    blobUrl: placeholderUrl,
+    width: 1792,
+    height: 1024,
+    size: 0, // Placeholder, actual size unknown
+    imageId,
+    isPlaceholder: true,
+    // No optimizedSet for placeholders
+  };
 }
 
 /**
