@@ -7,18 +7,32 @@ The `scripts/test-imagen-generation.mjs` script demonstrates how to generate ima
 
 ### Prerequisites
 
-1. **Environment Variables**: Ensure `.env.local` contains one of:
-   - `AI_GATEWAY_API_KEY` (recommended - uses Vercel AI Gateway)
-   - `GOOGLE_GENERATIVE_AI_API_KEY` (direct Google API access)
+1. **Environment Variables**: Ensure `.env.local` contains:
 
-2. **Dependencies**: Already installed in this project:
+   **For Google Imagen 3 (Vertex AI):**
+   - `GOOGLE_VERTEX_API_KEY` - Your Google Cloud API key
+   - `GOOGLE_VERTEX_PROJECT_ID` - Your Google Cloud project ID
+   - `GOOGLE_VERTEX_LOCATION` (optional, default: `us-central1`)
+
+   **For OpenAI DALL-E 3:**
+   - `OPENAI_API_KEY` - Your OpenAI API key
+
+2. **Dependencies**: Required packages:
    - `ai` (Vercel AI SDK)
-   - `@ai-sdk/google` (Google provider)
+   - `@ai-sdk/google-vertex` (Google Vertex AI provider)
+   - `@ai-sdk/openai` (OpenAI provider)
 
 ### Usage
 
+**Google Imagen 3 (Recommended - True 16:9 support):**
 ```bash
-# Run the test script
+# Run the Imagen 3 Vertex AI test script
+dotenv --file .env.local run node scripts/test-imagen3-vertex.mjs
+```
+
+**OpenAI DALL-E 3 (Alternative):**
+```bash
+# Run the DALL-E 3 test script
 dotenv --file .env.local run node scripts/test-imagen-generation.mjs
 ```
 
