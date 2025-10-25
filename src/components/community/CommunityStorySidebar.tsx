@@ -101,15 +101,15 @@ export function CommunityStorySidebar({ currentStoryId, characters, settings }: 
                   {/* Collapsed View */}
                   {!isExpanded && (
                     <div className="flex gap-3 p-2">
-                      {/* Character Image */}
-                      <div className="relative w-16 h-16 flex-shrink-0 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+                      {/* Character Image - 16:9 aspect ratio */}
+                      <div className="relative w-24 h-[54px] flex-shrink-0 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
                         {character.imageUrl ? (
                           <Image
                             src={character.imageUrl}
                             alt={character.name}
                             fill
                             className="object-cover"
-                            sizes="64px"
+                            sizes="96px"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-2xl">
@@ -147,9 +147,9 @@ export function CommunityStorySidebar({ currentStoryId, characters, settings }: 
                   {/* Expanded View */}
                   {isExpanded && (
                     <div className="animate-in fade-in duration-300">
-                      {/* Character Image - Full Width */}
+                      {/* Character Image - Full Width with 16:9 aspect ratio */}
                       {character.imageUrl && (
-                        <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-800">
+                        <div className="relative w-full aspect-video bg-gray-100 dark:bg-gray-800">
                           <Image
                             src={character.imageUrl}
                             alt={character.name}
@@ -336,23 +336,27 @@ export function CommunityStorySidebar({ currentStoryId, characters, settings }: 
                 >
                   {/* Collapsed View */}
                   {!isExpanded && (
-                    <div>
-                      {/* Setting Image */}
-                      {setting.imageUrl && (
-                        <div className="relative w-full h-32 bg-gray-100 dark:bg-gray-800">
+                    <div className="flex gap-3 p-2">
+                      {/* Setting Image - 16:9 aspect ratio */}
+                      <div className="relative w-24 h-[54px] flex-shrink-0 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+                        {setting.imageUrl ? (
                           <Image
                             src={setting.imageUrl}
                             alt={setting.name}
                             fill
                             className="object-cover"
-                            sizes="320px"
+                            sizes="96px"
                           />
-                        </div>
-                      )}
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-2xl">
+                            🏞️
+                          </div>
+                        )}
+                      </div>
 
                       {/* Setting Info */}
-                      <div className="p-3 bg-gray-50 dark:bg-gray-800/50">
-                        <h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-1">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-1 truncate">
                           {setting.name}
                         </h4>
                         {setting.mood && (
@@ -372,9 +376,9 @@ export function CommunityStorySidebar({ currentStoryId, characters, settings }: 
                   {/* Expanded View */}
                   {isExpanded && (
                     <div className="animate-in fade-in duration-300">
-                      {/* Setting Image - Full Width */}
+                      {/* Setting Image - Full Width with 16:9 aspect ratio */}
                       {setting.imageUrl && (
-                        <div className="relative w-full h-56 bg-gray-100 dark:bg-gray-800">
+                        <div className="relative w-full aspect-video bg-gray-100 dark:bg-gray-800">
                           <Image
                             src={setting.imageUrl}
                             alt={setting.name}
