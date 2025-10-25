@@ -2,10 +2,11 @@
  * Scene Evaluation Loop Service
  *
  * Implements iterative scene evaluation and improvement:
- * 1. Evaluate scene with qualitative AI evaluation
- * 2. Check if scene meets quality threshold
- * 3. Improve scene based on evaluation feedback
- * 4. Repeat until passing or max iterations reached
+ * 1. Apply rule-based formatting (deterministic fixes)
+ * 2. Evaluate scene with qualitative AI evaluation
+ * 3. Check if scene meets quality threshold
+ * 4. Improve scene based on evaluation feedback
+ * 5. Repeat until passing or max iterations reached
  */
 
 import { db } from '@/lib/db';
@@ -19,6 +20,7 @@ import {
   type EvaluationContext
 } from '@/lib/evaluation/schemas';
 import { buildEvaluationPrompt } from '@/lib/evaluation/prompts';
+import { formatSceneContent, type FormatResult } from '@/lib/services/scene-formatter';
 
 export interface SceneEvaluationLoopOptions {
   maxIterations?: number;        // Default: 3
@@ -50,6 +52,11 @@ export interface SceneEvaluationLoopResult {
   finalScore: number;
   passed: boolean;
   improvements: string[];
+  formattingStats: {
+    totalChanges: number;
+    paragraphsSplit: number;
+    spacingFixed: number;
+  };
 }
 
 /**
@@ -175,10 +182,44 @@ export async function evaluateAndImproveScene(
   }> = [];
   const improvements: string[] = [];
   let iteration = 0;
+  let totalFormattingChanges = 0;
+  let totalParagraphsSplit = 0;
+  let totalSpacingFixed = 0;
 
   while (iteration < maxIterations) {
     iteration++;
     console.log(`\n--- Iteration ${iteration}/${maxIterations} ---`);
+
+    // Step 0: Apply rule-based formatting BEFORE evaluation
+    console.log(`📝 Applying rule-based formatting...`);
+    const formatStartTime = Date.now();
+
+    const formatResult = formatSceneContent(currentContent);
+
+    if (formatResult.changes.length > 0) {
+      console.log(`✓ Formatting applied in ${Date.now() - formatStartTime}ms`);
+      console.log(`   Changes: ${formatResult.changes.length}`);
+      console.log(`   Paragraphs split: ${formatResult.stats.sentencesSplit}`);
+      console.log(`   Spacing fixed: ${formatResult.stats.spacingFixed}`);
+
+      // Update content with formatted version
+      currentContent = formatResult.formatted;
+      totalFormattingChanges += formatResult.changes.length;
+      totalParagraphsSplit += formatResult.stats.sentencesSplit;
+      totalSpacingFixed += formatResult.stats.spacingFixed;
+
+      // Update database with formatted content
+      await db.update(scenesTable)
+        .set({ content: formatResult.formatted })
+        .where(eq(scenesTable.id, sceneId));
+
+      // Log specific changes
+      formatResult.changes.forEach(change => {
+        console.log(`     - ${change.type}: ${change.description}`);
+      });
+    } else {
+      console.log(`✓ No formatting changes needed (${Date.now() - formatStartTime}ms)`);
+    }
 
     // Step 1: Evaluate the scene
     console.log(`📊 Evaluating scene "${currentScene.title}"...`);
@@ -265,7 +306,12 @@ export async function evaluateAndImproveScene(
     iterations: iteration,
     finalScore: finalEvaluation.overallScore,
     passed: finalEvaluation.overallScore >= passingScore,
-    improvements
+    improvements,
+    formattingStats: {
+      totalChanges: totalFormattingChanges,
+      paragraphsSplit: totalParagraphsSplit,
+      spacingFixed: totalSpacingFixed,
+    }
   };
 
   console.log(`\n🎯 ============= SCENE EVALUATION LOOP COMPLETE =============`);
@@ -276,6 +322,10 @@ export async function evaluateAndImproveScene(
   if (improvements.length > 0) {
     console.log(`   Changes: ${improvements.join(', ')}`);
   }
+  console.log(`   Formatting Applied:`);
+  console.log(`     - Total formatting changes: ${totalFormattingChanges}`);
+  console.log(`     - Paragraphs split: ${totalParagraphsSplit}`);
+  console.log(`     - Spacing fixes: ${totalSpacingFixed}`);
 
   return result;
 }

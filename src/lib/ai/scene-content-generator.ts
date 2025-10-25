@@ -87,6 +87,18 @@ Paragraph Structure:
 • White space: Maximum (short paragraphs create visual breathing room)
 • Single blank line between paragraphs
 
+🚨 CRITICAL PARAGRAPH FORMATTING RULES 🚨:
+1. DESCRIPTION PARAGRAPH LENGTH: Every description paragraph MUST contain 1-3 sentences ONLY
+   - If you write 4+ sentences of description, SPLIT into multiple paragraphs
+   - Each description paragraph = 1-3 sentences maximum
+   - This rule is ENFORCED by automated post-processing
+
+2. SPACING BETWEEN DESCRIPTION AND DIALOGUE:
+   - ALWAYS use blank line (2 newlines) between description blocks and dialogue blocks
+   - Description paragraph → blank line → dialogue
+   - Dialogue → blank line → description paragraph
+   - This creates clear visual separation and optimal mobile readability
+
 🚨 UNIVERSAL DIALOGUE REQUIREMENT (APPLIES TO ALL SCENE TYPES) 🚨
 
 MANDATORY: Every scene MUST contain minimum 40% dialogue by word count, regardless of scene type.
@@ -227,13 +239,17 @@ CONTENT GENERATION RULES:
 
 FORBIDDEN PRACTICES (NEVER USE):
 1. Paragraph indentation - Breaks mobile formatting
-2. Walls of text - Paragraphs over 4 sentences
+2. Walls of text - Description paragraphs over 3 sentences (AUTO-CORRECTED by post-processing)
 3. Complex vocabulary - Words above 9th-grade level without purpose
 4. Passive voice chains - Multiple passive constructions in sequence
 5. Pure description blocks - Description without action/dialogue integration
 6. Slow starts - Taking more than 50 words to establish conflict
 7. Complete resolution - Ending without forward momentum
 8. 🚨 DIALOGUE + ACTION ON SAME LINE - ALWAYS SEPARATE 🚨
+9. 🚨 NO BLANK LINE BETWEEN DESCRIPTION AND DIALOGUE - ALWAYS USE (AUTO-CORRECTED by post-processing)
+
+NOTE: Rules #2 and #9 are automatically enforced by post-processing. Even if you fail to follow them perfectly,
+the system will fix them deterministically. However, writing correctly from the start saves processing time.
 
 CRITICAL DIALOGUE FORMATTING:
 

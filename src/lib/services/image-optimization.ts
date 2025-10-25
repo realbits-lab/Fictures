@@ -123,6 +123,7 @@ async function uploadVariant(
   const blob = await put(path, buffer, {
     access: 'public',
     contentType: `image/${format}`,
+    addRandomSuffix: true,  // Avoid conflicts with existing files
   });
 
   return blob.url;
@@ -151,16 +152,12 @@ export async function optimizeImage(
   // Define storage path
   const basePath = `stories/${storyId}/${imageType}`;
 
-  // Store original
+  // Store original (use addRandomSuffix to avoid conflicts)
   const originalPath = `${basePath}/original/${imageId}.png`;
-  await put(originalPath, originalBuffer, {
-    access: 'public',
-    contentType: 'image/png',
-  });
-
   const originalBlob = await put(originalPath, originalBuffer, {
     access: 'public',
     contentType: 'image/png',
+    addRandomSuffix: true,
   });
 
   const variants: ImageVariant[] = [];

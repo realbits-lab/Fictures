@@ -8,6 +8,7 @@ import { useChapterScenes } from '@/hooks/useChapterScenes';
 import { useScenePrefetch } from '@/hooks/useScenePrefetch';
 import { ProgressIndicator } from './ProgressIndicator';
 import { CommentSection } from './CommentSection';
+import { WebtoonViewer } from '@/components/webtoon/webtoon-viewer';
 import type { Chapter } from '@/hooks/useStoryReader';
 import { trackReading } from '@/lib/analytics/google-analytics';
 
@@ -28,6 +29,9 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
   const [isScrollRestored, setIsScrollRestored] = useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [allScenes, setAllScenes] = useState<Array<{ scene: any; chapterId: string; chapterTitle: string; partTitle?: string }>>([]);
+
+  // View mode state (text or webtoon)
+  const [viewMode, setViewMode] = useState<'text' | 'webtoon'>('text');
 
   // Immersive reading mode state
   const [isUIVisible, setIsUIVisible] = useState(true);
@@ -716,6 +720,34 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
                 </span>
               </div>
             )}
+
+            {/* View Mode Toggle */}
+            {selectedScene && (
+              <div className="flex items-center gap-1 ml-auto">
+                <button
+                  onClick={() => setViewMode('text')}
+                  className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+                    viewMode === 'text'
+                      ? 'bg-gray-700 dark:bg-gray-600 text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                  title="Text View"
+                >
+                  📝 Text
+                </button>
+                <button
+                  onClick={() => setViewMode('webtoon')}
+                  className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+                    viewMode === 'webtoon'
+                      ? 'bg-gray-700 dark:bg-gray-600 text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                  title="Webtoon View"
+                >
+                  🎨 Webtoon
+                </button>
+              </div>
+            )}
           </div>
 
         </div>
@@ -884,29 +916,41 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
                 ) : selectedScene ? (
                   <>
                     {console.log(`📖 Rendering selected scene: ${selectedScene.title}`)}
-                    {/* Scene Image */}
-                    {selectedScene.sceneImage?.url && (
-                      <div className="mb-6">
-                        <div className="rounded-lg overflow-hidden shadow-lg">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={selectedScene.sceneImage.url}
-                            alt={`Scene: ${selectedScene.title}`}
-                            className="w-full h-auto object-contain"
-                            loading="lazy"
-                          />
-                        </div>
-                      </div>
-                    )}
 
-                    {/* Scene Content - ⚡ RENDERS IMMEDIATELY (no waiting for scroll restoration) */}
-                    <div className="whitespace-pre-wrap leading-relaxed">
-                      {selectedScene.content || (
-                        <p className="text-gray-500 dark:text-gray-400 italic">
-                          This scene is empty.
-                        </p>
-                      )}
-                    </div>
+                    {/* Conditional View Rendering */}
+                    {viewMode === 'text' ? (
+                      <>
+                        {/* Scene Image */}
+                        {selectedScene.sceneImage?.url && (
+                          <div className="mb-6">
+                            <div className="rounded-lg overflow-hidden shadow-lg">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={selectedScene.sceneImage.url}
+                                alt={`Scene: ${selectedScene.title}`}
+                                className="w-full h-auto object-contain"
+                                loading="lazy"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Scene Content - ⚡ RENDERS IMMEDIATELY (no waiting for scroll restoration) */}
+                        <div className="whitespace-pre-wrap leading-relaxed">
+                          {selectedScene.content || (
+                            <p className="text-gray-500 dark:text-gray-400 italic">
+                              This scene is empty.
+                            </p>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      /* Webtoon View */
+                      <WebtoonViewer
+                        sceneId={selectedScene.id}
+                        className="w-full"
+                      />
+                    )}
                   </>
                 ) : chapterScenes.length > 0 ? (
                   <div className="text-center py-12 text-gray-500 dark:text-gray-400">

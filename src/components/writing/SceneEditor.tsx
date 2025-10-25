@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent, Button } from "@/components/ui";
 import { SceneWriting } from "./SceneWriting";
+import { WebtoonPanelGeneratorButton } from "@/components/webtoon/webtoon-panel-generator-button";
 import yaml from "js-yaml";
 
 export interface SceneData {
@@ -205,6 +206,15 @@ export function SceneEditor({
           </div>
         </CardContent>
       </Card>
+
+      {/* Webtoon Panel Generation */}
+      {sceneId && (
+        <WebtoonPanelGeneratorButton
+          sceneId={sceneId}
+          sceneTitle={sceneData.summary}
+          disabled={disabled}
+        />
+      )}
 
       {/* Scene Writing Interface */}
       <SceneWriting
