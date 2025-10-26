@@ -176,11 +176,6 @@ export default function StoryCommunityPage() {
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <Link href="/community" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                    ← Back to Community Hub
-                  </Link>
-                </div>
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   📖 {story.title}
                 </h1>

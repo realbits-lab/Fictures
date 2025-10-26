@@ -338,9 +338,22 @@ export async function evaluateAndImproveScene(
 
     // Update scene in database
     if (improved.content) {
+      // ⚡ CRITICAL FIX: Format improved content before saving
+      // This ensures dialogue/description separation rules are enforced
+      console.log(`📝 Formatting improved content before save...`);
+      const improvedFormatResult = formatSceneContent(improved.content);
+      const formattedImprovedContent = improvedFormatResult.formatted;
+
+      if (improvedFormatResult.changes.length > 0) {
+        console.log(`✓ Applied ${improvedFormatResult.changes.length} formatting fixes to improved content`);
+        totalFormattingChanges += improvedFormatResult.changes.length;
+        totalParagraphsSplit += improvedFormatResult.stats.sentencesSplit;
+        totalSpacingFixed += improvedFormatResult.stats.spacingFixed;
+      }
+
       await db.update(scenesTable)
         .set({
-          content: improved.content,
+          content: formattedImprovedContent,  // Use formatted version
           goal: improved.goal || currentScene.goal,
           conflict: improved.conflict || currentScene.conflict,
           outcome: improved.outcome || currentScene.outcome,
@@ -348,7 +361,7 @@ export async function evaluateAndImproveScene(
         })
         .where(eq(scenesTable.id, sceneId));
 
-      currentContent = improved.content;
+      currentContent = formattedImprovedContent;  // Use formatted version for next iteration
       improvements.push(...improved.changes);
 
       // Refresh scene data
