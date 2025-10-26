@@ -17,9 +17,10 @@ export async function GET(
 ) {
   const perfLogger = getPerformanceLogger();
   const operationId = `get-community-story-${Date.now()}`;
+  let storyId: string | undefined;
 
   try {
-    const { storyId } = await params;
+    ({ storyId } = await params);
 
     if (!storyId) {
       return NextResponse.json(

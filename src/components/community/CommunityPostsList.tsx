@@ -309,29 +309,26 @@ export function CommunityPostsList({ posts, onPostDeleted }: CommunityPostsListP
     <div className="space-y-4">
       {/* Sort Controls */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600 dark:text-gray-400">Sort by:</span>
-          <div className="flex items-center gap-2">
-            {[
-              { key: 'recent', label: '🕒 Recent', desc: 'Latest activity' },
-              { key: 'popular', label: '🔥 Popular', desc: 'Most likes & views' },
-              { key: 'replies', label: '💬 Most Discussed', desc: 'Most replies' },
-            ].map((option) => (
-              <Button
-                key={option.key}
-                variant={sortBy === option.key ? 'primary' : 'ghost'}
-                size="sm"
-                onClick={() => setSortBy(option.key as typeof sortBy)}
-                title={option.desc}
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>
+        <div className="flex items-center gap-2">
+          {[
+            { key: 'recent', label: '🕒 Recent', desc: 'Latest activity' },
+            { key: 'popular', label: '🔥 Popular', desc: 'Most likes & views' },
+            { key: 'replies', label: '💬 Most Discussed', desc: 'Most replies' },
+          ].map((option) => (
+            <Button
+              key={option.key}
+              variant={sortBy === option.key ? 'primary' : 'ghost'}
+              size="sm"
+              onClick={() => setSortBy(option.key as typeof sortBy)}
+              title={option.desc}
+            >
+              {option.label}
+            </Button>
+          ))}
         </div>
 
         <div className="text-sm text-gray-500 dark:text-gray-400">
-          {finalPosts.length} posts
+          {finalPosts.length}
         </div>
       </div>
 

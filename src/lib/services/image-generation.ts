@@ -108,6 +108,8 @@ export async function generateStoryImage({
   const blob = await put(filename, buffer, {
     access: 'public',
     contentType: 'image/png',
+    addRandomSuffix: false,
+    allowOverwrite: true,
   });
 
   console.log(`[Image Generation] ✓ Original uploaded: ${blob.url}`);

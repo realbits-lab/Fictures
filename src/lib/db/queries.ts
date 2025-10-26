@@ -1,5 +1,5 @@
 import { db } from './index';
-import { stories, chapters, users, userStats, parts, scenes, apiKeys, communityPosts } from './schema';
+import { stories, chapters, users, userStats, parts, scenes, apiKeys, communityPosts, characters, settings } from './schema';
 import { eq, desc, and, inArray, sql, count } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { RelationshipManager } from './relationships';
