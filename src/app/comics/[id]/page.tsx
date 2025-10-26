@@ -1,8 +1,6 @@
 import { MainLayout } from '@/components/layout';
 import { ComicReaderClient } from '@/components/comic/comic-reader-client';
-import { db } from '@/lib/db';
-import { stories, scenes } from '@/lib/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { getStoryWithComicPanels } from '@/lib/db/cached-queries';
 import { notFound } from 'next/navigation';
 
 interface ComicPageProps {
@@ -16,55 +14,12 @@ export default async function ComicPage({ params }: ComicPageProps) {
   const { id } = await params;
   console.log(`📚 [SSR] Loading story for comic reading: ${id}`);
 
-  // Fetch story structure from database (SSR)
+  // Fetch story structure from Redis cache (SSR)
   const ssrFetchStart = Date.now();
-  console.log('⏳ [SSR] Fetching story structure with published comics...');
+  console.log('⏳ [SSR] Fetching story structure with published comics from cache...');
 
-  // Load story with comic panels (only published comics)
-  const story = await db.query.stories.findFirst({
-    where: eq(stories.id, id),
-    with: {
-      parts: {
-        orderBy: (parts, { asc }) => [asc(parts.orderIndex)],
-        with: {
-          chapters: {
-            orderBy: (chapters, { asc }) => [asc(chapters.orderIndex)],
-            with: {
-              scenes: {
-                where: and(
-                  eq(scenes.visibility, 'public'),
-                  eq(scenes.comicStatus, 'published')
-                ),
-                orderBy: (scenes, { asc }) => [asc(scenes.orderIndex)],
-                with: {
-                  comicPanels: {
-                    orderBy: (panels, { asc }) => [asc(panels.panelNumber)],
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      chapters: {
-        orderBy: (chapters, { asc }) => [asc(chapters.orderIndex)],
-        with: {
-          scenes: {
-            where: and(
-              eq(scenes.visibility, 'public'),
-              eq(scenes.comicStatus, 'published')
-            ),
-            orderBy: (scenes, { asc }) => [asc(scenes.orderIndex)],
-            with: {
-              comicPanels: {
-                orderBy: (panels, { asc }) => [asc(panels.panelNumber)],
-              },
-            },
-          },
-        },
-      },
-    },
-  });
+  // Load story with comic panels (only published comics) - with caching
+  const story = await getStoryWithComicPanels(id);
 
   const ssrFetchDuration = Date.now() - ssrFetchStart;
   console.log(`✅ [SSR] Story structure fetched in ${ssrFetchDuration}ms`);

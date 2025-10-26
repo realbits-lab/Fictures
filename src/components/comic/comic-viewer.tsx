@@ -12,6 +12,7 @@ import { PanelRenderer, PanelRendererSkeleton } from './panel-renderer';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/Button';
 import { AlertCircle, RefreshCw } from 'lucide-react';
+import { useSceneView } from '@/hooks/useSceneView';
 
 interface PanelData {
   id: string;
@@ -69,6 +70,13 @@ export function ComicViewer({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loadedPanels, setLoadedPanels] = useState<Set<number>>(new Set());
+
+  // Track scene views for comics
+  useSceneView(sceneId, {
+    enabled: true,
+    readingFormat: 'comic',
+    debounceMs: 1000,
+  });
 
   // Fetch panel data
   useEffect(() => {
