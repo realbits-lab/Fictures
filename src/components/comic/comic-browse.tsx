@@ -49,13 +49,46 @@ export function ComicBrowse() {
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <Skeleton className="h-10 w-64 mb-2" />
-          <Skeleton className="h-6 w-96" />
+        {/* Animated loading header */}
+        <div className="mb-10 text-center">
+          <div className="mb-6 flex justify-center">
+            {/* Animated comic stack */}
+            <div className="relative w-24 h-24">
+              {/* Back comic */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-200 to-purple-300 dark:from-purple-800 dark:to-purple-900 rounded-lg transform rotate-6 opacity-50 animate-pulse" style={{ animationDuration: '2s' }}></div>
+
+              {/* Middle comic */}
+              <div className="absolute inset-0 bg-gradient-to-br from-pink-200 to-pink-300 dark:from-pink-800 dark:to-pink-900 rounded-lg transform rotate-3 opacity-75 animate-pulse" style={{ animationDuration: '2s', animationDelay: '0.3s' }}></div>
+
+              {/* Front comic with icon */}
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-200 to-orange-300 dark:from-orange-800 dark:to-orange-900 rounded-lg shadow-xl flex items-center justify-center animate-pulse" style={{ animationDuration: '2s', animationDelay: '0.6s' }}>
+                <span className="text-4xl animate-bounce" style={{ animationDuration: '1.5s' }}>📚</span>
+              </div>
+            </div>
+          </div>
+
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 bg-clip-text text-transparent mb-2 animate-pulse">
+            Loading Comics Gallery
+          </h2>
+
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Fetching amazing stories for you...
+          </p>
+
+          {/* Animated progress dots */}
+          <div className="flex justify-center gap-2 mb-8">
+            <div className="w-3 h-3 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+            <div className="w-3 h-3 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
+            <div className="w-3 h-3 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
+          </div>
         </div>
+
+        {/* Skeleton grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
-            <ComicCardSkeleton key={i} />
+            <div key={i} className="animate-pulse">
+              <ComicCardSkeleton />
+            </div>
           ))}
         </div>
       </div>
@@ -65,14 +98,44 @@ export function ComicBrowse() {
   // Error state
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
-          <h2 className="text-xl font-bold text-red-900 dark:text-red-100 mb-2">
-            Failed to Load Comics
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-2xl mx-auto text-center">
+          {/* Friendly illustration */}
+          <div className="mb-8">
+            <div className="w-32 h-32 mx-auto bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100 dark:from-purple-900/30 dark:via-pink-900/30 dark:to-blue-900/30 rounded-full flex items-center justify-center shadow-2xl">
+              <span className="text-6xl">🎭</span>
+            </div>
+          </div>
+
+          {/* Friendly message */}
+          <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">
+            Couldn't Load Comics Gallery
           </h2>
-          <p className="text-red-700 dark:text-red-300">
-            {error.message || 'An error occurred while loading comics.'}
+
+          <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed text-lg max-w-md mx-auto">
+            We're having a little trouble fetching the comics right now.
+            This is usually temporary, so please try again in a moment!
           </p>
+
+          {/* Technical details (collapsible) */}
+          <details className="mb-8 text-left max-w-md mx-auto">
+            <summary className="cursor-pointer text-sm text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors text-center">
+              Show technical details
+            </summary>
+            <div className="mt-3 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm text-gray-600 dark:text-gray-400">
+              <div className="font-mono text-xs break-words bg-white dark:bg-gray-900 p-3 rounded">
+                {error.message || 'An error occurred while loading comics.'}
+              </div>
+            </div>
+          </details>
+
+          {/* Action button */}
+          <button
+            onClick={() => window.location.reload()}
+            className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg shadow-xl transition-all font-semibold text-lg"
+          >
+            Refresh Page
+          </button>
         </div>
       </div>
     );
@@ -117,10 +180,10 @@ export function ComicBrowse() {
           >
             {/* Cover Image */}
             <div className="relative h-48 bg-gradient-to-br from-purple-500 to-pink-500 overflow-hidden">
-              {story.coverImage?.url ? (
+              {story.hnsData?.storyImage?.url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={story.coverImage.url}
+                  src={story.hnsData.storyImage.url}
                   alt={story.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -141,7 +204,7 @@ export function ComicBrowse() {
                 {story.title}
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
-                {story.premise || story.summary || 'No description available'}
+                {story.description || "No description available."}
               </p>
 
               {/* Metadata */}
@@ -153,7 +216,6 @@ export function ComicBrowse() {
                     </span>
                   )}
                 </span>
-                <span>{story.wordCount?.toLocaleString() || 0} words</span>
               </div>
 
               {/* Read Button */}
@@ -164,13 +226,6 @@ export function ComicBrowse() {
           </Link>
         ))}
       </div>
-
-      {/* Count */}
-      {storiesWithComics.length > 0 && (
-        <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-          Showing {storiesWithComics.length} comic{storiesWithComics.length !== 1 ? 's' : ''}
-        </div>
-      )}
     </div>
   );
 }

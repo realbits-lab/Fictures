@@ -173,7 +173,7 @@ export function useStoryReader(
     isValidating,
     mutate
   } = usePersistedSWR<StoryReaderResponse>(
-    shouldFetch ? `/writing/api/stories/${storyId}/read` : null,
+    shouldFetch ? `/studio/api/stories/${storyId}/read` : null,
     fetcher,
     {
       ...CACHE_CONFIGS.reading, // 1hr TTL + compression
@@ -261,7 +261,7 @@ export function usePrefetchStory() {
     prefetch: async (storyId: string) => {
       try {
         // Prefetch story data but don't cache it yet
-        await fetch(`/writing/api/stories/${storyId}/read`, {
+        await fetch(`/studio/api/stories/${storyId}/read`, {
           credentials: 'include',
         });
       } catch (error) {

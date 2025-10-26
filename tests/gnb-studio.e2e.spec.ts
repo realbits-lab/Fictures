@@ -2,7 +2,34 @@ import { test, expect } from '@playwright/test';
 
 /**
  * E2E Tests for Studio Page (/studio)
- * Tests story management dashboard - restricted to writers and managers
+ *
+ * PURPOSE:
+ * Tests the story creation and management workspace for writers and managers.
+ * This is the primary workspace where authenticated users create, edit, and manage their stories.
+ *
+ * KEY FEATURES TESTED:
+ * - Writer/Manager authentication and access control
+ * - Story list/dashboard display
+ * - Create new story workflow
+ * - Story card navigation to editor
+ * - View toggle (card/table layouts)
+ * - Menu navigation and highlighting
+ * - Empty state handling
+ * - Performance metrics
+ *
+ * TEST CATEGORIES:
+ * - Access Control (2 tests): Writer/Manager access, menu visibility
+ * - Navigation (2 tests): Menu highlighting, Studio navigation
+ * - Content (3 tests): Story list display, create button, view toggle
+ * - Functionality (2 tests): Create story button, story card clicks
+ * - Performance (1 test): Page load time
+ * - Error Handling (1 test): Error message verification
+ *
+ * AUTHENTICATION:
+ * - ALL tests require authentication using .auth/user.json
+ * - Tests verify writer/manager role permissions
+ *
+ * TOTAL: 11 test cases
  */
 
 test.describe('GNB - Studio Page Tests', () => {

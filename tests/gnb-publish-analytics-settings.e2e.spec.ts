@@ -2,7 +2,48 @@ import { test, expect } from '@playwright/test';
 
 /**
  * E2E Tests for Publish, Analytics, and Settings Pages
- * All require authentication - restricted to writers/managers
+ *
+ * PURPOSE:
+ * Tests three distinct authenticated-user pages in a single test file:
+ * 1. Publish Page (/publish) - Story publication workflow
+ * 2. Analytics Page (/analytics) - Story performance metrics and insights
+ * 3. Settings Page (/settings) - User preferences and configuration
+ * Plus cross-cutting tests for mobile responsiveness, accessibility, and JavaScript errors.
+ *
+ * PUBLISH PAGE (/publish):
+ * - Writer/Manager access control
+ * - Publishable stories list display
+ * - Menu navigation and highlighting
+ * - Performance: Page load < 3 seconds
+ * Tests: 4
+ *
+ * ANALYTICS PAGE (/analytics):
+ * - Writer/Manager access control
+ * - Analytics dashboard display
+ * - Menu navigation and highlighting
+ * - Performance: Page load < 3 seconds
+ * Tests: 4
+ *
+ * SETTINGS PAGE (/settings):
+ * - All authenticated users can access
+ * - Profile settings display
+ * - Theme toggle functionality
+ * - Menu navigation and highlighting
+ * - Performance: Page load < 2 seconds
+ * Tests: 5
+ *
+ * CROSS-CUTTING TESTS:
+ * - Mobile responsiveness (375x667 viewport)
+ * - JavaScript error detection across all pages
+ * - Keyboard navigation accessibility
+ * Tests: 3
+ *
+ * AUTHENTICATION:
+ * - ALL tests require authentication using .auth/user.json
+ * - Publish/Analytics restricted to writers/managers
+ * - Settings accessible to all authenticated users
+ *
+ * TOTAL: 16 test cases (4 Publish + 4 Analytics + 5 Settings + 3 Cross-cutting)
  */
 
 test.describe('GNB - Publish Page Tests', () => {

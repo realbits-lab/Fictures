@@ -70,10 +70,26 @@ export function PanelRenderer({
     character_name: characterNames[d.character_id] || 'Unknown',
   }));
 
-  // Get responsive image sizes for Next.js Image component
-  const getImageSizes = () => {
-    return '(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1792px';
+  // Helper function to organize variants by format for srcset
+  const getVariantsByFormat = (format: string) => {
+    if (!imageVariants?.variants) return [];
+    return imageVariants.variants
+      .filter((v: any) => v.format === format)
+      .sort((a: any, b: any) => a.width - b.width); // Sort by width ascending
   };
+
+  // Generate srcset string for a specific format
+  const generateSrcSet = (format: string) => {
+    const variants = getVariantsByFormat(format);
+    if (variants.length === 0) return undefined;
+
+    return variants
+      .map((v: any) => `${v.url} ${v.width}w`)
+      .join(', ');
+  };
+
+  // Use optimized variants if available, otherwise fall back to original
+  const useOptimizedImages = imageVariants?.variants && imageVariants.variants.length > 0;
 
   return (
     <div
@@ -91,20 +107,64 @@ export function PanelRenderer({
           <Skeleton className="absolute inset-0 h-full w-full rounded-none" />
         )}
 
-        {/* Background image */}
-        <Image
-          src={imageUrl}
-          alt={`Panel ${panelNumber}${shotType ? ` - ${shotType}` : ''}`}
-          fill
-          sizes={getImageSizes()}
-          className={cn(
-            'object-cover transition-opacity duration-300',
-            imageLoaded ? 'opacity-100' : 'opacity-0'
-          )}
-          priority={priority}
-          onLoad={handleImageLoad}
-          quality={90}
-        />
+        {/* Background image with optimized variants */}
+        {useOptimizedImages ? (
+          <picture>
+            {/* AVIF - Best compression (Chrome, Edge, Opera, Firefox) */}
+            {generateSrcSet('avif') && (
+              <source
+                type="image/avif"
+                srcSet={generateSrcSet('avif')}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, (max-width: 1440px) 80vw, 1792px"
+              />
+            )}
+
+            {/* WebP - Good compression (All modern browsers) */}
+            {generateSrcSet('webp') && (
+              <source
+                type="image/webp"
+                srcSet={generateSrcSet('webp')}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, (max-width: 1440px) 80vw, 1792px"
+              />
+            )}
+
+            {/* JPEG - Universal fallback */}
+            {generateSrcSet('jpeg') && (
+              <source
+                type="image/jpeg"
+                srcSet={generateSrcSet('jpeg')}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, (max-width: 1440px) 80vw, 1792px"
+              />
+            )}
+
+            {/* Fallback image */}
+            <img
+              src={imageUrl}
+              alt={`Panel ${panelNumber}${shotType ? ` - ${shotType}` : ''}`}
+              className={cn(
+                'absolute inset-0 w-full h-full object-cover transition-opacity duration-300',
+                imageLoaded ? 'opacity-100' : 'opacity-0'
+              )}
+              loading={priority ? 'eager' : 'lazy'}
+              onLoad={handleImageLoad}
+            />
+          </picture>
+        ) : (
+          /* Fallback to Next.js Image if no variants available */
+          <Image
+            src={imageUrl}
+            alt={`Panel ${panelNumber}${shotType ? ` - ${shotType}` : ''}`}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1792px"
+            className={cn(
+              'object-cover transition-opacity duration-300',
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            )}
+            priority={priority}
+            onLoad={handleImageLoad}
+            quality={90}
+          />
+        )}
 
         {/* Dialogue bubbles overlay */}
         {dialogue.length > 0 && (

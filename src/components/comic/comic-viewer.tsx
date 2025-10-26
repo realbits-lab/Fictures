@@ -12,6 +12,7 @@ import { PanelRenderer, PanelRendererSkeleton } from './panel-renderer';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/Button';
 import { AlertCircle, RefreshCw } from 'lucide-react';
+import { useSceneView } from '@/hooks/useSceneView';
 
 interface PanelData {
   id: string;
@@ -70,6 +71,13 @@ export function ComicViewer({
   const [error, setError] = useState<string | null>(null);
   const [loadedPanels, setLoadedPanels] = useState<Set<number>>(new Set());
 
+  // Track scene views for comics
+  useSceneView(sceneId, {
+    enabled: true,
+    readingFormat: 'comic',
+    debounceMs: 1000,
+  });
+
   // Fetch panel data
   useEffect(() => {
     const fetchPanels = async () => {
@@ -126,10 +134,41 @@ export function ComicViewer({
   if (loading) {
     return (
       <div className={className}>
-        <div className="mx-auto max-w-[1792px] space-y-8">
-          {[1, 2, 3].map(i => (
-            <PanelRendererSkeleton key={i} />
-          ))}
+        <div className="max-w-md mx-auto py-12 px-6 text-center">
+          {/* Animated illustration */}
+          <div className="mb-8 relative">
+            {/* Outer pulsing ring */}
+            <div className="absolute inset-0 w-32 h-32 mx-auto bg-gradient-to-br from-purple-200 to-pink-200 dark:from-purple-800/40 dark:to-pink-800/40 rounded-full animate-ping opacity-20"></div>
+
+            {/* Middle rotating ring */}
+            <div className="relative w-32 h-32 mx-auto">
+              <div className="absolute inset-0 border-4 border-transparent border-t-purple-500 border-r-pink-500 rounded-full animate-spin"></div>
+              <div className="absolute inset-2 border-4 border-transparent border-b-purple-400 border-l-pink-400 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+
+              {/* Center icon */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50 rounded-full flex items-center justify-center">
+                  <span className="text-4xl animate-bounce" style={{ animationDuration: '1.5s' }}>📖</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Loading message */}
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
+            Loading Comic Panels
+          </h3>
+
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Preparing your visual journey...
+          </p>
+
+          {/* Loading progress dots */}
+          <div className="flex justify-center gap-2">
+            <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+            <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+          </div>
         </div>
       </div>
     );
@@ -139,22 +178,43 @@ export function ComicViewer({
   if (error) {
     return (
       <div className={className}>
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error Loading Comic</AlertTitle>
-          <AlertDescription className="mt-2">
-            {error}
-          </AlertDescription>
+        <div className="max-w-md mx-auto py-12 px-6 text-center">
+          {/* Friendly illustration */}
+          <div className="mb-6">
+            <div className="w-24 h-24 mx-auto bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-full flex items-center justify-center">
+              <span className="text-5xl">📚</span>
+            </div>
+          </div>
+
+          {/* Friendly message */}
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">
+            Oops! Having Trouble Loading This Comic
+          </h3>
+
+          <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+            We couldn't load the comic panels right now. This might be a temporary hiccup.
+            Please try again in a moment.
+          </p>
+
+          {/* Technical details (collapsible) */}
+          <details className="mb-6 text-left">
+            <summary className="cursor-pointer text-sm text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+              Show technical details
+            </summary>
+            <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-xs text-gray-600 dark:text-gray-400 font-mono break-words">
+              {error}
+            </div>
+          </details>
+
+          {/* Action button */}
           <Button
-            variant="outline"
-            size="sm"
             onClick={handleRetry}
-            className="mt-4"
+            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg"
           >
             <RefreshCw className="mr-2 h-4 w-4" />
-            Retry
+            Try Again
           </Button>
-        </Alert>
+        </div>
       </div>
     );
   }

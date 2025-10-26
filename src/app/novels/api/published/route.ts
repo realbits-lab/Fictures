@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   const reqId = Math.random().toString(36).substring(7);
   const requestStart = performance.now();
 
-  console.log(`[${reqId}] 🌐 GET /reading/api/published - Request started at ${new Date().toISOString()}`);
+  console.log(`[${reqId}] 🌐 GET /novels/api/published - Request started at ${new Date().toISOString()}`);
   console.log(`[${reqId}] 📋 Request details:`, {
     method: request.method,
     url: request.url,

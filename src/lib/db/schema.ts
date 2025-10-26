@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, boolean, json, uuid, varchar, serial, primaryKey, pgEnum, decimal } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, integer, boolean, json, uuid, varchar, serial, primaryKey, pgEnum, decimal, unique } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Status enum for stories and chapters
@@ -66,6 +66,13 @@ export const visibilityEnum = pgEnum('visibility', [
   'public'
 ]);
 
+// Comic status enum for scene comic panels
+export const comicStatusEnum = pgEnum('comic_status', [
+  'none',      // No comic panels exist
+  'draft',     // Comic panels exist but not published
+  'published'  // Comic panels are published and visible
+]);
+
 // Schedule type enum for publishing schedules
 export const scheduleTypeEnum = pgEnum('schedule_type', [
   'daily',
@@ -80,6 +87,12 @@ export const publicationStatusEnum = pgEnum('publication_status', [
   'published',
   'failed',
   'cancelled'
+]);
+
+// Reading format enum for reading history
+export const readingFormatEnum = pgEnum('reading_format', [
+  'novel',  // Text-based reading
+  'comic'   // Visual/panel-based reading
 ]);
 
 // Shot type enum for comic panels
@@ -238,6 +251,23 @@ export const scenes = pgTable('scenes', {
   publishedBy: text('published_by').references(() => users.id),
   unpublishedAt: timestamp('unpublished_at'),
   unpublishedBy: text('unpublished_by').references(() => users.id),
+  // Comic publishing fields
+  comicStatus: comicStatusEnum('comic_status').default('none').notNull(),
+  comicPublishedAt: timestamp('comic_published_at'),
+  comicPublishedBy: text('comic_published_by').references(() => users.id),
+  comicUnpublishedAt: timestamp('comic_unpublished_at'),
+  comicUnpublishedBy: text('comic_unpublished_by').references(() => users.id),
+  comicGeneratedAt: timestamp('comic_generated_at'),
+  comicPanelCount: integer('comic_panel_count').default(0),
+  comicVersion: integer('comic_version').default(1),
+  // View tracking - general and format-specific
+  viewCount: integer('view_count').default(0).notNull(),
+  uniqueViewCount: integer('unique_view_count').default(0).notNull(),
+  novelViewCount: integer('novel_view_count').default(0).notNull(),
+  novelUniqueViewCount: integer('novel_unique_view_count').default(0).notNull(),
+  comicViewCount: integer('comic_view_count').default(0).notNull(),
+  comicUniqueViewCount: integer('comic_unique_view_count').default(0).notNull(),
+  lastViewedAt: timestamp('last_viewed_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -271,6 +301,19 @@ export const comicPanels = pgTable('comic_panels', {
 
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Scene Views table - Tracks individual scene views for analytics
+export const sceneViews = pgTable('scene_views', {
+  id: text('id').primaryKey().default('gen_random_uuid()::text'),
+  sceneId: text('scene_id').references(() => scenes.id, { onDelete: 'cascade' }).notNull(),
+  userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
+  sessionId: text('session_id'), // Anonymous session ID from cookie
+  readingFormat: readingFormatEnum('reading_format').default('novel').notNull(), // Format: novel or comic
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  viewedAt: timestamp('viewed_at').defaultNow().notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 // Characters table - Story characters with HNS support
@@ -436,11 +479,19 @@ export const readingHistory = pgTable('reading_history', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   storyId: text('story_id').notNull().references(() => stories.id, { onDelete: 'cascade' }),
+  readingFormat: readingFormatEnum('reading_format').default('novel').notNull(), // Format: novel or comic
   lastReadAt: timestamp('last_read_at').defaultNow().notNull(),
-  readCount: integer('read_count').default(1).notNull(), // Track how many times user viewed this story
+  readCount: integer('read_count').default(1).notNull(), // Track how many times user viewed this story in this format
+
+  // Format-specific progress tracking
+  lastSceneId: text('last_scene_id'), // For novel format: which scene was last read
+  lastPanelId: text('last_panel_id'), // For comic format: which panel was last viewed
+  lastPageNumber: integer('last_page_number'), // For comic format: which page was last viewed
+
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
-  uniqueUserStory: primaryKey({ columns: [table.userId, table.storyId], name: 'user_story_unique' }),
+  // Unique constraint per user, story, and format (allows same story in both formats)
+  uniqueUserStoryFormat: unique('user_story_format_unique').on(table.userId, table.storyId, table.readingFormat),
 }));
 
 // Define relations

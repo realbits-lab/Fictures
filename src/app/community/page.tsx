@@ -4,6 +4,7 @@ import { MainLayout } from "@/components/layout";
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from "@/components/ui";
 import Link from "next/link";
 import { CommunityStoryCard } from "@/components/community/CommunityStoryCard";
+import { MetricCard } from "@/components/community/metric-card";
 import { Skeleton } from "@/components/ui";
 import { useCommunityStories } from '@/lib/hooks/use-page-cache';
 import { useCommunityEvents } from '@/lib/hooks/use-community-events';
@@ -259,47 +260,77 @@ export default function CommunityPage() {
             )}
             
             <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-              <Card className="text-center">
-                <CardContent className="py-4">
-                  <div className="text-2xl font-bold text-blue-600">{stats.activeToday.toLocaleString()}</div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400">Active Today</div>
-                </CardContent>
-              </Card>
-            
-            <Card className="text-center">
-              <CardContent className="py-4">
-                <div className="text-2xl font-bold text-green-600">{stats.commentsToday.toLocaleString()}</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">Comments Today</div>
-              </CardContent>
-            </Card>
-            
-            <Card className="text-center">
-              <CardContent className="py-4">
-                <div className="text-2xl font-bold text-purple-600">{stats.averageRating}</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">Avg Rating</div>
-              </CardContent>
-            </Card>
+              <MetricCard
+                value={stats.activeToday}
+                label="Active Today"
+                color="text-blue-600"
+                description="Stories with recent community activity in the past 24 hours."
+                details={[
+                  "Includes stories with new posts or comments",
+                  "Shows real-time engagement",
+                  "Updated throughout the day"
+                ]}
+              />
 
-            <Card className="text-center">
-              <CardContent className="py-4">
-                <div className="text-2xl font-bold text-orange-600">{stats.totalStories}</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">Stories</div>
-              </CardContent>
-            </Card>
+              <MetricCard
+                value={stats.commentsToday}
+                label="Comments Today"
+                color="text-green-600"
+                description="Total number of comments posted across all stories today."
+                details={[
+                  "Counts all discussion replies",
+                  "Refreshes every 30 minutes",
+                  "Helps track daily engagement"
+                ]}
+              />
 
-            <Card className="text-center">
-              <CardContent className="py-4">
-                <div className="text-2xl font-bold text-red-600">{stats.totalPosts}</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">Discussions</div>
-              </CardContent>
-            </Card>
+              <MetricCard
+                value={stats.averageRating}
+                label="Avg Rating"
+                color="text-purple-600"
+                description="Average community rating across all published stories."
+                details={[
+                  "Based on reader feedback",
+                  "Calculated from all published stories",
+                  "Scale: 1.0 to 5.0 stars"
+                ]}
+              />
 
-            <Card className="text-center">
-              <CardContent className="py-4">
-                <div className="text-2xl font-bold text-indigo-600">{stats.totalMembers.toLocaleString()}</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">Members</div>
-              </CardContent>
-            </Card>
+              <MetricCard
+                value={stats.totalStories}
+                label="Stories"
+                color="text-orange-600"
+                description="Total number of published stories available in the community."
+                details={[
+                  "Only published stories are shown",
+                  "Draft stories are not included",
+                  "Browse and read any story"
+                ]}
+              />
+
+              <MetricCard
+                value={stats.totalPosts}
+                label="Discussions"
+                color="text-red-600"
+                description="Total discussion threads across all community stories."
+                details={[
+                  "Includes all posts and topics",
+                  "Each story has its own discussions",
+                  "Join conversations anytime"
+                ]}
+              />
+
+              <MetricCard
+                value={stats.totalMembers}
+                label="Members"
+                color="text-indigo-600"
+                description="Total unique users who have participated in community discussions."
+                details={[
+                  "Active contributors and readers",
+                  "Sign in to join the community",
+                  "No membership fees"
+                ]}
+              />
             </div>
           </div>
         )}
@@ -332,7 +363,7 @@ export default function CommunityPage() {
             {/* Story Grid */}
             {stories.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {stories.map((story: CommunityStory) => {
+                {stories.map((story: CommunityStory, index: number) => {
                   const isNewlyPublished = recentlyPublishedStories.includes(story.id);
                   return (
                     <div
@@ -350,6 +381,7 @@ export default function CommunityPage() {
                           author: story.author.name,
                           coverImage: story.coverImage || ''
                         }}
+                        priority={index === 0}
                       />
                     </div>
                   );

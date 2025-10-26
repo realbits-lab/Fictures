@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { MainLayout } from '@/components/layout';
@@ -9,6 +9,7 @@ import { CommunityStorySidebar } from '@/components/community/CommunityStorySide
 import { CommunityPostsList } from '@/components/community/CommunityPostsList';
 import { CreatePostForm } from '@/components/community/CreatePostForm';
 import { useProtectedAction } from '@/hooks/useProtectedAction';
+import { useCommunityStory, useCommunityPosts, useRevalidateCommunityPosts } from '@/lib/hooks/use-community-cache';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
@@ -71,67 +72,65 @@ interface StoryData {
 }
 
 export default function StoryCommunityPage() {
+  const componentStartTime = performance.now();
+  console.log(`[StoryCommunityPage] 🚀 Component mounting`);
+
   const params = useParams();
   const { data: session } = useSession();
   const storyId = params.storyId as string;
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [posts, setPosts] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [story, setStory] = useState<StoryData | null>(null);
-  const [isLoadingStory, setIsLoadingStory] = useState(true);
+
+  console.log(`[StoryCommunityPage] 📍 Story ID: ${storyId}`);
+
+  // Use cached hooks for data fetching
+  const {
+    data: storyData,
+    isLoading: isLoadingStory,
+    error: storyError
+  } = useCommunityStory(storyId);
+
+  const {
+    data: postsData,
+    isLoading: isLoadingPosts,
+    error: postsError
+  } = useCommunityPosts(storyId);
+
+  console.log(`[StoryCommunityPage] 📊 Loading state:`, {
+    storyLoading: isLoadingStory,
+    postsLoading: isLoadingPosts,
+    hasStoryData: !!storyData,
+    hasPostsData: !!postsData,
+    elapsedTime: `${(performance.now() - componentStartTime).toFixed(2)}ms`
+  });
+
+  const revalidatePosts = useRevalidateCommunityPosts(storyId);
 
   const { executeAction: handleCreatePost } = useProtectedAction(() => {
     setShowCreateForm(true);
   });
 
-  const fetchStory = useCallback(async () => {
-    try {
-      setIsLoadingStory(true);
-      const response = await fetch(`/api/community/stories/${storyId}`);
-      const data = await response.json();
-
-      if (data.success) {
-        setStory(data.story);
-      } else {
-        toast.error('Failed to load story data');
-      }
-    } catch (error) {
-      console.error('Error fetching story:', error);
-      toast.error('Failed to load story data');
-    } finally {
-      setIsLoadingStory(false);
-    }
-  }, [storyId]);
-
-  const fetchPosts = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`/api/community/stories/${storyId}/posts`);
-      const data = await response.json();
-
-      if (data.success) {
-        setPosts(data.posts);
-      } else {
-        toast.error('Failed to load posts');
-      }
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-      toast.error('Failed to load posts');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [storyId]);
-
-  useEffect(() => {
-    fetchStory();
-    fetchPosts();
-  }, [storyId, fetchStory, fetchPosts]);
-
-  const handlePostCreated = () => {
+  const handlePostCreated = async () => {
     setShowCreateForm(false);
-    fetchPosts();
-    fetchStory(); // Refresh story stats to update post count
+    // Revalidate cache to show new post immediately
+    await revalidatePosts();
   };
+
+  const handlePostDeleted = async () => {
+    // Revalidate cache after post deletion
+    await revalidatePosts();
+  };
+
+  // Show error toasts if data fetching fails
+  if (storyError) {
+    toast.error('Failed to load story data');
+  }
+
+  if (postsError) {
+    toast.error('Failed to load posts');
+  }
+
+  const story = storyData?.story;
+  const posts = postsData?.posts || [];
 
   if (isLoadingStory || !story) {
     return (
@@ -176,11 +175,6 @@ export default function StoryCommunityPage() {
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <Link href="/community" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                    ← Back to Community Hub
-                  </Link>
-                </div>
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   📖 {story.title}
                 </h1>
@@ -251,7 +245,7 @@ export default function StoryCommunityPage() {
           )}
 
           {/* Posts List */}
-          <CommunityPostsList posts={posts} onPostDeleted={fetchPosts} />
+          <CommunityPostsList posts={posts} onPostDeleted={handlePostDeleted} />
 
           {/* Anonymous User CTA */}
           {!session && (

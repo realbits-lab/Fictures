@@ -35,7 +35,7 @@ export function SettingsDisplay({ storyData }: SettingsDisplayProps) {
       }
 
       try {
-        const response = await fetch(`/writing/api/stories/${storyId}/settings`);
+        const response = await fetch(`/studio/api/stories/${storyId}/settings`);
         if (response.ok) {
           const data = await response.json();
           // The API returns { settings: [...] }

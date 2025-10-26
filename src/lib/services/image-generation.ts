@@ -6,18 +6,19 @@ import { nanoid } from 'nanoid';
 
 // Placeholder images for fallback when generation fails
 const PLACEHOLDER_IMAGES = {
-  character: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/character-default.png',
-  setting: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/setting-visual.png',
-  scene: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/scene-illustration.png',
-  story: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/story-cover.png',
+  character: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/character-default.png',
+  setting: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/setting-visual.png',
+  scene: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/scene-illustration.png',
+  story: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/story-cover.png',
 } as const;
 
 export interface GenerateStoryImageParams {
   prompt: string;
   storyId: string;
-  imageType?: 'story' | 'scene' | 'character' | 'setting';
+  imageType?: 'story' | 'scene' | 'character' | 'setting' | 'panel';
   chapterId?: string;
   sceneId?: string;
+  panelNumber?: number; // For comic panels
   style?: 'vivid' | 'natural';
   quality?: 'standard' | 'hd';
   skipOptimization?: boolean; // For testing or special cases
@@ -52,6 +53,7 @@ export async function generateStoryImage({
   imageType = 'story',
   chapterId,
   sceneId,
+  panelNumber,
   style = 'vivid',
   quality = 'standard',
   skipOptimization = false,
@@ -89,7 +91,16 @@ export async function generateStoryImage({
 
   // Generate unique image ID
   const imageId = nanoid();
-  const filename = `stories/${storyId}/${imageType}/${imageId}.png`;
+
+  // Construct filename based on image type
+  let filename: string;
+  if (imageType === 'panel' && sceneId && panelNumber !== undefined) {
+    // Comic panel path: stories/{storyId}/comics/{sceneId}/panel-{number}.png
+    filename = `stories/${storyId}/comics/${sceneId}/panel-${panelNumber}.png`;
+  } else {
+    // Standard path: stories/{storyId}/{imageType}/{imageId}.png
+    filename = `stories/${storyId}/${imageType}/${imageId}.png`;
+  }
 
   console.log(`[Image Generation] Uploading original image to Vercel Blob...`);
 
@@ -97,6 +108,8 @@ export async function generateStoryImage({
   const blob = await put(filename, buffer, {
     access: 'public',
     contentType: 'image/png',
+    addRandomSuffix: false,
+    allowOverwrite: true,
   });
 
   console.log(`[Image Generation] ✓ Original uploaded: ${blob.url}`);
@@ -118,7 +131,8 @@ export async function generateStoryImage({
         blob.url,
         imageId,
         storyId,
-        imageType
+        imageType,
+        sceneId  // Pass sceneId for comics path hierarchy
       );
       result.optimizedSet = optimizedSet;
       console.log(`[Image Generation] ✓ Complete! Generated ${optimizedSet.variants.length} optimized variants`);

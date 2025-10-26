@@ -49,7 +49,7 @@ export function CommentForm({
 
     startTransition(async () => {
       try {
-        const endpoint = `/writing/api/stories/${storyId}/comments`;
+        const endpoint = `/studio/api/stories/${storyId}/comments`;
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: {

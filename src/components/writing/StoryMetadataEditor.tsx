@@ -31,7 +31,7 @@ export function StoryMetadataEditor({
 
     setIsLoading(true);
     try {
-      const response = await fetch(`/writing/api/stories/${storyId}`, {
+      const response = await fetch(`/studio/api/stories/${storyId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

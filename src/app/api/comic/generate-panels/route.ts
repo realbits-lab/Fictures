@@ -9,6 +9,7 @@
 
 import { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
+import { authenticateRequest, hasRequiredScope } from '@/lib/auth/dual-auth';
 import { db } from '@/lib/db';
 import { scenes, chapters, stories, characters, settings, comicPanels } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
@@ -25,11 +26,19 @@ interface GeneratePanelsRequest {
 
 export async function POST(request: NextRequest) {
   try {
-    // Authenticate user
-    const session = await auth();
-    if (!session?.user?.email) {
+    // Authenticate user with dual auth (session or API key)
+    const authResult = await authenticateRequest(request);
+    if (!authResult) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Check required scope for AI usage
+    if (!hasRequiredScope(authResult, 'ai:use')) {
+      return new Response(JSON.stringify({ error: 'Insufficient permissions. Required scope: ai:use' }), {
+        status: 403,
         headers: { 'Content-Type': 'application/json' },
       });
     }
@@ -76,8 +85,8 @@ export async function POST(request: NextRequest) {
     const story = scene.chapter.story;
 
     // Verify ownership
-    if (story.userId !== session.user.email) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+    if (story.authorId !== authResult.user.id) {
+      return new Response(JSON.stringify({ error: 'Forbidden - You do not own this story' }), {
         status: 403,
         headers: { 'Content-Type': 'application/json' },
       });

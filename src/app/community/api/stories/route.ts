@@ -1,85 +1,34 @@
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
-import { stories, users, communityPosts } from '@/lib/db/schema';
-import { eq, desc, sql, and } from 'drizzle-orm';
+import { getCommunityStories } from '@/lib/db/cached-queries';
 import { createHash } from 'crypto';
 
 export async function GET(request: NextRequest) {
+  const reqId = Math.random().toString(36).substring(7);
+  const requestStart = performance.now();
+
+  console.log(`[${reqId}] 🌐 GET /community/api/stories - Request started at ${new Date().toISOString()}`);
+
   try {
-    // Get only public stories with their authors and story images
-    const publicStories = await db
-      .select({
-        id: stories.id,
-        title: stories.title,
-        description: stories.description,
-        genre: stories.genre,
-        status: stories.status,
-        viewCount: stories.viewCount,
-        rating: stories.rating,
-        ratingCount: stories.ratingCount,
-        currentWordCount: stories.currentWordCount,
-        createdAt: stories.createdAt,
-        updatedAt: stories.updatedAt,
-        hnsData: stories.hnsData,
-        author: {
-          id: users.id,
-          name: users.name,
-          username: users.username,
-        },
-      })
-      .from(stories)
-      .leftJoin(users, eq(stories.authorId, users.id))
-      .where(eq(stories.status, 'published'))
-      .orderBy(desc(stories.updatedAt));
+    // Fetch community stories with Redis caching
+    const cacheStart = performance.now();
+    console.log(`[${reqId}] 🔍 Fetching community stories (with Redis cache)...`);
 
-    // Get real community stats from database
-    const storiesWithStats = await Promise.all(
-      publicStories.map(async (story) => {
-        // Count total posts for this story (excluding deleted)
-        const postCountResult = await db
-          .select({ count: sql<number>`count(*)` })
-          .from(communityPosts)
-          .where(and(
-            eq(communityPosts.storyId, story.id),
-            eq(communityPosts.isDeleted, false)
-          ));
-        const totalPosts = Number(postCountResult[0]?.count || 0);
+    const storiesWithStats = await getCommunityStories();
 
-        // Get last activity from most recent post
-        const lastPostResult = await db
-          .select({ lastActivityAt: communityPosts.lastActivityAt })
-          .from(communityPosts)
-          .where(and(
-            eq(communityPosts.storyId, story.id),
-            eq(communityPosts.isDeleted, false)
-          ))
-          .orderBy(desc(communityPosts.lastActivityAt))
-          .limit(1);
-        const lastActivity = lastPostResult[0]?.lastActivityAt || story.updatedAt;
+    const cacheDuration = Math.round(performance.now() - cacheStart);
+    console.log(`[${reqId}] ✅ Stories fetched in ${cacheDuration}ms:`, {
+      storiesCount: storiesWithStats.length,
+      cached: true
+    });
 
-        // Count unique members (authors who posted)
-        const memberCountResult = await db
-          .selectDistinct({ authorId: communityPosts.authorId })
-          .from(communityPosts)
-          .where(and(
-            eq(communityPosts.storyId, story.id),
-            eq(communityPosts.isDeleted, false)
-          ));
-        const totalMembers = memberCountResult.length;
-
-        // Determine if active (has posts in last 7 days)
-        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-        const isActive = lastActivity > sevenDaysAgo;
-
-        return {
-          ...story,
-          totalPosts,
-          totalMembers,
-          isActive,
-          lastActivity,
-        };
-      })
-    );
+    // Build response with metadata
+    const responseStart = performance.now();
+    const lastUpdated = storiesWithStats.length > 0
+      ? storiesWithStats.reduce((latest, story) =>
+          !latest || (story.updatedAt && story.updatedAt > latest) ? story.updatedAt : latest,
+          null as Date | null
+        )
+      : new Date();
 
     const response = {
       success: true,
@@ -87,66 +36,101 @@ export async function GET(request: NextRequest) {
       total: storiesWithStats.length,
       metadata: {
         fetchedAt: new Date().toISOString(),
-        lastUpdated: publicStories.length > 0
-          ? publicStories.reduce((latest, story) =>
-              !latest || (story.updatedAt && story.updatedAt > latest) ? story.updatedAt : latest,
-              null as Date | null
-            )
-          : new Date().toISOString()
+        lastUpdated: lastUpdated instanceof Date ? lastUpdated.toISOString() : lastUpdated
       }
     };
 
-    // Generate ETag based on community stories data (excluding random mock data)
+    // Generate ETag based on community stories data
+    const etagStart = performance.now();
+    console.log(`[${reqId}] 🔐 Generating ETag...`);
+
     const contentForHash = JSON.stringify({
-      storiesData: publicStories.map(story => ({
+      storiesData: storiesWithStats.map(story => ({
         id: story.id,
         title: story.title,
         updatedAt: story.updatedAt,
-        status: story.status,
-        viewCount: story.viewCount,
-        rating: story.rating,
-        wordCount: story.currentWordCount,
-        author: story.author
+        totalPosts: story.totalPosts,
+        totalMembers: story.totalMembers,
+        lastActivity: story.lastActivity
       })),
       totalStories: storiesWithStats.length,
       lastUpdated: response.metadata.lastUpdated
     });
     const etag = createHash('md5').update(contentForHash).digest('hex');
 
+    const etagDuration = Math.round(performance.now() - etagStart);
+    console.log(`[${reqId}] ✅ ETag generated in ${etagDuration}ms: ${etag.substring(0, 8)}...`);
+
     // Check if client has the same version
     const clientETag = request.headers.get('if-none-match');
+    console.log(`[${reqId}] 🔍 Checking client ETag:`, {
+      clientETag: clientETag?.substring(0, 8) + '...' || 'none',
+      serverETag: etag.substring(0, 8) + '...',
+      match: clientETag === etag,
+    });
+
     if (clientETag === etag) {
+      const totalTime = Math.round(performance.now() - requestStart);
+      console.log(`[${reqId}] 🎯 304 Not Modified - Returning cached response (${totalTime}ms total)`);
       return new Response(null, { status: 304 });
     }
+
+    // Serialize response
+    const serializeStart = performance.now();
+    const responseJson = JSON.stringify(response);
+    const serializeDuration = Math.round(performance.now() - serializeStart);
+    const responseSize = new Blob([responseJson]).size;
+    const responseSizeKB = (responseSize / 1024).toFixed(2);
+
+    console.log(`[${reqId}] ✅ Response serialized in ${serializeDuration}ms:`, {
+      sizeBytes: responseSize,
+      sizeKB: responseSizeKB,
+      storiesCount: storiesWithStats.length,
+    });
 
     // Set cache headers optimized for community content
     const headers = {
       'Content-Type': 'application/json',
       'ETag': etag,
-      // Medium cache for community content since it changes moderately
-      'Cache-Control': 'public, max-age=1200, stale-while-revalidate=2400', // 20min cache, 40min stale
+      // Optimized cache for community (aligned with Redis TTL)
+      'Cache-Control': 'public, max-age=300, stale-while-revalidate=600', // 5min cache, 10min stale
       'X-Content-Type': 'community-stories',
-      'X-Last-Modified': (response.metadata.lastUpdated instanceof Date
-        ? response.metadata.lastUpdated.toISOString()
-        : response.metadata.lastUpdated) || new Date().toISOString()
+      'X-Last-Modified': response.metadata.lastUpdated || new Date().toISOString(),
+      'X-Response-Time': `${Math.round(performance.now() - requestStart)}ms`,
+      'X-Stories-Count': storiesWithStats.length.toString(),
+      'X-Cache-Strategy': '3-layer (Redis + HTTP + localStorage)'
     };
 
-    return new Response(JSON.stringify(response), {
+    const totalTime = Math.round(performance.now() - requestStart);
+    console.log(`[${reqId}] ✅ 200 OK - Request completed successfully in ${totalTime}ms`);
+    console.log(`[${reqId}] 📊 Timing breakdown:`, {
+      cache: `${cacheDuration}ms`,
+      etag: `${etagDuration}ms`,
+      serialize: `${serializeDuration}ms`,
+      total: `${totalTime}ms`,
+    });
+
+    return new Response(responseJson, {
       status: 200,
       headers
     });
 
   } catch (error) {
-    console.error('❌ Error fetching community stories:', error);
-    
+    const errorTime = Math.round(performance.now() - requestStart);
+    console.error(`[${reqId}] ❌ Request failed after ${errorTime}ms:`, {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: 'Failed to fetch community stories',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
+        reqId,
       }),
-      { 
-        status: 500, 
-        headers: { 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
       }
     );
   }

@@ -53,7 +53,7 @@ export function ChapterPromptEditor({ chapterData, onChapterUpdate, onPreviewUpd
     setOriginalChapterData(chapterData);
 
     try {
-      const response = await fetch('/writing/api/chapter-analyzer', {
+      const response = await fetch('/studio/api/chapter-analyzer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/yaml',

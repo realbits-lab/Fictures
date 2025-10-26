@@ -10,7 +10,7 @@ import { db } from "@/lib/db";
 import { scenes as scenesTable } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import type { HNSScene, HNSChapter, HNSCharacter, HNSSetting, HNSStory } from "@/types/hns";
-import { formatSceneContent } from "@/lib/services/dialogue-formatter";
+import { formatSceneContent } from "@/lib/services/scene-formatter";
 import { cleanComponentHnsData } from "@/lib/utils/hns-data-cleaner";
 
 // Schema for scene content generation
@@ -356,12 +356,18 @@ Begin with: "${scene.entry_hook}"`,
       temperature: 0.85,
     });
 
-    // Apply rule-based dialogue formatting to ensure proper isolation
-    const formattedContent = formatSceneContent(object.content);
+    // Apply rule-based formatting (description paragraph splitting, dialogue separation)
+    const formatResult = formatSceneContent(object.content);
+
+    console.log(`📝 Formatting applied: ${formatResult.changes.length} changes`);
+    if (formatResult.changes.length > 0) {
+      console.log(`   - Paragraphs split: ${formatResult.stats.sentencesSplit}`);
+      console.log(`   - Spacing fixed: ${formatResult.stats.spacingFixed}`);
+    }
 
     return {
       ...object,
-      content: formattedContent
+      content: formatResult.formatted
     };
   } catch (error) {
     console.error(`Error generating content for scene ${scene.scene_id}:`, error);
@@ -468,7 +474,8 @@ function generateFallbackSceneContent(scene: HNSScene): string {
   const content = parts.join('\n');
 
   // Apply standard formatting (ensures dialogue separation and paragraph rules)
-  return formatSceneContent(content);
+  const formatResult = formatSceneContent(content);
+  return formatResult.formatted;
 }
 
 /**
@@ -509,7 +516,7 @@ export async function generateAllSceneContent(
         continue;
       }
 
-      // Generate content for this scene
+      // Generate content for this scene (already formatted inside generateSceneContent)
       const { content, writing_notes } = await generateSceneContent(
         scene,
         chapter,
@@ -518,8 +525,8 @@ export async function generateAllSceneContent(
         settings
       );
 
-      // Apply formatting to ensure dialogue rules are followed
-      const formattedContent = formatSceneContent(content);
+      // Content is already formatted by generateSceneContent, use it directly
+      const formattedContent = content;
 
       // Update the scene in the database immediately
       console.log(`Updating scene ${scene.scene_id} with ${formattedContent.split(/\s+/).length} words...`);

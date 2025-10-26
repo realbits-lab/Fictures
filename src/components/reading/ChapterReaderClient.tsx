@@ -6,9 +6,9 @@ import { useSession } from 'next-auth/react';
 import { useStoryReader, useReadingProgress } from '@/hooks/useStoryReader';
 import { useChapterScenes } from '@/hooks/useChapterScenes';
 import { useScenePrefetch } from '@/hooks/useScenePrefetch';
+import { useSceneView } from '@/hooks/useSceneView';
 import { ProgressIndicator } from './ProgressIndicator';
 import { CommentSection } from './CommentSection';
-import { ComicViewer } from '@/components/comic/comic-viewer';
 import type { Chapter } from '@/hooks/useStoryReader';
 import { trackReading } from '@/lib/analytics/google-analytics';
 
@@ -30,9 +30,6 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [allScenes, setAllScenes] = useState<Array<{ scene: any; chapterId: string; chapterTitle: string; partTitle?: string }>>([]);
 
-  // View mode state (text or comic)
-  const [viewMode, setViewMode] = useState<'text' | 'comic'>('text');
-
   // Immersive reading mode state
   const [isUIVisible, setIsUIVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -43,6 +40,9 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
 
   // Prefetch hook for adjacent scenes
   const { prefetchAdjacentScenes } = useScenePrefetch();
+
+  // Track scene views for analytics
+  useSceneView(selectedSceneId);
 
   // Scene scroll position management - moved outside useEffect dependencies
   const scrollPositionKey = React.useCallback((sceneId: string) => `fictures_scene_scroll_${storyId}_${sceneId}`, [storyId]);
@@ -256,7 +256,7 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
         console.log(`🚀 [PARALLEL] Starting fetch for chapter: ${chapter.title} (${chapter.id})`);
 
         try {
-          const response = await fetch(`/writing/api/chapters/${chapter.id}/scenes`, {
+          const response = await fetch(`/studio/api/chapters/${chapter.id}/scenes`, {
             credentials: 'include',
           });
 
@@ -720,34 +720,6 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
                 </span>
               </div>
             )}
-
-            {/* View Mode Toggle */}
-            {selectedScene && (
-              <div className="flex items-center gap-1 ml-auto">
-                <button
-                  onClick={() => setViewMode('text')}
-                  className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
-                    viewMode === 'text'
-                      ? 'bg-gray-700 dark:bg-gray-600 text-white'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-                  }`}
-                  title="Text View"
-                >
-                  📝 Text
-                </button>
-                <button
-                  onClick={() => setViewMode('comic')}
-                  className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
-                    viewMode === 'comic'
-                      ? 'bg-gray-700 dark:bg-gray-600 text-white'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-                  }`}
-                  title="Comic View"
-                >
-                  🎨 Comic
-                </button>
-              </div>
-            )}
           </div>
 
         </div>
@@ -846,6 +818,12 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
                               {item.partTitle && <span>{item.partTitle} • </span>}
                               {item.chapterTitle}
                             </div>
+                            {item.scene.novelUniqueViewCount !== undefined && (
+                              <div className="flex items-center gap-1 mt-1 text-xs text-gray-400 dark:text-gray-500">
+                                <span>👁️</span>
+                                <span>{item.scene.novelUniqueViewCount.toLocaleString()}</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </button>
@@ -917,40 +895,29 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
                   <>
                     {console.log(`📖 Rendering selected scene: ${selectedScene.title}`)}
 
-                    {/* Conditional View Rendering */}
-                    {viewMode === 'text' ? (
-                      <>
-                        {/* Scene Image */}
-                        {selectedScene.sceneImage?.url && (
-                          <div className="mb-6">
-                            <div className="rounded-lg overflow-hidden shadow-lg">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={selectedScene.sceneImage.url}
-                                alt={`Scene: ${selectedScene.title}`}
-                                className="w-full h-auto object-contain"
-                                loading="lazy"
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Scene Content - ⚡ RENDERS IMMEDIATELY (no waiting for scroll restoration) */}
-                        <div className="whitespace-pre-wrap leading-relaxed">
-                          {selectedScene.content || (
-                            <p className="text-gray-500 dark:text-gray-400 italic">
-                              This scene is empty.
-                            </p>
-                          )}
+                    {/* Scene Image */}
+                    {selectedScene.sceneImage?.url && (
+                      <div className="mb-6">
+                        <div className="rounded-lg overflow-hidden shadow-lg">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={selectedScene.sceneImage.url}
+                            alt={`Scene: ${selectedScene.title}`}
+                            className="w-full h-auto object-contain"
+                            loading="lazy"
+                          />
                         </div>
-                      </>
-                    ) : (
-                      /* Comic View */
-                      <ComicViewer
-                        sceneId={selectedScene.id}
-                        className="w-full"
-                      />
+                      </div>
                     )}
+
+                    {/* Scene Content - ⚡ RENDERS IMMEDIATELY (no waiting for scroll restoration) */}
+                    <div className="whitespace-pre-wrap leading-relaxed">
+                      {selectedScene.content || (
+                        <p className="text-gray-500 dark:text-gray-400 italic">
+                          This scene is empty.
+                        </p>
+                      )}
+                    </div>
                   </>
                 ) : chapterScenes.length > 0 ? (
                   <div className="text-center py-12 text-gray-500 dark:text-gray-400">

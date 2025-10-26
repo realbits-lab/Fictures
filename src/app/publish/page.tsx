@@ -1,7 +1,20 @@
+import { auth } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import { hasAnyRole } from '@/lib/auth/permissions';
 import { PublishClient } from "@/components/publish";
 import { MainLayout } from "@/components/layout";
 
-export default function PublishPage() {
+export default async function PublishPage() {
+  const session = await auth();
+
+  if (!session) {
+    redirect('/login');
+  }
+
+  if (!hasAnyRole(session, ['writer', 'manager'])) {
+    redirect('/');
+  }
+
   return (
     <MainLayout>
       <div className="space-y-8">
@@ -15,7 +28,7 @@ export default function PublishPage() {
             Schedule, publish, and track your story releases
           </p>
         </div>
-        
+
         <PublishClient />
       </div>
     </MainLayout>

@@ -144,7 +144,7 @@ async function main() {
       console.log(`   ✓ Generated ${imageBuffer.length} bytes`);
 
       // Upload to Vercel Blob
-      const blobPath = `stories/system/placeholders/${placeholder.filename}`;
+      const blobPath = `system/placeholders/${placeholder.filename}`;
       console.log(`   📤 Uploading to: ${blobPath}`);
 
       const blob = await put(blobPath, imageBuffer, {

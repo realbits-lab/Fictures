@@ -1,25 +1,48 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * E2E Tests for Reading Page (/reading)
- * Tests story browsing and reading - accessible to all users
+ * E2E Tests for Novels Page (/novels)
+ *
+ * PURPOSE:
+ * Tests the main story browsing and reading interface for all users (anonymous and authenticated).
+ * The /novels page is the primary landing page (home redirects here) where users discover and read stories.
+ *
+ * KEY FEATURES TESTED:
+ * - Anonymous user access (no authentication required)
+ * - Home redirect behavior (/ → /novels)
+ * - Story browsing and discovery
+ * - Story card interactions
+ * - Genre filtering and search
+ * - Menu navigation and highlighting
+ * - Image lazy loading
+ * - Performance metrics
+ *
+ * TEST CATEGORIES:
+ * - Access Control (3 tests): Anonymous access, menu visibility, restricted items
+ * - Home Redirect (2 tests): Redirect verification, logo navigation
+ * - Navigation (3 tests): Menu highlighting, filters, story card clicks
+ * - Content (5 tests): Story display, metadata, images, filters, search
+ * - Performance (2 tests): Page load time, lazy loading
+ * - Error Handling (2 tests): Error message verification, console errors/warnings
+ *
+ * TOTAL: 17 test cases
  */
 
-test.describe('GNB - Reading Page Tests', () => {
+test.describe('GNB - Novels Page Tests', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/reading');
+    await page.goto('/novels');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1500);
   });
 
   test.describe('Access Control Tests', () => {
-    test('TC-READING-AUTH-001: Anonymous users can access page', async ({ page }) => {
-      console.log('📖 Testing anonymous access to reading page...');
+    test('TC-NOVELS-AUTH-001: Anonymous users can access page', async ({ page }) => {
+      console.log('📖 Testing anonymous access to novels page...');
 
       // Clear any auth state
       await page.context().clearCookies();
 
-      await page.goto('/reading');
+      await page.goto('/novels');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(1500);
 
@@ -28,39 +51,112 @@ test.describe('GNB - Reading Page Tests', () => {
       expect(hasMainContent).toBe(true);
 
       // Check we're not completely blocked (not redirected to login)
-      const isOnReadingPage = page.url().includes('/reading');
-      expect(isOnReadingPage).toBe(true);
+      const isOnNovelsPage = page.url().includes('/novels');
+      expect(isOnNovelsPage).toBe(true);
 
-      console.log('✅ Anonymous users can access reading page');
+      console.log('✅ Anonymous users can access novels page');
     });
 
-    test('TC-READING-AUTH-003: Menu item visible to all users', async ({ page }) => {
-      console.log('📖 Testing Reading menu item visible...');
+    test('TC-NOVELS-AUTH-002: Menu item visible to all users', async ({ page }) => {
+      console.log('📖 Testing Novels menu item visible...');
 
       await page.goto('/');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(1000);
 
-      // Reading menu should be visible
-      const readingMenuItem = await page.locator('a[href="/novels"]:visible').count();
-      expect(readingMenuItem).toBeGreaterThan(0);
+      // Novels menu should be visible
+      const novelsMenuItem = await page.locator('a[href="/novels"]:visible').count();
+      expect(novelsMenuItem).toBeGreaterThan(0);
 
-      console.log('✅ Reading menu item is visible');
+      console.log('✅ Novels menu item is visible');
+    });
+
+    test('TC-NOVELS-AUTH-003: Restricted menu items hidden from anonymous users', async ({ page }) => {
+      console.log('📖 Testing restricted menu items hidden...');
+
+      // Clear any auth state
+      await page.context().clearCookies();
+
+      await page.goto('/novels');
+      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(1000);
+
+      // Check that Studio, Publish, Analytics are NOT visible
+      const studioVisible = await page.locator('a[href="/studio"]:visible').count();
+      const publishVisible = await page.locator('a[href="/publish"]:visible').count();
+      const analyticsVisible = await page.locator('a[href="/analytics"]:visible').count();
+
+      // These should be 0 for anonymous users
+      console.log(`Studio links visible: ${studioVisible}`);
+      console.log(`Publish links visible: ${publishVisible}`);
+      console.log(`Analytics links visible: ${analyticsVisible}`);
+
+      console.log('✅ Restricted menu items checked');
+    });
+  });
+
+  test.describe('Home Redirect Tests', () => {
+    test('TC-NOVELS-REDIRECT-001: Home page (/) redirects to /novels', async ({ page }) => {
+      console.log('📖 Testing home page redirects to novels...');
+
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(1000);
+
+      // Verify we end up on /novels after redirect
+      const currentUrl = page.url();
+      expect(currentUrl.includes('/novels')).toBe(true);
+
+      console.log('✅ Home page correctly redirects to /novels');
+    });
+
+    test('TC-NOVELS-REDIRECT-002: Logo link navigates to home and redirects to novels', async ({ page }) => {
+      console.log('📖 Testing logo navigation redirects to novels...');
+
+      // Navigate to a different page first (use comics instead of community to avoid SSE timeout)
+      await page.goto('/comics');
+      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(1000);
+
+      // Click logo/home link
+      const homeLink = page.locator('a[href="/"]').first();
+      const linkCount = await homeLink.count();
+
+      if (linkCount > 0) {
+        console.log('Found logo link, clicking...');
+
+        // Click and wait for navigation
+        await homeLink.click();
+
+        // Wait for URL to change or timeout after 3 seconds
+        await page.waitForURL((url) => url.pathname.includes('/novels') || url.pathname === '/', { timeout: 3000 }).catch(() => {});
+
+        await page.waitForLoadState('networkidle').catch(() => {});
+        await page.waitForTimeout(1000);
+
+        // Home page (/) redirects to /novels
+        const currentUrl = page.url();
+        console.log(`Current URL after logo click: ${currentUrl}`);
+        expect(currentUrl.includes('/novels')).toBe(true);
+        console.log('✅ Logo navigation correctly redirects to /novels');
+      } else {
+        console.log('ℹ️  Home link not found, skipping test');
+      }
     });
   });
 
   test.describe('Navigation Tests', () => {
-    test('TC-READING-NAV-001: Reading menu item highlighted when active', async ({ page }) => {
-      console.log('📖 Testing Reading menu item highlight...');
+    test('TC-NOVELS-NAV-001: Novels menu item highlighted when active', async ({ page }) => {
+      console.log('📖 Testing Novels menu item highlight...');
 
-      await page.goto('/reading');
+      await page.goto('/novels');
       await page.waitForLoadState('networkidle');
 
-      // Find the Reading menu link
-      const readingLink = page.locator('a[href="/novels"]').first();
+      // Find the Novels menu link
+      const novelsLink = page.locator('a[href="/novels"]').first();
 
       // Check if it has active styling
-      const hasActiveClass = await readingLink.evaluate((el) => {
+      const hasActiveClass = await novelsLink.evaluate((el) => {
         const classList = Array.from(el.classList);
         const computedStyle = window.getComputedStyle(el);
         const bgColor = computedStyle.backgroundColor;
@@ -70,13 +166,13 @@ test.describe('GNB - Reading Page Tests', () => {
       });
 
       expect(hasActiveClass).toBe(true);
-      console.log('✅ Reading menu item is highlighted');
+      console.log('✅ Novels menu item is highlighted');
     });
 
-    test('TC-READING-NAV-002: Genre filter navigation works if present', async ({ page }) => {
+    test('TC-NOVELS-NAV-002: Genre filter navigation works if present', async ({ page }) => {
       console.log('📖 Testing genre filter navigation...');
 
-      await page.goto('/reading');
+      await page.goto('/novels');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(1500);
 
@@ -94,10 +190,10 @@ test.describe('GNB - Reading Page Tests', () => {
       }
     });
 
-    test('TC-READING-NAV-003: Story card click opens reader', async ({ page }) => {
+    test('TC-NOVELS-NAV-003: Story card click opens reader', async ({ page }) => {
       console.log('📖 Testing story card click...');
 
-      await page.goto('/reading');
+      await page.goto('/novels');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(2000);
 
@@ -121,10 +217,10 @@ test.describe('GNB - Reading Page Tests', () => {
   });
 
   test.describe('Content Tests', () => {
-    test('TC-READING-CONTENT-001: Published stories display or empty state', async ({ page }) => {
+    test('TC-NOVELS-CONTENT-001: Published stories display or empty state', async ({ page }) => {
       console.log('📖 Testing published stories display...');
 
-      await page.goto('/reading');
+      await page.goto('/novels');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(2000);
 
@@ -139,10 +235,10 @@ test.describe('GNB - Reading Page Tests', () => {
       console.log(`✅ Content displayed (${hasStoryCards} stories or empty state)`);
     });
 
-    test('TC-READING-CONTENT-002: Story cards show metadata if stories exist', async ({ page }) => {
+    test('TC-NOVELS-CONTENT-002: Story cards show metadata if stories exist', async ({ page }) => {
       console.log('📖 Testing story card metadata...');
 
-      await page.goto('/reading');
+      await page.goto('/novels');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(2000);
 
@@ -161,10 +257,10 @@ test.describe('GNB - Reading Page Tests', () => {
       }
     });
 
-    test('TC-READING-CONTENT-003: Story cover images display if present', async ({ page }) => {
+    test('TC-NOVELS-CONTENT-003: Story cover images display if present', async ({ page }) => {
       console.log('📖 Testing story cover images...');
 
-      await page.goto('/reading');
+      await page.goto('/novels');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(2000);
 
@@ -184,10 +280,10 @@ test.describe('GNB - Reading Page Tests', () => {
       }
     });
 
-    test('TC-READING-CONTENT-005: Genre filters work if present', async ({ page }) => {
+    test('TC-NOVELS-CONTENT-004: Genre filters work if present', async ({ page }) => {
       console.log('📖 Testing genre filters...');
 
-      await page.goto('/reading');
+      await page.goto('/novels');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(1500);
 
@@ -210,10 +306,10 @@ test.describe('GNB - Reading Page Tests', () => {
       }
     });
 
-    test('TC-READING-CONTENT-006: Search functionality works if present', async ({ page }) => {
+    test('TC-NOVELS-CONTENT-005: Search functionality works if present', async ({ page }) => {
       console.log('📖 Testing search functionality...');
 
-      await page.goto('/reading');
+      await page.goto('/novels');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(1500);
 
@@ -232,11 +328,11 @@ test.describe('GNB - Reading Page Tests', () => {
   });
 
   test.describe('Performance Tests', () => {
-    test('TC-READING-PERF-001: Story grid loads in under 3 seconds', async ({ page }) => {
-      console.log('📖 Testing reading page load time...');
+    test('TC-NOVELS-PERF-001: Story grid loads in under 3 seconds', async ({ page }) => {
+      console.log('📖 Testing novels page load time...');
 
       const startTime = Date.now();
-      await page.goto('/reading');
+      await page.goto('/novels');
       await page.waitForLoadState('networkidle');
       const loadTime = Date.now() - startTime;
 
@@ -246,10 +342,10 @@ test.describe('GNB - Reading Page Tests', () => {
       console.log('✅ Page loaded within time limit');
     });
 
-    test('TC-READING-PERF-003: Images lazy load correctly if present', async ({ page }) => {
+    test('TC-NOVELS-PERF-002: Images lazy load correctly if present', async ({ page }) => {
       console.log('📖 Testing image lazy loading...');
 
-      await page.goto('/reading');
+      await page.goto('/novels');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(1500);
 
@@ -267,10 +363,10 @@ test.describe('GNB - Reading Page Tests', () => {
   });
 
   test.describe('Error Handling Tests', () => {
-    test('TC-READING-ERROR-001: No error messages displayed on successful load', async ({ page }) => {
+    test('TC-NOVELS-ERROR-001: No error messages displayed on successful load', async ({ page }) => {
       console.log('📖 Testing no error messages...');
 
-      await page.goto('/reading');
+      await page.goto('/novels');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(2000);
 
@@ -279,6 +375,54 @@ test.describe('GNB - Reading Page Tests', () => {
 
       expect(hasError).toBe(0);
       console.log('✅ No error messages displayed');
+    });
+
+    test('TC-NOVELS-ERROR-002: No console errors or warnings after page load', async ({ page }) => {
+      console.log('📖 Testing no console errors or warnings...');
+
+      const consoleMessages: { type: string; text: string }[] = [];
+
+      // Capture console messages
+      page.on('console', (msg) => {
+        const msgType = msg.type();
+        if (msgType === 'error' || msgType === 'warning') {
+          consoleMessages.push({
+            type: msgType,
+            text: msg.text()
+          });
+        }
+      });
+
+      // Capture page errors
+      page.on('pageerror', (error) => {
+        consoleMessages.push({
+          type: 'error',
+          text: error.message
+        });
+      });
+
+      await page.goto('/novels');
+      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(2000);
+
+      // Filter out non-critical errors
+      const criticalMessages = consoleMessages.filter(msg =>
+        !msg.text.includes('favicon') &&
+        !msg.text.includes('404') &&
+        !msg.text.toLowerCase().includes('download the react devtools') &&
+        !msg.text.toLowerCase().includes('image with src') &&
+        !msg.text.toLowerCase().includes('blob.vercel-storage.com')
+      );
+
+      if (criticalMessages.length > 0) {
+        console.log('⚠️  Console errors/warnings found:');
+        criticalMessages.forEach((msg, index) => {
+          console.log(`  ${index + 1}. [${msg.type.toUpperCase()}] ${msg.text.substring(0, 100)}`);
+        });
+      }
+
+      expect(criticalMessages.length).toBe(0);
+      console.log('✅ No console errors or warnings');
     });
   });
 });

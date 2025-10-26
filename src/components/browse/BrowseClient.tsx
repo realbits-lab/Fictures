@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useSession } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
 import { SkeletonLoader, Skeleton } from "@/components/ui";
 import { usePublishedStories } from "@/lib/hooks/use-page-cache";
 import { StoryGrid } from "./StoryGrid";
@@ -83,9 +84,14 @@ function StoriesSkeleton() {
 
 export function BrowseClient() {
   const { data: session } = useSession();
+  const pathname = usePathname();
   const { data, isLoading, isValidating, error, mutate } = usePublishedStories();
   const [showCacheInfo, setShowCacheInfo] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
+
+  // Determine page type from pathname
+  const pageType = pathname?.startsWith('/novels') ? 'novels' :
+                   pathname?.startsWith('/comics') ? 'comics' : 'reading';
 
   // Performance tracking
   const mountTimeRef = useRef<number>(Date.now());
@@ -96,7 +102,7 @@ export function BrowseClient() {
   const count = data?.count || 0;
 
   // Get cache health status
-  const cacheHealth = cacheManager.getCacheHealth('reading');
+  const cacheHealth = cacheManager.getCacheHealth(pageType);
 
   // Fix hydration mismatch by ensuring first render matches server
   useEffect(() => {
@@ -222,7 +228,7 @@ export function BrowseClient() {
               {/* Cache management button */}
               <button
                 onClick={() => {
-                  cacheManager.clearPageCache('reading');
+                  cacheManager.clearPageCache(pageType);
                   mutate();
                 }}
                 className="text-xs px-2 py-1 bg-[rgb(var(--secondary))] hover:bg-[rgb(var(--secondary)/80%)] text-[rgb(var(--secondary-foreground))] rounded-full transition-colors"
@@ -281,7 +287,7 @@ export function BrowseClient() {
           </div>
         ) : (
           /* Success state with story grid */
-          <StoryGrid stories={stories} currentUserId={session?.user?.id} />
+          <StoryGrid stories={stories} currentUserId={session?.user?.id} pageType={pageType} />
         )}
       </div>
     </div>

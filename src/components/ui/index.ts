@@ -10,3 +10,4 @@ export { StoryImage } from "./story-image";
 export { ToastProvider, useToast } from "./toast";
 export { Select, SelectGroup, SelectValue, SelectTrigger, SelectContent, SelectLabel, SelectItem, SelectSeparator, SelectScrollUpButton, SelectScrollDownButton } from "./select";
 export { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption } from "./table";
+export { Popover, PopoverTrigger, PopoverContent } from "./popover";

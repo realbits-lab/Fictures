@@ -15,7 +15,7 @@ interface CacheConfig {
 export const CACHE_CONFIGS = {
   writing: { ttl: 30 * 60 * 1000, version: '1.0.0' }, // 30min
   reading: { ttl: 60 * 60 * 1000, version: '1.1.0', compress: true }, // 1hr (optimized for published stories - they don't change often)
-  community: { ttl: 5 * 60 * 1000, version: '1.0.0' }, // 5min
+  community: { ttl: 30 * 60 * 1000, version: '1.1.0', compress: true }, // 30min (aligned with reading cache for public content)
   publish: { ttl: 60 * 60 * 1000, version: '1.0.0' }, // 1hr
   analytics: { ttl: 2 * 60 * 1000, version: '1.0.0' }, // 2min
   settings: { ttl: 24 * 60 * 60 * 1000, version: '1.0.0' }, // 24hr

@@ -16,6 +16,7 @@ import { InFeedAd } from "@/components/ads";
 import { trackSearch, trackStoryEvent } from '@/lib/analytics/google-analytics';
 import { readingHistoryManager } from '@/lib/storage/reading-history-manager';
 import { STORY_GENRES } from '@/lib/constants/genres';
+import type { ReadingFormat } from '@/types/reading-history';
 
 interface Story {
   id: string;
@@ -42,11 +43,12 @@ interface Story {
 interface StoryGridProps {
   stories: Story[];
   currentUserId?: string;
+  pageType?: 'novels' | 'comics' | 'reading';
 }
 
 const genres = ["All", ...STORY_GENRES];
 
-export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
+export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }: StoryGridProps) {
   const router = useRouter();
   const { data: session } = useSession();
   const [selectedGenre, setSelectedGenre] = useState("All");
@@ -56,12 +58,15 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
   const [readingHistory, setReadingHistory] = useState<Set<string>>(new Set());
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
+  // Determine reading format based on pageType
+  const format: ReadingFormat = pageType === 'comics' ? 'comic' : 'novel';
+
   // Fetch reading history when component mounts
   useEffect(() => {
     async function fetchHistory() {
       if (!session?.user?.id) {
-        // Anonymous user - use localStorage
-        const localHistory = readingHistoryManager.getHistory();
+        // Anonymous user - use localStorage for specific format
+        const localHistory = readingHistoryManager.getHistory(format);
         setReadingHistory(localHistory);
         setIsLoadingHistory(false);
         return;
@@ -69,20 +74,20 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
 
       // Authenticated user - use API and sync with localStorage
       try {
-        const response = await fetch('/reading/api/history');
+        const response = await fetch(`/${pageType}/api/history`);
         if (response.ok) {
           const data = await response.json();
           const storyIds = new Set<string>(data.history.map((h: any) => h.storyId as string));
           setReadingHistory(storyIds);
         } else {
           // API failed, fallback to localStorage
-          const localHistory = readingHistoryManager.getHistory();
+          const localHistory = readingHistoryManager.getHistory(format);
           setReadingHistory(localHistory);
         }
       } catch (error) {
-        console.error('Error fetching reading history:', error);
+        console.error(`Error fetching ${format} reading history:`, error);
         // Fallback to localStorage
-        const localHistory = readingHistoryManager.getHistory();
+        const localHistory = readingHistoryManager.getHistory(format);
         setReadingHistory(localHistory);
       } finally {
         setIsLoadingHistory(false);
@@ -90,41 +95,41 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
     }
 
     fetchHistory();
-  }, [session?.user?.id]);
+  }, [session?.user?.id, pageType, format]);
 
-  // Record story view
+  // Record story view with format-specific tracking
   const recordStoryView = async (storyId: string, storyTitle?: string) => {
     // Track story view in GA (always track, regardless of auth)
     trackStoryEvent.view(storyId, storyTitle);
 
     if (!session?.user?.id) {
-      // Anonymous user - use localStorage only
-      readingHistoryManager.addToHistory(storyId);
+      // Anonymous user - use localStorage only with format
+      readingHistoryManager.addToHistory(storyId, format);
       setReadingHistory(prev => new Set([...prev, storyId]));
       return;
     }
 
     // Authenticated user - use API + localStorage as backup
     try {
-      const response = await fetch('/reading/api/history', {
+      const response = await fetch(`/${pageType}/api/history`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ storyId }),
+        body: JSON.stringify({ storyId, format }),
       });
 
       if (response.ok) {
-        // Also update localStorage as backup/cache
-        readingHistoryManager.addToHistory(storyId);
+        // Also update localStorage as backup/cache with format
+        readingHistoryManager.addToHistory(storyId, format);
         setReadingHistory(prev => new Set([...prev, storyId]));
       } else {
         // API failed, fallback to localStorage
-        readingHistoryManager.addToHistory(storyId);
+        readingHistoryManager.addToHistory(storyId, format);
         setReadingHistory(prev => new Set([...prev, storyId]));
       }
     } catch (error) {
-      console.error('Error recording story view:', error);
+      console.error(`Error recording ${format} story view:`, error);
       // Fallback to localStorage
-      readingHistoryManager.addToHistory(storyId);
+      readingHistoryManager.addToHistory(storyId, format);
       setReadingHistory(prev => new Set([...prev, storyId]));
     }
   };
@@ -332,11 +337,11 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
                 key={story.id}
                 onClick={async () => {
                   await recordStoryView(story.id, story.title);
-                  router.push(`/reading/${story.id}`);
+                  router.push(`/${pageType}/${story.id}`);
                 }}
                 onMouseEnter={() => {
                   // Prefetch story data on hover for instant navigation
-                  fetch(`/writing/api/stories/${story.id}/read`, {
+                  fetch(`/studio/api/stories/${story.id}/read`, {
                     credentials: 'include',
                   }).catch(() => {
                     // Silently fail - prefetch is optional
@@ -437,11 +442,11 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
                       key={story.id}
                       onClick={async () => {
                         await recordStoryView(story.id, story.title);
-                        router.push(`/reading/${story.id}`);
+                        router.push(`/${pageType}/${story.id}`);
                       }}
                       onMouseEnter={() => {
                         // Prefetch story data on hover for instant navigation
-                        fetch(`/writing/api/stories/${story.id}/read`, {
+                        fetch(`/studio/api/stories/${story.id}/read`, {
                           credentials: 'include',
                         }).catch(() => {
                           // Silently fail - prefetch is optional

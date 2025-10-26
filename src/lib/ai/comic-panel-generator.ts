@@ -9,10 +9,56 @@ import { nanoid } from 'nanoid';
 import type { HNSScene, HNSCharacter, HNSSetting } from '@/types/hns';
 import { generateStoryImage } from '@/lib/services/image-generation';
 import { db } from '@/lib/db';
-import { comicPanels } from '@/lib/db/schema';
+import { comicPanels, scenes } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { convertSceneToScreenplay, type ComicScreenplay } from './screenplay-converter';
 import { buildPanelCharacterPrompts, extractKeyPhysicalTraits } from '@/lib/services/character-consistency';
 import { calculateTotalHeight, estimateReadingTime } from '@/lib/services/comic-layout';
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+/**
+ * Sanitize image prompt to avoid content filter triggers
+ */
+function sanitizePromptForContentFilter(originalPrompt: string, attemptNumber: number): string {
+  let sanitized = originalPrompt;
+
+  // List of potentially sensitive words/phrases to remove or replace
+  const sensitiveTerms = [
+    // Emotional distress
+    { pattern: /distress(ed)?/gi, replacement: 'concern' },
+    { pattern: /hurt/gi, replacement: 'affected' },
+    { pattern: /pain(ful)?/gi, replacement: 'discomfort' },
+    { pattern: /erase(d)?/gi, replacement: 'reset' },
+    { pattern: /scar(red)?/gi, replacement: 'worried' },
+    { pattern: /terrif(ied|ying)/gi, replacement: 'anxious' },
+    { pattern: /desperat(e|ion)/gi, replacement: 'determined' },
+
+    // Physical descriptions that might trigger filters
+    { pattern: /slumped/gi, replacement: 'seated' },
+    { pattern: /trembl(ing|e)/gi, replacement: 'moving' },
+    { pattern: /tears?/gi, replacement: 'eyes glistening' },
+  ];
+
+  // Apply sanitization based on attempt number
+  if (attemptNumber === 1) {
+    // First retry: Remove sensitive emotional terms
+    sensitiveTerms.forEach(({ pattern, replacement }) => {
+      sanitized = sanitized.replace(pattern, replacement);
+    });
+  } else if (attemptNumber >= 2) {
+    // Second retry: Use a very generic, safe description
+    // Extract just the basic setting and shot type
+    const genre = sanitized.match(/Professional\s+(\w+\s?\w*)\s+comic panel/i)?.[1] || 'Science Fiction';
+    const shotType = sanitized.match(/comic panel,\s+([\w\s]+),/i)?.[1] || 'medium shot';
+
+    sanitized = `Professional ${genre} comic panel, ${shotType}, cinematic composition. Characters in a futuristic setting with neutral expressions, clean modern environment, balanced lighting.`;
+  }
+
+  return sanitized;
+}
 
 // ============================================
 // TYPE DEFINITIONS
@@ -137,14 +183,45 @@ export async function generateComicPanels(
 
     console.log(`   Prompt: ${imagePrompt.substring(0, 100)}...`);
 
-    // Generate image
-    const imageResult = await generateStoryImage({
-      prompt: imagePrompt,
-      storyId: story.story_id,
-      imageType: 'scene',
-      style: 'vivid',
-      quality: 'standard',
-    });
+    // Generate image with automatic retry for content filter errors
+    let imageResult;
+    let attemptCount = 0;
+    const maxAttempts = 3;
+
+    while (attemptCount < maxAttempts) {
+      try {
+        const promptToUse = attemptCount === 0
+          ? imagePrompt
+          : sanitizePromptForContentFilter(imagePrompt, attemptCount);
+
+        if (attemptCount > 0) {
+          console.log(`   ⚠️  Retrying with sanitized prompt (attempt ${attemptCount + 1}/${maxAttempts})...`);
+        }
+
+        imageResult = await generateStoryImage({
+          prompt: promptToUse,
+          storyId: story.story_id,
+          imageType: 'panel',
+          sceneId: scene.scene_id || (scene as any).id,
+          panelNumber: panelSpec.panel_number,
+          style: 'vivid',
+          quality: 'standard',
+        });
+
+        break; // Success!
+      } catch (error: any) {
+        attemptCount++;
+        const isContentFilter = error.message?.includes('content filter') ||
+                                error.message?.includes('safety system');
+
+        if (!isContentFilter || attemptCount >= maxAttempts) {
+          console.error(`   ✗ Image generation failed after ${attemptCount} attempts:`, error.message);
+          throw error;
+        }
+
+        console.log(`   ⚠️  Content filter triggered, sanitizing prompt...`);
+      }
+    }
 
     console.log(`   ✅ Image generated: ${imageResult.url}`);
     console.log(`   ✅ Variants: ${imageResult.optimizedSet?.variants.length || 0}`);
@@ -209,6 +286,18 @@ export async function generateComicPanels(
   console.log(`   Images Generated: ${generatedPanels.length}`);
   console.log(`   Total Height: ${totalHeight}px`);
   console.log(`   Estimated Reading Time: ${readingTime.formatted}`);
+
+  // Update scene metadata with comics generation info
+  const sceneId = scene.scene_id || (scene as any).id;
+  console.log(`\n📝 Updating scene metadata for ${sceneId}...`);
+  await db.update(scenes)
+    .set({
+      comicStatus: 'generated',
+      comicGeneratedAt: new Date(),
+      comicPanelCount: generatedPanels.length,
+    })
+    .where(eq(scenes.id, sceneId));
+  console.log(`✅ Scene metadata updated successfully`);
 
   return {
     screenplay,

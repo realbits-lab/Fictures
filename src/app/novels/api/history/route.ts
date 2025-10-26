@@ -5,7 +5,9 @@ import { readingHistory } from '@/lib/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
-// GET /reading/api/history - Fetch user's reading history
+const FORMAT = 'novel' as const;
+
+// GET /novels/api/history - Fetch user's novel reading history
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
@@ -17,19 +19,25 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch reading history sorted by most recently read
+    // Fetch reading history for novels only, sorted by most recently read
     const history = await db
       .select()
       .from(readingHistory)
-      .where(eq(readingHistory.userId, session.user.id))
+      .where(
+        and(
+          eq(readingHistory.userId, session.user.id),
+          eq(readingHistory.readingFormat, FORMAT)
+        )
+      )
       .orderBy(desc(readingHistory.lastReadAt));
 
     return NextResponse.json({
       history,
-      count: history.length
+      count: history.length,
+      format: FORMAT
     });
   } catch (error) {
-    console.error('Error fetching reading history:', error);
+    console.error('Error fetching novel reading history:', error);
     return NextResponse.json(
       { error: 'Failed to fetch reading history' },
       { status: 500 }
@@ -37,7 +45,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /reading/api/history - Record a story view
+// POST /novels/api/history - Record a novel story view
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
@@ -50,7 +58,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { storyId } = body;
+    const { storyId, sceneId } = body;
 
     if (!storyId) {
       return NextResponse.json(
@@ -59,14 +67,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if history entry exists
+    // Check if history entry exists for this story in novel format
     const existing = await db
       .select()
       .from(readingHistory)
       .where(
         and(
           eq(readingHistory.userId, session.user.id),
-          eq(readingHistory.storyId, storyId)
+          eq(readingHistory.storyId, storyId),
+          eq(readingHistory.readingFormat, FORMAT)
         )
       )
       .limit(1);
@@ -78,16 +87,19 @@ export async function POST(request: NextRequest) {
         .set({
           lastReadAt: new Date(),
           readCount: existing[0].readCount + 1,
+          lastSceneId: sceneId || existing[0].lastSceneId,
         })
         .where(
           and(
             eq(readingHistory.userId, session.user.id),
-            eq(readingHistory.storyId, storyId)
+            eq(readingHistory.storyId, storyId),
+            eq(readingHistory.readingFormat, FORMAT)
           )
         );
 
       return NextResponse.json({
-        message: 'Reading history updated',
+        message: 'Novel reading history updated',
+        format: FORMAT,
         readCount: existing[0].readCount + 1
       });
     } else {
@@ -96,18 +108,23 @@ export async function POST(request: NextRequest) {
         id: nanoid(),
         userId: session.user.id,
         storyId,
+        readingFormat: FORMAT,
         lastReadAt: new Date(),
         readCount: 1,
+        lastSceneId: sceneId || null,
+        lastPanelId: null,
+        lastPageNumber: null,
         createdAt: new Date(),
       });
 
       return NextResponse.json({
-        message: 'Reading history created',
+        message: 'Novel reading history created',
+        format: FORMAT,
         readCount: 1
       });
     }
   } catch (error) {
-    console.error('Error recording reading history:', error);
+    console.error('Error recording novel reading history:', error);
     return NextResponse.json(
       { error: 'Failed to record reading history' },
       { status: 500 }

@@ -240,6 +240,79 @@ export async function getStoryWithStructure(
   ).then(r => r.result);
 }
 
+/**
+ * Get story with published comic scenes and panels (with caching)
+ * Specifically for comics reading view
+ */
+export async function getStoryWithComicPanels(storyId: string, userId?: string) {
+  return measureAsync(
+    'getStoryWithComicPanels',
+    async () => {
+      // Check story status first
+      const story: any = await getStoryById(storyId, userId);
+      if (!story) return null;
+
+      const isPublished = story.status === 'published';
+      const cacheKey = isPublished
+        ? `story:${storyId}:comics:public`
+        : `story:${storyId}:comics:user:${userId}`;
+
+      return withCache(
+        cacheKey,
+        async () => {
+          // Load story with comic panels (only published comics)
+          return await db.query.stories.findFirst({
+            where: eq(schema.stories.id, storyId),
+            with: {
+              parts: {
+                orderBy: (parts, { asc }) => [asc(parts.orderIndex)],
+                with: {
+                  chapters: {
+                    orderBy: (chapters, { asc }) => [asc(chapters.orderIndex)],
+                    with: {
+                      scenes: {
+                        where: (scenes, { and, eq }) => and(
+                          eq(scenes.visibility, 'public'),
+                          eq(scenes.comicStatus, 'published')
+                        ),
+                        orderBy: (scenes, { asc }) => [asc(scenes.orderIndex)],
+                        with: {
+                          comicPanels: {
+                            orderBy: (panels, { asc }) => [asc(panels.panelNumber)],
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              chapters: {
+                orderBy: (chapters, { asc }) => [asc(chapters.orderIndex)],
+                with: {
+                  scenes: {
+                    where: (scenes, { and, eq }) => and(
+                      eq(scenes.visibility, 'public'),
+                      eq(scenes.comicStatus, 'published')
+                    ),
+                    orderBy: (scenes, { asc }) => [asc(scenes.orderIndex)],
+                    with: {
+                      comicPanels: {
+                        orderBy: (panels, { asc }) => [asc(panels.panelNumber)],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          });
+        },
+        isPublished ? CACHE_TTL.PUBLISHED_CONTENT : CACHE_TTL.PRIVATE_CONTENT
+      );
+    },
+    { storyId, userId, cached: true }
+  ).then(r => r.result);
+}
+
 export async function getUserStories(userId: string) {
   const cacheKey = `user:${userId}:stories`;
 
@@ -288,6 +361,78 @@ export async function getPublishedStories() {
   ).then(r => r.result);
 }
 
+export async function getCommunityStories() {
+  const cacheKey = 'community:stories:all';
+
+  return measureAsync(
+    'getCommunityStories',
+    async () => {
+      return withCache(
+        cacheKey,
+        () => queries.getCommunityStories(),
+        300 // 5 minutes TTL for community stories (more dynamic than published list)
+      );
+    },
+    { cached: true }
+  ).then(r => r.result);
+}
+
+/**
+ * Get community story with all related data (public content)
+ *
+ * Returns: { story, characters, settings, stats }
+ *
+ * Cache Strategy:
+ * - Key: community:story:{storyId}:public
+ * - TTL: 1 hour (published content changes infrequently)
+ * - Shared by all users (public content)
+ *
+ * @param storyId - Story ID to fetch
+ */
+export async function getCommunityStory(storyId: string) {
+  const cacheKey = `community:story:${storyId}:public`;
+
+  return measureAsync(
+    'getCommunityStory',
+    async () => {
+      return withCache(
+        cacheKey,
+        () => queries.getCommunityStory(storyId),
+        CACHE_TTL.PUBLISHED_CONTENT // 1 hour
+      );
+    },
+    { storyId, cached: true }
+  ).then(r => r.result);
+}
+
+/**
+ * Get community posts for a story (public content)
+ *
+ * Returns: Array of posts with author data
+ *
+ * Cache Strategy:
+ * - Key: community:story:{storyId}:posts:public
+ * - TTL: 1 hour (posts change less frequently than expected)
+ * - Shared by all users (public content)
+ *
+ * @param storyId - Story ID to fetch posts for
+ */
+export async function getCommunityPosts(storyId: string) {
+  const cacheKey = `community:story:${storyId}:posts:public`;
+
+  return measureAsync(
+    'getCommunityPosts',
+    async () => {
+      return withCache(
+        cacheKey,
+        () => queries.getCommunityPosts(storyId),
+        CACHE_TTL.PUBLISHED_CONTENT // 1 hour
+      );
+    },
+    { storyId, cached: true }
+  ).then(r => r.result);
+}
+
 export async function getChapterWithPart(chapterId: string, userId?: string) {
   const publicCacheKey = `chapter:${chapterId}:with-part:public`;
 
@@ -329,6 +474,7 @@ export async function updateStory(
     `story:${storyId}:*`,                   // All story variants
     `user:${userId}:stories*`,               // User's story lists
     `stories:published`,                     // Published stories list
+    `community:stories:all`,                 // Community stories list
   ]);
 
   return result.result;
@@ -359,6 +505,7 @@ export async function updateChapter(
       `story:${chapter.storyId}:*`,             // All story variants
       `user:${userId}:stories*`,                 // User's story lists
       `stories:published`,                       // Published stories list
+      `community:stories:all`,                   // Community stories list
     ]);
   }
 

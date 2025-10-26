@@ -33,7 +33,7 @@ const fetcher = async (url: string): Promise<PublishedStoriesResponse> => {
 // Custom hook for fetching published stories with SWR
 export function usePublishedStories() {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    '/writing/api/stories/published',
+    '/novels/api/published',
     fetcher,
     {
       // Cache for 10 minutes (600 seconds) - published content doesn't change often

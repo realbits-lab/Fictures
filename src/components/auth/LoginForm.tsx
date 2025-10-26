@@ -21,6 +21,21 @@ export function LoginForm() {
     setIsLoading(true);
     setError('');
 
+    // Ensure password field is type="password" for Chrome password manager
+    const formElement = e.currentTarget;
+    const passwordInput = formElement.querySelector('#password') as HTMLInputElement;
+    const emailInput = formElement.querySelector('#email') as HTMLInputElement;
+    const wasShowingPassword = showPassword;
+
+    if (wasShowingPassword && passwordInput) {
+      setShowPassword(false);
+      passwordInput.type = 'password';
+    }
+
+    // Update DOM input values to match state (for password managers)
+    if (emailInput) emailInput.value = email;
+    if (passwordInput) passwordInput.value = password;
+
     try {
       const result = await signIn('credentials', {
         redirect: false,
@@ -31,26 +46,28 @@ export function LoginForm() {
 
       if (result?.error) {
         setError('Invalid email or password');
+        // Restore show password state on error
+        if (wasShowingPassword && passwordInput) {
+          setShowPassword(true);
+          passwordInput.type = 'text';
+        }
       } else if (result?.ok) {
         // Track successful sign in
         trackEngagement.signIn('email');
 
-        // Try to store credentials using Credential Management API if available
-        if ('credentials' in navigator && 'PasswordCredential' in window) {
-          try {
-            const credential = new (window as any).PasswordCredential(e.currentTarget);
-            await navigator.credentials.store(credential);
-          } catch (err) {
-            // Silently fail if credential storage is not supported or fails
-            console.debug('Credential storage not supported or failed', err);
-          }
-        }
+        // Give browser a moment to detect the successful login
+        await new Promise(resolve => setTimeout(resolve, 100));
 
-        router.push('/');
-        router.refresh();
+        // Navigate to trigger password save prompt
+        window.location.href = '/';
       }
     } catch (error) {
       setError('An error occurred during sign in');
+      // Restore show password state on error
+      if (wasShowingPassword && passwordInput) {
+        setShowPassword(true);
+        passwordInput.type = 'text';
+      }
     } finally {
       setIsLoading(false);
     }
@@ -101,10 +118,13 @@ export function LoginForm() {
 
           <form
             onSubmit={handleCredentialsSignIn}
+            name="login-form"
             action="/api/auth/callback/credentials"
             method="post"
+            autoComplete="on"
             className="space-y-4"
           >
+            <input type="hidden" name="csrfToken" value="" />
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Email
@@ -113,7 +133,7 @@ export function LoginForm() {
                 id="email"
                 name="email"
                 type="email"
-                autoComplete="username email"
+                autoComplete="username"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="email@example.com"
