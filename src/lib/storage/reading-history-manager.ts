@@ -2,21 +2,24 @@
  * Reading History Manager
  * Handles reading history for both authenticated and anonymous users
  * Uses localStorage for anonymous users, API for authenticated users
+ * Supports separate tracking for novel and comic formats
  */
 
-const STORAGE_KEY = 'fictures:reading-history';
-const STORAGE_VERSION = 1;
+import type {
+  ReadingFormat,
+  HistoryItem,
+  StorageData,
+  AddToHistoryOptions
+} from '@/types/reading-history';
+
+const STORAGE_VERSION = 2; // Bumped from 1 to support format separation
 const MAX_ITEMS = 100; // Limit history to prevent localStorage bloat
 
-interface HistoryItem {
-  storyId: string;
-  timestamp: number;
-  sceneId?: string;
-}
-
-interface StorageData {
-  version: number;
-  items: HistoryItem[];
+/**
+ * Get storage key for specific format
+ */
+function getStorageKey(format: ReadingFormat): string {
+  return `fictures:reading-history:${format}`;
 }
 
 class ReadingHistoryManager {
@@ -36,29 +39,31 @@ class ReadingHistoryManager {
   }
 
   /**
-   * Get reading history from localStorage
+   * Get reading history from localStorage for specific format
    */
-  private getLocalHistory(): HistoryItem[] {
+  private getLocalHistory(format: ReadingFormat): HistoryItem[] {
     if (!this.isLocalStorageAvailable()) {
       return [];
     }
 
     try {
-      const data = localStorage.getItem(STORAGE_KEY);
+      const storageKey = getStorageKey(format);
+      const data = localStorage.getItem(storageKey);
       if (!data) {
-        return [];
+        // Try migrating from old v1 format (no format separation)
+        return this.migrateLegacyHistory(format);
       }
 
       const parsed: StorageData = JSON.parse(data);
 
       // Version check and migration
       if (parsed.version !== STORAGE_VERSION) {
-        return this.migrateHistory(parsed);
+        return this.migrateHistory(parsed, format);
       }
 
       return parsed.items || [];
     } catch (error) {
-      console.error('Error reading reading history from localStorage:', error);
+      console.error(`Error reading ${format} reading history from localStorage:`, error);
       return [];
     }
   }

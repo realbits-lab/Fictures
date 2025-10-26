@@ -2,7 +2,7 @@ import { put } from '@vercel/blob';
 import sharp from 'sharp';
 
 // We already have character placeholder from first run
-const EXISTING_CHARACTER_URL = 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/character-default.png';
+const EXISTING_CHARACTER_URL = 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/character-default.png';
 
 const REMAINING_PLACEHOLDERS = [
   {
@@ -60,7 +60,7 @@ async function main() {
 
   for (const placeholder of REMAINING_PLACEHOLDERS) {
     const buffer = await createPlaceholder(placeholder);
-    const blob = await put(`stories/system/placeholders/${placeholder.filename}`, buffer, {
+    const blob = await put(`system/placeholders/${placeholder.filename}`, buffer, {
       access: 'public',
       contentType: 'image/png',
     });

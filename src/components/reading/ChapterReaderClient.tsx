@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useStoryReader, useReadingProgress } from '@/hooks/useStoryReader';
 import { useChapterScenes } from '@/hooks/useChapterScenes';
 import { useScenePrefetch } from '@/hooks/useScenePrefetch';
+import { useSceneView } from '@/hooks/useSceneView';
 import { ProgressIndicator } from './ProgressIndicator';
 import { CommentSection } from './CommentSection';
 import type { Chapter } from '@/hooks/useStoryReader';
@@ -39,6 +40,9 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
 
   // Prefetch hook for adjacent scenes
   const { prefetchAdjacentScenes } = useScenePrefetch();
+
+  // Track scene views for analytics
+  useSceneView(selectedSceneId);
 
   // Scene scroll position management - moved outside useEffect dependencies
   const scrollPositionKey = React.useCallback((sceneId: string) => `fictures_scene_scroll_${storyId}_${sceneId}`, [storyId]);

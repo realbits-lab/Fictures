@@ -257,7 +257,7 @@ export async function POST(request: NextRequest) {
                   error
                 );
 
-                const fallbackUrl = 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/character-default.png';
+                const fallbackUrl = 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/character-default.png';
 
                 // Even in catastrophic failure, ensure database gets a valid URL
                 await db.update(charactersTable)
@@ -333,7 +333,7 @@ export async function POST(request: NextRequest) {
                 // But keep as safety net - return a result with hardcoded placeholder
                 console.error(`Unexpected error processing setting ${setting.name}:`, error);
 
-                const fallbackUrl = 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/setting-visual.png';
+                const fallbackUrl = 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/setting-visual.png';
 
                 // Even in catastrophic failure, ensure database gets a valid URL
                 await db.update(settingsTable)

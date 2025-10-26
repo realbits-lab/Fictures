@@ -6,10 +6,10 @@ import { nanoid } from 'nanoid';
 
 // Placeholder images for fallback when generation fails
 const PLACEHOLDER_IMAGES = {
-  character: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/character-default.png',
-  setting: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/setting-visual.png',
-  scene: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/scene-illustration.png',
-  story: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/stories/system/placeholders/story-cover.png',
+  character: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/character-default.png',
+  setting: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/setting-visual.png',
+  scene: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/scene-illustration.png',
+  story: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/story-cover.png',
 } as const;
 
 export interface GenerateStoryImageParams {

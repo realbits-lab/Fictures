@@ -114,24 +114,24 @@ if (imageUrl) {
    - Generic silhouette figure
    - Neutral background
    - Text overlay: "Character Portrait Pending"
-   - Store at: `stories/system/placeholders/character-default.png`
+   - Store at: `system/placeholders/character-default.png`
 
 2. **Setting Visual Placeholder** (16:9, 1792×1024)
    - Generic environment/landscape
    - Soft focus, neutral mood
    - Text overlay: "Setting Visual Pending"
-   - Store at: `stories/system/placeholders/setting-default.png`
+   - Store at: `system/placeholders/setting-visual.png`
 
 3. **Scene Illustration Placeholder** (16:9, 1792×1024)
    - Abstract artistic composition
    - Neutral colors
    - Text overlay: "Scene Illustration Pending"
-   - Store at: `stories/system/placeholders/scene-default.png`
+   - Store at: `system/placeholders/scene-illustration.png`
 
 4. **Story Cover Placeholder** (16:9, 1792×1024)
    - Book cover template
    - Text overlay: "Story Cover Pending"
-   - Store at: `stories/system/placeholders/story-default.png`
+   - Store at: `system/placeholders/story-cover.png`
 
 #### Code Implementation
 
@@ -140,10 +140,10 @@ if (imageUrl) {
 ```typescript
 // Add at top of file
 const PLACEHOLDER_IMAGES = {
-  character: 'https://[blob-domain]/stories/system/placeholders/character-default.png',
-  setting: 'https://[blob-domain]/stories/system/placeholders/setting-default.png',
-  scene: 'https://[blob-domain]/stories/system/placeholders/scene-default.png',
-  story: 'https://[blob-domain]/stories/system/placeholders/story-default.png',
+  character: 'https://[blob-domain]/system/placeholders/character-default.png',
+  setting: 'https://[blob-domain]/system/placeholders/setting-visual.png',
+  scene: 'https://[blob-domain]/system/placeholders/scene-illustration.png',
+  story: 'https://[blob-domain]/system/placeholders/story-cover.png',
 } as const;
 
 export async function generateStoryImage({
@@ -512,18 +512,18 @@ const settingImagePromises = hnsDoc.settings.map(
 ## Implementation Checklist
 
 ### Phase 1: Create Placeholder Images (HIGH PRIORITY)
-- [ ] Design 4 placeholder images (character, setting, scene, story)
-- [ ] Upload to Vercel Blob at `/stories/system/placeholders/`
-- [ ] Document placeholder URLs in environment or config
-- [ ] Test placeholder images render correctly in UI
+- [x] Design 4 placeholder images (character, setting, scene, story)
+- [x] Upload to Vercel Blob at `/system/placeholders/`
+- [x] Document placeholder URLs in code constants
+- [x] Test placeholder images render correctly in UI
 
 ### Phase 2: Update Image Generation Service (CRITICAL)
-- [ ] Add `PLACEHOLDER_IMAGES` constants
-- [ ] Add `createPlaceholderImageResult()` function
-- [ ] Wrap `generateImage()` call in try-catch
-- [ ] Return placeholder on failure instead of throwing
-- [ ] Test with API key removed (simulate failure)
-- [ ] Test with rate limit scenario
+- [x] Add `PLACEHOLDER_IMAGES` constants
+- [x] Add `createPlaceholderImageResult()` function
+- [x] Wrap `generateImage()` call in try-catch
+- [x] Return placeholder on failure instead of throwing
+- [x] Test with API key removed (simulate failure)
+- [x] Test with rate limit scenario
 
 ### Phase 3: Improve Scene Content Fallback (MEDIUM PRIORITY)
 - [ ] Create `generateFallbackSceneContent()` function
@@ -534,12 +534,12 @@ const settingImagePromises = hnsDoc.settings.map(
 - [ ] Verify word count (600-800 words target)
 
 ### Phase 4: Database Update Safety (CRITICAL)
-- [ ] Update character image generation to always set imageUrl
-- [ ] Update setting image generation to always set imageUrl
-- [ ] Remove conditional database updates (no more `if (imageUrl)`)
-- [ ] Add `isPlaceholder` flag to results
-- [ ] Test with forced image generation failures
-- [ ] Verify database never has null imageUrls
+- [x] Update character image generation to always set imageUrl
+- [x] Update setting image generation to always set imageUrl
+- [x] Remove conditional database updates (no more `if (imageUrl)`)
+- [x] Add `isPlaceholder` flag to results
+- [x] Test with forced image generation failures
+- [x] Verify database never has null imageUrls
 
 ### Phase 5: Testing & Validation (REQUIRED)
 - [ ] Test complete story generation with all services working
@@ -617,10 +617,10 @@ Once placeholders are in place, implement regeneration:
 
 ### New Files:
 1. Placeholder images (4 files):
-   - `stories/system/placeholders/character-default.png`
-   - `stories/system/placeholders/setting-default.png`
-   - `stories/system/placeholders/scene-default.png`
-   - `stories/system/placeholders/story-default.png`
+   - `system/placeholders/character-default.png`
+   - `system/placeholders/setting-visual.png`
+   - `system/placeholders/scene-illustration.png`
+   - `system/placeholders/story-cover.png`
 
 ---
 

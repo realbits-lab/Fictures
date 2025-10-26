@@ -89,6 +89,12 @@ export const publicationStatusEnum = pgEnum('publication_status', [
   'cancelled'
 ]);
 
+// Reading format enum for reading history
+export const readingFormatEnum = pgEnum('reading_format', [
+  'novel',  // Text-based reading
+  'comic'   // Visual/panel-based reading
+]);
+
 // Shot type enum for comic panels
 export const shotTypeEnum = pgEnum('shot_type', [
   'establishing_shot',
@@ -254,6 +260,10 @@ export const scenes = pgTable('scenes', {
   comicGeneratedAt: timestamp('comic_generated_at'),
   comicPanelCount: integer('comic_panel_count').default(0),
   comicVersion: integer('comic_version').default(1),
+  // View tracking fields
+  viewCount: integer('view_count').default(0).notNull(),
+  uniqueViewCount: integer('unique_view_count').default(0).notNull(),
+  lastViewedAt: timestamp('last_viewed_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -287,6 +297,18 @@ export const comicPanels = pgTable('comic_panels', {
 
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Scene Views table - Tracks individual scene views for analytics
+export const sceneViews = pgTable('scene_views', {
+  id: text('id').primaryKey().default('gen_random_uuid()::text'),
+  sceneId: text('scene_id').references(() => scenes.id, { onDelete: 'cascade' }).notNull(),
+  userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
+  sessionId: text('session_id'), // Anonymous session ID from cookie
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  viewedAt: timestamp('viewed_at').defaultNow().notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 // Characters table - Story characters with HNS support
@@ -452,11 +474,19 @@ export const readingHistory = pgTable('reading_history', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   storyId: text('story_id').notNull().references(() => stories.id, { onDelete: 'cascade' }),
+  readingFormat: readingFormatEnum('reading_format').default('novel').notNull(), // Format: novel or comic
   lastReadAt: timestamp('last_read_at').defaultNow().notNull(),
-  readCount: integer('read_count').default(1).notNull(), // Track how many times user viewed this story
+  readCount: integer('read_count').default(1).notNull(), // Track how many times user viewed this story in this format
+
+  // Format-specific progress tracking
+  lastSceneId: text('last_scene_id'), // For novel format: which scene was last read
+  lastPanelId: text('last_panel_id'), // For comic format: which panel was last viewed
+  lastPageNumber: integer('last_page_number'), // For comic format: which page was last viewed
+
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
-  uniqueUserStory: unique('user_story_unique').on(table.userId, table.storyId),
+  // Unique constraint per user, story, and format (allows same story in both formats)
+  uniqueUserStoryFormat: unique('user_story_format_unique').on(table.userId, table.storyId, table.readingFormat),
 }));
 
 // Define relations
