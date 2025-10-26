@@ -7,15 +7,17 @@ import postgres from 'postgres';
 
 // Enhanced formatter that can split description+dialogue within a single line
 function splitMixedLine(line) {
-  // Find dialogue start: opening quote preceded by space or punctuation
-  const quoteMatch = line.match(/([.!?]\s+)(["'])/);
+  // Find dialogue start: opening quote (straight OR curly) preceded by space or punctuation
+  // \u201C = " (left curly double), \u201D = " (right curly double)
+  // \u2018 = ' (left curly single), \u2019 = ' (right curly single)
+  const quoteMatch = line.match(/([.!?]\s+)(["'\u201C\u201D\u2018\u2019«])/);
 
   if (quoteMatch) {
     const splitIndex = quoteMatch.index + quoteMatch[1].length;
     const description = line.substring(0, splitIndex).trim();
     const dialogue = line.substring(splitIndex).trim();
 
-    if (description && dialogue && dialogue.match(/^["']/)) {
+    if (description && dialogue && dialogue.match(/^["'\u201C\u201D\u2018\u2019«]/)) {
       return [description, dialogue];
     }
   }
@@ -25,8 +27,8 @@ function splitMixedLine(line) {
 
 function isDialogueLine(text) {
   const trimmed = text.trim();
-  // More precise: starts with quote AND contains closing quote
-  return /^["']/.test(trimmed) && /["']/.test(trimmed.substring(1));
+  // More precise: starts with quote AND contains closing quote (straight or curly)
+  return /^["'\u201C\u201D\u2018\u2019«]/.test(trimmed) && /["'\u201C\u201D\u2018\u2019»]/.test(trimmed.substring(1));
 }
 
 function formatSceneContent(content) {
