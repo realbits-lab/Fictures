@@ -1,6 +1,6 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { isWriter } from '@/lib/auth/permissions';
+import { hasAnyRole } from '@/lib/auth/permissions';
 import { MainLayout } from '@/components/layout';
 import { ComicReaderClient } from '@/components/comic/comic-reader-client';
 import { getStoryWithStructure } from '@/lib/db/cached-queries';
@@ -17,7 +17,7 @@ export default async function ComicPage({ params }: ComicPageProps) {
     redirect('/login');
   }
 
-  if (!isWriter(session)) {
+  if (!hasAnyRole(session, ['writer', 'manager'])) {
     redirect('/');
   }
 

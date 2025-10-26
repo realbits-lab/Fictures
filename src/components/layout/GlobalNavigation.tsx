@@ -38,13 +38,8 @@ export function GlobalNavigation() {
 
   // Filter navigation items based on user role
   const visibleGnbItems = gnbMenuItems.filter((item) => {
-    // Comics is writer only
-    if (item.href === '/comics') {
-      return session?.user?.role === 'writer';
-    }
-
-    // Studio, Publish, and Analytics are writer/manager specific
-    if (item.href === '/studio' || item.href === '/publish' || item.href === '/analytics') {
+    // Studio, Publish, Analytics, and Comics are writer/manager specific
+    if (item.href === '/studio' || item.href === '/publish' || item.href === '/analytics' || item.href === '/comics') {
       return session?.user?.role === 'writer' || session?.user?.role === 'manager';
     }
 

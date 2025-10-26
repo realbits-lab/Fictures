@@ -2,7 +2,30 @@ import { test, expect } from '@playwright/test';
 
 /**
  * E2E Tests for Novels Page (/novels)
- * Tests story browsing and reading - accessible to all users
+ *
+ * PURPOSE:
+ * Tests the main story browsing and reading interface for all users (anonymous and authenticated).
+ * The /novels page is the primary landing page (home redirects here) where users discover and read stories.
+ *
+ * KEY FEATURES TESTED:
+ * - Anonymous user access (no authentication required)
+ * - Home redirect behavior (/ → /novels)
+ * - Story browsing and discovery
+ * - Story card interactions
+ * - Genre filtering and search
+ * - Menu navigation and highlighting
+ * - Image lazy loading
+ * - Performance metrics
+ *
+ * TEST CATEGORIES:
+ * - Access Control (3 tests): Anonymous access, menu visibility, restricted items
+ * - Home Redirect (2 tests): Redirect verification, logo navigation
+ * - Navigation (3 tests): Menu highlighting, filters, story card clicks
+ * - Content (5 tests): Story display, metadata, images, filters, search
+ * - Performance (2 tests): Page load time, lazy loading
+ * - Error Handling (1 test): Error message verification
+ *
+ * TOTAL: 16 test cases
  */
 
 test.describe('GNB - Novels Page Tests', () => {

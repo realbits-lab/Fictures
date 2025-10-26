@@ -2,7 +2,34 @@ import { test, expect } from '@playwright/test';
 
 /**
  * E2E Tests for Community Page (/community)
- * Tests community discussions and posts - accessible to all users
+ *
+ * PURPOSE:
+ * Tests the community discussion and story sharing platform accessible to all users.
+ * Includes both anonymous viewing capabilities and authenticated user interactions.
+ *
+ * KEY FEATURES TESTED:
+ * - Anonymous user viewing (read-only access)
+ * - Community post browsing and discovery
+ * - Post categories and filtering
+ * - Create post functionality (authenticated users)
+ * - Like/dislike system (authenticated users)
+ * - Real-time updates via SSE (Server-Sent Events)
+ * - Menu navigation and highlighting
+ * - Scrolling performance
+ *
+ * TEST CATEGORIES:
+ * - Access Control (2 tests): Anonymous viewing, menu visibility
+ * - Navigation (3 tests): Menu highlighting, categories, post clicks
+ * - Content (3 tests): Post display, metadata, category filters
+ * - Functionality (2 tests): Create post button, like/dislike system (authenticated)
+ * - Performance (2 tests): Page load time, smooth scrolling
+ * - Error Handling (1 test): Error message verification
+ *
+ * SPECIAL NOTES:
+ * - Uses 'load' instead of 'networkidle' due to SSE keeping network active
+ * - Some tests require authentication (.auth/user.json)
+ *
+ * TOTAL: 13 test cases
  */
 
 test.describe('GNB - Community Page Tests', () => {
