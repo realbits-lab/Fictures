@@ -47,8 +47,13 @@ export async function GET(
 
     // Check if story is published or user is owner
     const session = await auth();
-    const isOwner = session?.user?.email === scene.chapter.story.userId;
-    const isPublished = scene.chapter.story.visibility === 'public';
+    const story = scene.chapter.story as any;
+
+    // Compare user IDs for ownership check
+    const isOwner = session?.user?.id === story.authorId;
+
+    // Check if story is public (using is_public from database)
+    const isPublished = story.isPublic === true || story.is_public === true;
 
     if (!isPublished && !isOwner) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), {
