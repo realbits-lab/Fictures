@@ -204,12 +204,15 @@ export function useCommunityEvents(
 
       // Error event
       eventSource.addEventListener('error', (event) => {
-        console.log('[SSE Client] SSE error event received');
+        // Silent - don't log routine connection attempts
       });
 
       // Handle connection errors
       eventSource.onerror = (err) => {
-        console.error('[SSE Client] Connection error');
+        // Only log error if we've tried multiple times (reduce noise)
+        if (reconnectAttempts.current > 1) {
+          console.warn('[SSE Client] Connection error after', reconnectAttempts.current, 'attempts');
+        }
         setIsConnected(false);
 
         const connectionError = new Error('SSE connection failed');
@@ -224,9 +227,12 @@ export function useCommunityEvents(
           reconnectAttempts.current < maxReconnectAttempts
         ) {
           const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
-          console.log(
-            `[SSE Client] Reconnecting in ${delay}ms... (attempt ${reconnectAttempts.current + 1}/${maxReconnectAttempts})`
-          );
+          // Only log reconnection attempts after first failure
+          if (reconnectAttempts.current > 0) {
+            console.log(
+              `[SSE Client] Reconnecting in ${delay}ms... (attempt ${reconnectAttempts.current + 1}/${maxReconnectAttempts})`
+            );
+          }
 
           reconnectTimeoutRef.current = setTimeout(() => {
             reconnectAttempts.current++;

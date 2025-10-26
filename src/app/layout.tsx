@@ -18,14 +18,13 @@ const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
   display: 'swap',
-  adjustFontFallback: false,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
   display: 'swap',
-  adjustFontFallback: false,
+  preload: false, // Only preload the main font, not the monospace
 });
 
 export const metadata: Metadata = {
