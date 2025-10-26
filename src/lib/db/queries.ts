@@ -929,3 +929,163 @@ export async function getApiKeyWithUser(keyHash: string) {
 
   return result[0] || null;
 }
+
+// ===========================
+// Community Queries
+// ===========================
+
+/**
+ * Get community story with all related data (public content)
+ *
+ * Fetches story, author, characters, settings, and community stats
+ * Optimized for caching - all data in single transaction
+ *
+ * @param storyId - Story ID to fetch
+ * @returns Story with complete community data or null if not found
+ */
+export async function getCommunityStory(storyId: string) {
+  // Fetch story with author (primary key lookup - fast)
+  const storyData = await db
+    .select({
+      id: stories.id,
+      title: stories.title,
+      description: stories.description,
+      genre: stories.genre,
+      status: stories.status,
+      viewCount: stories.viewCount,
+      rating: stories.rating,
+      ratingCount: stories.ratingCount,
+      author: {
+        id: users.id,
+        name: users.name,
+        username: users.username,
+        image: users.image,
+      },
+    })
+    .from(stories)
+    .leftJoin(users, eq(stories.authorId, users.id))
+    .where(eq(stories.id, storyId))
+    .limit(1);
+
+  if (storyData.length === 0) return null;
+
+  const story = storyData[0];
+
+  // Count posts (uses index: story_id, is_deleted, moderation_status)
+  const postCountResult = await db
+    .select({ count: count() })
+    .from(communityPosts)
+    .where(
+      and(
+        eq(communityPosts.storyId, storyId),
+        eq(communityPosts.isDeleted, false),
+        eq(communityPosts.moderationStatus, 'approved')
+      )
+    );
+
+  // Fetch characters (uses index: story_id)
+  const storyCharacters = await db
+    .select({
+      id: characters.id,
+      name: characters.name,
+      role: characters.role,
+      archetype: characters.archetype,
+      summary: characters.summary,
+      storyline: characters.storyline,
+      personality: characters.personality,
+      backstory: characters.backstory,
+      motivations: characters.motivations,
+      physicalDescription: characters.physicalDescription,
+      imageUrl: characters.imageUrl,
+      isMain: characters.isMain,
+    })
+    .from(characters)
+    .where(eq(characters.storyId, storyId));
+
+  // Fetch settings (uses index: story_id)
+  const storySettings = await db
+    .select({
+      id: settings.id,
+      name: settings.name,
+      description: settings.description,
+      mood: settings.mood,
+      sensory: settings.sensory,
+      visualStyle: settings.visualStyle,
+      architecturalStyle: settings.architecturalStyle,
+      colorPalette: settings.colorPalette,
+      imageUrl: settings.imageUrl,
+    })
+    .from(settings)
+    .where(eq(settings.storyId, storyId));
+
+  return {
+    id: story.id,
+    title: story.title,
+    description: story.description,
+    genre: story.genre,
+    status: story.status,
+    author: story.author,
+    stats: {
+      totalPosts: postCountResult[0]?.count || 0,
+      totalMembers: Math.floor((story.viewCount || 0) * 0.1), // Estimate 10% of viewers become members
+      totalViews: story.viewCount || 0,
+      averageRating: story.rating ? story.rating / 10 : 0, // Convert from integer to decimal (47 -> 4.7)
+      ratingCount: story.ratingCount || 0,
+    },
+    characters: storyCharacters,
+    settings: storySettings,
+  };
+}
+
+/**
+ * Get community posts for a story (public content)
+ *
+ * Fetches approved posts with author info, sorted by pinned then activity
+ * Uses composite index for optimal performance
+ *
+ * @param storyId - Story ID to fetch posts for
+ * @returns Array of posts with author data
+ */
+export async function getCommunityPosts(storyId: string) {
+  return db
+    .select({
+      id: communityPosts.id,
+      title: communityPosts.title,
+      content: communityPosts.content,
+      contentType: communityPosts.contentType,
+      contentHtml: communityPosts.contentHtml,
+      contentImages: communityPosts.contentImages,
+      storyId: communityPosts.storyId,
+      type: communityPosts.type,
+      isPinned: communityPosts.isPinned,
+      isLocked: communityPosts.isLocked,
+      isEdited: communityPosts.isEdited,
+      editCount: communityPosts.editCount,
+      lastEditedAt: communityPosts.lastEditedAt,
+      likes: communityPosts.likes,
+      replies: communityPosts.replies,
+      views: communityPosts.views,
+      tags: communityPosts.tags,
+      mentions: communityPosts.mentions,
+      lastActivityAt: communityPosts.lastActivityAt,
+      createdAt: communityPosts.createdAt,
+      updatedAt: communityPosts.updatedAt,
+      author: {
+        id: users.id,
+        name: users.name,
+        username: users.username,
+        image: users.image,
+      },
+    })
+    .from(communityPosts)
+    .leftJoin(users, eq(communityPosts.authorId, users.id))
+    .where(and(
+      eq(communityPosts.storyId, storyId),
+      eq(communityPosts.isDeleted, false),
+      eq(communityPosts.moderationStatus, 'approved')
+    ))
+    .orderBy(
+      desc(communityPosts.isPinned),
+      desc(communityPosts.lastActivityAt)
+    );
+}

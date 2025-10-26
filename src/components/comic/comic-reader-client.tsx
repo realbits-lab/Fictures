@@ -202,6 +202,12 @@ export function ComicReaderClient({ storyId, initialData }: ComicReaderClientPro
                     <div className="text-sm font-medium line-clamp-1">
                       {index + 1}. {item.scene.title}
                     </div>
+                    {item.scene.comicUniqueViewCount !== undefined && (
+                      <div className="flex items-center gap-1 mt-1 text-xs text-gray-400 dark:text-gray-500">
+                        <span>👁️</span>
+                        <span>{item.scene.comicUniqueViewCount.toLocaleString()}</span>
+                      </div>
+                    )}
                   </button>
                 );
               })}
