@@ -66,6 +66,13 @@ export const visibilityEnum = pgEnum('visibility', [
   'public'
 ]);
 
+// Comic status enum for scene comic panels
+export const comicStatusEnum = pgEnum('comic_status', [
+  'none',      // No comic panels exist
+  'draft',     // Comic panels exist but not published
+  'published'  // Comic panels are published and visible
+]);
+
 // Schedule type enum for publishing schedules
 export const scheduleTypeEnum = pgEnum('schedule_type', [
   'daily',
@@ -238,6 +245,15 @@ export const scenes = pgTable('scenes', {
   publishedBy: text('published_by').references(() => users.id),
   unpublishedAt: timestamp('unpublished_at'),
   unpublishedBy: text('unpublished_by').references(() => users.id),
+  // Comic publishing fields
+  comicStatus: comicStatusEnum('comic_status').default('none').notNull(),
+  comicPublishedAt: timestamp('comic_published_at'),
+  comicPublishedBy: text('comic_published_by').references(() => users.id),
+  comicUnpublishedAt: timestamp('comic_unpublished_at'),
+  comicUnpublishedBy: text('comic_unpublished_by').references(() => users.id),
+  comicGeneratedAt: timestamp('comic_generated_at'),
+  comicPanelCount: integer('comic_panel_count').default(0),
+  comicVersion: integer('comic_version').default(1),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

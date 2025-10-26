@@ -16,7 +16,7 @@ const __dirname = dirname(__filename);
 const AUTH_FILE_PATH = join(__dirname, '../.auth/user.json');
 const authData = JSON.parse(readFileSync(AUTH_FILE_PATH, 'utf-8'));
 const profile = authData.profiles?.[authData.defaultProfile] || authData.profiles?.manager;
-const authCookies = profile.cookies.map(c => `${c.name}=${c.value}`).join('; ');
+const apiKey = profile.apiKey;
 
 const BASE_URL = 'http://localhost:3000';
 
@@ -26,7 +26,10 @@ async function findScenes() {
   try {
     // Get all stories
     const response = await fetch(`${BASE_URL}/api/stories`, {
-      headers: { 'Cookie': authCookies }
+      headers: {
+        'X-API-Key': apiKey,
+        'Content-Type': 'application/json'
+      }
     });
 
     const data = await response.json();
@@ -39,7 +42,10 @@ async function findScenes() {
       console.log(`📚 Story: "${story.title}" (ID: ${story.id})`);
 
       const storyResponse = await fetch(`${BASE_URL}/api/stories/${story.id}`, {
-        headers: { 'Cookie': authCookies }
+        headers: {
+          'X-API-Key': apiKey,
+          'Content-Type': 'application/json'
+        }
       });
 
       const storyData = await storyResponse.json();

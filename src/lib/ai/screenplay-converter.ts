@@ -41,7 +41,7 @@ export const ComicPanelSpecSchema = z.object({
     emphasis: z.enum(['normal', 'large', 'dramatic'])
   })).default([]),
   gutter_after: z.number().min(0).max(1000).describe('Vertical space after panel in pixels'),
-  mood: z.string().describe('Overall emotional tone of the panel')
+  mood: z.string().default('neutral').describe('Overall emotional tone of the panel')
 });
 
 export const ComicScreenplaySchema = z.object({
