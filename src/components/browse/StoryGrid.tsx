@@ -16,6 +16,7 @@ import { InFeedAd } from "@/components/ads";
 import { trackSearch, trackStoryEvent } from '@/lib/analytics/google-analytics';
 import { readingHistoryManager } from '@/lib/storage/reading-history-manager';
 import { STORY_GENRES } from '@/lib/constants/genres';
+import type { ReadingFormat } from '@/types/reading-history';
 
 interface Story {
   id: string;
@@ -57,12 +58,15 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
   const [readingHistory, setReadingHistory] = useState<Set<string>>(new Set());
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
+  // Determine reading format based on pageType
+  const format: ReadingFormat = pageType === 'comics' ? 'comic' : 'novel';
+
   // Fetch reading history when component mounts
   useEffect(() => {
     async function fetchHistory() {
       if (!session?.user?.id) {
-        // Anonymous user - use localStorage
-        const localHistory = readingHistoryManager.getHistory();
+        // Anonymous user - use localStorage for specific format
+        const localHistory = readingHistoryManager.getHistory(format);
         setReadingHistory(localHistory);
         setIsLoadingHistory(false);
         return;
@@ -77,13 +81,13 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
           setReadingHistory(storyIds);
         } else {
           // API failed, fallback to localStorage
-          const localHistory = readingHistoryManager.getHistory();
+          const localHistory = readingHistoryManager.getHistory(format);
           setReadingHistory(localHistory);
         }
       } catch (error) {
-        console.error('Error fetching reading history:', error);
+        console.error(`Error fetching ${format} reading history:`, error);
         // Fallback to localStorage
-        const localHistory = readingHistoryManager.getHistory();
+        const localHistory = readingHistoryManager.getHistory(format);
         setReadingHistory(localHistory);
       } finally {
         setIsLoadingHistory(false);
@@ -91,16 +95,16 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
     }
 
     fetchHistory();
-  }, [session?.user?.id, pageType]);
+  }, [session?.user?.id, pageType, format]);
 
-  // Record story view
+  // Record story view with format-specific tracking
   const recordStoryView = async (storyId: string, storyTitle?: string) => {
     // Track story view in GA (always track, regardless of auth)
     trackStoryEvent.view(storyId, storyTitle);
 
     if (!session?.user?.id) {
-      // Anonymous user - use localStorage only
-      readingHistoryManager.addToHistory(storyId);
+      // Anonymous user - use localStorage only with format
+      readingHistoryManager.addToHistory(storyId, format);
       setReadingHistory(prev => new Set([...prev, storyId]));
       return;
     }
@@ -110,22 +114,22 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
       const response = await fetch(`/${pageType}/api/history`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ storyId }),
+        body: JSON.stringify({ storyId, format }),
       });
 
       if (response.ok) {
-        // Also update localStorage as backup/cache
-        readingHistoryManager.addToHistory(storyId);
+        // Also update localStorage as backup/cache with format
+        readingHistoryManager.addToHistory(storyId, format);
         setReadingHistory(prev => new Set([...prev, storyId]));
       } else {
         // API failed, fallback to localStorage
-        readingHistoryManager.addToHistory(storyId);
+        readingHistoryManager.addToHistory(storyId, format);
         setReadingHistory(prev => new Set([...prev, storyId]));
       }
     } catch (error) {
-      console.error('Error recording story view:', error);
+      console.error(`Error recording ${format} story view:`, error);
       // Fallback to localStorage
-      readingHistoryManager.addToHistory(storyId);
+      readingHistoryManager.addToHistory(storyId, format);
       setReadingHistory(prev => new Set([...prev, storyId]));
     }
   };

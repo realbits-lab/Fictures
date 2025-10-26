@@ -5,9 +5,9 @@ import { readingHistory } from '@/lib/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
-const FORMAT = 'novel' as const;
+const FORMAT = 'comic' as const;
 
-// GET /novels/api/history - Fetch user's novel reading history
+// GET /comics/api/history - Fetch user's comic reading history
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch reading history for novels only, sorted by most recently read
+    // Fetch reading history for comics only, sorted by most recently read
     const history = await db
       .select()
       .from(readingHistory)
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       format: FORMAT
     });
   } catch (error) {
-    console.error('Error fetching novel reading history:', error);
+    console.error('Error fetching comic reading history:', error);
     return NextResponse.json(
       { error: 'Failed to fetch reading history' },
       { status: 500 }
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /novels/api/history - Record a novel story view
+// POST /comics/api/history - Record a comic story view
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { storyId, sceneId } = body;
+    const { storyId, panelId, pageNumber } = body;
 
     if (!storyId) {
       return NextResponse.json(
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if history entry exists for this story in novel format
+    // Check if history entry exists for this story in comic format
     const existing = await db
       .select()
       .from(readingHistory)
@@ -87,7 +87,8 @@ export async function POST(request: NextRequest) {
         .set({
           lastReadAt: new Date(),
           readCount: existing[0].readCount + 1,
-          lastSceneId: sceneId || existing[0].lastSceneId,
+          lastPanelId: panelId || existing[0].lastPanelId,
+          lastPageNumber: pageNumber !== undefined ? pageNumber : existing[0].lastPageNumber,
         })
         .where(
           and(
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
         );
 
       return NextResponse.json({
-        message: 'Novel reading history updated',
+        message: 'Comic reading history updated',
         format: FORMAT,
         readCount: existing[0].readCount + 1
       });
@@ -111,20 +112,20 @@ export async function POST(request: NextRequest) {
         readingFormat: FORMAT,
         lastReadAt: new Date(),
         readCount: 1,
-        lastSceneId: sceneId || null,
-        lastPanelId: null,
-        lastPageNumber: null,
+        lastSceneId: null,
+        lastPanelId: panelId || null,
+        lastPageNumber: pageNumber !== undefined ? pageNumber : null,
         createdAt: new Date(),
       });
 
       return NextResponse.json({
-        message: 'Novel reading history created',
+        message: 'Comic reading history created',
         format: FORMAT,
         readCount: 1
       });
     }
   } catch (error) {
-    console.error('Error recording novel reading history:', error);
+    console.error('Error recording comic reading history:', error);
     return NextResponse.json(
       { error: 'Failed to record reading history' },
       { status: 500 }

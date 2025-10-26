@@ -14,6 +14,13 @@ interface ViewCountProps {
   viewCount: number;
   uniqueViewCount?: number;
   showUnique?: boolean;
+  // Format-specific counts (optional)
+  novelViewCount?: number;
+  novelUniqueViewCount?: number;
+  comicViewCount?: number;
+  comicUniqueViewCount?: number;
+  // Display mode
+  displayMode?: 'total' | 'novel' | 'comic' | 'split';
   className?: string;
   iconClassName?: string;
   size?: 'sm' | 'md' | 'lg';
@@ -36,16 +43,15 @@ export function ViewCount({
   viewCount,
   uniqueViewCount,
   showUnique = false,
+  novelViewCount,
+  novelUniqueViewCount,
+  comicViewCount,
+  comicUniqueViewCount,
+  displayMode = 'total',
   className = '',
   iconClassName = '',
   size = 'md',
 }: ViewCountProps) {
-  const displayCount = showUnique && uniqueViewCount !== undefined
-    ? uniqueViewCount
-    : viewCount;
-
-  const formattedCount = formatCount(displayCount);
-
   // Size classes
   const sizeClasses = {
     sm: 'text-xs',
@@ -59,15 +65,65 @@ export function ViewCount({
     lg: 'w-5 h-5',
   };
 
+  // Determine which count to display based on mode
+  let displayCount: number;
+  let labelText: string;
+
+  switch (displayMode) {
+    case 'novel':
+      displayCount = showUnique && novelUniqueViewCount !== undefined
+        ? novelUniqueViewCount
+        : (novelViewCount ?? viewCount);
+      labelText = `${displayCount.toLocaleString()} novel ${showUnique ? 'unique ' : ''}views`;
+      break;
+    case 'comic':
+      displayCount = showUnique && comicUniqueViewCount !== undefined
+        ? comicUniqueViewCount
+        : (comicViewCount ?? viewCount);
+      labelText = `${displayCount.toLocaleString()} comic ${showUnique ? 'unique ' : ''}views`;
+      break;
+    case 'split':
+      // Show both novel and comic counts
+      const novelCount = showUnique ? (novelUniqueViewCount ?? 0) : (novelViewCount ?? 0);
+      const comicCount = showUnique ? (comicUniqueViewCount ?? 0) : (comicViewCount ?? 0);
+      return (
+        <div className={`inline-flex items-center gap-2 ${sizeClasses[size]} ${className}`}>
+          <div
+            className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400"
+            title={`${novelCount.toLocaleString()} novel ${showUnique ? 'unique ' : ''}views`}
+          >
+            <Eye className={`${iconSizeClasses[size]} ${iconClassName}`} aria-hidden="true" />
+            <span>📖 {formatCount(novelCount)}</span>
+          </div>
+          <div
+            className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400"
+            title={`${comicCount.toLocaleString()} comic ${showUnique ? 'unique ' : ''}views`}
+          >
+            <Eye className={`${iconSizeClasses[size]} ${iconClassName}`} aria-hidden="true" />
+            <span>🎨 {formatCount(comicCount)}</span>
+          </div>
+        </div>
+      );
+    case 'total':
+    default:
+      displayCount = showUnique && uniqueViewCount !== undefined
+        ? uniqueViewCount
+        : viewCount;
+      labelText = `${viewCount.toLocaleString()} ${showUnique && uniqueViewCount ? 'unique ' : ''}views`;
+      break;
+  }
+
+  const formattedCount = formatCount(displayCount);
+
   return (
     <div
       className={`inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 ${sizeClasses[size]} ${className}`}
-      title={`${viewCount.toLocaleString()} ${showUnique && uniqueViewCount ? 'unique ' : ''}views`}
-      aria-label={`${viewCount.toLocaleString()} views`}
+      title={labelText}
+      aria-label={labelText}
     >
       <Eye className={`${iconSizeClasses[size]} ${iconClassName}`} aria-hidden="true" />
       <span>{formattedCount}</span>
-      {showUnique && uniqueViewCount !== undefined && uniqueViewCount !== viewCount && (
+      {showUnique && uniqueViewCount !== undefined && uniqueViewCount !== viewCount && displayMode === 'total' && (
         <span className="text-xs text-gray-400 dark:text-gray-500">
           ({formatCount(viewCount)})
         </span>
@@ -83,15 +139,58 @@ export function ViewCountBadge({
   viewCount,
   uniqueViewCount,
   showUnique = false,
+  novelViewCount,
+  novelUniqueViewCount,
+  comicViewCount,
+  comicUniqueViewCount,
+  displayMode = 'total',
   className = '',
-}: Omit<ViewCountProps, 'size'>) {
+}: Omit<ViewCountProps, 'size' | 'iconClassName'>) {
+  // Determine which count to display based on mode
+  let displayCount: number;
+
+  switch (displayMode) {
+    case 'novel':
+      displayCount = showUnique && novelUniqueViewCount !== undefined
+        ? novelUniqueViewCount
+        : (novelViewCount ?? viewCount);
+      break;
+    case 'comic':
+      displayCount = showUnique && comicUniqueViewCount !== undefined
+        ? comicUniqueViewCount
+        : (comicViewCount ?? viewCount);
+      break;
+    case 'split':
+      // Show both novel and comic counts
+      const novelCount = showUnique ? (novelUniqueViewCount ?? 0) : (novelViewCount ?? 0);
+      const comicCount = showUnique ? (comicUniqueViewCount ?? 0) : (comicViewCount ?? 0);
+      return (
+        <div className={`inline-flex items-center gap-2 ${className}`}>
+          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-medium">
+            <Eye className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>📖 {formatCount(novelCount)}</span>
+          </div>
+          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-medium">
+            <Eye className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>🎨 {formatCount(comicCount)}</span>
+          </div>
+        </div>
+      );
+    case 'total':
+    default:
+      displayCount = showUnique && uniqueViewCount !== undefined
+        ? uniqueViewCount
+        : viewCount;
+      break;
+  }
+
   return (
     <div
       className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-medium ${className}`}
-      title={`${viewCount.toLocaleString()} ${showUnique && uniqueViewCount ? 'unique ' : ''}views`}
+      title={`${displayCount.toLocaleString()} ${showUnique ? 'unique ' : ''}views`}
     >
       <Eye className="w-3.5 h-3.5" aria-hidden="true" />
-      <span>{formatCount(showUnique && uniqueViewCount !== undefined ? uniqueViewCount : viewCount)}</span>
+      <span>{formatCount(displayCount)}</span>
     </div>
   );
 }

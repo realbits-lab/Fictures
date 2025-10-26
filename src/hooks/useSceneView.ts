@@ -13,16 +13,18 @@ import { useSWRConfig } from 'swr';
 interface UseSceneViewOptions {
   enabled?: boolean;
   debounceMs?: number;
+  readingFormat?: 'novel' | 'comic';
 }
 
 export function useSceneView(
   sceneId: string | null,
   options: UseSceneViewOptions = {}
 ) {
-  const { enabled = true, debounceMs = 1000 } = options;
+  const { enabled = true, debounceMs = 1000, readingFormat = 'novel' } = options;
   const { mutate } = useSWRConfig();
 
   // Track which scenes have been viewed in this session (client-side only)
+  // Use format-specific key to allow tracking same scene in both formats
   const viewedScenes = useRef<Set<string>>(new Set());
   const trackingTimeout = useRef<NodeJS.Timeout>();
 
@@ -31,9 +33,12 @@ export function useSceneView(
       return;
     }
 
+    // Create format-specific tracking key
+    const trackingKey = `${sceneId}:${readingFormat}`;
+
     // Skip if already tracked in this session
-    if (viewedScenes.current.has(sceneId)) {
-      console.log(`👁️ Scene ${sceneId} already tracked in this session`);
+    if (viewedScenes.current.has(trackingKey)) {
+      console.log(`👁️ Scene ${sceneId} (${readingFormat}) already tracked in this session`);
       return;
     }
 
@@ -45,13 +50,16 @@ export function useSceneView(
     // Debounce the tracking call
     trackingTimeout.current = setTimeout(async () => {
       try {
-        console.log(`📊 Tracking view for scene: ${sceneId}`);
+        console.log(`📊 Tracking ${readingFormat} view for scene: ${sceneId}`);
 
         const response = await fetch(`/api/scenes/${sceneId}/view`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify({
+            reading_format: readingFormat,
+          }),
         });
 
         if (!response.ok) {
@@ -63,12 +71,12 @@ export function useSceneView(
 
         if (data.success) {
           // Mark as viewed in this session
-          viewedScenes.current.add(sceneId);
+          viewedScenes.current.add(trackingKey);
 
           console.log(
-            `✅ Scene view tracked: ${sceneId}`,
-            `\n   View Count: ${data.viewCount}`,
-            `\n   Unique Views: ${data.uniqueViewCount}`,
+            `✅ Scene view tracked: ${sceneId} (${readingFormat})`,
+            `\n   Total Views: ${data.viewCount} (Novel: ${data.novelViewCount}, Comic: ${data.comicViewCount})`,
+            `\n   Unique Views: ${data.uniqueViewCount} (Novel: ${data.novelUniqueViewCount}, Comic: ${data.comicUniqueViewCount})`,
             `\n   New View: ${data.isNewView ? 'Yes' : 'No'}`
           );
 
@@ -91,7 +99,7 @@ export function useSceneView(
         clearTimeout(trackingTimeout.current);
       }
     };
-  }, [sceneId, enabled, debounceMs, mutate]);
+  }, [sceneId, enabled, debounceMs, readingFormat, mutate]);
 
   return {
     hasViewed: sceneId ? viewedScenes.current.has(sceneId) : false,

@@ -22,6 +22,10 @@ export async function POST(
   try {
     const { id: sceneId } = await context.params;
 
+    // Parse request body for reading format
+    const body = await request.json().catch(() => ({}));
+    const readingFormat: 'novel' | 'comic' = body.reading_format === 'comic' ? 'comic' : 'novel';
+
     // Get authentication status
     const session = await auth();
     const userId = session?.user?.id;
@@ -49,13 +53,14 @@ export async function POST(
       );
     }
 
-    // Check if this user/session already viewed this scene
+    // Check if this user/session already viewed this scene in this format
     const existingView = await db
       .select({ id: sceneViewsTable.id })
       .from(sceneViewsTable)
       .where(
         and(
           eq(sceneViewsTable.sceneId, sceneId),
+          eq(sceneViewsTable.readingFormat, readingFormat),
           userId
             ? eq(sceneViewsTable.userId, userId)
             : eq(sceneViewsTable.sessionId, sessionId!)
@@ -72,6 +77,7 @@ export async function POST(
         sceneId,
         userId: userId || null,
         sessionId: sessionId || null,
+        readingFormat,
         ipAddress,
         userAgent,
         viewedAt: new Date(),
@@ -79,21 +85,31 @@ export async function POST(
 
       isNewView = true;
 
-      // Update scene's unique view count only for new viewers
+      // Update scene's unique view count for this format only for new viewers
+      const formatUniqueCount = readingFormat === 'novel'
+        ? scenesTable.novelUniqueViewCount
+        : scenesTable.comicUniqueViewCount;
+
       await db
         .update(scenesTable)
         .set({
           uniqueViewCount: sql`${scenesTable.uniqueViewCount} + 1`,
+          [readingFormat === 'novel' ? 'novelUniqueViewCount' : 'comicUniqueViewCount']: sql`${formatUniqueCount} + 1`,
           lastViewedAt: new Date(),
         })
         .where(eq(scenesTable.id, sceneId));
     }
 
-    // Always update total view count and last viewed time
+    // Always update total view count and format-specific view count
+    const formatViewCount = readingFormat === 'novel'
+      ? scenesTable.novelViewCount
+      : scenesTable.comicViewCount;
+
     await db
       .update(scenesTable)
       .set({
         viewCount: sql`${scenesTable.viewCount} + 1`,
+        [readingFormat === 'novel' ? 'novelViewCount' : 'comicViewCount']: sql`${formatViewCount} + 1`,
         lastViewedAt: new Date(),
       })
       .where(eq(scenesTable.id, sceneId));
@@ -103,6 +119,10 @@ export async function POST(
       .select({
         viewCount: scenesTable.viewCount,
         uniqueViewCount: scenesTable.uniqueViewCount,
+        novelViewCount: scenesTable.novelViewCount,
+        novelUniqueViewCount: scenesTable.novelUniqueViewCount,
+        comicViewCount: scenesTable.comicViewCount,
+        comicUniqueViewCount: scenesTable.comicUniqueViewCount,
       })
       .from(scenesTable)
       .where(eq(scenesTable.id, sceneId))
@@ -112,8 +132,13 @@ export async function POST(
       success: true,
       sceneId,
       isNewView,
+      readingFormat,
       viewCount: updatedScene[0].viewCount,
       uniqueViewCount: updatedScene[0].uniqueViewCount,
+      novelViewCount: updatedScene[0].novelViewCount,
+      novelUniqueViewCount: updatedScene[0].novelUniqueViewCount,
+      comicViewCount: updatedScene[0].comicViewCount,
+      comicUniqueViewCount: updatedScene[0].comicUniqueViewCount,
       viewer: {
         userId: userId || null,
         sessionId: sessionId || null,
@@ -146,6 +171,10 @@ export async function GET(
         viewCount: scenesTable.viewCount,
         uniqueViewCount: scenesTable.uniqueViewCount,
         lastViewedAt: scenesTable.lastViewedAt,
+        novelViewCount: scenesTable.novelViewCount,
+        novelUniqueViewCount: scenesTable.novelUniqueViewCount,
+        comicViewCount: scenesTable.comicViewCount,
+        comicUniqueViewCount: scenesTable.comicUniqueViewCount,
       })
       .from(scenesTable)
       .where(eq(scenesTable.id, sceneId))
@@ -181,6 +210,10 @@ export async function GET(
       viewCount: scene[0].viewCount,
       uniqueViewCount: scene[0].uniqueViewCount,
       lastViewedAt: scene[0].lastViewedAt,
+      novelViewCount: scene[0].novelViewCount,
+      novelUniqueViewCount: scene[0].novelUniqueViewCount,
+      comicViewCount: scene[0].comicViewCount,
+      comicUniqueViewCount: scene[0].comicUniqueViewCount,
       hasViewedByCurrentUser: hasViewed.length > 0,
     });
   } catch (error) {

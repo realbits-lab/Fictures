@@ -264,6 +264,11 @@ export const scenes = pgTable('scenes', {
   viewCount: integer('view_count').default(0).notNull(),
   uniqueViewCount: integer('unique_view_count').default(0).notNull(),
   lastViewedAt: timestamp('last_viewed_at'),
+  // Format-specific view tracking
+  novelViewCount: integer('novel_view_count').default(0).notNull(),
+  novelUniqueViewCount: integer('novel_unique_view_count').default(0).notNull(),
+  comicViewCount: integer('comic_view_count').default(0).notNull(),
+  comicUniqueViewCount: integer('comic_unique_view_count').default(0).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -305,6 +310,7 @@ export const sceneViews = pgTable('scene_views', {
   sceneId: text('scene_id').references(() => scenes.id, { onDelete: 'cascade' }).notNull(),
   userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
   sessionId: text('session_id'), // Anonymous session ID from cookie
+  readingFormat: readingFormatEnum('reading_format').default('novel').notNull(), // Format: novel or comic
   ipAddress: text('ip_address'),
   userAgent: text('user_agent'),
   viewedAt: timestamp('viewed_at').defaultNow().notNull(),

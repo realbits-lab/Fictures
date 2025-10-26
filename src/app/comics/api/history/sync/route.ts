@@ -6,10 +6,12 @@ import { eq, and, desc } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import type { HistoryItem, ReadingFormat } from '@/types/reading-history';
 
+const FORMAT: ReadingFormat = 'comic';
+
 /**
- * POST /novels/api/history/sync
+ * POST /comics/api/history/sync
  * Sync localStorage reading history to server when user logs in
- * Merges local history with existing server history for novel format
+ * Merges local history with existing server history for comic format
  */
 export async function POST(request: NextRequest) {
   try {
@@ -23,10 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { items, format = 'novel' } = body as {
-      items: HistoryItem[];
-      format?: ReadingFormat;
-    };
+    const { items } = body as { items: HistoryItem[] };
 
     if (!Array.isArray(items)) {
       return NextResponse.json(
@@ -35,7 +34,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`Syncing ${items.length} ${format} reading history items for user ${session.user.id}`);
+    console.log(`Syncing ${items.length} comic reading history items for user ${session.user.id}`);
 
     // Process each item from localStorage
     let syncedCount = 0;
@@ -48,7 +47,7 @@ export async function POST(request: NextRequest) {
       }
 
       try {
-        // Check if entry already exists for this story + format
+        // Check if entry already exists for this story in comic format
         const existing = await db
           .select()
           .from(readingHistory)
@@ -56,7 +55,7 @@ export async function POST(request: NextRequest) {
             and(
               eq(readingHistory.userId, session.user.id),
               eq(readingHistory.storyId, item.storyId),
-              eq(readingHistory.readingFormat, format)
+              eq(readingHistory.readingFormat, FORMAT)
             )
           )
           .limit(1);
@@ -69,16 +68,15 @@ export async function POST(request: NextRequest) {
               .update(readingHistory)
               .set({
                 lastReadAt: new Date(item.timestamp),
-                lastSceneId: item.sceneId || existing[0].lastSceneId,
                 lastPanelId: item.panelId || existing[0].lastPanelId,
-                lastPageNumber: item.pageNumber || existing[0].lastPageNumber,
+                lastPageNumber: item.pageNumber !== undefined ? item.pageNumber : existing[0].lastPageNumber,
                 // Don't increment readCount - this is a sync, not a new view
               })
               .where(
                 and(
                   eq(readingHistory.userId, session.user.id),
                   eq(readingHistory.storyId, item.storyId),
-                  eq(readingHistory.readingFormat, format)
+                  eq(readingHistory.readingFormat, FORMAT)
                 )
               );
             syncedCount++;
@@ -92,48 +90,48 @@ export async function POST(request: NextRequest) {
             id: nanoid(),
             userId: session.user.id,
             storyId: item.storyId,
-            readingFormat: format,
+            readingFormat: FORMAT,
             lastReadAt: new Date(item.timestamp),
             readCount: 1,
-            lastSceneId: item.sceneId || null,
+            lastSceneId: null,
             lastPanelId: item.panelId || null,
-            lastPageNumber: item.pageNumber || null,
+            lastPageNumber: item.pageNumber !== undefined ? item.pageNumber : null,
             createdAt: new Date(),
           });
           syncedCount++;
         }
       } catch (itemError) {
-        console.error(`Error syncing ${format} story ${item.storyId}:`, itemError);
+        console.error(`Error syncing comic story ${item.storyId}:`, itemError);
         skippedCount++;
       }
     }
 
-    // Fetch and return merged history for this format
+    // Fetch and return merged history for comic format
     const mergedHistory = await db
       .select()
       .from(readingHistory)
       .where(
         and(
           eq(readingHistory.userId, session.user.id),
-          eq(readingHistory.readingFormat, format)
+          eq(readingHistory.readingFormat, FORMAT)
         )
       )
       .orderBy(desc(readingHistory.lastReadAt));
 
     console.log(
-      `Sync complete: ${syncedCount} synced, ${skippedCount} skipped, ${mergedHistory.length} total ${format} entries`
+      `Sync complete: ${syncedCount} synced, ${skippedCount} skipped, ${mergedHistory.length} total comic entries`
     );
 
     return NextResponse.json({
-      message: `${format} reading history synced successfully`,
-      format,
+      message: 'Comic reading history synced successfully',
+      format: FORMAT,
       synced: syncedCount,
       skipped: skippedCount,
       total: mergedHistory.length,
       history: mergedHistory,
     });
   } catch (error) {
-    console.error('Error syncing reading history:', error);
+    console.error('Error syncing comic reading history:', error);
     return NextResponse.json(
       { error: 'Failed to sync reading history' },
       { status: 500 }
