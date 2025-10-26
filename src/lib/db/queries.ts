@@ -1,6 +1,6 @@
 import { db } from './index';
-import { stories, chapters, users, userStats, parts, scenes, apiKeys } from './schema';
-import { eq, desc, and, inArray } from 'drizzle-orm';
+import { stories, chapters, users, userStats, parts, scenes, apiKeys, communityPosts } from './schema';
+import { eq, desc, and, inArray, sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { RelationshipManager } from './relationships';
 import { hashPassword } from '../auth/password';
@@ -731,6 +731,85 @@ export async function getPublishedStories() {
       name: story.authorName || 'Anonymous'
     }
   }));
+}
+
+export async function getCommunityStories() {
+  // Get only published stories with their authors and story images
+  const publicStories = await db
+    .select({
+      id: stories.id,
+      title: stories.title,
+      description: stories.description,
+      genre: stories.genre,
+      status: stories.status,
+      viewCount: stories.viewCount,
+      rating: stories.rating,
+      ratingCount: stories.ratingCount,
+      currentWordCount: stories.currentWordCount,
+      createdAt: stories.createdAt,
+      updatedAt: stories.updatedAt,
+      hnsData: stories.hnsData,
+      author: {
+        id: users.id,
+        name: users.name,
+        username: users.username,
+      },
+    })
+    .from(stories)
+    .leftJoin(users, eq(stories.authorId, users.id))
+    .where(eq(stories.status, 'published'))
+    .orderBy(desc(stories.updatedAt));
+
+  // Get real community stats from database
+  const storiesWithStats = await Promise.all(
+    publicStories.map(async (story) => {
+      // Count total posts for this story (excluding deleted)
+      const postCountResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(communityPosts)
+        .where(and(
+          eq(communityPosts.storyId, story.id),
+          eq(communityPosts.isDeleted, false)
+        ));
+      const totalPosts = Number(postCountResult[0]?.count || 0);
+
+      // Get last activity from most recent post
+      const lastPostResult = await db
+        .select({ lastActivityAt: communityPosts.lastActivityAt })
+        .from(communityPosts)
+        .where(and(
+          eq(communityPosts.storyId, story.id),
+          eq(communityPosts.isDeleted, false)
+        ))
+        .orderBy(desc(communityPosts.lastActivityAt))
+        .limit(1);
+      const lastActivity = lastPostResult[0]?.lastActivityAt || story.updatedAt;
+
+      // Count unique members (authors who posted)
+      const memberCountResult = await db
+        .selectDistinct({ authorId: communityPosts.authorId })
+        .from(communityPosts)
+        .where(and(
+          eq(communityPosts.storyId, story.id),
+          eq(communityPosts.isDeleted, false)
+        ));
+      const totalMembers = memberCountResult.length;
+
+      // Determine if active (has posts in last 7 days)
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const isActive = lastActivity > sevenDaysAgo;
+
+      return {
+        ...story,
+        totalPosts,
+        totalMembers,
+        isActive,
+        lastActivity,
+      };
+    })
+  );
+
+  return storiesWithStats;
 }
 
 // API Keys queries

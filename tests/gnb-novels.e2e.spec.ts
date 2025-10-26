@@ -23,9 +23,9 @@ import { test, expect } from '@playwright/test';
  * - Navigation (3 tests): Menu highlighting, filters, story card clicks
  * - Content (5 tests): Story display, metadata, images, filters, search
  * - Performance (2 tests): Page load time, lazy loading
- * - Error Handling (1 test): Error message verification
+ * - Error Handling (2 tests): Error message verification, console errors/warnings
  *
- * TOTAL: 16 test cases
+ * TOTAL: 17 test cases
  */
 
 test.describe('GNB - Novels Page Tests', () => {
@@ -113,20 +113,30 @@ test.describe('GNB - Novels Page Tests', () => {
     test('TC-NOVELS-REDIRECT-002: Logo link navigates to home and redirects to novels', async ({ page }) => {
       console.log('📖 Testing logo navigation redirects to novels...');
 
-      // Navigate to a different page first
-      await page.goto('/community');
+      // Navigate to a different page first (use comics instead of community to avoid SSE timeout)
+      await page.goto('/comics');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(1000);
 
       // Click logo/home link
       const homeLink = page.locator('a[href="/"]').first();
-      if (await homeLink.count() > 0) {
+      const linkCount = await homeLink.count();
+
+      if (linkCount > 0) {
+        console.log('Found logo link, clicking...');
+
+        // Click and wait for navigation
         await homeLink.click();
-        await page.waitForLoadState('networkidle');
-        await page.waitForTimeout(500);
+
+        // Wait for URL to change or timeout after 3 seconds
+        await page.waitForURL((url) => url.pathname.includes('/novels') || url.pathname === '/', { timeout: 3000 }).catch(() => {});
+
+        await page.waitForLoadState('networkidle').catch(() => {});
+        await page.waitForTimeout(1000);
 
         // Home page (/) redirects to /novels
         const currentUrl = page.url();
+        console.log(`Current URL after logo click: ${currentUrl}`);
         expect(currentUrl.includes('/novels')).toBe(true);
         console.log('✅ Logo navigation correctly redirects to /novels');
       } else {
@@ -365,6 +375,54 @@ test.describe('GNB - Novels Page Tests', () => {
 
       expect(hasError).toBe(0);
       console.log('✅ No error messages displayed');
+    });
+
+    test('TC-NOVELS-ERROR-002: No console errors or warnings after page load', async ({ page }) => {
+      console.log('📖 Testing no console errors or warnings...');
+
+      const consoleMessages: { type: string; text: string }[] = [];
+
+      // Capture console messages
+      page.on('console', (msg) => {
+        const msgType = msg.type();
+        if (msgType === 'error' || msgType === 'warning') {
+          consoleMessages.push({
+            type: msgType,
+            text: msg.text()
+          });
+        }
+      });
+
+      // Capture page errors
+      page.on('pageerror', (error) => {
+        consoleMessages.push({
+          type: 'error',
+          text: error.message
+        });
+      });
+
+      await page.goto('/novels');
+      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(2000);
+
+      // Filter out non-critical errors
+      const criticalMessages = consoleMessages.filter(msg =>
+        !msg.text.includes('favicon') &&
+        !msg.text.includes('404') &&
+        !msg.text.toLowerCase().includes('download the react devtools') &&
+        !msg.text.toLowerCase().includes('image with src') &&
+        !msg.text.toLowerCase().includes('blob.vercel-storage.com')
+      );
+
+      if (criticalMessages.length > 0) {
+        console.log('⚠️  Console errors/warnings found:');
+        criticalMessages.forEach((msg, index) => {
+          console.log(`  ${index + 1}. [${msg.type.toUpperCase()}] ${msg.text.substring(0, 100)}`);
+        });
+      }
+
+      expect(criticalMessages.length).toBe(0);
+      console.log('✅ No console errors or warnings');
     });
   });
 });

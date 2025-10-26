@@ -42,11 +42,12 @@ interface Story {
 interface StoryGridProps {
   stories: Story[];
   currentUserId?: string;
+  pageType?: 'novels' | 'comics' | 'reading';
 }
 
 const genres = ["All", ...STORY_GENRES];
 
-export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
+export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }: StoryGridProps) {
   const router = useRouter();
   const { data: session } = useSession();
   const [selectedGenre, setSelectedGenre] = useState("All");
@@ -69,7 +70,7 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
 
       // Authenticated user - use API and sync with localStorage
       try {
-        const response = await fetch('/reading/api/history');
+        const response = await fetch(`/${pageType}/api/history`);
         if (response.ok) {
           const data = await response.json();
           const storyIds = new Set<string>(data.history.map((h: any) => h.storyId as string));
@@ -90,7 +91,7 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
     }
 
     fetchHistory();
-  }, [session?.user?.id]);
+  }, [session?.user?.id, pageType]);
 
   // Record story view
   const recordStoryView = async (storyId: string, storyTitle?: string) => {
@@ -106,7 +107,7 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
 
     // Authenticated user - use API + localStorage as backup
     try {
-      const response = await fetch('/reading/api/history', {
+      const response = await fetch(`/${pageType}/api/history`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ storyId }),
@@ -332,11 +333,11 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
                 key={story.id}
                 onClick={async () => {
                   await recordStoryView(story.id, story.title);
-                  router.push(`/reading/${story.id}`);
+                  router.push(`/${pageType}/${story.id}`);
                 }}
                 onMouseEnter={() => {
                   // Prefetch story data on hover for instant navigation
-                  fetch(`/writing/api/stories/${story.id}/read`, {
+                  fetch(`/studio/api/stories/${story.id}/read`, {
                     credentials: 'include',
                   }).catch(() => {
                     // Silently fail - prefetch is optional
@@ -437,11 +438,11 @@ export function StoryGrid({ stories = [], currentUserId }: StoryGridProps) {
                       key={story.id}
                       onClick={async () => {
                         await recordStoryView(story.id, story.title);
-                        router.push(`/reading/${story.id}`);
+                        router.push(`/${pageType}/${story.id}`);
                       }}
                       onMouseEnter={() => {
                         // Prefetch story data on hover for instant navigation
-                        fetch(`/writing/api/stories/${story.id}/read`, {
+                        fetch(`/studio/api/stories/${story.id}/read`, {
                           credentials: 'include',
                         }).catch(() => {
                           // Silently fail - prefetch is optional

@@ -288,6 +288,22 @@ export async function getPublishedStories() {
   ).then(r => r.result);
 }
 
+export async function getCommunityStories() {
+  const cacheKey = 'community:stories:all';
+
+  return measureAsync(
+    'getCommunityStories',
+    async () => {
+      return withCache(
+        cacheKey,
+        () => queries.getCommunityStories(),
+        300 // 5 minutes TTL for community stories (more dynamic than published list)
+      );
+    },
+    { cached: true }
+  ).then(r => r.result);
+}
+
 export async function getChapterWithPart(chapterId: string, userId?: string) {
   const publicCacheKey = `chapter:${chapterId}:with-part:public`;
 
@@ -329,6 +345,7 @@ export async function updateStory(
     `story:${storyId}:*`,                   // All story variants
     `user:${userId}:stories*`,               // User's story lists
     `stories:published`,                     // Published stories list
+    `community:stories:all`,                 // Community stories list
   ]);
 
   return result.result;
@@ -359,6 +376,7 @@ export async function updateChapter(
       `story:${chapter.storyId}:*`,             // All story variants
       `user:${userId}:stories*`,                 // User's story lists
       `stories:published`,                       // Published stories list
+      `community:stories:all`,                   // Community stories list
     ]);
   }
 
