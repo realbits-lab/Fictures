@@ -332,7 +332,7 @@ export default function CommunityPage() {
             {/* Story Grid */}
             {stories.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {stories.map((story: CommunityStory) => {
+                {stories.map((story: CommunityStory, index: number) => {
                   const isNewlyPublished = recentlyPublishedStories.includes(story.id);
                   return (
                     <div
@@ -350,6 +350,7 @@ export default function CommunityPage() {
                           author: story.author.name,
                           coverImage: story.coverImage || ''
                         }}
+                        priority={index === 0}
                       />
                     </div>
                   );

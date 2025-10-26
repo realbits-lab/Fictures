@@ -17,9 +17,10 @@ interface CommunityStoryCardProps {
     coverImage: string;
     status: string;
   };
+  priority?: boolean;
 }
 
-export function CommunityStoryCard({ story }: CommunityStoryCardProps) {
+export function CommunityStoryCard({ story, priority = false }: CommunityStoryCardProps) {
   return (
     <Link href={`/community/story/${story.id}`}>
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-[1.02] hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 flex flex-col overflow-hidden cursor-pointer">
@@ -31,6 +32,7 @@ export function CommunityStoryCard({ story }: CommunityStoryCardProps) {
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+            priority={priority}
           />
         </div>
 

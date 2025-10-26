@@ -11,9 +11,10 @@ interface StoryImageProps {
   sizes?: string;
   width?: number;
   height?: number;
+  priority?: boolean;
 }
 
-export function StoryImage({ src, alt, fill, className, sizes, width, height }: StoryImageProps) {
+export function StoryImage({ src, alt, fill, className, sizes, width, height, priority = false }: StoryImageProps) {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -68,6 +69,7 @@ export function StoryImage({ src, alt, fill, className, sizes, width, height }: 
         height={height}
         className={`${className} ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
         sizes={sizes}
+        priority={priority}
         onLoad={() => setIsLoading(false)}
         onError={() => {
           setIsLoading(false);
