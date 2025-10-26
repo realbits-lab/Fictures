@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, boolean, json, uuid, varchar, serial, primaryKey, pgEnum, decimal } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, integer, boolean, json, uuid, varchar, serial, primaryKey, pgEnum, decimal, unique } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Status enum for stories and chapters
@@ -440,7 +440,7 @@ export const readingHistory = pgTable('reading_history', {
   readCount: integer('read_count').default(1).notNull(), // Track how many times user viewed this story
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
-  uniqueUserStory: primaryKey({ columns: [table.userId, table.storyId], name: 'user_story_unique' }),
+  uniqueUserStory: unique('user_story_unique').on(table.userId, table.storyId),
 }));
 
 // Define relations
