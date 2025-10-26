@@ -18,21 +18,27 @@ const STORY_ID = '3JpLdcXb5hQK7zy5g3QIj';
 
 // Read authentication from .auth/user.json
 const AUTH_FILE_PATH = join(__dirname, '../.auth/user.json');
-let authCookies = '';
+let authHeaders = {};
 
 try {
   const authData = JSON.parse(readFileSync(AUTH_FILE_PATH, 'utf-8'));
-  const profile = authData.profiles?.writer || authData.profiles?.[authData.defaultProfile];
+  const profile = authData.profiles?.writer;
 
-  if (!profile || !profile.cookies || profile.cookies.length === 0) {
-    throw new Error('No cookies found in writer profile');
+  if (!profile) {
+    throw new Error('Writer profile not found');
   }
 
-  authCookies = profile.cookies
-    .map(cookie => `${cookie.name}=${cookie.value}`)
-    .join('; ');
+  // Use API key authentication
+  if (!profile.apiKey) {
+    throw new Error('No API key found in writer profile');
+  }
 
-  console.log('✓ Loaded authentication from .auth/user.json (writer profile)\n');
+  authHeaders = {
+    'Authorization': `Bearer ${profile.apiKey}`,
+  };
+
+  console.log(`✓ Loaded authentication: ${profile.email} (${profile.role})`);
+  console.log(`✓ Using API key authentication with scopes: ${profile.apiKeyScopes?.join(', ')}\n`);
 } catch (error) {
   console.error('✗ Failed to load authentication:', error.message);
   process.exit(1);
@@ -54,7 +60,7 @@ async function regeneratePanels() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Cookie': authCookies,
+        ...authHeaders,
       },
       body: JSON.stringify({
         sceneId: SCENE_ID,
@@ -130,7 +136,7 @@ async function regeneratePanels() {
     // Verify panels
     console.log('🔍 Verifying panels...');
     const verifyResponse = await fetch(`${BASE_URL}/api/comic/${SCENE_ID}/panels`, {
-      headers: { 'Cookie': authCookies },
+      headers: authHeaders,
     });
 
     if (verifyResponse.ok) {

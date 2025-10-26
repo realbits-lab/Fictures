@@ -134,10 +134,41 @@ export function ComicViewer({
   if (loading) {
     return (
       <div className={className}>
-        <div className="mx-auto max-w-[1792px] space-y-8">
-          {[1, 2, 3].map(i => (
-            <PanelRendererSkeleton key={i} />
-          ))}
+        <div className="max-w-md mx-auto py-12 px-6 text-center">
+          {/* Animated illustration */}
+          <div className="mb-8 relative">
+            {/* Outer pulsing ring */}
+            <div className="absolute inset-0 w-32 h-32 mx-auto bg-gradient-to-br from-purple-200 to-pink-200 dark:from-purple-800/40 dark:to-pink-800/40 rounded-full animate-ping opacity-20"></div>
+
+            {/* Middle rotating ring */}
+            <div className="relative w-32 h-32 mx-auto">
+              <div className="absolute inset-0 border-4 border-transparent border-t-purple-500 border-r-pink-500 rounded-full animate-spin"></div>
+              <div className="absolute inset-2 border-4 border-transparent border-b-purple-400 border-l-pink-400 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+
+              {/* Center icon */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50 rounded-full flex items-center justify-center">
+                  <span className="text-4xl animate-bounce" style={{ animationDuration: '1.5s' }}>📖</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Loading message */}
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
+            Loading Comic Panels
+          </h3>
+
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Preparing your visual journey...
+          </p>
+
+          {/* Loading progress dots */}
+          <div className="flex justify-center gap-2">
+            <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+            <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+          </div>
         </div>
       </div>
     );

@@ -62,15 +62,45 @@ export interface OptimizedImageSet {
 }
 
 /**
- * Download image from URL as buffer
+ * Download image from URL as buffer with retry logic for CDN propagation
  */
-async function downloadImage(url: string): Promise<Buffer> {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to download image: ${response.statusText}`);
+async function downloadImage(url: string, maxRetries = 3, initialDelay = 1000): Promise<Buffer> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        const arrayBuffer = await response.arrayBuffer();
+        if (attempt > 1) {
+          console.log(`[Image Optimization] ✓ Download succeeded on attempt ${attempt}/${maxRetries}`);
+        }
+        return Buffer.from(arrayBuffer);
+      }
+
+      // If 404, it might be CDN propagation delay - retry
+      if (response.status === 404 && attempt < maxRetries) {
+        const delay = initialDelay * Math.pow(2, attempt - 1); // Exponential backoff
+        console.log(`[Image Optimization] ⏳ Image not found (attempt ${attempt}/${maxRetries}), retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+
+      // Other errors or final 404 - throw
+      throw new Error(`Failed to download image: ${response.statusText}`);
+    } catch (error) {
+      lastError = error as Error;
+      if (attempt < maxRetries && (error as any).code !== 'ECONNREFUSED') {
+        const delay = initialDelay * Math.pow(2, attempt - 1);
+        console.log(`[Image Optimization] ⏳ Download failed (attempt ${attempt}/${maxRetries}), retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else if (attempt === maxRetries) {
+        throw lastError;
+      }
+    }
   }
-  const arrayBuffer = await response.arrayBuffer();
-  return Buffer.from(arrayBuffer);
+
+  throw lastError || new Error('Failed to download image after retries');
 }
 
 /**

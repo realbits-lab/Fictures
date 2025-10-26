@@ -17,23 +17,23 @@ export function MetricCard({ value, label, color, description, details }: Metric
 
   return (
     <Card className="text-center">
-      <CardContent className="py-4">
-        <div className={`text-2xl font-bold ${color}`}>
-          {typeof value === 'number' ? value.toLocaleString() : value}
-        </div>
-        <div className="flex items-center justify-center gap-1 text-xs text-gray-600 dark:text-gray-400">
-          <span>{label}</span>
-          <Popover open={isOpen} onOpenChange={setIsOpen}>
-            <div className="relative">
-              <PopoverTrigger
-                onClick={() => setIsOpen(!isOpen)}
-                className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors ml-0.5"
-              >
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <div className="relative">
+          <PopoverTrigger
+            onClick={() => setIsOpen(!isOpen)}
+            className="w-full text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors rounded-lg"
+          >
+            <CardContent className="py-4">
+              <div className={`text-2xl font-bold ${color}`}>
+                {typeof value === 'number' ? value.toLocaleString() : value}
+              </div>
+              <div className="flex items-center justify-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                <span>{label}</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
-                  className="w-3 h-3 text-gray-500 dark:text-gray-400"
+                  className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500"
                 >
                   <path
                     fillRule="evenodd"
@@ -41,30 +41,30 @@ export function MetricCard({ value, label, color, description, details }: Metric
                     clipRule="evenodd"
                   />
                 </svg>
-              </PopoverTrigger>
-              {isOpen && (
-                <PopoverContent align="center" side="bottom">
-                  <div className="space-y-2">
-                    <h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100">
-                      {label}
-                    </h4>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      {description}
-                    </p>
-                    {details && details.length > 0 && (
-                      <ul className="text-xs text-gray-500 dark:text-gray-500 space-y-1 mt-2 list-disc list-inside">
-                        {details.map((detail, index) => (
-                          <li key={index}>{detail}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </PopoverContent>
-              )}
-            </div>
-          </Popover>
+              </div>
+            </CardContent>
+          </PopoverTrigger>
+          {isOpen && (
+            <PopoverContent align="start" side="bottom">
+              <div className="space-y-3 text-left">
+                <h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100 text-left">
+                  {label}
+                </h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed text-left">
+                  {description}
+                </p>
+                {details && details.length > 0 && (
+                  <ul className="text-sm text-gray-500 dark:text-gray-500 space-y-1.5 pl-4 text-left">
+                    {details.map((detail, index) => (
+                      <li key={index} className="leading-relaxed list-disc ml-1">{detail}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </PopoverContent>
+          )}
         </div>
-      </CardContent>
+      </Popover>
     </Card>
   );
 }

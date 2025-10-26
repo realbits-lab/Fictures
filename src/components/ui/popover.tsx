@@ -77,7 +77,7 @@ export function PopoverContent({
     <div
       className={`absolute z-50 ${positionClasses[side]} ${alignClasses[align]} ${className || ""}`}
     >
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-4 max-w-xs animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-5 min-w-[320px] max-w-[500px] animate-in fade-in zoom-in-95 duration-200">
         {children}
       </div>
     </div>

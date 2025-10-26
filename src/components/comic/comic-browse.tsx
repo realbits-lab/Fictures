@@ -49,13 +49,46 @@ export function ComicBrowse() {
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <Skeleton className="h-10 w-64 mb-2" />
-          <Skeleton className="h-6 w-96" />
+        {/* Animated loading header */}
+        <div className="mb-10 text-center">
+          <div className="mb-6 flex justify-center">
+            {/* Animated comic stack */}
+            <div className="relative w-24 h-24">
+              {/* Back comic */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-200 to-purple-300 dark:from-purple-800 dark:to-purple-900 rounded-lg transform rotate-6 opacity-50 animate-pulse" style={{ animationDuration: '2s' }}></div>
+
+              {/* Middle comic */}
+              <div className="absolute inset-0 bg-gradient-to-br from-pink-200 to-pink-300 dark:from-pink-800 dark:to-pink-900 rounded-lg transform rotate-3 opacity-75 animate-pulse" style={{ animationDuration: '2s', animationDelay: '0.3s' }}></div>
+
+              {/* Front comic with icon */}
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-200 to-orange-300 dark:from-orange-800 dark:to-orange-900 rounded-lg shadow-xl flex items-center justify-center animate-pulse" style={{ animationDuration: '2s', animationDelay: '0.6s' }}>
+                <span className="text-4xl animate-bounce" style={{ animationDuration: '1.5s' }}>📚</span>
+              </div>
+            </div>
+          </div>
+
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 bg-clip-text text-transparent mb-2 animate-pulse">
+            Loading Comics Gallery
+          </h2>
+
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Fetching amazing stories for you...
+          </p>
+
+          {/* Animated progress dots */}
+          <div className="flex justify-center gap-2 mb-8">
+            <div className="w-3 h-3 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+            <div className="w-3 h-3 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
+            <div className="w-3 h-3 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
+          </div>
         </div>
+
+        {/* Skeleton grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
-            <ComicCardSkeleton key={i} />
+            <div key={i} className="animate-pulse">
+              <ComicCardSkeleton />
+            </div>
           ))}
         </div>
       </div>

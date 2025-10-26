@@ -61,9 +61,18 @@ export async function GET(
 
   } catch (error) {
     perfLogger.end(operationId, { error: true });
-    console.error('Error fetching story data:', error);
+    console.error('[API] Error fetching community story:', error);
+    console.error('[API] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    console.error('[API] Error details:', {
+      message: error instanceof Error ? error.message : String(error),
+      storyId,
+    });
     return NextResponse.json(
-      { error: 'Internal Server Error', message: 'Failed to fetch story data' },
+      {
+        error: 'Internal Server Error',
+        message: 'Failed to fetch story data',
+        details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
+      },
       { status: 500 }
     );
   }
