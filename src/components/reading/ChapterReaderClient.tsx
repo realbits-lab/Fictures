@@ -256,7 +256,7 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
         console.log(`🚀 [PARALLEL] Starting fetch for chapter: ${chapter.title} (${chapter.id})`);
 
         try {
-          const response = await fetch(`/writing/api/chapters/${chapter.id}/scenes`, {
+          const response = await fetch(`/studio/api/chapters/${chapter.id}/scenes`, {
             credentials: 'include',
           });
 

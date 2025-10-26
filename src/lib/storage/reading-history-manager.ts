@@ -185,7 +185,7 @@ class ReadingHistoryManager {
     try {
       console.log(`Syncing ${localItems.length} reading history items to server...`);
 
-      const response = await fetch('/reading/api/history/sync', {
+      const response = await fetch('/novels/api/history/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

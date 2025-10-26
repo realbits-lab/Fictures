@@ -139,7 +139,7 @@ export function useChapterScenes(chapterId: string | null) {
     isValidating,
     mutate
   } = usePersistedSWR<ChapterScenesResponse>(
-    shouldFetch ? `/writing/api/chapters/${chapterId}/scenes` : null,
+    shouldFetch ? `/studio/api/chapters/${chapterId}/scenes` : null,
     fetcher,
     {
       ...CACHE_CONFIGS.reading,

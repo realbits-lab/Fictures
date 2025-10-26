@@ -7,7 +7,7 @@ import { nanoid } from 'nanoid';
 
 export const runtime = 'nodejs';
 
-// POST /writing/api/chapters/[id]/like - Toggle like on a chapter
+// POST /studio/api/chapters/[id]/like - Toggle like on a chapter
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

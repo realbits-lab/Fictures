@@ -46,10 +46,10 @@ const fetcher = async (url: string) => {
   }
 };
 
-// Writing page hooks
+// Studio page hooks (formerly writing)
 export function useUserStories() {
   return usePersistedSWR(
-    '/writing/api/stories',
+    '/studio/api/stories',
     fetcher,
     CACHE_CONFIGS.writing,
     {
@@ -72,7 +72,7 @@ export function useUserStories() {
 
 export function useStoryDrafts() {
   return usePersistedSWR(
-    '/writing/api/stories/drafts',
+    '/studio/api/stories/drafts',
     fetcher,
     CACHE_CONFIGS.writing,
     {
@@ -87,7 +87,7 @@ export function useStoryDrafts() {
 
 export function useStoryStats(storyId: string | null) {
   return usePersistedSWR(
-    storyId ? `/writing/api/stories/${storyId}/stats` : null,
+    storyId ? `/studio/api/stories/${storyId}/stats` : null,
     fetcher,
     CACHE_CONFIGS.analytics,
     {
@@ -98,7 +98,7 @@ export function useStoryStats(storyId: string | null) {
   );
 }
 
-// Reading page hooks
+// Novels page hooks (formerly reading)
 export function usePublishedStories() {
   const hookStartTime = performance.now();
   console.log(`[usePublishedStories] 🎣 Hook called at ${new Date().toISOString()}`);
@@ -177,7 +177,7 @@ export function usePublishedStories() {
 
 export function useFeaturedStories() {
   return usePersistedSWR(
-    '/reading/api/stories/featured',
+    '/novels/api/stories/featured',
     fetcher,
     CACHE_CONFIGS.reading,
     {
@@ -193,7 +193,7 @@ export function useFeaturedStories() {
 
 export function useGenreStories(genre: string | null) {
   return usePersistedSWR(
-    genre ? `/reading/api/stories/genre/${genre}` : null,
+    genre ? `/novels/api/stories/genre/${genre}` : null,
     fetcher,
     CACHE_CONFIGS.reading,
     {

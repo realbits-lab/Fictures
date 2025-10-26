@@ -54,7 +54,7 @@ export function ScenePromptEditor({ sceneData, onSceneUpdate, onPreviewUpdate }:
     setOriginalSceneData(sceneData);
 
     try {
-      const response = await fetch('/writing/api/scene-analyzer', {
+      const response = await fetch('/studio/api/scene-analyzer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/yaml',

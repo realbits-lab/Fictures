@@ -7,7 +7,7 @@ import { nanoid } from 'nanoid';
 
 export const runtime = 'nodejs';
 
-// POST /writing/api/scenes/[id]/like - Toggle like on a scene
+// POST /studio/api/scenes/[id]/like - Toggle like on a scene
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
