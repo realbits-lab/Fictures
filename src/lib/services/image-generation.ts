@@ -131,7 +131,8 @@ export async function generateStoryImage({
         blob.url,
         imageId,
         storyId,
-        imageType
+        imageType,
+        sceneId  // Pass sceneId for comics path hierarchy
       );
       result.optimizedSet = optimizedSet;
       console.log(`[Image Generation] ✓ Complete! Generated ${optimizedSet.variants.length} optimized variants`);

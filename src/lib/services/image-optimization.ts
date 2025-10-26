@@ -172,15 +172,20 @@ export async function optimizeImage(
   originalImageUrl: string,
   imageId: string,
   storyId: string,
-  imageType: 'story' | 'scene' | 'character' | 'setting' = 'story'
+  imageType: 'story' | 'scene' | 'character' | 'setting' | 'panel' = 'story',
+  sceneId?: string
 ): Promise<OptimizedImageSet> {
   console.log(`[Image Optimization] Starting optimization for ${imageType} image ${imageId}`);
 
   // Download original image
   const originalBuffer = await downloadImage(originalImageUrl);
 
-  // Define storage path
-  const basePath = `stories/${storyId}/${imageType}`;
+  // Define storage path - place panel variants under specific scene directory
+  const basePath = imageType === 'panel' && sceneId
+    ? `stories/${storyId}/comics/${sceneId}/panel`
+    : imageType === 'panel'
+    ? `stories/${storyId}/comics/panel`
+    : `stories/${storyId}/${imageType}`;
 
   // Store original (use addRandomSuffix to avoid conflicts)
   const originalPath = `${basePath}/original/${imageId}.png`;
