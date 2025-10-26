@@ -147,22 +147,43 @@ export function ComicViewer({
   if (error) {
     return (
       <div className={className}>
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error Loading Comic</AlertTitle>
-          <AlertDescription className="mt-2">
-            {error}
-          </AlertDescription>
+        <div className="max-w-md mx-auto py-12 px-6 text-center">
+          {/* Friendly illustration */}
+          <div className="mb-6">
+            <div className="w-24 h-24 mx-auto bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-full flex items-center justify-center">
+              <span className="text-5xl">📚</span>
+            </div>
+          </div>
+
+          {/* Friendly message */}
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">
+            Oops! Having Trouble Loading This Comic
+          </h3>
+
+          <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+            We couldn't load the comic panels right now. This might be a temporary hiccup.
+            Please try again in a moment.
+          </p>
+
+          {/* Technical details (collapsible) */}
+          <details className="mb-6 text-left">
+            <summary className="cursor-pointer text-sm text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+              Show technical details
+            </summary>
+            <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-xs text-gray-600 dark:text-gray-400 font-mono break-words">
+              {error}
+            </div>
+          </details>
+
+          {/* Action button */}
           <Button
-            variant="outline"
-            size="sm"
             onClick={handleRetry}
-            className="mt-4"
+            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg"
           >
             <RefreshCw className="mr-2 h-4 w-4" />
-            Retry
+            Try Again
           </Button>
-        </Alert>
+        </div>
       </div>
     );
   }

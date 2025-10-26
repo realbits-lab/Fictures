@@ -96,14 +96,53 @@ export function ComicReaderClient({ storyId, initialData }: ComicReaderClientPro
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
-        <Alert variant="destructive" className="max-w-md">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Failed to Load Story</AlertTitle>
-          <AlertDescription>
-            {error.message || 'An error occurred while loading the story.'}
-          </AlertDescription>
-        </Alert>
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-6">
+        <div className="max-w-lg w-full text-center">
+          {/* Friendly illustration */}
+          <div className="mb-8">
+            <div className="w-32 h-32 mx-auto bg-gradient-to-br from-purple-100 via-pink-100 to-orange-100 dark:from-purple-900/30 dark:via-pink-900/30 dark:to-orange-900/30 rounded-full flex items-center justify-center shadow-xl">
+              <span className="text-6xl">🎨</span>
+            </div>
+          </div>
+
+          {/* Friendly message */}
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
+            Story Temporarily Unavailable
+          </h2>
+
+          <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed text-lg">
+            We're having trouble loading this story. Don't worry, it's still here!
+            Try refreshing the page or come back in a few moments.
+          </p>
+
+          {/* Technical details (collapsible) */}
+          <details className="mb-8 text-left mx-auto max-w-md">
+            <summary className="cursor-pointer text-sm text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors text-center">
+              What happened?
+            </summary>
+            <div className="mt-3 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm text-gray-600 dark:text-gray-400">
+              <p className="mb-2 font-medium">Technical Details:</p>
+              <div className="font-mono text-xs break-words bg-white dark:bg-gray-900 p-3 rounded">
+                {error.message || 'An error occurred while loading the story.'}
+              </div>
+            </div>
+          </details>
+
+          {/* Actions */}
+          <div className="flex gap-3 justify-center">
+            <Link href="/comics">
+              <button className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium">
+                Browse Comics
+              </button>
+            </Link>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg shadow-lg transition-all font-medium"
+            >
+              Refresh Page
+            </button>
+          </div>
+        </div>
       </div>
     );
   }

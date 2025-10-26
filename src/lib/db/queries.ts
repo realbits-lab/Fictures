@@ -1,6 +1,6 @@
 import { db } from './index';
 import { stories, chapters, users, userStats, parts, scenes, apiKeys, communityPosts } from './schema';
-import { eq, desc, and, inArray, sql } from 'drizzle-orm';
+import { eq, desc, and, inArray, sql, count } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { RelationshipManager } from './relationships';
 import { hashPassword } from '../auth/password';
@@ -734,7 +734,11 @@ export async function getPublishedStories() {
 }
 
 export async function getCommunityStories() {
-  // Get only published stories with their authors and story images
+  console.log('[getCommunityStories] 🔄 START - Optimized version with aggregation');
+  const startTime = Date.now();
+
+  // Query 1: Get all published stories with their authors
+  const storiesStart = Date.now();
   const publicStories = await db
     .select({
       id: stories.id,
@@ -760,54 +764,47 @@ export async function getCommunityStories() {
     .where(eq(stories.status, 'published'))
     .orderBy(desc(stories.updatedAt));
 
-  // Get real community stats from database
-  const storiesWithStats = await Promise.all(
-    publicStories.map(async (story) => {
-      // Count total posts for this story (excluding deleted)
-      const postCountResult = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(communityPosts)
-        .where(and(
-          eq(communityPosts.storyId, story.id),
-          eq(communityPosts.isDeleted, false)
-        ));
-      const totalPosts = Number(postCountResult[0]?.count || 0);
+  console.log(`[getCommunityStories] ✅ Query 1 (stories): ${Date.now() - storiesStart}ms - Found ${publicStories.length} stories`);
 
-      // Get last activity from most recent post
-      const lastPostResult = await db
-        .select({ lastActivityAt: communityPosts.lastActivityAt })
-        .from(communityPosts)
-        .where(and(
-          eq(communityPosts.storyId, story.id),
-          eq(communityPosts.isDeleted, false)
-        ))
-        .orderBy(desc(communityPosts.lastActivityAt))
-        .limit(1);
-      const lastActivity = lastPostResult[0]?.lastActivityAt || story.updatedAt;
-
-      // Count unique members (authors who posted)
-      const memberCountResult = await db
-        .selectDistinct({ authorId: communityPosts.authorId })
-        .from(communityPosts)
-        .where(and(
-          eq(communityPosts.storyId, story.id),
-          eq(communityPosts.isDeleted, false)
-        ));
-      const totalMembers = memberCountResult.length;
-
-      // Determine if active (has posts in last 7 days)
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      const isActive = lastActivity > sevenDaysAgo;
-
-      return {
-        ...story,
-        totalPosts,
-        totalMembers,
-        isActive,
-        lastActivity,
-      };
+  // Query 2: Get aggregated stats for ALL stories in a single query
+  const statsStart = Date.now();
+  const communityStats = await db
+    .select({
+      storyId: communityPosts.storyId,
+      totalPosts: sql<number>`count(*)::int`,
+      totalMembers: sql<number>`count(distinct ${communityPosts.authorId})::int`,
+      lastActivity: sql<Date>`max(${communityPosts.lastActivityAt})`,
     })
+    .from(communityPosts)
+    .where(eq(communityPosts.isDeleted, false))
+    .groupBy(communityPosts.storyId);
+
+  console.log(`[getCommunityStories] ✅ Query 2 (stats aggregation): ${Date.now() - statsStart}ms - Found stats for ${communityStats.length} stories`);
+
+  // Create a map for fast lookup
+  const statsMap = new Map(
+    communityStats.map(stat => [stat.storyId, stat])
   );
+
+  // Merge stories with their stats
+  const mergeStart = Date.now();
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const storiesWithStats = publicStories.map(story => {
+    const stats = statsMap.get(story.id);
+    const lastActivity = stats?.lastActivity || story.updatedAt;
+    const isActive = lastActivity > sevenDaysAgo;
+
+    return {
+      ...story,
+      totalPosts: stats?.totalPosts || 0,
+      totalMembers: stats?.totalMembers || 0,
+      isActive,
+      lastActivity,
+    };
+  });
+
+  console.log(`[getCommunityStories] ✅ Merge completed: ${Date.now() - mergeStart}ms`);
+  console.log(`[getCommunityStories] ✨ TOTAL TIME: ${Date.now() - startTime}ms (was ~1810ms with N+1 queries)`);
 
   return storiesWithStats;
 }

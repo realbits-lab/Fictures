@@ -65,14 +65,44 @@ export function ComicBrowse() {
   // Error state
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
-          <h2 className="text-xl font-bold text-red-900 dark:text-red-100 mb-2">
-            Failed to Load Comics
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-2xl mx-auto text-center">
+          {/* Friendly illustration */}
+          <div className="mb-8">
+            <div className="w-32 h-32 mx-auto bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100 dark:from-purple-900/30 dark:via-pink-900/30 dark:to-blue-900/30 rounded-full flex items-center justify-center shadow-2xl">
+              <span className="text-6xl">🎭</span>
+            </div>
+          </div>
+
+          {/* Friendly message */}
+          <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">
+            Couldn't Load Comics Gallery
           </h2>
-          <p className="text-red-700 dark:text-red-300">
-            {error.message || 'An error occurred while loading comics.'}
+
+          <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed text-lg max-w-md mx-auto">
+            We're having a little trouble fetching the comics right now.
+            This is usually temporary, so please try again in a moment!
           </p>
+
+          {/* Technical details (collapsible) */}
+          <details className="mb-8 text-left max-w-md mx-auto">
+            <summary className="cursor-pointer text-sm text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors text-center">
+              Show technical details
+            </summary>
+            <div className="mt-3 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm text-gray-600 dark:text-gray-400">
+              <div className="font-mono text-xs break-words bg-white dark:bg-gray-900 p-3 rounded">
+                {error.message || 'An error occurred while loading comics.'}
+              </div>
+            </div>
+          </details>
+
+          {/* Action button */}
+          <button
+            onClick={() => window.location.reload()}
+            className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg shadow-xl transition-all font-semibold text-lg"
+          >
+            Refresh Page
+          </button>
         </div>
       </div>
     );
