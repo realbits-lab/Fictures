@@ -117,10 +117,10 @@ export function ComicBrowse() {
           >
             {/* Cover Image */}
             <div className="relative h-48 bg-gradient-to-br from-purple-500 to-pink-500 overflow-hidden">
-              {story.coverImage?.url ? (
+              {story.hnsData?.storyImage?.url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={story.coverImage.url}
+                  src={story.hnsData.storyImage.url}
                   alt={story.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -141,7 +141,7 @@ export function ComicBrowse() {
                 {story.title}
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
-                {story.premise || story.summary || 'No description available'}
+                {story.description || "No description available."}
               </p>
 
               {/* Metadata */}
@@ -153,7 +153,6 @@ export function ComicBrowse() {
                     </span>
                   )}
                 </span>
-                <span>{story.wordCount?.toLocaleString() || 0} words</span>
               </div>
 
               {/* Read Button */}
@@ -164,13 +163,6 @@ export function ComicBrowse() {
           </Link>
         ))}
       </div>
-
-      {/* Count */}
-      {storiesWithComics.length > 0 && (
-        <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-          Showing {storiesWithComics.length} comic{storiesWithComics.length !== 1 ? 's' : ''}
-        </div>
-      )}
     </div>
   );
 }
