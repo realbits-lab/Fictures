@@ -818,6 +818,12 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
                               {item.partTitle && <span>{item.partTitle} • </span>}
                               {item.chapterTitle}
                             </div>
+                            {item.scene.novelUniqueViewCount !== undefined && (
+                              <div className="flex items-center gap-1 mt-1 text-xs text-gray-400 dark:text-gray-500">
+                                <span>👁️</span>
+                                <span>{item.scene.novelUniqueViewCount.toLocaleString()}</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </button>

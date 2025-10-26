@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Card, CardHeader, CardTitle, CardContent, Badge } from "@/components/ui";
+import { SceneViewStats } from "@/components/community/SceneViewStats";
 
 interface Character {
   id: string;
@@ -503,6 +504,9 @@ export function CommunityStorySidebar({ currentStoryId, characters, settings }: 
           </CardContent>
         </Card>
       )}
+
+      {/* Scene View Stats */}
+      <SceneViewStats storyId={currentStoryId} />
 
       {/* Community Guidelines */}
       <Card>

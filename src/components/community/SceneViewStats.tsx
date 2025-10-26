@@ -13,11 +13,9 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Skeleton } from '@/components/ui';
 import { SceneViewBadge } from '@/components/ui/scene-view-badge';
 import useSWR from 'swr';
-import Link from 'next/link';
 
 interface SceneViewStatsProps {
   storyId: string;
-  showFullStats?: boolean;
   className?: string;
 }
 
@@ -25,7 +23,6 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export function SceneViewStats({
   storyId,
-  showFullStats = false,
   className = '',
 }: SceneViewStatsProps) {
   const { data, error, isLoading } = useSWR(
@@ -134,16 +131,6 @@ export function SceneViewStats({
             </div>
           </div>
         ))}
-
-        {/* View All Link */}
-        {showFullStats && (
-          <Link
-            href={`/analytics?story=${storyId}#scenes`}
-            className="block text-center text-sm text-blue-600 dark:text-blue-400 hover:underline pt-2"
-          >
-            View detailed analytics →
-          </Link>
-        )}
       </CardContent>
     </Card>
   );

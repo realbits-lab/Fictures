@@ -6,6 +6,19 @@
 
 This system displays scene-level view statistics in both Community and Analytics pages, with separate tracking for novel (text) and comic (panel) viewing formats.
 
+### Important Implementation Notes
+
+**Database Schema:**
+- The `scenes` table stores format-specific view counts only: `novel_view_count`, `novel_unique_view_count`, `comic_view_count`, `comic_unique_view_count`
+- Total views are calculated by summing novel + comic views: `novel_view_count + comic_view_count`
+- Scene numbers use `orderIndex` field (not `sceneNumber`)
+- Chapter numbers also use `orderIndex` field (not `chapterNumber`)
+
+**Fixed Issues:**
+- Initially tried to query non-existent `viewCount` and `uniqueViewCount` columns
+- Fixed by using format-specific columns and calculating totals via SQL aggregation
+- Added proper null safety checks for empty result sets
+
 ## Architecture
 
 ```

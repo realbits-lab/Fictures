@@ -260,15 +260,12 @@ export const scenes = pgTable('scenes', {
   comicGeneratedAt: timestamp('comic_generated_at'),
   comicPanelCount: integer('comic_panel_count').default(0),
   comicVersion: integer('comic_version').default(1),
-  // View tracking fields
-  viewCount: integer('view_count').default(0).notNull(),
-  uniqueViewCount: integer('unique_view_count').default(0).notNull(),
-  lastViewedAt: timestamp('last_viewed_at'),
   // Format-specific view tracking
   novelViewCount: integer('novel_view_count').default(0).notNull(),
   novelUniqueViewCount: integer('novel_unique_view_count').default(0).notNull(),
   comicViewCount: integer('comic_view_count').default(0).notNull(),
   comicUniqueViewCount: integer('comic_unique_view_count').default(0).notNull(),
+  lastViewedAt: timestamp('last_viewed_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
