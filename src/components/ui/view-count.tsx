@@ -29,7 +29,7 @@ interface ViewCountProps {
 /**
  * Format large numbers with K/M suffixes
  */
-function formatCount(count: number): string {
+export function formatCount(count: number): string {
   if (count >= 1000000) {
     return `${(count / 1000000).toFixed(1)}M`;
   }

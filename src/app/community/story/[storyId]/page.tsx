@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@/compo
 import { CommunityStorySidebar } from '@/components/community/CommunityStorySidebar';
 import { CommunityPostsList } from '@/components/community/CommunityPostsList';
 import { CreatePostForm } from '@/components/community/CreatePostForm';
+import { SceneViewStats } from '@/components/community/SceneViewStats';
 import { useProtectedAction } from '@/hooks/useProtectedAction';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -215,6 +216,12 @@ export default function StoryCommunityPage() {
               </div>
             </div>
           </div>
+
+          {/* Scene View Stats */}
+          <SceneViewStats
+            storyId={storyId}
+            showFullStats={session?.user?.id === story.author.id}
+          />
 
           {/* Action Bar */}
           <div className="flex items-center justify-between">

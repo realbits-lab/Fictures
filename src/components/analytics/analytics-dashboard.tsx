@@ -2,6 +2,9 @@
 
 import { Card, CardHeader, CardTitle, CardContent, Progress, Badge, Skeleton } from "@/components/ui";
 import { useStoryAnalytics, useReaderAnalytics } from "@/lib/hooks/use-page-cache";
+import { ScenePerformanceTable } from "@/components/analytics/ScenePerformanceTable";
+import { FormatDistributionCard } from "@/components/analytics/FormatDistributionCard";
+import { useState } from "react";
 
 // Skeleton components for loading states
 function MetricsSkeleton() {
@@ -57,9 +60,14 @@ function StoryPerformanceSkeleton() {
 export function AnalyticsDashboard() {
   const { data: analyticsData, isLoading: analyticsLoading, error: analyticsError } = useStoryAnalytics('7d');
   const { data: readerData, isLoading: readerLoading, error: readerError } = useReaderAnalytics('7d');
+  const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
 
   const isLoading = analyticsLoading || readerLoading;
   const hasError = analyticsError || readerError;
+
+  // TODO: Get actual story ID from user's stories - for now using placeholder
+  // This should be replaced with actual story selection logic
+  const storyId = selectedStoryId || 'placeholder-story-id';
 
   return (
     <div className="space-y-8">
@@ -369,6 +377,29 @@ export function AnalyticsDashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* Scene Analytics Section */}
+      <div className="space-y-6" id="scenes">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <span>📊</span>
+            Scene Performance
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            Detailed view tracking for each scene in your stories
+          </p>
+        </div>
+
+        {/* Scene Performance and Format Distribution */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <ScenePerformanceTable storyId={storyId} />
+          </div>
+          <div>
+            <FormatDistributionCard storyId={storyId} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
