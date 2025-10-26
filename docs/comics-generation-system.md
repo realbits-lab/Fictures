@@ -504,42 +504,45 @@ All comic panel images are stored in **Vercel Blob Storage** (cloud object stora
 Vercel Blob Storage
 └── stories/
     └── {story_id}/
-        └── scenes/
-            └── {scene_id}/
-                └── panels/
-                    ├── panel-1-original.png          (1792×1024)
-                    ├── panel-1-mobile-640.avif       (640×360)
-                    ├── panel-1-mobile-640.webp
-                    ├── panel-1-mobile-640.jpg
-                    ├── panel-1-mobile-1280.avif      (1280×720)
-                    ├── panel-1-mobile-1280.webp
-                    ├── panel-1-mobile-1280.jpg
-                    ├── panel-1-tablet-1024.avif      (1024×576)
-                    ├── panel-1-tablet-1024.webp
-                    ├── panel-1-tablet-1024.jpg
-                    ├── panel-1-tablet-2048.avif      (2048×1152)
-                    ├── panel-1-tablet-2048.webp
-                    ├── panel-1-tablet-2048.jpg
-                    ├── panel-1-desktop-1440.avif     (1440×810)
-                    ├── panel-1-desktop-1440.webp
-                    ├── panel-1-desktop-1440.jpg
-                    ├── panel-1-desktop-2880.avif     (2880×1620)
-                    ├── panel-1-desktop-2880.webp
-                    ├── panel-1-desktop-2880.jpg
-                    ├── panel-2-original.png
-                    ├── panel-2-mobile-640.avif
-                    └── ... (18 variants for panel 2)
-                    └── ... (18 variants for panel 3)
+        ├── story/              # Story cover images (1 per story)
+        ├── character/          # Character portraits (1 per character)
+        ├── setting/            # Setting visuals (1 per setting)
+        ├── scene/              # Scene illustrations (1 per scene)
+        └── comics/             # Comic panels (first-class content type)
+            └── {scene_id}/     # Group by scene for multi-panel sequences
+                ├── panel-1.png                   (1792×1024)
+                ├── panel-1-mobile-640.avif       (640×360)
+                ├── panel-1-mobile-640.webp
+                ├── panel-1-mobile-640.jpg
+                ├── panel-1-mobile-1280.avif      (1280×720)
+                ├── panel-1-mobile-1280.webp
+                ├── panel-1-mobile-1280.jpg
+                ├── panel-1-tablet-1024.avif      (1024×576)
+                ├── panel-1-tablet-1024.webp
+                ├── panel-1-tablet-1024.jpg
+                ├── panel-1-tablet-2048.avif      (2048×1152)
+                ├── panel-1-tablet-2048.webp
+                ├── panel-1-tablet-2048.jpg
+                ├── panel-1-desktop-1440.avif     (1440×810)
+                ├── panel-1-desktop-1440.webp
+                ├── panel-1-desktop-1440.jpg
+                ├── panel-1-desktop-2880.avif     (2880×1620)
+                ├── panel-1-desktop-2880.webp
+                ├── panel-1-desktop-2880.jpg
+                ├── panel-2.png
+                ├── panel-2-mobile-640.avif
+                └── ... (18 variants for panel 2)
+                └── ... (18 variants for panel 3)
 ```
 
 ### URL Format
 
 ```
 Original Image:
-https://[blob-id].public.blob.vercel-storage.com/stories/3JpLdcXb5hQK7zy5g3QIj/scenes/s25ARzn_TttzuO9r5lvX3/panels/panel-1-original.png
+https://[blob-id].public.blob.vercel-storage.com/stories/3JpLdcXb5hQK7zy5g3QIj/comics/s25ARzn_TttzuO9r5lvX3/panel-1.png
 
 Optimized Variant:
-https://[blob-id].public.blob.vercel-storage.com/stories/3JpLdcXb5hQK7zy5g3QIj/scenes/s25ARzn_TttzuO9r5lvX3/panels/panel-1-mobile-640.avif
+https://[blob-id].public.blob.vercel-storage.com/stories/3JpLdcXb5hQK7zy5g3QIj/comics/s25ARzn_TttzuO9r5lvX3/panel-1-mobile-640.avif
 ```
 
 ### PostgreSQL Database Storage

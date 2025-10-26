@@ -72,10 +72,15 @@ interface StoryData {
 }
 
 export default function StoryCommunityPage() {
+  const componentStartTime = performance.now();
+  console.log(`[StoryCommunityPage] 🚀 Component mounting`);
+
   const params = useParams();
   const { data: session } = useSession();
   const storyId = params.storyId as string;
   const [showCreateForm, setShowCreateForm] = useState(false);
+
+  console.log(`[StoryCommunityPage] 📍 Story ID: ${storyId}`);
 
   // Use cached hooks for data fetching
   const {
@@ -89,6 +94,14 @@ export default function StoryCommunityPage() {
     isLoading: isLoadingPosts,
     error: postsError
   } = useCommunityPosts(storyId);
+
+  console.log(`[StoryCommunityPage] 📊 Loading state:`, {
+    storyLoading: isLoadingStory,
+    postsLoading: isLoadingPosts,
+    hasStoryData: !!storyData,
+    hasPostsData: !!postsData,
+    elapsedTime: `${(performance.now() - componentStartTime).toFixed(2)}ms`
+  });
 
   const revalidatePosts = useRevalidateCommunityPosts(storyId);
 

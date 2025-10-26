@@ -25,9 +25,24 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
  * @param storyId - Story ID to fetch
  */
 export function useCommunityStory(storyId: string) {
-  return usePersistedSWR(
+  const startTime = performance.now();
+  console.log(`[useCommunityStory] 🔄 START fetching story ${storyId}`);
+
+  const result = usePersistedSWR(
     `/api/community/stories/${storyId}`,
-    fetcher,
+    async (url: string) => {
+      const fetchStart = performance.now();
+      console.log(`[useCommunityStory] 🌐 API fetch starting for ${url}`);
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      const fetchEnd = performance.now();
+      console.log(`[useCommunityStory] ✅ API fetch completed in ${(fetchEnd - fetchStart).toFixed(2)}ms`);
+      console.log(`[useCommunityStory] 📦 Data size: ${JSON.stringify(data).length} bytes`);
+
+      return data;
+    },
     CACHE_CONFIGS.community,
     {
       revalidateOnFocus: false,     // Don't refetch on tab focus
@@ -36,13 +51,20 @@ export function useCommunityStory(storyId: string) {
       dedupingInterval: 30 * 60 * 1000, // Dedupe requests for 30min
       keepPreviousData: true,       // Show stale data while revalidating
       onSuccess: (data, key) => {
-        console.log(`[useCommunityStory] Cache updated for ${storyId}`);
+        const totalTime = performance.now() - startTime;
+        console.log(`[useCommunityStory] ✨ SUCCESS - Total time: ${totalTime.toFixed(2)}ms`);
+        console.log(`[useCommunityStory] 📊 Story: ${data?.story?.title || 'Unknown'}`);
+        console.log(`[useCommunityStory] 📊 Characters: ${data?.story?.characters?.length || 0}`);
+        console.log(`[useCommunityStory] 📊 Settings: ${data?.story?.settings?.length || 0}`);
       },
       onError: (error, key) => {
-        console.error(`[useCommunityStory] Error fetching ${storyId}:`, error);
+        const totalTime = performance.now() - startTime;
+        console.error(`[useCommunityStory] ❌ ERROR after ${totalTime.toFixed(2)}ms:`, error);
       }
     }
   );
+
+  return result;
 }
 
 /**
@@ -58,9 +80,24 @@ export function useCommunityStory(storyId: string) {
  * @param storyId - Story ID to fetch posts for
  */
 export function useCommunityPosts(storyId: string) {
-  return usePersistedSWR(
+  const startTime = performance.now();
+  console.log(`[useCommunityPosts] 🔄 START fetching posts for ${storyId}`);
+
+  const result = usePersistedSWR(
     `/api/community/stories/${storyId}/posts`,
-    fetcher,
+    async (url: string) => {
+      const fetchStart = performance.now();
+      console.log(`[useCommunityPosts] 🌐 API fetch starting for ${url}`);
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      const fetchEnd = performance.now();
+      console.log(`[useCommunityPosts] ✅ API fetch completed in ${(fetchEnd - fetchStart).toFixed(2)}ms`);
+      console.log(`[useCommunityPosts] 📦 Posts count: ${data?.posts?.length || 0}`);
+
+      return data;
+    },
     CACHE_CONFIGS.community,
     {
       revalidateOnFocus: false,
@@ -69,13 +106,18 @@ export function useCommunityPosts(storyId: string) {
       dedupingInterval: 30 * 60 * 1000,
       keepPreviousData: true,
       onSuccess: (data, key) => {
-        console.log(`[useCommunityPosts] Cache updated for ${storyId} (${data?.posts?.length || 0} posts)`);
+        const totalTime = performance.now() - startTime;
+        console.log(`[useCommunityPosts] ✨ SUCCESS - Total time: ${totalTime.toFixed(2)}ms`);
+        console.log(`[useCommunityPosts] 📊 Posts: ${data?.posts?.length || 0}`);
       },
       onError: (error, key) => {
-        console.error(`[useCommunityPosts] Error fetching posts for ${storyId}:`, error);
+        const totalTime = performance.now() - startTime;
+        console.error(`[useCommunityPosts] ❌ ERROR after ${totalTime.toFixed(2)}ms:`, error);
       }
     }
   );
+
+  return result;
 }
 
 /**

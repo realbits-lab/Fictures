@@ -95,8 +95,8 @@ export async function generateStoryImage({
   // Construct filename based on image type
   let filename: string;
   if (imageType === 'panel' && sceneId && panelNumber !== undefined) {
-    // Comic panel path: stories/{storyId}/scenes/{sceneId}/panels/panel-{number}-original.png
-    filename = `stories/${storyId}/scenes/${sceneId}/panels/panel-${panelNumber}-original.png`;
+    // Comic panel path: stories/{storyId}/comics/{sceneId}/panel-{number}.png
+    filename = `stories/${storyId}/comics/${sceneId}/panel-${panelNumber}.png`;
   } else {
     // Standard path: stories/{storyId}/{imageType}/{imageId}.png
     filename = `stories/${storyId}/${imageType}/${imageId}.png`;

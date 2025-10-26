@@ -944,7 +944,11 @@ export async function getApiKeyWithUser(keyHash: string) {
  * @returns Story with complete community data or null if not found
  */
 export async function getCommunityStory(storyId: string) {
+  console.log(`[getCommunityStory] 🔄 START DB queries for ${storyId}`);
+  const startTime = Date.now();
+
   // Fetch story with author (primary key lookup - fast)
+  const storyStart = Date.now();
   const storyData = await db
     .select({
       id: stories.id,
@@ -966,12 +970,17 @@ export async function getCommunityStory(storyId: string) {
     .leftJoin(users, eq(stories.authorId, users.id))
     .where(eq(stories.id, storyId))
     .limit(1);
+  console.log(`[getCommunityStory] ✅ Story query: ${Date.now() - storyStart}ms`);
 
-  if (storyData.length === 0) return null;
+  if (storyData.length === 0) {
+    console.log(`[getCommunityStory] ❌ Story not found: ${storyId}`);
+    return null;
+  }
 
   const story = storyData[0];
 
   // Count posts (uses index: story_id, is_deleted, moderation_status)
+  const postsStart = Date.now();
   const postCountResult = await db
     .select({ count: count() })
     .from(communityPosts)
@@ -982,8 +991,10 @@ export async function getCommunityStory(storyId: string) {
         eq(communityPosts.moderationStatus, 'approved')
       )
     );
+  console.log(`[getCommunityStory] ✅ Post count query: ${Date.now() - postsStart}ms`);
 
   // Fetch characters (uses index: story_id)
+  const charsStart = Date.now();
   const storyCharacters = await db
     .select({
       id: characters.id,
@@ -1001,8 +1012,10 @@ export async function getCommunityStory(storyId: string) {
     })
     .from(characters)
     .where(eq(characters.storyId, storyId));
+  console.log(`[getCommunityStory] ✅ Characters query: ${Date.now() - charsStart}ms (${storyCharacters.length} characters)`);
 
   // Fetch settings (uses index: story_id)
+  const settingsStart = Date.now();
   const storySettings = await db
     .select({
       id: settings.id,
@@ -1017,6 +1030,10 @@ export async function getCommunityStory(storyId: string) {
     })
     .from(settings)
     .where(eq(settings.storyId, storyId));
+  console.log(`[getCommunityStory] ✅ Settings query: ${Date.now() - settingsStart}ms (${storySettings.length} settings)`);
+
+  const totalTime = Date.now() - startTime;
+  console.log(`[getCommunityStory] ✨ COMPLETE - Total DB time: ${totalTime}ms`);
 
   return {
     id: story.id,
@@ -1047,7 +1064,10 @@ export async function getCommunityStory(storyId: string) {
  * @returns Array of posts with author data
  */
 export async function getCommunityPosts(storyId: string) {
-  return db
+  console.log(`[getCommunityPosts] 🔄 START DB query for ${storyId}`);
+  const startTime = Date.now();
+
+  const posts = await db
     .select({
       id: communityPosts.id,
       title: communityPosts.title,
@@ -1088,4 +1108,9 @@ export async function getCommunityPosts(storyId: string) {
       desc(communityPosts.isPinned),
       desc(communityPosts.lastActivityAt)
     );
+
+  const totalTime = Date.now() - startTime;
+  console.log(`[getCommunityPosts] ✨ COMPLETE - Total DB time: ${totalTime}ms (${posts.length} posts)`);
+
+  return posts;
 }
