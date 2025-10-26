@@ -38,13 +38,18 @@ export function GlobalNavigation() {
 
   // Filter navigation items based on user role
   const visibleGnbItems = gnbMenuItems.filter((item) => {
+    // Comics is writer only
+    if (item.href === '/comics') {
+      return session?.user?.role === 'writer';
+    }
+
     // Studio, Publish, and Analytics are writer/manager specific
     if (item.href === '/studio' || item.href === '/publish' || item.href === '/analytics') {
       return session?.user?.role === 'writer' || session?.user?.role === 'manager';
     }
 
-    // Novels, Comics, and Community are visible to all users (authenticated or anonymous)
-    if (item.href === '/novels' || item.href === '/comics' || item.href === '/community') {
+    // Novels and Community are visible to all users (authenticated or anonymous)
+    if (item.href === '/novels' || item.href === '/community') {
       return true;
     }
 

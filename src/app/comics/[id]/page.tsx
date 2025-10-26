@@ -1,3 +1,6 @@
+import { auth } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import { isWriter } from '@/lib/auth/permissions';
 import { MainLayout } from '@/components/layout';
 import { ComicReaderClient } from '@/components/comic/comic-reader-client';
 import { getStoryWithStructure } from '@/lib/db/cached-queries';
@@ -8,6 +11,16 @@ interface ComicPageProps {
 }
 
 export default async function ComicPage({ params }: ComicPageProps) {
+  const session = await auth();
+
+  if (!session) {
+    redirect('/login');
+  }
+
+  if (!isWriter(session)) {
+    redirect('/');
+  }
+
   const pageLoadStart = Date.now();
   console.log('\n🎨 [SSR] ComicPage loading started');
 
