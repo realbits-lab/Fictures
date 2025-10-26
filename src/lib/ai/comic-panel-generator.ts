@@ -9,7 +9,8 @@ import { nanoid } from 'nanoid';
 import type { HNSScene, HNSCharacter, HNSSetting } from '@/types/hns';
 import { generateStoryImage } from '@/lib/services/image-generation';
 import { db } from '@/lib/db';
-import { comicPanels } from '@/lib/db/schema';
+import { comicPanels, scenes } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { convertSceneToScreenplay, type ComicScreenplay } from './screenplay-converter';
 import { buildPanelCharacterPrompts, extractKeyPhysicalTraits } from '@/lib/services/character-consistency';
 import { calculateTotalHeight, estimateReadingTime } from '@/lib/services/comic-layout';
@@ -200,7 +201,9 @@ export async function generateComicPanels(
         imageResult = await generateStoryImage({
           prompt: promptToUse,
           storyId: story.story_id,
-          imageType: 'scene',
+          imageType: 'panel',
+          sceneId: scene.scene_id || (scene as any).id,
+          panelNumber: panelSpec.panel_number,
           style: 'vivid',
           quality: 'standard',
         });
@@ -283,6 +286,18 @@ export async function generateComicPanels(
   console.log(`   Images Generated: ${generatedPanels.length}`);
   console.log(`   Total Height: ${totalHeight}px`);
   console.log(`   Estimated Reading Time: ${readingTime.formatted}`);
+
+  // Update scene metadata with comics generation info
+  const sceneId = scene.scene_id || (scene as any).id;
+  console.log(`\n📝 Updating scene metadata for ${sceneId}...`);
+  await db.update(scenes)
+    .set({
+      comicStatus: 'generated',
+      comicGeneratedAt: new Date(),
+      comicPanelCount: generatedPanels.length,
+    })
+    .where(eq(scenes.id, sceneId));
+  console.log(`✅ Scene metadata updated successfully`);
 
   return {
     screenplay,

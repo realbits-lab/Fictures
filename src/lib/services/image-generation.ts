@@ -15,9 +15,10 @@ const PLACEHOLDER_IMAGES = {
 export interface GenerateStoryImageParams {
   prompt: string;
   storyId: string;
-  imageType?: 'story' | 'scene' | 'character' | 'setting';
+  imageType?: 'story' | 'scene' | 'character' | 'setting' | 'panel';
   chapterId?: string;
   sceneId?: string;
+  panelNumber?: number; // For comic panels
   style?: 'vivid' | 'natural';
   quality?: 'standard' | 'hd';
   skipOptimization?: boolean; // For testing or special cases
@@ -52,6 +53,7 @@ export async function generateStoryImage({
   imageType = 'story',
   chapterId,
   sceneId,
+  panelNumber,
   style = 'vivid',
   quality = 'standard',
   skipOptimization = false,
@@ -89,7 +91,16 @@ export async function generateStoryImage({
 
   // Generate unique image ID
   const imageId = nanoid();
-  const filename = `stories/${storyId}/${imageType}/${imageId}.png`;
+
+  // Construct filename based on image type
+  let filename: string;
+  if (imageType === 'panel' && sceneId && panelNumber !== undefined) {
+    // Comic panel path: stories/{storyId}/scenes/{sceneId}/panels/panel-{number}-original.png
+    filename = `stories/${storyId}/scenes/${sceneId}/panels/panel-${panelNumber}-original.png`;
+  } else {
+    // Standard path: stories/{storyId}/{imageType}/{imageId}.png
+    filename = `stories/${storyId}/${imageType}/${imageId}.png`;
+  }
 
   console.log(`[Image Generation] Uploading original image to Vercel Blob...`);
 

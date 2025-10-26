@@ -86,32 +86,38 @@ export async function POST(
       isNewView = true;
 
       // Update scene's unique view count for this format only for new viewers
-      const formatUniqueCount = readingFormat === 'novel'
-        ? scenesTable.novelUniqueViewCount
-        : scenesTable.comicUniqueViewCount;
+      const uniqueUpdateData: any = {
+        uniqueViewCount: sql`${scenesTable.uniqueViewCount} + 1`,
+        lastViewedAt: new Date(),
+      };
+
+      if (readingFormat === 'novel') {
+        uniqueUpdateData.novelUniqueViewCount = sql`${scenesTable.novelUniqueViewCount} + 1`;
+      } else {
+        uniqueUpdateData.comicUniqueViewCount = sql`${scenesTable.comicUniqueViewCount} + 1`;
+      }
 
       await db
         .update(scenesTable)
-        .set({
-          uniqueViewCount: sql`${scenesTable.uniqueViewCount} + 1`,
-          [readingFormat === 'novel' ? 'novelUniqueViewCount' : 'comicUniqueViewCount']: sql`${formatUniqueCount} + 1`,
-          lastViewedAt: new Date(),
-        })
+        .set(uniqueUpdateData)
         .where(eq(scenesTable.id, sceneId));
     }
 
     // Always update total view count and format-specific view count
-    const formatViewCount = readingFormat === 'novel'
-      ? scenesTable.novelViewCount
-      : scenesTable.comicViewCount;
+    const viewCountUpdateData: any = {
+      viewCount: sql`${scenesTable.viewCount} + 1`,
+      lastViewedAt: new Date(),
+    };
+
+    if (readingFormat === 'novel') {
+      viewCountUpdateData.novelViewCount = sql`${scenesTable.novelViewCount} + 1`;
+    } else {
+      viewCountUpdateData.comicViewCount = sql`${scenesTable.comicViewCount} + 1`;
+    }
 
     await db
       .update(scenesTable)
-      .set({
-        viewCount: sql`${scenesTable.viewCount} + 1`,
-        [readingFormat === 'novel' ? 'novelViewCount' : 'comicViewCount']: sql`${formatViewCount} + 1`,
-        lastViewedAt: new Date(),
-      })
+      .set(viewCountUpdateData)
       .where(eq(scenesTable.id, sceneId));
 
     // Get updated counts
