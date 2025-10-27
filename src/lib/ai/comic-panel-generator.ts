@@ -292,7 +292,7 @@ export async function generateComicPanels(
   console.log(`\n📝 Updating scene metadata for ${sceneId}...`);
   await db.update(scenes)
     .set({
-      comicStatus: 'generated',
+      comicStatus: 'draft',
       comicGeneratedAt: new Date(),
       comicPanelCount: generatedPanels.length,
     })
