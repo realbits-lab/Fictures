@@ -47,7 +47,7 @@ export const ComicPanelSpecSchema = z.object({
 export const ComicScreenplaySchema = z.object({
   scene_id: z.string(),
   scene_title: z.string(),
-  total_panels: z.number().min(1).max(3),
+  total_panels: z.number().min(1).max(12),
   panels: z.array(ComicPanelSpecSchema),
   pacing_notes: z.string().optional(),
   narrative_arc: z.string().describe('How the panels collectively tell the scene story')
@@ -103,22 +103,40 @@ ${setting.name}: ${setting.description}
 GENRE: ${storyGenre}
 
 INSTRUCTIONS:
-1. Break the narrative into ${targetPanelCount || '1-3'} visual panels (MAXIMUM 3 PANELS)
-2. Each panel must SHOW the action, not tell (minimize narration)
-3. Use varied camera angles for visual interest:
-   - Use establishing_shot for opening or location changes
-   - Use wide_shot for action sequences and multiple characters
-   - Use medium_shot for conversations and character interactions
-   - Use close_up for emotional moments and important details
-   - Use extreme_close_up for intense dramatic moments
-4. Maintain character consistency - reference same physical traits
-5. Include dialogue (max 2-3 speech bubbles per panel, max 100 chars each)
-6. Add sound effects (SFX) for impactful moments (doors, footsteps, impacts)
-7. Set gutters:
-   - 200px for continuous action (same moment)
-   - 400-600px for beat changes (transition to next moment)
-   - 800-1000px for scene transitions (change location or major time jump)
-8. Ensure each panel advances the story
+1. Break the narrative into ${targetPanelCount || '8-12'} visual panels (TARGET: ${targetPanelCount || '8-12'} PANELS)
+   - Aim for ${targetPanelCount || 10} panels for optimal pacing
+   - Use more panels for complex action sequences (up to 12)
+   - Use fewer panels for quiet, reflective moments (minimum 8)
+
+2. Shot Type Distribution (for ${targetPanelCount || '8-12'} panels):
+   - 1 establishing_shot (scene opening or major location change)
+   - 2-3 wide_shot (show full action, multiple characters, environment context)
+   - 3-5 medium_shot (main storytelling, conversations, character interactions)
+   - 2-3 close_up (emotional beats, reactions, important details)
+   - 0-1 extreme_close_up (climactic moments, critical details, intense emotion)
+   - 0-1 over_shoulder or dutch_angle (special moments, tension)
+
+3. Each panel must SHOW the action, not tell (minimize narration)
+
+4. Visual Variety and Pacing:
+   - Vary shot types to maintain visual interest
+   - Use establishing shots sparingly (scene openings, major transitions)
+   - Alternate between wide/medium shots for rhythm
+   - Save close-ups for emotional peaks
+   - Build tension with shot progression (wide → medium → close-up)
+
+5. Maintain character consistency - reference same physical traits across all panels
+
+6. Include dialogue (max 2-3 speech bubbles per panel, max 100 chars each)
+
+7. Add sound effects (SFX) for impactful moments (doors, footsteps, impacts, ambient sounds)
+
+8. Set gutters for pacing control:
+   - 200-300px for continuous action (same beat, rapid sequence)
+   - 400-600px for beat changes (next moment, dialogue transition)
+   - 800-1000px for major transitions (location change, time jump, act break)
+
+9. Ensure each panel advances the story - no redundant panels
 
 CHARACTER POSING GUIDANCE:
 - Describe exact body language and gestures

@@ -3,15 +3,16 @@
 /**
  * OptimizedImage Component
  *
- * Responsive image component that automatically serves the best format and size
- * for the user's device and browser.
+ * Responsive image component optimized for comics with 4-variant system.
+ * Mobile-first approach with desktop fallback using mobile 2x (1280×720).
  *
  * Features:
- * - Automatic format selection (AVIF → WebP → JPEG fallback)
- * - Responsive sizing based on viewport
+ * - Automatic format selection (AVIF → JPEG fallback)
+ * - 4 variants: mobile 1x/2x in AVIF and JPEG
+ * - Desktop uses mobile 2x (acceptable upscaling)
+ * - 78% fewer variants vs original system
+ * - 100% browser coverage
  * - Uses Next.js Image for optimal loading
- * - Supports lazy loading and priority loading
- * - Proper srcset generation for all variants
  *
  * Usage:
  * ```tsx
@@ -51,8 +52,9 @@ interface OptimizedImageSet {
 
 /**
  * Detect browser support for modern image formats
+ * Optimized for 2-format system: AVIF with JPEG fallback
  */
-function getSupportedFormat(): 'avif' | 'webp' | 'jpeg' {
+function getSupportedFormat(): 'avif' | 'jpeg' {
   if (typeof window === 'undefined') {
     return 'avif'; // Default to AVIF for SSR
   }
@@ -61,31 +63,24 @@ function getSupportedFormat(): 'avif' | 'webp' | 'jpeg' {
   const avifSupport = document.createElement('canvas').toDataURL('image/avif').indexOf('data:image/avif') === 0;
   if (avifSupport) return 'avif';
 
-  // Check for WebP support
-  const webpSupport = document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') === 0;
-  if (webpSupport) return 'webp';
-
   // Fallback to JPEG
   return 'jpeg';
 }
 
 /**
  * Get the best variant for current viewport and format
+ * Optimized for 4-variant system: mobile 1x/2x only
+ * Desktop automatically uses mobile 2x (1280×720)
  */
 function getBestVariant(
   variants: ImageVariant[],
-  format: 'avif' | 'webp' | 'jpeg',
+  format: 'avif' | 'jpeg',
   viewportWidth: number = 1440
 ): string | null {
   // Filter by format
   let formatVariants = variants.filter((v) => v.format === format);
 
-  // Fallback to WebP if AVIF not available
-  if (formatVariants.length === 0 && format === 'avif') {
-    formatVariants = variants.filter((v) => v.format === 'webp');
-  }
-
-  // Fallback to JPEG if WebP not available
+  // Fallback to JPEG if AVIF not available
   if (formatVariants.length === 0) {
     formatVariants = variants.filter((v) => v.format === 'jpeg');
   }
@@ -110,8 +105,9 @@ function getBestVariant(
 
 /**
  * Generate srcSet string for a format
+ * Optimized for 4-variant system: mobile 1x/2x only
  */
-function generateSrcSet(variants: ImageVariant[], format: 'avif' | 'webp' | 'jpeg'): string {
+function generateSrcSet(variants: ImageVariant[], format: 'avif' | 'jpeg'): string {
   const formatVariants = variants
     .filter((v) => v.format === format)
     .sort((a, b) => a.width - b.width);
@@ -126,7 +122,7 @@ export function OptimizedImage({
   className = '',
   priority = false,
   fill = false,
-  sizes = '(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1440px',
+  sizes = '(max-width: 640px) 100vw, 100vw',
   objectFit = 'cover',
   width,
   height,
@@ -175,12 +171,12 @@ export function OptimizedImage({
   }
 
   // Use optimized variants with picture element for format fallbacks
+  // Optimized for 4-variant system: AVIF with JPEG fallback
   const variants = optimizedSet.variants;
   const supportedFormat = getSupportedFormat();
 
   // Generate srcsets for each format
   const avifSrcSet = generateSrcSet(variants, 'avif');
-  const webpSrcSet = generateSrcSet(variants, 'webp');
   const jpegSrcSet = generateSrcSet(variants, 'jpeg');
 
   // Get best variant for the supported format as fallback
@@ -188,7 +184,7 @@ export function OptimizedImage({
 
   return (
     <picture className={className}>
-      {/* AVIF - best compression */}
+      {/* AVIF - best compression (93.8% browser support) */}
       {avifSrcSet && (
         <source
           type="image/avif"
@@ -197,16 +193,7 @@ export function OptimizedImage({
         />
       )}
 
-      {/* WebP - good compression, wider support */}
-      {webpSrcSet && (
-        <source
-          type="image/webp"
-          srcSet={webpSrcSet}
-          sizes={sizes}
-        />
-      )}
-
-      {/* JPEG - universal fallback */}
+      {/* JPEG - universal fallback (100% browser support) */}
       {jpegSrcSet && (
         <source
           type="image/jpeg"

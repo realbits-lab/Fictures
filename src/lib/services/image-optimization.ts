@@ -16,23 +16,18 @@ import sharp from 'sharp';
 import { put } from '@vercel/blob';
 
 // Image size configuration (16:9 aspect ratio)
+// Optimized for comics: mobile-first with desktop fallback
+// Mobile 2x (1280×720) serves both mobile retina and desktop users
 export const IMAGE_SIZES = {
   mobile: {
-    '1x': { width: 640, height: 360 },
-    '2x': { width: 1280, height: 720 },
-  },
-  tablet: {
-    '1x': { width: 1024, height: 576 },
-    '2x': { width: 2048, height: 1152 },
-  },
-  desktop: {
-    '1x': { width: 1440, height: 810 },
-    '2x': { width: 2880, height: 1620 },
+    '1x': { width: 640, height: 360 },   // Mobile standard displays
+    '2x': { width: 1280, height: 720 },  // Mobile retina + Desktop fallback
   },
 } as const;
 
 // Supported output formats in priority order
-export const IMAGE_FORMATS = ['avif', 'webp', 'jpeg'] as const;
+// Removed WebP: AVIF (93.8% support) with JPEG fallback covers 100% of users
+export const IMAGE_FORMATS = ['avif', 'jpeg'] as const;
 export type ImageFormat = typeof IMAGE_FORMATS[number];
 export type DeviceType = keyof typeof IMAGE_SIZES;
 export type DeviceResolution = '1x' | '2x';
@@ -264,7 +259,8 @@ export async function optimizeImage(
 
 /**
  * Get the best image variant for a given viewport width
- * Selects the smallest image that is still larger than the viewport
+ * Optimized for 4-variant system: mobile 1x/2x only
+ * Desktop automatically uses mobile 2x (1280×720)
  *
  * @param variants - Array of available image variants
  * @param viewportWidth - Current viewport width in pixels
@@ -279,12 +275,7 @@ export function getBestVariant(
   // Try to find variant in preferred format
   let formatVariants = variants.filter(v => v.format === format);
 
-  // Fallback to webp if avif not available
-  if (formatVariants.length === 0 && format === 'avif') {
-    formatVariants = variants.filter(v => v.format === 'webp');
-  }
-
-  // Final fallback to jpeg
+  // Fallback to jpeg if avif not available
   if (formatVariants.length === 0) {
     formatVariants = variants.filter(v => v.format === 'jpeg');
   }
@@ -327,10 +318,11 @@ export function generateSrcSet(variants: ImageVariant[], format: ImageFormat = '
 
 /**
  * Generate sizes attribute for responsive images
- * Follows mobile-first breakpoint strategy
+ * Optimized for 4-variant system: mobile 1x/2x only
+ * Desktop uses mobile 2x (1280×720) as fallback
  *
  * @returns sizes string for use in img tag
  */
 export function generateSizesAttribute(): string {
-  return '(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1440px';
+  return '(max-width: 640px) 100vw, 100vw';
 }
