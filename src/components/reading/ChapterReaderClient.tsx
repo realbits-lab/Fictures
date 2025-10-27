@@ -57,14 +57,10 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
     // Debounce localStorage write by 500ms
     scrollSaveTimeoutRef.current = setTimeout(() => {
       try {
-        // Only save if position is meaningful (not at top, not undefined)
-        if (position > 0 && !isNaN(position)) {
+        // Save all valid positions, including 0 (top)
+        if (!isNaN(position)) {
           localStorage.setItem(scrollPositionKey(sceneId), position.toString());
           console.log(`💾 Saved scroll position for scene ${sceneId}: ${position}px`);
-        } else if (position === 0) {
-          // Remove saved position if user scrolled back to top
-          localStorage.removeItem(scrollPositionKey(sceneId));
-          console.log(`🗑️ Cleared scroll position for scene ${sceneId} (at top)`);
         }
       } catch (error) {
         console.warn('Failed to save scroll position:', error);
