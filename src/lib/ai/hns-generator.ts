@@ -488,7 +488,13 @@ export async function generateCompleteHNS(
       .onConflictDoUpdate({
         target: [stories.id],
         set: {
+          title: story.story_title,
+          description: story.premise,
+          genre: story.genre,
           status: "writing",
+          premise: story.premise,
+          dramaticQuestion: story.dramatic_question,
+          theme: story.theme,
           hnsData: cleanStoryHnsData({
             metadata: {
               version: "1.0.0",
