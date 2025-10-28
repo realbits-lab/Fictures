@@ -76,7 +76,7 @@ export async function generateStoryImage({
 
     // Generate image with Gemini 2.5 Flash Image (1344×768)
     console.log(`[Image Generation] Calling Gemini 2.5 Flash Image...`);
-    const result = await model.generateContent({
+    const geminiResult = await model.generateContent({
       contents: [{
         parts: [{ text: prompt }]
       }],
@@ -89,7 +89,7 @@ export async function generateStoryImage({
     });
 
     // Extract image from response
-    const response = await result.response;
+    const response = await geminiResult.response;
     const imagePart = response.candidates?.[0]?.content?.parts?.find(part => part.inlineData);
 
     if (!imagePart) {
