@@ -20,6 +20,7 @@ interface PanelData {
   shot_type: string;
   image_url: string;
   image_variants?: any;
+  narrative?: string | null;
   dialogue?: Array<{
     character_id: string;
     text: string;
@@ -255,6 +256,7 @@ export function ComicViewer({
               panelNumber={panel.panel_number}
               imageUrl={panel.image_url}
               imageVariants={panel.image_variants}
+              narrative={panel.narrative}
               dialogue={panel.dialogue}
               sfx={panel.sfx}
               characterNames={characterNames}

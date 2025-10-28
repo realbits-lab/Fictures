@@ -36,6 +36,7 @@ interface PanelRendererProps {
       height: number;
     }>;
   };
+  narrative?: string | null; // Narrative text for panels without dialogue
   dialogue?: PanelDialogue[];
   sfx?: PanelSFX[];
   characterNames?: Record<string, string>; // Map of character_id to character name
@@ -49,6 +50,7 @@ export function PanelRenderer({
   panelNumber,
   imageUrl,
   imageVariants,
+  narrative,
   dialogue = [],
   sfx = [],
   characterNames = {},
@@ -164,6 +166,24 @@ export function PanelRenderer({
             onLoad={handleImageLoad}
             quality={90}
           />
+        )}
+
+        {/* Text overlays - Unified design for both narrative and dialogue */}
+        {narrative && (
+          <div
+            className="absolute z-10 max-w-[85%] md:max-w-[70%]"
+            style={{
+              left: '5%',
+              bottom: '8%',
+            }}
+          >
+            <div className="relative px-4 py-3 shadow-lg border-2 border-gray-800 bg-white">
+              {/* Narrative text */}
+              <div className="leading-relaxed text-gray-900 italic text-sm sm:text-base">
+                {narrative}
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Dialogue bubbles overlay */}

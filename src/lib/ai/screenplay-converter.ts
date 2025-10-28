@@ -31,6 +31,7 @@ export const ComicPanelSpecSchema = z.object({
   setting_focus: z.string().describe('Which part of the setting is emphasized'),
   lighting: z.string().describe('Lighting setup and mood'),
   camera_angle: z.string().describe('Camera positioning (e.g., low angle, eye level, birds eye)'),
+  narrative: z.string().optional().describe('Narrative text explaining the current situation. SHOULD be provided when characters_visible is empty.'),
   dialogue: z.array(z.object({
     character_id: z.string(),
     text: z.string().max(100).describe('Max 100 characters for readability'),
@@ -126,7 +127,11 @@ INSTRUCTIONS:
 
 5. Maintain character consistency - reference same physical traits across all panels
 
-6. Include dialogue (max 2-3 speech bubbles per panel, max 100 chars each)
+6. NARRATIVE vs DIALOGUE rules:
+   - If characters_visible is EMPTY (no characters in panel): MUST include "narrative" text to explain the situation
+   - If characters_visible has characters: "narrative" is optional, but MUST include at least one dialogue
+   - Narrative text: 1-2 sentences explaining what's happening in the scene
+   - Dialogue: max 2-3 speech bubbles per panel, max 100 chars each
 
 7. Add sound effects (SFX) for impactful moments (doors, footsteps, impacts, ambient sounds)
 

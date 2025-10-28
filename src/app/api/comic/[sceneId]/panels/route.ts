@@ -110,6 +110,7 @@ export async function GET(
         shot_type: panel.shotType,
         image_url: panel.imageUrl,
         image_variants: panel.imageVariants,
+        narrative: panel.narrative,
         dialogue: panel.dialogue,
         sfx: panel.sfx,
         metadata: panel.metadata,

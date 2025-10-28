@@ -80,6 +80,7 @@ export interface GeneratedPanel {
   shot_type: string;
   image_url: string;
   image_variants: any;
+  narrative?: string;
   dialogue: any[];
   sfx: any[];
   metadata: any;
@@ -234,6 +235,7 @@ export async function generateComicPanels(
       shotType: panelSpec.shot_type,
       imageUrl: imageResult.url,
       imageVariants: imageResult.optimizedSet as any,
+      narrative: panelSpec.narrative || null,
       dialogue: panelSpec.dialogue as any,
       sfx: panelSpec.sfx as any,
       metadata: {
@@ -253,6 +255,7 @@ export async function generateComicPanels(
       shot_type: panelSpec.shot_type,
       image_url: imageResult.url,
       image_variants: imageResult.optimizedSet,
+      narrative: panelSpec.narrative,
       dialogue: panelSpec.dialogue,
       sfx: panelSpec.sfx,
       metadata: {

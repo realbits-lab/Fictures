@@ -155,6 +155,7 @@ export async function POST(
           panel_number: p.panel_number,
           shot_type: p.shot_type,
           image_url: p.image_url,
+          narrative: p.narrative,
           dialogue: p.dialogue,
           sfx: p.sfx,
         })),
