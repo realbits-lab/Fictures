@@ -11,7 +11,7 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { comicPanels, scenes, chapters, stories } from '@/lib/db/schema';
 import { eq, asc } from 'drizzle-orm';
-import { calculateVerticalLayout, estimateReadingTime, calculatePanelDensity } from '@/lib/services/comic-layout';
+import { calculateVerticalLayout, estimateReadingTime, calculatePanelDensity, COMIC_CONSTANTS } from '@/lib/services/comic-layout';
 
 interface RouteContext {
   params: Promise<{
@@ -45,17 +45,20 @@ export async function GET(
       });
     }
 
-    // Check if story is published or user is owner
+    // Check if story is published or user is owner/admin
     const session = await auth();
     const story = scene.chapter.story as any;
 
     // Compare user IDs for ownership check
     const isOwner = session?.user?.id === story.authorId;
 
+    // Check if user is admin
+    const isAdmin = session?.user?.role === 'manager' || session?.user?.role === 'admin';
+
     // Check if story is public (using is_public from database)
     const isPublished = story.isPublic === true || story.is_public === true;
 
-    if (!isPublished && !isOwner) {
+    if (!isPublished && !isOwner && !isAdmin) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), {
         status: 403,
         headers: { 'Content-Type': 'application/json' },
@@ -93,7 +96,7 @@ export async function GET(
       panels.map(p => ({
         id: p.id,
         panel_number: p.panelNumber,
-        gutter_after: p.gutterAfter || 200,
+        gutter_after: p.gutterAfter || COMIC_CONSTANTS.GUTTER_MIN,
       }))
     );
 

@@ -15,10 +15,10 @@ export const COMIC_CONSTANTS = {
   PANEL_HEIGHT: 1024,
 
   // Gutter spacing guidelines (COMIC platform standards)
-  GUTTER_MIN: 200,           // Minimum space between panels
-  GUTTER_BEAT_CHANGE: 400,   // Space for beat/moment changes
-  GUTTER_SCENE_TRANSITION: 800, // Space for major scene transitions
-  GUTTER_MAX: 1000,          // Maximum recommended gutter
+  GUTTER_MIN: 50,            // Minimum space between panels
+  GUTTER_BEAT_CHANGE: 80,    // Space for beat/moment changes
+  GUTTER_SCENE_TRANSITION: 100, // Space for major scene transitions
+  GUTTER_MAX: 120,           // Maximum recommended gutter
 
   // Container max width for desktop
   MAX_CONTAINER_WIDTH: 1792,
