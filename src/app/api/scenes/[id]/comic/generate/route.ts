@@ -157,7 +157,6 @@ export async function POST(
           image_url: p.image_url,
           dialogue: p.dialogue,
           sfx: p.sfx,
-          gutter_after: p.gutter_after,
         })),
         metadata: result.metadata,
       },

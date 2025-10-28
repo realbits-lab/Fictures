@@ -287,9 +287,6 @@ export const comicPanels = pgTable('comic_panels', {
   dialogue: json('dialogue').$type<Array<{character_id: string; text: string; tone?: string}>>(),
   sfx: json('sfx').$type<Array<{text: string; emphasis: 'normal' | 'large' | 'dramatic'}>>(),
 
-  // Layout
-  gutterAfter: integer('gutter_after').default(200), // Vertical space after this panel in pixels
-
   // Metadata
   metadata: json('metadata').$type<{
     prompt: string;
