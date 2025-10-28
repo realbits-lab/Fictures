@@ -29,11 +29,9 @@ interface PanelData {
     text: string;
     emphasis: 'normal' | 'large' | 'dramatic';
   }>;
-  gutter_after: number;
   layout?: {
     y_position: number;
     height: number;
-    gutter_after: number;
     total_height: number;
   };
 }
@@ -264,17 +262,6 @@ export function ComicViewer({
               priority={index === 0} // Prioritize first panel
               onLoad={() => handlePanelLoad(panel.panel_number)}
             />
-
-            {/* Gutter spacing */}
-            {index < data.panels.length - 1 && (
-              <div
-                style={{
-                  height: `${panel.gutter_after}px`,
-                }}
-                className="w-full"
-                aria-hidden="true"
-              />
-            )}
           </div>
         ))}
       </div>

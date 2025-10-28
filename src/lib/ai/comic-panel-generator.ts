@@ -82,7 +82,6 @@ export interface GeneratedPanel {
   image_variants: any;
   dialogue: any[];
   sfx: any[];
-  gutter_after: number;
   metadata: any;
 }
 
@@ -237,7 +236,6 @@ export async function generateComicPanels(
       imageVariants: imageResult.optimizedSet as any,
       dialogue: panelSpec.dialogue as any,
       sfx: panelSpec.sfx as any,
-      gutterAfter: panelSpec.gutter_after,
       metadata: {
         prompt: imagePrompt,
         characters_visible: panelSpec.characters_visible,
@@ -257,7 +255,6 @@ export async function generateComicPanels(
       image_variants: imageResult.optimizedSet,
       dialogue: panelSpec.dialogue,
       sfx: panelSpec.sfx,
-      gutter_after: panelSpec.gutter_after,
       metadata: {
         prompt: imagePrompt,
         characters_visible: panelSpec.characters_visible,
@@ -355,10 +352,33 @@ ACTION: ${description}
 
 MOOD: ${mood}
 
-Style: Clean comic linework, vibrant colors, semi-realistic proportions, 16:9 widescreen format,
-professional ${genre} comic art style, cinematic composition, similar to Naver COMIC quality.
+COMPOSITION RULES FOR 7:5 VERTICAL FORMAT:
+- This is a 7:5 aspect ratio (1.4:1) - portrait-oriented, NOT widescreen
+- Optimal for vertical-scroll comics - taller than wide
+- Frame composition: Utilize vertical space - characters can fill more of the height
+- For wide shots: Show depth front-to-back rather than side-to-side
+- For medium shots: Frame characters from head to waist, use vertical negative space above/below
+- For close-ups: Fill the taller frame with character detail, leave minimal headroom
+- Background: Extend vertically - show more sky/ceiling and ground/floor
+- Multiple characters: Stack vertically or use diagonal arrangements, not horizontal lineups
 
-CRITICAL: Maintain exact character appearances - ${keyTraits}`;
+VISUAL STYLE:
+- Clean comic linework, vibrant colors, semi-realistic proportions
+- Professional ${genre} comic art style, cinematic composition
+- Similar to Naver COMIC/Webtoon quality
+
+CRITICAL CHARACTER CONSISTENCY:
+Maintain exact character appearances - ${keyTraits}
+
+FRAME FILL REQUIREMENT:
+Fill the ENTIRE 7:5 frame completely from edge to edge.
+No blank margins, no empty space, no letterboxing.
+Utilize the full vertical height and full horizontal width.
+The composition must reach all four edges of the canvas.
+
+BACKGROUND/MARGIN FALLBACK:
+If any margins, padding, or blank space cannot be avoided, use PURE WHITE (#FFFFFF) background.
+Never use black, gray, or colored margins - white only.`;
 
   return prompt;
 }

@@ -11,7 +11,7 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { comicPanels, scenes, chapters, stories } from '@/lib/db/schema';
 import { eq, asc } from 'drizzle-orm';
-import { calculateVerticalLayout, estimateReadingTime, calculatePanelDensity, COMIC_CONSTANTS } from '@/lib/services/comic-layout';
+import { estimateReadingTime, COMIC_CONSTANTS } from '@/lib/services/comic-layout';
 
 interface RouteContext {
   params: Promise<{
@@ -76,12 +76,10 @@ export async function GET(
         JSON.stringify({
           sceneId,
           panels: [],
-          layout: null,
           metadata: {
             total_panels: 0,
             total_height: 0,
             estimated_reading_time: '0s',
-            pacing: 'moderate',
           },
         }),
         {
@@ -91,15 +89,6 @@ export async function GET(
       );
     }
 
-    // Calculate layout information
-    const layoutInfo = calculateVerticalLayout(
-      panels.map(p => ({
-        id: p.id,
-        panel_number: p.panelNumber,
-        gutter_after: p.gutterAfter || COMIC_CONSTANTS.GUTTER_MIN,
-      }))
-    );
-
     // Calculate reading time
     const readingTime = estimateReadingTime(
       panels.map(p => ({
@@ -108,14 +97,14 @@ export async function GET(
       }))
     );
 
-    // Calculate panel density
-    const densityInfo = calculatePanelDensity(panels.length, layoutInfo.total_height);
+    // Simple total height without gutter spacing
+    const totalHeight = panels.length * COMIC_CONSTANTS.PANEL_HEIGHT;
 
     // Prepare response
     const response = {
       sceneId,
       sceneTitle: scene.title,
-      panels: panels.map((panel, index) => ({
+      panels: panels.map((panel) => ({
         id: panel.id,
         panel_number: panel.panelNumber,
         shot_type: panel.shotType,
@@ -123,20 +112,12 @@ export async function GET(
         image_variants: panel.imageVariants,
         dialogue: panel.dialogue,
         sfx: panel.sfx,
-        gutter_after: panel.gutterAfter,
-        layout: layoutInfo.panels[index],
         metadata: panel.metadata,
       })),
-      layout: {
-        total_height: layoutInfo.total_height,
-        panel_positions: layoutInfo.panels,
-      },
       metadata: {
         total_panels: panels.length,
-        total_height: layoutInfo.total_height,
+        total_height: totalHeight,
         estimated_reading_time: readingTime.formatted,
-        pacing: densityInfo.pacing,
-        density: densityInfo.density,
       },
     };
 
