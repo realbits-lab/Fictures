@@ -249,7 +249,7 @@ export function ComicViewer({
       </div>
 
       {/* Comic panels container */}
-      <div className="mx-auto max-w-[1792px]">
+      <div className="mx-auto max-w-[1792px] space-y-6">
         {data.panels.map((panel, index) => (
           <div key={panel.id}>
             <PanelRenderer
