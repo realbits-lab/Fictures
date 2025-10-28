@@ -150,78 +150,77 @@ export function ComicReaderClient({ storyId, initialData }: ComicReaderClientPro
   // Loading state
   if (isLoading || !story) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-6">
-        <div className="max-w-lg w-full text-center">
-          {/* Animated illustration with comic book flipping effect */}
-          <div className="mb-10 relative">
-            {/* Background gradient glow */}
-            <div className="absolute inset-0 w-40 h-40 mx-auto bg-gradient-to-br from-purple-400 to-pink-400 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        <div className="absolute inset-0 top-16 flex flex-col">
+          {/* Loading Header */}
+          <div className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between px-4 md:px-6 py-3">
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-16"></div>
+                <div className="hidden md:block h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-32"></div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="md:hidden h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </div>
 
-            {/* Main animated element */}
-            <div className="relative w-40 h-40 mx-auto">
-              {/* Rotating comic pages */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative w-32 h-32">
-                  {/* Page 1 */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-200 to-purple-300 dark:from-purple-700 dark:to-purple-800 rounded-lg shadow-2xl transform -rotate-12 animate-pulse" style={{ animationDuration: '2s' }}>
-                    <div className="p-4 h-full flex items-center justify-center">
-                      <div className="w-full h-1 bg-purple-400 dark:bg-purple-600 rounded mb-2"></div>
+          <div className="flex flex-1 min-h-0 relative">
+            {/* Sidebar Loading - Hidden on mobile, visible on desktop */}
+            <div className="hidden md:block w-80 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
+              {/* Story header skeleton */}
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700 animate-pulse">
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-1"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-3"></div>
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+              </div>
+
+              {/* Scene list skeleton */}
+              <div className="p-4 animate-pulse">
+                {/* "Scenes" header skeleton */}
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 mb-3"></div>
+
+                {/* Scene items skeleton */}
+                <div className="space-y-1">
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                    <div key={i} className="p-3 rounded-lg bg-gray-100 dark:bg-gray-700/50">
+                      <div className="flex items-start gap-2">
+                        {/* Icon placeholder */}
+                        <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded flex-shrink-0 mt-0.5"></div>
+                        <div className="flex-1 min-w-0 space-y-2">
+                          {/* Scene title placeholder */}
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                          {/* Chapter/part subtitle placeholder */}
+                          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-
-                  {/* Page 2 */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-pink-200 to-pink-300 dark:from-pink-700 dark:to-pink-800 rounded-lg shadow-xl transform -rotate-6 animate-pulse" style={{ animationDuration: '2s', animationDelay: '0.3s' }}>
-                    <div className="p-4 h-full flex items-center justify-center">
-                      <div className="w-full h-1 bg-pink-400 dark:bg-pink-600 rounded mb-2"></div>
-                    </div>
-                  </div>
-
-                  {/* Page 3 - Front page with icon */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-800 dark:to-orange-900 rounded-lg shadow-2xl flex items-center justify-center animate-pulse" style={{ animationDuration: '2s', animationDelay: '0.6s' }}>
-                    <span className="text-5xl animate-bounce" style={{ animationDuration: '1.8s' }}>🎨</span>
-                  </div>
+                  ))}
                 </div>
               </div>
+            </div>
 
-              {/* Orbiting sparkles */}
-              <div className="absolute inset-0 animate-spin" style={{ animationDuration: '3s' }}>
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-yellow-400 rounded-full shadow-lg"></div>
+            {/* Main Content Loading - Full width on mobile, flex-1 on desktop */}
+            <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
+              <div className="w-full max-w-md md:max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-8">
+                {/* Scene title skeleton */}
+                <div className="mb-6 text-center animate-pulse">
+                  <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mx-auto mb-2"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mx-auto"></div>
+                </div>
+
+                {/* Comic panels skeleton - 3-4 panels */}
+                <div className="space-y-6">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="relative w-full">
+                      <div className="relative w-full" style={{ aspectRatio: '16 / 9' }}>
+                        <div className="h-full w-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="absolute inset-0 animate-spin" style={{ animationDuration: '4s', animationDirection: 'reverse' }}>
-                <div className="absolute bottom-0 right-0 w-2 h-2 bg-purple-400 rounded-full shadow-lg"></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Loading text */}
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 bg-clip-text text-transparent mb-3 animate-pulse">
-            Loading Your Comic Story
-          </h2>
-
-          <p className="text-gray-700 dark:text-gray-300 mb-8 text-lg">
-            Setting up panels, preparing scenes, and painting your adventure...
-          </p>
-
-          {/* Progress bar */}
-          <div className="max-w-xs mx-auto mb-4">
-            <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 rounded-full animate-pulse w-2/3"></div>
-            </div>
-          </div>
-
-          {/* Loading steps with animated dots */}
-          <div className="flex justify-center gap-3">
-            <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
-              <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
-              <span>Panels</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
-              <div className="w-2 h-2 bg-pink-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-              <span>Scenes</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
-              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-              <span>Story</span>
             </div>
           </div>
         </div>
