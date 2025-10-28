@@ -284,11 +284,10 @@ export const comicPanels = pgTable('comic_panels', {
   imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized variants (AVIF, WebP, JPEG)
 
   // Content overlays
+  narrative: text('narrative'), // Narrative text for panels without characters
   dialogue: json('dialogue').$type<Array<{character_id: string; text: string; tone?: string}>>(),
   sfx: json('sfx').$type<Array<{text: string; emphasis: 'normal' | 'large' | 'dramatic'}>>(),
-
-  // Layout
-  gutterAfter: integer('gutter_after').default(200), // Vertical space after this panel in pixels
+  description: text('description'), // Visual description for image generation
 
   // Metadata
   metadata: json('metadata').$type<{

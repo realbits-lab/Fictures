@@ -158,13 +158,20 @@ async function displayResults(result) {
   // Screenplay
   if (result.result?.screenplay) {
     console.log('📜 Screenplay:');
-    console.log(`   Length: ${result.result.screenplay.length} characters`);
-    const lines = result.result.screenplay.split('\n').slice(0, 3);
-    lines.forEach(line => {
-      if (line.trim()) {
-        console.log(`   ${line.substring(0, 70)}${line.length > 70 ? '...' : ''}`);
-      }
-    });
+    if (typeof result.result.screenplay === 'string') {
+      console.log(`   Length: ${result.result.screenplay.length} characters`);
+      const lines = result.result.screenplay.split('\n').slice(0, 3);
+      lines.forEach(line => {
+        if (line.trim()) {
+          console.log(`   ${line.substring(0, 70)}${line.length > 70 ? '...' : ''}`);
+        }
+      });
+    } else if (result.result.screenplay.total_panels) {
+      // Screenplay is an object with panel data
+      console.log(`   Scene: ${result.result.screenplay.scene_title || 'Unknown'}`);
+      console.log(`   Total Panels: ${result.result.screenplay.total_panels}`);
+      console.log(`   Narrative Arc: ${result.result.screenplay.narrative_arc || 'N/A'}`);
+    }
     console.log('');
   }
 

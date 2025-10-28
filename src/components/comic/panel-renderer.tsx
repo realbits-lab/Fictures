@@ -36,8 +36,10 @@ interface PanelRendererProps {
       height: number;
     }>;
   };
+  narrative?: string | null; // Narrative text for panels without dialogue
   dialogue?: PanelDialogue[];
   sfx?: PanelSFX[];
+  description?: string | null; // Visual description for the panel
   characterNames?: Record<string, string>; // Map of character_id to character name
   shotType?: string;
   className?: string;
@@ -49,8 +51,10 @@ export function PanelRenderer({
   panelNumber,
   imageUrl,
   imageVariants,
+  narrative,
   dialogue = [],
   sfx = [],
+  description,
   characterNames = {},
   shotType,
   className,
@@ -166,6 +170,24 @@ export function PanelRenderer({
           />
         )}
 
+        {/* Text overlays - Unified design for both narrative and dialogue */}
+        {narrative && (
+          <div
+            className="absolute z-10 max-w-[85%] md:max-w-[70%]"
+            style={{
+              left: '5%',
+              bottom: '8%',
+            }}
+          >
+            <div className="relative px-4 py-3 shadow-lg border-2 border-gray-800 bg-white">
+              {/* Narrative text */}
+              <div className="leading-relaxed text-gray-900 italic text-sm sm:text-base">
+                {narrative}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Dialogue bubbles overlay */}
         {dialogue.length > 0 && (
           <DialogueBubbleGroup
@@ -189,6 +211,22 @@ export function PanelRenderer({
           </div>
         )}
       </div>
+
+      {/* Shot type and description metadata - Below image */}
+      {(shotType || description) && (
+        <div className="mt-2 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+          {shotType && (
+            <div className="text-xs font-semibold uppercase tracking-wider mb-1 text-purple-600 dark:text-purple-400">
+              {shotType.replace(/_/g, ' ')}
+            </div>
+          )}
+          {description && (
+            <div className="text-xs leading-relaxed text-gray-700 dark:text-gray-300">
+              {description}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
