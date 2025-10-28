@@ -238,6 +238,7 @@ export async function generateComicPanels(
       narrative: panelSpec.narrative || null,
       dialogue: panelSpec.dialogue as any,
       sfx: panelSpec.sfx as any,
+      description: panelSpec.description,
       metadata: {
         prompt: imagePrompt,
         characters_visible: panelSpec.characters_visible,

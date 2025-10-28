@@ -39,6 +39,7 @@ interface PanelRendererProps {
   narrative?: string | null; // Narrative text for panels without dialogue
   dialogue?: PanelDialogue[];
   sfx?: PanelSFX[];
+  description?: string | null; // Visual description for the panel
   characterNames?: Record<string, string>; // Map of character_id to character name
   shotType?: string;
   className?: string;
@@ -53,6 +54,7 @@ export function PanelRenderer({
   narrative,
   dialogue = [],
   sfx = [],
+  description,
   characterNames = {},
   shotType,
   className,
@@ -206,6 +208,22 @@ export function PanelRenderer({
         {process.env.NODE_ENV === 'development' && (
           <div className="absolute bottom-2 right-2 rounded bg-black/50 px-2 py-1 text-xs text-white">
             #{panelNumber}
+          </div>
+        )}
+
+        {/* Shot type and description metadata - Right side overlay */}
+        {(shotType || description) && (
+          <div className="absolute top-2 right-2 max-w-[30%] bg-black/75 backdrop-blur-sm rounded-lg px-3 py-2 text-white shadow-xl">
+            {shotType && (
+              <div className="text-xs font-semibold uppercase tracking-wider mb-1 text-purple-300">
+                {shotType.replace(/_/g, ' ')}
+              </div>
+            )}
+            {description && (
+              <div className="text-xs leading-relaxed text-gray-200">
+                {description}
+              </div>
+            )}
           </div>
         )}
       </div>

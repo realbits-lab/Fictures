@@ -287,6 +287,7 @@ export const comicPanels = pgTable('comic_panels', {
   narrative: text('narrative'), // Narrative text for panels without characters
   dialogue: json('dialogue').$type<Array<{character_id: string; text: string; tone?: string}>>(),
   sfx: json('sfx').$type<Array<{text: string; emphasis: 'normal' | 'large' | 'dramatic'}>>(),
+  description: text('description'), // Visual description for image generation
 
   // Metadata
   metadata: json('metadata').$type<{

@@ -30,6 +30,7 @@ interface PanelData {
     text: string;
     emphasis: 'normal' | 'large' | 'dramatic';
   }>;
+  description?: string | null;
   layout?: {
     y_position: number;
     height: number;
@@ -83,6 +84,7 @@ export function ComicViewer({
       try {
         setLoading(true);
         setError(null);
+        setData(null); // Reset data when fetching new scene
 
         const response = await fetch(`/api/comic/${sceneId}/panels`);
 
@@ -220,8 +222,8 @@ export function ComicViewer({
     );
   }
 
-  // Empty state
-  if (!data || data.panels.length === 0) {
+  // Empty state - only show if we're not loading and have no data
+  if (!loading && (!data || data.panels.length === 0)) {
     return (
       <div className={className}>
         <Alert>
@@ -261,6 +263,7 @@ export function ComicViewer({
               narrative={panel.narrative}
               dialogue={panel.dialogue}
               sfx={panel.sfx}
+              description={panel.description}
               characterNames={characterNames}
               shotType={panel.shot_type}
               priority={index === 0} // Prioritize first panel
