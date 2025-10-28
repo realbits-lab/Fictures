@@ -56,8 +56,11 @@ export async function POST(
     // Extract story for type safety
     const story = scene.chapter.story;
 
-    // Verify ownership
-    if (story.authorId !== session.user.id) {
+    // Verify ownership (allow story owner or manager/admin)
+    const isOwner = story.authorId === session.user.id;
+    const isAdmin = session.user.role === 'manager' || session.user.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 

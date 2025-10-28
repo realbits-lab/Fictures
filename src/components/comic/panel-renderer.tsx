@@ -174,13 +174,13 @@ export function PanelRenderer({
           />
         )}
 
-        {/* SFX text overlay */}
-        {sfx.length > 0 && (
+        {/* SFX text overlay - DISABLED per user request */}
+        {/* {sfx.length > 0 && (
           <SFXTextGroup
             sfxList={sfx}
             className="absolute inset-0"
           />
-        )}
+        )} */}
 
         {/* Panel number indicator (optional, for debugging) */}
         {process.env.NODE_ENV === 'development' && (

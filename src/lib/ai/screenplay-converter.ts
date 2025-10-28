@@ -40,7 +40,6 @@ export const ComicPanelSpecSchema = z.object({
     text: z.string(),
     emphasis: z.enum(['normal', 'large', 'dramatic'])
   })).default([]),
-  gutter_after: z.number().min(0).max(1000).describe('Vertical space after panel in pixels'),
   mood: z.string().default('neutral').describe('Overall emotional tone of the panel')
 });
 
@@ -131,12 +130,7 @@ INSTRUCTIONS:
 
 7. Add sound effects (SFX) for impactful moments (doors, footsteps, impacts, ambient sounds)
 
-8. Set gutters for pacing control:
-   - 200-300px for continuous action (same beat, rapid sequence)
-   - 400-600px for beat changes (next moment, dialogue transition)
-   - 800-1000px for major transitions (location change, time jump, act break)
-
-9. Ensure each panel advances the story - no redundant panels
+8. Ensure each panel advances the story - no redundant panels
 
 CHARACTER POSING GUIDANCE:
 - Describe exact body language and gestures

@@ -88,10 +88,12 @@ export function DialogueBubble({
           style.bg
         )}
       >
-        {/* Character name label */}
-        <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-600">
-          {characterName}
-        </div>
+        {/* Character name label - hide if Unknown */}
+        {characterName && characterName.toLowerCase() !== 'unknown' && (
+          <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-600">
+            {characterName}
+          </div>
+        )}
 
         {/* Dialogue text */}
         <div className={cn('leading-relaxed', style.text)}>
