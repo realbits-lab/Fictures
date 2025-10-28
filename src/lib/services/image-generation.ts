@@ -74,7 +74,7 @@ export async function generateStoryImage({
       model: 'gemini-2.5-flash-image',
     });
 
-    // Generate image with Gemini 2.5 Flash Image (1344×768)
+    // Generate image with Gemini 2.5 Flash Image (1344×768 = 7:4 ratio)
     console.log(`[Image Generation] Calling Gemini 2.5 Flash Image...`);
     const geminiResult = await model.generateContent({
       contents: [{
@@ -83,7 +83,7 @@ export async function generateStoryImage({
       generationConfig: {
         responseModalities: ['Image'],
         imageConfig: {
-          aspectRatio: '16:9',  // Generates 1344×768
+          aspectRatio: '16:9',  // Gemini uses 16:9 label but generates 1344×768 (7:4 = 1.75:1)
         },
       },
     });

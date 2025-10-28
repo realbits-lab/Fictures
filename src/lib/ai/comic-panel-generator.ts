@@ -356,15 +356,15 @@ ACTION: ${description}
 
 MOOD: ${mood}
 
-COMPOSITION RULES FOR 7:5 VERTICAL FORMAT:
-- This is a 7:5 aspect ratio (1.4:1) - portrait-oriented, NOT widescreen
-- Optimal for vertical-scroll comics - taller than wide
-- Frame composition: Utilize vertical space - characters can fill more of the height
-- For wide shots: Show depth front-to-back rather than side-to-side
-- For medium shots: Frame characters from head to waist, use vertical negative space above/below
-- For close-ups: Fill the taller frame with character detail, leave minimal headroom
-- Background: Extend vertically - show more sky/ceiling and ground/floor
-- Multiple characters: Stack vertically or use diagonal arrangements, not horizontal lineups
+COMPOSITION RULES FOR 7:4 LANDSCAPE FORMAT (1344×768):
+- This is a 7:4 aspect ratio (1.75:1) - landscape-oriented widescreen
+- Cinematic horizontal composition - wider than tall
+- Frame composition: Utilize horizontal space for panoramic storytelling
+- For establishing shots: Show expansive width - landscapes, cityscapes, wide environments
+- For medium shots: Position characters off-center using rule of thirds, horizontal negative space
+- For close-ups: Frame character detail with horizontal breathing room
+- Background: Extend horizontally - show more left-right environment detail
+- Multiple characters: Arrange side-by-side or use depth (foreground/background positioning)
 
 VISUAL STYLE:
 - Clean comic linework, vibrant colors, semi-realistic proportions
@@ -375,14 +375,15 @@ CRITICAL CHARACTER CONSISTENCY:
 Maintain exact character appearances - ${keyTraits}
 
 FRAME FILL REQUIREMENT:
-Fill the ENTIRE 7:5 frame completely from edge to edge.
-No blank margins, no empty space, no letterboxing.
-Utilize the full vertical height and full horizontal width.
-The composition must reach all four edges of the canvas.
+Fill the ENTIRE 7:4 landscape frame completely from edge to edge.
+No blank margins, no empty space, no letterboxing, no pillarboxing.
+Utilize the full horizontal width and full vertical height.
+The composition must reach all four edges of the 1344×768 canvas.
 
 BACKGROUND/MARGIN FALLBACK:
 If any margins, padding, or blank space cannot be avoided, use PURE WHITE (#FFFFFF) background.
-Never use black, gray, or colored margins - white only.`;
+NEVER use black, gray, or colored margins - ONLY pure white (#FFFFFF).
+This is critical: any padding MUST be white, not black.
 
   return prompt;
 }
