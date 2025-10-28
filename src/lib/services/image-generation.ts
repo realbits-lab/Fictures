@@ -1,7 +1,6 @@
-import { experimental_generateImage as generateImage } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { put } from '@vercel/blob';
-import { optimizeImage, type OptimizedImageSet } from './image-optimization';
+import { optimizeImage, type OptimizedImageSet, ORIGINAL_IMAGE_SIZE } from './image-optimization';
 import { nanoid } from 'nanoid';
 
 // Placeholder images for fallback when generation fails
@@ -36,12 +35,14 @@ export interface GenerateStoryImageResult {
 }
 
 /**
- * Generate a story illustration using DALL-E 3 and create optimized variants
+ * Generate a story illustration using Gemini 2.5 Flash Image and create optimized variants
  *
  * Process:
- * 1. Generate 1792x1024 (16:9) image with DALL-E 3
+ * 1. Generate 1344x768 (16:9) image with Gemini 2.5 Flash Image
  * 2. Upload original to Vercel Blob
- * 3. Create optimized variants (AVIF, WebP, JPEG in multiple sizes)
+ * 3. Create optimized variants:
+ *    - Mobile 1x: 672×384 (resize + convert)
+ *    - Mobile 2x: 1344×768 (convert only, no resize!)
  * 4. Return all URLs and metadata
  *
  * @param params - Image generation parameters
@@ -58,36 +59,45 @@ export async function generateStoryImage({
   quality = 'standard',
   skipOptimization = false,
 }: GenerateStoryImageParams): Promise<GenerateStoryImageResult> {
-  const apiKey = process.env.OPENAI_API_KEY || process.env.AI_GATEWAY_API_KEY;
+  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   if (!apiKey) {
-    console.warn('[Image Generation] Missing API key - using placeholder');
+    console.warn('[Image Generation] Missing GOOGLE_GENERATIVE_AI_API_KEY - using placeholder');
     return createPlaceholderImageResult(imageType);
   }
 
   try {
     console.log(`[Image Generation] Starting ${imageType} image generation for story ${storyId}`);
 
-  const openaiProvider = createOpenAI({
-    apiKey: apiKey,
-  });
+    // Initialize Google Generative AI
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash-image',
+    });
 
-  // Generate image with DALL-E 3
-  console.log(`[Image Generation] Calling DALL-E 3...`);
-  const { image } = await generateImage({
-    model: openaiProvider.image('dall-e-3'),
-    prompt: prompt,
-    size: '1792x1024', // 16:9 widescreen format
-    providerOptions: {
-      openai: {
-        style: style,
-        quality: quality,
+    // Generate image with Gemini 2.5 Flash Image (1344×768)
+    console.log(`[Image Generation] Calling Gemini 2.5 Flash Image...`);
+    const result = await model.generateContent({
+      contents: [{
+        parts: [{ text: prompt }]
+      }],
+      generationConfig: {
+        responseModalities: ['Image'],
+        imageConfig: {
+          aspectRatio: '16:9',  // Generates 1344×768
+        },
       },
-    },
-  });
+    });
 
-  // Convert base64 to buffer
-  const base64Data = image.base64.replace(/^data:image\/\w+;base64,/, '');
-  const buffer = Buffer.from(base64Data, 'base64');
+    // Extract image from response
+    const response = await result.response;
+    const imagePart = response.candidates?.[0]?.content?.parts?.find(part => part.inlineData);
+
+    if (!imagePart) {
+      throw new Error('No image data in Gemini response');
+    }
+
+    // Convert base64 to buffer
+    const buffer = Buffer.from(imagePart.inlineData.data, 'base64');
 
   // Generate unique image ID
   const imageId = nanoid();
@@ -117,8 +127,8 @@ export async function generateStoryImage({
   const result: GenerateStoryImageResult = {
     url: blob.url,
     blobUrl: blob.url,
-    width: 1792,
-    height: 1024,
+    width: ORIGINAL_IMAGE_SIZE.width,   // 1344
+    height: ORIGINAL_IMAGE_SIZE.height, // 768
     size: buffer.length,
     imageId,
   };
@@ -148,7 +158,7 @@ export async function generateStoryImage({
     return result;
   } catch (error) {
     // CRITICAL: Don't throw - return placeholder instead to prevent database corruption
-    console.error(`[Image Generation] ✗ DALL-E generation failed - using placeholder:`, error);
+    console.error(`[Image Generation] ✗ Gemini generation failed - using placeholder:`, error);
     console.error(`Error details:`, error instanceof Error ? error.message : String(error));
 
     return createPlaceholderImageResult(imageType);
@@ -157,7 +167,7 @@ export async function generateStoryImage({
 
 /**
  * Create a fallback result using placeholder image
- * Used when DALL-E generation fails (API errors, rate limits, network issues)
+ * Used when Gemini generation fails (API errors, rate limits, network issues)
  */
 function createPlaceholderImageResult(
   imageType: 'story' | 'scene' | 'character' | 'setting'
@@ -170,8 +180,8 @@ function createPlaceholderImageResult(
   return {
     url: placeholderUrl,
     blobUrl: placeholderUrl,
-    width: 1792,
-    height: 1024,
+    width: ORIGINAL_IMAGE_SIZE.width,   // 1344
+    height: ORIGINAL_IMAGE_SIZE.height, // 768
     size: 0, // Placeholder, actual size unknown
     imageId,
     isPlaceholder: true,
@@ -219,7 +229,7 @@ export function buildStoryImagePrompt({
     parts.push(`Genre: ${genre}`);
   }
 
-  parts.push('Cinematic widescreen composition, 16:9 aspect ratio, high quality digital art');
+  parts.push('Cinematic widescreen composition, 16:9 aspect ratio (1344×768), high quality digital art');
 
   return parts.join('. ');
 }

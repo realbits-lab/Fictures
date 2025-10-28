@@ -15,14 +15,21 @@
 import sharp from 'sharp';
 import { put } from '@vercel/blob';
 
-// Image size configuration (16:9 aspect ratio)
-// Optimized for comics: mobile-first with desktop fallback
-// Mobile 2x (1280×720) serves both mobile retina and desktop users
+// Image size configuration (16:9 aspect ratio, optimized for Gemini 2.5 Flash Image)
+// Original Gemini size: 1344×768 (7:4 ratio, ~1.75:1, very close to 16:9)
+// Mobile 2x uses original size (1344×768) - no resizing, just format conversion
+// Mobile 1x is exact half (672×384) for optimal scaling
 export const IMAGE_SIZES = {
   mobile: {
-    '1x': { width: 640, height: 360 },   // Mobile standard displays
-    '2x': { width: 1280, height: 720 },  // Mobile retina + Desktop fallback
+    '1x': { width: 672, height: 384 },    // Mobile standard displays (exact half)
+    '2x': { width: 1344, height: 768, noResize: true },  // Original size - no resize needed!
   },
+} as const;
+
+// Original image dimensions from Gemini 2.5 Flash Image
+export const ORIGINAL_IMAGE_SIZE = {
+  width: 1344,
+  height: 768,
 } as const;
 
 // Supported output formats in priority order
@@ -100,19 +107,27 @@ async function downloadImage(url: string, maxRetries = 3, initialDelay = 1000): 
 
 /**
  * Generate a single optimized image variant
+ *
+ * @param noResize - Skip resizing (for mobile 2x which uses original 1344×768)
  */
 async function generateVariant(
   imageBuffer: Buffer,
   width: number,
   height: number,
   format: ImageFormat,
-  quality: number
+  quality: number,
+  noResize: boolean = false
 ): Promise<{ buffer: Buffer; size: number }> {
-  let sharpInstance = sharp(imageBuffer)
-    .resize(width, height, {
+  let sharpInstance = sharp(imageBuffer);
+
+  // Skip resize for mobile 2x (already at optimal 1344×768)
+  // This saves processing time and maintains original quality
+  if (!noResize) {
+    sharpInstance = sharpInstance.resize(width, height, {
       fit: 'cover',
       position: 'center',
     });
+  }
 
   // Apply format-specific conversion
   switch (format) {
@@ -199,20 +214,22 @@ export async function optimizeImage(
   // Generate all variants (device × resolution × format)
   for (const [device, resolutions] of Object.entries(IMAGE_SIZES)) {
     for (const [resolution, dimensions] of Object.entries(resolutions)) {
-      const { width, height } = dimensions;
+      const { width, height, noResize } = dimensions as { width: number; height: number; noResize?: boolean };
 
       for (const format of IMAGE_FORMATS) {
         processedCount++;
-        console.log(`[Image Optimization] Processing variant ${processedCount}/${totalVariants}: ${device} ${resolution} ${format} (${width}x${height})`);
+        const action = noResize ? 'convert only' : 'resize + convert';
+        console.log(`[Image Optimization] Processing variant ${processedCount}/${totalVariants}: ${device} ${resolution} ${format} (${width}x${height}) [${action}]`);
 
         try {
-          // Generate optimized variant
+          // Generate optimized variant (skip resize for mobile 2x)
           const { buffer, size } = await generateVariant(
             originalBuffer,
             width,
             height,
             format,
-            QUALITY_SETTINGS[format]
+            QUALITY_SETTINGS[format],
+            noResize || false
           );
 
           // Upload to Vercel Blob
@@ -260,7 +277,7 @@ export async function optimizeImage(
 /**
  * Get the best image variant for a given viewport width
  * Optimized for 4-variant system: mobile 1x/2x only
- * Desktop automatically uses mobile 2x (1280×720)
+ * Desktop automatically uses mobile 2x (1344×768 - original Gemini size)
  *
  * @param variants - Array of available image variants
  * @param viewportWidth - Current viewport width in pixels
