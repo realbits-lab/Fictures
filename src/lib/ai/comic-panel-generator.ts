@@ -383,7 +383,7 @@ The composition must reach all four edges of the 1344×768 canvas.
 BACKGROUND/MARGIN FALLBACK:
 If any margins, padding, or blank space cannot be avoided, use PURE WHITE (#FFFFFF) background.
 NEVER use black, gray, or colored margins - ONLY pure white (#FFFFFF).
-This is critical: any padding MUST be white, not black.
+This is critical: any padding MUST be white, not black.`;
 
   return prompt;
 }

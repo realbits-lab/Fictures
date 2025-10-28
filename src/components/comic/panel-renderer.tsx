@@ -210,23 +210,23 @@ export function PanelRenderer({
             #{panelNumber}
           </div>
         )}
-
-        {/* Shot type and description metadata - Right side overlay */}
-        {(shotType || description) && (
-          <div className="absolute top-2 right-2 max-w-[30%] bg-black/75 backdrop-blur-sm rounded-lg px-3 py-2 text-white shadow-xl">
-            {shotType && (
-              <div className="text-xs font-semibold uppercase tracking-wider mb-1 text-purple-300">
-                {shotType.replace(/_/g, ' ')}
-              </div>
-            )}
-            {description && (
-              <div className="text-xs leading-relaxed text-gray-200">
-                {description}
-              </div>
-            )}
-          </div>
-        )}
       </div>
+
+      {/* Shot type and description metadata - Below image */}
+      {(shotType || description) && (
+        <div className="mt-2 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+          {shotType && (
+            <div className="text-xs font-semibold uppercase tracking-wider mb-1 text-purple-600 dark:text-purple-400">
+              {shotType.replace(/_/g, ' ')}
+            </div>
+          )}
+          {description && (
+            <div className="text-xs leading-relaxed text-gray-700 dark:text-gray-300">
+              {description}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
