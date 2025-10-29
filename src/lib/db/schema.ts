@@ -455,12 +455,11 @@ export const communityReplies: any = pgTable('community_replies', {
 
 // Post likes table - Track likes on community posts
 export const postLikes = pgTable('post_likes', {
-  id: text('id').primaryKey(),
   postId: text('post_id').notNull().references(() => communityPosts.id, { onDelete: 'cascade' }),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
-  uniqueUserPost: primaryKey({ columns: [table.postId, table.userId], name: 'post_user_unique' }),
+  pk: primaryKey({ columns: [table.postId, table.userId] }),
 }));
 
 // Post views table - Track views on community posts
@@ -723,62 +722,56 @@ export const comments: any = pgTable('comments', {
 
 // Comment likes table
 export const commentLikes = pgTable('comment_likes', {
-  id: text('id').primaryKey(),
   commentId: text('comment_id').notNull().references(() => comments.id, { onDelete: 'cascade' }),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
-  uniqueUserComment: primaryKey({ columns: [table.commentId, table.userId], name: 'comment_user_unique' }),
+  pk: primaryKey({ columns: [table.commentId, table.userId] }),
 }));
 
 // Story likes table
 export const storyLikes = pgTable('story_likes', {
-  id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   storyId: text('story_id').notNull().references(() => stories.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
-  uniqueUserStory: primaryKey({ columns: [table.userId, table.storyId], name: 'story_user_unique' }),
+  pk: primaryKey({ columns: [table.userId, table.storyId] }),
 }));
 
 // Chapter likes table
 export const chapterLikes = pgTable('chapter_likes', {
-  id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   chapterId: text('chapter_id').notNull().references(() => chapters.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
-  uniqueUserChapter: primaryKey({ columns: [table.userId, table.chapterId], name: 'chapter_user_unique' }),
+  pk: primaryKey({ columns: [table.userId, table.chapterId] }),
 }));
 
 // Scene likes table
 export const sceneLikes = pgTable('scene_likes', {
-  id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   sceneId: text('scene_id').notNull().references(() => scenes.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
-  uniqueUserScene: primaryKey({ columns: [table.userId, table.sceneId], name: 'scene_user_unique' }),
+  pk: primaryKey({ columns: [table.userId, table.sceneId] }),
 }));
 
 // Comment dislikes table
 export const commentDislikes = pgTable('comment_dislikes', {
-  id: text('id').primaryKey(),
   commentId: text('comment_id').notNull().references(() => comments.id, { onDelete: 'cascade' }),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
-  uniqueUserCommentDislike: primaryKey({ columns: [table.commentId, table.userId], name: 'comment_dislike_user_unique' }),
+  pk: primaryKey({ columns: [table.commentId, table.userId] }),
 }));
 
 // Scene dislikes table
 export const sceneDislikes = pgTable('scene_dislikes', {
-  id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   sceneId: text('scene_id').notNull().references(() => scenes.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
-  uniqueUserSceneDislike: primaryKey({ columns: [table.userId, table.sceneId], name: 'scene_dislike_user_unique' }),
+  pk: primaryKey({ columns: [table.userId, table.sceneId] }),
 }));
 
 // Relations for comments

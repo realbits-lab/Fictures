@@ -1,5 +1,5 @@
 {
-  "id": "e9147c45-d438-4a61-b2e0-7b582d6ba34f",
+  "id": "fcf8a727-7d2c-4c05-9359-dd3d72e239c4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -340,12 +340,6 @@
       "name": "chapter_likes",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
         "user_id": {
           "name": "user_id",
           "type": "text",
@@ -396,8 +390,8 @@
         }
       },
       "compositePrimaryKeys": {
-        "chapter_user_unique": {
-          "name": "chapter_user_unique",
+        "chapter_likes_user_id_chapter_id_pk": {
+          "name": "chapter_likes_user_id_chapter_id_pk",
           "columns": [
             "user_id",
             "chapter_id"
@@ -857,12 +851,6 @@
       "name": "comment_dislikes",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
         "comment_id": {
           "name": "comment_id",
           "type": "text",
@@ -913,8 +901,8 @@
         }
       },
       "compositePrimaryKeys": {
-        "comment_dislike_user_unique": {
-          "name": "comment_dislike_user_unique",
+        "comment_dislikes_comment_id_user_id_pk": {
+          "name": "comment_dislikes_comment_id_user_id_pk",
           "columns": [
             "comment_id",
             "user_id"
@@ -930,12 +918,6 @@
       "name": "comment_likes",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
         "comment_id": {
           "name": "comment_id",
           "type": "text",
@@ -986,8 +968,8 @@
         }
       },
       "compositePrimaryKeys": {
-        "comment_user_unique": {
-          "name": "comment_user_unique",
+        "comment_likes_comment_id_user_id_pk": {
+          "name": "comment_likes_comment_id_user_id_pk",
           "columns": [
             "comment_id",
             "user_id"
@@ -1812,12 +1794,6 @@
       "name": "post_likes",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
         "post_id": {
           "name": "post_id",
           "type": "text",
@@ -1868,8 +1844,8 @@
         }
       },
       "compositePrimaryKeys": {
-        "post_user_unique": {
-          "name": "post_user_unique",
+        "post_likes_post_id_user_id_pk": {
+          "name": "post_likes_post_id_user_id_pk",
           "columns": [
             "post_id",
             "user_id"
@@ -2389,12 +2365,6 @@
       "name": "scene_dislikes",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
         "user_id": {
           "name": "user_id",
           "type": "text",
@@ -2445,8 +2415,8 @@
         }
       },
       "compositePrimaryKeys": {
-        "scene_dislike_user_unique": {
-          "name": "scene_dislike_user_unique",
+        "scene_dislikes_user_id_scene_id_pk": {
+          "name": "scene_dislikes_user_id_scene_id_pk",
           "columns": [
             "user_id",
             "scene_id"
@@ -2569,12 +2539,6 @@
       "name": "scene_likes",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
         "user_id": {
           "name": "user_id",
           "type": "text",
@@ -2625,8 +2589,8 @@
         }
       },
       "compositePrimaryKeys": {
-        "scene_user_unique": {
-          "name": "scene_user_unique",
+        "scene_likes_user_id_scene_id_pk": {
+          "name": "scene_likes_user_id_scene_id_pk",
           "columns": [
             "user_id",
             "scene_id"
@@ -3641,12 +3605,6 @@
       "name": "story_likes",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
         "user_id": {
           "name": "user_id",
           "type": "text",
@@ -3697,8 +3655,8 @@
         }
       },
       "compositePrimaryKeys": {
-        "story_user_unique": {
-          "name": "story_user_unique",
+        "story_likes_user_id_story_id_pk": {
+          "name": "story_likes_user_id_story_id_pk",
           "columns": [
             "user_id",
             "story_id"

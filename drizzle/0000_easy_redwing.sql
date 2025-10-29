@@ -52,11 +52,10 @@ CREATE TABLE "api_keys" (
 );
 --> statement-breakpoint
 CREATE TABLE "chapter_likes" (
-	"id" text PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
 	"chapter_id" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "chapter_user_unique" PRIMARY KEY("user_id","chapter_id")
+	CONSTRAINT "chapter_likes_user_id_chapter_id_pk" PRIMARY KEY("user_id","chapter_id")
 );
 --> statement-breakpoint
 CREATE TABLE "chapters" (
@@ -123,19 +122,17 @@ CREATE TABLE "comic_panels" (
 );
 --> statement-breakpoint
 CREATE TABLE "comment_dislikes" (
-	"id" text PRIMARY KEY NOT NULL,
 	"comment_id" text NOT NULL,
 	"user_id" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "comment_dislike_user_unique" PRIMARY KEY("comment_id","user_id")
+	CONSTRAINT "comment_dislikes_comment_id_user_id_pk" PRIMARY KEY("comment_id","user_id")
 );
 --> statement-breakpoint
 CREATE TABLE "comment_likes" (
-	"id" text PRIMARY KEY NOT NULL,
 	"comment_id" text NOT NULL,
 	"user_id" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "comment_user_unique" PRIMARY KEY("comment_id","user_id")
+	CONSTRAINT "comment_likes_comment_id_user_id_pk" PRIMARY KEY("comment_id","user_id")
 );
 --> statement-breakpoint
 CREATE TABLE "comments" (
@@ -239,11 +236,10 @@ CREATE TABLE "places" (
 );
 --> statement-breakpoint
 CREATE TABLE "post_likes" (
-	"id" text PRIMARY KEY NOT NULL,
 	"post_id" text NOT NULL,
 	"user_id" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "post_user_unique" PRIMARY KEY("post_id","user_id")
+	CONSTRAINT "post_likes_post_id_user_id_pk" PRIMARY KEY("post_id","user_id")
 );
 --> statement-breakpoint
 CREATE TABLE "post_views" (
@@ -310,11 +306,10 @@ CREATE TABLE "reading_sessions" (
 );
 --> statement-breakpoint
 CREATE TABLE "scene_dislikes" (
-	"id" text PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
 	"scene_id" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "scene_dislike_user_unique" PRIMARY KEY("user_id","scene_id")
+	CONSTRAINT "scene_dislikes_user_id_scene_id_pk" PRIMARY KEY("user_id","scene_id")
 );
 --> statement-breakpoint
 CREATE TABLE "scene_evaluations" (
@@ -334,11 +329,10 @@ CREATE TABLE "scene_evaluations" (
 );
 --> statement-breakpoint
 CREATE TABLE "scene_likes" (
-	"id" text PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
 	"scene_id" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "scene_user_unique" PRIMARY KEY("user_id","scene_id")
+	CONSTRAINT "scene_likes_user_id_scene_id_pk" PRIMARY KEY("user_id","scene_id")
 );
 --> statement-breakpoint
 CREATE TABLE "scene_views" (
@@ -474,11 +468,10 @@ CREATE TABLE "story_insights" (
 );
 --> statement-breakpoint
 CREATE TABLE "story_likes" (
-	"id" text PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
 	"story_id" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "story_user_unique" PRIMARY KEY("user_id","story_id")
+	CONSTRAINT "story_likes_user_id_story_id_pk" PRIMARY KEY("user_id","story_id")
 );
 --> statement-breakpoint
 CREATE TABLE "user_preferences" (
