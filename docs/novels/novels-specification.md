@@ -30,17 +30,17 @@ Story (Level 1: Overall Narrative)
 
 ### Core Fields
 
-| Field | Type | Purpose |
-|-------|------|---------|
-| `story_id` | UUID | Unique identifier for database management |
-| `story_title` | string | Working or final title |
-| `genre` | string[] | Primary and secondary genres (e.g., ["urban_fantasy", "thriller"]) |
-| `premise` | string | Single sentence (<20 words) encapsulating the complete novel |
-| `dramatic_question` | string | Central yes-or-no question driving narrative (answered in climax) |
-| `theme` | string | Central message guiding narrative decisions |
-| `characters` | string[] | Array of character_ids |
-| `settings` | string[] | Array of setting_ids |
-| `parts` | string[] | Array of part_ids (typically three acts) |
+| Field               | Type      | Purpose                                                                      |
+|---------------------|-----------|------------------------------------------------------------------------------|
+| `story_id`          | UUID      | Unique identifier for database management                                    |
+| `story_title`       | string    | Working or final title                                                       |
+| `parts`             | string[]  | Array of part_ids (typically three acts)                                     |
+| `characters`        | string[]  | Array of character_ids                                                       |
+| `settings`          | string[]  | Array of setting_ids                                                         |
+| `genre`             | string[]  | Primary and secondary genres (e.g., ["urban_fantasy", "thriller"])           |
+| `premise`           | string    | Single sentence (<20 words) encapsulating the complete novel                 |
+| `dramatic_question` | string    | Central yes-or-no question driving narrative (answered in climax)            |
+| `theme`             | string    | Central message guiding narrative decisions                                  |
 
 ### JSON Example
 
@@ -76,14 +76,14 @@ Story (Level 1: Overall Narrative)
 
 ### Core Fields
 
-| Field | Type | Purpose |
-|-------|------|---------|
-| `part_id` | UUID | Unique identifier |
-| `part_title` | string | Descriptive title (e.g., "Part I: Discovery") |
-| `structural_role` | enum | Maps to dramatic framework (e.g., "Act 1: Setup") |
-| `summary` | string | One-paragraph description of main movements |
-| `key_beats` | string[] | Crucial plot points for validation |
-| `chapters` | string[] | Ordered array of chapter_ids |
+| Field             | Type      | Purpose                                              |
+|-------------------|-----------|------------------------------------------------------|
+| `part_id`         | UUID      | Unique identifier                                    |
+| `part_title`      | string    | Descriptive title (e.g., "Part I: Discovery")        |
+| `chapters`        | string[]  | Ordered array of chapter_ids                         |
+| `structural_role` | enum      | Maps to dramatic framework (e.g., "Act 1: Setup")    |
+| `key_beats`       | string[]  | Crucial plot points for validation                   |
+| `summary`         | string    | One-paragraph description of main movements          |
 
 ### Structural Roles & Key Beats
 
@@ -129,17 +129,17 @@ Story (Level 1: Overall Narrative)
 
 ### Core Fields
 
-| Field | Type | Purpose |
-|-------|------|---------|
-| `chapter_id` | UUID | Unique identifier |
-| `chapter_number` | integer | Sequential position in story |
-| `chapter_title` | string | Chapter title |
-| `part_ref` | UUID | Reference to parent part |
-| `summary` | string | Detailed one-paragraph summary |
-| `pacing_goal` | enum | Intended tempo: 'fast', 'medium', 'slow', 'reflective' |
-| `action_dialogue_ratio` | string | Percentage ratio (e.g., "40:60") |
-| `chapter_hook` | object | Structured end-of-chapter hook |
-| `scenes` | string[] | Ordered array of scene_ids |
+| Field                   | Type     | Purpose                                                       |
+|-------------------------|----------|---------------------------------------------------------------|
+| `chapter_id`            | UUID     | Unique identifier                                             |
+| `chapter_number`        | integer  | Sequential position in story                                  |
+| `chapter_title`         | string   | Chapter title                                                 |
+| `part_ref`              | UUID     | Reference to parent part                                      |
+| `scenes`                | string[] | Ordered array of scene_ids                                    |
+| `summary`               | string   | Detailed one-paragraph summary                                |
+| `pacing_goal`           | enum     | Intended tempo: 'fast', 'medium', 'slow', 'reflective'        |
+| `action_dialogue_ratio` | string   | Percentage ratio (e.g., "40:60")                              |
+| `chapter_hook`          | object   | Structured end-of-chapter hook                                |
 
 ### Chapter Hook Structure
 
@@ -201,22 +201,22 @@ Story (Level 1: Overall Narrative)
 
 ### Core Fields
 
-| Field | Type | Purpose |
-|-------|------|---------|
-| `scene_id` | UUID | Unique identifier |
-| `scene_number` | integer | Sequential number within chapter |
-| `scene_title` | string | Descriptive title capturing key event |
-| `chapter_ref` | UUID | Reference to parent chapter |
-| `character_ids` | string[] | All characters present or referenced |
-| `setting_id` | UUID | Link to specific location |
-| `pov_character_id` | UUID | Point-of-view character |
-| `narrative_voice` | enum | Perspective (e.g., "third_person_limited") |
-| `summary` | string | One-sentence core action description |
-| `entry_hook` | string | Opening line for reader engagement |
-| `goal` | string | What POV character wants to achieve |
-| `conflict` | string | Obstacle preventing goal achievement |
-| `outcome` | enum | Result: 'success', 'failure', 'success_with_cost', 'failure_with_discovery' |
-| `emotional_shift` | object | Change in POV character's emotional state |
+| Field              | Type     | Purpose                                                                              |
+|--------------------|----------|--------------------------------------------------------------------------------------|
+| `scene_id`         | UUID     | Unique identifier                                                                    |
+| `scene_number`     | integer  | Sequential number within chapter                                                     |
+| `scene_title`      | string   | Descriptive title capturing key event                                                |
+| `chapter_ref`      | UUID     | Reference to parent chapter                                                          |
+| `character_ids`    | string[] | All characters present or referenced                                                 |
+| `setting_id`       | UUID     | Link to specific location                                                            |
+| `pov_character_id` | UUID     | Point-of-view character                                                              |
+| `narrative_voice`  | enum     | Perspective (e.g., "third_person_limited")                                           |
+| `summary`          | string   | One-sentence core action description                                                 |
+| `entry_hook`       | string   | Opening line for reader engagement                                                   |
+| `goal`             | string   | What POV character wants to achieve                                                  |
+| `conflict`         | string   | Obstacle preventing goal achievement                                                 |
+| `outcome`          | enum     | Result: 'success', 'failure', 'success_with_cost', 'failure_with_discovery'          |
+| `emotional_shift`  | object   | Change in POV character's emotional state                                            |
 
 ### Outcome Enum Values
 
@@ -268,20 +268,20 @@ Story (Level 1: Overall Narrative)
 
 ### Core Fields
 
-| Field | Type | Purpose |
-|-------|------|---------|
-| `character_id` | UUID | Unique identifier |
-| `name` | string | Character's name |
-| `role` | enum | Narrative function: 'protagonist', 'antagonist', 'mentor', etc. |
-| `archetype` | string | Character pattern (e.g., 'reluctant_hero', 'trickster') |
-| `summary` | string | Brief description and story role |
-| `storyline` | string | Character's complete narrative journey |
-| `personality` | object | Traits, Myers-Briggs, Enneagram |
-| `backstory` | object | Childhood, education, career, relationships, trauma |
-| `motivations` | object | Primary goal, secondary goals, fears |
-| `voice` | object | Speech patterns, vocabulary, verbal tics, internal voice |
-| `physical_description` | object | Detailed appearance for AI image generation |
-| `visual_reference_id` | string | Reference to visual asset for consistency |
+| Field                  | Type   | Purpose                                                               |
+|------------------------|--------|-----------------------------------------------------------------------|
+| `character_id`         | UUID   | Unique identifier                                                     |
+| `name`                 | string | Character's name                                                      |
+| `visual_reference_id`  | string | Reference to visual asset for consistency                             |
+| `role`                 | enum   | Narrative function: 'protagonist', 'antagonist', 'mentor', etc.      |
+| `archetype`            | string | Character pattern (e.g., 'reluctant_hero', 'trickster')              |
+| `summary`              | string | Brief description and story role                                      |
+| `storyline`            | string | Character's complete narrative journey                                |
+| `personality`          | object | Traits, Myers-Briggs, Enneagram                                       |
+| `backstory`            | object | Childhood, education, career, relationships, trauma                   |
+| `motivations`          | object | Primary goal, secondary goals, fears                                  |
+| `voice`                | object | Speech patterns, vocabulary, verbal tics, internal voice              |
+| `physical_description` | object | Detailed appearance for AI image generation                           |
 
 ### Physical Description Structure (Optimized for AI)
 
@@ -373,17 +373,17 @@ Story (Level 1: Overall Narrative)
 
 ### Core Fields
 
-| Field | Type | Purpose |
-|-------|------|---------|
-| `setting_id` | UUID | Unique identifier |
-| `name` | string | Location designation |
-| `description` | string | Comprehensive paragraph describing location |
-| `mood` | string | Atmospheric quality (e.g., "oppressive and surreal") |
-| `sensory` | object | Arrays for five senses |
-| `visual_style` | string | Artistic direction for image generation |
-| `visual_references` | string[] | Style inspirations (e.g., ["HR Giger", "Silent Hill"]) |
-| `color_palette` | string[] | Dominant colors |
-| `architectural_style` | string | Structural design language |
+| Field                 | Type     | Purpose                                                            |
+|-----------------------|----------|--------------------------------------------------------------------|
+| `setting_id`          | UUID     | Unique identifier                                                  |
+| `name`                | string   | Location designation                                               |
+| `description`         | string   | Comprehensive paragraph describing location                        |
+| `mood`                | string   | Atmospheric quality (e.g., "oppressive and surreal")              |
+| `architectural_style` | string   | Structural design language                                         |
+| `sensory`             | object   | Arrays for five senses                                             |
+| `visual_style`        | string   | Artistic direction for image generation                            |
+| `visual_references`   | string[] | Style inspirations (e.g., ["HR Giger", "Silent Hill"])            |
+| `color_palette`       | string[] | Dominant colors                                                    |
 
 ### Sensory Object Structure
 
