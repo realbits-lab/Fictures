@@ -117,6 +117,13 @@ export const comicPanels = pgTable('comic_panels', {
 });
 ```
 
+**Important**: Database uses different column names than HNS interface:
+- Scenes: `title` (DB) → `scene_title` (HNS), `order_index` (DB) → `scene_number` (HNS)
+- Chapters: `title` (DB) → `chapter_title` (HNS), `order_index` (DB) → `chapter_number` (HNS)
+- Parts: `title` (DB), `order_index` (DB)
+
+**Field Mapping**: The API layer maps database columns to HNS interface fields automatically.
+
 **Relations:**
 - `scenes` → `comicPanels` (one-to-many)
 - Cascade delete: Deleting scene removes all panels

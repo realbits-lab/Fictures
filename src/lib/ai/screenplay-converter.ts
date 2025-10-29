@@ -83,7 +83,10 @@ export async function convertSceneToScreenplay(
 
   const { scene, characters, setting, storyGenre, targetPanelCount } = options;
 
-  console.log(`\n🎬 Converting scene to screenplay: "${scene.scene_title}"`);
+  // Safely get scene title (handle both HNS interface and database column names)
+  const sceneTitle = scene.scene_title || (scene as any).title || 'Untitled Scene';
+
+  console.log(`\n🎬 Converting scene to screenplay: "${sceneTitle}"`);
 
   // Build character descriptions
   const characterDescriptions = characters
@@ -94,7 +97,7 @@ export async function convertSceneToScreenplay(
   const screenplayPrompt = `You are an expert comic storyboard artist. Convert this narrative scene into a panel-by-panel screenplay optimized for vertical-scroll comics.
 
 SCENE INFORMATION:
-Title: ${scene.scene_title || (scene as any).title}
+Title: ${sceneTitle}
 Goal: ${scene.goal || 'Advance the story'}
 Conflict: ${scene.conflict || 'Tension and obstacles'}
 Outcome: ${scene.outcome || 'Resolution'}
