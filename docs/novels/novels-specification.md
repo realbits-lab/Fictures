@@ -37,7 +37,7 @@ Story (Level 1: Overall Narrative)
 | `parts`             | string[]  | Array of part_ids (typically three acts)                                     |
 | `characters`        | string[]  | Array of character_ids                                                       |
 | `settings`          | string[]  | Array of setting_ids                                                         |
-| `genre`             | string    | Single genre from predefined list (e.g., "Fantasy", "Science Fiction")      |
+| `genre`             | string    | Single genre from predefined list (e.g., "Fantasy", "Science Fiction")       |
 | `premise`           | string    | Single sentence (<20 words) encapsulating the complete novel                 |
 | `dramatic_question` | string    | Central yes-or-no question driving narrative (answered in climax)            |
 | `theme`             | string    | Central message guiding narrative decisions                                  |
@@ -201,22 +201,22 @@ Story (Level 1: Overall Narrative)
 
 ### Core Fields
 
-| Field              | Type     | Purpose                                                                              |
-|--------------------|----------|--------------------------------------------------------------------------------------|
-| `scene_id`         | UUID     | Unique identifier                                                                    |
-| `scene_number`     | integer  | Sequential number within chapter                                                     |
-| `scene_title`      | string   | Descriptive title capturing key event                                                |
-| `chapter_ref`      | UUID     | Reference to parent chapter                                                          |
-| `character_ids`    | string[] | All characters present or referenced                                                 |
-| `setting_id`       | UUID     | Link to specific location                                                            |
-| `pov_character_id` | UUID     | Point-of-view character                                                              |
-| `narrative_voice`  | enum     | Perspective (e.g., "third_person_limited")                                           |
-| `summary`          | string   | One-sentence core action description                                                 |
-| `entry_hook`       | string   | Opening line for reader engagement                                                   |
-| `goal`             | string   | What POV character wants to achieve                                                  |
-| `conflict`         | string   | Obstacle preventing goal achievement                                                 |
-| `outcome`          | enum     | Result: 'success', 'failure', 'success_with_cost', 'failure_with_discovery'          |
-| `emotional_shift`  | object   | Change in POV character's emotional state                                            |
+| Field              | Type     | Purpose                                                                      |
+|--------------------|----------|------------------------------------------------------------------------------|
+| `scene_id`         | UUID     | Unique identifier                                                            |
+| `scene_number`     | integer  | Sequential number within chapter                                             |
+| `scene_title`      | string   | Descriptive title capturing key event                                        |
+| `chapter_ref`      | UUID     | Reference to parent chapter                                                  |
+| `character_ids`    | string[] | All characters present or referenced                                         |
+| `setting_id`       | UUID     | Link to specific location                                                    |
+| `pov_character_id` | UUID     | Point-of-view character                                                      |
+| `narrative_voice`  | enum     | Perspective (e.g., "third_person_limited")                                   |
+| `summary`          | string   | One-sentence core action description                                         |
+| `entry_hook`       | string   | Opening line for reader engagement                                           |
+| `goal`             | string   | What POV character wants to achieve                                          |
+| `conflict`         | string   | Obstacle preventing goal achievement                                         |
+| `outcome`          | enum     | Result: 'success', 'failure', 'success_with_cost', 'failure_with_discovery'  |
+| `emotional_shift`  | object   | Change in POV character's emotional state                                    |
 
 ### Outcome Enum Values
 
