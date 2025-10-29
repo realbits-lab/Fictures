@@ -49,13 +49,13 @@ Story (Level 1: Overall Narrative)
   "story": {
     "story_id": "Kj3_xY9Qm2pL7",
     "story_title": "The Shadow Keeper",
+    "parts": ["Xc9vB3nMk7L", "Qw5eR2tYu8I", "Zx1aS4dFg6H"],
+    "characters": ["Hy8kL3mNp9Q", "Zx4vB7nWq2R", "Mj9pK5sXt6Y"],
+    "settings": ["Bv7nM2kLp9X", "Ty6uI8oP3qW"],
     "genre": "Fantasy",
     "premise": "A photographer must master shadow magic to save her sister from a supernatural realm before power corrupts her",
     "dramatic_question": "Can Maya master shadow magic before power corrupts her?",
-    "theme": "The conflict between power and responsibility",
-    "characters": ["Hy8kL3mNp9Q", "Zx4vB7nWq2R", "Mj9pK5sXt6Y"],
-    "settings": ["Bv7nM2kLp9X", "Ty6uI8oP3qW"],
-    "parts": ["Xc9vB3nMk7L", "Qw5eR2tYu8I", "Zx1aS4dFg6H"]
+    "theme": "The conflict between power and responsibility"
   }
 }
 ```
@@ -106,10 +106,10 @@ Story (Level 1: Overall Narrative)
   "part": {
     "part_id": "Xc9vB3nMk7L",
     "part_title": "Part I: Discovery",
+    "chapters": ["Hg8jK4lZx2C", "Nm5bV7cXz9Q", "Ty3uI1oP6wE"],
     "structural_role": "Act 1: Setup",
-    "summary": "Dr. Maya Chen's ordinary life shatters when her sister Elena disappears, leaving behind evidence of supernatural research. Despite her skepticism, Maya discovers she has inherited shadow manipulation abilities and must accept training from the mysterious Marcus Webb to save her sister.",
     "key_beats": ["Exposition", "Inciting Incident", "Plot Point One"],
-    "chapters": ["Hg8jK4lZx2C", "Nm5bV7cXz9Q", "Ty3uI1oP6wE"]
+    "summary": "Dr. Maya Chen's ordinary life shatters when her sister Elena disappears, leaving behind evidence of supernatural research. Despite her skepticism, Maya discovers she has inherited shadow manipulation abilities and must accept training from the mysterious Marcus Webb to save her sister."
   }
 }
 ```
@@ -160,6 +160,7 @@ Story (Level 1: Overall Narrative)
     "chapter_number": 1,
     "chapter_title": "Missing",
     "part_ref": "Xc9vB3nMk7L",
+    "scenes": ["Qp9wE3rTy5U", "Lk2mN8bVc7X", "Zx4aS6dFg1H"],
     "summary": "Maya arrives for her weekly coffee date with Elena only to find her sister's apartment unlocked and abandoned. Signs of struggle and a mysterious journal lead Maya to discover Elena was researching something called 'Shadow Keepers' before her disappearance.",
     "pacing_goal": "medium",
     "action_dialogue_ratio": "40:60",
@@ -167,8 +168,7 @@ Story (Level 1: Overall Narrative)
       "type": "revelation",
       "description": "Journal's last entry: 'They know about Maya. She has the mark too.'",
       "urgency_level": "high"
-    },
-    "scenes": ["Qp9wE3rTy5U", "Lk2mN8bVc7X", "Zx4aS6dFg1H"]
+    }
   }
 }
 ```
@@ -306,6 +306,7 @@ Story (Level 1: Overall Narrative)
   "character": {
     "character_id": "Hy8kL3mNp9Q",
     "name": "Maya Chen",
+    "visual_reference_id": "Gh7jK9lMn2B.png",
     "role": "protagonist",
     "archetype": "reluctant_hero",
     "summary": "Investigative photographer searching for missing sister, reluctantly learning shadow magic",
@@ -343,8 +344,7 @@ Story (Level 1: Overall Narrative)
       "facial_features": "High cheekbones, expressive eyebrows, determined jaw",
       "distinguishing_marks": "Silver star birthmark on left wrist",
       "typical_attire": "Dark jeans, comfortable boots, photographer vest, camera"
-    },
-    "visual_reference_id": "Gh7jK9lMn2B.png"
+    }
   }
 }
 ```
@@ -406,6 +406,7 @@ Story (Level 1: Overall Narrative)
     "name": "The Shadow Realm",
     "description": "A dark mirror dimension where shadows have substance and light is foreign. Architecture shifts based on inhabitants' fears, and time flows differently than in the material world.",
     "mood": "oppressive and surreal",
+    "architectural_style": "Gothic mixed with non-Euclidean geometry",
     "sensory": {
       "sight": [
         "Inverted architecture defying gravity",
@@ -427,8 +428,7 @@ Story (Level 1: Overall Narrative)
     },
     "visual_style": "dark fantasy horror",
     "visual_references": ["HR Giger", "Silent Hill", "Inception folding city"],
-    "color_palette": ["deep purples", "blacks", "silver highlights", "rare gold light"],
-    "architectural_style": "Gothic mixed with non-Euclidean geometry"
+    "color_palette": ["deep purples", "blacks", "silver highlights", "rare gold light"]
   }
 }
 ```
