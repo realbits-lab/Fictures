@@ -34,7 +34,7 @@ export const ComicPanelSpecSchema = z.object({
   narrative: z.string().optional().describe('Narrative text explaining the current situation. REQUIRED when characters_visible is empty.'),
   dialogue: z.array(z.object({
     character_id: z.string(),
-    text: z.string().max(100).describe('Max 100 characters for readability'),
+    text: z.string().max(150).describe('Max 150 characters for readability'),
     tone: z.string().optional()
   })).default([]),
   sfx: z.array(z.object({
@@ -144,7 +144,7 @@ INSTRUCTIONS:
    - If characters_visible is EMPTY (no characters in panel): MUST include "narrative" text
    - If characters_visible has characters: MUST include at least one "dialogue"
    - Narrative text: 1-2 sentences explaining what's happening in the scene
-   - Dialogue: max 2-3 speech bubbles per panel, max 100 chars each
+   - Dialogue: max 2-3 speech bubbles per panel, max 150 chars each
    - VALIDATION ERROR will occur if a panel has neither narrative nor dialogue
 
 7. Add sound effects (SFX) for impactful moments (doors, footsteps, impacts, ambient sounds)

@@ -315,7 +315,7 @@ export function PanelRenderer({ panel }) {
 2. Each panel must SHOW action (minimize narration)
 3. Use varied shot types for visual interest
 4. Maintain character consistency across panels
-5. Extract dialogue (max 2-3 bubbles per panel, 100 chars each)
+5. Extract dialogue (max 2-3 bubbles per panel, 150 chars each)
 6. Add sound effects for impactful moments
 
 **Output Schema:**
