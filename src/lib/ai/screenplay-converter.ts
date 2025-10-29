@@ -173,7 +173,7 @@ Return your response as a valid JSON object matching the ComicScreenplay schema.
   console.log(`   Sending screenplay generation request...`);
 
   const result = await generateObject({
-    model: gateway('google/gemini-2.5-flash'),
+    model: gateway('google/gemini-2.5-flash-lite'),
     schema: ComicScreenplaySchema,
     prompt: screenplayPrompt,
     temperature: 0.7,

@@ -12,7 +12,7 @@ The comics generation system converts narrative scene text into sequential visua
 
 ### Current Implementation
 
-- **Text-to-Screenplay**: OpenAI GPT-4o-mini (via Vercel AI Gateway)
+- **Text-to-Screenplay**: Google Gemini 2.5 Flash Lite (via Vercel AI SDK Gateway)
 - **Image Generation**: Google Gemini 2.5 Flash Image
 - **Image Format**: 1344×768 pixels (7:4 aspect ratio = 1.75:1)
 - **Optimization**: 4 variants (AVIF + JPEG × 2 sizes: mobile 1x, mobile 2x)
@@ -48,7 +48,7 @@ The comics generation system converts narrative scene text into sequential visua
 │  • Sound effects (SFX)                                      │
 │  • Visual descriptions for image generation                 │
 │                                                             │
-│  Model: OpenAI GPT-4o-mini via Vercel AI Gateway           │
+│  Model: Google Gemini 2.5 Flash Lite via AI SDK Gateway    │
 │  Output: Structured ComicScreenplay JSON                    │
 └────────────────────┬────────────────────────────────────────┘
                      │
