@@ -5,57 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1756731306002,
-      "tag": "0000_zippy_silver_centurion",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1756731438841,
-      "tag": "0001_lyrical_dark_phoenix",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1756777593361,
-      "tag": "0002_melted_cobalt_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1756785097416,
-      "tag": "0003_dusty_ted_forrester",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1756795593098,
-      "tag": "0004_sturdy_guardsmen",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1756902222559,
-      "tag": "0005_boring_madrox",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1758006055161,
-      "tag": "0006_woozy_lake",
-      "breakpoints": true
-    },
-    {
-      "idx": 23,
-      "version": "7",
-      "when": 1729770000000,
-      "tag": "0023_remove_redundant_id_arrays",
+      "when": 1761707937661,
+      "tag": "0000_stiff_gideon",
       "breakpoints": true
     }
   ]
