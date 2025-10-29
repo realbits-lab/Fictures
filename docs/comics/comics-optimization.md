@@ -36,10 +36,10 @@ CREATE INDEX IF NOT EXISTS idx_scenes_comic_view_count ON scenes(comic_view_coun
 
 ### Comic Panels Table - Indexes
 
-#### 4. Scene Panel Retrieval
+#### 4. Foreign Key Index (Automatic)
 ```sql
--- Defined in schema (src/lib/db/schema.ts)
--- Primary use: Load all panels for a scene in order
+-- Automatically created by PostgreSQL for foreign key constraint
+-- on comic_panels.scene_id → scenes.id
 ```
 
 **Usage:**
@@ -48,7 +48,9 @@ WHERE scene_id = ?
 ORDER BY panel_number
 ```
 
-**Primary Use:** ComicViewer component
+**Primary Use:** ComicViewer component loads all panels for a scene
+
+**Note:** No explicit indexes exist in migrations for comic_panels. PostgreSQL automatically creates an index on the foreign key column `scene_id` for referential integrity.
 
 ### Recommended Future Indexes
 
