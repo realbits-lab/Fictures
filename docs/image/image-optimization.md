@@ -1,6 +1,6 @@
 # Image Optimization System
 
-**Last Updated:** 2025-10-27
+**Last Updated:** 2025-10-29
 
 ## Overview
 
@@ -11,7 +11,7 @@ Fictures uses an optimized 4-variant image system designed for comics with many 
 ### 1. Image Generation Flow
 
 ```
-DALL-E 3 (1792×1024)
+Gemini 2.5 Flash Image (1344×768)
        ↓
 Original Upload to Vercel Blob
        ↓
@@ -20,7 +20,7 @@ Image Optimization Service
 Create 4 Variants:
   - 2 formats (AVIF, JPEG)
   - 2 sizes (mobile 1x, mobile 2x)
-  - Desktop uses mobile 2x (1280×720)
+  - Desktop uses mobile 2x (1344×768)
        ↓
 Store all variants in Vercel Blob
        ↓
@@ -36,18 +36,17 @@ Save metadata to database
 
 **Why no WebP?** WebP provides minimal benefit (1.5% coverage gap) while adding 50% more variants. AVIF + JPEG covers 100% of users efficiently.
 
-### 3. Responsive Sizes (16:9 Aspect Ratio)
+### 3. Responsive Sizes (~16:9 Aspect Ratio)
 
 | Device | Viewport | Size Used | Quality |
 |--------|----------|-----------|---------|
-| Mobile Standard | 320-640px | 640×360 (1x) | Perfect fit |
-| Mobile Retina | 320-640px | 1280×720 (2x) | Perfect fit |
-| Desktop | 1440-1920px | 1280×720 (2x) | Acceptable upscaling |
+| Mobile Standard | 320-640px | 672×384 (1x) | Perfect fit |
+| Mobile Retina | 320-640px | 1344×768 (2x) | No resize, format conversion only |
+| Desktop | 1440-1920px | 1344×768 (2x) | Original Gemini size |
 
-**Desktop strategy:** Using mobile 2x (1280×720) for desktop provides acceptable quality with 1.5x upscaling. Comics are mobile-first content - desktop is secondary viewing experience.
+**Desktop strategy:** Using mobile 2x (1344×768 - original Gemini output) for desktop provides perfect quality with no upscaling. Comics are mobile-first content - desktop uses original size.
 
 **Total variants per image:** 4 (2 formats × 2 sizes)
-**Reduction vs original:** 78% fewer variants (4 vs 18)
 
 ## Database Schema
 
@@ -55,7 +54,7 @@ All tables with images have been updated with two fields:
 
 ```typescript
 {
-  imageUrl: string | null;          // Original image URL (1792×1024 PNG)
+  imageUrl: string | null;          // Original image URL (1344×768 PNG)
   imageVariants: {                  // Optimized variants metadata
     imageId: string;
     originalUrl: string;
@@ -85,21 +84,19 @@ All tables with images have been updated with two fields:
 ```
 stories/{storyId}/{imageType}/
   ├── original/
-  │   └── {imageId}.png              (1792×1024 original)
+  │   └── {imageId}.png              (1344×768 original)
   ├── avif/
-  │   ├── 640x360/{imageId}.avif     (Mobile 1x)
-  │   └── 1280x720/{imageId}.avif    (Mobile 2x / Desktop fallback)
+  │   ├── 672x384/{imageId}.avif     (Mobile 1x)
+  │   └── 1344x768/{imageId}.avif    (Mobile 2x / Desktop)
   └── jpeg/
-      ├── 640x360/{imageId}.jpeg     (Mobile 1x)
-      └── 1280x720/{imageId}.jpeg    (Mobile 2x / Desktop fallback)
+      ├── 672x384/{imageId}.jpeg     (Mobile 1x)
+      └── 1344x768/{imageId}.jpeg    (Mobile 2x / Desktop)
 ```
 
 **Example path:**
 ```
-stories/abc123/character/avif/640x360/img_xyz789.avif
+stories/abc123/character/avif/672x384/img_xyz789.avif
 ```
-
-**Storage optimization:** 4 variants vs 18 variants = 78% reduction
 
 ## Usage Guide
 
@@ -112,7 +109,7 @@ import { generateStoryImage } from '@/lib/services/image-generation';
 const result = await generateStoryImage({
   prompt: 'A mysterious forest at twilight, cinematic 16:9',
   storyId: 'story_123',
-  imageType: 'scene',  // 'story' | 'scene' | 'character' | 'setting'
+  imageType: 'scene',  // 'story' | 'scene' | 'character' | 'setting' | 'panel'
   style: 'vivid',
   quality: 'standard',
 });
@@ -121,7 +118,7 @@ const result = await generateStoryImage({
 await db.update(scenes)
   .set({
     imageUrl: result.url,
-    imageVariants: result.optimizedSet,  // Includes all 18 variants
+    imageVariants: result.optimizedSet,  // Includes all 4 variants
   })
   .where(eq(scenes.id, sceneId));
 ```
@@ -146,7 +143,7 @@ import { OptimizedImage } from '@/components/optimized-image';
   imageUrl={scene.imageUrl}
   imageVariants={scene.imageVariants}
   alt={scene.title}
-  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+  sizes="(max-width: 768px) 100vw, 100vw"
   fill
   objectFit="cover"
 />
@@ -177,38 +174,29 @@ The `OptimizedImage` component automatically:
 - ✓ Integrates with Next.js Image for lazy loading
 - ✓ Supports priority loading for above-fold images
 - ✓ Handles missing variants gracefully
-- ✓ Desktop automatically uses mobile 2x (no separate desktop variants)
+- ✓ Desktop uses mobile 2x (1344×768 - original Gemini size)
 
 ## Performance Benefits
 
 ### Compression Comparison
 
-Original DALL-E image: **~500KB** (1792×1024 PNG)
+Original Gemini image: **~300KB** (1344×768 PNG)
 
 **Optimized variants (4-variant system):**
-- Mobile AVIF 1x (640×360): **~12KB** (98% smaller)
-- Mobile AVIF 2x (1280×720): **~25KB** (95% smaller)
-- Mobile JPEG 1x (640×360): **~35KB** (93% smaller)
-- Mobile JPEG 2x (1280×720): **~65KB** (87% smaller)
+- Mobile AVIF 1x (672×384): **~10KB** (97% smaller)
+- Mobile AVIF 2x (1344×768): **~20KB** (93% smaller)
+- Mobile JPEG 1x (672×384): **~30KB** (90% smaller)
+- Mobile JPEG 2x (1344×768): **~55KB** (82% smaller)
 
-**Total storage per image:** ~137KB for all 4 variants
-**Reduction vs 18-variant system:** 66% storage savings per image
+**Total storage per image:** ~115KB for all 4 variants
 
 ### Loading Speed
 
-| Device | Original | 18-variant | 4-variant | Improvement |
-|--------|----------|------------|-----------|-------------|
-| Mobile 3G | 6.5s | 0.8s | **0.6s** | **91% faster** |
-| Mobile 4G | 3.2s | 0.5s | **0.4s** | **88% faster** |
-| Desktop Wi-Fi | 1.1s | 0.2s | **0.15s** | **86% faster** |
-
-### Comics-Specific Benefits (7 panels/scene)
-
-| Metric | 18-variant | 4-variant | Improvement |
-|--------|------------|-----------|-------------|
-| **Images per scene** | 126 | 28 | 78% reduction |
-| **Storage per scene** | ~2.8MB | ~0.96MB | 66% savings |
-| **Generation time** | 2.5 min | 30 sec | 80% faster |
+| Device | Original | Optimized | Improvement |
+|--------|----------|-----------|-------------|
+| Mobile 3G | 5.0s | **0.5s** | **90% faster** |
+| Mobile 4G | 2.5s | **0.3s** | **88% faster** |
+| Desktop Wi-Fi | 0.8s | **0.12s** | **85% faster** |
 
 ## API Reference
 
@@ -223,7 +211,8 @@ const result = await optimizeImage(
   originalImageUrl,  // URL of original image
   imageId,          // Unique image identifier
   storyId,          // Story ID for storage organization
-  imageType         // 'story' | 'scene' | 'character' | 'setting'
+  imageType,        // 'story' | 'scene' | 'character' | 'setting' | 'panel'
+  sceneId           // Optional: Scene ID for comics path hierarchy
 );
 
 // Returns OptimizedImageSet with all 4 variants
@@ -231,7 +220,7 @@ const result = await optimizeImage(
 
 ### `generateStoryImage()`
 
-Generate image with DALL-E 3 and create optimized variants.
+Generate image with Gemini 2.5 Flash Image and create optimized variants.
 
 ```typescript
 import { generateStoryImage } from '@/lib/services/image-generation';
@@ -239,13 +228,16 @@ import { generateStoryImage } from '@/lib/services/image-generation';
 const result = await generateStoryImage({
   prompt: string;
   storyId: string;
-  imageType?: 'story' | 'scene' | 'character' | 'setting';
+  imageType?: 'story' | 'scene' | 'character' | 'setting' | 'panel';
+  chapterId?: string;
+  sceneId?: string;
+  panelNumber?: number;
   style?: 'vivid' | 'natural';
   quality?: 'standard' | 'hd';
   skipOptimization?: boolean;  // Skip variant creation (testing only)
 });
 
-// Returns { url, imageId, optimizedSet }
+// Returns { url, imageId, optimizedSet, isPlaceholder }
 ```
 
 ### `getBestVariant()`
@@ -271,7 +263,7 @@ dotenv --file .env.local run node scripts/test-imagen-generation.mjs
 ```
 
 The test script will:
-1. Generate a test image with DALL-E 3
+1. Generate a test image with Gemini 2.5 Flash Image
 2. Create all 4 optimized variants
 3. Display URLs and file sizes
 4. Show total optimization time
@@ -280,20 +272,16 @@ The test script will:
 ```
 [Image Generation] Starting story image generation...
 [Image Generation] ✓ Original uploaded
-[Image Optimization] Processing variant 1/4: mobile 1x avif (640x360)
-[Image Optimization] ✓ Generated avif 640x360 (12KB)
-[Image Optimization] Processing variant 2/4: mobile 2x avif (1280x720)
-[Image Optimization] ✓ Generated avif 1280x720 (25KB)
-[Image Optimization] Processing variant 3/4: mobile 1x jpeg (640x360)
-[Image Optimization] ✓ Generated jpeg 640x360 (35KB)
-[Image Optimization] Processing variant 4/4: mobile 2x jpeg (1280x720)
-[Image Optimization] ✓ Generated jpeg 1280x720 (65KB)
+[Image Optimization] Processing variant 1/4: mobile 1x avif (672x384) [resize + convert]
+[Image Optimization] ✓ Generated avif 672x384 (10KB)
+[Image Optimization] Processing variant 2/4: mobile 2x avif (1344x768) [convert only]
+[Image Optimization] ✓ Generated avif 1344x768 (20KB)
+[Image Optimization] Processing variant 3/4: mobile 1x jpeg (672x384) [resize + convert]
+[Image Optimization] ✓ Generated jpeg 672x384 (30KB)
+[Image Optimization] Processing variant 4/4: mobile 2x jpeg (1344x768) [convert only]
+[Image Optimization] ✓ Generated jpeg 1344x768 (55KB)
 [Image Optimization] Complete! Generated 4/4 variants
-[Image Optimization] Total size: 137KB across all variants
-
-✓ Image optimization complete!
-✓ 78% fewer variants than original system
-✓ 80% faster generation time
+[Image Optimization] Total size: 115KB across all variants
 ```
 
 ## Troubleshooting
@@ -313,48 +301,24 @@ The test script will:
 **Cause:** Database field not populated
 
 **Solution:**
-1. Check `imageVariants` field is populated:
-   ```sql
-   SELECT image_url, image_variants FROM stories WHERE id = 'story_id';
-   ```
+1. Check `imageVariants` field is populated
 2. Regenerate image if field is null
-3. Ensure migration 0027 was applied
+3. Ensure database migration was applied
 
 ### Issue: AVIF images not loading
 
 **Cause:** Browser doesn't support AVIF (6.2% of users on iOS 15 or Android 11 and below)
 
-**Solution:** Component automatically falls back to JPEG. Check browser console for format being used. Legacy browsers will receive JPEG variants automatically.
+**Solution:** Component automatically falls back to JPEG. Check browser console for format being used.
 
-## Migration Guide
+### Issue: Using placeholder images
 
-### From Old Image System
+**Cause:** Missing `GOOGLE_GENERATIVE_AI_API_KEY` or API error
 
-**Before (single image URL):**
-```tsx
-<Image src={story.imageUrl} alt="Cover" width={1792} height={1024} />
-```
-
-**After (optimized with fallbacks):**
-```tsx
-<OptimizedImage
-  imageUrl={story.imageUrl}
-  imageVariants={story.imageVariants}
-  alt="Cover"
-  priority
-/>
-```
-
-### Database Migration
-
-Migration `0027_add_image_optimization_fields.sql` adds:
-- `image_url` column to `stories` and `scenes`
-- `image_variants` JSON column to all image tables
-
-**Run migration:**
-```bash
-dotenv --file .env.local run pnpm db:migrate
-```
+**Solution:**
+1. Add API key to `.env.local`
+2. Check console logs for specific error
+3. Verify Google AI API quota and billing
 
 ## Best Practices
 
@@ -374,7 +338,7 @@ dotenv --file .env.local run pnpm db:migrate
 // Full-width image (default for 4-variant system)
 <OptimizedImage ... sizes="100vw" />
 
-// Note: Desktop automatically uses mobile 2x, so complex breakpoints unnecessary
+// Desktop uses mobile 2x (1344×768) automatically
 ```
 
 ### 3. Skip Optimization for Testing
@@ -392,25 +356,15 @@ const result = await generateStoryImage({
 
 Check Vercel Blob usage regularly:
 ```bash
-# 4-variant system: Each image generates ~137KB of variants
-# 100 images = ~14MB
-# 1000 images = ~140MB
-# 10,000 images = ~1.4GB
-
-# Comparison with 18-variant system:
-# Old: 100 images = ~40MB
-# New: 100 images = ~14MB (66% savings)
+# 4-variant system: Each image generates ~115KB of variants
+# 100 images = ~12MB
+# 1000 images = ~120MB
+# 10,000 images = ~1.2GB
 ```
 
 ## Related Documentation
 
-- [Story Image Generation Guide](./story-image-generation.md)
+- [image-generation.md](./image-generation.md) - API usage guide
+- [image-architecture.md](./image-architecture.md) - System overview
 - [Next.js Image Optimization](https://nextjs.org/docs/app/api-reference/components/image)
 - [Vercel Blob Documentation](https://vercel.com/docs/storage/vercel-blob)
-
-## Support
-
-For issues or questions:
-1. Check migration logs: `drizzle/0027_add_image_optimization_fields.sql`
-2. Review service logs during image generation
-3. Test with: `scripts/test-imagen-generation.mjs`

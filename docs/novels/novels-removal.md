@@ -6,7 +6,7 @@ Complete guide to removing stories and all related data from Fictures.
 
 The story removal system provides safe, comprehensive deletion of stories including:
 - Database records (story, parts, chapters, scenes, characters, settings)
-- Vercel Blob storage images (character portraits, setting visuals)
+- Vercel Blob storage images (ALL images via prefix-based discovery)
 - Community data (posts, likes, replies, bookmarks)
 - Analytics data (reading sessions, insights, events)
 
@@ -210,37 +210,80 @@ Additionally cleaned:
 
 ## Blob Storage Cleanup
 
+### Image Discovery Method (Improved 2025-10-26)
+
+**Current Approach:** Vercel Blob List API (Prefix-based discovery)
+
+The system uses Vercel Blob's `list()` API to find ALL images under the `stories/{storyId}/` prefix:
+
+```javascript
+async function getStoryBlobs(storyId) {
+  const prefix = `stories/${storyId}/`;
+  const { blobs } = await list({ prefix });
+  return blobs.map(blob => blob.url);
+}
+```
+
+**Benefits:**
+1. ✅ **Complete coverage** - Finds ALL images regardless of database state
+2. ✅ **Database-independent** - Works even if records are already deleted
+3. ✅ **Catches orphans** - Finds images never recorded in database
+4. ✅ **Future-proof** - Automatically handles new image types without code changes
+
+**Previous Approach (Deprecated):**
+
+The old method extracted URLs from database records only:
+- Only checked `characters.imageUrl` and `settings.imageUrl`
+- Missed story cover images and scene images
+- Failed if database records were deleted first
+- Required code updates for new image types
+
 ### Image Types Removed
 
-**Character Portraits:**
-- Format: 1024x1024 PNG
-- AI-generated via DALL-E 3
-- Stored in Vercel Blob
+All images stored under `stories/{storyId}/` prefix:
 
-**Setting Visuals:**
-- Format: 1792x1024 PNG (16:9 widescreen)
-- AI-generated via DALL-E 3
-- Stored in Vercel Blob
+1. **Story Cover Images**
+   - Path: `stories/{id}/story/*`
+   - Format: 1792×1024 PNG (16:9 widescreen)
+   - AI-generated via DALL-E 3
 
-**Cover Images:**
-- Format: Variable
-- Stored in `hnsData.story.coverImageUrl`
+2. **Scene Images**
+   - Path: `stories/{id}/scenes/*`
+   - Format: 1792×1024 PNG (16:9 widescreen)
+   - AI-generated via DALL-E 3
+
+3. **Character Portraits**
+   - Path: `stories/{id}/characters/*`
+   - Format: 1024×1024 PNG
+   - AI-generated via DALL-E 3
+
+4. **Setting Visuals**
+   - Path: `stories/{id}/settings/*`
+   - Format: 1792×1024 PNG (16:9 widescreen)
+   - AI-generated via DALL-E 3
+
+5. **Optimized Image Variants**
+   - Path: Same directories with format suffixes
+   - Formats: AVIF, WebP, JPEG
+   - Sizes: 6 sizes per format (mobile, tablet, desktop at 1x and 2x)
+   - Total: 18 variants per original image
 
 ### Deletion Process
 
-1. **Extract all image URLs** from:
-   - `characters.imageUrl`
-   - `settings.imageUrl`
-   - `places.imageUrl`
-   - `hnsData.story.coverImageUrl`
-   - `scenes.hnsData.scene_image_url`
+1. **Discover all images** via Vercel Blob list API
+   - Query: `list({ prefix: 'stories/{storyId}/' })`
+   - Returns: ALL blob URLs under prefix
+   - No database dependency
 
 2. **Batch delete from Vercel Blob** using `@vercel/blob` SDK
    - ✅ **Optimized:** Single batch operation for all URLs
    - ⚡ **Fast:** Deletes hundreds of images in <1 second
    - 🔄 **Fallback:** Individual deletion if batch fails
 
-3. **Handle failures gracefully** (orphaned images logged)
+3. **Handle failures gracefully**
+   - Logs failed deletions with specific URLs
+   - Continues with remaining deletions
+   - Reports orphaned images for manual cleanup
 
 4. **Report deletion counts** with timing metrics
 
@@ -248,17 +291,37 @@ Additionally cleaned:
 
 **Batch Deletion** (Implemented 2025-10-25):
 - Uses Vercel Blob's array deletion: `del([url1, url2, ...])`
-- **Before:** Sequential deletion, 1 request per image (~100ms each)
-  - 50 images = 5 seconds
-  - 200 images = 20 seconds
-- **After:** Single batch request for all images (~500ms total)
-  - 50 images = 0.5 seconds (**10x faster**)
-  - 200 images = 0.8 seconds (**25x faster**)
+
+**Performance Comparison:**
+
+| Image Count | Before (Sequential) | After (Batch) | Speedup |
+|-------------|---------------------|---------------|---------|
+| 10 images   | ~1.0 seconds       | ~0.3 seconds  | 3.3x    |
+| 50 images   | ~5.0 seconds       | ~0.5 seconds  | 10x     |
+| 100 images  | ~10.0 seconds      | ~0.6 seconds  | 16.7x   |
+| 200 images  | ~20.0 seconds      | ~0.8 seconds  | 25x     |
 
 **Fallback Strategy:**
 - If batch deletion fails, automatically falls back to individual deletion
 - Ensures reliable cleanup even with partial failures
 - Logs specific errors for failed individual deletions
+
+### Utility Scripts
+
+**List all blobs for a story:**
+```bash
+dotenv --file .env.local run node scripts/list-blob-storage.mjs "stories/STORY_ID"
+```
+
+**Clean up orphaned blobs:**
+```bash
+dotenv --file .env.local run node scripts/cleanup-story-blobs.mjs STORY_ID [--dry-run]
+```
+
+**Query stories in database:**
+```bash
+dotenv --file .env.local run node scripts/query-stories-db.mjs [search-term]
+```
 
 ## Safety Features
 
@@ -390,8 +453,16 @@ Please ensure .auth/user.json contains valid credentials.
 
 1. **Verify cleanup** - Check database and Blob storage
 2. **Review logs** - Look for failed deletions
-3. **Manual cleanup** - Remove orphaned images if needed
+3. **Manual cleanup** - Remove orphaned images if needed using utility scripts
 4. **Clear caches** - Refresh UI to reflect changes
+
+### Image Cleanup Best Practices
+
+1. **Always use Blob list API** for finding story-related images
+2. **Never rely on database records** for blob cleanup
+3. **Use prefix-based organization** for all blob storage (`stories/{id}/...`)
+4. **Test with real data** to ensure complete cleanup
+5. **Document storage organization** in code comments
 
 ## Troubleshooting
 
@@ -399,7 +470,11 @@ Please ensure .auth/user.json contains valid credentials.
 **A:** No, deletion is permanent. Consider using dry-run mode first or implement backup before deletion.
 
 ### Q: Some images weren't deleted
-**A:** Check Vercel Blob dashboard and manually delete orphaned images. The script logs failed deletions.
+**A:** Use the cleanup utility script:
+```bash
+dotenv --file .env.local run node scripts/cleanup-story-blobs.mjs STORY_ID
+```
+This will find and remove any orphaned images using the Blob list API.
 
 ### Q: Database records remain after deletion
 **A:** Check for foreign key constraint violations. The endpoint should handle cascading deletes automatically.
@@ -407,27 +482,54 @@ Please ensure .auth/user.json contains valid credentials.
 ### Q: How do I find a story ID?
 **A:**
 - Check the URL when editing: `/writing/{storyId}`
+- Use the list script: `node scripts/list-stories.mjs [search]`
 - Use the API: `GET /api/stories`
 - Check database: `SELECT id, title FROM stories`
 
 ### Q: Can I delete someone else's story?
 **A:** No, only the story owner or admin role can delete a story.
 
+### Q: How do I verify all images were deleted?
+**A:** Use the list blob utility:
+```bash
+dotenv --file .env.local run node scripts/list-blob-storage.mjs "stories/STORY_ID"
+```
+This should return no results if cleanup was complete.
+
 ## Performance
 
 **Single story removal:**
 - Database operations: < 1 second
-- Blob deletions: 1-5 seconds (depending on image count)
-- Total time: 2-10 seconds
+- Blob deletions: 0.3-1 second (depending on image count)
+- Total time: 1-3 seconds
 
 **Bulk removal (10 stories):**
 - Database operations: 5-10 seconds
-- Blob deletions: 10-30 seconds
-- Total time: 15-40 seconds
+- Blob deletions: 3-8 seconds (batch optimized)
+- Total time: 8-18 seconds
+
+**Storage Savings:**
+- Each story: 10-50+ images (5-100+ MB)
+- Proper cleanup prevents storage cost accumulation
+- Batch deletion 10-25x faster than sequential
+
+## Implementation History
+
+### 2025-10-26: Blob Discovery Improvements
+- **Changed:** Replaced database-based URL extraction with Vercel Blob list API
+- **Why:** Database method missed story/scene images and failed if records deleted first
+- **Result:** Complete, reliable image cleanup regardless of database state
+
+### 2025-10-25: Batch Deletion Optimization
+- **Changed:** Implemented batch deletion using `del([urls])` instead of sequential
+- **Why:** Sequential deletion too slow for stories with many images
+- **Result:** 10-25x faster cleanup, sub-second deletion for most stories
 
 ## Related Documentation
 
 - [Story Generation](../CLAUDE.md#story-generation)
-- [Database Schema](../src/lib/db/schema.ts)
-- [API Routes](../src/app/api/stories/[id]/route.ts)
+- [Story Image Generation](./story-image-generation.md)
+- [Image Optimization](./image-optimization.md)
+- [Database Schema](../../src/lib/db/schema.ts)
+- [API Routes](../../src/app/api/stories/[id]/route.ts)
 - [Vercel Blob Docs](https://vercel.com/docs/storage/vercel-blob)

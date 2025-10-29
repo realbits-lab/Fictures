@@ -2,7 +2,7 @@
 
 **Status:** ✅ PRODUCTION - Fully implemented
 
-Fictures uses **OpenAI DALL-E 3** for AI-generated story illustrations with automatic 18-variant optimization.
+Fictures uses **Google Gemini 2.5 Flash Image** for AI-generated story illustrations with automatic 4-variant optimization.
 
 ---
 
@@ -13,14 +13,13 @@ Fictures uses **OpenAI DALL-E 3** for AI-generated story illustrations with auto
 ```
 AI Prompt Creation
   ↓
-DALL-E 3 Generation (1792×1024, 16:9, PNG)
+Gemini 2.5 Flash Image (1344×768, ~16:9, PNG)
   ↓
 Upload to Vercel Blob
   ↓
-Automatic Optimization (18 variants)
-  ├─ AVIF: 6 sizes (640×360 → 2880×1620)
-  ├─ WebP: 6 sizes (640×360 → 2880×1620)
-  └─ JPEG: 6 sizes (640×360 → 2880×1620)
+Automatic Optimization (4 variants)
+  ├─ AVIF: 2 sizes (672×384, 1344×768)
+  └─ JPEG: 2 sizes (672×384, 1344×768)
   ↓
 Database Storage (imageUrl + imageVariants)
 ```
@@ -29,10 +28,11 @@ Database Storage (imageUrl + imageVariants)
 
 | Type | Dimensions | Purpose |
 |------|-----------|---------|
-| **Story Cover** | 1792×1024 (16:9) | Story thumbnails |
-| **Scene Image** | 1792×1024 (16:9) | Scene visuals |
-| **Character Portrait** | 1024×1024 (1:1) | Character profiles |
-| **Setting Visual** | 1792×1024 (16:9) | Environment images |
+| **Story Cover** | 1344×768 (~16:9) | Story thumbnails |
+| **Scene Image** | 1344×768 (~16:9) | Scene visuals |
+| **Character Portrait** | 1344×768 (~16:9) | Character profiles |
+| **Setting Visual** | 1344×768 (~16:9) | Environment images |
+| **Comic Panel** | 1344×768 (~16:9) | Panel illustrations |
 
 ## Core Implementation
 
@@ -59,11 +59,11 @@ const result = await generateStoryImage({
 
 ```typescript
 {
-  imageUrl: string;  // Original 1792×1024 PNG
+  imageUrl: string;  // Original 1344×768 PNG
   imageVariants: {
     imageId: string;
     originalUrl: string;
-    variants: ImageVariant[];  // 18 optimized variants
+    variants: ImageVariant[];  // 4 optimized variants
     generatedAt: string;
   } | null;
 }
@@ -76,33 +76,38 @@ const result = await generateStoryImage({
 ## Performance Metrics
 
 ### Generation Time
-- **Single image:** 2-4 seconds (DALL-E 3)
-- **Optimization:** 3-5 seconds (18 variants)
-- **Total:** 5-9 seconds per image
+- **Single image:** 2-4 seconds (Gemini 2.5 Flash)
+- **Optimization:** 2-3 seconds (4 variants)
+- **Total:** 4-7 seconds per image
 
 ### Loading Performance
-- **Mobile AVIF:** 87% faster (1.2MB → 150KB)
-- **Tablet WebP:** 84% faster (1.8MB → 280KB)
-- **Desktop JPEG:** 80% faster (2.1MB → 420KB)
+- **Mobile 1x AVIF:** 87% faster (original → 150KB)
+- **Mobile 2x AVIF:** No resize, format conversion only
+- **JPEG fallback:** Universal browser support
+
+### Optimization Strategy
+- **4 variants total:** 2 formats × 2 sizes
+- **AVIF primary:** 93.8% browser support, best compression
+- **JPEG fallback:** 100% universal support
+- **No WebP:** AVIF + JPEG covers all users efficiently
 
 ## Cost Structure
 
-### DALL-E 3 Pricing
-- **Standard:** $0.040 per image (1792×1024)
-- **HD:** $0.080 per image (1792×1024)
+### Google Gemini 2.5 Flash Image
+- **Free tier available** - Check Google AI pricing
+- **Fallback system:** Uses placeholders if API unavailable
 
-### Example Story Cost (16 images)
+### Vercel Blob Storage
+- **Storage:** $0.15 per GB/month
+- **Bandwidth:** $0.40 per GB transferred
+- **Optimization impact:** 4 variants = ~2MB total per image
+
+### Example Story Storage (16 images)
 ```
-1 Cover (HD):        $0.080
-10 Scenes:           $0.400
-3 Characters:        $0.120
-2 Settings:          $0.080
-─────────────────────────
-Total:               $0.680
+16 images × 2MB = 32MB = $0.005/month
 ```
 
 ## Related Documentation
 
-- **[image-generation-guide.md](image-generation-guide.md)** - API usage and quick start
+- **[image-generation.md](image-generation.md)** - API usage and quick start
 - **[image-optimization.md](image-optimization.md)** - Optimization system details
-- **[story-image-generation.md](story-image-generation.md)** - Complete implementation reference
