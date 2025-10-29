@@ -74,7 +74,8 @@ export async function generateStoryImage({
       model: 'gemini-2.5-flash-image',
     });
 
-    // Generate image with Gemini 2.5 Flash Image (1344×768 = 7:4 ratio)
+    // Generate image with Gemini 2.5 Flash Image
+    // Output: 1344×768 pixels = 7:4 aspect ratio (1.75:1) - landscape format for comics
     console.log(`[Image Generation] Calling Gemini 2.5 Flash Image...`);
     const geminiResult = await model.generateContent({
       contents: [{
@@ -83,7 +84,10 @@ export async function generateStoryImage({
       generationConfig: {
         responseModalities: ['Image'],
         imageConfig: {
-          aspectRatio: '16:9',  // Gemini uses 16:9 label but generates 1344×768 (7:4 = 1.75:1)
+          // NOTE: Gemini API accepts '16:9' as aspect ratio but actually generates 1344×768 pixels
+          // This is 7:4 aspect ratio (1.75:1), NOT true 16:9 (1.778:1)
+          // We use '16:9' because it's the closest standard option that produces landscape output
+          aspectRatio: '16:9',
         },
       },
     });

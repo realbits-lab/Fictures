@@ -29,10 +29,10 @@ export async function POST(
     const body = await request.json().catch(() => ({}));
     const { targetPanelCount, regenerate = false } = body;
 
-    // Validate targetPanelCount (maximum 3 panels per scene)
-    if (targetPanelCount !== undefined && (targetPanelCount < 1 || targetPanelCount > 3)) {
+    // Validate targetPanelCount (8-12 panels recommended per scene)
+    if (targetPanelCount !== undefined && (targetPanelCount < 1 || targetPanelCount > 12)) {
       return NextResponse.json(
-        { error: 'targetPanelCount must be between 1 and 3' },
+        { error: 'targetPanelCount must be between 1 and 12 (recommended: 8-12 for optimal pacing)' },
         { status: 400 }
       );
     }

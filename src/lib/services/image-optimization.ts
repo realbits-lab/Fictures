@@ -15,10 +15,10 @@
 import sharp from 'sharp';
 import { put } from '@vercel/blob';
 
-// Image size configuration (16:9 aspect ratio, optimized for Gemini 2.5 Flash Image)
-// Original Gemini size: 1344×768 (7:4 ratio, ~1.75:1, very close to 16:9)
+// Image size configuration (7:4 aspect ratio, optimized for Gemini 2.5 Flash Image)
+// Original Gemini output: 1344×768 pixels = 7:4 aspect ratio (1.75:1) - landscape format
 // Mobile 2x uses original size (1344×768) - no resizing, just format conversion
-// Mobile 1x is exact half (672×384) for optimal scaling
+// Mobile 1x is exact half (672×384) for optimal scaling while maintaining 7:4 ratio
 export const IMAGE_SIZES = {
   mobile: {
     '1x': { width: 672, height: 384 },    // Mobile standard displays (exact half)
