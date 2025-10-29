@@ -37,7 +37,7 @@ Story (Level 1: Overall Narrative)
 | `parts`             | string[]  | Array of part_ids (typically three acts)                                     |
 | `characters`        | string[]  | Array of character_ids                                                       |
 | `settings`          | string[]  | Array of setting_ids                                                         |
-| `genre`             | string[]  | Primary and secondary genres (e.g., ["urban_fantasy", "thriller"])           |
+| `genre`             | string    | Single genre from predefined list (e.g., "Fantasy", "Science Fiction")      |
 | `premise`           | string    | Single sentence (<20 words) encapsulating the complete novel                 |
 | `dramatic_question` | string    | Central yes-or-no question driving narrative (answered in climax)            |
 | `theme`             | string    | Central message guiding narrative decisions                                  |
@@ -49,7 +49,7 @@ Story (Level 1: Overall Narrative)
   "story": {
     "story_id": "Kj3_xY9Qm2pL7",
     "story_title": "The Shadow Keeper",
-    "genre": ["urban_fantasy", "thriller"],
+    "genre": "Fantasy",
     "premise": "A photographer must master shadow magic to save her sister from a supernatural realm before power corrupts her",
     "dramatic_question": "Can Maya master shadow magic before power corrupts her?",
     "theme": "The conflict between power and responsibility",
