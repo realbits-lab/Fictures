@@ -64,16 +64,15 @@ export const comicPanels = pgTable('comic_panels', {
   // Visual composition
   shotType: shotTypeEnum('shot_type').notNull(),
 
-  // Image data (16:9, 1792x1024)
+  // Image data (1344×768, ~16:9 from Gemini 2.5 Flash)
   imageUrl: text('image_url').notNull(),
-  imageVariants: json('image_variants'), // AVIF, WebP, JPEG variants
+  imageVariants: json('image_variants'), // 4 variants: AVIF + JPEG × 2 sizes
 
   // Content overlays
+  narrative: text('narrative'), // Narrative text for panels without characters
   dialogue: json('dialogue').$type<DialogueItem[]>(),
   sfx: json('sfx').$type<SFXItem[]>(),
-
-  // Layout
-  gutterAfter: integer('gutter_after').default(16),
+  description: text('description'), // Visual description
 
   // Metadata
   metadata: json('metadata'),
@@ -86,6 +85,8 @@ export const comicPanels = pgTable('comic_panels', {
 **Relations:**
 - `scenes` → `comicPanels` (one-to-many)
 - Cascade delete: Deleting a scene removes all associated comic panels
+
+**Note:** Gutter spacing (vertical space between panels) is calculated dynamically by the layout service (`src/lib/services/comic-layout.ts`), not stored in database.
 
 ---
 
@@ -101,7 +102,7 @@ stories/{storyId}/
   ├── scene/      # Scene illustrations for text reading (1 per scene)
   └── comics/     # Comic panels for comic reading ⭐
       └── {sceneId}/
-          ├── panel-1.png  (1792x1024, 16:9)
+          ├── panel-1.png  (1344×768, ~16:9)
           ├── panel-2.png
           └── panel-3.png
 ```
