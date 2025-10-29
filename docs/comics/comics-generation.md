@@ -2,9 +2,9 @@
 
 ## Overview
 
-The comics generation system converts narrative scene text into sequential visual comic panels optimized for vertical-scroll mobile reading. Each scene is transformed into 1-3 comic panels with AI-generated images, dialogue overlays, and sound effects.
+The comics generation system converts narrative scene text into sequential visual comic panels optimized for vertical-scroll mobile reading. Each scene is transformed into 8-12 comic panels with AI-generated images, dialogue overlays, and sound effects.
 
-**Format**: Mobile-first vertical scrolling with 16:9 widescreen panels
+**Format**: Mobile-first vertical scrolling with 7:4 landscape panels (1344×768 pixels)
 
 ---
 
@@ -14,17 +14,17 @@ The comics generation system converts narrative scene text into sequential visua
 
 - **Text-to-Screenplay**: OpenAI GPT-4o-mini (via Vercel AI Gateway)
 - **Image Generation**: Google Gemini 2.5 Flash Image
-- **Image Format**: 1344×768 pixels (~16:9 aspect ratio, 7:4 = 1.75:1)
+- **Image Format**: 1344×768 pixels (7:4 aspect ratio = 1.75:1)
 - **Optimization**: 4 variants (AVIF + JPEG × 2 sizes: mobile 1x, mobile 2x)
 - **Storage**: Vercel Blob Storage
 - **Database**: PostgreSQL (Neon) with Drizzle ORM
 
 ### Performance
 
-- **Generation Time**: ~3-4 minutes per scene (1-3 panels max)
+- **Generation Time**: ~8-15 minutes per scene (8-12 panels)
 - **Per Panel**: ~20-25 seconds (AI generation + upload + optimization)
 - **Storage**: ~350KB per original panel (30% smaller than DALL-E 3)
-- **Optimized Delivery**: ~1.4MB per scene (4 variants × 1-3 panels)
+- **Optimized Delivery**: ~3.5-5.5MB per scene (4 variants × 8-12 panels)
 
 ---
 
@@ -41,7 +41,7 @@ The comics generation system converts narrative scene text into sequential visua
 ┌─────────────────────────────────────────────────────────────┐
 │              STEP 1: Screenplay Conversion                   │
 │  AI analyzes narrative and generates panel specifications:  │
-│  • Panel count (1-3 panels)                                 │
+│  • Panel count (8-12 panels per scene)                      │
 │  • Shot types (establishing, wide, medium, close-up)        │
 │  • Camera angles, character poses                           │
 │  • Dialogue extraction                                      │
@@ -94,7 +94,7 @@ export const comicPanels = pgTable('comic_panels', {
   // 'establishing_shot' | 'wide_shot' | 'medium_shot' |
   // 'close_up' | 'extreme_close_up' | 'over_shoulder' | 'dutch_angle'
 
-  // Image data (1344×768, ~16:9)
+  // Image data (1344×768, 7:4 aspect ratio)
   imageUrl: text('image_url').notNull(),
   imageVariants: json('image_variants'), // 4 variants (AVIF/JPEG × 2 sizes)
 
@@ -120,8 +120,6 @@ export const comicPanels = pgTable('comic_panels', {
 **Relations:**
 - `scenes` → `comicPanels` (one-to-many)
 - Cascade delete: Deleting scene removes all panels
-
-**Note:** Gutter spacing is calculated dynamically, not stored in database.
 
 **Indexes:**
 ```sql
@@ -179,16 +177,17 @@ https://[blob].vercel-storage.com/stories/{storyId}/comics/{sceneId}/jpeg/1344x7
 **Request:**
 ```json
 {
-  "targetPanelCount": 3,  // Optional: 1-3 (default: auto)
-  "regenerate": false     // Optional: overwrite existing panels
+  "targetPanelCount": 10,  // Optional: 8-12 (default: 10)
+  "regenerate": false      // Optional: overwrite existing panels
 }
 ```
 
 **Response** (Server-Sent Events):
 ```typescript
 // Progress updates
-data: {"type":"progress","current":20,"total":100,"status":"Converting scene to screenplay..."}
-data: {"type":"progress","current":50,"total":100,"status":"Generating panel 1/3: establishing_shot"}
+data: {"type":"progress","current":10,"total":100,"status":"Converting scene to screenplay..."}
+data: {"type":"progress","current":20,"total":100,"status":"Generating panel 1/10: establishing_shot"}
+data: {"type":"progress","current":90,"total":100,"status":"Generating panel 10/10: close_up"}
 data: {"type":"progress","current":100,"total":100,"status":"Panel generation complete!"}
 
 // Final result
@@ -201,7 +200,7 @@ data: {"type":"complete","result":{ screenplay, panels, metadata }}
 - 401: Unauthorized (no session/API key)
 - 403: Access denied (not story owner or admin)
 - 404: Scene not found
-- 400: Invalid targetPanelCount
+- 400: Invalid targetPanelCount (must be 8-12)
 - 500: Generation error
 
 ### Get Scene Panels
@@ -212,7 +211,7 @@ data: {"type":"complete","result":{ screenplay, panels, metadata }}
 ```json
 {
   "sceneId": "s25ARzn_TttzuO9r5lvX3",
-  "totalPanels": 3,
+  "totalPanels": 10,
   "panels": [
     {
       "id": "panel_abc123",
@@ -221,9 +220,9 @@ data: {"type":"complete","result":{ screenplay, panels, metadata }}
       "imageUrl": "https://...",
       "imageVariants": { variants: [...] },
       "dialogue": [{ "character_id": "char_001", "text": "..." }],
-      "sfx": [{ "text": "CRASH", "emphasis": "dramatic" }],
-      "gutterAfter": 600
-    }
+      "sfx": [{ "text": "CRASH", "emphasis": "dramatic" }]
+    },
+    // ... panels 2-10
   ]
 }
 ```
@@ -250,16 +249,9 @@ export function ComicViewer({ sceneId }: { sceneId: string }) {
   }, [sceneId]);
 
   return (
-    <div className="comic-container max-w-[1344px] mx-auto">
-      {panels.map((panel, index) => (
-        <div key={panel.id}>
-          <PanelRenderer panel={panel} />
-
-          {/* Gutter spacing */}
-          {index < panels.length - 1 && (
-            <div style={{ height: `${panel.gutterAfter}px` }} />
-          )}
-        </div>
+    <div className="comic-container max-w-[1344px] mx-auto space-y-6">
+      {panels.map((panel) => (
+        <PanelRenderer key={panel.id} panel={panel} />
       ))}
     </div>
   );
@@ -310,25 +302,21 @@ export function PanelRenderer({ panel }) {
 **Input:** Scene narrative text (prose)
 
 **AI Instructions:**
-1. Break narrative into 1-3 visual panels (MAX 3)
+1. Break narrative into 8-12 visual panels (TARGET: 10 panels)
+   - More panels (10-12) for complex action sequences
+   - Fewer panels (8-9) for quiet, reflective moments
 2. Each panel must SHOW action (minimize narration)
 3. Use varied shot types for visual interest
 4. Maintain character consistency across panels
 5. Extract dialogue (max 2-3 bubbles per panel, 100 chars each)
 6. Add sound effects for impactful moments
-7. Set gutter spacing for pacing control
-
-**Gutter Spacing Rules:**
-- 200-300px: Continuous action (same beat)
-- 400-600px: Beat change (next moment)
-- 800-1000px: Major transition (location/time change)
 
 **Output Schema:**
 ```typescript
 interface ComicScreenplay {
   scene_id: string;
   scene_title: string;
-  total_panels: number;  // 1-3
+  total_panels: number;  // 8-12 (default: 10)
   panels: [
     {
       panel_number: number;
@@ -341,7 +329,6 @@ interface ComicScreenplay {
       camera_angle: string;
       dialogue: [{ character_id, text, tone }];
       sfx: [{ text, emphasis }];
-      gutter_after: number;
       mood: string;
     }
   ];
@@ -374,7 +361,7 @@ ACTION: {description}
 MOOD: {mood}
 
 Style: Clean comic linework, vibrant colors, semi-realistic proportions,
-16:9 widescreen format, professional {genre} comic art style.
+7:4 landscape format (1344×768), professional {genre} comic art style.
 ```
 
 ---
@@ -386,8 +373,8 @@ Style: Clean comic linework, vibrant colors, semi-realistic proportions,
 ```
 1. Author navigates to scene in Studio
 2. Click "Generate Comic Panels" button
-3. System converts narrative to screenplay (10-20s)
-4. System generates 1-3 panel images (~60-90s)
+3. System converts narrative to screenplay (15-30s)
+4. System generates 8-12 panel images (~3-5 minutes)
 5. Panels saved to database with status: draft
 6. Author reviews panels in preview
 7. Author publishes comic (comicStatus: published)
@@ -402,7 +389,7 @@ Style: Clean comic linework, vibrant colors, semi-realistic proportions,
 3. ComicViewer renders panels vertically
 4. Reader scrolls through panels
 5. Dialogue bubbles and SFX overlay images
-6. Gutter spacing provides reading rhythm
+6. Static spacing (24px) between panels provides reading rhythm
 ```
 
 ---

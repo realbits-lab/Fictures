@@ -11,7 +11,7 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { comicPanels, scenes, chapters, stories } from '@/lib/db/schema';
 import { eq, asc } from 'drizzle-orm';
-import { estimateReadingTime, COMIC_CONSTANTS } from '@/lib/services/comic-layout';
+import { calculateTotalHeight, estimateReadingTime, COMIC_CONSTANTS } from '@/lib/services/comic-layout';
 
 interface RouteContext {
   params: Promise<{
@@ -97,8 +97,8 @@ export async function GET(
       }))
     );
 
-    // Simple total height without gutter spacing
-    const totalHeight = panels.length * COMIC_CONSTANTS.PANEL_HEIGHT;
+    // Calculate total height with static 24px spacing (matches viewer)
+    const totalHeight = calculateTotalHeight(panels);
 
     // Prepare response
     const response = {

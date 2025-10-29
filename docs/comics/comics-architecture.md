@@ -64,7 +64,7 @@ export const comicPanels = pgTable('comic_panels', {
   // Visual composition
   shotType: shotTypeEnum('shot_type').notNull(),
 
-  // Image data (1344×768, ~16:9 from Gemini 2.5 Flash)
+  // Image data (1344×768, 7:4 ratio from Gemini 2.5 Flash)
   imageUrl: text('image_url').notNull(),
   imageVariants: json('image_variants'), // 4 variants: AVIF + JPEG × 2 sizes
 
@@ -86,8 +86,6 @@ export const comicPanels = pgTable('comic_panels', {
 - `scenes` → `comicPanels` (one-to-many)
 - Cascade delete: Deleting a scene removes all associated comic panels
 
-**Note:** Gutter spacing (vertical space between panels) is calculated dynamically by the layout service (`src/lib/services/comic-layout.ts`), not stored in database.
-
 ---
 
 ## Storage Architecture
@@ -102,19 +100,34 @@ stories/{storyId}/
   ├── scene/      # Scene illustrations for text reading (1 per scene)
   └── comics/     # Comic panels for comic reading ⭐
       └── {sceneId}/
-          ├── panel-1.png  (1344×768, ~16:9)
+          ├── panel-1.png  (1344×768, 7:4 ratio)
           ├── panel-2.png
-          └── panel-3.png
+          ├── panel-3.png
+          └── panel/       # Optimized variants directory
+              ├── original/
+              │   └── {imageId}.png
+              ├── avif/
+              │   ├── 672x384/{imageId}.avif
+              │   └── 1344x768/{imageId}.avif
+              └── jpeg/
+                  ├── 672x384/{imageId}.jpeg
+                  └── 1344x768/{imageId}.jpeg
 ```
 
 **URL Format:**
 ```
+Original panels:
 https://[blob].vercel-storage.com/stories/3JpLd.../comics/s25AR.../panel-1.png
+
+Optimized variants:
+https://[blob].vercel-storage.com/stories/3JpLd.../comics/s25AR.../panel/avif/672x384/[id].avif
+https://[blob].vercel-storage.com/stories/3JpLd.../comics/s25AR.../panel/jpeg/1344x768/[id].jpeg
 ```
 
 **Design Principles:**
 - **Flat structure** for single images (story/, character/, scene/)
 - **Nested structure** for multi-image content (comics/{sceneId}/)
+- **Optimized variants** under `panel/` subdirectory within scene folder
 - **Semantic clarity** - comics treated as distinct content type, not "scene images"
 
 ---
@@ -129,8 +142,8 @@ https://[blob].vercel-storage.com/stories/3JpLd.../comics/s25AR.../panel-1.png
 
 **Process:**
 1. Fetch scene content and context
-2. Use AI to split scene into panels (3-6 panels typical)
-3. Generate images for each panel (DALL-E 3, 16:9)
+2. Use AI to split scene into panels (8-12 panels typical)
+3. Generate images for each panel (Gemini 2.5 Flash, 1344×768, 7:4 ratio)
 4. Extract dialogue and sound effects
 5. Save panels to `comic_panels` table
 6. Update scene: `comicStatus: 'draft'`
@@ -140,7 +153,7 @@ https://[blob].vercel-storage.com/stories/3JpLd.../comics/s25AR.../panel-1.png
 {
   "success": true,
   "comicStatus": "draft",
-  "panelCount": 5,
+  "panelCount": 10,
   "panels": [...]
 }
 ```
@@ -348,8 +361,8 @@ interface ComicStatusCardProps {
    POST /api/scenes/[id]/comic/generate
    │
    ├─> Fetch scene content
-   ├─> AI splits into 3-6 panels
-   ├─> Generate images (DALL-E 3, 16:9)
+   ├─> AI splits into 8-12 panels (typical)
+   ├─> Generate images (Gemini 2.5 Flash, 1344×768, 7:4)
    ├─> Extract dialogue & SFX
    ├─> Save to comic_panels table
    └─> Update scene: comicStatus = 'draft'
@@ -387,7 +400,7 @@ interface ComicStatusCardProps {
 /comics/[id]
   Query: visibility = 'public' AND comicStatus = 'published'
   Shows: comicPanels (ordered by panelNumber)
-  Format: Sequential visual storytelling
+  Format: Sequential visual storytelling with static spacing (space-y-6, 24px)
 ```
 
 ---
@@ -411,14 +424,40 @@ interface ComicStatusCardProps {
 
 ### Scalable Architecture
 - Easy to add comic versioning (regenerate panels)
+- Dynamic layout calculation via comic-layout service
 - Can add layout options (webtoon vs traditional)
 - Can add comic-specific features (zoom, pan)
 
 ---
 
+## Technical Specifications
+
+### Image Format
+- **Model:** Google Gemini 2.5 Flash Image
+- **Dimensions:** 1344×768 pixels (7:4 ratio, ~16:9)
+- **Optimization:** 4 variants per panel (AVIF + JPEG × 2 sizes)
+
+### Panel Count
+- **Typical:** 8-12 panels per scene
+- **Range:** Configured in screenplay-converter.ts
+  - Target: 10 panels for optimal pacing
+  - Max: 12 panels for complex action sequences
+  - Min: 8 panels for quiet, reflective moments
+
+### Panel Spacing
+- **Current Implementation:** Static spacing using Tailwind `space-y-6` class (24px between panels)
+- **View Component:** `src/components/comic/comic-viewer.tsx` uses fixed spacing
+- **Legacy Constants** (defined in `comic-layout.ts` but not actively used):
+  - GUTTER_MIN: 50px (continuous action)
+  - GUTTER_BEAT_CHANGE: 80px (moment changes)
+  - GUTTER_SCENE_TRANSITION: 100px (major transitions)
+  - GUTTER_MAX: 120px (maximum recommended)
+
+---
+
 ## Related Documentation
 
-- **Comic Panel Generation:** `docs/comics/comic-panel-generation.md`
-- **Comics Generation System:** `docs/comics/comics-generation-system.md`
-- **Image Optimization:** `docs/image-optimization.md`
-- **Storage Architecture:** This document
+- **Comic Panel Generation:** `docs/comics/comics-generation.md`
+- **Image System:** `docs/image/image-architecture.md`
+- **Image Optimization:** `docs/image/image-optimization.md`
+- **Database Optimization:** `docs/comics/comics-optimization.md`

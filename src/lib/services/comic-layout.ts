@@ -28,6 +28,31 @@ export const COMIC_CONSTANTS = {
 // LAYOUT CALCULATIONS
 // ============================================
 
+/**
+ * Calculate total vertical height for panels
+ * Uses static 24px spacing between panels (matches Tailwind space-y-6 in viewer)
+ */
+export function calculateTotalHeight(
+  panels: Array<{ id?: string; panel_number?: number }>
+): number {
+  if (panels.length === 0) return 0;
+
+  // Static 24px spacing between panels (matches Tailwind space-y-6 in viewer)
+  const PANEL_SPACING = 24;
+
+  // Total height = all panels + spacing between them (no spacing after last panel)
+  return (panels.length * COMIC_CONSTANTS.PANEL_HEIGHT) +
+         ((panels.length - 1) * PANEL_SPACING);
+}
+
+// ============================================
+// LEGACY FUNCTIONS (NOT ACTIVELY USED)
+// ============================================
+// The following functions reference dynamic gutter_after values
+// which are no longer stored in the database or used in the viewer.
+// Current implementation uses static 24px spacing (Tailwind space-y-6).
+// These functions are kept for reference but are not called in production code.
+
 export interface PanelLayoutInfo {
   panel_id: string;
   panel_number: number;
@@ -38,6 +63,7 @@ export interface PanelLayoutInfo {
 }
 
 /**
+ * @deprecated Legacy function - not actively used
  * Calculate vertical layout for a set of panels
  */
 export function calculateVerticalLayout(
@@ -72,18 +98,7 @@ export function calculateVerticalLayout(
 }
 
 /**
- * Calculate total vertical height for panels
- */
-export function calculateTotalHeight(
-  panels: Array<{ gutter_after?: number }>
-): number {
-  return panels.reduce((total, panel) => {
-    const gutterAfter = panel.gutter_after || COMIC_CONSTANTS.GUTTER_MIN;
-    return total + COMIC_CONSTANTS.PANEL_HEIGHT + gutterAfter;
-  }, 0);
-}
-
-/**
+ * @deprecated Legacy function - not actively used
  * Validate gutter spacing
  */
 export function validateGutterSpacing(gutterAfter: number): {
@@ -114,6 +129,7 @@ export function validateGutterSpacing(gutterAfter: number): {
 }
 
 /**
+ * @deprecated Legacy function - not actively used
  * Suggest gutter spacing based on context
  */
 export function suggestGutterSpacing(context: {
