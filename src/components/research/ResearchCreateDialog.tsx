@@ -16,7 +16,6 @@ export default function ResearchCreateDialog({
 }: ResearchCreateDialogProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [tags, setTags] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,15 +27,9 @@ export default function ResearchCreateDialog({
     setIsCreating(true);
 
     try {
-      const tagsArray = tags
-        .split(',')
-        .map((tag) => tag.trim())
-        .filter((tag) => tag.length > 0);
-
       const newItem = await createResearchItem({
         title,
         content,
-        tags: tagsArray.length > 0 ? tagsArray : undefined,
       });
 
       onCreated(newItem);
@@ -45,7 +38,6 @@ export default function ResearchCreateDialog({
       // Reset form
       setTitle('');
       setContent('');
-      setTags('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create research item');
     } finally {
@@ -91,22 +83,6 @@ export default function ResearchCreateDialog({
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder:text-gray-400"
               placeholder="Enter research title"
             />
-          </div>
-
-          {/* Tags */}
-          <div>
-            <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
-              Tags
-            </label>
-            <input
-              type="text"
-              id="tags"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder:text-gray-400"
-              placeholder="Comma-separated tags (e.g., AI, Research, Analysis)"
-            />
-            <p className="text-xs text-gray-500 mt-1">Separate tags with commas</p>
           </div>
 
           {/* Content */}
