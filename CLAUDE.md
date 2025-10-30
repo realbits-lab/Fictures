@@ -48,6 +48,12 @@ This file provides guidance to Claude Code when working with this repository.
 - Always prefix commands with `dotenv --file .env.local run` for proper database connectivity
 - DO NOT use Supabase MCP tools - this project uses Neon PostgreSQL
 
+**Database Naming Convention:**
+- **Column names use camelCase** (e.g., `createdAt`, `updatedAt`, `emailVerified`)
+- **NOT snake_case** (e.g., ~~`created_at`~~, ~~`updated_at`~~)
+- In raw SQL queries, quote camelCase columns: `"createdAt"`, `"updatedAt"`
+- This is Drizzle ORM's default convention matching JavaScript/TypeScript naming
+
 **Database Commands:**
 - **Generate migrations**: `pnpm db:generate`
 - **Run migrations**: `pnpm db:migrate`

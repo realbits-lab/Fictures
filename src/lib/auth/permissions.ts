@@ -1,6 +1,6 @@
 import { Session } from 'next-auth';
 
-export type UserRole = 'admin' | 'writer' | 'reader' | 'moderator';
+export type UserRole = 'manager' | 'writer' | 'reader';
 
 export function hasRole(session: Session | null, role: UserRole): boolean {
   return session?.user?.role === role;
@@ -10,8 +10,8 @@ export function hasAnyRole(session: Session | null, roles: UserRole[]): boolean 
   return roles.includes(session?.user?.role as UserRole);
 }
 
-export function isAdmin(session: Session | null): boolean {
-  return hasRole(session, 'admin');
+export function isManager(session: Session | null): boolean {
+  return hasRole(session, 'manager');
 }
 
 export function isWriter(session: Session | null): boolean {
@@ -23,11 +23,11 @@ export function isReader(session: Session | null): boolean {
 }
 
 export function canWrite(session: Session | null): boolean {
-  return hasAnyRole(session, ['admin', 'writer']);
+  return hasAnyRole(session, ['manager', 'writer']);
 }
 
-export function canModerate(session: Session | null): boolean {
-  return hasAnyRole(session, ['admin', 'moderator']);
+export function canManage(session: Session | null): boolean {
+  return hasRole(session, 'manager');
 }
 
 export function getUserRole(session: Session | null): UserRole | null {
