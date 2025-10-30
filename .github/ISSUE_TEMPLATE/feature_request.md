@@ -14,3 +14,5 @@ assignees: realbits-lab
 # Task
 
 - [ ] 
+- [ ] Write test scripts
+- [ ] Update documents

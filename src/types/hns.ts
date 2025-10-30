@@ -525,7 +525,7 @@ export function createEmptyStory(id: string): HNSStory {
   return {
     story_id: id,
     story_title: '',
-    genre: [] as any,
+    genre: 'Fantasy', // Default to Fantasy genre
     premise: '',
     dramatic_question: '',
     theme: '',

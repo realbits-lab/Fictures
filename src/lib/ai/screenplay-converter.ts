@@ -34,7 +34,7 @@ export const ComicPanelSpecSchema = z.object({
   narrative: z.string().optional().describe('Narrative text explaining the current situation. REQUIRED when characters_visible is empty.'),
   dialogue: z.array(z.object({
     character_id: z.string(),
-    text: z.string().max(100).describe('Max 100 characters for readability'),
+    text: z.string().max(150).describe('Max 150 characters for readability'),
     tone: z.string().optional()
   })).default([]),
   sfx: z.array(z.object({
@@ -83,7 +83,10 @@ export async function convertSceneToScreenplay(
 
   const { scene, characters, setting, storyGenre, targetPanelCount } = options;
 
-  console.log(`\n🎬 Converting scene to screenplay: "${scene.scene_title}"`);
+  // Safely get scene title (handle both HNS interface and database column names)
+  const sceneTitle = scene.scene_title || (scene as any).title || 'Untitled Scene';
+
+  console.log(`\n🎬 Converting scene to screenplay: "${sceneTitle}"`);
 
   // Build character descriptions
   const characterDescriptions = characters
@@ -94,7 +97,7 @@ export async function convertSceneToScreenplay(
   const screenplayPrompt = `You are an expert comic storyboard artist. Convert this narrative scene into a panel-by-panel screenplay optimized for vertical-scroll comics.
 
 SCENE INFORMATION:
-Title: ${scene.scene_title || (scene as any).title}
+Title: ${sceneTitle}
 Goal: ${scene.goal || 'Advance the story'}
 Conflict: ${scene.conflict || 'Tension and obstacles'}
 Outcome: ${scene.outcome || 'Resolution'}
@@ -141,7 +144,7 @@ INSTRUCTIONS:
    - If characters_visible is EMPTY (no characters in panel): MUST include "narrative" text
    - If characters_visible has characters: MUST include at least one "dialogue"
    - Narrative text: 1-2 sentences explaining what's happening in the scene
-   - Dialogue: max 2-3 speech bubbles per panel, max 100 chars each
+   - Dialogue: max 2-3 speech bubbles per panel, max 150 chars each
    - VALIDATION ERROR will occur if a panel has neither narrative nor dialogue
 
 7. Add sound effects (SFX) for impactful moments (doors, footsteps, impacts, ambient sounds)
@@ -173,7 +176,7 @@ Return your response as a valid JSON object matching the ComicScreenplay schema.
   console.log(`   Sending screenplay generation request...`);
 
   const result = await generateObject({
-    model: gateway('google/gemini-2.5-flash'),
+    model: gateway('google/gemini-2.5-flash-lite'),
     schema: ComicScreenplaySchema,
     prompt: screenplayPrompt,
     temperature: 0.7,

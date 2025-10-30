@@ -29,10 +29,10 @@ export async function POST(
     const body = await request.json().catch(() => ({}));
     const { targetPanelCount, regenerate = false } = body;
 
-    // Validate targetPanelCount (maximum 3 panels per scene)
-    if (targetPanelCount !== undefined && (targetPanelCount < 1 || targetPanelCount > 3)) {
+    // Validate targetPanelCount (8-12 panels recommended per scene)
+    if (targetPanelCount !== undefined && (targetPanelCount < 1 || targetPanelCount > 12)) {
       return NextResponse.json(
-        { error: 'targetPanelCount must be between 1 and 3' },
+        { error: 'targetPanelCount must be between 1 and 12 (recommended: 8-12 for optimal pacing)' },
         { status: 400 }
       );
     }
@@ -110,12 +110,48 @@ export async function POST(
 
     console.log(`🎨 Generating comic panels for scene: ${scene.title}`);
 
-    // Generate panels
+    // Map database scene to HNS interface (database uses 'title', HNS uses 'scene_title')
+    const hnsScene: Partial<HNSScene> = {
+      scene_id: scene.id,
+      scene_number: scene.orderIndex,
+      scene_title: scene.title,
+      chapter_ref: scene.chapterId,
+      character_ids: Array.isArray(scene.characterIds) ? scene.characterIds : [],
+      setting_id: scene.settingId || '',
+      pov_character_id: scene.povCharacterId || undefined,
+      goal: scene.goal || '',
+      conflict: scene.conflict || '',
+      outcome: scene.outcome || '',
+      content: scene.content || '',
+      emotional_shift: scene.emotionalShift as any,
+      entry_hook: scene.entryHook || undefined,
+      narrative_voice: scene.narrativeVoice || undefined,
+      summary: scene.summary || undefined,
+    };
+
+    // Map database characters to HNS interface (minimal fields for comic generation)
+    const hnsCharacters: Partial<HNSCharacter>[] = storyCharacters.map(char => ({
+      character_id: char.id,
+      name: char.name,
+      role: char.role as any,
+      summary: char.summary || char.description || '',
+      motivations: char.motivations as any,
+    }));
+
+    // Map database setting to HNS interface (minimal fields for comic generation)
+    const hnsSetting: Partial<HNSSetting> = {
+      setting_id: primarySetting.id,
+      name: primarySetting.name,
+      description: primarySetting.description || '',
+      mood: primarySetting.mood || 'neutral',
+    };
+
+    // Generate panels (cast partial types to full HNS types - generator handles missing fields)
     const result = await generateComicPanels({
       sceneId: id,
-      scene: scene as unknown as HNSScene,
-      characters: storyCharacters as unknown as HNSCharacter[],
-      setting: primarySetting as unknown as HNSSetting,
+      scene: hnsScene as HNSScene,
+      characters: hnsCharacters as HNSCharacter[],
+      setting: hnsSetting as HNSSetting,
       story: {
         story_id: story.id,
         genre: story.genre || 'drama',

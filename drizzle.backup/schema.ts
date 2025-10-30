@@ -215,11 +215,11 @@ export const storyInsights = pgTable("story_insights", {
 ]);
 
 export const storyLikes = pgTable("story_likes", {
+	id: text().primaryKey().notNull(),
 	storyId: text("story_id").notNull(),
 	userId: text("user_id").notNull(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	primaryKey({ columns: [table.storyId, table.userId] }),
 	index("story_likes_story_id_idx").using("btree", table.storyId.asc().nullsLast().op("text_ops")),
 	index("story_likes_user_id_idx").using("btree", table.userId.asc().nullsLast().op("text_ops")),
 	foreignKey({
@@ -232,14 +232,15 @@ export const storyLikes = pgTable("story_likes", {
 			foreignColumns: [users.id],
 			name: "story_likes_user_id_fkey"
 		}).onDelete("cascade"),
+	unique("story_likes_story_id_user_id_unique").on(table.storyId, table.userId),
 ]);
 
 export const chapterLikes = pgTable("chapter_likes", {
+	id: text().primaryKey().notNull(),
 	chapterId: text("chapter_id").notNull(),
 	userId: text("user_id").notNull(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	primaryKey({ columns: [table.chapterId, table.userId] }),
 	index("chapter_likes_chapter_id_idx").using("btree", table.chapterId.asc().nullsLast().op("text_ops")),
 	index("chapter_likes_user_id_idx").using("btree", table.userId.asc().nullsLast().op("text_ops")),
 	foreignKey({
@@ -252,14 +253,15 @@ export const chapterLikes = pgTable("chapter_likes", {
 			foreignColumns: [users.id],
 			name: "chapter_likes_user_id_fkey"
 		}).onDelete("cascade"),
+	unique("chapter_likes_chapter_id_user_id_unique").on(table.chapterId, table.userId),
 ]);
 
 export const sceneLikes = pgTable("scene_likes", {
+	id: text().primaryKey().notNull(),
 	sceneId: text("scene_id").notNull(),
 	userId: text("user_id").notNull(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	primaryKey({ columns: [table.sceneId, table.userId] }),
 	index("scene_likes_scene_id_idx").using("btree", table.sceneId.asc().nullsLast().op("text_ops")),
 	index("scene_likes_user_id_idx").using("btree", table.userId.asc().nullsLast().op("text_ops")),
 	foreignKey({
@@ -272,14 +274,15 @@ export const sceneLikes = pgTable("scene_likes", {
 			foreignColumns: [users.id],
 			name: "scene_likes_user_id_fkey"
 		}).onDelete("cascade"),
+	unique("scene_likes_scene_id_user_id_unique").on(table.sceneId, table.userId),
 ]);
 
 export const commentLikes = pgTable("comment_likes", {
+	id: text().primaryKey().notNull(),
 	commentId: text("comment_id").notNull(),
 	userId: text("user_id").notNull(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	primaryKey({ columns: [table.commentId, table.userId] }),
 	index("comment_likes_comment_id_idx").using("btree", table.commentId.asc().nullsLast().op("text_ops")),
 	index("comment_likes_user_id_idx").using("btree", table.userId.asc().nullsLast().op("text_ops")),
 	foreignKey({
@@ -292,6 +295,7 @@ export const commentLikes = pgTable("comment_likes", {
 			foreignColumns: [users.id],
 			name: "comment_likes_user_id_fkey"
 		}).onDelete("cascade"),
+	unique("comment_likes_comment_id_user_id_unique").on(table.commentId, table.userId),
 ]);
 
 export const publishingSchedules = pgTable("publishing_schedules", {
@@ -763,11 +767,11 @@ export const users = pgTable("users", {
 ]);
 
 export const postLikes = pgTable("post_likes", {
+	id: text().primaryKey().notNull(),
 	postId: text("post_id").notNull(),
 	userId: text("user_id").notNull(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	primaryKey({ columns: [table.postId, table.userId] }),
 	index("idx_post_likes_post_id").using("btree", table.postId.asc().nullsLast().op("text_ops")),
 	index("idx_post_likes_user_id").using("btree", table.userId.asc().nullsLast().op("text_ops")),
 	foreignKey({
@@ -780,6 +784,7 @@ export const postLikes = pgTable("post_likes", {
 			foreignColumns: [users.id],
 			name: "post_likes_user_id_fkey"
 		}).onDelete("cascade"),
+	unique("post_user_unique").on(table.postId, table.userId),
 ]);
 
 export const userPreferences = pgTable("user_preferences", {
@@ -868,11 +873,11 @@ export const scheduledPublications = pgTable("scheduled_publications", {
 ]);
 
 export const commentDislikes = pgTable("comment_dislikes", {
+	id: text().primaryKey().notNull(),
 	commentId: text("comment_id").notNull(),
 	userId: text("user_id").notNull(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	primaryKey({ columns: [table.commentId, table.userId] }),
 	index("idx_comment_dislikes_comment_id").using("btree", table.commentId.asc().nullsLast().op("text_ops")),
 	index("idx_comment_dislikes_user_id").using("btree", table.userId.asc().nullsLast().op("text_ops")),
 	foreignKey({
@@ -885,6 +890,7 @@ export const commentDislikes = pgTable("comment_dislikes", {
 			foreignColumns: [users.id],
 			name: "comment_dislikes_user_id_fkey"
 		}).onDelete("cascade"),
+	unique("comment_dislike_user_unique").on(table.commentId, table.userId),
 ]);
 
 export const stories = pgTable("stories", {
@@ -929,11 +935,11 @@ export const stories = pgTable("stories", {
 ]);
 
 export const sceneDislikes = pgTable("scene_dislikes", {
+	id: text().primaryKey().notNull(),
 	userId: text("user_id").notNull(),
 	sceneId: text("scene_id").notNull(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	primaryKey({ columns: [table.userId, table.sceneId] }),
 	index("idx_scene_dislikes_scene_id").using("btree", table.sceneId.asc().nullsLast().op("text_ops")),
 	index("idx_scene_dislikes_user_id").using("btree", table.userId.asc().nullsLast().op("text_ops")),
 	foreignKey({
@@ -946,6 +952,7 @@ export const sceneDislikes = pgTable("scene_dislikes", {
 			foreignColumns: [scenes.id],
 			name: "scene_dislikes_scene_id_fkey"
 		}).onDelete("cascade"),
+	unique("scene_dislike_user_unique").on(table.userId, table.sceneId),
 ]);
 
 export const comments = pgTable("comments", {
