@@ -1215,6 +1215,64 @@ export async function createResearch(authorId: string, data: {
   return item;
 }
 
+export async function updateResearch(
+  researchId: string,
+  userId: string,
+  data: {
+    title: string;
+    content: string;
+    tags?: string[];
+  }
+) {
+  console.log(`[updateResearch] 🔄 START DB update for ${researchId}`);
+  const startTime = Date.now();
+
+  const [updatedItem] = await db
+    .update(research)
+    .set({
+      title: data.title,
+      content: data.content,
+      tags: data.tags || [],
+      updatedAt: new Date(),
+    })
+    .where(and(
+      eq(research.id, researchId),
+      eq(research.authorId, userId)
+    ))
+    .returning();
+
+  const totalTime = Date.now() - startTime;
+  console.log(`[updateResearch] ✨ COMPLETE - Total DB time: ${totalTime}ms`);
+
+  if (!updatedItem) {
+    return null;
+  }
+
+  // Fetch the complete item with author details
+  const [completeItem] = await db
+    .select({
+      id: research.id,
+      title: research.title,
+      content: research.content,
+      tags: research.tags,
+      viewCount: research.viewCount,
+      createdAt: research.createdAt,
+      updatedAt: research.updatedAt,
+      author: {
+        id: users.id,
+        name: users.name,
+        username: users.username,
+        image: users.image,
+      },
+    })
+    .from(research)
+    .leftJoin(users, eq(research.authorId, users.id))
+    .where(eq(research.id, researchId))
+    .limit(1);
+
+  return completeItem || null;
+}
+
 export async function deleteResearch(researchId: string, userId: string) {
   console.log(`[deleteResearch] 🔄 START DB delete for ${researchId}`);
   const startTime = Date.now();

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { getResearchById, deleteResearch } from '@/lib/db/cached-queries';
+import { getResearchById, updateResearch, deleteResearch } from '@/lib/db/cached-queries';
 import { getPerformanceLogger } from '@/lib/cache/performance-logger';
 import { canWrite, canManage } from '@/lib/auth/permissions';
 
@@ -52,6 +52,72 @@ export async function GET(
   } catch (error) {
     perfLogger.end(operationId, { error: true });
     console.error('Error fetching research item:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+// PUT /api/research/[id] - Update research item
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const perfLogger = getPerformanceLogger();
+  const operationId = `update-research-${Date.now()}`;
+
+  try {
+    perfLogger.start(operationId, 'PUT /api/research/[id]', { apiRoute: true });
+
+    const { id } = await params;
+    const session = await auth();
+
+    // Only managers can update research
+    if (!canManage(session)) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Only managers can update research' },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json();
+    const { title, content, tags } = body;
+
+    // Validate required fields
+    if (!title || !content) {
+      return NextResponse.json(
+        { error: 'Title and content are required' },
+        { status: 400 }
+      );
+    }
+
+    const dbQueryStart = Date.now();
+    const updatedResearch = await updateResearch(id, session.user.id, {
+      title,
+      content,
+      tags: tags || [],
+    });
+    const dbQueryDuration = Date.now() - dbQueryStart;
+
+    if (!updatedResearch) {
+      return NextResponse.json(
+        { error: 'Research item not found or access denied' },
+        { status: 404 }
+      );
+    }
+
+    const totalDuration = perfLogger.end(operationId);
+
+    const headers = new Headers({
+      'Content-Type': 'application/json',
+      'X-Server-Timing': `total;dur=${totalDuration},db;dur=${dbQueryDuration}`,
+    });
+
+    return new NextResponse(
+      JSON.stringify({ item: updatedResearch }),
+      { status: 200, headers }
+    );
+  } catch (error) {
+    perfLogger.end(operationId, { error: true });
+    console.error('Error updating research item:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

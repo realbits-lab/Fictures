@@ -122,6 +122,32 @@ export async function createResearchItem(data: {
   return response.item;
 }
 
+// Helper function to update a research item
+export async function updateResearchItem(
+  id: string,
+  data: {
+    title: string;
+    content: string;
+    tags?: string[];
+  }
+): Promise<ResearchItem> {
+  const res = await fetch(`/api/research/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Failed to update research item');
+  }
+
+  const response = await res.json();
+  return response.item;
+}
+
 // Helper function to delete a research item
 export async function deleteResearchItem(id: string): Promise<void> {
   const res = await fetch(`/api/research/${id}`, {
