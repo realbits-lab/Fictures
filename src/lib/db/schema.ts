@@ -113,6 +113,13 @@ export const sfxEmphasisEnum = pgEnum('sfx_emphasis', [
   'dramatic'
 ]);
 
+// User role enum for authorization and permissions
+export const userRoleEnum = pgEnum('user_role', [
+  'reader',   // Can read and view content
+  'writer',   // Can read, write, and create content
+  'manager'   // Full administrative access
+]);
+
 // Users table - Core user authentication and profile
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
@@ -123,7 +130,7 @@ export const users = pgTable('users', {
   username: varchar('username', { length: 50 }).unique(),
   password: varchar('password', { length: 255 }),
   bio: text('bio'),
-  role: varchar('role', { length: 20 }).default('reader').notNull(),
+  role: userRoleEnum('role').default('reader').notNull(),
   createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
 });
