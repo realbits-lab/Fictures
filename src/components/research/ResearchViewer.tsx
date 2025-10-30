@@ -248,7 +248,7 @@ export default function ResearchViewer({ selectedId, onDelete, canDelete }: Rese
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-8 py-8">
-          <div className="prose prose-lg max-w-none">
+          <div className="prose prose-lg max-w-none text-gray-900 prose-headings:text-gray-900 prose-p:text-gray-900 prose-strong:text-gray-900 prose-code:text-gray-900 prose-pre:text-gray-900 prose-li:text-gray-900">
             <ReactMarkdown>{item.content}</ReactMarkdown>
           </div>
         </div>
