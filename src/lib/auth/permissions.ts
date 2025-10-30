@@ -18,12 +18,20 @@ export function isWriter(session: Session | null): boolean {
   return hasRole(session, 'writer');
 }
 
+export function isManager(session: Session | null): boolean {
+  return hasRole(session, 'manager');
+}
+
 export function isReader(session: Session | null): boolean {
   return hasRole(session, 'reader');
 }
 
 export function canWrite(session: Session | null): boolean {
   return hasAnyRole(session, ['admin', 'writer']);
+}
+
+export function canManage(session: Session | null): boolean {
+  return hasAnyRole(session, ['admin', 'manager']);
 }
 
 export function canModerate(session: Session | null): boolean {
