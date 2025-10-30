@@ -18,12 +18,12 @@ interface NavItem {
 
 const gnbMenuItems: NavItem[] = [
   { href: "/studio", label: "Studio", icon: "🎬" },
-  { href: "/research", label: "Research", icon: "🔬" },
   { href: "/novels", label: "Novels", icon: "📖" },
   { href: "/comics", label: "Comics", icon: "🎨" },
   { href: "/community", label: "Community", icon: "💬" },
   { href: "/publish", label: "Publish", icon: "📤" },
   { href: "/analytics", label: "Analytics", icon: "📊" },
+  { href: "/research", label: "Research", icon: "🔬" },
   { href: "/settings", label: "Settings", icon: "⚙️" }
 ];
 
