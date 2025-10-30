@@ -88,7 +88,7 @@ export default function ResearchCreateDialog({
               onChange={(e) => setTitle(e.target.value)}
               required
               maxLength={500}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder:text-gray-400"
               placeholder="Enter research title"
             />
           </div>
@@ -103,7 +103,7 @@ export default function ResearchCreateDialog({
               id="tags"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder:text-gray-400"
               placeholder="Comma-separated tags (e.g., AI, Research, Analysis)"
             />
             <p className="text-xs text-gray-500 mt-1">Separate tags with commas</p>
@@ -120,7 +120,7 @@ export default function ResearchCreateDialog({
               onChange={(e) => setContent(e.target.value)}
               required
               rows={12}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm text-gray-900 placeholder:text-gray-400"
               placeholder="Enter your research content in Markdown format..."
             />
             <p className="text-xs text-gray-500 mt-1">
