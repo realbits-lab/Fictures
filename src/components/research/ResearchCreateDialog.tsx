@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { createResearchItem, ResearchItem } from '@/lib/hooks/use-research';
 
 interface ResearchCreateDialogProps {
@@ -15,18 +15,45 @@ export default function ResearchCreateDialog({
   onCreated,
 }: ResearchCreateDialogProps) {
   const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Only accept HTML files
+      if (file.type === 'text/html' || file.name.endsWith('.html')) {
+        setSelectedFile(file);
+        setError(null);
+        // Extract title from filename (remove .html extension)
+        const fileName = file.name.replace(/\.html$/, '');
+        setTitle(fileName);
+      } else {
+        setError('Please select an HTML file');
+        setSelectedFile(null);
+      }
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!selectedFile) {
+      setError('Please select an HTML file');
+      return;
+    }
+
     setIsCreating(true);
 
     try {
+      // Read file content
+      const content = await selectedFile.text();
+
       const newItem = await createResearchItem({
         title,
         content,
@@ -37,7 +64,10 @@ export default function ResearchCreateDialog({
 
       // Reset form
       setTitle('');
-      setContent('');
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create research item');
     } finally {
@@ -49,6 +79,11 @@ export default function ResearchCreateDialog({
     if (isCreating) return;
     onClose();
     setError(null);
+    setTitle('');
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -68,6 +103,30 @@ export default function ResearchCreateDialog({
             </div>
           )}
 
+          {/* File Selection */}
+          <div>
+            <label htmlFor="file" className="block text-sm font-medium text-gray-700 mb-1">
+              HTML File <span className="text-red-500">*</span>
+            </label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              id="file"
+              accept=".html,text/html"
+              onChange={handleFileSelect}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Select an HTML file to upload
+            </p>
+            {selectedFile && (
+              <p className="text-xs text-green-600 mt-1">
+                Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
+              </p>
+            )}
+          </div>
+
           {/* Title */}
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
@@ -83,24 +142,8 @@ export default function ResearchCreateDialog({
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder:text-gray-400"
               placeholder="Enter research title"
             />
-          </div>
-
-          {/* Content */}
-          <div>
-            <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
-              Content (Markdown) <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              required
-              rows={12}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm text-gray-900 placeholder:text-gray-400"
-              placeholder="Enter your research content in Markdown format..."
-            />
             <p className="text-xs text-gray-500 mt-1">
-              Supports Markdown formatting (headings, lists, code blocks, etc.)
+              Title will be auto-filled from filename, but you can edit it
             </p>
           </div>
 
@@ -116,7 +159,7 @@ export default function ResearchCreateDialog({
             </button>
             <button
               type="submit"
-              disabled={isCreating || !title.trim() || !content.trim()}
+              disabled={isCreating || !title.trim() || !selectedFile}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isCreating ? 'Creating...' : 'Create'}

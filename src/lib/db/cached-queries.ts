@@ -630,30 +630,6 @@ export async function createResearch(
   return result.result;
 }
 
-export async function updateResearch(
-  researchId: string,
-  userId: string,
-  data: {
-    title: string;
-    content: string;
-    tags?: string[];
-  }
-) {
-  const result = await measureAsync(
-    'updateResearch',
-    () => queries.updateResearch(researchId, userId, data),
-    { researchId, userId }
-  );
-
-  // Invalidate both item and list caches
-  await invalidateCache([
-    `research:${researchId}:*`,
-    `research:list:user:${userId}`,
-  ]);
-
-  return result.result;
-}
-
 export async function deleteResearch(researchId: string, userId: string) {
   const result = await measureAsync(
     'deleteResearch',
