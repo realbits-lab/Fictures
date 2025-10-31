@@ -212,8 +212,9 @@ export async function POST(request: NextRequest) {
       part: PartGenerationResult;
       characters: CharacterGenerationResult[];
       previousPartChapters?: ChapterGenerationResult[];
+      chaptersPerPart?: number;
     };
-    const { part, characters, previousPartChapters = [] } = body;
+    const { part, characters, previousPartChapters = [], chaptersPerPart } = body;
 
     if (!part || !characters || characters.length === 0) {
       return NextResponse.json(
@@ -223,10 +224,35 @@ export async function POST(request: NextRequest) {
     }
 
     // Build context for chapter generation
+    const totalArcs = part.characterArcs.length;
+    const targetChapterCount = chaptersPerPart !== undefined ? chaptersPerPart : totalArcs * 2; // Default to 2 chapters per arc if not specified
+
     const chaptersContext = `
 # PART CONTEXT
 Act ${part.actNumber}: ${part.title}
 ${part.summary}
+
+# STORY STRUCTURE CONSTRAINTS (MUST FOLLOW EXACTLY)
+${chaptersPerPart !== undefined ? `
+CRITICAL: Generate EXACTLY ${chaptersPerPart} chapter${chaptersPerPart > 1 ? 's' : ''} for this part, NO MORE, NO LESS.
+${chaptersPerPart === 1 ? `
+Since you must generate only ONE chapter, COMBINE all character arcs into a SINGLE cohesive chapter that:
+- Weaves together adversity-triumph cycles for all ${totalArcs} character${totalArcs > 1 ? 's' : ''}
+- Maintains the moral framework for each character's journey
+- Creates a unified narrative that advances all arcs simultaneously
+- Prioritizes the primary character's arc while incorporating secondary arcs as support
+` : chaptersPerPart < totalArcs ? `
+Since you have ${chaptersPerPart} chapter${chaptersPerPart > 1 ? 's' : ''} for ${totalArcs} character arcs:
+- Distribute character arcs across ${chaptersPerPart} chapter${chaptersPerPart > 1 ? 's' : ''}
+- Primary character arc gets priority focus
+- Secondary arcs can share chapters or be woven into primary arc chapters
+- Each chapter must still be a complete adversity-triumph cycle
+` : `
+You have ${chaptersPerPart} chapters for ${totalArcs} character arcs.
+- Each main character can have ${Math.floor(chaptersPerPart / totalArcs)}-${Math.ceil(chaptersPerPart / totalArcs)} chapter${Math.ceil(chaptersPerPart / totalArcs) > 1 ? 's' : ''}
+- Distribute chapters to best serve the story's pacing and arc development
+`}
+` : ''}
 
 # CHARACTER MACRO ARCS FOR THIS PART
 ${part.characterArcs.map((arc) => {
@@ -266,7 +292,11 @@ ${previousPartChapters.length > 0 ? previousPartChapters.slice(-2).map((ch) => `
 `).join('\n') : 'This is Act 1 - no previous chapters'}
 
 # YOUR TASK
-Decompose EACH character's MACRO arc into 2-4 individual chapters (micro-cycles).
+${chaptersPerPart !== undefined
+  ? `Generate EXACTLY ${chaptersPerPart} chapter${chaptersPerPart > 1 ? 's' : ''} that ${chaptersPerPart === 1
+      ? 'combines all character arcs into ONE unified adversity-triumph cycle'
+      : `distribute${chaptersPerPart > 1 ? 's' : ''} the ${totalArcs} character arc${totalArcs > 1 ? 's' : ''} appropriately`}.`
+  : `Decompose EACH character's MACRO arc into 2-4 individual chapters (micro-cycles).`}
 Each chapter must be ONE complete adversity-triumph cycle.
 
 Generate chapters following the output format, ensuring:
@@ -274,6 +304,7 @@ Generate chapters following the output format, ensuring:
 2. Seed planting in early chapters, resolution in later chapters
 3. Arc position progression (beginning → middle → climax → resolution)
 4. Variety in virtue types
+${chaptersPerPart !== undefined ? `5. EXACTLY ${chaptersPerPart} chapter${chaptersPerPart > 1 ? 's' : ''} total (this is critical!)` : ''}
 `;
 
     const result = await generateWithGemini({

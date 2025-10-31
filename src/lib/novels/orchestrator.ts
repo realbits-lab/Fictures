@@ -46,14 +46,19 @@ export type ProgressPhase =
   | 'story_summary_start'
   | 'story_summary_complete'
   | 'characters_start'
+  | 'characters_progress'
   | 'characters_complete'
   | 'settings_start'
+  | 'settings_progress'
   | 'settings_complete'
   | 'parts_start'
+  | 'parts_progress'
   | 'parts_complete'
   | 'chapters_start'
+  | 'chapters_progress'
   | 'chapters_complete'
   | 'scene_summaries_start'
+  | 'scene_summaries_progress'
   | 'scene_summaries_complete'
   | 'scene_content_start'
   | 'scene_content_progress'
@@ -132,9 +137,11 @@ export async function generateCompleteNovel(
     });
 
     // Phase 2: Characters
+    const totalCharacters = storySummary.characters.length;
     await onProgress({
       phase: 'characters_start',
-      message: `Expanding ${storySummary.characters.length} character profiles...`,
+      message: `Expanding ${totalCharacters} character profiles...`,
+      data: { totalCharacters },
     });
 
     const charactersResponse = await fetch(`${baseUrl}/studio/api/generation/characters`, {
@@ -153,19 +160,24 @@ export async function generateCompleteNovel(
     await onProgress({
       phase: 'characters_complete',
       message: `${characters.length} characters created`,
-      data: { characters },
+      data: { characters, totalCharacters: characters.length },
     });
 
     // Phase 3: Settings
+    const expectedSettings = options.settingCount || 3;
     await onProgress({
       phase: 'settings_start',
-      message: 'Creating immersive story settings...',
+      message: `Creating ${expectedSettings} immersive story settings...`,
+      data: { totalSettings: expectedSettings },
     });
 
     const settingsResponse = await fetch(`${baseUrl}/studio/api/generation/settings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ storySummary }),
+      body: JSON.stringify({
+        storySummary,
+        settingCount: expectedSettings,
+      }),
     });
 
     if (!settingsResponse.ok) {
@@ -178,19 +190,26 @@ export async function generateCompleteNovel(
     await onProgress({
       phase: 'settings_complete',
       message: `${settings.length} settings created`,
-      data: { settings },
+      data: { settings, totalSettings: settings.length },
     });
 
     // Phase 4: Parts
+    const expectedParts = options.partsCount || 3;
     await onProgress({
       phase: 'parts_start',
-      message: 'Structuring three-act story framework...',
+      message: `Structuring ${expectedParts}-act story framework...`,
+      data: { totalParts: expectedParts },
     });
 
     const partsResponse = await fetch(`${baseUrl}/studio/api/generation/parts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ storySummary, characters }),
+      body: JSON.stringify({
+        storySummary,
+        characters,
+        partsCount: expectedParts,
+        chaptersPerPart: options.chaptersPerPart || 3,
+      }),
     });
 
     if (!partsResponse.ok) {
@@ -203,7 +222,7 @@ export async function generateCompleteNovel(
     await onProgress({
       phase: 'parts_complete',
       message: `${parts.length} acts created`,
-      data: { parts },
+      data: { parts, totalParts: parts.length },
     });
 
     // Phase 5: Chapters
@@ -224,7 +243,8 @@ export async function generateCompleteNovel(
         body: JSON.stringify({
           part,
           characters,
-          previousPartChapters
+          previousPartChapters,
+          chaptersPerPart: options.chaptersPerPart || 3
         }),
       });
 
@@ -274,7 +294,8 @@ export async function generateCompleteNovel(
         body: JSON.stringify({
           chapter,
           characters,
-          settings
+          settings,
+          scenesPerChapter: options.scenesPerChapter || 6
         }),
       });
 
@@ -387,37 +408,8 @@ export async function generateCompleteNovel(
       message: 'All scenes evaluated and improved',
     });
 
-    // Phase 9: Images
-    await onProgress({
-      phase: 'images_start',
-      message: 'Generating character and setting images...',
-      data: {
-        totalImages: characters.length + settings.length,
-      },
-    });
-
-    const imagesResponse = await fetch(`${baseUrl}/studio/api/generation/images`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        storyId: 'temp', // This will be replaced by actual story ID from database
-        characters,
-        settings,
-      }),
-    });
-
-    if (!imagesResponse.ok) {
-      const error = await imagesResponse.json();
-      throw new Error(`Image generation failed: ${error.details || error.error}`);
-    }
-
-    const imageResults = await imagesResponse.json();
-
-    await onProgress({
-      phase: 'images_complete',
-      message: 'All images generated',
-      data: imageResults,
-    });
+    // Phase 9: Images - handled by main API route after database creation
+    // (needs actual storyId from database)
 
     // Generation complete
     const result = {

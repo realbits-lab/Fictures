@@ -182,9 +182,25 @@ export function CreateStoryForm() {
                 // Phase 2: Characters
                 case 'characters_start':
                   updateProgress(1, 'in_progress');
+                  if (data.data?.totalCharacters) {
+                    setProgress(prev => prev.map((step, index) =>
+                      index === 1 ? {
+                        ...step,
+                        description: `Expanding ${data.data.totalCharacters} character profiles with detailed arcs`
+                      } : step
+                    ));
+                  }
                   break;
                 case 'characters_complete':
                   updateProgress(1, 'completed');
+                  if (data.data?.totalCharacters) {
+                    setProgress(prev => prev.map((step, index) =>
+                      index === 1 ? {
+                        ...step,
+                        description: `${data.data.totalCharacters} characters created`
+                      } : step
+                    ));
+                  }
                   if (data.data?.characters) {
                     setStoryData(prev => ({ ...prev, characters: data.data.characters }));
                     // @ts-ignore
@@ -198,9 +214,25 @@ export function CreateStoryForm() {
                 // Phase 3: Settings
                 case 'settings_start':
                   updateProgress(2, 'in_progress');
+                  if (data.data?.totalSettings) {
+                    setProgress(prev => prev.map((step, index) =>
+                      index === 2 ? {
+                        ...step,
+                        description: `Creating ${data.data.totalSettings} immersive locations with adversity elements`
+                      } : step
+                    ));
+                  }
                   break;
                 case 'settings_complete':
                   updateProgress(2, 'completed');
+                  if (data.data?.totalSettings) {
+                    setProgress(prev => prev.map((step, index) =>
+                      index === 2 ? {
+                        ...step,
+                        description: `${data.data.totalSettings} settings created`
+                      } : step
+                    ));
+                  }
                   if (data.data?.settings) {
                     setStoryData(prev => ({ ...prev, places: data.data.settings }));
                     // @ts-ignore
@@ -214,9 +246,25 @@ export function CreateStoryForm() {
                 // Phase 4: Parts
                 case 'parts_start':
                   updateProgress(3, 'in_progress');
+                  if (data.data?.totalParts) {
+                    setProgress(prev => prev.map((step, index) =>
+                      index === 3 ? {
+                        ...step,
+                        description: `Structuring ${data.data.totalParts}-act framework with macro arcs`
+                      } : step
+                    ));
+                  }
                   break;
                 case 'parts_complete':
                   updateProgress(3, 'completed');
+                  if (data.data?.totalParts) {
+                    setProgress(prev => prev.map((step, index) =>
+                      index === 3 ? {
+                        ...step,
+                        description: `${data.data.totalParts} acts created`
+                      } : step
+                    ));
+                  }
                   if (data.data?.parts) {
                     setStoryData(prev => ({ ...prev, parts: data.data.parts }));
                     // @ts-ignore

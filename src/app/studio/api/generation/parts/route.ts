@@ -198,8 +198,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json() as {
       storySummary: StorySummaryResult;
       characters: CharacterGenerationResult[];
+      partsCount?: number;
+      chaptersPerPart?: number;
     };
-    const { storySummary, characters } = body;
+    const { storySummary, characters, partsCount = 3, chaptersPerPart = 3 } = body;
 
     if (!storySummary || !characters || characters.length < 2) {
       return NextResponse.json(
@@ -227,6 +229,11 @@ Tone: ${storySummary.tone}
 # MORAL FRAMEWORK
 ${storySummary.moralFramework}
 
+# STORY STRUCTURE CONSTRAINTS (MUST FOLLOW EXACTLY)
+Parts (Acts): ${partsCount}
+Chapters per Part: ${chaptersPerPart}
+TOTAL CHAPTERS: ${partsCount * chaptersPerPart}
+
 # CHARACTERS
 ${characters.map((char) => `
 ## ${char.name} (${char.isMain ? 'MAIN' : 'Supporting'})
@@ -238,16 +245,26 @@ ${characters.map((char) => `
 `).join('\n')}
 
 # YOUR TASK
-Design MACRO adversity-triumph arcs for each main character across all three acts.
-Each MACRO arc will later decompose into 2-4 chapter-level micro-cycles.
+Design MACRO adversity-triumph arcs for each main character across EXACTLY ${partsCount} part${partsCount > 1 ? 's' : ''} (acts).
+Each MACRO arc will later decompose into approximately ${chaptersPerPart} chapters.
 
-Focus on:
-1. How each character's flaw creates their Act 1 adversity
-2. How their flawed approach causes Act 2A complications
-3. How their flaw fully exposes in Act 2B (Dark Night)
-4. How their healed state enables Act 3 virtue
+${partsCount === 1 ? `
+IMPORTANT: Since this is a single-part story, compress the traditional three-act structure into ONE complete arc:
+- Setup adversity quickly
+- Build to climax efficiently
+- Resolve within ${chaptersPerPart} chapters
+` : partsCount === 2 ? `
+IMPORTANT: For a two-part structure:
+- Part 1: Setup and rising action (build adversity)
+- Part 2: Climax and resolution (resolve conflict)
+` : `
+IMPORTANT: For a three-part structure (traditional):
+- Part 1 (Act 1): Setup and first trials
+- Part 2 (Act 2): Escalation and dark night
+- Part 3 (Act 3): Climax and resolution
+`}
 
-Generate the three-act structure following the output format.
+Generate the ${partsCount}-part structure following the output format. Create EXACTLY ${partsCount} parts with clear adversity-triumph arcs.
 `;
 
     const result = await generateWithGemini({
@@ -259,7 +276,7 @@ Generate the three-act structure following the output format.
     });
 
     // Parse structured text into parts array
-    const parts = parsePartsFromText(result, characters);
+    const parts = parsePartsFromText(result, characters, partsCount);
 
     return NextResponse.json(parts);
   } catch (error) {
@@ -276,15 +293,16 @@ Generate the three-act structure following the output format.
 
 function parsePartsFromText(
   text: string,
-  characters: CharacterGenerationResult[]
+  characters: CharacterGenerationResult[],
+  partsCount: number
 ): PartGenerationResult[] {
   const parts: PartGenerationResult[] = [];
 
-  // Split by acts
-  const actSections = text.split(/# ACT \d+:/);
+  // Split by acts (support both "ACT" and "PART" headers)
+  const actSections = text.split(/# (?:ACT|PART) \d+:/);
 
   // Process each act (skip first empty split)
-  for (let actNum = 1; actNum <= 3; actNum++) {
+  for (let actNum = 1; actNum <= partsCount; actNum++) {
     const actSection = actSections[actNum];
     if (!actSection) continue;
 
@@ -299,8 +317,8 @@ function parsePartsFromText(
     // Extract character arcs
     const characterArcs = [];
 
-    // For Act 2, handle 2A and 2B subsections
-    if (actNum === 2) {
+    // For Act 2 in 3-part structure, handle 2A and 2B subsections
+    if (actNum === 2 && partsCount === 3) {
       // Split into 2A and 2B
       const [_, part2A, part2B] = actSection.split(/## Part 2[AB]:/);
 
@@ -314,7 +332,7 @@ function parsePartsFromText(
         characterArcs.push(...arcs2B);
       }
     } else {
-      // Act 1 or Act 3
+      // Single part or other acts
       const arcs = extractCharacterArcs(actSection, characters);
       characterArcs.push(...arcs);
     }

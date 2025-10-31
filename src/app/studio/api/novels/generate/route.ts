@@ -235,6 +235,127 @@ export async function POST(request: NextRequest) {
             await db.insert(scenes).values(sceneRecords);
           }
 
+          // Phase 9: Generate images (now that we have actual storyId)
+          const totalImages = result.characters.length + result.settings.length;
+          let completedImages = 0;
+
+          controller.enqueue(
+            encoder.encode(
+              createSSEMessage({
+                phase: 'images_start',
+                message: 'Generating character and setting images...',
+                data: {
+                  totalImages,
+                },
+              })
+            )
+          );
+
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+          // Generate character images
+          for (let i = 0; i < result.characters.length; i++) {
+            const character = result.characters[i];
+
+            try {
+              controller.enqueue(
+                encoder.encode(
+                  createSSEMessage({
+                    phase: 'images_progress',
+                    message: `Generating image for ${character.name}...`,
+                    data: {
+                      currentItem: completedImages + 1,
+                      totalItems: totalImages,
+                      percentage: Math.round(((completedImages + 1) / totalImages) * 100),
+                    },
+                  })
+                )
+              );
+
+              const imageResponse = await fetch(`${baseUrl}/studio/api/generation/images`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  storyId: generatedStoryId,
+                  imageType: 'character',
+                  targetData: character,
+                }),
+              });
+
+              if (imageResponse.ok) {
+                const imageResult = await imageResponse.json();
+                // Store image URL in character record (can be updated separately if needed)
+                console.log(`[Novel Generation] Generated image for character ${character.name}:`, imageResult.originalUrl);
+              } else {
+                const error = await imageResponse.json();
+                console.error(`[Novel Generation] Failed to generate image for character ${character.name}:`, error);
+              }
+
+              completedImages++;
+            } catch (error) {
+              console.error(`[Novel Generation] Error generating image for character ${character.name}:`, error);
+              completedImages++;
+            }
+          }
+
+          // Generate setting images
+          for (let i = 0; i < result.settings.length; i++) {
+            const setting = result.settings[i];
+
+            try {
+              controller.enqueue(
+                encoder.encode(
+                  createSSEMessage({
+                    phase: 'images_progress',
+                    message: `Generating image for ${setting.name}...`,
+                    data: {
+                      currentItem: completedImages + 1,
+                      totalItems: totalImages,
+                      percentage: Math.round(((completedImages + 1) / totalImages) * 100),
+                    },
+                  })
+                )
+              );
+
+              const imageResponse = await fetch(`${baseUrl}/studio/api/generation/images`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  storyId: generatedStoryId,
+                  imageType: 'setting',
+                  targetData: setting,
+                }),
+              });
+
+              if (imageResponse.ok) {
+                const imageResult = await imageResponse.json();
+                // Store image URL in setting record (can be updated separately if needed)
+                console.log(`[Novel Generation] Generated image for setting ${setting.name}:`, imageResult.originalUrl);
+              } else {
+                const error = await imageResponse.json();
+                console.error(`[Novel Generation] Failed to generate image for setting ${setting.name}:`, error);
+              }
+
+              completedImages++;
+            } catch (error) {
+              console.error(`[Novel Generation] Error generating image for setting ${setting.name}:`, error);
+              completedImages++;
+            }
+          }
+
+          controller.enqueue(
+            encoder.encode(
+              createSSEMessage({
+                phase: 'images_complete',
+                message: 'All images generated',
+                data: {
+                  completedImages,
+                  totalImages,
+                },
+              })
+            )
+          );
+
           // Send completion message
           controller.enqueue(
             encoder.encode(

@@ -212,8 +212,9 @@ export async function POST(request: NextRequest) {
       chapter: ChapterGenerationResult;
       characters: CharacterGenerationResult[];
       settings: SettingGenerationResult[];
+      scenesPerChapter?: number;
     };
-    const { chapter, characters, settings } = body;
+    const { chapter, characters, settings, scenesPerChapter = 6 } = body;
 
     if (!chapter || !characters || !settings) {
       return NextResponse.json(
@@ -285,7 +286,9 @@ ${seedsResolveSection}
 ${seedsPlantSection}
 
 # YOUR TASK
-Break this chapter's adversity-triumph cycle into 5-8 scenes following the 5-phase structure.
+Break this chapter's adversity-triumph cycle into EXACTLY ${scenesPerChapter} scenes following the 5-phase structure.
+
+IMPORTANT: Generate exactly ${scenesPerChapter} scenes, no more, no less.
 
 Remember:
 1. Phase 3 (Virtue) is THE emotional peak - make it the longest scene
@@ -293,8 +296,9 @@ Remember:
 3. Character voices should be distinct (use voice style info)
 4. Resolve any seeds that should pay off in this chapter
 5. Plant any seeds that should set up future payoffs
+${scenesPerChapter < 5 ? `6. Since you have only ${scenesPerChapter} scenes, compress phases efficiently while maintaining the virtue peak` : ''}
 
-Generate scene summaries following the output format.
+Generate ${scenesPerChapter} scene summaries following the output format.
 `;
 
     const result = await generateWithGemini({
