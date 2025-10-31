@@ -204,22 +204,41 @@ export async function generateCompleteNovel(
       message: 'Generating detailed chapter structure...',
     });
 
-    const chaptersResponse = await fetch(`${baseUrl}/studio/api/generation/chapters`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ storySummary, characters, parts }),
-    });
+    // Generate chapters for each part
+    const allChapters: ChapterGenerationResult[] = [];
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      const previousPartChapters = i > 0 ? allChapters.filter(ch => ch.partId === parts[i - 1].id) : [];
 
-    if (!chaptersResponse.ok) {
-      const error = await chaptersResponse.json();
-      throw new Error(`Chapters generation failed: ${error.details || error.error}`);
+      const chaptersResponse = await fetch(`${baseUrl}/studio/api/generation/chapters`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          part,
+          characters,
+          previousPartChapters
+        }),
+      });
+
+      if (!chaptersResponse.ok) {
+        const error = await chaptersResponse.json();
+        throw new Error(`Chapters generation failed for Part ${i + 1}: ${error.details || error.error}`);
+      }
+
+      const partChapters: ChapterGenerationResult[] = await chaptersResponse.json();
+      allChapters.push(...partChapters);
+
+      await onProgress({
+        phase: 'chapters_progress',
+        message: `Generated ${partChapters.length} chapters for Part ${i + 1}/${parts.length}`,
+      });
     }
 
-    const chapters: ChapterGenerationResult[] = await chaptersResponse.json();
+    const chapters = allChapters;
 
     await onProgress({
       phase: 'chapters_complete',
-      message: `${chapters.length} chapters created`,
+      message: `${chapters.length} chapters created across ${parts.length} parts`,
       data: { chapters },
     });
 
@@ -229,22 +248,40 @@ export async function generateCompleteNovel(
       message: 'Breaking down chapters into scene outlines...',
     });
 
-    const sceneSummariesResponse = await fetch(`${baseUrl}/studio/api/generation/scene-summaries`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ storySummary, characters, chapters }),
-    });
+    // Generate scene summaries for each chapter
+    const allSceneSummaries: SceneSummaryResult[] = [];
+    for (let i = 0; i < chapters.length; i++) {
+      const chapter = chapters[i];
 
-    if (!sceneSummariesResponse.ok) {
-      const error = await sceneSummariesResponse.json();
-      throw new Error(`Scene summaries generation failed: ${error.details || error.error}`);
+      const sceneSummariesResponse = await fetch(`${baseUrl}/studio/api/generation/scene-summaries`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chapter,
+          characters,
+          settings
+        }),
+      });
+
+      if (!sceneSummariesResponse.ok) {
+        const error = await sceneSummariesResponse.json();
+        throw new Error(`Scene summaries generation failed for Chapter ${i + 1}: ${error.details || error.error}`);
+      }
+
+      const chapterSceneSummaries: SceneSummaryResult[] = await sceneSummariesResponse.json();
+      allSceneSummaries.push(...chapterSceneSummaries);
+
+      await onProgress({
+        phase: 'scene_summaries_progress',
+        message: `Generated ${chapterSceneSummaries.length} scene outlines for Chapter ${i + 1}/${chapters.length}`,
+      });
     }
 
-    const sceneSummaries: SceneSummaryResult[] = await sceneSummariesResponse.json();
+    const sceneSummaries = allSceneSummaries;
 
     await onProgress({
       phase: 'scene_summaries_complete',
-      message: `${sceneSummaries.length} scene outlines created`,
+      message: `${sceneSummaries.length} scene outlines created across ${chapters.length} chapters`,
       data: { sceneSummaries },
     });
 
@@ -255,24 +292,61 @@ export async function generateCompleteNovel(
       data: { totalScenes: sceneSummaries.length },
     });
 
-    const sceneContentResponse = await fetch(`${baseUrl}/studio/api/generation/scene-content`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        storySummary,
-        characters,
-        settings,
-        sceneSummaries,
-      }),
-    });
+    // Generate content for each scene
+    const allScenes: any[] = [];
+    for (let i = 0; i < sceneSummaries.length; i++) {
+      const sceneSummary = sceneSummaries[i];
 
-    if (!sceneContentResponse.ok) {
-      const error = await sceneContentResponse.json();
-      throw new Error(`Scene content generation failed: ${error.details || error.error}`);
+      // Find the chapter this scene belongs to
+      const chapter = chapters.find(ch => ch.id === sceneSummary.chapterId);
+      if (!chapter) {
+        throw new Error(`Chapter not found for scene ${i + 1}`);
+      }
+
+      const sceneContentResponse = await fetch(`${baseUrl}/studio/api/generation/scene-content`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sceneSummary,
+          characters,
+          settings,
+          chapterContext: {
+            title: chapter.title,
+            summary: chapter.summary,
+            virtueType: chapter.virtueType
+          },
+          storyContext: {
+            genre: storySummary.genre,
+            tone: storySummary.targetAudience,
+            moralFramework: storySummary.moralFramework.title
+          }
+        }),
+      });
+
+      if (!sceneContentResponse.ok) {
+        const error = await sceneContentResponse.json();
+        throw new Error(`Scene content generation failed for Scene ${i + 1}: ${error.details || error.error}`);
+      }
+
+      const sceneContent: any = await sceneContentResponse.json();
+      allScenes.push(sceneContent);
+
+      // Calculate percentage for progress
+      const percentage = Math.round(((i + 1) / sceneSummaries.length) * 100);
+
+      await onProgress({
+        phase: 'scene_content_progress',
+        message: `Generated content for scene ${i + 1}/${sceneSummaries.length}`,
+        data: {
+          completedScenes: i + 1,
+          totalScenes: sceneSummaries.length,
+          currentScene: i + 1,
+          percentage
+        },
+      });
     }
 
-    // Scene content returns array of scenes with content
-    const scenes: any[] = await sceneContentResponse.json();
+    const scenes = allScenes;
 
     await onProgress({
       phase: 'scene_content_complete',

@@ -263,11 +263,15 @@ export function CreateStoryForm() {
                   }
                   break;
                 case 'scene_content_progress':
-                  if (data.data?.percentage) {
+                  if (data.data?.currentScene && data.data?.totalScenes) {
+                    const sceneNum = data.data.currentScene;
+                    const totalScenes = data.data.totalScenes;
+                    const percentage = data.data.percentage || Math.round((sceneNum / totalScenes) * 100);
+
                     setProgress(prev => prev.map((step, index) =>
                       index === 6 ? {
                         ...step,
-                        description: `Generating scenes: ${data.data.percentage}%`
+                        description: `Scene ${sceneNum} of ${totalScenes} (${percentage}%)`
                       } : step
                     ));
                   }
