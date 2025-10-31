@@ -192,6 +192,10 @@ NEW ADVERSITY:
 
 **Purpose**: Divide chapter's adversity-triumph into 3-7 narrative beats
 
+**Key Fields**:
+- `summary` (text): Scene specification - what happens, emotional beat, purpose, sensory anchors
+- `content` (text): Full prose narrative generated from the summary
+
 **Scene Types by Cycle Phase**:
 
 1. **Setup Scenes** (1-2 scenes)
@@ -219,9 +223,9 @@ NEW ADVERSITY:
    - Hook for next chapter
    - Character's emotional state shifts
 
-**Content Field**:
-- `content` (text): Full prose narrative for this scene
-- Generated based on scene's role in adversity-triumph cycle
+**Two-Step Generation Process**:
+1. Generate `summary` for all scenes in chapter (planning)
+2. Generate `content` for each scene using its summary (execution)
 
 ---
 
@@ -344,12 +348,15 @@ interface Scene {
 
   title: string;
 
+  // NEW: Scene specification (planning layer)
+  summary: string; // Scene specification: what happens, emotional beat, purpose, sensory anchors
+
   // Cycle phase tracking
   cyclePhase: 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition';
   emotionalBeat: 'fear' | 'hope' | 'tension' | 'relief' | 'elevation' | 'catharsis' | 'despair' | 'joy';
 
-  // Content
-  content: string; // Full prose narrative
+  // Generated prose (execution layer)
+  content: string; // Full prose narrative generated from summary
 
   // Existing fields
   imageUrl?: string;
@@ -367,12 +374,13 @@ interface Scene {
 - Story: Add `summary`, `genre`, `tone`, `moralFramework`, `characters`
 - Part: Add `summary`, `characterArcs`
 - Chapter: Add `summary`, cycle tracking fields
-- Scene: Add `cyclePhase`, `emotionalBeat`
+- Scene: Add `summary`, `cyclePhase`, `emotionalBeat`
 
 **Phase 2**: Migrate existing data
 - Convert old `premise` + `dramaticQuestion` + `theme` → new `summary`
 - Convert old part `description` → new `summary`
 - Convert old chapter `description` → new `summary`
+- Scene `summary` starts empty (new field, no migration needed)
 
 **Phase 3**: Deprecate old fields
 - Mark `premise`, `dramaticQuestion`, `theme` as optional in schema
@@ -380,11 +388,12 @@ interface Scene {
 - Remove from new story generation
 
 **Naming Consistency**:
-- All hierarchical levels now use `summary` for their narrative overview
+All hierarchical levels now use `summary` for their planning/specification layer:
 - `Story.summary`: General thematic premise and moral framework
 - `Part.summary`: Adversity-triumph cycles for this act
 - `Chapter.summary`: Single adversity-triumph cycle
-- `Scene.content`: Full prose narrative (different purpose)
+- `Scene.summary`: Scene specification (what happens, purpose, sensory anchors)
+- `Scene.content`: Full prose narrative (execution layer)
 
 ---
 

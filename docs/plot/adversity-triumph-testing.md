@@ -164,22 +164,68 @@ describe('Chapter Generation', () => {
 });
 ```
 
+#### Scene Summary Generation Tests
+
+```typescript
+describe('Scene Summary Generation', () => {
+  test('should generate correct number of scenes', () => {
+    const output = generateSceneSummaries(chapterData, 5);
+
+    expect(output.scenes.length).toBe(5);
+  });
+
+  test('should include all cycle phases', () => {
+    const output = generateSceneSummaries(chapterData, 5);
+    const phases = output.scenes.map(s => s.cyclePhase);
+
+    expect(phases).toContain('virtue'); // Must have THE moment
+    expect(phases.filter(p => p === 'virtue').length).toBe(1); // Exactly one
+  });
+
+  test('virtue scene should be marked as long', () => {
+    const output = generateSceneSummaries(chapterData, 5);
+    const virtueScene = output.scenes.find(s => s.cyclePhase === 'virtue');
+
+    expect(virtueScene.suggestedLength).toBe('long');
+  });
+
+  test('should have detailed summaries', () => {
+    const output = generateSceneSummaries(chapterData, 5);
+
+    output.scenes.forEach(scene => {
+      expect(scene.summary).toBeTruthy();
+      expect(scene.summary.length).toBeGreaterThan(200); // Detailed specification
+      expect(scene.sensoryAnchors.length).toBeGreaterThanOrEqual(5);
+    });
+  });
+});
+```
+
 #### Scene Content Tests
 
 ```typescript
 describe('Scene Content Generation', () => {
   test('should meet word count targets', () => {
-    const content = generateSceneContent(sceneSpec);
+    const scene = {
+      summary: "Scene specification...",
+      cyclePhase: 'virtue',
+      suggestedLength: 'long'
+    };
+    const content = generateSceneContent(scene);
     const wordCount = content.split(/\s+/).length;
 
-    if (sceneSpec.suggestedLength === 'short') {
+    if (scene.suggestedLength === 'short') {
       expect(wordCount).toBeGreaterThanOrEqual(300);
       expect(wordCount).toBeLessThanOrEqual(500);
+    }
+    if (scene.suggestedLength === 'long') {
+      expect(wordCount).toBeGreaterThanOrEqual(800);
+      expect(wordCount).toBeLessThanOrEqual(1000);
     }
   });
 
   test('should follow formatting rules', () => {
-    const content = generateSceneContent(sceneSpec);
+    const content = generateSceneContent(scene);
 
     // Description paragraphs max 3 sentences
     const paragraphs = content.split('\n\n');
@@ -194,9 +240,23 @@ describe('Scene Content Generation', () => {
     expect(content).not.toMatch(/\.\n"/); // Should be .\n\n"
   });
 
+  test('should use scene summary as specification', () => {
+    const scene = {
+      summary: "Character performs specific action with water bottle",
+      cyclePhase: 'virtue'
+    };
+    const content = generateSceneContent(scene);
+
+    // Content should reflect the summary's specification
+    expect(content).toMatch(/water/i);
+  });
+
   test('virtue scene should show intrinsic motivation', () => {
-    const virtueSpec = { ...sceneSpec, cyclePhase: 'virtue' };
-    const content = generateSceneContent(virtueSpec);
+    const scene = {
+      summary: "...",
+      cyclePhase: 'virtue'
+    };
+    const content = generateSceneContent(scene);
 
     // Should NOT contain transactional language
     expect(content).not.toMatch(/in (order to|return for|exchange)/i);

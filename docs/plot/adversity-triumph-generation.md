@@ -60,43 +60,50 @@ This document provides comprehensive implementation specifications for the Adver
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  API 4: Scene Specifications Generation (Per Chapter)           │
-│  POST /api/generation/scenes                                     │
+│  API 4: Scene Summaries Generation (Per Chapter)                │
+│  POST /api/generation/scene-summaries                            │
 │                                                                   │
 │  System Prompt Focus:                                            │
 │  - Divide cycle into 5 phases: setup → confrontation →         │
 │    virtue → consequence → transition                            │
 │  - Assign emotional beats per scene                            │
 │  - Plan pacing (build to virtue scene, release to consequence) │
-│  - Specify sensory anchors and dialogue ratios                 │
+│  - Specify what happens, purpose, sensory anchors              │
 │                                                                   │
-│  Output: 3-7 scenes, each with cycle phase and spec           │
+│  Output: 3-7 scenes, each with Scene.summary specification     │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  API 5: Scene Content Generation (Per Scene)                    │
+│  API 5: Scene Content Generation (Per Scene, One at a Time)     │
 │  POST /api/generation/scene-content                              │
 │                                                                   │
 │  System Prompt Focus:                                            │
-│  - Cycle-specific writing guidelines                            │
+│  - Uses Scene.summary as primary specification                 │
+│  - Cycle-specific writing guidelines per phase                 │
 │  - Setup: Build empathy, establish adversity                   │
 │  - Confrontation: Externalize internal conflict                │
 │  - Virtue: Create moral elevation moment (THE PEAK)            │
 │  - Consequence: Deliver earned payoff, trigger catharsis       │
 │  - Transition: Create next adversity, hook forward             │
 │                                                                   │
-│  Output: Full prose narrative (300-1200 words)                 │
+│  Output: Scene.content - Full prose narrative (300-1200 words) │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  Post-Processing Pipeline                                        │
+│  Post-Processing Pipeline (Per Scene)                           │
 │  1. Scene Formatting (rule-based, deterministic)                │
 │  2. Scene Evaluation & Improvement Loop                         │
 │  3. Image Validation & Generation (if needed)                   │
 │  4. Character/Setting Image Generation                          │
 └─────────────────────────────────────────────────────────────────┘
+
+Note: Two-step scene generation allows:
+- Pause/resume story generation between scenes
+- Edit scene summaries before content generation
+- Regenerate individual scene content without losing specification
+- Human review of scene plan before expensive prose generation
 ```
 
 ### 1.2 Complete Generation Flow API
@@ -570,7 +577,131 @@ Return structured text with clear chapter separations.
 - **Iterative Generation**: Generate chapters one at a time
 - **Post-Processing**: Parse into Chapter records, extract seeds with UUIDs, build causal chain map
 
-### 2.4 Scene Content Generation API
+### 2.4 Scene Summary Generation API
+
+#### Endpoint
+```typescript
+POST /api/generation/scene-summaries
+
+Request:
+{
+  storyId: string;
+  chapterId: string;
+  chapterSummary: string;
+  numberOfScenes: number; // Typically 3-7
+  storySummary: string;
+  characters: Character[];
+}
+
+Response:
+{
+  scenes: {
+    title: string;
+    summary: string; // Scene specification
+    cyclePhase: 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition';
+    emotionalBeat: string;
+    characterFocus: string[];
+    sensoryAnchors: string[];
+    dialogueVsDescription: string;
+    suggestedLength: 'short' | 'medium' | 'long';
+  }[];
+}
+```
+
+#### System Prompt (v1.0)
+
+```markdown
+# ROLE
+You are an expert at breaking down adversity-triumph cycles into compelling scene specifications that guide prose generation.
+
+# CONTEXT
+Chapter Summary: {chapterSummary}
+Story Summary: {storySummary}
+Characters: {characters}
+Number of Scenes: {numberOfScenes}
+
+# YOUR TASK
+Break down this chapter's adversity-triumph cycle into {numberOfScenes} scene summaries, where each summary provides a complete specification for prose generation.
+
+# SCENE SUMMARY STRUCTURE
+
+Each scene summary must contain:
+
+## 1. TITLE
+Short, evocative scene title (3-7 words)
+
+## 2. SUMMARY
+Detailed specification (200-400 words) including:
+- What happens in this scene (actions, events, interactions)
+- Why this scene matters in the cycle (purpose, function)
+- What emotional beat to hit
+- Character internal states
+- Key dialogue or moments to include
+- How it connects to previous/next scene
+
+## 3. CYCLE PHASE
+One of: setup, confrontation, virtue, consequence, transition
+
+## 4. EMOTIONAL BEAT
+Primary emotion this scene should evoke:
+- setup → fear, tension, anxiety
+- confrontation → desperation, determination, conflict
+- virtue → elevation, moral beauty, witnessing goodness
+- consequence → catharsis, joy, relief, surprise, gam-dong
+- transition → anticipation, dread, curiosity
+
+## 5. CHARACTER FOCUS
+Which character(s) this scene focuses on (1-2 max for depth)
+
+## 6. SENSORY ANCHORS
+5-10 specific sensory details that should appear:
+- Visual details (colors, lighting, movement)
+- Sounds (ambient, dialogue quality, silence)
+- Tactile sensations (textures, temperatures, physical feelings)
+- Smells (environment, memory triggers)
+- Emotional/physical sensations (heart racing, tears, warmth)
+
+## 7. DIALOGUE VS DESCRIPTION
+Guidance on balance:
+- Dialogue-heavy: Conversation-driven, lots of back-and-forth
+- Balanced: Mix of action and dialogue
+- Description-heavy: Internal thoughts, sensory immersion, sparse dialogue
+
+## 8. SUGGESTED LENGTH
+- short: 300-500 words (transition, quick setup)
+- medium: 500-800 words (confrontation, consequence)
+- long: 800-1000 words (virtue scene - THE moment)
+
+# SCENE DISTRIBUTION REQUIREMENTS
+
+For a complete adversity-triumph cycle:
+- 1-2 Setup scenes (establish adversity)
+- 1-3 Confrontation scenes (build tension)
+- 1 Virtue scene (THE PEAK - must be longest)
+- 1-2 Consequence scenes (deliver payoff)
+- 1 Transition scene (hook to next chapter)
+
+Total: 3-7 scenes
+
+# CRITICAL RULES
+1. Virtue scene MUST be marked as "long" - this is THE moment
+2. Each summary must be detailed enough to guide prose generation
+3. Sensory anchors must be SPECIFIC (not "nature sounds" but "wind rattling dead leaves")
+4. Scene progression must build emotional intensity toward virtue, then release
+5. Each scene must have clear purpose in the cycle
+6. Character focus should alternate to maintain variety
+7. Summaries should NOT contain actual prose - just specifications
+
+# OUTPUT FORMAT
+Return structured data for all scenes with clear sections.
+```
+
+#### Implementation Notes
+- **AI Model**: GPT-4o-mini (structured breakdown task)
+- **Temperature**: 0.6 (need consistency in specifications)
+- **Post-Processing**: Validate scene count, ensure virtue scene is marked long, check cycle phase coverage
+
+### 2.5 Scene Content Generation API
 
 #### Endpoint
 ```typescript
@@ -580,10 +711,12 @@ Request:
 {
   storyId: string;
   sceneId: string;
-  sceneSpecification: string;
+  sceneSummary: string; // Scene specification from Scene.summary
   cyclePhase: string;
-  chapterContext: string;
-  characterContext: Character[];
+  emotionalBeat: string;
+  chapterSummary: string;
+  storySummary: string;
+  characters: Character[];
   previousSceneContent?: string;
 }
 
@@ -602,15 +735,18 @@ Response:
 You are a master prose writer, crafting emotionally resonant scenes that form part of a larger adversity-triumph narrative cycle.
 
 # CONTEXT
-Scene Specification: {sceneSpecification}
+Scene Summary: {sceneSummary}
 Cycle Phase: {cyclePhase}
 Emotional Beat: {emotionalBeat}
-Chapter Context: {chapterSummary}
+Chapter Summary: {chapterSummary}
+Story Summary: {storySummary}
 Characters: {characterContext}
-Previous Scene: {previousSceneContent}
+Previous Scene Content: {previousSceneContent}
 
 # TASK
-Write full prose narrative for this scene, optimized for its role in the adversity-triumph cycle.
+Write full prose narrative for this scene based on the scene summary, optimized for its role in the adversity-triumph cycle.
+
+The scene summary provides the specification for what this scene should accomplish. Use it as your primary guide while incorporating the broader context from chapter, story, and character information.
 
 # CYCLE-SPECIFIC WRITING GUIDELINES
 
@@ -861,25 +997,30 @@ NEW ADVERSITY:
 - Causal linking clear (Chapter 2 → Chapter 3)
 - Seeds tracked properly
 
-### Phase 4: Scene 4 Specification (Virtue Scene)
+### Phase 4: Scene 4 Summary (Virtue Scene)
 
-```json
-{
-  "title": "We Both Live or We Both Die",
-  "cyclePhase": "virtue",
-  "emotionalBeat": "elevation",
-  "specification": "Yuna returns to garden with her last water. Sun is brutal, body weak, mind tells her she's a fool. She kneels beside the seedlings. For a long moment, she just looks at them. They're so small. So vulnerable. So alive. She makes her choice. Uncaps bottle and begins to pour, slowly, reverently. Whispers to them as she would to a child: 'We both live or we both die. I won't give up on you.' Pours every drop, even as her throat burns. From ruins across street, Jin watches, transfixed. This is the moral elevation moment.",
-  "characterFocus": "Yuna (primary), Jin (observer)",
-  "sensoryAnchors": "Heat on skin, cracked earth smell, weight of water bottle, sound of water hitting soil, morning glories' delicate leaves, Jin's sharp intake of breath, sweat on Yuna's neck",
-  "dialogueVsDescription": "Description-heavy with whispered dialogue",
-  "suggestedLength": "long (800-1000 words)"
-}
+**Scene.summary field content**:
+
+```markdown
+Scene 4: "We Both Live or We Both Die" (Virtue Scene)
+
+Yuna returns to the garden with her last water. The sun is brutal, her body is weak from dehydration, and her mind tells her she's a fool. She kneels beside the seedlings—struggling sprouts of tomato, pepper, and her daughter's favorite flower, morning glory. For a long moment, she just looks at them. They're so small. So vulnerable. So alive. She thinks about her daughter, about the war, about all the life that's been lost.
+
+Then she makes her choice. She uncaps the water bottle and begins to pour, slowly, reverently. She whispers to them as she would to a child: 'We both live or we both die. I won't give up on you.' She pours every drop, even as her throat burns with thirst.
+
+From the ruins across the street, Jin watches from his hiding place, transfixed. He has never seen anything more beautiful. This is the moral elevation moment—the audience should feel the sacredness of her commitment, the courage it takes to hope when hope is dangerous.
+
+Character Focus: Yuna (primary), Jin (observer - does not switch POV)
+Sensory Anchors: Heat on skin, cracked earth smell, weight of water bottle, sound of water hitting soil, morning glories' delicate leaves, Jin's sharp intake of breath from distance, sweat on Yuna's neck, the quiet except for water
+Dialogue vs Description: Description-heavy with whispered dialogue (Yuna to plants, internal thoughts)
+Suggested Length: long (800-1000 words) - this is THE moment
 ```
 
 **Evaluation**: 98/100 ✅
 - Perfect cycle phase alignment
 - Specific sensory anchors
-- Emotional beat clear
+- Detailed specification for prose generation
+- Clear emotional beat and purpose
 
 ### Phase 5: Scene 4 Content (v1.1 - After Iteration)
 
