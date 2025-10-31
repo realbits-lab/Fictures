@@ -292,7 +292,117 @@ The 4-phase narrative cycle (Adversity → Virtue → Consequence → New Advers
 
 ## Part III: Data Model Specification
 
-### 3.1 Enhanced Schema
+### 3.1 Character Schema (Zero-Base Design)
+
+**Philosophy**: Characters are **moral agents** whose internal flaws create adversity, whose core virtues drive triumph, and whose transformation generates emotional resonance (Gam-dong).
+
+```typescript
+// Character table
+interface Character {
+  // === IDENTITY ===
+  id: string;
+  storyId: string;
+  name: string;
+  isMain: boolean; // Main characters (2-4) get MACRO arcs
+  summary: string; // 1-2 sentence essence: "[CoreTrait] [role] [internalFlaw], seeking [externalGoal]"
+
+  // === ADVERSITY-TRIUMPH CORE (The Engine) ===
+  coreTrait: string; // THE defining moral virtue: "courage" | "compassion" | "integrity" | "loyalty" | "wisdom" | "sacrifice"
+  internalFlaw: string; // MUST include cause: "[fears/believes/wounded by] X because Y"
+  externalGoal: string; // What they THINK will solve their problem (healing flaw actually will)
+
+  // === CHARACTER DEPTH (For Realistic Portrayal) ===
+  personality: {
+    traits: string[];        // Behavioral traits: "impulsive", "optimistic", "stubborn"
+    values: string[];        // What they care about: "family", "honor", "freedom"
+  };
+  backstory: string; // Focused history providing motivation context (2-4 paragraphs)
+
+  // === RELATIONSHIPS (Jeong System) ===
+  relationships: {
+    [characterId: string]: {
+      type: 'ally' | 'rival' | 'family' | 'romantic' | 'mentor' | 'adversary';
+      jeongLevel: number;      // 0-10: depth of connection (정 - affective bonds)
+      sharedHistory: string;   // What binds them
+      currentDynamic: string;  // Current relationship state
+    };
+  };
+
+  // === PROSE GENERATION ===
+  physicalDescription: {
+    age: string;               // "mid-30s", "elderly", "young adult"
+    appearance: string;        // Overall look
+    distinctiveFeatures: string; // Memorable details for "show don't tell"
+    style: string;            // How they dress/present themselves
+  };
+  voiceStyle: {
+    tone: string;             // "warm", "sarcastic", "formal", "gentle"
+    vocabulary: string;       // "simple", "educated", "technical", "poetic"
+    quirks: string[];        // Verbal tics, repeated phrases
+    emotionalRange: string;  // "reserved", "expressive", "volatile"
+  };
+
+  // === VISUAL GENERATION ===
+  imageUrl?: string;  // Original portrait (1024×1024 from DALL-E 3)
+  imageVariants?: {
+    imageId: string;
+    originalUrl: string;
+    variants: Array<{
+      format: 'avif' | 'webp' | 'jpeg';
+      width: number;
+      height: number;
+      url: string;
+      size: number;
+    }>;
+    generatedAt: string;
+  };
+  visualStyle?: string; // "realistic" | "anime" | "painterly" | "cinematic"
+
+  // === METADATA ===
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+#### Key Field Rationales
+
+**coreTrait** (Critical):
+- THE defining moral virtue that drives virtue scenes
+- Single trait for focused moral elevation moments
+- Valid values: courage, compassion, integrity, loyalty, wisdom, sacrifice
+- Used in Part generation for MACRO virtue definition
+
+**internalFlaw** (Critical):
+- Source of ADVERSITY in cycles
+- **MUST include cause** for specificity and empathy
+- Format: "[fears/believes/wounded by] X because Y"
+- Examples:
+  - ✅ "fears abandonment because lost family in war and never felt secure since"
+  - ✅ "believes strength means never showing emotion because father punished vulnerability"
+  - ❌ "has trust issues" (too vague)
+
+**externalGoal**:
+- What character THINKS will solve their problem
+- Creates dramatic irony (healing flaw is actual solution)
+- External obstacle forces facing internal flaw
+
+**personality vs coreTrait**:
+- `coreTrait` = **MORAL** virtue (drives virtue scenes)
+- `personality.traits` = **BEHAVIORAL** characteristics (drives everyday scenes)
+- Both needed for dimensional, realistic characters
+
+**relationships (Jeong System)**:
+- Tracks 정 (deep affective bonds) between characters
+- `jeongLevel` (0-10) determines emotional stakes
+- High jeongLevel (7-10) makes virtuous actions more meaningful
+- Enables relationship arcs parallel to character arcs
+
+**voiceStyle**:
+- Ensures distinct, authentic dialogue per character
+- Prevents generic "everyone sounds the same" problem
+- AI uses this to generate character-specific speech patterns
+
+### 3.2 Story Schema
 
 ```typescript
 // Story table
@@ -305,17 +415,11 @@ interface Story {
 
   // Metadata
   genre: string;
-  tone: string;
+  tone: string; // "hopeful" | "dark" | "bittersweet" | "satirical"
   moralFramework: string; // "What virtues are valued in this world?"
 
-  // Main characters definition
-  characters: {
-    id: string;
-    name: string;
-    coreTrait: string;
-    internalFlaw: string;
-    externalGoal: string;
-  }[];
+  // Main characters reference (stored in characters table)
+  // 2-4 main characters with isMain=true
 
   // Deprecated (keep for migration)
   premise?: string;
@@ -326,6 +430,9 @@ interface Story {
   updatedAt: Date;
 }
 
+### 3.3 Part Schema
+
+```typescript
 // Part table
 interface Part {
   id: string;
@@ -339,16 +446,17 @@ interface Part {
 
   // Tracking structure - ENHANCED for nested cycles
   characterArcs: {
-    characterId: string;
+    characterId: string; // References Character.id
 
     // MACRO ARC (Part-level transformation)
+    // Derived from Character.internalFlaw, Character.coreTrait, Character.externalGoal
     macroAdversity: {
-      internal: string;
-      external: string;
+      internal: string;  // From Character.internalFlaw
+      external: string;  // External obstacle that forces facing internal flaw
     };
-    macroVirtue: string;
-    macroConsequence: string;
-    macroNewAdversity: string;
+    macroVirtue: string;         // From Character.coreTrait - THE defining moral choice
+    macroConsequence: string;    // Earned payoff for virtue
+    macroNewAdversity: string;   // How resolution creates next act's challenge
 
     // NEW: Progression planning
     estimatedChapters: number;     // 2-4 typical
@@ -365,6 +473,11 @@ interface Part {
   createdAt: Date;
   updatedAt: Date;
 }
+```
+
+### 3.4 Chapter Schema
+
+```typescript
 
 // Chapter table
 interface Chapter {
@@ -413,7 +526,11 @@ interface Chapter {
   createdAt: Date;
   updatedAt: Date;
 }
+```
 
+### 3.5 Scene Schema
+
+```typescript
 // Scene table
 interface Scene {
   id: string;
@@ -442,10 +559,11 @@ interface Scene {
 }
 ```
 
-### 3.2 Migration Strategy
+### 3.6 Migration Strategy
 
 **Phase 1**: Add new fields alongside existing
-- Story: Add `summary`, `genre`, `tone`, `moralFramework`, `characters`
+- Story: Add `summary`, `genre`, `tone`, `moralFramework`
+- Character: Add `isMain`, `summary`, `coreTrait`, `internalFlaw`, `externalGoal`, `relationships`, `voiceStyle`
 - Part: Add `summary`, `characterArcs`
 - Chapter: Add `summary`, cycle tracking fields
 - Scene: Add `summary`, `cyclePhase`, `emotionalBeat`

@@ -27,14 +27,28 @@ This document provides comprehensive implementation specifications for the Adver
 │  System Prompt Focus:                                            │
 │  - Extract general thematic premise, NOT detailed plot           │
 │  - Identify moral framework                                      │
-│  - Suggest 2-4 characters with flaws                            │
+│  - Suggest 2-4 characters (basic: name, coreTrait, flaw, goal) │
 │                                                                   │
 │  Output: Story.summary, genre, tone, moralFramework, characters │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  API 2: Part Summaries Generation (3-Act Structure)             │
+│  API 2: Character Generation (Full Profiles)                    │
+│  POST /api/generation/characters                                 │
+│                                                                   │
+│  System Prompt Focus:                                            │
+│  - Expand basic character data into full profiles               │
+│  - Create personality, backstory, relationships (Jeong system)  │
+│  - Define physical description and voice style                  │
+│  - Generate character portraits (DALL-E 3, 1024×1024)          │
+│                                                                   │
+│  Output: Complete Character records in database                 │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  API 3: Part Summaries Generation (3-Act Structure)             │
 │  POST /api/generation/parts                                      │
 │                                                                   │
 │  System Prompt Focus:                                            │
@@ -49,7 +63,7 @@ This document provides comprehensive implementation specifications for the Adver
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  API 3: Chapter Summaries Generation (Per Part)                 │
+│  API 4: Chapter Summaries Generation (Per Part)                 │
 │  POST /api/generation/chapters                                   │
 │                                                                   │
 │  System Prompt Focus:                                            │
@@ -64,7 +78,7 @@ This document provides comprehensive implementation specifications for the Adver
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  API 4: Scene Summaries Generation (Per Chapter)                │
+│  API 5: Scene Summaries Generation (Per Chapter)                │
 │  POST /api/generation/scene-summaries                            │
 │                                                                   │
 │  System Prompt Focus:                                            │
@@ -79,7 +93,7 @@ This document provides comprehensive implementation specifications for the Adver
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  API 5: Scene Content Generation (Per Scene, One at a Time)     │
+│  API 6: Scene Content Generation (Per Scene, One at a Time)     │
 │  POST /api/generation/scene-content                              │
 │                                                                   │
 │  System Prompt Focus:                                            │
@@ -272,7 +286,279 @@ Return ONLY the JSON object, no explanations, no markdown formatting.
 - **Temperature**: 0.7 (balanced creativity and consistency)
 - **Post-Processing**: Validate JSON, check summary format, verify character count
 
-### 2.2 Part Summaries Generation API
+---
+
+### 2.2 Character Generation API
+
+#### Endpoint
+```typescript
+POST /api/generation/characters
+
+Request:
+{
+  storyId: string;
+  characters: Array<{  // Basic character info from Story Summary Generation
+    name: string;
+    coreTrait: string;
+    internalFlaw: string;
+    externalGoal: string;
+  }>;
+  storyContext: {
+    summary: string;
+    genre: string;
+    tone: string;
+    moralFramework: string;
+  };
+  visualStyle: 'realistic' | 'anime' | 'painterly' | 'cinematic';
+}
+
+Response:
+{
+  characters: Array<{
+    id: string;
+    name: string;
+    isMain: boolean;
+    summary: string;
+    coreTrait: string;
+    internalFlaw: string;
+    externalGoal: string;
+    personality: {
+      traits: string[];
+      values: string[];
+    };
+    backstory: string;
+    relationships: Record<string, Relationship>;
+    physicalDescription: {
+      age: string;
+      appearance: string;
+      distinctiveFeatures: string;
+      style: string;
+    };
+    voiceStyle: {
+      tone: string;
+      vocabulary: string;
+      quirks: string[];
+      emotionalRange: string;
+    };
+    imageUrl: string;
+    imageVariants: ImageVariantSet;
+  }>;
+}
+```
+
+#### System Prompt (v1.0)
+
+```markdown
+# ROLE
+You are an expert character architect specializing in creating psychologically rich characters for adversity-triumph narratives. Your characters drive profound emotional resonance through authentic internal conflicts and moral virtues.
+
+# CONTEXT
+Story Summary: {storySummary}
+Moral Framework: {moralFramework}
+Genre: {genre}
+Tone: {tone}
+Visual Style: {visualStyle}
+
+Basic Character Data (to expand):
+{characters}
+
+# YOUR TASK
+For EACH character, expand the basic data into a complete character profile optimized for adversity-triumph cycle generation.
+
+# CHARACTER EXPANSION TEMPLATE
+
+For each character, generate:
+
+## 1. IDENTITY
+```
+NAME: {name}
+IS MAIN: true (for main characters with arcs, false for supporting)
+SUMMARY: "[CoreTrait] [role] [internalFlaw], seeking [externalGoal]"
+
+Example: "Brave knight haunted by past failure, seeking redemption through one final mission"
+```
+
+## 2. ADVERSITY-TRIUMPH CORE (Already Provided - Verify Quality)
+```
+CORE TRAIT: {coreTrait}
+- Verify this is ONE of: courage, compassion, integrity, loyalty, wisdom, sacrifice
+- This drives all virtue scenes
+
+INTERNAL FLAW: {internalFlaw}
+- MUST follow format: "[fears/believes/wounded by] X because Y"
+- Verify CAUSE is included
+- If cause missing, ADD it based on backstory you'll create
+
+EXTERNAL GOAL: {externalGoal}
+- What they THINK will solve problem
+- Should create dramatic irony
+```
+
+## 3. PERSONALITY (BEHAVIORAL TRAITS)
+```
+TRAITS: [4-6 behavioral characteristics]
+- Focus on HOW they act day-to-day
+- Mix positive and negative
+- Should contrast with coreTrait to create complexity
+
+Example:
+- coreTrait: "courage" (moral virtue)
+- traits: ["impulsive", "optimistic", "stubborn", "loyal"] (behaviors)
+
+VALUES: [3-5 things they care deeply about]
+- "family", "honor", "freedom", "justice", "tradition", "truth"
+- Creates motivation beyond just healing flaw
+```
+
+## 4. BACKSTORY (2-4 Paragraphs, 200-400 words)
+```
+FOCUS ON:
+- Formative experience that created internalFlaw
+- Key relationships (living or dead) that matter
+- Past actions that can "seed" for earned luck payoffs
+- Cultural/social context that shaped them
+
+EXCLUDE:
+- Entire life story
+- Irrelevant details
+- Generic background
+
+STRUCTURE:
+Paragraph 1: Early life, family, formative environment
+Paragraph 2: THE event/experience that created internalFlaw (be specific)
+Paragraph 3: How they've coped since, current situation
+Paragraph 4 (optional): Key relationship or skill that matters for story
+```
+
+## 5. RELATIONSHIPS
+```
+For EACH other character in the story, define:
+
+{characterName}:
+- TYPE: ally | rival | family | romantic | mentor | adversary
+- JEONG LEVEL: 0-10 (depth of affective bond)
+  * 0-2: Strangers
+  * 3-5: Acquaintances
+  * 6-8: Friends/allies
+  * 9-10: Deep bond (family, true love)
+- SHARED HISTORY: What binds them? (1-2 sentences)
+- CURRENT DYNAMIC: Current state of relationship (1 sentence)
+
+RULES:
+- Main characters should have SOME connection (jeongLevel 3+)
+- Opposing flaws create natural friction
+- At least one high-jeong relationship (7+) per main character
+```
+
+## 6. PHYSICAL DESCRIPTION
+```
+AGE: "mid-30s" | "elderly" | "young adult" | "middle-aged" | etc.
+
+APPEARANCE: (2-3 sentences)
+- Overall look, build, posture
+- Reflects personality and backstory
+- Genre-appropriate
+
+DISTINCTIVE FEATURES: (1-2 sentences)
+- Memorable visual details for "show don't tell"
+- Should be SPECIFIC: "scar across left eyebrow" not "scarred"
+- Used for character recognition in scenes
+
+STYLE: (1-2 sentences)
+- How they dress/present themselves
+- Reflects personality and values
+- Include one signature item if possible
+```
+
+## 7. VOICE STYLE
+```
+TONE: (1-2 words)
+- "warm", "sarcastic", "formal", "gentle", "gruff", "playful"
+
+VOCABULARY: (1-2 words + brief explanation)
+- "simple nautical terms", "educated formal", "street slang", "poetic metaphors"
+
+QUIRKS: [1-3 specific verbal tics]
+- Repeated phrases: "you know?", "as it were", "right?"
+- Speech patterns: "ends statements as questions", "speaks in short bursts"
+- Unique expressions: "calls everyone 'sailor'", "quotes scripture"
+
+EMOTIONAL RANGE: (1 sentence)
+- How they express emotion
+- "reserved until deeply moved", "volatile and expressive", "masks all feeling"
+```
+
+# CRITICAL RULES
+
+1. **Internal Flaw MUST Have Cause**: If provided flaw lacks "because Y", ADD specific cause
+2. **Distinct Voices**: Each character must sound DIFFERENT in dialogue
+3. **Opposing Flaws**: Characters' flaws should create natural conflict
+4. **Jeong System**: Define ALL relationships between characters
+5. **Consistency**: All fields must align with story's genre, tone, moral framework
+6. **Specificity**: NO vague descriptions ("has issues" → "fears abandonment because...")
+7. **Visual Consistency**: All descriptions match story's visualStyle
+
+# OUTPUT FORMAT
+
+Return JSON array of complete character objects:
+
+```json
+[
+  {
+    "name": "...",
+    "isMain": true,
+    "summary": "...",
+    "coreTrait": "...",
+    "internalFlaw": "...",
+    "externalGoal": "...",
+    "personality": {
+      "traits": ["...", "..."],
+      "values": ["...", "..."]
+    },
+    "backstory": "...",
+    "relationships": {
+      "char_id_1": {
+        "type": "...",
+        "jeongLevel": 7,
+        "sharedHistory": "...",
+        "currentDynamic": "..."
+      }
+    },
+    "physicalDescription": {
+      "age": "...",
+      "appearance": "...",
+      "distinctiveFeatures": "...",
+      "style": "..."
+    },
+    "voiceStyle": {
+      "tone": "...",
+      "vocabulary": "...",
+      "quirks": ["...", "..."],
+      "emotionalRange": "..."
+    }
+  }
+]
+```
+
+# OUTPUT
+Return ONLY the JSON array, no explanations.
+```
+
+#### Implementation Notes
+- **AI Model**: GPT-4o (needs higher capability for character depth)
+- **Temperature**: 0.8 (need creativity for unique characters)
+- **Post-Processing**:
+  1. Validate all required fields present
+  2. Verify internalFlaw has cause ("because")
+  3. Generate character portraits via DALL-E 3 (1024×1024)
+  4. Create 18 optimized image variants (AVIF/WebP/JPEG)
+  5. Store in database with generated imageUrl and imageVariants
+- **Character Images**: Generated separately after character data is created
+  - Prompt format: `Portrait of {name}, {physicalDescription.appearance}, {physicalDescription.distinctiveFeatures}, {visualStyle} style, {genre} genre aesthetic`
+
+---
+
+### 2.3 Part Summaries Generation API
 
 #### Endpoint
 ```typescript
