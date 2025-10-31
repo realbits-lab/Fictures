@@ -227,7 +227,7 @@ export const stories = pgTable('stories', {
   // Adversity-Triumph Engine fields
   summary: text('summary'), // General thematic premise and moral framework
   tone: toneEnum('tone'), // Overall emotional direction
-  moralFramework: text('moralFramework'), // What virtues are valued in this world
+  moralFramework: text('moral_framework'), // What virtues are valued in this world
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
               title: result.story.title,
               genre: result.story.genre,
               summary: result.story.summary, // Adversity-Triumph: General thematic premise
-              tone: result.story.tone as 'hopeful' | 'dark' | 'bittersweet' | 'satirical', // Adversity-Triumph: Emotional direction
+              tone: result.story.tone?.toLowerCase() as 'hopeful' | 'dark' | 'bittersweet' | 'satirical', // Adversity-Triumph: Emotional direction
               moralFramework: result.story.moralFramework, // Adversity-Triumph: Virtue framework
               status: 'writing',  // Fixed: Use 'writing' instead of 'draft' (valid enum value)
               createdAt: new Date(),
@@ -124,26 +124,31 @@ export async function POST(request: NextRequest) {
             })
             .returning();
 
-          // Insert characters
+          // Insert characters and create ID mapping
+          const characterIdMap = new Map<string, string>();
           if (result.characters.length > 0) {
-            const characterRecords = result.characters.map((char) => ({
-              id: nanoid(),
-              storyId: generatedStoryId!,
-              name: char.name,
-              isMain: char.isMain,
-              summary: char.summary,
-              coreTrait: char.coreTrait,
-              internalFlaw: char.internalFlaw,
-              externalGoal: char.externalGoal,
-              personality: char.personality,
-              backstory: char.backstory,
-              relationships: char.relationships,
-              physicalDescription: char.physicalDescription,
-              voiceStyle: char.voiceStyle,
-              visualStyle: char.visualStyle,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            }));
+            const characterRecords = result.characters.map((char) => {
+              const newId = nanoid();
+              characterIdMap.set(char.id, newId); // Map temp ID to database ID
+              return {
+                id: newId,
+                storyId: generatedStoryId!,
+                name: char.name,
+                isMain: char.isMain,
+                summary: char.summary,
+                coreTrait: char.coreTrait,
+                internalFlaw: char.internalFlaw,
+                externalGoal: char.externalGoal,
+                personality: char.personality,
+                backstory: char.backstory,
+                relationships: char.relationships,
+                physicalDescription: char.physicalDescription,
+                voiceStyle: char.voiceStyle,
+                visualStyle: char.visualStyle,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              };
+            });
 
             await db.insert(characters).values(characterRecords);
           }
@@ -177,6 +182,7 @@ export async function POST(request: NextRequest) {
             const partRecords = result.parts.map((part, index) => ({
               id: nanoid(),
               storyId: generatedStoryId!,
+              authorId: session.user.id,
               title: part.title,
               summary: part.summary,
               actNumber: part.actNumber,
@@ -189,47 +195,61 @@ export async function POST(request: NextRequest) {
             await db.insert(parts).values(partRecords);
           }
 
-          // Insert chapters
+          // Insert chapters and create ID mapping
+          const chapterIdMap = new Map<string, string>();
           if (result.chapters.length > 0) {
-            const chapterRecords = result.chapters.map((chapter, index) => ({
-              id: nanoid(),
-              storyId: generatedStoryId!,
-              partId: null, // Will be linked later if needed
-              title: chapter.title,
-              summary: chapter.summary,
-              characterId: chapter.characterId,
-              arcPosition: chapter.arcPosition,
-              contributesToMacroArc: chapter.contributesToMacroArc,
-              focusCharacters: chapter.focusCharacters,
-              adversityType: chapter.adversityType,
-              virtueType: chapter.virtueType,
-              seedsPlanted: chapter.seedsPlanted,
-              seedsResolved: chapter.seedsResolved,
-              connectsToPreviousChapter: chapter.connectsToPreviousChapter,
-              createsNextAdversity: chapter.createsNextAdversity,
-              orderIndex: index,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            }));
+            const chapterRecords = result.chapters.map((chapter, index) => {
+              const newId = nanoid();
+              chapterIdMap.set(chapter.id, newId); // Map temp ID to database ID
+              return {
+                id: newId,
+                storyId: generatedStoryId!,
+                authorId: session.user.id,
+                partId: null, // Will be linked later if needed
+                title: chapter.title,
+                summary: chapter.summary,
+                characterId: chapter.characterId ? characterIdMap.get(chapter.characterId) || null : null,
+                arcPosition: chapter.arcPosition,
+                contributesToMacroArc: chapter.contributesToMacroArc,
+                focusCharacters: chapter.focusCharacters,
+                adversityType: chapter.adversityType,
+                virtueType: chapter.virtueType,
+                seedsPlanted: chapter.seedsPlanted,
+                seedsResolved: chapter.seedsResolved,
+                connectsToPreviousChapter: chapter.connectsToPreviousChapter,
+                createsNextAdversity: chapter.createsNextAdversity,
+                orderIndex: index,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              };
+            });
 
             await db.insert(chapters).values(chapterRecords);
           }
 
-          // Insert scenes
+          // Insert scenes (map chapter IDs)
           if (result.scenes.length > 0) {
-            const sceneRecords = result.scenes.map((scene, index) => ({
-              id: nanoid(),
-              chapterId: null, // Will be linked later if needed
-              storyId: generatedStoryId!,
-              title: scene.title,
-              summary: scene.summary,
-              content: scene.content,
-              cyclePhase: scene.cyclePhase,
-              emotionalBeat: scene.emotionalBeat,
-              orderIndex: index,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            }));
+            console.log('[Novel Generation] Chapter ID Map:', Object.fromEntries(chapterIdMap));
+            console.log('[Novel Generation] Scene chapter IDs:', result.scenes.map(s => ({ sceneId: s.id, chapterId: s.chapterId })));
+
+            const sceneRecords = result.scenes.map((scene, index) => {
+              const mappedChapterId = scene.chapterId ? chapterIdMap.get(scene.chapterId) || null : null;
+              console.log(`[Novel Generation] Scene ${index + 1}: chapterId=${scene.chapterId}, mapped=${mappedChapterId}`);
+
+              return {
+                id: nanoid(),
+                chapterId: mappedChapterId,
+                storyId: generatedStoryId!,
+                title: scene.title || `Scene ${index + 1}`, // Fallback title if missing
+                summary: scene.summary,
+                content: scene.content,
+                cyclePhase: scene.cyclePhase,
+                emotionalBeat: scene.emotionalBeat,
+                orderIndex: index,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              };
+            });
 
             await db.insert(scenes).values(sceneRecords);
           }

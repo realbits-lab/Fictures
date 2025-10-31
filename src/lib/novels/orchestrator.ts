@@ -16,6 +16,7 @@
  * 9. Images - Generate character portraits, setting visuals, and scene images
  */
 
+import { nanoid } from 'nanoid';
 import { generateJSON } from './ai-client';
 import type {
   StoryGenerationContext,
@@ -326,7 +327,15 @@ export async function generateCompleteNovel(
       }
 
       const partChapters: ChapterGenerationResult[] = await chaptersResponse.json();
-      allChapters.push(...partChapters);
+
+      // Add unique ID and part reference to each chapter
+      const chaptersWithIds = partChapters.map((chapter) => ({
+        ...chapter,
+        id: nanoid(), // Generate unique ID for chapter
+        partId: part.id, // Link to part
+      }));
+
+      allChapters.push(...chaptersWithIds);
 
       const percentage = Math.round(((i + 1) / parts.length) * 100);
 
@@ -377,7 +386,15 @@ export async function generateCompleteNovel(
       }
 
       const chapterSceneSummaries: SceneSummaryResult[] = await sceneSummariesResponse.json();
-      allSceneSummaries.push(...chapterSceneSummaries);
+
+      // Add chapterId and unique ID to each scene summary
+      const sceneSummariesWithChapterId = chapterSceneSummaries.map((sceneSummary, sceneIndex) => ({
+        ...sceneSummary,
+        id: nanoid(), // Generate unique ID for scene
+        chapterId: chapter.id, // Link to chapter
+      }));
+
+      allSceneSummaries.push(...sceneSummariesWithChapterId);
 
       const percentage = Math.round(((i + 1) / chapters.length) * 100);
 
@@ -444,7 +461,14 @@ export async function generateCompleteNovel(
       }
 
       const sceneContent: any = await sceneContentResponse.json();
-      allScenes.push(sceneContent);
+
+      // Merge scene summary with scene content for complete scene data
+      const completeScene = {
+        ...sceneSummary, // Includes id, chapterId, title, summary, cyclePhase, emotionalBeat, etc.
+        ...sceneContent,  // Includes content, wordCount, emotionalTone
+      };
+
+      allScenes.push(completeScene);
 
       // Calculate percentage for progress
       const percentage = Math.round(((i + 1) / sceneSummaries.length) * 100);
