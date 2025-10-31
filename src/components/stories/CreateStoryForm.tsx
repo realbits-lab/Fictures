@@ -27,6 +27,11 @@ interface StoryData {
 export function CreateStoryForm() {
   const [prompt, setPrompt] = useState('');
   const [language, setLanguage] = useState('English');
+  const [characterCount, setCharacterCount] = useState(3);
+  const [settingCount, setSettingCount] = useState(3);
+  const [partsCount, setPartsCount] = useState(1);
+  const [chaptersPerPart, setChaptersPerPart] = useState(1);
+  const [scenesPerChapter, setScenesPerChapter] = useState(3);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isCompleted, setIsCompleted] = useState(false);
@@ -119,7 +124,11 @@ export function CreateStoryForm() {
         body: JSON.stringify({
           userPrompt: prompt.trim(),
           language,
-          characterCount: 3,
+          characterCount,
+          settingCount,
+          partsCount,
+          chaptersPerPart,
+          scenesPerChapter,
         }),
       });
 
@@ -222,6 +231,20 @@ export function CreateStoryForm() {
                 case 'chapters_start':
                   updateProgress(4, 'in_progress');
                   break;
+                case 'chapters_progress':
+                  if (data.data?.currentPart && data.data?.totalParts) {
+                    const partNum = data.data.currentPart;
+                    const totalParts = data.data.totalParts;
+                    const percentage = data.data.percentage || Math.round((partNum / totalParts) * 100);
+
+                    setProgress(prev => prev.map((step, index) =>
+                      index === 4 ? {
+                        ...step,
+                        description: `Part ${partNum} of ${totalParts} (${percentage}%)`
+                      } : step
+                    ));
+                  }
+                  break;
                 case 'chapters_complete':
                   updateProgress(4, 'completed');
                   if (data.data?.chapters) {
@@ -237,6 +260,20 @@ export function CreateStoryForm() {
                 // Phase 6: Scene Summaries
                 case 'scene_summaries_start':
                   updateProgress(5, 'in_progress');
+                  break;
+                case 'scene_summaries_progress':
+                  if (data.data?.currentChapter && data.data?.totalChapters) {
+                    const chapterNum = data.data.currentChapter;
+                    const totalChapters = data.data.totalChapters;
+                    const percentage = data.data.percentage || Math.round((chapterNum / totalChapters) * 100);
+
+                    setProgress(prev => prev.map((step, index) =>
+                      index === 5 ? {
+                        ...step,
+                        description: `Chapter ${chapterNum} of ${totalChapters} (${percentage}%)`
+                      } : step
+                    ));
+                  }
                   break;
                 case 'scene_summaries_complete':
                   updateProgress(5, 'completed');
@@ -443,6 +480,87 @@ export function CreateStoryForm() {
               <option value="English">English</option>
               <option value="Korean">Korean</option>
             </select>
+          </div>
+
+          {/* Story Structure Controls */}
+          <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border">
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Story Structure</h3>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="characterCount">Characters: {characterCount}</Label>
+                <input
+                  type="range"
+                  id="characterCount"
+                  min="1"
+                  max="5"
+                  value={characterCount}
+                  onChange={(e) => setCharacterCount(parseInt(e.target.value))}
+                  disabled={isLoading}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="settingCount">Settings: {settingCount}</Label>
+                <input
+                  type="range"
+                  id="settingCount"
+                  min="1"
+                  max="5"
+                  value={settingCount}
+                  onChange={(e) => setSettingCount(parseInt(e.target.value))}
+                  disabled={isLoading}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="partsCount">Parts (Acts): {partsCount}</Label>
+                <input
+                  type="range"
+                  id="partsCount"
+                  min="1"
+                  max="3"
+                  value={partsCount}
+                  onChange={(e) => setPartsCount(parseInt(e.target.value))}
+                  disabled={isLoading}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="chaptersPerPart">Chapters per Part: {chaptersPerPart}</Label>
+                <input
+                  type="range"
+                  id="chaptersPerPart"
+                  min="1"
+                  max="5"
+                  value={chaptersPerPart}
+                  onChange={(e) => setChaptersPerPart(parseInt(e.target.value))}
+                  disabled={isLoading}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="space-y-2 col-span-2">
+                <Label htmlFor="scenesPerChapter">Scenes per Chapter: {scenesPerChapter}</Label>
+                <input
+                  type="range"
+                  id="scenesPerChapter"
+                  min="3"
+                  max="8"
+                  value={scenesPerChapter}
+                  onChange={(e) => setScenesPerChapter(parseInt(e.target.value))}
+                  disabled={isLoading}
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            <div className="text-sm text-gray-600 dark:text-gray-400 pt-2 border-t">
+              Total: {partsCount} part{partsCount > 1 ? 's' : ''}, {partsCount * chaptersPerPart} chapter{partsCount * chaptersPerPart > 1 ? 's' : ''}, ~{partsCount * chaptersPerPart * scenesPerChapter} scenes
+            </div>
           </div>
 
           {error && (

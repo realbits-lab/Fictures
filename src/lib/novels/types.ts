@@ -44,6 +44,10 @@ export interface StoryGenerationContext {
   preferredGenre?: string;
   preferredTone?: 'dark' | 'hopeful' | 'bittersweet' | 'satirical';
   characterCount?: number;
+  settingCount?: number;
+  partsCount?: number;
+  chaptersPerPart?: number;
+  scenesPerChapter?: number;
 }
 
 export interface StorySummaryResult {

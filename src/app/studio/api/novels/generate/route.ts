@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json() as NovelGenerationOptions;
-    const { userPrompt, preferredGenre, preferredTone, characterCount, language } = body;
+    const { userPrompt, preferredGenre, preferredTone, characterCount, settingCount, partsCount, chaptersPerPart, scenesPerChapter, language } = body;
 
     if (!userPrompt?.trim()) {
       return new Response('User prompt is required', { status: 400 });
@@ -87,6 +87,10 @@ export async function POST(request: NextRequest) {
               preferredGenre,
               preferredTone,
               characterCount,
+              settingCount,
+              partsCount,
+              chaptersPerPart,
+              scenesPerChapter,
               language,
             },
             onProgress

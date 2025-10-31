@@ -35,6 +35,10 @@ export interface NovelGenerationOptions {
   preferredGenre?: string;
   preferredTone?: 'dark' | 'hopeful' | 'bittersweet' | 'satirical';
   characterCount?: number;
+  settingCount?: number;
+  partsCount?: number;
+  chaptersPerPart?: number;
+  scenesPerChapter?: number;
   language?: string;
 }
 
@@ -107,6 +111,10 @@ export async function generateCompleteNovel(
         preferredGenre: options.preferredGenre,
         preferredTone: options.preferredTone,
         characterCount: options.characterCount || 3,
+        settingCount: options.settingCount || 3,
+        partsCount: options.partsCount || 3,
+        chaptersPerPart: options.chaptersPerPart || 3,
+        scenesPerChapter: options.scenesPerChapter || 6,
       } as StoryGenerationContext),
     });
 
@@ -228,9 +236,16 @@ export async function generateCompleteNovel(
       const partChapters: ChapterGenerationResult[] = await chaptersResponse.json();
       allChapters.push(...partChapters);
 
+      const percentage = Math.round(((i + 1) / parts.length) * 100);
+
       await onProgress({
         phase: 'chapters_progress',
         message: `Generated ${partChapters.length} chapters for Part ${i + 1}/${parts.length}`,
+        data: {
+          currentPart: i + 1,
+          totalParts: parts.length,
+          percentage
+        },
       });
     }
 
@@ -271,9 +286,16 @@ export async function generateCompleteNovel(
       const chapterSceneSummaries: SceneSummaryResult[] = await sceneSummariesResponse.json();
       allSceneSummaries.push(...chapterSceneSummaries);
 
+      const percentage = Math.round(((i + 1) / chapters.length) * 100);
+
       await onProgress({
         phase: 'scene_summaries_progress',
         message: `Generated ${chapterSceneSummaries.length} scene outlines for Chapter ${i + 1}/${chapters.length}`,
+        data: {
+          currentChapter: i + 1,
+          totalChapters: chapters.length,
+          percentage
+        },
       });
     }
 

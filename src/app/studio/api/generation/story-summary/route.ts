@@ -79,7 +79,16 @@ Return ONLY the JSON object, no explanations, no markdown formatting.`;
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json() as StoryGenerationContext;
-    const { userPrompt, preferredGenre, preferredTone, characterCount = 3 } = body;
+    const {
+      userPrompt,
+      preferredGenre,
+      preferredTone,
+      characterCount = 3,
+      settingCount = 3,
+      partsCount = 3,
+      chaptersPerPart = 3,
+      scenesPerChapter = 6
+    } = body;
 
     if (!userPrompt) {
       return NextResponse.json(
@@ -95,7 +104,17 @@ ${userPrompt}
 # PREFERENCES
 ${preferredGenre ? `Preferred Genre: ${preferredGenre}` : ''}
 ${preferredTone ? `Preferred Tone: ${preferredTone}` : ''}
+
+# STORY STRUCTURE CONSTRAINTS (MUST FOLLOW EXACTLY)
 Character Count: ${characterCount}
+Setting Count: ${settingCount}
+Parts (Acts): ${partsCount}
+Chapters per Part: ${chaptersPerPart}
+Scenes per Chapter: ${scenesPerChapter}
+TOTAL CHAPTERS: ${partsCount * chaptersPerPart}
+TOTAL SCENES: ${partsCount * chaptersPerPart * scenesPerChapter}
+
+IMPORTANT: The story must be designed to work within these exact structure constraints. Create exactly ${characterCount} characters.
 
 Generate the story foundation following the output format.
 `.trim();
