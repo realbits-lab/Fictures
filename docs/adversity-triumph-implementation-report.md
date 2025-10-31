@@ -122,7 +122,7 @@ Centralized system prompts for all APIs:
 ---
 
 ### API 1: Story Summary Generation
-**Route**: `POST /api/novels/generation/story-summary`
+**Route**: `POST /api/studio/generation/story-summary`
 **Model**: Gemini 2.5 Flash Lite
 **Temperature**: 0.7
 
@@ -163,7 +163,7 @@ Centralized system prompts for all APIs:
 ---
 
 ### API 2: Character Generation
-**Route**: `POST /api/novels/generation/characters`
+**Route**: `POST /api/studio/generation/characters`
 **Model**: Gemini 2.5 Flash Lite
 **Temperature**: 0.8
 
@@ -229,7 +229,7 @@ Array<{
 ---
 
 ### API 3: Settings Generation
-**Route**: `POST /api/novels/generation/settings`
+**Route**: `POST /api/studio/generation/settings`
 **Model**: Gemini 2.5 Flash Lite
 **Temperature**: 0.8
 
@@ -294,7 +294,7 @@ Array<{
 ---
 
 ### API 4: Part Summaries Generation
-**Route**: `POST /api/novels/generation/parts`
+**Route**: `POST /api/studio/generation/parts`
 **Model**: Gemini 2.5 Flash
 **Temperature**: 0.7
 
@@ -351,7 +351,7 @@ Array<{
 ---
 
 ### API 5: Chapter Summaries Generation
-**Route**: `POST /api/novels/generation/chapters`
+**Route**: `POST /api/studio/generation/chapters`
 **Model**: Gemini 2.5 Flash
 **Temperature**: 0.7
 
@@ -414,7 +414,7 @@ Array<{
 ---
 
 ### API 6: Scene Summaries Generation
-**Route**: `POST /api/novels/generation/scene-summaries`
+**Route**: `POST /api/studio/generation/scene-summaries`
 **Model**: Gemini 2.5 Flash Lite
 **Temperature**: 0.7
 
@@ -466,7 +466,7 @@ Array<{
 ---
 
 ### API 7: Scene Content Generation
-**Route**: `POST /api/novels/generation/scene-content`
+**Route**: `POST /api/studio/generation/scene-content`
 **Model**: Gemini 2.5 Flash
 **Temperature**: 0.8
 
@@ -534,7 +534,7 @@ Array<{
 ---
 
 ### API 8: Scene Evaluation & Improvement
-**Route**: `POST /api/novels/generation/scene-evaluation`
+**Route**: `POST /api/studio/generation/scene-evaluation`
 **Model**: Gemini 2.5 Flash Lite
 **Temperature**: 0.3 (lower for consistent evaluation)
 
@@ -607,7 +607,7 @@ Array<{
 ### API 9: Image Generation (All Story Assets)
 **Status**: ⏳ NOT YET IMPLEMENTED
 
-**Planned Route**: `POST /api/novels/generation/images`
+**Planned Route**: `POST /api/studio/generation/images`
 **Model**: Gemini 2.5 Flash (Imagen)
 **Image Dimensions**: 1344×768 (7:4 aspect ratio)
 
@@ -957,14 +957,14 @@ Successfully implemented 8 of 9 APIs for the Adversity-Triumph Engine, with APIs
 - `src/lib/novels/system-prompts.ts` - Centralized system prompts
 
 ### API Routes
-- `src/app/api/novels/generation/story-summary/route.ts` - API 1
-- `src/app/api/novels/generation/characters/route.ts` - API 2
-- `src/app/api/novels/generation/settings/route.ts` - API 3
-- `src/app/api/novels/generation/parts/route.ts` - API 4
-- `src/app/api/novels/generation/chapters/route.ts` - API 5
-- `src/app/api/novels/generation/scene-summaries/route.ts` - API 6
-- `src/app/api/novels/generation/scene-content/route.ts` - API 7
-- `src/app/api/novels/generation/scene-evaluation/route.ts` - API 8
+- `src/app/api/studio/generation/story-summary/route.ts` - API 1
+- `src/app/api/studio/generation/characters/route.ts` - API 2
+- `src/app/api/studio/generation/settings/route.ts` - API 3
+- `src/app/api/studio/generation/parts/route.ts` - API 4
+- `src/app/api/studio/generation/chapters/route.ts` - API 5
+- `src/app/api/studio/generation/scene-summaries/route.ts` - API 6
+- `src/app/api/studio/generation/scene-content/route.ts` - API 7
+- `src/app/api/studio/generation/scene-evaluation/route.ts` - API 8
 
 ### Test Scripts
 - `scripts/test-novels-generation-phase-2-1.mjs` - Phase 2-1 test suite

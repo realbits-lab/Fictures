@@ -56,7 +56,7 @@ async function generateTestStory() {
   try {
     // API 1: Story Summary
     log('Generating story summary...', 'blue');
-    const storySummary = await fetch(`${BASE_URL}/api/novels/generation/story-summary`, {
+    const storySummary = await fetch(`${BASE_URL}/api/studio/generation/story-summary`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -69,7 +69,7 @@ async function generateTestStory() {
 
     // API 2: Characters
     log('Generating characters...', 'blue');
-    const characters = await fetch(`${BASE_URL}/api/novels/generation/characters`, {
+    const characters = await fetch(`${BASE_URL}/api/studio/generation/characters`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ storySummary }),
@@ -77,7 +77,7 @@ async function generateTestStory() {
 
     // API 3: Settings
     log('Generating settings...', 'blue');
-    const settings = await fetch(`${BASE_URL}/api/novels/generation/settings`, {
+    const settings = await fetch(`${BASE_URL}/api/studio/generation/settings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ storySummary }),
@@ -85,7 +85,7 @@ async function generateTestStory() {
 
     // API 4: Parts
     log('Generating parts...', 'blue');
-    const parts = await fetch(`${BASE_URL}/api/novels/generation/parts`, {
+    const parts = await fetch(`${BASE_URL}/api/studio/generation/parts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ storySummary, characters }),
@@ -93,7 +93,7 @@ async function generateTestStory() {
 
     // API 5: Chapters (first part only)
     log('Generating chapters...', 'blue');
-    const chapters = await fetch(`${BASE_URL}/api/novels/generation/chapters`, {
+    const chapters = await fetch(`${BASE_URL}/api/studio/generation/chapters`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ part: parts[0], characters }),
@@ -101,7 +101,7 @@ async function generateTestStory() {
 
     // API 6: Scene Summaries (first chapter only)
     log('Generating scene summaries...', 'blue');
-    const sceneSummaries = await fetch(`${BASE_URL}/api/novels/generation/scene-summaries`, {
+    const sceneSummaries = await fetch(`${BASE_URL}/api/studio/generation/scene-summaries`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chapter: chapters[0], characters, settings }),
@@ -126,7 +126,7 @@ async function testAPI9_CharacterPortrait(character) {
   try {
     log(`Generating portrait for ${character.name}...`, 'blue');
 
-    const response = await fetch(`${BASE_URL}/api/novels/generation/images`, {
+    const response = await fetch(`${BASE_URL}/api/studio/generation/images`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -201,7 +201,7 @@ async function testAPI9_SettingVisual(setting) {
   try {
     log(`Generating visual for ${setting.name}...`, 'blue');
 
-    const response = await fetch(`${BASE_URL}/api/novels/generation/images`, {
+    const response = await fetch(`${BASE_URL}/api/studio/generation/images`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -240,7 +240,7 @@ async function testAPI9_SceneIllustration(scene) {
   try {
     log(`Generating illustration for ${scene.title}...`, 'blue');
 
-    const response = await fetch(`${BASE_URL}/api/novels/generation/images`, {
+    const response = await fetch(`${BASE_URL}/api/studio/generation/images`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

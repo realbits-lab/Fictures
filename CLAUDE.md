@@ -35,11 +35,6 @@ This file provides guidance to Claude Code when working with this repository.
   - Example: `scripts/capture-auth-manual.mjs` for authentication capture
   - Example: `scripts/test-auto-login.mjs` for testing automated login
   - Main script: `scripts/generate-complete-story.mjs` for full story generation
-- **Claude Code Skills**: Project-specific skills in `.claude/skills/{skill-name}/` directories
-  - Each skill has `SKILL.md` with YAML frontmatter
-  - `story-generator/SKILL.md`: Complete story generation with HNS methodology
-  - `story-remover/SKILL.md`: Complete story removal with database and Blob cleanup
-  - Skills are model-invoked (Claude activates automatically based on request)
 
 ## Database Management
 
@@ -245,15 +240,6 @@ dotenv --file .env.local run node scripts/generate-complete-story.mjs --publish 
 - Scene evaluation adds 1-3 minutes per story
 - Each scene evaluated and improved iteratively for quality assurance
 
-**Claude Code Skill:**
-- Use the `story-generator` skill in `.claude/skills/story-generator.md`
-- Skill handles complete workflow: prompt gathering, execution, monitoring, and reporting
-- Automatically uses writer@fictures.xyz credentials
-- Supports both draft and published story generation
-- User says "create" → auto-publish
-- User says "generate" or "write" → draft only
-- Provides real-time progress updates and final summary with links
-
 ## Story Removal
 
 **Complete Story Removal Scripts:**
@@ -298,14 +284,6 @@ dotenv --file .env.local run node scripts/remove-story.mjs STORY_ID > logs/story
 - Audit logging of deletions
 - Owner verification (only story owner or admin can delete)
 
-**Claude Code Skill:**
-- Use the `story-remover` skill in `.claude/skills/story-remover.md`
-- Skill handles complete workflow: identification, confirmation, execution, and cleanup reporting
-- Automatically uses writer@fictures.xyz credentials
-- Supports single and bulk story removal
-- Always confirms before permanent deletion
-- Reports detailed cleanup summary with counts
-
 ## Novel Generation
 
 **IMPORTANT: Documentation-First Development Process**
@@ -334,23 +312,17 @@ When making ANY changes to the novel generation system, ALWAYS follow this order
 - **What to update:** Implement changes according to updated documentation
 - **Validation:** Ensure code matches documented API contracts and specifications
 
-**3. THIRD: Update Claude Code Skill**
-- **Skill location:** `.claude/skills/novel-generator/SKILL.md`
-- **What to update:** Skill workflow, API endpoint references, generation parameters
-- **Validation:** Test skill end-to-end to ensure it works with updated code and follows new documentation
-
 ### Why This Order Matters
 
 **Documentation-First Benefits:**
 - **Single Source of Truth**: Documentation defines the intended behavior before implementation
 - **Design Review**: Changes can be reviewed and validated before coding begins
-- **Synchronization**: Ensures all three layers (docs, code, skill) stay aligned
+- **Synchronization**: Ensures both layers (docs, code) stay aligned
 - **Knowledge Transfer**: New developers understand the system from authoritative documentation
 - **Version Control**: Changes are tracked with clear intent and specifications
 
 **Common Mistakes to Avoid:**
 - ❌ Changing code first, then updating docs as an afterthought → Docs become outdated
-- ❌ Updating skill without updating docs → Skill behavior diverges from design intent
 - ❌ Skipping documentation updates entirely → System becomes unmaintainable
 
 ### Novel Generation System Overview
@@ -358,7 +330,7 @@ When making ANY changes to the novel generation system, ALWAYS follow this order
 **Architecture:**
 - **Location**: `docs/novels/novels-generation.md` - Complete specification
 - **Methodology**: Adversity-Triumph Engine (Korean Gam-dong narrative psychology)
-- **API Endpoints**: `/api/novels/generation/*` - SSE streaming for real-time progress
+- **API Endpoints**: `/api/studio/generation/*` - Generation APIs for story creation
 - **Database**: Novel-specific tables in Neon PostgreSQL (see `drizzle/` migrations)
 - **AI Model**: Gemini 2.5 Flash & Flash Lite (via Google AI API)
 - **Image Generation**: Gemini 2.5 Flash (1344×768, 7:4 aspect ratio)
@@ -366,10 +338,6 @@ When making ANY changes to the novel generation system, ALWAYS follow this order
 
 **Generation Flow:**
 1. Story Summary → 2. Characters → 3. Settings → 4. Parts → 5. Chapters → 6. Scene Summaries → 7. Scene Content → 8. Scene Evaluation → 9. Images
-
-**Claude Code Skills:**
-- **novel-generator** (`.claude/skills/novel-generator/SKILL.md`) - Complete novel generation workflow
-- **novel-evaluator** (`.claude/skills/novel-evaluator/SKILL.md`) - Quality evaluation for existing novels
 
 **Documentation Reference:**
 - 📖 **Specification**: `docs/novels/novels-specification.md` - Core concepts and data model
@@ -690,7 +658,6 @@ curl -X POST http://localhost:3000/api/evaluation/scene \
 - **[docs/scene-evaluation-api.md](docs/scene-evaluation-api.md)** - Automated scene quality evaluation
 
 **Story Generation & Removal:**
-- **[docs/story-generator-skill.md](docs/story-generator-skill.md)** - Complete story generation via Claude Code skill
 - **[docs/story-removal.md](docs/story-removal.md)** - Story removal with database and Blob cleanup (10-25x faster batch deletion)
 
 ### Documentation Organization
