@@ -306,6 +306,83 @@ dotenv --file .env.local run node scripts/remove-story.mjs STORY_ID > logs/story
 - Always confirms before permanent deletion
 - Reports detailed cleanup summary with counts
 
+## Novel Generation
+
+**IMPORTANT: Documentation-First Development Process**
+
+The novel generation system uses the Adversity-Triumph Engine methodology with a strict documentation-first approach to ensure synchronization across documentation, implementation, and automation tools.
+
+### Novel Generation Change Protocol
+
+When making ANY changes to the novel generation system, ALWAYS follow this order:
+
+**1. FIRST: Update Documentation** (`docs/novels/`)
+- **Primary documentation files:**
+  - `novels-specification.md` - Core concepts, data model, theoretical foundation
+  - `novels-generation.md` - API architecture, system prompts, implementation specs
+  - `novels-testing.md` - Validation methods, quality metrics, test strategies
+  - `novels-optimization.md` - Performance tuning, cost optimization
+  - `novels-removal.md` - Deletion workflows, cleanup procedures
+- **What to update:** API specifications, system prompts, data models, generation flows, examples
+- **Why first:** Documentation serves as the single source of truth and design specification
+
+**2. SECOND: Update Implementation Code**
+- **Code locations:**
+  - `src/app/api/novels/` - Novel generation API endpoints
+  - `src/lib/novels/` - Novel generation services, utilities, and business logic
+  - `drizzle/*.sql` - Database schema changes if data model updated
+- **What to update:** Implement changes according to updated documentation
+- **Validation:** Ensure code matches documented API contracts and specifications
+
+**3. THIRD: Update Claude Code Skill**
+- **Skill location:** `.claude/skills/novel-generator/SKILL.md`
+- **What to update:** Skill workflow, API endpoint references, generation parameters
+- **Validation:** Test skill end-to-end to ensure it works with updated code and follows new documentation
+
+### Why This Order Matters
+
+**Documentation-First Benefits:**
+- **Single Source of Truth**: Documentation defines the intended behavior before implementation
+- **Design Review**: Changes can be reviewed and validated before coding begins
+- **Synchronization**: Ensures all three layers (docs, code, skill) stay aligned
+- **Knowledge Transfer**: New developers understand the system from authoritative documentation
+- **Version Control**: Changes are tracked with clear intent and specifications
+
+**Common Mistakes to Avoid:**
+- ❌ Changing code first, then updating docs as an afterthought → Docs become outdated
+- ❌ Updating skill without updating docs → Skill behavior diverges from design intent
+- ❌ Skipping documentation updates entirely → System becomes unmaintainable
+
+### Novel Generation System Overview
+
+**Architecture:**
+- **Location**: `docs/novels/novels-generation.md` - Complete specification
+- **Methodology**: Adversity-Triumph Engine (Korean Gam-dong narrative psychology)
+- **API Endpoints**: `/api/novels/generation/*` - SSE streaming for real-time progress
+- **Database**: Novel-specific tables in Neon PostgreSQL (see `drizzle/` migrations)
+- **AI Model**: Gemini 2.5 Flash & Flash Lite (via Google AI API)
+- **Image Generation**: Gemini 2.5 Flash (1344×768, 7:4 aspect ratio)
+- **Image Optimization**: 4 variants per image (AVIF/JPEG × mobile 1x/2x)
+
+**Generation Flow:**
+1. Story Summary → 2. Characters → 3. Settings → 4. Parts → 5. Chapters → 6. Scene Summaries → 7. Scene Content → 8. Scene Evaluation → 9. Images
+
+**Claude Code Skills:**
+- **novel-generator** (`.claude/skills/novel-generator/SKILL.md`) - Complete novel generation workflow
+- **novel-evaluator** (`.claude/skills/novel-evaluator/SKILL.md`) - Quality evaluation for existing novels
+
+**Documentation Reference:**
+- 📖 **Specification**: `docs/novels/novels-specification.md` - Core concepts and data model
+- 🔧 **Generation Guide**: `docs/novels/novels-generation.md` - API specs and system prompts
+- 🧪 **Testing Guide**: `docs/novels/novels-testing.md` - Validation and quality metrics
+- ⚡ **Optimization**: `docs/novels/novels-optimization.md` - Performance and cost tuning
+- 🗑️ **Removal**: `docs/novels/novels-removal.md` - Deletion workflows
+
+**Related System:**
+- The existing "Story Generation" system (HNS methodology with `/api/stories/generate-hns`) is separate from the Novels system
+- Novels use Adversity-Triumph Engine, Stories use HNS (Hook-Nurture-Satisfy)
+- Both systems share image generation and optimization infrastructure
+
 ## Code Guidelines
 
 **Core Development Practices:**

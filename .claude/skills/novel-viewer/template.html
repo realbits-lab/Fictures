@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{STORY_TITLE}} - Interactive Viewer</title>
+
+  <style>
+    /* ========================================
+       CSS VARIABLES
+       ======================================== */
+    :root {
+      /* Colors - Light Mode */
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8f9fa;
+      --bg-tertiary: #e9ecef;
+      --text-primary: #212529;
+      --text-secondary: #6c757d;
+      --text-tertiary: #adb5bd;
+      --accent: #0066cc;
+      --accent-hover: #0052a3;
+      --border: #dee2e6;
+      --shadow: rgba(0, 0, 0, 0.1);
+
+      /* Typography */
+      --font-serif: Georgia, 'Times New Roman', serif;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SF Mono', Monaco, 'Courier New', monospace;
+
+      /* Text Sizes */
+      --text-xs: 0.75rem;
+      --text-sm: 0.875rem;
+      --text-base: 1rem;
+      --text-lg: 1.125rem;
+      --text-xl: 1.25rem;
+      --text-2xl: 1.5rem;
+      --text-3xl: 1.875rem;
+      --text-4xl: 2.25rem;
+
+      /* Spacing */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2rem;
+      --space-2xl: 3rem;
+      --space-3xl: 4rem;
+
+      /* Layout */
+      --sidebar-width: 280px;
+      --header-height: 60px;
+      --max-content-width: 800px;
+    }
+
+    /* Dark Mode Variables */
+    body.dark-mode {
+      --bg-primary: #1a1a1a;
+      --bg-secondary: #2d2d2d;
+      --bg-tertiary: #3d3d3d;
+      --text-primary: #e9ecef;
+      --text-secondary: #adb5bd;
+      --text-tertiary: #868e96;
+      --accent: #4dabf7;
+      --accent-hover: #339af0;
+      --border: #495057;
+      --shadow: rgba(0, 0, 0, 0.3);
+    }
+
+    /* ========================================
+       BASE STYLES
+       ======================================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: var(--text-base);
+      line-height: 1.6;
+      color: var(--text-primary);
+      background-color: var(--bg-primary);
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-serif);
+      line-height: 1.2;
+      margin-bottom: var(--space-md);
+    }
+
+    h1 { font-size: var(--text-4xl); }
+    h2 { font-size: var(--text-3xl); }
+    h3 { font-size: var(--text-2xl); }
+    h4 { font-size: var(--text-xl); }
+    h5 { font-size: var(--text-lg); }
+    h6 { font-size: var(--text-base); }
+
+    p {
+      margin-bottom: var(--space-md);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    a:hover {
+      color: var(--accent-hover);
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    button {
+      font-family: inherit;
+      font-size: inherit;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: inherit;
+    }
+
+    /* ========================================
+       LAYOUT
+       ======================================== */
+    .app {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Mobile Header */
+    .mobile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-md);
+      background-color: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-height);
+      z-index: 100;
+    }
+
+    .story-title {
+      font-size: var(--text-lg);
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .menu-toggle,
+    .theme-toggle,
+    .close-menu {
+      padding: var(--space-sm);
+      font-size: var(--text-xl);
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .menu-toggle:hover,
+    .theme-toggle:hover,
+    .close-menu:hover {
+      background-color: var(--bg-tertiary);
+      border-radius: 4px;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      background-color: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      position: fixed;
+      top: 0;
+      left: -100%;
+      height: 100vh;
+      z-index: 200;
+      transition: left 0.3s;
+    }
+
+    .sidebar.open {
+      left: 0;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-md);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-header h2 {
+      font-size: var(--text-lg);
+      margin: 0;
+    }
+
+    /* Navigation */
+    .main-nav {
+      padding: var(--space-md);
+    }
+
+    .nav-item {
+      display: block;
+      padding: var(--space-sm) var(--space-md);
+      margin-bottom: var(--space-xs);
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+
+    .nav-item:hover {
+      background-color: var(--bg-tertiary);
+    }
+
+    .nav-item.active {
+      background-color: var(--accent);
+      color: white;
+    }
+
+    .nav-section {
+      margin-bottom: var(--space-xl);
+    }
+
+    .nav-section h3 {
+      font-size: var(--text-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-sm);
+    }
+
+    .nav-section ul {
+      list-style: none;
+    }
+
+    .nav-section ul ul {
+      margin-left: var(--space-md);
+    }
+
+    .nav-section li {
+      margin-bottom: var(--space-xs);
+    }
+
+    /* Main Content */
+    .content {
+      flex: 1;
+      padding: var(--space-xl);
+      margin-top: var(--header-height);
+      max-width: var(--max-content-width);
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ========================================
+       VIEWS
+       ======================================== */
+
+    /* Home View */
+    .story-header {
+      text-align: center;
+      margin-bottom: var(--space-3xl);
+    }
+
+    .genre {
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .story-summary {
+      margin-bottom: var(--space-3xl);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: var(--space-md);
+      margin-top: var(--space-lg);
+    }
+
+    .stat {
+      text-align: center;
+      padding: var(--space-lg);
+      background-color: var(--bg-secondary);
+      border-radius: 8px;
+    }
+
+    .stat-value {
+      display: block;
+      font-size: var(--text-3xl);
+      font-weight: bold;
+      color: var(--accent);
+      margin-bottom: var(--space-xs);
+    }
+
+    .stat-label {
+      display: block;
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+    }
+
+    .character-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-lg);
+      margin-top: var(--space-lg);
+    }
+
+    .character-card {
+      background-color: var(--bg-secondary);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .character-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+
+    .character-card img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+    }
+
+    .character-card h3 {
+      padding: var(--space-md);
+      margin: 0;
+      font-size: var(--text-lg);
+    }
+
+    .character-card p {
+      padding: 0 var(--space-md) var(--space-md);
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: var(--text-sm);
+    }
+
+    .start-reading {
+      text-align: center;
+      margin-top: var(--space-3xl);
+    }
+
+    .btn-primary {
+      display: inline-block;
+      padding: var(--space-md) var(--space-xl);
+      background-color: var(--accent);
+      color: white;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: background-color 0.2s, transform 0.2s;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-hover);
+      transform: translateY(-2px);
+    }
+
+    /* Chapter View */
+    .breadcrumb {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      margin-bottom: var(--space-md);
+    }
+
+    .chapter-header {
+      margin-bottom: var(--space-3xl);
+      padding-bottom: var(--space-lg);
+      border-bottom: 2px solid var(--border);
+    }
+
+    .chapter-content {
+      margin-bottom: var(--space-3xl);
+    }
+
+    /* Scene */
+    .scene {
+      margin-bottom: var(--space-3xl);
+    }
+
+    .scene-header {
+      margin-bottom: var(--space-xl);
+    }
+
+    .scene-header h2 {
+      font-size: var(--text-2xl);
+      color: var(--accent);
+    }
+
+    .scene-image {
+      margin-bottom: var(--space-xl);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .scene-image img {
+      width: 100%;
+      height: auto;
+    }
+
+    .scene-prose {
+      font-family: var(--font-serif);
+      font-size: var(--text-lg);
+      line-height: 1.8;
+    }
+
+    .scene-prose p {
+      margin-bottom: var(--space-lg);
+      text-indent: 2em;
+    }
+
+    .scene-prose p:first-child {
+      text-indent: 0;
+    }
+
+    /* Chapter Navigation */
+    .chapter-nav {
+      display: flex;
+      justify-content: space-between;
+      padding-top: var(--space-xl);
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-secondary {
+      padding: var(--space-md) var(--space-lg);
+      background-color: var(--bg-secondary);
+      border-radius: 8px;
+      transition: background-color 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--bg-tertiary);
+    }
+
+    /* Character View */
+    .character-profile {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-xl);
+    }
+
+    .character-portrait {
+      margin: 0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .character-details section {
+      margin-bottom: var(--space-xl);
+    }
+
+    .character-traits h2,
+    .character-description h2,
+    .character-relationships h2 {
+      font-size: var(--text-xl);
+      margin-bottom: var(--space-md);
+    }
+
+    .character-relationships ul {
+      list-style: none;
+    }
+
+    .character-relationships li {
+      margin-bottom: var(--space-lg);
+      padding: var(--space-md);
+      background-color: var(--bg-secondary);
+      border-radius: 8px;
+    }
+
+    /* Setting View */
+    .setting-profile {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-xl);
+    }
+
+    .setting-image {
+      margin: 0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .setting-image figcaption {
+      padding: var(--space-md);
+      background-color: var(--bg-secondary);
+      text-align: center;
+      font-style: italic;
+      color: var(--text-secondary);
+    }
+
+    .setting-details section {
+      margin-bottom: var(--space-xl);
+    }
+
+    .setting-adversity ul {
+      list-style: none;
+      padding-left: var(--space-md);
+    }
+
+    .setting-adversity li {
+      padding: var(--space-xs) 0;
+      border-left: 3px solid var(--accent);
+      padding-left: var(--space-md);
+      margin-bottom: var(--space-sm);
+    }
+
+    /* ========================================
+       RESPONSIVE DESIGN
+       ======================================== */
+
+    /* Tablet and up */
+    @media (min-width: 768px) {
+      .mobile-header {
+        display: none;
+      }
+
+      .sidebar {
+        left: 0;
+        position: fixed;
+      }
+
+      .content {
+        margin-left: var(--sidebar-width);
+        margin-top: 0;
+      }
+
+      .character-profile,
+      .setting-profile {
+        grid-template-columns: 300px 1fr;
+      }
+    }
+
+    /* Desktop */
+    @media (min-width: 1024px) {
+      :root {
+        --sidebar-width: 320px;
+      }
+
+      .scene-prose {
+        font-size: var(--text-xl);
+      }
+    }
+
+    /* ========================================
+       PRINT STYLES
+       ======================================== */
+    @media print {
+      .mobile-header,
+      .sidebar,
+      .chapter-nav,
+      .start-reading {
+        display: none !important;
+      }
+
+      .content {
+        margin: 0;
+        max-width: 100%;
+      }
+
+      .scene {
+        page-break-inside: avoid;
+      }
+
+      body {
+        color: black;
+        background: white;
+      }
+    }
+  </style>
+</head>
+<body class="light-mode">
+  <div class="app">
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+      <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">☰</button>
+      <h1 class="story-title">{{STORY_TITLE}}</h1>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">🌙</button>
+    </header>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>{{STORY_TITLE}}</h2>
+        <button class="close-menu" onclick="toggleSidebar()" aria-label="Close menu">✕</button>
+      </div>
+
+      <nav class="main-nav" id="nav">
+        <!-- Navigation content will be generated by JavaScript -->
+      </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content" id="content">
+      <!-- Content will be dynamically loaded here -->
+    </main>
+  </div>
+
+  <script>
+    // ========================================
+    // NOVEL DATA (Embedded JSON)
+    // ========================================
+    const novelData = {{NOVEL_DATA_JSON}};
+
+    // ========================================
+    // STATE MANAGEMENT
+    // ========================================
+    const state = {
+      currentView: 'home',
+      currentId: null,
+      theme: localStorage.getItem('novel-theme') || 'light',
+      sidebarOpen: false
+    };
+
+    // ========================================
+    // UTILITY FUNCTIONS
+    // ========================================
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function parseMarkdown(text) {
+      // Simple markdown parser for paragraphs
+      return text
+        .split('\n\n')
+        .map(para => `<p>${escapeHtml(para.trim())}</p>`)
+        .join('');
+    }
+
+    // ========================================
+    // THEME MANAGEMENT
+    // ========================================
+    function toggleTheme() {
+      state.theme = state.theme === 'light' ? 'dark' : 'light';
+      document.body.className = `${state.theme}-mode`;
+      localStorage.setItem('novel-theme', state.theme);
+
+      // Update theme icon
+      const icon = state.theme === 'light' ? '🌙' : '☀️';
+      document.querySelector('.theme-toggle').textContent = icon;
+    }
+
+    function initTheme() {
+      document.body.className = `${state.theme}-mode`;
+      const icon = state.theme === 'light' ? '🌙' : '☀️';
+      document.querySelector('.theme-toggle').textContent = icon;
+    }
+
+    // ========================================
+    // SIDEBAR MANAGEMENT
+    // ========================================
+    function toggleSidebar() {
+      state.sidebarOpen = !state.sidebarOpen;
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('open', state.sidebarOpen);
+    }
+
+    function closeSidebarOnMobile() {
+      if (window.innerWidth < 768) {
+        state.sidebarOpen = false;
+        document.getElementById('sidebar').classList.remove('open');
+      }
+    }
+
+    // ========================================
+    // NAVIGATION
+    // ========================================
+    function renderNavigation() {
+      const nav = document.getElementById('nav');
+      let html = '';
+
+      // Home
+      html += `<a href="#home" class="nav-item">📖 Home</a>`;
+
+      // Parts & Chapters
+      if (novelData.structure && novelData.structure.parts) {
+        html += `<div class="nav-section">
+          <h3>Story</h3>
+          <ul>`;
+
+        novelData.structure.parts.forEach((part, partIdx) => {
+          html += `<li>
+            <a href="#part-${partIdx + 1}">📚 ${part.title}</a>
+            <ul>`;
+
+          if (part.chapters) {
+            part.chapters.forEach((chapter, chapterIdx) => {
+              html += `<li>
+                <a href="#chapter-${partIdx + 1}-${chapterIdx + 1}">📝 ${chapter.title}</a>
+              </li>`;
+            });
+          }
+
+          html += `</ul></li>`;
+        });
+
+        html += `</ul></div>`;
+      }
+
+      // Characters
+      if (novelData.characters && novelData.characters.length > 0) {
+        html += `<div class="nav-section">
+          <h3>Characters</h3>
+          <ul>`;
+
+        novelData.characters.forEach((character, idx) => {
+          html += `<li><a href="#character-${idx}">👤 ${character.name}</a></li>`;
+        });
+
+        html += `</ul></div>`;
+      }
+
+      // Settings
+      if (novelData.settings && novelData.settings.length > 0) {
+        html += `<div class="nav-section">
+          <h3>Settings</h3>
+          <ul>`;
+
+        novelData.settings.forEach((setting, idx) => {
+          html += `<li><a href="#setting-${idx}">🏞️ ${setting.name}</a></li>`;
+        });
+
+        html += `</ul></div>`;
+      }
+
+      nav.innerHTML = html;
+    }
+
+    // ========================================
+    // VIEW RENDERERS
+    // ========================================
+    function renderHome() {
+      const content = document.getElementById('content');
+      let html = `
+        <div class="view home-view">
+          <header class="story-header">
+            <h1>${novelData.metadata.title}</h1>
+            <p class="genre">${novelData.metadata.genre} | ${novelData.metadata.tone}</p>
+          </header>
+
+          <section class="story-summary">
+            <h2>Summary</h2>
+            <p>${novelData.metadata.summary}</p>
+          </section>
+
+          <section class="story-stats">
+            <h2>Statistics</h2>
+            <div class="stats-grid">
+              <div class="stat">
+                <span class="stat-value">${novelData.statistics.parts || 3}</span>
+                <span class="stat-label">Parts</span>
+              </div>
+              <div class="stat">
+                <span class="stat-value">${novelData.statistics.chapters || 0}</span>
+                <span class="stat-label">Chapters</span>
+              </div>
+              <div class="stat">
+                <span class="stat-value">${novelData.statistics.scenes || 0}</span>
+                <span class="stat-label">Scenes</span>
+              </div>
+              <div class="stat">
+                <span class="stat-value">~${novelData.metadata.wordCount || 0}</span>
+                <span class="stat-label">Words</span>
+              </div>
+            </div>
+          </section>`;
+
+      // Characters section
+      if (novelData.characters && novelData.characters.length > 0) {
+        html += `
+          <section class="story-characters">
+            <h2>Characters</h2>
+            <div class="character-grid">`;
+
+        novelData.characters.forEach((character, idx) => {
+          const imageUrl = character.imageVariants?.variants?.find(v => v.format === 'avif')?.url || character.imageUrl;
+          html += `
+            <a href="#character-${idx}" class="character-card">
+              ${imageUrl ? `<img src="${imageUrl}" alt="${character.name}" loading="lazy">` : ''}
+              <h3>${character.name}</h3>
+              <p>${character.coreTrait}</p>
+            </a>`;
+        });
+
+        html += `
+            </div>
+          </section>`;
+      }
+
+      // Start reading button
+      html += `
+          <nav class="start-reading">
+            <a href="#chapter-1-1" class="btn-primary">Start Reading →</a>
+          </nav>
+        </div>`;
+
+      content.innerHTML = html;
+    }
+
+    function renderChapter(partIdx, chapterIdx) {
+      // Implementation for chapter rendering
+      const content = document.getElementById('content');
+      content.innerHTML = '<div class="chapter-view"><h1>Chapter View</h1><p>Chapter content would go here...</p></div>';
+    }
+
+    function renderCharacter(characterIdx) {
+      // Implementation for character rendering
+      const content = document.getElementById('content');
+      content.innerHTML = '<div class="character-view"><h1>Character View</h1><p>Character details would go here...</p></div>';
+    }
+
+    function renderSetting(settingIdx) {
+      // Implementation for setting rendering
+      const content = document.getElementById('content');
+      content.innerHTML = '<div class="setting-view"><h1>Setting View</h1><p>Setting details would go here...</p></div>';
+    }
+
+    // ========================================
+    // ROUTER
+    // ========================================
+    function navigate(hash) {
+      // Parse hash
+      const match = hash.match(/#(\w+)(?:-(.+))?/);
+      if (!match) {
+        renderHome();
+        return;
+      }
+
+      const [_, view, params] = match;
+
+      // Update active nav item
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.toggle('active', item.getAttribute('href') === hash);
+      });
+
+      // Render appropriate view
+      switch (view) {
+        case 'home':
+          renderHome();
+          break;
+        case 'chapter':
+          const [partIdx, chapterIdx] = params.split('-').map(Number);
+          renderChapter(partIdx, chapterIdx);
+          break;
+        case 'character':
+          renderCharacter(parseInt(params));
+          break;
+        case 'setting':
+          renderSetting(parseInt(params));
+          break;
+        default:
+          renderHome();
+      }
+
+      // Close sidebar on mobile after navigation
+      closeSidebarOnMobile();
+
+      // Save reading position
+      localStorage.setItem('novel-progress', hash);
+
+      // Scroll to top
+      window.scrollTo(0, 0);
+    }
+
+    // ========================================
+    // INITIALIZATION
+    // ========================================
+    function init() {
+      // Initialize theme
+      initTheme();
+
+      // Render navigation
+      renderNavigation();
+
+      // Set up hash change listener
+      window.addEventListener('hashchange', () => {
+        navigate(window.location.hash);
+      });
+
+      // Restore reading position or show home
+      const savedProgress = localStorage.getItem('novel-progress');
+      const initialHash = window.location.hash || savedProgress || '#home';
+
+      if (initialHash !== window.location.hash) {
+        window.location.hash = initialHash;
+      } else {
+        navigate(initialHash);
+      }
+
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener('click', (e) => {
+        const sidebar = document.getElementById('sidebar');
+        const menuToggle = document.querySelector('.menu-toggle');
+
+        if (state.sidebarOpen &&
+            !sidebar.contains(e.target) &&
+            !menuToggle.contains(e.target)) {
+          toggleSidebar();
+        }
+      });
+    }
+
+    // Start the application
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

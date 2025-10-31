@@ -1765,8 +1765,6 @@ Return ONLY the JSON evaluation, no explanations.
 
 ### 2.9 Image Generation API
 
-**Complete Documentation:** See [Image System Guide](../../docs/image/image-system-guide.md) for comprehensive image generation and optimization details.
-
 #### Endpoint
 ```typescript
 POST /novels/api/images/generate
@@ -1803,75 +1801,67 @@ Final Event:
       scenes: number      // Count of scene images
     },
     totalImages: number,
-    totalVariants: number // 4 variants per image
+    totalVariants: number // 18 variants per image
   }
 }
 ```
 
-#### Image Specifications
+#### Image Generation Specifications
 
-**Dimensions:**
-- Story covers: 1344×768 (7:4)
-- Character portraits: 1024×1024 (square)
-- Setting environments: 1344×768 (7:4)
-- Scene images: 1344×768 (7:4)
+**Story Cover Image**:
+- Size: 1344×768 (7:4 aspect ratio)
+- Prompt: `Book cover illustration for "{storyTitle}", {storySummary}, {genre} genre, {tone} atmosphere, {visualStyle} art style, dramatic composition, professional book cover design`
 
-**Model:** Gemini 2.5 Flash via Google AI API
+**Character Portrait**:
+- Size: 1024×1024 (square)
+- Prompt: `Portrait of {characterName}, {physicalDescription.appearance}, {physicalDescription.distinctiveFeatures}, {visualStyle} style, {genre} genre aesthetic, character concept art`
 
-**Optimization:** Each image generates 4 variants (AVIF/JPEG × 2 sizes)
-- Mobile 1x: 672×384
-- Mobile 2x / Desktop: 1344×768 (original size)
+**Setting Environment**:
+- Size: 1344×768 (7:4 aspect ratio)
+- Prompt: `Wide landscape view of {settingName}, {settingDescription}, {visualReferences[0]} style, {genre} aesthetic, {colorPalette} colors, {mood} atmosphere, cinematic composition`
 
-**See:** [Image Optimization Guide](../../docs/image/image-optimization.md) for complete variant specifications
+**Scene Image**:
+- Size: 1344×768 (7:4 aspect ratio)
+- Prompt: `Cinematic scene from {storyTitle}: {sceneTitle}, {sceneVisualDescription}, {settingName} environment, {charactersPresent}, {visualStyle} style, {genre} aesthetic, 7:4 composition`
 
-#### Prompt Templates
+#### Image Optimization
 
-**Story Cover:**
-```
-Book cover illustration for "{storyTitle}", {storySummary}, {genre} genre,
-{tone} atmosphere, {visualStyle} art style, dramatic composition,
-professional book cover design
-```
+For EACH generated image, automatically create 4 optimized variants:
 
-**Character Portrait:**
-```
-Portrait of {characterName}, {physicalDescription.appearance},
-{physicalDescription.distinctiveFeatures}, {visualStyle} style,
-{genre} genre aesthetic, character concept art
-```
+**Formats**: AVIF (best compression), JPEG (universal fallback)
+**Sizes**:
+- Mobile 1x: 672×384 (for 320-640px viewports)
+- Mobile 2x: 1344×768 (original Gemini size, also used for desktop)
 
-**Setting Environment:**
-```
-Wide landscape view of {settingName}, {settingDescription},
-{visualReferences[0]} style, {genre} aesthetic, {colorPalette} colors,
-{mood} atmosphere, cinematic composition
-```
+**Total per image**: 2 formats × 2 sizes = 4 variants
 
-**Scene Image:**
-```
-Cinematic scene from {storyTitle}: {sceneTitle}, {sceneVisualDescription},
-{settingName} environment, {charactersPresent}, {visualStyle} style,
-{genre} aesthetic, 7:4 composition
-```
+**Why 4 variants?** Mobile-first optimization strategy:
+- AVIF provides 50% smaller files than JPEG with 93.8% browser support
+- No WebP needed (only 1.5% coverage gap, adds 50% more variants)
+- Desktop uses mobile 2x (original 1344×768) - no upscaling needed
+- Optimized for comics with many panels per scene
 
 #### Implementation Notes
-- **Batch Processing**: Generate 5 images at a time to avoid rate limits
+- **Image Generation Model**: Gemini 2.5 Flash via Google AI API
+- **Optimization Service**: Sharp.js for variant creation
 - **Storage**: Vercel Blob with public access
-- **Database**: Store imageUrl and imageVariants for each entity
+- **Database Updates**: Store imageUrl and imageVariants for each entity
+- **Batch Processing**: Generate 5 images at a time to avoid rate limits
 - **Error Handling**: Retry failed generations up to 3 times
-- **Progress Tracking**: SSE for real-time progress updates
+- **Progress Tracking**: Use SSE to report real-time progress to client
 
-**Generation Order:**
+**Generation Order**:
 1. Story cover (1 image)
 2. Characters (2-4 images)
 3. Settings (2-4 images)
-4. Scenes (3-7 per chapter × N chapters)
+4. Scenes (per chapter, 3-7 per chapter × N chapters)
 
-**Performance:**
-- Generation: ~5-15 seconds per image
+**Performance**:
+- Story cover: ~5-15 seconds
+- Character portrait: ~5-15 seconds each
+- Setting environment: ~5-15 seconds each
+- Scene image: ~5-15 seconds each
 - Optimization: ~2 seconds per image (4 variants)
-
-**See:** [Image Generation Guide](../../docs/image/image-generation.md) for API usage examples and testing
 
 ---
 

@@ -80,6 +80,7 @@ test-scripts/
 
 # Output directory
 @output/
+outputs/
 
 # Downloads directory
 downloads/
