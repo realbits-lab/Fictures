@@ -255,7 +255,93 @@ Profile Details:
 
 ## Using with Playwright
 
-The profile structure is compatible with Playwright's `storageState` option:
+### Quick Start: Capturing Fresh Authentication
+
+Before running Playwright tests, you need to capture fresh authentication data and convert it to Playwright format:
+
+**Step 1: Capture Writer Authentication**
+```bash
+# Capture fresh authentication for writer@fictures.xyz
+dotenv --file .env.local run node scripts/capture-writer-auth.mjs
+```
+
+This script will:
+1. Open a browser window
+2. Navigate to `/login` page
+3. Automatically fill in writer@fictures.xyz credentials
+4. Wait for successful login redirect (to `/`, `/studio`, `/novels`, or `/comics`)
+5. Capture session cookies and localStorage
+6. Save to `.auth/user.json` under `profiles.writer`
+
+**Step 2: Create Playwright-Compatible Auth File**
+```bash
+# Convert writer profile to Playwright storage state format
+node scripts/create-playwright-auth.mjs
+```
+
+This script will:
+1. Read `.auth/user.json`
+2. Extract writer profile data (cookies and origins)
+3. Create `.auth/writer-playwright.json` in Playwright's `storageState` format
+
+**Step 3: Use in Playwright Tests**
+```javascript
+import { test } from '@playwright/test';
+
+// Use writer authentication
+test.use({ storageState: '.auth/writer-playwright.json' });
+
+test('authenticated writer can create stories', async ({ page }) => {
+  await page.goto('http://localhost:3000/studio/new');
+  // Test runs with writer@fictures.xyz authentication
+});
+```
+
+### Playwright Storage State Format
+
+The `.auth/writer-playwright.json` file created by `create-playwright-auth.mjs` follows Playwright's standard format:
+
+```json
+{
+  "cookies": [
+    {
+      "name": "authjs.csrf-token",
+      "value": "...",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "authjs.session-token",
+      "value": "...",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1763547081.986371,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "swr-cache-/api/stories",
+          "value": "..."
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Manual Profile Loading (Advanced)
+
+The profile structure is also compatible with dynamic profile loading:
 
 ```javascript
 const { test } = require('@playwright/test');

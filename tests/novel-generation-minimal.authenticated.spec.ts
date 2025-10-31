@@ -13,8 +13,8 @@
 
 import { test, expect } from '@playwright/test';
 
-// Use authenticated state from .auth/user.json
-test.use({ storageState: '.auth/user.json' });
+// Use authenticated state from writer account (writer@fictures.xyz)
+test.use({ storageState: '.auth/writer-playwright.json' });
 
 test.describe('Novel Generation - Minimal Configuration', () => {
   test.setTimeout(600000); // 10 minutes timeout for full generation

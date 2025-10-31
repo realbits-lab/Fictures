@@ -81,8 +81,8 @@ async function captureWriterAuth() {
 
   try {
     // Navigate to login page
-    console.log(`📍 Navigating to ${BASE_URL}/auth/signin...\n`);
-    await page.goto(`${BASE_URL}/auth/signin`, { waitUntil: 'networkidle' });
+    console.log(`📍 Navigating to ${BASE_URL}/login...\n`);
+    await page.goto(`${BASE_URL}/login`, { waitUntil: 'networkidle' });
 
     // Wait for page to load
     await page.waitForTimeout(1000);
@@ -104,7 +104,11 @@ async function captureWriterAuth() {
       console.log('⏳ Waiting for manual login (timeout: 120 seconds)...\n');
 
       // Wait for navigation to home page (successful login)
-      await page.waitForURL(url => url.pathname === '/' || url.pathname.startsWith('/studio'), {
+      await page.waitForURL(url =>
+        url.pathname === '/' ||
+        url.pathname.startsWith('/studio') ||
+        url.pathname.startsWith('/novels') ||
+        url.pathname.startsWith('/comics'), {
         timeout: 120000,
       });
     } else {
@@ -120,7 +124,11 @@ async function captureWriterAuth() {
       await submitButton.click();
 
       console.log('⏳ Waiting for login to complete...\n');
-      await page.waitForURL(url => url.pathname === '/' || url.pathname.startsWith('/studio'), {
+      await page.waitForURL(url =>
+        url.pathname === '/' ||
+        url.pathname.startsWith('/studio') ||
+        url.pathname.startsWith('/novels') ||
+        url.pathname.startsWith('/comics'), {
         timeout: 30000,
       });
     }
