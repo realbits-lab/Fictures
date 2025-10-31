@@ -1,19 +1,18 @@
 # Story Image Generation
 
-Generate 16:9 widescreen story illustrations using **OpenAI DALL-E 3** or **Google Gemini 2.5 Flash**.
+Generate story illustrations using **Google Gemini 2.5 Flash**.
 
-## Model Comparison
+## Model Specifications
 
-| Feature | DALL-E 3 | Gemini 2.5 Flash |
-|---------|----------|------------------|
-| **Size** | 1792×1024 (true 16:9) | 1344×768 (7:4, ~16:9) |
-| **Quality** | Standard / HD | Standard only |
-| **Style** | Vivid / Natural | Not supported |
-| **Cost** | $0.04 (std) / $0.08 (HD) | Free (during preview) |
-| **Speed** | 10-30 seconds | 5-15 seconds |
-| **Current** | ✅ Primary | Fallback/testing |
+| Feature | Gemini 2.5 Flash |
+|---------|------------------|
+| **Size** | 1344×768 (7:4) |
+| **Quality** | Standard |
+| **Cost** | Free (during preview) |
+| **Speed** | 5-15 seconds |
+| **Status** | ✅ Primary |
 
-**Recommendation:** Use DALL-E 3 for production (true 16:9, better quality control).
+**Note:** Gemini 2.5 Flash provides fast, cost-effective image generation suitable for novel illustrations.
 
 ## Quick Start
 
@@ -26,11 +25,9 @@ const response = await fetch('/api/images/generate', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    prompt: 'A mysterious forest at twilight, cinematic widescreen',
+    prompt: 'A mysterious forest at twilight, cinematic composition',
     storyId: 'story_123',
     imageType: 'scene',
-    style: 'vivid',      // DALL-E only
-    quality: 'standard', // DALL-E: 'standard' | 'hd'
   }),
 });
 
@@ -48,8 +45,6 @@ const result = await generateStoryImage({
   prompt: 'A beautiful sunset over calm ocean with sailboats',
   storyId: 'story_123',
   imageType: 'scene',
-  style: 'vivid',
-  quality: 'standard',
 });
 
 console.log('Image URL:', result.url);
@@ -66,8 +61,6 @@ console.log('Optimized variants:', result.optimizedSet.variants.length);
 | `chapterId` | string | No | - | Chapter context |
 | `sceneId` | string | No | - | Scene context |
 | `panelNumber` | number | No | - | Panel number (for comics) |
-| `style` | string | No | `vivid` | `vivid` \| `natural` (DALL-E only) |
-| `quality` | string | No | `standard` | `standard` \| `hd` (DALL-E only) |
 | `skipOptimization` | boolean | No | `false` | Skip variant generation |
 | `autoPrompt` | boolean | No | `false` | Auto-generate from context |
 
@@ -82,39 +75,14 @@ console.log('Optimized variants:', result.optimizedSet.variants.length);
   image: {
     url: "https://blob.vercel-storage.com/story-images/...",
     blobUrl: "https://blob.vercel-storage.com/story-images/...",
-    width: 1792,
-    height: 1024,
-    size: 2846330,
-    aspectRatio: "16:9"
+    width: 1344,
+    height: 768,
+    size: 1500000,
+    aspectRatio: "7:4"
   },
   prompt: "The final prompt used for generation"
 }
 ```
-
-## Style Options (DALL-E 3 Only)
-
-### Vivid Style (Default)
-- Hyper-real and cinematic
-- Enhanced colors and dramatic lighting
-- Ideal for: fantasy, sci-fi, dramatic scenes
-
-### Natural Style
-- More realistic and subdued
-- Natural colors and lighting
-- Ideal for: contemporary, historical, realistic fiction
-
-## Quality Options (DALL-E 3 Only)
-
-### Standard Quality (Default)
-- Good quality, faster generation
-- ~1-2 MB file size
-- $0.04 per image
-
-### HD Quality
-- Higher resolution and detail
-- ~2-3 MB file size
-- $0.08 per image
-- Best for: hero images, cover art
 
 ## Automatic Image Optimization
 
@@ -130,10 +98,7 @@ See [Image Optimization Guide](./image-optimization.md) for details.
 Required in `.env.local`:
 
 ```bash
-# OpenAI API Key for DALL-E 3 (primary)
-OPENAI_API_KEY=sk-...
-
-# Google AI API Key (fallback/testing)
+# Google AI API Key for Gemini 2.5 Flash
 GOOGLE_GENERATIVE_AI_API_KEY=...
 
 # Vercel Blob Storage Token
@@ -155,10 +120,10 @@ Expected output: Generates test image in `logs/generated-images/`
 
 ```
 "A cyberpunk city street at night with neon signs, rain-soaked pavement,
-dramatic lighting, cinematic widescreen composition"
+dramatic lighting, cinematic composition"
 
 "Ancient library with towering bookshelves reaching into darkness,
-magical glowing books, mysterious atmosphere, 16:9 aspect ratio"
+magical glowing books, mysterious atmosphere, 7:4 cinematic composition"
 ```
 
 ### Poor Prompts ❌
@@ -171,7 +136,7 @@ magical glowing books, mysterious atmosphere, 16:9 aspect ratio"
 ### Guidelines
 
 1. **Be specific:** Include setting, mood, lighting, composition details
-2. **Add composition hints:** "cinematic widescreen" or "16:9 aspect ratio"
+2. **Add composition hints:** "cinematic composition" or "7:4 aspect ratio"
 3. **Specify mood:** Use descriptive adjectives (mysterious, dramatic, serene)
 4. **Describe visual style:** Mention art style (photorealistic, digital art)
 5. **Use narrative paragraphs:** Better than keyword lists
@@ -184,7 +149,6 @@ const response = await fetch('/api/images/generate', {
   body: JSON.stringify({
     storyId: 'story_abc123',
     autoPrompt: true,
-    style: 'natural',
   }),
 });
 
@@ -209,7 +173,7 @@ const prompt = buildStoryImagePrompt({
 
 // Output: "A young warrior must protect an ancient artifact.
 //          Setting: Ancient temple ruins. Characters: Aria the warrior, Elder Mage.
-//          Mood: Epic. Genre: Fantasy. Cinematic widescreen composition..."
+//          Mood: Epic. Genre: Fantasy. Cinematic composition..."
 ```
 
 ## Organization
@@ -235,7 +199,6 @@ story-images/
       storyId,
       imageType: 'story',
       autoPrompt: true,
-      quality: 'hd' // Use HD for cover art
     }),
   });
   const { image } = await response.json();
@@ -252,12 +215,11 @@ const generateSceneImage = async (description: string) => {
   const response = await fetch('/api/images/generate', {
     method: 'POST',
     body: JSON.stringify({
-      prompt: `${description}, cinematic widescreen composition`,
+      prompt: `${description}, cinematic composition`,
       sceneId,
       storyId,
       chapterId,
       imageType: 'scene',
-      style: 'vivid',
     }),
   });
   return await response.json();
@@ -271,8 +233,6 @@ const result = await generateStoryImage({
   prompt: 'Aria the warrior, determined expression, ancient armor',
   storyId: 'story_123',
   imageType: 'character',
-  style: 'fantasy-art',
-  quality: 'standard',
 });
 ```
 
@@ -282,7 +242,7 @@ If generation fails (API errors, rate limits, network issues):
 
 1. **Automatic placeholders:** Pre-defined images by type
 2. **Graceful degradation:** No database corruption
-3. **Retry logic:** Automatic fallback to Gemini if DALL-E fails
+3. **Retry logic:** Automatic retry with exponential backoff
 
 Placeholder images:
 - Character: `system/placeholders/character-default.png`
@@ -292,7 +252,7 @@ Placeholder images:
 
 ## Performance
 
-- **Generation time:** 10-30 seconds (DALL-E), 5-15 seconds (Gemini)
+- **Generation time:** 5-15 seconds (Gemini 2.5 Flash)
 - **Optimization time:** +2-4 seconds for 18 variants
 - **Consider:** Queue system for batch generation
 - **Caching:** Hash prompts to avoid duplicate generation
@@ -324,13 +284,9 @@ try {
 
 ## Troubleshooting
 
-**Missing DALL-E images:**
-- Add `OPENAI_API_KEY` to `.env.local`
-- System falls back to Gemini or placeholders
-
-**Missing Gemini images:**
+**Missing images:**
 - Add `GOOGLE_GENERATIVE_AI_API_KEY` to `.env.local`
-- System uses placeholders if both fail
+- System uses placeholders if generation fails
 
 **Upload failures:**
 - Verify `BLOB_READ_WRITE_TOKEN` is set
@@ -338,38 +294,36 @@ try {
 
 **Using placeholders:**
 - Check console logs for generation errors
-- Verify API keys are valid
+- Verify API key is valid
 - Check rate limits and billing
 
 **Quality issues:**
 - Use more descriptive prompts
-- Try HD quality for important images
-- Switch between vivid/natural styles
-- Add composition hints ("16:9", "widescreen")
+- Add composition hints ("cinematic", "7:4 aspect ratio")
+- Include specific style references
 
 ## Cost Considerations
 
-### DALL-E 3 Pricing
-- **Standard (1792x1024):** $0.040 per image
-- **HD (1792x1024):** $0.080 per image
+### Gemini 2.5 Flash Pricing
+- **Current:** Free during preview period
+- **Future:** Check Google AI pricing when GA
 
 ### Vercel Blob Storage
 - First 100 GB/month: Free
 - Additional storage: Check Vercel pricing
 
 ### Recommendations
-- Use standard quality for most images
-- Reserve HD for cover art and key illustrations
 - Implement caching to avoid duplicate generation
 - Consider batch generation with queue system
+- Monitor API usage during preview period
 
 ## API Limitations
 
-1. **Content Policy:** DALL-E 3 follows OpenAI's content policy
-2. **Rate Limits:** Check your OpenAI API rate limits
-3. **Generation Time:** 10-30 seconds per image
-4. **Fixed Size:** DALL-E always generates 1792x1024
-5. **Gemini Preview:** May have usage limits during preview period
+1. **Content Policy:** Gemini follows Google AI content policy
+2. **Rate Limits:** Check your Google AI API rate limits
+3. **Generation Time:** 5-15 seconds per image
+4. **Fixed Size:** Gemini generates 1344×768 (7:4 ratio)
+5. **Preview Period:** May have usage limits during preview
 
 ## Related Documentation
 

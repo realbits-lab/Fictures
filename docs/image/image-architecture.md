@@ -13,7 +13,7 @@ Fictures uses **Google Gemini 2.5 Flash Image** for AI-generated story illustrat
 ```
 AI Prompt Creation
   ↓
-Gemini 2.5 Flash Image (1344×768, ~16:9, PNG)
+Gemini 2.5 Flash Image (1344×768, 7:4, PNG)
   ↓
 Upload to Vercel Blob
   ↓
@@ -28,11 +28,11 @@ Database Storage (imageUrl + imageVariants)
 
 | Type | Dimensions | Purpose |
 |------|-----------|---------|
-| **Story Cover** | 1344×768 (~16:9) | Story thumbnails |
-| **Scene Image** | 1344×768 (~16:9) | Scene visuals |
-| **Character Portrait** | 1344×768 (~16:9) | Character profiles |
-| **Setting Visual** | 1344×768 (~16:9) | Environment images |
-| **Comic Panel** | 1344×768 (~16:9) | Panel illustrations |
+| **Story Cover** | 1344×768 (7:4) | Story thumbnails |
+| **Scene Image** | 1344×768 (7:4) | Scene visuals |
+| **Character Portrait** | 1344×768 (7:4) | Character profiles |
+| **Setting Visual** | 1344×768 (7:4) | Environment images |
+| **Comic Panel** | 1344×768 (7:4) | Panel illustrations |
 
 ## Core Implementation
 
@@ -47,11 +47,9 @@ Database Storage (imageUrl + imageVariants)
 import { generateStoryImage } from '@/lib/services/image-generation';
 
 const result = await generateStoryImage({
-  prompt: 'A mysterious forest at twilight, cinematic widescreen',
+  prompt: 'A mysterious forest at twilight, cinematic composition',
   storyId: 'story_123',
   imageType: 'scene',
-  style: 'vivid',
-  quality: 'standard',
 });
 ```
 

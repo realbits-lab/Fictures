@@ -41,9 +41,8 @@ This document provides comprehensive implementation specifications for the novel
 │  - Expand basic character data into full profiles               │
 │  - Create personality, backstory, relationships (Jeong system)  │
 │  - Define physical description and voice style                  │
-│  - Generate character portraits (DALL-E 3, 1024×1024)          │
 │                                                                   │
-│  Output: Complete Character records in database                 │
+│  Output: Complete Character records in database (no images)     │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
@@ -56,9 +55,8 @@ This document provides comprehensive implementation specifications for the novel
 │  - Define symbolic meaning (reflect moral framework)            │
 │  - Specify cycle amplification (how setting amplifies phases)   │
 │  - Rich sensory details (sight, sound, smell, touch, taste)    │
-│  - Generate environment images (DALL-E 3, 1792×1024, 16:9)     │
 │                                                                   │
-│  Output: Complete Setting records with images                   │
+│  Output: Complete Setting records in database (no images)       │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
@@ -125,11 +123,31 @@ This document provides comprehensive implementation specifications for the novel
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  Post-Processing Pipeline (Per Scene)                           │
-│  1. Scene Formatting (rule-based, deterministic)                │
-│  2. Scene Evaluation & Improvement Loop                         │
-│  3. Image Validation & Generation (if needed)                   │
-│  4. Character/Setting Image Generation                          │
+│  API 8: Scene Evaluation & Improvement                          │
+│  POST /novels/api/evaluation/scene                                      │
+│                                                                   │
+│  System Prompt Focus:                                            │
+│  - Evaluate scene quality using "Architectonics of Engagement"  │
+│  - Score 5 categories: plot, character, pacing, prose, world   │
+│  - Provide improvement feedback if score < 3.0                  │
+│  - Iterate until quality threshold met (max 2 iterations)       │
+│                                                                   │
+│  Output: Evaluated & improved scene content                     │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  API 9: Image Generation (All Story Assets)                     │
+│  POST /novels/api/images/generate                                       │
+│                                                                   │
+│  System Prompt Focus:                                            │
+│  - Generate story cover image (1792×1024, 16:9)                │
+│  - Generate character portraits (1024×1024 per character)       │
+│  - Generate setting environments (1792×1024, 16:9 per setting) │
+│  - Generate scene images (1792×1024, 16:9 per scene)           │
+│  - Create 18 optimized variants per image (AVIF/WebP/JPEG)     │
+│                                                                   │
+│  Output: All images with optimized variants stored in Blob      │
 └─────────────────────────────────────────────────────────────────┘
 
 Note: Two-step scene generation allows:
@@ -565,11 +583,7 @@ Return ONLY the JSON array, no explanations.
 - **Post-Processing**:
   1. Validate all required fields present
   2. Verify internalFlaw has cause ("because")
-  3. Generate character portraits via DALL-E 3 (1024×1024)
-  4. Create 18 optimized image variants (AVIF/WebP/JPEG)
-  5. Store in database with generated imageUrl and imageVariants
-- **Character Images**: Generated separately after character data is created
-  - Prompt format: `Portrait of {name}, {physicalDescription.appearance}, {physicalDescription.distinctiveFeatures}, {visualStyle} style, {genre} genre aesthetic`
+  3. Store in database without images (images generated later via API 9)
 
 ---
 
@@ -868,11 +882,7 @@ Return ONLY the JSON array, no explanations.
   2. Check sensory arrays have minimum items (sight: 5+, sound: 3+, smell: 2+, touch: 2+)
   3. Verify adversityElements has items in all 4 categories
   4. Verify cycleAmplification has all 5 phases defined
-  5. Generate environment images via DALL-E 3 (1792×1024, 16:9)
-  6. Create 18 optimized image variants (AVIF/WebP/JPEG)
-  7. Store in database with generated imageUrl and imageVariants
-- **Environment Images**: Generated separately after setting data is created
-  - Prompt format: `Wide landscape view of {name}, {description}, {visualReferences[0]} style, {genre} aesthetic, {colorPalette} colors, {mood} atmosphere, 16:9 cinematic composition`
+  5. Store in database without images (images generated later via API 9)
 
 ---
 
@@ -1548,6 +1558,305 @@ Return ONLY the prose narrative, no metadata, no explanations.
 - **Temperature**: 0.7
 - **Post-Processing**: Scene formatting (paragraph splitting, spacing), validation
 - **Prompt Version**: v1.1 (improved from v1.0 based on testing)
+
+---
+
+### 2.8 Scene Evaluation & Improvement API
+
+#### Endpoint
+```typescript
+POST /novels/api/evaluation/scene
+
+Request:
+{
+  sceneId: string;
+  content: string;
+  context: {
+    storyGenre: string;
+    cyclePhase: 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition';
+    arcPosition: 'beginning' | 'middle' | 'climax' | 'resolution';
+    chapterNumber: number;
+    characterContext: string[]; // Character summaries
+  };
+  options?: {
+    maxIterations?: number; // Default: 2
+    passingScore?: number; // Default: 3.0
+    improvementLevel?: 'light' | 'moderate' | 'heavy'; // Default: 'moderate'
+  };
+}
+
+Response:
+{
+  scene: {
+    id: string;
+    content: string; // Final improved content
+  };
+  evaluations: Array<{
+    iteration: number;
+    scores: {
+      plot: number;          // 1-4 scale
+      character: number;     // 1-4 scale
+      pacing: number;        // 1-4 scale
+      prose: number;         // 1-4 scale
+      worldBuilding: number; // 1-4 scale
+    };
+    overallScore: number;    // Average of 5 categories
+    feedback: {
+      strengths: string[];
+      improvements: string[];
+      priorityFixes: string[];
+    };
+  }>;
+  iterations: number;
+  finalScore: number;
+  passed: boolean;
+  improvements: string[]; // List of changes made
+}
+```
+
+#### System Prompt (v1.0)
+
+```markdown
+# ROLE
+You are an expert narrative evaluator using the "Architectonics of Engagement" framework to assess scene quality and provide actionable improvement feedback.
+
+# CONTEXT
+Scene Content: {sceneContent}
+Story Genre: {storyGenre}
+Cycle Phase: {cyclePhase}
+Arc Position: {arcPosition}
+Chapter Number: {chapterNumber}
+Characters: {characterContext}
+
+# YOUR TASK
+Evaluate this scene across 5 quality categories and provide improvement feedback if score < {passingScore}.
+
+# EVALUATION CATEGORIES (1-4 scale)
+
+## 1. PLOT (Goal Clarity, Conflict Engagement, Stakes Progression)
+
+**Score 1 - Nascent**: Scene lacks clear dramatic goal or conflict is unfocused
+**Score 2 - Developing**: Goal present but weak; conflict needs sharpening
+**Score 3 - Effective**: Clear goal, engaging conflict, stakes are evident ✅
+**Score 4 - Exemplary**: Urgent goal, compelling conflict, stakes deeply felt
+
+Evaluate:
+- Does the scene have a clear dramatic goal?
+- Is the conflict compelling and escalating?
+- Are the stakes evident and meaningful?
+
+## 2. CHARACTER (Voice Distinctiveness, Motivation Clarity, Emotional Authenticity)
+
+**Score 1 - Nascent**: Characters lack distinct voice or clear motivation
+**Score 2 - Developing**: Voice emerging but generic; motivations need depth
+**Score 3 - Effective**: Characters have unique voices, clear motivations ✅
+**Score 4 - Exemplary**: Voices are unforgettable, motivations drive action powerfully
+
+Evaluate:
+- Do characters have unique, consistent voices?
+- Are motivations clear and driving action?
+- Do emotions feel genuine and earned?
+
+## 3. PACING (Tension Modulation, Scene Rhythm, Narrative Momentum)
+
+**Score 1 - Nascent**: Pacing is uneven or drags
+**Score 2 - Developing**: Pacing functional but needs dynamic range
+**Score 3 - Effective**: Tension rises and falls strategically, engaging pace ✅
+**Score 4 - Exemplary**: Masterful rhythm, reader can't put it down
+
+Evaluate:
+- Does tension build and release effectively?
+- Is the scene's rhythm engaging (not too fast or slow)?
+- Does momentum propel story forward?
+
+## 4. PROSE (Sentence Variety, Word Choice Precision, Sensory Engagement)
+
+**Score 1 - Nascent**: Sentences repetitive, words generic, no sensory details
+**Score 2 - Developing**: Some variety, decent words, sparse sensory details
+**Score 3 - Effective**: Varied sentences, precise words, multiple senses engaged ✅
+**Score 4 - Exemplary**: Poetic craft, every word chosen with care, immersive
+
+Evaluate:
+- Do sentences vary in length and structure?
+- Are words precise and evocative?
+- Are multiple senses engaged (sight, sound, smell, touch)?
+
+## 5. WORLD-BUILDING (Setting Integration, Detail Balance, Immersion)
+
+**Score 1 - Nascent**: Setting is backdrop only, no integration with action
+**Score 2 - Developing**: Setting mentioned but not supporting story
+**Score 3 - Effective**: Setting supports and enhances action, details enrich ✅
+**Score 4 - Exemplary**: Setting is character itself, reader fully immersed
+
+Evaluate:
+- Does setting support and enhance the action?
+- Are details enriching without overwhelming?
+- Does reader feel present in the scene?
+
+# SCORING GUIDELINES
+
+- **3.0+ = PASSING** (Effective level, professionally crafted)
+- **Below 3.0 = NEEDS IMPROVEMENT** (provide specific feedback)
+
+# OUTPUT FORMAT
+
+Return JSON:
+
+```json
+{
+  "scores": {
+    "plot": 3.5,
+    "character": 3.0,
+    "pacing": 2.5,
+    "prose": 3.5,
+    "worldBuilding": 3.0
+  },
+  "overallScore": 3.1,
+  "feedback": {
+    "strengths": [
+      "Strong character voice for protagonist",
+      "Vivid sensory details in garden scene",
+      "Clear dramatic goal established early"
+    ],
+    "improvements": [
+      "Pacing drags in middle section - consider cutting 2-3 sentences",
+      "Antagonist's motivation unclear - add internal thought or dialogue",
+      "Setting could be more integrated - show how heat affects character actions"
+    ],
+    "priorityFixes": [
+      "PACING: Cut middle section from 'She knelt...' to '...finally stood' to maintain momentum",
+      "CHARACTER: Add line revealing why antagonist cares about garden's success"
+    ]
+  }
+}
+```
+
+# IMPROVEMENT GUIDANCE (if score < {passingScore})
+
+When providing improvement feedback:
+
+1. **Be Specific**: Point to exact sentences or sections
+2. **Be Actionable**: Suggest concrete fixes, not vague advice
+3. **Prioritize**: Focus on 1-3 high-impact improvements
+4. **Preserve Strengths**: Don't fix what's working
+
+Example Priority Fixes:
+- ✅ "Add sensory detail to opening: 'dust-choked air' → 'dust-choked air that burned her throat'"
+- ✅ "Tighten dialogue exchange between Sarah and Jin - current version is 4 lines, reduce to 2"
+- ❌ "Make it more engaging" (too vague)
+- ❌ "Improve character voice" (not specific enough)
+
+# OUTPUT
+Return ONLY the JSON evaluation, no explanations.
+```
+
+#### Implementation Notes
+- **AI Model**: Gemini 2.5 Flash (needs capability for nuanced literary analysis)
+- **Temperature**: 0.3 (need consistency in evaluation)
+- **Evaluation Loop**:
+  1. Evaluate scene content (first iteration)
+  2. If score < passingScore: Generate improvement feedback
+  3. Re-generate scene with feedback incorporated
+  4. Re-evaluate improved scene (second iteration)
+  5. Repeat until passing or max iterations reached
+- **Integration**: Called after scene content generation (API 7), before image generation (API 9)
+
+---
+
+### 2.9 Image Generation API
+
+#### Endpoint
+```typescript
+POST /novels/api/images/generate
+
+Request:
+{
+  storyId: string;
+  imageTypes: Array<'story' | 'character' | 'setting' | 'scene'>;
+  options?: {
+    visualStyle: 'realistic' | 'anime' | 'painterly' | 'cinematic'; // Default from story
+    batchSize?: number; // Generate N images at a time, default: 5
+  };
+}
+
+Response: Server-Sent Events (SSE)
+{
+  event: 'progress',
+  data: {
+    type: 'story' | 'character' | 'setting' | 'scene',
+    current: number,
+    total: number,
+    message: string
+  }
+}
+
+Final Event:
+{
+  event: 'complete',
+  data: {
+    generated: {
+      story: number,      // Count of story images
+      characters: number, // Count of character images
+      settings: number,   // Count of setting images
+      scenes: number      // Count of scene images
+    },
+    totalImages: number,
+    totalVariants: number // 18 variants per image
+  }
+}
+```
+
+#### Image Generation Specifications
+
+**Story Cover Image**:
+- Size: 1792×1024 (16:9 widescreen)
+- Prompt: `Book cover illustration for "{storyTitle}", {storySummary}, {genre} genre, {tone} atmosphere, {visualStyle} art style, dramatic composition, professional book cover design`
+
+**Character Portrait**:
+- Size: 1024×1024 (square)
+- Prompt: `Portrait of {characterName}, {physicalDescription.appearance}, {physicalDescription.distinctiveFeatures}, {visualStyle} style, {genre} genre aesthetic, character concept art`
+
+**Setting Environment**:
+- Size: 1792×1024 (16:9 widescreen)
+- Prompt: `Wide landscape view of {settingName}, {settingDescription}, {visualReferences[0]} style, {genre} aesthetic, {colorPalette} colors, {mood} atmosphere, 16:9 cinematic composition`
+
+**Scene Image**:
+- Size: 1792×1024 (16:9 widescreen)
+- Prompt: `Cinematic scene from {storyTitle}: {sceneTitle}, {sceneVisualDescription}, {settingName} environment, {charactersPresent}, {visualStyle} style, {genre} aesthetic, 16:9 composition`
+
+#### Image Optimization
+
+For EACH generated image, automatically create 18 optimized variants:
+
+**Formats**: AVIF (best), WebP (fallback), JPEG (universal)
+**Sizes**:
+- Mobile: 640×360, 1280×720
+- Tablet: 1024×576, 2048×1152
+- Desktop: 1440×810, 2880×1620
+
+**Total per image**: 3 formats × 6 sizes = 18 variants
+
+#### Implementation Notes
+- **Image Generation Model**: Gemini 2.5 Flash via Google AI API
+- **Optimization Service**: Sharp.js for variant creation
+- **Storage**: Vercel Blob with public access
+- **Database Updates**: Store imageUrl and imageVariants for each entity
+- **Batch Processing**: Generate 5 images at a time to avoid rate limits
+- **Error Handling**: Retry failed generations up to 3 times
+- **Progress Tracking**: Use SSE to report real-time progress to client
+
+**Generation Order**:
+1. Story cover (1 image)
+2. Characters (2-4 images)
+3. Settings (2-4 images)
+4. Scenes (per chapter, 3-7 per chapter × N chapters)
+
+**Performance**:
+- Story cover: ~5-15 seconds
+- Character portrait: ~5-15 seconds each
+- Setting environment: ~5-15 seconds each
+- Scene image: ~5-15 seconds each
+- Optimization: ~2 seconds per image (18 variants)
 
 ---
 
