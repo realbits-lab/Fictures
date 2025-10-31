@@ -157,11 +157,14 @@ src/
 - **communityPosts**: Basic story sharing features
 
 ### Key Features
+- **Novel Generation**: Adversity-Triumph Engine for emotionally resonant storytelling
 - **Hierarchical Writing**: Stories → Parts → Chapters → Scenes
-- **Character Management**: Detailed character profiles and tracking
-- **AI Writing Assistant**: OpenAI GPT-4o-mini integration for writing help
-- **AI Image Generation**: DALL-E 3 for story illustrations (16:9, 1792x1024) with automatic optimization
-- **Image Optimization**: 18 variants per image (AVIF, WebP, JPEG × 6 sizes) for optimal performance
+- **Character Management**: Detailed character profiles with internal flaws and arcs
+- **Moral Framework**: Stories built on tested virtues and meaningful consequences
+- **AI Writing Assistant**: Gemini 2.5 Flash for complex narrative generation
+- **AI Image Generation**: Gemini 2.5 Flash for story illustrations (7:4, 1344x768) with automatic optimization
+- **Image Optimization**: 4 variants per image (AVIF, JPEG × 2 sizes) for optimal performance
+- **Scene Evaluation**: Automated quality assessment and iterative improvement
 - **Community Sharing**: Basic story publication and discovery
 - **Progress Tracking**: Word counts and writing statistics
 
@@ -175,8 +178,7 @@ GOOGLE_CLIENT_ID=***
 GOOGLE_CLIENT_SECRET=***
 
 # AI Integration
-AI_GATEWAY_API_KEY=***             # Vercel AI Gateway for OpenAI GPT-4o-mini
-OPENAI_API_KEY=***                 # OpenAI API key for DALL-E 3 image generation
+GOOGLE_GENERATIVE_AI_API_KEY=***   # Google AI for Gemini 2.5 Flash (text & image generation)
 
 # Database & Storage
 POSTGRES_URL=***                   # Neon PostgreSQL
@@ -191,54 +193,78 @@ REDIS_URL=***                      # Session storage
 3. **Testing**: `dotenv --file .env.local run npx playwright test --headless`
 4. **Building**: `pnpm build` (includes type checking)
 
-## Story Generation
+## Novel Generation
 
-**Complete Story Generation Script:**
-- **Location**: `scripts/generate-complete-story.mjs`
-- **Authentication**: Uses writer@fictures.xyz from `.auth/user.json`
-- **API Endpoints**:
-  - `POST /api/stories/generate-hns` (story generation with SSE streaming)
-  - `PUT /api/stories/{id}/visibility` (publishing)
+**Primary Generation System: Adversity-Triumph Engine**
 
-**Usage:**
-```bash
-# Default prompt (draft)
-dotenv --file .env.local run node scripts/generate-complete-story.mjs
+The platform uses the Adversity-Triumph Engine for novel generation, creating emotionally resonant stories with deep character development and moral frameworks.
 
-# Custom prompt (draft)
-dotenv --file .env.local run node scripts/generate-complete-story.mjs "Your story idea here"
+**UI Generation:**
+- **Location**: `/studio/new` - Novel creation page
+- **API Endpoint**: `POST /studio/api/novels/generate` (SSE streaming)
+- **Model**: Gemini 2.5 Flash & Flash Lite (via Google AI API)
 
-# Custom prompt with auto-publish
-dotenv --file .env.local run node scripts/generate-complete-story.mjs --publish "Your story idea here"
-
-# Background execution with logging
-dotenv --file .env.local run node scripts/generate-complete-story.mjs --publish "Story prompt" > logs/story-generation.log 2>&1 &
-```
+**Generation Pipeline (9 Phases):**
+1. **Story Summary** - Generate story foundation and moral framework
+2. **Characters** - Expand character profiles with detailed arcs and internal flaws
+3. **Settings** - Create immersive locations with adversity elements
+4. **Parts** - Structure three-act framework with macro character arcs
+5. **Chapters** - Generate detailed chapter structure with micro-arcs
+6. **Scene Summaries** - Break down chapters into scene outlines
+7. **Scene Content** - Generate full narrative content for each scene
+8. **Scene Evaluation** - Evaluate and improve scene quality automatically
+9. **Images** - Generate character portraits and setting visuals (7:4, 1344x768)
 
 **What It Generates:**
-- Story metadata (title, genre, premise, dramatic question, theme)
-- Parts (3-act structure)
-- Chapters (detailed chapter specifications)
-- Scenes (full scene content with automatic quality evaluation)
-  - Each scene evaluated on 5 categories (plot, character, pacing, prose, world-building)
-  - Iterative improvement until 3.0+/4.0 quality threshold (max 2 iterations)
-  - AI-powered evaluation using "Architectonics of Engagement" framework
-- Characters (with AI-generated portrait images in 16:9, 1792x1024)
-- Settings (with AI-generated environment images in 16:9, 1792x1024)
+- Story metadata (title, genre, summary, moral framework, tone)
+- Characters with:
+  - Core traits, internal flaws, external goals
+  - Detailed personality, backstory, relationships
+  - Physical descriptions and voice style
+  - AI-generated portrait images (1344×768, 7:4)
+- Settings with:
+  - Adversity elements (obstacles, scarcity, dangers)
+  - Symbolic meaning and cycle amplification
+  - Sensory details (sight, sound, smell, touch, taste)
+  - AI-generated environment images (1344×768, 7:4)
+- Parts (3-act structure with macro character arcs)
+- Chapters (with adversity types, virtue tests, narrative seeds)
+- Scenes (with cycle phases, emotional beats, full narrative content)
+- 4 optimized image variants per image (AVIF, JPEG × mobile 1x/2x)
+
+**User Experience:**
+1. Navigate to `/studio/new`
+2. Enter story prompt and preferences
+3. Click "Generate Story"
+4. Watch real-time progress through 9 phases
+5. View generated story at `/studio/edit/story/{storyId}`
 
 **Routes:**
-- Studio (story management): `/studio`
+- Studio dashboard: `/studio`
+- Create story: `/studio/new`
 - Edit story: `/studio/edit/story/{storyId}`
 - Edit chapter: `/studio/edit/{chapterId}`
-- Browse novels (reading): `/novels`
+- Browse novels: `/novels`
 - Read novel: `/novels/{storyId}`
-- Browse comics (comic format): `/comics`
+- Browse comics: `/comics`
 - Read comic: `/comics/{storyId}`
 - Community view: `/community/story/{storyId}` (published stories only)
 
-**Generation Time:** 4-20 minutes depending on story size and complexity
-- Scene evaluation adds 1-3 minutes per story
-- Each scene evaluated and improved iteratively for quality assurance
+**Generation Time:** 5-25 minutes depending on story complexity
+- Story summary: ~30 seconds
+- Characters: ~1-2 minutes
+- Settings: ~1-2 minutes
+- Parts: ~1-2 minutes
+- Chapters: ~2-3 minutes
+- Scene summaries: ~1-2 minutes
+- Scene content: ~5-10 minutes (varies by scene count)
+- Scene evaluation: ~1-2 minutes
+- Images: ~2-5 minutes
+
+**Legacy System (Deprecated):**
+- The old HNS (Hook-Nurture-Satisfy) system at `/studio/api/stories/generate-hns` is deprecated
+- Use the new Novel generation system for all new stories
+- Legacy endpoint may be removed in future releases
 
 ## Story Removal
 
@@ -330,7 +356,7 @@ When making ANY changes to the novel generation system, ALWAYS follow this order
 **Architecture:**
 - **Location**: `docs/novels/novels-generation.md` - Complete specification
 - **Methodology**: Adversity-Triumph Engine (Korean Gam-dong narrative psychology)
-- **API Endpoints**: `/api/studio/generation/*` - Generation APIs for story creation
+- **API Endpoints**: `/studio/api/generation/*` - Generation APIs for story creation
 - **Database**: Novel-specific tables in Neon PostgreSQL (see `drizzle/` migrations)
 - **AI Model**: Gemini 2.5 Flash & Flash Lite (via Google AI API)
 - **Image Generation**: Gemini 2.5 Flash (1344×768, 7:4 aspect ratio)
@@ -359,11 +385,11 @@ When making ANY changes to the novel generation system, ALWAYS follow this order
 - **Authentication**: Use NextAuth.js session management throughout
 - **Database**: All operations through Drizzle ORM - see `src/lib/db/`
 - **AI Integration**:
-  - Text Generation: Use OpenAI GPT-4o-mini via Vercel AI Gateway with AI_GATEWAY_API_KEY
-  - Scene Evaluation: Use OpenAI GPT-4o-mini via Vercel AI Gateway (automatic quality assessment)
-  - Scene Improvement: Use OpenAI GPT-4o-mini via Vercel AI Gateway (iterative refinement)
-  - Image Generation: Use OpenAI DALL-E 3 with OPENAI_API_KEY (16:9, 1792x1024)
-  - Image Optimization: Automatic generation of 18 variants (AVIF, WebP, JPEG in 6 sizes)
+  - Text Generation: Use Gemini 2.5 Flash & Flash Lite via Google AI API with GOOGLE_GENERATIVE_AI_API_KEY
+  - Scene Evaluation: Automated quality assessment (part of Novel generation pipeline)
+  - Scene Improvement: Iterative refinement until quality threshold met
+  - Image Generation: Use Gemini 2.5 Flash with GOOGLE_GENERATIVE_AI_API_KEY (7:4, 1344x768)
+  - Image Optimization: Automatic generation of 4 variants (AVIF, JPEG × mobile 1x/2x)
 - **Image Storage**: Generated images stored in Vercel Blob with public access
 - **Error Handling**: Implement proper error boundaries and loading states
 - **Performance**: Optimize for story writing workflow and database queries
@@ -373,20 +399,19 @@ When making ANY changes to the novel generation system, ALWAYS follow this order
 **AI-Powered Story Illustrations with Automatic Optimization:**
 
 ### Image Generation
-- **Service**: `src/lib/services/image-generation.ts` - Primary image generation service
-- **Optimization Service**: `src/lib/services/image-optimization.ts` - Creates 18 optimized variants
-- **API Endpoint**: POST `/api/images/generate` - Generate story illustrations
-- **Model**: OpenAI DALL-E 3
-- **Original Format**: 1792x1024 pixels (16:9 widescreen), PNG
+- **Service**: `src/lib/novels/` - Novel generation handles image creation
+- **API Endpoint**: POST `/studio/api/generation/images` - Generate story illustrations
+- **Model**: Gemini 2.5 Flash via Google AI API
+- **Original Format**: 1344x768 pixels (7:4 aspect ratio), PNG
 - **Quality**: Standard quality for all image types
 - **Storage**: Vercel Blob (automatic upload)
 
 ### Automatic Image Optimization
-Every generated image automatically creates **18 optimized variants**:
-- **Formats**: AVIF (best compression), WebP (fallback), JPEG (universal fallback)
-- **Sizes**: Mobile (640×360, 1280×720), Tablet (1024×576, 2048×1152), Desktop (1440×810, 2880×1620)
-- **Total**: 3 formats × 6 sizes = 18 variants per image
-- **Performance**: 87% faster loading on mobile, 50% smaller file sizes with AVIF
+Every generated image automatically creates **4 optimized variants**:
+- **Formats**: AVIF (best compression), JPEG (universal fallback)
+- **Sizes**: Mobile 1x (672×384), Mobile 2x (1344×768 - uses original)
+- **Total**: 2 formats × 2 sizes = 4 variants per image
+- **Performance**: Optimized for mobile devices with responsive image loading
 
 ### Database Storage
 All images include both `imageUrl` (original) and `imageVariants` (optimized set):

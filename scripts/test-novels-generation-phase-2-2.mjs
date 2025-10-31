@@ -89,7 +89,7 @@ async function testAPI8_GoodQualityScene() {
   logSection('Test 1: Evaluate Good Quality Scene');
 
   try {
-    const response = await fetch(`${BASE_URL}/api/studio/generation/scene-evaluation`, {
+    const response = await fetch(`${BASE_URL}/studio/api/generation/scene-evaluation`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -151,7 +151,7 @@ async function testAPI8_PoorQualityScene() {
   logSection('Test 2: Evaluate Poor Quality Scene');
 
   try {
-    const response = await fetch(`${BASE_URL}/api/studio/generation/scene-evaluation`, {
+    const response = await fetch(`${BASE_URL}/studio/api/generation/scene-evaluation`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
