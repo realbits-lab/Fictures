@@ -4,6 +4,10 @@
 
 This document provides comprehensive implementation specifications for the Adversity-Triumph Engine APIs, including ultra-engineered system prompts, complete examples, and iterative improvement workflows.
 
+**Related Documents:**
+- 📖 **Specification** (`adversity-triumph-specification.md`): Core concepts, data model, and theoretical foundation
+- 🧪 **Testing Guide** (`adversity-triumph-testing.md`): Validation methods, quality metrics, and test strategies
+
 ---
 
 ## Part I: API Architecture

@@ -4,6 +4,10 @@
 
 This document outlines a comprehensive testing strategy for the Adversity-Triumph narrative generation system, including quantitative metrics, qualitative evaluation frameworks, iterative prompt improvement methodology, and complete evaluation examples from production testing.
 
+**Related Documents:**
+- 📖 **Specification** (`adversity-triumph-specification.md`): Core concepts, data model, and success criteria
+- 📋 **Generation Guide** (`adversity-triumph-generation.md`): API implementations and system prompts to test
+
 ---
 
 ## Part I: Testing Objectives

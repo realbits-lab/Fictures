@@ -8,6 +8,10 @@ This document specifies a complete redesign of the story generation system using
 
 **Status**: ✅ **Validated and Ready for Implementation**
 
+**Related Documents:**
+- 📋 **Generation Guide** (`adversity-triumph-generation.md`): API specifications and system prompts for implementation
+- 🧪 **Testing Guide** (`adversity-triumph-testing.md`): Testing strategies, metrics, and validation methods
+
 ---
 
 ## Part I: Core Concepts
@@ -62,6 +66,8 @@ Each cycle is engineered to elicit specific emotions:
 
 ### 1.4 Quick Reference: Cycle Structure
 
+**The 4-Phase Adversity-Triumph Cycle** (narrative structure):
+
 ```
 1. ADVERSITY
    - Internal flaw (fear/belief/wound) + External obstacle
@@ -83,8 +89,15 @@ Each cycle is engineered to elicit specific emotions:
    - Cycle perpetuates
 ```
 
+**Important Distinction:**
+- **4 Cycle Phases** = The narrative structure (what happens in the story)
+- **5 Scene Types** = How we divide the cycle into prose scenes (implementation)
+
+See section 2.4 for how the 4-phase cycle maps to 5 scene types in practice.
+
 ### 1.5 Critical Success Factors
 
+**Core Principles:**
 1. **Intrinsic Motivation**: Virtuous actions MUST be genuine, not strategic
 2. **Causal Linking**: Every event connects to previous actions (no deus ex machina)
 3. **Seed Tracking**: Small actions pay off later as "earned luck"
@@ -110,11 +123,11 @@ Summary: "In a world where [setting/context], [moral principle] is tested when [
 Example: "In a fractured post-war society where trust has been shattered, the power of human connection is tested when strangers are forced to rely on each other to survive"
 ```
 
-**Metadata to Track**:
-- Genre (mystery, romance, thriller, fantasy, etc.)
-- Tone (hopeful, dark, bittersweet, satirical)
-- Moral framework: What virtues are valued? What vices are punished?
-- 2-4 main characters with: name, core trait, internal flaw, external goal
+**Metadata to Track:**
+- **Genre**: mystery, romance, thriller, fantasy, etc.
+- **Tone**: hopeful, dark, bittersweet, satirical
+- **Moral Framework**: What virtues are valued? What vices are punished?
+- **Characters** (2-4 main): name, core trait, internal flaw, external goal
 
 ### 2.2 Part Level (Act Structure)
 
@@ -234,11 +247,15 @@ PROGRESSION CONTRIBUTION:
 
 ### 2.4 Scene Level (Cycle Phases)
 
-**Purpose**: Divide chapter's adversity-triumph into 3-7 narrative beats
+**Purpose**: Divide chapter's adversity-triumph cycle into 3-7 narrative beats
 
 **Key Fields**:
 - `summary` (text): Scene specification - what happens, emotional beat, purpose, sensory anchors
 - `content` (text): Full prose narrative generated from the summary
+
+**Mapping 4-Phase Cycle to 5 Scene Types:**
+
+The 4-phase narrative cycle (Adversity → Virtue → Consequence → New Adversity) is implemented as 5 scene types to provide better pacing and emotional flow:
 
 **Scene Types by Cycle Phase**:
 
@@ -456,6 +473,8 @@ All hierarchical levels now use `summary` for their planning/specification layer
 
 ## Part IV: Success Metrics
 
+**Note**: For detailed testing methodology, evaluation frameworks, and complete metric definitions, see **Testing Guide** (`adversity-triumph-testing.md`).
+
 ### 4.1 Baseline Performance Targets
 
 | Metric | Target | Critical Threshold |
@@ -469,32 +488,20 @@ All hierarchical levels now use `summary` for their planning/specification layer
 | **Gam-dong Response** | 80% | 60% |
 | **Intrinsic Motivation** | 90% | 70% |
 
-### 4.2 Quantitative Metrics
+### 4.2 Metric Categories
 
-#### Structural Metrics
-- **Cycle Completeness**: % of cycles with all 5 components
-- **Causal Chain Continuity**: % of chapters with valid previous/next links
-- **Seed Resolution Rate**: Resolved seeds / Planted seeds
-- **Virtue Scene Presence**: % of chapters with exactly 1 virtue scene
-- **Phase Coverage**: % of chapters with all 5 cycle phases
+**Structural Metrics:**
+- Cycle Completeness, Causal Chain Continuity, Seed Resolution Rate, Phase Coverage
 
-#### Quality Metrics
-- **Scene Quality Score**: Average evaluation score (1-4 scale)
-- **First-Pass Success Rate**: % of scenes passing evaluation on first generation
-- **Word Count Accuracy**: % of scenes within target word count ±10%
-- **Formatting Compliance**: % of scenes following all formatting rules
-- **Prose Variety**: Average sentence length variance
+**Quality Metrics:**
+- Scene Quality Score, First-Pass Success Rate, Word Count Accuracy, Formatting Compliance
 
-### 4.3 Emotional Metrics
+**Emotional Metrics:**
+- Moral Elevation Detection, Gam-dong Response, Emotional Beat Accuracy, Catharsis Experience
 
-#### Reader Response Metrics
-- **Moral Elevation Detection**: % of readers identifying virtue scene correctly
-- **Gam-dong Response Rate**: % of readers reporting feeling "profoundly moved"
-- **Emotional Beat Accuracy**: % of scenes where readers identify intended emotion
-- **Catharsis Experience**: % of readers reporting emotional release
-- **Empathy Building**: % of readers caring about character outcomes
+*See Testing Guide (Part III) for detailed measurement methods and evaluation rubrics.*
 
-### 4.4 Validated Baseline Results
+### 4.3 Validated Baseline Results
 
 From "The Last Garden" test story:
 
@@ -510,6 +517,8 @@ From "The Last Garden" test story:
 | Intrinsic Motivation | 70% | 100% | ✅ EXCEEDED |
 
 **Conclusion**: System performs above expectations at baseline. Ready for production.
+
+*See Testing Guide (Part IV) for complete test story analysis and detailed results.*
 
 ---
 
@@ -531,17 +540,17 @@ From "The Last Garden" test story:
 ### Phase 2: Generation APIs (Week 3-4)
 
 **Tasks**:
-1. Implement theme generation endpoint
+1. Implement story summary generation endpoint
 2. Implement part summary generation endpoint
 3. Implement chapter summary generation endpoint
 4. Implement scene specification generation endpoint
 5. Update scene content generation with cycle-aware prompts
 
 **Deliverables**:
-- `/api/generation/theme`
+- `/api/generation/story-summary`
 - `/api/generation/parts`
 - `/api/generation/chapters`
-- `/api/generation/scenes`
+- `/api/generation/scene-summaries`
 - Updated `/api/generation/scene-content`
 
 ### Phase 3: Complete Flow Integration (Week 5-6)
