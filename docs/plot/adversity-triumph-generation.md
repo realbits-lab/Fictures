@@ -1079,6 +1079,9 @@ Response:
   chapters: {
     title: string;
     summary: string;
+    characterId: string; // The character whose MACRO arc this chapter advances
+    arcPosition: 'beginning' | 'middle' | 'climax' | 'resolution';
+    contributesToMacroArc: string;
     focusCharacters: string[];
     adversityType: string;
     virtueType: string;

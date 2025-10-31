@@ -594,7 +594,7 @@ interface Chapter {
   summary: string;
 
   // NEW: Nested cycle tracking (links micro-cycle to macro arc)
-  characterArcId: string; // References Part.characterArcs[].characterId
+  characterId: string; // References Character.id (the character whose macro arc this chapter advances)
   arcPosition: 'beginning' | 'middle' | 'climax' | 'resolution'; // 'climax' = MACRO moment
   contributesToMacroArc: string; // How this chapter advances the macro arc
 
