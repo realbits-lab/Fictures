@@ -402,7 +402,107 @@ interface Character {
 - Prevents generic "everyone sounds the same" problem
 - AI uses this to generate character-specific speech patterns
 
-### 3.2 Story Schema
+### 3.2 Setting Schema (Zero-Base Design)
+
+**Philosophy**: Settings are **emotional environments** that create external adversity, amplify cycle phases through atmosphere, and serve as symbolic mirrors for character transformation.
+
+```typescript
+// Setting table
+interface Setting {
+  // === IDENTITY ===
+  id: string;
+  storyId: string;
+  name: string;
+  description: string; // Comprehensive paragraph (3-5 sentences)
+
+  // === ADVERSITY-TRIUMPH CORE (The Engine) ===
+  adversityElements: {
+    physicalObstacles: string[];    // Environmental challenges: "harsh desert heat", "crumbling infrastructure"
+    scarcityFactors: string[];      // Limited resources that force choices: "water shortage", "food scarcity"
+    dangerSources: string[];        // Threats from environment: "unstable buildings", "hostile wildlife"
+    socialDynamics: string[];       // Community factors: "distrust between neighbors", "gang territories"
+  };
+  symbolicMeaning: string;          // How setting reflects story's moral framework (1-2 sentences)
+  cycleAmplification: {
+    setup: string;                  // How setting establishes adversity: "oppressive heat weighs on characters"
+    confrontation: string;          // How setting intensifies conflict: "confined space forces interaction"
+    virtue: string;                 // How setting contrasts/witnesses moral beauty: "barren land vs. act of nurture"
+    consequence: string;            // How setting transforms or reveals: "garden blooms, proving hope possible"
+    transition: string;             // How setting hints at new problems: "storm clouds gathering"
+  };
+
+  // === EMOTIONAL ATMOSPHERE ===
+  mood: string;                     // Primary emotional quality: "oppressive and surreal", "hopeful but fragile"
+  emotionalResonance: string;       // What emotion this amplifies: "isolation", "hope", "fear", "connection"
+
+  // === SENSORY IMMERSION (For Prose Generation) ===
+  sensory: {
+    sight: string[];                // Visual details (5-10 items)
+    sound: string[];                // Auditory elements (3-7 items)
+    smell: string[];                // Olfactory details (2-5 items)
+    touch: string[];                // Tactile sensations (2-5 items)
+    taste: string[];                // Flavor elements (0-2 items, optional)
+  };
+  architecturalStyle?: string;      // Structural design language (if applicable)
+
+  // === VISUAL GENERATION ===
+  imageUrl?: string;  // Original environment image (1792×1024, 16:9 from DALL-E 3)
+  imageVariants?: {
+    imageId: string;
+    originalUrl: string;
+    variants: Array<{
+      format: 'avif' | 'webp' | 'jpeg';
+      width: number;
+      height: number;
+      url: string;
+      size: number;
+    }>;
+    generatedAt: string;
+  };
+  visualStyle: string;              // "realistic" | "anime" | "painterly" | "cinematic"
+  visualReferences: string[];       // Style inspirations: ["Blade Runner 2049", "Studio Ghibli countryside"]
+  colorPalette: string[];           // Dominant colors: ["warm golds", "dusty browns", "deep greens"]
+
+  // === METADATA ===
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+#### Key Field Rationales
+
+**adversityElements** (Critical):
+- THE source of external conflict in adversity-triumph cycles
+- Creates obstacles that force characters to confront internal flaws
+- Four categories cover all environmental adversity types:
+  - Physical: Tangible environmental challenges
+  - Scarcity: Resource limitations forcing moral choices
+  - Danger: Threats requiring courage/sacrifice
+  - Social: Community dynamics creating interpersonal conflict
+
+**symbolicMeaning**:
+- Connects setting to story's moral framework
+- Makes environment meaningful beyond just backdrop
+- Example: "Destroyed city represents broken trust and loss of community—garden becomes symbol of healing and renewal"
+
+**cycleAmplification**:
+- Specifies HOW setting amplifies each cycle phase
+- Guides scene content generation to use setting appropriately
+- Ensures setting actively participates in emotional architecture
+- Different settings can amplify same phase differently (desert heat vs. cold rain both create adversity)
+
+**sensory arrays**:
+- Provide concrete details for "show don't tell" prose
+- Ground abstract emotions in physical experiences
+- Enable deep sensory immersion in scenes
+- Must be SPECIFIC: "wind rattling dry leaves" not "nature sounds"
+
+**cycleAmplification vs mood**:
+- `mood` = Overall atmospheric quality (static)
+- `cycleAmplification` = How atmosphere shifts with narrative phases (dynamic)
+- Both needed for rich, emotionally responsive environments
+
+### 3.3 Story Schema
 
 ```typescript
 // Story table
@@ -421,6 +521,9 @@ interface Story {
   // Main characters reference (stored in characters table)
   // 2-4 main characters with isMain=true
 
+  // Settings reference (stored in settings table)
+  // 2-6 primary settings where story unfolds
+
   // Deprecated (keep for migration)
   premise?: string;
   dramaticQuestion?: string;
@@ -429,8 +532,9 @@ interface Story {
   createdAt: Date;
   updatedAt: Date;
 }
+```
 
-### 3.3 Part Schema
+### 3.4 Part Schema
 
 ```typescript
 // Part table
@@ -475,10 +579,9 @@ interface Part {
 }
 ```
 
-### 3.4 Chapter Schema
+### 3.5 Chapter Schema
 
 ```typescript
-
 // Chapter table
 interface Chapter {
   id: string;
@@ -528,7 +631,7 @@ interface Chapter {
 }
 ```
 
-### 3.5 Scene Schema
+### 3.6 Scene Schema
 
 ```typescript
 // Scene table
@@ -559,11 +662,12 @@ interface Scene {
 }
 ```
 
-### 3.6 Migration Strategy
+### 3.7 Migration Strategy
 
 **Phase 1**: Add new fields alongside existing
 - Story: Add `summary`, `genre`, `tone`, `moralFramework`
 - Character: Add `isMain`, `summary`, `coreTrait`, `internalFlaw`, `externalGoal`, `relationships`, `voiceStyle`
+- Setting: Add `adversityElements`, `symbolicMeaning`, `cycleAmplification`, `emotionalResonance`
 - Part: Add `summary`, `characterArcs`
 - Chapter: Add `summary`, cycle tracking fields
 - Scene: Add `summary`, `cyclePhase`, `emotionalBeat`

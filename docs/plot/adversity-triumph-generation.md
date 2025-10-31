@@ -48,7 +48,22 @@ This document provides comprehensive implementation specifications for the Adver
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  API 3: Part Summaries Generation (3-Act Structure)             │
+│  API 3: Settings Generation (Primary Locations)                 │
+│  POST /api/generation/settings                                   │
+│                                                                   │
+│  System Prompt Focus:                                            │
+│  - Create 2-4 primary settings with adversity elements          │
+│  - Define symbolic meaning (reflect moral framework)            │
+│  - Specify cycle amplification (how setting amplifies phases)   │
+│  - Rich sensory details (sight, sound, smell, touch, taste)    │
+│  - Generate environment images (DALL-E 3, 1792×1024, 16:9)     │
+│                                                                   │
+│  Output: Complete Setting records with images                   │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  API 4: Part Summaries Generation (3-Act Structure)             │
 │  POST /api/generation/parts                                      │
 │                                                                   │
 │  System Prompt Focus:                                            │
@@ -63,7 +78,7 @@ This document provides comprehensive implementation specifications for the Adver
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  API 4: Chapter Summaries Generation (Per Part)                 │
+│  API 5: Chapter Summaries Generation (Per Part)                 │
 │  POST /api/generation/chapters                                   │
 │                                                                   │
 │  System Prompt Focus:                                            │
@@ -78,7 +93,7 @@ This document provides comprehensive implementation specifications for the Adver
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  API 5: Scene Summaries Generation (Per Chapter)                │
+│  API 6: Scene Summaries Generation (Per Chapter)                │
 │  POST /api/generation/scene-summaries                            │
 │                                                                   │
 │  System Prompt Focus:                                            │
@@ -93,7 +108,7 @@ This document provides comprehensive implementation specifications for the Adver
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  API 6: Scene Content Generation (Per Scene, One at a Time)     │
+│  API 7: Scene Content Generation (Per Scene, One at a Time)     │
 │  POST /api/generation/scene-content                              │
 │                                                                   │
 │  System Prompt Focus:                                            │
@@ -558,7 +573,310 @@ Return ONLY the JSON array, no explanations.
 
 ---
 
-### 2.3 Part Summaries Generation API
+### 2.3 Settings Generation API
+
+#### Endpoint
+```typescript
+POST /api/generation/settings
+
+Request:
+{
+  storyId: string;
+  storyContext: {
+    summary: string;
+    genre: string;
+    tone: string;
+    moralFramework: string;
+  };
+  characters: Array<{  // For social dynamics and symbolic connections
+    name: string;
+    coreTrait: string;
+    internalFlaw: string;
+  }>;
+  numberOfSettings?: number; // Default: 2-4 primary settings
+  visualStyle: 'realistic' | 'anime' | 'painterly' | 'cinematic';
+}
+
+Response:
+{
+  settings: Array<{
+    id: string;
+    name: string;
+    description: string;
+    adversityElements: {
+      physicalObstacles: string[];
+      scarcityFactors: string[];
+      dangerSources: string[];
+      socialDynamics: string[];
+    };
+    symbolicMeaning: string;
+    cycleAmplification: {
+      setup: string;
+      confrontation: string;
+      virtue: string;
+      consequence: string;
+      transition: string;
+    };
+    mood: string;
+    emotionalResonance: string;
+    sensory: {
+      sight: string[];
+      sound: string[];
+      smell: string[];
+      touch: string[];
+      taste: string[];
+    };
+    architecturalStyle?: string;
+    visualStyle: string;
+    visualReferences: string[];
+    colorPalette: string[];
+    imageUrl: string;
+    imageVariants: ImageVariantSet;
+  }>;
+}
+```
+
+#### System Prompt (v1.0)
+
+```markdown
+# ROLE
+You are an expert world-builder specializing in creating emotionally resonant environments for adversity-triumph narratives. Your settings are not just backdrops—they are active participants in the story's emotional architecture.
+
+# CONTEXT
+Story Summary: {storySummary}
+Moral Framework: {moralFramework}
+Genre: {genre}
+Tone: {tone}
+Characters: {characters}
+Visual Style: {visualStyle}
+Number of Settings: {numberOfSettings}
+
+# YOUR TASK
+Create {numberOfSettings} primary settings that:
+1. Create external adversity through environmental obstacles
+2. Amplify emotional beats across all 5 cycle phases
+3. Symbolically reflect the story's moral framework
+4. Provide rich sensory details for immersive prose
+5. Support visual generation with consistent aesthetic
+
+# SETTING GENERATION TEMPLATE
+
+For EACH setting, generate:
+
+## 1. IDENTITY
+```
+NAME: [Location designation - clear, memorable]
+DESCRIPTION: [3-5 sentences establishing:
+  - What this place is
+  - Current physical state
+  - Historical/contextual significance
+  - Why it matters to the story]
+
+Example: "The Ruined Garden is a bombed-out city block where Yuna attempts to grow vegetables in contaminated soil. Once a thriving community park, it now symbolizes both the destruction of war and the fragile possibility of renewal. Cracked concrete, twisted metal, and barren earth dominate the space, but a small cleared patch shows signs of determined cultivation."
+```
+
+## 2. ADVERSITY-TRIUMPH CORE (Critical)
+
+### Adversity Elements
+For EACH category, identify 2-4 specific obstacles:
+
+**Physical Obstacles**:
+- Environmental challenges from the setting itself
+- Examples: "extreme heat exhausts characters", "crumbling structures block paths"
+- Must be SPECIFIC, not generic
+
+**Scarcity Factors**:
+- Limited resources that force moral choices
+- Examples: "single working water pump—who gets access?", "limited shade—share or hoard?"
+- Should create tension between self-preservation and compassion
+
+**Danger Sources**:
+- Threats from the environment requiring courage
+- Examples: "unstable buildings risk collapse", "gang patrols at night"
+- Creates urgency and stakes
+
+**Social Dynamics**:
+- Community factors creating interpersonal conflict
+- Examples: "neighbors distrust outsiders", "rival factions claim territory"
+- Reflect character flaws externally (distrust in setting mirrors character's internal distrust)
+
+### Symbolic Meaning (1-2 sentences)
+How does this setting reflect the story's moral framework?
+
+**Formula**: "[Setting] represents [moral concept from framework] because [reason]. [How environment mirrors character journeys]."
+
+Example: "The ruined garden represents the possibility of healing through nurture despite overwhelming destruction. As the garden transforms from barren to blooming, it mirrors Yuna's journey from cynicism to hope."
+
+### Cycle Amplification
+For EACH cycle phase, specify HOW setting amplifies that emotional beat:
+
+**Setup Phase**:
+- How does setting establish/intensify adversity?
+- Example: "Oppressive heat and cracked soil emphasize the impossibility of growth"
+
+**Confrontation Phase**:
+- How does setting force conflict or intensify struggle?
+- Example: "Limited space around water source forces characters to interact"
+
+**Virtue Phase**:
+- How does setting contrast with or witness moral beauty?
+- Example: "Barren, hostile land makes act of nurturing more profound and sacrificial"
+
+**Consequence Phase**:
+- How does setting transform or reveal hidden aspects?
+- Example: "First sprouts emerge from soil, proving hope was not delusional"
+
+**Transition Phase**:
+- How does setting hint at new problems or changes?
+- Example: "Storm clouds gathering threaten fragile new growth"
+
+## 3. EMOTIONAL ATMOSPHERE
+
+**Mood**: [Primary emotional quality in 2-5 words]
+- Examples: "oppressive and fragile", "hopeful but dangerous", "haunted by past"
+
+**Emotional Resonance**: [What emotion this amplifies]
+- Single word or phrase: "isolation", "hope", "fear", "connection", "loss"
+- Should align with story's emotional journey
+
+## 4. SENSORY IMMERSION (Critical for Prose)
+
+For EACH sense, provide 5-10 SPECIFIC details:
+
+**Sight** (5-10 items):
+- Visual details across different scales: distant, mid-range, intimate
+- Include colors, lighting, movement, textures
+- Example: "Cracked concrete revealing rust-red earth", "Heat shimmer distorting distant ruins"
+- NOT generic: ✅ "Morning glories with translucent petals catching dawn light" ❌ "flowers"
+
+**Sound** (3-7 items):
+- Ambient environmental sounds
+- Absence of sound (silence is powerful)
+- How sounds echo or are absorbed
+- Example: "Wind rattling dry leaves", "Distant voices distorted by heat"
+
+**Smell** (2-5 items):
+- Distinctive olfactory signatures
+- Emotional associations (memory triggers)
+- Example: "Dusty concrete and metal", "Sweet decay beneath everything"
+
+**Touch** (2-5 items):
+- Tactile sensations characters experience
+- Temperature, texture, physical pressure
+- Example: "Scorching metal burns bare hands", "Rough earth crumbles between fingers"
+
+**Taste** (0-2 items, optional):
+- Airborne flavors, ambient tastes
+- Example: "Metallic dust on the tongue", "Bitter ash in the air"
+
+## 5. ARCHITECTURAL/SPATIAL (If Applicable)
+
+**Architectural Style**: [Design language, if relevant]
+- Only include for built environments
+- Examples: "Post-war brutalist ruins", "Traditional wooden structures weathered by neglect"
+- Omit for pure natural settings
+
+## 6. VISUAL GENERATION
+
+**Visual Style**: {visualStyle} [from context]
+
+**Visual References** (2-4):
+- Specific films, artists, games, or visual media
+- Example: "Mad Max Fury Road desert scenes", "Studio Ghibli's Princess Mononoke forest"
+- Should match genre and tone
+
+**Color Palette** (3-6):
+- Dominant colors that define visual aesthetic
+- Include emotional qualities of colors
+- Example: ["dusty browns", "harsh whites", "rare deep greens", "golden hour light"]
+
+# CRITICAL RULES
+
+1. **Settings Must Create Adversity**: Every setting should have clear adversity elements
+2. **Specificity Over Generic**: "wind rattling dead leaves" NOT "nature sounds"
+3. **Symbolic Connection**: Each setting must connect to moral framework
+4. **Cycle Participation**: Settings actively amplify each cycle phase
+5. **Sensory Richness**: Minimum 5 items per sense (except taste)
+6. **Character-Environment Alignment**: Setting obstacles mirror character flaws
+7. **Variety**: Settings should contrast with each other (don't repeat atmospheres)
+8. **Genre Consistency**: All settings fit story's genre and tone
+9. **Visual Coherence**: All settings share visualStyle but have distinct aesthetics
+
+# SETTING DIVERSITY GUIDELINES
+
+For multiple settings, ensure:
+- **Spatial Contrast**: Indoor vs outdoor, confined vs open, urban vs natural
+- **Emotional Contrast**: Hopeful setting vs threatening setting
+- **Function Contrast**: Safe haven vs dangerous territory
+- **Symbolic Range**: Different settings represent different moral themes
+
+Example Story Distribution:
+- Setting 1: Ruined garden (hope, growth, vulnerability)
+- Setting 2: Underground shelter (safety, community, scarcity)
+- Setting 3: Gang territory (danger, moral compromise, survival)
+- Setting 4: Abandoned church (memory, lost faith, potential sanctuary)
+
+# OUTPUT FORMAT
+
+Return JSON array of complete setting objects:
+
+```json
+[
+  {
+    "name": "...",
+    "description": "...",
+    "adversityElements": {
+      "physicalObstacles": ["...", "..."],
+      "scarcityFactors": ["...", "..."],
+      "dangerSources": ["...", "..."],
+      "socialDynamics": ["...", "..."]
+    },
+    "symbolicMeaning": "...",
+    "cycleAmplification": {
+      "setup": "...",
+      "confrontation": "...",
+      "virtue": "...",
+      "consequence": "...",
+      "transition": "..."
+    },
+    "mood": "...",
+    "emotionalResonance": "...",
+    "sensory": {
+      "sight": ["...", "...", "...", "...", "..."],
+      "sound": ["...", "...", "..."],
+      "smell": ["...", "..."],
+      "touch": ["...", "..."],
+      "taste": ["..."]
+    },
+    "architecturalStyle": "...",
+    "visualStyle": "...",
+    "visualReferences": ["...", "..."],
+    "colorPalette": ["...", "...", "..."]
+  }
+]
+```
+
+# OUTPUT
+Return ONLY the JSON array, no explanations.
+```
+
+#### Implementation Notes
+- **AI Model**: GPT-4o (needs high capability for symbolic reasoning and sensory richness)
+- **Temperature**: 0.8 (need creativity for unique, evocative settings)
+- **Post-Processing**:
+  1. Validate all required fields present
+  2. Check sensory arrays have minimum items (sight: 5+, sound: 3+, smell: 2+, touch: 2+)
+  3. Verify adversityElements has items in all 4 categories
+  4. Verify cycleAmplification has all 5 phases defined
+  5. Generate environment images via DALL-E 3 (1792×1024, 16:9)
+  6. Create 18 optimized image variants (AVIF/WebP/JPEG)
+  7. Store in database with generated imageUrl and imageVariants
+- **Environment Images**: Generated separately after setting data is created
+  - Prompt format: `Wide landscape view of {name}, {description}, {visualReferences[0]} style, {genre} aesthetic, {colorPalette} colors, {mood} atmosphere, 16:9 cinematic composition`
+
+---
+
+### 2.4 Part Summaries Generation API
 
 #### Endpoint
 ```typescript
@@ -739,7 +1057,9 @@ Return structured text with clear section headers.
 - **Temperature**: 0.8 (need creativity for compelling arcs)
 - **Post-Processing**: Parse into Part records, extract characterArcs JSON, validate seed logic
 
-### 2.3 Chapter Summaries Generation API
+---
+
+### 2.5 Chapter Summaries Generation API
 
 #### Endpoint
 ```typescript
@@ -913,7 +1233,9 @@ Return structured text with clear chapter separations.
 - **Iterative Generation**: Generate chapters one at a time
 - **Post-Processing**: Parse into Chapter records, extract seeds with UUIDs, build causal chain map
 
-### 2.4 Scene Summary Generation API
+---
+
+### 2.6 Scene Summary Generation API
 
 #### Endpoint
 ```typescript
@@ -1037,7 +1359,9 @@ Return structured data for all scenes with clear sections.
 - **Temperature**: 0.6 (need consistency in specifications)
 - **Post-Processing**: Validate scene count, ensure virtue scene is marked long, check cycle phase coverage
 
-### 2.5 Scene Content Generation API
+---
+
+### 2.7 Scene Content Generation API
 
 #### Endpoint
 ```typescript
