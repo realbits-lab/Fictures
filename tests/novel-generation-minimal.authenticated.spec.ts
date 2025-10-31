@@ -50,20 +50,16 @@ test.describe('Novel Generation - Minimal Configuration', () => {
     console.log('📍 Step 2: Verifying form elements...');
     await expect(page.locator('h1')).toContainText('Create New Story');
 
-    // Find the prompt textarea
-    const promptTextarea = page.locator('textarea[placeholder*="story"]').first();
+    // Find the prompt textarea using ID
+    const promptTextarea = page.locator('#prompt');
     await expect(promptTextarea).toBeVisible();
 
-    // Find the character count input
-    const characterCountInput = page.locator('input[type="number"]').filter({ has: page.locator('text=/character/i') }).first();
-
-    // Find the setting count input
-    const settingCountInput = page.locator('input[type="number"]').filter({ has: page.locator('text=/setting/i') }).first();
-
-    // Find parts, chapters, scenes inputs
-    const partsInput = page.locator('label:has-text("Parts")').locator('..').locator('input[type="number"]').first();
-    const chaptersInput = page.locator('label:has-text("Chapters")').locator('..').locator('input[type="number"]').first();
-    const scenesInput = page.locator('label:has-text("Scenes")').locator('..').locator('input[type="number"]').first();
+    // Find form inputs using their IDs
+    const characterCountInput = page.locator('#characterCount');
+    const settingCountInput = page.locator('#settingCount');
+    const partsInput = page.locator('#partsCount');
+    const chaptersInput = page.locator('#chaptersPerPart');
+    const scenesInput = page.locator('#scenesPerChapter');
 
     console.log('✅ Form elements verified\n');
 
@@ -74,36 +70,32 @@ test.describe('Novel Generation - Minimal Configuration', () => {
     await promptTextarea.fill(storyPrompt);
     console.log('  ✓ Prompt:', storyPrompt);
 
-    // Set character count to 2
-    await characterCountInput.clear();
+    // Set character count to 2 (range slider)
     await characterCountInput.fill('2');
     console.log('  ✓ Characters: 2');
 
-    // Set setting count to 1
-    await settingCountInput.clear();
+    // Set setting count to 1 (range slider)
     await settingCountInput.fill('1');
     console.log('  ✓ Settings: 1');
 
-    // Set parts to 1
-    await partsInput.clear();
+    // Set parts to 1 (range slider)
     await partsInput.fill('1');
     console.log('  ✓ Parts: 1');
 
-    // Set chapters per part to 1
-    await chaptersInput.clear();
+    // Set chapters per part to 1 (range slider)
     await chaptersInput.fill('1');
     console.log('  ✓ Chapters per part: 1');
 
-    // Set scenes per chapter to 3
-    await scenesInput.clear();
+    // Set scenes per chapter to 3 (range slider)
     await scenesInput.fill('3');
     console.log('  ✓ Scenes per chapter: 3\n');
 
     // Step 4: Start generation
     console.log('📍 Step 4: Starting story generation...');
-    const generateButton = page.locator('button:has-text("Generate")').first();
+    const generateButton = page.locator('button:has-text("Generate Story")');
+    await expect(generateButton).toBeVisible();
     await generateButton.click();
-    console.log('✅ Generate button clicked\n');
+    console.log('✅ Generate Story button clicked\n');
 
     // Step 5: Monitor all 9 phases
     console.log('📍 Step 5: Monitoring 9-phase generation...\n');
@@ -183,5 +175,11 @@ test.describe('Novel Generation - Minimal Configuration', () => {
     console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('🎉 [PLAYWRIGHT] Minimal Novel Generation Test PASSED');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
+    console.log('🔍 Keeping browser open for inspection...');
+    console.log('   Press Ctrl+C to close browser and end test\n');
+
+    // Keep browser open indefinitely for inspection
+    await page.pause();
   });
 });

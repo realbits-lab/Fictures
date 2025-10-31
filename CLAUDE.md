@@ -44,10 +44,11 @@ This file provides guidance to Claude Code when working with this repository.
 - DO NOT use Supabase MCP tools - this project uses Neon PostgreSQL
 
 **Database Naming Convention:**
-- **Column names use camelCase** (e.g., `createdAt`, `updatedAt`, `emailVerified`)
-- **NOT snake_case** (e.g., ~~`created_at`~~, ~~`updated_at`~~)
-- In raw SQL queries, quote camelCase columns: `"createdAt"`, `"updatedAt"`
-- This is Drizzle ORM's default convention matching JavaScript/TypeScript naming
+- **Table and column names use snake_case** (e.g., `created_at`, `updated_at`, `email_verified`)
+- **NOT camelCase** (e.g., ~~`createdAt`~~, ~~`updatedAt`~~)
+- In raw SQL queries, use snake_case without quotes: `created_at`, `updated_at`
+- Drizzle ORM schema definitions use camelCase in TypeScript, but map to snake_case in PostgreSQL
+- Example: TypeScript `createdAt` → PostgreSQL `created_at`
 
 **Database Commands:**
 - **Generate migrations**: `pnpm db:generate`

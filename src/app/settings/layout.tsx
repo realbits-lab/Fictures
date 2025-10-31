@@ -19,11 +19,11 @@ export default async function SettingsLayout({
       <div className="space-y-8">
         {/* Page Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-[rgb(var(--foreground))] flex items-center gap-3">
             <span>⚙️</span>
             Settings
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <p className="text-[rgb(var(--muted-foreground))] mt-2">
             Customize your writing experience and preferences
           </p>
         </div>

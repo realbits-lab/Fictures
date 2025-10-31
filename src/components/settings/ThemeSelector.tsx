@@ -127,8 +127,8 @@ function ThemePreview({
 				"relative cursor-pointer group transition-all duration-200",
 				"border-2 rounded-xl p-1",
 				isSelected
-					? "border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800"
-					: "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600",
+					? "border-[rgb(var(--primary))] ring-2 ring-[rgb(var(--primary)/20%)]"
+					: "border-[rgb(var(--border))] hover:border-[rgb(var(--border)/80%)]",
 			)}
 			onClick={onClick}
 		>
@@ -309,13 +309,13 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
 		return (
 			<div className={cn("space-y-4", className)}>
 				<div className="animate-pulse">
-					<div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-2"></div>
-					<div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-96 mb-4"></div>
+					<div className="h-6 bg-[rgb(var(--muted))] rounded w-48 mb-2"></div>
+					<div className="h-4 bg-[rgb(var(--muted))] rounded w-96 mb-4"></div>
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 						{[...Array(8)].map((_, i) => (
 							<div
 								key={i}
-								className="h-32 bg-gray-200 dark:bg-gray-700 rounded-xl"
+								className="h-32 bg-[rgb(var(--muted))] rounded-xl"
 							></div>
 						))}
 					</div>
@@ -330,10 +330,10 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
 	return (
 		<div className={cn("space-y-4", className)}>
 			<div>
-				<h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+				<h3 className="text-lg font-semibold text-[rgb(var(--foreground))] mb-2">
 					Choose Your Theme
 				</h3>
-				<p className="text-sm text-gray-600 dark:text-gray-400">
+				<p className="text-sm text-[rgb(var(--muted-foreground))]">
 					Select a theme to personalize your writing experience. Changes are
 					applied instantly.
 				</p>
@@ -345,8 +345,8 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
 					className={cn(
 						"flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all",
 						theme === "system"
-							? "border-blue-500 bg-blue-50 dark:bg-blue-950/20"
-							: "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600",
+							? "border-[rgb(var(--primary))] bg-[rgb(var(--primary)/10%)]"
+							: "border-[rgb(var(--border))] hover:border-[rgb(var(--border)/80%)]",
 					)}
 					onClick={() => handleThemeChange("system")}
 				>
@@ -366,15 +366,15 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
 						</svg>
 					</div>
 					<div className="flex-1">
-						<div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+						<div className="text-sm font-medium text-[rgb(var(--foreground))]">
 							System
 						</div>
-						<div className="text-xs text-gray-600 dark:text-gray-400">
+						<div className="text-xs text-[rgb(var(--muted-foreground))]">
 							Use your device&apos;s theme setting
 						</div>
 					</div>
 					{theme === "system" && (
-						<div className="w-5 h-5 text-blue-500">
+						<div className="w-5 h-5 text-[rgb(var(--primary))]">
 							<svg fill="currentColor" viewBox="0 0 20 20">
 								<path
 									fillRule="evenodd"
@@ -399,30 +399,30 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
 			</div>
 
 			{/* Current Theme Info */}
-			<div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+			<div className="mt-6 p-4 bg-[rgb(var(--muted)/50%)] rounded-lg border border-[rgb(var(--border))]">
 				<div className="flex items-center gap-3">
 					<div className="flex -space-x-1">
 						<div
-							className="w-4 h-4 rounded-full border border-white dark:border-gray-800"
+							className="w-4 h-4 rounded-full border border-[rgb(var(--background))]"
 							style={{ backgroundColor: currentTheme.preview.primary }}
 						/>
 						<div
-							className="w-4 h-4 rounded-full border border-white dark:border-gray-800"
+							className="w-4 h-4 rounded-full border border-[rgb(var(--background))]"
 							style={{ backgroundColor: currentTheme.preview.secondary }}
 						/>
 						<div
-							className="w-4 h-4 rounded-full border border-white dark:border-gray-800"
+							className="w-4 h-4 rounded-full border border-[rgb(var(--background))]"
 							style={{ backgroundColor: currentTheme.preview.background }}
 						/>
 					</div>
 					<div>
-						<div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+						<div className="text-sm font-medium text-[rgb(var(--foreground))]">
 							Current Theme:{" "}
 							{theme === "system"
 								? `System (${currentTheme.name})`
 								: currentTheme.name}
 						</div>
-						<div className="text-xs text-gray-600 dark:text-gray-400">
+						<div className="text-xs text-[rgb(var(--muted-foreground))]">
 							{currentTheme.description}
 						</div>
 					</div>

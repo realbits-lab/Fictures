@@ -60,7 +60,14 @@ export async function POST(request: NextRequest) {
 
           // Progress callback to stream updates
           const onProgress = async (progress: ProgressData) => {
-            controller.enqueue(encoder.encode(createSSEMessage(progress)));
+            // Try to send SSE message, but continue if controller is closed
+            try {
+              controller.enqueue(encoder.encode(createSSEMessage(progress)));
+            } catch (error) {
+              // Controller may be closed if client disconnected or timeout occurred
+              // This is not fatal - we continue with database insertion
+              console.log('SSE stream closed, continuing with database insertion...');
+            }
 
             // Store data for database insertion
             if (progress.phase === 'story_summary_complete') {
@@ -97,17 +104,32 @@ export async function POST(request: NextRequest) {
           );
 
           // Create database records
-          controller.enqueue(
-            encoder.encode(
-              createSSEMessage({
-                phase: 'scene_content_progress',
-                message: 'Saving story to database...',
-              })
-            )
-          );
+          try {
+            controller.enqueue(
+              encoder.encode(
+                createSSEMessage({
+                  phase: 'scene_content_progress',
+                  message: 'Saving story to database...',
+                })
+              )
+            );
+          } catch (error) {
+            console.log('SSE stream closed, continuing with database insertion...');
+          }
 
           // Insert story
           generatedStoryId = nanoid();
+
+          // Extract first tone value if multiple are provided (comma-separated)
+          let toneValue: 'hopeful' | 'dark' | 'bittersweet' | 'satirical' = 'hopeful'; // default
+          if (result.story.tone) {
+            const firstTone = result.story.tone.split(',')[0].trim().toLowerCase();
+            // Validate against enum values
+            if (['hopeful', 'dark', 'bittersweet', 'satirical'].includes(firstTone)) {
+              toneValue = firstTone as 'hopeful' | 'dark' | 'bittersweet' | 'satirical';
+            }
+          }
+
           const [storyRecord] = await db
             .insert(stories)
             .values({
@@ -116,7 +138,7 @@ export async function POST(request: NextRequest) {
               title: result.story.title,
               genre: result.story.genre,
               summary: result.story.summary, // Adversity-Triumph: General thematic premise
-              tone: result.story.tone?.toLowerCase() as 'hopeful' | 'dark' | 'bittersweet' | 'satirical', // Adversity-Triumph: Emotional direction
+              tone: toneValue, // Adversity-Triumph: Emotional direction (validated enum value)
               moralFramework: result.story.moralFramework, // Adversity-Triumph: Virtue framework
               status: 'writing',  // Fixed: Use 'writing' instead of 'draft' (valid enum value)
               createdAt: new Date(),
