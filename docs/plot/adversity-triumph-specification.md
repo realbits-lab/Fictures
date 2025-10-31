@@ -118,75 +118,119 @@ Example: "In a fractured post-war society where trust has been shattered, the po
 
 ### 2.2 Part Level (Act Structure)
 
-**Purpose**: Define main adversity-triumph cycle for EACH main character within this act
+**Purpose**: Define MACRO adversity-triumph arc for EACH main character within this act
+
+**Key Concept: Nested Cycles**
+- **Macro Arc** (Part-level): Complete character transformation over 2-4 chapters
+- **Micro Cycles** (Chapter-level): Progressive steps building toward macro payoff
 
 **Key Field**:
-- `summary` (text): Adversity-triumph cycles per character in this act
+- `summary` (text): MACRO adversity-triumph arcs per character with progression planning
 
 **Content Structure**:
 ```
 ACT [I/II/III]: [Act Name]
 
 CHARACTER: [Name]
-- Internal Adversity: [Fear/flaw/wound]
-- External Adversity: [Obstacle/antagonist]
-- Virtuous Action: [What moral choice do they make?]
-- Unintended Consequence: [What earned luck/karmic result occurs?]
-- New Adversity Created: [How does this resolution create next problem?]
+
+MACRO ARC (Overall transformation for this act):
+- Macro Adversity: [Major challenge/flaw confrontation]
+- Macro Virtue: [Defining moral choice - THE moment for this act]
+- Macro Consequence: [Major earned payoff/karmic result]
+- Macro New Adversity: [How this creates next act's challenge]
+
+PROGRESSION PLANNING:
+- Estimated Chapters: [2-4 typically]
+- Arc Position: [primary/secondary - primary gets more chapters]
+- Progression Strategy: [How arc unfolds gradually]
+  * Chapter N (Beginning): Setup macro adversity, first small choice
+  * Chapter N+1 (Middle): Escalate crisis, bigger choices required
+  * Chapter N+2 (Climax): MACRO VIRTUE demonstrated, major consequence
+  * [Optional] Chapter N+3 (Resolution): Aftermath, transition
 
 CHARACTER: [Name]
-- Internal Adversity: ...
+- Macro Arc: ...
+- Progression: ...
 - [etc.]
 
 CHARACTER INTERACTIONS:
-- How do their cycles intersect?
+- How do their macro arcs intersect?
+- Which chapters feature which characters? (Rotation strategy)
 - What relationships (Jeong) form or deepen?
 - What shared Han (wounds) are revealed?
+- How do parallel arcs build toward convergence?
 ```
 
 **Three-Act Structure Mapping**:
 - **Act I (Setup)**: Introduce character flaws, inciting incident creates first adversity
-- **Act II (Confrontation)**: Escalating cycles, midpoint reversal, character hits lowest point
-- **Act III (Resolution)**: Final cycle resolves both internal and external conflicts
+  - Each character's macro arc unfolds over 2-3 chapters
+- **Act II (Confrontation)**: Escalating macro arcs, midpoint reversal, character hits lowest point
+  - Primary characters get 3-4 chapters, secondary get 2 chapters
+  - Arcs interleave for variety and parallel development
+- **Act III (Resolution)**: Final macro arcs resolve both internal and external conflicts
+  - All character arcs converge toward story climax
 
-### 2.3 Chapter Level (Single Cycle)
+### 2.3 Chapter Level (Micro Cycle)
 
-**Purpose**: ONE complete adversity-triumph cycle, focusing on specific character(s)
+**Purpose**: ONE complete adversity-triumph cycle (micro-cycle) that progressively builds the character's macro arc
 
-**Key Field**:
-- `summary` (text): One adversity-triumph cycle from the part
+**Key Concept: Micro Cycles within Macro Arcs**
+- Each chapter is a self-contained cycle (complete on its own)
+- Collectively, 2-4 micro-cycles build one macro arc
+- Each micro-cycle advances the character toward their defining moment
+
+**Key Fields**:
+- `summary` (text): One micro-cycle adversity-triumph
+- `characterArcId` (text): Links to the macro arc this is part of
+- `arcPosition` (enum): 'beginning' | 'middle' | 'climax' | 'resolution' (climax = MACRO moment)
+- `contributesToMacroArc` (text): How does this advance the macro transformation?
 
 **Content Structure**:
 ```
 CHAPTER [N]: [Title]
 
+MACRO ARC CONTEXT:
+- Character: [Name]
+- Macro Arc: [Brief macro adversity → macro virtue summary]
+- Position in Arc: [beginning/middle/climax/resolution] (climax = MACRO moment)
+
+MICRO-CYCLE (This Chapter):
 FOCUS: [Character name(s)]
 CONNECTED TO: [Previous chapter resolution that created this adversity]
 
-ADVERSITY:
+ADVERSITY (Micro):
 - Internal: [Specific fear/flaw being confronted]
 - External: [Specific obstacle in this chapter]
+- How it Advances Macro: [Connection to overall arc]
 
-VIRTUOUS ACTION:
+VIRTUOUS ACTION (Micro or MACRO):
 - What: [Specific moral choice/act of goodness]
 - Why: [Character's intrinsic motivation - NOT transactional]
+- Is This MACRO Virtue?: [Yes/No]
 - Seeds Planted: [What setup for future payoff?]
 
-UNINTENDED CONSEQUENCE:
+UNINTENDED CONSEQUENCE (Micro or MACRO):
 - What: [Surprising resolution/reward]
 - Why Earned: [How is this causally linked to past actions?]
 - Seeds Resolved: [What past setup pays off here?]
+- Magnitude: [Minor payoff OR Major macro consequence]
 
-NEW ADVERSITY:
+NEW ADVERSITY (Micro or MACRO):
 - What: [Next problem created by this resolution]
 - Stakes: [How are they higher than before?]
+- Leads To: [Next chapter OR next act if macro moment]
+
+PROGRESSION CONTRIBUTION:
+[1-2 sentences explaining how this micro-cycle moves character closer to their macro virtue moment]
 ```
 
 **Key Principles**:
-- Each chapter MUST connect to previous resolution
-- Each chapter MUST create next adversity
+- Each chapter MUST be a complete micro-cycle (works standalone)
+- Each chapter MUST advance its macro arc progressively
 - Focus on 1-2 characters max to maintain emotional depth
-- Balance plot advancement with character development
+- Rotate between characters for variety (not all chapters for one character)
+- Build tension gradually: beginning → middle → CLIMAX (macro moment)
+- Climax chapter contains MACRO virtue and MACRO consequence
 
 ### 2.4 Scene Level (Cycle Phases)
 
@@ -273,19 +317,27 @@ interface Part {
   actNumber: number; // 1, 2, or 3
   title: string;
 
-  // NEW: Adversity-triumph summary for each character
-  summary: string; // Multi-character adversity-triumph cycles
+  // NEW: MACRO adversity-triumph arcs with progression planning
+  summary: string; // Multi-character MACRO arcs with progression strategy
 
-  // Tracking structure
+  // Tracking structure - ENHANCED for nested cycles
   characterArcs: {
     characterId: string;
-    adversity: {
+
+    // MACRO ARC (Part-level transformation)
+    macroAdversity: {
       internal: string;
       external: string;
     };
-    virtue: string;
-    consequence: string;
-    newAdversity: string;
+    macroVirtue: string;
+    macroConsequence: string;
+    macroNewAdversity: string;
+
+    // NEW: Progression planning
+    estimatedChapters: number;     // 2-4 typical
+    arcPosition: 'primary' | 'secondary';  // Primary arcs get more chapters
+    progressionStrategy: string;    // How does this unfold gradually?
+    // Example: "Gradual escalation across 3 chapters: setup → crisis → resolution"
   }[];
 
   // Deprecated
@@ -307,6 +359,11 @@ interface Chapter {
 
   // NEW: Single adversity-triumph cycle
   summary: string;
+
+  // NEW: Nested cycle tracking (links micro-cycle to macro arc)
+  characterArcId: string; // References Part.characterArcs[].characterId
+  arcPosition: 'beginning' | 'middle' | 'climax' | 'resolution'; // 'climax' = MACRO moment
+  contributesToMacroArc: string; // How this chapter advances the macro arc
 
   // Cycle tracking
   focusCharacters: string[]; // Character ID(s)

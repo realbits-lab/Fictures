@@ -83,22 +83,68 @@ describe('Story Summary Generation', () => {
 
 ```typescript
 describe('Part Generation', () => {
-  test('should create complete adversity-triumph cycles for each character', () => {
-    const output = generateParts(themeData);
+  test('should create complete MACRO arcs for each character', () => {
+    const output = generateParts(storyData);
 
     output.parts.forEach(part => {
       part.characterArcs.forEach(arc => {
-        expect(arc.adversity.internal).toBeTruthy();
-        expect(arc.adversity.external).toBeTruthy();
-        expect(arc.virtue).toBeTruthy();
-        expect(arc.consequence).toBeTruthy();
-        expect(arc.newAdversity).toBeTruthy();
+        // MACRO arc fields
+        expect(arc.macroAdversity.internal).toBeTruthy();
+        expect(arc.macroAdversity.external).toBeTruthy();
+        expect(arc.macroVirtue).toBeTruthy();
+        expect(arc.macroConsequence).toBeTruthy();
+        expect(arc.macroNewAdversity).toBeTruthy();
+
+        // Nested cycle planning fields
+        expect(arc.estimatedChapters).toBeGreaterThanOrEqual(2);
+        expect(arc.estimatedChapters).toBeLessThanOrEqual(4);
+        expect(arc.arcPosition).toMatch(/primary|secondary/);
+        expect(arc.progressionStrategy).toBeTruthy();
+        expect(arc.progressionStrategy.length).toBeGreaterThan(100);
+      });
+    });
+  });
+
+  test('should validate progression strategy structure', () => {
+    const output = generateParts(storyData);
+
+    output.parts.forEach(part => {
+      part.characterArcs.forEach(arc => {
+        const strategy = arc.progressionStrategy;
+
+        // Should mention chapter progression
+        expect(strategy).toMatch(/chapter/i);
+
+        // Should mention beginning/middle/climax/resolution phases
+        expect(strategy).toMatch(/beginning|middle|climax|resolution/i);
+
+        // Should describe HOW arc unfolds gradually
+        expect(strategy).toMatch(/gradually|progressive|build|escalate/i);
+      });
+    });
+  });
+
+  test('should balance primary vs secondary arcs', () => {
+    const output = generateParts(storyData);
+
+    output.parts.forEach(part => {
+      const primaryArcs = part.characterArcs.filter(a => a.arcPosition === 'primary');
+      const secondaryArcs = part.characterArcs.filter(a => a.arcPosition === 'secondary');
+
+      // At least one primary arc per part
+      expect(primaryArcs.length).toBeGreaterThanOrEqual(1);
+
+      // Primary arcs should get more chapters
+      primaryArcs.forEach(primary => {
+        secondaryArcs.forEach(secondary => {
+          expect(primary.estimatedChapters).toBeGreaterThanOrEqual(secondary.estimatedChapters);
+        });
       });
     });
   });
 
   test('should plant seeds with expected payoffs', () => {
-    const output = generateParts(themeData);
+    const output = generateParts(storyData);
     const allSeeds = output.parts.flatMap(p => extractSeeds(p.summary));
 
     allSeeds.forEach(seed => {
@@ -108,7 +154,7 @@ describe('Part Generation', () => {
   });
 
   test('should create cyclical engine (resolution → adversity)', () => {
-    const output = generateParts(themeData);
+    const output = generateParts(storyData);
 
     output.parts.forEach((part, index) => {
       if (index < output.parts.length - 1) {
@@ -125,6 +171,83 @@ describe('Part Generation', () => {
 
 ```typescript
 describe('Chapter Generation', () => {
+  test('should link micro-cycles to MACRO arcs', () => {
+    const chapters = generateChapters(partData);
+
+    chapters.forEach(chapter => {
+      // Nested cycle tracking fields
+      expect(chapter.characterArcId).toBeTruthy();
+      expect(chapter.arcPosition).toMatch(/beginning|middle|climax|resolution/);
+      expect(chapter.contributesToMacroArc).toBeTruthy();
+      expect(chapter.contributesToMacroArc.length).toBeGreaterThan(50);
+    });
+  });
+
+  test('should have progressive arc positions', () => {
+    const chapters = generateChapters(partData);
+
+    // Group chapters by character arc
+    const arcGroups = new Map<string, typeof chapters>();
+    chapters.forEach(ch => {
+      if (!arcGroups.has(ch.characterArcId)) {
+        arcGroups.set(ch.characterArcId, []);
+      }
+      arcGroups.get(ch.characterArcId)!.push(ch);
+    });
+
+    // Validate progression for each character arc
+    arcGroups.forEach((arcChapters, arcId) => {
+      const positions = arcChapters.map(ch => ch.arcPosition);
+
+      // Should have beginning before climax
+      const beginningIndex = positions.indexOf('beginning');
+      const climaxIndex = positions.indexOf('climax');
+
+      if (beginningIndex >= 0 && climaxIndex >= 0) {
+        expect(beginningIndex).toBeLessThan(climaxIndex);
+      }
+
+      // Should have climax before resolution (if resolution exists)
+      const resolutionIndex = positions.indexOf('resolution');
+      if (climaxIndex >= 0 && resolutionIndex >= 0) {
+        expect(climaxIndex).toBeLessThan(resolutionIndex);
+      }
+    });
+  });
+
+  test('should have exactly ONE climax chapter per character arc', () => {
+    const chapters = generateChapters(partData);
+
+    // Group by character arc
+    const arcGroups = new Map<string, typeof chapters>();
+    chapters.forEach(ch => {
+      if (!arcGroups.has(ch.characterArcId)) {
+        arcGroups.set(ch.characterArcId, []);
+      }
+      arcGroups.get(ch.characterArcId)!.push(ch);
+    });
+
+    // Each arc should have exactly one climax chapter (the MACRO moment)
+    arcGroups.forEach((arcChapters, arcId) => {
+      const climaxChapters = arcChapters.filter(ch => ch.arcPosition === 'climax');
+      expect(climaxChapters.length).toBe(1);
+    });
+  });
+
+  test('should rotate character focus for variety', () => {
+    const chapters = generateChapters(partData);
+
+    // No more than 2 consecutive chapters for same character
+    for (let i = 0; i < chapters.length - 2; i++) {
+      const char1 = chapters[i].characterArcId;
+      const char2 = chapters[i + 1].characterArcId;
+      const char3 = chapters[i + 2].characterArcId;
+
+      // If 3 consecutive chapters exist, they shouldn't all be same character
+      expect(char1 === char2 && char2 === char3).toBe(false);
+    }
+  });
+
   test('should connect to previous chapter', () => {
     const chapters = generateChapters(partData);
 
@@ -347,7 +470,7 @@ describe('System Performance', () => {
     const result1 = await generateCompleteStory(userPrompt, { seed: 12345 });
     const result2 = await generateCompleteStory(userPrompt, { seed: 12345 });
 
-    expect(result1.story.theme).toBe(result2.story.theme);
+    expect(result1.story.summary).toBe(result2.story.summary);
     expect(result1.parts.length).toBe(result2.parts.length);
   });
 });

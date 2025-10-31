@@ -121,7 +121,7 @@ Response: Server-Sent Events (SSE)
 {
   event: 'progress',
   data: {
-    phase: 'theme' | 'parts' | 'chapters' | 'scenes' | 'content' | 'images' | 'evaluation',
+    phase: 'story' | 'parts' | 'chapters' | 'scenes' | 'content' | 'images' | 'evaluation',
     progress: number, // 0-100
     message: string,
     currentItem?: string
@@ -188,10 +188,10 @@ Response:
 # ROLE AND CONTEXT
 You are an expert story architect with deep knowledge of narrative psychology, moral philosophy, and the principles of emotional resonance in fiction. You specialize in the Korean concept of Gam-dong (감동) - creating stories that profoundly move readers.
 
-Your task is to transform a user's raw story idea into a thematic foundation that will support a Cyclic Adversity-Triumph narrative engine.
+Your task is to transform a user's raw story idea into a story foundation that will support a Cyclic Adversity-Triumph narrative engine.
 
 # CRITICAL CONSTRAINTS
-- Theme must be GENERAL, not specific plot
+- Story summary must be GENERAL, not specific plot
 - Do NOT create detailed adversity-triumph cycles (that happens in Part generation)
 - Focus on establishing the WORLD and its MORAL RULES
 - Identify what makes virtue MEANINGFUL in this specific world
@@ -312,12 +312,26 @@ Moral Framework: {moralFramework}
 Characters: {characters}
 
 # YOUR TASK
-Design adversity-triumph cycles for each character across all three acts, ensuring:
-1. Each cycle demonstrates the story's moral framework
-2. Cycles intersect and amplify each other
-3. Each resolution creates the next adversity
+Design MACRO adversity-triumph arcs for each character across all three acts, ensuring:
+1. Each MACRO arc demonstrates the story's moral framework
+2. Arcs intersect and amplify each other
+3. Each MACRO arc spans 2-4 chapters (progressive transformation, not rushed)
 4. Stakes escalate across acts
-5. Character arcs show transformation
+5. Character arcs show gradual, earned transformation
+
+## NESTED CYCLES ARCHITECTURE
+
+**MACRO ARC (Part Level)**: Complete character transformation over 2-4 chapters
+- Macro Adversity: Major internal flaw + external challenge
+- Macro Virtue: THE defining moral choice for this act
+- Macro Consequence: Major earned payoff/karmic result
+- Macro New Adversity: How this creates next act's challenge
+
+**MICRO CYCLES (Chapter Level)**: Progressive steps building toward macro payoff
+- Each chapter is still a COMPLETE adversity-triumph cycle
+- Chapters progressively advance the macro arc
+- Arc positions: beginning → middle → climax → resolution
+- Climax chapter contains the MACRO virtue and MACRO consequence
 
 # THREE-ACT STRUCTURE REQUIREMENTS
 
@@ -339,7 +353,7 @@ Design adversity-triumph cycles for each character across all three acts, ensuri
 - Consequence: Karmic payoff of ALL seeds planted; earned triumph
 - Resolution: Both internal (flaw healed) and external (goal achieved/transcended)
 
-# ADVERSITY-TRIUMPH CYCLE TEMPLATE
+# MACRO ARC TEMPLATE
 
 For EACH character in EACH act:
 
@@ -348,30 +362,40 @@ CHARACTER: [Name]
 
 ACT [I/II/III]: [Act Title]
 
-ADVERSITY:
-- Internal (Flaw): [Fear/Belief/Wound being confronted]
-- External (Obstacle): [Specific challenge that forces confrontation]
-- Connection: [How external conflict requires facing internal conflict]
+MACRO ARC (Overall transformation for this act):
 
-VIRTUOUS ACTION:
-- What: [Specific moral choice or act of goodness]
-- Intrinsic Motivation: [Why character does this - NOT transactional]
+MACRO ADVERSITY:
+- Internal (Flaw): [Core fear/wound requiring 2-4 chapters to confront]
+- External (Obstacle): [Major challenge that demands transformation]
+- Connection: [How external conflict forces facing internal flaw]
+
+MACRO VIRTUE:
+- What: [THE defining moral choice of this act]
+- Intrinsic Motivation: [Deep character reason]
 - Virtue Type: [courage/compassion/integrity/sacrifice/loyalty/wisdom]
-- Seeds Planted: [Small actions that will pay off later - be SPECIFIC]
+- Seeds Planted: [Actions that will pay off later]
   * [Seed 1]: Expected Payoff in Act [X]
   * [Seed 2]: Expected Payoff in Act [X]
 
-UNINTENDED CONSEQUENCE (EARNED LUCK):
-- What: [Surprising resolution or reward]
-- Causal Link: [HOW connected to past actions]
-- Seeds Resolved: [If any previous seeds pay off]
-- Why Earned: [Why this feels like justice, not random luck]
+MACRO CONSEQUENCE (EARNED LUCK):
+- What: [Major resolution or reward]
+- Causal Link: [HOW connected to past actions across multiple chapters]
+- Seeds Resolved: [Previous seeds that pay off]
+- Why Earned: [Why this feels like justice]
 - Emotional Impact: [Catharsis/Gam-dong/Hope/Relief]
 
-NEW ADVERSITY CREATED:
-- What: [Next problem from this resolution]
+MACRO NEW ADVERSITY:
+- What: [Next act's major problem]
 - How Created: [Specific mechanism]
 - Stakes Escalation: [How stakes are higher]
+
+PROGRESSION PLANNING:
+- Estimated Chapters: [2-4 typically]
+- Arc Position: [primary/secondary - primary gets more chapters]
+- Progression Strategy: [How arc unfolds gradually across chapters]
+  * Chapter 1-2: [beginning phase - setup, initial confrontation]
+  * Chapter 3-4: [middle/climax - escalation, MACRO virtue moment]
+  * Chapter 5+: [resolution phase - consequence, stabilization]
 ```
 
 # CHARACTER INTERACTION REQUIREMENTS
@@ -460,32 +484,39 @@ Response:
 
 ```markdown
 # ROLE
-You are an expert at decomposing multi-character narrative arcs into focused, single-cycle chapter structures that maintain emotional momentum and causal logic.
+You are an expert at decomposing MACRO character arcs into progressive micro-cycle chapters that build gradually toward climactic transformation, maintaining emotional momentum and causal logic.
 
 # CONTEXT
 Part Summary: {partSummary}
+Character Macro Arcs: {characterMacroArcs}
 Number of Chapters: {numberOfChapters}
 Previous Chapter: {previousChapterSummary}
 
 # YOUR TASK
-Extract {numberOfChapters} individual chapters from the part's multi-character cycles, where EACH chapter is ONE complete adversity-triumph cycle.
+Create {numberOfChapters} individual chapters from the part's MACRO arcs, where:
+1. EACH chapter is ONE complete adversity-triumph cycle (micro-cycle)
+2. Chapters progressively build toward the MACRO virtue and consequence
+3. Character arcs rotate to maintain variety
+4. Each chapter advances its character's MACRO arc position
 
-# ADVERSITY-TRIUMPH CYCLE FOR CHAPTER
+# MICRO-CYCLE CHAPTER TEMPLATE
 
 Each chapter must contain:
 
-## 1. FOCUS & CONNECTION
+## 1. MACRO ARC CONTEXT
 ```
 CHAPTER {number}: {title}
 
-FOCUS: {character name(s)}
+CHARACTER: {name}
+MACRO ARC: {brief macro adversity → macro virtue summary}
+POSITION IN ARC: {beginning/middle/climax/resolution} (climax = MACRO virtue/consequence)
 CONNECTED TO: {how previous chapter created THIS adversity}
 ```
 
-## 2. ADVERSITY
+## 2. MICRO-CYCLE ADVERSITY (This Chapter)
 ```
 ADVERSITY:
-- Internal: {specific fear/flaw in THIS chapter}
+- Internal: {specific fear/flaw confronted in THIS chapter}
 - External: {specific obstacle in THIS chapter}
 - Why Now: {why this is the right moment}
 ```
@@ -521,7 +552,19 @@ NEW ADVERSITY:
 - Hook: {why reader must continue}
 ```
 
-## 6. SCENE BREAKDOWN GUIDANCE
+## 6. PROGRESSION CONTRIBUTION
+```
+PROGRESSION CONTRIBUTION:
+- How This Advances Macro Arc: {specific progress toward MACRO virtue/consequence}
+- Position-Specific Guidance:
+  * If beginning: Establish flaw, hint at transformation needed
+  * If middle: Escalate tension, character wavers, doubt grows
+  * If climax: MACRO virtue moment, defining choice, highest stakes
+  * If resolution: Process consequence, stabilize, reflect on change
+- Setup for Next Chapter: {what this positions for next micro-cycle}
+```
+
+## 7. SCENE BREAKDOWN GUIDANCE
 ```
 SCENE BREAKDOWN GUIDANCE:
 - Setup Scenes (1-2): {what to establish}
@@ -557,15 +600,18 @@ SCENE BREAKDOWN GUIDANCE:
 
 # CRITICAL RULES
 1. EXACTLY {numberOfChapters} chapters required
-2. Each chapter = ONE complete cycle
-3. MUST show causal link from previous chapter
-4. MUST create adversity for next chapter
-5. Seeds planted MUST have specific expected payoffs
-6. Seeds resolved MUST reference specific previous seeds
-7. Balance focus across characters
-8. Emotional pacing builds toward part's climax
-9. Virtuous actions MUST be intrinsically motivated
-10. Consequences MUST feel earned through causality
+2. Each chapter = ONE complete micro-cycle (self-contained)
+3. Chapters MUST progressively advance MACRO arc (not rushed completion)
+4. ONE chapter per character arc must have arcPosition='climax' (the MACRO moment)
+5. Arc positions must progress: beginning → middle → climax → resolution
+6. MUST show causal link from previous chapter
+7. MUST create adversity for next chapter
+8. Seeds planted MUST have specific expected payoffs
+9. Seeds resolved MUST reference specific previous seeds
+10. Balance focus across characters (rotate arcs for variety)
+11. Emotional pacing builds toward part's climax
+12. Virtuous actions MUST be intrinsically motivated
+13. Consequences MUST feel earned through causality
 
 # OUTPUT FORMAT
 Return structured text with clear chapter separations.
@@ -1127,7 +1173,7 @@ Next priority: Consequence scenes (need similar depth and emotional lingering)
 
 ### Generation Failures
 
-**Theme Generation Failure**:
+**Story Summary Generation Failure**:
 - Retry up to 3 times with temperature adjustment
 - Fall back to simpler prompt if JSON parsing fails
 - Manual intervention after 3 failures
