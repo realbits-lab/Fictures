@@ -173,7 +173,7 @@ export async function generateCompleteNovel(
     console.log(`[Orchestrator] Emitting characters_progress (100%) - ${characters.length} characters`);
     await onProgress({
       phase: 'characters_progress',
-      message: `Generated ${characters.length} characters`,
+      message: `Generated ${characters.length} characters (100%)`,
       data: {
         currentCharacter: characters.length,
         totalCharacters: characters.length,
@@ -227,7 +227,7 @@ export async function generateCompleteNovel(
     console.log(`[Orchestrator] Emitting settings_progress (100%) - ${settings.length} settings`);
     await onProgress({
       phase: 'settings_progress',
-      message: `Generated ${settings.length} settings`,
+      message: `Generated ${settings.length} settings (100%)`,
       data: {
         currentSetting: settings.length,
         totalSettings: settings.length,
@@ -283,7 +283,7 @@ export async function generateCompleteNovel(
     console.log(`[Orchestrator] Emitting parts_progress (100%) - ${parts.length} parts`);
     await onProgress({
       phase: 'parts_progress',
-      message: `Generated ${parts.length} acts`,
+      message: `Generated ${parts.length} acts (100%)`,
       data: {
         currentPart: parts.length,
         totalParts: parts.length,

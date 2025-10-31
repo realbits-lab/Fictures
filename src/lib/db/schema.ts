@@ -120,6 +120,55 @@ export const userRoleEnum = pgEnum('user_role', [
   'manager'   // Full administrative access
 ]);
 
+// Adversity-Triumph Engine enums for novel generation
+export const toneEnum = pgEnum('tone', [
+  'hopeful',
+  'dark',
+  'bittersweet',
+  'satirical'
+]);
+
+export const arcPositionEnum = pgEnum('arc_position', [
+  'beginning',
+  'middle',
+  'climax',
+  'resolution'
+]);
+
+export const adversityTypeEnum = pgEnum('adversity_type', [
+  'internal',
+  'external',
+  'both'
+]);
+
+export const virtueTypeEnum = pgEnum('virtue_type', [
+  'courage',
+  'compassion',
+  'integrity',
+  'sacrifice',
+  'loyalty',
+  'wisdom'
+]);
+
+export const cyclePhaseEnum = pgEnum('cycle_phase', [
+  'setup',
+  'confrontation',
+  'virtue',
+  'consequence',
+  'transition'
+]);
+
+export const emotionalBeatEnum = pgEnum('emotional_beat', [
+  'fear',
+  'hope',
+  'tension',
+  'relief',
+  'elevation',
+  'catharsis',
+  'despair',
+  'joy'
+]);
+
 // Users table - Core user authentication and profile
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
@@ -170,11 +219,15 @@ export const stories = pgTable('stories', {
   // Image fields
   imageUrl: text('image_url'), // Original/cover image URL from Vercel Blob
   imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
-  // HNS fields
+  // HNS fields (legacy - kept for backward compatibility)
   premise: text('premise'),
   dramaticQuestion: text('dramatic_question'),
   theme: text('theme'),
   hnsData: json('hns_data').$type<Record<string, unknown>>(),
+  // Adversity-Triumph Engine fields
+  summary: text('summary'), // General thematic premise and moral framework
+  tone: toneEnum('tone'), // Overall emotional direction
+  moralFramework: text('moralFramework'), // What virtues are valued in this world
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -190,11 +243,23 @@ export const parts = pgTable('parts', {
   targetWordCount: integer('target_word_count').default(0),
   currentWordCount: integer('current_word_count').default(0),
   content: text('content').default(''), // Store part-specific development YAML data as text
-  // HNS fields
+  // HNS fields (legacy - kept for backward compatibility)
   structuralRole: varchar('structural_role', { length: 50 }),
-  summary: text('summary'),
+  summary: text('summary'), // Multi-character MACRO arcs with progression strategy
   keyBeats: json('key_beats').$type<string[]>(),
   hnsData: json('hns_data').$type<Record<string, unknown>>(),
+  // Adversity-Triumph Engine fields
+  actNumber: integer('actNumber'), // 1, 2, or 3 in three-act structure
+  characterArcs: json('characterArcs').$type<Array<{
+    characterId: string;
+    macroAdversity: { internal: string; external: string };
+    macroVirtue: string;
+    macroConsequence: string;
+    macroNewAdversity: string;
+    estimatedChapters: number;
+    arcPosition: 'primary' | 'secondary';
+    progressionStrategy: string;
+  }>>(), // Macro adversity-triumph arcs for each character in this act
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -216,11 +281,31 @@ export const chapters = pgTable('chapters', {
   characterFocus: text('character_focus'), // Main character focus for chapter
   publishedAt: timestamp('published_at'),
   scheduledFor: timestamp('scheduled_for'),
-  // HNS fields
+  // HNS fields (legacy - kept for backward compatibility)
   pacingGoal: varchar('pacing_goal', { length: 20 }),
   actionDialogueRatio: varchar('action_dialogue_ratio', { length: 10 }),
   chapterHook: json('chapter_hook').$type<{type: string; description: string; urgency_level: string}>(),
   hnsData: json('hns_data').$type<Record<string, unknown>>(),
+  // Adversity-Triumph Engine fields - Nested cycle tracking
+  characterId: text('characterId').references(() => characters.id, { onDelete: 'set null' }), // Primary character whose macro arc this advances
+  arcPosition: arcPositionEnum('arcPosition'), // Position in macro arc: beginning, middle, climax (MACRO moment), or resolution
+  contributesToMacroArc: text('contributesToMacroArc'), // How this chapter advances the macro transformation
+  focusCharacters: json('focusCharacters').$type<string[]>().default([]), // Array of character IDs featured in this chapter
+  adversityType: adversityTypeEnum('adversityType'), // Type of conflict: internal, external, or both
+  virtueType: virtueTypeEnum('virtueType'), // Moral virtue tested: courage, compassion, integrity, sacrifice, loyalty, wisdom
+  seedsPlanted: json('seedsPlanted').$type<Array<{
+    id: string;
+    description: string;
+    expectedPayoff: string;
+  }>>().default([]), // Setup for future payoffs
+  seedsResolved: json('seedsResolved').$type<Array<{
+    sourceChapterId: string;
+    sourceSceneId: string;
+    seedId: string;
+    payoffDescription: string;
+  }>>().default([]), // Past setups that pay off in this chapter
+  connectsToPreviousChapter: text('connectsToPreviousChapter'), // How previous resolution created this adversity
+  createsNextAdversity: text('createsNextAdversity'), // How this resolution creates next problem
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -243,13 +328,16 @@ export const scenes = pgTable('scenes', {
   povCharacterId: text('pov_character_id'),
   settingId: text('setting_id'),
   narrativeVoice: varchar('narrative_voice', { length: 50 }),
-  summary: text('summary'),
+  summary: text('summary'), // Scene specification (planning layer)
   entryHook: text('entry_hook'),
   emotionalShift: json('emotional_shift').$type<{from: string; to: string}>(),
   hnsData: json('hns_data').$type<Record<string, unknown>>(),
   // Character and place references for scene writing
   characterIds: json('character_ids').$type<string[]>().default([]).notNull(),
   placeIds: json('place_ids').$type<string[]>().default([]).notNull(),
+  // Adversity-Triumph Engine fields - Cycle phase tracking
+  cyclePhase: cyclePhaseEnum('cyclePhase'), // Position in 4-phase cycle: setup, confrontation, virtue, consequence, or transition
+  emotionalBeat: emotionalBeatEnum('emotionalBeat'), // Target emotion: fear, hope, tension, relief, elevation, catharsis, despair, joy
   // Publishing fields
   publishedAt: timestamp('published_at'),
   scheduledFor: timestamp('scheduled_for'),
@@ -343,6 +431,23 @@ export const characters = pgTable('characters', {
   physicalDescription: json('physical_description').$type<Record<string, unknown>>(),
   visualReferenceId: text('visual_reference_id'),
   hnsData: json('hns_data').$type<Record<string, unknown>>(),
+  // Adversity-Triumph Engine fields - Character core
+  coreTrait: text('coreTrait'), // THE defining moral virtue: courage, compassion, integrity, loyalty, wisdom, sacrifice
+  internalFlaw: text('internalFlaw'), // Source of adversity - MUST include cause
+  externalGoal: text('externalGoal'), // What character THINKS will solve their problem
+  relationships: json('relationships').$type<Record<string, {
+    type: 'ally' | 'rival' | 'family' | 'romantic' | 'mentor' | 'adversary';
+    jeongLevel: number;
+    sharedHistory: string;
+    currentDynamic: string;
+  }>>(), // Jeong system tracking
+  voiceStyle: json('voiceStyle').$type<{
+    tone: string;
+    vocabulary: string;
+    quirks: string[];
+    emotionalRange: string;
+  }>(), // Dialogue generation guide
+  visualStyle: text('visualStyle'), // Visual aesthetic: realistic, anime, painterly, cinematic
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -582,6 +687,22 @@ export const settings = pgTable('settings', {
   architecturalStyle: text('architectural_style'),
   imageUrl: text('image_url'), // Original setting image URL from Vercel Blob
   imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
+  // Adversity-Triumph Engine fields - Environmental adversity and amplification
+  adversityElements: json('adversityElements').$type<{
+    physicalObstacles: string[];
+    scarcityFactors: string[];
+    dangerSources: string[];
+    socialDynamics: string[];
+  }>(), // External conflict sources
+  symbolicMeaning: text('symbolicMeaning'), // How setting reflects moral framework
+  cycleAmplification: json('cycleAmplification').$type<{
+    setup: string;
+    confrontation: string;
+    virtue: string;
+    consequence: string;
+    transition: string;
+  }>(), // How setting amplifies each cycle phase
+  emotionalResonance: text('emotionalResonance'), // Primary emotion this setting amplifies
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

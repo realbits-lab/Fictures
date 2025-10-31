@@ -115,6 +115,9 @@ export async function POST(request: NextRequest) {
               authorId: session.user.id,  // Fixed: Use 'authorId' (correct schema field name)
               title: result.story.title,
               genre: result.story.genre,
+              summary: result.story.summary, // Adversity-Triumph: General thematic premise
+              tone: result.story.tone as 'hopeful' | 'dark' | 'bittersweet' | 'satirical', // Adversity-Triumph: Emotional direction
+              moralFramework: result.story.moralFramework, // Adversity-Triumph: Virtue framework
               status: 'writing',  // Fixed: Use 'writing' instead of 'draft' (valid enum value)
               createdAt: new Date(),
               updatedAt: new Date(),
