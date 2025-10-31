@@ -97,7 +97,7 @@ test.describe('Novel Generation - Minimal Configuration', () => {
     await generateButton.click();
     console.log('✅ Generate Story button clicked\n');
 
-    // Step 5: Monitor all 9 phases
+    // Step 5: Monitor all 9 phases and wait for completion
     console.log('📍 Step 5: Monitoring 9-phase generation...\n');
 
     const phases = [
@@ -112,18 +112,15 @@ test.describe('Novel Generation - Minimal Configuration', () => {
       { name: 'Images', selector: 'text=/Images/i' },
     ];
 
-    // Wait for each phase to complete (max 8 minutes total)
-    const phaseTimeout = 480000; // 8 minutes for all phases
-
+    // Wait for each phase to appear (phases show up immediately)
     for (let i = 0; i < phases.length; i++) {
       const phase = phases[i];
-      console.log(`  ⏳ Phase ${i + 1}/9: ${phase.name} - Waiting...`);
+      console.log(`  ⏳ Phase ${i + 1}/9: ${phase.name} - Waiting to appear...`);
 
       try {
-        // Wait for phase to appear or complete
         await page.locator(phase.selector).first().waitFor({
           state: 'visible',
-          timeout: phaseTimeout
+          timeout: 60000 // 1 minute timeout for phase to appear
         });
 
         console.log(`  ✅ Phase ${i + 1}/9: ${phase.name} - Detected`);
@@ -131,7 +128,6 @@ test.describe('Novel Generation - Minimal Configuration', () => {
         console.error(`  ❌ Phase ${i + 1}/9: ${phase.name} - Timeout or error`);
         console.error(`  Error:`, error);
 
-        // Take screenshot of current state
         await page.screenshot({
           path: `logs/phase-${i + 1}-error.png`,
           fullPage: true
@@ -142,6 +138,34 @@ test.describe('Novel Generation - Minimal Configuration', () => {
     }
 
     console.log('\n✅ All 9 phases detected!\n');
+
+    // Step 5b: Wait for Images phase to actually complete
+    console.log('📍 Step 5b: Waiting for Images phase to complete...\n');
+
+    try {
+      // Wait for the "Generating Story..." button to disappear or become "Generation Complete"
+      // This indicates all phases are done
+      await page.waitForFunction(() => {
+        const button = document.querySelector('button:has-text("Generating Story")');
+        return button === null || button?.textContent?.includes('Complete') || button?.textContent?.includes('Success');
+      }, { timeout: 600000 }); // 10 minutes max for full generation
+
+      console.log('✅ Story generation completed!\n');
+    } catch (error) {
+      console.warn('⚠️  Button state check timeout, checking for success indicators...\n');
+
+      // Alternative: Check if we can see completed checkmarks for all phases
+      const completedPhases = await page.locator('[data-phase-status="completed"], .phase-complete, text=/✓|✅|complete/i').count();
+      console.log(`  Found ${completedPhases} completion indicators`);
+
+      if (completedPhases < 9) {
+        await page.screenshot({
+          path: 'logs/generation-timeout.png',
+          fullPage: true
+        });
+        throw new Error(`Generation appears incomplete. Only ${completedPhases}/9 phases marked as complete.`);
+      }
+    }
 
     // Step 6: Wait for completion message
     console.log('📍 Step 6: Waiting for completion...');

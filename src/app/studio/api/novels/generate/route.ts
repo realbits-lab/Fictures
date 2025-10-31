@@ -200,20 +200,25 @@ export async function POST(request: NextRequest) {
             await db.insert(settings).values(settingRecords);
           }
 
-          // Insert parts
+          // Insert parts and create ID mapping
+          const partIdMap = new Map<string, string>();
           if (result.parts.length > 0) {
-            const partRecords = result.parts.map((part, index) => ({
-              id: nanoid(),
-              storyId: generatedStoryId!,
-              authorId: session.user.id,
-              title: part.title,
-              summary: part.summary,
-              actNumber: part.actNumber,
-              characterArcs: part.characterArcs,
-              orderIndex: index,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            }));
+            const partRecords = result.parts.map((part, index) => {
+              const newId = nanoid();
+              partIdMap.set(part.id, newId); // Map temp ID to database ID
+              return {
+                id: newId,
+                storyId: generatedStoryId!,
+                authorId: session.user.id,
+                title: part.title,
+                summary: part.summary,
+                actNumber: part.actNumber,
+                characterArcs: part.characterArcs,
+                orderIndex: index,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              };
+            });
 
             await db.insert(parts).values(partRecords);
           }
@@ -281,7 +286,7 @@ export async function POST(request: NextRequest) {
           }
 
           // Update story with ID arrays for quick access to related entities
-          const partIds = result.parts.map(p => p.id);
+          const partIds = Array.from(partIdMap.values());
           const chapterIds = Array.from(chapterIdMap.values());
           const sceneIds = Array.from(sceneIdMap.values());
 
@@ -296,20 +301,20 @@ export async function POST(request: NextRequest) {
             .where(eq(stories.id, generatedStoryId!));
 
           console.log('[Novel Generation] Updated story with ID arrays:', {
-            partIds,
+            partIds: partIds.length,
             chapterIds: chapterIds.length,
             sceneIds: sceneIds.length,
           });
 
           // Phase 9: Generate images (now that we have actual storyId)
-          const totalImages = result.characters.length + result.settings.length;
+          const totalImages = 1 + result.characters.length + result.settings.length + result.scenes.length; // +1 for story cover
           let completedImages = 0;
 
           controller.enqueue(
             encoder.encode(
               createSSEMessage({
                 phase: 'images_start',
-                message: 'Generating character and setting images...',
+                message: 'Generating story cover, character, setting, and scene images...',
                 data: {
                   totalImages,
                 },
@@ -318,6 +323,60 @@ export async function POST(request: NextRequest) {
           );
 
           const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+          // Generate story cover image
+          try {
+            controller.enqueue(
+              encoder.encode(
+                createSSEMessage({
+                  phase: 'images_progress',
+                  message: 'Generating story cover image...',
+                  data: {
+                    currentItem: 1,
+                    totalItems: totalImages,
+                    percentage: Math.round((1 / totalImages) * 100),
+                  },
+                })
+              )
+            );
+
+            const storyCoverResponse = await fetch(`${baseUrl}/studio/api/generation/images`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                storyId: generatedStoryId,
+                imageType: 'story',
+                targetData: {
+                  title: result.story.title,
+                  genre: result.story.genre,
+                  summary: result.story.summary,
+                  tone: result.story.tone,
+                },
+              }),
+            });
+
+            if (storyCoverResponse.ok) {
+              const imageResult = await storyCoverResponse.json();
+              console.log('[Novel Generation] Generated story cover image:', imageResult.originalUrl);
+
+              // Update story record with cover image
+              await db
+                .update(stories)
+                .set({
+                  coverImage: imageResult.originalUrl,
+                  updatedAt: new Date(),
+                })
+                .where(eq(stories.id, generatedStoryId!));
+            } else {
+              const error = await storyCoverResponse.json();
+              console.error('[Novel Generation] Failed to generate story cover:', error);
+            }
+
+            completedImages++;
+          } catch (error) {
+            console.error('[Novel Generation] Error generating story cover:', error);
+            completedImages++;
+          }
 
           // Generate character images
           for (let i = 0; i < result.characters.length; i++) {
@@ -405,6 +464,64 @@ export async function POST(request: NextRequest) {
               completedImages++;
             } catch (error) {
               console.error(`[Novel Generation] Error generating image for setting ${setting.name}:`, error);
+              completedImages++;
+            }
+          }
+
+          // Generate scene images
+          for (let i = 0; i < result.scenes.length; i++) {
+            const scene = result.scenes[i];
+            const sceneDbId = sceneIdMap.get(scene.id);
+
+            try {
+              controller.enqueue(
+                encoder.encode(
+                  createSSEMessage({
+                    phase: 'images_progress',
+                    message: `Generating image for scene: ${scene.title}...`,
+                    data: {
+                      currentItem: completedImages + 1,
+                      totalItems: totalImages,
+                      percentage: Math.round(((completedImages + 1) / totalImages) * 100),
+                    },
+                  })
+                )
+              );
+
+              const imageResponse = await fetch(`${baseUrl}/studio/api/generation/images`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  storyId: generatedStoryId,
+                  sceneId: sceneDbId,
+                  imageType: 'scene',
+                  targetData: scene,
+                }),
+              });
+
+              if (imageResponse.ok) {
+                const imageResult = await imageResponse.json();
+                console.log(`[Novel Generation] Generated image for scene ${scene.title}:`, imageResult.originalUrl);
+
+                // Update scene record with image URL
+                if (sceneDbId) {
+                  await db
+                    .update(scenes)
+                    .set({
+                      imageUrl: imageResult.originalUrl,
+                      imageVariants: imageResult.variants,
+                      updatedAt: new Date(),
+                    })
+                    .where(eq(scenes.id, sceneDbId));
+                }
+              } else {
+                const error = await imageResponse.json();
+                console.error(`[Novel Generation] Failed to generate image for scene ${scene.title}:`, error);
+              }
+
+              completedImages++;
+            } catch (error) {
+              console.error(`[Novel Generation] Error generating image for scene ${scene.title}:`, error);
               completedImages++;
             }
           }
