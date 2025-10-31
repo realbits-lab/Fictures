@@ -191,6 +191,22 @@ export function CreateStoryForm() {
                     ));
                   }
                   break;
+                case 'characters_progress':
+                  console.log('[Frontend] Received characters_progress:', data.data);
+                  if (data.data?.currentCharacter !== undefined && data.data?.totalCharacters) {
+                    const characterNum = data.data.currentCharacter;
+                    const totalCharacters = data.data.totalCharacters;
+                    const percentage = data.data.percentage || Math.round((characterNum / totalCharacters) * 100);
+
+                    console.log(`[Frontend] Updating characters progress: ${characterNum} of ${totalCharacters} (${percentage}%)`);
+                    setProgress(prev => prev.map((step, index) =>
+                      index === 1 ? {
+                        ...step,
+                        description: `Character ${characterNum} of ${totalCharacters} (${percentage}%)`
+                      } : step
+                    ));
+                  }
+                  break;
                 case 'characters_complete':
                   updateProgress(1, 'completed');
                   if (data.data?.totalCharacters) {
@@ -223,6 +239,22 @@ export function CreateStoryForm() {
                     ));
                   }
                   break;
+                case 'settings_progress':
+                  console.log('[Frontend] Received settings_progress:', data.data);
+                  if (data.data?.currentSetting !== undefined && data.data?.totalSettings) {
+                    const settingNum = data.data.currentSetting;
+                    const totalSettings = data.data.totalSettings;
+                    const percentage = data.data.percentage || Math.round((settingNum / totalSettings) * 100);
+
+                    console.log(`[Frontend] Updating settings progress: ${settingNum} of ${totalSettings} (${percentage}%)`);
+                    setProgress(prev => prev.map((step, index) =>
+                      index === 2 ? {
+                        ...step,
+                        description: `Setting ${settingNum} of ${totalSettings} (${percentage}%)`
+                      } : step
+                    ));
+                  }
+                  break;
                 case 'settings_complete':
                   updateProgress(2, 'completed');
                   if (data.data?.totalSettings) {
@@ -251,6 +283,22 @@ export function CreateStoryForm() {
                       index === 3 ? {
                         ...step,
                         description: `Structuring ${data.data.totalParts}-act framework with macro arcs`
+                      } : step
+                    ));
+                  }
+                  break;
+                case 'parts_progress':
+                  console.log('[Frontend] Received parts_progress:', data.data);
+                  if (data.data?.currentPart !== undefined && data.data?.totalParts) {
+                    const partNum = data.data.currentPart;
+                    const totalParts = data.data.totalParts;
+                    const percentage = data.data.percentage || Math.round((partNum / totalParts) * 100);
+
+                    console.log(`[Frontend] Updating parts progress: ${partNum} of ${totalParts} (${percentage}%)`);
+                    setProgress(prev => prev.map((step, index) =>
+                      index === 3 ? {
+                        ...step,
+                        description: `Part ${partNum} of ${totalParts} (${percentage}%)`
                       } : step
                     ));
                   }

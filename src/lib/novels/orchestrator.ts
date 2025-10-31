@@ -144,6 +144,18 @@ export async function generateCompleteNovel(
       data: { totalCharacters },
     });
 
+    // Show initial progress
+    console.log('[Orchestrator] Emitting characters_progress (0%)');
+    await onProgress({
+      phase: 'characters_progress',
+      message: `Generating characters...`,
+      data: {
+        currentCharacter: 0,
+        totalCharacters,
+        percentage: 0,
+      },
+    });
+
     const charactersResponse = await fetch(`${baseUrl}/studio/api/generation/characters`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -157,6 +169,18 @@ export async function generateCompleteNovel(
 
     const characters: CharacterGenerationResult[] = await charactersResponse.json();
 
+    // Show completion progress
+    console.log(`[Orchestrator] Emitting characters_progress (100%) - ${characters.length} characters`);
+    await onProgress({
+      phase: 'characters_progress',
+      message: `Generated ${characters.length} characters`,
+      data: {
+        currentCharacter: characters.length,
+        totalCharacters: characters.length,
+        percentage: 100,
+      },
+    });
+
     await onProgress({
       phase: 'characters_complete',
       message: `${characters.length} characters created`,
@@ -169,6 +193,18 @@ export async function generateCompleteNovel(
       phase: 'settings_start',
       message: `Creating ${expectedSettings} immersive story settings...`,
       data: { totalSettings: expectedSettings },
+    });
+
+    // Show initial progress
+    console.log('[Orchestrator] Emitting settings_progress (0%)');
+    await onProgress({
+      phase: 'settings_progress',
+      message: `Generating settings...`,
+      data: {
+        currentSetting: 0,
+        totalSettings: expectedSettings,
+        percentage: 0,
+      },
     });
 
     const settingsResponse = await fetch(`${baseUrl}/studio/api/generation/settings`, {
@@ -187,6 +223,18 @@ export async function generateCompleteNovel(
 
     const settings: SettingGenerationResult[] = await settingsResponse.json();
 
+    // Show completion progress
+    console.log(`[Orchestrator] Emitting settings_progress (100%) - ${settings.length} settings`);
+    await onProgress({
+      phase: 'settings_progress',
+      message: `Generated ${settings.length} settings`,
+      data: {
+        currentSetting: settings.length,
+        totalSettings: settings.length,
+        percentage: 100,
+      },
+    });
+
     await onProgress({
       phase: 'settings_complete',
       message: `${settings.length} settings created`,
@@ -199,6 +247,18 @@ export async function generateCompleteNovel(
       phase: 'parts_start',
       message: `Structuring ${expectedParts}-act story framework...`,
       data: { totalParts: expectedParts },
+    });
+
+    // Show initial progress
+    console.log('[Orchestrator] Emitting parts_progress (0%)');
+    await onProgress({
+      phase: 'parts_progress',
+      message: `Generating parts...`,
+      data: {
+        currentPart: 0,
+        totalParts: expectedParts,
+        percentage: 0,
+      },
     });
 
     const partsResponse = await fetch(`${baseUrl}/studio/api/generation/parts`, {
@@ -218,6 +278,18 @@ export async function generateCompleteNovel(
     }
 
     const parts: PartGenerationResult[] = await partsResponse.json();
+
+    // Show completion progress
+    console.log(`[Orchestrator] Emitting parts_progress (100%) - ${parts.length} parts`);
+    await onProgress({
+      phase: 'parts_progress',
+      message: `Generated ${parts.length} acts`,
+      data: {
+        currentPart: parts.length,
+        totalParts: parts.length,
+        percentage: 100,
+      },
+    });
 
     await onProgress({
       phase: 'parts_complete',

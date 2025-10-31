@@ -112,14 +112,10 @@ export async function POST(request: NextRequest) {
             .insert(stories)
             .values({
               id: generatedStoryId,
-              userId: session.user.id,
+              authorId: session.user.id,  // Fixed: Use 'authorId' (correct schema field name)
               title: result.story.title,
               genre: result.story.genre,
-              tone: result.story.tone,
-              summary: result.story.summary,
-              moralFramework: result.story.moralFramework,
-              status: 'draft',
-              visibility: 'private',
+              status: 'writing',  // Fixed: Use 'writing' instead of 'draft' (valid enum value)
               createdAt: new Date(),
               updatedAt: new Date(),
             })
