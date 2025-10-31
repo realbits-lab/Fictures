@@ -20,6 +20,7 @@ import { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { stories, parts, chapters, scenes, characters, settings } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { generateCompleteNovel, type NovelGenerationOptions, type ProgressData } from '@/lib/novels/orchestrator';
 import { nanoid } from 'nanoid';
 
@@ -250,16 +251,19 @@ export async function POST(request: NextRequest) {
           }
 
           // Insert scenes (map chapter IDs)
+          const sceneIdMap = new Map<string, string>();
           if (result.scenes.length > 0) {
             console.log('[Novel Generation] Chapter ID Map:', Object.fromEntries(chapterIdMap));
             console.log('[Novel Generation] Scene chapter IDs:', result.scenes.map(s => ({ sceneId: s.id, chapterId: s.chapterId })));
 
             const sceneRecords = result.scenes.map((scene, index) => {
+              const newId = nanoid();
+              sceneIdMap.set(scene.id, newId); // Map temp ID to database ID
               const mappedChapterId = scene.chapterId ? chapterIdMap.get(scene.chapterId) || null : null;
               console.log(`[Novel Generation] Scene ${index + 1}: chapterId=${scene.chapterId}, mapped=${mappedChapterId}`);
 
               return {
-                id: nanoid(),
+                id: newId,
                 chapterId: mappedChapterId,
                 storyId: generatedStoryId!,
                 title: scene.title || `Scene ${index + 1}`, // Fallback title if missing
@@ -275,6 +279,27 @@ export async function POST(request: NextRequest) {
 
             await db.insert(scenes).values(sceneRecords);
           }
+
+          // Update story with ID arrays for quick access to related entities
+          const partIds = result.parts.map(p => p.id);
+          const chapterIds = Array.from(chapterIdMap.values());
+          const sceneIds = Array.from(sceneIdMap.values());
+
+          await db
+            .update(stories)
+            .set({
+              partIds,
+              chapterIds,
+              sceneIds,
+              updatedAt: new Date(),
+            })
+            .where(eq(stories.id, generatedStoryId!));
+
+          console.log('[Novel Generation] Updated story with ID arrays:', {
+            partIds,
+            chapterIds: chapterIds.length,
+            sceneIds: sceneIds.length,
+          });
 
           // Phase 9: Generate images (now that we have actual storyId)
           const totalImages = result.characters.length + result.settings.length;

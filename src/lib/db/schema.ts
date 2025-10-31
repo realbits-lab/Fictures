@@ -228,6 +228,10 @@ export const stories = pgTable('stories', {
   summary: text('summary'), // General thematic premise and moral framework
   tone: toneEnum('tone'), // Overall emotional direction
   moralFramework: text('moral_framework'), // What virtues are valued in this world
+  // ID arrays for quick access to related entities (populated after generation)
+  partIds: json('part_ids').$type<string[]>().default([]),
+  chapterIds: json('chapter_ids').$type<string[]>().default([]),
+  sceneIds: json('scene_ids').$type<string[]>().default([]),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
