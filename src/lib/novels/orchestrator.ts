@@ -102,34 +102,54 @@ export async function generateCompleteNovel(
 }> {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('🚀 [ORCHESTRATOR] Starting Novel Generation');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('[ORCHESTRATOR] Options:', JSON.stringify(options, null, 2));
+  console.log('[ORCHESTRATOR] Base URL:', baseUrl);
+
   try {
     // Phase 1: Story Summary
+    console.log('\n📖 [ORCHESTRATOR] Phase 1/9: Story Summary - START');
     await onProgress({
       phase: 'story_summary_start',
       message: 'Generating story foundation and moral framework...',
     });
 
+    const storySummaryPayload = {
+      userPrompt: options.userPrompt,
+      preferredGenre: options.preferredGenre,
+      preferredTone: options.preferredTone,
+      characterCount: options.characterCount || 3,
+      settingCount: options.settingCount || 3,
+      partsCount: options.partsCount || 3,
+      chaptersPerPart: options.chaptersPerPart || 3,
+      scenesPerChapter: options.scenesPerChapter || 6,
+    } as StoryGenerationContext;
+
+    console.log('[ORCHESTRATOR] Story Summary Request:', JSON.stringify(storySummaryPayload, null, 2));
+
     const storySummaryResponse = await fetch(`${baseUrl}/studio/api/generation/story-summary`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userPrompt: options.userPrompt,
-        preferredGenre: options.preferredGenre,
-        preferredTone: options.preferredTone,
-        characterCount: options.characterCount || 3,
-        settingCount: options.settingCount || 3,
-        partsCount: options.partsCount || 3,
-        chaptersPerPart: options.chaptersPerPart || 3,
-        scenesPerChapter: options.scenesPerChapter || 6,
-      } as StoryGenerationContext),
+      body: JSON.stringify(storySummaryPayload),
     });
+
+    console.log('[ORCHESTRATOR] Story Summary Response Status:', storySummaryResponse.status);
 
     if (!storySummaryResponse.ok) {
       const error = await storySummaryResponse.json();
+      console.error('❌ [ORCHESTRATOR] Story Summary Failed:', error);
       throw new Error(`Story summary generation failed: ${error.details || error.error}`);
     }
 
     const storySummary: StorySummaryResult = await storySummaryResponse.json();
+    console.log('✅ [ORCHESTRATOR] Story Summary Complete');
+    console.log('[ORCHESTRATOR] Story Data:', JSON.stringify({
+      title: storySummary.title,
+      genre: storySummary.genre,
+      charactersCount: storySummary.characters?.length || 0,
+    }, null, 2));
 
     await onProgress({
       phase: 'story_summary_complete',
@@ -138,7 +158,10 @@ export async function generateCompleteNovel(
     });
 
     // Phase 2: Characters
+    console.log('\n👥 [ORCHESTRATOR] Phase 2/9: Characters - START');
     const totalCharacters = storySummary.characters.length;
+    console.log('[ORCHESTRATOR] Expected characters:', totalCharacters);
+
     await onProgress({
       phase: 'characters_start',
       message: `Expanding ${totalCharacters} character profiles...`,
@@ -146,7 +169,7 @@ export async function generateCompleteNovel(
     });
 
     // Show initial progress
-    console.log('[Orchestrator] Emitting characters_progress (0%)');
+    console.log('[ORCHESTRATOR] Emitting characters_progress (0%)');
     await onProgress({
       phase: 'characters_progress',
       message: `Generating characters...`,
@@ -163,15 +186,20 @@ export async function generateCompleteNovel(
       body: JSON.stringify({ storySummary }),
     });
 
+    console.log('[ORCHESTRATOR] Characters Response Status:', charactersResponse.status);
+
     if (!charactersResponse.ok) {
       const error = await charactersResponse.json();
+      console.error('❌ [ORCHESTRATOR] Characters Failed:', error);
       throw new Error(`Character generation failed: ${error.details || error.error}`);
     }
 
     const characters: CharacterGenerationResult[] = await charactersResponse.json();
+    console.log('✅ [ORCHESTRATOR] Characters Complete:', characters.length, 'characters');
+    console.log('[ORCHESTRATOR] Character Names:', characters.map(c => c.name).join(', '));
 
     // Show completion progress
-    console.log(`[Orchestrator] Emitting characters_progress (100%) - ${characters.length} characters`);
+    console.log(`[ORCHESTRATOR] Emitting characters_progress (100%) - ${characters.length} characters`);
     await onProgress({
       phase: 'characters_progress',
       message: `Generated ${characters.length} characters (100%)`,
@@ -189,7 +217,10 @@ export async function generateCompleteNovel(
     });
 
     // Phase 3: Settings
+    console.log('\n🗺️ [ORCHESTRATOR] Phase 3/9: Settings - START');
     const expectedSettings = options.settingCount || 3;
+    console.log('[ORCHESTRATOR] Expected settings:', expectedSettings);
+
     await onProgress({
       phase: 'settings_start',
       message: `Creating ${expectedSettings} immersive story settings...`,
@@ -197,7 +228,7 @@ export async function generateCompleteNovel(
     });
 
     // Show initial progress
-    console.log('[Orchestrator] Emitting settings_progress (0%)');
+    console.log('[ORCHESTRATOR] Emitting settings_progress (0%)');
     await onProgress({
       phase: 'settings_progress',
       message: `Generating settings...`,
@@ -217,15 +248,20 @@ export async function generateCompleteNovel(
       }),
     });
 
+    console.log('[ORCHESTRATOR] Settings Response Status:', settingsResponse.status);
+
     if (!settingsResponse.ok) {
       const error = await settingsResponse.json();
+      console.error('❌ [ORCHESTRATOR] Settings Failed:', error);
       throw new Error(`Settings generation failed: ${error.details || error.error}`);
     }
 
     const settings: SettingGenerationResult[] = await settingsResponse.json();
+    console.log('✅ [ORCHESTRATOR] Settings Complete:', settings.length, 'settings');
+    console.log('[ORCHESTRATOR] Setting Names:', settings.map(s => s.name).join(', '));
 
     // Show completion progress
-    console.log(`[Orchestrator] Emitting settings_progress (100%) - ${settings.length} settings`);
+    console.log(`[ORCHESTRATOR] Emitting settings_progress (100%) - ${settings.length} settings`);
     await onProgress({
       phase: 'settings_progress',
       message: `Generated ${settings.length} settings (100%)`,
@@ -243,7 +279,10 @@ export async function generateCompleteNovel(
     });
 
     // Phase 4: Parts
+    console.log('\n📚 [ORCHESTRATOR] Phase 4/9: Parts - START');
     const expectedParts = options.partsCount || 3;
+    console.log('[ORCHESTRATOR] Expected parts:', expectedParts);
+
     await onProgress({
       phase: 'parts_start',
       message: `Structuring ${expectedParts}-act story framework...`,
@@ -251,7 +290,7 @@ export async function generateCompleteNovel(
     });
 
     // Show initial progress
-    console.log('[Orchestrator] Emitting parts_progress (0%)');
+    console.log('[ORCHESTRATOR] Emitting parts_progress (0%)');
     await onProgress({
       phase: 'parts_progress',
       message: `Generating parts...`,
@@ -262,26 +301,39 @@ export async function generateCompleteNovel(
       },
     });
 
+    const partsPayload = {
+      storySummary,
+      characters,
+      partsCount: expectedParts,
+      chaptersPerPart: options.chaptersPerPart || 3,
+    };
+    console.log('[ORCHESTRATOR] Parts Request:', JSON.stringify({
+      partsCount: expectedParts,
+      chaptersPerPart: options.chaptersPerPart || 3,
+      charactersCount: characters.length,
+    }, null, 2));
+
     const partsResponse = await fetch(`${baseUrl}/studio/api/generation/parts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        storySummary,
-        characters,
-        partsCount: expectedParts,
-        chaptersPerPart: options.chaptersPerPart || 3,
-      }),
+      body: JSON.stringify(partsPayload),
     });
+
+    console.log('[ORCHESTRATOR] Parts Response Status:', partsResponse.status);
 
     if (!partsResponse.ok) {
       const error = await partsResponse.json();
+      console.error('❌ [ORCHESTRATOR] Parts Failed:', error);
       throw new Error(`Parts generation failed: ${error.details || error.error}`);
     }
 
     const parts: PartGenerationResult[] = await partsResponse.json();
+    console.log('✅ [ORCHESTRATOR] Parts Complete:', parts.length, 'parts');
+    console.log('[ORCHESTRATOR] Part Titles:', parts.map(p => p.title).join(', '));
+    console.log('[ORCHESTRATOR] Parts with IDs:', parts.map(p => ({ id: p.id, title: p.title })));
 
     // Show completion progress
-    console.log(`[Orchestrator] Emitting parts_progress (100%) - ${parts.length} parts`);
+    console.log(`[ORCHESTRATOR] Emitting parts_progress (100%) - ${parts.length} parts`);
     await onProgress({
       phase: 'parts_progress',
       message: `Generated ${parts.length} acts (100%)`,
@@ -299,6 +351,10 @@ export async function generateCompleteNovel(
     });
 
     // Phase 5: Chapters
+    console.log('\n📑 [ORCHESTRATOR] Phase 5/9: Chapters - START');
+    console.log('[ORCHESTRATOR] Generating chapters for', parts.length, 'parts');
+    console.log('[ORCHESTRATOR] Chapters per part:', options.chaptersPerPart || 3);
+
     await onProgress({
       phase: 'chapters_start',
       message: 'Generating detailed chapter structure...',
@@ -308,32 +364,58 @@ export async function generateCompleteNovel(
     const allChapters: ChapterGenerationResult[] = [];
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
+      console.log(`\n[ORCHESTRATOR] Processing Part ${i + 1}/${parts.length}: ${part.title}`);
+      console.log('[ORCHESTRATOR] Part ID:', part.id);
+      console.log('[ORCHESTRATOR] Part character arcs:', part.characterArcs?.length || 0);
+
       const previousPartChapters = i > 0 ? allChapters.filter(ch => ch.partId === parts[i - 1].id) : [];
+      console.log('[ORCHESTRATOR] Previous part chapters:', previousPartChapters.length);
+
+      const chaptersPayload = {
+        part,
+        characters,
+        previousPartChapters,
+        chaptersPerPart: options.chaptersPerPart || 3
+      };
+
+      console.log('[ORCHESTRATOR] Chapters Request:', JSON.stringify({
+        partId: part.id,
+        partTitle: part.title,
+        charactersCount: characters.length,
+        previousChaptersCount: previousPartChapters.length,
+        chaptersPerPart: options.chaptersPerPart || 3,
+      }, null, 2));
 
       const chaptersResponse = await fetch(`${baseUrl}/studio/api/generation/chapters`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          part,
-          characters,
-          previousPartChapters,
-          chaptersPerPart: options.chaptersPerPart || 3
-        }),
+        body: JSON.stringify(chaptersPayload),
       });
+
+      console.log('[ORCHESTRATOR] Chapters Response Status:', chaptersResponse.status);
 
       if (!chaptersResponse.ok) {
         const error = await chaptersResponse.json();
+        console.error('❌ [ORCHESTRATOR] Chapters Failed for Part', i + 1, ':', error);
+        console.error('[ORCHESTRATOR] Part data:', JSON.stringify(part, null, 2));
+        console.error('[ORCHESTRATOR] Characters data:', JSON.stringify(characters.map(c => ({ id: c.id, name: c.name })), null, 2));
         throw new Error(`Chapters generation failed for Part ${i + 1}: ${error.details || error.error}`);
       }
 
       const partChapters: ChapterGenerationResult[] = await chaptersResponse.json();
+      console.log('✅ [ORCHESTRATOR] Part', i + 1, 'Chapters:', partChapters.length, 'chapters');
+      console.log('[ORCHESTRATOR] Chapter Titles:', partChapters.map(c => c.title).join(', '));
 
       // Add unique ID and part reference to each chapter
-      const chaptersWithIds = partChapters.map((chapter) => ({
-        ...chapter,
-        id: nanoid(), // Generate unique ID for chapter
-        partId: part.id, // Link to part
-      }));
+      const chaptersWithIds = partChapters.map((chapter) => {
+        const chapterId = nanoid();
+        console.log('[ORCHESTRATOR] Assigning chapter ID:', chapterId, 'to', chapter.title);
+        return {
+          ...chapter,
+          id: chapterId, // Generate unique ID for chapter
+          partId: part.id, // Link to part
+        };
+      });
 
       allChapters.push(...chaptersWithIds);
 
@@ -351,6 +433,8 @@ export async function generateCompleteNovel(
     }
 
     const chapters = allChapters;
+    console.log('✅ [ORCHESTRATOR] All Chapters Complete:', chapters.length, 'total chapters');
+    console.log('[ORCHESTRATOR] Chapters with IDs:', chapters.map(c => ({ id: c.id, title: c.title, partId: c.partId })));
 
     await onProgress({
       phase: 'chapters_complete',

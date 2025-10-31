@@ -208,6 +208,10 @@ Return ONLY the structured text, no JSON, no markdown code blocks.`;
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📑 [CHAPTERS API] Request received');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
     const body = await request.json() as {
       part: PartGenerationResult;
       characters: CharacterGenerationResult[];
@@ -216,12 +220,38 @@ export async function POST(request: NextRequest) {
     };
     const { part, characters, previousPartChapters = [], chaptersPerPart } = body;
 
-    if (!part || !characters || characters.length === 0) {
+    console.log('[CHAPTERS API] Request body summary:', {
+      hasPart: !!part,
+      partTitle: part?.title,
+      partId: (part as any)?.id,
+      charactersCount: characters?.length || 0,
+      characterNames: characters?.map(c => c.name).join(', '),
+      previousChaptersCount: previousPartChapters.length,
+      chaptersPerPart,
+    });
+
+    if (!part) {
+      console.error('❌ [CHAPTERS API] Validation failed: Part is missing');
       return NextResponse.json(
-        { error: 'Part and characters are required' },
+        { error: 'Part is required' },
         { status: 400 }
       );
     }
+
+    if (!characters || characters.length === 0) {
+      console.error('❌ [CHAPTERS API] Validation failed: Characters are missing or empty');
+      return NextResponse.json(
+        { error: 'Characters are required' },
+        { status: 400 }
+      );
+    }
+
+    console.log('✅ [CHAPTERS API] Validation passed');
+    console.log('[CHAPTERS API] Part data:', JSON.stringify({
+      title: part.title,
+      actNumber: part.actNumber,
+      characterArcsCount: part.characterArcs?.length || 0,
+    }, null, 2));
 
     // Build context for chapter generation
     const totalArcs = part.characterArcs.length;
