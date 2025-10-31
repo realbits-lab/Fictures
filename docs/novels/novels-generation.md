@@ -1,12 +1,12 @@
-# Adversity-Triumph Engine: Generation Guide
+# Novels Generation Guide: Adversity-Triumph Engine
 
 ## Overview
 
-This document provides comprehensive implementation specifications for the Adversity-Triumph Engine APIs, including ultra-engineered system prompts, complete examples, and iterative improvement workflows.
+This document provides comprehensive implementation specifications for the novels generation APIs using the Adversity-Triumph Engine, including ultra-engineered system prompts, complete examples, and iterative improvement workflows.
 
 **Related Documents:**
-- 📖 **Specification** (`adversity-triumph-specification.md`): Core concepts, data model, and theoretical foundation
-- 🧪 **Testing Guide** (`adversity-triumph-testing.md`): Validation methods, quality metrics, and test strategies
+- 📖 **Specification** (`novels-specification.md`): Core concepts, data model, and theoretical foundation
+- 🧪 **Testing Guide** (`novels-testing.md`): Validation methods, quality metrics, and test strategies
 
 ---
 
@@ -22,7 +22,7 @@ This document provides comprehensive implementation specifications for the Adver
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 1: Story Summary Generation                                 │
-│  POST /api/generation/story-summary                              │
+│  POST /novels/api/generation/story-summary                              │
 │                                                                   │
 │  System Prompt Focus:                                            │
 │  - Extract general thematic premise, NOT detailed plot           │
@@ -35,7 +35,7 @@ This document provides comprehensive implementation specifications for the Adver
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 2: Character Generation (Full Profiles)                    │
-│  POST /api/generation/characters                                 │
+│  POST /novels/api/generation/characters                                 │
 │                                                                   │
 │  System Prompt Focus:                                            │
 │  - Expand basic character data into full profiles               │
@@ -49,7 +49,7 @@ This document provides comprehensive implementation specifications for the Adver
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 3: Settings Generation (Primary Locations)                 │
-│  POST /api/generation/settings                                   │
+│  POST /novels/api/generation/settings                                   │
 │                                                                   │
 │  System Prompt Focus:                                            │
 │  - Create 2-4 primary settings with adversity elements          │
@@ -64,7 +64,7 @@ This document provides comprehensive implementation specifications for the Adver
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 4: Part Summaries Generation (3-Act Structure)             │
-│  POST /api/generation/parts                                      │
+│  POST /novels/api/generation/parts                                      │
 │                                                                   │
 │  System Prompt Focus:                                            │
 │  - Create adversity-triumph cycle PER CHARACTER per act         │
@@ -79,7 +79,7 @@ This document provides comprehensive implementation specifications for the Adver
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 5: Chapter Summaries Generation (Per Part)                 │
-│  POST /api/generation/chapters                                   │
+│  POST /novels/api/generation/chapters                                   │
 │                                                                   │
 │  System Prompt Focus:                                            │
 │  - Extract ONE adversity-triumph cycle per chapter              │
@@ -94,7 +94,7 @@ This document provides comprehensive implementation specifications for the Adver
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 6: Scene Summaries Generation (Per Chapter)                │
-│  POST /api/generation/scene-summaries                            │
+│  POST /novels/api/generation/scene-summaries                            │
 │                                                                   │
 │  System Prompt Focus:                                            │
 │  - Divide cycle into 5 phases: setup → confrontation →         │
@@ -109,7 +109,7 @@ This document provides comprehensive implementation specifications for the Adver
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 7: Scene Content Generation (Per Scene, One at a Time)     │
-│  POST /api/generation/scene-content                              │
+│  POST /novels/api/generation/scene-content                              │
 │                                                                   │
 │  System Prompt Focus:                                            │
 │  - Uses Scene.summary as primary specification                 │
@@ -142,7 +142,7 @@ Note: Two-step scene generation allows:
 ### 1.2 Complete Generation Flow API
 
 ```typescript
-POST /api/stories/generate-complete
+POST /novels/api/stories/generate-complete
 
 Request:
 {
@@ -186,7 +186,7 @@ Final Event:
 
 #### Endpoint
 ```typescript
-POST /api/generation/story-summary
+POST /novels/api/generation/story-summary
 
 Request:
 {
@@ -297,7 +297,7 @@ Return ONLY the JSON object, no explanations, no markdown formatting.
 ```
 
 #### Implementation Notes
-- **AI Model**: GPT-4o-mini (cost-effective, sufficient for structured output)
+- **AI Model**: Gemini 2.5 Flash Lite (cost-effective, sufficient for structured output)
 - **Temperature**: 0.7 (balanced creativity and consistency)
 - **Post-Processing**: Validate JSON, check summary format, verify character count
 
@@ -307,7 +307,7 @@ Return ONLY the JSON object, no explanations, no markdown formatting.
 
 #### Endpoint
 ```typescript
-POST /api/generation/characters
+POST /novels/api/generation/characters
 
 Request:
 {
@@ -560,7 +560,7 @@ Return ONLY the JSON array, no explanations.
 ```
 
 #### Implementation Notes
-- **AI Model**: GPT-4o (needs higher capability for character depth)
+- **AI Model**: Gemini 2.5 Flash (needs higher capability for character depth)
 - **Temperature**: 0.8 (need creativity for unique characters)
 - **Post-Processing**:
   1. Validate all required fields present
@@ -577,7 +577,7 @@ Return ONLY the JSON array, no explanations.
 
 #### Endpoint
 ```typescript
-POST /api/generation/settings
+POST /novels/api/generation/settings
 
 Request:
 {
@@ -861,7 +861,7 @@ Return ONLY the JSON array, no explanations.
 ```
 
 #### Implementation Notes
-- **AI Model**: GPT-4o (needs high capability for symbolic reasoning and sensory richness)
+- **AI Model**: Gemini 2.5 Flash (needs high capability for symbolic reasoning and sensory richness)
 - **Temperature**: 0.8 (need creativity for unique, evocative settings)
 - **Post-Processing**:
   1. Validate all required fields present
@@ -880,7 +880,7 @@ Return ONLY the JSON array, no explanations.
 
 #### Endpoint
 ```typescript
-POST /api/generation/parts
+POST /novels/api/generation/parts
 
 Request:
 {
@@ -1053,7 +1053,7 @@ Return structured text with clear section headers.
 ```
 
 #### Implementation Notes
-- **AI Model**: GPT-4o (higher capability for complex multi-character planning)
+- **AI Model**: Gemini 2.5 Flash (higher capability for complex multi-character planning)
 - **Temperature**: 0.8 (need creativity for compelling arcs)
 - **Post-Processing**: Parse into Part records, extract characterArcs JSON, validate seed logic
 
@@ -1063,7 +1063,7 @@ Return structured text with clear section headers.
 
 #### Endpoint
 ```typescript
-POST /api/generation/chapters
+POST /novels/api/generation/chapters
 
 Request:
 {
@@ -1231,7 +1231,7 @@ Return structured text with clear chapter separations.
 ```
 
 #### Implementation Notes
-- **AI Model**: GPT-4o (complex decomposition task)
+- **AI Model**: Gemini 2.5 Flash (complex decomposition task)
 - **Temperature**: 0.7
 - **Iterative Generation**: Generate chapters one at a time
 - **Post-Processing**: Parse into Chapter records, extract seeds with UUIDs, build causal chain map
@@ -1242,7 +1242,7 @@ Return structured text with clear chapter separations.
 
 #### Endpoint
 ```typescript
-POST /api/generation/scene-summaries
+POST /novels/api/generation/scene-summaries
 
 Request:
 {
@@ -1358,7 +1358,7 @@ Return structured data for all scenes with clear sections.
 ```
 
 #### Implementation Notes
-- **AI Model**: GPT-4o-mini (structured breakdown task)
+- **AI Model**: Gemini 2.5 Flash Lite (structured breakdown task)
 - **Temperature**: 0.6 (need consistency in specifications)
 - **Post-Processing**: Validate scene count, ensure virtue scene is marked long, check cycle phase coverage
 
@@ -1368,7 +1368,7 @@ Return structured data for all scenes with clear sections.
 
 #### Endpoint
 ```typescript
-POST /api/generation/scene-content
+POST /novels/api/generation/scene-content
 
 Request:
 {
@@ -1544,7 +1544,7 @@ Return ONLY the prose narrative, no metadata, no explanations.
 ```
 
 #### Implementation Notes
-- **AI Model**: GPT-4o-mini for most scenes, GPT-4o for complex virtue/consequence scenes
+- **AI Model**: Gemini 2.5 Flash Lite for most scenes, Gemini 2.5 Flash for complex virtue/consequence scenes
 - **Temperature**: 0.7
 - **Post-Processing**: Scene formatting (paragraph splitting, spacing), validation
 - **Prompt Version**: v1.1 (improved from v1.0 based on testing)
