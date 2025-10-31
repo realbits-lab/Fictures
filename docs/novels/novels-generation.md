@@ -141,11 +141,11 @@ This document provides comprehensive implementation specifications for the novel
 │  POST /novels/api/images/generate                                       │
 │                                                                   │
 │  System Prompt Focus:                                            │
-│  - Generate story cover image (1792×1024, 16:9)                │
+│  - Generate story cover image (1344×768, 7:4)                  │
 │  - Generate character portraits (1024×1024 per character)       │
-│  - Generate setting environments (1792×1024, 16:9 per setting) │
-│  - Generate scene images (1792×1024, 16:9 per scene)           │
-│  - Create 18 optimized variants per image (AVIF/WebP/JPEG)     │
+│  - Generate setting environments (1344×768, 7:4 per setting)   │
+│  - Generate scene images (1344×768, 7:4 per scene)             │
+│  - Create 4 optimized variants per image (AVIF/JPEG)           │
 │                                                                   │
 │  Output: All images with optimized variants stored in Blob      │
 └─────────────────────────────────────────────────────────────────┘
@@ -1765,6 +1765,8 @@ Return ONLY the JSON evaluation, no explanations.
 
 ### 2.9 Image Generation API
 
+**Complete Documentation:** See [Image System Guide](../../docs/image/image-system-guide.md) for comprehensive image generation and optimization details.
+
 #### Endpoint
 ```typescript
 POST /novels/api/images/generate
@@ -1801,62 +1803,75 @@ Final Event:
       scenes: number      // Count of scene images
     },
     totalImages: number,
-    totalVariants: number // 18 variants per image
+    totalVariants: number // 4 variants per image
   }
 }
 ```
 
-#### Image Generation Specifications
+#### Image Specifications
 
-**Story Cover Image**:
-- Size: 1792×1024 (16:9 widescreen)
-- Prompt: `Book cover illustration for "{storyTitle}", {storySummary}, {genre} genre, {tone} atmosphere, {visualStyle} art style, dramatic composition, professional book cover design`
+**Dimensions:**
+- Story covers: 1344×768 (7:4)
+- Character portraits: 1024×1024 (square)
+- Setting environments: 1344×768 (7:4)
+- Scene images: 1344×768 (7:4)
 
-**Character Portrait**:
-- Size: 1024×1024 (square)
-- Prompt: `Portrait of {characterName}, {physicalDescription.appearance}, {physicalDescription.distinctiveFeatures}, {visualStyle} style, {genre} genre aesthetic, character concept art`
+**Model:** Gemini 2.5 Flash via Google AI API
 
-**Setting Environment**:
-- Size: 1792×1024 (16:9 widescreen)
-- Prompt: `Wide landscape view of {settingName}, {settingDescription}, {visualReferences[0]} style, {genre} aesthetic, {colorPalette} colors, {mood} atmosphere, 16:9 cinematic composition`
+**Optimization:** Each image generates 4 variants (AVIF/JPEG × 2 sizes)
+- Mobile 1x: 672×384
+- Mobile 2x / Desktop: 1344×768 (original size)
 
-**Scene Image**:
-- Size: 1792×1024 (16:9 widescreen)
-- Prompt: `Cinematic scene from {storyTitle}: {sceneTitle}, {sceneVisualDescription}, {settingName} environment, {charactersPresent}, {visualStyle} style, {genre} aesthetic, 16:9 composition`
+**See:** [Image Optimization Guide](../../docs/image/image-optimization.md) for complete variant specifications
 
-#### Image Optimization
+#### Prompt Templates
 
-For EACH generated image, automatically create 18 optimized variants:
+**Story Cover:**
+```
+Book cover illustration for "{storyTitle}", {storySummary}, {genre} genre,
+{tone} atmosphere, {visualStyle} art style, dramatic composition,
+professional book cover design
+```
 
-**Formats**: AVIF (best), WebP (fallback), JPEG (universal)
-**Sizes**:
-- Mobile: 640×360, 1280×720
-- Tablet: 1024×576, 2048×1152
-- Desktop: 1440×810, 2880×1620
+**Character Portrait:**
+```
+Portrait of {characterName}, {physicalDescription.appearance},
+{physicalDescription.distinctiveFeatures}, {visualStyle} style,
+{genre} genre aesthetic, character concept art
+```
 
-**Total per image**: 3 formats × 6 sizes = 18 variants
+**Setting Environment:**
+```
+Wide landscape view of {settingName}, {settingDescription},
+{visualReferences[0]} style, {genre} aesthetic, {colorPalette} colors,
+{mood} atmosphere, cinematic composition
+```
+
+**Scene Image:**
+```
+Cinematic scene from {storyTitle}: {sceneTitle}, {sceneVisualDescription},
+{settingName} environment, {charactersPresent}, {visualStyle} style,
+{genre} aesthetic, 7:4 composition
+```
 
 #### Implementation Notes
-- **Image Generation Model**: Gemini 2.5 Flash via Google AI API
-- **Optimization Service**: Sharp.js for variant creation
-- **Storage**: Vercel Blob with public access
-- **Database Updates**: Store imageUrl and imageVariants for each entity
 - **Batch Processing**: Generate 5 images at a time to avoid rate limits
+- **Storage**: Vercel Blob with public access
+- **Database**: Store imageUrl and imageVariants for each entity
 - **Error Handling**: Retry failed generations up to 3 times
-- **Progress Tracking**: Use SSE to report real-time progress to client
+- **Progress Tracking**: SSE for real-time progress updates
 
-**Generation Order**:
+**Generation Order:**
 1. Story cover (1 image)
 2. Characters (2-4 images)
 3. Settings (2-4 images)
-4. Scenes (per chapter, 3-7 per chapter × N chapters)
+4. Scenes (3-7 per chapter × N chapters)
 
-**Performance**:
-- Story cover: ~5-15 seconds
-- Character portrait: ~5-15 seconds each
-- Setting environment: ~5-15 seconds each
-- Scene image: ~5-15 seconds each
-- Optimization: ~2 seconds per image (18 variants)
+**Performance:**
+- Generation: ~5-15 seconds per image
+- Optimization: ~2 seconds per image (4 variants)
+
+**See:** [Image Generation Guide](../../docs/image/image-generation.md) for API usage examples and testing
 
 ---
 
