@@ -4,13 +4,7 @@ import { BookOpenIcon, GithubIcon } from 'lucide-react';
 export function baseOptions(): BaseLayoutProps {
   return {
     nav: {
-      title: (
-        <>
-          <BookOpenIcon className="w-5 h-5" />
-          <span className="font-semibold">Fictures Docs</span>
-        </>
-      ),
-      transparentMode: 'top',
+      enabled: false, // Disable Fumadocs nav since we use GlobalNavigation
     },
     links: [
       {

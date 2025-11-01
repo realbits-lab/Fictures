@@ -39,13 +39,13 @@ export function GlobalNavigation() {
 
   // Filter navigation items based on user role
   const visibleGnbItems = gnbMenuItems.filter((item) => {
-    // Studio, Publish, Analytics, and Comics are writer/manager specific
-    if (item.href === '/studio' || item.href === '/publish' || item.href === '/analytics' || item.href === '/comics') {
+    // Studio, Publish, Analytics, Comics, and Docs are writer/manager specific
+    if (item.href === '/studio' || item.href === '/publish' || item.href === '/analytics' || item.href === '/comics' || item.href === '/docs') {
       return session?.user?.role === 'writer' || session?.user?.role === 'manager';
     }
 
-    // Novels, Community, and Docs are visible to all users (authenticated or anonymous)
-    if (item.href === '/novels' || item.href === '/community' || item.href === '/docs') {
+    // Novels and Community are visible to all users (authenticated or anonymous)
+    if (item.href === '/novels' || item.href === '/community') {
       return true;
     }
 

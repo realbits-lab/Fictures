@@ -19,15 +19,17 @@ export default function Layout({ children }: { children: ReactNode }) {
   console.log('[DOCS LAYOUT] Rendering DocsLayout');
 
   return (
-    <DocsLayout
-      tree={pageTree}
-      {...options}
-      sidebar={{
-        enabled: true,
-        defaultOpenLevel: 1,
-      }}
-    >
-      {children}
-    </DocsLayout>
+    <div className="pt-24">
+      <DocsLayout
+        tree={pageTree}
+        {...options}
+        sidebar={{
+          enabled: true,
+          defaultOpenLevel: 1,
+        }}
+      >
+        {children}
+      </DocsLayout>
+    </div>
   );
 }
