@@ -43,7 +43,7 @@ export function DashboardClient() {
   const stories = (data?.stories || []).map((story: any) => ({
     id: story.id,
     title: story.title,
-    description: `${story.chapters?.completed || 0}/${story.chapters?.total || 0} chapters completed`, // Use chapter progress as description
+    summary: story.summary || '', // Story summary from database
     genre: story.genre || "General",
     status: story.status,
     isPublic: story.isPublic || false,

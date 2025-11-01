@@ -50,6 +50,7 @@ export async function getCachedUserStories(userId: string) {
     .select({
       id: stories.id,
       title: stories.title,
+      summary: stories.summary, // ✅ INCLUDE: Story summary for card descriptions
       genre: stories.genre,
       status: stories.status,
       authorId: stories.authorId,
@@ -63,7 +64,6 @@ export async function getCachedUserStories(userId: string) {
       // ❌ SKIP heavy fields for list view:
       // - moralFramework - not needed for list
       // - hnsData - removed from schema (legacy HNS field)
-      // - description - removed from schema
     })
     .from(stories)
     .where(eq(stories.authorId, userId))

@@ -21,18 +21,15 @@ import type { ReadingFormat } from '@/types/reading-history';
 interface Story {
   id: string;
   title: string;
-  description: string;
+  summary: string; // Story summary from database
   genre: string;
   status: string;
   isPublic: boolean;
   viewCount: number;
   rating: number;
   createdAt: Date;
-  hnsData?: {
-    storyImage?: {
-      url: string;
-    };
-  };
+  imageUrl?: string;
+  imageVariants?: any;
   author: {
     id: string;
     name: string;
@@ -172,65 +169,67 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
       <div className="mb-10">
         {/* Mobile: 2 rows, Desktop: 1 row */}
         <div className="flex flex-col md:flex-row md:justify-end items-stretch md:items-center gap-3">
-          {/* First row on mobile: History/All + View toggles */}
+          {/* First row on mobile: History/All + View toggles (or just View toggle for studio) */}
           <div className="flex items-center justify-between md:justify-end gap-3">
-            {/* History/All Toggle */}
-            <div className="inline-flex rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))] p-1 flex-1 md:flex-initial">
-            <button
-              onClick={() => setFilterMode("all")}
-              className={`inline-flex items-center justify-center rounded-md px-2 md:px-3 py-1.5 text-sm font-medium transition-all flex-1 md:flex-initial ${
-                filterMode === "all"
-                  ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-sm"
-                  : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-foreground))]"
-              }`}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="md:mr-2"
-              >
-                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                <path d="M21 3v5h-5" />
-                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                <path d="M3 21v-5h5" />
-              </svg>
-              <span className="hidden md:inline">All Stories</span>
-              <span className="md:hidden">All</span>
-            </button>
-            <button
-              onClick={() => setFilterMode("history")}
-              className={`inline-flex items-center justify-center rounded-md px-2 md:px-3 py-1.5 text-sm font-medium transition-all flex-1 md:flex-initial ${
-                filterMode === "history"
-                  ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-sm"
-                  : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-foreground))]"
-              }`}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="md:mr-2"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-              <span className="hidden md:inline">My History</span>
-              <span className="md:hidden">History</span>
-            </button>
-          </div>
+            {/* History/All Toggle - Hide for studio page */}
+            {pageType !== 'studio' && (
+              <div className="inline-flex rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))] p-1 flex-1 md:flex-initial">
+                <button
+                  onClick={() => setFilterMode("all")}
+                  className={`inline-flex items-center justify-center rounded-md px-2 md:px-3 py-1.5 text-sm font-medium transition-all flex-1 md:flex-initial ${
+                    filterMode === "all"
+                      ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-sm"
+                      : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-foreground))]"
+                  }`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="md:mr-2"
+                  >
+                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                    <path d="M21 3v5h-5" />
+                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                    <path d="M3 21v-5h5" />
+                  </svg>
+                  <span className="hidden md:inline">All Stories</span>
+                  <span className="md:hidden">All</span>
+                </button>
+                <button
+                  onClick={() => setFilterMode("history")}
+                  className={`inline-flex items-center justify-center rounded-md px-2 md:px-3 py-1.5 text-sm font-medium transition-all flex-1 md:flex-initial ${
+                    filterMode === "history"
+                      ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-sm"
+                      : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-foreground))]"
+                  }`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="md:mr-2"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                  <span className="hidden md:inline">My History</span>
+                  <span className="md:hidden">History</span>
+                </button>
+              </div>
+            )}
 
             {/* View Toggle */}
             <div className="inline-flex rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))] p-1 flex-1 md:flex-initial">
@@ -394,7 +393,7 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                 </h3>
 
                 <p className="text-gray-600 dark:text-gray-400 text-xs mb-2 line-clamp-3 flex-grow overflow-hidden">
-                  {story.description || "No description available."}
+                  {story.summary || "No summary available."}
                 </p>
 
                 <div className="text-xs text-gray-500 dark:text-gray-500 mb-3 flex-shrink-0 truncate">
@@ -410,9 +409,6 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                     <span className="flex items-center gap-1 flex-shrink-0">
                       <span>⭐</span>
                       <span>{(story.rating || 0).toFixed(1)}</span>
-                    </span>
-                    <span className="flex items-center gap-1 flex-shrink-0">
-                      <span>📝</span>
                     </span>
                   </div>
                 </div>
@@ -444,7 +440,6 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                   <TableHead>Author</TableHead>
                   <TableHead className="w-[100px] text-center">Views</TableHead>
                   <TableHead className="w-[100px] text-center">Rating</TableHead>
-                  <TableHead className="w-[120px] text-center">Words</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -490,7 +485,7 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                             {story.title}
                           </div>
                           <div className="text-xs text-gray-600 dark:text-gray-400 line-clamp-1">
-                            {story.description || "No description available."}
+                            {story.summary || "No summary available."}
                           </div>
                         </div>
                       </TableCell>
@@ -521,11 +516,6 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                         <span className="flex items-center justify-center gap-1">
                           <span>⭐</span>
                           <span>{(story.rating || 0).toFixed(1)}</span>
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-center text-gray-600 dark:text-gray-400">
-                        <span className="flex items-center justify-center gap-1">
-                          <span>📝</span>
                         </span>
                       </TableCell>
                     </TableRow>

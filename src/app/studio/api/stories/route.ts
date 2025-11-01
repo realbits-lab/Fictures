@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
     const transformedStories = stories.map((story) => ({
       id: story.id,
       title: story.title,
+      summary: story.summary || '', // Story summary for card descriptions
       genre: story.genre || "General",
       parts: {
         completed: story.completedParts || 0,

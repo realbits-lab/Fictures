@@ -631,7 +631,7 @@ export async function getPublishedStories() {
   return publishedStories.map(story => ({
     id: story.id,
     title: story.title,
-    description: story.description || '',
+    summary: story.summary || '', // Story summary from database
     genre: story.genre || 'Fiction',
     status: story.status,
     isPublic: true,
@@ -639,7 +639,6 @@ export async function getPublishedStories() {
     rating: story.rating || 0,
     createdAt: story.createdAt,
     // Adversity-Triumph Engine fields
-    summary: story.summary,
     tone: story.tone,
     moralFramework: story.moralFramework,
     imageUrl: story.imageUrl,

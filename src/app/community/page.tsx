@@ -111,7 +111,7 @@ export default function CommunityPage() {
   const stories = data?.success ? data.stories.map((story: any) => ({
     id: story.id,
     title: story.title,
-    description: story.summary || 'No summary available',
+    summary: story.summary || 'No summary available', // Story summary from database
     genre: story.genre,
     status: story.status,
     isPublic: true, // Community stories are always public
