@@ -50,20 +50,20 @@ export async function getCachedUserStories(userId: string) {
     .select({
       id: stories.id,
       title: stories.title,
-      description: stories.description,
       genre: stories.genre,
       status: stories.status,
       authorId: stories.authorId,
       viewCount: stories.viewCount,
       rating: stories.rating,
       ratingCount: stories.ratingCount,
-      hnsData: stories.hnsData,
       updatedAt: stories.updatedAt,
       createdAt: stories.createdAt,
       imageUrl: stories.imageUrl,
+      imageVariants: stories.imageVariants, // ✅ INCLUDE: Needed for API response transformation
       // ❌ SKIP heavy fields for list view:
-      // - imageVariants (~125 KB) - only URL needed for thumbnails
       // - moralFramework - not needed for list
+      // - hnsData - removed from schema (legacy HNS field)
+      // - description - removed from schema
     })
     .from(stories)
     .where(eq(stories.authorId, userId))

@@ -51,7 +51,6 @@ export async function GET(request: NextRequest) {
       rating: (story.rating || 0) / 10, // Convert from database format (47 = 4.7)
       status: story.status as "draft" | "publishing" | "completed" | "published",
       firstChapterId: story.firstChapterId,
-      hnsData: story.hnsData || null,
       isPublic: story.status === 'published',
       imageUrl: story.imageUrl,
       imageVariants: story.imageVariants,

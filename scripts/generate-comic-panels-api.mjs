@@ -104,6 +104,10 @@ async function generateComicPanels(sceneId, auth, options = {}) {
   const startTime = Date.now();
 
   try {
+    // Comic generation can take 3-5 minutes, set timeout to 10 minutes
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10 * 60 * 1000); // 10 minutes
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -111,7 +115,10 @@ async function generateComicPanels(sceneId, auth, options = {}) {
         'Cookie': auth.cookieHeader,
       },
       body: JSON.stringify(body),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     const generationTime = ((Date.now() - startTime) / 1000).toFixed(2);
 
