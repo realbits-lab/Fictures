@@ -36,7 +36,7 @@ export default async function Page(props: {
   console.log('[DOCS PAGE] Rendering DocsPage with toc:', page.data.toc);
 
   return (
-    <DocsPage full={page.data.full}>
+    <DocsPage toc={page.data.toc} full={page.data.full}>
       <DocsBody>
         <MDX />
       </DocsBody>

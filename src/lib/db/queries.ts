@@ -601,90 +601,31 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
   };
 }
 
-// Get published stories for Browse page - optimized version with only 3 DB queries
+// Get published stories for Browse page - simplified version
 export async function getPublishedStories() {
-  // Query 1: Get all published stories with their authors
+  // Query 1: Get all published stories
   const publishedStories = await db
-    .select({
-      id: stories.id,
-      title: stories.title,
-      description: stories.description,
-      genre: stories.genre,
-      status: stories.status,
-      viewCount: stories.viewCount,
-      rating: stories.rating,
-      createdAt: stories.createdAt,
-      authorId: stories.authorId,
-      authorName: users.name,
-      hnsData: stories.hnsData
-    })
+    .select()
     .from(stories)
-    .leftJoin(users, eq(stories.authorId, users.id))
     .where(eq(stories.status, 'published'))
     .orderBy(desc(stories.updatedAt));
 
   if (publishedStories.length === 0) return [];
 
-  // Extract story IDs for subsequent queries
-  const storyIds = publishedStories.map(story => story.id);
+  // Get unique author IDs
+  const authorIds = [...new Set(publishedStories.map(story => story.authorId))];
 
-  // Query 2: Get all chapters for all published stories at once with aggregated data
-  const storyChapters = await db
-    .select({
-      storyId: chapters.storyId,
-      chapterId: chapters.id,
-      chapterStatus: chapters.status,
-      hasPublishedChapter: eq(chapters.status, 'published')
-    })
-    .from(chapters)
-    .where(inArray(chapters.storyId, storyIds));
+  // Fetch author information
+  const authors = await db
+    .select()
+    .from(users)
+    .where(inArray(users.id, authorIds));
 
-  // Query 3: Get all scenes for all chapters in published stories with aggregated data
-  const chapterIds = storyChapters.map(ch => ch.chapterId);
-  const chapterScenes = chapterIds.length > 0 ? await db
-    .select({
-      chapterId: scenes.chapterId,
-    })
-    .from(scenes)
-    .where(inArray(scenes.chapterId, chapterIds))
-    : [];
+  // Create author map for quick lookup
+  const authorMap = new Map(authors.map(author => [author.id, author]));
 
-  // Process data to calculate word counts - show all published stories
-  const validPublishedStories = [];
-
-  for (const story of publishedStories) {
-    const storyChaps = storyChapters.filter(ch => ch.storyId === story.id);
-    
-    // Calculate total word count from scenes or chapters
-    let totalWords = 0;
-    
-    for (const chapter of storyChaps) {
-      const chapScenes = chapterScenes.filter(sc => sc.chapterId === chapter.chapterId);
-      
-      if (chapScenes.length > 0) {
-        // Use scene word counts if available
-        const sceneWords = chapScenes.reduce((sum, scene) => sum + (scene.sceneWordCount || 0), 0);
-        if (sceneWords > 0) {
-          totalWords += sceneWords;
-        } else {
-          // Fallback to chapter word count if scenes exist but have no word count
-          totalWords += chapter.chapterWordCount || 0;
-        }
-      } else {
-        // Use chapter word count when no scenes exist
-        totalWords += chapter.chapterWordCount || 0;
-      }
-    }
-
-    // Use calculated word count or fall back to story's currentWordCount
-    
-    // Include all published stories (the DB query already filtered for public + published)
-    validPublishedStories.push({
-      ...story,
-    });
-  }
-
-  return validPublishedStories.map(story => ({
+  // Return all published stories
+  return publishedStories.map(story => ({
     id: story.id,
     title: story.title,
     description: story.description || '',
@@ -694,10 +635,14 @@ export async function getPublishedStories() {
     viewCount: story.viewCount || 0,
     rating: story.rating || 0,
     createdAt: story.createdAt,
-    hnsData: story.hnsData,
+    // Adversity-Triumph Engine fields
+    summary: story.summary,
+    tone: story.tone,
+    moralFramework: story.moralFramework,
+    imageUrl: story.imageUrl,
     author: {
       id: story.authorId,
-      name: story.authorName || 'Anonymous'
+      name: authorMap.get(story.authorId)?.name || 'Anonymous'
     }
   }));
 }

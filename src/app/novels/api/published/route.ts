@@ -131,16 +131,18 @@ export async function GET(request: NextRequest) {
 
     // Log detailed story statistics
     if (publishedStories.length > 0) {
-      const avgWordCount = Math.round(totalWordCount / publishedStories.length);
       const genres = [...new Set(publishedStories.map(s => s.genre))];
+      const avgRating = publishedStories.reduce((sum, s) => sum + (s.rating || 0), 0) / publishedStories.length;
+      const totalViews = publishedStories.reduce((sum, s) => sum + (s.viewCount || 0), 0);
 
       console.log(`[${reqId}] 📈 Story statistics:`, {
         totalStories: publishedStories.length,
-        totalWords: totalWordCount.toLocaleString(),
-        avgWords: avgWordCount.toLocaleString(),
+        totalViews: totalViews.toLocaleString(),
+        avgRating: (avgRating / 10).toFixed(1), // Convert from stored format (47 = 4.7)
         uniqueGenres: genres.length,
         genres: genres.slice(0, 5).join(', ') + (genres.length > 5 ? '...' : ''),
         topStory: publishedStories[0]?.title,
+        mostViewed: publishedStories.reduce((max, s) => (s.viewCount || 0) > (max.viewCount || 0) ? s : max, publishedStories[0])?.title,
       });
     }
 
