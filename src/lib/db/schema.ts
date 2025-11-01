@@ -205,7 +205,6 @@ export const userPreferences = pgTable('user_preferences', {
 export const stories = pgTable('stories', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
-  description: text('description'),
   genre: varchar('genre', { length: 100 }),
   status: statusEnum('status').default('writing').notNull(),
   tags: json('tags').$type<string[]>().default([]),
@@ -215,14 +214,9 @@ export const stories = pgTable('stories', {
   viewCount: integer('view_count').default(0),
   rating: integer('rating').default(0), // Average rating * 10 (e.g., 47 = 4.7)
   ratingCount: integer('rating_count').default(0),
-  content: text('content').default(''), // Store complete story development YAML data as text
   // Image fields
   imageUrl: text('image_url'), // Original/cover image URL from Vercel Blob
   imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
-  // Legacy fields (kept for backward compatibility during migration)
-  premise: text('premise'),
-  dramaticQuestion: text('dramatic_question'),
-  theme: text('theme'),
   // Adversity-Triumph Engine fields
   summary: text('summary'), // General thematic premise and moral framework
   tone: toneEnum('tone'), // Overall emotional direction
