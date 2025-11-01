@@ -3,7 +3,6 @@
 import { useStudioAgentChat } from '@/hooks/use-studio-agent-chat';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Send, Wrench, CheckCircle, XCircle, Bot, User, Sparkles } from 'lucide-react';
@@ -190,7 +189,7 @@ export function StudioAgentChat({
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4">
+      <div className="flex-1 p-4 overflow-y-auto">
         <div className="space-y-4 max-w-4xl mx-auto">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-12 text-center">
@@ -247,7 +246,7 @@ export function StudioAgentChat({
             ))
           )}
         </div>
-      </ScrollArea>
+      </div>
 
       {/* Input */}
       <div className="border-t bg-card p-4">

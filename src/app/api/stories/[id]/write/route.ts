@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getStoryWithStructure } from '@/lib/db/queries';
 import { db } from '@/lib/db';
-import { stories, characters, places } from '@/lib/db/schema';
+import { stories, characters, settings } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { createHash } from 'crypto';
 import * as yaml from 'js-yaml';
@@ -90,9 +90,9 @@ export async function GET(
       };
     });
 
-    // Get places for this story
-    const storyPlaces = await db.query.places.findMany({
-      where: eq(places.storyId, id)
+    // Get settings (places/locations) for this story
+    const storyPlaces = await db.query.settings.findMany({
+      where: eq(settings.storyId, id)
     });
 
     // Only story owners can edit

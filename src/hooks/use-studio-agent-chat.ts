@@ -1,7 +1,7 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 interface UseStudioAgentChatProps {
   chatId?: string;
@@ -14,7 +14,6 @@ export function useStudioAgentChat({
 }: UseStudioAgentChatProps) {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
-  const [activeTools, setActiveTools] = useState<string[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | undefined>(chatId);
 
   const chat = useChat({
@@ -32,7 +31,7 @@ export function useStudioAgentChat({
       }
     },
     onFinish: () => {
-      setActiveTools([]); // Clear active tools when response completes
+      // Active tools are automatically cleared via useMemo when messages update
     },
     onError: (error) => {
       console.error('[Agent Chat] Error:', error);
@@ -63,14 +62,13 @@ export function useStudioAgentChat({
   }, [currentChatId, historyLoaded]);
 
   // Track active tools from message parts
-  useEffect(() => {
-    const activeTool = chat.messages
+  const { messages } = chat;
+  const activeTools = useMemo(() => {
+    return messages
       .flatMap((m) => (m as any).toolInvocations || [])
       .filter((t: any) => t.state === 'call')
       .map((t: any) => t.toolName);
-
-    setActiveTools(activeTool);
-  }, [chat.messages]);
+  }, [messages]);
 
   return {
     ...chat,

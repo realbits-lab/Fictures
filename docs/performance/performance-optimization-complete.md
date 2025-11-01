@@ -184,25 +184,60 @@ CREATE INDEX idx_stories_status ON stories(status);
 
 **Impact**: Prevents full table scans, critical for scaling
 
-### 5. Edge Runtime (Ready) ⏳
+### 5. Edge Runtime (Blocked by Redis Client) ⏳
 
-**Status**: Implemented but disabled due to file casing issues
+**Status**: Code ready but **blocked by Node.js dependency**
 
 **File**: `src/app/novels/[id]/page.tsx`
 ```typescript
 // ⚡ Strategy 4: Edge Runtime
-// TODO: Enable after fixing UI component file casing issues
+// BLOCKED: Current Redis client (ioredis/redis) requires Node.js 'stream' module
+// Solution: Switch to @upstash/redis (Edge-compatible) or use conditional imports
+// Benefit when enabled: 20-50ms improvement for global users
 // export const runtime = 'edge';
 ```
 
+**Root Cause**:
+```
+Module not found: Can't resolve 'stream'
+./node_modules/@redis/client/dist/lib/client/cache.js:4:1
+> const stream_1 = require("stream");
+```
+
+Edge Runtime only supports Web APIs, not Node.js built-ins like `stream`.
+
 **Blockers**:
-- File casing issues: `Textarea` vs `textarea`, `Button` vs `button`
-- Need to fix UI component imports before enabling
+1. Current Redis client (`ioredis` / `redis`) requires Node.js `stream` module
+2. Edge Runtime doesn't support Node.js built-ins (only Web APIs)
+3. Would need to switch to Edge-compatible Redis client
+
+**Solutions**:
+1. **Use Upstash Redis** (Edge-compatible):
+   ```bash
+   npm install @upstash/redis
+   ```
+   ```typescript
+   import { Redis } from '@upstash/redis'
+
+   const redis = Redis.fromEnv() // Works in Edge Runtime!
+   ```
+
+2. **Conditional Import** (keep both):
+   ```typescript
+   // Use ioredis in Node.js runtime, skip caching in Edge
+   const cache = runtime === 'edge' ? null : getCache();
+   ```
+
+3. **Keep Node.js Runtime** (current choice):
+   - Maintain full Redis caching functionality
+   - Trade edge latency for feature completeness
+   - Still very fast (84ms cached, 1.46s cold)
 
 **Expected Benefit** (when enabled):
 - Deploy to Vercel Edge network globally
 - Near-zero latency for users worldwide
 - Additional 20-50ms improvement for international users
+- **Trade-off**: Would lose current Redis caching benefits unless using Upstash
 
 ## 📁 Files Modified
 

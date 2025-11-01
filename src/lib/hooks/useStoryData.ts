@@ -53,7 +53,7 @@ export function useStoryData(storyId: string | null) {
   const shouldFetch = storyId && sessionStatus !== 'loading';
   
   const { data, error, isLoading, isValidating, mutate } = usePersistedSWR(
-    shouldFetch ? `/writing/api/stories/${storyId}/write` : null,
+    shouldFetch ? `/api/stories/${storyId}/write` : null,
     fetcher,
     {
       ...CACHE_CONFIGS.writing, // 30min TTL with localStorage persistence

@@ -387,7 +387,8 @@ export async function POST(request: NextRequest) {
               await db
                 .update(stories)
                 .set({
-                  coverImage: imageResult.originalUrl,
+                  imageUrl: imageResult.originalUrl,
+                  imageVariants: imageResult.optimizedSet,
                   updatedAt: new Date(),
                 })
                 .where(eq(stories.id, generatedStoryId!));

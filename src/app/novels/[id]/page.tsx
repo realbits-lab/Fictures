@@ -14,7 +14,9 @@ interface ReadPageProps {
 export const experimental_ppr = true;
 
 // ⚡ Strategy 4: Edge Runtime
-// TODO: Enable after fixing UI component file casing issues
+// BLOCKED: Current Redis client (ioredis/redis) requires Node.js 'stream' module
+// Solution: Switch to @upstash/redis (Edge-compatible) or use conditional imports
+// Benefit when enabled: 20-50ms improvement for global users
 // export const runtime = 'edge';
 
 // ⚡ Strategy 1: Streaming SSR with Suspense Boundaries
