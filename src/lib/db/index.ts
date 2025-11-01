@@ -11,9 +11,21 @@ import * as schema from './schema';
  * Before: Chapter queries slowed from 220ms to 1450ms under concurrent load (6.6x slower)
  * After: Chapter queries maintain ~220ms even with concurrent requests
  *
+ * ⚡ NETWORK LATENCY OPTIMIZATION: Use Neon pooled connection
+ * - Neon's pooled connection reduces connection overhead and network latency
+ * - Falls back to direct connection if POSTGRES_URL_POOLED not available
+ *
  * See: docs/scene-loading-bottleneck-analysis.md
  */
-const client = postgres(process.env.POSTGRES_URL!, {
+const connectionString = process.env.POSTGRES_URL_POOLED || process.env.POSTGRES_URL!;
+
+if (process.env.POSTGRES_URL_POOLED) {
+  console.log('🔗 [DB] Using Neon pooled connection for optimal performance');
+} else {
+  console.log('🔗 [DB] Using direct connection (consider using POSTGRES_URL_POOLED for better performance)');
+}
+
+const client = postgres(connectionString, {
   // Disable prefetch as it is not supported for "Transaction" pool mode
   prepare: false,
 

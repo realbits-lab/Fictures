@@ -22,6 +22,7 @@
     "@ai-sdk/google": "^2.0.14",
     "@ai-sdk/google-vertex": "^3.0.53",
     "@ai-sdk/openai": "^2.0.53",
+    "@ai-sdk/react": "^2.0.86",
     "@auth/drizzle-adapter": "^1.10.0",
     "@fuma-comment/react": "^1.3.1",
     "@fuma-comment/server": "^1.3.1",

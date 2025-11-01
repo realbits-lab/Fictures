@@ -2,10 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateStoryImage, type GenerateStoryImageParams } from '@/lib/services/image-generation';
 import type { CharacterGenerationResult, SettingGenerationResult, SceneSummaryResult } from '@/lib/novels/types';
 
+interface StoryData {
+  title: string;
+  genre: string;
+  summary: string;
+  tone: string;
+}
+
 interface ImageGenerationRequest {
   storyId: string;
-  imageType: 'character' | 'setting' | 'scene';
-  targetData: CharacterGenerationResult | SettingGenerationResult | (SceneSummaryResult & { content?: string });
+  imageType: 'story' | 'character' | 'setting' | 'scene';
+  targetData: StoryData | CharacterGenerationResult | SettingGenerationResult | (SceneSummaryResult & { content?: string });
   chapterId?: string;
   sceneId?: string;
 }
@@ -13,7 +20,7 @@ interface ImageGenerationRequest {
 /**
  * API 9: Image Generation (All Story Assets)
  *
- * Generates images for characters, settings, and scenes using Gemini 2.5 Flash Image.
+ * Generates images for story covers, characters, settings, and scenes using Gemini 2.5 Flash Image.
  * Automatically creates optimized variants for mobile devices.
  *
  * Dimensions: 1344×768 (7:4 aspect ratio)
@@ -36,6 +43,29 @@ export async function POST(request: NextRequest) {
     let params: GenerateStoryImageParams;
 
     switch (imageType) {
+      case 'story': {
+        const story = targetData as StoryData;
+
+        // Build story cover image prompt
+        const genreVisual = story.genre || 'dramatic story';
+        const toneVisual = story.tone || 'captivating';
+        const summary = story.summary.substring(0, 250); // Limit summary length
+
+        prompt = `Book cover illustration for "${story.title}". ${summary}.
+Genre: ${genreVisual}. Tone: ${toneVisual}.
+Cinematic widescreen composition, professional book cover art, dramatic and engaging visual.
+High quality illustration, 7:4 aspect ratio, story cover design.`;
+
+        params = {
+          prompt: prompt.trim(),
+          storyId,
+          imageType: 'story',
+          style: 'vivid', // Story covers benefit from vivid style
+          quality: 'standard',
+        };
+        break;
+      }
+
       case 'character': {
         const char = targetData as CharacterGenerationResult;
 
