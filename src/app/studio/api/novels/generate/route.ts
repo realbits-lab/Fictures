@@ -274,7 +274,6 @@ export async function POST(request: NextRequest) {
               return {
                 id: newId,
                 chapterId: mappedChapterId,
-                storyId: generatedStoryId!,
                 title: scene.title || `Scene ${index + 1}`, // Fallback title if missing
                 summary: scene.summary,
                 content: scene.content,
