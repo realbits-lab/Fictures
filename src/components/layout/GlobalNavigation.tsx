@@ -54,7 +54,7 @@ export function GlobalNavigation() {
   });
 
   return (
-    <header className="sticky top-0 z-[60] w-full border-b border-[rgb(var(--border))] bg-[rgb(var(--background))/95%] backdrop-blur supports-[backdrop-filter]:bg-[rgb(var(--background))/60%]">
+    <header className="sticky top-0 z-[60] w-full border-b border-[rgb(var(--border))] bg-[rgb(var(--background))]">
       <nav className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4">
         {/* Logo */}
         <Link 

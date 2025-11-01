@@ -407,6 +407,13 @@
 	}
 }
 
+html,
+body {
+	/* Prevent bounce/overscroll effect */
+	overscroll-behavior: none;
+	overscroll-behavior-y: none;
+}
+
 body {
 	color: rgb(var(--foreground));
 	background: rgb(var(--background));

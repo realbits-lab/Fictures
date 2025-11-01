@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Polyfill for React.useEffectEvent
  *
