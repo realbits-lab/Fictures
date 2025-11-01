@@ -207,7 +207,6 @@ export const stories = pgTable('stories', {
   title: varchar('title', { length: 255 }).notNull(),
   genre: varchar('genre', { length: 100 }),
   status: statusEnum('status').default('writing').notNull(),
-  tags: json('tags').$type<string[]>().default([]),
   authorId: text('author_id').references(() => users.id).notNull(),
   targetWordCount: integer('target_word_count').default(50000),
   currentWordCount: integer('current_word_count').default(0),
