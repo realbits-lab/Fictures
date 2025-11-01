@@ -155,7 +155,7 @@ prefetchAdjacentScenes(
 - Next/previous scene navigation becomes instant
 - Scenes load from cache (0ms network delay)
 - Better user experience for sequential reading
-- **Test results**: Works correctly, navigation <700ms (first load), instant thereafter
+- **Test results**: Works correctly, navigation `<700ms` (first load), instant thereafter
 
 ---
 
@@ -171,9 +171,9 @@ prefetchAdjacentScenes(
 
 | Metric | Target | Actual | Status |
 |--------|--------|--------|--------|
-| Initial Page Load | <2000ms | 5207ms | ⚠️ Needs Improvement |
+| Initial Page Load | `<2000ms` | 5207ms | ⚠️ Needs Improvement |
 | Parallel Fetch Time | N/A | 1932ms (3 chapters) | ✅ Working |
-| Scene Navigation | <500ms | 621ms (first), instant (cached) | ✅ Good |
+| Scene Navigation | `<500ms` | 621ms (first), instant (cached) | ✅ Good |
 | Scroll Restoration | Working | Working | ✅ Good |
 | Content Display | Instant | Instant | ✅ Excellent |
 
@@ -204,7 +204,7 @@ prefetchAdjacentScenes(
 | Optimization | Before | After | Improvement |
 |--------------|--------|-------|-------------|
 | Initial Scene Fetch | 5-10s | 1-2s | **5-10x faster** |
-| Scene Navigation | 200-500ms | <50ms | **4-10x faster** |
+| Scene Navigation | 200-500ms | `<50ms` | **4-10x faster** |
 | Scroll Restoration | 200-500ms | 0ms (background) | **Instant** |
 | Content Display | Blocked | Immediate | **Instant** |
 

@@ -6,7 +6,7 @@ title: "First Visit Loading Time Optimization Strategy"
 
 **Date:** October 25, 2025
 **Current Performance:** First visit ~3.7s (cold cache)
-**Target:** <1s for first visit
+**Target:** `<1`s for first visit
 
 ---
 
@@ -337,7 +337,7 @@ await publishStory(storyId, userId);
 
 // Immediate request (should hit cache)
 const response = await fetch(`/api/stories/${storyId}/structure`);
-// Expected: <100ms (cache HIT)
+// Expected: `<100ms` (cache HIT)
 ```
 
 ### Test 3: Background Warming
@@ -348,7 +348,7 @@ curl http://localhost:3000/api/cache/warm
 
 # Request popular story
 curl http://localhost:3000/api/stories/{popularStoryId}/structure
-# Expected: <100ms (cache HIT)
+# Expected: `<100ms` (cache HIT)
 ```
 
 ---
@@ -373,7 +373,7 @@ const storyStructure = await getStoryWithStructure(storyId, false, session.user?
 - UnifiedWritingEditor doesn't actually need scene content in the initial prop
 - SceneDisplay already fetches scene content on-demand via SWR
 - Reduces initial payload by ~90%
-- Reduces query time from 3.7s to <1s
+- Reduces query time from 3.7s to `<1`s
 
 ### Option 2: Cache Warming Helper
 
@@ -480,8 +480,8 @@ Target: >95%
 
 2. **Average Response Time:**
 ```
-- Cold cache: <1s (target)
-- Warm cache: <100ms (target)
+- Cold cache: `<1`s (target)
+- Warm cache: `<100ms` (target)
 ```
 
 3. **Cache Memory Usage:**
@@ -519,7 +519,7 @@ console.log('[CacheWarming] Stories warmed:', count);
    - Keeps popular content always cached
 
 **Expected Result:**
-- First visit: 3.7s → **<1s** 🚀
-- All subsequent visits: **<0.5s** 🚀
-- Popular stories: **Always <0.5s** 🚀
+- First visit: 3.7s → **`<1`s** 🚀
+- All subsequent visits: **`<0`.5s** 🚀
+- Popular stories: **Always `<0`.5s** 🚀
 

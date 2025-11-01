@@ -34,7 +34,7 @@ This document outlines the comprehensive caching implementation for community pa
 
 ### Impact
 
-- **Page load time**: 800-1500ms (should be <100ms with caching)
+- **Page load time**: 800-1500ms (should be ``<100ms`` with caching)
 - **Database load**: 5-7 queries per page load (should be 0-1 with cache hits)
 - **User experience**: Slow navigation between community pages
 - **Server costs**: Unnecessary database queries for public content
@@ -68,7 +68,7 @@ This document outlines the comprehensive caching implementation for community pa
 │  ├── Slow: ~100-500ms query                                     │
 │  ├── Only on cache miss                                         │
 │  ├── Optimized with composite indexes                          │
-│  └── Expected hit rate: <5% with full caching                  │
+│  └── Expected hit rate: ``<5%`` with full caching                  │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -670,7 +670,7 @@ await invalidateCache([
 - SWR memory: 70-80% of requests
 - localStorage: 15-20% of requests
 - Redis: 5-10% of requests
-- Database: <5% of requests (cold start only)
+- Database: ``<5%`` of requests (cold start only)
 
 **Performance Improvement:**
 - ✅ 90-95% reduction in database queries
@@ -752,17 +752,17 @@ await invalidateCache([
 - SWR hit rate: Should be >70%
 - localStorage hit rate: Should be >15%
 - Redis hit rate: Should be >5%
-- Database hit rate: Should be <5%
+- Database hit rate: Should be ``<5%``
 
 **API Performance:**
-- Average response time: Should be <100ms
-- P95 response time: Should be <200ms
-- P99 response time: Should be <500ms
+- Average response time: Should be ``<100ms``
+- P95 response time: Should be ``<200ms``
+- P99 response time: Should be ``<500ms``
 
 **User Experience:**
-- Time to Interactive: Should be <300ms
-- Time to First Byte: Should be <50ms
-- Navigation time: Should be <50ms (SWR cache)
+- Time to Interactive: Should be ``<300ms``
+- Time to First Byte: Should be ``<50ms``
+- Navigation time: Should be ``<50ms`` (SWR cache)
 
 ### Logging
 
@@ -812,8 +812,8 @@ await invalidateCache([
 **Expected Outcomes:**
 - ✅ 90-95% reduction in database load
 - ✅ 95-99% faster page loads after first visit
-- ✅ <100ms API response time (from ~800ms)
-- ✅ <10ms page navigation (SWR cache)
+- ✅ ``<100ms`` API response time (from ~800ms)
+- ✅ ``<10ms`` page navigation (SWR cache)
 - ✅ Survives page refresh (localStorage)
 - ✅ Better user experience with instant navigation
 - ✅ Reduced server costs from fewer database queries

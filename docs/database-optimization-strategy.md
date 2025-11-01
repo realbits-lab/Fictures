@@ -505,8 +505,8 @@ dotenv --file .env.local run node scripts/test-redis-pipeline.mjs
 | **Cache Warming** | 3.7s cold | 0.5s | **7x faster** |
 
 **Overall Expected Improvement:**
-- Cold cache: 3.7s → **<0.5s** (7x faster)
-- Warm cache: 0.5s → **<0.1s** (5x faster)
+- Cold cache: 3.7s → **`<0`.5s** (7x faster)
+- Warm cache: 0.5s → **`<0`.1s** (5x faster)
 - Database load: **60-80% reduction**
 
 ---

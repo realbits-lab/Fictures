@@ -346,7 +346,7 @@ performance.mark('navigation-start');
 performance.mark('navigation-end');
 performance.measure('navigation', 'navigation-start', 'navigation-end');
 console.log(performance.getEntriesByName('navigation'));
-// Expected: < 1ms from SWR memory, 5-10ms from localStorage
+// Expected: `< 1ms` from SWR memory, 5-10ms from localStorage
 ```
 
 ---
@@ -389,9 +389,9 @@ console.log(performance.getEntriesByName('navigation'));
 - Better scalability for user growth
 
 ### For Performance
-- <1ms loads for cached content (SWR)
-- <50ms loads for server cache (Redis)
-- 95%+ cache hit rate in typical sessions
+- `< 1ms` loads for cached content (SWR)
+- `< 50ms` loads for server cache (Redis)
+- > 95% cache hit rate in typical sessions
 - 3-10x faster overall performance
 
 ---
@@ -425,5 +425,5 @@ STORY_LIST: 300
 
 **Status:** ✅ APPLIED
 **Memory Impact:** 99.9% reduction for public content
-**Performance:** <1ms client, <50ms server, 95%+ hit rate
+**Performance:** ``<1ms`` client, ``<50ms`` server, 95%+ hit rate
 **User Experience:** Professional native app feel

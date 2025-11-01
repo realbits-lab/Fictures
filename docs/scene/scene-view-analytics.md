@@ -330,7 +330,7 @@ Growth/decline indicators with color coding:
 
 ### API
 - Response size: ~5KB for 20 scenes
-- Query time: <50ms for 1000 scenes
+- Query time: `<50ms` for 1000 scenes
 - Cache hit rate: >80% expected
 
 ## Usage Examples

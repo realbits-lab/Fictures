@@ -213,7 +213,7 @@ User clicks story card
 2. SSR Page (Next.js 15)
     - ✅ Check Redis cache for story structure
     - If MISS: Query PostgreSQL (1-2s)
-    - If HIT: Return from Redis (<50ms)
+    - If HIT: Return from Redis (`<50ms`)
     - Load structure only (titles, IDs, status)
     - ✅ NOT loading full scene content anymore
     ↓
@@ -224,7 +224,7 @@ User clicks story card
 5. When user selects a scene:
     - SceneDisplay makes SWR API call
     - ✅ Hits Redis cache for scene content
-    - Renders scene immediately (<100ms)
+    - Renders scene immediately (`<100ms`)
 ```
 
 ### Cache Strategy
@@ -274,7 +274,7 @@ Shared by: Individual user only
 
 3. **Popular Stories:**
    - Almost always cached
-   - **<500ms load time consistently**
+   - **`<500ms` load time consistently**
 
 ---
 
@@ -312,14 +312,14 @@ Shared by: Individual user only
    ```bash
    grep "SSR.*rendering complete" logs/dev-server*.log
    ```
-   **Target (Cold):** <1.5s
-   **Target (Warm):** <500ms
+   **Target (Cold):** `<1`.5s
+   **Target (Warm):** `<500ms`
 
 3. **Scene API Response Time:**
    ```bash
    grep "Scene data fetched" logs/dev-server*.log
    ```
-   **Target:** <100ms
+   **Target:** `<100ms`
 
 ### Health Indicators
 
@@ -333,7 +333,7 @@ Shared by: Individual user only
 
 **Needs Attention:**
 ```
-[SSR] Story structure fetched in >2000ms (Cold cache is OK, but warm should be <100ms)
+[SSR] Story structure fetched in >2000ms (Cold cache is OK, but warm should be `<100ms`)
 [RedisCache] MISS: story:*:structure:*:public (repeatedly for same story)
 [CLIENT] SWR: Scene data fetched in >500ms
 ```

@@ -10,7 +10,7 @@ On mobile devices (375px width), the left sidebar takes up most of the screen wi
 ## Solution Implemented
 
 ### 1. Responsive Sidebar Behavior
-- **Mobile (<768px)**: Sidebar hidden by default, accessible via hamburger menu
+- **Mobile (`<7`68px)**: Sidebar hidden by default, accessible via hamburger menu
 - **Desktop (≥768px)**: Sidebar always visible (unchanged from original)
 
 ### 2. Key Changes in `src/components/reading/ChapterReaderClient.tsx`

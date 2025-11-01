@@ -235,13 +235,13 @@ const batchSuccessRate = batchSuccesses / totalAttempts;
 **Average Deletion Time:**
 ```typescript
 const avgTime = totalDeletionTime / totalDeletions;
-// Target: <1 second
+// Target: `<1` second
 ```
 
 **Fallback Frequency:**
 ```typescript
 const fallbackRate = fallbackAttempts / totalAttempts;
-// Target: <5%
+// Target: `<5%`
 ```
 
 ### Console Logs

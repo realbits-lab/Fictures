@@ -8,8 +8,8 @@ title: "Real-Time Update Strategies Comparison"
 
 | Approach | Latency | Complexity | Infrastructure | Cost | Best For |
 |----------|---------|------------|----------------|------|----------|
-| **Redis Pub/Sub + SSE** ⭐ | <100ms | Medium | Redis (existing) | $0 | **Story publishing notifications** |
-| WebSocket (Socket.io) | <50ms | High | WebSocket server | $$ | Bi-directional (chat, collab) |
+| **Redis Pub/Sub + SSE** ⭐ | `<100ms` | Medium | Redis (existing) | $0 | **Story publishing notifications** |
+| WebSocket (Socket.io) | `<50ms` | High | WebSocket server | $$ | Bi-directional (chat, collab) |
 | Next.js Server Actions | N/A | Low | None | $0 | Single-user updates only |
 | Polling (current) | 0-5min | Low | None | $ (server load) | Low-priority updates |
 
@@ -30,7 +30,7 @@ title: "Real-Time Update Strategies Comparison"
 ```
 
 **Performance:**
-- ✅ Instant cross-user updates (<100ms)
+- ✅ Instant cross-user updates (`<100ms`)
 - ✅ Efficient: only sends when changes occur
 - ✅ Scales horizontally with Redis
 - ✅ Auto-reconnection built-in
@@ -60,7 +60,7 @@ title: "Real-Time Update Strategies Comparison"
 
 **Performance:**
 - ✅ Bi-directional communication
-- ✅ Very low latency (<50ms)
+- ✅ Very low latency (`<50ms`)
 - ✅ Rich ecosystem (rooms, namespaces)
 - ⚠️ Requires dedicated server process
 - ⚠️ More complex deployment

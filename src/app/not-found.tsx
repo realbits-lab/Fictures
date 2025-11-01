@@ -6,7 +6,7 @@ export default function NotFound() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-[rgb(var(--background))]">
       <div className="max-w-2xl w-full text-center">
-        {/* Animated 404 Illustration */}
+        {/* 404 Illustration */}
         <div className="relative mb-8">
           {/* Main 404 Text */}
           <div className="relative inline-block">
@@ -14,13 +14,13 @@ export default function NotFound() {
               404
             </h1>
 
-            {/* Floating Elements */}
+            {/* Static Decorative Elements */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="relative w-full h-full max-w-md">
-                {/* Floating Book Icon */}
-                <div className="absolute top-1/4 left-1/4 animate-float-slow">
+                {/* Book Icon */}
+                <div className="absolute top-1/4 left-1/4">
                   <svg
-                    className="w-12 h-12 md:w-16 md:h-16 text-[rgb(var(--primary))]"
+                    className="w-12 h-12 md:w-16 md:h-16 text-[rgb(var(--primary))] opacity-60"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                   >
@@ -28,10 +28,10 @@ export default function NotFound() {
                   </svg>
                 </div>
 
-                {/* Floating Pen Icon */}
-                <div className="absolute top-1/3 right-1/4 animate-float-fast">
+                {/* Pen Icon */}
+                <div className="absolute top-1/3 right-1/4">
                   <svg
-                    className="w-10 h-10 md:w-14 md:h-14 text-[rgb(var(--primary))]"
+                    className="w-10 h-10 md:w-14 md:h-14 text-[rgb(var(--primary))] opacity-60"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                   >
@@ -39,10 +39,10 @@ export default function NotFound() {
                   </svg>
                 </div>
 
-                {/* Floating Star Icon */}
-                <div className="absolute bottom-1/4 left-1/3 animate-float-medium">
+                {/* Star Icon */}
+                <div className="absolute bottom-1/4 left-1/3">
                   <svg
-                    className="w-8 h-8 md:w-12 md:h-12 text-[rgb(var(--primary))]"
+                    className="w-8 h-8 md:w-12 md:h-12 text-[rgb(var(--primary))] opacity-60"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                   >
@@ -157,48 +157,6 @@ export default function NotFound() {
           </div>
         </div>
       </div>
-
-      {/* Floating Animation Styles */}
-      <style jsx>{`
-        @keyframes float-slow {
-          0%, 100% {
-            transform: translateY(0px) rotate(0deg);
-          }
-          50% {
-            transform: translateY(-20px) rotate(5deg);
-          }
-        }
-
-        @keyframes float-fast {
-          0%, 100% {
-            transform: translateY(0px) rotate(0deg);
-          }
-          50% {
-            transform: translateY(-25px) rotate(-5deg);
-          }
-        }
-
-        @keyframes float-medium {
-          0%, 100% {
-            transform: translateY(0px) rotate(0deg);
-          }
-          50% {
-            transform: translateY(-15px) rotate(3deg);
-          }
-        }
-
-        .animate-float-slow {
-          animation: float-slow 6s ease-in-out infinite;
-        }
-
-        .animate-float-fast {
-          animation: float-fast 4s ease-in-out infinite;
-        }
-
-        .animate-float-medium {
-          animation: float-medium 5s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 }

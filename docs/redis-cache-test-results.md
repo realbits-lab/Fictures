@@ -341,7 +341,7 @@ Chapter API - Warm:
 | Endpoint | Improvement | User Impact |
 |----------|------------|-------------|
 | Published Stories | 97.14% | Story browsing feels instant |
-| Story Structure | 98.78% | Story page loads in <50ms |
+| Story Structure | 98.78% | Story page loads in `<50ms` |
 | Chapter Content | 98.31% | Chapter navigation seamless |
 
 ### Production Readiness

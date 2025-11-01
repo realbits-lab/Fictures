@@ -411,11 +411,11 @@ REDIS_URL=redis://your-redis-url
 
 | Metric | Target | Alert Threshold |
 |--------|--------|----------------|
-| Cache Hit Rate | >80% | <70% |
-| Avg Response Time | <100ms | >500ms |
-| P95 Response Time | <200ms | >1000ms |
-| Cache Miss Rate | <20% | >30% |
-| Database Query Time | <1000ms | >2000ms |
+| Cache Hit Rate | >80% | `<70%` |
+| Avg Response Time | `<100ms` | >500ms |
+| P95 Response Time | `<200ms` | >1000ms |
+| Cache Miss Rate | `<20%` | >30% |
+| Database Query Time | `<1000ms` | >2000ms |
 
 ---
 

@@ -58,7 +58,7 @@ ALTER TABLE scenes ADD COLUMN:
 ### Session Management
 
 **For Anonymous Users**:
-- Session ID generated on first visit: `sess_<32-char-nanoid>`
+- Session ID generated on first visit: `sess_`<3`2-char-nanoid>`
 - Stored in HTTP-only cookie: `fictures_session_id`
 - Expires after 30 days
 - Secure in production (HTTPS only)
@@ -298,12 +298,12 @@ Final counts:
 SELECT id FROM scene_views
 WHERE scene_id = ? AND user_id = ?
 LIMIT 1;
--- Execution time: <1ms
+-- Execution time: `<1ms`
 
 -- Get scene view counts (uses primary key)
 SELECT view_count, unique_view_count FROM scenes
 WHERE id = ?;
--- Execution time: <1ms
+-- Execution time: `<1ms`
 ```
 
 ### Caching Strategy

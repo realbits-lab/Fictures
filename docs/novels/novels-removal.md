@@ -281,7 +281,7 @@ All images stored under `stories/{storyId}/` prefix:
 
 2. **Batch delete from Vercel Blob** using `@vercel/blob` SDK
    - ✅ **Optimized:** Single batch operation for all URLs
-   - ⚡ **Fast:** Deletes hundreds of images in <1 second
+   - ⚡ **Fast:** Deletes hundreds of images in `<1` second
    - 🔄 **Fallback:** Individual deletion if batch fails
 
 3. **Handle failures gracefully**

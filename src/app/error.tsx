@@ -18,17 +18,8 @@ export default function Error({
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-[rgb(var(--background))]">
       <div className="max-w-2xl w-full text-center">
-        {/* Error Icon with Animation */}
+        {/* Error Icon */}
         <div className="relative mb-8 inline-block">
-          {/* Pulsing Background Circle */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div
-              className="w-32 h-32 md:w-40 md:h-40 bg-[rgb(var(--destructive))] opacity-10 animate-ping"
-              style={{ borderRadius: 'var(--radius-card)' }}
-            />
-          </div>
-
-          {/* Static Background Circle */}
           <div className="relative">
             <div
               className="w-32 h-32 md:w-40 md:h-40 bg-[rgb(var(--destructive))] opacity-20 flex items-center justify-center"
@@ -51,14 +42,11 @@ export default function Error({
             </div>
 
             {/* Decorative Elements */}
-            <div className="absolute -top-2 -right-2 w-6 h-6 bg-[rgb(var(--primary))] opacity-50 animate-bounce"
+            <div className="absolute -top-2 -right-2 w-6 h-6 bg-[rgb(var(--primary))] opacity-50"
               style={{ borderRadius: 'var(--radius-badge)' }}
             />
-            <div className="absolute -bottom-2 -left-2 w-8 h-8 bg-[rgb(var(--primary))] opacity-30 animate-bounce"
-              style={{
-                borderRadius: 'var(--radius-badge)',
-                animationDelay: '0.2s',
-              }}
+            <div className="absolute -bottom-2 -left-2 w-8 h-8 bg-[rgb(var(--primary))] opacity-30"
+              style={{ borderRadius: 'var(--radius-badge)' }}
             />
           </div>
         </div>
@@ -187,15 +175,13 @@ export default function Error({
           </div>
         </div>
 
-        {/* Animated Background Decoration */}
+        {/* Background Decoration */}
         <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
           <div
-            className="absolute top-1/4 left-1/4 w-64 h-64 bg-[rgb(var(--primary))] opacity-5 rounded-full blur-3xl animate-pulse"
-            style={{ animationDuration: '4s' }}
+            className="absolute top-1/4 left-1/4 w-64 h-64 bg-[rgb(var(--primary))] opacity-5 rounded-full blur-3xl"
           />
           <div
-            className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[rgb(var(--destructive))] opacity-5 rounded-full blur-3xl animate-pulse"
-            style={{ animationDuration: '6s', animationDelay: '1s' }}
+            className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[rgb(var(--destructive))] opacity-5 rounded-full blur-3xl"
           />
         </div>
       </div>
