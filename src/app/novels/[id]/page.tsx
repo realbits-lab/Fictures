@@ -13,6 +13,10 @@ interface ReadPageProps {
 // Enable experimental PPR to pre-render static shell at build time
 export const experimental_ppr = true;
 
+// ⚡ Strategy 4: Edge Runtime
+// TODO: Enable after fixing UI component file casing issues
+// export const runtime = 'edge';
+
 // ⚡ Strategy 1: Streaming SSR with Suspense Boundaries
 // Split loading into progressive chunks for faster perceived performance
 

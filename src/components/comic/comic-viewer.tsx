@@ -10,7 +10,7 @@
 import { useEffect, useState } from 'react';
 import { PanelRenderer, PanelRendererSkeleton } from './panel-renderer';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { useSceneView } from '@/hooks/useSceneView';
 

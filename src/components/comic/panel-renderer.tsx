@@ -12,7 +12,7 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { DialogueBubbleGroup } from './dialogue-bubble';
 import { SFXTextGroup } from './sfx-text';
-import { Skeleton } from '@/components/ui/SkeletonLoader';
+import { Skeleton } from '@/components/ui/skeleton-loader';
 
 interface PanelDialogue {
   character_id: string;
