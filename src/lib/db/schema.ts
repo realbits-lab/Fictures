@@ -208,8 +208,6 @@ export const stories = pgTable('stories', {
   genre: varchar('genre', { length: 100 }),
   status: statusEnum('status').default('writing').notNull(),
   authorId: text('author_id').references(() => users.id).notNull(),
-  targetWordCount: integer('target_word_count').default(50000),
-  currentWordCount: integer('current_word_count').default(0),
   viewCount: integer('view_count').default(0),
   rating: integer('rating').default(0), // Average rating * 10 (e.g., 47 = 4.7)
   ratingCount: integer('rating_count').default(0),
@@ -260,8 +258,6 @@ export const chapters = pgTable('chapters', {
   partId: text('part_id').references(() => parts.id),
   authorId: text('author_id').references(() => users.id).notNull(),
   orderIndex: integer('order_index').notNull(),
-  wordCount: integer('word_count').default(0),
-  targetWordCount: integer('target_word_count').default(4000),
   status: statusEnum('status').default('writing').notNull(),
   purpose: text('purpose'), // Chapter purpose from story development
   hook: text('hook'), // Chapter hook from story development
@@ -301,10 +297,6 @@ export const scenes = pgTable('scenes', {
   content: text('content').default(''),
   chapterId: text('chapter_id').references(() => chapters.id).notNull(),
   orderIndex: integer('order_index').notNull(),
-  wordCount: integer('word_count').default(0),
-  goal: text('goal'),
-  conflict: text('conflict'),
-  outcome: text('outcome'),
   // Image fields
   imageUrl: text('image_url'), // Original scene image URL from Vercel Blob
   imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
