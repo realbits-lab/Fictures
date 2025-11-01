@@ -649,6 +649,12 @@ interface Scene {
   cyclePhase: 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition';
   emotionalBeat: 'fear' | 'hope' | 'tension' | 'relief' | 'elevation' | 'catharsis' | 'despair' | 'joy';
 
+  // Planning metadata (guides content generation)
+  characterFocus: string[]; // Character IDs appearing in this scene
+  sensoryAnchors: string[]; // Key sensory details to include (e.g., "rain on metal roof", "smell of smoke")
+  dialogueVsDescription: string; // Balance guidance (e.g., "60% dialogue, 40% description")
+  suggestedLength: 'short' | 'medium' | 'long'; // short: 300-500, medium: 500-800, long: 800-1000 words
+
   // Generated prose (execution layer)
   content: string; // Full prose narrative generated from summary
 
@@ -670,7 +676,7 @@ interface Scene {
 - Setting: Add `adversityElements`, `symbolicMeaning`, `cycleAmplification`, `emotionalResonance`
 - Part: Add `summary`, `characterArcs`
 - Chapter: Add `summary`, cycle tracking fields
-- Scene: Add `summary`, `cyclePhase`, `emotionalBeat`
+- Scene: Add `summary`, `cyclePhase`, `emotionalBeat`, `characterFocus`, `sensoryAnchors`, `dialogueVsDescription`, `suggestedLength`
 
 **Phase 2**: Migrate existing data
 - Convert old `premise` + `dramaticQuestion` + `theme` → new `summary`

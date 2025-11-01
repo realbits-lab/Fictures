@@ -3,6 +3,8 @@ import { sql } from "drizzle-orm"
 
 export const comicStatus = pgEnum("comic_status", ['none', 'draft', 'published'])
 export const contentType = pgEnum("content_type", ['markdown', 'html', 'plain'])
+export const cyclePhase = pgEnum("cycle_phase", ['setup', 'confrontation', 'virtue', 'consequence', 'transition'])
+export const emotionalBeat = pgEnum("emotional_beat", ['fear', 'hope', 'tension', 'relief', 'elevation', 'catharsis', 'despair', 'joy'])
 export const eventType = pgEnum("event_type", ['page_view', 'story_view', 'chapter_read_start', 'chapter_read_complete', 'scene_read', 'comment_created', 'comment_liked', 'story_liked', 'chapter_liked', 'post_created', 'post_viewed', 'share', 'bookmark'])
 export const insightType = pgEnum("insight_type", ['quality_improvement', 'engagement_drop', 'reader_feedback', 'pacing_issue', 'character_development', 'plot_consistency', 'trending_up', 'publishing_opportunity', 'audience_mismatch'])
 export const moderationStatus = pgEnum("moderation_status", ['approved', 'pending', 'flagged', 'rejected'])
@@ -1091,6 +1093,13 @@ export const scenes = pgTable("scenes", {
 	comicGeneratedAt: timestamp("comic_generated_at", { mode: 'string' }),
 	comicPanelCount: integer("comic_panel_count").default(0),
 	comicVersion: integer("comic_version").default(1),
+	// Adversity-Triumph Engine fields
+	cyclePhase: cyclePhase("cyclePhase"),
+	emotionalBeat: emotionalBeat("emotionalBeat"),
+	characterFocus: jsonb("characterFocus").default([]),
+	sensoryAnchors: jsonb("sensoryAnchors").default([]),
+	dialogueVsDescription: text("dialogueVsDescription"),
+	suggestedLength: text("suggestedLength"),
 }, (table) => [
 	index("idx_scenes_chapter_id").using("btree", table.chapterId.asc().nullsLast().op("text_ops")),
 	index("idx_scenes_chapter_order").using("btree", table.chapterId.asc().nullsLast().op("int4_ops"), table.orderIndex.asc().nullsLast().op("int4_ops")),

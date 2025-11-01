@@ -352,6 +352,39 @@ When making ANY changes to the novel generation system, ALWAYS follow this order
 - ❌ Changing code first, then updating docs as an afterthought → Docs become outdated
 - ❌ Skipping documentation updates entirely → System becomes unmaintainable
 
+**CRITICAL: Field Synchronization Across All Layers**
+
+When modifying data model fields for stories, parts, chapters, scenes, characters, or settings, you MUST synchronize changes across:
+
+1. **Documentation Layer**:
+   - `docs/novels/novels-specification.md` - Data model definitions and field descriptions
+   - `docs/novels/novels-development.md` - API specifications and field usage
+
+2. **Database Layer**:
+   - `src/lib/db/schema.ts` - Drizzle ORM schema definitions
+   - `drizzle/migrations/*.sql` - Database migration files
+
+3. **Code Layer**:
+   - TypeScript interfaces and types
+   - API route handlers
+   - UI components using the fields
+   - Query functions and services
+
+**Why This Matters:**
+- Prevents schema drift between documentation and implementation
+- Ensures API contracts match actual database structure
+- Maintains type safety across the entire codebase
+- Avoids runtime errors from missing or mismatched fields
+
+**Example**: If you add a new field `emotional_tone` to scenes:
+1. Update `docs/novels/novels-specification.md` - Define field purpose and data type
+2. Update `docs/novels/novels-development.md` - Document API usage
+3. Create database migration in `drizzle/migrations/`
+4. Update `src/lib/db/schema.ts` - Add field to scenes table schema
+5. Update TypeScript interfaces in components using scenes
+6. Update API routes that create/update scenes
+7. Update UI components displaying scene data
+
 ### Novel Generation System Overview
 
 **Architecture:**
