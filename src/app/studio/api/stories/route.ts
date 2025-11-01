@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { authenticateRequest, hasRequiredScope } from '@/lib/auth/dual-auth';
 import { createStory, getUserStories, getUserStoriesWithFirstChapter } from '@/lib/db/queries';
+import { getCachedUserStories, invalidateStudioCache } from '@/lib/db/studio-queries';
 import { z } from 'zod';
 import { createHash } from 'crypto';
 
@@ -30,7 +31,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const stories = await getUserStoriesWithFirstChapter(authResult.user.id);
+    // ⚡ Use Redis-cached query for better performance
+    const stories = await getCachedUserStories(authResult.user.id);
     
     // Transform the data to match the Dashboard component expectations
     const transformedStories = stories.map((story) => ({
@@ -132,6 +134,10 @@ export async function POST(request: NextRequest) {
     const validatedData = createStorySchema.parse(body);
 
     const story = await createStory(authResult.user.id, validatedData);
+
+    // ⚡ Invalidate cache after creating new story
+    await invalidateStudioCache(authResult.user.id);
+
     return NextResponse.json({ story }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {

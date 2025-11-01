@@ -494,3 +494,26 @@ This documentation-first approach ensures:
 - System integrity
 
 When in doubt, **refer to the specification** - it is the single source of truth for the Adversity-Triumph Engine.
+
+---
+
+## Related Documentation
+
+- **[Schema Simplification](./schema-simplification.md)** - Removal of bi-directional links (2025-11-01)
+- **[Novels Specification](./novels-specification.md)** - Complete data model and field definitions
+- **[Novels Development Guide](./novels-development.md)** - API implementation details
+- **[Novels Testing Guide](./novels-testing.md)** - Validation and quality metrics
+
+## Schema Evolution Milestones
+
+### 2025-11-01: Schema Simplification
+- **Change**: Removed bi-directional linking (JSON arrays in stories table)
+- **Rationale**: Eliminated data redundancy without performance cost
+- **Impact**: Simpler writes, no desync risk, reduced storage
+- **Migration**: `drizzle/0024_remove_story_id_arrays.sql`
+- **Documentation**: [schema-simplification.md](./schema-simplification.md)
+
+### Future Considerations
+- Monitor query performance as story count grows
+- Consider materialized views for complex aggregations
+- Evaluate need for read replicas for high-traffic scenarios

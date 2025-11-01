@@ -50,7 +50,7 @@ async function fetchStoryWithComicPanels(storyId: string) {
       imageVariants: stories.imageVariants, // ⚡ CRITICAL: Needed for AVIF optimization
       createdAt: stories.createdAt,
       updatedAt: stories.updatedAt,
-      // ❌ SKIPPED: moralFramework, partIds, chapterIds, sceneIds (studio-only)
+      // ❌ SKIPPED: moralFramework (studio-only)
     })
       .from(stories)
       .where(eq(stories.id, storyId))
@@ -337,13 +337,13 @@ export async function invalidateComicCache(storyId: string, sceneIds?: string[])
  * Calculate estimated data reduction
  *
  * Studio-only fields per entity:
- * - Story: ~300 bytes (moralFramework, partIds, chapterIds, sceneIds)
+ * - Story: ~100 bytes (moralFramework)
  * - Chapter: ~200 bytes (adversity metadata: 5 fields × ~40 bytes each)
  * - Scene: ~800 bytes (content + planning metadata + cycle analysis)
  * - ComicPanel: ~100 bytes (detailed metadata)
  *
  * For a typical comic story with 3 chapters, 10 scenes, 80 panels:
- * - Story: 300 bytes saved
+ * - Story: 100 bytes saved
  * - Chapters: 3 × 200 bytes = 600 bytes saved
  * - Scenes: 10 × 800 bytes = 8 KB saved (biggest win - skip text content)
  * - Panels: 80 × 100 bytes = 8 KB saved

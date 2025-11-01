@@ -238,9 +238,7 @@ const storyDetailColumns = {
   summary: stories.summary,
   moralFramework: stories.moralFramework,
   imageVariants: stories.imageVariants, // Include for detail view
-  partIds: stories.partIds,
-  chapterIds: stories.chapterIds,
-  sceneIds: stories.sceneIds,
+  // Note: partIds, chapterIds, sceneIds are derived from FK relationships, not stored in stories table
 };
 
 // Scene columns optimized for reading vs editing

@@ -292,41 +292,7 @@ export async function POST(request: NextRequest) {
 
             await db.insert(scenes).values(sceneRecords);
 
-            // Update story with ID arrays
-            const partIds = Array.from(partIdMap.values());
-            const chapterIds = Array.from(chapterIdMap.values());
-            const sceneIds = Array.from(sceneIdMap.values());
-
-            await db
-              .update(stories)
-              .set({
-                partIds,
-                chapterIds,
-                sceneIds,
-                updatedAt: new Date(),
-              })
-              .where(eq(stories.id, generatedStoryId!));
-
-            console.log('[Novel Generation] Updated story with ID arrays:', {
-              partIds: partIds.length,
-              chapterIds: chapterIds.length,
-              sceneIds: sceneIds.length,
-            });
-          } else {
-            // No scenes - still update story with ID arrays
-            const partIds = Array.from(partIdMap.values());
-            const chapterIds = Array.from(chapterIdMap.values());
-            const sceneIds: string[] = [];
-
-            await db
-              .update(stories)
-              .set({
-                partIds,
-                chapterIds,
-                sceneIds,
-                updatedAt: new Date(),
-              })
-              .where(eq(stories.id, generatedStoryId!));
+            console.log('[Novel Generation] ✅ All entities created with FK relationships');
           }
 
           // Phase 9: Generate images (now that we have actual storyId)
