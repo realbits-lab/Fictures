@@ -49,7 +49,7 @@ function ToolExecutionCard({ tool }: { tool: ToolInvocation }) {
             <Loader2 className="h-4 w-4 animate-spin text-primary" />
           )}
           <Wrench className="h-4 w-4 text-muted-foreground" />
-          <span className="font-mono text-sm font-medium">{tool.toolName}</span>
+          <span className="font-mono text-sm font-medium text-card-foreground">{tool.toolName}</span>
         </div>
         <Badge variant={isComplete ? (isError ? 'destructive' : 'default') : 'secondary'} className="text-xs theme-badge">
           {isComplete ? (isError ? 'Error' : 'Complete') : 'Running'}
@@ -60,14 +60,14 @@ function ToolExecutionCard({ tool }: { tool: ToolInvocation }) {
           <div className="space-y-2">
             <div>
               <div className="text-xs font-semibold text-muted-foreground mb-1">Input:</div>
-              <pre className="rounded-theme-input bg-muted/50 p-2 text-xs overflow-x-auto border-theme">
+              <pre className="rounded-theme-input bg-muted/50 p-2 text-xs overflow-x-auto border-theme text-foreground">
                 {JSON.stringify(tool.args, null, 2)}
               </pre>
             </div>
             {tool.result && (
               <div>
                 <div className="text-xs font-semibold text-muted-foreground mb-1">Output:</div>
-                <pre className="rounded-theme-input bg-muted/50 p-2 text-xs overflow-x-auto border-theme">
+                <pre className="rounded-theme-input bg-muted/50 p-2 text-xs overflow-x-auto border-theme text-foreground">
                   {JSON.stringify(tool.result, null, 2)}
                 </pre>
               </div>
@@ -97,10 +97,13 @@ function AgentMessage({ message }: { message: Message & { toolInvocations?: Tool
             'rounded-theme-card px-4 py-2.5 transition-all',
             isUser
               ? 'bg-primary text-primary-foreground'
-              : 'bg-muted text-foreground border-theme'
+              : 'bg-muted border-theme'
           )}
         >
-          <div className="prose prose-sm dark:prose-invert max-w-none">
+          <div className={cn(
+            "prose prose-sm dark:prose-invert max-w-none",
+            isUser ? "prose-invert" : "text-foreground [&>*]:text-foreground"
+          )}>
             {message.content}
           </div>
         </div>
@@ -189,14 +192,14 @@ export function StudioAgentChat({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 p-4 overflow-y-auto">
+      <div className="flex-1 p-4 overflow-y-auto text-foreground">
         <div className="space-y-4 max-w-4xl mx-auto">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-12 text-center">
               <div className="rounded-full bg-primary p-6 mb-4">
                 <Sparkles className="h-8 w-8 text-primary-foreground" />
               </div>
-              <h3 className="text-lg font-medium text-foreground mb-2">Start a Conversation</h3>
+              <h3 className="text-lg font-medium mb-2">Start a Conversation</h3>
               <p className="text-sm text-muted-foreground max-w-sm">
                 Ask me to help you manage your story. I can read, create, update, or delete
                 stories, parts, chapters, scenes, characters, and settings.
