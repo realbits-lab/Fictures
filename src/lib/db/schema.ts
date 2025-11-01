@@ -232,15 +232,8 @@ export const stories = pgTable('stories', {
 export const parts = pgTable('parts', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
-  description: text('description'),
   storyId: text('story_id').references(() => stories.id).notNull(),
   authorId: text('author_id').references(() => users.id).notNull(),
-  orderIndex: integer('order_index').notNull(),
-  targetWordCount: integer('target_word_count').default(0),
-  currentWordCount: integer('current_word_count').default(0),
-  content: text('content').default(''), // Store part-specific development YAML data as text
-  // Legacy fields (kept for backward compatibility during migration)
-  structuralRole: varchar('structural_role', { length: 50 }),
   summary: text('summary'), // Multi-character MACRO arcs with progression strategy
   // Adversity-Triumph Engine fields
   actNumber: integer('actNumber'), // 1, 2, or 3 in three-act structure

@@ -176,26 +176,31 @@ export async function POST(request: NextRequest) {
             await db.insert(characters).values(characterRecords);
           }
 
-          // Insert settings
+          // Insert settings and create ID mapping
+          const settingIdMap = new Map<string, string>();
           if (result.settings.length > 0) {
-            const settingRecords = result.settings.map((setting) => ({
-              id: nanoid(),
-              storyId: generatedStoryId!,
-              name: setting.name,
-              description: setting.description,
-              adversityElements: setting.adversityElements,
-              symbolicMeaning: setting.symbolicMeaning,
-              cycleAmplification: setting.cycleAmplification,
-              mood: setting.mood,
-              emotionalResonance: setting.emotionalResonance,
-              sensory: setting.sensory,
-              architecturalStyle: setting.architecturalStyle,
-              visualStyle: setting.visualStyle,
-              visualReferences: setting.visualReferences,
-              colorPalette: setting.colorPalette,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            }));
+            const settingRecords = result.settings.map((setting) => {
+              const newId = nanoid();
+              settingIdMap.set(setting.id, newId); // Map temp ID to database ID
+              return {
+                id: newId,
+                storyId: generatedStoryId!,
+                name: setting.name,
+                description: setting.description,
+                adversityElements: setting.adversityElements,
+                symbolicMeaning: setting.symbolicMeaning,
+                cycleAmplification: setting.cycleAmplification,
+                mood: setting.mood,
+                emotionalResonance: setting.emotionalResonance,
+                sensory: setting.sensory,
+                architecturalStyle: setting.architecturalStyle,
+                visualStyle: setting.visualStyle,
+                visualReferences: setting.visualReferences,
+                colorPalette: setting.colorPalette,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              };
+            });
 
             await db.insert(settings).values(settingRecords);
           }
@@ -274,6 +279,7 @@ export async function POST(request: NextRequest) {
                 title: scene.title || `Scene ${index + 1}`, // Fallback title if missing
                 summary: scene.summary,
                 content: scene.content,
+                wordCount: scene.wordCount || 0, // Include word count from scene generation
                 cyclePhase: scene.cyclePhase,
                 emotionalBeat: scene.emotionalBeat,
                 orderIndex: index,
@@ -283,28 +289,50 @@ export async function POST(request: NextRequest) {
             });
 
             await db.insert(scenes).values(sceneRecords);
+
+            // Calculate total word count from all scenes
+            const totalWordCount = sceneRecords.reduce((sum, scene) => sum + (scene.wordCount || 0), 0);
+            console.log(`[Novel Generation] Total word count from ${sceneRecords.length} scenes: ${totalWordCount}`);
+
+            // Update story with ID arrays and word count
+            const partIds = Array.from(partIdMap.values());
+            const chapterIds = Array.from(chapterIdMap.values());
+            const sceneIds = Array.from(sceneIdMap.values());
+
+            await db
+              .update(stories)
+              .set({
+                partIds,
+                chapterIds,
+                sceneIds,
+                currentWordCount: totalWordCount,
+                updatedAt: new Date(),
+              })
+              .where(eq(stories.id, generatedStoryId!));
+
+            console.log('[Novel Generation] Updated story with ID arrays and word count:', {
+              partIds: partIds.length,
+              chapterIds: chapterIds.length,
+              sceneIds: sceneIds.length,
+              currentWordCount: totalWordCount,
+            });
+          } else {
+            // No scenes - still update story with ID arrays
+            const partIds = Array.from(partIdMap.values());
+            const chapterIds = Array.from(chapterIdMap.values());
+            const sceneIds: string[] = [];
+
+            await db
+              .update(stories)
+              .set({
+                partIds,
+                chapterIds,
+                sceneIds,
+                currentWordCount: 0,
+                updatedAt: new Date(),
+              })
+              .where(eq(stories.id, generatedStoryId!));
           }
-
-          // Update story with ID arrays for quick access to related entities
-          const partIds = Array.from(partIdMap.values());
-          const chapterIds = Array.from(chapterIdMap.values());
-          const sceneIds = Array.from(sceneIdMap.values());
-
-          await db
-            .update(stories)
-            .set({
-              partIds,
-              chapterIds,
-              sceneIds,
-              updatedAt: new Date(),
-            })
-            .where(eq(stories.id, generatedStoryId!));
-
-          console.log('[Novel Generation] Updated story with ID arrays:', {
-            partIds: partIds.length,
-            chapterIds: chapterIds.length,
-            sceneIds: sceneIds.length,
-          });
 
           // Phase 9: Generate images (now that we have actual storyId)
           const totalImages = 1 + result.characters.length + result.settings.length + result.scenes.length; // +1 for story cover
@@ -381,6 +409,7 @@ export async function POST(request: NextRequest) {
           // Generate character images
           for (let i = 0; i < result.characters.length; i++) {
             const character = result.characters[i];
+            const characterDbId = characterIdMap.get(character.id);
 
             try {
               controller.enqueue(
@@ -409,8 +438,19 @@ export async function POST(request: NextRequest) {
 
               if (imageResponse.ok) {
                 const imageResult = await imageResponse.json();
-                // Store image URL in character record (can be updated separately if needed)
                 console.log(`[Novel Generation] Generated image for character ${character.name}:`, imageResult.originalUrl);
+
+                // Update character record with image URL
+                if (characterDbId) {
+                  await db
+                    .update(characters)
+                    .set({
+                      imageUrl: imageResult.originalUrl,
+                      imageVariants: imageResult.variants,
+                      updatedAt: new Date(),
+                    })
+                    .where(eq(characters.id, characterDbId));
+                }
               } else {
                 const error = await imageResponse.json();
                 console.error(`[Novel Generation] Failed to generate image for character ${character.name}:`, error);
@@ -426,6 +466,7 @@ export async function POST(request: NextRequest) {
           // Generate setting images
           for (let i = 0; i < result.settings.length; i++) {
             const setting = result.settings[i];
+            const settingDbId = settingIdMap.get(setting.id);
 
             try {
               controller.enqueue(
@@ -454,8 +495,19 @@ export async function POST(request: NextRequest) {
 
               if (imageResponse.ok) {
                 const imageResult = await imageResponse.json();
-                // Store image URL in setting record (can be updated separately if needed)
                 console.log(`[Novel Generation] Generated image for setting ${setting.name}:`, imageResult.originalUrl);
+
+                // Update setting record with image URL
+                if (settingDbId) {
+                  await db
+                    .update(settings)
+                    .set({
+                      imageUrl: imageResult.originalUrl,
+                      imageVariants: imageResult.variants,
+                      updatedAt: new Date(),
+                    })
+                    .where(eq(settings.id, settingDbId));
+                }
               } else {
                 const error = await imageResponse.json();
                 console.error(`[Novel Generation] Failed to generate image for setting ${setting.name}:`, error);
