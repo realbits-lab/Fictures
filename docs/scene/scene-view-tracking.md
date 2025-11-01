@@ -351,7 +351,7 @@ expect(data.viewCount).toBeGreaterThan(0);
 **Test Logged-In User Flow**:
 ```typescript
 // 1. Login
-await page.goto('/auth/signin');
+await page.goto('/login');
 await page.fill('[name="email"]', 'test@example.com');
 await page.click('button[type="submit"]');
 

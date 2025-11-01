@@ -7,19 +7,20 @@ const storyId = 'V-brkWWynVrT6vX_XE-JG';
 const [story] = await db.select({
   id: stories.id,
   title: stories.title,
-  imageUrl: stories.imageUrl,
-  imageVariants: stories.imageVariants,
+  authorId: stories.authorId,
+  userId: stories.userId,
+  status: stories.status,
 }).from(stories).where(eq(stories.id, storyId));
 
 console.log('Story data from database:');
 console.log('- id:', story?.id);
 console.log('- title:', story?.title);
-console.log('- imageUrl:', story?.imageUrl);
-console.log('- imageVariants type:', typeof story?.imageVariants);
-console.log('- imageVariants value:', story?.imageVariants);
+console.log('- authorId:', story?.authorId);
+console.log('- userId:', story?.userId);
+console.log('- status:', story?.status);
 
-if (story?.imageVariants === null) {
-  console.log('\n⚠️  imageVariants is NULL in database!');
+if (!story) {
+  console.log('\n⚠️  Story NOT found in database!');
 }
 
 process.exit(0);
