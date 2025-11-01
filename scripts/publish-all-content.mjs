@@ -26,6 +26,14 @@ async function publishAllContent() {
       GROUP BY status
     `;
 
+    const scenesBeforeCount = await sql`
+      SELECT
+        visibility,
+        COUNT(*) as count
+      FROM scenes
+      GROUP BY visibility
+    `;
+
     console.log('\n📊 Current Status Counts:');
     console.log('\n  Stories:');
     storiesBeforeCount.forEach(row => {
@@ -35,6 +43,11 @@ async function publishAllContent() {
     console.log('\n  Chapters:');
     chaptersBeforeCount.forEach(row => {
       console.log(`    ${row.status}: ${row.count}`);
+    });
+
+    console.log('\n  Scenes:');
+    scenesBeforeCount.forEach(row => {
+      console.log(`    ${row.visibility}: ${row.count}`);
     });
 
     // Update stories to published
@@ -72,6 +85,16 @@ async function publishAllContent() {
       });
     }
 
+    // Update scenes to public visibility
+    const updatedScenes = await sql`
+      UPDATE scenes
+      SET visibility = 'public'
+      WHERE visibility != 'public'
+      RETURNING id, visibility
+    `;
+
+    console.log(`\n✅ Updated ${updatedScenes.length} scenes to public visibility`);
+
     // Get final counts
     const storiesAfterCount = await sql`
       SELECT
@@ -89,6 +112,14 @@ async function publishAllContent() {
       GROUP BY status
     `;
 
+    const scenesAfterCount = await sql`
+      SELECT
+        visibility,
+        COUNT(*) as count
+      FROM scenes
+      GROUP BY visibility
+    `;
+
     console.log('\n📊 Final Status Counts:');
     console.log('\n  Stories:');
     storiesAfterCount.forEach(row => {
@@ -100,10 +131,16 @@ async function publishAllContent() {
       console.log(`    ${row.status}: ${row.count}`);
     });
 
+    console.log('\n  Scenes:');
+    scenesAfterCount.forEach(row => {
+      console.log(`    ${row.visibility}: ${row.count}`);
+    });
+
     console.log('\n' + '='.repeat(80));
     console.log('✅ Publication Complete!');
     console.log(`   Stories published: ${updatedStories.length}`);
     console.log(`   Chapters published: ${updatedChapters.length}`);
+    console.log(`   Scenes made public: ${updatedScenes.length}`);
     console.log('\n');
 
   } catch (error) {

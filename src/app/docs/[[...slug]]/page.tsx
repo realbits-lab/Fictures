@@ -2,54 +2,28 @@ import { source } from '@/lib/source';
 import type { Metadata } from 'next';
 import { DocsPage, DocsBody } from 'fumadocs-ui/page';
 import { notFound } from 'next/navigation';
+// TODO: Re-enable when @fuma-comment supports Next Auth v5
+// import { DocsComments } from '@/components/docs/docs-comments';
 
 export default async function Page(props: {
   params: Promise<{ slug?: string[] }>;
 }) {
-  console.log('[DOCS PAGE] Starting render');
-  console.log('[DOCS PAGE] Props:', JSON.stringify(props, null, 2));
-
   const params = await props.params;
-  console.log('[DOCS PAGE] Params:', params);
-  console.log('[DOCS PAGE] Slug:', params.slug);
-
   const page = source.getPage(params.slug);
-  console.log('[DOCS PAGE] Page found:', !!page);
 
   if (!page) {
-    console.error('[DOCS PAGE] Page not found for slug:', params.slug);
     notFound();
   }
 
-  console.log('[DOCS PAGE] Page data:', {
-    title: page.data.title,
-    description: page.data.description,
-    hasToc: !!page.data.toc,
-    tocLength: page.data.toc?.length,
-    full: page.data.full,
-    hasBody: !!page.data.body,
-  });
-
   const MDX = page.data.body;
-  console.log('[DOCS PAGE] MDX component:', typeof MDX);
-
-  console.log('[DOCS PAGE] TOC DEBUGGING:');
-  console.log('[DOCS PAGE] - toc exists:', !!page.data.toc);
-  console.log('[DOCS PAGE] - toc type:', typeof page.data.toc);
-  console.log('[DOCS PAGE] - toc is array:', Array.isArray(page.data.toc));
-  console.log('[DOCS PAGE] - toc length:', page.data.toc?.length);
-  console.log('[DOCS PAGE] - toc value:', JSON.stringify(page.data.toc, null, 2));
-  console.log('[DOCS PAGE] - full prop:', page.data.full);
-  console.log('[DOCS PAGE] Rendering DocsPage with toc:', page.data.toc);
-
-  const pageSlug = params.slug?.join('/') || 'index';
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
       <DocsBody>
         <MDX />
       </DocsBody>
-      <DocsComments page={pageSlug} />
+      {/* TODO: Re-enable when @fuma-comment supports Next Auth v5 */}
+      {/* <DocsComments page={pageSlug} /> */}
     </DocsPage>
   );
 }

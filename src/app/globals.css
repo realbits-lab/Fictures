@@ -646,3 +646,14 @@ body {
 .animate-slide-in {
 	animation: slide-in 0.3s ease-out;
 }
+
+/* Force Fumadocs TOC to display */
+:root {
+	--fd-toc-width: 256px !important;
+}
+
+@media (max-width: 1279px) {
+	:root {
+		--fd-toc-width: 0px !important;
+	}
+}

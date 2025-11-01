@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getChapterById, getChapterScenes } from '@/lib/db/cached-queries';
 import { getStoryById } from '@/lib/db/cached-queries';
+import { getChapterScenesForReading } from '@/lib/db/reading-queries';
 import { createHash } from 'crypto';
 
 export async function GET(
@@ -54,11 +55,14 @@ export async function GET(
       return NextResponse.json({ error: 'Chapter not available' }, { status: 403 });
     }
 
-    // 4. Get scenes using cached query (with scene images already extracted)
+    // 4. Get scenes using optimized query for reading mode (skips studio fields, keeps imageVariants)
     const scenesQueryStartTime = performance.now();
-    const scenesWithImages: any = await getChapterScenes(chapterId, session?.user?.id, isPublishedStory);
+    // ⚡ Strategy 3: Use optimized reading query for published content
+    const scenesWithImages: any = isPublishedStory && !isOwner
+      ? await getChapterScenesForReading(chapterId)
+      : await getChapterScenes(chapterId, session?.user?.id, isPublishedStory);
     const scenesQueryDuration = performance.now() - scenesQueryStartTime;
-    console.log(`[${requestId}] 🎬 Scenes query completed: ${scenesQueryDuration.toFixed(2)}ms (${scenesWithImages.length} scenes) - CACHED`);
+    console.log(`[${requestId}] 🎬 Scenes query completed: ${scenesQueryDuration.toFixed(2)}ms (${scenesWithImages.length} scenes) - ${isPublishedStory && !isOwner ? 'OPTIMIZED' : 'FULL'}`);
 
     // No additional processing needed - scene images already extracted in cached function
 

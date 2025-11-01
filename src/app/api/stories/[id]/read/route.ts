@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { getStoryWithStructure } from '@/lib/db/queries';
+import { getStoryForReading } from '@/lib/db/reading-queries';
 import { createHash } from 'crypto';
 
 export async function GET(
@@ -11,9 +11,10 @@ export async function GET(
     const session = await auth();
     const { id } = await params;
 
-    // Get story with structure but without scenes (loaded on demand)
-    const storyWithStructure = await getStoryWithStructure(id, false);
-    
+    // ⚡ Strategy 3: Smart Data Reduction
+    // Get story with optimized reading query (skips studio-only fields, keeps imageVariants)
+    const storyWithStructure = await getStoryForReading(id);
+
     if (!storyWithStructure) {
       return NextResponse.json({ error: 'Story not found' }, { status: 404 });
     }
