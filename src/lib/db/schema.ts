@@ -422,18 +422,6 @@ export const characters = pgTable('characters', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Places table - Story locations/settings
-export const places = pgTable('places', {
-  id: text('id').primaryKey(),
-  name: varchar('name', { length: 255 }).notNull(),
-  storyId: text('story_id').references(() => stories.id).notNull(),
-  isMain: boolean('is_main').default(false), // is this a main location?
-  content: text('content').default(''), // Store all place data as YAML/JSON
-  imageUrl: text('image_url'), // Original place image URL from Vercel Blob
-  imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
 
 // AI interactions table - Track AI assistant usage (simplified, no sessions)
 export const aiInteractions = pgTable('ai_interactions', {
@@ -595,7 +583,6 @@ export const storiesRelations = relations(stories, ({ one, many }) => ({
   parts: many(parts),
   chapters: many(chapters),
   characters: many(characters),
-  places: many(places),
   settings: many(settings),
   communityPosts: many(communityPosts),
   readingHistory: many(readingHistory),
@@ -676,13 +663,6 @@ export const settings = pgTable('settings', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
-
-export const placesRelations = relations(places, ({ one }) => ({
-  story: one(stories, {
-    fields: [places.storyId],
-    references: [stories.id],
-  }),
-}));
 
 export const settingsRelations = relations(settings, ({ one }) => ({
   story: one(stories, {
