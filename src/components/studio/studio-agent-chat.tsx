@@ -48,7 +48,7 @@ function ToolExecutionCard({ tool }: { tool: ToolInvocation }) {
           ) : (
             <Loader2 className="h-4 w-4 animate-spin text-primary" />
           )}
-          <Wrench className="h-4 w-4 text-muted-foreground" />
+          <Wrench className="h-4 w-4" style={{ color: 'rgb(var(--color-muted-foreground))' }} />
           <span className="font-mono text-sm font-medium text-card-foreground">{tool.toolName}</span>
         </div>
         <Badge variant={isComplete ? (isError ? 'destructive' : 'default') : 'secondary'} className="text-xs theme-badge">
@@ -59,15 +59,15 @@ function ToolExecutionCard({ tool }: { tool: ToolInvocation }) {
         <CardContent className="py-2 px-4">
           <div className="space-y-2">
             <div>
-              <div className="text-xs font-semibold text-muted-foreground mb-1">Input:</div>
-              <pre className="rounded-theme-input bg-muted/50 p-2 text-xs overflow-x-auto border-theme text-foreground">
+              <div className="text-xs font-semibold mb-1" style={{ color: 'rgb(var(--color-muted-foreground))' }}>Input:</div>
+              <pre className="rounded-theme-input bg-muted/50 p-2 text-xs overflow-x-auto border-theme" style={{ color: 'rgb(var(--color-foreground))' }}>
                 {JSON.stringify(tool.args, null, 2)}
               </pre>
             </div>
             {tool.result && (
               <div>
-                <div className="text-xs font-semibold text-muted-foreground mb-1">Output:</div>
-                <pre className="rounded-theme-input bg-muted/50 p-2 text-xs overflow-x-auto border-theme text-foreground">
+                <div className="text-xs font-semibold mb-1" style={{ color: 'rgb(var(--color-muted-foreground))' }}>Output:</div>
+                <pre className="rounded-theme-input bg-muted/50 p-2 text-xs overflow-x-auto border-theme" style={{ color: 'rgb(var(--color-foreground))' }}>
                   {JSON.stringify(tool.result, null, 2)}
                 </pre>
               </div>
@@ -100,10 +100,13 @@ function AgentMessage({ message }: { message: Message & { toolInvocations?: Tool
               : 'bg-muted border-theme'
           )}
         >
-          <div className={cn(
-            "prose prose-sm dark:prose-invert max-w-none",
-            isUser ? "prose-invert" : "text-foreground [&>*]:text-foreground"
-          )}>
+          <div
+            className={cn(
+              "prose prose-sm dark:prose-invert max-w-none",
+              isUser ? "prose-invert" : ""
+            )}
+            style={!isUser ? { color: 'rgb(var(--color-foreground))' } : undefined}
+          >
             {message.content}
           </div>
         </div>
@@ -111,8 +114,8 @@ function AgentMessage({ message }: { message: Message & { toolInvocations?: Tool
         {/* Tool executions */}
         {!isUser && message.toolInvocations && message.toolInvocations.length > 0 && (
           <div className="w-full space-y-2">
-            <div className="text-xs font-semibold text-muted-foreground flex items-center gap-2 px-1">
-              <Sparkles className="h-3 w-3" />
+            <div className="text-xs font-semibold flex items-center gap-2 px-1" style={{ color: 'rgb(var(--color-muted-foreground))' }}>
+              <Sparkles className="h-3 w-3" style={{ color: 'rgb(var(--color-muted-foreground))' }} />
               Tools Used:
             </div>
             {message.toolInvocations.map((tool) => (
@@ -157,8 +160,8 @@ export function StudioAgentChat({
     return (
       <div className={cn('flex items-center justify-center h-full', className)}>
         <div className="flex flex-col items-center gap-2">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Loading conversation...</span>
+          <Loader2 className="h-8 w-8 animate-spin" style={{ color: 'rgb(var(--color-muted-foreground))' }} />
+          <span className="text-sm" style={{ color: 'rgb(var(--color-muted-foreground))' }}>Loading conversation...</span>
         </div>
       </div>
     );
@@ -167,15 +170,15 @@ export function StudioAgentChat({
   return (
     <div className={cn('flex flex-col h-full bg-background', className)}>
       {/* Header */}
-      <div className="border-b bg-card border-theme text-card-foreground">
+      <div className="border-b bg-card border-theme">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-theme-button bg-primary">
               <Bot className="h-5 w-5 text-primary-foreground" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold">Studio Editing Agent</h2>
-              <p className="text-sm text-muted-foreground">
+              <h2 className="text-lg font-semibold" style={{ color: 'rgb(var(--color-foreground))' }}>Studio Editing Agent</h2>
+              <p className="text-sm" style={{ color: 'rgb(var(--color-muted-foreground))' }}>
                 AI assistant for managing your story
               </p>
             </div>
@@ -183,7 +186,7 @@ export function StudioAgentChat({
           {activeTools.length > 0 && (
             <div className="flex items-center gap-2 text-sm">
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              <span className="text-muted-foreground">
+              <span style={{ color: 'rgb(var(--color-muted-foreground))' }}>
                 Running: {activeTools.join(', ')}
               </span>
             </div>
@@ -199,8 +202,8 @@ export function StudioAgentChat({
               <div className="rounded-full bg-primary p-6 mb-4">
                 <Sparkles className="h-8 w-8 text-primary-foreground" />
               </div>
-              <h3 className="text-lg font-medium mb-2">Start a Conversation</h3>
-              <p className="text-sm text-muted-foreground max-w-sm">
+              <h3 className="text-lg font-medium mb-2" style={{ color: 'rgb(var(--color-foreground))' }}>Start a Conversation</h3>
+              <p className="text-sm max-w-sm" style={{ color: 'rgb(var(--color-muted-foreground))' }}>
                 Ask me to help you manage your story. I can read, create, update, or delete
                 stories, parts, chapters, scenes, characters, and settings.
               </p>
@@ -218,7 +221,7 @@ export function StudioAgentChat({
                 >
                   <div className="flex flex-col items-start gap-1">
                     <span className="font-medium">Show story details</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs" style={{ color: 'rgb(var(--color-muted-foreground))' }}>
                       Get complete information about the current story
                     </span>
                   </div>
@@ -236,7 +239,7 @@ export function StudioAgentChat({
                 >
                   <div className="flex flex-col items-start gap-1">
                     <span className="font-medium">List all characters</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs" style={{ color: 'rgb(var(--color-muted-foreground))' }}>
                       View all characters with their details
                     </span>
                   </div>
@@ -281,7 +284,7 @@ export function StudioAgentChat({
             )}
           </Button>
         </form>
-        <p className="text-xs text-muted-foreground text-center mt-2">
+        <p className="text-xs text-center mt-2" style={{ color: 'rgb(var(--color-muted-foreground))' }}>
           Press Enter to send, Shift+Enter for new line
         </p>
       </div>
