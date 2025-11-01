@@ -9,7 +9,7 @@
 
 import React, { useState, useEffect } from "react";
 import { usePublishedStories } from "@/lib/hooks/use-page-cache";
-import { Skeleton } from "@/components/ui/SkeletonLoader";
+import { Skeleton } from "@/components/ui/skeleton-loader";
 import Link from "next/link";
 
 function ComicCardSkeleton() {
