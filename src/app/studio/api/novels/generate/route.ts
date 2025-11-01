@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
                 authorId: session.user.id,
                 title: part.title,
                 summary: part.summary,
-                actNumber: part.actNumber,
+                orderIndex: part.orderIndex,
                 characterArcs: part.characterArcs,
                 createdAt: new Date(),
                 updatedAt: new Date(),

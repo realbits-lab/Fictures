@@ -234,7 +234,7 @@ export const parts = pgTable('parts', {
   authorId: text('author_id').references(() => users.id).notNull(),
   summary: text('summary'), // Multi-character MACRO arcs with progression strategy
   // Adversity-Triumph Engine fields
-  actNumber: integer('act_number'), // 1, 2, or 3 in three-act structure
+  orderIndex: integer('order_index').notNull(), // 0, 1, 2 (for acts 1, 2, 3 in three-act structure)
   characterArcs: json('character_arcs').$type<Array<{
     characterId: string;
     macroAdversity: { internal: string; external: string };

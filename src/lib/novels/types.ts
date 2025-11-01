@@ -126,7 +126,7 @@ export interface SettingGenerationResult {
 }
 
 export interface PartGenerationResult {
-  actNumber: number;
+  orderIndex: number; // 0, 1, 2 (for acts 1, 2, 3)
   title: string;
   summary: string;
   characterArcs: CharacterMacroArc[];

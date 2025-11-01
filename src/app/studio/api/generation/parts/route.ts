@@ -338,7 +338,7 @@ function parsePartsFromText(
     }
 
     parts.push({
-      actNumber: actNum,
+      orderIndex: actNum - 1, // Convert act number (1-3) to 0-based index (0-2)
       title,
       summary,
       characterArcs,

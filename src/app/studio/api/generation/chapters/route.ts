@@ -249,7 +249,7 @@ export async function POST(request: NextRequest) {
     console.log('✅ [CHAPTERS API] Validation passed');
     console.log('[CHAPTERS API] Part data:', JSON.stringify({
       title: part.title,
-      actNumber: part.actNumber,
+      orderIndex: part.orderIndex,
       characterArcsCount: part.characterArcs?.length || 0,
     }, null, 2));
 
@@ -259,7 +259,7 @@ export async function POST(request: NextRequest) {
 
     const chaptersContext = `
 # PART CONTEXT
-Act ${part.actNumber}: ${part.title}
+Act ${part.orderIndex + 1}: ${part.title}
 ${part.summary}
 
 # STORY STRUCTURE CONSTRAINTS (MUST FOLLOW EXACTLY)
