@@ -1,8 +1,7 @@
 import { NextComment } from '@fuma-comment/server/next';
 import { createDrizzleAdapter } from '@fuma-comment/server/adapters/drizzle';
-import { createNextAuthAdapter } from '@fuma-comment/server/adapters/next-auth';
 import { db, fumaComments, fumaRates, fumaRoles, users } from '@/lib/db';
-import { authConfig } from '@/lib/auth/config';
+import { createNextAuthV5Adapter } from '@/lib/fuma-comment/auth-adapter';
 
 const storage = createDrizzleAdapter({
   db,
@@ -15,7 +14,7 @@ const storage = createDrizzleAdapter({
   auth: 'next-auth',
 });
 
-const auth = createNextAuthAdapter(authConfig);
+const auth = createNextAuthV5Adapter();
 
 export const { GET, DELETE, PATCH, POST } = NextComment({
   auth,

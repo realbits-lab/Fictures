@@ -2,8 +2,7 @@ import { source } from '@/lib/source';
 import type { Metadata } from 'next';
 import { DocsPage, DocsBody } from 'fumadocs-ui/page';
 import { notFound } from 'next/navigation';
-// TODO: Re-enable when @fuma-comment supports Next Auth v5
-// import { DocsComments } from '@/components/docs/docs-comments';
+import { DocsComments } from '@/components/docs/docs-comments';
 
 export default async function Page(props: {
   params: Promise<{ slug?: string[] }>;
@@ -16,14 +15,14 @@ export default async function Page(props: {
   }
 
   const MDX = page.data.body;
+  const pageSlug = params.slug?.join('/') || 'index';
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
       <DocsBody>
         <MDX />
       </DocsBody>
-      {/* TODO: Re-enable when @fuma-comment supports Next Auth v5 */}
-      {/* <DocsComments page={pageSlug} /> */}
+      <DocsComments page={pageSlug} />
     </DocsPage>
   );
 }

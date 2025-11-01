@@ -47,6 +47,8 @@ export async function getStoryForReading(storyId: string) {
 
   if (!story) return null;
 
+  if (!story) return null;
+
   // Get parts with reading-relevant fields only
   const storyParts = await db.select({
     id: parts.id,
