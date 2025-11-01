@@ -1,3 +1,6 @@
+// IMPORTANT: Import polyfills first, before any other imports
+import '@/lib/react-polyfills';
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { auth } from '@/lib/auth';

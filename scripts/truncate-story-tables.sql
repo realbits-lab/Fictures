@@ -4,10 +4,8 @@
 
 BEGIN;
 
--- Disable triggers temporarily for faster truncation
-SET session_replication_role = replica;
-
 -- Truncate tables in order (children first to avoid FK constraint issues)
+-- Using CASCADE to handle foreign key dependencies automatically
 
 -- 1. Analytics and tracking (dependent on stories, chapters, scenes)
 TRUNCATE TABLE analytics_events CASCADE;
@@ -58,9 +56,6 @@ TRUNCATE TABLE research CASCADE;
 
 -- 12. Stories (root table)
 TRUNCATE TABLE stories CASCADE;
-
--- Re-enable triggers
-SET session_replication_role = DEFAULT;
 
 COMMIT;
 

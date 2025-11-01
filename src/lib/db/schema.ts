@@ -574,7 +574,6 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   communityReplies: many(communityReplies),
   apiKeys: many(apiKeys),
   readingHistory: many(readingHistory),
-  research: many(research),
 }));
 
 export const storiesRelations = relations(stories, ({ one, many }) => ({
@@ -1117,26 +1116,6 @@ export const scheduledPublicationsRelations = relations(scheduledPublications, (
   scene: one(scenes, {
     fields: [scheduledPublications.sceneId],
     references: [scenes.id],
-  }),
-}));
-
-// Research table - Store research notes and documentation
-export const research = pgTable('research', {
-  id: text('id').primaryKey(),
-  title: varchar('title', { length: 500 }).notNull(),
-  content: text('content').notNull(), // Markdown content
-  authorId: text('author_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  tags: json('tags').$type<string[]>().default([]),
-  viewCount: integer('view_count').default(0).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
-
-// Relations for research table
-export const researchRelations = relations(research, ({ one }) => ({
-  author: one(users, {
-    fields: [research.authorId],
-    references: [users.id],
   }),
 }));
 
