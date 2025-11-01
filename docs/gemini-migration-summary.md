@@ -1,3 +1,7 @@
+---
+title: "Migration to Gemini 2.5 Flash Image - Complete Summary"
+---
+
 # Migration to Gemini 2.5 Flash Image - Complete Summary
 
 **Date**: 2025-10-28

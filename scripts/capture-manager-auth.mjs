@@ -81,8 +81,8 @@ async function captureManagerAuth() {
 
   try {
     // Navigate to login page
-    console.log(`📍 Navigating to ${BASE_URL}/auth/signin...\n`);
-    await page.goto(`${BASE_URL}/auth/signin`, { waitUntil: 'networkidle' });
+    console.log(`📍 Navigating to ${BASE_URL}/login...\n`);
+    await page.goto(`${BASE_URL}/login`, { waitUntil: 'networkidle' });
 
     // Wait for page to load
     await page.waitForTimeout(1000);

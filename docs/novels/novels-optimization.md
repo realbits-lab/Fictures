@@ -1,3 +1,7 @@
+---
+title: "Story Card Loading Performance Optimization"
+---
+
 # Story Card Loading Performance Optimization
 
 **Date:** October 25, 2025
@@ -306,11 +310,11 @@ useEffect(() => {
 ### Target Performance (With Additional Optimizations)
 
 1. **Card Click** → SSR Page Load
-   - With hover prefetch: <100ms ⭐
+   - With hover prefetch: `<100ms` ⭐
    - With warm cache: ~0.4s ✅
 
 2. **Scene Selection** → Scene Display
-   - With props passing: <50ms (no API call needed) ⭐
+   - With props passing: `<50ms` (no API call needed) ⭐
    - With combined API: ~100ms (1 call instead of 3) ⭐
 
 ---
@@ -345,7 +349,7 @@ grep -E "\[SSR\]|\[Cache\]|\[RedisCache\]" logs/dev-server-cache-fix-test.log
 
 **Good Indicators:**
 ```
-[SSR] Story structure fetched in <100ms
+[SSR] Story structure fetched in `<100ms`
 [RedisCache] HIT: story:*:structure:*:public
 [Cache] HIT public story structure
 ```
@@ -363,20 +367,20 @@ grep -E "\[SSR\]|\[Cache\]|\[RedisCache\]" logs/dev-server-cache-fix-test.log
 ```
 🎨 [CLIENT] UnifiedWritingEditor component mounting
 📺 [CLIENT] SceneDisplay component mounting
-✅ [CLIENT] SWR: Scene data fetched in <100ms
-⏱️  [CLIENT] Total time from mount to scene render: <200ms
+✅ [CLIENT] SWR: Scene data fetched in `<100ms`
+⏱️  [CLIENT] Total time from mount to scene render: `<200ms`
 ```
 
 ### Key Metrics to Track
 
 1. **SSR Page Load Time:**
-   - Target (Cold): <4s
-   - Target (Warm): <500ms
+   - Target (Cold): `<4`s
+   - Target (Warm): `<500ms`
    - **Current:** 394ms ✅
 
 2. **Scene API Response Time:**
-   - Target (Cold): <3s
-   - Target (Warm): <100ms
+   - Target (Cold): `<3`s
+   - Target (Warm): `<100ms`
    - **Current:** 51ms ✅
 
 3. **Cache Hit Rate:**

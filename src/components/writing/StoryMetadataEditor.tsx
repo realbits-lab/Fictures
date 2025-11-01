@@ -76,24 +76,24 @@ export function StoryMetadataEditor({
       <CardContent className="space-y-4">
         {/* Title Display (read-only for now) */}
         <div>
-          <label className="block text-sm font-medium text-[rgb(var(--muted-foreground))] mb-1">
+          <label className="block text-sm font-medium text-[rgb(var(--color-muted-foreground))] mb-1">
             Title
           </label>
-          <div className="text-base font-medium text-[rgb(var(--foreground))]">
+          <div className="text-base font-medium text-[rgb(var(--color-foreground))]">
             {currentTitle}
           </div>
         </div>
 
         {/* Genre Selector */}
         <div>
-          <label className="block text-sm font-medium text-[rgb(var(--muted-foreground))] mb-2">
+          <label className="block text-sm font-medium text-[rgb(var(--color-muted-foreground))] mb-2">
             Genre
           </label>
           <select
             value={genre}
             onChange={(e) => setGenre(e.target.value)}
             disabled={disabled || isLoading}
-            className="w-full px-3 py-2 border border-[rgb(var(--border))] rounded-md bg-[rgb(var(--background))] text-[rgb(var(--foreground))] focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-2 border border-[rgb(var(--color-border))] rounded-md bg-[rgb(var(--color-background))] text-[rgb(var(--color-foreground))] focus:outline-none focus:ring-2 focus:ring-[rgb(var(--color-primary))] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {VALID_GENRES.map((genreOption) => (
               <option key={genreOption} value={genreOption}>

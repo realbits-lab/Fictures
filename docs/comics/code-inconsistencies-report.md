@@ -1,3 +1,7 @@
+---
+title: "Comics Generation Code Inconsistencies Report"
+---
+
 # Comics Generation Code Inconsistencies Report
 
 **Date**: 2025-10-29

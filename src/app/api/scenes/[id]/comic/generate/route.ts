@@ -11,7 +11,11 @@ export const maxDuration = 300; // 5 minutes
 
 /**
  * POST /api/scenes/[id]/comic/generate
- * Generate comic panels for a scene and set status to draft
+ * Generate comic panels for a scene with SSE progress updates
+ *
+ * Response format:
+ * - With Accept: text/event-stream - Returns SSE stream with progress updates
+ * - Otherwise - Returns JSON response after completion
  */
 export async function POST(
   request: NextRequest,
@@ -97,107 +101,173 @@ export async function POST(
       id: 'default',
       name: 'Default Setting',
       description: 'A generic setting',
+      mood: 'neutral',
+      sensory: null,
+      visualStyle: null,
+      visualReferences: null,
+      colorPalette: null,
+      architecturalStyle: null,
       imageUrl: null,
       imageVariants: null,
       storyId: story.id,
-      settingType: 'location',
-      atmosphere: 'neutral',
-      timeOfDay: null,
-      weather: null,
+      adversityElements: null,
+      symbolicMeaning: null,
+      cycleAmplification: null,
+      emotionalResonance: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    console.log(`🎨 Generating comic panels for scene: ${scene.title}`);
+    // Check if client wants SSE
+    const acceptHeader = request.headers.get('accept') || '';
+    const wantsSSE = acceptHeader.includes('text/event-stream');
 
-    // Map database scene to HNS interface (database uses 'title', HNS uses 'scene_title')
-    const hnsScene: Partial<HNSScene> = {
-      scene_id: scene.id,
-      scene_number: scene.orderIndex,
-      scene_title: scene.title,
-      chapter_ref: scene.chapterId,
-      character_ids: Array.isArray(scene.characterIds) ? scene.characterIds : [],
-      setting_id: scene.settingId || '',
-      pov_character_id: scene.povCharacterId || undefined,
-      goal: scene.goal || '',
-      conflict: scene.conflict || '',
-      outcome: scene.outcome || '',
-      content: scene.content || '',
-      emotional_shift: scene.emotionalShift as any,
-      entry_hook: scene.entryHook || undefined,
-      narrative_voice: scene.narrativeVoice || undefined,
-      summary: scene.summary || undefined,
-    };
+    if (wantsSSE) {
+      // Return SSE stream
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            // Helper to send SSE event
+            const sendEvent = (event: string, data: any) => {
+              const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+              controller.enqueue(encoder.encode(message));
+            };
 
-    // Map database characters to HNS interface (minimal fields for comic generation)
-    const hnsCharacters: Partial<HNSCharacter>[] = storyCharacters.map(char => ({
-      character_id: char.id,
-      name: char.name,
-      role: char.role as any,
-      summary: char.summary || char.description || '',
-      motivations: char.motivations as any,
-    }));
+            sendEvent('start', {
+              message: `Generating comic panels for scene: ${scene.title}`,
+              sceneId: id,
+              sceneTitle: scene.title,
+            });
 
-    // Map database setting to HNS interface (minimal fields for comic generation)
-    const hnsSetting: Partial<HNSSetting> = {
-      setting_id: primarySetting.id,
-      name: primarySetting.name,
-      description: primarySetting.description || '',
-      mood: primarySetting.mood || 'neutral',
-    };
+            console.log(`🎨 Generating comic panels for scene: ${scene.title}`);
 
-    // Generate panels (cast partial types to full HNS types - generator handles missing fields)
-    const result = await generateComicPanels({
-      sceneId: id,
-      scene: hnsScene as HNSScene,
-      characters: hnsCharacters as HNSCharacter[],
-      setting: hnsSetting as HNSSetting,
-      story: {
-        story_id: story.id,
-        genre: story.genre || 'drama',
-      },
-      targetPanelCount,
-    });
+            // Database objects now match HNS types - just cast directly
+            const result = await generateComicPanels({
+              sceneId: id,
+              scene: scene as unknown as HNSScene,
+              characters: storyCharacters as unknown as HNSCharacter[],
+              setting: primarySetting as unknown as HNSSetting,
+              story: {
+                story_id: story.id,
+                genre: story.genre || 'drama',
+              },
+              targetPanelCount,
+              progressCallback: (current, total, status) => {
+                sendEvent('progress', {
+                  current,
+                  total,
+                  status,
+                  percentage: Math.round((current / total) * 100),
+                });
+              },
+            });
 
-    // Update scene metadata with comic status
-    const [updatedScene] = await db.update(scenes)
-      .set({
-        comicStatus: 'draft',
-        comicGeneratedAt: new Date(),
-        comicPanelCount: result.panels.length,
-        comicVersion: (scene.comicVersion || 0) + 1,
-        updatedAt: new Date(),
-      })
-      .where(eq(scenes.id, id))
-      .returning();
+            // Update scene metadata with comic status
+            const [updatedScene] = await db.update(scenes)
+              .set({
+                comicStatus: 'draft',
+                comicGeneratedAt: new Date(),
+                comicPanelCount: result.panels.length,
+                comicVersion: (scene.comicVersion || 0) + 1,
+                updatedAt: new Date(),
+              })
+              .where(eq(scenes.id, id))
+              .returning();
 
-    console.log(`✅ Generated ${result.panels.length} comic panels for scene: ${scene.title}`);
+            console.log(`✅ Generated ${result.panels.length} comic panels for scene: ${scene.title}`);
 
-    return NextResponse.json({
-      success: true,
-      message: 'Comic panels generated successfully',
-      scene: {
-        id: updatedScene.id,
-        title: updatedScene.title,
-        comicStatus: updatedScene.comicStatus,
-        comicPanelCount: updatedScene.comicPanelCount,
-        comicGeneratedAt: updatedScene.comicGeneratedAt,
-        comicVersion: updatedScene.comicVersion,
-      },
-      result: {
-        screenplay: result.screenplay,
-        panels: result.panels.map(p => ({
-          id: p.id,
-          panel_number: p.panel_number,
-          shot_type: p.shot_type,
-          image_url: p.image_url,
-          narrative: p.narrative,
-          dialogue: p.dialogue,
-          sfx: p.sfx,
-        })),
-        metadata: result.metadata,
-      },
-    });
+            sendEvent('complete', {
+              success: true,
+              message: 'Comic panels generated successfully',
+              scene: {
+                id: updatedScene.id,
+                title: updatedScene.title,
+                comicStatus: updatedScene.comicStatus,
+                comicPanelCount: updatedScene.comicPanelCount,
+                comicGeneratedAt: updatedScene.comicGeneratedAt,
+                comicVersion: updatedScene.comicVersion,
+              },
+              metadata: result.metadata,
+            });
+
+            controller.close();
+          } catch (error) {
+            console.error('Error generating comic:', error);
+            const message = `event: error\ndata: ${JSON.stringify({
+              error: 'Internal server error',
+              message: error instanceof Error ? error.message : 'Unknown error',
+            })}\n\n`;
+            controller.enqueue(encoder.encode(message));
+            controller.close();
+          }
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+      });
+    } else {
+      // Return regular JSON response
+      console.log(`🎨 Generating comic panels for scene: ${scene.title}`);
+
+      // Database objects now match HNS types - just cast directly
+      const result = await generateComicPanels({
+        sceneId: id,
+        scene: scene as unknown as HNSScene,
+        characters: storyCharacters as unknown as HNSCharacter[],
+        setting: primarySetting as unknown as HNSSetting,
+        story: {
+          story_id: story.id,
+          genre: story.genre || 'drama',
+        },
+        targetPanelCount,
+      });
+
+      // Update scene metadata with comic status
+      const [updatedScene] = await db.update(scenes)
+        .set({
+          comicStatus: 'draft',
+          comicGeneratedAt: new Date(),
+          comicPanelCount: result.panels.length,
+          comicVersion: (scene.comicVersion || 0) + 1,
+          updatedAt: new Date(),
+        })
+        .where(eq(scenes.id, id))
+        .returning();
+
+      console.log(`✅ Generated ${result.panels.length} comic panels for scene: ${scene.title}`);
+
+      return NextResponse.json({
+        success: true,
+        message: 'Comic panels generated successfully',
+        scene: {
+          id: updatedScene.id,
+          title: updatedScene.title,
+          comicStatus: updatedScene.comicStatus,
+          comicPanelCount: updatedScene.comicPanelCount,
+          comicGeneratedAt: updatedScene.comicGeneratedAt,
+          comicVersion: updatedScene.comicVersion,
+        },
+        result: {
+          screenplay: result.screenplay,
+          panels: result.panels.map(p => ({
+            id: p.id,
+            panel_number: p.panel_number,
+            shot_type: p.shot_type,
+            image_url: p.image_url,
+            narrative: p.narrative,
+            dialogue: p.dialogue,
+            sfx: p.sfx,
+          })),
+          metadata: result.metadata,
+        },
+      });
+    }
   } catch (error) {
     console.error('Error generating comic:', error);
     return NextResponse.json(

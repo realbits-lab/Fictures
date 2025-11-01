@@ -31,13 +31,14 @@ export function buildCharacterPromptFragment(
   character: HNSCharacter,
   pose: string
 ): string {
-  const cacheKey = character.character_id;
+  // Use 'id' field from database schema (not legacy 'character_id')
+  const cacheKey = character.id;
 
   // Check cache first
   if (!characterVisualCache.has(cacheKey)) {
     const basePrompt = createCharacterBasePrompt(character);
     characterVisualCache.set(cacheKey, {
-      character_id: character.character_id,
+      character_id: character.id,
       base_prompt: basePrompt,
       last_generated: new Date()
     });
@@ -104,7 +105,8 @@ export function buildPanelCharacterPrompts(
 ): string {
   const characterPrompts = characterIds
     .map(charId => {
-      const character = characters.find(c => c.character_id === charId);
+      // Use 'id' field from database schema (not legacy 'character_id')
+      const character = characters.find(c => c.id === charId);
       if (!character) return '';
 
       const pose = characterPoses[charId] || 'standing naturally';

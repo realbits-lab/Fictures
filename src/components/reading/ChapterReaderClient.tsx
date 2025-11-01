@@ -9,6 +9,7 @@ import { useScenePrefetch } from '@/hooks/useScenePrefetch';
 import { useSceneView } from '@/hooks/useSceneView';
 import { ProgressIndicator } from './ProgressIndicator';
 import { CommentSection } from './CommentSection';
+import { SceneImage } from '@/components/optimized-image';
 import type { Chapter } from '@/hooks/useStoryReader';
 import { trackReading } from '@/lib/analytics/google-analytics';
 
@@ -197,7 +198,25 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
   // Fetch all scenes from all chapters in PARALLEL (major performance optimization)
   useEffect(() => {
     const fetchAllScenes = async () => {
-      if (!story || availableChapters.length === 0) return;
+      if (!story || availableChapters.length === 0) {
+        console.log(`⚠️ [PARALLEL-FETCH] Skipping parallel fetch: story=${!!story}, availableChapters=${availableChapters.length}`);
+        if (story) {
+          console.log(`⚠️ [PARALLEL-FETCH] Story data structure:`);
+          console.log(`⚠️   - parts: ${story.parts?.length ?? 0}`);
+          console.log(`⚠️   - chapters: ${story.chapters?.length ?? 0}`);
+          if (story.parts?.length > 0) {
+            story.parts.forEach((part: any, idx: number) => {
+              console.log(`⚠️     Part ${idx}: title="${part.title}", chapters=${part.chapters?.length ?? 0}`);
+            });
+          }
+          if (story.chapters?.length > 0) {
+            story.chapters.forEach((ch: any, idx: number) => {
+              console.log(`⚠️     Chapter ${idx}: title="${ch.title}", status="${ch.status}"`);
+            });
+          }
+        }
+        return;
+      }
 
       console.log(`🚀 Starting parallel scene fetch for ${availableChapters.length} chapters...`);
       const startTime = performance.now();
@@ -228,8 +247,8 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
         });
       }
 
-      // Process standalone chapters if story has no parts
-      if (story.chapters.length > 0 && story.parts.length === 0) {
+      // Process standalone chapters (chapters not in any part)
+      if (story.chapters.length > 0) {
         const standaloneChapters = [...story.chapters]
           .filter(chapter => isOwner || chapter.status === 'published')
           .sort((a, b) => a.orderIndex - b.orderIndex);
@@ -242,6 +261,15 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
             chapterOrderIndex: chapter.orderIndex
           });
         });
+      }
+
+      // ⚡ DEBUG: Log chaptersToFetch array
+      console.log(`🔍 [PARALLEL-FETCH] Built chaptersToFetch array: ${chaptersToFetch.length} chapters`);
+      if (chaptersToFetch.length === 0) {
+        console.log(`⚠️ [PARALLEL-FETCH] No chapters to fetch! Checking conditions:`);
+        console.log(`⚠️   - story.chapters.length: ${story.chapters?.length ?? 0}`);
+        console.log(`⚠️   - story.parts.length: ${story.parts?.length ?? 0}`);
+        console.log(`⚠️   - isOwner: ${isOwner}`);
       }
 
       // ⚡ PARALLEL FETCH - Fire all requests simultaneously
@@ -856,7 +884,7 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
               className="max-w-4xl mx-auto px-8 py-8 pb-24 md:pb-8"
             >
               {/* Scene Content */}
-              <div className="prose prose-lg max-w-none" style={{ color: 'rgb(var(--foreground))' }}>
+              <div className="prose prose-lg max-w-none" style={{ color: 'rgb(var(--color-foreground))' }}>
                 {scenesError ? (
                   <div className="text-center py-12 text-red-500 dark:text-red-400">
                     <div className="max-w-md mx-auto">
@@ -891,16 +919,18 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
                   <>
                     {console.log(`📖 Rendering selected scene: ${selectedScene.title}`)}
 
-                    {/* Scene Image */}
-                    {selectedScene.sceneImage?.url && (
+                    {/* Scene Image - Using OptimizedImage with imageVariants */}
+                    {(selectedScene.imageUrl || selectedScene.sceneImage?.url) && (
                       <div className="mb-6">
                         <div className="rounded-lg overflow-hidden shadow-lg">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={selectedScene.sceneImage.url}
-                            alt={`Scene: ${selectedScene.title}`}
+                          <SceneImage
+                            scene={{
+                              title: selectedScene.title,
+                              imageUrl: selectedScene.imageUrl || selectedScene.sceneImage?.url,
+                              imageVariants: selectedScene.imageVariants
+                            }}
                             className="w-full h-auto object-contain"
-                            loading="lazy"
+                            priority={false}
                           />
                         </div>
                       </div>

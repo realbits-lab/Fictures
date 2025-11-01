@@ -6,6 +6,7 @@ import {
   Card,
   CardContent,
   Progress,
+  StoryImage,
 } from "@/components/ui";
 
 interface StoryCardProps {
@@ -23,9 +24,9 @@ interface StoryCardProps {
   readers: number;
   rating: number;
   status: "draft" | "publishing" | "completed" | "published";
-  wordCount?: number;
   firstChapterId?: string | null;
   isPublic?: boolean;
+  imageUrl?: string | null;
 }
 
 export function StoryCard({
@@ -37,9 +38,9 @@ export function StoryCard({
   readers,
   rating,
   status,
-  wordCount,
   firstChapterId,
   isPublic,
+  imageUrl,
 }: StoryCardProps) {
   const progressPercentage =
     chapters.total > 0 ? (chapters.completed / chapters.total) * 100 : 0;
@@ -69,54 +70,61 @@ export function StoryCard({
 
   return (
     <Link href={`/studio/edit/story/${id}`} className="block h-full">
-      <Card className="h-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] hover:border-blue-400 dark:hover:border-blue-500 cursor-pointer">
-        <CardContent className="space-y-4">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <h3 className="text-lg font-semibold text-[rgb(var(--foreground))]">
-              📖 {title}
-            </h3>
-            <p className="text-sm text-[rgb(var(--muted-foreground))]">{genre}</p>
+      <Card className="h-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] hover:border-blue-400 dark:hover:border-blue-500 cursor-pointer overflow-hidden">
+        <CardContent className="p-0 space-y-0">
+        {/* Story Image - 16:9 Aspect Ratio */}
+        {imageUrl && (
+          <div className="relative w-full aspect-video bg-[rgb(var(--color-muted))]">
+            <StoryImage
+              src={imageUrl}
+              alt={title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+            />
           </div>
-          {getVisibilityBadge()}
-        </div>
+        )}
 
-        <div className="space-y-3">
+        <div className="p-6 space-y-4">
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <h3 className="text-lg font-semibold text-[rgb(var(--color-foreground))]">
+                📖 {title}
+              </h3>
+              <p className="text-sm text-[rgb(var(--color-muted-foreground))]">{genre}</p>
+            </div>
+            {getVisibilityBadge()}
+          </div>
+
+          <div className="space-y-3">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="space-y-1">
-              <p className="text-[rgb(var(--muted-foreground))]">
+              <p className="text-[rgb(var(--color-muted-foreground))]">
                 📄 Parts: {parts.completed}/{parts.total}
               </p>
-              <p className="text-[rgb(var(--muted-foreground))]">
+              <p className="text-[rgb(var(--color-muted-foreground))]">
                 {chapters.completed === chapters.total ? "✓" : "⏳"} Chapters:{" "}
                 {chapters.completed}/{chapters.total}
               </p>
             </div>
             <div className="space-y-1">
-              <p className="text-[rgb(var(--muted-foreground))]">
+              <p className="text-[rgb(var(--color-muted-foreground))]">
                 📊 Readers: {formatReaders(readers)}
               </p>
-              <p className="text-[rgb(var(--muted-foreground))]">
+              <p className="text-[rgb(var(--color-muted-foreground))]">
                 ⭐ Rating: {rating.toFixed(1)}
               </p>
             </div>
           </div>
 
-          {wordCount && (
-            <p className="text-sm text-[rgb(var(--muted-foreground))]">
-              📝 {wordCount.toLocaleString()} words
-            </p>
-          )}
-
           <div className="space-y-2">
-            <div className="flex justify-between text-sm text-[rgb(var(--muted-foreground))]">
+            <div className="flex justify-between text-sm text-[rgb(var(--color-muted-foreground))]">
               <span>Progress</span>
               <span>{Math.round(progressPercentage)}%</span>
             </div>
             <Progress value={progressPercentage} />
           </div>
-
-
+        </div>
         </div>
       </CardContent>
     </Card>

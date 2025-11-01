@@ -178,7 +178,7 @@ async function main() {
     console.log('='.repeat(60));
     console.log('\n⚠️  IMPORTANT: Save this password securely!');
     console.log('This is the only time it will be displayed.');
-    console.log('\nTest the login at: http://localhost:3000/auth/signin');
+    console.log('\nTest the login at: http://localhost:3000/login');
 
     await sql.end();
     process.exit(0);

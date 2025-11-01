@@ -1,3 +1,7 @@
+---
+title: "Scene View Tracking System"
+---
+
 # Scene View Tracking System
 
 **Complete view tracking for both logged-in and anonymous users**
@@ -54,7 +58,7 @@ ALTER TABLE scenes ADD COLUMN:
 ### Session Management
 
 **For Anonymous Users**:
-- Session ID generated on first visit: `sess_<32-char-nanoid>`
+- Session ID generated on first visit: `sess_`<3`2-char-nanoid>`
 - Stored in HTTP-only cookie: `fictures_session_id`
 - Expires after 30 days
 - Secure in production (HTTPS only)
@@ -294,12 +298,12 @@ Final counts:
 SELECT id FROM scene_views
 WHERE scene_id = ? AND user_id = ?
 LIMIT 1;
--- Execution time: <1ms
+-- Execution time: `<1ms`
 
 -- Get scene view counts (uses primary key)
 SELECT view_count, unique_view_count FROM scenes
 WHERE id = ?;
--- Execution time: <1ms
+-- Execution time: `<1ms`
 ```
 
 ### Caching Strategy
@@ -347,7 +351,7 @@ expect(data.viewCount).toBeGreaterThan(0);
 **Test Logged-In User Flow**:
 ```typescript
 // 1. Login
-await page.goto('/auth/signin');
+await page.goto('/login');
 await page.fill('[name="email"]', 'test@example.com');
 await page.click('button[type="submit"]');
 

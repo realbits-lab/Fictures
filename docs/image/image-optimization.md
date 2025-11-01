@@ -1,3 +1,7 @@
+---
+title: "Image Optimization System"
+---
+
 # Image Optimization System
 
 **Last Updated:** 2025-10-29
@@ -36,7 +40,7 @@ Save metadata to database
 
 **Why no WebP?** WebP provides minimal benefit (1.5% coverage gap) while adding 50% more variants. AVIF + JPEG covers 100% of users efficiently.
 
-### 3. Responsive Sizes (~16:9 Aspect Ratio)
+### 3. Responsive Sizes (7:4 Aspect Ratio)
 
 | Device | Viewport | Size Used | Quality |
 |--------|----------|-----------|---------|
@@ -107,11 +111,9 @@ import { generateStoryImage } from '@/lib/services/image-generation';
 
 // Generate image with automatic optimization
 const result = await generateStoryImage({
-  prompt: 'A mysterious forest at twilight, cinematic 16:9',
+  prompt: 'A mysterious forest at twilight, cinematic composition',
   storyId: 'story_123',
   imageType: 'scene',  // 'story' | 'scene' | 'character' | 'setting' | 'panel'
-  style: 'vivid',
-  quality: 'standard',
 });
 
 // Save to database

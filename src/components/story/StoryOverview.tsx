@@ -8,8 +8,6 @@ interface StoryOverviewProps {
     genre: string;
     status: string;
     startDate: string;
-    wordCount: number;
-    targetWordCount: number;
     readers: number;
     rating: number;
     parts: Array<{
@@ -17,13 +15,11 @@ interface StoryOverviewProps {
       title: string;
       completed: boolean;
       chapters: number;
-      wordCount: number;
     }>;
   };
 }
 
 export function StoryOverview({ story }: StoryOverviewProps) {
-  const progressPercentage = (story.wordCount / story.targetWordCount) * 100;
 
   return (
     <div className="space-y-6">
@@ -73,7 +69,6 @@ export function StoryOverview({ story }: StoryOverviewProps) {
                       <span>{part.completed ? "✓" : "⏳"}</span>
                       <span>{part.chapters} Ch.</span>
                     </div>
-                    <div className="mt-1">{part.wordCount.toLocaleString()} words</div>
                   </div>
                 </div>
               ))}
@@ -87,7 +82,6 @@ export function StoryOverview({ story }: StoryOverviewProps) {
                 🎯 <strong>Current:</strong> Writing Chapter 16 &ldquo;Final Confrontation&rdquo;
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                📊 <strong>Total:</strong> {story.wordCount.toLocaleString()} words | 👥 {story.readers.toLocaleString()} readers | ⭐ {story.rating.toFixed(1)} rating
               </p>
             </div>
           </div>
@@ -109,8 +103,6 @@ export function StoryOverview({ story }: StoryOverviewProps) {
               <Button size="sm" variant="ghost" className="mt-2">✏️ Edit</Button>
             </div>
             <div className="space-y-2">
-              <p className="text-sm"><strong>Target Word Count:</strong> {story.targetWordCount.toLocaleString()}</p>
-              <p className="text-sm"><strong>Current Progress:</strong> {story.wordCount.toLocaleString()} ({Math.round(progressPercentage)}%)</p>
               <p className="text-sm"><strong>Genre:</strong> {story.genre}</p>
               <p className="text-sm"><strong>Themes:</strong> Power, Family, Sacrifice</p>
             </div>

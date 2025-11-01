@@ -1,3 +1,7 @@
+---
+title: "UI Development Guide - Fictures Platform"
+---
+
 # UI Development Guide - Fictures Platform
 
 ## Overview
@@ -8,7 +12,7 @@ This guide provides detailed UI mockups and visual development patterns for impl
 
 **Consistent Top Navigation Bar across all screens:**
 
-```ascii
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ 📖 Fictures  [📚 Stories] [📝 Write] [💬 Community] [📤 Publish] [🤖 AI]   │
 │              [📊 Analytics] [⚙️ Settings] [👤 Profile] [🔔 Notifications]    │
@@ -17,7 +21,7 @@ This guide provides detailed UI mockups and visual development patterns for impl
 
 ## Main Dashboard - Project Overview
 
-```ascii
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ 📖 Fictures  [📚 Stories] [📝 Write] [💬 Community] [📤 Publish] [🤖 AI]   │
 │              [📊 Analytics] [⚙️ Settings] [👤 Profile] [🔔 Notifications]    │
@@ -60,7 +64,7 @@ This guide provides detailed UI mockups and visual development patterns for impl
 
 ## Story Overview and Planning Interface
 
-```ascii
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ 📖 Fictures  [📚 Stories] [📝 Write] [💬 Community] [📤 Publish] [🤖 AI]   │
 │              [📊 Analytics] [⚙️ Settings] [👤 Profile] [🔔 Notifications]    │
@@ -140,7 +144,7 @@ This guide provides detailed UI mockups and visual development patterns for impl
 
 ## Part Development Interface
 
-```ascii
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ 📖 Fictures  [📚 Stories] [📝 Write] [💬 Community] [📤 Publish] [🤖 AI]   │
 │              [📊 Analytics] [⚙️ Settings] [👤 Profile] [🔔 Notifications]    │
@@ -209,7 +213,7 @@ This guide provides detailed UI mockups and visual development patterns for impl
 
 ## Chapter Writing Interface
 
-```ascii
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ 📖 Fictures  [📚 Stories] [📝 Write] [💬 Community] [📤 Publish] [🤖 AI]   │
 │              [📊 Analytics] [⚙️ Settings] [👤 Profile] [🔔 Notifications]    │
@@ -281,7 +285,7 @@ This guide provides detailed UI mockups and visual development patterns for impl
 
 ## Mobile Interface - Chapter Writing
 
-```ascii
+```text
 ┌─────────────────────────┐
 │ ☰ Ch 16: Final Confront │
 │ [📋] [💾] [📤]          │
@@ -330,7 +334,7 @@ This guide provides detailed UI mockups and visual development patterns for impl
 
 ## Community Hub Interface
 
-```ascii
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ 📖 Fictures  [📚 Stories] [📝 Write] [💬 Community] [📤 Publish] [🤖 AI]   │
 │              [📊 Analytics] [⚙️ Settings] [👤 Profile] [🔔 Notifications]    │
@@ -399,7 +403,7 @@ This guide provides detailed UI mockups and visual development patterns for impl
 
 ## Publication Center Interface
 
-```ascii
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ 📖 Fictures  [📚 Stories] [📝 Write] [💬 Community] [📤 Publish] [🤖 AI]   │
 │              [📊 Analytics] [⚙️ Settings] [👤 Profile] [🔔 Notifications]    │

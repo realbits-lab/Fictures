@@ -8,7 +8,6 @@ interface Story {
   status: string;
   viewCount: number;
   rating: number;
-  currentWordCount: number;
   createdAt: Date;
   author: {
     id: string;

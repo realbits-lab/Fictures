@@ -1,3 +1,7 @@
+---
+title: "Reading Feature Specification"
+---
+
 # Reading Feature Specification
 
 This document outlines the specifications for enhancing the reading experience on Fictures with reply features, responsive mobile design, and engagement features (like/dislike buttons).

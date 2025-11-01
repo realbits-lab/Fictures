@@ -32,7 +32,6 @@ export async function GET(request: NextRequest) {
         id: story.id,
         title: story.title,
         status: story.status,
-        currentWordCount: story.currentWordCount,
         rating: story.rating,
         viewCount: story.viewCount
       })),
@@ -52,12 +51,18 @@ export async function GET(request: NextRequest) {
       storiesCount: publishedStories.length
     });
 
-    // Set cache headers optimized for published content (longer cache)
+    // ⚡ Strategy 4: Vercel Edge Caching for global CDN performance
+    // Cache published story list on edge network (119 global locations)
     const headers = new Headers({
       'Content-Type': 'application/json',
       'ETag': etag,
-      // Longer cache for published content since it changes less frequently
-      'Cache-Control': 'public, max-age=1800, stale-while-revalidate=3600', // 30min cache, 1hr stale
+
+      // Client-side caching (browser)
+      'Cache-Control': 'public, max-age=300, stale-while-revalidate=900', // 5min client, 15min stale
+
+      // Vercel Edge Network caching (global CDN)
+      'CDN-Cache-Control': 's-maxage=1800, stale-while-revalidate=3600', // 30min edge, 1hr stale
+
       'X-Content-Type': 'published-stories',
       'X-Last-Modified': response.metadata.lastUpdated || new Date().toISOString(),
       'X-Server-Timing': `total;dur=${totalDuration},db;dur=${dbQueryDuration}`,

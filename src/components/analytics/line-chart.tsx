@@ -33,11 +33,11 @@ export function LineChart({ data, xKey, lines, height = 300, className }: LineCh
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: 'hsl(var(--popover))',
-              border: '1px solid hsl(var(--border))',
+              backgroundColor: 'hsl(var(--color-popover))',
+              border: '1px solid hsl(var(--color-border))',
               borderRadius: '8px',
             }}
-            labelStyle={{ color: 'hsl(var(--popover-foreground))' }}
+            labelStyle={{ color: 'hsl(var(--color-popover-foreground))' }}
           />
           <Legend />
           {lines.map((line) => (

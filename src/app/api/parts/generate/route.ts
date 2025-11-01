@@ -86,7 +86,6 @@ export async function POST(request: NextRequest) {
         const [updatedPart] = await db.update(parts)
           .set({
             title: partSpec.title,
-            targetWordCount: partSpec.words,
             content: JSON.stringify(partSpec),
             updatedAt: new Date(),
           })
@@ -102,7 +101,6 @@ export async function POST(request: NextRequest) {
             title: partSpec.title,
             authorId: session.user.id,
             orderIndex: partSpec.part,
-            targetWordCount: partSpec.words,
             content: JSON.stringify(partSpec),
           }
         );

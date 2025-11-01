@@ -14,7 +14,6 @@ const createPartSchema = z.object({
   description: z.string().optional(),
   storyId: z.string(),
   orderIndex: z.number().min(1),
-  targetWordCount: z.number().min(100).max(100000).optional(),
   content: z.string().optional(),
 });
 
@@ -99,7 +98,6 @@ export async function POST(request: NextRequest) {
         description: validatedData.description,
         authorId: session.user.id,
         orderIndex: validatedData.orderIndex,
-        targetWordCount: validatedData.targetWordCount || 20000,
         content: validatedData.content || '',
       }
     );

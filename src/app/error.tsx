@@ -16,27 +16,18 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-[rgb(var(--background))]">
+    <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-[rgb(var(--color-background))]">
       <div className="max-w-2xl w-full text-center">
-        {/* Error Icon with Animation */}
+        {/* Error Icon */}
         <div className="relative mb-8 inline-block">
-          {/* Pulsing Background Circle */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div
-              className="w-32 h-32 md:w-40 md:h-40 bg-[rgb(var(--destructive))] opacity-10 animate-ping"
-              style={{ borderRadius: 'var(--radius-card)' }}
-            />
-          </div>
-
-          {/* Static Background Circle */}
           <div className="relative">
             <div
-              className="w-32 h-32 md:w-40 md:h-40 bg-[rgb(var(--destructive))] opacity-20 flex items-center justify-center"
+              className="w-32 h-32 md:w-40 md:h-40 bg-[rgb(var(--color-destructive))] opacity-20 flex items-center justify-center"
               style={{ borderRadius: 'var(--radius-card)' }}
             >
               {/* Error Icon */}
               <svg
-                className="w-16 h-16 md:w-20 md:h-20 text-[rgb(var(--destructive))]"
+                className="w-16 h-16 md:w-20 md:h-20 text-[rgb(var(--color-destructive))]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -51,24 +42,21 @@ export default function Error({
             </div>
 
             {/* Decorative Elements */}
-            <div className="absolute -top-2 -right-2 w-6 h-6 bg-[rgb(var(--primary))] opacity-50 animate-bounce"
+            <div className="absolute -top-2 -right-2 w-6 h-6 bg-[rgb(var(--color-primary))] opacity-50"
               style={{ borderRadius: 'var(--radius-badge)' }}
             />
-            <div className="absolute -bottom-2 -left-2 w-8 h-8 bg-[rgb(var(--primary))] opacity-30 animate-bounce"
-              style={{
-                borderRadius: 'var(--radius-badge)',
-                animationDelay: '0.2s',
-              }}
+            <div className="absolute -bottom-2 -left-2 w-8 h-8 bg-[rgb(var(--color-primary))] opacity-30"
+              style={{ borderRadius: 'var(--radius-badge)' }}
             />
           </div>
         </div>
 
         {/* Error Message */}
         <div className="space-y-4 mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-[rgb(var(--foreground))]">
+          <h2 className="text-3xl md:text-4xl font-bold text-[rgb(var(--color-foreground))]">
             Oops! Something Went Wrong
           </h2>
-          <p className="text-lg text-[rgb(var(--muted-foreground))] max-w-md mx-auto">
+          <p className="text-lg text-[rgb(var(--color-muted-foreground))] max-w-md mx-auto">
             We encountered an unexpected error. Don't worry, your data is safe.
             Try refreshing the page or return home.
           </p>
@@ -76,22 +64,22 @@ export default function Error({
           {/* Error Details (Development Mode) */}
           {process.env.NODE_ENV === 'development' && error.message && (
             <details
-              className="mt-6 p-4 bg-[rgb(var(--muted))] text-left overflow-auto max-w-lg mx-auto"
+              className="mt-6 p-4 bg-[rgb(var(--color-muted))] text-left overflow-auto max-w-lg mx-auto"
               style={{
                 borderRadius: 'var(--radius-card)',
-                borderWidth: 'var(--border-width)',
-                borderStyle: 'var(--border-style)',
-                borderColor: 'rgb(var(--border))',
+                borderWidth: 'var(--color-border-width)',
+                borderStyle: 'var(--color-border-style)',
+                borderColor: 'rgb(var(--color-border))',
               }}
             >
-              <summary className="cursor-pointer text-sm font-medium text-[rgb(var(--foreground))] mb-2">
+              <summary className="cursor-pointer text-sm font-medium text-[rgb(var(--color-foreground))] mb-2">
                 Error Details (Development Only)
               </summary>
-              <pre className="text-xs text-[rgb(var(--muted-foreground))] whitespace-pre-wrap break-words">
+              <pre className="text-xs text-[rgb(var(--color-muted-foreground))] whitespace-pre-wrap break-words">
                 {error.message}
               </pre>
               {error.digest && (
-                <p className="text-xs text-[rgb(var(--muted-foreground))] mt-2">
+                <p className="text-xs text-[rgb(var(--color-muted-foreground))] mt-2">
                   Error ID: {error.digest}
                 </p>
               )}
@@ -103,7 +91,7 @@ export default function Error({
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <button
             onClick={reset}
-            className="group relative inline-flex items-center justify-center px-8 py-3 text-base font-medium text-[rgb(var(--primary-foreground))] bg-[rgb(var(--primary))] overflow-hidden transition-all duration-300 ease-out hover:scale-105 active:scale-95"
+            className="group relative inline-flex items-center justify-center px-8 py-3 text-base font-medium text-[rgb(var(--color-primary-foreground))] bg-[rgb(var(--color-primary))] overflow-hidden transition-all duration-300 ease-out hover:scale-105 active:scale-95"
             style={{ borderRadius: 'var(--radius-button)' }}
           >
             <span className="relative flex items-center gap-2">
@@ -128,12 +116,12 @@ export default function Error({
 
           <Link
             href="/"
-            className="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-[rgb(var(--primary))] bg-[rgb(var(--secondary))] hover:bg-[rgb(var(--accent))] transition-all duration-300 ease-out hover:scale-105 active:scale-95"
+            className="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-[rgb(var(--color-primary))] bg-[rgb(var(--color-secondary))] hover:bg-[rgb(var(--color-accent))] transition-all duration-300 ease-out hover:scale-105 active:scale-95"
             style={{
               borderRadius: 'var(--radius-button)',
-              borderWidth: 'var(--border-width)',
-              borderStyle: 'var(--border-style)',
-              borderColor: 'rgb(var(--border))',
+              borderWidth: 'var(--color-border-width)',
+              borderStyle: 'var(--color-border-style)',
+              borderColor: 'rgb(var(--color-border))',
             }}
           >
             <span className="flex items-center gap-2">
@@ -156,46 +144,44 @@ export default function Error({
         </div>
 
         {/* Help Section */}
-        <div className="mt-12 pt-8 border-t" style={{ borderColor: 'rgb(var(--border))' }}>
-          <p className="text-sm text-[rgb(var(--muted-foreground))] mb-4">
+        <div className="mt-12 pt-8 border-t" style={{ borderColor: 'rgb(var(--color-border))' }}>
+          <p className="text-sm text-[rgb(var(--color-muted-foreground))] mb-4">
             If this problem persists, you might want to:
           </p>
           <div className="flex flex-wrap gap-3 justify-center text-sm">
             <button
               onClick={() => window.location.reload()}
-              className="text-[rgb(var(--primary))] hover:underline"
+              className="text-[rgb(var(--color-primary))] hover:underline"
             >
               Refresh the page
             </button>
-            <span className="text-[rgb(var(--muted-foreground))]">•</span>
+            <span className="text-[rgb(var(--color-muted-foreground))]">•</span>
             <button
               onClick={() => {
                 localStorage.clear();
                 window.location.href = '/';
               }}
-              className="text-[rgb(var(--primary))] hover:underline"
+              className="text-[rgb(var(--color-primary))] hover:underline"
             >
               Clear cache and restart
             </button>
-            <span className="text-[rgb(var(--muted-foreground))]">•</span>
+            <span className="text-[rgb(var(--color-muted-foreground))]">•</span>
             <Link
               href="/settings"
-              className="text-[rgb(var(--primary))] hover:underline"
+              className="text-[rgb(var(--color-primary))] hover:underline"
             >
               Check your settings
             </Link>
           </div>
         </div>
 
-        {/* Animated Background Decoration */}
+        {/* Background Decoration */}
         <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
           <div
-            className="absolute top-1/4 left-1/4 w-64 h-64 bg-[rgb(var(--primary))] opacity-5 rounded-full blur-3xl animate-pulse"
-            style={{ animationDuration: '4s' }}
+            className="absolute top-1/4 left-1/4 w-64 h-64 bg-[rgb(var(--color-primary))] opacity-5 rounded-full blur-3xl"
           />
           <div
-            className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[rgb(var(--destructive))] opacity-5 rounded-full blur-3xl animate-pulse"
-            style={{ animationDuration: '6s', animationDelay: '1s' }}
+            className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[rgb(var(--color-destructive))] opacity-5 rounded-full blur-3xl"
           />
         </div>
       </div>

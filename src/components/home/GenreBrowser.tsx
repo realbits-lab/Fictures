@@ -16,14 +16,14 @@ interface GenreBrowserProps {
 
 export function GenreBrowser({ genreCounts = {} }: GenreBrowserProps) {
   return (
-    <section className="py-16 bg-gradient-to-b from-[rgb(var(--background))] to-[rgb(var(--muted)/30%)]">
+    <section className="py-16 bg-gradient-to-b from-[rgb(var(--color-background))] to-[rgb(var(--color-muted)/30%)]">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-[rgb(var(--foreground))] mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-[rgb(var(--color-foreground))] mb-4">
             📚 Explore Genres
           </h2>
-          <p className="text-xl text-[rgb(var(--muted-foreground))] max-w-2xl mx-auto">
+          <p className="text-xl text-[rgb(var(--color-muted-foreground))] max-w-2xl mx-auto">
             Find your next favorite story by genre
           </p>
         </div>
@@ -69,7 +69,7 @@ export function GenreBrowser({ genreCounts = {} }: GenreBrowserProps) {
         <div className="text-center mt-10">
           <Link
             href="/novels"
-            className="inline-flex items-center text-[rgb(var(--primary))] hover:underline text-lg font-medium"
+            className="inline-flex items-center text-[rgb(var(--color-primary))] hover:underline text-lg font-medium"
           >
             Browse All Stories
             <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

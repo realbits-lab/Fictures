@@ -1,5 +1,5 @@
 import { db } from './index';
-import { stories, chapters, users, userStats, parts, scenes, apiKeys, communityPosts, characters, settings, research } from './schema';
+import { stories, chapters, users, userStats, parts, scenes, apiKeys, communityPosts, characters, settings } from './schema';
 import { eq, desc, and, inArray, sql, count } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { RelationshipManager } from './relationships';
@@ -74,17 +74,15 @@ export async function createStory(authorId: string, data: {
   title: string;
   description?: string;
   genre?: string;
-  targetWordCount?: number;
 }) {
   const storyId = nanoid();
-  
+
   const [story] = await db.insert(stories).values({
     id: storyId,
     title: data.title,
     description: data.description,
     genre: data.genre,
     authorId,
-    targetWordCount: data.targetWordCount || 50000,
     status: 'writing',
   }).returning();
 
@@ -185,7 +183,6 @@ export async function updateStory(storyId: string, userId: string, data: Partial
   description: string;
   genre: string;
   status: 'writing' | 'published';
-  targetWordCount: number;
 }>) {
   const [updatedStory] = await db
     .update(stories)
@@ -201,7 +198,6 @@ export async function createChapter(storyId: string, authorId: string, data: {
   title: string;
   partId?: string;
   orderIndex: number;
-  targetWordCount?: number;
 }) {
   // Use RelationshipManager for bi-directional consistency
   const chapterId = await RelationshipManager.addChapterToStory(
@@ -210,18 +206,17 @@ export async function createChapter(storyId: string, authorId: string, data: {
       title: data.title,
       authorId,
       orderIndex: data.orderIndex,
-      targetWordCount: data.targetWordCount || 4000,
       status: 'writing',
     },
     data.partId
   );
-  
+
   // Return the created chapter
   const [chapter] = await db.select()
     .from(chapters)
     .where(eq(chapters.id, chapterId))
     .limit(1);
-    
+
   return chapter!;
 }
 
@@ -237,7 +232,6 @@ export async function createFirstChapter(storyId: string, authorId: string) {
   return createChapter(storyId, authorId, {
     title: `Chapter ${nextOrderIndex}`,
     orderIndex: nextOrderIndex,
-    targetWordCount: 4000,
   });
 }
 
@@ -263,7 +257,6 @@ export async function updateChapter(chapterId: string, userId: string, data: Par
   title: string;
   content: string;
   status: 'writing' | 'published';
-  wordCount: number;
   publishedAt: Date;
   scheduledFor: Date;
 }>) {
@@ -338,7 +331,7 @@ export async function updateUserStats(userId: string, updates: Partial<{
 }
 
 // Dynamic status calculation utilities
-export function calculateSceneStatus(scene: { content?: string; wordCount?: number; status?: string }) {
+export function calculateSceneStatus(scene: { content?: string; status?: string }) {
   // Always respect explicit database status first
   if (scene.status === 'complete') {
     return 'completed';
@@ -355,19 +348,14 @@ export function calculateSceneStatus(scene: { content?: string; wordCount?: numb
   if (scene.status === 'draft') {
     return 'draft';
   }
-  
+
   // If no explicit database status, calculate based on content
   if (!scene.content || scene.content.trim() === '') {
     return 'draft';
   }
-  
-  // Consider a scene completed if it has substantial content (200+ words)
-  if (scene.wordCount && scene.wordCount >= 200) {
-    return 'completed';
-  }
-  
-  // Scenes with some content but less than 200 words are in progress
-  return scene.wordCount && scene.wordCount > 0 ? 'in_progress' : 'draft';
+
+  // Scenes with content are considered completed
+  return 'completed';
 }
 
 export function calculateChapterStatus(scenes: Array<{ status: string }>) {
@@ -431,11 +419,17 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
   // Get story with all relationships using direct array lookups (much faster)
   const result = await RelationshipManager.getStoryWithStructure(storyId, includeScenes);
   if (!result) return null;
-  
+
   // Check user access
   if (userId && result.authorId !== userId && result.status !== 'published') {
     return null;
   }
+
+  // Fetch characters and settings for the story
+  const [storyCharacters, storySettings] = await Promise.all([
+    db.select().from(characters).where(eq(characters.storyId, storyId)),
+    db.select().from(settings).where(eq(settings.storyId, storyId))
+  ]);
   
   // Apply dynamic status calculations to match original interface
   const structuredParts = result.parts.map(part => {
@@ -444,45 +438,34 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
         // Calculate dynamic scene status
         const dynamicSceneStatus = calculateSceneStatus({
           content: scene.content || '',
-          wordCount: scene.wordCount || 0,
           status: (scene as any).status || ''
         });
-        
+
+        // Return ALL scene fields from database
         return {
-          id: scene.id,
-          title: scene.title,
-          status: dynamicSceneStatus,
-          wordCount: scene.wordCount || 0,
-          goal: scene.goal || '',
-          conflict: scene.conflict || '',
-          outcome: scene.outcome || '',
-          content: scene.content || '',
-          orderIndex: scene.orderIndex
+          ...scene,
+          status: dynamicSceneStatus
         };
       }).sort((a, b) => a.orderIndex - b.orderIndex);
       
       // Calculate dynamic chapter status
       const dynamicChapterStatus = calculateChapterStatus(chapterScenes);
       const finalStatus = chapter.status === 'published' ? 'published' : dynamicChapterStatus;
-      
+
+      // Return ALL chapter fields from database
       return {
-        id: chapter.id,
-        title: chapter.title,
-        orderIndex: chapter.orderIndex,
+        ...chapter,
         status: finalStatus,
-        wordCount: chapter.wordCount || 0,
-        targetWordCount: chapter.targetWordCount || 4000,
         scenes: chapterScenes
       };
     });
     
     // Calculate dynamic part status
     const dynamicPartStatus = calculatePartStatus(partChapters);
-    
+
+    // Return ALL part fields from database
     return {
-      id: part.id,
-      title: part.title,
-      orderIndex: part.orderIndex,
+      ...part,
       status: dynamicPartStatus,
       chapters: partChapters
     };
@@ -493,33 +476,23 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
     const chapterScenes = (chapter.scenes || []).map(scene => {
       const dynamicSceneStatus = calculateSceneStatus({
         content: scene.content || '',
-        wordCount: scene.wordCount || 0,
         status: (scene as any).status || ''
       });
-      
+
+      // Return ALL scene fields from database
       return {
-        id: scene.id,
-        title: scene.title,
-        status: dynamicSceneStatus,
-        wordCount: scene.wordCount || 0,
-        goal: scene.goal || '',
-        conflict: scene.conflict || '',
-        outcome: scene.outcome || '',
-        content: scene.content || '',
-        orderIndex: scene.orderIndex
+        ...scene,
+        status: dynamicSceneStatus
       };
     }).sort((a, b) => a.orderIndex - b.orderIndex);
-    
+
     const dynamicChapterStatus = calculateChapterStatus(chapterScenes);
     const finalStatus = chapter.status === 'published' ? 'published' : dynamicChapterStatus;
-    
+
+    // Return ALL chapter fields from database
     return {
-      id: chapter.id,
-      title: chapter.title,
-      orderIndex: chapter.orderIndex,
+      ...chapter,
       status: finalStatus,
-      wordCount: chapter.wordCount || 0,
-      targetWordCount: chapter.targetWordCount || 4000,
       scenes: chapterScenes
     };
   });
@@ -531,16 +504,26 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
   return {
     id: result.id,
     title: result.title,
-    description: result.description,
+    summary: result.summary,
     genre: result.genre || 'General',
     status: finalStoryStatus,
     isPublic: result.status === 'published',
-    hnsData: result.hnsData || null,
+    tone: result.tone || null,
+    moralFramework: result.moralFramework || null,
+    imageUrl: result.imageUrl || null,
+    imageVariants: result.imageVariants || null,
     authorId: result.authorId,
     userId: result.authorId,
+    createdAt: result.createdAt,
+    updatedAt: result.updatedAt,
+    viewCount: result.viewCount || 0,
+    rating: result.rating || 0,
+    ratingCount: result.ratingCount || 0,
     parts: structuredParts,
     chapters: standaloneChapters,
-    scenes: [] // Legacy field - scenes are now nested in chapters
+    scenes: [], // Legacy field - scenes are now nested in chapters
+    characters: storyCharacters,
+    settings: storySettings
   };
 }
 
@@ -557,8 +540,6 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
         partId: chapters.partId,
         authorId: chapters.authorId,
         orderIndex: chapters.orderIndex,
-        wordCount: chapters.wordCount,
-        targetWordCount: chapters.targetWordCount,
         status: chapters.status,
         purpose: chapters.purpose,
         hook: chapters.hook,
@@ -594,12 +575,10 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
   // Map scenes with dynamic status calculation
   const scenesWithStatus = chapterScenes.map(scene => {
     const sceneContent = scene.content || '';
-    const sceneWordCount = scene.wordCount || 0;
     const dbStatus = (scene as any).status || '';
     
     const dynamicSceneStatus = calculateSceneStatus({ 
       content: sceneContent, 
-      wordCount: sceneWordCount,
       status: dbStatus
     });
     
@@ -607,7 +586,6 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
       id: scene.id,
       title: scene.title,
       status: dynamicSceneStatus,
-      wordCount: sceneWordCount,
       goal: scene.goal || '',
       conflict: scene.conflict || '',
       outcome: scene.outcome || '',
@@ -626,95 +604,31 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
   };
 }
 
-// Get published stories for Browse page - optimized version with only 3 DB queries
+// Get published stories for Browse page - simplified version
 export async function getPublishedStories() {
-  // Query 1: Get all published stories with their authors
+  // Query 1: Get all published stories
   const publishedStories = await db
-    .select({
-      id: stories.id,
-      title: stories.title,
-      description: stories.description,
-      genre: stories.genre,
-      status: stories.status,
-      viewCount: stories.viewCount,
-      rating: stories.rating,
-      currentWordCount: stories.currentWordCount,
-      createdAt: stories.createdAt,
-      authorId: stories.authorId,
-      authorName: users.name,
-      hnsData: stories.hnsData
-    })
+    .select()
     .from(stories)
-    .leftJoin(users, eq(stories.authorId, users.id))
     .where(eq(stories.status, 'published'))
     .orderBy(desc(stories.updatedAt));
 
   if (publishedStories.length === 0) return [];
 
-  // Extract story IDs for subsequent queries
-  const storyIds = publishedStories.map(story => story.id);
+  // Get unique author IDs
+  const authorIds = [...new Set(publishedStories.map(story => story.authorId))];
 
-  // Query 2: Get all chapters for all published stories at once with aggregated data
-  const storyChapters = await db
-    .select({
-      storyId: chapters.storyId,
-      chapterId: chapters.id,
-      chapterWordCount: chapters.wordCount,
-      chapterStatus: chapters.status,
-      hasPublishedChapter: eq(chapters.status, 'published')
-    })
-    .from(chapters)
-    .where(inArray(chapters.storyId, storyIds));
+  // Fetch author information
+  const authors = await db
+    .select()
+    .from(users)
+    .where(inArray(users.id, authorIds));
 
-  // Query 3: Get all scenes for all chapters in published stories with aggregated data
-  const chapterIds = storyChapters.map(ch => ch.chapterId);
-  const chapterScenes = chapterIds.length > 0 ? await db
-    .select({
-      chapterId: scenes.chapterId,
-      sceneWordCount: scenes.wordCount
-    })
-    .from(scenes)
-    .where(inArray(scenes.chapterId, chapterIds))
-    : [];
+  // Create author map for quick lookup
+  const authorMap = new Map(authors.map(author => [author.id, author]));
 
-  // Process data to calculate word counts - show all published stories
-  const validPublishedStories = [];
-
-  for (const story of publishedStories) {
-    const storyChaps = storyChapters.filter(ch => ch.storyId === story.id);
-    
-    // Calculate total word count from scenes or chapters
-    let totalWords = 0;
-    
-    for (const chapter of storyChaps) {
-      const chapScenes = chapterScenes.filter(sc => sc.chapterId === chapter.chapterId);
-      
-      if (chapScenes.length > 0) {
-        // Use scene word counts if available
-        const sceneWords = chapScenes.reduce((sum, scene) => sum + (scene.sceneWordCount || 0), 0);
-        if (sceneWords > 0) {
-          totalWords += sceneWords;
-        } else {
-          // Fallback to chapter word count if scenes exist but have no word count
-          totalWords += chapter.chapterWordCount || 0;
-        }
-      } else {
-        // Use chapter word count when no scenes exist
-        totalWords += chapter.chapterWordCount || 0;
-      }
-    }
-
-    // Use calculated word count or fall back to story's currentWordCount
-    const finalWordCount = totalWords > 0 ? totalWords : (story.currentWordCount || 0);
-    
-    // Include all published stories (the DB query already filtered for public + published)
-    validPublishedStories.push({
-      ...story,
-      currentWordCount: finalWordCount
-    });
-  }
-
-  return validPublishedStories.map(story => ({
+  // Return all published stories
+  return publishedStories.map(story => ({
     id: story.id,
     title: story.title,
     description: story.description || '',
@@ -723,12 +637,16 @@ export async function getPublishedStories() {
     isPublic: true,
     viewCount: story.viewCount || 0,
     rating: story.rating || 0,
-    currentWordCount: story.currentWordCount || 0,
     createdAt: story.createdAt,
-    hnsData: story.hnsData,
+    // Adversity-Triumph Engine fields
+    summary: story.summary,
+    tone: story.tone,
+    moralFramework: story.moralFramework,
+    imageUrl: story.imageUrl,
+    imageVariants: story.imageVariants,
     author: {
       id: story.authorId,
-      name: story.authorName || 'Anonymous'
+      name: authorMap.get(story.authorId)?.name || 'Anonymous'
     }
   }));
 }
@@ -743,16 +661,18 @@ export async function getCommunityStories() {
     .select({
       id: stories.id,
       title: stories.title,
-      description: stories.description,
       genre: stories.genre,
       status: stories.status,
       viewCount: stories.viewCount,
       rating: stories.rating,
       ratingCount: stories.ratingCount,
-      currentWordCount: stories.currentWordCount,
+      imageUrl: stories.imageUrl,
+      imageVariants: stories.imageVariants,
+      summary: stories.summary,
+      tone: stories.tone,
+      moralFramework: stories.moralFramework,
       createdAt: stories.createdAt,
       updatedAt: stories.updatedAt,
-      hnsData: stories.hnsData,
       author: {
         id: users.id,
         name: users.name,
@@ -950,12 +870,16 @@ export async function getCommunityStory(storyId: string) {
     .select({
       id: stories.id,
       title: stories.title,
-      description: stories.description,
+      summary: stories.summary,
       genre: stories.genre,
       status: stories.status,
       viewCount: stories.viewCount,
       rating: stories.rating,
       ratingCount: stories.ratingCount,
+      imageUrl: stories.imageUrl,
+      imageVariants: stories.imageVariants,
+      tone: stories.tone,
+      moralFramework: stories.moralFramework,
       author: {
         id: users.id,
         name: users.name,
@@ -1110,125 +1034,4 @@ export async function getCommunityPosts(storyId: string) {
   console.log(`[getCommunityPosts] ✨ COMPLETE - Total DB time: ${totalTime}ms (${posts.length} posts)`);
 
   return posts;
-}
-
-// Research queries
-export async function getAllResearch(userId?: string) {
-  console.log(`[getAllResearch] 🔄 START DB query${userId ? ` for user ${userId}` : ''}`);
-  const startTime = Date.now();
-
-  const query = db
-    .select({
-      id: research.id,
-      title: research.title,
-      content: research.content,
-      tags: research.tags,
-      viewCount: research.viewCount,
-      createdAt: research.createdAt,
-      updatedAt: research.updatedAt,
-      author: {
-        id: users.id,
-        name: users.name,
-        username: users.username,
-        image: users.image,
-      },
-    })
-    .from(research)
-    .leftJoin(users, eq(research.authorId, users.id))
-    .orderBy(desc(research.createdAt));
-
-  // If userId is provided, filter to only that user's research
-  const items = userId
-    ? await query.where(eq(research.authorId, userId))
-    : await query;
-
-  const totalTime = Date.now() - startTime;
-  console.log(`[getAllResearch] ✨ COMPLETE - Total DB time: ${totalTime}ms (${items.length} items)`);
-
-  return items;
-}
-
-export async function getResearchById(researchId: string, userId?: string) {
-  console.log(`[getResearchById] 🔄 START DB query for ${researchId}`);
-  const startTime = Date.now();
-
-  const [item] = await db
-    .select({
-      id: research.id,
-      title: research.title,
-      content: research.content,
-      authorId: research.authorId,
-      tags: research.tags,
-      viewCount: research.viewCount,
-      createdAt: research.createdAt,
-      updatedAt: research.updatedAt,
-      author: {
-        id: users.id,
-        name: users.name,
-        username: users.username,
-        image: users.image,
-      },
-    })
-    .from(research)
-    .leftJoin(users, eq(research.authorId, users.id))
-    .where(eq(research.id, researchId))
-    .limit(1);
-
-  const totalTime = Date.now() - startTime;
-  console.log(`[getResearchById] ✨ COMPLETE - Total DB time: ${totalTime}ms`);
-
-  if (!item) return null;
-
-  // Check if user has access (only writer/manager can access research)
-  // This will be enforced at the API level, but we can add basic check here
-  if (userId && item.authorId !== userId) {
-    console.log(`[getResearchById] ⚠️ Access denied for user ${userId}`);
-  }
-
-  return item;
-}
-
-export async function createResearch(authorId: string, data: {
-  title: string;
-  content: string;
-  tags?: string[];
-}) {
-  console.log(`[createResearch] 🔄 START DB insert for author ${authorId}`);
-  const startTime = Date.now();
-
-  const researchId = nanoid();
-
-  const [item] = await db.insert(research).values({
-    id: researchId,
-    title: data.title,
-    content: data.content,
-    authorId,
-    tags: data.tags || [],
-    viewCount: 0,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }).returning();
-
-  const totalTime = Date.now() - startTime;
-  console.log(`[createResearch] ✨ COMPLETE - Total DB time: ${totalTime}ms (ID: ${researchId})`);
-
-  return item;
-}
-
-export async function deleteResearch(researchId: string, userId: string) {
-  console.log(`[deleteResearch] 🔄 START DB delete for ${researchId}`);
-  const startTime = Date.now();
-
-  const [deletedItem] = await db
-    .delete(research)
-    .where(and(
-      eq(research.id, researchId),
-      eq(research.authorId, userId)
-    ))
-    .returning();
-
-  const totalTime = Date.now() - startTime;
-  console.log(`[deleteResearch] ✨ COMPLETE - Total DB time: ${totalTime}ms`);
-
-  return deletedItem || null;
 }

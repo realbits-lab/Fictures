@@ -25,30 +25,30 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 		const baseStyles = [
 			"inline-flex items-center justify-center gap-2",
 			"rounded-theme-button font-medium transition-colors",
-			"focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[rgb(var(--background))]",
+			"focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[rgb(var(--color-background))]",
 			"disabled:opacity-50 disabled:cursor-not-allowed",
 		];
 
 		const variants = {
 			primary: [
-				"bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))]",
-				"hover:bg-[rgb(var(--primary)/90%)] focus:ring-[rgb(var(--primary)/50%)]",
+				"bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))]",
+				"hover:bg-[rgb(var(--color-primary)/90%)] focus:ring-[rgb(var(--color-primary)/50%)]",
 			],
 			secondary: [
-				"bg-[rgb(var(--secondary))] text-[rgb(var(--secondary-foreground))]",
-				"hover:bg-[rgb(var(--secondary)/80%)] focus:ring-[rgb(var(--secondary)/50%)]",
+				"bg-[rgb(var(--color-secondary))] text-[rgb(var(--color-secondary-foreground))]",
+				"hover:bg-[rgb(var(--color-secondary)/80%)] focus:ring-[rgb(var(--color-secondary)/50%)]",
 			],
 			outline: [
-				"border-theme border-[rgb(var(--border))] bg-transparent text-[rgb(var(--foreground))]",
-				"hover:bg-[rgb(var(--accent))] hover:text-[rgb(var(--accent-foreground))] focus:ring-[rgb(var(--primary)/50%)]",
+				"border-theme border-[rgb(var(--color-border))] bg-transparent text-[rgb(var(--color-foreground))]",
+				"hover:bg-[rgb(var(--color-accent))] hover:text-[rgb(var(--color-accent-foreground))] focus:ring-[rgb(var(--color-primary)/50%)]",
 			],
 			ghost: [
-				"bg-transparent text-[rgb(var(--foreground))]",
-				"hover:bg-[rgb(var(--muted))] focus:ring-[rgb(var(--muted)/50%)]",
+				"bg-transparent text-[rgb(var(--color-foreground))]",
+				"hover:bg-[rgb(var(--color-muted))] focus:ring-[rgb(var(--color-muted)/50%)]",
 			],
 			destructive: [
-				"bg-[rgb(var(--destructive))] text-[rgb(var(--destructive-foreground))]",
-				"hover:bg-[rgb(var(--destructive)/90%)] focus:ring-[rgb(var(--destructive)/50%)]",
+				"bg-[rgb(var(--color-destructive))] text-[rgb(var(--color-destructive-foreground))]",
+				"hover:bg-[rgb(var(--color-destructive)/90%)] focus:ring-[rgb(var(--color-destructive)/50%)]",
 			],
 		};
 

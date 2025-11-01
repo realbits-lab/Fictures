@@ -1,37 +1,39 @@
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
 @import "tailwindcss";
+@import "@fuma-comment/react/preset.css";
 
+/* Tailwind v4 Theme Variables - Bridge to runtime theme system */
 @theme {
-	--font-sans:
-		"Inter Variable", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-		"Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-	--font-mono:
-		"JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco,
-		Consolas, "Liberation Mono", "Courier New", monospace;
-	--font-heading: "Poppins", ui-sans-serif, system-ui, sans-serif;
-	--font-body: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+	/* Color variables - generate Tailwind utilities (bg-primary, text-foreground, etc.) */
+	--color-primary: var(--theme-color-primary);
+	--color-primary-foreground: var(--theme-color-primary-foreground);
+	--color-secondary: var(--theme-color-secondary);
+	--color-secondary-foreground: var(--theme-color-secondary-foreground);
+	--color-muted: var(--theme-color-muted);
+	--color-muted-foreground: var(--theme-color-muted-foreground);
+	--color-accent: var(--theme-color-accent);
+	--color-accent-foreground: var(--theme-color-accent-foreground);
+	--color-destructive: var(--theme-color-destructive);
+	--color-destructive-foreground: var(--theme-color-destructive-foreground);
+	--color-border: var(--theme-color-border);
+	--color-input: var(--theme-color-input);
+	--color-ring: var(--theme-color-ring);
+	--color-background: var(--theme-color-background);
+	--color-foreground: var(--theme-color-foreground);
+	--color-card: var(--theme-color-card);
+	--color-card-foreground: var(--theme-color-card-foreground);
+	--color-popover: var(--theme-color-popover);
+	--color-popover-foreground: var(--theme-color-popover-foreground);
 
-	--color-primary: 59 130 246;
-	--color-primary-foreground: 255 255 255;
-	--color-secondary: 244 244 245;
-	--color-secondary-foreground: 39 39 42;
-	--color-muted: 244 244 245;
-	--color-muted-foreground: 113 113 122;
-	--color-accent: 244 244 245;
-	--color-accent-foreground: 39 39 42;
-	--color-destructive: 239 68 68;
-	--color-destructive-foreground: 255 255 255;
-	--color-border: 228 228 231;
-	--color-input: 228 228 231;
-	--color-ring: 59 130 246;
-	--color-background: 255 255 255;
-	--color-foreground: 39 39 42;
-	--color-card: 255 255 255;
-	--color-card-foreground: 39 39 42;
-	--color-popover: 255 255 255;
-	--color-popover-foreground: 39 39 42;
+	/* Font variables */
+	--font-sans: var(--theme-font-sans);
+	--font-mono: var(--theme-font-mono);
+	--font-heading: var(--theme-font-heading);
+	--font-body: var(--theme-font-body);
 
-	--radius-none: 0;
-	--radius-xs: 0.125rem;
+	/* Radius variables */
+	--radius: var(--theme-radius);
 	--radius-sm: 0.25rem;
 	--radius-md: 0.375rem;
 	--radius-lg: 0.5rem;
@@ -39,89 +41,99 @@
 	--radius-2xl: 1rem;
 	--radius-3xl: 1.5rem;
 	--radius-full: 9999px;
-
-	--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-	--shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-	--shadow-lg:
-		0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-	--shadow-xl:
-		0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-	--shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-
-	--animate-duration-fast: 150ms;
-	--animate-duration-normal: 300ms;
-	--animate-duration-slow: 500ms;
-
-	--blur-sm: blur(4px);
-	--blur-md: blur(8px);
-	--blur-lg: blur(16px);
-	--blur-xl: blur(24px);
 }
 
-/* Default Light Theme */
-:root {
-	--primary: 59 130 246;
-	--primary-foreground: 255 255 255;
-	--secondary: 244 244 245;
-	--secondary-foreground: 39 39 42;
-	--muted: 244 244 245;
-	--muted-foreground: 113 113 122;
-	--accent: 244 244 245;
-	--accent-foreground: 39 39 42;
-	--destructive: 239 68 68;
-	--destructive-foreground: 255 255 255;
-	--border: 228 228 231;
-	--input: 228 228 231;
-	--ring: 59 130 246;
-	--background: 255 255 255;
-	--foreground: 39 39 42;
-	--card: 255 255 255;
-	--card-foreground: 39 39 42;
-	--popover: 255 255 255;
-	--popover-foreground: 39 39 42;
+/* Default Light Theme - Runtime CSS Variables */
+@layer base {
+	:root {
+		/* Base Font Stacks */
+		--theme-font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+		--theme-font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+		--theme-font-heading: "Poppins", ui-sans-serif, system-ui, sans-serif;
+		--theme-font-body: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
 
-	--radius: 0.5rem;
-	--radius-button: 0.5rem;
-	--radius-card: 0.5rem;
-	--radius-input: 0.375rem;
-	--radius-badge: 0.25rem;
-	--radius-dialog: 0.75rem;
-	--border-width: 1px;
-	--border-width-thick: 2px;
-	--border-style: solid;
-	--font-sans: var(--font-sans);
-	--font-mono: var(--font-mono);
-	--font-heading: var(--font-heading);
-	--font-body: var(--font-body);
+		/* Base Shadows */
+		--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+		--shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+		--shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+		--shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+		--shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 
-	--shadow: var(--shadow-md);
-	--animate-duration: var(--animate-duration-normal);
-	--blur: var(--blur-md);
+		/* Base Animation Durations */
+		--animate-duration-fast: 150ms;
+		--animate-duration-normal: 300ms;
+		--animate-duration-slow: 500ms;
+
+		/* Base Blur Values */
+		--blur-sm: blur(4px);
+		--blur-md: blur(8px);
+		--blur-lg: blur(16px);
+		--blur-xl: blur(24px);
+
+		/* Theme Colors */
+		--theme-color-primary: 59 130 246;
+		--theme-color-primary-foreground: 255 255 255;
+		--theme-color-secondary: 244 244 245;
+		--theme-color-secondary-foreground: 39 39 42;
+		--theme-color-muted: 244 244 245;
+		--theme-color-muted-foreground: 113 113 122;
+		--theme-color-accent: 244 244 245;
+		--theme-color-accent-foreground: 39 39 42;
+		--theme-color-destructive: 239 68 68;
+		--theme-color-destructive-foreground: 255 255 255;
+		--theme-color-border: 228 228 231;
+		--theme-color-input: 228 228 231;
+		--theme-color-ring: 59 130 246;
+		--theme-color-background: 255 255 255;
+		--theme-color-foreground: 39 39 42;
+		--theme-color-card: 255 255 255;
+		--theme-color-card-foreground: 39 39 42;
+		--theme-color-popover: 255 255 255;
+		--theme-color-popover-foreground: 39 39 42;
+
+		/* Border Radius */
+		--theme-radius: 0.5rem;
+		--radius-button: 0.5rem;
+		--radius-card: 0.5rem;
+		--radius-input: 0.375rem;
+		--radius-badge: 0.25rem;
+		--radius-dialog: 0.75rem;
+
+		/* Border Widths */
+		--border-width: 1px;
+		--border-width-thick: 2px;
+		--border-style: solid;
+
+		/* Applied Tokens */
+		--shadow: var(--shadow-md);
+		--animate-duration: var(--animate-duration-normal);
+		--blur: var(--blur-md);
+	}
 }
 
 /* Dark Theme */
 [data-theme="dark"] {
-	--primary: 59 130 246;
-	--primary-foreground: 255 255 255;
-	--secondary: 39 39 42;
-	--secondary-foreground: 244 244 245;
-	--muted: 39 39 42;
-	--muted-foreground: 161 161 170;
-	--accent: 39 39 42;
-	--accent-foreground: 244 244 245;
-	--destructive: 239 68 68;
-	--destructive-foreground: 255 255 255;
-	--border: 39 39 42;
-	--input: 39 39 42;
-	--ring: 59 130 246;
-	--background: 9 9 11;
-	--foreground: 244 244 245;
-	--card: 9 9 11;
-	--card-foreground: 244 244 245;
-	--popover: 9 9 11;
-	--popover-foreground: 244 244 245;
+	--theme-color-primary: 59 130 246;
+	--theme-color-primary-foreground: 255 255 255;
+	--theme-color-secondary: 39 39 42;
+	--theme-color-secondary-foreground: 244 244 245;
+	--theme-color-muted: 39 39 42;
+	--theme-color-muted-foreground: 161 161 170;
+	--theme-color-accent: 39 39 42;
+	--theme-color-accent-foreground: 244 244 245;
+	--theme-color-destructive: 239 68 68;
+	--theme-color-destructive-foreground: 255 255 255;
+	--theme-color-border: 39 39 42;
+	--theme-color-input: 39 39 42;
+	--theme-color-ring: 59 130 246;
+	--theme-color-background: 9 9 11;
+	--theme-color-foreground: 244 244 245;
+	--theme-color-card: 9 9 11;
+	--theme-color-card-foreground: 244 244 245;
+	--theme-color-popover: 9 9 11;
+	--theme-color-popover-foreground: 244 244 245;
 
-	--radius: 0.5rem;
+	--theme-radius: 0.5rem;
 	--radius-button: 0.5rem;
 	--radius-card: 0.375rem;
 	--radius-input: 0.25rem;
@@ -130,10 +142,6 @@
 	--border-width: 1px;
 	--border-width-thick: 1px;
 	--border-style: solid;
-	--font-sans: var(--font-sans);
-	--font-mono: var(--font-mono);
-	--font-heading: var(--font-heading);
-	--font-body: var(--font-body);
 
 	--shadow: var(--shadow-lg);
 	--animate-duration: var(--animate-duration-normal);
@@ -142,27 +150,27 @@
 
 /* Blue Ocean Theme */
 [data-theme="ocean"] {
-	--primary: 59 130 246;
-	--primary-foreground: 255 255 255;
-	--secondary: 219 234 254;
-	--secondary-foreground: 30 58 138;
-	--muted: 219 234 254;
-	--muted-foreground: 59 130 246;
-	--accent: 147 197 253;
-	--accent-foreground: 30 58 138;
-	--destructive: 239 68 68;
-	--destructive-foreground: 255 255 255;
-	--border: 147 197 253;
-	--input: 219 234 254;
-	--ring: 59 130 246;
-	--background: 248 250 252;
-	--foreground: 30 58 138;
-	--card: 255 255 255;
-	--card-foreground: 30 58 138;
-	--popover: 255 255 255;
-	--popover-foreground: 30 58 138;
+	--theme-color-primary: 59 130 246;
+	--theme-color-primary-foreground: 255 255 255;
+	--theme-color-secondary: 219 234 254;
+	--theme-color-secondary-foreground: 23 37 84;
+	--theme-color-muted: 219 234 254;
+	--theme-color-muted-foreground: 59 130 246;
+	--theme-color-accent: 147 197 253;
+	--theme-color-accent-foreground: 23 37 84;
+	--theme-color-destructive: 239 68 68;
+	--theme-color-destructive-foreground: 255 255 255;
+	--theme-color-border: 147 197 253;
+	--theme-color-input: 219 234 254;
+	--theme-color-ring: 59 130 246;
+	--theme-color-background: 248 250 252;
+	--theme-color-foreground: 23 37 84;
+	--theme-color-card: 255 255 255;
+	--theme-color-card-foreground: 23 37 84;
+	--theme-color-popover: 255 255 255;
+	--theme-color-popover-foreground: 23 37 84;
 
-	--radius: 0.75rem;
+	--theme-radius: 0.75rem;
 	--radius-button: 0.875rem;
 	--radius-card: 1rem;
 	--radius-input: 0.75rem;
@@ -171,9 +179,9 @@
 	--border-width: 1px;
 	--border-width-thick: 2px;
 	--border-style: solid;
-	--font-sans: "Nunito Variable", var(--font-sans);
-	--font-heading: "Nunito Variable", var(--font-heading);
-	--font-body: "Inter Variable", var(--font-body);
+	--theme-font-sans: "Nunito Variable", var(--theme-font-sans);
+	--theme-font-heading: "Nunito Variable", var(--theme-font-heading);
+	--theme-font-body: "Inter Variable", var(--theme-font-body);
 
 	--shadow: var(--shadow-lg);
 	--animate-duration: var(--animate-duration-slow);
@@ -182,27 +190,27 @@
 
 /* Purple Dream Theme */
 [data-theme="purple"] {
-	--primary: 147 51 234;
-	--primary-foreground: 255 255 255;
-	--secondary: 233 213 255;
-	--secondary-foreground: 88 28 135;
-	--muted: 233 213 255;
-	--muted-foreground: 147 51 234;
-	--accent: 196 181 253;
-	--accent-foreground: 88 28 135;
-	--destructive: 239 68 68;
-	--destructive-foreground: 255 255 255;
-	--border: 196 181 253;
-	--input: 233 213 255;
-	--ring: 147 51 234;
-	--background: 250 245 255;
-	--foreground: 88 28 135;
-	--card: 255 255 255;
-	--card-foreground: 88 28 135;
-	--popover: 255 255 255;
-	--popover-foreground: 88 28 135;
+	--theme-color-primary: 147 51 234;
+	--theme-color-primary-foreground: 255 255 255;
+	--theme-color-secondary: 233 213 255;
+	--theme-color-secondary-foreground: 66 21 101;
+	--theme-color-muted: 233 213 255;
+	--theme-color-muted-foreground: 147 51 234;
+	--theme-color-accent: 196 181 253;
+	--theme-color-accent-foreground: 66 21 101;
+	--theme-color-destructive: 239 68 68;
+	--theme-color-destructive-foreground: 255 255 255;
+	--theme-color-border: 196 181 253;
+	--theme-color-input: 233 213 255;
+	--theme-color-ring: 147 51 234;
+	--theme-color-background: 250 245 255;
+	--theme-color-foreground: 66 21 101;
+	--theme-color-card: 255 255 255;
+	--theme-color-card-foreground: 66 21 101;
+	--theme-color-popover: 255 255 255;
+	--theme-color-popover-foreground: 66 21 101;
 
-	--radius: 1rem;
+	--theme-radius: 1rem;
 	--radius-button: 1.25rem;
 	--radius-card: 1.5rem;
 	--radius-input: 1rem;
@@ -211,9 +219,9 @@
 	--border-width: 2px;
 	--border-width-thick: 3px;
 	--border-style: solid;
-	--font-sans: "DM Sans Variable", var(--font-sans);
-	--font-heading: "Space Grotesk Variable", var(--font-heading);
-	--font-body: "DM Sans Variable", var(--font-body);
+	--theme-font-sans: "DM Sans Variable", var(--theme-font-sans);
+	--theme-font-heading: "Space Grotesk Variable", var(--theme-font-heading);
+	--theme-font-body: "DM Sans Variable", var(--theme-font-body);
 
 	--shadow: var(--shadow-xl);
 	--animate-duration: var(--animate-duration-fast);
@@ -222,27 +230,27 @@
 
 /* Forest Green Theme */
 [data-theme="forest"] {
-	--primary: 34 197 94;
-	--primary-foreground: 255 255 255;
-	--secondary: 220 252 231;
-	--secondary-foreground: 21 128 61;
-	--muted: 220 252 231;
-	--muted-foreground: 34 197 94;
-	--accent: 134 239 172;
-	--accent-foreground: 21 128 61;
-	--destructive: 239 68 68;
-	--destructive-foreground: 255 255 255;
-	--border: 134 239 172;
-	--input: 220 252 231;
-	--ring: 34 197 94;
-	--background: 247 254 231;
-	--foreground: 21 128 61;
-	--card: 255 255 255;
-	--card-foreground: 21 128 61;
-	--popover: 255 255 255;
-	--popover-foreground: 21 128 61;
+	--theme-color-primary: 34 197 94;
+	--theme-color-primary-foreground: 255 255 255;
+	--theme-color-secondary: 220 252 231;
+	--theme-color-secondary-foreground: 14 90 40;
+	--theme-color-muted: 220 252 231;
+	--theme-color-muted-foreground: 34 197 94;
+	--theme-color-accent: 134 239 172;
+	--theme-color-accent-foreground: 14 90 40;
+	--theme-color-destructive: 239 68 68;
+	--theme-color-destructive-foreground: 255 255 255;
+	--theme-color-border: 134 239 172;
+	--theme-color-input: 220 252 231;
+	--theme-color-ring: 34 197 94;
+	--theme-color-background: 247 254 231;
+	--theme-color-foreground: 14 90 40;
+	--theme-color-card: 255 255 255;
+	--theme-color-card-foreground: 14 90 40;
+	--theme-color-popover: 255 255 255;
+	--theme-color-popover-foreground: 14 90 40;
 
-	--radius: 0.375rem;
+	--theme-radius: 0.375rem;
 	--radius-button: 0.375rem;
 	--radius-card: 0.5rem;
 	--radius-input: 0.25rem;
@@ -251,9 +259,9 @@
 	--border-width: 1px;
 	--border-width-thick: 2px;
 	--border-style: solid;
-	--font-sans: "Inter Variable", var(--font-sans);
-	--font-heading: "Fraunces Variable", var(--font-heading);
-	--font-body: "Source Sans 3 Variable", var(--font-body);
+	--theme-font-sans: "Inter Variable", var(--theme-font-sans);
+	--theme-font-heading: "Fraunces Variable", var(--theme-font-heading);
+	--theme-font-body: "Source Sans 3 Variable", var(--theme-font-body);
 
 	--shadow: var(--shadow-sm);
 	--animate-duration: var(--animate-duration-normal);
@@ -262,27 +270,27 @@
 
 /* Warm Sunset Theme */
 [data-theme="sunset"] {
-	--primary: 234 88 12;
-	--primary-foreground: 255 255 255;
-	--secondary: 254 215 170;
-	--secondary-foreground: 154 52 18;
-	--muted: 254 215 170;
-	--muted-foreground: 234 88 12;
-	--accent: 253 186 116;
-	--accent-foreground: 154 52 18;
-	--destructive: 239 68 68;
-	--destructive-foreground: 255 255 255;
-	--border: 253 186 116;
-	--input: 254 215 170;
-	--ring: 234 88 12;
-	--background: 255 247 237;
-	--foreground: 154 52 18;
-	--card: 255 255 255;
-	--card-foreground: 154 52 18;
-	--popover: 255 255 255;
-	--popover-foreground: 154 52 18;
+	--theme-color-primary: 234 88 12;
+	--theme-color-primary-foreground: 255 255 255;
+	--theme-color-secondary: 254 215 170;
+	--theme-color-secondary-foreground: 120 40 14;
+	--theme-color-muted: 254 215 170;
+	--theme-color-muted-foreground: 234 88 12;
+	--theme-color-accent: 253 186 116;
+	--theme-color-accent-foreground: 120 40 14;
+	--theme-color-destructive: 239 68 68;
+	--theme-color-destructive-foreground: 255 255 255;
+	--theme-color-border: 253 186 116;
+	--theme-color-input: 254 215 170;
+	--theme-color-ring: 234 88 12;
+	--theme-color-background: 255 247 237;
+	--theme-color-foreground: 120 40 14;
+	--theme-color-card: 255 255 255;
+	--theme-color-card-foreground: 120 40 14;
+	--theme-color-popover: 255 255 255;
+	--theme-color-popover-foreground: 120 40 14;
 
-	--radius: 1.5rem;
+	--theme-radius: 1.5rem;
 	--radius-button: 1.75rem;
 	--radius-card: 2rem;
 	--radius-input: 1.5rem;
@@ -291,9 +299,9 @@
 	--border-width: 1px;
 	--border-width-thick: 2px;
 	--border-style: solid;
-	--font-sans: "Manrope Variable", var(--font-sans);
-	--font-heading: "Playfair Display Variable", var(--font-heading);
-	--font-body: "Manrope Variable", var(--font-body);
+	--theme-font-sans: "Manrope Variable", var(--theme-font-sans);
+	--theme-font-heading: "Playfair Display Variable", var(--theme-font-heading);
+	--theme-font-body: "Manrope Variable", var(--theme-font-body);
 
 	--shadow: var(--shadow-2xl);
 	--animate-duration: var(--animate-duration-slow);
@@ -302,27 +310,27 @@
 
 /* Rose Garden Theme */
 [data-theme="rose"] {
-	--primary: 244 63 94;
-	--primary-foreground: 255 255 255;
-	--secondary: 254 205 211;
-	--secondary-foreground: 159 18 57;
-	--muted: 254 205 211;
-	--muted-foreground: 244 63 94;
-	--accent: 251 113 133;
-	--accent-foreground: 159 18 57;
-	--destructive: 239 68 68;
-	--destructive-foreground: 255 255 255;
-	--border: 251 113 133;
-	--input: 254 205 211;
-	--ring: 244 63 94;
-	--background: 255 241 242;
-	--foreground: 159 18 57;
-	--card: 255 255 255;
-	--card-foreground: 159 18 57;
-	--popover: 255 255 255;
-	--popover-foreground: 159 18 57;
+	--theme-color-primary: 244 63 94;
+	--theme-color-primary-foreground: 255 255 255;
+	--theme-color-secondary: 254 205 211;
+	--theme-color-secondary-foreground: 120 14 43;
+	--theme-color-muted: 254 205 211;
+	--theme-color-muted-foreground: 244 63 94;
+	--theme-color-accent: 251 113 133;
+	--theme-color-accent-foreground: 120 14 43;
+	--theme-color-destructive: 239 68 68;
+	--theme-color-destructive-foreground: 255 255 255;
+	--theme-color-border: 251 113 133;
+	--theme-color-input: 254 205 211;
+	--theme-color-ring: 244 63 94;
+	--theme-color-background: 255 241 242;
+	--theme-color-foreground: 120 14 43;
+	--theme-color-card: 255 255 255;
+	--theme-color-card-foreground: 120 14 43;
+	--theme-color-popover: 255 255 255;
+	--theme-color-popover-foreground: 120 14 43;
 
-	--radius: 0.25rem;
+	--theme-radius: 0.25rem;
 	--radius-button: 0.25rem;
 	--radius-card: 0.375rem;
 	--radius-input: 0.1875rem;
@@ -331,9 +339,9 @@
 	--border-width: 1px;
 	--border-width-thick: 1px;
 	--border-style: solid;
-	--font-sans: "Plus Jakarta Sans Variable", var(--font-sans);
-	--font-heading: "Crimson Text Variable", var(--font-heading);
-	--font-body: "Plus Jakarta Sans Variable", var(--font-body);
+	--theme-font-sans: "Plus Jakarta Sans Variable", var(--theme-font-sans);
+	--theme-font-heading: "Crimson Text Variable", var(--theme-font-heading);
+	--theme-font-body: "Plus Jakarta Sans Variable", var(--theme-font-body);
 
 	--shadow: var(--shadow-md);
 	--animate-duration: var(--animate-duration-fast);
@@ -342,27 +350,27 @@
 
 /* Midnight Theme */
 [data-theme="midnight"] {
-	--primary: 168 85 247;
-	--primary-foreground: 255 255 255;
-	--secondary: 30 41 59;
-	--secondary-foreground: 203 213 225;
-	--muted: 30 41 59;
-	--muted-foreground: 148 163 184;
-	--accent: 51 65 85;
-	--accent-foreground: 203 213 225;
-	--destructive: 239 68 68;
-	--destructive-foreground: 255 255 255;
-	--border: 51 65 85;
-	--input: 30 41 59;
-	--ring: 168 85 247;
-	--background: 15 23 42;
-	--foreground: 241 245 249;
-	--card: 30 41 59;
-	--card-foreground: 241 245 249;
-	--popover: 30 41 59;
-	--popover-foreground: 241 245 249;
+	--theme-color-primary: 168 85 247;
+	--theme-color-primary-foreground: 255 255 255;
+	--theme-color-secondary: 30 41 59;
+	--theme-color-secondary-foreground: 203 213 225;
+	--theme-color-muted: 30 41 59;
+	--theme-color-muted-foreground: 148 163 184;
+	--theme-color-accent: 51 65 85;
+	--theme-color-accent-foreground: 203 213 225;
+	--theme-color-destructive: 239 68 68;
+	--theme-color-destructive-foreground: 255 255 255;
+	--theme-color-border: 51 65 85;
+	--theme-color-input: 30 41 59;
+	--theme-color-ring: 168 85 247;
+	--theme-color-background: 15 23 42;
+	--theme-color-foreground: 241 245 249;
+	--theme-color-card: 30 41 59;
+	--theme-color-card-foreground: 241 245 249;
+	--theme-color-popover: 30 41 59;
+	--theme-color-popover-foreground: 241 245 249;
 
-	--radius: 0.125rem;
+	--theme-radius: 0.125rem;
 	--radius-button: 0.125rem;
 	--radius-card: 0.1875rem;
 	--radius-input: 0.0625rem;
@@ -371,9 +379,9 @@
 	--border-width: 1px;
 	--border-width-thick: 1px;
 	--border-style: solid;
-	--font-sans: "Outfit Variable", var(--font-sans);
-	--font-heading: "JetBrains Mono Variable", var(--font-heading);
-	--font-body: "IBM Plex Sans Variable", var(--font-body);
+	--theme-font-sans: "Outfit Variable", var(--theme-font-sans);
+	--theme-font-heading: "JetBrains Mono Variable", var(--theme-font-heading);
+	--theme-font-body: "IBM Plex Sans Variable", var(--theme-font-body);
 
 	--shadow: var(--shadow-2xl);
 	--animate-duration: var(--animate-duration-fast);
@@ -403,6 +411,25 @@
 		--popover: 9 9 11;
 		--popover-foreground: 244 244 245;
 	}
+}
+
+html,
+body {
+	/* Prevent bounce/overscroll effect */
+	overscroll-behavior: none;
+	overscroll-behavior-y: none;
+}
+
+/* Hide Fumadocs mobile TOC header since we use GlobalNavigation */
+header.xl\:hidden {
+	display: none !important;
+}
+
+/* Push Fumadocs sidebar down to account for GNB header (64px) */
+aside[class*="fixed"] {
+	top: 64px !important;
+	/* Use theme background color for sidebar instead of card color */
+	background-color: rgb(var(--background)) !important;
 }
 
 body {
@@ -623,4 +650,15 @@ body {
 
 .animate-slide-in {
 	animation: slide-in 0.3s ease-out;
+}
+
+/* Force Fumadocs TOC to display */
+:root {
+	--fd-toc-width: 256px !important;
+}
+
+@media (max-width: 1279px) {
+	:root {
+		--fd-toc-width: 0px !important;
+	}
 }

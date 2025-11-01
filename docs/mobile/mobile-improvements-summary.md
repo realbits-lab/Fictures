@@ -1,3 +1,7 @@
+---
+title: "Mobile Improvements Summary"
+---
+
 # Mobile Improvements Summary
 
 **Status:** ✅ IMPLEMENTED
@@ -114,7 +118,7 @@ xl: 1280px  /* Large desktop */
 
 ### Layout Behavior
 
-| Feature | Mobile (<768px) | Desktop (≥768px) |
+| Feature | Mobile (`<7`68px) | Desktop (≥768px) |
 |---------|----------------|------------------|
 | Bottom Nav | Always visible | Always visible |
 | Top GNB | Auto-hide on scroll | Auto-hide on scroll |

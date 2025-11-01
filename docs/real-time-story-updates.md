@@ -1,3 +1,7 @@
+---
+title: "Real-Time Story Updates Implementation"
+---
+
 # Real-Time Story Updates Implementation
 
 **Status:** ✅ IMPLEMENTED
@@ -503,7 +507,7 @@ export default function CommunityPage() {
 ### 📊 Performance Impact
 - **Network**: ~100 bytes per event vs 5KB+ per poll
 - **Server Load**: Event-driven vs time-based polling
-- **Latency**: <100ms vs 0-5 minutes (current polling interval)
+- **Latency**: `<100ms` vs 0-5 minutes (current polling interval)
 - **Battery**: Less mobile battery drain than frequent polling
 
 ## Alternative Approaches Considered
@@ -634,6 +638,6 @@ if (process.env.NODE_ENV === 'production') {
 **Additional Infrastructure:**
 - Redis: Already included ($0)
 - Bandwidth: ~10KB per user per hour (minimal)
-- Server resources: <5% CPU increase
+- Server resources: `<5%` CPU increase
 
 **Total additional monthly cost:** ~$0 (uses existing Redis)

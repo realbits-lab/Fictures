@@ -1,3 +1,6 @@
+// IMPORTANT: Import polyfills first, before any other imports
+import '@/lib/react-polyfills';
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { auth } from '@/lib/auth';
@@ -12,6 +15,7 @@ import { Analytics } from '@vercel/analytics/next';
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
 import { PageViewTracker } from '@/components/analytics/PageViewTracker';
 import { ReadingHistorySync } from '@/components/analytics/ReadingHistorySync';
+import { RootProvider } from 'fumadocs-ui/provider';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -48,23 +52,25 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider>
-          <SessionProvider session={session}>
-            <AuthModalProvider>
-              <PageViewTracker />
-              <ReadingHistorySync />
-              <GlobalNavigation />
-              {children}
-              <AuthModal />
-              <Toaster
-                richColors
-                position="top-right"
-                closeButton
-                duration={5000}
-              />
-            </AuthModalProvider>
-          </SessionProvider>
-        </ThemeProvider>
+        <RootProvider>
+          <ThemeProvider>
+            <SessionProvider session={session}>
+              <AuthModalProvider>
+                <PageViewTracker />
+                <ReadingHistorySync />
+                <GlobalNavigation />
+                {children}
+                <AuthModal />
+                <Toaster
+                  richColors
+                  position="top-right"
+                  closeButton
+                  duration={5000}
+                />
+              </AuthModalProvider>
+            </SessionProvider>
+          </ThemeProvider>
+        </RootProvider>
         <Analytics />
       </body>
     </html>

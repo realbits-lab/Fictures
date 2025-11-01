@@ -9,7 +9,6 @@ interface Scene {
   title: string;
   content: string;
   orderIndex: number;
-  wordCount: number;
   status: string;
 }
 
@@ -18,7 +17,6 @@ interface Chapter {
   title: string;
   content?: string;
   orderIndex: number;
-  wordCount: number;
   status: string;
   scenes?: Scene[];
 }
@@ -35,7 +33,6 @@ interface Story {
   title: string;
   description?: string;
   genre?: string;
-  wordCount?: number;
   status: string;
   parts: Part[];
   chapters: Chapter[];
@@ -250,7 +247,6 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
             {selectedChapter && (
               <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-xs text-gray-600 dark:text-gray-400">
                 <span>📖</span>
-                <span>{selectedChapter.wordCount || 0} words</span>
               </div>
             )}
 
@@ -363,7 +359,6 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
                           </span>
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          {chapter.wordCount || 0} words
                         </div>
                       </button>
                     );
@@ -404,7 +399,6 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
                           </span>
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          {chapter.wordCount || 0} words
                         </div>
                       </button>
                     );
@@ -451,7 +445,6 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
                   {selectedChapter.title}
                 </h1>
                 <div className="text-sm text-gray-500 dark:text-gray-400">
-                  {selectedChapter.wordCount || 0} words
                 </div>
               </header>
 

@@ -16,13 +16,10 @@ interface Story {
       title: string;
       orderIndex: number;
       status: string;
-      wordCount: number;
-      targetWordCount: number;
       scenes?: Array<{
         id: string;
         title: string;
         status: string;
-        wordCount: number;
       }>;
     }>;
   }>;
@@ -31,13 +28,10 @@ interface Story {
     title: string;
     orderIndex: number;
     status: string;
-    wordCount: number;
-    targetWordCount: number;
     scenes?: Array<{
       id: string;
       title: string;
       status: string;
-      wordCount: number;
     }>;
   }>;
 }
@@ -59,7 +53,7 @@ export function useStoryData(storyId: string | null) {
   const shouldFetch = storyId && sessionStatus !== 'loading';
   
   const { data, error, isLoading, isValidating, mutate } = usePersistedSWR(
-    shouldFetch ? `/writing/api/stories/${storyId}/write` : null,
+    shouldFetch ? `/api/stories/${storyId}/write` : null,
     fetcher,
     {
       ...CACHE_CONFIGS.writing, // 30min TTL with localStorage persistence

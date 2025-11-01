@@ -17,15 +17,13 @@ export default async function WriteStoryPage({ params }: { params: Promise<{ sto
   console.log(`📖 [SSR] Loading story: ${storyId}`);
 
   // Get story structure for navigation sidebar
-  // OPTIMIZATION: Load structure only (not full scene content) for faster SSR
-  // Scene content is loaded on-demand by SceneDisplay component
+  // Load full structure including scenes for tree view display
   const ssrFetchStart = Date.now();
-  console.log('⏳ [SSR] Fetching story structure (metadata only, no scene content)...');
-  const storyStructure = await getStoryWithStructure(storyId, false, session.user?.id);
+  console.log('⏳ [SSR] Fetching story structure with scenes for tree view...');
+  const storyStructure = await getStoryWithStructure(storyId, true, session.user?.id);
   const ssrFetchDuration = Date.now() - ssrFetchStart;
   console.log(`✅ [SSR] Story structure fetched in ${ssrFetchDuration}ms`);
   console.log(`📊 [SSR] Story has ${storyStructure?.parts?.length || 0} parts with ${storyStructure?.parts?.reduce((sum, p) => sum + (p.chapters?.length || 0), 0) || 0} total chapters`);
-  console.log(`🚀 [SSR] Optimization: Scene content NOT loaded (loaded on-demand)`);
 
   if (!storyStructure) {
     notFound();

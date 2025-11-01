@@ -22,6 +22,20 @@
       "when": 1761822656651,
       "tag": "0002_fancy_grandmaster",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1761911046506,
+      "tag": "0003_fair_johnny_blaze",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1761918000000,
+      "tag": "0004_fix_moral_framework_column_name",
+      "breakpoints": true
     }
   ]
 }

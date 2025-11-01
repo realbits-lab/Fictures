@@ -1,3 +1,7 @@
+---
+title: "Google AdSense Complete Guide for Fictures"
+---
+
 # Google AdSense Complete Guide for Fictures
 
 **Complete documentation for implementing and optimizing Google AdSense monetization on the Fictures platform.**

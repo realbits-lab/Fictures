@@ -48,8 +48,6 @@ export async function GET(request: NextRequest) {
       readyToPublish: readyToPublish ? {
         id: readyToPublish.id,
         title: readyToPublish.title || 'Untitled Chapter',
-        wordCount: readyToPublish.wordCount || 0,
-        targetWordCount: 4000,
         shortTitle: readyToPublish.title?.substring(0, 20) || 'Untitled',
         preview: readyToPublish.summary?.substring(0, 150) + '...' || 'No preview available',
         scheduledTime: 'Tomorrow at 2:00 PM',

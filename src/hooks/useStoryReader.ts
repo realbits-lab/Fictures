@@ -9,7 +9,6 @@ export interface Scene {
   title: string;
   content: string;
   orderIndex: number;
-  wordCount: number;
   status: string;
 }
 
@@ -18,7 +17,6 @@ export interface Chapter {
   title: string;
   content?: string;
   orderIndex: number;
-  wordCount: number;
   status: string;
   scenes?: Scene[];
 }
@@ -35,7 +33,6 @@ export interface Story {
   title: string;
   description?: string;
   genre?: string;
-  wordCount?: number;
   status: string;
   parts: Part[];
   chapters: Chapter[];

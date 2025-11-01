@@ -27,7 +27,6 @@ interface Story {
   isPublic: boolean;
   viewCount: number;
   rating: number;
-  currentWordCount: number;
   createdAt: Date;
   hnsData?: {
     storyImage?: {
@@ -165,13 +164,13 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
           {/* First row on mobile: History/All + View toggles */}
           <div className="flex items-center justify-between md:justify-end gap-3">
             {/* History/All Toggle */}
-            <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] p-1 flex-1 md:flex-initial">
+            <div className="inline-flex rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))] p-1 flex-1 md:flex-initial">
             <button
               onClick={() => setFilterMode("all")}
               className={`inline-flex items-center justify-center rounded-md px-2 md:px-3 py-1.5 text-sm font-medium transition-all flex-1 md:flex-initial ${
                 filterMode === "all"
-                  ? "bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] shadow-sm"
-                  : "text-[rgb(var(--muted-foreground))] hover:bg-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))]"
+                  ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-sm"
+                  : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-foreground))]"
               }`}
             >
               <svg
@@ -198,8 +197,8 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
               onClick={() => setFilterMode("history")}
               className={`inline-flex items-center justify-center rounded-md px-2 md:px-3 py-1.5 text-sm font-medium transition-all flex-1 md:flex-initial ${
                 filterMode === "history"
-                  ? "bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] shadow-sm"
-                  : "text-[rgb(var(--muted-foreground))] hover:bg-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))]"
+                  ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-sm"
+                  : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-foreground))]"
               }`}
             >
               <svg
@@ -223,13 +222,13 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
           </div>
 
             {/* View Toggle */}
-            <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] p-1 flex-1 md:flex-initial">
+            <div className="inline-flex rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))] p-1 flex-1 md:flex-initial">
               <button
                 onClick={() => setViewMode("card")}
                 className={`inline-flex items-center justify-center rounded-md px-2 md:px-3 py-1.5 text-sm font-medium transition-all flex-1 md:flex-initial ${
                   viewMode === "card"
-                    ? "bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] shadow-sm"
-                    : "text-[rgb(var(--muted-foreground))] hover:bg-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))]"
+                    ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-sm"
+                    : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-foreground))]"
                 }`}
               >
                 <svg
@@ -255,8 +254,8 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                 onClick={() => setViewMode("table")}
                 className={`inline-flex items-center justify-center rounded-md px-2 md:px-3 py-1.5 text-sm font-medium transition-all flex-1 md:flex-initial ${
                   viewMode === "table"
-                    ? "bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] shadow-sm"
-                    : "text-[rgb(var(--muted-foreground))] hover:bg-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))]"
+                    ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-sm"
+                    : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-foreground))]"
                 }`}
               >
                 <svg
@@ -283,7 +282,7 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
           {/* Second row on mobile: Genre + Sort selects */}
           <div className="flex items-center justify-between md:justify-end gap-3">
             {/* Genre Select */}
-            <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] flex-1 md:flex-initial">
+            <div className="inline-flex rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))] flex-1 md:flex-initial">
               <Select value={selectedGenre} onValueChange={(genre) => {
                 setSelectedGenre(genre);
                 // Track genre filter
@@ -291,7 +290,7 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                   trackSearch.filterByGenre(genre);
                 }
               }}>
-                <SelectTrigger className="border-0 bg-transparent hover:bg-[rgb(var(--muted))] focus:ring-0 focus:ring-offset-0 w-full">
+                <SelectTrigger className="border-0 bg-transparent hover:bg-[rgb(var(--color-muted))] focus:ring-0 focus:ring-offset-0 w-full">
                   <SelectValue placeholder="Select genre" />
                 </SelectTrigger>
                 <SelectContent>
@@ -305,9 +304,9 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
             </div>
 
             {/* Sort By Select */}
-            <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] flex-1 md:flex-initial">
+            <div className="inline-flex rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))] flex-1 md:flex-initial">
               <Select value={sortBy} onValueChange={(value) => setSortBy(value as "latest" | "popular" | "rating")}>
-                <SelectTrigger className="border-0 bg-transparent hover:bg-[rgb(var(--muted))] focus:ring-0 focus:ring-offset-0 w-full">
+                <SelectTrigger className="border-0 bg-transparent hover:bg-[rgb(var(--color-muted))] focus:ring-0 focus:ring-offset-0 w-full">
                   <SelectValue placeholder="Select sort order" />
                 </SelectTrigger>
                 <SelectContent>
@@ -327,7 +326,7 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
           /* Card View with In-Feed Ads */
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {sortedStories.map((story, index) => {
-              const imageUrl = story.hnsData?.storyImage?.url;
+              const imageUrl = story.imageUrl;
               const shouldShowAd = (index + 1) % 8 === 0 && index !== sortedStories.length - 1;
 
               return (
@@ -398,7 +397,6 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                     </span>
                     <span className="flex items-center gap-1 flex-shrink-0">
                       <span>📝</span>
-                      <span className="truncate">{(story.currentWordCount || 0).toLocaleString()} {story.currentWordCount === 1 ? 'word' : 'words'}</span>
                     </span>
                   </div>
                 </div>
@@ -435,7 +433,7 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
               </TableHeader>
               <TableBody>
                 {sortedStories.map((story) => {
-                  const imageUrl = story.hnsData?.storyImage?.url;
+                  const imageUrl = story.imageUrl;
 
                   return (
                     <TableRow
@@ -507,7 +505,6 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                       <TableCell className="text-center text-gray-600 dark:text-gray-400">
                         <span className="flex items-center justify-center gap-1">
                           <span>📝</span>
-                          <span>{(story.currentWordCount || 0).toLocaleString()} {story.currentWordCount === 1 ? 'word' : 'words'}</span>
                         </span>
                       </TableCell>
                     </TableRow>

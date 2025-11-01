@@ -252,7 +252,6 @@ export async function POST(request: NextRequest) {
             description: 'AI-generated story',
             genre: storyConcept.genre || 'General',
             authorId: session.user.id,
-            targetWordCount: storyConcept.words || 60000,
             status: 'writing',
             content: JSON.stringify(storyConcept),
           }).returning();
@@ -272,7 +271,6 @@ export async function POST(request: NextRequest) {
                   title: `Part ${storyPart.part}: ${storyPart.goal}`,
                   authorId: session.user.id,
                   orderIndex: storyPart.part,
-                  targetWordCount: partWordCount,
                   content: JSON.stringify(storyPart),
                 }
               );

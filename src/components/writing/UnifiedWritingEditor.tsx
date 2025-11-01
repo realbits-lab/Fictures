@@ -10,15 +10,11 @@ import { useWritingProgress, useWritingSession } from "@/hooks/useStoryWriter";
 import { JSONDataDisplay } from "./JSONDataDisplay";
 import { ChapterEditor } from "./ChapterEditor";
 import { SceneEditor, SceneData } from "./SceneEditor";
-import { SceneDisplay } from "./SceneDisplay";
 import { StoryStructureSidebar } from "./StoryStructureSidebar";
 import { SceneSidebar } from "./SceneSidebar";
-import { WritingGuidelines } from "./WritingGuidelines";
-import { StoryPromptWriter } from "./StoryPromptWriter";
-import { BeautifulJSONDisplay } from "./BeautifulJSONDisplay";
 import { CharactersDisplay } from "./CharactersDisplay";
 import { SettingsDisplay } from "./SettingsDisplay";
-import { StoryMetadataEditor } from "./StoryMetadataEditor";
+import { StudioAgentChat } from "@/components/studio/studio-agent-chat";
 import type {
   HNSStory,
   HNSPart,
@@ -48,14 +44,11 @@ interface Story {
       title: string;
       orderIndex: number;
       status: string;
-      wordCount: number;
-      targetWordCount: number;
       hnsData?: any;
       scenes?: Array<{
         id: string;
         title: string;
         status: "completed" | "in_progress" | "planned";
-        wordCount: number;
         goal: string;
         conflict: string;
         outcome: string;
@@ -68,14 +61,11 @@ interface Story {
     title: string;
     orderIndex: number;
     status: string;
-    wordCount: number;
-    targetWordCount: number;
     hnsData?: any;
     scenes?: Array<{
       id: string;
       title: string;
       status: "completed" | "in_progress" | "planned";
-      wordCount: number;
       goal: string;
       conflict: string;
       outcome: string;
@@ -86,7 +76,6 @@ interface Story {
     id: string;
     title: string;
     status: "completed" | "in_progress" | "planned";
-    wordCount: number;
     goal: string;
     conflict: string;
     outcome: string;
@@ -407,45 +396,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     }
   };
 
-  // Helper functions for JSON conversion for StoryPromptWriter
-  const convertStoryDataToJSON = (storyData: HNSDocument): string => {
-    try {
-      return JSON.stringify(storyData, null, 2);
-    } catch (error) {
-      console.error('Error converting story data to JSON:', error);
-      return '';
-    }
-  };
-
-  const convertJSONToStoryData = (jsonText: string): HNSDocument | null => {
-    try {
-      const parsed = JSON.parse(jsonText);
-      return parsed as HNSDocument;
-    } catch (error) {
-      console.error('Error parsing JSON to story data:', error);
-      return null;
-    }
-  };
-
-  // Wrapper handlers for StoryPromptWriter that work with JSON
-  const handleStoryJSONUpdate = (updatedJson: string) => {
-    const storyData = convertJSONToStoryData(updatedJson);
-    if (storyData) {
-      handleStoryDataUpdate(storyData);
-    }
-  };
-
-  const handleStoryJSONPreviewUpdate = (previewJson: string | null) => {
-    if (previewJson === null) {
-      setStoryPreviewData(null);
-    } else {
-      const storyData = convertJSONToStoryData(previewJson);
-      if (storyData) {
-        setStoryPreviewData(storyData);
-      }
-    }
-  };
-
   // Update chapter data and track changes
   const handleChapterDataUpdate = (updatedData: any) => {
     setCurrentChapterData(updatedData);
@@ -487,7 +437,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               chapter_title: ch.title,
               order_index: ch.orderIndex,
               status: ch.status,
-              word_count: ch.wordCount
             })) || []
           };
           setOriginalPartData(partMetadata);
@@ -532,13 +481,11 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             chapter_title: selectedChapter.title,
             order_index: selectedChapter.orderIndex,
             status: selectedChapter.status,
-            word_count: selectedChapter.wordCount,
             target_word_count: selectedChapter.targetWordCount,
             scenes: (selectedChapter.scenes || []).map(scene => ({
               scene_id: scene.id,
               scene_title: scene.title,
               status: scene.status,
-              word_count: scene.wordCount
             }))
           };
           setOriginalChapterData(chapterMetadata);
@@ -583,7 +530,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       if (selectedScene) {
         console.log(`✅ [CLIENT] Scene found in ${sceneLoadDuration}ms`);
         console.log(`📝 [CLIENT] Scene title: "${selectedScene.title}"`);
-        console.log(`📊 [CLIENT] Scene has content: ${!!(selectedScene as any).content}, wordCount: ${selectedScene.wordCount || 0}`);
         console.log(`📦 [CLIENT] Scene hnsData available: ${!!selectedScene.hnsData}`);
 
         // If we have hnsData, use it directly
@@ -596,7 +542,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             scene_id: selectedScene.id,
             scene_title: selectedScene.title,
             status: selectedScene.status,
-            word_count: selectedScene.wordCount,
             goal: selectedScene.goal,
             conflict: selectedScene.conflict,
             outcome: selectedScene.outcome
@@ -691,13 +636,12 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const handleSave = async (data: any) => {
     setIsLoading(true);
     try {
-      // Check if this is scene data (has content and wordCount) and we have a sceneId
-      if (data.content !== undefined && data.wordCount !== undefined && currentSelection.sceneId) {
+      // Check if this is scene data and we have a sceneId
+      if (currentSelection.level === "scene" && currentSelection.sceneId && data) {
         // Save scene content and metadata to the scene API using JSON
         const sceneJsonData = {
           title: data.summary || `Scene ${data.id}`,
           content: data.content,
-          wordCount: data.wordCount,
           goal: data.goal,
           conflict: data.obstacle,
           outcome: data.outcome,
@@ -849,8 +793,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     // If chapter is marked as published but has no content, force it to draft status
     if (currentChapter && currentChapterStatus === 'published') {
       const hasScenes = currentChapter.scenes && currentChapter.scenes.length > 0;
-      const hasContent = (currentChapter as any).purpose || (currentChapter as any).hook || (currentChapter as any).characterFocus || (currentChapter.wordCount && currentChapter.wordCount > 0);
-      const scenesWithContent = hasScenes && currentChapter.scenes ? currentChapter.scenes.filter((scene: any) => scene.wordCount > 0) : [];
+      const scenesWithContent = currentChapter.scenes?.filter(s => s.content && s.content.trim() !== '') || [];
+      const hasContent = scenesWithContent.length > 0;
 
       if (!hasContent && scenesWithContent.length === 0) {
         currentChapterStatus = 'draft';
@@ -866,7 +810,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         alert('Cannot publish chapter without scenes. Please add at least one scene before publishing.');
         return;
       }
-      const scenesWithContent = chapterScenes.filter(scene => scene.wordCount > 0);
       if (scenesWithContent.length === 0) {
         alert('Cannot publish chapter with empty scenes. Please add content to at least one scene before publishing.');
         return;
@@ -1153,7 +1096,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       leads_to: `scene_${sceneNum + 1}`,
       image_prompt: `Scene ${sceneNum} visual description for ${selectedSceneChapter?.title || 'chapter'}`,
       content: scene?.content || "",
-      wordCount: scene?.wordCount || 0
     });
 
     const sceneData = selectedScene ?
@@ -1163,49 +1105,213 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     return { sceneData, selectedSceneChapter, sceneNumber };
   };
 
-  const renderSceneDisplay = () => {
-    if (!currentSelection.sceneId) return null;
-
-    return (
-      <SceneDisplay
-        sceneId={currentSelection.sceneId}
-        storyId={story.id}
-        disabled={disabled}
-      />
-    );
-  };
-
   const renderEditor = () => {
     switch (currentSelection.level) {
       case "story":
         return (
           <div className="space-y-6">
-            {/* Story JSON Data Display */}
-            <BeautifulJSONDisplay
-              title="Story JSON Data"
-              icon="📖"
-              data={sampleStoryData}
-              isCollapsed={false}
-              onToggleCollapse={() => setStoryDataCollapsed(!storyDataCollapsed)}
-              changedKeys={changedStoryKeys}
-              onDataChange={handleStoryDataUpdate}
-              disabled={disabled}
-            />
+            <Card>
+              <CardHeader>
+                <CardTitle>📖 Story Details - All Fields</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <tbody>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800 w-1/3">ID</td>
+                        <td className="py-2 px-4 font-mono text-xs">{story.id}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Title</td>
+                        <td className="py-2 px-4">{story.title}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Genre</td>
+                        <td className="py-2 px-4">{story.genre || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Status</td>
+                        <td className="py-2 px-4">
+                          <Badge variant={story.status === 'published' ? 'default' : 'secondary'}>
+                            {story.status}
+                          </Badge>
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Author ID</td>
+                        <td className="py-2 px-4 font-mono text-xs">{(story as any).authorId || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">View Count</td>
+                        <td className="py-2 px-4">{(story as any).viewCount || 0}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Rating</td>
+                        <td className="py-2 px-4">{(story as any).rating ? ((story as any).rating / 10).toFixed(1) : 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Rating Count</td>
+                        <td className="py-2 px-4">{(story as any).ratingCount || 0}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Image URL</td>
+                        <td className="py-2 px-4">
+                          {(story as any).imageUrl ? (
+                            <a href={(story as any).imageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs break-all">
+                              {(story as any).imageUrl}
+                            </a>
+                          ) : 'N/A'}
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Image Variants</td>
+                        <td className="py-2 px-4">
+                          {(story as any).imageVariants ? (
+                            <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
+                              {JSON.stringify((story as any).imageVariants, null, 2)}
+                            </pre>
+                          ) : 'N/A'}
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Summary</td>
+                        <td className="py-2 px-4">{(story as any).summary || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Tone</td>
+                        <td className="py-2 px-4">{(story as any).tone || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Moral Framework</td>
+                        <td className="py-2 px-4">
+                          {(story as any).moralFramework ? (
+                            <div className="max-h-40 overflow-auto text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded">
+                              {(story as any).moralFramework}
+                            </div>
+                          ) : 'N/A'}
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Created At</td>
+                        <td className="py-2 px-4">{(story as any).createdAt ? new Date((story as any).createdAt).toLocaleString() : 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Updated At</td>
+                        <td className="py-2 px-4">{(story as any).updatedAt ? new Date((story as any).updatedAt).toLocaleString() : 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Parts Count</td>
+                        <td className="py-2 px-4">{story.parts?.length || 0}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Chapters Count</td>
+                        <td className="py-2 px-4">{story.chapters?.length || 0}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Total Scenes</td>
+                        <td className="py-2 px-4">
+                          {(() => {
+                            let totalScenes = 0;
+                            story.parts?.forEach(part => {
+                              part.chapters?.forEach(chapter => {
+                                totalScenes += chapter.scenes?.length || 0;
+                              });
+                            });
+                            story.chapters?.forEach(chapter => {
+                              totalScenes += chapter.scenes?.length || 0;
+                            });
+                            return totalScenes;
+                          })()}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         );
       
       case "part":
-        // Display part HNS data using BeautifulJSONDisplay
+        const selectedPart = story.parts.find(p => p.id === currentSelection.partId);
+        if (!selectedPart) {
+          return (
+            <Card>
+              <CardContent className="py-8 text-center text-gray-500">
+                Part not found
+              </CardContent>
+            </Card>
+          );
+        }
+
         return (
-          <div className="space-y-4">
-            <BeautifulJSONDisplay
-              title="Part HNS Data"
-              data={partPreviewData || currentPartData}
-              icon="📚"
-              isCollapsed={false}
-              onToggleCollapse={() => {}}
-              disabled={disabled}
-            />
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>📚 Part Details - All Fields</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <tbody>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800 w-1/3">ID</td>
+                        <td className="py-2 px-4 font-mono text-xs">{selectedPart.id}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Title</td>
+                        <td className="py-2 px-4">{selectedPart.title}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Story ID</td>
+                        <td className="py-2 px-4 font-mono text-xs">{(selectedPart as any).storyId || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Author ID</td>
+                        <td className="py-2 px-4 font-mono text-xs">{(selectedPart as any).authorId || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Order Index</td>
+                        <td className="py-2 px-4">{selectedPart.orderIndex}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Summary</td>
+                        <td className="py-2 px-4">{(selectedPart as any).summary || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Character Arcs</td>
+                        <td className="py-2 px-4">
+                          {(selectedPart as any).characterArcs ? (
+                            <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-60">
+                              {JSON.stringify((selectedPart as any).characterArcs, null, 2)}
+                            </pre>
+                          ) : 'N/A'}
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Chapters Count</td>
+                        <td className="py-2 px-4">{selectedPart.chapters?.length || 0}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Total Scenes</td>
+                        <td className="py-2 px-4">
+                          {selectedPart.chapters?.reduce((total, ch) => total + (ch.scenes?.length || 0), 0)}
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Created At</td>
+                        <td className="py-2 px-4">{(selectedPart as any).createdAt ? new Date((selectedPart as any).createdAt).toLocaleString() : 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Updated At</td>
+                        <td className="py-2 px-4">{(selectedPart as any).updatedAt ? new Date((selectedPart as any).updatedAt).toLocaleString() : 'N/A'}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         );
       
@@ -1244,9 +1350,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         const createChapterData = (chapter: any, partTitle: string | null) => {
           // Check if chapter has any actual content
           const hasScenes = chapter.scenes && chapter.scenes.length > 0;
-          const hasContent = chapter.purpose || chapter.hook || chapter.characterFocus || (chapter.wordCount && chapter.wordCount > 0);
-          const scenesWithContent = hasScenes ? chapter.scenes.filter((scene: any) => scene.wordCount > 0) : [];
-          
+          const scenesWithContent = chapter.scenes?.filter((s: any) => s.content && s.content.trim() !== '') || [];
+          const hasContent = scenesWithContent.length > 0;
+
           // If chapter is marked as published but has no content, force it to draft status
           let actualStatus = chapter.status || 'draft';
           if (actualStatus === 'published' && !hasContent && scenesWithContent.length === 0) {
@@ -1258,8 +1364,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             id: chapter.id,
             title: chapter.title,
             partTitle: partTitle || "Standalone",
-            wordCount: chapter.wordCount || 0,
-            targetWordCount: chapter.targetWordCount || 4000,
             status: actualStatus,
             purpose: chapter.purpose || "",
             hook: chapter.hook || "",
@@ -1284,7 +1388,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 <CardContent className="text-center py-8">
                   <div className="text-gray-500 dark:text-gray-400 mb-4">
                     <div className="text-4xl mb-4">📄</div>
-                    <h3 className="text-lg font-medium mb-2 text-[rgb(var(--card-foreground))]">No Chapter Data</h3>
+                    <h3 className="text-lg font-medium mb-2 text-[rgb(var(--color-card-foreground))]">No Chapter Data</h3>
                     <p>This chapter doesn&apos;t exist or hasn&apos;t been created yet.</p>
                     <p className="text-sm mt-2">Chapter ID: {currentSelection.chapterId}</p>
                   </div>
@@ -1302,86 +1406,743 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
         return (
           <div className="space-y-6">
-            {/* Chapter Editor Header with Save/Cancel */}
-            {(chapterHasChanges || !!chapterPreviewData) && (
-              <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
-                <div>
-                  <h3 className="font-medium text-blue-900 dark:text-blue-100">📝 Chapter Changes</h3>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">You have unsaved changes to this chapter</p>
+            <Card>
+              <CardHeader>
+                <CardTitle>📝 Chapter Details - All Fields</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <tbody>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800 w-1/3">ID</td>
+                        <td className="py-2 px-4 font-mono text-xs">{selectedChapter.id}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Title</td>
+                        <td className="py-2 px-4">{selectedChapter.title}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Summary</td>
+                        <td className="py-2 px-4">{(selectedChapter as any).summary || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Story ID</td>
+                        <td className="py-2 px-4 font-mono text-xs">{(selectedChapter as any).storyId || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Part ID</td>
+                        <td className="py-2 px-4 font-mono text-xs">{(selectedChapter as any).partId || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Part</td>
+                        <td className="py-2 px-4">{selectedPartTitle || 'Standalone'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Author ID</td>
+                        <td className="py-2 px-4 font-mono text-xs">{(selectedChapter as any).authorId || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Order Index</td>
+                        <td className="py-2 px-4">{selectedChapter.orderIndex}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Status</td>
+                        <td className="py-2 px-4">
+                          <Badge variant={selectedChapter.status === 'published' ? 'default' : 'secondary'}>
+                            {selectedChapter.status}
+                          </Badge>
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Purpose</td>
+                        <td className="py-2 px-4">{(selectedChapter as any).purpose || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Hook</td>
+                        <td className="py-2 px-4">{(selectedChapter as any).hook || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Character Focus</td>
+                        <td className="py-2 px-4">{(selectedChapter as any).characterFocus || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Published At</td>
+                        <td className="py-2 px-4">{(selectedChapter as any).publishedAt ? new Date((selectedChapter as any).publishedAt).toLocaleString() : 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Scheduled For</td>
+                        <td className="py-2 px-4">{(selectedChapter as any).scheduledFor ? new Date((selectedChapter as any).scheduledFor).toLocaleString() : 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Character ID</td>
+                        <td className="py-2 px-4 font-mono text-xs">{(selectedChapter as any).characterId || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Arc Position</td>
+                        <td className="py-2 px-4">{(selectedChapter as any).arcPosition || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Contributes to Macro Arc</td>
+                        <td className="py-2 px-4">{(selectedChapter as any).contributesToMacroArc || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Focus Characters</td>
+                        <td className="py-2 px-4">
+                          {(selectedChapter as any).focusCharacters && (selectedChapter as any).focusCharacters.length > 0 ? (
+                            <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto">
+                              {JSON.stringify((selectedChapter as any).focusCharacters, null, 2)}
+                            </pre>
+                          ) : 'N/A'}
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Adversity Type</td>
+                        <td className="py-2 px-4">{(selectedChapter as any).adversityType || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Virtue Type</td>
+                        <td className="py-2 px-4">{(selectedChapter as any).virtueType || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Seeds Planted</td>
+                        <td className="py-2 px-4">
+                          {(selectedChapter as any).seedsPlanted && (selectedChapter as any).seedsPlanted.length > 0 ? (
+                            <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-60">
+                              {JSON.stringify((selectedChapter as any).seedsPlanted, null, 2)}
+                            </pre>
+                          ) : 'N/A'}
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Seeds Resolved</td>
+                        <td className="py-2 px-4">
+                          {(selectedChapter as any).seedsResolved && (selectedChapter as any).seedsResolved.length > 0 ? (
+                            <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-60">
+                              {JSON.stringify((selectedChapter as any).seedsResolved, null, 2)}
+                            </pre>
+                          ) : 'N/A'}
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Connects to Previous Chapter</td>
+                        <td className="py-2 px-4">{(selectedChapter as any).connectsToPreviousChapter || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Creates Next Adversity</td>
+                        <td className="py-2 px-4">{(selectedChapter as any).createsNextAdversity || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Scenes Count</td>
+                        <td className="py-2 px-4">{selectedChapter.scenes?.length || 0}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Created At</td>
+                        <td className="py-2 px-4">{(selectedChapter as any).createdAt ? new Date((selectedChapter as any).createdAt).toLocaleString() : 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Updated At</td>
+                        <td className="py-2 px-4">{(selectedChapter as any).updatedAt ? new Date((selectedChapter as any).updatedAt).toLocaleString() : 'N/A'}</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setCurrentChapterData(originalChapterData);
-                      setChapterPreviewData(null);
-                      setChapterHasChanges(false);
-                    }}
-                    className="whitespace-nowrap"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={async () => {
-                      await handleSave(chapterPreviewData || currentChapterData);
-                      setOriginalChapterData(chapterPreviewData || currentChapterData);
-                      setChapterPreviewData(null);
-                      setChapterHasChanges(false);
-                    }}
-                    className="whitespace-nowrap"
-                  >
-                    💾 Save Changes
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Chapter Overview */}
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <BeautifulJSONDisplay
-                  title="📝 Chapter Overview"
-                  icon="📝"
-                  data={{
-                    title: chapterData.title,
-                    part: chapterData.partTitle,
-                    status: chapterData.status,
-                    progress: {
-                      current: chapterData.wordCount,
-                      target: chapterData.targetWordCount,
-                      percentage: Math.round((chapterData.wordCount / chapterData.targetWordCount) * 100)
-                    },
-                    purpose: chapterData.purpose,
-                    hook: chapterData.hook,
-                    characterFocus: chapterData.characterFocus
-                  }}
-                  isCollapsed={false}
-                  disabled={disabled}
-                />
-              </div>
-            </div>
-
-
-
+              </CardContent>
+            </Card>
           </div>
         );
 
       case "scene":
-        return renderSceneDisplay();
+        // Find the selected scene
+        let selectedScene = null;
+        let selectedSceneChapter = null;
+        let selectedScenePart = null;
+
+        // Look in parts first
+        for (const part of story.parts) {
+          for (const chapter of part.chapters) {
+            const foundScene = chapter.scenes?.find(s => s.id === currentSelection.sceneId);
+            if (foundScene) {
+              selectedScene = foundScene;
+              selectedSceneChapter = chapter;
+              selectedScenePart = part;
+              break;
+            }
+          }
+          if (selectedScene) break;
+        }
+
+        // Look in standalone chapters if not found in parts
+        if (!selectedScene) {
+          for (const chapter of story.chapters) {
+            const foundScene = chapter.scenes?.find(s => s.id === currentSelection.sceneId);
+            if (foundScene) {
+              selectedScene = foundScene;
+              selectedSceneChapter = chapter;
+              break;
+            }
+          }
+        }
+
+        if (!selectedScene) {
+          return (
+            <Card>
+              <CardContent className="py-8 text-center text-gray-500">
+                Scene not found
+              </CardContent>
+            </Card>
+          );
+        }
+
+        return (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>🎬 Scene Details - All Fields</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <tbody>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800 w-1/3">ID</td>
+                        <td className="py-2 px-4 font-mono text-xs">{selectedScene.id}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Title</td>
+                        <td className="py-2 px-4">{selectedScene.title}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Content</td>
+                        <td className="py-2 px-4">
+                          {(selectedScene as any).content ? (
+                            <div className="max-h-40 overflow-auto text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded">
+                              {(selectedScene as any).content}
+                            </div>
+                          ) : 'N/A'}
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Chapter ID</td>
+                        <td className="py-2 px-4 font-mono text-xs">{(selectedScene as any).chapterId || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Chapter</td>
+                        <td className="py-2 px-4">{selectedSceneChapter?.title || 'Unknown'}</td>
+                      </tr>
+                      {selectedScenePart && (
+                        <tr className="border-b">
+                          <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Part</td>
+                          <td className="py-2 px-4">{selectedScenePart.title}</td>
+                        </tr>
+                      )}
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Order Index</td>
+                        <td className="py-2 px-4">{(selectedScene as any).orderIndex}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Image URL</td>
+                        <td className="py-2 px-4">
+                          {(selectedScene as any).imageUrl ? (
+                            <a href={(selectedScene as any).imageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs break-all">
+                              {(selectedScene as any).imageUrl}
+                            </a>
+                          ) : 'N/A'}
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Image Variants</td>
+                        <td className="py-2 px-4">
+                          {(selectedScene as any).imageVariants ? (
+                            <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
+                              {JSON.stringify((selectedScene as any).imageVariants, null, 2)}
+                            </pre>
+                          ) : 'N/A'}
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Summary</td>
+                        <td className="py-2 px-4">{(selectedScene as any).summary || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Cycle Phase</td>
+                        <td className="py-2 px-4">{(selectedScene as any).cyclePhase || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Emotional Beat</td>
+                        <td className="py-2 px-4">{(selectedScene as any).emotionalBeat || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Character Focus</td>
+                        <td className="py-2 px-4">
+                          {(selectedScene as any).characterFocus ? (
+                            <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto">
+                              {JSON.stringify((selectedScene as any).characterFocus, null, 2)}
+                            </pre>
+                          ) : 'N/A'}
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Sensory Anchors</td>
+                        <td className="py-2 px-4">
+                          {(selectedScene as any).sensoryAnchors ? (
+                            <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto">
+                              {JSON.stringify((selectedScene as any).sensoryAnchors, null, 2)}
+                            </pre>
+                          ) : 'N/A'}
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Dialogue vs Description</td>
+                        <td className="py-2 px-4">{(selectedScene as any).dialogueVsDescription || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Suggested Length</td>
+                        <td className="py-2 px-4">{(selectedScene as any).suggestedLength || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Published At</td>
+                        <td className="py-2 px-4">{(selectedScene as any).publishedAt ? new Date((selectedScene as any).publishedAt).toLocaleString() : 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Scheduled For</td>
+                        <td className="py-2 px-4">{(selectedScene as any).scheduledFor ? new Date((selectedScene as any).scheduledFor).toLocaleString() : 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Visibility</td>
+                        <td className="py-2 px-4">{(selectedScene as any).visibility || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Auto Publish</td>
+                        <td className="py-2 px-4">{(selectedScene as any).autoPublish ? 'Yes' : 'No'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Published By</td>
+                        <td className="py-2 px-4 font-mono text-xs">{(selectedScene as any).publishedBy || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Unpublished At</td>
+                        <td className="py-2 px-4">{(selectedScene as any).unpublishedAt ? new Date((selectedScene as any).unpublishedAt).toLocaleString() : 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Unpublished By</td>
+                        <td className="py-2 px-4 font-mono text-xs">{(selectedScene as any).unpublishedBy || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Comic Status</td>
+                        <td className="py-2 px-4">{(selectedScene as any).comicStatus || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Comic Published At</td>
+                        <td className="py-2 px-4">{(selectedScene as any).comicPublishedAt ? new Date((selectedScene as any).comicPublishedAt).toLocaleString() : 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Comic Published By</td>
+                        <td className="py-2 px-4 font-mono text-xs">{(selectedScene as any).comicPublishedBy || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Comic Unpublished At</td>
+                        <td className="py-2 px-4">{(selectedScene as any).comicUnpublishedAt ? new Date((selectedScene as any).comicUnpublishedAt).toLocaleString() : 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Comic Unpublished By</td>
+                        <td className="py-2 px-4 font-mono text-xs">{(selectedScene as any).comicUnpublishedBy || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Comic Generated At</td>
+                        <td className="py-2 px-4">{(selectedScene as any).comicGeneratedAt ? new Date((selectedScene as any).comicGeneratedAt).toLocaleString() : 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Comic Panel Count</td>
+                        <td className="py-2 px-4">{(selectedScene as any).comicPanelCount || 0}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Comic Version</td>
+                        <td className="py-2 px-4">{(selectedScene as any).comicVersion || 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">View Count</td>
+                        <td className="py-2 px-4">{(selectedScene as any).viewCount || 0}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Unique View Count</td>
+                        <td className="py-2 px-4">{(selectedScene as any).uniqueViewCount || 0}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Novel View Count</td>
+                        <td className="py-2 px-4">{(selectedScene as any).novelViewCount || 0}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Novel Unique View Count</td>
+                        <td className="py-2 px-4">{(selectedScene as any).novelUniqueViewCount || 0}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Comic View Count</td>
+                        <td className="py-2 px-4">{(selectedScene as any).comicViewCount || 0}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Comic Unique View Count</td>
+                        <td className="py-2 px-4">{(selectedScene as any).comicUniqueViewCount || 0}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Last Viewed At</td>
+                        <td className="py-2 px-4">{(selectedScene as any).lastViewedAt ? new Date((selectedScene as any).lastViewedAt).toLocaleString() : 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Created At</td>
+                        <td className="py-2 px-4">{(selectedScene as any).createdAt ? new Date((selectedScene as any).createdAt).toLocaleString() : 'N/A'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Updated At</td>
+                        <td className="py-2 px-4">{(selectedScene as any).updatedAt ? new Date((selectedScene as any).updatedAt).toLocaleString() : 'N/A'}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
 
       case "characters":
         return (
           <div className="space-y-6">
-            <CharactersDisplay storyData={sampleStoryData} />
+            <Card>
+              <CardHeader>
+                <CardTitle>👥 Characters - All Fields</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {story.characters && story.characters.length > 0 ? (
+                  <div className="space-y-8">
+                    {story.characters.map((character: any, index: number) => (
+                      <div key={character.id || index} className="border-b last:border-b-0 pb-6 last:pb-0">
+                        <h3 className="text-lg font-semibold mb-4 text-[rgb(var(--color-foreground))]">
+                          Character {index + 1}: {character.name}
+                        </h3>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <tbody>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800 w-1/3">ID</td>
+                                <td className="py-2 px-4 font-mono text-xs">{character.id}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Name</td>
+                                <td className="py-2 px-4">{character.name}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Story ID</td>
+                                <td className="py-2 px-4 font-mono text-xs">{character.storyId || 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Is Main</td>
+                                <td className="py-2 px-4">{character.isMain ? 'Yes' : 'No'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Content</td>
+                                <td className="py-2 px-4">
+                                  {character.content ? (
+                                    <div className="max-h-40 overflow-auto text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded">
+                                      {character.content}
+                                    </div>
+                                  ) : 'N/A'}
+                                </td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Image URL</td>
+                                <td className="py-2 px-4">
+                                  {character.imageUrl ? (
+                                    <a href={character.imageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs break-all">
+                                      {character.imageUrl}
+                                    </a>
+                                  ) : 'N/A'}
+                                </td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Image Variants</td>
+                                <td className="py-2 px-4">
+                                  {character.imageVariants ? (
+                                    <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
+                                      {JSON.stringify(character.imageVariants, null, 2)}
+                                    </pre>
+                                  ) : 'N/A'}
+                                </td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Role</td>
+                                <td className="py-2 px-4">{character.role || 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Archetype</td>
+                                <td className="py-2 px-4">{character.archetype || 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Summary</td>
+                                <td className="py-2 px-4">{character.summary || 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Storyline</td>
+                                <td className="py-2 px-4">{character.storyline || 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Personality</td>
+                                <td className="py-2 px-4">
+                                  {character.personality ? (
+                                    <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
+                                      {JSON.stringify(character.personality, null, 2)}
+                                    </pre>
+                                  ) : 'N/A'}
+                                </td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Backstory</td>
+                                <td className="py-2 px-4">
+                                  {character.backstory ? (
+                                    <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
+                                      {JSON.stringify(character.backstory, null, 2)}
+                                    </pre>
+                                  ) : 'N/A'}
+                                </td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Motivations</td>
+                                <td className="py-2 px-4">
+                                  {character.motivations ? (
+                                    <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
+                                      {JSON.stringify(character.motivations, null, 2)}
+                                    </pre>
+                                  ) : 'N/A'}
+                                </td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Voice</td>
+                                <td className="py-2 px-4">
+                                  {character.voice ? (
+                                    <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
+                                      {JSON.stringify(character.voice, null, 2)}
+                                    </pre>
+                                  ) : 'N/A'}
+                                </td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Physical Description</td>
+                                <td className="py-2 px-4">
+                                  {character.physicalDescription ? (
+                                    <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
+                                      {JSON.stringify(character.physicalDescription, null, 2)}
+                                    </pre>
+                                  ) : 'N/A'}
+                                </td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Visual Reference ID</td>
+                                <td className="py-2 px-4 font-mono text-xs">{character.visualReferenceId || 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Core Trait</td>
+                                <td className="py-2 px-4">{character.coreTrait || 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Internal Flaw</td>
+                                <td className="py-2 px-4">{character.internalFlaw || 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">External Goal</td>
+                                <td className="py-2 px-4">{character.externalGoal || 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Relationships</td>
+                                <td className="py-2 px-4">
+                                  {character.relationships ? (
+                                    <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-60">
+                                      {JSON.stringify(character.relationships, null, 2)}
+                                    </pre>
+                                  ) : 'N/A'}
+                                </td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Voice Style</td>
+                                <td className="py-2 px-4">
+                                  {character.voiceStyle ? (
+                                    <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
+                                      {JSON.stringify(character.voiceStyle, null, 2)}
+                                    </pre>
+                                  ) : 'N/A'}
+                                </td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Visual Style</td>
+                                <td className="py-2 px-4">{character.visualStyle || 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Created At</td>
+                                <td className="py-2 px-4">{character.createdAt ? new Date(character.createdAt).toLocaleString() : 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Updated At</td>
+                                <td className="py-2 px-4">{character.updatedAt ? new Date(character.updatedAt).toLocaleString() : 'N/A'}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    No characters found
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         );
 
       case "settings":
         return (
           <div className="space-y-6">
-            <SettingsDisplay storyData={sampleStoryData} />
+            <Card>
+              <CardHeader>
+                <CardTitle>🗺️ Settings - All Fields</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {story.settings && story.settings.length > 0 ? (
+                  <div className="space-y-8">
+                    {story.settings.map((setting: any, index: number) => (
+                      <div key={setting.id || index} className="border-b last:border-b-0 pb-6 last:pb-0">
+                        <h3 className="text-lg font-semibold mb-4 text-[rgb(var(--color-foreground))]">
+                          Setting {index + 1}: {setting.name}
+                        </h3>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <tbody>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800 w-1/3">ID</td>
+                                <td className="py-2 px-4 font-mono text-xs">{setting.id}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Name</td>
+                                <td className="py-2 px-4">{setting.name}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Story ID</td>
+                                <td className="py-2 px-4 font-mono text-xs">{setting.storyId || 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Description</td>
+                                <td className="py-2 px-4">{setting.description || 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Mood</td>
+                                <td className="py-2 px-4">{setting.mood || 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Sensory</td>
+                                <td className="py-2 px-4">
+                                  {setting.sensory ? (
+                                    <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
+                                      {JSON.stringify(setting.sensory, null, 2)}
+                                    </pre>
+                                  ) : 'N/A'}
+                                </td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Visual Style</td>
+                                <td className="py-2 px-4">{setting.visualStyle || 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Visual References</td>
+                                <td className="py-2 px-4">
+                                  {setting.visualReferences ? (
+                                    <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto">
+                                      {JSON.stringify(setting.visualReferences, null, 2)}
+                                    </pre>
+                                  ) : 'N/A'}
+                                </td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Color Palette</td>
+                                <td className="py-2 px-4">
+                                  {setting.colorPalette ? (
+                                    <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto">
+                                      {JSON.stringify(setting.colorPalette, null, 2)}
+                                    </pre>
+                                  ) : 'N/A'}
+                                </td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Architectural Style</td>
+                                <td className="py-2 px-4">{setting.architecturalStyle || 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Image URL</td>
+                                <td className="py-2 px-4">
+                                  {setting.imageUrl ? (
+                                    <a href={setting.imageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs break-all">
+                                      {setting.imageUrl}
+                                    </a>
+                                  ) : 'N/A'}
+                                </td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Image Variants</td>
+                                <td className="py-2 px-4">
+                                  {setting.imageVariants ? (
+                                    <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
+                                      {JSON.stringify(setting.imageVariants, null, 2)}
+                                    </pre>
+                                  ) : 'N/A'}
+                                </td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Adversity Elements</td>
+                                <td className="py-2 px-4">
+                                  {setting.adversityElements ? (
+                                    <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-60">
+                                      {JSON.stringify(setting.adversityElements, null, 2)}
+                                    </pre>
+                                  ) : 'N/A'}
+                                </td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Symbolic Meaning</td>
+                                <td className="py-2 px-4">{setting.symbolicMeaning || 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Cycle Amplification</td>
+                                <td className="py-2 px-4">
+                                  {setting.cycleAmplification ? (
+                                    <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-60">
+                                      {JSON.stringify(setting.cycleAmplification, null, 2)}
+                                    </pre>
+                                  ) : 'N/A'}
+                                </td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Emotional Resonance</td>
+                                <td className="py-2 px-4">{setting.emotionalResonance || 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Created At</td>
+                                <td className="py-2 px-4">{setting.createdAt ? new Date(setting.createdAt).toLocaleString() : 'N/A'}</td>
+                              </tr>
+                              <tr className="border-b">
+                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Updated At</td>
+                                <td className="py-2 px-4">{setting.updatedAt ? new Date(setting.updatedAt).toLocaleString() : 'N/A'}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    No settings found
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         );
 
@@ -1391,9 +2152,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   };
 
   return (
-    <div className="min-h-screen bg-[rgb(var(--background))]">
+    <div className="min-h-screen bg-[rgb(var(--color-background))]">
       {/* Fixed Header */}
-      <div className="sticky top-0 z-50 bg-[rgb(var(--background)/95%)] backdrop-blur-[var(--blur)] border-b border-[rgb(var(--border))]">
+      <div className="sticky top-0 z-50 bg-[rgb(var(--color-background)/95%)] backdrop-blur-[var(--blur)] border-b border-[rgb(var(--color-border))]">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 md:gap-4">
@@ -1401,15 +2162,15 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 variant="ghost"
                 size="sm"
                 onClick={() => router.push('/studio')}
-                className="flex items-center gap-2 text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))]"
+                className="flex items-center gap-2 text-[rgb(var(--color-muted-foreground))] hover:text-[rgb(var(--color-foreground))]"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
                 <span className="hidden sm:inline">Back to Stories</span>
               </Button>
-              <div className="w-px h-6 bg-[rgb(var(--border))] hidden sm:block"></div>
-              <h1 className="text-lg md:text-xl font-semibold text-[rgb(var(--foreground))] truncate font-[var(--font-heading)]">
+              <div className="w-px h-6 bg-[rgb(var(--color-border))] hidden sm:block"></div>
+              <h1 className="text-lg md:text-xl font-semibold text-[rgb(var(--color-foreground))] truncate font-[var(--font-heading)]">
                 {currentSelection.level === "story" ? "📖" :
                  currentSelection.level === "part" ? "📚" :
                  currentSelection.level === "chapter" ? "📝" :
@@ -1420,8 +2181,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               
               {/* Cache Status Indicators */}
               {(isValidatingCurrentStory || isValidatingStory) && (
-                <div className="flex items-center gap-2 text-xs text-[rgb(var(--primary))] opacity-60">
-                  <div className="w-3 h-3 border-2 border-[rgb(var(--primary))] border-t-transparent rounded-full animate-spin"></div>
+                <div className="flex items-center gap-2 text-xs text-[rgb(var(--color-primary))] opacity-60">
+                  <div className="w-3 h-3 border-2 border-[rgb(var(--color-primary))] border-t-transparent rounded-full animate-spin"></div>
                   <span className="hidden md:inline">Syncing...</span>
                 </div>
               )}
@@ -1432,7 +2193,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                   size="sm" 
                   onClick={handleVisibilityToggle} 
                   disabled={isLoading}
-                  className={story.status === 'published' ? 'bg-[rgb(var(--primary))] hover:bg-[rgb(var(--primary)/90%)] text-[rgb(var(--primary-foreground))]' : 'bg-[rgb(var(--muted))] hover:bg-[rgb(var(--muted)/80%)] text-[rgb(var(--muted-foreground))]'}
+                  className={story.status === 'published' ? 'bg-[rgb(var(--color-primary))] hover:bg-[rgb(var(--color-primary)/90%)] text-[rgb(var(--color-primary-foreground))]' : 'bg-[rgb(var(--color-muted))] hover:bg-[rgb(var(--color-muted)/80%)] text-[rgb(var(--color-muted-foreground))]'}
                   title={
                     story.status === 'published'
                       ? 'Story is public - visible in community hub. Click to make private.'
@@ -1441,7 +2202,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 >
                   {isLoading ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-[rgb(var(--primary-foreground))] border-t-transparent rounded-full animate-spin mr-1"></div>
+                      <div className="w-4 h-4 border-2 border-[rgb(var(--color-primary-foreground))] border-t-transparent rounded-full animate-spin mr-1"></div>
                       <span className="hidden sm:inline">Updating...</span>
                     </>
                   ) : (
@@ -1485,8 +2246,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                   // If chapter is marked as published but has no content, force it to draft status
                   if (currentChapter && currentChapterStatus === 'published') {
                     const hasScenes = currentChapter.scenes && currentChapter.scenes.length > 0;
-                    const hasContent = (currentChapter as any).purpose || (currentChapter as any).hook || (currentChapter as any).characterFocus || (currentChapter.wordCount && currentChapter.wordCount > 0);
-                    const scenesWithContent = hasScenes && currentChapter.scenes ? currentChapter.scenes.filter((scene: any) => scene.wordCount > 0) : [];
+                    const scenesWithContent = currentChapter.scenes?.filter(s => s.content && s.content.trim() !== '') || [];
+                    const hasContent = scenesWithContent.length > 0;
 
                     if (!hasContent && scenesWithContent.length === 0) {
                       currentChapterStatus = 'draft';
@@ -1499,7 +2260,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                       size="sm" 
                       onClick={handlePublishToggle} 
                       disabled={isLoading}
-                      className={`${currentChapterStatus === 'published' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-[rgb(var(--primary))] hover:bg-[rgb(var(--primary)/90%)] text-[rgb(var(--primary-foreground))]'} rounded-[var(--radius)]`}
+                      className={`${currentChapterStatus === 'published' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-[rgb(var(--color-primary))] hover:bg-[rgb(var(--color-primary)/90%)] text-[rgb(var(--color-primary-foreground))]'} rounded-[var(--radius)]`}
                       title={
                         currentChapterStatus === 'published' 
                           ? 'Chapter is published - click to unpublish' 
@@ -1526,24 +2287,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       </div>
 
       <div className="w-full px-4 py-6">
-        <div className={`grid ${sidebarCollapsed ? 'grid-cols-12' : 'grid-cols-12'} gap-6 min-h-[calc(100vh-200px)]`}>
-          {/* Left Sidebar - Story Structure Navigation */}
-          {!sidebarCollapsed && (
-            <div className="col-span-12 lg:col-span-3 space-y-6">
-              <StoryStructureSidebar
-                story={story}
-                currentSelection={currentSelection}
-                onSidebarCollapse={setSidebarCollapsed}
-              onSelectionChange={handleSelectionChange}
-              validatingStoryId={
-                isValidatingCurrentStory ? story.id : null
-              }
-            />
-            </div>
-          )}
-
-          {/* Collapsed sidebar trigger */}
-          {sidebarCollapsed && (
+        <div className="grid grid-cols-12 gap-6 h-[calc(100vh-200px)]">
+          {/* Left Sidebar - Story Structure Navigation (Tree View) */}
+          <div className="col-span-3 h-full">
             <StoryStructureSidebar
               story={story}
               currentSelection={currentSelection}
@@ -1553,157 +2299,27 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 isValidatingCurrentStory ? story.id : null
               }
             />
-          )}
-          
-          {/* Main Writing Area - 50% width */}
-          <div className={`col-span-12 ${sidebarCollapsed ? 'lg:col-span-9' : 'lg:col-span-6'}`}>
-            {renderEditor()}
           </div>
 
-          {/* Right Sidebar */}
-          <div className="col-span-12 lg:col-span-3 space-y-6">
-            {/* Removed SceneSidebar - Scene content now handled by SceneDisplay in main area */}
+          {/* Middle Panel - Table Data Display */}
+          <div className="col-span-6 h-full">
+            <div className="h-full overflow-y-auto">
+              {renderEditor()}
+            </div>
+          </div>
 
-            {/* Delete Story Button - Show for story level */}
-            {currentSelection.level === "story" && (
-              <Card className="border-red-200 dark:border-red-800">
-                <CardHeader>
-                  <CardTitle className="text-red-600 dark:text-red-400">⚠️ Danger Zone</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-sm text-[rgb(var(--muted-foreground))]">
-                    Permanently delete this story and all associated content.
-                  </p>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="w-full"
-                    onClick={async () => {
-                      if (confirm(`Are you sure you want to delete "${story.title}"? This action cannot be undone and will delete:\n\n• Story and all metadata\n• All parts, chapters, and scenes\n• All characters and settings\n• All images from storage\n\nType DELETE to confirm.`)) {
-                        const userConfirmation = prompt('Type DELETE to confirm deletion:');
-                        if (userConfirmation === 'DELETE') {
-                          setIsLoading(true);
-                          try {
-                            const response = await fetch(`/studio/api/stories/${story.id}`, {
-                              method: 'DELETE',
-                            });
-
-                            if (!response.ok) {
-                              const error = await response.json();
-                              throw new Error(error.error || 'Failed to delete story');
-                            }
-
-                            toast.success('Story deleted successfully', {
-                              duration: 3000,
-                              position: 'top-right',
-                            });
-
-                            // Invalidate SWR cache for stories list
-                            await mutate('/studio/api/stories');
-
-                            // Clear localStorage cache for stories
-                            if (typeof window !== 'undefined') {
-                              const storiesCacheKey = 'swr-cache-/api/stories';
-                              localStorage.removeItem(storiesCacheKey);
-                              localStorage.removeItem(`${storiesCacheKey}-timestamp`);
-                              localStorage.removeItem(`${storiesCacheKey}-version`);
-                            }
-
-                            // Clear cache and redirect to stories page
-                            // Use replace to avoid keeping deleted story in browser history
-                            router.replace('/stories');
-                            router.refresh();
-                          } catch (error) {
-                            console.error('Delete failed:', error);
-                            toast.error(error instanceof Error ? error.message : 'Failed to delete story', {
-                              duration: 5000,
-                              position: 'top-right',
-                            });
-                          } finally {
-                            setIsLoading(false);
-                          }
-                        }
-                      }
-                    }}
-                    disabled={disabled || isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                        Deleting...
-                      </>
-                    ) : (
-                      <>🗑️ Delete Story</>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Story Metadata Editor - Show for story level */}
-            {currentSelection.level === "story" && (
-              <StoryMetadataEditor
-                storyId={story.id}
-                currentGenre={story.genre}
-                currentTitle={story.title}
-                onUpdate={() => {
-                  // Refresh the page to show updated data
-                  router.refresh();
-                }}
-                disabled={disabled}
-              />
-            )}
-
-            {/* Story Prompt Writer - Show for story level */}
-            {currentSelection.level === "story" && (
-              <StoryPromptWriter
-                storyJson={convertStoryDataToJSON(storyPreviewData || sampleStoryData)}
-                storyId={story.id}
-                onStoryUpdate={handleStoryJSONUpdate}
-                onPreviewUpdate={handleStoryJSONPreviewUpdate}
-                disabled={disabled}
-              />
-            )}
-
-            {/* Part HNS Data Display - Show for part level */}
-            {currentSelection.level === "part" && currentPartData && (
-              <BeautifulJSONDisplay
-                title="Part HNS Data"
-                data={partPreviewData || currentPartData}
-                icon="📚"
-                isCollapsed={false}
-                onToggleCollapse={() => {}}
-                disabled={disabled}
-              />
-            )}
-
-            {/* Chapter HNS Data Display - Show for chapter level */}
-            {currentSelection.level === "chapter" && currentChapterData && (
-              <BeautifulJSONDisplay
-                title="Chapter HNS Data"
-                data={chapterPreviewData || currentChapterData}
-                icon="📝"
-                isCollapsed={false}
-                onToggleCollapse={() => {}}
-                disabled={disabled}
-              />
-            )}
-
-            {/* Scene HNS Data Display - Show for scene level */}
-            {currentSelection.level === "scene" && currentSceneData && (
-              <BeautifulJSONDisplay
-                title="Scene HNS Data"
-                data={scenePreviewData || currentSceneData}
-                icon="🎬"
-                isCollapsed={false}
-                onToggleCollapse={() => {}}
-                disabled={disabled}
-              />
-            )}
-
-
-            {/* Writing Guidelines - Show for scene editing */}
-            <WritingGuidelines currentLevel={currentSelection.level === 'characters' ? 'story' : currentSelection.level as "story" | "part" | "chapter" | "scene"} />
+          {/* Right Sidebar - Studio Agent Chat Only */}
+          <div className="col-span-3 h-full">
+            <StudioAgentChat
+              storyId={story.id}
+              storyContext={{
+                storyTitle: story.title,
+                currentSelection: currentSelection,
+                genre: story.genre,
+                status: story.status,
+              }}
+              className="h-full"
+            />
           </div>
         </div>
       </div>

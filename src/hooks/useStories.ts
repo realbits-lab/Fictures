@@ -17,7 +17,6 @@ export interface Story {
   readers: number;
   rating: number;
   status: "draft" | "publishing" | "completed" | "published";
-  wordCount: number;
   firstChapterId: string | null;
   hnsData: any;
 }

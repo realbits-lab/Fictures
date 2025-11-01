@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { getCommunityStories } from '@/lib/db/cached-queries';
+import { getCommunityStoriesOptimized } from '@/lib/db/cached-queries';
 import { createHash } from 'crypto';
 
 export async function GET(request: NextRequest) {
@@ -9,11 +9,11 @@ export async function GET(request: NextRequest) {
   console.log(`[${reqId}] 🌐 GET /community/api/stories - Request started at ${new Date().toISOString()}`);
 
   try {
-    // Fetch community stories with Redis caching
+    // Fetch community stories with Redis caching (OPTIMIZED)
     const cacheStart = performance.now();
-    console.log(`[${reqId}] 🔍 Fetching community stories (with Redis cache)...`);
+    console.log(`[${reqId}] 🔍 Fetching community stories (OPTIMIZED with Redis cache)...`);
 
-    const storiesWithStats = await getCommunityStories();
+    const storiesWithStats = await getCommunityStoriesOptimized();
 
     const cacheDuration = Math.round(performance.now() - cacheStart);
     console.log(`[${reqId}] ✅ Stories fetched in ${cacheDuration}ms:`, {
@@ -92,8 +92,8 @@ export async function GET(request: NextRequest) {
     const headers = {
       'Content-Type': 'application/json',
       'ETag': etag,
-      // Optimized cache for community (aligned with Redis TTL)
-      'Cache-Control': 'public, max-age=300, stale-while-revalidate=600', // 5min cache, 10min stale
+      // Optimized cache for community (aligned with Redis TTL - increased to 10min)
+      'Cache-Control': 'public, max-age=600, stale-while-revalidate=1200', // 10min cache, 20min stale
       'X-Content-Type': 'community-stories',
       'X-Last-Modified': response.metadata.lastUpdated || new Date().toISOString(),
       'X-Response-Time': `${Math.round(performance.now() - requestStart)}ms`,

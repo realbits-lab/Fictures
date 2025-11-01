@@ -9,8 +9,6 @@ export const StoryValidationSchema = z.object({
   premise: z.string().optional(),
   dramaticQuestion: z.string().optional(),
   theme: z.string().optional(),
-  targetWordCount: z.number().min(1000).max(500000).optional(),
-  currentWordCount: z.number().min(0).optional(),
   status: z.enum([
     'draft', 'phase1_in_progress', 'phase1_complete', 'phase2_complete',
     'phase3_complete', 'phase4_complete', 'phase5_6_complete',
@@ -31,8 +29,6 @@ export const PartValidationSchema = z.object({
   structuralRole: z.string().optional(),
   summary: z.string().optional(),
   keyBeats: z.array(z.string()).optional(),
-  targetWordCount: z.number().min(0).optional(),
-  currentWordCount: z.number().min(0).optional(),
   chapterIds: z.array(z.string()).optional(),
 });
 
@@ -49,7 +45,6 @@ export const ChapterValidationSchema = z.object({
   pacingGoal: z.string().optional(),
   actionDialogueRatio: z.string().optional(),
   wordCount: z.number().min(0).optional(),
-  targetWordCount: z.number().min(0).optional(),
   sceneIds: z.array(z.string()).optional(),
   chapterHook: z.object({
     type: z.string(),

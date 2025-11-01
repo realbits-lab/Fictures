@@ -1,3 +1,7 @@
+---
+title: "Real-Time Story Updates - Implementation Summary"
+---
+
 # Real-Time Story Updates - Implementation Summary
 
 ## 🎉 Implementation Complete!
@@ -62,7 +66,7 @@ Successfully implemented **Redis Pub/Sub + Server-Sent Events (SSE)** for real-t
 - **Server Load**: Constant polling overhead
 
 ### After (Redis SSE)
-- **Update Latency**: <100ms ⚡
+- **Update Latency**: `<100ms` ⚡
 - **Requests**: Event-driven only
 - **Bandwidth**: ~100 bytes per event
 - **Server Load**: 95% reduction in unnecessary requests
@@ -394,7 +398,7 @@ useCommunityEvents({
 **Implementation Time**: ~2 hours
 
 **Performance Gains**:
-- ⚡ 3000x faster updates (5 min → <100ms)
+- ⚡ 3000x faster updates (5 min → `<100ms`)
 - 📉 99% less bandwidth
 - 🔋 Better mobile battery life
 - 🎯 100% delivery rate (vs random with polling)

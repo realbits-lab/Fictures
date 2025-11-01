@@ -187,7 +187,7 @@ export function PublishClient() {
           onClick={() => {
             refreshStatus();
           }} 
-          className="px-4 py-2 bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] rounded-lg hover:bg-[rgb(var(--primary)/90%)] transition-colors disabled:opacity-50"
+          className="px-4 py-2 bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] rounded-lg hover:bg-[rgb(var(--color-primary)/90%)] transition-colors disabled:opacity-50"
         >
           Try Again
         </button>
@@ -304,13 +304,11 @@ export function PublishClient() {
               <div className="flex items-center gap-2">
                 <span className="text-sm">Word Count:</span>
                 <Badge variant="success" size="sm">
-                  {publishStatus?.readyToPublish?.wordCount?.toLocaleString() || '4,247'} ✅
                 </Badge>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm">Target:</span>
                 <Badge variant="success" size="sm">
-                  {publishStatus?.readyToPublish?.targetWordCount?.toLocaleString() || '4,000'} ✅
                 </Badge>
               </div>
               <div className="flex items-center gap-2">

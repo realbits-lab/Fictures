@@ -1,3 +1,7 @@
+---
+title: "Vercel Analytics Setup"
+---
+
 # Vercel Analytics Setup
 
 ## Installation Complete ✅

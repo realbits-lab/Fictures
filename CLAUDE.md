@@ -32,14 +32,13 @@ This file provides guidance to Claude Code when working with this repository.
   - E2E tests: `tests/*.spec.ts` (Playwright tests)
   - Unit tests: `__tests__/*.test.ts` or `__tests__/*.test.tsx` (Jest tests)
 - **Script Files**: Always write script files in `scripts/` directory
-  - Example: `scripts/capture-auth-manual.mjs` for authentication capture
-  - Example: `scripts/test-auto-login.mjs` for testing automated login
-  - Main script: `scripts/generate-complete-story.mjs` for full story generation
-- **Claude Code Skills**: Project-specific skills in `.claude/skills/{skill-name}/` directories
-  - Each skill has `SKILL.md` with YAML frontmatter
-  - `story-generator/SKILL.md`: Complete story generation with HNS methodology
-  - `story-remover/SKILL.md`: Complete story removal with database and Blob cleanup
-  - Skills are model-invoked (Claude activates automatically based on request)
+  - See complete script documentation: [scripts/CLAUDE.md](scripts/CLAUDE.md)
+  - Story generation, management, testing, and utility scripts
+- **Documentation Files**: All documentation files (`.md` or `.mdx`) MUST include frontmatter
+  - **MANDATORY**: Frontmatter with at least `title` field at the top of every documentation file
+  - Format: `---\ntitle: Document Title\n---` before content
+  - Optional: Use `.mdx` for enhanced documentation with JSX components and interactive examples
+  - Both `.md` and `.mdx` formats are acceptable, but frontmatter is required
 
 ## Database Management
 
@@ -49,10 +48,11 @@ This file provides guidance to Claude Code when working with this repository.
 - DO NOT use Supabase MCP tools - this project uses Neon PostgreSQL
 
 **Database Naming Convention:**
-- **Column names use camelCase** (e.g., `createdAt`, `updatedAt`, `emailVerified`)
-- **NOT snake_case** (e.g., ~~`created_at`~~, ~~`updated_at`~~)
-- In raw SQL queries, quote camelCase columns: `"createdAt"`, `"updatedAt"`
-- This is Drizzle ORM's default convention matching JavaScript/TypeScript naming
+- **Table and column names use snake_case** (e.g., `created_at`, `updated_at`, `email_verified`)
+- **NOT camelCase** (e.g., ~~`createdAt`~~, ~~`updatedAt`~~)
+- In raw SQL queries, use snake_case without quotes: `created_at`, `updated_at`
+- Drizzle ORM schema definitions use camelCase in TypeScript, but map to snake_case in PostgreSQL
+- Example: TypeScript `createdAt` → PostgreSQL `created_at`
 
 **Database Commands:**
 - **Generate migrations**: `pnpm db:generate`
@@ -68,18 +68,27 @@ This file provides guidance to Claude Code when working with this repository.
 
 **End-to-End Testing:**
 - **Framework**: Playwright for e2e tests
-- **Command**: `dotenv --file .env.local run npx playwright test --headless`
-- **Background Testing**: `dotenv --file .env.local run npx playwright test --headless > logs/playwright.log 2>&1 &`
-- **Authentication**: Uses `.auth/user.json` for Google OAuth testing
+- **Command**: `dotenv --file .env.local run npx playwright test`
+- **Background Testing**: `dotenv --file .env.local run npx playwright test > logs/playwright.log 2>&1 &`
+- **Authentication**: Uses `.auth/user.json` for authentication testing (supports both Google OAuth and email/password)
 - **Test Setup**: Run setup project first for authentication state
-- **Headless Mode**: Always use `--headless` option for automated testing
+- **Display Mode**: Uses headed mode by default for better debugging visibility
 
-**Google OAuth Authentication Setup for Playwright:**
+**Authentication Setup for Playwright:**
+
+**Option 1: Google OAuth**
 1. **Initial Capture**: Run `dotenv --file .env.local run node scripts/capture-auth-manual.mjs`
    - Opens browser for manual Google login with manager@fictures.xyz account
    - Automatically captures authentication state to `.auth/user.json`
    - Includes NextAuth.js session cookies and Google OAuth tokens
    - **Testing Account**: Always use manager@fictures.xyz from `.auth/user.json` for web API and UI testing
+
+**Option 2: Email/Password Authentication**
+1. **Initial Capture**: Run authentication capture script for email/password
+   - Opens browser for manual email/password login
+   - Automatically captures authentication state to `.auth/user.json`
+   - Includes NextAuth.js session cookies and credentials
+   - Stored alongside Google OAuth credentials in `.auth/user.json`
 
 2. **Testing Automatic Login**: Run `dotenv --file .env.local run node scripts/test-auto-login.mjs`
    - Verifies stored credentials work for automatic authentication
@@ -123,10 +132,11 @@ This file provides guidance to Claude Code when working with this repository.
 ### Core Technologies
 - **Framework**: Next.js 15 with App Router
 - **Database**: PostgreSQL (Neon) with Drizzle ORM
-- **Authentication**: NextAuth.js v5 with Google OAuth
+- **Authentication**: NextAuth.js v5 with Google OAuth and email/password
 - **AI Integration**:
-  - OpenAI GPT-4o-mini via Vercel AI Gateway (text generation)
-  - OpenAI DALL-E 3 (image generation - 16:9, 1792x1024)
+  - Google Gemini 2.5 Flash & Flash Lite via Vercel AI SDK (text generation)
+  - Google Gemini 2.5 Flash (image generation - 7:4 aspect ratio, 1344×768)
+  - Vercel AI SDK Gateway for API management
 - **Storage**: Vercel Blob for generated images
 - **Styling**: Tailwind CSS v4
 
@@ -136,15 +146,21 @@ This file provides guidance to Claude Code when working with this repository.
 src/
 ├── app/                    # Next.js App Router
 │   ├── auth/              # Authentication routes
-│   ├── stories/           # Story management
-│   ├── write/             # Writing interface
-│   ├── community/         # Story sharing
-│   ├── api/               # API endpoints
-│   └── settings/          # User settings
+│   ├── studio/            # Story creation & management workspace
+│   │   └── api/           # Studio API endpoints (generation, scenes, chapters)
+│   ├── novels/            # Novel reading interface
+│   ├── comics/            # Comic reading interface
+│   ├── community/         # Story sharing & discussion
+│   ├── publish/           # Publishing & scheduling
+│   ├── analytics/         # Performance metrics
+│   ├── settings/          # User preferences
+│   └── api/               # Global API endpoints
 ├── components/            # React UI components
 ├── lib/
 │   ├── auth/             # NextAuth configuration
-│   ├── db/               # Database schema & operations
+│   ├── db/               # Database schema (Drizzle ORM)
+│   ├── novels/           # Novel generation services
+│   ├── services/         # Shared services (image, evaluation, formatting)
 │   └── hooks/            # Custom React hooks
 └── types/                # TypeScript definitions
 ```
@@ -152,21 +168,25 @@ src/
 ### Database Schema
 
 **Core Story Writing Tables:**
-- **users**: User accounts with Google OAuth
+- **users**: User accounts with Google OAuth and email/password
 - **stories**: Main story entities with metadata
 - **parts**: Optional story sections
 - **chapters**: Story chapters with content organization
 - **scenes**: Chapter breakdown for detailed writing
 - **characters**: Story character management
+- **settings**: Story-specific settings and configurations
 - **aiInteractions**: AI writing assistance tracking
 - **communityPosts**: Basic story sharing features
 
 ### Key Features
+- **Novel Generation**: Adversity-Triumph Engine for emotionally resonant storytelling
 - **Hierarchical Writing**: Stories → Parts → Chapters → Scenes
-- **Character Management**: Detailed character profiles and tracking
-- **AI Writing Assistant**: OpenAI GPT-4o-mini integration for writing help
-- **AI Image Generation**: DALL-E 3 for story illustrations (16:9, 1792x1024) with automatic optimization
-- **Image Optimization**: 18 variants per image (AVIF, WebP, JPEG × 6 sizes) for optimal performance
+- **Character Management**: Detailed character profiles with internal flaws and arcs
+- **Moral Framework**: Stories built on tested virtues and meaningful consequences
+- **AI Writing Assistant**: Gemini 2.5 Flash for complex narrative generation
+- **AI Image Generation**: Gemini 2.5 Flash for story illustrations (7:4, 1344x768) with automatic optimization
+- **Image Optimization**: 4 variants per image (AVIF, JPEG × 2 sizes) for optimal performance
+- **Scene Evaluation**: Automated quality assessment and iterative improvement
 - **Community Sharing**: Basic story publication and discovery
 - **Progress Tracking**: Word counts and writing statistics
 
@@ -180,8 +200,8 @@ GOOGLE_CLIENT_ID=***
 GOOGLE_CLIENT_SECRET=***
 
 # AI Integration
-AI_GATEWAY_API_KEY=***             # Vercel AI Gateway for OpenAI GPT-4o-mini
-OPENAI_API_KEY=***                 # OpenAI API key for DALL-E 3 image generation
+GOOGLE_GENERATIVE_AI_API_KEY=***   # Google AI for Gemini 2.5 Flash (text & image generation)
+AI_GATEWAY_API_KEY=***             # Vercel AI SDK Gateway API key for AI provider management
 
 # Database & Storage
 POSTGRES_URL=***                   # Neon PostgreSQL
@@ -193,66 +213,44 @@ REDIS_URL=***                      # Session storage
 
 1. **Setup**: `pnpm install` → Set up `.env.local` → `pnpm db:migrate`
 2. **Development**: `dotenv --file .env.local run pnpm dev` (background process)
-3. **Testing**: `dotenv --file .env.local run npx playwright test --headless`
+3. **Testing**: `dotenv --file .env.local run npx playwright test`
 4. **Building**: `pnpm build` (includes type checking)
 
-## Story Generation
+## Novel Generation
 
-**Complete Story Generation Script:**
-- **Location**: `scripts/generate-complete-story.mjs`
-- **Authentication**: Uses writer@fictures.xyz from `.auth/user.json`
-- **API Endpoints**:
-  - `POST /api/stories/generate-hns` (story generation with SSE streaming)
-  - `PUT /api/stories/{id}/visibility` (publishing)
+**Primary Generation System: Adversity-Triumph Engine**
 
-**Usage:**
-```bash
-# Default prompt (draft)
-dotenv --file .env.local run node scripts/generate-complete-story.mjs
+The platform uses the Adversity-Triumph Engine for novel generation, creating emotionally resonant stories with deep character development and moral frameworks.
 
-# Custom prompt (draft)
-dotenv --file .env.local run node scripts/generate-complete-story.mjs "Your story idea here"
+**Complete Documentation:**
+- **📖 Specification**: [docs/novels/novels-specification.mdx](docs/novels/novels-specification.mdx) - Core concepts and data model
+- **🔧 Development Guide**: [docs/novels/novels-development.md](docs/novels/novels-development.md) - API specs and system prompts
+- **🧪 Testing Guide**: [docs/novels/novels-testing.mdx](docs/novels/novels-testing.mdx) - Validation and quality metrics
+- **⚡ Optimization**: [docs/novels/novels-optimization.mdx](docs/novels/novels-optimization.mdx) - Performance tuning
+- **🗑️ Removal**: [docs/novels/novels-removal.mdx](docs/novels/novels-removal.mdx) - Deletion workflows
 
-# Custom prompt with auto-publish
-dotenv --file .env.local run node scripts/generate-complete-story.mjs --publish "Your story idea here"
+**Quick Reference:**
+- **UI**: `/studio/new` - Novel creation page
+- **API**: `/studio/api/generation/*` - Generation endpoints (SSE streaming)
+- **Model**: Gemini 2.5 Flash & Flash Lite (via Vercel AI SDK)
 
-# Background execution with logging
-dotenv --file .env.local run node scripts/generate-complete-story.mjs --publish "Story prompt" > logs/story-generation.log 2>&1 &
-```
+**Generation Pipeline:**
+9-phase system: Story Summary → Characters → Settings → Parts → Chapters → Scene Summaries → Scene Content → Scene Evaluation → Images
 
-**What It Generates:**
-- Story metadata (title, genre, premise, dramatic question, theme)
-- Parts (3-act structure)
-- Chapters (detailed chapter specifications)
-- Scenes (full scene content with automatic quality evaluation)
-  - Each scene evaluated on 5 categories (plot, character, pacing, prose, world-building)
-  - Iterative improvement until 3.0+/4.0 quality threshold (max 2 iterations)
-  - AI-powered evaluation using "Architectonics of Engagement" framework
-- Characters (with AI-generated portrait images in 16:9, 1792x1024)
-- Settings (with AI-generated environment images in 16:9, 1792x1024)
+**Output:**
+- Complete story structure with moral framework
+- Character profiles with AI-generated portraits (1344×768, 7:4)
+- Immersive settings with environment images
+- Full narrative content with 4 optimized image variants per image
+- Automatic quality evaluation and improvement
 
-**Routes:**
-- Studio (story management): `/studio`
-- Edit story: `/studio/edit/story/{storyId}`
-- Edit chapter: `/studio/edit/{chapterId}`
-- Browse novels (reading): `/novels`
-- Read novel: `/novels/{storyId}`
-- Browse comics (comic format): `/comics`
-- Read comic: `/comics/{storyId}`
-- Community view: `/community/story/{storyId}` (published stories only)
+**Key Routes:**
+- Create: `/studio/new`
+- Edit: `/studio/edit/story/{storyId}` | `/studio/edit/{chapterId}`
+- Read: `/novels/{storyId}` (novel format) | `/comics/{storyId}` (comic format)
+- Community: `/community/story/{storyId}` (published stories only)
 
-**Generation Time:** 4-20 minutes depending on story size and complexity
-- Scene evaluation adds 1-3 minutes per story
-- Each scene evaluated and improved iteratively for quality assurance
-
-**Claude Code Skill:**
-- Use the `story-generator` skill in `.claude/skills/story-generator.md`
-- Skill handles complete workflow: prompt gathering, execution, monitoring, and reporting
-- Automatically uses writer@fictures.xyz credentials
-- Supports both draft and published story generation
-- User says "create" → auto-publish
-- User says "generate" or "write" → draft only
-- Provides real-time progress updates and final summary with links
+**Generation Time:** 5-25 minutes depending on story complexity
 
 ## Story Removal
 
@@ -298,13 +296,105 @@ dotenv --file .env.local run node scripts/remove-story.mjs STORY_ID > logs/story
 - Audit logging of deletions
 - Owner verification (only story owner or admin can delete)
 
-**Claude Code Skill:**
-- Use the `story-remover` skill in `.claude/skills/story-remover.md`
-- Skill handles complete workflow: identification, confirmation, execution, and cleanup reporting
-- Automatically uses writer@fictures.xyz credentials
-- Supports single and bulk story removal
-- Always confirms before permanent deletion
-- Reports detailed cleanup summary with counts
+## Novel Generation
+
+**IMPORTANT: Documentation-First Development Process**
+
+The novel generation system uses the Adversity-Triumph Engine methodology with a strict documentation-first approach to ensure synchronization across documentation, implementation, and automation tools.
+
+### Novel Generation Change Protocol
+
+When making ANY changes to the novel generation system, ALWAYS follow this order:
+
+**1. FIRST: Update Documentation** (`docs/novels/`)
+- **Primary documentation files:**
+  - `novels-specification.md` - Core concepts, data model, theoretical foundation
+  - `novels-development.md` - API architecture, system prompts, implementation specs
+  - `novels-testing.md` - Validation methods, quality metrics, test strategies
+  - `novels-optimization.md` - Performance tuning, cost optimization
+  - `novels-removal.md` - Deletion workflows, cleanup procedures
+- **What to update:** API specifications, system prompts, data models, generation flows, examples
+- **Why first:** Documentation serves as the single source of truth and design specification
+
+**2. SECOND: Update Implementation Code**
+- **Code locations:**
+  - `src/app/api/novels/` - Novel generation API endpoints
+  - `src/lib/novels/` - Novel generation services, utilities, and business logic
+  - `drizzle/*.sql` - Database schema changes if data model updated
+- **What to update:** Implement changes according to updated documentation
+- **Validation:** Ensure code matches documented API contracts and specifications
+
+### Why This Order Matters
+
+**Documentation-First Benefits:**
+- **Single Source of Truth**: Documentation defines the intended behavior before implementation
+- **Design Review**: Changes can be reviewed and validated before coding begins
+- **Synchronization**: Ensures both layers (docs, code) stay aligned
+- **Knowledge Transfer**: New developers understand the system from authoritative documentation
+- **Version Control**: Changes are tracked with clear intent and specifications
+
+**Common Mistakes to Avoid:**
+- ❌ Changing code first, then updating docs as an afterthought → Docs become outdated
+- ❌ Skipping documentation updates entirely → System becomes unmaintainable
+
+**CRITICAL: Field Synchronization Across All Layers**
+
+When modifying data model fields for stories, parts, chapters, scenes, characters, or settings, you MUST synchronize changes across:
+
+1. **Documentation Layer**:
+   - `docs/novels/novels-specification.md` - Data model definitions and field descriptions
+   - `docs/novels/novels-development.md` - API specifications and field usage
+
+2. **Database Layer**:
+   - `src/lib/db/schema.ts` - Drizzle ORM schema definitions
+   - `drizzle/migrations/*.sql` - Database migration files
+
+3. **Code Layer**:
+   - TypeScript interfaces and types
+   - API route handlers
+   - UI components using the fields
+   - Query functions and services
+
+**Why This Matters:**
+- Prevents schema drift between documentation and implementation
+- Ensures API contracts match actual database structure
+- Maintains type safety across the entire codebase
+- Avoids runtime errors from missing or mismatched fields
+
+**Example**: If you add a new field `emotional_tone` to scenes:
+1. Update `docs/novels/novels-specification.md` - Define field purpose and data type
+2. Update `docs/novels/novels-development.md` - Document API usage
+3. Create database migration in `drizzle/migrations/`
+4. Update `src/lib/db/schema.ts` - Add field to scenes table schema
+5. Update TypeScript interfaces in components using scenes
+6. Update API routes that create/update scenes
+7. Update UI components displaying scene data
+
+### Novel Generation System Overview
+
+**Architecture:**
+- **Location**: `docs/novels/novels-development.md` - Complete specification
+- **Methodology**: Adversity-Triumph Engine (Korean Gam-dong narrative psychology)
+- **API Endpoints**: `/studio/api/generation/*` - Generation APIs for story creation
+- **Database**: Novel-specific tables in Neon PostgreSQL (see `drizzle/` migrations)
+- **AI Model**: Gemini 2.5 Flash & Flash Lite (via Google AI API)
+- **Image Generation**: Gemini 2.5 Flash (1344×768, 7:4 aspect ratio)
+- **Image Optimization**: 4 variants per image (AVIF/JPEG × mobile 1x/2x)
+
+**Generation Flow:**
+1. Story Summary → 2. Characters → 3. Settings → 4. Parts → 5. Chapters → 6. Scene Summaries → 7. Scene Content → 8. Scene Evaluation → 9. Images
+
+**Documentation Reference:**
+- 📖 **Specification**: `docs/novels/novels-specification.md` - Core concepts and data model
+- 🔧 **Development Guide**: `docs/novels/novels-development.md` - API specs and system prompts
+- 🧪 **Testing Guide**: `docs/novels/novels-testing.md` - Validation and quality metrics
+- ⚡ **Optimization**: `docs/novels/novels-optimization.md` - Performance and cost tuning
+- 🗑️ **Removal**: `docs/novels/novels-removal.md` - Deletion workflows
+
+**Related System:**
+- The existing "Story Generation" system (HNS methodology with `/api/stories/generate-hns`) is separate from the Novels system
+- Novels use Adversity-Triumph Engine, Stories use HNS (Hook-Nurture-Satisfy)
+- Both systems share image generation and optimization infrastructure
 
 ## Code Guidelines
 
@@ -313,35 +403,44 @@ dotenv --file .env.local run node scripts/remove-story.mjs STORY_ID > logs/story
 - **Environment Variables**: Always prefix commands with `dotenv --file .env.local run`
 - **Authentication**: Use NextAuth.js session management throughout
 - **Database**: All operations through Drizzle ORM - see `src/lib/db/`
+- **API Route Organization**:
+  - **Page-specific APIs**: Create API routes under the related page directory (e.g., `/studio/api/`, `/analytics/api/`)
+  - **Common APIs**: Use `/api/` directory only for global/shared API endpoints
+  - **Example**: Studio-related APIs go in `src/app/studio/api/generation/*` instead of `src/app/api/studio/generation/*`
 - **AI Integration**:
-  - Text Generation: Use OpenAI GPT-4o-mini via Vercel AI Gateway with AI_GATEWAY_API_KEY
-  - Scene Evaluation: Use OpenAI GPT-4o-mini via Vercel AI Gateway (automatic quality assessment)
-  - Scene Improvement: Use OpenAI GPT-4o-mini via Vercel AI Gateway (iterative refinement)
-  - Image Generation: Use OpenAI DALL-E 3 with OPENAI_API_KEY (16:9, 1792x1024)
-  - Image Optimization: Automatic generation of 18 variants (AVIF, WebP, JPEG in 6 sizes)
+  - **AI SDK**: Use Vercel AI SDK with AI Gateway (AI_GATEWAY_API_KEY)
+  - **Text Generation**: Gemini 2.5 Flash & Flash Lite via Vercel AI SDK
+  - **Scene Evaluation**: Automated quality assessment (part of Novel generation pipeline)
+  - **Scene Improvement**: Iterative refinement until quality threshold met
+  - **Image Generation**: Gemini 2.5 Flash via Vercel AI SDK (7:4, 1344×768)
+  - **Image Optimization**: Automatic generation of 4 variants (AVIF, JPEG × mobile 1x/2x)
 - **Image Storage**: Generated images stored in Vercel Blob with public access
 - **Error Handling**: Implement proper error boundaries and loading states
 - **Performance**: Optimize for story writing workflow and database queries
 
 ## Image Generation & Optimization
 
-**AI-Powered Story Illustrations with Automatic Optimization:**
+**Complete Image System Documentation:**
+- **📖 Architecture**: [docs/image/image-architecture.mdx](docs/image/image-architecture.mdx) - System overview
+- **🎨 Generation**: [docs/image/image-generation.mdx](docs/image/image-generation.mdx) - Image generation guide
+- **⚡ Optimization**: [docs/image/image-optimization.mdx](docs/image/image-optimization.mdx) - Optimization pipeline
+
+**Quick Reference:**
 
 ### Image Generation
-- **Service**: `src/lib/services/image-generation.ts` - Primary image generation service
-- **Optimization Service**: `src/lib/services/image-optimization.ts` - Creates 18 optimized variants
-- **API Endpoint**: POST `/api/images/generate` - Generate story illustrations
-- **Model**: OpenAI DALL-E 3
-- **Original Format**: 1792x1024 pixels (16:9 widescreen), PNG
+- **Service**: `src/lib/novels/` - Novel generation handles image creation
+- **API Endpoint**: POST `/studio/api/generation/images` - Generate story illustrations
+- **Model**: Gemini 2.5 Flash via Vercel AI SDK
+- **Original Format**: 1344×768 pixels (7:4 aspect ratio), PNG
 - **Quality**: Standard quality for all image types
 - **Storage**: Vercel Blob (automatic upload)
 
 ### Automatic Image Optimization
-Every generated image automatically creates **18 optimized variants**:
-- **Formats**: AVIF (best compression), WebP (fallback), JPEG (universal fallback)
-- **Sizes**: Mobile (640×360, 1280×720), Tablet (1024×576, 2048×1152), Desktop (1440×810, 2880×1620)
-- **Total**: 3 formats × 6 sizes = 18 variants per image
-- **Performance**: 87% faster loading on mobile, 50% smaller file sizes with AVIF
+Every generated image automatically creates **4 optimized variants**:
+- **Formats**: AVIF (best compression), JPEG (universal fallback)
+- **Sizes**: Mobile 1x (672×384), Mobile 2x (1344×768 - uses original)
+- **Total**: 2 formats × 2 sizes = 4 variants per image
+- **Performance**: Optimized for mobile devices with responsive image loading
 
 ### Database Storage
 All images include both `imageUrl` (original) and `imageVariants` (optimized set):
@@ -385,204 +484,45 @@ dotenv --file .env.local run node scripts/test-imagen-generation.mjs
 
 ## Scene Quality Evaluation and Validation
 
-**Automated Scene Evaluation, Formatting, and Image Validation:**
+**Complete Scene Quality Documentation:**
+- **📖 Specification**: [docs/novels/novels-specification.mdx](docs/novels/novels-specification.mdx) - Scene quality framework
+- **🔧 Development**: [docs/novels/novels-development.md](docs/novels/novels-development.md) - Evaluation API & implementation
+- **🧪 Testing**: [docs/novels/novels-testing.mdx](docs/novels/novels-testing.mdx) - Quality metrics & validation
 
-Every scene generated through the story generation pipeline is automatically:
+**Automated Scene Pipeline:**
+
+Every scene generated is automatically:
 1. **Formatted** - Rule-based text formatting for optimal mobile readability
 2. **Validated** - Image existence and accessibility checking with auto-regeneration
 3. **Evaluated** - Quality assessment using "Architectonics of Engagement" framework
 4. **Improved** - Iterative refinement until professional quality standards are met
 
-### Automated Formatting Rules
+**Key Features:**
 
-**Text Formatting** (`src/lib/services/scene-formatter.ts`):
+### Formatting
+- **Max 3 sentences per paragraph** for mobile readability
+- **Blank line separation** between description and dialogue
+- Service: `src/lib/services/scene-formatter.ts`
+- Testing: `dotenv --file .env.local run pnpm test -- __tests__/scene-formatter.test.ts`
 
-Every scene undergoes deterministic rule-based formatting BEFORE evaluation:
+### Image Validation
+- Validates image URL existence and accessibility
+- Auto-regenerates missing images using Gemini 2.5 Flash
+- Creates 4 optimized variants automatically
+- Service: `src/lib/services/image-validator.ts`
 
-1. **Description Paragraph Length**: Max 3 sentences per description paragraph
-   - Long paragraphs are automatically split for mobile readability
-   - Example: 5-sentence paragraph → split into 2 paragraphs (3 + 2)
+### Quality Evaluation
+- **Framework**: "Architectonics of Engagement"
+- **Scoring**: 1-4 scale across 5 categories (Plot, Character, Pacing, Prose, World-Building)
+- **Passing Score**: 3.0/4.0 ("Effective" level)
+- **Max Iterations**: 2 improvement cycles
+- **API**: POST `/studio/api/evaluate/scene`
+- Service: `src/lib/services/scene-evaluation-loop.ts`
 
-2. **Spacing Between Description and Dialogue**: Blank line (2 newlines) required
-   - Ensures visual separation between narrative and dialogue
-   - Automatically inserted if missing
-
-**Why Automated?** AI models struggle to consistently follow exact formatting rules. Post-processing ensures 100% compliance.
-
-**Performance**: ~10-50ms per scene, negligible cost
-
-**Testing**:
-```bash
-dotenv --file .env.local run pnpm test -- __tests__/scene-formatter.test.ts
-```
-
-### Automated Image Validation
-
-**Image Validation** (`src/lib/services/image-validator.ts`):
-
-Every scene's image is validated during the first evaluation iteration:
-
-1. **Image URL Exists**: Scene must have non-null `imageUrl`
-2. **Image URL Accessible**: HEAD request verifies image returns HTTP 200
-3. **Optimized Variants Exist**: 18 variants (AVIF, WebP, JPEG × 6 sizes)
-
-**Auto-Regeneration**: If any check fails and `regenerateIfMissing: true`:
-- Extract visual description from scene content (first 2-3 paragraphs)
-- Build cinematic image prompt with scene title, setting, characters
-- Generate new image via DALL-E 3 (1792×1024, 16:9)
-- Create 18 optimized variants automatically
-- Update database with new URLs
-
-**Performance**:
-- Validation: ~50-200ms per scene (network request)
-- Regeneration: ~2-4 seconds per scene (when needed)
-- Expected regeneration rate: 1-5% of scenes
-
-**Testing**:
-```bash
-dotenv --file .env.local run pnpm test -- __tests__/image-validator.test.ts
-```
-
-### Evaluation Framework
-
-**Based on**: "Architectonics of Engagement" - a narrative quality assessment framework
-
-**Evaluation Service**: `src/lib/services/scene-evaluation-loop.ts`
-
-**API Endpoint**: POST `/api/evaluation/scene` - Evaluate individual scenes
-
-### Quality Metrics
-
-Each scene is scored on a **1-4 scale** across 5 categories:
-
-1. **Plot** (Goal Clarity, Conflict Engagement, Stakes Progression)
-   - Scene has clear dramatic goal
-   - Conflict is compelling and escalates
-   - Stakes are evident and meaningful
-
-2. **Character** (Voice Distinctiveness, Motivation Clarity, Emotional Authenticity)
-   - Characters have unique voices
-   - Motivations drive action
-   - Emotions feel genuine and earned
-
-3. **Pacing** (Tension Modulation, Scene Rhythm, Narrative Momentum)
-   - Tension rises and falls strategically
-   - Scene moves at engaging pace
-   - Momentum propels story forward
-
-4. **Prose** (Sentence Variety, Word Choice Precision, Sensory Engagement)
-   - Sentences vary in length and structure
-   - Words are precise and evocative
-   - Multiple senses engaged
-
-5. **World-Building** (Setting Integration, Detail Balance, Immersion)
-   - Setting supports and enhances action
-   - Details enrich without overwhelming
-   - Reader feels present in the scene
-
-### Scoring Scale
-
-- **1.0 - Nascent**: Foundational elements present but underdeveloped
-- **2.0 - Developing**: Core elements functional but needing refinement
-- **3.0 - Effective**: Professionally crafted, engaging, meets quality standards ✅
-- **4.0 - Exemplary**: Exceptional craft, deeply immersive, publishable excellence
-
-### Evaluation Loop Process
-
-```typescript
-// Automatic evaluation for each scene during generation
-import { evaluateAndImproveScene } from '@/lib/services/scene-evaluation-loop';
-
-const result = await evaluateAndImproveScene(
-  sceneId,
-  sceneContent,
-  {
-    maxIterations: 2,           // Limit iterations to control cost/time
-    passingScore: 3.0,          // "Effective" level required
-    improvementLevel: 'moderate', // Balanced refinement
-    storyContext: {
-      storyGenre: 'mystery',
-      arcPosition: 'middle',
-      chapterNumber: 3,
-      characterContext: ['Detective Sarah - driven investigator', 'Suspect John - nervous accountant']
-    }
-  }
-);
-
-// Returns:
-// - scene: Updated scene object
-// - evaluations: Array of all evaluation results
-// - iterations: Number of improvement cycles
-// - finalScore: Overall quality score (0-4)
-// - passed: Whether scene met threshold
-// - improvements: List of changes made
-```
-
-### Integration in Story Generation
-
-Evaluation is integrated into `src/lib/ai/scene-content-generator.ts` as **Phase 7.5**:
-
-1. Scene content is generated (Phase 7)
-2. Scene is evaluated against quality metrics (Phase 7.5)
-3. If score < 3.0, AI improves scene based on feedback
-4. Re-evaluation occurs (max 2 total iterations)
-5. Scene is accepted when passing or max iterations reached
-6. Process continues to next scene
-
-### Configuration
-
-**Default Settings** (configured in scene-content-generator.ts):
-- **Max Iterations**: 2 (to control generation time and cost)
-- **Passing Score**: 3.0/4.0 (Effective level)
-- **Improvement Level**: 'moderate' (balanced refinement)
-- **Context**: Full story context (genre, arc position, character info)
-
-### Expected Results
-
-Based on testing and design:
-- **70-80%** of scenes pass on first evaluation
-- **15-20%** require one improvement iteration
-- **5-10%** reach max iterations without passing threshold
-- **Average final score**: 3.2-3.5/4.0 across all scenes
-
-### Performance Impact
-
-- **Time Added**: 1-3 minutes per story (depending on scene count)
-- **Cost**: Minimal (uses GPT-4o-mini for evaluation and improvement)
-- **Quality Improvement**: Scenes are more engaging, better paced, and professionally crafted
-
-### Improvement Actions
-
-When a scene scores below 3.0, the AI:
-- Reviews high-priority feedback (e.g., weak conflict, unclear goal)
-- Addresses category-specific improvements (e.g., add sensory details, improve dialogue)
-- Preserves scene strengths identified in evaluation
-- Maintains author voice and story consistency
-- Uses moderate improvement level (balanced refinement without over-rewriting)
-
-### API Usage
-
-For manual scene evaluation:
-
-```bash
-# Evaluate a single scene
-curl -X POST http://localhost:3000/api/evaluation/scene \
-  -H "Content-Type: application/json" \
-  -d '{
-    "sceneId": "scene_abc123",
-    "content": "Scene narrative content...",
-    "context": {
-      "storyGenre": "mystery",
-      "arcPosition": "beginning"
-    }
-  }'
-```
-
-### Documentation
-
-- **API Reference**: `docs/scene-evaluation-api.md`
-- **Implementation**: `src/lib/services/scene-evaluation-loop.ts`
-- **Evaluation Service**: `src/lib/evaluation/index.ts`
+**Performance:**
+- 70-80% of scenes pass on first evaluation
+- 1-3 minutes added per story
+- Average final score: 3.2-3.5/4.0
 
 ---
 
@@ -613,7 +553,6 @@ curl -X POST http://localhost:3000/api/evaluation/scene \
 - **[docs/scene-evaluation-api.md](docs/scene-evaluation-api.md)** - Automated scene quality evaluation
 
 **Story Generation & Removal:**
-- **[docs/story-generator-skill.md](docs/story-generator-skill.md)** - Complete story generation via Claude Code skill
 - **[docs/story-removal.md](docs/story-removal.md)** - Story removal with database and Blob cleanup (10-25x faster batch deletion)
 
 ### Documentation Organization

@@ -1,3 +1,7 @@
+---
+title: "Scene Quality Pipeline"
+---
+
 # Scene Quality Pipeline
 
 **Complete automated quality assurance for generated scenes**
@@ -361,7 +365,7 @@ Based on testing and design:
 - **Final Score**: 3.2-3.5/4.0 across all scenes
 - **Time Per Scene**:
   - Generation: 10-20 seconds
-  - Formatting: <100ms total
+  - Formatting: `<100ms` total
   - Evaluation (1 iter): 2-3 seconds
   - Improvement (if needed): 3-5 seconds
   - **Total**: 15-30 seconds per scene

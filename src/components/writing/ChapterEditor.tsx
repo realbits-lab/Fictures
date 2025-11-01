@@ -11,7 +11,6 @@ interface Scene {
   id: string;
   title: string;
   status: "completed" | "in_progress" | "planned";
-  wordCount: number;
   goal: string;
   conflict: string;
   outcome: string;
@@ -32,8 +31,6 @@ interface Story {
       title: string;
       orderIndex: number;
       status: string;
-      wordCount: number;
-      targetWordCount: number;
       scenes?: Scene[];
     }>;
   }>;
@@ -42,8 +39,6 @@ interface Story {
     title: string;
     orderIndex: number;
     status: string;
-    wordCount: number;
-    targetWordCount: number;
     scenes?: Scene[];
   }>;
   scenes?: Scene[]; // Add scenes to the story level for current chapter
@@ -53,8 +48,6 @@ interface ChapterData {
   id: string;
   title: string;
   partTitle: string;
-  wordCount: number;
-  targetWordCount: number;
   status: string;
   purpose: string;
   hook: string;
@@ -97,7 +90,6 @@ export function ChapterEditor({
 
   Maya's shadows writhed, responding to her emotional turmoil. Part of her—the part she'd been fighting since this began—whispered that he was right. Why should she hold back? Elena was dying. The world was at stake.`);
 
-  const [currentWordCount, setCurrentWordCount] = useState(chapterData?.wordCount || 0);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);

@@ -23,7 +23,7 @@ const gnbMenuItems: NavItem[] = [
   { href: "/community", label: "Community", icon: "💬" },
   { href: "/publish", label: "Publish", icon: "📤" },
   { href: "/analytics", label: "Analytics", icon: "📊" },
-  { href: "/research", label: "Research", icon: "🔬" },
+  { href: "/docs", label: "Docs", icon: "📚" },
   { href: "/settings", label: "Settings", icon: "⚙️" }
 ];
 
@@ -39,8 +39,8 @@ export function GlobalNavigation() {
 
   // Filter navigation items based on user role
   const visibleGnbItems = gnbMenuItems.filter((item) => {
-    // Studio, Research, Publish, Analytics, and Comics are writer/manager specific
-    if (item.href === '/studio' || item.href === '/research' || item.href === '/publish' || item.href === '/analytics' || item.href === '/comics') {
+    // Studio, Publish, Analytics, Comics, and Docs are writer/manager specific
+    if (item.href === '/studio' || item.href === '/publish' || item.href === '/analytics' || item.href === '/comics' || item.href === '/docs') {
       return session?.user?.role === 'writer' || session?.user?.role === 'manager';
     }
 
@@ -54,7 +54,7 @@ export function GlobalNavigation() {
   });
 
   return (
-    <header className="sticky top-0 z-[60] w-full border-b border-[rgb(var(--border))] bg-[rgb(var(--background))/95%] backdrop-blur supports-[backdrop-filter]:bg-[rgb(var(--background))/60%]">
+    <header className="sticky top-0 z-[60] w-full border-b border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))]">
       <nav className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4">
         {/* Logo */}
         <Link 
@@ -62,8 +62,8 @@ export function GlobalNavigation() {
           className={cn(
             "flex items-center space-x-2 text-xl font-bold transition-colors px-2 py-1 rounded-lg",
             pathname === "/"
-              ? "bg-[rgb(var(--primary)/10%)] text-[rgb(var(--primary))]"
-              : "text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))]"
+              ? "bg-[rgb(var(--color-primary)/10%)] text-[rgb(var(--color-primary))]"
+              : "text-[rgb(var(--color-foreground))] hover:bg-[rgb(var(--color-muted))]"
           )}
         >
           <span className="text-2xl">📖</span>
@@ -79,8 +79,8 @@ export function GlobalNavigation() {
               className={cn(
                 "flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                 isActiveRoute(item.href)
-                  ? "bg-[rgb(var(--primary)/10%)] text-[rgb(var(--primary))]"
-                  : "text-[rgb(var(--muted-foreground))] hover:bg-[rgb(var(--muted))]"
+                  ? "bg-[rgb(var(--color-primary)/10%)] text-[rgb(var(--color-primary))]"
+                  : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))]"
               )}
             >
               <span className="text-lg">{item.icon}</span>
@@ -104,9 +104,9 @@ export function GlobalNavigation() {
           >
             <span className="sr-only">Open menu</span>
             <div className="flex flex-col space-y-1">
-              <div className="w-4 h-0.5 bg-[rgb(var(--foreground))]" />
-              <div className="w-4 h-0.5 bg-[rgb(var(--foreground))]" />
-              <div className="w-4 h-0.5 bg-[rgb(var(--foreground))]" />
+              <div className="w-4 h-0.5 bg-[rgb(var(--color-foreground))]" />
+              <div className="w-4 h-0.5 bg-[rgb(var(--color-foreground))]" />
+              <div className="w-4 h-0.5 bg-[rgb(var(--color-foreground))]" />
             </div>
           </Button>
         </div>
@@ -122,7 +122,7 @@ export function GlobalNavigation() {
           />
 
           {/* Menu Panel */}
-          <div className="fixed top-16 right-0 left-0 bg-[rgb(var(--background))] border-b border-[rgb(var(--border))] shadow-lg z-[75] md:hidden">
+          <div className="fixed top-16 right-0 left-0 bg-[rgb(var(--color-background))] border-b border-[rgb(var(--color-border))] shadow-lg z-[75] md:hidden">
             <div className="container mx-auto px-4 py-4 space-y-2">
               {/* Navigation Items */}
               {visibleGnbItems.map((item) => (
@@ -133,8 +133,8 @@ export function GlobalNavigation() {
                   className={cn(
                     "flex items-center space-x-3 px-4 py-3 rounded-lg text-base font-medium transition-colors",
                     isActiveRoute(item.href)
-                      ? "bg-[rgb(var(--primary)/10%)] text-[rgb(var(--primary))]"
-                      : "text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))]"
+                      ? "bg-[rgb(var(--color-primary)/10%)] text-[rgb(var(--color-primary))]"
+                      : "text-[rgb(var(--color-foreground))] hover:bg-[rgb(var(--color-muted))]"
                   )}
                 >
                   <span className="text-xl">{item.icon}</span>
@@ -143,7 +143,7 @@ export function GlobalNavigation() {
               ))}
 
               {/* Auth Section */}
-              <div className="pt-2 border-t border-[rgb(var(--border))]">
+              <div className="pt-2 border-t border-[rgb(var(--color-border))]">
                 <MobileAuthSection onNavigate={() => setIsMobileMenuOpen(false)} />
               </div>
             </div>
@@ -162,7 +162,7 @@ function AuthSection() {
   if (status === 'loading') {
     return (
       <div className="flex items-center space-x-2 px-3 py-2">
-        <div className="w-4 h-4 border-2 border-[rgb(var(--muted))] border-t-[rgb(var(--primary))] rounded-full animate-spin"></div>
+        <div className="w-4 h-4 border-2 border-[rgb(var(--color-muted))] border-t-[rgb(var(--color-primary))] rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -175,7 +175,7 @@ function AuthSection() {
     <div className="relative">
       <button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-[rgb(var(--muted-foreground))] hover:bg-[rgb(var(--muted))]"
+        className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))]"
       >
         {session.user?.image && !imageError ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -192,7 +192,7 @@ function AuthSection() {
             }}
           />
         ) : (
-          <div className="w-6 h-6 rounded-full bg-[rgb(var(--primary))] flex items-center justify-center text-xs font-semibold text-[rgb(var(--primary-foreground))]">
+          <div className="w-6 h-6 rounded-full bg-[rgb(var(--color-primary))] flex items-center justify-center text-xs font-semibold text-[rgb(var(--color-primary-foreground))]">
             {session.user?.name?.[0]?.toUpperCase() || 'U'}
           </div>
         )}
@@ -203,7 +203,7 @@ function AuthSection() {
       </button>
 
       {isDropdownOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-[rgb(var(--popover))] border border-[rgb(var(--border))] rounded-lg shadow-lg z-[70]">
+        <div className="absolute right-0 mt-2 w-48 bg-[rgb(var(--color-popover))] border border-[rgb(var(--color-border))] rounded-lg shadow-lg z-[70]">
           <div className="px-4 py-2">
             <SignOutButton />
           </div>
@@ -227,7 +227,7 @@ function MobileAuthSection({ onNavigate }: { onNavigate: () => void }) {
   if (status === 'loading') {
     return (
       <div className="flex items-center justify-center px-4 py-3">
-        <div className="w-5 h-5 border-2 border-[rgb(var(--muted))] border-t-[rgb(var(--primary))] rounded-full animate-spin"></div>
+        <div className="w-5 h-5 border-2 border-[rgb(var(--color-muted))] border-t-[rgb(var(--color-primary))] rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -243,7 +243,7 @@ function MobileAuthSection({ onNavigate }: { onNavigate: () => void }) {
   return (
     <div className="space-y-2">
       {/* User Info */}
-      <div className="flex items-center space-x-3 px-4 py-3 rounded-lg bg-[rgb(var(--muted))]">
+      <div className="flex items-center space-x-3 px-4 py-3 rounded-lg bg-[rgb(var(--color-muted))]">
         {session.user?.image && !imageError ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -259,13 +259,13 @@ function MobileAuthSection({ onNavigate }: { onNavigate: () => void }) {
             }}
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-[rgb(var(--primary))] flex items-center justify-center text-base font-semibold text-[rgb(var(--primary-foreground))]">
+          <div className="w-10 h-10 rounded-full bg-[rgb(var(--color-primary))] flex items-center justify-center text-base font-semibold text-[rgb(var(--color-primary-foreground))]">
             {session.user?.name?.[0]?.toUpperCase() || 'U'}
           </div>
         )}
         <div className="flex-1">
-          <div className="font-medium text-[rgb(var(--foreground))]">{session.user?.name}</div>
-          <div className="text-sm text-[rgb(var(--muted-foreground))]">{session.user?.email}</div>
+          <div className="font-medium text-[rgb(var(--color-foreground))]">{session.user?.name}</div>
+          <div className="text-sm text-[rgb(var(--color-muted-foreground))]">{session.user?.email}</div>
         </div>
       </div>
 

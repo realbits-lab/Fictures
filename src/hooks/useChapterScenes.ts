@@ -8,7 +8,6 @@ export interface Scene {
   title: string;
   content: string;
   orderIndex: number;
-  wordCount: number;
   status: string;
   sceneImage?: {
     url?: string;

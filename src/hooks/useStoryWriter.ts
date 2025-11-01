@@ -9,7 +9,6 @@ export interface Scene {
   title: string;
   content: string;
   orderIndex: number;
-  wordCount: number;
   status: 'completed' | 'in_progress' | 'planned';
   goal?: string;
   conflict?: string;
@@ -21,8 +20,6 @@ export interface Chapter {
   title: string;
   content?: string;
   orderIndex: number;
-  wordCount: number;
-  targetWordCount: number;
   status: string;
   scenes?: Scene[];
 }
@@ -39,7 +36,6 @@ export interface Story {
   title: string;
   description?: string;
   genre?: string;
-  wordCount?: number;
   status: string;
   isPublic?: boolean;
   hnsData?: Record<string, unknown>;
@@ -191,7 +187,6 @@ export function useWritingProgress(storyId: string, chapterId: string | null, sc
       cursorPosition?: number;
       scrollPosition?: number;
       content?: string;
-      wordCount?: number;
       lastEdited?: string; // timestamp
     }) => {
       if (typeof window !== 'undefined') {
@@ -303,7 +298,6 @@ export function useWritingSession(storyId: string) {
     
     // Update session progress
     updateSession: (updates: {
-      wordCount?: number;
       keystrokes?: number;
       lastActivity?: number;
     }) => {
@@ -347,7 +341,6 @@ export function useWritingSession(storyId: string) {
               ...data,
               endTime,
               duration,
-              wordsWritten: data.wordCount - data.wordCountStart
             });
             
             // Keep only last 30 sessions
@@ -358,7 +351,6 @@ export function useWritingSession(storyId: string) {
             localStorage.setItem(historyKey, JSON.stringify(history));
             localStorage.removeItem(key); // Clear current session
             
-            return { duration, wordsWritten: data.wordCount - data.wordCountStart };
           } catch {
             return null;
           }

@@ -272,7 +272,6 @@ export async function withCache<T>(
 
   const data = await fetcher();
   await cache.set(key, data, ttl);
-
   return data;
 }
 

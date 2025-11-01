@@ -56,7 +56,8 @@ export function useUserStories() {
       revalidateOnFocus: false, // Optimized: Don't revalidate on tab focus for better performance
       revalidateOnReconnect: true,
       refreshInterval: 10 * 60 * 1000, // Optimized: Refresh every 10 minutes instead of default
-      dedupingInterval: 60 * 1000, // Optimized: Extended to 1 minute for better deduplication
+      dedupingInterval: 30 * 60 * 1000, // ⚡ OPTIMIZED: 30 minutes - keeps story list in SWR memory cache for extended editing sessions
+      keepPreviousData: true, // ⚡ OPTIMIZED: Keep previous data in memory when navigating
       // staleTime: 5 * 60 * 1000, // Keep data fresh for 5 minutes before considering stale
       errorRetryCount: 3,
       errorRetryInterval: 1000,
@@ -140,7 +141,6 @@ export function usePublishedStories() {
             firstStory: data.stories[0]?.title,
             lastStory: data.stories[storiesCount - 1]?.title,
             genres: [...new Set(data.stories.map((s: any) => s.genre))],
-            totalWordCount: data.stories.reduce((sum: number, s: any) => sum + (s.wordCount || 0), 0),
           });
         }
       },

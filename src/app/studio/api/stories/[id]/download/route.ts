@@ -73,15 +73,11 @@ export async function GET(
     const storyMetadata = {
       id: story.id,
       title: story.title,
-      description: story.description,
       genre: story.genre,
       status: story.status,
-      tags: story.tags,
-      premise: story.premise,
-      dramaticQuestion: story.dramaticQuestion,
-      theme: story.theme,
-      targetWordCount: story.targetWordCount,
-      currentWordCount: story.currentWordCount,
+      summary: story.summary,
+      tone: story.tone,
+      moralFramework: story.moralFramework,
       createdAt: story.createdAt,
       updatedAt: story.updatedAt,
     };

@@ -1,3 +1,7 @@
+---
+title: "Scene Writing Discipline for AI Content Generation"
+---
+
 # Scene Writing Discipline for AI Content Generation
 
 ## Core Principles

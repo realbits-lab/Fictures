@@ -9,7 +9,8 @@
 
 import React, { useState, useEffect } from "react";
 import { usePublishedStories } from "@/lib/hooks/use-page-cache";
-import { Skeleton } from "@/components/ui/SkeletonLoader";
+import { Skeleton } from "@/components/ui/skeleton-loader";
+import { StoryCoverImage } from "@/components/optimized-image";
 import Link from "next/link";
 
 function ComicCardSkeleton() {
@@ -178,22 +179,23 @@ export function ComicBrowse() {
             href={`/comics/${story.id}`}
             className="group bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow"
           >
-            {/* Cover Image */}
+            {/* Cover Image - Optimized with AVIF/JPEG variants */}
             <div className="relative h-48 bg-gradient-to-br from-purple-500 to-pink-500 overflow-hidden">
-              {story.hnsData?.storyImage?.url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={story.hnsData.storyImage.url}
-                  alt={story.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
+              {story.imageUrl || story.imageVariants ? (
+                <div className="relative w-full h-full group-hover:scale-105 transition-transform duration-300">
+                  <StoryCoverImage
+                    story={story}
+                    className="object-cover"
+                    priority={false}
+                  />
+                </div>
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-white text-4xl">
                   📖
                 </div>
               )}
               {/* Comic Badge */}
-              <div className="absolute top-2 right-2 bg-purple-600 text-white text-xs font-bold px-2 py-1 rounded">
+              <div className="absolute top-2 right-2 bg-purple-600 text-white text-xs font-bold px-2 py-1 rounded z-10">
                 COMIC
               </div>
             </div>

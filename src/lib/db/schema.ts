@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, boolean, json, uuid, varchar, serial, primaryKey, pgEnum, decimal, unique } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, integer, boolean, json, uuid, varchar, serial, primaryKey, pgEnum, decimal, unique, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Status enum for stories and chapters
@@ -120,61 +120,104 @@ export const userRoleEnum = pgEnum('user_role', [
   'manager'   // Full administrative access
 ]);
 
+// Adversity-Triumph Engine enums for novel generation
+export const toneEnum = pgEnum('tone', [
+  'hopeful',
+  'dark',
+  'bittersweet',
+  'satirical'
+]);
+
+export const arcPositionEnum = pgEnum('arc_position', [
+  'beginning',
+  'middle',
+  'climax',
+  'resolution'
+]);
+
+export const adversityTypeEnum = pgEnum('adversity_type', [
+  'internal',
+  'external',
+  'both'
+]);
+
+export const virtueTypeEnum = pgEnum('virtue_type', [
+  'courage',
+  'compassion',
+  'integrity',
+  'sacrifice',
+  'loyalty',
+  'wisdom'
+]);
+
+export const cyclePhaseEnum = pgEnum('cycle_phase', [
+  'setup',
+  'confrontation',
+  'virtue',
+  'consequence',
+  'transition'
+]);
+
+export const emotionalBeatEnum = pgEnum('emotional_beat', [
+  'fear',
+  'hope',
+  'tension',
+  'relief',
+  'elevation',
+  'catharsis',
+  'despair',
+  'joy'
+]);
+
 // Users table - Core user authentication and profile
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
   name: text('name'),
   email: text('email').notNull(),
-  emailVerified: timestamp('emailVerified', { mode: 'date' }),
+  emailVerified: timestamp('email_verified', { mode: 'date' }),
   image: text('image'),
   username: varchar('username', { length: 50 }).unique(),
   password: varchar('password', { length: 255 }),
   bio: text('bio'),
   role: userRoleEnum('role').default('reader').notNull(),
-  createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 });
 
 // User preferences table - Store user settings and preferences
 export const userPreferences = pgTable('user_preferences', {
   id: text('id').primaryKey(),
-  userId: text('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   theme: varchar('theme', { length: 20 }).default('system'),
   language: varchar('language', { length: 10 }).default('en'),
   timezone: varchar('timezone', { length: 50 }).default('UTC'),
-  emailNotifications: boolean('emailNotifications').default(true),
-  pushNotifications: boolean('pushNotifications').default(false),
-  marketingEmails: boolean('marketingEmails').default(false),
-  profileVisibility: varchar('profileVisibility', { length: 20 }).default('public'),
-  showEmail: boolean('showEmail').default(false),
-  showStats: boolean('showStats').default(true),
-  createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
+  emailNotifications: boolean('email_notifications').default(true),
+  pushNotifications: boolean('push_notifications').default(false),
+  marketingEmails: boolean('marketing_emails').default(false),
+  profileVisibility: varchar('profile_visibility', { length: 20 }).default('public'),
+  showEmail: boolean('show_email').default(false),
+  showStats: boolean('show_stats').default(true),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 });
 
 // Stories table - Main story/book entities with HNS support
 export const stories = pgTable('stories', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
-  description: text('description'),
   genre: varchar('genre', { length: 100 }),
   status: statusEnum('status').default('writing').notNull(),
-  tags: json('tags').$type<string[]>().default([]),
   authorId: text('author_id').references(() => users.id).notNull(),
-  targetWordCount: integer('target_word_count').default(50000),
-  currentWordCount: integer('current_word_count').default(0),
   viewCount: integer('view_count').default(0),
   rating: integer('rating').default(0), // Average rating * 10 (e.g., 47 = 4.7)
   ratingCount: integer('rating_count').default(0),
-  content: text('content').default(''), // Store complete story development YAML data as text
   // Image fields
   imageUrl: text('image_url'), // Original/cover image URL from Vercel Blob
   imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
-  // HNS fields
-  premise: text('premise'),
-  dramaticQuestion: text('dramatic_question'),
-  theme: text('theme'),
-  hnsData: json('hns_data').$type<Record<string, unknown>>(),
+  // Adversity-Triumph Engine fields
+  summary: text('summary'), // General thematic premise and moral framework
+  tone: toneEnum('tone'), // Overall emotional direction
+  moralFramework: text('moral_framework'), // What virtues are valued in this world
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -183,18 +226,21 @@ export const stories = pgTable('stories', {
 export const parts = pgTable('parts', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
-  description: text('description'),
   storyId: text('story_id').references(() => stories.id).notNull(),
   authorId: text('author_id').references(() => users.id).notNull(),
-  orderIndex: integer('order_index').notNull(),
-  targetWordCount: integer('target_word_count').default(0),
-  currentWordCount: integer('current_word_count').default(0),
-  content: text('content').default(''), // Store part-specific development YAML data as text
-  // HNS fields
-  structuralRole: varchar('structural_role', { length: 50 }),
-  summary: text('summary'),
-  keyBeats: json('key_beats').$type<string[]>(),
-  hnsData: json('hns_data').$type<Record<string, unknown>>(),
+  summary: text('summary'), // Multi-character MACRO arcs with progression strategy
+  // Adversity-Triumph Engine fields
+  orderIndex: integer('order_index').notNull(), // 0, 1, 2 (for acts 1, 2, 3 in three-act structure)
+  characterArcs: json('character_arcs').$type<Array<{
+    characterId: string;
+    macroAdversity: { internal: string; external: string };
+    macroVirtue: string;
+    macroConsequence: string;
+    macroNewAdversity: string;
+    estimatedChapters: number;
+    arcPosition: 'primary' | 'secondary';
+    progressionStrategy: string;
+  }>>(), // Macro adversity-triumph arcs for each character in this act
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -208,19 +254,34 @@ export const chapters = pgTable('chapters', {
   partId: text('part_id').references(() => parts.id),
   authorId: text('author_id').references(() => users.id).notNull(),
   orderIndex: integer('order_index').notNull(),
-  wordCount: integer('word_count').default(0),
-  targetWordCount: integer('target_word_count').default(4000),
   status: statusEnum('status').default('writing').notNull(),
   purpose: text('purpose'), // Chapter purpose from story development
   hook: text('hook'), // Chapter hook from story development
   characterFocus: text('character_focus'), // Main character focus for chapter
   publishedAt: timestamp('published_at'),
   scheduledFor: timestamp('scheduled_for'),
-  // HNS fields
-  pacingGoal: varchar('pacing_goal', { length: 20 }),
-  actionDialogueRatio: varchar('action_dialogue_ratio', { length: 10 }),
-  chapterHook: json('chapter_hook').$type<{type: string; description: string; urgency_level: string}>(),
-  hnsData: json('hns_data').$type<Record<string, unknown>>(),
+  // Legacy fields removed - HNS-specific fields dropped
+  // pacingGoal, actionDialogueRatio, chapterHook were HNS-only and not used by Novels
+  // Adversity-Triumph Engine fields - Nested cycle tracking
+  characterId: text('character_id').references(() => characters.id, { onDelete: 'set null' }), // Primary character whose macro arc this advances
+  arcPosition: arcPositionEnum('arc_position'), // Position in macro arc: beginning, middle, climax (MACRO moment), or resolution
+  contributesToMacroArc: text('contributes_to_macro_arc'), // How this chapter advances the macro transformation
+  focusCharacters: json('focus_characters').$type<string[]>().default([]), // Array of character IDs featured in this chapter
+  adversityType: adversityTypeEnum('adversity_type'), // Type of conflict: internal, external, or both
+  virtueType: virtueTypeEnum('virtue_type'), // Moral virtue tested: courage, compassion, integrity, sacrifice, loyalty, wisdom
+  seedsPlanted: json('seeds_planted').$type<Array<{
+    id: string;
+    description: string;
+    expectedPayoff: string;
+  }>>().default([]), // Setup for future payoffs
+  seedsResolved: json('seeds_resolved').$type<Array<{
+    sourceChapterId: string;
+    sourceSceneId: string;
+    seedId: string;
+    payoffDescription: string;
+  }>>().default([]), // Past setups that pay off in this chapter
+  connectsToPreviousChapter: text('connects_to_previous_chapter'), // How previous resolution created this adversity
+  createsNextAdversity: text('creates_next_adversity'), // How this resolution creates next problem
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -232,24 +293,20 @@ export const scenes = pgTable('scenes', {
   content: text('content').default(''),
   chapterId: text('chapter_id').references(() => chapters.id).notNull(),
   orderIndex: integer('order_index').notNull(),
-  wordCount: integer('word_count').default(0),
-  goal: text('goal'),
-  conflict: text('conflict'),
-  outcome: text('outcome'),
   // Image fields
   imageUrl: text('image_url'), // Original scene image URL from Vercel Blob
   imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
-  // HNS fields
-  povCharacterId: text('pov_character_id'),
-  settingId: text('setting_id'),
-  narrativeVoice: varchar('narrative_voice', { length: 50 }),
-  summary: text('summary'),
-  entryHook: text('entry_hook'),
-  emotionalShift: json('emotional_shift').$type<{from: string; to: string}>(),
-  hnsData: json('hns_data').$type<Record<string, unknown>>(),
-  // Character and place references for scene writing
-  characterIds: json('character_ids').$type<string[]>().default([]).notNull(),
-  placeIds: json('place_ids').$type<string[]>().default([]).notNull(),
+  // Scene fields
+  summary: text('summary'), // Scene specification (planning layer)
+  // Legacy HNS fields removed: povCharacterId, settingId, narrativeVoice, entryHook, emotionalShift were HNS-only
+  // Adversity-Triumph Engine fields - Cycle phase tracking
+  cyclePhase: cyclePhaseEnum('cycle_phase'), // Position in 4-phase cycle: setup, confrontation, virtue, consequence, or transition
+  emotionalBeat: emotionalBeatEnum('emotional_beat'), // Target emotion: fear, hope, tension, relief, elevation, catharsis, despair, joy
+  // Planning metadata (guides content generation) - from novels specification
+  characterFocus: json('character_focus').$type<string[]>(), // Character IDs appearing in this scene
+  sensoryAnchors: json('sensory_anchors').$type<string[]>(), // Key sensory details to include (e.g., "rain on metal roof", "smell of smoke")
+  dialogueVsDescription: text('dialogue_vs_description'), // Balance guidance: "dialogue-heavy" | "balanced" | "description-heavy"
+  suggestedLength: text('suggested_length'), // "short" (300-500) | "medium" (500-800) | "long" (800-1000 words)
   // Publishing fields
   publishedAt: timestamp('published_at'),
   scheduledFor: timestamp('scheduled_for'),
@@ -342,23 +399,27 @@ export const characters = pgTable('characters', {
   voice: json('voice').$type<Record<string, unknown>>(),
   physicalDescription: json('physical_description').$type<Record<string, unknown>>(),
   visualReferenceId: text('visual_reference_id'),
-  hnsData: json('hns_data').$type<Record<string, unknown>>(),
+  // Adversity-Triumph Engine fields - Character core
+  coreTrait: text('core_trait'), // THE defining moral virtue: courage, compassion, integrity, loyalty, wisdom, sacrifice
+  internalFlaw: text('internal_flaw'), // Source of adversity - MUST include cause
+  externalGoal: text('external_goal'), // What character THINKS will solve their problem
+  relationships: json('relationships').$type<Record<string, {
+    type: 'ally' | 'rival' | 'family' | 'romantic' | 'mentor' | 'adversary';
+    jeongLevel: number;
+    sharedHistory: string;
+    currentDynamic: string;
+  }>>(), // Jeong system tracking
+  voiceStyle: json('voice_style').$type<{
+    tone: string;
+    vocabulary: string;
+    quirks: string[];
+    emotionalRange: string;
+  }>(), // Dialogue generation guide
+  visualStyle: text('visual_style'), // Visual aesthetic: realistic, anime, painterly, cinematic
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Places table - Story locations/settings
-export const places = pgTable('places', {
-  id: text('id').primaryKey(),
-  name: varchar('name', { length: 255 }).notNull(),
-  storyId: text('story_id').references(() => stories.id).notNull(),
-  isMain: boolean('is_main').default(false), // is this a main location?
-  content: text('content').default(''), // Store all place data as YAML/JSON
-  imageUrl: text('image_url'), // Original place image URL from Vercel Blob
-  imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
 
 // AI interactions table - Track AI assistant usage (simplified, no sessions)
 export const aiInteractions = pgTable('ai_interactions', {
@@ -509,7 +570,6 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   communityReplies: many(communityReplies),
   apiKeys: many(apiKeys),
   readingHistory: many(readingHistory),
-  research: many(research),
 }));
 
 export const storiesRelations = relations(stories, ({ one, many }) => ({
@@ -520,7 +580,6 @@ export const storiesRelations = relations(stories, ({ one, many }) => ({
   parts: many(parts),
   chapters: many(chapters),
   characters: many(characters),
-  places: many(places),
   settings: many(settings),
   communityPosts: many(communityPosts),
   readingHistory: many(readingHistory),
@@ -582,16 +641,25 @@ export const settings = pgTable('settings', {
   architecturalStyle: text('architectural_style'),
   imageUrl: text('image_url'), // Original setting image URL from Vercel Blob
   imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
+  // Adversity-Triumph Engine fields - Environmental adversity and amplification
+  adversityElements: json('adversity_elements').$type<{
+    physicalObstacles: string[];
+    scarcityFactors: string[];
+    dangerSources: string[];
+    socialDynamics: string[];
+  }>(), // External conflict sources
+  symbolicMeaning: text('symbolic_meaning'), // How setting reflects moral framework
+  cycleAmplification: json('cycle_amplification').$type<{
+    setup: string;
+    confrontation: string;
+    virtue: string;
+    consequence: string;
+    transition: string;
+  }>(), // How setting amplifies each cycle phase
+  emotionalResonance: text('emotional_resonance'), // Primary emotion this setting amplifies
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
-
-export const placesRelations = relations(places, ({ one }) => ({
-  story: one(stories, {
-    fields: [places.storyId],
-    references: [stories.id],
-  }),
-}));
 
 export const settingsRelations = relations(settings, ({ one }) => ({
   story: one(stories, {
@@ -1047,23 +1115,160 @@ export const scheduledPublicationsRelations = relations(scheduledPublications, (
   }),
 }));
 
-// Research table - Store research notes and documentation
-export const research = pgTable('research', {
+// Fuma Comment tables for documentation pages
+// These are separate from the story/scene comments above
+
+// Fuma Comment - Comments table
+export const fumaComments = pgTable('fuma_comments', {
   id: text('id').primaryKey(),
-  title: varchar('title', { length: 500 }).notNull(),
-  content: text('content').notNull(), // Markdown content
-  authorId: text('author_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  tags: json('tags').$type<string[]>().default([]),
-  viewCount: integer('view_count').default(0).notNull(),
+  page: text('page').notNull(),
+  content: text('content').notNull(),
+  authorId: text('author_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  parentId: text('parent_id'),
+  depth: integer('depth').default(0).notNull(),
+  isEdited: boolean('is_edited').default(false).notNull(),
+  isDeleted: boolean('is_deleted').default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Relations for research table
-export const researchRelations = relations(research, ({ one }) => ({
+// Fuma Comment - Rates table (for reactions/ratings on comments)
+export const fumaRates = pgTable('fuma_rates', {
+  id: text('id').primaryKey(),
+  commentId: text('comment_id').notNull().references(() => fumaComments.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  value: integer('value').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  uniqueUserComment: unique().on(table.commentId, table.userId),
+}));
+
+// Fuma Comment - Roles table (for user roles in commenting)
+export const fumaRoles = pgTable('fuma_roles', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
+  role: text('role').notNull().default('user'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Fuma Comment relations
+export const fumaCommentsRelations = relations(fumaComments, ({ one, many }) => ({
   author: one(users, {
-    fields: [research.authorId],
+    fields: [fumaComments.authorId],
+    references: [users.id],
+  }),
+  parent: one(fumaComments, {
+    fields: [fumaComments.parentId],
+    references: [fumaComments.id],
+    relationName: 'parentChild',
+  }),
+  children: many(fumaComments, { relationName: 'parentChild' }),
+  rates: many(fumaRates),
+}));
+
+export const fumaRatesRelations = relations(fumaRates, ({ one }) => ({
+  comment: one(fumaComments, {
+    fields: [fumaRates.commentId],
+    references: [fumaComments.id],
+  }),
+  user: one(users, {
+    fields: [fumaRates.userId],
     references: [users.id],
   }),
 }));
+
+export const fumaRolesRelations = relations(fumaRoles, ({ one }) => ({
+  user: one(users, {
+    fields: [fumaRoles.userId],
+    references: [users.id],
+  }),
+}));
+
+// ==============================================================================
+// STUDIO AGENT TABLES - AI-powered story editing assistant
+// ==============================================================================
+
+// Studio Agent Chats - Track agent conversation sessions
+export const studioAgentChats = pgTable('studio_agent_chats', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  storyId: text('story_id').references(() => stories.id, { onDelete: 'cascade' }), // Optional: link to story being worked on
+  agentType: varchar('agent_type', { length: 50 }).notNull(), // 'editing' (we focus on editing for /studio/edit/story)
+  title: varchar('title', { length: 255 }).notNull(),
+  context: json('context'), // Story context, selected entity, etc.
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index('studio_agent_chats_user_id_idx').on(table.userId),
+  storyIdIdx: index('studio_agent_chats_story_id_idx').on(table.storyId),
+  agentTypeIdx: index('studio_agent_chats_agent_type_idx').on(table.agentType),
+}));
+
+// Studio Agent Messages - Individual messages in chat sessions
+export const studioAgentMessages = pgTable('studio_agent_messages', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  chatId: uuid('chat_id').references(() => studioAgentChats.id, { onDelete: 'cascade' }).notNull(),
+  role: varchar('role', { length: 20 }).notNull(), // 'user' | 'assistant' | 'system'
+  content: text('content').notNull(),
+  parts: json('parts'), // AI SDK message parts (text, tool-call, tool-result)
+  reasoning: text('reasoning'), // Agent's chain of thought
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  chatIdIdx: index('studio_agent_messages_chat_id_idx').on(table.chatId),
+  createdAtIdx: index('studio_agent_messages_created_at_idx').on(table.createdAt),
+}));
+
+// Studio Agent Tool Executions - Track tool usage and results
+export const studioAgentToolExecutions = pgTable('studio_agent_tool_executions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  messageId: uuid('message_id').references(() => studioAgentMessages.id, { onDelete: 'cascade' }).notNull(),
+  toolName: varchar('tool_name', { length: 100 }).notNull(),
+  toolInput: json('tool_input').notNull(),
+  toolOutput: json('tool_output'),
+  status: varchar('status', { length: 20 }).notNull(), // 'pending' | 'executing' | 'completed' | 'error'
+  error: text('error'),
+  executionTimeMs: integer('execution_time_ms'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  completedAt: timestamp('completed_at'),
+}, (table) => ({
+  messageIdIdx: index('studio_agent_tool_executions_message_id_idx').on(table.messageId),
+  toolNameIdx: index('studio_agent_tool_executions_tool_name_idx').on(table.toolName),
+}));
+
+// Studio Agent Relations
+export const studioAgentChatsRelations = relations(studioAgentChats, ({ one, many }) => ({
+  user: one(users, {
+    fields: [studioAgentChats.userId],
+    references: [users.id],
+  }),
+  story: one(stories, {
+    fields: [studioAgentChats.storyId],
+    references: [stories.id],
+  }),
+  messages: many(studioAgentMessages),
+}));
+
+export const studioAgentMessagesRelations = relations(studioAgentMessages, ({ one, many }) => ({
+  chat: one(studioAgentChats, {
+    fields: [studioAgentMessages.chatId],
+    references: [studioAgentChats.id],
+  }),
+  toolExecutions: many(studioAgentToolExecutions),
+}));
+
+export const studioAgentToolExecutionsRelations = relations(studioAgentToolExecutions, ({ one }) => ({
+  message: one(studioAgentMessages, {
+    fields: [studioAgentToolExecutions.messageId],
+    references: [studioAgentMessages.id],
+  }),
+}));
+
+// TypeScript types for studio agent
+export type StudioAgentChat = typeof studioAgentChats.$inferSelect;
+export type NewStudioAgentChat = typeof studioAgentChats.$inferInsert;
+export type StudioAgentMessage = typeof studioAgentMessages.$inferSelect;
+export type NewStudioAgentMessage = typeof studioAgentMessages.$inferInsert;
+export type StudioAgentToolExecution = typeof studioAgentToolExecutions.$inferSelect;
+export type NewStudioAgentToolExecution = typeof studioAgentToolExecutions.$inferInsert;
 

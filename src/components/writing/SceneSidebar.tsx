@@ -24,7 +24,6 @@ interface SceneData {
   leads_to: string;
   image_prompt: string;
   content?: string;
-  wordCount?: number;
 }
 
 interface ChapterContext {
@@ -99,13 +98,13 @@ export function SceneSidebar({
         <CardHeader className="pb-2">
           <button
             onClick={() => toggleSection(key)}
-            className="w-full flex items-center justify-between text-left hover:bg-[rgb(var(--accent))] rounded p-2 -m-2"
+            className="w-full flex items-center justify-between text-left hover:bg-[rgb(var(--color-accent))] rounded p-2 -m-2"
           >
             <CardTitle className="text-sm flex items-center gap-2">
               {title}
             </CardTitle>
             <svg
-              className={`w-4 h-4 text-[rgb(var(--muted-foreground))] transition-transform ${
+              className={`w-4 h-4 text-[rgb(var(--color-muted-foreground))] transition-transform ${
                 isExpanded ? 'rotate-90' : ''
               }`}
               fill="none"
@@ -207,7 +206,7 @@ export function SceneSidebar({
       {/* Scene Beats */}
       {renderCollapsibleSection("📝 Scene Beats", "beats", (
         <div className="space-y-2">
-          <p className="text-xs text-[rgb(var(--muted-foreground))] mb-2">
+          <p className="text-xs text-[rgb(var(--color-muted-foreground))] mb-2">
             Break down the scene into 4-6 key beats or moments.
           </p>
           {sceneData.beats.map((beat, index) => (
@@ -238,11 +237,11 @@ export function SceneSidebar({
       {/* Characters */}
       {renderCollapsibleSection("🎭 Characters", "characters", (
         <div className="space-y-3">
-          <p className="text-xs text-[rgb(var(--muted-foreground))] mb-2">
+          <p className="text-xs text-[rgb(var(--color-muted-foreground))] mb-2">
             Track character states and transformations in this scene.
           </p>
           {Object.entries(sceneData.characters).map(([charName, charData]) => (
-            <div key={charName} className="border border-[rgb(var(--border))] rounded-[var(--radius)] p-3">
+            <div key={charName} className="border border-[rgb(var(--color-border))] rounded-[var(--radius)] p-3">
               <h4 className="text-sm font-medium mb-2 capitalize">{charName}</h4>
               <div className="space-y-2">
                 <div>

@@ -9,9 +9,54 @@ import { AI_MODELS } from "./config";
 import { db } from "@/lib/db";
 import { scenes as scenesTable } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import type { HNSScene, HNSChapter, HNSCharacter, HNSSetting, HNSStory } from "@/types/hns";
 import { formatSceneContent } from "@/lib/services/scene-formatter";
-import { cleanComponentHnsData } from "@/lib/utils/hns-data-cleaner";
+
+// Minimal interfaces for scene content generation
+// These replace the old HNS types with simplified versions
+interface SceneInput {
+  scene_id?: string;
+  scene_title: string;
+  pov_character_id?: string;
+  setting_id?: string;
+  character_ids?: string[];
+  entry_hook?: string;
+  goal?: string;
+  conflict?: string;
+  outcome?: string;
+  emotional_shift?: { from: string; to: string };
+  narrative_voice?: string;
+}
+
+interface ChapterInput {
+  chapter_title: string;
+  summary?: string;
+  pacing_goal?: string;
+}
+
+interface StoryInput {
+  story_title: string;
+  genre?: string;
+  theme?: string;
+  premise?: string;
+}
+
+interface CharacterInput {
+  character_id?: string;
+  name: string;
+  role?: string;
+}
+
+interface SettingInput {
+  setting_id?: string;
+  name: string;
+  description?: string;
+  mood?: string;
+  sensory?: {
+    sight?: string[];
+    sound?: string[];
+    smell?: string[];
+  };
+}
 
 // Schema for scene content generation
 const SceneContentSchema = z.object({
@@ -24,11 +69,11 @@ const SceneContentSchema = z.object({
  * Generate narrative content for a single scene
  */
 export async function generateSceneContent(
-  scene: HNSScene,
-  chapter: HNSChapter,
-  story: HNSStory,
-  characters: HNSCharacter[],
-  settings: HNSSetting[]
+  scene: SceneInput,
+  chapter: ChapterInput,
+  story: StoryInput,
+  characters: CharacterInput[],
+  settings: SettingInput[]
 ): Promise<{ content: string; writing_notes?: string }> {
   try {
     // Find the POV character and setting for this scene
@@ -385,7 +430,7 @@ Begin with: "${scene.entry_hook}"`,
  * Creates structured draft content matching web novel format (600-800 words)
  * Includes ~40% dialogue to meet requirements
  */
-function generateFallbackSceneContent(scene: HNSScene): string {
+function generateFallbackSceneContent(scene: SceneInput): string {
   const parts: string[] = [];
 
   // Opening hook (required)
@@ -490,11 +535,11 @@ function generateFallbackSceneContent(scene: HNSScene): string {
  */
 export async function generateAllSceneContent(
   storyId: string,
-  allScenes: HNSScene[],
-  allChapters: HNSChapter[],
-  story: HNSStory,
-  characters: HNSCharacter[],
-  settings: HNSSetting[],
+  allScenes: SceneInput[],
+  allChapters: ChapterInput[],
+  story: StoryInput,
+  characters: CharacterInput[],
+  settings: SettingInput[],
   progressCallback?: (event: string, data: any) => void
 ): Promise<void> {
   const totalScenes = allScenes.length;
@@ -531,7 +576,7 @@ export async function generateAllSceneContent(
       // Update the scene in the database immediately
       console.log(`Updating scene ${scene.scene_id} with ${formattedContent.split(/\s+/).length} words...`);
 
-      // Create updated scene object with actual content for hnsData
+      // Create updated scene object with actual content
       const updatedScene = {
         ...scene,
         content: formattedContent
@@ -542,7 +587,6 @@ export async function generateAllSceneContent(
         .set({
           content: formattedContent,
           wordCount: formattedContent.split(/\s+/).length,
-          hnsData: cleanComponentHnsData(updatedScene),
           updatedAt: new Date(),
         })
         .where(eq(scenesTable.id, scene.scene_id || ''))

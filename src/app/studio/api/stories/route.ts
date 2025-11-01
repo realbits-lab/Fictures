@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { authenticateRequest, hasRequiredScope } from '@/lib/auth/dual-auth';
 import { createStory, getUserStories, getUserStoriesWithFirstChapter } from '@/lib/db/queries';
+import { getCachedUserStories, invalidateStudioCache } from '@/lib/db/studio-queries';
 import { z } from 'zod';
 import { createHash } from 'crypto';
 
@@ -11,7 +12,6 @@ const createStorySchema = z.object({
   title: z.string().min(1).max(255),
   description: z.string().optional(),
   genre: z.string().optional(),
-  targetWordCount: z.number().min(1000).max(500000).optional(),
 });
 
 // GET /api/stories - Get user's stories with detailed data for dashboard
@@ -31,7 +31,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const stories = await getUserStoriesWithFirstChapter(authResult.user.id);
+    // ⚡ Use Redis-cached query for better performance
+    const stories = await getCachedUserStories(authResult.user.id);
     
     // Transform the data to match the Dashboard component expectations
     const transformedStories = stories.map((story) => ({
@@ -49,10 +50,10 @@ export async function GET(request: NextRequest) {
       readers: story.viewCount || 0,
       rating: (story.rating || 0) / 10, // Convert from database format (47 = 4.7)
       status: story.status as "draft" | "publishing" | "completed" | "published",
-      wordCount: story.currentWordCount || 0,
       firstChapterId: story.firstChapterId,
-      hnsData: story.hnsData || null,
       isPublic: story.status === 'published',
+      imageUrl: story.imageUrl,
+      imageVariants: story.imageVariants,
     }));
 
     const response = {
@@ -73,7 +74,6 @@ export async function GET(request: NextRequest) {
         title: story.title,
         updatedAt: story.updatedAt,
         status: story.status,
-        wordCount: story.currentWordCount,
         completedChapters: story.completedChapters,
         totalChapters: story.totalChapters,
         rating: story.rating,
@@ -133,6 +133,10 @@ export async function POST(request: NextRequest) {
     const validatedData = createStorySchema.parse(body);
 
     const story = await createStory(authResult.user.id, validatedData);
+
+    // ⚡ Invalidate cache after creating new story
+    await invalidateStudioCache(authResult.user.id);
+
     return NextResponse.json({ story }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {

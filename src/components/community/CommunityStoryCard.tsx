@@ -9,7 +9,7 @@ interface CommunityStoryCardProps {
     title: string;
     genre: string;
     author: string;
-    description: string;
+    summary: string;
     totalPosts: number;
     totalMembers: number;
     lastActivity: string;
@@ -55,7 +55,7 @@ export function CommunityStoryCard({ story, priority = false }: CommunityStoryCa
           </h3>
 
           <p className="text-gray-600 dark:text-gray-400 text-xs mb-2 line-clamp-3 flex-grow overflow-hidden">
-            {story.description || "No description available."}
+            {story.summary || "No summary available."}
           </p>
 
           <div className="text-xs text-gray-500 dark:text-gray-500 mb-3 flex-shrink-0 truncate">
