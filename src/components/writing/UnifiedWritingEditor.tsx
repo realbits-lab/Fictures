@@ -14,7 +14,6 @@ import { SceneDisplay } from "./SceneDisplay";
 import { StoryStructureSidebar } from "./StoryStructureSidebar";
 import { SceneSidebar } from "./SceneSidebar";
 import { WritingGuidelines } from "./WritingGuidelines";
-import { StoryPromptWriter } from "./StoryPromptWriter";
 import { BeautifulJSONDisplay } from "./BeautifulJSONDisplay";
 import { CharactersDisplay } from "./CharactersDisplay";
 import { SettingsDisplay } from "./SettingsDisplay";
@@ -398,45 +397,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     setCurrentPartData(updatedData);
     if (originalPartData) {
       setPartHasChanges(JSON.stringify(updatedData) !== JSON.stringify(originalPartData));
-    }
-  };
-
-  // Helper functions for JSON conversion for StoryPromptWriter
-  const convertStoryDataToJSON = (storyData: HNSDocument): string => {
-    try {
-      return JSON.stringify(storyData, null, 2);
-    } catch (error) {
-      console.error('Error converting story data to JSON:', error);
-      return '';
-    }
-  };
-
-  const convertJSONToStoryData = (jsonText: string): HNSDocument | null => {
-    try {
-      const parsed = JSON.parse(jsonText);
-      return parsed as HNSDocument;
-    } catch (error) {
-      console.error('Error parsing JSON to story data:', error);
-      return null;
-    }
-  };
-
-  // Wrapper handlers for StoryPromptWriter that work with JSON
-  const handleStoryJSONUpdate = (updatedJson: string) => {
-    const storyData = convertJSONToStoryData(updatedJson);
-    if (storyData) {
-      handleStoryDataUpdate(storyData);
-    }
-  };
-
-  const handleStoryJSONPreviewUpdate = (previewJson: string | null) => {
-    if (previewJson === null) {
-      setStoryPreviewData(null);
-    } else {
-      const storyData = convertJSONToStoryData(previewJson);
-      if (storyData) {
-        setStoryPreviewData(storyData);
-      }
     }
   };
 
@@ -1638,17 +1598,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                   // Refresh the page to show updated data
                   router.refresh();
                 }}
-                disabled={disabled}
-              />
-            )}
-
-            {/* Story Prompt Writer - Show for story level */}
-            {currentSelection.level === "story" && (
-              <StoryPromptWriter
-                storyJson={convertStoryDataToJSON(storyPreviewData || sampleStoryData)}
-                storyId={story.id}
-                onStoryUpdate={handleStoryJSONUpdate}
-                onPreviewUpdate={handleStoryJSONPreviewUpdate}
                 disabled={disabled}
               />
             )}
