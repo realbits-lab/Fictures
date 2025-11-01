@@ -5,9 +5,11 @@ import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from "@/compo
 import Link from "next/link";
 import { CommunityStoryCard } from "@/components/community/CommunityStoryCard";
 import { MetricCard } from "@/components/community/metric-card";
-import { Skeleton } from "@/components/ui";
+import { Skeleton, SkeletonLoader } from "@/components/ui";
 import { useCommunityStories } from '@/lib/hooks/use-page-cache';
 import { useCommunityEvents } from '@/lib/hooks/use-community-events';
+import { StoryGrid } from "@/components/browse/StoryGrid";
+import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import { useCallback, useState } from 'react';
 import type { StoryPublishedEvent, StoryUpdatedEvent, PostCreatedEvent } from '@/lib/redis/client';
@@ -40,6 +42,7 @@ interface CommunityStats {
 }
 
 export default function CommunityPage() {
+  const { data: session } = useSession();
   const [newStoryCount, setNewStoryCount] = useState(0);
   const [recentlyPublishedStories, setRecentlyPublishedStories] = useState<string[]>([]);
 
@@ -104,22 +107,32 @@ export default function CommunityPage() {
     autoRevalidate: true,
   });
 
-  // Transform data when available
+  // Transform data when available - convert to StoryGrid compatible format
   const stories = data?.success ? data.stories.map((story: any) => ({
-    ...story,
-    author: story.author?.name || story.author || 'Unknown Author',
-    summary: story.summary || 'No summary available',
-    coverImage: story.imageUrl || '',
-    lastActivity: formatRelativeTime(story.lastActivity),
+    id: story.id,
+    title: story.title,
+    description: story.summary || 'No summary available',
+    genre: story.genre,
+    status: story.status,
+    isPublic: true, // Community stories are always public
+    viewCount: story.totalPosts || 0, // Use posts as view count for community
+    rating: 0, // Community stories don't have ratings yet
+    createdAt: new Date(story.lastActivity),
+    imageUrl: story.imageUrl || story.coverImage || '',
+    author: {
+      id: story.author?.id || '',
+      name: story.author?.name || story.author || 'Unknown Author',
+    },
   })) : [];
 
-  // Calculate stats from fetched data
-  const stats: CommunityStats = stories.length > 0 ? {
-    totalStories: stories.length,
-    totalPosts: stories.reduce((sum: number, story: CommunityStory) => sum + story.totalPosts, 0),
-    totalMembers: stories.reduce((sum: number, story: CommunityStory) => sum + story.totalMembers, 0),
-    activeToday: stories.filter((story: CommunityStory) => story.isActive).length,
-    commentsToday: Math.floor(stories.reduce((sum: number, story: CommunityStory) => sum + story.totalPosts, 0) * 0.3),
+  // Calculate stats from original fetched data
+  const rawStories = data?.success ? data.stories : [];
+  const stats: CommunityStats = rawStories.length > 0 ? {
+    totalStories: rawStories.length,
+    totalPosts: rawStories.reduce((sum: number, story: any) => sum + (story.totalPosts || 0), 0),
+    totalMembers: rawStories.reduce((sum: number, story: any) => sum + (story.totalMembers || 0), 0),
+    activeToday: rawStories.filter((story: any) => story.isActive).length,
+    commentsToday: Math.floor(rawStories.reduce((sum: number, story: any) => sum + (story.totalPosts || 0), 0) * 0.3),
     averageRating: 4.7,
   } : {
     activeToday: 0,
@@ -335,7 +348,7 @@ export default function CommunityPage() {
           </div>
         )}
 
-        {/* Story Selection */}
+        {/* Story Selection with StoryGrid */}
         {!isLoading && !error && (
           <div className="relative">
             <div className="flex items-center justify-between mb-6">
@@ -347,71 +360,20 @@ export default function CommunityPage() {
                   Select a story to join its community discussions
                 </p>
               </div>
-              
-              <div className="flex items-center gap-3">
-                {/* Background revalidation indicator for stories */}
-                {isValidating && !isLoading && (
-                  <div className="flex items-center gap-2 text-xs text-blue-500 dark:text-blue-400 opacity-60">
-                    <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                    <span>Refreshing stories...</span>
-                  </div>
-                )}
-                
-              </div>
             </div>
 
-            {/* Story Grid */}
-            {stories.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {stories.map((story: CommunityStory, index: number) => {
-                  const isNewlyPublished = recentlyPublishedStories.includes(story.id);
-                  return (
-                    <div
-                      key={story.id}
-                      className={isNewlyPublished ? 'relative animate-in fade-in slide-in-from-bottom duration-500' : ''}
-                    >
-                      {isNewlyPublished && (
-                        <div className="absolute -top-2 -right-2 z-10 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg animate-pulse">
-                          NEW
-                        </div>
-                      )}
-                      <CommunityStoryCard
-                        story={{
-                          ...story,
-                          author: story.author.name,
-                          coverImage: story.coverImage || ''
-                        }}
-                        priority={index === 0}
-                      />
-                    </div>
-                  );
-                })}
+            {/* Background revalidation indicator */}
+            {isValidating && !isLoading && (
+              <div className="fixed top-20 right-4 z-50 bg-[rgb(var(--color-background))] rounded-lg shadow-lg border border-[rgb(var(--color-border))] px-3 py-2">
+                <div className="flex items-center gap-2 text-sm text-[rgb(var(--color-muted-foreground))]">
+                  <div className="w-4 h-4 border-2 border-[rgb(var(--color-primary)/30%)] border-t-[rgb(var(--color-primary))] rounded-full animate-spin" />
+                  <span>Refreshing stories...</span>
+                </div>
               </div>
-            ) : (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <div className="text-4xl mb-4">📚</div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                    No public stories yet
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    Stories will appear here once authors make them public for community discussions
-                  </p>
-                  <div className="flex justify-center gap-3">
-                    <Link href="/stories">
-                      <Button variant="outline">
-                        📝 View All Stories
-                      </Button>
-                    </Link>
-                    <Link href="/stories/new">
-                      <Button>
-                        ✍️ Write Your Story
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
             )}
+
+            {/* Use StoryGrid component */}
+            <StoryGrid stories={stories} currentUserId={session?.user?.id} pageType="reading" />
           </div>
         )}
       </div>

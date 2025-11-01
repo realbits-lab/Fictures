@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { SkeletonLoader, Skeleton, StoryCardSkeleton, Button } from "@/components/ui";
 import { useUserStories } from "@/lib/hooks/use-page-cache";
+import { StoryGrid } from "@/components/browse/StoryGrid";
 
 import { StoryCard } from "./StoryCard";
 import { ViewToggle } from "./view-toggle";
@@ -38,8 +39,24 @@ export function DashboardClient() {
   const { data: session } = useSession();
   const { data, isLoading, isValidating, error, mutate: refreshStories } = useUserStories();
 
-  // Transform data to match expected format
-  const stories = data?.stories || [];
+  // Transform data to match StoryGrid expected format
+  const stories = (data?.stories || []).map((story: any) => ({
+    id: story.id,
+    title: story.title,
+    description: `${story.chapters?.completed || 0}/${story.chapters?.total || 0} chapters completed`, // Use chapter progress as description
+    genre: story.genre || "General",
+    status: story.status,
+    isPublic: story.isPublic || false,
+    viewCount: story.readers || 0,
+    rating: story.rating || 0,
+    createdAt: new Date(),
+    imageUrl: story.imageUrl || '',
+    imageVariants: story.imageVariants,
+    author: {
+      id: session?.user?.id || '',
+      name: session?.user?.name || 'You',
+    },
+  }));
 
   // Show loading state
   if (!session?.user?.id) {
@@ -75,52 +92,40 @@ export function DashboardClient() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Stories Section */}
-      <section>
+    <div className="min-h-screen bg-[rgb(var(--color-background))]">
+      <div className="container mx-auto px-4 pt-1 pb-8">
+        {/* Background validation indicator in top right */}
+        {isValidating && !isLoading && (
+          <div className="fixed top-20 right-4 z-50 bg-[rgb(var(--color-background))] rounded-lg shadow-lg border border-[rgb(var(--color-border))] px-3 py-2">
+            <div className="flex items-center gap-2 text-sm text-[rgb(var(--color-muted-foreground))]">
+              <div className="w-4 h-4 border-2 border-[rgb(var(--color-primary)/30%)] border-t-[rgb(var(--color-primary))] rounded-full animate-spin" />
+              <span>Refreshing stories...</span>
+            </div>
+          </div>
+        )}
+
+        {/* Header Section */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-bold text-[rgb(var(--color-foreground))] flex items-center gap-2">
               <span>📚</span>
               My Stories
-              {isValidating && (
-                <div className="w-4 h-4 border-2 border-[rgb(var(--color-muted))] border-t-[rgb(var(--color-primary))] rounded-full animate-spin ml-2"></div>
-              )}
             </h2>
             <p className="text-[rgb(var(--color-muted-foreground))] mt-1">
               Manage and organize all your creative works
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <ViewToggle view={view} onViewChange={setView} />
-            <Link href="/studio/new">
-              <Button>
-                <span className="mr-2">📖</span>
-                Create New Story
-              </Button>
-            </Link>
-          </div>
+          <Link href="/studio/new">
+            <Button>
+              <span className="mr-2">📖</span>
+              Create New Story
+            </Button>
+          </Link>
         </div>
 
-        {view === "card" ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {stories.map((story: any) => (
-              <StoryCard key={story.id} {...story} />
-            ))}
-            {stories.length === 0 && (
-              <div className="col-span-full text-center py-12 text-[rgb(var(--color-muted-foreground))]">
-                <p className="text-xl mb-2">📝 Ready to start writing?</p>
-                <p>
-                  Click the &quot;Create New Story&quot; button above to begin your
-                  first story!
-                </p>
-              </div>
-            )}
-          </div>
-        ) : (
-          <StoryTableView stories={stories} />
-        )}
-      </section>
+        {/* Use StoryGrid component with studio pageType */}
+        <StoryGrid stories={stories} currentUserId={session?.user?.id} pageType="studio" />
+      </div>
     </div>
   );
 }

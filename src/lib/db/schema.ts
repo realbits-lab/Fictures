@@ -158,6 +158,20 @@ export const cyclePhaseEnum = pgEnum('cycle_phase', [
   'transition'
 ]);
 
+// Genre enum for stories
+export const genreEnum = pgEnum('genre', [
+  'Fantasy',
+  'Science Fiction',
+  'Romance',
+  'Mystery',
+  'Thriller',
+  'Detective',
+  'Adventure',
+  'Horror',
+  'Historical Fiction',
+  'Contemporary'
+]);
+
 export const emotionalBeatEnum = pgEnum('emotional_beat', [
   'fear',
   'hope',
@@ -205,7 +219,7 @@ export const userPreferences = pgTable('user_preferences', {
 export const stories = pgTable('stories', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
-  genre: varchar('genre', { length: 100 }),
+  genre: genreEnum('genre'),
   status: statusEnum('status').default('writing').notNull(),
   authorId: text('author_id').references(() => users.id).notNull(),
   viewCount: integer('view_count').default(0),

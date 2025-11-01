@@ -20,8 +20,6 @@ export const STORY_GENRES = [
   "Horror",
   "Historical Fiction",
   "Contemporary",
-  "Young Adult",
-  "Children's Literature",
 ] as const;
 
 export type StoryGenre = typeof STORY_GENRES[number];
@@ -80,16 +78,6 @@ export const GENRE_METADATA: Record<StoryGenre, { icon: string; gradient: string
     icon: "🏙️",
     gradient: "from-slate-500 to-blue-500",
     description: "Modern-day realistic fiction"
-  },
-  "Young Adult": {
-    icon: "🎓",
-    gradient: "from-teal-500 to-cyan-500",
-    description: "Coming-of-age stories"
-  },
-  "Children's Literature": {
-    icon: "📚",
-    gradient: "from-orange-400 to-pink-400",
-    description: "Stories for young readers"
   },
 };
 

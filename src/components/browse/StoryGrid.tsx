@@ -42,7 +42,7 @@ interface Story {
 interface StoryGridProps {
   stories: Story[];
   currentUserId?: string;
-  pageType?: 'novels' | 'comics' | 'reading';
+  pageType?: 'novels' | 'comics' | 'reading' | 'studio';
 }
 
 const genres = ["All", ...STORY_GENRES];
@@ -63,6 +63,12 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
   // Fetch reading history when component mounts
   useEffect(() => {
     async function fetchHistory() {
+      // For studio page, skip history fetching (all stories are user's own)
+      if (pageType === 'studio') {
+        setIsLoadingHistory(false);
+        return;
+      }
+
       if (!session?.user?.id) {
         // Anonymous user - use localStorage for specific format
         const localHistory = readingHistoryManager.getHistory(format);
@@ -98,6 +104,11 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
 
   // Record story view with format-specific tracking
   const recordStoryView = async (storyId: string, storyTitle?: string) => {
+    // Skip history tracking for studio page (user's own stories)
+    if (pageType === 'studio') {
+      return;
+    }
+
     // Track story view in GA (always track, regardless of auth)
     trackStoryEvent.view(storyId, storyTitle);
 
@@ -335,8 +346,13 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
               <div
                 key={story.id}
                 onClick={async () => {
-                  await recordStoryView(story.id, story.title);
-                  router.push(`/${pageType}/${story.id}`);
+                  // For studio page, navigate to edit page instead of reading page
+                  if (pageType === 'studio') {
+                    router.push(`/studio/edit/story/${story.id}`);
+                  } else {
+                    await recordStoryView(story.id, story.title);
+                    router.push(`/${pageType}/${story.id}`);
+                  }
                 }}
                 onMouseEnter={() => {
                   // Prefetch story data on hover for instant navigation
@@ -393,7 +409,7 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                     </span>
                     <span className="flex items-center gap-1 flex-shrink-0">
                       <span>⭐</span>
-                      <span>{((story.rating || 0) / 10).toFixed(1)}</span>
+                      <span>{(story.rating || 0).toFixed(1)}</span>
                     </span>
                     <span className="flex items-center gap-1 flex-shrink-0">
                       <span>📝</span>
@@ -439,8 +455,13 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                     <TableRow
                       key={story.id}
                       onClick={async () => {
-                        await recordStoryView(story.id, story.title);
-                        router.push(`/${pageType}/${story.id}`);
+                        // For studio page, navigate to edit page instead of reading page
+                        if (pageType === 'studio') {
+                          router.push(`/studio/edit/story/${story.id}`);
+                        } else {
+                          await recordStoryView(story.id, story.title);
+                          router.push(`/${pageType}/${story.id}`);
+                        }
                       }}
                       onMouseEnter={() => {
                         // Prefetch story data on hover for instant navigation
@@ -499,7 +520,7 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                       <TableCell className="text-center text-gray-600 dark:text-gray-400">
                         <span className="flex items-center justify-center gap-1">
                           <span>⭐</span>
-                          <span>{((story.rating || 0) / 10).toFixed(1)}</span>
+                          <span>{(story.rating || 0).toFixed(1)}</span>
                         </span>
                       </TableCell>
                       <TableCell className="text-center text-gray-600 dark:text-gray-400">
