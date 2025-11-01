@@ -1661,7 +1661,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       <div className="w-full px-4 py-6">
         <div className="grid grid-cols-12 gap-6 h-[calc(100vh-200px)]">
           {/* Left Sidebar - Story Structure Navigation (Tree View) */}
-          <div className="col-span-3 h-full overflow-y-auto">
+          <div className="col-span-3 h-full">
             <StoryStructureSidebar
               story={story}
               currentSelection={currentSelection}
@@ -1674,8 +1674,10 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           </div>
 
           {/* Middle Panel - Table Data Display */}
-          <div className="col-span-6 h-full overflow-y-auto">
-            {renderEditor()}
+          <div className="col-span-6 h-full">
+            <div className="h-full overflow-y-auto">
+              {renderEditor()}
+            </div>
           </div>
 
           {/* Right Sidebar - Studio Agent Chat Only */}

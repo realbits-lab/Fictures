@@ -15,7 +15,7 @@ import type { StoryPublishedEvent, StoryUpdatedEvent, PostCreatedEvent } from '@
 interface CommunityStory {
   id: string;
   title: string;
-  description: string;
+  summary: string;
   genre: string;
   status: string;
   coverImage: string | null;
@@ -108,8 +108,8 @@ export default function CommunityPage() {
   const stories = data?.success ? data.stories.map((story: any) => ({
     ...story,
     author: story.author?.name || story.author || 'Unknown Author',
-    description: story.description || 'No description available',
-    coverImage: story.hnsData?.storyImage?.url || story.coverImage || '',
+    summary: story.summary || 'No summary available',
+    coverImage: story.imageUrl || '',
     lastActivity: formatRelativeTime(story.lastActivity),
   })) : [];
 

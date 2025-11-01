@@ -112,10 +112,16 @@ export function StoryStructureSidebar({
       // Sort parts by orderIndex before processing
       const sortedParts = [...story.parts].sort((a, b) => a.orderIndex - b.orderIndex);
       sortedParts.forEach(part => {
-        console.log('📑 Processing part:', part);
+        console.log('📑 Processing part:', {
+          id: part.id,
+          title: part.title,
+          chaptersCount: part.chapters?.length || 0,
+          chapters: part.chapters
+        });
+
         const partItem: TreeDataItem = {
           id: `part-${part.id}`,
-          name: `Part ${part.orderIndex}: ${part.title}`,
+          name: part.title, // Show only title
           icon: FileText,
           onClick: () => onSelectionChange?.({
             level: "part",
@@ -126,59 +132,85 @@ export function StoryStructureSidebar({
         };
 
         // Add chapters under part - sort by orderIndex
-        const sortedChapters = [...part.chapters].sort((a, b) => a.orderIndex - b.orderIndex);
-        sortedChapters.forEach(chapter => {
-          const chapterItem: TreeDataItem = {
-            id: `chapter-${chapter.id}`,
-            name: `Ch ${chapter.orderIndex}: ${chapter.title}`,
-            icon: Edit3,
-            onClick: () => onSelectionChange?.({
-              level: "chapter",
-              storyId: story.id,
-              partId: part.id,
-              chapterId: chapter.id
-            }),
-            children: []
-          };
+        if (part.chapters && Array.isArray(part.chapters)) {
+          const sortedChapters = [...part.chapters].sort((a, b) => a.orderIndex - b.orderIndex);
+          console.log(`  📚 Part "${part.title}" has ${sortedChapters.length} chapters`);
 
-          // Add scenes under chapter - sort by orderIndex if available
-          if (chapter.scenes && chapter.scenes.length > 0) {
-            const sortedScenes = [...chapter.scenes].sort((a, b) => {
-              // Use orderIndex if available, otherwise maintain original order
-              const aIndex = (a as any).orderIndex ?? 999;
-              const bIndex = (b as any).orderIndex ?? 999;
-              return aIndex - bIndex;
+          sortedChapters.forEach(chapter => {
+            console.log(`    📄 Processing chapter:`, {
+              id: chapter.id,
+              title: chapter.title,
+              scenesCount: chapter.scenes?.length || 0,
+              scenes: chapter.scenes
             });
-            sortedScenes.forEach(scene => {
-              chapterItem.children?.push({
-                id: `scene-${scene.id}`,
-                name: scene.title,
-                icon: Camera,
-                onClick: () => onSelectionChange?.({
-                  level: "scene",
-                  storyId: story.id,
-                  partId: part.id,
-                  chapterId: chapter.id,
-                  sceneId: scene.id
-                })
+
+            const chapterItem: TreeDataItem = {
+              id: `chapter-${chapter.id}`,
+              name: chapter.title, // Show only title
+              icon: Edit3,
+              onClick: () => onSelectionChange?.({
+                level: "chapter",
+                storyId: story.id,
+                partId: part.id,
+                chapterId: chapter.id
+              }),
+              children: []
+            };
+
+            // Add scenes under chapter - sort by orderIndex if available
+            if (chapter.scenes && Array.isArray(chapter.scenes) && chapter.scenes.length > 0) {
+              const sortedScenes = [...chapter.scenes].sort((a, b) => {
+                // Use orderIndex if available, otherwise maintain original order
+                const aIndex = (a as any).orderIndex ?? 999;
+                const bIndex = (b as any).orderIndex ?? 999;
+                return aIndex - bIndex;
               });
-            });
-          }
+              console.log(`      🎬 Chapter "${chapter.title}" has ${sortedScenes.length} scenes`);
 
-          partItem.children?.push(chapterItem);
-        });
+              sortedScenes.forEach(scene => {
+                console.log(`        🎭 Adding scene: ${scene.title}`);
+                chapterItem.children?.push({
+                  id: `scene-${scene.id}`,
+                  name: scene.title,
+                  icon: Camera,
+                  onClick: () => onSelectionChange?.({
+                    level: "scene",
+                    storyId: story.id,
+                    partId: part.id,
+                    chapterId: chapter.id,
+                    sceneId: scene.id
+                  })
+                });
+              });
+            } else {
+              console.log(`      ⚠️ Chapter "${chapter.title}" has no scenes or scenes is not an array`);
+            }
+
+            partItem.children?.push(chapterItem);
+          });
+        } else {
+          console.log(`  ⚠️ Part "${part.title}" has no chapters or chapters is not an array`);
+        }
 
         storyItem.children?.push(partItem);
-        console.log('✅ Added part to story children:', partItem);
+        console.log('✅ Added part to story children. Part has', partItem.children?.length, 'chapters');
       });
       console.log('📊 Story item with parts:', storyItem);
     } else {
       // No parts, add chapters directly under story - sort by orderIndex
+      console.log('📚 No parts, processing standalone chapters:', story.chapters);
       const sortedChapters = [...story.chapters].sort((a, b) => a.orderIndex - b.orderIndex);
       sortedChapters.forEach(chapter => {
+        console.log('📄 Processing standalone chapter:', {
+          id: chapter.id,
+          title: chapter.title,
+          scenesCount: chapter.scenes?.length || 0,
+          scenes: chapter.scenes
+        });
+
         const chapterItem: TreeDataItem = {
           id: `chapter-${chapter.id}`,
-          name: `Ch ${chapter.orderIndex}: ${chapter.title}`,
+          name: chapter.title, // Show only title
           icon: Edit3,
           onClick: () => onSelectionChange?.({
             level: "chapter",
@@ -189,14 +221,17 @@ export function StoryStructureSidebar({
         };
 
         // Add scenes under chapter - sort by orderIndex if available
-        if (chapter.scenes && chapter.scenes.length > 0) {
+        if (chapter.scenes && Array.isArray(chapter.scenes) && chapter.scenes.length > 0) {
           const sortedScenes = [...chapter.scenes].sort((a, b) => {
             // Use orderIndex if available, otherwise maintain original order
             const aIndex = (a as any).orderIndex ?? 999;
             const bIndex = (b as any).orderIndex ?? 999;
             return aIndex - bIndex;
           });
+          console.log(`  🎬 Standalone chapter "${chapter.title}" has ${sortedScenes.length} scenes`);
+
           sortedScenes.forEach(scene => {
+            console.log(`    🎭 Adding scene: ${scene.title}`);
             chapterItem.children?.push({
               id: `scene-${scene.id}`,
               name: scene.title,
@@ -209,6 +244,8 @@ export function StoryStructureSidebar({
               })
             });
           });
+        } else {
+          console.log(`  ⚠️ Standalone chapter "${chapter.title}" has no scenes or scenes is not an array`);
         }
 
         storyItem.children?.push(chapterItem);
@@ -273,8 +310,8 @@ export function StoryStructureSidebar({
   }
 
   return (
-    <Card className="h-fit max-h-[calc(100vh-8rem)]">
-      <CardHeader className="pb-3">
+    <Card className="h-full flex flex-col">
+      <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
             <BookOpen className="h-4 w-4" />
@@ -310,7 +347,7 @@ export function StoryStructureSidebar({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-0 pb-2 overflow-auto max-h-[calc(100vh-12rem)]">
+      <CardContent className="pt-0 pb-2 flex-1 overflow-y-auto">
         <TreeView
           data={treeData}
           initialSelectedItemId={initialSelectedItemId}
