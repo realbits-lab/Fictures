@@ -1,0 +1,525 @@
+---
+title: "First Visit Loading Time Optimization Strategy"
+---
+
+# First Visit Loading Time Optimization Strategy
+
+**Date:** October 25, 2025
+**Current Performance:** First visit ~3.7s (cold cache)
+**Target:** <1s for first visit
+
+---
+
+## Problem Analysis
+
+### Current Bottleneck
+
+The SSR page calls:
+```typescript
+const storyStructure = await getStoryWithStructure(storyId, true, session.user?.id);
+```
+
+With `includeScenes=true`, this query:
+1. Fetches story metadata
+2. Fetches all parts
+3. Fetches all chapters
+4. **Fetches ALL scenes with FULL CONTENT** ← **This is the bottleneck!**
+
+For a story with 10 scenes averaging 2000 words each:
+- Total content loaded: ~20,000 words
+- Data transfer: ~120KB of text
+- Database query time: 3-4 seconds
+- **User only needs to see ONE scene at a time!**
+
+---
+
+## Optimization Strategies
+
+### Strategy 1: Optimize SSR Query (Immediate Impact)
+
+**Change:** Load story structure WITHOUT full scene content
+
+**Implementation:**
+
+#### Option A: Use `includeScenes=false`
+```typescript
+// page.tsx (SSR)
+const storyStructure = await getStoryWithStructure(storyId, false, session.user?.id);
+```
+
+**Impact:**
+- Query only loads metadata (titles, IDs, status)
+- No scene content loaded
+- **Expected improvement: 2-3s faster** (3.7s → 0.7-1.7s)
+- Scene content loaded on-demand when user selects a scene
+
+**Trade-off:**
+- Scene content not immediately available
+- Requires client-side fetch when scene is selected
+- But we already have this! SceneDisplay makes API calls
+
+#### Option B: Create new query `getStoryStructureLite()`
+```typescript
+// queries.ts
+export async function getStoryStructureLite(storyId: string, userId?: string) {
+  // Same as getStoryWithStructure but:
+  // - Load scene metadata only (title, id, status, wordCount)
+  // - Do NOT load scene.content field
+  // - Much faster query
+}
+```
+
+**Impact:**
+- Optimized query that's still cacheable
+- Provides all metadata needed for navigation
+- **Expected improvement: 2-3s faster**
+
+---
+
+### Strategy 2: Cache Warming on Publish (Short-term)
+
+**Concept:** When a story is published, immediately populate the cache
+
+**Implementation:**
+
+```typescript
+// In story publish handler
+export async function publishStory(storyId: string, userId: string) {
+  // 1. Update story status to 'published'
+  await updateStory(storyId, userId, { status: 'published' });
+
+  // 2. Warm the cache immediately
+  console.log('[CacheWarming] Pre-populating cache for published story...');
+  await getStoryWithStructure(storyId, true, userId); // This populates cache
+  console.log('[CacheWarming] Cache populated successfully');
+
+  return result;
+}
+```
+
+**Impact:**
+- First user after publish gets cache HIT instead of MISS
+- **Zero impact for first user** (0.4s instead of 3.7s)
+- Simple to implement
+- Works with existing cache infrastructure
+
+**When to warm:**
+- On story publish
+- On story update (if significant)
+- On chapter publish
+- On scene content save
+
+---
+
+### Strategy 3: Background Cache Warming (Long-term)
+
+**Concept:** Keep popular content always cached
+
+**Implementation:**
+
+```typescript
+// Background job (runs every 5 minutes)
+async function warmPopularStories() {
+  // Get list of popular published stories
+  const popularStories = await db
+    .select({ id: stories.id })
+    .from(stories)
+    .where(eq(stories.status, 'published'))
+    .orderBy(desc(stories.viewCount))
+    .limit(100); // Top 100 stories
+
+  console.log(`[CacheWarming] Warming cache for ${popularStories.length} stories`);
+
+  for (const story of popularStories) {
+    // Check if cache exists
+    const cacheKey = `story:${story.id}:structure:scenes:true:public`;
+    const cached = await getCache().get(cacheKey);
+
+    if (!cached) {
+      // Cache miss - warm it
+      await getStoryWithStructure(story.id, true);
+      console.log(`[CacheWarming] Warmed: ${story.id}`);
+    }
+  }
+}
+
+// Schedule with cron or Next.js API route
+```
+
+**Impact:**
+- Popular stories ALWAYS cached
+- Users almost never experience cache miss
+- **Near-zero cold cache requests** for popular content
+
+**Options:**
+- Run as cron job (every 5-10 minutes)
+- Run as Next.js API route with cron trigger
+- Run as background worker process
+
+---
+
+### Strategy 4: Extend Cache TTL (Immediate)
+
+**Current:** Published content cached for 600s (10 minutes)
+**Proposed:** Extend to 3600s (1 hour) or longer
+
+**Implementation:**
+
+```typescript
+// cached-queries.ts
+const CACHE_TTL = {
+  PUBLISHED_CONTENT: 3600,   // 1 hour (from 10 minutes)
+  PRIVATE_CONTENT: 180,       // 3 minutes
+  LIST: 600,                  // 10 minutes
+};
+```
+
+**Impact:**
+- Cache stays warm longer
+- Fewer cache misses
+- **Reduced cold cache requests by ~80%**
+
+**Trade-off:**
+- Content updates take up to 1 hour to reflect
+- Can manually invalidate cache on publish/update
+
+---
+
+### Strategy 5: Stale-While-Revalidate
+
+**Concept:** Serve slightly stale data immediately, revalidate in background
+
+**Implementation:**
+
+```typescript
+export async function getStoryWithStructure(storyId: string, includeScenes: boolean, userId?: string) {
+  const cacheKey = /* ... */;
+
+  // Check cache
+  const cached = await getCache().get(cacheKey);
+  const cacheAge = cached ? Date.now() - cached.timestamp : Infinity;
+
+  // Serve stale data if < 1 hour old
+  if (cached && cacheAge < 3600000) {
+    // If > 10 minutes old, revalidate in background
+    if (cacheAge > 600000) {
+      // Don't await - revalidate in background
+      queries.getStoryWithStructure(storyId, includeScenes, userId)
+        .then(fresh => getCache().set(cacheKey, fresh, CACHE_TTL.PUBLISHED_CONTENT));
+    }
+
+    return cached;
+  }
+
+  // Cache miss or too stale - fetch fresh
+  const fresh = await queries.getStoryWithStructure(storyId, includeScenes, userId);
+  await getCache().set(cacheKey, fresh, CACHE_TTL.PUBLISHED_CONTENT);
+  return fresh;
+}
+```
+
+**Impact:**
+- Always serve cached data if < 1 hour
+- Revalidate in background if > 10 minutes
+- **Sub-100ms response time** even on "cache miss"
+
+---
+
+### Strategy 6: Database Query Optimization
+
+**Concept:** Optimize the underlying database query
+
+**Opportunities:**
+
+1. **Add Database Indexes:**
+```sql
+CREATE INDEX idx_stories_status ON stories(status);
+CREATE INDEX idx_scenes_chapter_id ON scenes(chapter_id);
+CREATE INDEX idx_chapters_story_id ON chapters(story_id);
+```
+
+2. **Use Database Query Caching:**
+```typescript
+// PostgreSQL prepared statements
+// Neon may have built-in query caching
+```
+
+3. **Optimize JOIN strategy:**
+- Review RelationshipManager.getStoryWithStructure()
+- Ensure efficient JOIN order
+- Consider separate queries + in-memory join
+
+**Expected Impact:** 20-30% faster query (3.7s → 2.5s)
+
+---
+
+## Recommended Implementation Plan
+
+### Phase 1: Immediate (This Week)
+
+**Priority 1: Optimize SSR Query**
+```typescript
+// page.tsx - Change to includeScenes=false
+const storyStructure = await getStoryWithStructure(storyId, false, session.user?.id);
+```
+
+**Expected Result:**
+- First visit: 3.7s → **0.7-1.0s** ✅
+- Implementation time: 5 minutes
+- Risk: Low (scene content already loaded on-demand)
+
+**Priority 2: Extend Cache TTL**
+```typescript
+const CACHE_TTL = {
+  PUBLISHED_CONTENT: 3600,   // 1 hour
+};
+```
+
+**Expected Result:**
+- 80% reduction in cache misses
+- Implementation time: 2 minutes
+- Risk: None (can invalidate manually)
+
+### Phase 2: Short-term (Next Week)
+
+**Cache Warming on Publish**
+- Add cache warming to story publish handler
+- Warm cache on significant updates
+
+**Expected Result:**
+- Zero cache misses for newly published content
+- Implementation time: 30 minutes
+- Risk: Low
+
+### Phase 3: Long-term (Future)
+
+**Background Cache Warming**
+- Implement periodic cache warming for popular stories
+- Use cron job or background worker
+
+**Expected Result:**
+- Popular stories always cached
+- Near-zero cache misses
+- Implementation time: 2-3 hours
+
+---
+
+## Performance Targets
+
+| Scenario | Current | Phase 1 | Phase 2 | Phase 3 |
+|----------|---------|---------|---------|---------|
+| **First Visit (Cold Cache)** | 3.7s | 0.7-1.0s | 0.4s | 0.4s |
+| **Second Visit (Warm Cache)** | 0.4s | 0.4s | 0.4s | 0.4s |
+| **Popular Story** | 3.7s | 0.7-1.0s | 0.4s | 0.4s |
+| **Newly Published** | 3.7s | 0.7-1.0s | 0.4s | 0.4s |
+
+---
+
+## Testing Plan
+
+### Test 1: SSR Query Optimization
+
+```bash
+# Before
+curl -w "@curl-format.txt" http://localhost:3000/writing/edit/story/{id}
+# Time: ~3.7s
+
+# After (includeScenes=false)
+curl -w "@curl-format.txt" http://localhost:3000/writing/edit/story/{id}
+# Expected: ~0.7-1.0s
+```
+
+### Test 2: Cache Warming
+
+```javascript
+// Publish story
+await publishStory(storyId, userId);
+
+// Immediate request (should hit cache)
+const response = await fetch(`/api/stories/${storyId}/structure`);
+// Expected: <100ms (cache HIT)
+```
+
+### Test 3: Background Warming
+
+```bash
+# Run warming job
+curl http://localhost:3000/api/cache/warm
+
+# Request popular story
+curl http://localhost:3000/api/stories/{popularStoryId}/structure
+# Expected: <100ms (cache HIT)
+```
+
+---
+
+## Implementation Code
+
+### Option 1: SSR Query Optimization (RECOMMENDED - DO THIS FIRST)
+
+**File: `src/app/writing/edit/story/[storyId]/page.tsx`**
+
+```typescript
+// BEFORE
+const storyStructure = await getStoryWithStructure(storyId, true, session.user?.id);
+
+// AFTER
+const storyStructure = await getStoryWithStructure(storyId, false, session.user?.id);
+//                                                          ^^^^^
+//                                                          Load structure only, not full scene content
+```
+
+**Why this works:**
+- UnifiedWritingEditor doesn't actually need scene content in the initial prop
+- SceneDisplay already fetches scene content on-demand via SWR
+- Reduces initial payload by ~90%
+- Reduces query time from 3.7s to <1s
+
+### Option 2: Cache Warming Helper
+
+**File: `src/lib/cache/cache-warming.ts`**
+
+```typescript
+import { getCache } from './redis-cache';
+import { getStoryWithStructure } from '../db/cached-queries';
+
+/**
+ * Warm cache for a specific story
+ */
+export async function warmStoryCache(storyId: string) {
+  console.log(`[CacheWarming] Warming cache for story: ${storyId}`);
+
+  try {
+    // This will populate the cache
+    await getStoryWithStructure(storyId, true);
+    console.log(`[CacheWarming] ✅ Cache warmed for story: ${storyId}`);
+    return true;
+  } catch (error) {
+    console.error(`[CacheWarming] ❌ Failed to warm cache for story: ${storyId}`, error);
+    return false;
+  }
+}
+
+/**
+ * Warm cache for multiple stories
+ */
+export async function warmMultipleStories(storyIds: string[]) {
+  console.log(`[CacheWarming] Warming cache for ${storyIds.length} stories`);
+
+  const results = await Promise.allSettled(
+    storyIds.map(id => warmStoryCache(id))
+  );
+
+  const succeeded = results.filter(r => r.status === 'fulfilled').length;
+  console.log(`[CacheWarming] Warmed ${succeeded}/${storyIds.length} stories`);
+
+  return { total: storyIds.length, succeeded };
+}
+
+/**
+ * Warm cache for top N published stories
+ */
+export async function warmPopularStories(limit: number = 100) {
+  const { db } = await import('../db');
+  const { stories } = await import('../db/schema');
+  const { eq, desc } = await import('drizzle-orm');
+
+  const popularStories = await db
+    .select({ id: stories.id })
+    .from(stories)
+    .where(eq(stories.status, 'published'))
+    .orderBy(desc(stories.viewCount))
+    .limit(limit);
+
+  const storyIds = popularStories.map(s => s.id);
+  return warmMultipleStories(storyIds);
+}
+```
+
+### Option 3: API Route for Manual Cache Warming
+
+**File: `src/app/api/cache/warm/route.ts`**
+
+```typescript
+import { NextResponse } from 'next/server';
+import { warmPopularStories } from '@/lib/cache/cache-warming';
+
+export async function POST() {
+  try {
+    console.log('[API] Cache warming triggered');
+    const result = await warmPopularStories(50); // Warm top 50 stories
+
+    return NextResponse.json({
+      success: true,
+      ...result,
+      message: `Warmed cache for ${result.succeeded}/${result.total} stories`
+    });
+  } catch (error) {
+    console.error('[API] Cache warming failed:', error);
+    return NextResponse.json(
+      { error: 'Cache warming failed' },
+      { status: 500 }
+    );
+  }
+}
+
+// Can be triggered by cron or manually
+```
+
+---
+
+## Monitoring
+
+### Metrics to Track
+
+1. **Cache Hit Rate:**
+```
+(Cache HITs / Total Requests) * 100
+Target: >95%
+```
+
+2. **Average Response Time:**
+```
+- Cold cache: <1s (target)
+- Warm cache: <100ms (target)
+```
+
+3. **Cache Memory Usage:**
+```
+Monitor Redis memory
+Alert if >80% capacity
+```
+
+### Logging
+
+```typescript
+console.log('[Performance] SSR load time:', duration, 'ms');
+console.log('[Cache] Hit rate:', hitRate, '%');
+console.log('[CacheWarming] Stories warmed:', count);
+```
+
+---
+
+## Conclusion
+
+**Recommended Approach:**
+
+1. **IMMEDIATE:** Change `includeScenes=true` to `includeScenes=false`
+   - 5 minute implementation
+   - 70-80% performance improvement
+   - Low risk
+
+2. **SHORT-TERM:** Implement cache warming on publish
+   - 30 minute implementation
+   - Eliminates cold cache for new content
+   - Low risk
+
+3. **LONG-TERM:** Background cache warming for popular content
+   - Optional enhancement
+   - Keeps popular content always cached
+
+**Expected Result:**
+- First visit: 3.7s → **<1s** 🚀
+- All subsequent visits: **<0.5s** 🚀
+- Popular stories: **Always <0.5s** 🚀
+

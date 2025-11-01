@@ -1,0 +1,479 @@
+---
+title: "Scene View Tracking System"
+---
+
+# Scene View Tracking System
+
+**Complete view tracking for both logged-in and anonymous users**
+
+This document describes the scene view tracking system that tracks how many times scenes are viewed, with support for both authenticated and anonymous users.
+
+## Overview
+
+The view tracking system provides:
+- **Accurate view counts** for each scene
+- **Unique visitor tracking** to distinguish new viewers from repeat visitors
+- **Anonymous user support** using session cookies
+- **Privacy-friendly** tracking without storing personally identifiable information
+- **Real-time updates** with automatic cache invalidation
+
+## Architecture
+
+### Database Schema
+
+**`scene_views` Table**:
+```sql
+CREATE TABLE scene_views (
+  id TEXT PRIMARY KEY,
+  scene_id TEXT NOT NULL REFERENCES scenes(id) ON DELETE CASCADE,
+  user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+  session_id TEXT,  -- For anonymous users
+  ip_address TEXT,  -- Optional, for analytics
+  user_agent TEXT,  -- Optional, for analytics
+  viewed_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+
+  -- Ensure at least one identifier exists
+  CONSTRAINT scene_views_user_or_session CHECK (
+    (user_id IS NOT NULL) OR (session_id IS NOT NULL)
+  )
+);
+```
+
+**Indexes** (for performance):
+- `idx_scene_views_scene_id` - Fast lookups by scene
+- `idx_scene_views_user_id` - Fast lookups by user
+- `idx_scene_views_session_id` - Fast lookups by session
+- `idx_scene_views_unique_user` - Unique constraint per user+scene
+- `idx_scene_views_unique_session` - Unique constraint per session+scene
+
+**`scenes` Table Updates**:
+```sql
+ALTER TABLE scenes ADD COLUMN:
+  view_count INTEGER NOT NULL DEFAULT 0,           -- Total views (can include repeats)
+  unique_view_count INTEGER NOT NULL DEFAULT 0,    -- Distinct viewers (users/sessions)
+  last_viewed_at TIMESTAMP                         -- Last view timestamp
+```
+
+### Session Management
+
+**For Anonymous Users**:
+- Session ID generated on first visit: `sess_<32-char-nanoid>`
+- Stored in HTTP-only cookie: `fictures_session_id`
+- Expires after 30 days
+- Secure in production (HTTPS only)
+- SameSite: lax (CSRF protection)
+
+**Location**: `src/lib/utils/session.ts`
+
+```typescript
+// Get or create session ID for current user
+const sessionId = await getOrCreateSessionId(userId);
+
+// Returns:
+// - null for logged-in users (use userId instead)
+// - existing or new session ID for anonymous users
+```
+
+## API Endpoints
+
+### POST `/api/scenes/[id]/view`
+
+Track a scene view.
+
+**Behavior**:
+1. Get user ID (if logged in) or session ID (if anonymous)
+2. Check if this user/session already viewed this scene
+3. If new viewer:
+   - Create `scene_views` record
+   - Increment scene's `unique_view_count`
+4. Always increment scene's `view_count` (allows repeat view tracking)
+5. Update `last_viewed_at` timestamp
+6. Return updated counts
+
+**Request**: No body required
+
+**Response**:
+```json
+{
+  "success": true,
+  "sceneId": "scene_abc123",
+  "isNewView": true,  // false if user/session already viewed
+  "viewCount": 156,
+  "uniqueViewCount": 98,
+  "viewer": {
+    "userId": "user_xyz789",  // or null
+    "sessionId": null,  // or "sess_..."
+    "isAuthenticated": true
+  }
+}
+```
+
+**Client Usage**:
+```typescript
+const response = await fetch(`/api/scenes/${sceneId}/view`, {
+  method: 'POST'
+});
+
+const data = await response.json();
+console.log(`Total views: ${data.viewCount}`);
+console.log(`Unique viewers: ${data.uniqueViewCount}`);
+```
+
+### GET `/api/scenes/[id]/view`
+
+Get view statistics for a scene.
+
+**Response**:
+```json
+{
+  "sceneId": "scene_abc123",
+  "viewCount": 156,
+  "uniqueViewCount": 98,
+  "lastViewedAt": "2025-10-26T12:34:56.789Z",
+  "hasViewedByCurrentUser": true
+}
+```
+
+## React Hook Integration
+
+### useSceneView Hook
+
+**Location**: `src/hooks/useSceneView.ts`
+
+Automatically tracks scene views when scenes are loaded.
+
+**Features**:
+- Debounces API calls (1 second default)
+- Prevents duplicate tracking in same session
+- Works with React component lifecycle
+- Automatic cache revalidation
+
+**Usage**:
+```typescript
+import { useSceneView } from '@/hooks/useSceneView';
+
+function SceneReader({ sceneId }: { sceneId: string }) {
+  // Automatically tracks view when sceneId changes
+  const { hasViewed } = useSceneView(sceneId);
+
+  return (
+    <div>
+      <h1>Scene Content</h1>
+      {hasViewed && <span>✓ Tracked</span>}
+    </div>
+  );
+}
+```
+
+**Options**:
+```typescript
+useSceneView(sceneId, {
+  enabled: true,        // Enable/disable tracking
+  debounceMs: 1000     // Debounce delay (default: 1000ms)
+});
+```
+
+**Integration Example** (`ChapterReaderClient.tsx`):
+```typescript
+// Track views automatically when scene is selected
+useSceneView(selectedSceneId);
+```
+
+## UI Components
+
+### ViewCount Component
+
+**Location**: `src/components/ui/view-count.tsx`
+
+Displays view counts with eye icon.
+
+**Basic Usage**:
+```typescript
+import { ViewCount } from '@/components/ui/view-count';
+
+<ViewCount viewCount={156} />
+// Shows: 👁️ 156
+
+<ViewCount viewCount={1500} />
+// Shows: 👁️ 1.5K
+
+<ViewCount viewCount={2500000} />
+// Shows: 👁️ 2.5M
+```
+
+**Show Unique Views**:
+```typescript
+<ViewCount
+  viewCount={156}
+  uniqueViewCount={98}
+  showUnique={true}
+/>
+// Shows: 👁️ 98 (156)
+```
+
+**Sizes**:
+```typescript
+<ViewCount viewCount={156} size="sm" />  // Small (text-xs)
+<ViewCount viewCount={156} size="md" />  // Medium (text-sm) - default
+<ViewCount viewCount={156} size="lg" />  // Large (text-base)
+```
+
+**Badge Variant**:
+```typescript
+import { ViewCountBadge } from '@/components/ui/view-count';
+
+<ViewCountBadge viewCount={156} />
+// Rounded pill badge with background
+```
+
+**Loading State**:
+```typescript
+import { ViewCountSkeleton } from '@/components/ui/view-count';
+
+<ViewCountSkeleton size="md" />
+// Animated loading skeleton
+```
+
+## View Count Types
+
+### Total Views (`viewCount`)
+- **What**: All view records for this scene
+- **Includes**: Repeat views from same user/session
+- **Use Case**: Overall popularity, engagement metrics
+- **Increment**: Every time API is called
+
+### Unique Views (`uniqueViewCount`)
+- **What**: Distinct viewers (unique users + unique sessions)
+- **Includes**: Only first view per user/session
+- **Use Case**: Reach metrics, audience size
+- **Increment**: Only for new viewers
+
+### Example Scenario:
+```
+User A (logged in) views scene twice:
+  - First view: viewCount +1, uniqueViewCount +1
+  - Second view: viewCount +1, uniqueViewCount +0
+
+User B (anonymous) views scene three times:
+  - First view: viewCount +1, uniqueViewCount +1
+  - Second view: viewCount +1, uniqueViewCount +0
+  - Third view: viewCount +1, uniqueViewCount +0
+
+Final counts:
+  - viewCount: 5 (total views)
+  - uniqueViewCount: 2 (User A + User B)
+```
+
+## Privacy & GDPR Compliance
+
+### Data Collected
+- **User ID**: Only for logged-in users (already authenticated)
+- **Session ID**: Random anonymous identifier (no PII)
+- **IP Address**: Optional, for analytics only (can be disabled)
+- **User Agent**: Browser information (standard HTTP header)
+
+### Privacy Features
+- Session IDs are random and cannot be traced to individuals
+- No tracking of browsing history beyond current site
+- HTTP-only cookies prevent JavaScript access
+- Secure cookies in production (HTTPS only)
+- 30-day expiry automatically removes old sessions
+
+### User Rights
+- Users can clear cookies to reset session tracking
+- Logged-in users can request data deletion
+- No cross-site tracking or third-party sharing
+
+## Performance Considerations
+
+### Database Performance
+- **Indexes**: All queries use indexed columns
+- **Constraints**: Unique indexes prevent duplicate tracking
+- **Cascade Deletion**: Views automatically deleted when scene is deleted
+
+### Query Performance:
+```sql
+-- Check if user viewed scene (uses unique index)
+SELECT id FROM scene_views
+WHERE scene_id = ? AND user_id = ?
+LIMIT 1;
+-- Execution time: <1ms
+
+-- Get scene view counts (uses primary key)
+SELECT view_count, unique_view_count FROM scenes
+WHERE id = ?;
+-- Execution time: <1ms
+```
+
+### Caching Strategy
+- Scene data cached in Redis (includes view counts)
+- Cache invalidated when view is tracked
+- Uses SWR pattern for optimistic updates
+
+### API Performance
+- Debounced tracking (1 second) prevents spam
+- Client-side deduplication per session
+- Async processing doesn't block rendering
+
+## Testing
+
+### Unit Tests
+```bash
+# Test session management
+pnpm test -- __tests__/session.test.ts
+
+# Test view tracking API
+pnpm test -- __tests__/api/scenes/view.test.ts
+
+# Test ViewCount component
+pnpm test -- __tests__/components/view-count.test.ts
+```
+
+### Integration Testing
+
+**Test Anonymous User Flow**:
+```typescript
+// 1. Visit scene without login
+await page.goto('/novels/story-id');
+
+// 2. Check cookie is set
+const cookies = await page.context().cookies();
+const sessionCookie = cookies.find(c => c.name === 'fictures_session_id');
+expect(sessionCookie).toBeDefined();
+
+// 3. Verify view was tracked
+const response = await page.request.get(`/api/scenes/${sceneId}/view`);
+const data = await response.json();
+expect(data.viewCount).toBeGreaterThan(0);
+```
+
+**Test Logged-In User Flow**:
+```typescript
+// 1. Login
+await page.goto('/auth/signin');
+await page.fill('[name="email"]', 'test@example.com');
+await page.click('button[type="submit"]');
+
+// 2. Visit scene
+await page.goto('/novels/story-id');
+
+// 3. Verify tracking uses user ID
+const response = await page.request.get(`/api/scenes/${sceneId}/view`);
+const data = await response.json();
+expect(data.hasViewedByCurrentUser).toBe(true);
+```
+
+**Test Duplicate Prevention**:
+```typescript
+// Track view twice
+await fetch(`/api/scenes/${sceneId}/view`, { method: 'POST' });
+const first = await fetch(`/api/scenes/${sceneId}/view`, { method: 'POST' });
+const second = await fetch(`/api/scenes/${sceneId}/view`, { method: 'POST' });
+
+const firstData = await first.json();
+const secondData = await second.json();
+
+expect(firstData.isNewView).toBe(true);
+expect(secondData.isNewView).toBe(false);
+expect(firstData.uniqueViewCount).toBe(secondData.uniqueViewCount);
+```
+
+## Analytics & Insights
+
+### View Metrics Available
+- **Total Views**: Overall engagement
+- **Unique Viewers**: Reach and audience size
+- **View Velocity**: Views over time
+- **Reader Retention**: Repeat view patterns
+- **Popular Scenes**: Most viewed content
+
+### Query Examples
+
+**Most Viewed Scenes**:
+```sql
+SELECT id, title, view_count, unique_view_count
+FROM scenes
+WHERE story_id = ?
+ORDER BY view_count DESC
+LIMIT 10;
+```
+
+**View Growth Over Time**:
+```sql
+SELECT DATE(viewed_at) as date, COUNT(*) as views
+FROM scene_views
+WHERE scene_id = ?
+GROUP BY DATE(viewed_at)
+ORDER BY date DESC;
+```
+
+**Unique Viewer Ratio**:
+```sql
+SELECT
+  scene_id,
+  view_count,
+  unique_view_count,
+  ROUND(unique_view_count::numeric / NULLIF(view_count, 0) * 100, 2) as unique_ratio
+FROM scenes
+WHERE story_id = ?;
+```
+
+## Troubleshooting
+
+### Views Not Tracking
+1. **Check cookie settings**: Session cookie must be enabled
+2. **Verify API endpoint**: Check browser console for errors
+3. **Check database**: Verify migration ran successfully
+4. **Clear cache**: Redis cache may be stale
+
+### Duplicate Tracking
+1. **Check unique indexes**: `idx_scene_views_unique_user/session`
+2. **Verify session cookie**: Should persist across page loads
+3. **Check client-side dedup**: `useSceneView` prevents multiple calls
+
+### Performance Issues
+1. **Check indexes**: All lookups should use indexes
+2. **Monitor Redis**: Cache hit rate should be >80%
+3. **Database connection pool**: May need to increase pool size
+
+## Future Enhancements
+
+### Planned Features
+- [ ] Real-time view counter updates (WebSocket)
+- [ ] View heatmaps (which parts of scene are read)
+- [ ] Reading speed analytics
+- [ ] A/B testing support
+- [ ] View source tracking (social media, search, direct)
+- [ ] Geographic distribution (optional, privacy-conscious)
+
+### Configuration Options
+- [ ] Toggle between total/unique view display
+- [ ] Disable tracking for private stories
+- [ ] Custom tracking intervals
+- [ ] Batch view updates for performance
+
+## Related Documentation
+
+- **Database Schema**: `drizzle/0030_add_scene_views.sql`
+- **Session Management**: `src/lib/utils/session.ts`
+- **API Endpoint**: `src/app/api/scenes/[id]/view/route.ts`
+- **React Hook**: `src/hooks/useSceneView.ts`
+- **UI Component**: `src/components/ui/view-count.tsx`
+- **Analytics Guide**: `docs/analytics-specification.md`
+- **Privacy Policy**: `docs/privacy-policy.md`
+
+## Summary
+
+The scene view tracking system provides:
+
+✅ **Accurate Tracking** - Distinguishes between total and unique views
+✅ **Anonymous Support** - Works for non-logged-in users with session cookies
+✅ **Privacy-Friendly** - No PII stored for anonymous users
+✅ **High Performance** - Indexed queries, Redis caching, debounced tracking
+✅ **Easy Integration** - Simple React hook for automatic tracking
+✅ **Flexible Display** - Reusable UI components with multiple variants
+
+**Implementation Time**: Complete in 2-3 hours
+**Cost**: Minimal (storage for views table, negligible API overhead)
+**Maintenance**: Low (automated cache management, self-cleaning sessions)

@@ -280,6 +280,11 @@ export async function POST(request: NextRequest) {
                 content: scene.content,
                 cyclePhase: scene.cyclePhase,
                 emotionalBeat: scene.emotionalBeat,
+                // Planning metadata from scene summary generation
+                characterFocus: scene.characterFocus || [],
+                sensoryAnchors: scene.sensoryAnchors || [],
+                dialogueVsDescription: scene.dialogueVsDescription || 'balanced',
+                suggestedLength: scene.suggestedLength || 'medium',
                 orderIndex: index,
                 createdAt: new Date(),
                 updatedAt: new Date(),

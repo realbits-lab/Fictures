@@ -24,6 +24,7 @@ const gnbMenuItems: NavItem[] = [
   { href: "/publish", label: "Publish", icon: "📤" },
   { href: "/analytics", label: "Analytics", icon: "📊" },
   { href: "/research", label: "Research", icon: "🔬" },
+  { href: "/docs", label: "Docs", icon: "📚" },
   { href: "/settings", label: "Settings", icon: "⚙️" }
 ];
 
@@ -44,8 +45,8 @@ export function GlobalNavigation() {
       return session?.user?.role === 'writer' || session?.user?.role === 'manager';
     }
 
-    // Novels and Community are visible to all users (authenticated or anonymous)
-    if (item.href === '/novels' || item.href === '/community') {
+    // Novels, Community, and Docs are visible to all users (authenticated or anonymous)
+    if (item.href === '/novels' || item.href === '/community' || item.href === '/docs') {
       return true;
     }
 

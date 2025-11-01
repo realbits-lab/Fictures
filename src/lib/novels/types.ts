@@ -152,10 +152,10 @@ export interface SceneSummaryResult {
   summary: string;
   cyclePhase: CyclePhase;
   emotionalBeat: EmotionalBeat;
-  characterFocus: string[];
-  sensoryAnchors: string[];
+  characterFocus: string[]; // Character IDs appearing in this scene
+  sensoryAnchors: string[]; // Key sensory details to include
   dialogueVsDescription: 'dialogue-heavy' | 'balanced' | 'description-heavy';
-  suggestedLength: 'short' | 'medium' | 'long';
+  suggestedLength: 'short' | 'medium' | 'long'; // short: 300-500, medium: 500-800, long: 800-1000 words
 }
 
 export interface SceneContentResult {

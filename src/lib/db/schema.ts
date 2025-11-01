@@ -303,12 +303,14 @@ export const scenes = pgTable('scenes', {
   // Scene fields
   summary: text('summary'), // Scene specification (planning layer)
   // Legacy HNS fields removed: povCharacterId, settingId, narrativeVoice, entryHook, emotionalShift were HNS-only
-  // Character and place references for scene writing
-  characterIds: json('character_ids').$type<string[]>().default([]).notNull(),
-  placeIds: json('place_ids').$type<string[]>().default([]).notNull(),
   // Adversity-Triumph Engine fields - Cycle phase tracking
   cyclePhase: cyclePhaseEnum('cycle_phase'), // Position in 4-phase cycle: setup, confrontation, virtue, consequence, or transition
   emotionalBeat: emotionalBeatEnum('emotional_beat'), // Target emotion: fear, hope, tension, relief, elevation, catharsis, despair, joy
+  // Planning metadata (guides content generation) - from novels specification
+  characterFocus: json('character_focus').$type<string[]>(), // Character IDs appearing in this scene
+  sensoryAnchors: json('sensory_anchors').$type<string[]>(), // Key sensory details to include (e.g., "rain on metal roof", "smell of smoke")
+  dialogueVsDescription: text('dialogue_vs_description'), // Balance guidance: "dialogue-heavy" | "balanced" | "description-heavy"
+  suggestedLength: text('suggested_length'), // "short" (300-500) | "medium" (500-800) | "long" (800-1000 words)
   // Publishing fields
   publishedAt: timestamp('published_at'),
   scheduledFor: timestamp('scheduled_for'),
