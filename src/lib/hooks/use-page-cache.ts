@@ -140,7 +140,6 @@ export function usePublishedStories() {
             firstStory: data.stories[0]?.title,
             lastStory: data.stories[storiesCount - 1]?.title,
             genres: [...new Set(data.stories.map((s: any) => s.genre))],
-            totalWordCount: data.stories.reduce((sum: number, s: any) => sum + (s.wordCount || 0), 0),
           });
         }
       },

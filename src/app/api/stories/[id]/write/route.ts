@@ -184,10 +184,7 @@ export async function GET(
         writingContext: {
           draftsCount: allChapters.filter(ch => ch.status === 'writing').length,
           completedChapters: allChapters.filter(ch => ch.status === 'published').length,
-          totalWordCount: allChapters.reduce((sum, ch) => sum + (ch.wordCount || 0), 0),
-          averageChapterLength: allChapters.length > 0
-            ? Math.round(allChapters.reduce((sum, ch) => sum + (ch.wordCount || 0), 0) / allChapters.length)
-            : 0
+          averageChapterLength: 0
         }
       }
     };
@@ -197,12 +194,10 @@ export async function GET(
       storyId: storyWithStructure.id,
       chaptersData: allChapters.map(ch => ({
         id: ch.id,
-        wordCount: ch.wordCount,
         status: ch.status
       })),
       scenesData: allScenes.map(sc => ({
         id: sc.id,
-        wordCount: sc.wordCount,
         status: sc.status
       })),
       writingMetrics: response.metadata.writingContext

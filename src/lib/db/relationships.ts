@@ -23,8 +23,6 @@ export class RelationshipManager {
         description: partData.description,
         authorId: partData.authorId!,
         orderIndex: partData.orderIndex!,
-        targetWordCount: partData.targetWordCount,
-        currentWordCount: partData.currentWordCount,
         content: partData.content,
       });
 
@@ -58,7 +56,6 @@ export class RelationshipManager {
         orderIndex: chapterData.orderIndex!,
         status: chapterData.status,
         summary: chapterData.summary,
-        targetWordCount: chapterData.targetWordCount,
       });
 
       // Update parent timestamps

@@ -78,8 +78,6 @@ export async function GET(
       summary: story.summary,
       tone: story.tone,
       moralFramework: story.moralFramework,
-      targetWordCount: story.targetWordCount,
-      currentWordCount: story.currentWordCount,
       createdAt: story.createdAt,
       updatedAt: story.updatedAt,
     };

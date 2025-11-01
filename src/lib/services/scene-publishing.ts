@@ -130,11 +130,6 @@ async function validateSceneForPublishing(scene: any): Promise<ValidationResult>
     errors.push('Scene has no content');
   }
 
-  // Check minimum word count
-  if (scene.wordCount < 100) {
-    warnings.push(`Scene is very short (${scene.wordCount} words)`);
-  }
-
   // Check if title exists
   if (!scene.title || scene.title.trim().length === 0) {
     errors.push('Scene has no title');

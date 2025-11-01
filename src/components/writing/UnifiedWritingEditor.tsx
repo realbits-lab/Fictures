@@ -48,14 +48,11 @@ interface Story {
       title: string;
       orderIndex: number;
       status: string;
-      wordCount: number;
-      targetWordCount: number;
       hnsData?: any;
       scenes?: Array<{
         id: string;
         title: string;
         status: "completed" | "in_progress" | "planned";
-        wordCount: number;
         goal: string;
         conflict: string;
         outcome: string;
@@ -68,14 +65,11 @@ interface Story {
     title: string;
     orderIndex: number;
     status: string;
-    wordCount: number;
-    targetWordCount: number;
     hnsData?: any;
     scenes?: Array<{
       id: string;
       title: string;
       status: "completed" | "in_progress" | "planned";
-      wordCount: number;
       goal: string;
       conflict: string;
       outcome: string;
@@ -86,7 +80,6 @@ interface Story {
     id: string;
     title: string;
     status: "completed" | "in_progress" | "planned";
-    wordCount: number;
     goal: string;
     conflict: string;
     outcome: string;
@@ -487,7 +480,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               chapter_title: ch.title,
               order_index: ch.orderIndex,
               status: ch.status,
-              word_count: ch.wordCount
             })) || []
           };
           setOriginalPartData(partMetadata);
@@ -532,13 +524,11 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             chapter_title: selectedChapter.title,
             order_index: selectedChapter.orderIndex,
             status: selectedChapter.status,
-            word_count: selectedChapter.wordCount,
             target_word_count: selectedChapter.targetWordCount,
             scenes: (selectedChapter.scenes || []).map(scene => ({
               scene_id: scene.id,
               scene_title: scene.title,
               status: scene.status,
-              word_count: scene.wordCount
             }))
           };
           setOriginalChapterData(chapterMetadata);
@@ -583,7 +573,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       if (selectedScene) {
         console.log(`✅ [CLIENT] Scene found in ${sceneLoadDuration}ms`);
         console.log(`📝 [CLIENT] Scene title: "${selectedScene.title}"`);
-        console.log(`📊 [CLIENT] Scene has content: ${!!(selectedScene as any).content}, wordCount: ${selectedScene.wordCount || 0}`);
         console.log(`📦 [CLIENT] Scene hnsData available: ${!!selectedScene.hnsData}`);
 
         // If we have hnsData, use it directly
@@ -596,7 +585,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             scene_id: selectedScene.id,
             scene_title: selectedScene.title,
             status: selectedScene.status,
-            word_count: selectedScene.wordCount,
             goal: selectedScene.goal,
             conflict: selectedScene.conflict,
             outcome: selectedScene.outcome
@@ -691,13 +679,12 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   const handleSave = async (data: any) => {
     setIsLoading(true);
     try {
-      // Check if this is scene data (has content and wordCount) and we have a sceneId
-      if (data.content !== undefined && data.wordCount !== undefined && currentSelection.sceneId) {
+      // Check if this is scene data and we have a sceneId
+      if (currentSelection.level === "scene" && currentSelection.sceneId && data) {
         // Save scene content and metadata to the scene API using JSON
         const sceneJsonData = {
           title: data.summary || `Scene ${data.id}`,
           content: data.content,
-          wordCount: data.wordCount,
           goal: data.goal,
           conflict: data.obstacle,
           outcome: data.outcome,
@@ -849,8 +836,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     // If chapter is marked as published but has no content, force it to draft status
     if (currentChapter && currentChapterStatus === 'published') {
       const hasScenes = currentChapter.scenes && currentChapter.scenes.length > 0;
-      const hasContent = (currentChapter as any).purpose || (currentChapter as any).hook || (currentChapter as any).characterFocus || (currentChapter.wordCount && currentChapter.wordCount > 0);
-      const scenesWithContent = hasScenes && currentChapter.scenes ? currentChapter.scenes.filter((scene: any) => scene.wordCount > 0) : [];
 
       if (!hasContent && scenesWithContent.length === 0) {
         currentChapterStatus = 'draft';
@@ -866,7 +851,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         alert('Cannot publish chapter without scenes. Please add at least one scene before publishing.');
         return;
       }
-      const scenesWithContent = chapterScenes.filter(scene => scene.wordCount > 0);
       if (scenesWithContent.length === 0) {
         alert('Cannot publish chapter with empty scenes. Please add content to at least one scene before publishing.');
         return;
@@ -1153,7 +1137,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       leads_to: `scene_${sceneNum + 1}`,
       image_prompt: `Scene ${sceneNum} visual description for ${selectedSceneChapter?.title || 'chapter'}`,
       content: scene?.content || "",
-      wordCount: scene?.wordCount || 0
     });
 
     const sceneData = selectedScene ?
@@ -1244,8 +1227,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         const createChapterData = (chapter: any, partTitle: string | null) => {
           // Check if chapter has any actual content
           const hasScenes = chapter.scenes && chapter.scenes.length > 0;
-          const hasContent = chapter.purpose || chapter.hook || chapter.characterFocus || (chapter.wordCount && chapter.wordCount > 0);
-          const scenesWithContent = hasScenes ? chapter.scenes.filter((scene: any) => scene.wordCount > 0) : [];
           
           // If chapter is marked as published but has no content, force it to draft status
           let actualStatus = chapter.status || 'draft';
@@ -1258,8 +1239,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             id: chapter.id,
             title: chapter.title,
             partTitle: partTitle || "Standalone",
-            wordCount: chapter.wordCount || 0,
-            targetWordCount: chapter.targetWordCount || 4000,
             status: actualStatus,
             purpose: chapter.purpose || "",
             hook: chapter.hook || "",
@@ -1349,9 +1328,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                     part: chapterData.partTitle,
                     status: chapterData.status,
                     progress: {
-                      current: chapterData.wordCount,
                       target: chapterData.targetWordCount,
-                      percentage: Math.round((chapterData.wordCount / chapterData.targetWordCount) * 100)
                     },
                     purpose: chapterData.purpose,
                     hook: chapterData.hook,
@@ -1485,8 +1462,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                   // If chapter is marked as published but has no content, force it to draft status
                   if (currentChapter && currentChapterStatus === 'published') {
                     const hasScenes = currentChapter.scenes && currentChapter.scenes.length > 0;
-                    const hasContent = (currentChapter as any).purpose || (currentChapter as any).hook || (currentChapter as any).characterFocus || (currentChapter.wordCount && currentChapter.wordCount > 0);
-                    const scenesWithContent = hasScenes && currentChapter.scenes ? currentChapter.scenes.filter((scene: any) => scene.wordCount > 0) : [];
 
                     if (!hasContent && scenesWithContent.length === 0) {
                       currentChapterStatus = 'draft';

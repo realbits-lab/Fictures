@@ -686,6 +686,17 @@ export const chapters = pgTable("chapters", {
 	actionDialogueRatio: varchar("action_dialogue_ratio", { length: 10 }),
 	chapterHook: jsonb("chapter_hook"),
 	hnsData: jsonb("hns_data"),
+	// Adversity-Triumph Engine fields
+	characterId: text("characterId"),
+	arcPosition: text("arcPosition"),
+	contributesToMacroArc: text("contributesToMacroArc"),
+	focusCharacters: jsonb("focusCharacters").default([]),
+	adversityType: text("adversityType"),
+	virtueType: text("virtueType"),
+	seedsPlanted: jsonb("seedsPlanted").default([]),
+	seedsResolved: jsonb("seedsResolved").default([]),
+	connectsToPreviousChapter: text("connectsToPreviousChapter"),
+	createsNextAdversity: text("createsNextAdversity"),
 }, (table) => [
 	index("idx_chapters_hns_data").using("gin", table.hnsData.asc().nullsLast().op("jsonb_ops")),
 	index("idx_chapters_part_id").using("btree", table.partId.asc().nullsLast().op("text_ops")),
@@ -707,6 +718,11 @@ export const chapters = pgTable("chapters", {
 			foreignColumns: [users.id],
 			name: "chapters_author_id_users_id_fk"
 		}),
+	foreignKey({
+			columns: [table.characterId],
+			foreignColumns: [characters.id],
+			name: "chapters_character_id_fkey"
+		}).onDelete("set null"),
 ]);
 
 export const parts = pgTable("parts", {

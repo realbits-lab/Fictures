@@ -45,7 +45,6 @@ interface Scene {
   id: string;
   title: string;
   status: "completed" | "in_progress" | "planned";
-  wordCount: number;
 }
 
 interface Chapter {
@@ -53,8 +52,6 @@ interface Chapter {
   title: string;
   orderIndex: number;
   status: string;
-  wordCount: number;
-  targetWordCount: number;
   scenes?: Scene[];
 }
 
@@ -101,8 +98,6 @@ interface DetailedStory {
       title: string;
       orderIndex: number;
       status: string;
-      wordCount: number;
-      targetWordCount: number;
       scenes?: Scene[];
     }>;
   }>;
@@ -111,8 +106,6 @@ interface DetailedStory {
     title: string;
     orderIndex: number;
     status: string;
-    wordCount: number;
-    targetWordCount: number;
     scenes?: Scene[];
   }>;
 }
@@ -420,7 +413,6 @@ export function StoryListSidebar({
                                                 <div className="w-2 h-2 rounded-full bg-current mr-2" />
                                                 <span className="truncate">{scene.title}</span>
                                                 <span className="ml-auto text-xs text-gray-400">
-                                                  {scene.wordCount}w
                                                 </span>
                                               </Button>
                                             );
@@ -501,7 +493,6 @@ export function StoryListSidebar({
                                         <div className="w-2 h-2 rounded-full bg-current mr-2" />
                                         <span className="truncate">{scene.title}</span>
                                         <span className="ml-auto text-xs text-gray-400">
-                                          {scene.wordCount}w
                                         </span>
                                       </Button>
                                     );

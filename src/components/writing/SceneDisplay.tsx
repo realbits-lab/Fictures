@@ -10,7 +10,6 @@ interface Scene {
   content: string;
   chapterId: string;
   orderIndex: number;
-  wordCount: number;
   status: string;
   goal?: string;
   conflict?: string;
@@ -235,11 +234,6 @@ export function SceneDisplay({ sceneId, storyId, disabled = false }: SceneDispla
               </p>
             )}
           </div>
-          {scene.wordCount !== undefined && scene.wordCount > 0 && (
-            <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-              Word Count: {scene.wordCount}
-            </div>
-          )}
         </CardContent>
       </Card>
 

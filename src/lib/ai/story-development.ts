@@ -816,7 +816,6 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
         description: `${storyConcept.goal} | ${storyConcept.conflict} | ${storyConcept.outcome}`,
         genre: storyConcept.genre || 'General',
         authorId: userId,
-        targetWordCount: storyConcept.words || 60000,
         status: 'writing',
         hnsData: storyImageData ? { storyImage: storyImageData } : {},
         content: JSON.stringify({
@@ -881,7 +880,6 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
           title: `Part ${partSpec.part}: ${(partSpec as any).desc || storyConcept.parts[partIndex]?.goal || 'Part ' + (partIndex + 1)}`,
           authorId: userId,
           orderIndex: partSpec.part,
-          targetWordCount: partWordCount,
           content: JSON.stringify(partSpec),
         }
       );

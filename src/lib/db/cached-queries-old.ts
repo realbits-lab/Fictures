@@ -159,7 +159,6 @@ export async function updateStory(
     description: string;
     genre: string;
     status: 'writing' | 'published';
-    targetWordCount: number;
   }>
 ) {
   const result = await measureAsync(
@@ -184,7 +183,6 @@ export async function updateChapter(
     title: string;
     content: string;
     status: 'writing' | 'published';
-    wordCount: number;
     publishedAt: Date;
     scheduledFor: Date;
   }>

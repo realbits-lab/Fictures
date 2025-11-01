@@ -308,7 +308,6 @@ async function evaluateScene(scene: any): Promise<SceneEvaluation> {
         prompt: `Evaluate this scene's written content and structure:
 
 Scene Title: ${scene.title}
-Word Count: ${scene.wordCount || scene.content.split(/\s+/).length}
 
 SCENE METADATA:
 Goal: ${scene.goal || 'N/A'}

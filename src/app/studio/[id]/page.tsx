@@ -59,8 +59,6 @@ export default async function StoryPage({ params }: { params: Promise<{ id: stri
     genre: story.genre || 'General',
     status: story.status,
     startDate: new Date(story.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-    wordCount: story.currentWordCount || 0,
-    targetWordCount: story.targetWordCount || 0,
     readers: story.viewCount || 0,
     rating: story.rating || 0,
     parts: [] // TODO: Fetch actual parts/chapters data

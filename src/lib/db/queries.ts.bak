@@ -432,6 +432,7 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
         // Calculate dynamic scene status
         const dynamicSceneStatus = calculateSceneStatus({
           content: scene.content || '',
+          wordCount: scene.wordCount || 0,
           status: (scene as any).status || ''
         });
         
@@ -439,6 +440,7 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
           id: scene.id,
           title: scene.title,
           status: dynamicSceneStatus,
+          wordCount: scene.wordCount || 0,
           goal: scene.goal || '',
           conflict: scene.conflict || '',
           outcome: scene.outcome || '',
@@ -456,6 +458,8 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
         title: chapter.title,
         orderIndex: chapter.orderIndex,
         status: finalStatus,
+        wordCount: chapter.wordCount || 0,
+        targetWordCount: chapter.targetWordCount || 4000,
         scenes: chapterScenes
       };
     });
@@ -477,6 +481,7 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
     const chapterScenes = (chapter.scenes || []).map(scene => {
       const dynamicSceneStatus = calculateSceneStatus({
         content: scene.content || '',
+        wordCount: scene.wordCount || 0,
         status: (scene as any).status || ''
       });
       
@@ -484,6 +489,7 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
         id: scene.id,
         title: scene.title,
         status: dynamicSceneStatus,
+        wordCount: scene.wordCount || 0,
         goal: scene.goal || '',
         conflict: scene.conflict || '',
         outcome: scene.outcome || '',
@@ -500,6 +506,8 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
       title: chapter.title,
       orderIndex: chapter.orderIndex,
       status: finalStatus,
+      wordCount: chapter.wordCount || 0,
+      targetWordCount: chapter.targetWordCount || 4000,
       scenes: chapterScenes
     };
   });
@@ -537,6 +545,8 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
         partId: chapters.partId,
         authorId: chapters.authorId,
         orderIndex: chapters.orderIndex,
+        wordCount: chapters.wordCount,
+        targetWordCount: chapters.targetWordCount,
         status: chapters.status,
         purpose: chapters.purpose,
         hook: chapters.hook,
@@ -572,10 +582,12 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
   // Map scenes with dynamic status calculation
   const scenesWithStatus = chapterScenes.map(scene => {
     const sceneContent = scene.content || '';
+    const sceneWordCount = scene.wordCount || 0;
     const dbStatus = (scene as any).status || '';
     
     const dynamicSceneStatus = calculateSceneStatus({ 
       content: sceneContent, 
+      wordCount: sceneWordCount,
       status: dbStatus
     });
     
@@ -583,6 +595,7 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
       id: scene.id,
       title: scene.title,
       status: dynamicSceneStatus,
+      wordCount: sceneWordCount,
       goal: scene.goal || '',
       conflict: scene.conflict || '',
       outcome: scene.outcome || '',
@@ -613,6 +626,7 @@ export async function getPublishedStories() {
       status: stories.status,
       viewCount: stories.viewCount,
       rating: stories.rating,
+      currentWordCount: stories.currentWordCount,
       createdAt: stories.createdAt,
       authorId: stories.authorId,
       authorName: users.name,
@@ -633,6 +647,7 @@ export async function getPublishedStories() {
     .select({
       storyId: chapters.storyId,
       chapterId: chapters.id,
+      chapterWordCount: chapters.wordCount,
       chapterStatus: chapters.status,
       hasPublishedChapter: eq(chapters.status, 'published')
     })
@@ -644,6 +659,7 @@ export async function getPublishedStories() {
   const chapterScenes = chapterIds.length > 0 ? await db
     .select({
       chapterId: scenes.chapterId,
+      sceneWordCount: scenes.wordCount
     })
     .from(scenes)
     .where(inArray(scenes.chapterId, chapterIds))
@@ -677,10 +693,12 @@ export async function getPublishedStories() {
     }
 
     // Use calculated word count or fall back to story's currentWordCount
+    const finalWordCount = totalWords > 0 ? totalWords : (story.currentWordCount || 0);
     
     // Include all published stories (the DB query already filtered for public + published)
     validPublishedStories.push({
       ...story,
+      currentWordCount: finalWordCount
     });
   }
 
@@ -693,6 +711,7 @@ export async function getPublishedStories() {
     isPublic: true,
     viewCount: story.viewCount || 0,
     rating: story.rating || 0,
+    currentWordCount: story.currentWordCount || 0,
     createdAt: story.createdAt,
     hnsData: story.hnsData,
     author: {
@@ -718,6 +737,7 @@ export async function getCommunityStories() {
       viewCount: stories.viewCount,
       rating: stories.rating,
       ratingCount: stories.ratingCount,
+      currentWordCount: stories.currentWordCount,
       createdAt: stories.createdAt,
       updatedAt: stories.updatedAt,
       hnsData: stories.hnsData,

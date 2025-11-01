@@ -32,7 +32,6 @@ export async function GET(request: NextRequest) {
         id: story.id,
         title: story.title,
         status: story.status,
-        currentWordCount: story.currentWordCount,
         rating: story.rating,
         viewCount: story.viewCount
       })),

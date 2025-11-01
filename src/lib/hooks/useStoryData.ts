@@ -16,13 +16,10 @@ interface Story {
       title: string;
       orderIndex: number;
       status: string;
-      wordCount: number;
-      targetWordCount: number;
       scenes?: Array<{
         id: string;
         title: string;
         status: string;
-        wordCount: number;
       }>;
     }>;
   }>;
@@ -31,13 +28,10 @@ interface Story {
     title: string;
     orderIndex: number;
     status: string;
-    wordCount: number;
-    targetWordCount: number;
     scenes?: Array<{
       id: string;
       title: string;
       status: string;
-      wordCount: number;
     }>;
   }>;
 }

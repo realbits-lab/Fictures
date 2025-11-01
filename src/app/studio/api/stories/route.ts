@@ -11,7 +11,6 @@ const createStorySchema = z.object({
   title: z.string().min(1).max(255),
   description: z.string().optional(),
   genre: z.string().optional(),
-  targetWordCount: z.number().min(1000).max(500000).optional(),
 });
 
 // GET /api/stories - Get user's stories with detailed data for dashboard
@@ -49,7 +48,6 @@ export async function GET(request: NextRequest) {
       readers: story.viewCount || 0,
       rating: (story.rating || 0) / 10, // Convert from database format (47 = 4.7)
       status: story.status as "draft" | "publishing" | "completed" | "published",
-      wordCount: story.currentWordCount || 0,
       firstChapterId: story.firstChapterId,
       hnsData: story.hnsData || null,
       isPublic: story.status === 'published',
@@ -73,7 +71,6 @@ export async function GET(request: NextRequest) {
         title: story.title,
         updatedAt: story.updatedAt,
         status: story.status,
-        wordCount: story.currentWordCount,
         completedChapters: story.completedChapters,
         totalChapters: story.totalChapters,
         rating: story.rating,

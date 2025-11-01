@@ -304,13 +304,11 @@ export function PublishClient() {
               <div className="flex items-center gap-2">
                 <span className="text-sm">Word Count:</span>
                 <Badge variant="success" size="sm">
-                  {publishStatus?.readyToPublish?.wordCount?.toLocaleString() || '4,247'} ✅
                 </Badge>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm">Target:</span>
                 <Badge variant="success" size="sm">
-                  {publishStatus?.readyToPublish?.targetWordCount?.toLocaleString() || '4,000'} ✅
                 </Badge>
               </div>
               <div className="flex items-center gap-2">

@@ -23,7 +23,6 @@ export async function GET() {
         viewCount: stories.viewCount,
         rating: stories.rating,
         ratingCount: stories.ratingCount,
-        currentWordCount: stories.currentWordCount,
         status: stories.status,
         author: {
           id: users.id,
@@ -38,7 +37,6 @@ export async function GET() {
       .orderBy(
         desc(stories.rating),
         desc(stories.viewCount),
-        desc(stories.currentWordCount)
       )
       .limit(10);
 

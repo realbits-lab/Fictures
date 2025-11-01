@@ -23,7 +23,6 @@ interface StoryCardProps {
   readers: number;
   rating: number;
   status: "draft" | "publishing" | "completed" | "published";
-  wordCount?: number;
   firstChapterId?: string | null;
   isPublic?: boolean;
 }
@@ -37,7 +36,6 @@ export function StoryCard({
   readers,
   rating,
   status,
-  wordCount,
   firstChapterId,
   isPublic,
 }: StoryCardProps) {
@@ -101,12 +99,6 @@ export function StoryCard({
               </p>
             </div>
           </div>
-
-          {wordCount && (
-            <p className="text-sm text-[rgb(var(--muted-foreground))]">
-              📝 {wordCount.toLocaleString()} words
-            </p>
-          )}
 
           <div className="space-y-2">
             <div className="flex justify-between text-sm text-[rgb(var(--muted-foreground))]">

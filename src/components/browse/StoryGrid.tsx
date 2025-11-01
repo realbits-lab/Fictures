@@ -27,7 +27,6 @@ interface Story {
   isPublic: boolean;
   viewCount: number;
   rating: number;
-  currentWordCount: number;
   createdAt: Date;
   hnsData?: {
     storyImage?: {
@@ -398,7 +397,6 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                     </span>
                     <span className="flex items-center gap-1 flex-shrink-0">
                       <span>📝</span>
-                      <span className="truncate">{(story.currentWordCount || 0).toLocaleString()} {story.currentWordCount === 1 ? 'word' : 'words'}</span>
                     </span>
                   </div>
                 </div>
@@ -507,7 +505,6 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                       <TableCell className="text-center text-gray-600 dark:text-gray-400">
                         <span className="flex items-center justify-center gap-1">
                           <span>📝</span>
-                          <span>{(story.currentWordCount || 0).toLocaleString()} {story.currentWordCount === 1 ? 'word' : 'words'}</span>
                         </span>
                       </TableCell>
                     </TableRow>

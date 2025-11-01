@@ -9,8 +9,6 @@ interface ChapterData {
   title: string;
   summary: string;
   orderIndex: number;
-  wordCount: number;
-  targetWordCount: number;
   status: string;
   purpose: string;
   hook: string;
@@ -20,7 +18,6 @@ interface ChapterData {
     id: string;
     title: string;
     status: string;
-    wordCount: number;
     goal: string;
     conflict: string;
     outcome: string;

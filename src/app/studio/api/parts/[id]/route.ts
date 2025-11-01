@@ -12,8 +12,6 @@ const updatePartSchema = z.object({
   title: z.string().min(1).max(255).optional(),
   description: z.string().optional(),
   status: z.enum(['planned', 'in_progress', 'completed']).optional(),
-  targetWordCount: z.number().min(100).max(100000).optional(),
-  currentWordCount: z.number().min(0).optional(),
   content: z.string().optional(),
 });
 

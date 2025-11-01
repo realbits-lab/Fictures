@@ -7,7 +7,6 @@ export const runtime = 'nodejs';
 
 const autosaveSchema = z.object({
   content: z.string(),
-  wordCount: z.number().min(0),
 });
 
 // POST /api/chapters/[id]/autosave - Auto-save chapter content
@@ -24,7 +23,6 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { content, wordCount } = autosaveSchema.parse(body);
 
     const chapter = await updateChapter(id, session.user.id, {
       content,
@@ -34,7 +32,6 @@ export async function POST(
     return NextResponse.json({ 
       success: true, 
       savedAt: new Date().toISOString(),
-      wordCount: chapter.wordCount 
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

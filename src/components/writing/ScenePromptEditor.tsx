@@ -9,7 +9,6 @@ interface SceneData {
   title: string;
   content: string;
   orderIndex: number;
-  wordCount: number;
   status: string;
   goal: string;
   conflict: string;
@@ -321,7 +320,6 @@ Error details: ${error instanceof Error ? error.message : 'Unknown error'}`);
               <div className="font-medium mb-1">Current Scene:</div>
               <div>Characters: {sceneData.characters?.length || 0}</div>
               <div>Locations: {sceneData.places?.length || 0}</div>
-              <div>Word Count: {sceneData.wordCount?.toLocaleString() || '0'}</div>
             </div>
           </div>
         )}

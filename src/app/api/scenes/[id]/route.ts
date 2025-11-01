@@ -13,7 +13,6 @@ export const runtime = 'nodejs';
 const updateSceneSchema = z.object({
   title: z.string().min(1).max(255).optional(),
   content: z.string().optional(),
-  wordCount: z.number().min(0).optional(),
   goal: z.string().optional(),
   conflict: z.string().optional(),
   outcome: z.string().optional(),

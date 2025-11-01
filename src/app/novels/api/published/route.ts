@@ -56,7 +56,6 @@ export async function GET(request: NextRequest) {
         id: story.id,
         title: story.title,
         status: story.status,
-        currentWordCount: story.currentWordCount,
         rating: story.rating,
         viewCount: story.viewCount
       })),
@@ -132,7 +131,6 @@ export async function GET(request: NextRequest) {
 
     // Log detailed story statistics
     if (publishedStories.length > 0) {
-      const totalWordCount = publishedStories.reduce((sum, s) => sum + (s.currentWordCount || 0), 0);
       const avgWordCount = Math.round(totalWordCount / publishedStories.length);
       const genres = [...new Set(publishedStories.map(s => s.genre))];
 

@@ -20,7 +20,6 @@ interface Scene {
   id: string;
   title: string;
   status: "completed" | "in_progress" | "planned";
-  wordCount: number;
 }
 
 interface Chapter {
@@ -28,8 +27,6 @@ interface Chapter {
   title: string;
   orderIndex: number;
   status: string;
-  wordCount: number;
-  targetWordCount: number;
   scenes?: Scene[];
 }
 

@@ -100,7 +100,6 @@ export async function POST(request: NextRequest) {
           title: chapterSpec.title,
           authorId: session.user.id,
           orderIndex: chapterSpec.chap,
-          targetWordCount: chapterSpec.words,
           status: 'writing',
           purpose: `Chapter ${chapterSpec.chap} - ${chapterSpec.goal}`,
           characterFocus: chapterSpec.pov,

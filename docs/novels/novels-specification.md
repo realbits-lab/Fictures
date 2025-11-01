@@ -9,7 +9,7 @@ This document specifies the novels generation system using a **Cyclic Adversity-
 **Status**: ✅ **Validated and Ready for Implementation**
 
 **Related Documents:**
-- 📋 **Generation Guide** (`novels-generation.md`): API specifications and system prompts for implementation
+- 📋 **Development Guide** (`novels-development.md`): API specifications and system prompts for implementation
 - 🧪 **Testing Guide** (`novels-testing.md`): Testing strategies, metrics, and validation methods
 
 ---
@@ -194,7 +194,7 @@ CHARACTER INTERACTIONS:
 
 **Key Fields**:
 - `summary` (text): One micro-cycle adversity-triumph
-- `characterArcId` (text): Links to the macro arc this is part of
+- `characterId` (text): References Character.id (the character whose macro arc this chapter advances)
 - `arcPosition` (enum): 'beginning' | 'middle' | 'climax' | 'resolution' (climax = MACRO moment)
 - `contributesToMacroArc` (text): How does this advance the macro transformation?
 

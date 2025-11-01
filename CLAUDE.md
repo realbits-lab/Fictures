@@ -324,7 +324,7 @@ When making ANY changes to the novel generation system, ALWAYS follow this order
 **1. FIRST: Update Documentation** (`docs/novels/`)
 - **Primary documentation files:**
   - `novels-specification.md` - Core concepts, data model, theoretical foundation
-  - `novels-generation.md` - API architecture, system prompts, implementation specs
+  - `novels-development.md` - API architecture, system prompts, implementation specs
   - `novels-testing.md` - Validation methods, quality metrics, test strategies
   - `novels-optimization.md` - Performance tuning, cost optimization
   - `novels-removal.md` - Deletion workflows, cleanup procedures
@@ -355,7 +355,7 @@ When making ANY changes to the novel generation system, ALWAYS follow this order
 ### Novel Generation System Overview
 
 **Architecture:**
-- **Location**: `docs/novels/novels-generation.md` - Complete specification
+- **Location**: `docs/novels/novels-development.md` - Complete specification
 - **Methodology**: Adversity-Triumph Engine (Korean Gam-dong narrative psychology)
 - **API Endpoints**: `/studio/api/generation/*` - Generation APIs for story creation
 - **Database**: Novel-specific tables in Neon PostgreSQL (see `drizzle/` migrations)
@@ -368,7 +368,7 @@ When making ANY changes to the novel generation system, ALWAYS follow this order
 
 **Documentation Reference:**
 - 📖 **Specification**: `docs/novels/novels-specification.md` - Core concepts and data model
-- 🔧 **Generation Guide**: `docs/novels/novels-generation.md` - API specs and system prompts
+- 🔧 **Development Guide**: `docs/novels/novels-development.md` - API specs and system prompts
 - 🧪 **Testing Guide**: `docs/novels/novels-testing.md` - Validation and quality metrics
 - ⚡ **Optimization**: `docs/novels/novels-optimization.md` - Performance and cost tuning
 - 🗑️ **Removal**: `docs/novels/novels-removal.md` - Deletion workflows

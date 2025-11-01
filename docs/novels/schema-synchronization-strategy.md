@@ -325,7 +325,7 @@ pnpm db:generate
 |----------|----------------|
 | `novels-specification.md` | **FIRST** - before any code changes |
 | `schema-gap-analysis.md` | After specification changes, before implementation |
-| `novels-generation.md` | When API endpoints or system prompts change |
+| `novels-development.md` | When API endpoints or system prompts change |
 | `novels-testing.md` | When validation rules or quality metrics change |
 | `schema-synchronization-strategy.md` | When sync process itself needs refinement |
 

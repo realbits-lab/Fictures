@@ -16,7 +16,6 @@ interface FeaturedStoryData {
     viewCount: number;
     rating: number;
     ratingCount: number;
-    wordCount: number;
     chapterCount: number;
   };
 }
@@ -98,7 +97,6 @@ export function FeaturedStory({ initialStory }: FeaturedStoryProps) {
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
                   <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                    {(story.stats.wordCount / 1000).toFixed(0)}k
                   </div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">
                     Words

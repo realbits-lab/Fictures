@@ -24,7 +24,6 @@ interface SceneData {
   leads_to: string;
   image_prompt: string;
   content?: string;
-  wordCount?: number;
 }
 
 interface ChapterContext {

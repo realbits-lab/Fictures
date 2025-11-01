@@ -17,7 +17,6 @@ const updateStorySchema = z.object({
   genre: z.string().optional(),
   status: z.enum(['writing', 'published']).optional(),
   isPublic: z.boolean().optional(),
-  targetWordCount: z.number().min(1000).max(500000).optional(),
   coverImage: z.string().url().optional(),
 });
 

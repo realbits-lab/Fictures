@@ -549,7 +549,7 @@ export async function generateCompleteNovel(
       // Merge scene summary with scene content for complete scene data
       const completeScene = {
         ...sceneSummary, // Includes id, chapterId, title, summary, cyclePhase, emotionalBeat, etc.
-        ...sceneContent,  // Includes content, wordCount, emotionalTone
+        ...sceneContent,  // Includes content, emotionalTone
       };
 
       allScenes.push(completeScene);

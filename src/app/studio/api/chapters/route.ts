@@ -10,7 +10,6 @@ const createChapterSchema = z.object({
   storyId: z.string(),
   partId: z.string().optional(), // Optional - supports standalone chapters
   orderIndex: z.number().min(0),
-  targetWordCount: z.number().min(100).max(20000).optional(),
 });
 
 // POST /api/chapters - Create a new chapter

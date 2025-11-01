@@ -26,7 +26,6 @@ export function SceneWriting({
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   // Calculate word count
-  const wordCount = sceneContent.trim() ? sceneContent.trim().split(/\s+/).length : 0;
 
   // Define handleAutoSave before using it in useEffect
   const handleAutoSave = useCallback(async () => {
@@ -108,7 +107,6 @@ export function SceneWriting({
         <div className="flex items-center gap-3">
           <h2 className="text-xl font-bold">✍️ Scene Writing</h2>
           <Badge variant="default" className="flex items-center gap-1">
-            <span>{wordCount}</span> words
           </Badge>
           {lastSaved && (
             <span className="text-xs text-[rgb(var(--muted-foreground))]">

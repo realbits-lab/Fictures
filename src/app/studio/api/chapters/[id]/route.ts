@@ -9,7 +9,6 @@ const updateChapterSchema = z.object({
   title: z.string().min(1).max(255).optional(),
   content: z.string().optional(),
   status: z.enum(['draft', 'in_progress', 'completed', 'published']).optional(),
-  wordCount: z.number().min(0).optional(),
   publishedAt: z.string().datetime().optional(),
   scheduledFor: z.string().datetime().optional(),
 });
@@ -62,12 +61,10 @@ export async function PATCH(
 
     const chapter = await updateChapter(id, session.user.id, updateData);
 
-    // Update user stats if word count changed
-    if (updateData.wordCount !== undefined) {
-      await updateUserStats(session.user.id, {
-        lastWritingDate: new Date(),
-      });
-    }
+    // Update user stats
+    await updateUserStats(session.user.id, {
+      lastWritingDate: new Date(),
+    });
 
     return NextResponse.json({ chapter });
   } catch (error) {

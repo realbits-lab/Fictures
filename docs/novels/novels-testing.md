@@ -6,7 +6,7 @@ This document outlines a comprehensive testing strategy for the novels generatio
 
 **Related Documents:**
 - 📖 **Specification** (`novels-specification.md`): Core concepts, data model, and success criteria
-- 📋 **Generation Guide** (`novels-generation.md`): API implementations and system prompts to test
+- 📋 **Development Guide** (`novels-development.md`): API implementations and system prompts to test
 
 ---
 
@@ -180,7 +180,7 @@ describe('Chapter Generation', () => {
 
     chapters.forEach(chapter => {
       // Nested cycle tracking fields
-      expect(chapter.characterArcId).toBeTruthy();
+      expect(chapter.characterId).toBeTruthy();
       expect(chapter.arcPosition).toMatch(/beginning|middle|climax|resolution/);
       expect(chapter.contributesToMacroArc).toBeTruthy();
       expect(chapter.contributesToMacroArc.length).toBeGreaterThan(50);
@@ -193,10 +193,10 @@ describe('Chapter Generation', () => {
     // Group chapters by character arc
     const arcGroups = new Map<string, typeof chapters>();
     chapters.forEach(ch => {
-      if (!arcGroups.has(ch.characterArcId)) {
-        arcGroups.set(ch.characterArcId, []);
+      if (!arcGroups.has(ch.characterId)) {
+        arcGroups.set(ch.characterId, []);
       }
-      arcGroups.get(ch.characterArcId)!.push(ch);
+      arcGroups.get(ch.characterId)!.push(ch);
     });
 
     // Validate progression for each character arc
@@ -225,10 +225,10 @@ describe('Chapter Generation', () => {
     // Group by character arc
     const arcGroups = new Map<string, typeof chapters>();
     chapters.forEach(ch => {
-      if (!arcGroups.has(ch.characterArcId)) {
-        arcGroups.set(ch.characterArcId, []);
+      if (!arcGroups.has(ch.characterId)) {
+        arcGroups.set(ch.characterId, []);
       }
-      arcGroups.get(ch.characterArcId)!.push(ch);
+      arcGroups.get(ch.characterId)!.push(ch);
     });
 
     // Each arc should have exactly one climax chapter (the MACRO moment)
@@ -243,9 +243,9 @@ describe('Chapter Generation', () => {
 
     // No more than 2 consecutive chapters for same character
     for (let i = 0; i < chapters.length - 2; i++) {
-      const char1 = chapters[i].characterArcId;
-      const char2 = chapters[i + 1].characterArcId;
-      const char3 = chapters[i + 2].characterArcId;
+      const char1 = chapters[i].characterId;
+      const char2 = chapters[i + 1].characterId;
+      const char3 = chapters[i + 2].characterId;
 
       // If 3 consecutive chapters exist, they shouldn't all be same character
       expect(char1 === char2 && char2 === char3).toBe(false);
