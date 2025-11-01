@@ -30,12 +30,12 @@ function ToolExecutionCard({ tool }: { tool: ToolInvocation }) {
 
   return (
     <Card className={cn(
-      'my-2 border-l-4 transition-all',
+      'my-2 border-l-4 transition-all theme-card',
       isComplete
         ? isError
           ? 'border-l-destructive bg-destructive/5'
-          : 'border-l-green-500 bg-green-50 dark:bg-green-950/20'
-        : 'border-l-blue-500 bg-blue-50 dark:bg-blue-950/20'
+          : 'border-l-primary/70 bg-accent/50'
+        : 'border-l-primary bg-accent/30'
     )}>
       <CardHeader className="flex flex-row items-center gap-2 py-3 px-4">
         <div className="flex items-center gap-2 flex-1">
@@ -43,15 +43,15 @@ function ToolExecutionCard({ tool }: { tool: ToolInvocation }) {
             isError ? (
               <XCircle className="h-4 w-4 text-destructive" />
             ) : (
-              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <CheckCircle className="h-4 w-4 text-primary" />
             )
           ) : (
-            <Loader2 className="h-4 w-4 animate-spin text-blue-600 dark:text-blue-400" />
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
           )}
           <Wrench className="h-4 w-4 text-muted-foreground" />
           <span className="font-mono text-sm font-medium">{tool.toolName}</span>
         </div>
-        <Badge variant={isComplete ? (isError ? 'destructive' : 'default') : 'secondary'} className="text-xs">
+        <Badge variant={isComplete ? (isError ? 'destructive' : 'default') : 'secondary'} className="text-xs theme-badge">
           {isComplete ? (isError ? 'Error' : 'Complete') : 'Running'}
         </Badge>
       </CardHeader>
@@ -60,14 +60,14 @@ function ToolExecutionCard({ tool }: { tool: ToolInvocation }) {
           <div className="space-y-2">
             <div>
               <div className="text-xs font-semibold text-muted-foreground mb-1">Input:</div>
-              <pre className="rounded bg-muted/50 p-2 text-xs overflow-x-auto border">
+              <pre className="rounded-theme-input bg-muted/50 p-2 text-xs overflow-x-auto border-theme">
                 {JSON.stringify(tool.args, null, 2)}
               </pre>
             </div>
             {tool.result && (
               <div>
                 <div className="text-xs font-semibold text-muted-foreground mb-1">Output:</div>
-                <pre className="rounded bg-muted/50 p-2 text-xs overflow-x-auto border">
+                <pre className="rounded-theme-input bg-muted/50 p-2 text-xs overflow-x-auto border-theme">
                   {JSON.stringify(tool.result, null, 2)}
                 </pre>
               </div>
@@ -85,8 +85,8 @@ function AgentMessage({ message }: { message: Message & { toolInvocations?: Tool
   return (
     <div className={cn('flex gap-3 mb-4', isUser ? 'justify-end' : 'justify-start')}>
       {!isUser && (
-        <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-500">
-          <Bot className="h-4 w-4 text-white" />
+        <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-primary">
+          <Bot className="h-4 w-4 text-primary-foreground" />
         </div>
       )}
 
@@ -94,10 +94,10 @@ function AgentMessage({ message }: { message: Message & { toolInvocations?: Tool
         {/* Message content */}
         <div
           className={cn(
-            'rounded-lg px-4 py-2.5',
+            'rounded-theme-card px-4 py-2.5 transition-all',
             isUser
               ? 'bg-primary text-primary-foreground'
-              : 'bg-muted'
+              : 'bg-muted text-foreground border-theme'
           )}
         >
           <div className="prose prose-sm dark:prose-invert max-w-none">
@@ -120,8 +120,8 @@ function AgentMessage({ message }: { message: Message & { toolInvocations?: Tool
       </div>
 
       {isUser && (
-        <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500">
-          <User className="h-4 w-4 text-white" />
+        <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-secondary">
+          <User className="h-4 w-4 text-secondary-foreground" />
         </div>
       )}
     </div>
@@ -164,11 +164,11 @@ export function StudioAgentChat({
   return (
     <div className={cn('flex flex-col h-full bg-background', className)}>
       {/* Header */}
-      <div className="border-b bg-card">
+      <div className="border-b bg-card border-theme text-card-foreground">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-blue-500">
-              <Bot className="h-5 w-5 text-white" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-theme-button bg-primary">
+              <Bot className="h-5 w-5 text-primary-foreground" />
             </div>
             <div>
               <h2 className="text-lg font-semibold">Studio Editing Agent</h2>
@@ -179,7 +179,7 @@ export function StudioAgentChat({
           </div>
           {activeTools.length > 0 && (
             <div className="flex items-center gap-2 text-sm">
-              <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
               <span className="text-muted-foreground">
                 Running: {activeTools.join(', ')}
               </span>
@@ -193,10 +193,10 @@ export function StudioAgentChat({
         <div className="space-y-4 max-w-4xl mx-auto">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-12 text-center">
-              <div className="rounded-full bg-gradient-to-br from-purple-500 to-blue-500 p-6 mb-4">
-                <Sparkles className="h-8 w-8 text-white" />
+              <div className="rounded-full bg-primary p-6 mb-4">
+                <Sparkles className="h-8 w-8 text-primary-foreground" />
               </div>
-              <h3 className="text-lg font-medium mb-2">Start a Conversation</h3>
+              <h3 className="text-lg font-medium text-foreground mb-2">Start a Conversation</h3>
               <p className="text-sm text-muted-foreground max-w-sm">
                 Ask me to help you manage your story. I can read, create, update, or delete
                 stories, parts, chapters, scenes, characters, and settings.
@@ -204,7 +204,7 @@ export function StudioAgentChat({
               <div className="mt-6 grid gap-2 w-full max-w-md">
                 <Button
                   variant="outline"
-                  className="justify-start text-left h-auto py-3"
+                  className="justify-start text-left h-auto py-3 theme-button"
                   onClick={() => {
                     const event = new Event('submit', { bubbles: true, cancelable: true });
                     handleInputChange({
@@ -222,7 +222,7 @@ export function StudioAgentChat({
                 </Button>
                 <Button
                   variant="outline"
-                  className="justify-start text-left h-auto py-3"
+                  className="justify-start text-left h-auto py-3 theme-button"
                   onClick={() => {
                     const event = new Event('submit', { bubbles: true, cancelable: true });
                     handleInputChange({
@@ -249,13 +249,13 @@ export function StudioAgentChat({
       </div>
 
       {/* Input */}
-      <div className="border-t bg-card p-4">
+      <div className="border-t bg-card p-4 border-theme">
         <form onSubmit={handleSubmit} className="flex gap-2 max-w-4xl mx-auto">
           <Textarea
             value={input}
             onChange={handleInputChange}
             placeholder="Ask me to help manage your story... (e.g., 'Create a new chapter titled...', 'Update the scene with...', 'Show me all characters')"
-            className="flex-1 resize-none min-h-[60px] max-h-[200px]"
+            className="flex-1 resize-none min-h-[60px] max-h-[200px] theme-input"
             rows={2}
             disabled={isLoading}
             onKeyDown={(e) => {
@@ -269,7 +269,7 @@ export function StudioAgentChat({
             type="submit"
             disabled={isLoading || !input?.trim()}
             size="icon"
-            className="h-[60px] w-[60px] shrink-0"
+            className="h-[60px] w-[60px] shrink-0 theme-button"
           >
             {isLoading ? (
               <Loader2 className="h-5 w-5 animate-spin" />

@@ -1184,37 +1184,21 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                       </tr>
                       <tr className="border-b">
                         <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Moral Framework</td>
-                        <td className="py-2 px-4">{(story as any).moralFramework || 'N/A'}</td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Part IDs</td>
                         <td className="py-2 px-4">
-                          {(story as any).partIds && (story as any).partIds.length > 0 ? (
-                            <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto">
-                              {JSON.stringify((story as any).partIds, null, 2)}
-                            </pre>
+                          {(story as any).moralFramework ? (
+                            <div className="max-h-40 overflow-auto text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded">
+                              {(story as any).moralFramework}
+                            </div>
                           ) : 'N/A'}
                         </td>
                       </tr>
                       <tr className="border-b">
-                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Chapter IDs</td>
-                        <td className="py-2 px-4">
-                          {(story as any).chapterIds && (story as any).chapterIds.length > 0 ? (
-                            <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto">
-                              {JSON.stringify((story as any).chapterIds, null, 2)}
-                            </pre>
-                          ) : 'N/A'}
-                        </td>
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Created At</td>
+                        <td className="py-2 px-4">{(story as any).createdAt ? new Date((story as any).createdAt).toLocaleString() : 'N/A'}</td>
                       </tr>
                       <tr className="border-b">
-                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Scene IDs</td>
-                        <td className="py-2 px-4">
-                          {(story as any).sceneIds && (story as any).sceneIds.length > 0 ? (
-                            <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto">
-                              {JSON.stringify((story as any).sceneIds, null, 2)}
-                            </pre>
-                          ) : 'N/A'}
-                        </td>
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Updated At</td>
+                        <td className="py-2 px-4">{(story as any).updatedAt ? new Date((story as any).updatedAt).toLocaleString() : 'N/A'}</td>
                       </tr>
                       <tr className="border-b">
                         <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Parts Count</td>
@@ -1240,18 +1224,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                             return totalScenes;
                           })()}
                         </td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Created At</td>
-                        <td className="py-2 px-4">{(story as any).createdAt ? new Date((story as any).createdAt).toLocaleString() : 'N/A'}</td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Updated At</td>
-                        <td className="py-2 px-4">{(story as any).updatedAt ? new Date((story as any).updatedAt).toLocaleString() : 'N/A'}</td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Public</td>
-                        <td className="py-2 px-4">{story.isPublic ? 'Yes' : 'No'}</td>
                       </tr>
                     </tbody>
                   </table>

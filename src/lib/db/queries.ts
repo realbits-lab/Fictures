@@ -419,11 +419,17 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
   // Get story with all relationships using direct array lookups (much faster)
   const result = await RelationshipManager.getStoryWithStructure(storyId, includeScenes);
   if (!result) return null;
-  
+
   // Check user access
   if (userId && result.authorId !== userId && result.status !== 'published') {
     return null;
   }
+
+  // Fetch characters and settings for the story
+  const [storyCharacters, storySettings] = await Promise.all([
+    db.select().from(characters).where(eq(characters.storyId, storyId)),
+    db.select().from(settings).where(eq(settings.storyId, storyId))
+  ]);
   
   // Apply dynamic status calculations to match original interface
   const structuredParts = result.parts.map(part => {
@@ -434,27 +440,21 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
           content: scene.content || '',
           status: (scene as any).status || ''
         });
-        
+
+        // Return ALL scene fields from database
         return {
-          id: scene.id,
-          title: scene.title,
-          status: dynamicSceneStatus,
-          goal: scene.goal || '',
-          conflict: scene.conflict || '',
-          outcome: scene.outcome || '',
-          content: scene.content || '',
-          orderIndex: scene.orderIndex
+          ...scene,
+          status: dynamicSceneStatus
         };
       }).sort((a, b) => a.orderIndex - b.orderIndex);
       
       // Calculate dynamic chapter status
       const dynamicChapterStatus = calculateChapterStatus(chapterScenes);
       const finalStatus = chapter.status === 'published' ? 'published' : dynamicChapterStatus;
-      
+
+      // Return ALL chapter fields from database
       return {
-        id: chapter.id,
-        title: chapter.title,
-        orderIndex: chapter.orderIndex,
+        ...chapter,
         status: finalStatus,
         scenes: chapterScenes
       };
@@ -462,11 +462,10 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
     
     // Calculate dynamic part status
     const dynamicPartStatus = calculatePartStatus(partChapters);
-    
+
+    // Return ALL part fields from database
     return {
-      id: part.id,
-      title: part.title,
-      orderIndex: part.orderIndex,
+      ...part,
       status: dynamicPartStatus,
       chapters: partChapters
     };
@@ -479,26 +478,20 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
         content: scene.content || '',
         status: (scene as any).status || ''
       });
-      
+
+      // Return ALL scene fields from database
       return {
-        id: scene.id,
-        title: scene.title,
-        status: dynamicSceneStatus,
-        goal: scene.goal || '',
-        conflict: scene.conflict || '',
-        outcome: scene.outcome || '',
-        content: scene.content || '',
-        orderIndex: scene.orderIndex
+        ...scene,
+        status: dynamicSceneStatus
       };
     }).sort((a, b) => a.orderIndex - b.orderIndex);
-    
+
     const dynamicChapterStatus = calculateChapterStatus(chapterScenes);
     const finalStatus = chapter.status === 'published' ? 'published' : dynamicChapterStatus;
-    
+
+    // Return ALL chapter fields from database
     return {
-      id: chapter.id,
-      title: chapter.title,
-      orderIndex: chapter.orderIndex,
+      ...chapter,
       status: finalStatus,
       scenes: chapterScenes
     };
@@ -521,9 +514,16 @@ export async function getStoryWithStructure(storyId: string, includeScenes: bool
     imageVariants: result.imageVariants || null,
     authorId: result.authorId,
     userId: result.authorId,
+    createdAt: result.createdAt,
+    updatedAt: result.updatedAt,
+    viewCount: result.viewCount || 0,
+    rating: result.rating || 0,
+    ratingCount: result.ratingCount || 0,
     parts: structuredParts,
     chapters: standaloneChapters,
-    scenes: [] // Legacy field - scenes are now nested in chapters
+    scenes: [], // Legacy field - scenes are now nested in chapters
+    characters: storyCharacters,
+    settings: storySettings
   };
 }
 

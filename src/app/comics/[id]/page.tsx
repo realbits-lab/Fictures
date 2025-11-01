@@ -23,19 +23,7 @@ export default async function ComicPage({ params }: ComicPageProps) {
   console.log('⏳ [SSR] Fetching story structure with published comics from cache...');
 
   // Load story with comic panels (only published comics) - with caching
-  let story;
-  try {
-    console.log(`[DEBUG-PAGE] 🎬 Calling getStoryWithComicPanels...`);
-    story = await getStoryWithComicPanels(id);
-    console.log(`[DEBUG-PAGE] ✅ getStoryWithComicPanels returned:`, {
-      hasStory: !!story,
-      storyId: story?.id,
-      storyKeys: story ? Object.keys(story).join(', ') : 'none'
-    });
-  } catch (error) {
-    console.error(`[DEBUG-PAGE] ❌ Error in getStoryWithComicPanels:`, error);
-    throw error;
-  }
+  const story = await getStoryWithComicPanels(id);
 
   const ssrFetchDuration = Date.now() - ssrFetchStart;
   console.log(`✅ [SSR] Story structure fetched in ${ssrFetchDuration}ms`);
@@ -44,14 +32,6 @@ export default async function ComicPage({ params }: ComicPageProps) {
     console.log(`❌ [SSR] Story not found: ${id}`);
     notFound();
   }
-
-  console.log(`[DEBUG-PAGE] 📊 Story structure:`, {
-    id: story.id,
-    title: story.title,
-    partsCount: story.parts?.length || 0,
-    chaptersCount: story.chapters?.length || 0,
-    imageVariants: story.imageVariants ? 'present' : 'missing'
-  });
 
   // Count total comic scenes available
   let totalComicScenes = 0;

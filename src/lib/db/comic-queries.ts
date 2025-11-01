@@ -35,7 +35,6 @@ async function fetchStoryWithComicPanels(storyId: string) {
   // ⚡ BATCHED QUERY: Fetch story + parts + chapters + scenes in parallel using Promise.all
   // This reduces network latency from 4 roundtrips to 1 roundtrip
   const batchQueryStart = performance.now();
-  console.log(`[DEBUG] 📦 Starting batched queries...`);
 
   let storyResult, storyParts, allChapters, allScenes;
   try {
@@ -47,7 +46,7 @@ async function fetchStoryWithComicPanels(storyId: string) {
       genre: stories.genre,
       tone: stories.tone,
       summary: stories.summary,
-      description: stories.description,
+      // ❌ REMOVED: description field was removed from schema in schema-simplification
       status: stories.status,
       authorId: stories.authorId,
       imageUrl: stories.imageUrl,
@@ -111,9 +110,8 @@ async function fetchStoryWithComicPanels(storyId: string) {
       )
       .orderBy(asc(scenes.orderIndex))
     ]);
-    console.log(`[DEBUG] ✅ All queries completed successfully`);
   } catch (error) {
-    console.error(`[DEBUG] ❌ Error in batched queries:`, error);
+    console.error(`[PERF-QUERY] ❌ Error in batched queries:`, error);
     throw error;
   }
 
@@ -124,26 +122,11 @@ async function fetchStoryWithComicPanels(storyId: string) {
   console.log(`[PERF-QUERY]   - Chapters: ${allChapters.length} results`);
   console.log(`[PERF-QUERY]   - Scenes: ${allScenes.length} published comic scenes`);
 
-  console.log(`[DEBUG] 🔍 Story result:`, {
-    count: storyResult.length,
-    hasStory: !!storyResult[0],
-    storyId: storyResult[0]?.id,
-    imageUrl: storyResult[0]?.imageUrl,
-    imageVariants: storyResult[0]?.imageVariants ? 'present' : 'missing'
-  });
-
   const [story] = storyResult;
   if (!story) {
     console.log(`[PERF-QUERY] ❌ Story not found`);
     return null;
   }
-
-  console.log(`[DEBUG] ✅ Story loaded:`, {
-    id: story.id,
-    title: story.title,
-    imageUrl: story.imageUrl?.substring(0, 50) || 'none',
-    imageVariantsType: story.imageVariants ? typeof story.imageVariants : 'null/undefined'
-  });
 
   // Fetch comic panels for all scenes (batched for performance)
   console.log(`[PERF-QUERY] 🎨 Fetching comic panels for ${allScenes.length} scenes...`);
@@ -219,21 +202,14 @@ async function fetchStoryWithComicPanels(storyId: string) {
   }
 
   // Build hierarchical structure
-  console.log(`[DEBUG] 🔧 Building hierarchical structure...`);
-  console.log(`[DEBUG]    - Parts count: ${storyParts.length}`);
-  console.log(`[DEBUG]    - Chapters count: ${allChapters.length}`);
-  console.log(`[DEBUG]    - Chapters by part:`, allChapters.map(c => ({ id: c.id, partId: c.partId })));
-
   const result = {
     ...story,
     parts: storyParts.map(part => {
-      console.log(`[DEBUG]    - Processing part ${part.id}`);
       return {
         ...part,
         chapters: allChapters
           .filter(chapter => chapter.partId === part.id)
           .map(chapter => {
-            console.log(`[DEBUG]      - Chapter ${chapter.id} in part ${part.id}`);
             return {
               ...chapter,
               scenes: scenesByChapter.get(chapter.id) || []
@@ -244,20 +220,12 @@ async function fetchStoryWithComicPanels(storyId: string) {
     chapters: allChapters
       .filter(chapter => !chapter.partId)
       .map(chapter => {
-        console.log(`[DEBUG]    - Standalone chapter ${chapter.id}`);
         return {
           ...chapter,
           scenes: scenesByChapter.get(chapter.id) || []
         };
       })
   };
-
-  console.log(`[DEBUG] 🎉 Hierarchical structure built:`, {
-    storyId: result.id,
-    partsCount: result.parts.length,
-    chaptersCount: result.chapters.length,
-    totalScenes: [...result.parts.flatMap(p => p.chapters.flatMap(c => c.scenes)), ...result.chapters.flatMap(c => c.scenes)].length
-  });
 
   const totalDuration = performance.now() - queryStartTime;
   console.log(`[PERF-QUERY] 🏁 getStoryWithComicPanels COMPLETE: ${totalDuration.toFixed(2)}ms`);

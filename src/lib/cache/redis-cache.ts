@@ -263,26 +263,16 @@ export async function withCache<T>(
   fetcher: () => Promise<T>,
   ttl?: number
 ): Promise<T> {
-  console.log(`[DEBUG-withCache] 🔧 withCache called for key: ${key}`);
   const cache = getCache();
   const cached = await cache.get<T>(key);
 
   if (cached !== null) {
-    console.log(`[DEBUG-withCache] ✅ Cache HIT for key: ${key}`);
     return cached;
   }
 
-  console.log(`[DEBUG-withCache] ⚠️  Cache MISS, calling fetcher for key: ${key}`);
-  try {
-    const data = await fetcher();
-    console.log(`[DEBUG-withCache] ✅ Fetcher returned data, type:`, typeof data, 'isNull:', data === null);
-    await cache.set(key, data, ttl);
-    console.log(`[DEBUG-withCache] ✅ Data cached successfully`);
-    return data;
-  } catch (error) {
-    console.error(`[DEBUG-withCache] ❌ Error in fetcher:`, error);
-    throw error;
-  }
+  const data = await fetcher();
+  await cache.set(key, data, ttl);
+  return data;
 }
 
 export async function invalidateCache(keys: string | string[]): Promise<void> {
