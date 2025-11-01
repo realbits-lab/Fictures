@@ -252,16 +252,12 @@ Generate the prose following the output format (prose only, no metadata).
       maxTokens: 4096,
     });
 
-    // Calculate word count
-    const wordCount = result.trim().split(/\s+/).length;
-
     // Determine emotional tone from first paragraph
     const firstParagraph = result.split('\n\n')[0];
     const emotionalTone = sceneSummary.emotionalBeat;
 
     const response: SceneContentResult = {
       content: result.trim(),
-      wordCount,
       emotionalTone,
     };
 

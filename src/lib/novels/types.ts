@@ -160,7 +160,6 @@ export interface SceneSummaryResult {
 
 export interface SceneContentResult {
   content: string;
-  wordCount: number;
   emotionalTone: string;
 }
 

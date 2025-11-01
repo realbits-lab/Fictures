@@ -278,7 +278,6 @@ export async function POST(request: NextRequest) {
                 title: scene.title || `Scene ${index + 1}`, // Fallback title if missing
                 summary: scene.summary,
                 content: scene.content,
-                wordCount: scene.wordCount || 0, // Include word count from scene generation
                 cyclePhase: scene.cyclePhase,
                 emotionalBeat: scene.emotionalBeat,
                 orderIndex: index,
@@ -289,11 +288,7 @@ export async function POST(request: NextRequest) {
 
             await db.insert(scenes).values(sceneRecords);
 
-            // Calculate total word count from all scenes
-            const totalWordCount = sceneRecords.reduce((sum, scene) => sum + (scene.wordCount || 0), 0);
-            console.log(`[Novel Generation] Total word count from ${sceneRecords.length} scenes: ${totalWordCount}`);
-
-            // Update story with ID arrays and word count
+            // Update story with ID arrays
             const partIds = Array.from(partIdMap.values());
             const chapterIds = Array.from(chapterIdMap.values());
             const sceneIds = Array.from(sceneIdMap.values());
@@ -304,16 +299,14 @@ export async function POST(request: NextRequest) {
                 partIds,
                 chapterIds,
                 sceneIds,
-                currentWordCount: totalWordCount,
                 updatedAt: new Date(),
               })
               .where(eq(stories.id, generatedStoryId!));
 
-            console.log('[Novel Generation] Updated story with ID arrays and word count:', {
+            console.log('[Novel Generation] Updated story with ID arrays:', {
               partIds: partIds.length,
               chapterIds: chapterIds.length,
               sceneIds: sceneIds.length,
-              currentWordCount: totalWordCount,
             });
           } else {
             // No scenes - still update story with ID arrays
@@ -327,7 +320,6 @@ export async function POST(request: NextRequest) {
                 partIds,
                 chapterIds,
                 sceneIds,
-                currentWordCount: 0,
                 updatedAt: new Date(),
               })
               .where(eq(stories.id, generatedStoryId!));
