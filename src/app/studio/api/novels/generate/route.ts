@@ -219,7 +219,6 @@ export async function POST(request: NextRequest) {
                 summary: part.summary,
                 actNumber: part.actNumber,
                 characterArcs: part.characterArcs,
-                orderIndex: index,
                 createdAt: new Date(),
                 updatedAt: new Date(),
               };
