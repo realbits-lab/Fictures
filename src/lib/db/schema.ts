@@ -249,7 +249,6 @@ export const parts = pgTable('parts', {
   // Legacy fields (kept for backward compatibility during migration)
   structuralRole: varchar('structural_role', { length: 50 }),
   summary: text('summary'), // Multi-character MACRO arcs with progression strategy
-  keyBeats: json('key_beats').$type<string[]>(),
   // Adversity-Triumph Engine fields
   actNumber: integer('actNumber'), // 1, 2, or 3 in three-act structure
   characterArcs: json('characterArcs').$type<Array<{
