@@ -12,15 +12,16 @@ title: Novel Reading Performance Optimization
 
 | Metric | Target | Cold Cache | Warm Cache | Status |
 |--------|--------|------------|------------|--------|
-| **First Visit** | < 2s | ~1-2s | N/A | ✅ |
-| **Second Visit** | < 50ms | 628ms | 4-16ms | ✅ |
-| **Time to Interactive** | < 3.5s | 442ms | < 16ms | ✅ |
-| **Scene Navigation** | Instant | < 16ms | < 16ms | ✅ |
-| **Cache Hit Rate** | > 95% | N/A | 100% | ✅ |
+| **First Paint** | < 1s | 560ms | 108ms | ✅ |
+| **First Contentful Paint** | < 1s | 560ms | 108ms | ✅ |
+| **Time to Interactive** | < 3.5s | 2378ms | 790ms | ✅ |
+| **Full Load** | < 5s | 2380ms | 792ms | ✅ |
+| **Data Transfer** | < 200 KB | 13.57 KB | 13.54 KB | ✅ |
 
-### Performance Improvements (Phase 1 & 2)
-- **Second visit:** 93.4% faster (9,468ms → 628ms)
-- **Time to Interactive:** 95.1% faster (8,994ms → 442ms)
+### Performance Improvements (All Phases)
+- **First Paint:** 80.7% faster (560ms → 108ms)
+- **First Contentful Paint:** 80.7% faster (560ms → 108ms)
+- **Time to Interactive:** 66.8% faster (2378ms → 790ms)
 - **Data transfer:** 25% reduction (~20 KB saved per story)
 
 ---

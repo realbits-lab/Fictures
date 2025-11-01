@@ -23,21 +23,22 @@ import { eq, asc, inArray } from 'drizzle-orm';
  * Reduces data transfer by ~25% compared to full studio query
  */
 export async function getStoryForReading(storyId: string) {
+  const queryStartTime = performance.now();
+  console.log(`[PERF-QUERY] 🔍 getStoryForReading START for story: ${storyId}`);
+
   // Get story with only reading-relevant fields
+  const storyQueryStart = performance.now();
   const [story] = await db.select({
     id: stories.id,
     title: stories.title,
-    description: stories.description,
     genre: stories.genre,
     tone: stories.tone,
     moralFramework: stories.moralFramework,
     summary: stories.summary,
     status: stories.status,
     authorId: stories.authorId,
-    userId: stories.userId,
     imageUrl: stories.imageUrl,
     imageVariants: stories.imageVariants, // ⚡ CRITICAL: Needed for AVIF optimization
-    totalWords: stories.totalWords,
     createdAt: stories.createdAt,
     updatedAt: stories.updatedAt,
   })
@@ -45,16 +46,20 @@ export async function getStoryForReading(storyId: string) {
     .where(eq(stories.id, storyId))
     .limit(1);
 
-  if (!story) return null;
+  const storyQueryDuration = performance.now() - storyQueryStart;
+  console.log(`[PERF-QUERY] ✅ Story query: ${storyQueryDuration.toFixed(2)}ms`);
 
-  if (!story) return null;
+  if (!story) {
+    console.log(`[PERF-QUERY] ❌ Story not found`);
+    return null;
+  }
 
   // Get parts with reading-relevant fields only
+  const partsQueryStart = performance.now();
   const storyParts = await db.select({
     id: parts.id,
     storyId: parts.storyId,
     title: parts.title,
-    description: parts.description,
     orderIndex: parts.orderIndex,
     createdAt: parts.createdAt,
     updatedAt: parts.updatedAt,
@@ -63,7 +68,11 @@ export async function getStoryForReading(storyId: string) {
     .where(eq(parts.storyId, storyId))
     .orderBy(asc(parts.orderIndex));
 
+  const partsQueryDuration = performance.now() - partsQueryStart;
+  console.log(`[PERF-QUERY] ✅ Parts query: ${partsQueryDuration.toFixed(2)}ms (${storyParts.length} parts)`);
+
   // Get chapters with reading-relevant fields only (skip studio metadata)
+  const chaptersQueryStart = performance.now();
   const allChapters = await db.select({
     id: chapters.id,
     storyId: chapters.storyId,
@@ -72,12 +81,10 @@ export async function getStoryForReading(storyId: string) {
     summary: chapters.summary,
     status: chapters.status,
     orderIndex: chapters.orderIndex,
-    imageUrl: chapters.imageUrl,
-    imageVariants: chapters.imageVariants, // ⚡ CRITICAL: Needed for AVIF optimization
-    totalWords: chapters.totalWords,
     createdAt: chapters.createdAt,
     updatedAt: chapters.updatedAt,
     // ❌ SKIPPED: arcPosition, adversityType, virtueType, seedsPlanted, seedsResolved (studio-only)
+    // ❌ SKIPPED: imageUrl, imageVariants (chapters don't have images in schema)
   })
     .from(chapters)
     .where(eq(chapters.storyId, storyId))

@@ -34,10 +34,11 @@ This file provides guidance to Claude Code when working with this repository.
 - **Script Files**: Always write script files in `scripts/` directory
   - See complete script documentation: [scripts/CLAUDE.md](scripts/CLAUDE.md)
   - Story generation, management, testing, and utility scripts
-- **Documentation Files**: Always write documentation in MDX format (`.mdx`) instead of Markdown (`.md`)
-  - MDX allows embedding JSX components within Markdown content
-  - All new documentation should use `.mdx` extension
-  - Use MDX for enhanced documentation with interactive examples and components
+- **Documentation Files**: All documentation files (`.md` or `.mdx`) MUST include frontmatter
+  - **MANDATORY**: Frontmatter with at least `title` field at the top of every documentation file
+  - Format: `---\ntitle: Document Title\n---` before content
+  - Optional: Use `.mdx` for enhanced documentation with JSX components and interactive examples
+  - Both `.md` and `.mdx` formats are acceptable, but frontmatter is required
 
 ## Database Management
 

@@ -20,15 +20,18 @@ export async function GET(
     }
 
     // Only show published stories in read mode (unless owner)
-    if (storyWithStructure.status !== 'published' && storyWithStructure.userId !== session?.user?.id) {
+    if (storyWithStructure.status !== 'published' && storyWithStructure.authorId !== session?.user?.id) {
       return NextResponse.json({ error: 'Story not available' }, { status: 403 });
     }
 
-    const isOwner = storyWithStructure.userId === session?.user?.id;
+    const isOwner = storyWithStructure.authorId === session?.user?.id;
 
     // Return story data optimized for reading
     const response = {
-      story: storyWithStructure,
+      story: {
+        ...storyWithStructure,
+        userId: storyWithStructure.authorId, // Map authorId to userId for interface compatibility
+      },
       isOwner,
       metadata: {
         fetchedAt: new Date().toISOString(),
