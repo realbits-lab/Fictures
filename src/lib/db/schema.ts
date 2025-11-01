@@ -1119,3 +1119,73 @@ export const scheduledPublicationsRelations = relations(scheduledPublications, (
   }),
 }));
 
+// Fuma Comment tables for documentation pages
+// These are separate from the story/scene comments above
+
+// Fuma Comment - Comments table
+export const fumaComments = pgTable('fuma_comments', {
+  id: text('id').primaryKey(),
+  page: text('page').notNull(),
+  content: text('content').notNull(),
+  authorId: text('author_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  parentId: text('parent_id'),
+  depth: integer('depth').default(0).notNull(),
+  isEdited: boolean('is_edited').default(false).notNull(),
+  isDeleted: boolean('is_deleted').default(false).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Fuma Comment - Rates table (for reactions/ratings on comments)
+export const fumaRates = pgTable('fuma_rates', {
+  id: text('id').primaryKey(),
+  commentId: text('comment_id').notNull().references(() => fumaComments.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  value: integer('value').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  uniqueUserComment: unique().on(table.commentId, table.userId),
+}));
+
+// Fuma Comment - Roles table (for user roles in commenting)
+export const fumaRoles = pgTable('fuma_roles', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
+  role: text('role').notNull().default('user'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Fuma Comment relations
+export const fumaCommentsRelations = relations(fumaComments, ({ one, many }) => ({
+  author: one(users, {
+    fields: [fumaComments.authorId],
+    references: [users.id],
+  }),
+  parent: one(fumaComments, {
+    fields: [fumaComments.parentId],
+    references: [fumaComments.id],
+    relationName: 'parentChild',
+  }),
+  children: many(fumaComments, { relationName: 'parentChild' }),
+  rates: many(fumaRates),
+}));
+
+export const fumaRatesRelations = relations(fumaRates, ({ one }) => ({
+  comment: one(fumaComments, {
+    fields: [fumaRates.commentId],
+    references: [fumaComments.id],
+  }),
+  user: one(users, {
+    fields: [fumaRates.userId],
+    references: [users.id],
+  }),
+}));
+
+export const fumaRolesRelations = relations(fumaRoles, ({ one }) => ({
+  user: one(users, {
+    fields: [fumaRoles.userId],
+    references: [users.id],
+  }),
+}));
+

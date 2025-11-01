@@ -60,14 +60,23 @@ export async function GET(
       return new NextResponse(null, { status: 304 });
     }
 
-    // Set cache headers for better performance
+    // ⚡ Strategy 4: Vercel Edge Caching for global CDN performance
+    // Cache published stories on 119 edge locations worldwide
+    const isPublished = storyWithStructure.status === 'published' && !isOwner;
+
     const headers = new Headers({
       'Content-Type': 'application/json',
       'ETag': etag,
-      // Cache for 10 minutes for published stories, no cache for drafts
-      'Cache-Control': storyWithStructure.status === 'published' && !isOwner 
-        ? 'public, max-age=600, stale-while-revalidate=1200' 
+
+      // Client-side caching (browser)
+      'Cache-Control': isPublished
+        ? 'public, max-age=60, stale-while-revalidate=600' // 1min client, 10min stale
         : 'no-cache, no-store, must-revalidate',
+
+      // Vercel Edge Network caching (global CDN)
+      'CDN-Cache-Control': isPublished
+        ? 's-maxage=3600, stale-while-revalidate=7200' // 1hr edge, 2hr stale
+        : 'no-store',
     });
 
     return new NextResponse(JSON.stringify(response), {

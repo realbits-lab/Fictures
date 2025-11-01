@@ -33,13 +33,23 @@ export default async function Page(props: {
   const MDX = page.data.body;
   console.log('[DOCS PAGE] MDX component:', typeof MDX);
 
+  console.log('[DOCS PAGE] TOC DEBUGGING:');
+  console.log('[DOCS PAGE] - toc exists:', !!page.data.toc);
+  console.log('[DOCS PAGE] - toc type:', typeof page.data.toc);
+  console.log('[DOCS PAGE] - toc is array:', Array.isArray(page.data.toc));
+  console.log('[DOCS PAGE] - toc length:', page.data.toc?.length);
+  console.log('[DOCS PAGE] - toc value:', JSON.stringify(page.data.toc, null, 2));
+  console.log('[DOCS PAGE] - full prop:', page.data.full);
   console.log('[DOCS PAGE] Rendering DocsPage with toc:', page.data.toc);
+
+  const pageSlug = params.slug?.join('/') || 'index';
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
       <DocsBody>
         <MDX />
       </DocsBody>
+      <DocsComments page={pageSlug} />
     </DocsPage>
   );
 }

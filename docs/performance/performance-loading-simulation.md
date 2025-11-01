@@ -379,60 +379,64 @@ export function ScenesList({ chapterId }: { chapterId: string }) {
 
 ---
 
-### 🎨 Strategy 6: GraphQL for Precise Data Fetching
+###🎨 Strategy 6: Smart Data Reduction - Skip Studio-Only Fields
 
-**Problem:** Loading studio-only fields (planning metadata, seeds) in reading mode.
+**Problem:** Loading studio-only fields (planning metadata, seeds, relationships) in reading mode wastes bandwidth.
 
-**Solution:** Use GraphQL to request only needed fields per context.
+**Solution:** Create optimized API responses that skip studio-only fields while KEEPING imageVariants for optimal image loading.
+
+**What to Keep:**
+- ✅ **imageVariants** - Critical! AVIF format saves 50-70% vs original JPEG
+- ✅ Core fields needed for reading experience
+- ✅ Small enum fields (tone, cyclePhase, emotionalBeat)
+
+**What to Skip in Reading Mode:**
+- ❌ seedsPlanted/seedsResolved arrays (~40 KB, studio-only)
+- ❌ Planning metadata (characterFocus, sensoryAnchors, etc.) (~30 KB, studio-only)
+- ❌ Character relationships/voiceStyle JSON (~35 KB, studio-only)
+- ❌ Setting adversityElements/cycleAmplification (~20 KB, studio-only)
 
 **Implementation:**
-```tsx
-// Reading Mode - Minimal fields
-query GetStoryForReading($storyId: ID!) {
-  story(id: $storyId) {
-    id
-    title
-    imageUrl  # Skip imageVariants
-    summary
-    tone
-    chapters(limit: 10) {
-      id
-      title
-      orderIndex
-      # Skip: seedsPlanted, seedsResolved, characterArcs
-      scenes(limit: 3, visibility: PUBLIC) {
-        id
-        title
-        content
-        imageUrl  # Skip imageVariants
-        cyclePhase
-        emotionalBeat
-        # Skip: planning metadata
-      }
-    }
-    characters(isMain: true) {
-      id
-      name
-      imageUrl  # Skip imageVariants
-      coreTrait
-      # Skip: relationships, voiceStyle
-    }
-  }
-}
+```typescript
+// app/api/novels/[storyId]/read/route.ts - Reading Mode API
+export async function GET(request: Request, { params }: { params: { storyId: string } }) {
+  const story = await db.select({
+    // Core fields
+    id: stories.id,
+    title: stories.title,
+    status: stories.status,
 
-// Studio Mode - Full fields
-query GetStoryForStudio($storyId: ID!) {
-  story(id: $storyId) {
-    # ... all fields including imageVariants, planning metadata, etc.
-  }
+    // ✅ Keep imageVariants - enables AVIF optimization!
+    imageUrl: stories.imageUrl,
+    imageVariants: stories.imageVariants,
+
+    // Keep reading-relevant Adversity-Triumph fields
+    summary: stories.summary,
+    tone: stories.tone,
+
+    // ❌ Skip moralFramework (studio-only, 2-3 KB)
+  }).from(stories).where(eq(stories.id, params.storyId));
+
+  const chapters = await db.select({
+    id: chapters.id,
+    title: chapters.title,
+    summary: chapters.summary,
+    orderIndex: chapters.orderIndex,
+    arcPosition: chapters.arcPosition,
+    virtueType: chapters.virtueType,
+
+    // ❌ Skip: seedsPlanted, seedsResolved (2-4 KB each)
+  }).from(chapters).where(eq(chapters.storyId, params.storyId));
+
+  return Response.json({ story, chapters });
 }
 ```
 
 **Expected Results:**
-- **Reading Mode: 484 KB → ~180 KB** (62% reduction)
-- Skip imageVariants (save ~100 KB)
-- Skip planning metadata (save ~40 KB)
-- Skip studio-only fields (save ~164 KB)
+- **JSON Metadata:** 484 KB → ~360 KB (**25% reduction**)
+- **Actual Image Transfer:** AVIF variants save ~125 KB per image vs original
+- **Net Total:** ~250 KB (metadata + optimized images)
+- **Why imageVariants Matter:** 3 KB JSON cost enables 40-50x savings in image transfer!
 
 ---
 
