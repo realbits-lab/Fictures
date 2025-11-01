@@ -19,6 +19,7 @@ import { BeautifulJSONDisplay } from "./BeautifulJSONDisplay";
 import { CharactersDisplay } from "./CharactersDisplay";
 import { SettingsDisplay } from "./SettingsDisplay";
 import { StoryMetadataEditor } from "./StoryMetadataEditor";
+import { StudioAgentChat } from "@/components/studio/studio-agent-chat";
 import type {
   HNSStory,
   HNSPart,
@@ -1535,9 +1536,21 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             {renderEditor()}
           </div>
 
-          {/* Right Sidebar */}
+          {/* Right Sidebar - Agent Chat */}
           <div className="col-span-12 lg:col-span-3 space-y-6">
-            {/* Removed SceneSidebar - Scene content now handled by SceneDisplay in main area */}
+            {/* Studio Agent Chat */}
+            <Card className="h-[calc(100vh-200px)] flex flex-col overflow-hidden">
+              <StudioAgentChat
+                storyId={story.id}
+                storyContext={{
+                  storyTitle: story.title,
+                  currentSelection: currentSelection,
+                  genre: story.genre,
+                  status: story.status,
+                }}
+                className="flex-1"
+              />
+            </Card>
 
             {/* Delete Story Button - Show for story level */}
             {currentSelection.level === "story" && (

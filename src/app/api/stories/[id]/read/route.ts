@@ -26,6 +26,21 @@ export async function GET(
 
     const isOwner = storyWithStructure.authorId === session?.user?.id;
 
+    // ⚡ DEBUG: Log raw data structure from database
+    console.log(`[API-READ] 📦 Raw data from getStoryForReading for story ${id}:`);
+    console.log(`[API-READ]   - parts: ${storyWithStructure.parts?.length ?? 0}`);
+    console.log(`[API-READ]   - chapters: ${storyWithStructure.chapters?.length ?? 0}`);
+    if (storyWithStructure.parts?.length > 0) {
+      storyWithStructure.parts.forEach((part: any, idx: number) => {
+        console.log(`[API-READ]     Part ${idx}: id=${part.id}, title="${part.title}", chapters=${part.chapters?.length ?? 0}`);
+      });
+    }
+    if (storyWithStructure.chapters?.length > 0) {
+      storyWithStructure.chapters.forEach((ch: any, idx: number) => {
+        console.log(`[API-READ]     Chapter ${idx}: id=${ch.id}, title="${ch.title}", status="${ch.status}", partId=${ch.partId}`);
+      });
+    }
+
     // Return story data optimized for reading
     const response = {
       story: {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useChat } from 'ai/react';
+import { useChat } from 'ai';
 import { useEffect, useState } from 'react';
 
 interface UseStudioAgentChatProps {
@@ -19,7 +19,7 @@ export function useStudioAgentChat({
 
   const chat = useChat({
     id: currentChatId,
-    api: '/api/studio/agent',
+    api: '/studio/api/agent',
     body: {
       chatId: currentChatId,
       storyContext,
@@ -46,7 +46,7 @@ export function useStudioAgentChat({
     async function loadChatHistory() {
       setLoadingHistory(true);
       try {
-        const response = await fetch(`/api/studio/agent/${currentChatId}/messages`);
+        const response = await fetch(`/studio/api/agent/${currentChatId}/messages`);
         if (response.ok) {
           const { messages } = await response.json();
           chat.setMessages(messages);

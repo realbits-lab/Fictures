@@ -403,6 +403,10 @@ When modifying data model fields for stories, parts, chapters, scenes, character
 - **Environment Variables**: Always prefix commands with `dotenv --file .env.local run`
 - **Authentication**: Use NextAuth.js session management throughout
 - **Database**: All operations through Drizzle ORM - see `src/lib/db/`
+- **API Route Organization**:
+  - **Page-specific APIs**: Create API routes under the related page directory (e.g., `/studio/api/`, `/analytics/api/`)
+  - **Common APIs**: Use `/api/` directory only for global/shared API endpoints
+  - **Example**: Studio-related APIs go in `src/app/studio/api/generation/*` instead of `src/app/api/studio/generation/*`
 - **AI Integration**:
   - **AI SDK**: Use Vercel AI SDK with AI Gateway (AI_GATEWAY_API_KEY)
   - **Text Generation**: Gemini 2.5 Flash & Flash Lite via Vercel AI SDK

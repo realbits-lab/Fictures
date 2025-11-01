@@ -90,6 +90,12 @@ export async function getStoryForReading(storyId: string) {
     .where(eq(chapters.storyId, storyId))
     .orderBy(asc(chapters.orderIndex));
 
+  const chaptersQueryDuration = performance.now() - chaptersQueryStart;
+  console.log(`[PERF-QUERY] ✅ Chapters query: ${chaptersQueryDuration.toFixed(2)}ms (${allChapters.length} chapters)`);
+
+  const totalDuration = performance.now() - queryStartTime;
+  console.log(`[PERF-QUERY] 🏁 getStoryForReading COMPLETE: ${totalDuration.toFixed(2)}ms`);
+
   // For reading mode, scenes are loaded on demand (see getChapterScenesForReading)
   return {
     ...story,
@@ -116,14 +122,15 @@ export async function getStoryForReading(storyId: string) {
  * Loads scenes on demand to reduce initial payload
  */
 export async function getChapterScenesForReading(chapterId: string) {
-  return await db.select({
+  const queryStartTime = performance.now();
+  console.log(`[PERF-QUERY] 🔍 getChapterScenesForReading START for chapter: ${chapterId}`);
+
+  const sceneList = await db.select({
     id: scenes.id,
     chapterId: scenes.chapterId,
     title: scenes.title,
     content: scenes.content,
-    goal: scenes.goal,
-    conflict: scenes.conflict,
-    outcome: scenes.outcome,
+    summary: scenes.summary,
     orderIndex: scenes.orderIndex,
     visibility: scenes.visibility,
     publishedAt: scenes.publishedAt,
@@ -131,11 +138,17 @@ export async function getChapterScenesForReading(chapterId: string) {
     imageVariants: scenes.imageVariants, // ⚡ CRITICAL: Needed for AVIF optimization
     createdAt: scenes.createdAt,
     updatedAt: scenes.updatedAt,
-    // ❌ SKIPPED: characterFocus, sensoryAnchors, voiceStyle, planning metadata (studio-only)
+    // ❌ SKIPPED: goal, conflict, outcome (HNS fields - removed from schema)
+    // ❌ SKIPPED: characterFocus, sensoryAnchors, dialogueVsDescription, suggestedLength (planning metadata - studio-only)
   })
     .from(scenes)
     .where(eq(scenes.chapterId, chapterId))
     .orderBy(asc(scenes.orderIndex));
+
+  const totalDuration = performance.now() - queryStartTime;
+  console.log(`[PERF-QUERY] 🏁 getChapterScenesForReading COMPLETE: ${totalDuration.toFixed(2)}ms (${sceneList.length} scenes)`);
+
+  return sceneList;
 }
 
 /**

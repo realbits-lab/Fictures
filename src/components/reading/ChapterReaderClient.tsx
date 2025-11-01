@@ -197,7 +197,25 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
   // Fetch all scenes from all chapters in PARALLEL (major performance optimization)
   useEffect(() => {
     const fetchAllScenes = async () => {
-      if (!story || availableChapters.length === 0) return;
+      if (!story || availableChapters.length === 0) {
+        console.log(`⚠️ [PARALLEL-FETCH] Skipping parallel fetch: story=${!!story}, availableChapters=${availableChapters.length}`);
+        if (story) {
+          console.log(`⚠️ [PARALLEL-FETCH] Story data structure:`);
+          console.log(`⚠️   - parts: ${story.parts?.length ?? 0}`);
+          console.log(`⚠️   - chapters: ${story.chapters?.length ?? 0}`);
+          if (story.parts?.length > 0) {
+            story.parts.forEach((part: any, idx: number) => {
+              console.log(`⚠️     Part ${idx}: title="${part.title}", chapters=${part.chapters?.length ?? 0}`);
+            });
+          }
+          if (story.chapters?.length > 0) {
+            story.chapters.forEach((ch: any, idx: number) => {
+              console.log(`⚠️     Chapter ${idx}: title="${ch.title}", status="${ch.status}"`);
+            });
+          }
+        }
+        return;
+      }
 
       console.log(`🚀 Starting parallel scene fetch for ${availableChapters.length} chapters...`);
       const startTime = performance.now();
@@ -228,8 +246,8 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
         });
       }
 
-      // Process standalone chapters if story has no parts
-      if (story.chapters.length > 0 && story.parts.length === 0) {
+      // Process standalone chapters (chapters not in any part)
+      if (story.chapters.length > 0) {
         const standaloneChapters = [...story.chapters]
           .filter(chapter => isOwner || chapter.status === 'published')
           .sort((a, b) => a.orderIndex - b.orderIndex);
@@ -242,6 +260,15 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
             chapterOrderIndex: chapter.orderIndex
           });
         });
+      }
+
+      // ⚡ DEBUG: Log chaptersToFetch array
+      console.log(`🔍 [PARALLEL-FETCH] Built chaptersToFetch array: ${chaptersToFetch.length} chapters`);
+      if (chaptersToFetch.length === 0) {
+        console.log(`⚠️ [PARALLEL-FETCH] No chapters to fetch! Checking conditions:`);
+        console.log(`⚠️   - story.chapters.length: ${story.chapters?.length ?? 0}`);
+        console.log(`⚠️   - story.parts.length: ${story.parts?.length ?? 0}`);
+        console.log(`⚠️   - isOwner: ${isOwner}`);
       }
 
       // ⚡ PARALLEL FETCH - Fire all requests simultaneously

@@ -58,11 +58,21 @@ export async function GET(
     // 4. Get scenes using optimized query for reading mode (skips studio fields, keeps imageVariants)
     const scenesQueryStartTime = performance.now();
     // ⚡ Strategy 3: Use optimized reading query for published content
-    const scenesWithImages: any = isPublishedStory && !isOwner
-      ? await getChapterScenesForReading(chapterId)
-      : await getChapterScenes(chapterId, session?.user?.id, isPublishedStory);
+    const useOptimized = isPublishedStory && !isOwner;
+    console.log(`[${requestId}] 🔍 Scenes query decision: isPublishedStory=${isPublishedStory}, isOwner=${isOwner}, useOptimized=${useOptimized}`);
+
+    let scenesWithImages: any;
+    try {
+      scenesWithImages = useOptimized
+        ? await getChapterScenesForReading(chapterId)
+        : await getChapterScenes(chapterId, session?.user?.id, isPublishedStory);
+    } catch (error) {
+      console.error(`[${requestId}] ❌ Scenes query error:`, error);
+      throw error;
+    }
+
     const scenesQueryDuration = performance.now() - scenesQueryStartTime;
-    console.log(`[${requestId}] 🎬 Scenes query completed: ${scenesQueryDuration.toFixed(2)}ms (${scenesWithImages.length} scenes) - ${isPublishedStory && !isOwner ? 'OPTIMIZED' : 'FULL'}`);
+    console.log(`[${requestId}] 🎬 Scenes query completed: ${scenesQueryDuration.toFixed(2)}ms (${scenesWithImages?.length ?? 0} scenes) - ${useOptimized ? 'OPTIMIZED' : 'FULL'}`);
 
     // No additional processing needed - scene images already extracted in cached function
 
