@@ -85,15 +85,15 @@ export default function AccountSettingsPage() {
     return (
       <div className="text-center py-12">
         <div className="text-4xl mb-4">⚠️</div>
-        <h3 className="text-lg font-medium text-[rgb(var(--foreground))] mb-2">
+        <h3 className="text-lg font-medium text-[rgb(var(--color-foreground))] mb-2">
           Failed to load settings
         </h3>
-        <p className="text-[rgb(var(--muted-foreground))] mb-4">
+        <p className="text-[rgb(var(--color-muted-foreground))] mb-4">
           {error.message || "Something went wrong while loading your settings."}
         </p>
         <button 
           onClick={() => refreshSettings()} 
-          className="px-4 py-2 bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] rounded-lg hover:bg-[rgb(var(--primary)/90%)] transition-colors"
+          className="px-4 py-2 bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] rounded-lg hover:bg-[rgb(var(--color-primary)/90%)] transition-colors"
         >
           Try Again
         </button>
@@ -111,45 +111,45 @@ export default function AccountSettingsPage() {
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
+              <label className="block text-sm font-medium text-[rgb(var(--color-foreground))] mb-2">
                 Display Name
               </label>
               <input
                 type="text"
                 defaultValue={userSettings?.displayName || session?.user?.name || ""}
-                className="w-full px-3 py-2 border border-[rgb(var(--input))] rounded-lg bg-[rgb(var(--background))] text-[rgb(var(--foreground))]"
+                className="w-full px-3 py-2 border border-[rgb(var(--color-input))] rounded-lg bg-[rgb(var(--color-background))] text-[rgb(var(--color-foreground))]"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
+              <label className="block text-sm font-medium text-[rgb(var(--color-foreground))] mb-2">
                 Email Address
               </label>
               <input
                 type="email"
                 defaultValue={session?.user?.email || ""}
                 disabled
-                className="w-full px-3 py-2 border border-[rgb(var(--input))] rounded-lg bg-[rgb(var(--muted))] text-[rgb(var(--muted-foreground))]"
+                className="w-full px-3 py-2 border border-[rgb(var(--color-input))] rounded-lg bg-[rgb(var(--color-muted))] text-[rgb(var(--color-muted-foreground))]"
               />
-              <p className="text-xs text-[rgb(var(--muted-foreground))] mt-1">
+              <p className="text-xs text-[rgb(var(--color-muted-foreground))] mt-1">
                 Email cannot be changed as it&apos;s managed by OAuth provider
               </p>
             </div>
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
+            <label className="block text-sm font-medium text-[rgb(var(--color-foreground))] mb-2">
               Bio
             </label>
             <textarea
               rows={3}
               defaultValue={userSettings?.bio || ""}
               placeholder="Tell us about yourself as a writer..."
-              className="w-full px-3 py-2 border border-[rgb(var(--input))] rounded-lg bg-[rgb(var(--background))] text-[rgb(var(--foreground))]"
+              className="w-full px-3 py-2 border border-[rgb(var(--color-input))] rounded-lg bg-[rgb(var(--color-background))] text-[rgb(var(--color-foreground))]"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
+            <label className="block text-sm font-medium text-[rgb(var(--color-foreground))] mb-2">
               Profile Image
             </label>
             <div className="flex items-center gap-4">
@@ -168,13 +168,13 @@ export default function AccountSettingsPage() {
                   }}
                 />
               ) : (
-                <div className="w-16 h-16 rounded-full bg-[rgb(var(--primary))] flex items-center justify-center">
-                  <span className="text-2xl font-semibold text-[rgb(var(--primary-foreground))]">
+                <div className="w-16 h-16 rounded-full bg-[rgb(var(--color-primary))] flex items-center justify-center">
+                  <span className="text-2xl font-semibold text-[rgb(var(--color-primary-foreground))]">
                     {session?.user?.name?.[0]?.toUpperCase() || 'U'}
                   </span>
                 </div>
               )}
-              <div className="text-sm text-[rgb(var(--muted-foreground))]">
+              <div className="text-sm text-[rgb(var(--color-muted-foreground))]">
                 Profile image is managed by your OAuth provider (Google)
               </div>
             </div>
@@ -195,14 +195,14 @@ export default function AccountSettingsPage() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="font-medium text-[rgb(var(--muted-foreground))]">Account Type:</span>
-              <div className="text-[rgb(var(--foreground))] capitalize">
+              <span className="font-medium text-[rgb(var(--color-muted-foreground))]">Account Type:</span>
+              <div className="text-[rgb(var(--color-foreground))] capitalize">
                 {userSettings?.accountType || session?.user?.role || 'User'}
               </div>
             </div>
             <div>
-              <span className="font-medium text-[rgb(var(--muted-foreground))]">Member Since:</span>
-              <div className="text-[rgb(var(--foreground))]">
+              <span className="font-medium text-[rgb(var(--color-muted-foreground))]">Member Since:</span>
+              <div className="text-[rgb(var(--color-foreground))]">
                 {userSettings?.memberSince ? new Date(userSettings.memberSince).toLocaleDateString() : new Date().toLocaleDateString()}
               </div>
             </div>

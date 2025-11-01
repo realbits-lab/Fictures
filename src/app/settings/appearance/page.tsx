@@ -22,10 +22,10 @@ export default function AppearancePage() {
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
+              <label className="block text-sm font-medium text-[rgb(var(--color-foreground))] mb-2">
                 Interface Font Family
               </label>
-              <select className="w-full px-3 py-2 border border-[rgb(var(--input))] rounded-lg bg-[rgb(var(--background))] text-[rgb(var(--foreground))]" defaultValue="Inter (Default)">
+              <select className="w-full px-3 py-2 border border-[rgb(var(--color-input))] rounded-lg bg-[rgb(var(--color-background))] text-[rgb(var(--color-foreground))]" defaultValue="Inter (Default)">
                 <option>Inter (Default)</option>
                 <option>System UI</option>
                 <option>Roboto</option>
@@ -34,10 +34,10 @@ export default function AppearancePage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
+              <label className="block text-sm font-medium text-[rgb(var(--color-foreground))] mb-2">
                 Interface Font Size
               </label>
-              <select className="w-full px-3 py-2 border border-[rgb(var(--input))] rounded-lg bg-[rgb(var(--background))] text-[rgb(var(--foreground))]" defaultValue="Medium (14px)">
+              <select className="w-full px-3 py-2 border border-[rgb(var(--color-input))] rounded-lg bg-[rgb(var(--color-background))] text-[rgb(var(--color-foreground))]" defaultValue="Medium (14px)">
                 <option>Small (13px)</option>
                 <option>Medium (14px)</option>
                 <option>Large (16px)</option>
@@ -47,10 +47,10 @@ export default function AppearancePage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
+            <label className="block text-sm font-medium text-[rgb(var(--color-foreground))] mb-2">
               Font Weight
             </label>
-            <select className="w-full px-3 py-2 border border-[rgb(var(--input))] rounded-lg bg-[rgb(var(--background))] text-[rgb(var(--foreground))]" defaultValue="Regular (400)">
+            <select className="w-full px-3 py-2 border border-[rgb(var(--color-input))] rounded-lg bg-[rgb(var(--color-background))] text-[rgb(var(--color-foreground))]" defaultValue="Regular (400)">
               <option>Light (300)</option>
               <option>Regular (400)</option>
               <option>Medium (500)</option>
@@ -61,23 +61,23 @@ export default function AppearancePage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="font-medium text-[rgb(var(--foreground))]">High Contrast Mode</h4>
-                <p className="text-sm text-[rgb(var(--muted-foreground))]">Increase contrast for better readability</p>
+                <h4 className="font-medium text-[rgb(var(--color-foreground))]">High Contrast Mode</h4>
+                <p className="text-sm text-[rgb(var(--color-muted-foreground))]">Increase contrast for better readability</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only peer" />
-                <div className="w-11 h-6 bg-[rgb(var(--muted))] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[rgb(var(--primary)/30%)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[rgb(var(--border))] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[rgb(var(--primary))]"></div>
+                <div className="w-11 h-6 bg-[rgb(var(--color-muted))] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[rgb(var(--color-primary)/30%)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[rgb(var(--color-border))] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[rgb(var(--color-primary))]"></div>
               </label>
             </div>
 
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="font-medium text-[rgb(var(--foreground))]">Reduce Motion</h4>
-                <p className="text-sm text-[rgb(var(--muted-foreground))]">Minimize animations and transitions</p>
+                <h4 className="font-medium text-[rgb(var(--color-foreground))]">Reduce Motion</h4>
+                <p className="text-sm text-[rgb(var(--color-muted-foreground))]">Minimize animations and transitions</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only peer" />
-                <div className="w-11 h-6 bg-[rgb(var(--muted))] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[rgb(var(--primary)/30%)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[rgb(var(--border))] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[rgb(var(--primary))]"></div>
+                <div className="w-11 h-6 bg-[rgb(var(--color-muted))] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[rgb(var(--color-primary)/30%)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[rgb(var(--color-border))] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[rgb(var(--color-primary))]"></div>
               </label>
             </div>
           </div>
@@ -91,21 +91,21 @@ export default function AppearancePage() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
+            <label className="block text-sm font-medium text-[rgb(var(--color-foreground))] mb-2">
               Content Width
             </label>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-[rgb(var(--muted-foreground))]">Narrow</span>
+              <span className="text-sm text-[rgb(var(--color-muted-foreground))]">Narrow</span>
               <input type="range" min="1" max="3" defaultValue="2" className="flex-1" />
-              <span className="text-sm text-[rgb(var(--muted-foreground))]">Wide</span>
+              <span className="text-sm text-[rgb(var(--color-muted-foreground))]">Wide</span>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
+            <label className="block text-sm font-medium text-[rgb(var(--color-foreground))] mb-2">
               Sidebar Width
             </label>
-            <select className="w-full px-3 py-2 border border-[rgb(var(--input))] rounded-lg bg-[rgb(var(--background))] text-[rgb(var(--foreground))]" defaultValue="Standard (240px)">
+            <select className="w-full px-3 py-2 border border-[rgb(var(--color-input))] rounded-lg bg-[rgb(var(--color-background))] text-[rgb(var(--color-foreground))]" defaultValue="Standard (240px)">
               <option>Narrow (200px)</option>
               <option>Standard (240px)</option>
               <option>Wide (280px)</option>
@@ -116,12 +116,12 @@ export default function AppearancePage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="font-medium text-[rgb(var(--foreground))]">Compact Mode</h4>
-                <p className="text-sm text-[rgb(var(--muted-foreground))]">Reduce padding and spacing</p>
+                <h4 className="font-medium text-[rgb(var(--color-foreground))]">Compact Mode</h4>
+                <p className="text-sm text-[rgb(var(--color-muted-foreground))]">Reduce padding and spacing</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only peer" />
-                <div className="w-11 h-6 bg-[rgb(var(--muted))] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[rgb(var(--primary)/30%)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[rgb(var(--border))] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[rgb(var(--primary))]"></div>
+                <div className="w-11 h-6 bg-[rgb(var(--color-muted))] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[rgb(var(--color-primary)/30%)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[rgb(var(--color-border))] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[rgb(var(--color-primary))]"></div>
               </label>
             </div>
           </div>

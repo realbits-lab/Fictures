@@ -109,7 +109,7 @@ export function SceneWriting({
           <Badge variant="default" className="flex items-center gap-1">
           </Badge>
           {lastSaved && (
-            <span className="text-xs text-[rgb(var(--muted-foreground))]">
+            <span className="text-xs text-[rgb(var(--color-muted-foreground))]">
               Last saved: {formatTime(lastSaved)}
             </span>
           )}
@@ -142,7 +142,7 @@ export function SceneWriting({
             <div
               contentEditable={!disabled}
               onInput={(e) => setSceneContent(e.currentTarget.textContent || '')}
-              className="w-full h-full min-h-[600px] p-4 border border-[rgb(var(--border))] rounded-[var(--radius)] font-serif text-base leading-relaxed focus:outline-none focus:ring-2 focus:ring-[rgb(var(--ring))] focus:border-transparent overflow-y-auto bg-white dark:bg-gray-900"
+              className="w-full h-full min-h-[600px] p-4 border border-[rgb(var(--color-border))] rounded-[var(--radius)] font-serif text-base leading-relaxed focus:outline-none focus:ring-2 focus:ring-[rgb(var(--color-ring))] focus:border-transparent overflow-y-auto bg-white dark:bg-gray-900"
               style={{ whiteSpace: 'pre-wrap' }}
               suppressContentEditableWarning={true}
               data-placeholder="Write your scene here using the MRU (Motivation-Reaction Unit) structure..."
@@ -155,10 +155,10 @@ export function SceneWriting({
 
       {/* Status Indicators */}
       {(isSaving || isWriting) && (
-        <Card className="border-[rgb(var(--primary))] bg-[rgb(var(--primary)/10%)]">
+        <Card className="border-[rgb(var(--color-primary))] bg-[rgb(var(--color-primary)/10%)]">
           <CardContent className="p-3">
-            <div className="flex items-center gap-2 text-sm text-[rgb(var(--primary))]">
-              <div className="w-4 h-4 border-2 border-[rgb(var(--primary))] border-t-transparent rounded-full animate-spin"></div>
+            <div className="flex items-center gap-2 text-sm text-[rgb(var(--color-primary))]">
+              <div className="w-4 h-4 border-2 border-[rgb(var(--color-primary))] border-t-transparent rounded-full animate-spin"></div>
               {isSaving && <span>Auto-saving scene content...</span>}
               {isWriting && <span>AI is generating scene content...</span>}
             </div>

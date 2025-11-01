@@ -15,14 +15,14 @@ const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
 
 		const variants = {
 			default:
-				"bg-[rgb(var(--muted))] text-[rgb(var(--muted-foreground))] border-[rgb(var(--border))]",
+				"bg-[rgb(var(--color-muted))] text-[rgb(var(--color-muted-foreground))] border-[rgb(var(--color-border))]",
 			success:
 				"bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-700",
 			warning:
 				"bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700",
 			danger:
-				"bg-[rgb(var(--destructive)/10%)] text-[rgb(var(--destructive))] border-[rgb(var(--destructive)/20%)]",
-			info: "bg-[rgb(var(--primary)/10%)] text-[rgb(var(--primary))] border-[rgb(var(--primary)/20%)]",
+				"bg-[rgb(var(--color-destructive)/10%)] text-[rgb(var(--color-destructive))] border-[rgb(var(--color-destructive)/20%)]",
+			info: "bg-[rgb(var(--color-primary)/10%)] text-[rgb(var(--color-primary))] border-[rgb(var(--color-primary)/20%)]",
 		};
 
 		const sizes = {

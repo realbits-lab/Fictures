@@ -9,11 +9,11 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
 	({ className, variant = "default", ...props }, ref) => {
 		const variants = {
 			default:
-				"bg-[rgb(var(--card)/85%)] backdrop-blur-sm border-theme border-[rgb(var(--border)/60%)] text-[rgb(var(--card-foreground))]",
+				"bg-[rgb(var(--color-card)/85%)] backdrop-blur-sm border-theme border-[rgb(var(--color-border)/60%)] text-[rgb(var(--color-card-foreground))]",
 			elevated:
-				"bg-[rgb(var(--card)/90%)] backdrop-blur-sm shadow-lg border-theme border-[rgb(var(--border)/60%)] text-[rgb(var(--card-foreground))]",
+				"bg-[rgb(var(--color-card)/90%)] backdrop-blur-sm shadow-lg border-theme border-[rgb(var(--color-border)/60%)] text-[rgb(var(--color-card-foreground))]",
 			outlined:
-				"bg-[rgb(var(--card)/40%)] backdrop-blur-sm border-theme-thick border-[rgb(var(--border)/80%)] text-[rgb(var(--card-foreground))]",
+				"bg-[rgb(var(--color-card)/40%)] backdrop-blur-sm border-theme-thick border-[rgb(var(--color-border)/80%)] text-[rgb(var(--color-card-foreground))]",
 		};
 
 		return (
@@ -48,7 +48,7 @@ const CardTitle = React.forwardRef<
 	<h3
 		ref={ref}
 		className={cn(
-			"text-lg font-semibold leading-none tracking-tight text-[rgb(var(--card-foreground))]",
+			"text-lg font-semibold leading-none tracking-tight text-[rgb(var(--color-card-foreground))]",
 			className,
 		)}
 		{...props}
@@ -63,7 +63,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
 	<p
 		ref={ref}
-		className={cn("text-sm text-[rgb(var(--muted-foreground))]", className)}
+		className={cn("text-sm text-[rgb(var(--color-muted-foreground))]", className)}
 		{...props}
 	/>
 ));

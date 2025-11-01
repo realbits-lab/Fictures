@@ -71,10 +71,10 @@ export function StoryCard({
         <CardContent className="space-y-4">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <h3 className="text-lg font-semibold text-[rgb(var(--foreground))]">
+            <h3 className="text-lg font-semibold text-[rgb(var(--color-foreground))]">
               📖 {title}
             </h3>
-            <p className="text-sm text-[rgb(var(--muted-foreground))]">{genre}</p>
+            <p className="text-sm text-[rgb(var(--color-muted-foreground))]">{genre}</p>
           </div>
           {getVisibilityBadge()}
         </div>
@@ -82,26 +82,26 @@ export function StoryCard({
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="space-y-1">
-              <p className="text-[rgb(var(--muted-foreground))]">
+              <p className="text-[rgb(var(--color-muted-foreground))]">
                 📄 Parts: {parts.completed}/{parts.total}
               </p>
-              <p className="text-[rgb(var(--muted-foreground))]">
+              <p className="text-[rgb(var(--color-muted-foreground))]">
                 {chapters.completed === chapters.total ? "✓" : "⏳"} Chapters:{" "}
                 {chapters.completed}/{chapters.total}
               </p>
             </div>
             <div className="space-y-1">
-              <p className="text-[rgb(var(--muted-foreground))]">
+              <p className="text-[rgb(var(--color-muted-foreground))]">
                 📊 Readers: {formatReaders(readers)}
               </p>
-              <p className="text-[rgb(var(--muted-foreground))]">
+              <p className="text-[rgb(var(--color-muted-foreground))]">
                 ⭐ Rating: {rating.toFixed(1)}
               </p>
             </div>
           </div>
 
           <div className="space-y-2">
-            <div className="flex justify-between text-sm text-[rgb(var(--muted-foreground))]">
+            <div className="flex justify-between text-sm text-[rgb(var(--color-muted-foreground))]">
               <span>Progress</span>
               <span>{Math.round(progressPercentage)}%</span>
             </div>

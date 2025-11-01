@@ -115,7 +115,7 @@ export function StoryStructureSidebar({
         console.log('📑 Processing part:', part);
         const partItem: TreeDataItem = {
           id: `part-${part.id}`,
-          name: `Part ${part.orderIndex}`,
+          name: `Part ${part.orderIndex}: ${part.title}`,
           icon: FileText,
           onClick: () => onSelectionChange?.({
             level: "part",

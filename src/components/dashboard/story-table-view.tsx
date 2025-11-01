@@ -59,7 +59,7 @@ export function StoryTableView({ stories }: StoryTableViewProps) {
 
   if (stories.length === 0) {
     return (
-      <div className="text-center py-12 text-[rgb(var(--muted-foreground))]">
+      <div className="text-center py-12 text-[rgb(var(--color-muted-foreground))]">
         <p className="text-xl mb-2">📝 Ready to start writing?</p>
         <p>Click the &ldquo;Create New Story&rdquo; button above to begin your first story!</p>
       </div>
@@ -67,7 +67,7 @@ export function StoryTableView({ stories }: StoryTableViewProps) {
   }
 
   return (
-    <div className="rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--card))] overflow-hidden">
+    <div className="rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-card))] overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -101,7 +101,7 @@ export function StoryTableView({ stories }: StoryTableViewProps) {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <span className="text-[rgb(var(--muted-foreground))]">
+                  <span className="text-[rgb(var(--color-muted-foreground))]">
                     {story.genre}
                   </span>
                 </TableCell>
@@ -122,7 +122,7 @@ export function StoryTableView({ stories }: StoryTableViewProps) {
                     <div className="flex-1 min-w-[80px]">
                       <Progress value={progressPercentage} className="h-2" />
                     </div>
-                    <span className="text-sm text-[rgb(var(--muted-foreground))] min-w-[45px] text-right">
+                    <span className="text-sm text-[rgb(var(--color-muted-foreground))] min-w-[45px] text-right">
                       {Math.round(progressPercentage)}%
                     </span>
                   </div>

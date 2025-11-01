@@ -63,15 +63,15 @@ export default function PrivacySecurityPage() {
     return (
       <div className="text-center py-12">
         <div className="text-4xl mb-4">⚠️</div>
-        <h3 className="text-lg font-medium text-[rgb(var(--foreground))] mb-2">
+        <h3 className="text-lg font-medium text-[rgb(var(--color-foreground))] mb-2">
           Failed to load privacy settings
         </h3>
-        <p className="text-[rgb(var(--muted-foreground))] mb-4">
+        <p className="text-[rgb(var(--color-muted-foreground))] mb-4">
           {error.message || "Something went wrong while loading your privacy settings."}
         </p>
         <button
           onClick={() => refreshSettings()}
-          className="px-4 py-2 bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] rounded-lg hover:bg-[rgb(var(--primary)/90%)] transition-colors"
+          className="px-4 py-2 bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] rounded-lg hover:bg-[rgb(var(--color-primary)/90%)] transition-colors"
         >
           Try Again
         </button>

@@ -4,13 +4,13 @@ import Link from 'next/link';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-[rgb(var(--background))]">
+    <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-[rgb(var(--color-background))]">
       <div className="max-w-2xl w-full text-center">
         {/* 404 Illustration */}
         <div className="relative mb-8">
           {/* Main 404 Text */}
           <div className="relative inline-block">
-            <h1 className="text-9xl md:text-[12rem] font-bold text-[rgb(var(--primary))] opacity-20 select-none">
+            <h1 className="text-9xl md:text-[12rem] font-bold text-[rgb(var(--color-primary))] opacity-20 select-none">
               404
             </h1>
 
@@ -20,7 +20,7 @@ export default function NotFound() {
                 {/* Book Icon */}
                 <div className="absolute top-1/4 left-1/4">
                   <svg
-                    className="w-12 h-12 md:w-16 md:h-16 text-[rgb(var(--primary))] opacity-60"
+                    className="w-12 h-12 md:w-16 md:h-16 text-[rgb(var(--color-primary))] opacity-60"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                   >
@@ -31,7 +31,7 @@ export default function NotFound() {
                 {/* Pen Icon */}
                 <div className="absolute top-1/3 right-1/4">
                   <svg
-                    className="w-10 h-10 md:w-14 md:h-14 text-[rgb(var(--primary))] opacity-60"
+                    className="w-10 h-10 md:w-14 md:h-14 text-[rgb(var(--color-primary))] opacity-60"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                   >
@@ -42,7 +42,7 @@ export default function NotFound() {
                 {/* Star Icon */}
                 <div className="absolute bottom-1/4 left-1/3">
                   <svg
-                    className="w-8 h-8 md:w-12 md:h-12 text-[rgb(var(--primary))] opacity-60"
+                    className="w-8 h-8 md:w-12 md:h-12 text-[rgb(var(--color-primary))] opacity-60"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                   >
@@ -56,10 +56,10 @@ export default function NotFound() {
 
         {/* Error Message */}
         <div className="space-y-4 mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-[rgb(var(--foreground))]">
+          <h2 className="text-3xl md:text-4xl font-bold text-[rgb(var(--color-foreground))]">
             Page Not Found
           </h2>
-          <p className="text-lg text-[rgb(var(--muted-foreground))] max-w-md mx-auto">
+          <p className="text-lg text-[rgb(var(--color-muted-foreground))] max-w-md mx-auto">
             The story you're looking for seems to have wandered off into the unknown.
             Let's get you back to familiar territory.
           </p>
@@ -69,7 +69,7 @@ export default function NotFound() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Link
             href="/"
-            className="group relative inline-flex items-center justify-center px-8 py-3 text-base font-medium text-[rgb(var(--primary-foreground))] bg-[rgb(var(--primary))] overflow-hidden transition-all duration-300 ease-out hover:scale-105 active:scale-95"
+            className="group relative inline-flex items-center justify-center px-8 py-3 text-base font-medium text-[rgb(var(--color-primary-foreground))] bg-[rgb(var(--color-primary))] overflow-hidden transition-all duration-300 ease-out hover:scale-105 active:scale-95"
             style={{ borderRadius: 'var(--radius-button)' }}
           >
             <span className="relative flex items-center gap-2">
@@ -94,12 +94,12 @@ export default function NotFound() {
 
           <Link
             href="/studio"
-            className="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-[rgb(var(--primary))] bg-[rgb(var(--secondary))] hover:bg-[rgb(var(--accent))] transition-all duration-300 ease-out hover:scale-105 active:scale-95"
+            className="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-[rgb(var(--color-primary))] bg-[rgb(var(--color-secondary))] hover:bg-[rgb(var(--color-accent))] transition-all duration-300 ease-out hover:scale-105 active:scale-95"
             style={{
               borderRadius: 'var(--radius-button)',
-              borderWidth: 'var(--border-width)',
-              borderStyle: 'var(--border-style)',
-              borderColor: 'rgb(var(--border))',
+              borderWidth: 'var(--color-border-width)',
+              borderStyle: 'var(--color-border-style)',
+              borderColor: 'rgb(var(--color-border))',
             }}
           >
             <span className="flex items-center gap-2">
@@ -122,35 +122,35 @@ export default function NotFound() {
         </div>
 
         {/* Additional Help Links */}
-        <div className="mt-12 pt-8 border-t" style={{ borderColor: 'rgb(var(--border))' }}>
-          <p className="text-sm text-[rgb(var(--muted-foreground))] mb-4">
+        <div className="mt-12 pt-8 border-t" style={{ borderColor: 'rgb(var(--color-border))' }}>
+          <p className="text-sm text-[rgb(var(--color-muted-foreground))] mb-4">
             Need help? Try these popular pages:
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link
               href="/novels"
-              className="text-sm text-[rgb(var(--primary))] hover:underline"
+              className="text-sm text-[rgb(var(--color-primary))] hover:underline"
             >
               Browse Novels
             </Link>
-            <span className="text-[rgb(var(--muted-foreground))]">•</span>
+            <span className="text-[rgb(var(--color-muted-foreground))]">•</span>
             <Link
               href="/comics"
-              className="text-sm text-[rgb(var(--primary))] hover:underline"
+              className="text-sm text-[rgb(var(--color-primary))] hover:underline"
             >
               Browse Comics
             </Link>
-            <span className="text-[rgb(var(--muted-foreground))]">•</span>
+            <span className="text-[rgb(var(--color-muted-foreground))]">•</span>
             <Link
               href="/community"
-              className="text-sm text-[rgb(var(--primary))] hover:underline"
+              className="text-sm text-[rgb(var(--color-primary))] hover:underline"
             >
               Community
             </Link>
-            <span className="text-[rgb(var(--muted-foreground))]">•</span>
+            <span className="text-[rgb(var(--color-muted-foreground))]">•</span>
             <Link
               href="/settings"
-              className="text-sm text-[rgb(var(--primary))] hover:underline"
+              className="text-sm text-[rgb(var(--color-primary))] hover:underline"
             >
               Settings
             </Link>

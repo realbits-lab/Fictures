@@ -10,14 +10,10 @@ import { useWritingProgress, useWritingSession } from "@/hooks/useStoryWriter";
 import { JSONDataDisplay } from "./JSONDataDisplay";
 import { ChapterEditor } from "./ChapterEditor";
 import { SceneEditor, SceneData } from "./SceneEditor";
-import { SceneDisplay } from "./SceneDisplay";
 import { StoryStructureSidebar } from "./StoryStructureSidebar";
 import { SceneSidebar } from "./SceneSidebar";
-import { WritingGuidelines } from "./WritingGuidelines";
-import { BeautifulJSONDisplay } from "./BeautifulJSONDisplay";
 import { CharactersDisplay } from "./CharactersDisplay";
 import { SettingsDisplay } from "./SettingsDisplay";
-import { StoryMetadataEditor } from "./StoryMetadataEditor";
 import { StudioAgentChat } from "@/components/studio/studio-agent-chat";
 import type {
   HNSStory,
@@ -1107,49 +1103,147 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     return { sceneData, selectedSceneChapter, sceneNumber };
   };
 
-  const renderSceneDisplay = () => {
-    if (!currentSelection.sceneId) return null;
-
-    return (
-      <SceneDisplay
-        sceneId={currentSelection.sceneId}
-        storyId={story.id}
-        disabled={disabled}
-      />
-    );
-  };
-
   const renderEditor = () => {
     switch (currentSelection.level) {
       case "story":
         return (
           <div className="space-y-6">
-            {/* Story JSON Data Display */}
-            <BeautifulJSONDisplay
-              title="Story JSON Data"
-              icon="📖"
-              data={sampleStoryData}
-              isCollapsed={false}
-              onToggleCollapse={() => setStoryDataCollapsed(!storyDataCollapsed)}
-              changedKeys={changedStoryKeys}
-              onDataChange={handleStoryDataUpdate}
-              disabled={disabled}
-            />
+            <Card>
+              <CardHeader>
+                <CardTitle>📖 Story Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <tbody>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Title</td>
+                        <td className="py-2 px-4">{story.title}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Genre</td>
+                        <td className="py-2 px-4">{story.genre}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Status</td>
+                        <td className="py-2 px-4">
+                          <Badge variant={story.status === 'published' ? 'default' : 'secondary'}>
+                            {story.status}
+                          </Badge>
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Parts</td>
+                        <td className="py-2 px-4">{story.parts?.length || 0}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Chapters</td>
+                        <td className="py-2 px-4">{story.chapters?.length || 0}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Total Scenes</td>
+                        <td className="py-2 px-4">
+                          {(() => {
+                            let totalScenes = 0;
+                            story.parts?.forEach(part => {
+                              part.chapters?.forEach(chapter => {
+                                totalScenes += chapter.scenes?.length || 0;
+                              });
+                            });
+                            story.chapters?.forEach(chapter => {
+                              totalScenes += chapter.scenes?.length || 0;
+                            });
+                            return totalScenes;
+                          })()}
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Public</td>
+                        <td className="py-2 px-4">{story.isPublic ? 'Yes' : 'No'}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         );
       
       case "part":
-        // Display part HNS data using BeautifulJSONDisplay
+        const selectedPart = story.parts.find(p => p.id === currentSelection.partId);
+        if (!selectedPart) {
+          return (
+            <Card>
+              <CardContent className="py-8 text-center text-gray-500">
+                Part not found
+              </CardContent>
+            </Card>
+          );
+        }
+
         return (
-          <div className="space-y-4">
-            <BeautifulJSONDisplay
-              title="Part HNS Data"
-              data={partPreviewData || currentPartData}
-              icon="📚"
-              isCollapsed={false}
-              onToggleCollapse={() => {}}
-              disabled={disabled}
-            />
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>📚 Part Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <tbody>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800 w-1/3">Part Number</td>
+                        <td className="py-2 px-4">{selectedPart.orderIndex}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Title</td>
+                        <td className="py-2 px-4">{selectedPart.title}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Chapters</td>
+                        <td className="py-2 px-4">{selectedPart.chapters?.length || 0}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Total Scenes</td>
+                        <td className="py-2 px-4">
+                          {selectedPart.chapters?.reduce((total, ch) => total + (ch.scenes?.length || 0), 0)}
+                        </td>
+                      </tr>
+                      {(selectedPart as any).targetWordCount && (
+                        <tr className="border-b">
+                          <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Target Words</td>
+                          <td className="py-2 px-4">{(selectedPart as any).targetWordCount?.toLocaleString()}</td>
+                        </tr>
+                      )}
+                      {(selectedPart as any).function && (
+                        <tr className="border-b">
+                          <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Function</td>
+                          <td className="py-2 px-4">{(selectedPart as any).function}</td>
+                        </tr>
+                      )}
+                      {(selectedPart as any).goal && (
+                        <tr className="border-b">
+                          <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Goal</td>
+                          <td className="py-2 px-4">{(selectedPart as any).goal}</td>
+                        </tr>
+                      )}
+                      {(selectedPart as any).conflict && (
+                        <tr className="border-b">
+                          <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Conflict</td>
+                          <td className="py-2 px-4">{(selectedPart as any).conflict}</td>
+                        </tr>
+                      )}
+                      {(selectedPart as any).outcome && (
+                        <tr className="border-b">
+                          <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Outcome</td>
+                          <td className="py-2 px-4">{(selectedPart as any).outcome}</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         );
       
@@ -1224,7 +1318,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 <CardContent className="text-center py-8">
                   <div className="text-gray-500 dark:text-gray-400 mb-4">
                     <div className="text-4xl mb-4">📄</div>
-                    <h3 className="text-lg font-medium mb-2 text-[rgb(var(--card-foreground))]">No Chapter Data</h3>
+                    <h3 className="text-lg font-medium mb-2 text-[rgb(var(--color-card-foreground))]">No Chapter Data</h3>
                     <p>This chapter doesn&apos;t exist or hasn&apos;t been created yet.</p>
                     <p className="text-sm mt-2">Chapter ID: {currentSelection.chapterId}</p>
                   </div>
@@ -1242,72 +1336,175 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
         return (
           <div className="space-y-6">
-            {/* Chapter Editor Header with Save/Cancel */}
-            {(chapterHasChanges || !!chapterPreviewData) && (
-              <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
-                <div>
-                  <h3 className="font-medium text-blue-900 dark:text-blue-100">📝 Chapter Changes</h3>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">You have unsaved changes to this chapter</p>
+            <Card>
+              <CardHeader>
+                <CardTitle>📝 Chapter Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <tbody>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800 w-1/3">Chapter Number</td>
+                        <td className="py-2 px-4">{selectedChapter.orderIndex}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Title</td>
+                        <td className="py-2 px-4">{selectedChapter.title}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Part</td>
+                        <td className="py-2 px-4">{selectedPartTitle || 'Standalone'}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Status</td>
+                        <td className="py-2 px-4">
+                          <Badge variant={selectedChapter.status === 'published' ? 'default' : 'secondary'}>
+                            {selectedChapter.status}
+                          </Badge>
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Scenes</td>
+                        <td className="py-2 px-4">{selectedChapter.scenes?.length || 0}</td>
+                      </tr>
+                      {(selectedChapter as any).purpose && (
+                        <tr className="border-b">
+                          <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Purpose</td>
+                          <td className="py-2 px-4">{(selectedChapter as any).purpose}</td>
+                        </tr>
+                      )}
+                      {(selectedChapter as any).hook && (
+                        <tr className="border-b">
+                          <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Hook</td>
+                          <td className="py-2 px-4">{(selectedChapter as any).hook}</td>
+                        </tr>
+                      )}
+                      {(selectedChapter as any).characterFocus && (
+                        <tr className="border-b">
+                          <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Character Focus</td>
+                          <td className="py-2 px-4">{(selectedChapter as any).characterFocus}</td>
+                        </tr>
+                      )}
+                      {(selectedChapter as any).targetWordCount && (
+                        <tr className="border-b">
+                          <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Target Words</td>
+                          <td className="py-2 px-4">{(selectedChapter as any).targetWordCount?.toLocaleString()}</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setCurrentChapterData(originalChapterData);
-                      setChapterPreviewData(null);
-                      setChapterHasChanges(false);
-                    }}
-                    className="whitespace-nowrap"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={async () => {
-                      await handleSave(chapterPreviewData || currentChapterData);
-                      setOriginalChapterData(chapterPreviewData || currentChapterData);
-                      setChapterPreviewData(null);
-                      setChapterHasChanges(false);
-                    }}
-                    className="whitespace-nowrap"
-                  >
-                    💾 Save Changes
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Chapter Overview */}
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <BeautifulJSONDisplay
-                  title="📝 Chapter Overview"
-                  icon="📝"
-                  data={{
-                    title: chapterData.title,
-                    part: chapterData.partTitle,
-                    status: chapterData.status,
-                    progress: {
-                      target: chapterData.targetWordCount,
-                    },
-                    purpose: chapterData.purpose,
-                    hook: chapterData.hook,
-                    characterFocus: chapterData.characterFocus
-                  }}
-                  isCollapsed={false}
-                  disabled={disabled}
-                />
-              </div>
-            </div>
-
-
-
+              </CardContent>
+            </Card>
           </div>
         );
 
       case "scene":
-        return renderSceneDisplay();
+        // Find the selected scene
+        let selectedScene = null;
+        let selectedSceneChapter = null;
+        let selectedScenePart = null;
+
+        // Look in parts first
+        for (const part of story.parts) {
+          for (const chapter of part.chapters) {
+            const foundScene = chapter.scenes?.find(s => s.id === currentSelection.sceneId);
+            if (foundScene) {
+              selectedScene = foundScene;
+              selectedSceneChapter = chapter;
+              selectedScenePart = part;
+              break;
+            }
+          }
+          if (selectedScene) break;
+        }
+
+        // Look in standalone chapters if not found in parts
+        if (!selectedScene) {
+          for (const chapter of story.chapters) {
+            const foundScene = chapter.scenes?.find(s => s.id === currentSelection.sceneId);
+            if (foundScene) {
+              selectedScene = foundScene;
+              selectedSceneChapter = chapter;
+              break;
+            }
+          }
+        }
+
+        if (!selectedScene) {
+          return (
+            <Card>
+              <CardContent className="py-8 text-center text-gray-500">
+                Scene not found
+              </CardContent>
+            </Card>
+          );
+        }
+
+        return (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>🎬 Scene Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <tbody>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800 w-1/3">Title</td>
+                        <td className="py-2 px-4">{selectedScene.title}</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Chapter</td>
+                        <td className="py-2 px-4">{selectedSceneChapter?.title || 'Unknown'}</td>
+                      </tr>
+                      {selectedScenePart && (
+                        <tr className="border-b">
+                          <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Part</td>
+                          <td className="py-2 px-4">{selectedScenePart.title}</td>
+                        </tr>
+                      )}
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Status</td>
+                        <td className="py-2 px-4">
+                          <Badge variant={selectedScene.status === 'completed' ? 'default' : 'secondary'}>
+                            {selectedScene.status}
+                          </Badge>
+                        </td>
+                      </tr>
+                      {selectedScene.goal && (
+                        <tr className="border-b">
+                          <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Goal</td>
+                          <td className="py-2 px-4">{selectedScene.goal}</td>
+                        </tr>
+                      )}
+                      {selectedScene.conflict && (
+                        <tr className="border-b">
+                          <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Conflict</td>
+                          <td className="py-2 px-4">{selectedScene.conflict}</td>
+                        </tr>
+                      )}
+                      {selectedScene.outcome && (
+                        <tr className="border-b">
+                          <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Outcome</td>
+                          <td className="py-2 px-4">{selectedScene.outcome}</td>
+                        </tr>
+                      )}
+                      {(selectedScene as any).orderIndex !== undefined && (
+                        <tr className="border-b">
+                          <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Scene Number</td>
+                          <td className="py-2 px-4">{(selectedScene as any).orderIndex}</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
 
       case "characters":
         return (
@@ -1329,9 +1526,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   };
 
   return (
-    <div className="min-h-screen bg-[rgb(var(--background))]">
+    <div className="min-h-screen bg-[rgb(var(--color-background))]">
       {/* Fixed Header */}
-      <div className="sticky top-0 z-50 bg-[rgb(var(--background)/95%)] backdrop-blur-[var(--blur)] border-b border-[rgb(var(--border))]">
+      <div className="sticky top-0 z-50 bg-[rgb(var(--color-background)/95%)] backdrop-blur-[var(--blur)] border-b border-[rgb(var(--color-border))]">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 md:gap-4">
@@ -1339,15 +1536,15 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 variant="ghost"
                 size="sm"
                 onClick={() => router.push('/studio')}
-                className="flex items-center gap-2 text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))]"
+                className="flex items-center gap-2 text-[rgb(var(--color-muted-foreground))] hover:text-[rgb(var(--color-foreground))]"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
                 <span className="hidden sm:inline">Back to Stories</span>
               </Button>
-              <div className="w-px h-6 bg-[rgb(var(--border))] hidden sm:block"></div>
-              <h1 className="text-lg md:text-xl font-semibold text-[rgb(var(--foreground))] truncate font-[var(--font-heading)]">
+              <div className="w-px h-6 bg-[rgb(var(--color-border))] hidden sm:block"></div>
+              <h1 className="text-lg md:text-xl font-semibold text-[rgb(var(--color-foreground))] truncate font-[var(--font-heading)]">
                 {currentSelection.level === "story" ? "📖" :
                  currentSelection.level === "part" ? "📚" :
                  currentSelection.level === "chapter" ? "📝" :
@@ -1358,8 +1555,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
               
               {/* Cache Status Indicators */}
               {(isValidatingCurrentStory || isValidatingStory) && (
-                <div className="flex items-center gap-2 text-xs text-[rgb(var(--primary))] opacity-60">
-                  <div className="w-3 h-3 border-2 border-[rgb(var(--primary))] border-t-transparent rounded-full animate-spin"></div>
+                <div className="flex items-center gap-2 text-xs text-[rgb(var(--color-primary))] opacity-60">
+                  <div className="w-3 h-3 border-2 border-[rgb(var(--color-primary))] border-t-transparent rounded-full animate-spin"></div>
                   <span className="hidden md:inline">Syncing...</span>
                 </div>
               )}
@@ -1370,7 +1567,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                   size="sm" 
                   onClick={handleVisibilityToggle} 
                   disabled={isLoading}
-                  className={story.status === 'published' ? 'bg-[rgb(var(--primary))] hover:bg-[rgb(var(--primary)/90%)] text-[rgb(var(--primary-foreground))]' : 'bg-[rgb(var(--muted))] hover:bg-[rgb(var(--muted)/80%)] text-[rgb(var(--muted-foreground))]'}
+                  className={story.status === 'published' ? 'bg-[rgb(var(--color-primary))] hover:bg-[rgb(var(--color-primary)/90%)] text-[rgb(var(--color-primary-foreground))]' : 'bg-[rgb(var(--color-muted))] hover:bg-[rgb(var(--color-muted)/80%)] text-[rgb(var(--color-muted-foreground))]'}
                   title={
                     story.status === 'published'
                       ? 'Story is public - visible in community hub. Click to make private.'
@@ -1379,7 +1576,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 >
                   {isLoading ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-[rgb(var(--primary-foreground))] border-t-transparent rounded-full animate-spin mr-1"></div>
+                      <div className="w-4 h-4 border-2 border-[rgb(var(--color-primary-foreground))] border-t-transparent rounded-full animate-spin mr-1"></div>
                       <span className="hidden sm:inline">Updating...</span>
                     </>
                   ) : (
@@ -1435,7 +1632,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                       size="sm" 
                       onClick={handlePublishToggle} 
                       disabled={isLoading}
-                      className={`${currentChapterStatus === 'published' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-[rgb(var(--primary))] hover:bg-[rgb(var(--primary)/90%)] text-[rgb(var(--primary-foreground))]'} rounded-[var(--radius)]`}
+                      className={`${currentChapterStatus === 'published' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-[rgb(var(--color-primary))] hover:bg-[rgb(var(--color-primary)/90%)] text-[rgb(var(--color-primary-foreground))]'} rounded-[var(--radius)]`}
                       title={
                         currentChapterStatus === 'published' 
                           ? 'Chapter is published - click to unpublish' 
@@ -1462,24 +1659,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       </div>
 
       <div className="w-full px-4 py-6">
-        <div className={`grid ${sidebarCollapsed ? 'grid-cols-12' : 'grid-cols-12'} gap-6 min-h-[calc(100vh-200px)]`}>
-          {/* Left Sidebar - Story Structure Navigation */}
-          {!sidebarCollapsed && (
-            <div className="col-span-12 lg:col-span-3 space-y-6">
-              <StoryStructureSidebar
-                story={story}
-                currentSelection={currentSelection}
-                onSidebarCollapse={setSidebarCollapsed}
-              onSelectionChange={handleSelectionChange}
-              validatingStoryId={
-                isValidatingCurrentStory ? story.id : null
-              }
-            />
-            </div>
-          )}
-
-          {/* Collapsed sidebar trigger */}
-          {sidebarCollapsed && (
+        <div className="grid grid-cols-12 gap-6 h-[calc(100vh-200px)]">
+          {/* Left Sidebar - Story Structure Navigation (Tree View) */}
+          <div className="col-span-3 h-full overflow-y-auto">
             <StoryStructureSidebar
               story={story}
               currentSelection={currentSelection}
@@ -1489,158 +1671,25 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                 isValidatingCurrentStory ? story.id : null
               }
             />
-          )}
-          
-          {/* Main Writing Area - 50% width */}
-          <div className={`col-span-12 ${sidebarCollapsed ? 'lg:col-span-9' : 'lg:col-span-6'}`}>
+          </div>
+
+          {/* Middle Panel - Table Data Display */}
+          <div className="col-span-6 h-full overflow-y-auto">
             {renderEditor()}
           </div>
 
-          {/* Right Sidebar - Agent Chat */}
-          <div className="col-span-12 lg:col-span-3 space-y-6">
-            {/* Studio Agent Chat */}
-            <Card className="h-[calc(100vh-200px)] flex flex-col overflow-hidden">
-              <StudioAgentChat
-                storyId={story.id}
-                storyContext={{
-                  storyTitle: story.title,
-                  currentSelection: currentSelection,
-                  genre: story.genre,
-                  status: story.status,
-                }}
-                className="flex-1"
-              />
-            </Card>
-
-            {/* Delete Story Button - Show for story level */}
-            {currentSelection.level === "story" && (
-              <Card className="border-red-200 dark:border-red-800">
-                <CardHeader>
-                  <CardTitle className="text-red-600 dark:text-red-400">⚠️ Danger Zone</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-sm text-[rgb(var(--muted-foreground))]">
-                    Permanently delete this story and all associated content.
-                  </p>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="w-full"
-                    onClick={async () => {
-                      if (confirm(`Are you sure you want to delete "${story.title}"? This action cannot be undone and will delete:\n\n• Story and all metadata\n• All parts, chapters, and scenes\n• All characters and settings\n• All images from storage\n\nType DELETE to confirm.`)) {
-                        const userConfirmation = prompt('Type DELETE to confirm deletion:');
-                        if (userConfirmation === 'DELETE') {
-                          setIsLoading(true);
-                          try {
-                            const response = await fetch(`/studio/api/stories/${story.id}`, {
-                              method: 'DELETE',
-                            });
-
-                            if (!response.ok) {
-                              const error = await response.json();
-                              throw new Error(error.error || 'Failed to delete story');
-                            }
-
-                            toast.success('Story deleted successfully', {
-                              duration: 3000,
-                              position: 'top-right',
-                            });
-
-                            // Invalidate SWR cache for stories list
-                            await mutate('/studio/api/stories');
-
-                            // Clear localStorage cache for stories
-                            if (typeof window !== 'undefined') {
-                              const storiesCacheKey = 'swr-cache-/api/stories';
-                              localStorage.removeItem(storiesCacheKey);
-                              localStorage.removeItem(`${storiesCacheKey}-timestamp`);
-                              localStorage.removeItem(`${storiesCacheKey}-version`);
-                            }
-
-                            // Clear cache and redirect to stories page
-                            // Use replace to avoid keeping deleted story in browser history
-                            router.replace('/stories');
-                            router.refresh();
-                          } catch (error) {
-                            console.error('Delete failed:', error);
-                            toast.error(error instanceof Error ? error.message : 'Failed to delete story', {
-                              duration: 5000,
-                              position: 'top-right',
-                            });
-                          } finally {
-                            setIsLoading(false);
-                          }
-                        }
-                      }
-                    }}
-                    disabled={disabled || isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                        Deleting...
-                      </>
-                    ) : (
-                      <>🗑️ Delete Story</>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Story Metadata Editor - Show for story level */}
-            {currentSelection.level === "story" && (
-              <StoryMetadataEditor
-                storyId={story.id}
-                currentGenre={story.genre}
-                currentTitle={story.title}
-                onUpdate={() => {
-                  // Refresh the page to show updated data
-                  router.refresh();
-                }}
-                disabled={disabled}
-              />
-            )}
-
-            {/* Part HNS Data Display - Show for part level */}
-            {currentSelection.level === "part" && currentPartData && (
-              <BeautifulJSONDisplay
-                title="Part HNS Data"
-                data={partPreviewData || currentPartData}
-                icon="📚"
-                isCollapsed={false}
-                onToggleCollapse={() => {}}
-                disabled={disabled}
-              />
-            )}
-
-            {/* Chapter HNS Data Display - Show for chapter level */}
-            {currentSelection.level === "chapter" && currentChapterData && (
-              <BeautifulJSONDisplay
-                title="Chapter HNS Data"
-                data={chapterPreviewData || currentChapterData}
-                icon="📝"
-                isCollapsed={false}
-                onToggleCollapse={() => {}}
-                disabled={disabled}
-              />
-            )}
-
-            {/* Scene HNS Data Display - Show for scene level */}
-            {currentSelection.level === "scene" && currentSceneData && (
-              <BeautifulJSONDisplay
-                title="Scene HNS Data"
-                data={scenePreviewData || currentSceneData}
-                icon="🎬"
-                isCollapsed={false}
-                onToggleCollapse={() => {}}
-                disabled={disabled}
-              />
-            )}
-
-
-            {/* Writing Guidelines - Show for scene editing */}
-            <WritingGuidelines currentLevel={currentSelection.level === 'characters' ? 'story' : currentSelection.level as "story" | "part" | "chapter" | "scene"} />
+          {/* Right Sidebar - Studio Agent Chat Only */}
+          <div className="col-span-3 h-full">
+            <StudioAgentChat
+              storyId={story.id}
+              storyContext={{
+                storyTitle: story.title,
+                currentSelection: currentSelection,
+                genre: story.genre,
+                status: story.status,
+              }}
+              className="h-full"
+            />
           </div>
         </div>
       </div>

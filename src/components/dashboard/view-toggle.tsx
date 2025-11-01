@@ -9,14 +9,14 @@ interface ViewToggleProps {
 
 export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
   return (
-    <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] p-1">
+    <div className="inline-flex rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))] p-1">
       <button
         onClick={() => onViewChange("card")}
         className={cn(
           "inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium transition-all",
           view === "card"
-            ? "bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] shadow-sm"
-            : "text-[rgb(var(--muted-foreground))] hover:bg-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))]"
+            ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-sm"
+            : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-foreground))]"
         )}
       >
         <svg
@@ -43,8 +43,8 @@ export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
         className={cn(
           "inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium transition-all",
           view === "table"
-            ? "bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] shadow-sm"
-            : "text-[rgb(var(--muted-foreground))] hover:bg-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))]"
+            ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-sm"
+            : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-foreground))]"
         )}
       >
         <svg

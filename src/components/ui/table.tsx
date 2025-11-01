@@ -22,7 +22,7 @@ const TableHeader = React.forwardRef<
   <thead
     ref={ref}
     className={cn(
-      "border-b border-[rgb(var(--border))] bg-[rgb(var(--muted)/50%)]",
+      "border-b border-[rgb(var(--color-border))] bg-[rgb(var(--color-muted)/50%)]",
       className
     )}
     {...props}
@@ -49,7 +49,7 @@ const TableFooter = React.forwardRef<
   <tfoot
     ref={ref}
     className={cn(
-      "border-t border-[rgb(var(--border))] bg-[rgb(var(--muted)/50%)] font-medium",
+      "border-t border-[rgb(var(--color-border))] bg-[rgb(var(--color-muted)/50%)] font-medium",
       className
     )}
     {...props}
@@ -64,7 +64,7 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b border-[rgb(var(--border))] transition-colors hover:bg-[rgb(var(--muted)/50%)] data-[state=selected]:bg-[rgb(var(--muted))]",
+      "border-b border-[rgb(var(--color-border))] transition-colors hover:bg-[rgb(var(--color-muted)/50%)] data-[state=selected]:bg-[rgb(var(--color-muted))]",
       className
     )}
     {...props}
@@ -79,7 +79,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-12 px-4 text-left align-middle font-semibold text-[rgb(var(--muted-foreground))] [&:has([role=checkbox])]:pr-0",
+      "h-12 px-4 text-left align-middle font-semibold text-[rgb(var(--color-muted-foreground))] [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}
@@ -105,7 +105,7 @@ const TableCaption = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <caption
     ref={ref}
-    className={cn("mt-4 text-sm text-[rgb(var(--muted-foreground))]", className)}
+    className={cn("mt-4 text-sm text-[rgb(var(--color-muted-foreground))]", className)}
     {...props}
   />
 ));

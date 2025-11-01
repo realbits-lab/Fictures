@@ -45,13 +45,13 @@ function StoriesSkeleton() {
           {/* First row on mobile: History/All + View toggles */}
           <div className="flex items-center justify-between md:justify-end gap-3">
             {/* History/All Toggle Skeleton */}
-            <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] p-1 flex-1 md:flex-initial">
+            <div className="inline-flex rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))] p-1 flex-1 md:flex-initial">
               <Skeleton className="h-8 w-20 md:w-24 rounded" />
               <Skeleton className="h-8 w-20 md:w-24 rounded ml-1" />
             </div>
 
             {/* View Toggle Skeleton */}
-            <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] p-1 flex-1 md:flex-initial">
+            <div className="inline-flex rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))] p-1 flex-1 md:flex-initial">
               <Skeleton className="h-8 w-16 md:w-20 rounded" />
               <Skeleton className="h-8 w-16 md:w-20 rounded ml-1" />
             </div>
@@ -60,12 +60,12 @@ function StoriesSkeleton() {
           {/* Second row on mobile: Genre + Sort selects */}
           <div className="flex items-center justify-between md:justify-end gap-3">
             {/* Genre Select Skeleton */}
-            <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] flex-1 md:flex-initial">
+            <div className="inline-flex rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))] flex-1 md:flex-initial">
               <Skeleton className="h-9 w-32 rounded" />
             </div>
 
             {/* Sort Select Skeleton */}
-            <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] flex-1 md:flex-initial">
+            <div className="inline-flex rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))] flex-1 md:flex-initial">
               <Skeleton className="h-9 w-32 rounded" />
             </div>
           </div>
@@ -190,13 +190,13 @@ export function BrowseClient() {
   }, [error, stories.length]);
 
   return (
-    <div className="min-h-screen bg-[rgb(var(--background))]">
+    <div className="min-h-screen bg-[rgb(var(--color-background))]">
       <div className="container mx-auto px-4 pt-1 pb-8">
         {/* Background validation indicator in top right */}
         {isValidating && !isLoading && (
-          <div className="fixed top-20 right-4 z-50 bg-[rgb(var(--background))] rounded-lg shadow-lg border border-[rgb(var(--border))] px-3 py-2">
-            <div className="flex items-center gap-2 text-sm text-[rgb(var(--muted-foreground))]">
-              <div className="w-4 h-4 border-2 border-[rgb(var(--primary)/30%)] border-t-[rgb(var(--primary))] rounded-full animate-spin" />
+          <div className="fixed top-20 right-4 z-50 bg-[rgb(var(--color-background))] rounded-lg shadow-lg border border-[rgb(var(--color-border))] px-3 py-2">
+            <div className="flex items-center gap-2 text-sm text-[rgb(var(--color-muted-foreground))]">
+              <div className="w-4 h-4 border-2 border-[rgb(var(--color-primary)/30%)] border-t-[rgb(var(--color-primary))] rounded-full animate-spin" />
               <span>Refreshing stories...</span>
             </div>
           </div>
@@ -212,7 +212,7 @@ export function BrowseClient() {
                   cacheHealth === 'fresh' ? 'bg-emerald-500 text-white' : 
                   cacheHealth === 'stale' ? 'bg-amber-500 text-white' : 
                   cacheHealth === 'expired' ? 'bg-red-500 text-white' : 
-                  'bg-[rgb(var(--muted))] text-[rgb(var(--muted-foreground))]'
+                  'bg-[rgb(var(--color-muted))] text-[rgb(var(--color-muted-foreground))]'
                 }`}
                 onClick={() => setShowCacheInfo(!showCacheInfo)}
                 title={`Cache status: ${cacheHealth} - Click for details`}
@@ -231,7 +231,7 @@ export function BrowseClient() {
                   cacheManager.clearPageCache(pageType);
                   mutate();
                 }}
-                className="text-xs px-2 py-1 bg-[rgb(var(--secondary))] hover:bg-[rgb(var(--secondary)/80%)] text-[rgb(var(--secondary-foreground))] rounded-full transition-colors"
+                className="text-xs px-2 py-1 bg-[rgb(var(--color-secondary))] hover:bg-[rgb(var(--color-secondary)/80%)] text-[rgb(var(--color-secondary-foreground))] rounded-full transition-colors"
                 title="Clear cache and refresh"
               >
                 🗑️ Clear Cache
@@ -240,17 +240,17 @@ export function BrowseClient() {
 
             {/* Cache info panel */}
             {showCacheInfo && (
-              <div className="absolute top-12 right-0 bg-[rgb(var(--background))] rounded-lg shadow-xl border border-[rgb(var(--border))] p-4 w-64 text-sm">
-                <h4 className="font-medium mb-2 text-[rgb(var(--foreground))]">Cache Status</h4>
-                <div className="space-y-1 text-[rgb(var(--muted-foreground))]">
-                  <div>Status: <span className="font-medium text-[rgb(var(--foreground))]">{cacheHealth}</span></div>
-                  <div>Stories: <span className="font-medium text-[rgb(var(--foreground))]">{stories.length}</span></div>
-                  <div>TTL: <span className="font-medium text-[rgb(var(--foreground))]">1 hour</span></div>
-                  <div>Source: <span className="font-medium text-[rgb(var(--foreground))]">localStorage</span></div>
+              <div className="absolute top-12 right-0 bg-[rgb(var(--color-background))] rounded-lg shadow-xl border border-[rgb(var(--color-border))] p-4 w-64 text-sm">
+                <h4 className="font-medium mb-2 text-[rgb(var(--color-foreground))]">Cache Status</h4>
+                <div className="space-y-1 text-[rgb(var(--color-muted-foreground))]">
+                  <div>Status: <span className="font-medium text-[rgb(var(--color-foreground))]">{cacheHealth}</span></div>
+                  <div>Stories: <span className="font-medium text-[rgb(var(--color-foreground))]">{stories.length}</span></div>
+                  <div>TTL: <span className="font-medium text-[rgb(var(--color-foreground))]">1 hour</span></div>
+                  <div>Source: <span className="font-medium text-[rgb(var(--color-foreground))]">localStorage</span></div>
                 </div>
                 <button
                   onClick={() => setShowCacheInfo(false)}
-                  className="mt-2 text-xs text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))] transition-colors"
+                  className="mt-2 text-xs text-[rgb(var(--color-muted-foreground))] hover:text-[rgb(var(--color-foreground))] transition-colors"
                 >
                   Close
                 </button>
@@ -271,15 +271,15 @@ export function BrowseClient() {
           /* Error state */
           <div className="text-center py-12">
             <div className="text-4xl mb-4">⚠️</div>
-            <h3 className="text-lg font-medium text-[rgb(var(--foreground))] mb-2">
+            <h3 className="text-lg font-medium text-[rgb(var(--color-foreground))] mb-2">
               Failed to load stories
             </h3>
-            <p className="text-[rgb(var(--muted-foreground))] mb-4">
+            <p className="text-[rgb(var(--color-muted-foreground))] mb-4">
               {error.message || "Something went wrong while loading stories."}
             </p>
             <button 
               onClick={() => mutate()} 
-              className="px-4 py-2 bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] rounded-lg hover:bg-[rgb(var(--primary)/80%)] transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] rounded-lg hover:bg-[rgb(var(--color-primary)/80%)] transition-colors disabled:opacity-50"
               disabled={isValidating}
             >
               {isValidating ? 'Retrying...' : 'Try Again'}
