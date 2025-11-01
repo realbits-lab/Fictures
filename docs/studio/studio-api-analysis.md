@@ -10,11 +10,11 @@ This document provides a comprehensive analysis of all Studio API routes in the 
 
 ## Statistics
 
-- **Total API Route Files**: 51
-- **Total Endpoints**: 51+
+- **Total API Route Files**: 49
+- **Total Endpoints**: 49+
 - **Actively Used**: 22+
 - **Defined but Partially Verified**: 12+
-- **Potentially Unused**: 3
+- **Legacy APIs Removed**: 2 (generate, generate-stream)
 
 ## API Routes by Category
 
@@ -334,16 +334,7 @@ These endpoints provide AI-powered analysis and modification of story elements u
 - **Function**: Get published stories
 - **Response**: Array of published stories with metadata
 
-#### POST `/studio/api/stories/generate-stream`
-- **File**: `src/app/studio/api/stories/generate-stream/route.ts` (422 lines)
-- **Status**: ⚠️ DEFINED (might be legacy)
-- **Function**: Stream-based story generation (HNS methodology)
-- **Note**: Verify if still used; newer system uses `/novels/generate`
-
-#### POST `/studio/api/stories/generate`
-- **Status**: ⚠️ DEFINED (might be legacy)
-- **Function**: Non-streaming story generation
-- **Note**: Verify if still used; newer system uses `/novels/generate`
+**Note**: Legacy endpoints `/stories/generate` and `/stories/generate-stream` have been removed. The platform now uses the `/studio/api/generation/*` system with the Adversity-Triumph Engine methodology instead of the old HNS generation system.
 
 ---
 
@@ -738,11 +729,14 @@ Routes with implementation but limited usage evidence:
 5. Story Analysis/Update APIs
 6. Scene Evaluation API
 
-### 🔴 Potentially Unused (3 endpoints)
-Routes with limited or no confirmed usage:
-1. Story Generate (legacy HNS)
-2. Story Generate Stream (legacy HNS)
-3. Characters-Places (possible duplicate)
+### ⚠️ Review Needed (1 endpoint)
+Routes that may need review:
+1. Characters-Places (possible duplicate - may overlap with /characters and /settings endpoints)
+
+### ✅ Legacy APIs Removed (2025-11-01)
+Superseded by `/studio/api/generation/*` with Adversity-Triumph Engine:
+1. ~~Story Generate (legacy HNS)~~ - **REMOVED**
+2. ~~Story Generate Stream (legacy HNS)~~ - **REMOVED**
 
 ---
 
@@ -768,7 +762,7 @@ Routes with limited or no confirmed usage:
 ## Recommendations
 
 ### High Priority
-1. **Verify Legacy Endpoints**: Confirm if `stories/generate` and `stories/generate-stream` are still in use
+1. ~~**Verify Legacy Endpoints**~~: ✅ **COMPLETED** - Legacy HNS generation endpoints removed (2025-11-01)
 2. **Document Missing Endpoints**: Add JSDoc comments to all route handlers
 3. **Consolidate Duplicates**: Review `/characters-places` for duplication with `/characters` and `/settings`
 4. **Error Handling**: Standardize error responses across all endpoints

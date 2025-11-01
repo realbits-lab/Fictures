@@ -268,7 +268,7 @@ export function StudioAgentChat({
           />
           <Button
             type="submit"
-            disabled={isLoading || !input.trim()}
+            disabled={isLoading || !input?.trim()}
             size="icon"
             className="h-[60px] w-[60px] shrink-0"
           >

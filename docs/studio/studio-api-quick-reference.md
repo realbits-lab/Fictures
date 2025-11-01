@@ -58,13 +58,18 @@ title: Studio API Quick Reference
 | **Analysis** | `/story-analysis` | ⚠️ Defined | Verify usage |
 | | `/story-update` | ⚠️ Defined | Verify usage |
 
-### Potentially Unused (3)
+### Review Needed (1)
 
 | Endpoint | Status | Note |
 |----------|--------|------|
-| `/stories/generate` | 🔴 Unused | Legacy HNS system |
-| `/stories/generate-stream` | 🔴 Unused | Legacy HNS system |
-| `/stories/[id]/characters-places` | 🔴 Unused | Might duplicate `/characters` + `/settings` |
+| `/stories/[id]/characters-places` | ⚠️ Review | Might duplicate `/characters` + `/settings` |
+
+### Legacy APIs Removed (2025-11-01)
+
+| Endpoint | Status | Replacement |
+|----------|--------|-------------|
+| ~~`/stories/generate`~~ | ✅ Removed | Use `/generation/*` system |
+| ~~`/stories/generate-stream`~~ | ✅ Removed | Use `/generation/*` system |
 
 ---
 
