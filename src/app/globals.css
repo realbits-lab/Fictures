@@ -3,66 +3,33 @@
 @import "tailwindcss";
 @import "@fuma-comment/react/preset.css";
 
-@theme {
-	--font-sans:
-		"Inter Variable", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-		"Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-	--font-mono:
-		"JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco,
-		Consolas, "Liberation Mono", "Courier New", monospace;
+/* Default Light Theme */
+:root {
+	/* Base Font Stacks */
+	--font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+	--font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 	--font-heading: "Poppins", ui-sans-serif, system-ui, sans-serif;
 	--font-body: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
 
-	--color-primary: 59 130 246;
-	--color-primary-foreground: 255 255 255;
-	--color-secondary: 244 244 245;
-	--color-secondary-foreground: 39 39 42;
-	--color-muted: 244 244 245;
-	--color-muted-foreground: 113 113 122;
-	--color-accent: 244 244 245;
-	--color-accent-foreground: 39 39 42;
-	--color-destructive: 239 68 68;
-	--color-destructive-foreground: 255 255 255;
-	--color-border: 228 228 231;
-	--color-input: 228 228 231;
-	--color-ring: 59 130 246;
-	--color-background: 255 255 255;
-	--color-foreground: 39 39 42;
-	--color-card: 255 255 255;
-	--color-card-foreground: 39 39 42;
-	--color-popover: 255 255 255;
-	--color-popover-foreground: 39 39 42;
-
-	--radius-none: 0;
-	--radius-xs: 0.125rem;
-	--radius-sm: 0.25rem;
-	--radius-md: 0.375rem;
-	--radius-lg: 0.5rem;
-	--radius-xl: 0.75rem;
-	--radius-2xl: 1rem;
-	--radius-3xl: 1.5rem;
-	--radius-full: 9999px;
-
+	/* Base Shadows */
 	--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 	--shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-	--shadow-lg:
-		0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-	--shadow-xl:
-		0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+	--shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+	--shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 	--shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 
+	/* Base Animation Durations */
 	--animate-duration-fast: 150ms;
 	--animate-duration-normal: 300ms;
 	--animate-duration-slow: 500ms;
 
+	/* Base Blur Values */
 	--blur-sm: blur(4px);
 	--blur-md: blur(8px);
 	--blur-lg: blur(16px);
 	--blur-xl: blur(24px);
-}
 
-/* Default Light Theme */
-:root {
+	/* Theme Colors */
 	--primary: 59 130 246;
 	--primary-foreground: 255 255 255;
 	--secondary: 244 244 245;
@@ -83,20 +50,20 @@
 	--popover: 255 255 255;
 	--popover-foreground: 39 39 42;
 
+	/* Border Radius */
 	--radius: 0.5rem;
 	--radius-button: 0.5rem;
 	--radius-card: 0.5rem;
 	--radius-input: 0.375rem;
 	--radius-badge: 0.25rem;
 	--radius-dialog: 0.75rem;
+
+	/* Border Widths */
 	--border-width: 1px;
 	--border-width-thick: 2px;
 	--border-style: solid;
-	--font-sans: var(--font-sans);
-	--font-mono: var(--font-mono);
-	--font-heading: var(--font-heading);
-	--font-body: var(--font-body);
 
+	/* Applied Tokens */
 	--shadow: var(--shadow-md);
 	--animate-duration: var(--animate-duration-normal);
 	--blur: var(--blur-md);
@@ -133,10 +100,6 @@
 	--border-width: 1px;
 	--border-width-thick: 1px;
 	--border-style: solid;
-	--font-sans: var(--font-sans);
-	--font-mono: var(--font-mono);
-	--font-heading: var(--font-heading);
-	--font-body: var(--font-body);
 
 	--shadow: var(--shadow-lg);
 	--animate-duration: var(--animate-duration-normal);

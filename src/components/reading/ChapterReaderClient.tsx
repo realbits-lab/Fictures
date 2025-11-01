@@ -883,7 +883,7 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
               className="max-w-4xl mx-auto px-8 py-8 pb-24 md:pb-8"
             >
               {/* Scene Content */}
-              <div className="prose prose-lg max-w-none" style={{ color: 'rgb(var(--color-foreground))' }}>
+              <div className="prose prose-lg max-w-none" style={{ color: 'rgb(var(--foreground))' }}>
                 {scenesError ? (
                   <div className="text-center py-12 text-red-500 dark:text-red-400">
                     <div className="max-w-md mx-auto">

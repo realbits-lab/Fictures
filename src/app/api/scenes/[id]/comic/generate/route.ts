@@ -97,61 +97,32 @@ export async function POST(
       id: 'default',
       name: 'Default Setting',
       description: 'A generic setting',
+      mood: 'neutral',
+      sensory: null,
+      visualStyle: null,
+      visualReferences: null,
+      colorPalette: null,
+      architecturalStyle: null,
       imageUrl: null,
       imageVariants: null,
       storyId: story.id,
-      settingType: 'location',
-      atmosphere: 'neutral',
-      timeOfDay: null,
-      weather: null,
+      adversityElements: null,
+      symbolicMeaning: null,
+      cycleAmplification: null,
+      emotionalResonance: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     console.log(`🎨 Generating comic panels for scene: ${scene.title}`);
 
-    // Map database scene to HNS interface (database uses 'title', HNS uses 'scene_title')
-    const hnsScene: Partial<HNSScene> = {
-      scene_id: scene.id,
-      scene_number: scene.orderIndex,
-      scene_title: scene.title,
-      chapter_ref: scene.chapterId,
-      character_ids: Array.isArray(scene.characterIds) ? scene.characterIds : [],
-      setting_id: scene.settingId || '',
-      pov_character_id: scene.povCharacterId || undefined,
-      goal: scene.goal || '',
-      conflict: scene.conflict || '',
-      outcome: scene.outcome || '',
-      content: scene.content || '',
-      emotional_shift: scene.emotionalShift as any,
-      entry_hook: scene.entryHook || undefined,
-      narrative_voice: scene.narrativeVoice || undefined,
-      summary: scene.summary || undefined,
-    };
-
-    // Map database characters to HNS interface (minimal fields for comic generation)
-    const hnsCharacters: Partial<HNSCharacter>[] = storyCharacters.map(char => ({
-      character_id: char.id,
-      name: char.name,
-      role: char.role as any,
-      summary: char.summary || char.description || '',
-      motivations: char.motivations as any,
-    }));
-
-    // Map database setting to HNS interface (minimal fields for comic generation)
-    const hnsSetting: Partial<HNSSetting> = {
-      setting_id: primarySetting.id,
-      name: primarySetting.name,
-      description: primarySetting.description || '',
-      mood: primarySetting.mood || 'neutral',
-    };
-
-    // Generate panels (cast partial types to full HNS types - generator handles missing fields)
+    // Database objects now match HNS types - just cast directly
+    // The HNS types have been updated to match the Adversity-Triumph Engine schema
     const result = await generateComicPanels({
       sceneId: id,
-      scene: hnsScene as HNSScene,
-      characters: hnsCharacters as HNSCharacter[],
-      setting: hnsSetting as HNSSetting,
+      scene: scene as unknown as HNSScene,
+      characters: storyCharacters as unknown as HNSCharacter[],
+      setting: primarySetting as unknown as HNSSetting,
       story: {
         story_id: story.id,
         genre: story.genre || 'drama',

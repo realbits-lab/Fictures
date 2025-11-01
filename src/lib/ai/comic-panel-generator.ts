@@ -109,9 +109,13 @@ export async function generateComicPanels(
   const startTime = Date.now();
   const { scene, characters, setting, story, targetPanelCount, progressCallback } = options;
 
+  // Use database field names (not legacy HNS names)
+  const sceneId = scene.id;
+  const sceneTitle = scene.title;
+
   console.log(`\n🎬 ============= COMIC PANEL GENERATION START =============`);
-  console.log(`   Scene: ${scene.scene_title || (scene as any).title}`);
-  console.log(`   Scene ID: ${scene.scene_id || (scene as any).id}`);
+  console.log(`   Scene: ${sceneTitle}`);
+  console.log(`   Scene ID: ${sceneId}`);
   console.log(`   Genre: ${story.genre}`);
 
   // ========================================
@@ -158,22 +162,22 @@ export async function generateComicPanels(
       panelSpec.character_poses as Record<string, string>
     );
 
-    // Extract key traits for emphasis
+    // Extract key traits for emphasis (use 'id' not 'character_id')
     const keyTraits = panelSpec.characters_visible
       .map(charId => {
-        const char = characters.find(c => c.character_id === charId);
+        const char = characters.find(c => c.id === charId);
         return char ? extractKeyPhysicalTraits(char) : [];
       })
       .flat()
       .join(', ');
 
-    // Construct full image prompt
+    // Construct full image prompt (use 'mood' not 'atmosphere')
     const imagePrompt = buildPanelImagePrompt({
       genre: story.genre,
       shotType: panelSpec.shot_type,
       cameraAngle: panelSpec.camera_angle,
       settingFocus: panelSpec.setting_focus,
-      settingAtmosphere: (setting as any).atmosphere || setting.mood,
+      settingAtmosphere: setting.mood || 'neutral',
       characterPrompts,
       keyTraits,
       lighting: panelSpec.lighting,
@@ -202,7 +206,7 @@ export async function generateComicPanels(
           prompt: promptToUse,
           storyId: story.story_id,
           imageType: 'panel',
-          sceneId: scene.scene_id || (scene as any).id,
+          sceneId: sceneId,
           panelNumber: panelSpec.panel_number,
           style: 'vivid',
           quality: 'standard',
@@ -230,7 +234,7 @@ export async function generateComicPanels(
     const panelId = nanoid();
     await db.insert(comicPanels).values({
       id: panelId,
-      sceneId: scene.scene_id || (scene as any).id,
+      sceneId: sceneId,
       panelNumber: panelSpec.panel_number,
       shotType: panelSpec.shot_type,
       imageUrl: imageResult.url,
@@ -289,7 +293,6 @@ export async function generateComicPanels(
   console.log(`   Estimated Reading Time: ${readingTime.formatted}`);
 
   // Update scene metadata with comics generation info
-  const sceneId = scene.scene_id || (scene as any).id;
   console.log(`\n📝 Updating scene metadata for ${sceneId}...`);
   await db.update(scenes)
     .set({
