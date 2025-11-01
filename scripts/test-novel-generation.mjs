@@ -21,7 +21,7 @@ const __dirname = path.dirname(__filename);
 // Load authentication from .auth/user.json
 const authPath = path.join(__dirname, '../.auth/user.json');
 const authData = JSON.parse(fs.readFileSync(authPath, 'utf-8'));
-const managerProfile = authData.profiles.manager;
+const writerProfile = authData.profiles.writer;
 
 const BASE_URL = 'http://localhost:3000';
 
@@ -39,7 +39,7 @@ async function testNovelGeneration() {
   console.log('  - Characters: 2');
   console.log('  - Settings: 1\n');
 
-  const cookieString = cookiesToString(managerProfile.cookies);
+  const cookieString = cookiesToString(writerProfile.cookies);
 
   try {
     // Step 1: Start novel generation
