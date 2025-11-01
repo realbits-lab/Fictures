@@ -51,6 +51,8 @@ export async function GET(request: NextRequest) {
       firstChapterId: story.firstChapterId,
       hnsData: story.hnsData || null,
       isPublic: story.status === 'published',
+      imageUrl: story.imageUrl,
+      imageVariants: story.imageVariants,
     }));
 
     const response = {

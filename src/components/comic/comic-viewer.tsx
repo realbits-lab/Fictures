@@ -9,6 +9,7 @@
 
 import { useEffect, useState } from 'react';
 import { PanelRenderer, PanelRendererSkeleton } from './panel-renderer';
+import { ProgressiveComicPanel, getRecommendedInitialLoadCount } from './progressive-comic-panel';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RefreshCw } from 'lucide-react';
@@ -70,6 +71,12 @@ export function ComicViewer({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loadedPanels, setLoadedPanels] = useState<Set<number>>(new Set());
+  const [initialLoadCount, setInitialLoadCount] = useState(3);
+
+  // Set recommended initial load count based on screen size
+  useEffect(() => {
+    setInitialLoadCount(getRecommendedInitialLoadCount());
+  }, []);
 
   // Track scene views for comics
   useSceneView(sceneId, {
@@ -252,22 +259,17 @@ export function ComicViewer({
         </div>
       </div>
 
-      {/* Comic panels container */}
+      {/* Comic panels container - Progressive Loading */}
       <div className="mx-auto max-w-[1792px] space-y-6">
         {data.panels.map((panel, index) => (
           <div key={panel.id}>
-            <PanelRenderer
-              panelNumber={panel.panel_number}
-              imageUrl={panel.image_url}
-              imageVariants={panel.image_variants}
-              narrative={panel.narrative}
-              dialogue={panel.dialogue}
-              sfx={panel.sfx}
-              description={panel.description}
+            <ProgressiveComicPanel
+              panel={panel}
+              panelIndex={index}
+              totalPanels={data.panels.length}
               characterNames={characterNames}
-              shotType={panel.shot_type}
-              priority={index === 0} // Prioritize first panel
-              onLoad={() => handlePanelLoad(panel.panel_number)}
+              onLoad={handlePanelLoad}
+              initialLoadCount={initialLoadCount}
             />
           </div>
         ))}

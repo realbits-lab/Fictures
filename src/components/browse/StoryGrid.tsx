@@ -326,7 +326,7 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
           /* Card View with In-Feed Ads */
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {sortedStories.map((story, index) => {
-              const imageUrl = story.hnsData?.storyImage?.url;
+              const imageUrl = story.imageUrl;
               const shouldShowAd = (index + 1) % 8 === 0 && index !== sortedStories.length - 1;
 
               return (
@@ -433,7 +433,7 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
               </TableHeader>
               <TableBody>
                 {sortedStories.map((story) => {
-                  const imageUrl = story.hnsData?.storyImage?.url;
+                  const imageUrl = story.imageUrl;
 
                   return (
                     <TableRow

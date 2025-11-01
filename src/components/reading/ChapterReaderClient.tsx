@@ -9,6 +9,7 @@ import { useScenePrefetch } from '@/hooks/useScenePrefetch';
 import { useSceneView } from '@/hooks/useSceneView';
 import { ProgressIndicator } from './ProgressIndicator';
 import { CommentSection } from './CommentSection';
+import { SceneImage } from '@/components/optimized-image';
 import type { Chapter } from '@/hooks/useStoryReader';
 import { trackReading } from '@/lib/analytics/google-analytics';
 
@@ -918,16 +919,18 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
                   <>
                     {console.log(`📖 Rendering selected scene: ${selectedScene.title}`)}
 
-                    {/* Scene Image */}
-                    {selectedScene.sceneImage?.url && (
+                    {/* Scene Image - Using OptimizedImage with imageVariants */}
+                    {(selectedScene.imageUrl || selectedScene.sceneImage?.url) && (
                       <div className="mb-6">
                         <div className="rounded-lg overflow-hidden shadow-lg">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={selectedScene.sceneImage.url}
-                            alt={`Scene: ${selectedScene.title}`}
+                          <SceneImage
+                            scene={{
+                              title: selectedScene.title,
+                              imageUrl: selectedScene.imageUrl || selectedScene.sceneImage?.url,
+                              imageVariants: selectedScene.imageVariants
+                            }}
                             className="w-full h-auto object-contain"
-                            loading="lazy"
+                            priority={false}
                           />
                         </div>
                       </div>

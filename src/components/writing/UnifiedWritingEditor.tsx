@@ -793,6 +793,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     // If chapter is marked as published but has no content, force it to draft status
     if (currentChapter && currentChapterStatus === 'published') {
       const hasScenes = currentChapter.scenes && currentChapter.scenes.length > 0;
+      const scenesWithContent = currentChapter.scenes?.filter(s => s.content && s.content.trim() !== '') || [];
+      const hasContent = scenesWithContent.length > 0;
 
       if (!hasContent && scenesWithContent.length === 0) {
         currentChapterStatus = 'draft';
@@ -1282,7 +1284,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         const createChapterData = (chapter: any, partTitle: string | null) => {
           // Check if chapter has any actual content
           const hasScenes = chapter.scenes && chapter.scenes.length > 0;
-          
+          const scenesWithContent = chapter.scenes?.filter((s: any) => s.content && s.content.trim() !== '') || [];
+          const hasContent = scenesWithContent.length > 0;
+
           // If chapter is marked as published but has no content, force it to draft status
           let actualStatus = chapter.status || 'draft';
           if (actualStatus === 'published' && !hasContent && scenesWithContent.length === 0) {
@@ -1620,6 +1624,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                   // If chapter is marked as published but has no content, force it to draft status
                   if (currentChapter && currentChapterStatus === 'published') {
                     const hasScenes = currentChapter.scenes && currentChapter.scenes.length > 0;
+                    const scenesWithContent = currentChapter.scenes?.filter(s => s.content && s.content.trim() !== '') || [];
+                    const hasContent = scenesWithContent.length > 0;
 
                     if (!hasContent && scenesWithContent.length === 0) {
                       currentChapterStatus = 'draft';

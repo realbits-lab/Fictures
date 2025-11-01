@@ -643,6 +643,7 @@ export async function getPublishedStories() {
     tone: story.tone,
     moralFramework: story.moralFramework,
     imageUrl: story.imageUrl,
+    imageVariants: story.imageVariants,
     author: {
       id: story.authorId,
       name: authorMap.get(story.authorId)?.name || 'Anonymous'
