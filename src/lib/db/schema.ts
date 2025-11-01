@@ -219,11 +219,10 @@ export const stories = pgTable('stories', {
   // Image fields
   imageUrl: text('image_url'), // Original/cover image URL from Vercel Blob
   imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
-  // HNS fields (legacy - kept for backward compatibility)
+  // Legacy fields (kept for backward compatibility during migration)
   premise: text('premise'),
   dramaticQuestion: text('dramatic_question'),
   theme: text('theme'),
-  hnsData: json('hns_data').$type<Record<string, unknown>>(),
   // Adversity-Triumph Engine fields
   summary: text('summary'), // General thematic premise and moral framework
   tone: toneEnum('tone'), // Overall emotional direction
@@ -247,11 +246,10 @@ export const parts = pgTable('parts', {
   targetWordCount: integer('target_word_count').default(0),
   currentWordCount: integer('current_word_count').default(0),
   content: text('content').default(''), // Store part-specific development YAML data as text
-  // HNS fields (legacy - kept for backward compatibility)
+  // Legacy fields (kept for backward compatibility during migration)
   structuralRole: varchar('structural_role', { length: 50 }),
   summary: text('summary'), // Multi-character MACRO arcs with progression strategy
   keyBeats: json('key_beats').$type<string[]>(),
-  hnsData: json('hns_data').$type<Record<string, unknown>>(),
   // Adversity-Triumph Engine fields
   actNumber: integer('actNumber'), // 1, 2, or 3 in three-act structure
   characterArcs: json('characterArcs').$type<Array<{
@@ -285,11 +283,8 @@ export const chapters = pgTable('chapters', {
   characterFocus: text('character_focus'), // Main character focus for chapter
   publishedAt: timestamp('published_at'),
   scheduledFor: timestamp('scheduled_for'),
-  // HNS fields (legacy - kept for backward compatibility)
-  pacingGoal: varchar('pacing_goal', { length: 20 }),
-  actionDialogueRatio: varchar('action_dialogue_ratio', { length: 10 }),
-  chapterHook: json('chapter_hook').$type<{type: string; description: string; urgency_level: string}>(),
-  hnsData: json('hns_data').$type<Record<string, unknown>>(),
+  // Legacy fields removed - HNS-specific fields dropped
+  // pacingGoal, actionDialogueRatio, chapterHook were HNS-only and not used by Novels
   // Adversity-Triumph Engine fields - Nested cycle tracking
   characterId: text('characterId').references(() => characters.id, { onDelete: 'set null' }), // Primary character whose macro arc this advances
   arcPosition: arcPositionEnum('arcPosition'), // Position in macro arc: beginning, middle, climax (MACRO moment), or resolution
@@ -328,14 +323,9 @@ export const scenes = pgTable('scenes', {
   // Image fields
   imageUrl: text('image_url'), // Original scene image URL from Vercel Blob
   imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
-  // HNS fields
-  povCharacterId: text('pov_character_id'),
-  settingId: text('setting_id'),
-  narrativeVoice: varchar('narrative_voice', { length: 50 }),
+  // Scene fields
   summary: text('summary'), // Scene specification (planning layer)
-  entryHook: text('entry_hook'),
-  emotionalShift: json('emotional_shift').$type<{from: string; to: string}>(),
-  hnsData: json('hns_data').$type<Record<string, unknown>>(),
+  // Legacy HNS fields removed: povCharacterId, settingId, narrativeVoice, entryHook, emotionalShift were HNS-only
   // Character and place references for scene writing
   characterIds: json('character_ids').$type<string[]>().default([]).notNull(),
   placeIds: json('place_ids').$type<string[]>().default([]).notNull(),
@@ -434,7 +424,6 @@ export const characters = pgTable('characters', {
   voice: json('voice').$type<Record<string, unknown>>(),
   physicalDescription: json('physical_description').$type<Record<string, unknown>>(),
   visualReferenceId: text('visual_reference_id'),
-  hnsData: json('hns_data').$type<Record<string, unknown>>(),
   // Adversity-Triumph Engine fields - Character core
   coreTrait: text('coreTrait'), // THE defining moral virtue: courage, compassion, integrity, loyalty, wisdom, sacrifice
   internalFlaw: text('internalFlaw'), // Source of adversity - MUST include cause
