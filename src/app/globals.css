@@ -414,6 +414,18 @@ body {
 	overscroll-behavior-y: none;
 }
 
+/* Hide Fumadocs mobile TOC header since we use GlobalNavigation */
+header.xl\:hidden {
+	display: none !important;
+}
+
+/* Push Fumadocs sidebar down to account for GNB header (64px) */
+aside[class*="fixed"] {
+	top: 64px !important;
+	/* Use theme background color for sidebar instead of card color */
+	background-color: rgb(var(--background)) !important;
+}
+
 body {
 	color: rgb(var(--foreground));
 	background: rgb(var(--background));

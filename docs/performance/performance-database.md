@@ -39,29 +39,43 @@ title: "Database Optimization Strategy - PostgreSQL (Neon) & Redis"
 
 **Solution:**
 ```sql
--- Stories table
+-- Stories table (with Adversity-Triumph fields)
 CREATE INDEX idx_stories_author_id ON stories(author_id);
 CREATE INDEX idx_stories_status ON stories(status);
 CREATE INDEX idx_stories_status_created ON stories(status, created_at DESC);
 CREATE INDEX idx_stories_view_count ON stories(view_count DESC); -- For popular stories
+CREATE INDEX idx_stories_tone ON stories(tone); -- Filter by emotional direction
 
--- Chapters table
+-- Chapters table (with Adversity-Triumph cycle tracking)
 CREATE INDEX idx_chapters_story_id ON chapters(story_id);
 CREATE INDEX idx_chapters_part_id ON chapters(part_id);
 CREATE INDEX idx_chapters_story_order ON chapters(story_id, order_index);
 CREATE INDEX idx_chapters_status ON chapters(status);
+CREATE INDEX idx_chapters_character_id ON chapters(character_id); -- Primary character arc
+CREATE INDEX idx_chapters_arc_position ON chapters(arc_position); -- Macro arc tracking
+CREATE INDEX idx_chapters_virtue_type ON chapters(virtue_type); -- Moral virtue filtering
 
--- Parts table
+-- Parts table (with character arcs)
 CREATE INDEX idx_parts_story_id ON parts(story_id);
 CREATE INDEX idx_parts_story_order ON parts(story_id, order_index);
 
--- Scenes table
+-- Scenes table (with visibility and publishing)
 CREATE INDEX idx_scenes_chapter_id ON scenes(chapter_id);
 CREATE INDEX idx_scenes_chapter_order ON scenes(chapter_id, order_index);
-CREATE INDEX idx_scenes_status ON scenes(status);
+CREATE INDEX idx_scenes_visibility ON scenes(visibility); -- Public/private/unlisted filtering
+CREATE INDEX idx_scenes_published_at ON scenes(published_at DESC); -- Published scenes
+CREATE INDEX idx_scenes_comic_status ON scenes(comic_status); -- Comic panel tracking
+CREATE INDEX idx_scenes_view_count ON scenes(view_count DESC); -- Popular scenes
+CREATE INDEX idx_scenes_novel_view_count ON scenes(novel_view_count DESC); -- Novel format analytics
+CREATE INDEX idx_scenes_comic_view_count ON scenes(comic_view_count DESC); -- Comic format analytics
 
--- Characters table
+-- Characters table (with core traits)
 CREATE INDEX idx_characters_story_id ON characters(story_id);
+CREATE INDEX idx_characters_is_main ON characters(is_main); -- Filter main characters
+CREATE INDEX idx_characters_story_main ON characters(story_id, is_main); -- Composite for main character queries
+
+-- Settings table (environment and adversity)
+CREATE INDEX idx_settings_story_id ON settings(story_id);
 
 -- AI Interactions table
 CREATE INDEX idx_ai_interactions_user_id ON ai_interactions(user_id);
@@ -79,10 +93,19 @@ CREATE INDEX idx_ai_interactions_created ON ai_interactions(created_at DESC);
 
 **Solution:**
 ```sql
--- Composite indexes for common query patterns
+-- Composite indexes for common query patterns (Adversity-Triumph optimized)
 CREATE INDEX idx_stories_author_status ON stories(author_id, status);
+CREATE INDEX idx_stories_tone_status ON stories(tone, status); -- Filter by tone + published/writing
+
+-- Chapters with Adversity-Triumph tracking
 CREATE INDEX idx_chapters_story_status_order ON chapters(story_id, status, order_index);
-CREATE INDEX idx_scenes_chapter_status_order ON scenes(chapter_id, status, order_index);
+CREATE INDEX idx_chapters_character_arc ON chapters(character_id, arc_position); -- Track character arc progression
+CREATE INDEX idx_chapters_story_virtue ON chapters(story_id, virtue_type); -- Filter by tested virtue
+
+-- Scenes with visibility and publishing
+CREATE INDEX idx_scenes_chapter_visibility_order ON scenes(chapter_id, visibility, order_index); -- Public scenes in order
+CREATE INDEX idx_scenes_visibility_published ON scenes(visibility, published_at DESC); -- Recently published public scenes
+CREATE INDEX idx_scenes_comic_status_order ON scenes(chapter_id, comic_status, order_index); -- Comic panel availability
 ```
 
 **Expected Impact:**
@@ -184,28 +207,63 @@ export function getStoryById(id: string) {
 
 **Solution:**
 ```typescript
-// Bad: Select all columns
+// Bad: Select all columns (including heavy JSON fields)
 const stories = await db.select().from(stories);
 
-// Good: Select only needed columns
+// Good: Select only needed columns for story list
 const stories = await db.select({
   id: stories.id,
   title: stories.title,
   status: stories.status,
   authorId: stories.authorId,
+  tone: stories.tone, // Adversity-Triumph field
+  viewCount: stories.viewCount,
+  imageUrl: stories.imageUrl, // Skip heavy imageVariants JSON
 }).from(stories);
 
-// Even better: Create reusable column sets
+// Even better: Create reusable column sets for different use cases
 const storyListColumns = {
   id: stories.id,
   title: stories.title,
   status: stories.status,
   authorId: stories.authorId,
+  tone: stories.tone,
   viewCount: stories.viewCount,
   createdAt: stories.createdAt,
+  imageUrl: stories.imageUrl, // Only URL, not full variants
 };
 
-const stories = await db.select(storyListColumns).from(stories);
+const storyDetailColumns = {
+  ...storyListColumns,
+  summary: stories.summary,
+  moralFramework: stories.moralFramework,
+  imageVariants: stories.imageVariants, // Include for detail view
+  partIds: stories.partIds,
+  chapterIds: stories.chapterIds,
+  sceneIds: stories.sceneIds,
+};
+
+// Scene columns optimized for reading vs editing
+const sceneReadingColumns = {
+  id: scenes.id,
+  title: scenes.title,
+  content: scenes.content,
+  orderIndex: scenes.orderIndex,
+  imageUrl: scenes.imageUrl,
+  imageVariants: scenes.imageVariants,
+  cyclePhase: scenes.cyclePhase,
+  emotionalBeat: scenes.emotionalBeat,
+  visibility: scenes.visibility,
+  publishedAt: scenes.publishedAt,
+};
+
+const sceneEditingColumns = {
+  ...sceneReadingColumns,
+  characterFocus: scenes.characterFocus, // Planning metadata
+  sensoryAnchors: scenes.sensoryAnchors,
+  dialogueVsDescription: scenes.dialogueVsDescription,
+  suggestedLength: scenes.suggestedLength,
+};
 ```
 
 **Expected Impact:**
@@ -315,22 +373,32 @@ story:{id}:structure:scenes:false:public
 scene:{id}:public
 ```
 
-**Optimized Structure:**
+**Optimized Structure (Adversity-Triumph Schema):**
 ```
-# Namespaced and hierarchical
-fictures:story:{id}:public
-fictures:story:{id}:chapters
-fictures:chapter:{id}:scenes
-fictures:scene:{id}:public
-
-# Use sorted sets for collections
+# Namespaced and hierarchical - Stories
+fictures:story:{id}:public (HASH: title, status, summary, tone, moralFramework, imageUrl, imageVariants)
+fictures:story:{id}:parts (ZSET: score=orderIndex, member=partId)
 fictures:story:{id}:chapters (ZSET: score=orderIndex, member=chapterId)
-fictures:chapter:{id}:scenes (ZSET: score=orderIndex, member=sceneId)
 fictures:popular:stories (ZSET: score=viewCount, member=storyId)
 
-# Use hashes for objects
-fictures:story:{id} (HASH: title, status, authorId, etc.)
-fictures:scene:{id} (HASH: title, content, status, etc.)
+# Parts with character arcs
+fictures:part:{id} (HASH: title, summary, characterArcs)
+
+# Chapters with Adversity-Triumph tracking
+fictures:chapter:{id} (HASH: title, summary, characterId, arcPosition, adversityType, virtueType, seedsPlanted, seedsResolved)
+fictures:chapter:{id}:scenes (ZSET: score=orderIndex, member=sceneId)
+
+# Scenes with visibility and publishing
+fictures:scene:{id}:public (HASH: title, content, cyclePhase, emotionalBeat, visibility, publishedAt, viewCount)
+fictures:scene:{id}:planning (HASH: characterFocus, sensoryAnchors, dialogueVsDescription, suggestedLength)
+
+# Characters with core traits
+fictures:story:{id}:characters (ZSET: score=isMain, member=characterId)
+fictures:character:{id} (HASH: name, coreTrait, internalFlaw, externalGoal, relationships, voiceStyle)
+
+# Settings with adversity elements
+fictures:story:{id}:settings (SET: settingId)
+fictures:setting:{id} (HASH: name, description, adversityElements, symbolicMeaning, cycleAmplification)
 ```
 
 **Benefits:**
@@ -345,151 +413,60 @@ fictures:scene:{id} (HASH: title, content, status, etc.)
 
 **Solution:**
 ```typescript
-// Background job to warm popular content
+// Background job to warm popular published content
 async function warmPopularStoriesCache() {
-  // Get top 100 popular stories
+  // Get top 100 popular published stories (Adversity-Triumph Engine)
   const popularStories = await db
-    .select({ id: stories.id })
+    .select({
+      id: stories.id,
+      tone: stories.tone,
+      viewCount: stories.viewCount,
+    })
     .from(stories)
     .where(eq(stories.status, 'published'))
     .orderBy(desc(stories.viewCount))
     .limit(100);
 
+  console.log(`[Cache Warming] Found ${popularStories.length} popular stories`);
+
   // Warm cache in batches
   const batchSize = 10;
   for (let i = 0; i < popularStories.length; i += batchSize) {
     const batch = popularStories.slice(i, i + batchSize);
+
+    // Fetch full story data including Adversity-Triumph fields
     await Promise.all(
-      batch.map(story => getStoryWithStructure(story.id, false))
+      batch.map(async (story) => {
+        // Warm story cache (summary, tone, moralFramework, IDs)
+        await getStoryWithStructure(story.id, false);
+
+        // Warm public scenes cache (visibility=public only)
+        await getPublishedScenes(story.id);
+
+        // Warm character cache (coreTrait, relationships)
+        await getStoryCharacters(story.id);
+      })
     );
+
+    console.log(`[Cache Warming] Warmed batch ${i / batchSize + 1}`);
   }
 }
 
-// Run every 30 minutes
-setInterval(warmPopularStoriesCache, 30 * 60 * 1000);
-```
-
----
-
-## Implementation Plan
-
-### Phase 1: Critical Fixes ✅ COMPLETED
-
-**Priority 1: Fix N+1 Query Problem** ✅
-- ✅ Modified `src/lib/db/relationships.ts:getStoryWithStructure()`
-- ✅ Replaced loop-based scene queries with single `inArray()` query
-- ✅ Added performance logging
-
-**Code Changes:**
-```typescript
-// BEFORE: N+1 query problem
-for (const chapterId of chapterIds) {
-  scenesByChapter[chapterId] = await db.select()
+// Warm only public/published scenes
+async function getPublishedScenes(storyId: string) {
+  return db.select()
     .from(scenes)
-    .where(eq(scenes.chapterId, chapterId))
+    .where(
+      and(
+        eq(scenes.storyId, storyId),
+        eq(scenes.visibility, 'public')
+      )
+    )
     .orderBy(asc(scenes.orderIndex));
 }
 
-// AFTER: Single query
-const allScenes = await db.select()
-  .from(scenes)
-  .where(inArray(scenes.chapterId, chapterIds))
-  .orderBy(asc(scenes.chapterId), asc(scenes.orderIndex));
-
-// Group in memory (fast)
-const scenesByChapter = {};
-for (const scene of allScenes) {
-  if (!scenesByChapter[scene.chapterId]) {
-    scenesByChapter[scene.chapterId] = [];
-  }
-  scenesByChapter[scene.chapterId].push(scene);
-}
-```
-
-**Priority 2: Add Critical Indexes** ✅
-- ✅ Created database migration `drizzle/0024_add_performance_indexes.sql`
-- ✅ Applied 13 critical indexes to Neon database (128ms execution time)
-- ✅ Created `scripts/apply-indexes.mjs` for migration execution
-
-**Indexes Applied:**
-- Stories: 5 indexes (author_id, status, view_count, composites)
-- Chapters: 4 indexes (story_id, part_id, status, composites)
-- Parts: 2 indexes (story_id, order_index)
-- Scenes: 4 indexes (chapter_id, visibility, composites)
-- Characters: 1 index (story_id)
-- AI Interactions: 2 indexes (user_id, created_at)
-
-**Actual Results:**
-- Migration applied successfully: **128ms**
-- Expected query performance improvement: **50-80% faster**
-- Expected database load reduction: **60-80%**
-
-### Phase 2: Redis Optimization (SHORT-TERM - 2 hours)
-
-**Priority 1: Implement Pipeline Operations**
-- Update `src/lib/cache/redis-cache.ts`
-- Batch operations where possible
-
-**Priority 2: Optimize Cache Key Structure**
-- Migrate to namespaced keys
-- Use sorted sets for ordered data
-
-**Expected Results:**
-- Cache operations: **2-3x faster**
-- Memory usage: **20-30% reduction**
-
-### Phase 3: Advanced Optimizations (LONG-TERM - 4 hours)
-
-**Priority 1: Prepared Statements**
-- Create reusable query builders
-- Cache compiled queries
-
-**Priority 2: Column Selection Optimization**
-- Define column sets for different use cases
-- Reduce data transfer
-
-**Priority 3: Cache Warming**
-- Implement background job
-- Warm popular content proactively
-
-**Expected Results:**
-- Overall performance: **5-10x faster**
-- Cache hit rate: **>98%**
-
----
-
-## Testing Plan
-
-### Test 1: N+1 Query Fix Verification
-
-```bash
-# Before optimization
-dotenv --file .env.local run node scripts/test-query-performance.mjs
-# Expected: 10 database queries, ~500-1000ms
-
-# After optimization
-dotenv --file .env.local run node scripts/test-query-performance.mjs
-# Expected: 1 database query, ~50-100ms
-```
-
-### Test 2: Index Performance
-
-```sql
--- Verify index usage
-EXPLAIN ANALYZE
-SELECT * FROM scenes
-WHERE chapter_id = 'test-chapter-id'
-ORDER BY order_index;
-
--- Should show "Index Scan" instead of "Seq Scan"
-```
-
-### Test 3: Redis Pipeline Performance
-
-```bash
-# Test batch operations
-dotenv --file .env.local run node scripts/test-redis-pipeline.mjs
-# Expected: 3-5x faster than sequential operations
+// Run every 30 minutes to keep popular content cached
+setInterval(warmPopularStoriesCache, 30 * 60 * 1000);
 ```
 
 ---
@@ -511,52 +488,84 @@ dotenv --file .env.local run node scripts/test-redis-pipeline.mjs
 
 ---
 
-## Monitoring
+## Database Schema Reference
 
-### Key Metrics
+### Current Schema (Adversity-Triumph Engine)
 
-1. **Database Query Count**
-   ```typescript
-   console.log('[DB] Query count:', queryCount);
-   console.log('[DB] Total query time:', totalQueryTime);
-   ```
+**Stories Table:**
+- **Core fields**: id, title, genre, status, authorId
+- **Image fields**: imageUrl, imageVariants (optimized variants)
+- **Adversity-Triumph fields**: summary, tone, moralFramework
+- **ID arrays**: partIds, chapterIds, sceneIds (quick access)
+- **Tracking**: viewCount, rating, ratingCount
 
-2. **Index Usage**
-   ```sql
-   SELECT * FROM pg_stat_user_indexes
-   WHERE schemaname = 'public';
-   ```
+**Parts Table:**
+- **Core fields**: id, title, storyId, authorId, orderIndex
+- **Adversity-Triumph fields**:
+  - summary (multi-character MACRO arcs)
+  - characterArcs (array of macro adversity-triumph cycles per character)
 
-3. **Redis Performance**
-   ```bash
-   redis-cli INFO stats
-   redis-cli SLOWLOG GET 10
-   ```
+**Chapters Table:**
+- **Core fields**: id, title, summary, storyId, partId, orderIndex, status
+- **Publishing**: publishedAt, scheduledFor
+- **Adversity-Triumph fields**:
+  - characterId, arcPosition, contributesToMacroArc
+  - focusCharacters (array of character IDs)
+  - adversityType, virtueType
+  - seedsPlanted, seedsResolved (setup/payoff tracking)
+  - connectsToPreviousChapter, createsNextAdversity
 
-4. **Cache Hit Rate**
-   ```typescript
-   const hitRate = (hits / (hits + misses)) * 100;
-   console.log('[Cache] Hit rate:', hitRate, '%');
-   ```
+**Scenes Table:**
+- **Core fields**: id, title, content, chapterId, orderIndex
+- **Image fields**: imageUrl, imageVariants
+- **Adversity-Triumph fields**:
+  - cyclePhase, emotionalBeat
+  - Planning metadata: characterFocus, sensoryAnchors, dialogueVsDescription, suggestedLength
+- **Publishing fields**:
+  - visibility (private/unlisted/public), publishedAt, scheduledFor
+  - autoPublish, publishedBy, unpublishedAt, unpublishedBy
+- **Comic fields**: comicStatus, comicPublishedAt, comicPanelCount, comicVersion
+- **View tracking**: viewCount, uniqueViewCount, novelViewCount, comicViewCount
 
----
+**Characters Table:**
+- **Core fields**: id, name, storyId, isMain
+- **Image fields**: imageUrl, imageVariants
+- **Adversity-Triumph fields**:
+  - coreTrait (defining moral virtue)
+  - internalFlaw (source of adversity)
+  - externalGoal
+  - relationships (Jeong system tracking)
+  - voiceStyle (dialogue generation)
 
-## Files to Modify
+**Settings Table:**
+- **Core fields**: id, name, storyId, description
+- **Image fields**: imageUrl, imageVariants
+- **Adversity-Triumph fields**:
+  - adversityElements (physicalObstacles, scarcityFactors, dangerSources, socialDynamics)
+  - symbolicMeaning (reflects moral framework)
+  - cycleAmplification (how setting amplifies each cycle phase)
+  - emotionalResonance
 
-1. **src/lib/db/relationships.ts** - Fix N+1 query
-2. **drizzle/migrations/*** - Add database indexes
-3. **src/lib/cache/redis-cache.ts** - Implement pipeline operations
-4. **scripts/test-query-performance.mjs** - Create performance test
-5. **scripts/warm-cache.mjs** - Create cache warming script
+### Index Strategy for Adversity-Triumph Schema
 
----
+**Additional indexes for new fields:**
+```sql
+-- Scenes publishing and visibility
+CREATE INDEX idx_scenes_visibility ON scenes(visibility);
+CREATE INDEX idx_scenes_published_at ON scenes(published_at DESC);
+CREATE INDEX idx_scenes_comic_status ON scenes(comic_status);
 
-## Next Steps
+-- View tracking for analytics
+CREATE INDEX idx_scenes_view_count ON scenes(view_count DESC);
+CREATE INDEX idx_scenes_novel_view_count ON scenes(novel_view_count DESC);
+CREATE INDEX idx_scenes_comic_view_count ON scenes(comic_view_count DESC);
 
-1. ✅ Create this optimization strategy document
-2. ⏳ Fix N+1 query problem (NEXT)
-3. ⏳ Create database migration for indexes
-4. ⏳ Implement Redis pipeline operations
-5. ⏳ Create performance test scripts
-6. ⏳ Test and verify improvements
-7. ⏳ Update performance-optimization-summary.md with results
+-- Chapter adversity-triumph tracking
+CREATE INDEX idx_chapters_character_id ON chapters(character_id);
+CREATE INDEX idx_chapters_arc_position ON chapters(arc_position);
+CREATE INDEX idx_chapters_virtue_type ON chapters(virtue_type);
+
+-- Characters core trait system
+CREATE INDEX idx_characters_is_main ON characters(is_main);
+CREATE INDEX idx_characters_story_main ON characters(story_id, is_main);
+```

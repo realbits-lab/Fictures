@@ -96,18 +96,22 @@ CACHE_CONFIGS.reading: {
 
 **Published Content (Shared):**
 ```
-fictures:story:{storyId}:public
-fictures:story:{storyId}:chapters:public
-fictures:chapter:{chapterId}:public
-fictures:scene:{sceneId}:public
-fictures:stories:published
+fictures:story:{storyId}:public              # Story with summary, tone, moralFramework
+fictures:story:{storyId}:chapters:public     # Chapters with Adversity-Triumph fields
+fictures:story:{storyId}:parts:public        # Parts with characterArcs
+fictures:chapter:{chapterId}:public          # Chapter with seeds, virtues, arc position
+fictures:scene:{sceneId}:public              # Scene with visibility=public, planning metadata
+fictures:stories:published                   # List of published stories
+fictures:characters:{storyId}:public         # Characters with coreTrait, relationships
+fictures:settings:{storyId}:public           # Settings with adversityElements
 ```
 
 **Private Content (User-Specific):**
 ```
-fictures:story:{storyId}:user:{userId}
+fictures:story:{storyId}:user:{userId}       # Private/writing stories
 fictures:story:{storyId}:chapters:user:{userId}
-fictures:scene:{sceneId}:user:{userId}
+fictures:scene:{sceneId}:user:{userId}       # Scenes with visibility=private/unlisted
+fictures:user:{userId}:stories:writing       # User's writing-in-progress stories
 ```
 
 ### Implementation
@@ -139,6 +143,7 @@ export async function getStoryById(storyId: string, userId?: string) {
   if (!story) return null;
 
   // Cache based on story status
+  // Stories include: summary, tone, moralFramework, partIds, chapterIds, sceneIds
   const isPublished = story.status === 'published';
 
   if (isPublished) {
@@ -151,6 +156,28 @@ export async function getStoryById(storyId: string, userId?: string) {
   }
 
   return story;
+}
+
+// Scene caching considers visibility and publishing status
+export async function getSceneById(sceneId: string, userId?: string) {
+  const scene = await queries.getSceneById(sceneId);
+  if (!scene) return null;
+
+  // Cache based on scene visibility
+  // Scenes include: planning metadata (characterFocus, sensoryAnchors, dialogueVsDescription, suggestedLength)
+  // Publishing fields: visibility, publishedAt, scheduledFor, comicStatus
+  // View tracking: viewCount, novelViewCount, comicViewCount
+  const isPublic = scene.visibility === 'public';
+
+  if (isPublic) {
+    const publicKey = `fictures:scene:${sceneId}:public`;
+    await redis.set(publicKey, scene, { ex: 600 }); // 10 minutes
+  } else if (userId && (scene.visibility === 'private' || scene.visibility === 'unlisted')) {
+    const userKey = `fictures:scene:${sceneId}:user:${userId}`;
+    await redis.set(userKey, scene, { ex: 180 }); // 3 minutes
+  }
+
+  return scene;
 }
 ```
 
@@ -247,12 +274,28 @@ const scenes = await Promise.all(
 
 ```typescript
 await invalidateCache([
-  `fictures:story:${storyId}:public`,       // Public cache
-  `fictures:story:${storyId}:user:${userId}`, // User cache
-  `fictures:story:${storyId}:*`,            // All story variants
-  `fictures:user:${userId}:stories*`,       // User's story lists
-  `fictures:stories:published`,             // Published stories list
+  `fictures:story:${storyId}:public`,        // Public story cache
+  `fictures:story:${storyId}:user:${userId}`, // User-specific story cache
+  `fictures:story:${storyId}:chapters:*`,    // All chapter variants
+  `fictures:story:${storyId}:parts:*`,       // All parts variants
+  `fictures:chapter:${chapterId}:*`,         // Chapter with seeds/virtues
+  `fictures:scene:${sceneId}:*`,             // Scene with visibility/publishing
+  `fictures:characters:${storyId}:*`,        // Characters with traits/relationships
+  `fictures:settings:${storyId}:*`,          // Settings with adversity elements
+  `fictures:user:${userId}:stories:*`,       // User's story lists
+  `fictures:stories:published`,              // Published stories list
 ]);
+
+// Invalidate scene cache when publishing status changes
+export async function invalidateSceneCache(sceneId: string, visibility: string) {
+  const patterns = [
+    `fictures:scene:${sceneId}:public`,      // Public cache
+    `fictures:scene:${sceneId}:user:*`,      // All user-specific caches
+  ];
+
+  await Promise.all(patterns.map(pattern => redis.del(pattern)));
+  console.log(`[Cache] Invalidated scene ${sceneId} (visibility: ${visibility})`);
+}
 ```
 
 ---
