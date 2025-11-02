@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { mutate } from "swr";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
 import { useStoryData } from "@/lib/hooks/useStoryData";
 import { useWritingProgress, useWritingSession } from "@/hooks/useStoryWriter";
@@ -131,7 +132,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
   const [jsonLevel, setJsonLevel] = useState<EditorLevel>("story");
   const [isLoading, setIsLoading] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Collapse states for YAML data displays
   const [storyDataCollapsed, setStoryDataCollapsed] = useState(false);
@@ -2287,41 +2287,48 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       </div>
 
       <div className="w-full px-4 py-6">
-        <div className="grid grid-cols-12 gap-6 h-[calc(100vh-200px)]">
+        <PanelGroup direction="horizontal" className="h-[calc(100vh-200px)]">
           {/* Left Sidebar - Story Structure Navigation (Tree View) */}
-          <div className="col-span-3 h-full">
-            <StoryStructureSidebar
-              story={story}
-              currentSelection={currentSelection}
-              onSidebarCollapse={setSidebarCollapsed}
-              onSelectionChange={handleSelectionChange}
-              validatingStoryId={
-                isValidatingCurrentStory ? story.id : null
-              }
-            />
-          </div>
+          <Panel defaultSize={25} minSize={15} maxSize={40}>
+            <div className="h-full pr-2">
+              <StoryStructureSidebar
+                story={story}
+                currentSelection={currentSelection}
+                onSelectionChange={handleSelectionChange}
+                validatingStoryId={
+                  isValidatingCurrentStory ? story.id : null
+                }
+              />
+            </div>
+          </Panel>
+
+          <PanelResizeHandle className="w-1 bg-gray-300 dark:bg-gray-700 hover:bg-blue-500 dark:hover:bg-blue-400 transition-colors cursor-col-resize" />
 
           {/* Middle Panel - Table Data Display */}
-          <div className="col-span-6 h-full">
-            <div className="h-full overflow-y-auto">
+          <Panel defaultSize={50} minSize={30}>
+            <div className="h-full px-2 overflow-y-auto">
               {renderEditor()}
             </div>
-          </div>
+          </Panel>
+
+          <PanelResizeHandle className="w-1 bg-gray-300 dark:bg-gray-700 hover:bg-blue-500 dark:hover:bg-blue-400 transition-colors cursor-col-resize" />
 
           {/* Right Sidebar - Studio Agent Chat Only */}
-          <div className="col-span-3 h-full">
-            <StudioAgentChat
-              storyId={story.id}
-              storyContext={{
-                storyTitle: story.title,
-                currentSelection: currentSelection,
-                genre: story.genre,
-                status: story.status,
-              }}
-              className="h-full"
-            />
-          </div>
-        </div>
+          <Panel defaultSize={25} minSize={15} maxSize={40}>
+            <div className="h-full pl-2">
+              <StudioAgentChat
+                storyId={story.id}
+                storyContext={{
+                  storyTitle: story.title,
+                  currentSelection: currentSelection,
+                  genre: story.genre,
+                  status: story.status,
+                }}
+                className="h-full"
+              />
+            </div>
+          </Panel>
+        </PanelGroup>
       </div>
     </div>
   );

@@ -11,9 +11,7 @@ import {
   Users,
   MapPin,
   Maximize2,
-  Minimize2,
-  PanelLeftClose,
-  PanelLeftOpen
+  Minimize2
 } from "lucide-react";
 
 interface Scene {
@@ -59,24 +57,15 @@ interface StoryStructureSidebarProps {
   currentSelection?: Selection;
   onSelectionChange?: (selection: Selection) => void;
   validatingStoryId?: string | null;
-  onSidebarCollapse?: (collapsed: boolean) => void;
 }
 
 export function StoryStructureSidebar({
   story,
   currentSelection,
   onSelectionChange,
-  validatingStoryId,
-  onSidebarCollapse
+  validatingStoryId
 }: StoryStructureSidebarProps) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandAll, setExpandAll] = useState(true);
-
-  const toggleSidebar = () => {
-    const newCollapsed = !sidebarCollapsed;
-    setSidebarCollapsed(newCollapsed);
-    onSidebarCollapse?.(newCollapsed);
-  };
 
   // Convert story structure to TreeDataItem format
   const treeData = useMemo<TreeDataItem[]>(() => {
@@ -294,21 +283,6 @@ export function StoryStructureSidebar({
     return undefined;
   }, [currentSelection, story.id]);
 
-  if (sidebarCollapsed) {
-    return (
-      <div className="fixed left-2 top-1/2 transform -translate-y-1/2 z-50">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={toggleSidebar}
-          className="h-12 w-8 p-0 rounded-full shadow-lg"
-        >
-          <PanelLeftOpen className="h-4 w-4" />
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="pb-3 flex-shrink-0">
@@ -321,30 +295,19 @@ export function StoryStructureSidebar({
                    title="Updating story data" />
             )}
           </CardTitle>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setExpandAll(!expandAll)}
-              className="h-6 w-6 p-0"
-              title={expandAll ? "Collapse All" : "Expand All"}
-            >
-              {expandAll ? (
-                <Minimize2 className="h-3 w-3" />
-              ) : (
-                <Maximize2 className="h-3 w-3" />
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleSidebar}
-              className="h-6 w-6 p-0"
-              title="Collapse Sidebar"
-            >
-              <PanelLeftClose className="h-3 w-3" />
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setExpandAll(!expandAll)}
+            className="h-6 w-6 p-0"
+            title={expandAll ? "Collapse All" : "Expand All"}
+          >
+            {expandAll ? (
+              <Minimize2 className="h-3 w-3" />
+            ) : (
+              <Maximize2 className="h-3 w-3" />
+            )}
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="pt-0 pb-2 flex-1 overflow-y-auto">

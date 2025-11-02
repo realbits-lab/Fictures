@@ -169,10 +169,33 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
       <div className="mb-10">
         {/* Mobile: 2 rows, Desktop: 1 row */}
         <div className="flex flex-col md:flex-row md:justify-end items-stretch md:items-center gap-3">
-          {/* First row on mobile: History/All + View toggles (or just View toggle for studio) */}
+          {/* First row on mobile: Create New Story (studio) or History/All + View toggles (other pages) */}
           <div className="flex items-center justify-between md:justify-end gap-3">
-            {/* History/All Toggle - Hide for studio page */}
-            {pageType !== 'studio' && (
+            {/* Create New Story Button - Only for studio page */}
+            {pageType === 'studio' ? (
+              <Link
+                href="/studio/new"
+                className="inline-flex items-center justify-center rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] hover:bg-[rgb(var(--color-primary)/90%)] px-3 md:px-4 py-2 text-sm font-medium transition-all shadow-sm flex-1 md:flex-initial"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="mr-2"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                <span className="hidden md:inline">Create New Story</span>
+                <span className="md:hidden">New Story</span>
+              </Link>
+            ) : (
+              /* History/All Toggle - For novels, comics, community pages */
               <div className="inline-flex rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))] p-1 flex-1 md:flex-initial">
                 <button
                   onClick={() => setFilterMode("all")}
