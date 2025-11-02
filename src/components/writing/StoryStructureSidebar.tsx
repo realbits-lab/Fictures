@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
+import React, { useMemo } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui";
 import { TreeView, TreeDataItem } from "@/components/ui/tree-view";
 import {
   BookOpen,
@@ -9,9 +9,7 @@ import {
   Edit3,
   Camera,
   Users,
-  MapPin,
-  Maximize2,
-  Minimize2
+  MapPin
 } from "lucide-react";
 
 interface Scene {
@@ -35,6 +33,16 @@ interface Part {
   chapters: Chapter[];
 }
 
+interface Character {
+  id: string;
+  name: string;
+}
+
+interface Setting {
+  id: string;
+  name: string;
+}
+
 interface Story {
   id: string;
   title: string;
@@ -42,6 +50,8 @@ interface Story {
   status: string;
   parts: Part[];
   chapters: Chapter[];
+  characters?: Character[];
+  settings?: Setting[];
 }
 
 interface Selection {
@@ -65,8 +75,6 @@ export function StoryStructureSidebar({
   onSelectionChange,
   validatingStoryId
 }: StoryStructureSidebarProps) {
-  const [expandAll, setExpandAll] = useState(true);
-
   // Convert story structure to TreeDataItem format
   const treeData = useMemo<TreeDataItem[]>(() => {
     const items: TreeDataItem[] = [];
@@ -244,27 +252,63 @@ export function StoryStructureSidebar({
     items.push(storyItem);
     console.log('🌳 Final tree items before Characters/Settings:', items);
 
-    // Add Characters item
-    items.push({
+    // Add Characters item with character list
+    const charactersItem: TreeDataItem = {
       id: "characters",
       name: "Characters",
       icon: Users,
       onClick: () => onSelectionChange?.({
         level: "characters",
         storyId: story.id
-      })
-    });
+      }),
+      children: []
+    };
 
-    // Add Settings item
-    items.push({
+    // Add individual characters as children
+    if (story.characters && story.characters.length > 0) {
+      story.characters.forEach(character => {
+        charactersItem.children?.push({
+          id: `character-${character.id}`,
+          name: character.name,
+          icon: Users,
+          onClick: () => onSelectionChange?.({
+            level: "characters",
+            storyId: story.id
+          })
+        });
+      });
+    }
+
+    items.push(charactersItem);
+
+    // Add Settings item with settings list
+    const settingsItem: TreeDataItem = {
       id: "settings",
       name: "Settings",
       icon: MapPin,
       onClick: () => onSelectionChange?.({
         level: "settings",
         storyId: story.id
-      })
-    });
+      }),
+      children: []
+    };
+
+    // Add individual settings as children
+    if (story.settings && story.settings.length > 0) {
+      story.settings.forEach(setting => {
+        settingsItem.children?.push({
+          id: `setting-${setting.id}`,
+          name: setting.name,
+          icon: MapPin,
+          onClick: () => onSelectionChange?.({
+            level: "settings",
+            storyId: story.id
+          })
+        });
+      });
+    }
+
+    items.push(settingsItem);
 
     return items;
   }, [story, onSelectionChange]);
@@ -286,35 +330,20 @@ export function StoryStructureSidebar({
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="pb-3 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <BookOpen className="h-4 w-4" />
-            Story Structure
-            {validatingStoryId === story.id && (
-              <div className="w-3 h-3 border-2 border-gray-400 border-t-blue-400 rounded-full animate-spin opacity-60"
-                   title="Updating story data" />
-            )}
-          </CardTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setExpandAll(!expandAll)}
-            className="h-6 w-6 p-0"
-            title={expandAll ? "Collapse All" : "Expand All"}
-          >
-            {expandAll ? (
-              <Minimize2 className="h-3 w-3" />
-            ) : (
-              <Maximize2 className="h-3 w-3" />
-            )}
-          </Button>
-        </div>
+        <CardTitle className="text-sm flex items-center gap-2">
+          <BookOpen className="h-4 w-4" />
+          Story Structure
+          {validatingStoryId === story.id && (
+            <div className="w-3 h-3 border-2 border-gray-400 border-t-blue-400 rounded-full animate-spin opacity-60"
+                 title="Updating story data" />
+          )}
+        </CardTitle>
       </CardHeader>
       <CardContent className="pt-0 pb-2 flex-1 overflow-y-auto">
         <TreeView
           data={treeData}
           initialSelectedItemId={initialSelectedItemId}
-          expandAll={expandAll}
+          expandAll={true}
         />
       </CardContent>
     </Card>

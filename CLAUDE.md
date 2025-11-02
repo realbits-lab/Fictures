@@ -94,7 +94,34 @@ This file provides guidance to Claude Code when working with this repository.
    - Verifies stored credentials work for automatic authentication
    - Tests navigation to protected routes like `/stories`
 
-3. **Using in Playwright Tests**:
+3. **Programmatic Login in Playwright Tests**:
+   ```javascript
+   // For tests that need fresh authentication without .auth/user.json
+   async function login(page, email, password) {
+     await page.goto('http://localhost:3000/login');
+     await page.waitForLoadState('networkidle');
+
+     // Fill email field
+     await page.fill('input[type="email"], input[name="email"]', email);
+
+     // Fill password field
+     await page.fill('input[type="password"], input[name="password"]', password);
+
+     // Click sign in button
+     await page.click('button:has-text("Sign in with Email")');
+     await page.waitForLoadState('networkidle');
+
+     // Wait for redirect after successful login
+     await page.waitForTimeout(2000);
+   }
+
+   test('example with programmatic login', async ({ page }) => {
+     await login(page, 'user@example.com', 'password123');
+     // Test runs with authenticated session
+   });
+   ```
+
+4. **Using in Playwright Tests with storageState**:
    ```javascript
    // In your Playwright test files
    const { test, expect } = require('@playwright/test');
