@@ -1,22 +1,37 @@
 ---
-title: Community Performance Optimization - Implementation Summary
+title: Performance Optimization - Implementation Summary
 ---
 
-# Community Performance Optimization - Implementation Summary
+# Performance Optimization - Implementation Summary
 
-**Date:** November 1, 2025  
-**Status:** ✅ COMPLETED - All phases implemented  
-**Performance Target:** 75-85% improvement (matching novels/comics)
+**Last Updated:** November 2, 2025
+**Status:** ✅ MULTIPLE FEATURES COMPLETED
 
 ---
 
-## 🎉 Implementation Complete!
+## 🎉 Completed Optimizations
+
+### 1. Community Performance (November 1, 2025)
+**Status:** ✅ COMPLETED
+**Performance Target:** 75-85% improvement
 
 All three phases of the community performance optimization have been successfully implemented:
 
-✅ **Phase 1:** Server-Side Architecture (PPR + SSR + Optimized queries + Indexes)  
-✅ **Phase 2:** Client-Side Enhancement (Hybrid components + Real-time updates)  
+✅ **Phase 1:** Server-Side Architecture (PPR + SSR + Optimized queries + Indexes)
+✅ **Phase 2:** Client-Side Enhancement (Hybrid components + Real-time updates)
 ✅ **Phase 3:** Testing & Verification (Performance testing + Migration applied)
+
+### 2. Comments Performance (November 2, 2025)
+**Status:** ✅ COMPLETED
+**Performance Target:** 80-95% improvement
+
+Complete 4-layer caching system with ETag support for `/novels/[id]` comments:
+
+✅ **Layer 1:** Database indexes (10 critical indexes)
+✅ **Layer 2:** Client-side caching (SWR + localStorage)
+✅ **Layer 3:** Server-side Redis caching (10min TTL)
+✅ **Layer 4:** ETag conditional requests (304 responses)
+✅ **Feature:** Optimistic UI updates for all mutations
 
 ---
 

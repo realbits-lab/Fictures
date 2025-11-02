@@ -6,6 +6,7 @@ import { eq, and, isNull, desc, not } from 'drizzle-orm';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
 import { getCache } from '@/lib/cache/redis-cache';
+import { createHash } from 'crypto';
 
 export const runtime = 'nodejs';
 
@@ -168,6 +169,36 @@ export async function GET(
     const response = { comments: result };
     const duration = Date.now() - startTime;
 
+    // Generate ETag based on comments data
+    const contentForHash = JSON.stringify({
+      commentsData: result.map(comment => ({
+        id: comment.id,
+        content: comment.content,
+        likeCount: comment.likeCount,
+        replyCount: comment.replyCount,
+        isEdited: comment.isEdited,
+        updatedAt: comment.updatedAt,
+      })),
+      totalCount: result.length,
+      cacheKey,
+    });
+    const etag = `"${createHash('md5').update(contentForHash).digest('hex')}"`;
+
+    // Check if client has the same version (ETag match)
+    const clientETag = request.headers.get('if-none-match');
+    if (clientETag === etag) {
+      console.log(`[Comments ETag] ✅ 304 Not Modified: ${cacheKey} (${duration}ms)`);
+      return new NextResponse(null, {
+        status: 304,
+        headers: {
+          'ETag': etag,
+          'X-Cache-Status': 'HIT',
+          'X-Cache-Type': 'etag',
+          'X-Server-Timing': `total;dur=${duration}`,
+        },
+      });
+    }
+
     // Cache the result
     if (isPublished) {
       await getCache().set(publicCacheKey, response, CACHE_TTL.PUBLISHED_CONTENT);
@@ -178,6 +209,7 @@ export async function GET(
       status: 200,
       headers: {
         'Content-Type': 'application/json',
+        'ETag': etag,
         'X-Cache-Status': 'MISS',
         'X-Cache-Type': isPublished ? 'public' : 'none',
         'Cache-Control': isPublished ? 'public, max-age=600' : 'private, max-age=180',

@@ -64,6 +64,30 @@ test('Verify independent panel scrolling with mouse wheel', async ({ page }) => 
 
   console.log('📍 On story editor page');
 
+  // Wait for page to stabilize
+  await page.waitForTimeout(2000);
+
+  // Click on first scene in left sidebar to load content into middle panel
+  console.log('🖱️  Clicking on first scene to load content...');
+  const firstScene = page.locator('div.cursor-pointer').filter({ hasText: /scene/i }).first();
+
+  // If no scene found, try clicking on first chapter
+  const sceneCount = await firstScene.count();
+  if (sceneCount > 0) {
+    await firstScene.click();
+    console.log('✅ Clicked on scene');
+  } else {
+    console.log('⚠️  No scene found, trying first chapter...');
+    const firstChapter = page.locator('div.cursor-pointer').filter({ hasText: /chapter/i }).first();
+    const chapterCount = await firstChapter.count();
+    if (chapterCount > 0) {
+      await firstChapter.click();
+      console.log('✅ Clicked on chapter');
+    }
+  }
+
+  await page.waitForTimeout(2000);
+
   // Find the three main panels
   const leftPanel = page.locator('div.flex-1.min-h-0.pr-2.overflow-y-auto').first();
   const middlePanel = page.locator('div.flex-1.min-h-0.px-2.overflow-y-auto').first();

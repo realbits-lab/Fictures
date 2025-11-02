@@ -393,43 +393,66 @@ export const sceneViews = pgTable('scene_views', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// Characters table - Story characters with HNS support
+// Characters table - Story characters with Adversity-Triumph Engine
 export const characters = pgTable('characters', {
+  // === IDENTITY ===
   id: text('id').primaryKey(),
-  name: varchar('name', { length: 255 }).notNull(),
   storyId: text('story_id').references(() => stories.id).notNull(),
-  isMain: boolean('is_main').default(false),
-  content: text('content').default(''), // Store all character data as YAML/JSON
-  imageUrl: text('image_url'), // Original character image URL from Vercel Blob
-  imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
-  // HNS fields
-  role: varchar('role', { length: 50 }),
-  archetype: varchar('archetype', { length: 100 }),
-  summary: text('summary'),
-  storyline: text('storyline'),
-  personality: json('personality').$type<{traits: string[]; myers_briggs: string; enneagram: string}>(),
-  backstory: json('backstory').$type<Record<string, string>>(),
-  motivations: json('motivations').$type<{primary: string; secondary: string; fear: string}>(),
-  voice: json('voice').$type<Record<string, unknown>>(),
-  physicalDescription: json('physical_description').$type<Record<string, unknown>>(),
-  visualReferenceId: text('visual_reference_id'),
-  // Adversity-Triumph Engine fields - Character core
+  name: varchar('name', { length: 255 }).notNull(),
+  isMain: boolean('is_main').default(false), // Main characters (2-4) get MACRO arcs
+  summary: text('summary'), // 1-2 sentence essence: "[CoreTrait] [role] [internalFlaw], seeking [externalGoal]"
+
+  // === ADVERSITY-TRIUMPH CORE (The Engine) ===
   coreTrait: text('core_trait'), // THE defining moral virtue: courage, compassion, integrity, loyalty, wisdom, sacrifice
-  internalFlaw: text('internal_flaw'), // Source of adversity - MUST include cause
-  externalGoal: text('external_goal'), // What character THINKS will solve their problem
+  internalFlaw: text('internal_flaw'), // MUST include cause: "[fears/believes/wounded by] X because Y"
+  externalGoal: text('external_goal'), // What they THINK will solve their problem (healing flaw actually will)
+
+  // === CHARACTER DEPTH (For Realistic Portrayal) ===
+  personality: json('personality').$type<{
+    traits: string[];  // Behavioral traits: "impulsive", "optimistic", "stubborn"
+    values: string[];  // What they care about: "family", "honor", "freedom"
+  }>(),
+  backstory: text('backstory'), // Focused history providing motivation context (2-4 paragraphs)
+
+  // === RELATIONSHIPS (Jeong System) ===
   relationships: json('relationships').$type<Record<string, {
     type: 'ally' | 'rival' | 'family' | 'romantic' | 'mentor' | 'adversary';
-    jeongLevel: number;
-    sharedHistory: string;
-    currentDynamic: string;
-  }>>(), // Jeong system tracking
+    jeongLevel: number;      // 0-10: depth of connection (정 - affective bonds)
+    sharedHistory: string;   // What binds them
+    currentDynamic: string;  // Current relationship state
+  }>>(),
+
+  // === PROSE GENERATION ===
+  physicalDescription: json('physical_description').$type<{
+    age: string;               // "mid-30s", "elderly", "young adult"
+    appearance: string;        // Overall look
+    distinctiveFeatures: string; // Memorable details for "show don't tell"
+    style: string;            // How they dress/present themselves
+  }>(),
   voiceStyle: json('voice_style').$type<{
-    tone: string;
-    vocabulary: string;
-    quirks: string[];
-    emotionalRange: string;
-  }>(), // Dialogue generation guide
-  visualStyle: text('visual_style'), // Visual aesthetic: realistic, anime, painterly, cinematic
+    tone: string;             // "warm", "sarcastic", "formal", "gentle"
+    vocabulary: string;       // "simple", "educated", "technical", "poetic"
+    quirks: string[];        // Verbal tics, repeated phrases
+    emotionalRange: string;  // "reserved", "expressive", "volatile"
+  }>(),
+
+  // === VISUAL GENERATION ===
+  imageUrl: text('image_url'), // Original portrait (1024×1024 from DALL-E 3)
+  imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants
+  visualStyle: text('visual_style'), // "realistic" | "anime" | "painterly" | "cinematic"
+
+  // === DEPRECATED HNS FIELDS (Keep for backward compatibility with existing stories) ===
+  // These fields are NULL for all new Adversity-Triumph stories generated after schema migration
+  // Used only by legacy HNS stories - will be removed in future major version
+  content: text('content').default(''), // Legacy: Store all character data as YAML/JSON
+  role: varchar('role', { length: 50 }), // Legacy: Character role (replaced by summary)
+  archetype: varchar('archetype', { length: 100 }), // Legacy: Character archetype
+  storyline: text('storyline'), // Legacy: Character storyline
+  motivations: json('motivations').$type<{primary: string; secondary: string; fear: string}>(), // Legacy: Replaced by internalFlaw/externalGoal
+  voice: json('voice').$type<Record<string, unknown>>(), // Legacy: Replaced by voiceStyle
+  visualReferenceId: text('visual_reference_id'), // Legacy: Visual reference
+
+  // === METADATA ===
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

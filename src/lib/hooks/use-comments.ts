@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { usePersistedSWR, CACHE_CONFIGS, cacheManager } from './use-persisted-swr';
 import { mutate } from 'swr';
 
@@ -73,25 +73,48 @@ export function useComments({ storyId, chapterId, sceneId }: UseCommentsOptions)
 
   const cacheKey = getCacheKey();
 
-  // Fetcher function
-  const fetcher = useCallback(async (url: string): Promise<CommentsResponse> => {
+  // Store ETag in memory for conditional requests
+  const [etag, setETag] = useState<string | null>(null);
+
+  // Fetcher function with ETag support
+  const fetcher = useCallback(async (url: string): Promise<CommentsResponse | undefined> => {
     console.log(`[useComments] 🔄 Fetching comments from: ${url}`);
 
-    const response = await fetch(url, {
-      headers: {
-        'Cache-Control': 'public, max-age=600', // 10min cache for CDN
-      },
-    });
+    const headers: HeadersInit = {
+      'Cache-Control': 'public, max-age=600', // 10min cache for CDN
+    };
+
+    // Add If-None-Match header if we have an ETag from previous response
+    if (etag) {
+      headers['If-None-Match'] = etag;
+      console.log(`[useComments] 📋 Sending ETag: ${etag}`);
+    }
+
+    const response = await fetch(url, { headers });
+
+    // Handle 304 Not Modified - return undefined to keep using cached data
+    if (response.status === 304) {
+      console.log(`[useComments] ✅ 304 Not Modified - using cached data`);
+      // Return undefined to tell SWR to keep current data
+      return undefined;
+    }
 
     if (!response.ok) {
       throw new Error(`Failed to fetch comments: ${response.statusText}`);
+    }
+
+    // Store new ETag for next request
+    const newETag = response.headers.get('ETag');
+    if (newETag) {
+      setETag(newETag);
+      console.log(`[useComments] 📝 Stored new ETag: ${newETag}`);
     }
 
     const data = await response.json();
     console.log(`[useComments] ✅ Fetched ${data.comments?.length || 0} comments`);
 
     return data;
-  }, []);
+  }, [etag]);
 
   // Use persisted SWR with community cache config (30min TTL)
   const { data, error, isLoading, isValidating, mutate: swrMutate } = usePersistedSWR<CommentsResponse>(
@@ -102,6 +125,7 @@ export function useComments({ storyId, chapterId, sceneId }: UseCommentsOptions)
       revalidateOnFocus: false, // Don't revalidate on window focus (comments don't change often)
       revalidateOnReconnect: true, // Revalidate when reconnecting
       dedupingInterval: 10000, // Dedupe requests within 10 seconds
+      keepPreviousData: true, // Keep showing previous data when fetcher returns undefined (304 case)
     }
   );
 
@@ -112,6 +136,8 @@ export function useComments({ storyId, chapterId, sceneId }: UseCommentsOptions)
     // Clear both SWR memory cache and localStorage cache
     if (cacheKey) {
       cacheManager.clearCachedData(cacheKey);
+      // Clear ETag so next request fetches fresh data
+      setETag(null);
       await swrMutate();
     }
   }, [cacheKey, swrMutate]);
