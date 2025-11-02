@@ -338,48 +338,45 @@ export function StoryStructureSidebar({
   };
 
   return (
-    <div className="h-full grid grid-rows-2 gap-4">
-      {/* Novel Tree View */}
-      <Card className="flex flex-col overflow-hidden">
-        <CardHeader className="pb-3 flex-shrink-0">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <BookOpen className="h-4 w-4" />
-            📖 Novel View
-            {validatingStoryId === story.id && (
-              <div className="w-3 h-3 border-2 border-gray-400 border-t-blue-400 rounded-full animate-spin opacity-60"
-                   title="Updating story data" />
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0 pb-2 flex-1 overflow-y-auto min-h-0">
-          <TreeView
-            data={novelTreeData}
-            initialSelectedItemId={getSelectedItemId("novel")}
-            expandAll={true}
-          />
-        </CardContent>
-      </Card>
+    <div className="h-full flex flex-col overflow-hidden">
+      {/* Single scrollable area for both tree views */}
+      <div className="flex-1 overflow-y-auto min-h-0 p-2">
+        <div className="space-y-6">
+          {/* Novel Tree View */}
+          <div>
+            <div className="flex items-center gap-2 mb-3 px-2">
+              <BookOpen className="h-4 w-4" />
+              <h3 className="text-sm font-semibold">📖 Novel View</h3>
+              {validatingStoryId === story.id && (
+                <div className="w-3 h-3 border-2 border-gray-400 border-t-blue-400 rounded-full animate-spin opacity-60"
+                     title="Updating story data" />
+              )}
+            </div>
+            <TreeView
+              data={novelTreeData}
+              initialSelectedItemId={getSelectedItemId("novel")}
+              expandAll={true}
+            />
+          </div>
 
-      {/* Comic Tree View */}
-      <Card className="flex flex-col overflow-hidden">
-        <CardHeader className="pb-3 flex-shrink-0">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <BookOpen className="h-4 w-4" />
-            🎨 Comic View
-            {validatingStoryId === story.id && (
-              <div className="w-3 h-3 border-2 border-gray-400 border-t-blue-400 rounded-full animate-spin opacity-60"
-                   title="Updating story data" />
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0 pb-2 flex-1 overflow-y-auto min-h-0">
-          <TreeView
-            data={comicTreeData}
-            initialSelectedItemId={getSelectedItemId("comic")}
-            expandAll={true}
-          />
-        </CardContent>
-      </Card>
+          {/* Comic Tree View */}
+          <div>
+            <div className="flex items-center gap-2 mb-3 px-2">
+              <BookOpen className="h-4 w-4" />
+              <h3 className="text-sm font-semibold">🎨 Comic View</h3>
+              {validatingStoryId === story.id && (
+                <div className="w-3 h-3 border-2 border-gray-400 border-t-blue-400 rounded-full animate-spin opacity-60"
+                     title="Updating story data" />
+              )}
+            </div>
+            <TreeView
+              data={comicTreeData}
+              initialSelectedItemId={getSelectedItemId("comic")}
+              expandAll={true}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

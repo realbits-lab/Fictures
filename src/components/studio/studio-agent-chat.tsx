@@ -169,33 +169,8 @@ export function StudioAgentChat({
 
   return (
     <div className={cn('flex flex-col h-full bg-background', className)}>
-      {/* Header */}
-      <div className="border-b bg-card border-theme">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-theme-button bg-primary">
-              <Bot className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold" style={{ color: 'rgb(var(--color-foreground))' }}>Studio Editing Agent</h2>
-              <p className="text-sm" style={{ color: 'rgb(var(--color-muted-foreground))' }}>
-                AI assistant for managing your story
-              </p>
-            </div>
-          </div>
-          {activeTools.length > 0 && (
-            <div className="flex items-center gap-2 text-sm">
-              <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              <span style={{ color: 'rgb(var(--color-muted-foreground))' }}>
-                Running: {activeTools.join(', ')}
-              </span>
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* Messages */}
-      <div className="flex-1 p-4 overflow-y-auto text-foreground">
+      <div className="flex-1 p-4 overflow-y-auto text-foreground min-h-0">
         <div className="space-y-4 max-w-4xl mx-auto">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-12 text-center">
@@ -255,7 +230,7 @@ export function StudioAgentChat({
       </div>
 
       {/* Input */}
-      <div className="border-t bg-card p-4 border-theme">
+      <div className="border-t bg-card p-4 border-theme flex-shrink-0">
         <form onSubmit={handleSubmit} className="flex gap-2 max-w-4xl mx-auto">
           <Textarea
             value={input}
