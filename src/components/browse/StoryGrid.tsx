@@ -39,7 +39,7 @@ interface Story {
 interface StoryGridProps {
   stories: Story[];
   currentUserId?: string;
-  pageType?: 'novels' | 'comics' | 'reading' | 'studio';
+  pageType?: 'novels' | 'comics' | 'reading' | 'studio' | 'community';
 }
 
 const genres = ["All", ...STORY_GENRES];
@@ -371,6 +371,9 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                   // For studio page, navigate to edit page instead of reading page
                   if (pageType === 'studio') {
                     router.push(`/studio/edit/story/${story.id}`);
+                  } else if (pageType === 'community') {
+                    await recordStoryView(story.id, story.title);
+                    router.push(`/community/story/${story.id}`);
                   } else {
                     await recordStoryView(story.id, story.title);
                     router.push(`/${pageType}/${story.id}`);
@@ -476,6 +479,9 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                         // For studio page, navigate to edit page instead of reading page
                         if (pageType === 'studio') {
                           router.push(`/studio/edit/story/${story.id}`);
+                        } else if (pageType === 'community') {
+                          await recordStoryView(story.id, story.title);
+                          router.push(`/community/story/${story.id}`);
                         } else {
                           await recordStoryView(story.id, story.title);
                           router.push(`/${pageType}/${story.id}`);

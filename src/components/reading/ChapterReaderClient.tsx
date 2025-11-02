@@ -921,18 +921,16 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
 
                     {/* Scene Image - Using OptimizedImage with imageVariants */}
                     {(selectedScene.imageUrl || selectedScene.sceneImage?.url) && (
-                      <div className="mb-6">
-                        <div className="rounded-lg overflow-hidden shadow-lg">
-                          <SceneImage
-                            scene={{
-                              title: selectedScene.title,
-                              imageUrl: selectedScene.imageUrl || selectedScene.sceneImage?.url,
-                              imageVariants: selectedScene.imageVariants
-                            }}
-                            className="w-full h-auto object-contain"
-                            priority={false}
-                          />
-                        </div>
+                      <div className="mb-6 w-fit mx-auto rounded-lg overflow-hidden shadow-lg">
+                        <SceneImage
+                          scene={{
+                            title: selectedScene.title,
+                            imageUrl: selectedScene.imageUrl || selectedScene.sceneImage?.url,
+                            imageVariants: selectedScene.imageVariants
+                          }}
+                          className="w-full h-auto block"
+                          priority={false}
+                        />
                       </div>
                     )}
 

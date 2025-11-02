@@ -55,26 +55,34 @@ test('Manual scrolling test - check panels in headed mode', async ({ page }) => 
 
     console.log('📍 On story editor page');
 
-    // Check for panel content divs (the ones with overflow-y-auto)
-    const panels = page.locator('div.overflow-y-auto');
+    // Check for panel content divs (flex-1 min-h-0 overflow-y-auto)
+    const panels = page.locator('div.flex-1.min-h-0.overflow-y-auto');
     const panelCount = await panels.count();
 
-    console.log(`Found ${panelCount} scrollable divs`);
+    console.log(`Found ${panelCount} flex-based scrollable divs`);
 
-    // Log panel overflow styles
+    if (panelCount === 0) {
+      console.log('⚠️ No panels found with flex-1 min-h-0 overflow-y-auto');
+      console.log('Checking for any overflow-y-auto divs...');
+      const anyOverflow = page.locator('div.overflow-y-auto');
+      console.log(`Found ${await anyOverflow.count()} divs with overflow-y-auto`);
+    }
+
+    // Log panel overflow and flex styles
     for (let i = 0; i < panelCount; i++) {
       const panel = panels.nth(i);
-      const overflowY = await panel.evaluate((el) => {
-        const styles = window.getComputedStyle(el);
+      const styles = await panel.evaluate((el) => {
+        const computed = window.getComputedStyle(el);
         return {
-          overflowY: styles.overflowY,
-          height: styles.height,
-          maxHeight: styles.maxHeight,
+          overflowY: computed.overflowY,
+          height: computed.height,
+          minHeight: computed.minHeight,
+          flex: computed.flex,
           className: el.className,
         };
       });
 
-      console.log(`Scrollable div ${i + 1} styles:`, overflowY);
+      console.log(`Panel ${i + 1} styles:`, styles);
     }
 
     // Wait for manual inspection

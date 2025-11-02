@@ -121,8 +121,8 @@ test.describe('Story Editor Resizable Panels Tests', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
 
-    // Look for resize handles
-    const resizeHandles = page.locator('[data-panel-resize-handle]');
+    // Look for resize handles (using cursor-col-resize class from our implementation)
+    const resizeHandles = page.locator('.cursor-col-resize');
     const handleCount = await resizeHandles.count();
 
     console.log(`   Found ${handleCount} resize handles`);
@@ -149,12 +149,16 @@ test.describe('Story Editor Resizable Panels Tests', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
 
-    // Check each panel has overflow-y-auto class
-    const panels = page.locator('[data-panel]');
-    const panelCount = await panels.count();
+    // Check the three main panel content divs have overflow-y-auto
+    const scrollablePanels = page.locator('div.h-full.overflow-y-auto');
+    const panelCount = await scrollablePanels.count();
 
-    for (let i = 0; i < panelCount; i++) {
-      const panel = panels.nth(i);
+    console.log(`   Found ${panelCount} scrollable panel divs`);
+    expect(panelCount).toBeGreaterThanOrEqual(3); // At least 3 main panels
+
+    // Verify first 3 have proper overflow
+    for (let i = 0; i < Math.min(3, panelCount); i++) {
+      const panel = scrollablePanels.nth(i);
       const hasOverflow = await panel.evaluate((el) => {
         const styles = window.getComputedStyle(el);
         return styles.overflowY === 'auto' || styles.overflowY === 'scroll';
@@ -164,7 +168,7 @@ test.describe('Story Editor Resizable Panels Tests', () => {
       expect(hasOverflow).toBe(true);
     }
 
-    console.log('✅ All panels have overflow scrolling');
+    console.log('✅ All main panels have overflow scrolling');
   });
 
   test('TC-EDITOR-PANELS-005: Test panel resizing functionality', async ({ page }) => {
@@ -191,8 +195,8 @@ test.describe('Story Editor Resizable Panels Tests', () => {
 
     console.log(`   Initial width of first panel: ${initialWidth}px`);
 
-    // Find first resize handle
-    const firstHandle = page.locator('[data-panel-resize-handle]').first();
+    // Find first resize handle (using cursor-col-resize class)
+    const firstHandle = page.locator('.cursor-col-resize').first();
     const handleBox = await firstHandle.boundingBox();
 
     if (!handleBox) {

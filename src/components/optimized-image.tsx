@@ -145,7 +145,7 @@ export function OptimizedImage({
           src={imageUrl}
           alt={alt}
           fill
-          className={className}
+          className={`${className} m-0`}
           style={{ objectFit }}
           priority={priority}
           sizes={sizes}
@@ -161,7 +161,7 @@ export function OptimizedImage({
         alt={alt}
         width={width || 1792}
         height={height || 1024}
-        className={className}
+        className={`${className} m-0`}
         priority={priority}
         sizes={sizes}
         onLoad={onLoad}
@@ -213,6 +213,7 @@ export function OptimizedImage({
           sizes={sizes}
           onLoad={onLoad}
           onError={onError}
+          className="m-0"
         />
       ) : (
         <Image
@@ -224,6 +225,7 @@ export function OptimizedImage({
           sizes={sizes}
           onLoad={onLoad}
           onError={onError}
+          className="m-0"
         />
       )}
     </picture>
@@ -261,6 +263,7 @@ export function StoryCoverImage({
 
 /**
  * Helper component for scene images
+ * Scene images use 7:4 aspect ratio (1344×768)
  */
 export function SceneImage({
   scene,
@@ -282,6 +285,8 @@ export function SceneImage({
       alt={scene.title}
       className={className}
       priority={priority}
+      width={1344}
+      height={768}
     />
   );
 }

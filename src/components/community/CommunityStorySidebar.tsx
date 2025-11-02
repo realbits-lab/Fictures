@@ -284,10 +284,10 @@ export function CommunityStorySidebar({ currentStoryId, characters, settings }: 
                             <h5 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
                               Backstory
                             </h5>
-                            <div className="space-y-1 text-sm">
-                              {Object.entries(character.backstory).map(([key, value]) => (
-                                <p key={key} className="text-gray-900 dark:text-gray-100">
-                                  <span className="font-semibold capitalize">{key.replace(/_/g, ' ')}:</span> {value}
+                            <div className="space-y-2 text-sm text-gray-900 dark:text-gray-100 leading-relaxed">
+                              {Object.values(character.backstory).map((value, index) => (
+                                <p key={index}>
+                                  {value}
                                 </p>
                               ))}
                             </div>
