@@ -1,7 +1,3 @@
----
-title: "Like/Dislike Implementation Guide"
----
-
 # Like/Dislike Implementation Guide
 
 ## Overview

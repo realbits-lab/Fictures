@@ -1,7 +1,3 @@
----
-title: "Scene View Tracking System"
----
-
 # Scene View Tracking System
 
 **Complete view tracking for both logged-in and anonymous users**

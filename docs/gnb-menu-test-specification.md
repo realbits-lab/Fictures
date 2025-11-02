@@ -1,7 +1,3 @@
----
-title: "GNB Menu Test Specification"
----
-
 # GNB Menu Test Specification
 
 ## Overview

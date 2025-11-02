@@ -1,7 +1,3 @@
----
-title: Cache Invalidation System - Production Rollout Guide
----
-
 # Cache Invalidation System - Production Rollout Guide
 
 ## Overview

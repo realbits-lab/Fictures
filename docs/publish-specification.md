@@ -1,7 +1,3 @@
----
-title: "Publishing & Scheduling Specification"
----
-
 # Publishing & Scheduling Specification
 
 This document outlines the specifications for a comprehensive publishing system with scene-by-scene scheduling, automated publishing, duration-based scheduling (daily/weekly), manual status control, and beautiful timeline visualization.

@@ -1,7 +1,3 @@
----
-title: Playwright Multi-Account Authentication Implementation
----
-
 # Playwright Multi-Account Authentication System
 
 ## Summary

@@ -1,7 +1,3 @@
----
-title: "Comics Architecture"
----
-
 # Comics Architecture
 
 ## Overview

@@ -1,7 +1,3 @@
----
-title: "Authentication Profiles"
----
-
 # Authentication Profiles
 
 This document describes the authentication system for testing with multiple user accounts, including password hashing algorithms and verification methods.

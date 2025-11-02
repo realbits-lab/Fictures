@@ -1,7 +1,3 @@
----
-title: API Routes Usage Analysis Report
----
-
 # API Routes Usage Analysis Report
 ## Fictures Project
 

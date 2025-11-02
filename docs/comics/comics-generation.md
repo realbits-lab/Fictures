@@ -1,7 +1,3 @@
----
-title: "Comics Generation System"
----
-
 # Comics Generation System
 
 ## Overview

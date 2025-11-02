@@ -1,7 +1,3 @@
----
-title: Cache Invalidation System - Rollout Execution Report
----
-
 # Cache Invalidation System - Rollout Execution Report
 
 ## Report Summary

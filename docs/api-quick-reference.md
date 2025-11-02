@@ -1,7 +1,3 @@
----
-title: API Routes Quick Reference
----
-
 # API Routes Quick Reference
 
 ## Summary Statistics

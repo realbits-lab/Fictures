@@ -1,7 +1,3 @@
----
-title: "Scene Quality Pipeline"
----
-
 # Scene Quality Pipeline
 
 **Complete automated quality assurance for generated scenes**

@@ -1,7 +1,3 @@
----
-title: "Google Analytics 4 Setup"
----
-
 # Google Analytics 4 Setup
 
 ## Installation Complete ✅

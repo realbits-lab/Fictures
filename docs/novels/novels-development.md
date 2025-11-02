@@ -1,7 +1,3 @@
----
-title: "Novels Generation Guide: Adversity-Triumph Engine"
----
-
 # Novels Generation Guide: Adversity-Triumph Engine
 
 ## Overview

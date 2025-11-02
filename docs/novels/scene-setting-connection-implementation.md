@@ -1,7 +1,3 @@
----
-title: "Scene-Setting Connection Implementation"
----
-
 # Scene-Setting Connection Implementation
 
 **Date**: 2025-11-02

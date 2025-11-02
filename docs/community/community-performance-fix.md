@@ -1,7 +1,3 @@
----
-title: "Community Story Page Performance Fix"
----
-
 # Community Story Page Performance Fix
 
 **Date**: 2025-10-26

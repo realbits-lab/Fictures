@@ -1,7 +1,3 @@
----
-title: "Story Removal Documentation"
----
-
 # Story Removal Documentation
 
 Complete guide to removing stories and all related data from Fictures.

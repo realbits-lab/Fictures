@@ -1,7 +1,3 @@
----
-title: "Real-Time Story Updates Implementation"
----
-
 # Real-Time Story Updates Implementation
 
 **Status:** ✅ IMPLEMENTED

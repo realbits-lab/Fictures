@@ -1,7 +1,3 @@
----
-title: Independent Scrolling Implementation
----
-
 # Independent Scrolling Implementation
 
 This document describes the implementation method for achieving completely independent vertical scrolling in multi-panel layouts, preventing any cross-panel scroll interference and eliminating page body scrolling.

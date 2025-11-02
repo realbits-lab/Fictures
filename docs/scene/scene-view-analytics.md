@@ -1,7 +1,3 @@
----
-title: "Scene View Analytics System"
----
-
 # Scene View Analytics System
 
 **Complete implementation of per-scene view tracking with novel/comic format breakdown**

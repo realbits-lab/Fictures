@@ -1,7 +1,3 @@
----
-title: "Analytics & Insights Specification"
----
-
 # Analytics & Insights Specification
 
 This document outlines the specifications for upgrading the Fictures analytics features from mock data to production-ready implementation with AI-powered insights, quality recommendations, and responsive mobile design.

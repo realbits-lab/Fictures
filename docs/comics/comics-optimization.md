@@ -1,7 +1,3 @@
----
-title: "Comics Optimization"
----
-
 # Comics Optimization
 
 ## Overview

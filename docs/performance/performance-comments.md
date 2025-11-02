@@ -1,7 +1,3 @@
----
-title: Comments Performance Optimization
----
-
 # Comments Performance Optimization
 
 Complete guide to the 4-layer caching system for comments in `/novels/[id]` page.

@@ -1,8 +1,3 @@
----
-title: Neon Pooled Connection - Quick Start Guide
-date: 2025-11-01
----
-
 # Neon Pooled Connection - Quick Start (5 Minutes)
 
 ## TL;DR - What You Need to Do

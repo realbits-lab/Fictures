@@ -1,7 +1,3 @@
----
-title: Database Fields Analysis - Complete Field Mapping
----
-
 # Database Fields Analysis
 
 ## Stories Table (15 database fields)

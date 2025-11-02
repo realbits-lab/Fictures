@@ -1,7 +1,3 @@
----
-title: "Novels Testing & Evaluation: Adversity-Triumph Engine"
----
-
 # Novels Testing & Evaluation: Adversity-Triumph Engine
 
 ## Executive Summary

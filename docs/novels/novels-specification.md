@@ -1,7 +1,3 @@
----
-title: "Novels Generation Specification: Adversity-Triumph Engine"
----
-
 # Novels Generation Specification: Adversity-Triumph Engine
 
 ## Executive Summary

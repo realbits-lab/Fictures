@@ -1,7 +1,3 @@
----
-title: "Vercel Blob Batch Deletion Optimization"
----
-
 # Vercel Blob Batch Deletion Optimization
 
 **Date:** 2025-10-25

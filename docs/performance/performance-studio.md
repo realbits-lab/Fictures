@@ -1,7 +1,3 @@
----
-title: Studio Writing Performance Optimization
----
-
 **Status:** 🚧 IN PROGRESS
 **Target:** Sub-second perceived load time, instant navigation
 **Date:** November 1, 2025

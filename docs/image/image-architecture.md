@@ -1,7 +1,3 @@
----
-title: "Image Architecture"
----
-
 # Image Architecture
 
 **Status:** ✅ PRODUCTION - Fully implemented

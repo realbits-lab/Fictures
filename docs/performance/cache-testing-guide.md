@@ -1,7 +1,3 @@
----
-title: "Cache Performance Testing Guide"
----
-
 # Cache Performance Testing Guide
 
 **Date:** November 2, 2025

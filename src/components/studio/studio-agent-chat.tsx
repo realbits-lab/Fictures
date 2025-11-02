@@ -213,10 +213,6 @@ export function StudioAgentChat({
                     handleInputChange({
                       target: { value: promptText },
                     } as any);
-                    // Use handleSubmit directly with a synthetic event
-                    setTimeout(() => {
-                      handleSubmit(new Event('submit') as any);
-                    }, 100);
                   }}
                 >
                   <div className="flex flex-col items-start gap-1">
@@ -235,10 +231,6 @@ export function StudioAgentChat({
                     handleInputChange({
                       target: { value: promptText },
                     } as any);
-                    // Use handleSubmit directly with a synthetic event
-                    setTimeout(() => {
-                      handleSubmit(new Event('submit') as any);
-                    }, 100);
                   }}
                 >
                   <div className="flex flex-col items-start gap-1">

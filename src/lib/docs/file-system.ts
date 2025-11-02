@@ -98,11 +98,15 @@ export function getDocPage(slug: string[] | undefined): DocPage | null {
     // Extract headings for TOC
     const headings = extractHeadings(content);
 
+    // Use first H1 heading as title, fallback to frontmatter or 'Untitled'
+    const firstH1 = headings.find(h => h.level === 1);
+    const title = firstH1?.text || data.title || 'Untitled';
+
     return {
       slug: slug?.join('/') || 'index',
       content,
       metadata: {
-        title: data.title || 'Untitled',
+        title,
         description: data.description,
         ...data,
       },

@@ -1,7 +1,3 @@
----
-title: "Quick Reference: Copy-Paste Code Snippets"
----
-
 # Quick Reference: Copy-Paste Code Snippets
 ## For Implementing Research Feature (or Similar)
 

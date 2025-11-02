@@ -1,7 +1,3 @@
----
-title: "Character Schema Synchronization - November 2, 2025"
----
-
 # Character Schema Synchronization Report
 
 ## Executive Summary

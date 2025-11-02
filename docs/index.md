@@ -1,8 +1,3 @@
----
-title: Fictures Documentation
-description: Complete guide to the Fictures AI-powered story writing platform
----
-
 # Fictures Documentation
 
 Welcome to the Fictures documentation! This guide covers everything you need to know about building, deploying, and using the Fictures platform.
