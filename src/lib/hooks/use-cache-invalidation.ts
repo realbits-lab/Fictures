@@ -16,6 +16,7 @@
 import { useCallback } from 'react';
 import { mutate } from 'swr';
 import { CacheManager } from '../hooks/use-persisted-swr';
+import { cacheMetrics } from '../cache/cache-metrics';
 
 /**
  * Client-side cache types that can be invalidated
@@ -48,6 +49,7 @@ export function useCacheInvalidation() {
       const types = cacheTypes.split(',').map((t) => t.trim());
       types.forEach((type) => {
         cacheManager.invalidatePageCache(type as ClientCacheType);
+        cacheMetrics.invalidate('localStorage', type);
       });
     }
 
@@ -69,6 +71,7 @@ export function useCacheInvalidation() {
           undefined,
           { revalidate: true }
         );
+        cacheMetrics.invalidate('swr', key);
       });
     }
 

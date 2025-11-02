@@ -26,6 +26,7 @@ import {
   onCharacterMutation,
   onSettingMutation,
 } from './invalidation-hooks';
+import { cacheMetrics } from './cache-metrics';
 
 /**
  * Entity types that can trigger cache invalidation
@@ -107,56 +108,70 @@ export function createInvalidationContext(
 export async function invalidateEntityCache(
   context: InvalidationContext
 ): Promise<void> {
-  // Call appropriate invalidation hook based on entity type
-  switch (context.entityType) {
-    case 'story':
-      await onStoryMutation(context.entityId);
-      break;
+  const startTime = Date.now();
 
-    case 'part':
-      if (!context.storyId) {
-        throw new Error('storyId required for part invalidation');
-      }
-      await onPartMutation(context.entityId, context.storyId);
-      break;
+  try {
+    // Call appropriate invalidation hook based on entity type
+    switch (context.entityType) {
+      case 'story':
+        await onStoryMutation(context.entityId);
+        cacheMetrics.invalidate('redis', `story:${context.entityId}`);
+        break;
 
-    case 'chapter':
-      if (!context.storyId) {
-        throw new Error('storyId required for chapter invalidation');
-      }
-      await onChapterMutation(context.entityId, context.storyId);
-      break;
+      case 'part':
+        if (!context.storyId) {
+          throw new Error('storyId required for part invalidation');
+        }
+        await onPartMutation(context.entityId, context.storyId);
+        cacheMetrics.invalidate('redis', `part:${context.entityId}`);
+        break;
 
-    case 'scene':
-      if (!context.storyId) {
-        throw new Error('storyId required for scene invalidation');
-      }
-      await onSceneMutation(context.entityId, context.storyId);
-      break;
+      case 'chapter':
+        if (!context.storyId) {
+          throw new Error('storyId required for chapter invalidation');
+        }
+        await onChapterMutation(context.entityId, context.storyId);
+        cacheMetrics.invalidate('redis', `chapter:${context.entityId}`);
+        break;
 
-    case 'character':
-      if (!context.storyId) {
-        throw new Error('storyId required for character invalidation');
-      }
-      await onCharacterMutation(context.entityId, context.storyId);
-      break;
+      case 'scene':
+        if (!context.storyId) {
+          throw new Error('storyId required for scene invalidation');
+        }
+        await onSceneMutation(context.entityId, context.storyId);
+        cacheMetrics.invalidate('redis', `scene:${context.entityId}`);
+        break;
 
-    case 'setting':
-      if (!context.storyId) {
-        throw new Error('storyId required for setting invalidation');
-      }
-      await onSettingMutation(context.entityId, context.storyId);
-      break;
+      case 'character':
+        if (!context.storyId) {
+          throw new Error('storyId required for character invalidation');
+        }
+        await onCharacterMutation(context.entityId, context.storyId);
+        cacheMetrics.invalidate('redis', `character:${context.entityId}`);
+        break;
 
-    case 'comment':
-    case 'like':
-    case 'post':
-      // Community entities handled separately
-      // Import and call community-specific invalidation if needed
-      break;
+      case 'setting':
+        if (!context.storyId) {
+          throw new Error('storyId required for setting invalidation');
+        }
+        await onSettingMutation(context.entityId, context.storyId);
+        cacheMetrics.invalidate('redis', `setting:${context.entityId}`);
+        break;
 
-    default:
-      console.warn(`Unknown entity type for cache invalidation: ${context.entityType}`);
+      case 'comment':
+      case 'like':
+      case 'post':
+        // Community entities handled separately
+        // Import and call community-specific invalidation if needed
+        cacheMetrics.invalidate('redis', `${context.entityType}:${context.entityId}`);
+        break;
+
+      default:
+        console.warn(`Unknown entity type for cache invalidation: ${context.entityType}`);
+    }
+  } finally {
+    const duration = Date.now() - startTime;
+    console.log(`[Cache] Invalidated ${context.entityType}:${context.entityId} in ${duration}ms`);
   }
 }
 

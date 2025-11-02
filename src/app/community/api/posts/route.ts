@@ -3,6 +3,11 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { communityPosts } from '@/lib/db/schema';
 import { nanoid } from 'nanoid';
+import {
+  createInvalidationContext,
+  invalidateEntityCache,
+  getCacheInvalidationHeaders,
+} from '@/lib/cache/unified-invalidation';
 
 /**
  * POST /api/community/posts
@@ -49,10 +54,25 @@ export async function POST(request: NextRequest) {
       moderationStatus: 'approved',
     }).returning();
 
-    return NextResponse.json({
-      success: true,
-      post: post[0],
-    }, { status: 201 });
+    // ✅ CACHE INVALIDATION: Invalidate community caches after post creation
+    const invalidationContext = createInvalidationContext({
+      entityType: 'post',
+      entityId: post[0].id,
+      storyId,
+      userId: session.user.id,
+    });
+    await invalidateEntityCache(invalidationContext);
+
+    return NextResponse.json(
+      {
+        success: true,
+        post: post[0],
+      },
+      {
+        status: 201,
+        headers: getCacheInvalidationHeaders(invalidationContext),
+      }
+    );
 
   } catch (error) {
     console.error('Error creating community post:', error);

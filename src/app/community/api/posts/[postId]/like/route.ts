@@ -60,11 +60,24 @@ export async function POST(
         })
         .where(eq(communityPosts.id, postId));
 
-      return NextResponse.json({
-        success: true,
-        liked: false,
-        message: 'Like removed',
+      // ✅ CACHE INVALIDATION: Invalidate community caches after unlike
+      const invalidationContext = createInvalidationContext({
+        entityType: 'like',
+        entityId: postId,
+        userId: session.user.id,
       });
+      await invalidateEntityCache(invalidationContext);
+
+      return NextResponse.json(
+        {
+          success: true,
+          liked: false,
+          message: 'Like removed',
+        },
+        {
+          headers: getCacheInvalidationHeaders(invalidationContext),
+        }
+      );
     } else {
       await db.insert(postLikes).values({
         id: nanoid(),
@@ -79,11 +92,24 @@ export async function POST(
         })
         .where(eq(communityPosts.id, postId));
 
-      return NextResponse.json({
-        success: true,
-        liked: true,
-        message: 'Like added',
+      // ✅ CACHE INVALIDATION: Invalidate community caches after like
+      const invalidationContext = createInvalidationContext({
+        entityType: 'like',
+        entityId: postId,
+        userId: session.user.id,
       });
+      await invalidateEntityCache(invalidationContext);
+
+      return NextResponse.json(
+        {
+          success: true,
+          liked: true,
+          message: 'Like added',
+        },
+        {
+          headers: getCacheInvalidationHeaders(invalidationContext),
+        }
+      );
     }
 
   } catch (error) {

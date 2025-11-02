@@ -4,6 +4,11 @@ import { db } from '@/lib/db';
 import { communityReplies, communityPosts, users } from '@/lib/db/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import {
+  createInvalidationContext,
+  invalidateEntityCache,
+  getCacheInvalidationHeaders,
+} from '@/lib/cache/unified-invalidation';
 
 /**
  * GET /api/community/posts/[postId]/replies
@@ -131,10 +136,25 @@ export async function POST(
       })
       .where(eq(communityPosts.id, postId));
 
-    return NextResponse.json({
-      success: true,
-      reply: reply[0],
-    }, { status: 201 });
+    // ✅ CACHE INVALIDATION: Invalidate community caches after reply creation
+    const invalidationContext = createInvalidationContext({
+      entityType: 'comment',
+      entityId: reply[0].id,
+      userId: session.user.id,
+      additionalData: { postId },
+    });
+    await invalidateEntityCache(invalidationContext);
+
+    return NextResponse.json(
+      {
+        success: true,
+        reply: reply[0],
+      },
+      {
+        status: 201,
+        headers: getCacheInvalidationHeaders(invalidationContext),
+      }
+    );
 
   } catch (error) {
     console.error('Error creating post reply:', error);
