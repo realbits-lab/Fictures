@@ -76,12 +76,17 @@ This file provides guidance to Claude Code when working with this repository.
 
 **Authentication Setup for Playwright:**
 
+**Testing Account Priority:**
+- **ALWAYS use writer@fictures.xyz** for testing story editor and writing features
+- Use manager@fictures.xyz only for admin/management specific tests
+- All test scripts should read credentials from `.auth/user.json` profiles
+
 **Option 1: Google OAuth**
 1. **Initial Capture**: Run `dotenv --file .env.local run node scripts/capture-auth-manual.mjs`
    - Opens browser for manual Google login with manager@fictures.xyz account
    - Automatically captures authentication state to `.auth/user.json`
    - Includes NextAuth.js session cookies and Google OAuth tokens
-   - **Testing Account**: Always use manager@fictures.xyz from `.auth/user.json` for web API and UI testing
+   - **Testing Account**: Always use writer@fictures.xyz from `.auth/user.json` for story editing tests
 
 **Option 2: Email/Password Authentication**
 1. **Initial Capture**: Run authentication capture script for email/password
@@ -136,7 +141,7 @@ This file provides guidance to Claude Code when working with this repository.
    });
    ```
 
-4. **Refreshing Authentication**: When credentials expire, re-run capture script:
+5. **Refreshing Authentication**: When credentials expire, re-run capture script:
    ```bash
    dotenv --file .env.local run node scripts/capture-auth-manual.mjs
    ```

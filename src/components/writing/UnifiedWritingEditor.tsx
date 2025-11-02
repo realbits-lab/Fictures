@@ -92,6 +92,8 @@ interface Selection {
   partId?: string;
   chapterId?: string;
   sceneId?: string;
+  characterId?: string;
+  settingId?: string;
 }
 
 interface AllStoryListItem {
@@ -1805,45 +1807,61 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         );
 
       case "characters":
+        // If no characterId, show nothing (clicked on parent node)
+        if (!currentSelection.characterId) {
+          return null;
+        }
+
+        // Find the specific character by ID
+        const selectedCharacter = story.characters?.find((c: any) => c.id === currentSelection.characterId);
+
+        if (!selectedCharacter) {
+          return (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>👥 Character Not Found</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center py-8 text-gray-500">
+                  Character with ID {currentSelection.characterId} not found
+                </CardContent>
+              </Card>
+            </div>
+          );
+        }
+
         return (
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>👥 Characters - All Fields</CardTitle>
+                <CardTitle>👥 Character Details - {selectedCharacter.name}</CardTitle>
               </CardHeader>
               <CardContent>
-                {story.characters && story.characters.length > 0 ? (
-                  <div className="space-y-8">
-                    {story.characters.map((character: any, index: number) => (
-                      <div key={character.id || index} className="border-b last:border-b-0 pb-6 last:pb-0">
-                        <h3 className="text-lg font-semibold mb-4 text-[rgb(var(--color-foreground))]">
-                          Character {index + 1}: {character.name}
-                        </h3>
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
-                            <tbody>
-                              <tr className="border-b">
-                                <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800 w-1/3">ID</td>
-                                <td className="py-2 px-4 font-mono text-xs">{character.id}</td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <tbody>
+                      <tr className="border-b">
+                        <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800 w-1/3">ID</td>
+                        <td className="py-2 px-4 font-mono text-xs">{selectedCharacter.id}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Name</td>
-                                <td className="py-2 px-4">{character.name}</td>
+                                <td className="py-2 px-4">{selectedCharacter.name}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Story ID</td>
-                                <td className="py-2 px-4 font-mono text-xs">{character.storyId || 'N/A'}</td>
+                                <td className="py-2 px-4 font-mono text-xs">{selectedCharacter.storyId || 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Is Main</td>
-                                <td className="py-2 px-4">{character.isMain ? 'Yes' : 'No'}</td>
+                                <td className="py-2 px-4">{selectedCharacter.isMain ? 'Yes' : 'No'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Content</td>
                                 <td className="py-2 px-4">
-                                  {character.content ? (
+                                  {selectedCharacter.content ? (
                                     <div className="max-h-40 overflow-auto text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded">
-                                      {character.content}
+                                      {selectedCharacter.content}
                                     </div>
                                   ) : 'N/A'}
                                 </td>
@@ -1851,9 +1869,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Image URL</td>
                                 <td className="py-2 px-4">
-                                  {character.imageUrl ? (
-                                    <a href={character.imageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs break-all">
-                                      {character.imageUrl}
+                                  {selectedCharacter.imageUrl ? (
+                                    <a href={selectedCharacter.imageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs break-all">
+                                      {selectedCharacter.imageUrl}
                                     </a>
                                   ) : 'N/A'}
                                 </td>
@@ -1861,35 +1879,35 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Image Variants</td>
                                 <td className="py-2 px-4">
-                                  {character.imageVariants ? (
+                                  {selectedCharacter.imageVariants ? (
                                     <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
-                                      {JSON.stringify(character.imageVariants, null, 2)}
+                                      {JSON.stringify(selectedCharacter.imageVariants, null, 2)}
                                     </pre>
                                   ) : 'N/A'}
                                 </td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Role</td>
-                                <td className="py-2 px-4">{character.role || 'N/A'}</td>
+                                <td className="py-2 px-4">{selectedCharacter.role || 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Archetype</td>
-                                <td className="py-2 px-4">{character.archetype || 'N/A'}</td>
+                                <td className="py-2 px-4">{selectedCharacter.archetype || 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Summary</td>
-                                <td className="py-2 px-4">{character.summary || 'N/A'}</td>
+                                <td className="py-2 px-4">{selectedCharacter.summary || 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Storyline</td>
-                                <td className="py-2 px-4">{character.storyline || 'N/A'}</td>
+                                <td className="py-2 px-4">{selectedCharacter.storyline || 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Personality</td>
                                 <td className="py-2 px-4">
-                                  {character.personality ? (
+                                  {selectedCharacter.personality ? (
                                     <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
-                                      {JSON.stringify(character.personality, null, 2)}
+                                      {JSON.stringify(selectedCharacter.personality, null, 2)}
                                     </pre>
                                   ) : 'N/A'}
                                 </td>
@@ -1897,9 +1915,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Backstory</td>
                                 <td className="py-2 px-4">
-                                  {character.backstory ? (
+                                  {selectedCharacter.backstory ? (
                                     <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
-                                      {JSON.stringify(character.backstory, null, 2)}
+                                      {JSON.stringify(selectedCharacter.backstory, null, 2)}
                                     </pre>
                                   ) : 'N/A'}
                                 </td>
@@ -1907,9 +1925,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Motivations</td>
                                 <td className="py-2 px-4">
-                                  {character.motivations ? (
+                                  {selectedCharacter.motivations ? (
                                     <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
-                                      {JSON.stringify(character.motivations, null, 2)}
+                                      {JSON.stringify(selectedCharacter.motivations, null, 2)}
                                     </pre>
                                   ) : 'N/A'}
                                 </td>
@@ -1917,9 +1935,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Voice</td>
                                 <td className="py-2 px-4">
-                                  {character.voice ? (
+                                  {selectedCharacter.voice ? (
                                     <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
-                                      {JSON.stringify(character.voice, null, 2)}
+                                      {JSON.stringify(selectedCharacter.voice, null, 2)}
                                     </pre>
                                   ) : 'N/A'}
                                 </td>
@@ -1927,35 +1945,35 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Physical Description</td>
                                 <td className="py-2 px-4">
-                                  {character.physicalDescription ? (
+                                  {selectedCharacter.physicalDescription ? (
                                     <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
-                                      {JSON.stringify(character.physicalDescription, null, 2)}
+                                      {JSON.stringify(selectedCharacter.physicalDescription, null, 2)}
                                     </pre>
                                   ) : 'N/A'}
                                 </td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Visual Reference ID</td>
-                                <td className="py-2 px-4 font-mono text-xs">{character.visualReferenceId || 'N/A'}</td>
+                                <td className="py-2 px-4 font-mono text-xs">{selectedCharacter.visualReferenceId || 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Core Trait</td>
-                                <td className="py-2 px-4">{character.coreTrait || 'N/A'}</td>
+                                <td className="py-2 px-4">{selectedCharacter.coreTrait || 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Internal Flaw</td>
-                                <td className="py-2 px-4">{character.internalFlaw || 'N/A'}</td>
+                                <td className="py-2 px-4">{selectedCharacter.internalFlaw || 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">External Goal</td>
-                                <td className="py-2 px-4">{character.externalGoal || 'N/A'}</td>
+                                <td className="py-2 px-4">{selectedCharacter.externalGoal || 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Relationships</td>
                                 <td className="py-2 px-4">
-                                  {character.relationships ? (
+                                  {selectedCharacter.relationships ? (
                                     <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-60">
-                                      {JSON.stringify(character.relationships, null, 2)}
+                                      {JSON.stringify(selectedCharacter.relationships, null, 2)}
                                     </pre>
                                   ) : 'N/A'}
                                 </td>
@@ -1963,99 +1981,107 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Voice Style</td>
                                 <td className="py-2 px-4">
-                                  {character.voiceStyle ? (
+                                  {selectedCharacter.voiceStyle ? (
                                     <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
-                                      {JSON.stringify(character.voiceStyle, null, 2)}
+                                      {JSON.stringify(selectedCharacter.voiceStyle, null, 2)}
                                     </pre>
                                   ) : 'N/A'}
                                 </td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Visual Style</td>
-                                <td className="py-2 px-4">{character.visualStyle || 'N/A'}</td>
+                                <td className="py-2 px-4">{selectedCharacter.visualStyle || 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Created At</td>
-                                <td className="py-2 px-4">{character.createdAt ? new Date(character.createdAt).toLocaleString() : 'N/A'}</td>
+                                <td className="py-2 px-4">{selectedCharacter.createdAt ? new Date(selectedCharacter.createdAt).toLocaleString() : 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Updated At</td>
-                                <td className="py-2 px-4">{character.updatedAt ? new Date(character.updatedAt).toLocaleString() : 'N/A'}</td>
+                                <td className="py-2 px-4">{selectedCharacter.updatedAt ? new Date(selectedCharacter.updatedAt).toLocaleString() : 'N/A'}</td>
                               </tr>
                             </tbody>
                           </table>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    No characters found
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>
         );
 
       case "settings":
+        // If no settingId, show nothing (clicked on parent node)
+        if (!currentSelection.settingId) {
+          return null;
+        }
+
+        // Find the specific setting by ID
+        const selectedSetting = story.settings?.find((s: any) => s.id === currentSelection.settingId);
+
+        if (!selectedSetting) {
+          return (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>🗺️ Setting Not Found</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center py-8 text-gray-500">
+                  Setting with ID {currentSelection.settingId} not found
+                </CardContent>
+              </Card>
+            </div>
+          );
+        }
+
         return (
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>🗺️ Settings - All Fields</CardTitle>
+                <CardTitle>🗺️ Setting Details - {selectedSetting.name}</CardTitle>
               </CardHeader>
               <CardContent>
-                {story.settings && story.settings.length > 0 ? (
-                  <div className="space-y-8">
-                    {story.settings.map((setting: any, index: number) => (
-                      <div key={setting.id || index} className="border-b last:border-b-0 pb-6 last:pb-0">
-                        <h3 className="text-lg font-semibold mb-4 text-[rgb(var(--color-foreground))]">
-                          Setting {index + 1}: {setting.name}
-                        </h3>
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
-                            <tbody>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <tbody>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800 w-1/3">ID</td>
-                                <td className="py-2 px-4 font-mono text-xs">{setting.id}</td>
+                                <td className="py-2 px-4 font-mono text-xs">{selectedSetting.id}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Name</td>
-                                <td className="py-2 px-4">{setting.name}</td>
+                                <td className="py-2 px-4">{selectedSetting.name}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Story ID</td>
-                                <td className="py-2 px-4 font-mono text-xs">{setting.storyId || 'N/A'}</td>
+                                <td className="py-2 px-4 font-mono text-xs">{selectedSetting.storyId || 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Description</td>
-                                <td className="py-2 px-4">{setting.description || 'N/A'}</td>
+                                <td className="py-2 px-4">{selectedSetting.description || 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Mood</td>
-                                <td className="py-2 px-4">{setting.mood || 'N/A'}</td>
+                                <td className="py-2 px-4">{selectedSetting.mood || 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Sensory</td>
                                 <td className="py-2 px-4">
-                                  {setting.sensory ? (
+                                  {selectedSetting.sensory ? (
                                     <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
-                                      {JSON.stringify(setting.sensory, null, 2)}
+                                      {JSON.stringify(selectedSetting.sensory, null, 2)}
                                     </pre>
                                   ) : 'N/A'}
                                 </td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Visual Style</td>
-                                <td className="py-2 px-4">{setting.visualStyle || 'N/A'}</td>
+                                <td className="py-2 px-4">{selectedSetting.visualStyle || 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Visual References</td>
                                 <td className="py-2 px-4">
-                                  {setting.visualReferences ? (
+                                  {selectedSetting.visualReferences ? (
                                     <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto">
-                                      {JSON.stringify(setting.visualReferences, null, 2)}
+                                      {JSON.stringify(selectedSetting.visualReferences, null, 2)}
                                     </pre>
                                   ) : 'N/A'}
                                 </td>
@@ -2063,23 +2089,23 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Color Palette</td>
                                 <td className="py-2 px-4">
-                                  {setting.colorPalette ? (
+                                  {selectedSetting.colorPalette ? (
                                     <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto">
-                                      {JSON.stringify(setting.colorPalette, null, 2)}
+                                      {JSON.stringify(selectedSetting.colorPalette, null, 2)}
                                     </pre>
                                   ) : 'N/A'}
                                 </td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Architectural Style</td>
-                                <td className="py-2 px-4">{setting.architecturalStyle || 'N/A'}</td>
+                                <td className="py-2 px-4">{selectedSetting.architecturalStyle || 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Image URL</td>
                                 <td className="py-2 px-4">
-                                  {setting.imageUrl ? (
-                                    <a href={setting.imageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs break-all">
-                                      {setting.imageUrl}
+                                  {selectedSetting.imageUrl ? (
+                                    <a href={selectedSetting.imageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs break-all">
+                                      {selectedSetting.imageUrl}
                                     </a>
                                   ) : 'N/A'}
                                 </td>
@@ -2087,9 +2113,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Image Variants</td>
                                 <td className="py-2 px-4">
-                                  {setting.imageVariants ? (
+                                  {selectedSetting.imageVariants ? (
                                     <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-40">
-                                      {JSON.stringify(setting.imageVariants, null, 2)}
+                                      {JSON.stringify(selectedSetting.imageVariants, null, 2)}
                                     </pre>
                                   ) : 'N/A'}
                                 </td>
@@ -2097,50 +2123,42 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Adversity Elements</td>
                                 <td className="py-2 px-4">
-                                  {setting.adversityElements ? (
+                                  {selectedSetting.adversityElements ? (
                                     <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-60">
-                                      {JSON.stringify(setting.adversityElements, null, 2)}
+                                      {JSON.stringify(selectedSetting.adversityElements, null, 2)}
                                     </pre>
                                   ) : 'N/A'}
                                 </td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Symbolic Meaning</td>
-                                <td className="py-2 px-4">{setting.symbolicMeaning || 'N/A'}</td>
+                                <td className="py-2 px-4">{selectedSetting.symbolicMeaning || 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Cycle Amplification</td>
                                 <td className="py-2 px-4">
-                                  {setting.cycleAmplification ? (
+                                  {selectedSetting.cycleAmplification ? (
                                     <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-60">
-                                      {JSON.stringify(setting.cycleAmplification, null, 2)}
+                                      {JSON.stringify(selectedSetting.cycleAmplification, null, 2)}
                                     </pre>
                                   ) : 'N/A'}
                                 </td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Emotional Resonance</td>
-                                <td className="py-2 px-4">{setting.emotionalResonance || 'N/A'}</td>
+                                <td className="py-2 px-4">{selectedSetting.emotionalResonance || 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Created At</td>
-                                <td className="py-2 px-4">{setting.createdAt ? new Date(setting.createdAt).toLocaleString() : 'N/A'}</td>
+                                <td className="py-2 px-4">{selectedSetting.createdAt ? new Date(selectedSetting.createdAt).toLocaleString() : 'N/A'}</td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Updated At</td>
-                                <td className="py-2 px-4">{setting.updatedAt ? new Date(setting.updatedAt).toLocaleString() : 'N/A'}</td>
+                                <td className="py-2 px-4">{selectedSetting.updatedAt ? new Date(selectedSetting.updatedAt).toLocaleString() : 'N/A'}</td>
                               </tr>
                             </tbody>
                           </table>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    No settings found
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>

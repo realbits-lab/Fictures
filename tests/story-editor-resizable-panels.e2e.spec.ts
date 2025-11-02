@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import fs from 'fs';
 
 /**
  * E2E Tests for Story Editor Resizable Panels
@@ -12,12 +13,37 @@ import { test, expect } from '@playwright/test';
  * - Panel widths can be adjusted by dragging dividers
  *
  * AUTHENTICATION:
- * - Requires authentication using .auth/user.json
+ * - Uses programmatic login with credentials from .auth/user.json
  */
 
+// Helper function to login programmatically
+async function login(page: any) {
+  const authData = JSON.parse(fs.readFileSync('.auth/user.json', 'utf-8'));
+  const email = authData.profiles.writer.email;
+  const password = authData.profiles.writer.password;
+
+  await page.goto('/login');  // Use relative URL to work with baseURL
+  await page.waitForLoadState('networkidle');
+
+  // Fill email field
+  await page.fill('input[type="email"], input[name="email"]', email);
+
+  // Fill password field
+  await page.fill('input[type="password"], input[name="password"]', password);
+
+  // Click sign in button
+  await page.click('button:has-text("Sign in with Email")');
+  await page.waitForLoadState('networkidle');
+
+  // Wait for redirect after successful login
+  await page.waitForTimeout(2000);
+}
+
 test.describe('Story Editor Resizable Panels Tests', () => {
-  // Use authenticated state
-  test.use({ storageState: '.auth/user.json' });
+  test.beforeEach(async ({ page }) => {
+    // Login before each test
+    await login(page);
+  });
 
   test('TC-EDITOR-PANELS-001: Navigate to story editor and verify layout', async ({ page }) => {
     console.log('📖 Testing story editor panel layout...');

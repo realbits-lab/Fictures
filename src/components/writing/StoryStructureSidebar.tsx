@@ -60,6 +60,8 @@ interface Selection {
   partId?: string;
   chapterId?: string;
   sceneId?: string;
+  characterId?: string;
+  settingId?: string;
 }
 
 interface StoryStructureSidebarProps {
@@ -273,7 +275,8 @@ export function StoryStructureSidebar({
           icon: Users,
           onClick: () => onSelectionChange?.({
             level: "characters",
-            storyId: story.id
+            storyId: story.id,
+            characterId: character.id
           })
         });
       });
@@ -302,7 +305,8 @@ export function StoryStructureSidebar({
           icon: MapPin,
           onClick: () => onSelectionChange?.({
             level: "settings",
-            storyId: story.id
+            storyId: story.id,
+            settingId: setting.id
           })
         });
       });
@@ -321,7 +325,9 @@ export function StoryStructureSidebar({
     if (currentSelection.level === "part" && currentSelection.partId) return `part-${currentSelection.partId}`;
     if (currentSelection.level === "chapter" && currentSelection.chapterId) return `chapter-${currentSelection.chapterId}`;
     if (currentSelection.level === "scene" && currentSelection.sceneId) return `scene-${currentSelection.sceneId}`;
+    if (currentSelection.level === "characters" && currentSelection.characterId) return `character-${currentSelection.characterId}`;
     if (currentSelection.level === "characters") return "characters";
+    if (currentSelection.level === "settings" && currentSelection.settingId) return `setting-${currentSelection.settingId}`;
     if (currentSelection.level === "settings") return "settings";
 
     return undefined;
