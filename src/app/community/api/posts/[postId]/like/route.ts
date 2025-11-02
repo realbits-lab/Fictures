@@ -4,6 +4,11 @@ import { db } from '@/lib/db';
 import { postLikes, communityPosts } from '@/lib/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import {
+  createInvalidationContext,
+  invalidateEntityCache,
+  getCacheInvalidationHeaders,
+} from '@/lib/cache/unified-invalidation';
 
 /**
  * POST /api/community/posts/[postId]/like

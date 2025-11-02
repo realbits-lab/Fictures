@@ -5,6 +5,11 @@ import { scenes, chapters, stories } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { z } from 'zod';
 import { RelationshipManager } from '@/lib/db/relationships';
+import {
+  createInvalidationContext,
+  invalidateEntityCache,
+  getCacheInvalidationHeaders,
+} from '@/lib/cache/unified-invalidation';
 
 export const runtime = 'nodejs';
 
@@ -138,10 +143,28 @@ export async function PATCH(
       }
     }
 
-    return NextResponse.json({
-      scene: updatedScene,
-      chapterAutoPublished: validatedData.content && validatedData.content.trim().length > 0
+    // ✅ CACHE INVALIDATION: Invalidate all cache layers
+    const invalidationContext = createInvalidationContext({
+      entityType: 'scene',
+      entityId: id,
+      storyId: story.id,
+      chapterId: chapter.id,
+      userId: session.user.id,
     });
+
+    // Invalidate server-side caches (Redis)
+    await invalidateEntityCache(invalidationContext);
+
+    // Return with headers for client-side cache invalidation
+    return NextResponse.json(
+      {
+        scene: updatedScene,
+        chapterAutoPublished: validatedData.content && validatedData.content.trim().length > 0,
+      },
+      {
+        headers: getCacheInvalidationHeaders(invalidationContext),
+      }
+    );
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -188,7 +211,25 @@ export async function DELETE(
     // Delete scene using RelationshipManager for bi-directional consistency
     await RelationshipManager.deleteScene(id);
 
-    return NextResponse.json({ message: 'Scene deleted successfully' });
+    // ✅ CACHE INVALIDATION: Invalidate all cache layers after deletion
+    const invalidationContext = createInvalidationContext({
+      entityType: 'scene',
+      entityId: id,
+      storyId: story.id,
+      chapterId: chapter.id,
+      userId: session.user.id,
+    });
+
+    // Invalidate server-side caches (Redis)
+    await invalidateEntityCache(invalidationContext);
+
+    // Return with headers for client-side cache invalidation
+    return NextResponse.json(
+      { message: 'Scene deleted successfully' },
+      {
+        headers: getCacheInvalidationHeaders(invalidationContext),
+      }
+    );
   } catch (error) {
     console.error('Error deleting scene:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

@@ -8,6 +8,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
 import { useStoryData } from "@/lib/hooks/useStoryData";
 import { useWritingProgress, useWritingSession } from "@/hooks/useStoryWriter";
+import { useCacheInvalidation } from "@/lib/hooks/use-cache-invalidation";
 import { JSONDataDisplay } from "./JSONDataDisplay";
 import { ChapterEditor } from "./ChapterEditor";
 import { SceneEditor, SceneData } from "./SceneEditor";
@@ -149,12 +150,15 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   
   // Writing progress and session tracking
   const writingProgress = useWritingProgress(
-    story.id, 
-    currentSelection.chapterId || null, 
+    story.id,
+    currentSelection.chapterId || null,
     currentSelection.sceneId || null
   );
   const writingSession = useWritingSession(story.id);
-  
+
+  // Cache invalidation hook
+  const { handleCacheInvalidation } = useCacheInvalidation();
+
   // Track writing session
   useEffect(() => {
     // Start a writing session when component mounts
@@ -671,6 +675,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           throw new Error(`Failed to save scene: ${errorData.error || response.statusText}`);
         }
 
+        // ✅ CACHE INVALIDATION: Handle client-side cache invalidation
+        handleCacheInvalidation(response.headers);
+
         console.log('Scene saved successfully');
       } else if (currentSelection.level === "chapter" && data) {
         // Save chapter HNS data
@@ -689,6 +696,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           const errorData = await response.json();
           throw new Error(`Failed to save chapter: ${errorData.error || response.statusText}`);
         }
+
+        // ✅ CACHE INVALIDATION: Handle client-side cache invalidation
+        handleCacheInvalidation(response.headers);
 
         const saveResult = await response.json();
         console.log('✅ Chapter HNS data saved successfully:', saveResult);
@@ -713,6 +723,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           console.error('❌ Save failed:', errorData);
           throw new Error(`Failed to save story: ${errorData.error || response.statusText}`);
         }
+
+        // ✅ CACHE INVALIDATION: Handle client-side cache invalidation
+        handleCacheInvalidation(response.headers);
 
         const saveResult = await response.json();
         console.log('✅ Story data saved successfully:', saveResult);
@@ -741,6 +754,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           const errorData = await response.json();
           throw new Error(`Failed to save part: ${errorData.error || response.statusText}`);
         }
+
+        // ✅ CACHE INVALIDATION: Handle client-side cache invalidation
+        handleCacheInvalidation(response.headers);
 
         const saveResult = await response.json();
         console.log('✅ Part HNS data saved successfully:', saveResult);

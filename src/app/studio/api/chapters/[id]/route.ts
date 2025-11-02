@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getChapterById, updateChapter, updateUserStats } from '@/lib/db/queries';
 import { z } from 'zod';
+import {
+  createInvalidationContext,
+  invalidateEntityCache,
+  getCacheInvalidationHeaders,
+} from '@/lib/cache/unified-invalidation';
 
 export const runtime = 'nodejs';
 
@@ -66,7 +71,27 @@ export async function PATCH(
       lastWritingDate: new Date(),
     });
 
-    return NextResponse.json({ chapter });
+    // ✅ CACHE INVALIDATION: Invalidate all cache layers
+    // Note: updateChapter from cached-queries.ts already invalidates Redis,
+    // but we still need to invalidate client-side caches via headers
+    const invalidationContext = createInvalidationContext({
+      entityType: 'chapter',
+      entityId: id,
+      storyId: chapter.storyId,
+      userId: session.user.id,
+    });
+
+    // Invalidate server-side caches (Redis)
+    // This is redundant if using cached-queries.ts, but ensures invalidation
+    await invalidateEntityCache(invalidationContext);
+
+    // Return with headers for client-side cache invalidation
+    return NextResponse.json(
+      { chapter },
+      {
+        headers: getCacheInvalidationHeaders(invalidationContext),
+      }
+    );
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
