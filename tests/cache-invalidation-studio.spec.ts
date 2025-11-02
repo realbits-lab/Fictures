@@ -222,8 +222,15 @@ test.describe('Cache Invalidation: Studio Routes', () => {
   });
 
   test('Story PATCH invalidates writing and browse caches', { timeout: TEST_TIMEOUT }, async ({ page }) => {
-    // Step 1: Navigate to story settings
-    await page.goto('http://localhost:3000/studio');
+    // Step 1: Get test story and navigate to editor
+    const storyId = await getFirstTestStoryId(page);
+    if (!storyId) {
+      console.log('[Test] ⚠️ No test story found, skipping test');
+      test.skip();
+      return;
+    }
+
+    await page.goto(`http://localhost:3000/studio/edit/story/${storyId}`);
     await page.waitForLoadState('networkidle');
 
     // Step 2: Get initial caches
@@ -238,20 +245,12 @@ test.describe('Cache Invalidation: Studio Routes', () => {
         response.request().method() === 'PATCH'
     );
 
-    // Step 4: Click on story settings/edit
-    const settingsButton = page.locator('button:has-text("Settings"), a:has-text("Edit Story")').first();
+    // Step 4: Edit story title in the editor (triggers story update)
+    const titleInput = page.locator('input[name="title"], input[placeholder*="Title"], h1[contenteditable="true"]').first();
 
-    if (await settingsButton.isVisible({ timeout: 2000 })) {
-      await settingsButton.click();
-      await page.waitForLoadState('networkidle');
-
-      // Edit story title or description
-      const titleInput = page.locator('input[name="title"], input[placeholder*="Title"]').first();
+    if (await titleInput.isVisible({ timeout: 2000 })) {
       await titleInput.fill('Updated Story Title - Cache Test');
-
-      // Save changes
-      const saveButton = page.locator('button:has-text("Save"), button[type="submit"]').first();
-      await saveButton.click();
+      await page.waitForTimeout(2500); // Wait for autosave
 
       // Step 5: Verify PATCH request
       const response = await responsePromise;
@@ -271,14 +270,21 @@ test.describe('Cache Invalidation: Studio Routes', () => {
 
       console.log('[Test] ✅ Story PATCH invalidated writing and browse caches');
     } else {
-      console.log('[Test] ⚠️ Story settings not accessible, skipping test');
+      console.log('[Test] ⚠️ Story title input not found, skipping test');
       test.skip();
     }
   });
 
   test('Cache invalidation prevents data loss on page refresh', { timeout: TEST_TIMEOUT }, async ({ page }) => {
-    // Step 1: Navigate to editor
-    await page.click('text=Edit');
+    // Step 1: Get test story and navigate to editor
+    const storyId = await getFirstTestStoryId(page);
+    if (!storyId) {
+      console.log('[Test] ⚠️ No test story found, skipping test');
+      test.skip();
+      return;
+    }
+
+    await page.goto(`http://localhost:3000/studio/edit/story/${storyId}`);
     await page.waitForLoadState('networkidle');
 
     // Step 2: Make an edit
@@ -302,22 +308,30 @@ test.describe('Cache Invalidation: Studio Routes', () => {
   });
 
   test('Cache Debug Panel shows invalidation events', { timeout: TEST_TIMEOUT }, async ({ page }) => {
-    // Step 1: Open Cache Debug Panel (Ctrl+Shift+D)
+    // Step 1: Get test story and navigate to editor
+    const storyId = await getFirstTestStoryId(page);
+    if (!storyId) {
+      console.log('[Test] ⚠️ No test story found, skipping test');
+      test.skip();
+      return;
+    }
+
+    await page.goto(`http://localhost:3000/studio/edit/story/${storyId}`);
+    await page.waitForLoadState('networkidle');
+
+    // Step 2: Open Cache Debug Panel (Ctrl+Shift+D)
     await page.keyboard.press('Control+Shift+D');
     await page.waitForTimeout(500);
 
-    // Step 2: Verify panel is visible
+    // Step 3: Verify panel is visible
     await expect(page.locator('text=Cache Debug Panel')).toBeVisible();
 
-    // Step 3: Make an edit to trigger invalidation
-    await page.click('text=Edit');
-    await page.waitForLoadState('networkidle');
-
+    // Step 4: Make an edit to trigger invalidation
     const contentEditor = page.locator('textarea[name="content"], div[contenteditable="true"]').first();
     await contentEditor.fill('Test for cache debug panel');
     await page.waitForTimeout(2500);
 
-    // Step 4: Check debug panel for invalidation events
+    // Step 5: Check debug panel for invalidation events
     const recentOps = page.locator('text=INVALIDATE').first();
     await expect(recentOps).toBeVisible({ timeout: 5000 });
 

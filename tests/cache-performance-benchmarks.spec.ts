@@ -172,8 +172,8 @@ test.describe('Performance Benchmarks: Cache System', () => {
     await page.goto('http://localhost:3000/studio');
     await page.waitForLoadState('networkidle');
 
-    // Step 2: Find story link
-    const storyLink = page.locator('a:has-text("Edit"), a[href*="/studio/edit"]').first();
+    // Step 2: Find story card link (clickable story cards, not "Edit" buttons)
+    const storyLink = page.locator('a[href*="/studio/edit/story/"]').first();
 
     if (await storyLink.isVisible({ timeout: 2000 })) {
       // Step 3: Hover to trigger prefetch
@@ -274,13 +274,14 @@ test.describe('Performance Benchmarks: Cache System', () => {
   });
 
   test('Cache invalidation performance', { timeout: TEST_TIMEOUT }, async ({ page }) => {
-    // Step 1: Navigate to editor
+    // Step 1: Navigate to story editor
     await page.goto('http://localhost:3000/studio');
     await page.waitForLoadState('networkidle');
 
-    const editButton = page.locator('text=Edit').first();
-    if (await editButton.isVisible({ timeout: 2000 })) {
-      await editButton.click();
+    // Find story card link to navigate to editor
+    const storyLink = page.locator('a[href*="/studio/edit/story/"]').first();
+    if (await storyLink.isVisible({ timeout: 2000 })) {
+      await storyLink.click();
       await page.waitForLoadState('networkidle');
 
       // Step 2: Measure invalidation time
@@ -300,7 +301,7 @@ test.describe('Performance Benchmarks: Cache System', () => {
 
       console.log(`[Test] ✅ Cache invalidation completed in ${invalidationDuration}ms`);
     } else {
-      console.log('[Test] ⚠️ Edit button not found, skipping invalidation benchmark');
+      console.log('[Test] ⚠️ Story link not found, skipping invalidation benchmark');
       test.skip();
     }
   });
