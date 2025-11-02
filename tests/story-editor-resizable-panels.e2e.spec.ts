@@ -53,8 +53,8 @@ test.describe('Story Editor Resizable Panels Tests', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
 
-    // Find first story card and get its href
-    const storyCard = page.locator('[data-testid="story-card"], .story-card, article').first();
+    // Find first story card (using actual card structure from StoryGrid)
+    const storyCard = page.locator('div.cursor-pointer.rounded-lg.shadow-sm').first();
     const storyCount = await storyCard.count();
 
     if (storyCount === 0) {
@@ -82,7 +82,7 @@ test.describe('Story Editor Resizable Panels Tests', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1500);
 
-    const storyCard = page.locator('[data-testid="story-card"], .story-card, article').first();
+    const storyCard = page.locator('div.cursor-pointer.rounded-lg.shadow-sm').first();
     if (await storyCard.count() === 0) {
       console.log('⚠️  No stories found');
       test.skip();
@@ -114,7 +114,7 @@ test.describe('Story Editor Resizable Panels Tests', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1500);
 
-    const storyCard = page.locator('[data-testid="story-card"], .story-card, article').first();
+    const storyCard = page.locator('div.cursor-pointer.rounded-lg.shadow-sm').first();
     if (await storyCard.count() === 0) {
       console.log('⚠️  No stories found');
       test.skip();
@@ -142,7 +142,7 @@ test.describe('Story Editor Resizable Panels Tests', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1500);
 
-    const storyCard = page.locator('[data-testid="story-card"], .story-card, article').first();
+    const storyCard = page.locator('div.cursor-pointer.rounded-lg.shadow-sm').first();
     if (await storyCard.count() === 0) {
       console.log('⚠️  No stories found');
       test.skip();
@@ -178,7 +178,7 @@ test.describe('Story Editor Resizable Panels Tests', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1500);
 
-    const storyCard = page.locator('[data-testid="story-card"], .story-card, article').first();
+    const storyCard = page.locator('div.cursor-pointer.rounded-lg.shadow-sm').first();
     if (await storyCard.count() === 0) {
       console.log('⚠️  No stories found');
       test.skip();
@@ -231,7 +231,7 @@ test.describe('Story Editor Resizable Panels Tests', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1500);
 
-    const storyCard = page.locator('[data-testid="story-card"], .story-card, article').first();
+    const storyCard = page.locator('div.cursor-pointer.rounded-lg.shadow-sm').first();
     if (await storyCard.count() === 0) {
       console.log('⚠️  No stories found');
       test.skip();
@@ -256,7 +256,7 @@ test.describe('Story Editor Resizable Panels Tests', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1500);
 
-    const storyCard = page.locator('[data-testid="story-card"], .story-card, article').first();
+    const storyCard = page.locator('div.cursor-pointer.rounded-lg.shadow-sm').first();
     if (await storyCard.count() === 0) {
       console.log('⚠️  No stories found');
       test.skip();

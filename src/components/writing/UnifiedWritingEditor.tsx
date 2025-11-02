@@ -94,6 +94,7 @@ interface Selection {
   sceneId?: string;
   characterId?: string;
   settingId?: string;
+  format?: "novel" | "comic"; // Which format the selection is for
 }
 
 interface AllStoryListItem {
@@ -2307,8 +2308,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       <div className="w-full px-4 py-6">
         <PanelGroup direction="horizontal" className="h-[calc(100vh-200px)]">
           {/* Left Sidebar - Story Structure Navigation (Tree View) */}
-          <Panel defaultSize={25} minSize={15} maxSize={40} className="overflow-y-auto">
-            <div className="h-full pr-2">
+          <Panel defaultSize={25} minSize={15} maxSize={40}>
+            <div className="h-full pr-2 overflow-y-auto">
               <StoryStructureSidebar
                 story={story}
                 currentSelection={currentSelection}
@@ -2323,8 +2324,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           <PanelResizeHandle className="w-1 bg-gray-300 dark:bg-gray-700 hover:bg-blue-500 dark:hover:bg-blue-400 transition-colors cursor-col-resize" />
 
           {/* Middle Panel - Table Data Display */}
-          <Panel defaultSize={50} minSize={30} className="overflow-y-auto">
-            <div className="h-full px-2">
+          <Panel defaultSize={50} minSize={30}>
+            <div className="h-full px-2 overflow-y-auto">
               {renderEditor()}
             </div>
           </Panel>
@@ -2332,8 +2333,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           <PanelResizeHandle className="w-1 bg-gray-300 dark:bg-gray-700 hover:bg-blue-500 dark:hover:bg-blue-400 transition-colors cursor-col-resize" />
 
           {/* Right Sidebar - Studio Agent Chat Only */}
-          <Panel defaultSize={25} minSize={15} maxSize={40} className="overflow-y-auto">
-            <div className="h-full pl-2">
+          <Panel defaultSize={25} minSize={15} maxSize={40}>
+            <div className="h-full pl-2 overflow-y-auto">
               <StudioAgentChat
                 storyId={story.id}
                 storyContext={{
