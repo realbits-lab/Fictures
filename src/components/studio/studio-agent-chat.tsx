@@ -151,6 +151,7 @@ export function StudioAgentChat({
     isLoading,
     loadingHistory,
     activeTools,
+    setInput,
   } = useStudioAgentChat({
     chatId,
     storyContext: {
@@ -209,10 +210,7 @@ export function StudioAgentChat({
                   className="justify-start text-left h-auto py-3 theme-button"
                   onClick={(e) => {
                     e.preventDefault();
-                    const promptText = 'Show me the details of this story';
-                    handleInputChange({
-                      target: { value: promptText },
-                    } as any);
+                    setInput('Show me the details of this story');
                   }}
                 >
                   <div className="flex flex-col items-start gap-1">
@@ -227,10 +225,7 @@ export function StudioAgentChat({
                   className="justify-start text-left h-auto py-3 theme-button"
                   onClick={(e) => {
                     e.preventDefault();
-                    const promptText = 'List all characters in this story';
-                    handleInputChange({
-                      target: { value: promptText },
-                    } as any);
+                    setInput('List all characters in this story');
                   }}
                 >
                   <div className="flex flex-col items-start gap-1">

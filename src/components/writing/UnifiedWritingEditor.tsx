@@ -18,6 +18,7 @@ import { CharactersDisplay } from "./CharactersDisplay";
 import { SettingsDisplay } from "./SettingsDisplay";
 import { StudioAgentChat } from "@/components/studio/studio-agent-chat";
 import { ImageContentDisplay } from "./ImageContentDisplay";
+import { ContentLoadError } from "@/components/error/ContentLoadError";
 import type {
   HNSStory,
   HNSPart,
@@ -1443,27 +1444,13 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         // If no chapter data found, show empty state
         if (!chapterData) {
           return (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>📝 Chapter Not Found</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center py-8">
-                  <div className="text-gray-500 dark:text-gray-400 mb-4">
-                    <div className="text-4xl mb-4">📄</div>
-                    <h3 className="text-lg font-medium mb-2 text-[rgb(var(--color-card-foreground))]">No Chapter Data</h3>
-                    <p>This chapter doesn&apos;t exist or hasn&apos;t been created yet.</p>
-                    <p className="text-sm mt-2">Chapter ID: {currentSelection.chapterId}</p>
-                  </div>
-                  <Button 
-                    onClick={() => handleSelectionChange({ level: "story", storyId: story.id })}
-                    variant="secondary"
-                  >
-                    ← Back to Story Overview
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+            <ContentLoadError
+              title="Chapter Not Found"
+              message={`We couldn't find chapter ${currentSelection.chapterId}. It may have been deleted or the link is incorrect.`}
+              icon="chapter"
+              onRetry={() => handleSelectionChange({ level: "story", storyId: story.id })}
+              compact={false}
+            />
           );
         }
 
@@ -1904,16 +1891,13 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
         if (!selectedCharacter) {
           return (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>👥 Character Not Found</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center py-8 text-gray-500">
-                  Character with ID {currentSelection.characterId} not found
-                </CardContent>
-              </Card>
-            </div>
+            <ContentLoadError
+              title="Character Not Found"
+              message={`We couldn't find a character with ID ${currentSelection.characterId}. It may have been deleted or the link is incorrect.`}
+              icon="character"
+              onRetry={() => window.location.reload()}
+              compact={false}
+            />
           );
         }
 
@@ -2119,16 +2103,13 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
         if (!selectedSetting) {
           return (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>🗺️ Setting Not Found</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center py-8 text-gray-500">
-                  Setting with ID {currentSelection.settingId} not found
-                </CardContent>
-              </Card>
-            </div>
+            <ContentLoadError
+              title="Setting Not Found"
+              message={`We couldn't find a setting with ID ${currentSelection.settingId}. It may have been deleted or the link is incorrect.`}
+              icon="setting"
+              onRetry={() => window.location.reload()}
+              compact={false}
+            />
           );
         }
 

@@ -13,6 +13,7 @@ import Image from 'next/image';
 import { PanelRenderer, PanelRendererSkeleton } from '@/components/comic/panel-renderer';
 import { Skeleton } from '@/components/ui/skeleton-loader';
 import { cn } from '@/lib/utils';
+import { ContentLoadError } from '@/components/error/ContentLoadError';
 
 interface ImageVariant {
   url: string;
@@ -143,12 +144,18 @@ export function ImageContentDisplay({
   // Error state
   if (error) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <p className="text-red-500 mb-2">Error loading {type}</p>
-          <p className="text-sm text-gray-500">{error}</p>
-        </div>
-      </div>
+      <ContentLoadError
+        title={`Error Loading ${type.charAt(0).toUpperCase() + type.slice(1)}`}
+        message={error}
+        icon={type as "character" | "setting" | "scene"}
+        onRetry={() => {
+          setError(null);
+          setLoading(true);
+          // Trigger refetch by forcing component to re-run useEffect
+          window.location.reload();
+        }}
+        compact={false}
+      />
     );
   }
 
