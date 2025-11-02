@@ -36,13 +36,15 @@ test('Verify independent panel scrolling with mouse wheel', async ({ page }) => 
 
   // Navigate to studio
   await page.goto('/studio');
-  await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(2000);
+  await page.waitForLoadState('domcontentloaded');
 
   console.log('📍 On studio page');
 
   // Find and click first story
   const storyCard = page.locator('div.cursor-pointer.rounded-lg.shadow-sm').first();
+
+  // Wait for story cards to be visible (instead of networkidle)
+  await storyCard.waitFor({ state: 'visible', timeout: 30000 });
   const storyCount = await storyCard.count();
 
   console.log(`Found ${storyCount} stories`);
@@ -55,8 +57,10 @@ test('Verify independent panel scrolling with mouse wheel', async ({ page }) => 
 
   console.log('Clicking first story...');
   await storyCard.click();
-  await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(3000);
+
+  // Wait for editor page URL
+  await page.waitForURL(/\/studio\/edit\/story\//, { timeout: 30000 });
+  await page.waitForLoadState('domcontentloaded');
 
   console.log('📍 On story editor page');
 

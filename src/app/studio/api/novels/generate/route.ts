@@ -211,6 +211,13 @@ export async function POST(request: NextRequest) {
             const partRecords = result.parts.map((part, index) => {
               const newId = nanoid();
               partIdMap.set(part.id, newId); // Map temp ID to database ID
+
+              // Map temporary character IDs to database character IDs in characterArcs
+              const mappedCharacterArcs = part.characterArcs.map((arc) => ({
+                ...arc,
+                characterId: characterIdMap.get(arc.characterId) || arc.characterId,
+              }));
+
               return {
                 id: newId,
                 storyId: generatedStoryId!,
@@ -218,7 +225,7 @@ export async function POST(request: NextRequest) {
                 title: part.title,
                 summary: part.summary,
                 orderIndex: part.orderIndex,
-                characterArcs: part.characterArcs,
+                characterArcs: mappedCharacterArcs,
                 createdAt: new Date(),
                 updatedAt: new Date(),
               };
@@ -233,6 +240,12 @@ export async function POST(request: NextRequest) {
             const chapterRecords = result.chapters.map((chapter, index) => {
               const newId = nanoid();
               chapterIdMap.set(chapter.id, newId); // Map temp ID to database ID
+
+              // Map temporary character IDs to database character IDs in focusCharacters array
+              const mappedFocusCharacters = chapter.focusCharacters?.map((charId) =>
+                characterIdMap.get(charId) || charId
+              ) || [];
+
               return {
                 id: newId,
                 storyId: generatedStoryId!,
@@ -243,7 +256,7 @@ export async function POST(request: NextRequest) {
                 characterId: chapter.characterId ? characterIdMap.get(chapter.characterId) || null : null,
                 arcPosition: chapter.arcPosition,
                 contributesToMacroArc: chapter.contributesToMacroArc,
-                focusCharacters: chapter.focusCharacters,
+                focusCharacters: mappedFocusCharacters,
                 adversityType: chapter.adversityType,
                 virtueType: chapter.virtueType,
                 seedsPlanted: chapter.seedsPlanted,
@@ -271,6 +284,11 @@ export async function POST(request: NextRequest) {
               const mappedChapterId = scene.chapterId ? chapterIdMap.get(scene.chapterId) || null : null;
               console.log(`[Novel Generation] Scene ${index + 1}: chapterId=${scene.chapterId}, mapped=${mappedChapterId}`);
 
+              // Map temporary character IDs to database character IDs in characterFocus array
+              const mappedCharacterFocus = scene.characterFocus?.map((charId) =>
+                characterIdMap.get(charId) || charId
+              ) || [];
+
               return {
                 id: newId,
                 chapterId: mappedChapterId,
@@ -280,7 +298,7 @@ export async function POST(request: NextRequest) {
                 cyclePhase: scene.cyclePhase,
                 emotionalBeat: scene.emotionalBeat,
                 // Planning metadata from scene summary generation
-                characterFocus: scene.characterFocus || [],
+                characterFocus: mappedCharacterFocus,
                 sensoryAnchors: scene.sensoryAnchors || [],
                 dialogueVsDescription: scene.dialogueVsDescription || 'balanced',
                 suggestedLength: scene.suggestedLength || 'medium',
