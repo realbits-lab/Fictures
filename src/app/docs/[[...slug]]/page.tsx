@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getDocPage, generateDocPaths } from '@/lib/docs/file-system';
+import { getDocPage, generateDocPaths, getFileTree } from '@/lib/docs/file-system';
 import { MarkdownViewer } from '@/components/docs/MarkdownViewer';
 import { TableOfContents } from '@/components/docs/TableOfContents';
+import { FileTree } from '@/components/docs/FileTree';
+import { DocsPageWrapper } from '@/components/docs/DocsPageWrapper';
 
 export default async function DocsPage(props: {
   params: Promise<{ slug?: string[] }>;
@@ -14,30 +16,35 @@ export default async function DocsPage(props: {
     notFound();
   }
 
-  return (
-    <>
-      {/* Main Content */}
-      <article className="pr-0 xl:pr-72">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-            {page.metadata.title}
-          </h1>
-          {page.metadata.description && (
-            <p className="text-lg text-gray-600 dark:text-gray-400">
-              {page.metadata.description}
-            </p>
-          )}
-        </div>
-        <MarkdownViewer content={page.content} />
-      </article>
+  const fileTree = getFileTree();
 
-      {/* Right Panel - Table of Contents */}
-      <aside className="hidden xl:block fixed right-0 top-20 bottom-0 w-64 border-l border-gray-200 dark:border-gray-800">
-        <div className="h-full overflow-y-auto px-4 py-6">
-          <TableOfContents headings={page.headings} />
-        </div>
-      </aside>
-    </>
+  return (
+    <DocsPageWrapper
+      fileTree={
+        <>
+          <h2 className="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-4">
+            Documentation
+          </h2>
+          <FileTree tree={fileTree} />
+        </>
+      }
+      content={
+        <article>
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100">
+              {page.metadata.title}
+            </h1>
+            {page.metadata.description && (
+              <p className="text-lg text-gray-600 dark:text-gray-400">
+                {page.metadata.description}
+              </p>
+            )}
+          </div>
+          <MarkdownViewer content={page.content} />
+        </article>
+      }
+      tableOfContents={<TableOfContents headings={page.headings} />}
+    />
   );
 }
 
