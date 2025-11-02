@@ -919,16 +919,18 @@ export async function getCommunityStory(storyId: string) {
     .select({
       id: characters.id,
       name: characters.name,
-      role: characters.role,
-      archetype: characters.archetype,
       summary: characters.summary,
-      storyline: characters.storyline,
+      isMain: characters.isMain,
+      coreTrait: characters.coreTrait,
+      internalFlaw: characters.internalFlaw,
+      externalGoal: characters.externalGoal,
       personality: characters.personality,
       backstory: characters.backstory,
-      motivations: characters.motivations,
+      relationships: characters.relationships,
       physicalDescription: characters.physicalDescription,
+      voiceStyle: characters.voiceStyle,
       imageUrl: characters.imageUrl,
-      isMain: characters.isMain,
+      visualStyle: characters.visualStyle,
     })
     .from(characters)
     .where(eq(characters.storyId, storyId));

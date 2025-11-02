@@ -119,7 +119,7 @@ export async function convertSceneToScreenplay(
 
   // Build character descriptions
   const characterDescriptions = characters
-    .map(c => `${c.name} - ${c.role || 'character'}: ${c.motivations?.primary || c.summary || 'pursuing their goals'}`)
+    .map(c => `${c.name}: ${c.summary || c.internalFlaw || c.externalGoal || 'pursuing their goals'}`)
     .join('\n');
 
   // Build screenplay prompt

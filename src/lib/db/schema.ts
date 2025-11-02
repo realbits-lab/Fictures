@@ -441,17 +441,6 @@ export const characters = pgTable('characters', {
   imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants
   visualStyle: text('visual_style'), // "realistic" | "anime" | "painterly" | "cinematic"
 
-  // === DEPRECATED HNS FIELDS (Keep for backward compatibility with existing stories) ===
-  // These fields are NULL for all new Adversity-Triumph stories generated after schema migration
-  // Used only by legacy HNS stories - will be removed in future major version
-  content: text('content').default(''), // Legacy: Store all character data as YAML/JSON
-  role: varchar('role', { length: 50 }), // Legacy: Character role (replaced by summary)
-  archetype: varchar('archetype', { length: 100 }), // Legacy: Character archetype
-  storyline: text('storyline'), // Legacy: Character storyline
-  motivations: json('motivations').$type<{primary: string; secondary: string; fear: string}>(), // Legacy: Replaced by internalFlaw/externalGoal
-  voice: json('voice').$type<Record<string, unknown>>(), // Legacy: Replaced by voiceStyle
-  visualReferenceId: text('visual_reference_id'), // Legacy: Visual reference
-
   // === METADATA ===
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
