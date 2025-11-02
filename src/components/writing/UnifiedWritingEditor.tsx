@@ -2344,11 +2344,14 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 px-4 py-6">
+      <div className="flex-1 min-h-0 px-4 py-6 overflow-hidden">
         <PanelGroup direction="horizontal" className="h-full">
           {/* Left Sidebar - Story Structure Navigation (Tree View) */}
           <Panel defaultSize={25} minSize={15} maxSize={40} style={{ display: 'flex', flexDirection: 'column' }}>
-            <div className="flex-1 min-h-0 pr-2 overflow-y-auto">
+            <div
+              className="flex-1 min-h-0 pr-2 overflow-y-auto [overscroll-behavior-y:contain]"
+              onWheel={(e) => e.stopPropagation()}
+            >
               <StoryStructureSidebar
                 story={story}
                 currentSelection={currentSelection}
@@ -2364,7 +2367,10 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
           {/* Middle Panel - Table Data Display */}
           <Panel defaultSize={50} minSize={30} style={{ display: 'flex', flexDirection: 'column' }}>
-            <div className="flex-1 min-h-0 px-2 overflow-y-auto">
+            <div
+              className="flex-1 min-h-0 px-2 overflow-y-auto [overscroll-behavior-y:contain]"
+              onWheel={(e) => e.stopPropagation()}
+            >
               {renderEditor()}
             </div>
           </Panel>
@@ -2373,7 +2379,10 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
           {/* Right Sidebar - Studio Agent Chat Only */}
           <Panel defaultSize={25} minSize={15} maxSize={40} style={{ display: 'flex', flexDirection: 'column' }}>
-            <div className="h-full pl-2">
+            <div
+              className="h-full pl-2 flex flex-col overflow-y-auto [overscroll-behavior-y:contain]"
+              onWheel={(e) => e.stopPropagation()}
+            >
               <StudioAgentChat
                 storyId={story.id}
                 storyContext={{
@@ -2382,7 +2391,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                   genre: story.genre,
                   status: story.status,
                 }}
-                className="h-full"
+                className="flex-1"
               />
             </div>
           </Panel>

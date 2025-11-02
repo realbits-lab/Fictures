@@ -23,7 +23,7 @@ export default function TestChatScrollingPage() {
         <PanelGroup direction="horizontal" className="h-full">
           {/* Left Panel */}
           <Panel defaultSize={25} minSize={15} style={{ display: 'flex', flexDirection: 'column' }}>
-            <div className="h-full pr-2 overflow-y-auto bg-gray-100 dark:bg-gray-800">
+            <div className="h-full pr-2 overflow-y-auto bg-gray-100 dark:bg-gray-800" style={{ overscrollBehaviorY: 'contain' }}>
               <div className="p-4">
                 <h3 className="font-bold mb-2">Left Sidebar</h3>
                 {Array.from({ length: 100 }, (_, i) => (
@@ -37,7 +37,7 @@ export default function TestChatScrollingPage() {
 
           {/* Middle Panel */}
           <Panel defaultSize={50} minSize={30} style={{ display: 'flex', flexDirection: 'column' }}>
-            <div className="h-full px-2 overflow-y-auto bg-white dark:bg-gray-900">
+            <div className="h-full px-2 overflow-y-auto bg-white dark:bg-gray-900" style={{ overscrollBehaviorY: 'contain' }}>
               <div className="p-4">
                 <h3 className="font-bold mb-2">Middle Content</h3>
                 {Array.from({ length: 100 }, (_, i) => (
@@ -55,7 +55,7 @@ export default function TestChatScrollingPage() {
               {/* Chat Component - flexbox container */}
               <div className="h-full flex flex-col bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded">
                 {/* Messages Area - SCROLLABLE */}
-                <div className="flex-1 min-h-0 overflow-y-auto p-4 bg-blue-50 dark:bg-blue-950/20">
+                <div className="flex-1 min-h-0 overflow-y-auto p-4 bg-blue-50 dark:bg-blue-950/20" style={{ overscrollBehaviorY: 'contain' }}>
                   <div className="space-y-4">
                     <div className="text-xs text-gray-500 mb-4">↓ SCROLL THIS AREA ONLY ↓</div>
                     {messages.map((msg) => (
