@@ -55,22 +55,23 @@ async function loadAuth() {
     const authPath = path.join(__dirname, '../.auth/user.json');
     const authData = JSON.parse(await fs.readFile(authPath, 'utf-8'));
 
-    // Use manager profile since it has session cookies
-    // (writer profile doesn't have cookies in .auth/user.json)
-    if (!authData.profiles?.manager) {
-      throw new Error('manager profile not found in .auth/user.json');
+    // Extract cookies as header string
+    if (!authData.cookies || authData.cookies.length === 0) {
+      throw new Error('No cookies found in .auth/user.json');
     }
 
-    const profile = authData.profiles.manager;
-
-    // Extract cookies as header string
-    const cookies = profile.cookies
+    const cookieHeader = authData.cookies
       .map(c => `${c.name}=${c.value}`)
       .join('; ');
 
     return {
-      ...profile,
-      cookieHeader: cookies,
+      email: authData.email || 'unknown',
+      name: authData.name || 'User',
+      userId: authData.userId || 'unknown',
+      role: authData.role || 'unknown',
+      apiKey: authData.apiKey,
+      cookies: authData.cookies,
+      cookieHeader: cookieHeader,
     };
   } catch (error) {
     console.error('❌ Failed to load authentication data:', error.message);
