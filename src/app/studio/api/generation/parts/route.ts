@@ -195,6 +195,10 @@ Return ONLY the structured text, no JSON, no markdown code blocks.`;
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🎭 [PARTS API] Request received');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
     const body = await request.json() as {
       storySummary: StorySummaryResult;
       characters: CharacterGenerationResult[];
@@ -203,12 +207,23 @@ export async function POST(request: NextRequest) {
     };
     const { storySummary, characters, partsCount = 3, chaptersPerPart = 3 } = body;
 
+    console.log('[PARTS API] Request parameters:', {
+      hasStorySummary: !!storySummary,
+      charactersCount: characters?.length || 0,
+      partsCount,
+      chaptersPerPart,
+      totalChapters: partsCount * chaptersPerPart,
+    });
+
     if (!storySummary || !characters || characters.length < 2) {
+      console.error('❌ [PARTS API] Validation failed');
       return NextResponse.json(
         { error: 'Story summary and at least 2 characters are required' },
         { status: 400 }
       );
     }
+
+    console.log('✅ [PARTS API] Validation passed');
 
     // Identify main characters
     const mainCharacters = characters.filter(c => c.isMain);
@@ -267,6 +282,10 @@ IMPORTANT: For a three-part structure (traditional):
 Generate the ${partsCount}-part structure following the output format. Create EXACTLY ${partsCount} parts with clear adversity-triumph arcs.
 `;
 
+    console.log('[PARTS API] 🤖 Calling AI generation...');
+    console.log('[PARTS API] Model: gemini-2.5-flash');
+    console.log('[PARTS API] Temperature: 0.7, MaxTokens: 8192');
+
     const result = await generateWithGemini({
       prompt: partsContext,
       systemPrompt: PARTS_EXPANSION_PROMPT,
@@ -275,8 +294,17 @@ Generate the ${partsCount}-part structure following the output format. Create EX
       maxTokens: 8192,
     });
 
+    console.log('[PARTS API] ✅ AI generation completed');
+    console.log('[PARTS API] Parsing structured text into parts array...');
+
     // Parse structured text into parts array
     const parts = parsePartsFromText(result, characters, partsCount);
+
+    console.log('[PARTS API] Result summary:', {
+      partsCount: parts.length,
+      partTitles: parts.map(p => p.title).join(', '),
+    });
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
     return NextResponse.json(parts);
   } catch (error) {

@@ -124,15 +124,34 @@ Return ONLY the JSON array, no markdown formatting, no explanations.`;
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('👥 [CHARACTERS API] Request received');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
     const body = await request.json() as { storySummary: StorySummaryResult };
     const { storySummary } = body;
 
+    console.log('[CHARACTERS API] Request summary:', {
+      hasStorySummary: !!storySummary,
+      genre: storySummary?.genre,
+      tone: storySummary?.tone,
+      characterCount: storySummary?.characters?.length || 0,
+      characterNames: storySummary?.characters?.map(c => c.name).join(', ') || '(none)',
+    });
+
     if (!storySummary || !storySummary.characters || storySummary.characters.length < 2) {
+      console.error('❌ [CHARACTERS API] Validation failed:', {
+        hasStorySummary: !!storySummary,
+        hasCharacters: !!storySummary?.characters,
+        characterCount: storySummary?.characters?.length || 0,
+      });
       return NextResponse.json(
         { error: 'Valid story summary with at least 2 characters is required' },
         { status: 400 }
       );
     }
+
+    console.log('✅ [CHARACTERS API] Validation passed');
 
     // Build context for character expansion
     const characterContext = `
@@ -152,6 +171,10 @@ ${idx + 1}. ${char.name}
 Expand these characters into complete profiles following the requirements.
 `;
 
+    console.log('[CHARACTERS API] 🤖 Calling AI generation...');
+    console.log('[CHARACTERS API] Model: gemini-2.5-flash-lite');
+    console.log('[CHARACTERS API] Temperature: 0.8');
+
     const result = await generateJSON<CharacterGenerationResult[]>({
       prompt: characterContext,
       systemPrompt: CHARACTER_EXPANSION_PROMPT,
@@ -159,8 +182,17 @@ Expand these characters into complete profiles following the requirements.
       temperature: 0.8,
     });
 
+    console.log('[CHARACTERS API] ✅ AI generation completed');
+    console.log('[CHARACTERS API] Result summary:', {
+      isArray: Array.isArray(result),
+      count: Array.isArray(result) ? result.length : 0,
+      expectedCount: storySummary.characters.length,
+      characterNames: Array.isArray(result) ? result.map(c => c.name).join(', ') : '(invalid)',
+    });
+
     // Validate result
     if (!Array.isArray(result) || result.length !== storySummary.characters.length) {
+      console.error('❌ [CHARACTERS API] Validation failed: wrong number of characters');
       throw new Error('Invalid character generation result: wrong number of characters');
     }
 
@@ -186,6 +218,9 @@ Expand these characters into complete profiles following the requirements.
         }
       }
     }
+
+    console.log('✅ [CHARACTERS API] All validations passed, returning result');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
     return NextResponse.json(result);
   } catch (error) {

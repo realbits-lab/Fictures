@@ -222,6 +222,10 @@ Return ONLY the structured text, no JSON, no markdown code blocks.`;
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🎬 [SCENE SUMMARIES API] Request received');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
     const body = await request.json() as {
       chapter: ChapterGenerationResult;
       characters: CharacterGenerationResult[];
@@ -230,12 +234,23 @@ export async function POST(request: NextRequest) {
     };
     const { chapter, characters, settings, scenesPerChapter = 6 } = body;
 
+    console.log('[SCENE SUMMARIES API] Request parameters:', {
+      hasChapter: !!chapter,
+      chapterTitle: chapter?.title,
+      charactersCount: characters?.length || 0,
+      settingsCount: settings?.length || 0,
+      scenesPerChapter,
+    });
+
     if (!chapter || !characters || !settings) {
+      console.error('❌ [SCENE SUMMARIES API] Validation failed');
       return NextResponse.json(
         { error: 'Chapter, characters, and settings are required' },
         { status: 400 }
       );
     }
+
+    console.log('✅ [SCENE SUMMARIES API] Validation passed');
 
     // Build context for scene generation
     const charactersSection = chapter.focusCharacters.map((charId) => {
@@ -315,6 +330,9 @@ ${scenesPerChapter < 5 ? `6. Since you have only ${scenesPerChapter} scenes, com
 Generate ${scenesPerChapter} scene summaries following the output format.
 `;
 
+    console.log('[SCENE SUMMARIES API] 🤖 Calling AI generation...');
+    console.log('[SCENE SUMMARIES API] Model: gemini-2.5-flash-lite, MaxTokens: 8192');
+
     const result = await generateWithGemini({
       prompt: scenesContext,
       systemPrompt: SCENE_SUMMARIES_EXPANSION_PROMPT,
@@ -323,8 +341,16 @@ Generate ${scenesPerChapter} scene summaries following the output format.
       maxTokens: 8192,
     });
 
+    console.log('[SCENE SUMMARIES API] ✅ AI generation completed, parsing scenes...');
+
     // Parse structured text into scenes array
     const scenes = parseScenesFromText(result, characters, settings);
+
+    console.log('[SCENE SUMMARIES API] Result summary:', {
+      scenesCount: scenes.length,
+      sceneTitles: scenes.map(s => s.title).join(', '),
+    });
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
     return NextResponse.json(scenes);
   } catch (error) {

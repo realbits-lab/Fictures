@@ -28,15 +28,30 @@ interface ImageGenerationRequest {
  */
 export async function POST(request: NextRequest) {
   try {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🎨 [IMAGES API] Request received');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
     const body = await request.json() as ImageGenerationRequest;
     const { storyId, imageType, targetData, chapterId, sceneId } = body;
 
+    console.log('[IMAGES API] Request parameters:', {
+      storyId,
+      imageType,
+      hasTargetData: !!targetData,
+      chapterId,
+      sceneId,
+    });
+
     if (!storyId || !imageType || !targetData) {
+      console.error('❌ [IMAGES API] Validation failed');
       return NextResponse.json(
         { error: 'storyId, imageType, and targetData are required' },
         { status: 400 }
       );
     }
+
+    console.log('✅ [IMAGES API] Validation passed');
 
     // Build image generation prompt based on type
     let prompt: string;
@@ -159,10 +174,21 @@ Cinematic widescreen composition, story illustration style, dramatic moment capt
     }
 
     // Generate image using existing service
-    console.log(`[API 9] Generating ${imageType} image for story ${storyId}`);
-    console.log(`[API 9] Prompt: ${prompt.substring(0, 150)}...`);
+    console.log(`[IMAGES API] 🎨 Generating ${imageType} image for story ${storyId}`);
+    console.log(`[IMAGES API] Prompt preview: ${prompt.substring(0, 150)}...`);
+    console.log(`[IMAGES API] Style: ${params.style}, Quality: ${params.quality}`);
 
     const result = await generateStoryImage(params);
+
+    console.log('[IMAGES API] ✅ Image generation completed');
+    console.log('[IMAGES API] Result summary:', {
+      imageId: result.imageId,
+      dimensions: `${result.width}×${result.height}`,
+      size: result.size,
+      hasOptimizedSet: !!result.optimizedSet,
+      variantsCount: result.optimizedSet?.variants?.length || 0,
+    });
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
     // Return result with all URLs
     return NextResponse.json({

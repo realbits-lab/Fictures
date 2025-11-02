@@ -201,15 +201,29 @@ Return ONLY the JSON array, no markdown formatting, no explanations.`;
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🏛️  [SETTINGS API] Request received');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
     const body = await request.json() as { storySummary: StorySummaryResult };
     const { storySummary } = body;
 
+    console.log('[SETTINGS API] Request summary:', {
+      hasStorySummary: !!storySummary,
+      genre: storySummary?.genre,
+      tone: storySummary?.tone,
+      characterCount: storySummary?.characters?.length || 0,
+    });
+
     if (!storySummary) {
+      console.error('❌ [SETTINGS API] Validation failed: Story summary is missing');
       return NextResponse.json(
         { error: 'Story summary is required' },
         { status: 400 }
       );
     }
+
+    console.log('✅ [SETTINGS API] Validation passed');
 
     // Build context for settings generation
     const settingsContext = `
@@ -235,6 +249,10 @@ Create 2-3 primary settings that will:
 3. Create distinct emotional atmospheres for different story phases
 `;
 
+    console.log('[SETTINGS API] 🤖 Calling AI generation...');
+    console.log('[SETTINGS API] Model: gemini-2.5-flash-lite');
+    console.log('[SETTINGS API] Temperature: 0.8');
+
     const result = await generateJSON<SettingGenerationResult[]>({
       prompt: settingsContext,
       systemPrompt: SETTINGS_EXPANSION_PROMPT,
@@ -242,8 +260,16 @@ Create 2-3 primary settings that will:
       temperature: 0.8,
     });
 
+    console.log('[SETTINGS API] ✅ AI generation completed');
+    console.log('[SETTINGS API] Result summary:', {
+      isArray: Array.isArray(result),
+      count: Array.isArray(result) ? result.length : 0,
+      settingNames: Array.isArray(result) ? result.map(s => s.name).join(', ') : '(invalid)',
+    });
+
     // Validate result
     if (!Array.isArray(result) || result.length < 2 || result.length > 3) {
+      console.error('❌ [SETTINGS API] Validation failed: should return 2-3 settings');
       throw new Error('Invalid settings generation result: should return 2-3 settings');
     }
 
@@ -274,6 +300,9 @@ Create 2-3 primary settings that will:
         throw new Error(`Invalid setting data for ${setting.name}: missing sensory details`);
       }
     }
+
+    console.log('✅ [SETTINGS API] All validations passed, returning result');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
     return NextResponse.json(result);
   } catch (error) {
