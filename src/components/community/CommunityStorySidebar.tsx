@@ -279,17 +279,23 @@ export function CommunityStorySidebar({ currentStoryId, characters, settings }: 
                         )}
 
                         {/* Backstory */}
-                        {character.backstory && Object.keys(character.backstory).length > 0 && (
+                        {character.backstory && (
                           <div>
                             <h5 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
                               Backstory
                             </h5>
-                            <div className="space-y-2 text-sm text-gray-900 dark:text-gray-100 leading-relaxed">
-                              {Object.values(character.backstory).map((value, index) => (
-                                <p key={index}>
-                                  {value}
-                                </p>
-                              ))}
+                            <div className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed">
+                              {typeof character.backstory === 'string' ? (
+                                <p>{character.backstory}</p>
+                              ) : typeof character.backstory === 'object' && Object.keys(character.backstory).length > 0 ? (
+                                <div className="space-y-2">
+                                  {Object.values(character.backstory).map((value, index) => (
+                                    typeof value === 'string' && value.trim() && (
+                                      <p key={index}>{value}</p>
+                                    )
+                                  ))}
+                                </div>
+                              ) : null}
                             </div>
                           </div>
                         )}

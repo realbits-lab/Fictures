@@ -928,7 +928,7 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
                             imageUrl: selectedScene.imageUrl || selectedScene.sceneImage?.url,
                             imageVariants: selectedScene.imageVariants
                           }}
-                          className="w-full h-auto block"
+                          className="w-full h-auto block !m-0"
                           priority={false}
                         />
                       </div>
