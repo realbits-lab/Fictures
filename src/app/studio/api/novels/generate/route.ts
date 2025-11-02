@@ -131,13 +131,64 @@ export async function POST(request: NextRequest) {
             }
           }
 
+          // Map AI-generated genre to database enum values
+          const validGenres = [
+            'Fantasy', 'Science Fiction', 'Romance', 'Mystery', 'Thriller',
+            'Detective', 'Adventure', 'Horror', 'Historical Fiction', 'Contemporary'
+          ] as const;
+
+          type ValidGenre = typeof validGenres[number];
+          let genreValue: ValidGenre = 'Contemporary'; // default genre
+
+          if (result.story.genre) {
+            const aiGenre = result.story.genre.trim();
+
+            // Try exact match first (case-insensitive)
+            const exactMatch = validGenres.find(g => g.toLowerCase() === aiGenre.toLowerCase());
+            if (exactMatch) {
+              genreValue = exactMatch;
+            } else {
+              // Smart mapping for common AI-generated genres that don't match enum
+              const genreMapping: Record<string, ValidGenre> = {
+                'cyberpunk': 'Science Fiction',
+                'cyberpunk noir': 'Science Fiction',
+                'noir': 'Mystery',
+                'dystopian': 'Science Fiction',
+                'urban fantasy': 'Fantasy',
+                'epic fantasy': 'Fantasy',
+                'paranormal': 'Fantasy',
+                'suspense': 'Thriller',
+                'psychological thriller': 'Thriller',
+                'action': 'Adventure',
+                'spy': 'Thriller',
+                'western': 'Adventure',
+                'steampunk': 'Science Fiction',
+              };
+
+              const lowerGenre = aiGenre.toLowerCase();
+              if (genreMapping[lowerGenre]) {
+                genreValue = genreMapping[lowerGenre];
+              } else {
+                // Fallback: try to find closest match by checking if genre contains valid genre names
+                for (const validGenre of validGenres) {
+                  if (lowerGenre.includes(validGenre.toLowerCase()) || validGenre.toLowerCase().includes(lowerGenre)) {
+                    genreValue = validGenre;
+                    break;
+                  }
+                }
+              }
+            }
+
+            console.log(`[GENRE MAPPING] AI genre "${result.story.genre}" → DB genre "${genreValue}"`);
+          }
+
           const [storyRecord] = await db
             .insert(stories)
             .values({
               id: generatedStoryId,
               authorId: session.user.id,  // Fixed: Use 'authorId' (correct schema field name)
               title: result.story.title,
-              genre: result.story.genre,
+              genre: genreValue, // Mapped and validated genre value
               summary: result.story.summary, // Adversity-Triumph: General thematic premise
               tone: toneValue, // Adversity-Triumph: Emotional direction (validated enum value)
               moralFramework: result.story.moralFramework, // Adversity-Triumph: Virtue framework

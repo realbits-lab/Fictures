@@ -75,6 +75,14 @@ export default defineConfig({
       use: { ...devices['iPhone 12'] },
       testMatch: /.*\.mobile\.spec\.ts/,
     },
+    {
+      name: 'cache-tests',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: '.auth/user.json',
+      },
+      testMatch: /cache.*\.spec\.ts/,
+    },
   ],
 
   webServer: {
