@@ -329,8 +329,11 @@ export class RelationshipManager {
     // OPTIMIZATION: Fetch all scenes in a SINGLE query using inArray() instead of looping (fixes N+1 query problem)
     const chapterIds = allChapters.map(c => c.id);
 
+    console.log(`[DB] 🔍 Chapter IDs before query:`, JSON.stringify({ chapterIds, count: chapterIds.length, isArray: Array.isArray(chapterIds) }));
+
     const sceneQueryStart = Date.now();
-    const allScenes = chapterIds.length > 0
+    // Ensure chapterIds is an array and has items
+    const allScenes = chapterIds.length > 0 && Array.isArray(chapterIds)
       ? await db.select()
           .from(scenes)
           .where(inArray(scenes.chapterId, chapterIds))
