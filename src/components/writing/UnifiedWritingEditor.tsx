@@ -1371,7 +1371,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             status: actualStatus,
             purpose: chapter.purpose || "",
             hook: chapter.hook || "",
-            characterFocus: chapter.characterFocus || "",
             scenes: chapter.scenes || []
           };
         };
@@ -2211,9 +2210,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   };
 
   return (
-    <div className="min-h-screen bg-[rgb(var(--color-background))]">
+    <div className="h-screen bg-[rgb(var(--color-background))] flex flex-col">
       {/* Fixed Header */}
-      <div className="sticky top-0 z-50 bg-[rgb(var(--color-background)/95%)] backdrop-blur-[var(--blur)] border-b border-[rgb(var(--color-border))]">
+      <div className="flex-shrink-0 z-50 bg-[rgb(var(--color-background)/95%)] backdrop-blur-[var(--blur)] border-b border-[rgb(var(--color-border))]">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 md:gap-4">
@@ -2345,8 +2344,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         </div>
       </div>
 
-      <div className="w-full px-4 py-6">
-        <PanelGroup direction="horizontal" className="h-[calc(100vh-200px)]">
+      <div className="flex-1 min-h-0 px-4 py-6">
+        <PanelGroup direction="horizontal" className="h-full">
           {/* Left Sidebar - Story Structure Navigation (Tree View) */}
           <Panel defaultSize={25} minSize={15} maxSize={40} style={{ display: 'flex', flexDirection: 'column' }}>
             <div className="flex-1 min-h-0 pr-2 overflow-y-auto">

@@ -70,8 +70,16 @@ One of: fear, hope, tension, relief, elevation, catharsis, despair, joy
 - First ID is POV/focus character
 - Maximum 3-4 characters per scene (avoid crowd scenes)
 
+## Setting Selection
+Choose ONE setting from available settings that best fits this scene:
+- Consider the cycle phase (setup, confrontation, virtue, consequence, transition)
+- Use setting's `cycleAmplification` to match emotional needs
+- Settings can be reused across scenes, but aim for variety
+- Physical setting should match the action (confined space for confrontation, open space for freedom, etc.)
+
 ## Sensory Anchors
 3-5 specific sensory details that ground the scene:
+- Draw from the selected setting's sensory palette
 - Sight: Specific visual (not generic)
 - Sound: Distinctive audio element
 - Smell: Evocative scent
@@ -152,6 +160,9 @@ Return structured text with clear scene separations:
 ## Summary
 [2-3 sentence scene summary]
 
+## Setting
+[Setting Name from available settings]
+
 ## Cycle Phase
 setup
 
@@ -199,9 +210,12 @@ medium
 5. Cycle phases must follow order: setup → confrontation → virtue → consequence → transition
 6. Emotional beats must ESCALATE tension before virtue, then RELEASE after
 7. Character focus should stay consistent per scene (don't jump POVs mid-scene)
-8. Sensory anchors must be SPECIFIC not generic ("metallic blood taste" not "bad taste")
-9. Confrontation phase needs 2-3 scenes minimum (most of the action)
-10. Each scene summary should clearly state WHAT HAPPENS (action not theme)
+8. Each scene MUST specify a setting from available settings (use exact setting name)
+9. Settings should MATCH cycle phase needs (use cycleAmplification guidance)
+10. Sensory anchors must be SPECIFIC not generic ("metallic blood taste" not "bad taste")
+11. Sensory anchors should DRAW from selected setting's sensory palette
+12. Confrontation phase needs 2-3 scenes minimum (most of the action)
+13. Each scene summary should clearly state WHAT HAPPENS (action not theme)
 
 # OUTPUT
 Return ONLY the structured text, no JSON, no markdown code blocks.`;
@@ -346,6 +360,14 @@ function parseScenesFromText(
     const summaryMatch = sceneSection.match(/## Summary\s*\n([^\n#]+(?:\n[^\n#]+)*)/);
     const summary = summaryMatch ? summaryMatch[1].trim() : '';
 
+    // Extract setting
+    const settingMatch = sceneSection.match(/## Setting\s*\n([^\n]+)/);
+    const settingName = settingMatch ? settingMatch[1].trim() : null;
+
+    // Map setting name to ID
+    const setting = settings.find(s => s.name === settingName);
+    const settingId = setting?.id || undefined;
+
     // Extract cycle phase
     const cyclePhaseMatch = sceneSection.match(/## Cycle Phase\s*\n([^\n]+)/);
     const cyclePhase = cyclePhaseMatch ? cyclePhaseMatch[1].trim() as CyclePhase : 'setup';
@@ -398,6 +420,7 @@ function parseScenesFromText(
       cyclePhase,
       emotionalBeat,
       characterFocus,
+      settingId,
       sensoryAnchors,
       dialogueVsDescription,
       suggestedLength,

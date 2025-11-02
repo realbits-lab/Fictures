@@ -271,11 +271,11 @@ export const chapters = pgTable('chapters', {
   status: statusEnum('status').default('writing').notNull(),
   purpose: text('purpose'), // Chapter purpose from story development
   hook: text('hook'), // Chapter hook from story development
-  characterFocus: text('character_focus'), // Main character focus for chapter
   publishedAt: timestamp('published_at'),
   scheduledFor: timestamp('scheduled_for'),
   // Legacy fields removed - HNS-specific fields dropped
   // pacingGoal, actionDialogueRatio, chapterHook were HNS-only and not used by Novels
+  // characterFocus was HNS legacy field - removed in favor of focusCharacters array
   // Adversity-Triumph Engine fields - Nested cycle tracking
   characterId: text('character_id').references(() => characters.id, { onDelete: 'set null' }), // Primary character whose macro arc this advances
   arcPosition: arcPositionEnum('arc_position'), // Position in macro arc: beginning, middle, climax (MACRO moment), or resolution
@@ -318,6 +318,7 @@ export const scenes = pgTable('scenes', {
   emotionalBeat: emotionalBeatEnum('emotional_beat'), // Target emotion: fear, hope, tension, relief, elevation, catharsis, despair, joy
   // Planning metadata (guides content generation) - from novels specification
   characterFocus: json('character_focus').$type<string[]>(), // Character IDs appearing in this scene
+  settingId: text('setting_id').references(() => settings.id), // Setting where this scene takes place (nullable for legacy/ambiguous scenes)
   sensoryAnchors: json('sensory_anchors').$type<string[]>(), // Key sensory details to include (e.g., "rain on metal roof", "smell of smoke")
   dialogueVsDescription: text('dialogue_vs_description'), // Balance guidance: "dialogue-heavy" | "balanced" | "description-heavy"
   suggestedLength: text('suggested_length'), // "short" (300-500) | "medium" (500-800) | "long" (800-1000 words)
@@ -635,6 +636,10 @@ export const scenesRelations = relations(scenes, ({ one, many }) => ({
   chapter: one(chapters, {
     fields: [scenes.chapterId],
     references: [chapters.id],
+  }),
+  setting: one(settings, {
+    fields: [scenes.settingId],
+    references: [settings.id],
   }),
   comicPanels: many(comicPanels),
 }));

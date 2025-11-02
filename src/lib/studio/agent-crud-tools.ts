@@ -229,7 +229,6 @@ export const getChapter = tool({
         status: chapter.status,
         purpose: chapter.purpose,
         hook: chapter.hook,
-        characterFocus: chapter.characterFocus,
         arcPosition: chapter.arcPosition,
         adversityType: chapter.adversityType,
         virtueType: chapter.virtueType,

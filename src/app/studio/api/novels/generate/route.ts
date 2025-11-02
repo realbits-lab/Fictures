@@ -289,6 +289,9 @@ export async function POST(request: NextRequest) {
                 characterIdMap.get(charId) || charId
               ) || [];
 
+              // Map temporary setting ID to database setting ID
+              const mappedSettingId = scene.settingId ? settingIdMap.get(scene.settingId) || null : null;
+
               return {
                 id: newId,
                 chapterId: mappedChapterId,
@@ -299,6 +302,7 @@ export async function POST(request: NextRequest) {
                 emotionalBeat: scene.emotionalBeat,
                 // Planning metadata from scene summary generation
                 characterFocus: mappedCharacterFocus,
+                settingId: mappedSettingId,
                 sensoryAnchors: scene.sensoryAnchors || [],
                 dialogueVsDescription: scene.dialogueVsDescription || 'balanced',
                 suggestedLength: scene.suggestedLength || 'medium',

@@ -75,4 +75,17 @@ test('Diagnose mockup panel styles', async ({ page }) => {
 
     console.log(`\nPanel ${i + 1}:`, JSON.stringify(panelInfo, null, 2));
   }
+
+  // Check PanelGroup
+  const panelGroup = page.locator('[data-panel-group][data-panel-group-direction="horizontal"]');
+  const pgInfo = await panelGroup.evaluate((el) => {
+    const computed = window.getComputedStyle(el);
+    return {
+      className: el.className,
+      height: computed.height,
+      maxHeight: computed.maxHeight,
+      display: computed.display,
+    };
+  });
+  console.log(`\n\nPanelGroup:`, JSON.stringify(pgInfo, null, 2));
 });

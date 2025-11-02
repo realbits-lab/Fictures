@@ -9,16 +9,16 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 export default function TestScrollingPage() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
-      <div className="mb-4">
+    <div className="h-screen bg-gray-50 dark:bg-gray-900 p-4 flex flex-col">
+      <div className="mb-4 flex-shrink-0">
         <h1 className="text-2xl font-bold">Test Independent Panel Scrolling</h1>
         <p className="text-sm text-gray-600 dark:text-gray-400">
           Each panel should scroll independently when you hover and use mouse wheel
         </p>
       </div>
 
-      <div className="border-2 border-blue-500">
-        <PanelGroup direction="horizontal" className="h-[calc(100vh-200px)]">
+      <div className="border-2 border-blue-500 flex-1 min-h-0">
+        <PanelGroup direction="horizontal" className="h-full">
           {/* Left Panel */}
           <Panel
             defaultSize={33}
@@ -50,7 +50,7 @@ export default function TestScrollingPage() {
             minSize={20}
             style={{ display: 'flex', flexDirection: 'column' }}
           >
-            <div className="flex-1 min-h-0 px-2 overflow-y-auto bg-green-50 dark:bg-green-900/20">
+            <div className="flex-1 min-h-0 px-2 overflow-y-auto bg-green-50 dark:bg-green-900/20" style={{ height: '100%' }}>
               <div className="p-4">
                 <h2 className="text-xl font-bold mb-2 sticky top-0 bg-green-100 dark:bg-green-800 p-2">
                   MIDDLE PANEL
@@ -75,7 +75,7 @@ export default function TestScrollingPage() {
             maxSize={50}
             style={{ display: 'flex', flexDirection: 'column' }}
           >
-            <div className="flex-1 min-h-0 pl-2 overflow-y-auto bg-blue-50 dark:bg-blue-900/20">
+            <div className="flex-1 min-h-0 pl-2 overflow-y-auto bg-blue-50 dark:bg-blue-900/20" style={{ height: '100%' }}>
               <div className="p-4">
                 <h2 className="text-xl font-bold mb-2 sticky top-0 bg-blue-100 dark:bg-blue-800 p-2">
                   RIGHT PANEL
@@ -93,7 +93,7 @@ export default function TestScrollingPage() {
         </PanelGroup>
       </div>
 
-      <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded">
+      <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded flex-shrink-0">
         <h3 className="font-bold mb-2">Testing Instructions:</h3>
         <ol className="list-decimal list-inside space-y-1 text-sm">
           <li>Hover your mouse over the LEFT panel and scroll with mouse wheel - only left should scroll</li>

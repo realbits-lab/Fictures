@@ -153,6 +153,7 @@ export interface SceneSummaryResult {
   cyclePhase: CyclePhase;
   emotionalBeat: EmotionalBeat;
   characterFocus: string[]; // Character IDs appearing in this scene
+  settingId?: string; // Setting ID where this scene takes place (optional for legacy/ambiguous scenes)
   sensoryAnchors: string[]; // Key sensory details to include
   dialogueVsDescription: 'dialogue-heavy' | 'balanced' | 'description-heavy';
   suggestedLength: 'short' | 'medium' | 'long'; // short: 300-500, medium: 500-800, long: 800-1000 words

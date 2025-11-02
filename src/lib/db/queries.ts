@@ -543,7 +543,6 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
         status: chapters.status,
         purpose: chapters.purpose,
         hook: chapters.hook,
-        characterFocus: chapters.characterFocus,
         publishedAt: chapters.publishedAt,
         scheduledFor: chapters.scheduledFor,
         createdAt: chapters.createdAt,

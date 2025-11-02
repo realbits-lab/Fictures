@@ -256,6 +256,7 @@ PROGRESSION CONTRIBUTION:
 **Key Fields**:
 - `summary` (text): Scene specification - what happens, emotional beat, purpose, sensory anchors
 - `content` (text): Full prose narrative generated from the summary
+- `settingId` (text, nullable): References Setting.id - the physical location where this scene takes place
 
 **Mapping 4-Phase Cycle to 5 Scene Types:**
 
@@ -291,6 +292,35 @@ The 4-phase narrative cycle (Adversity → Virtue → Consequence → New Advers
 **Two-Step Generation Process**:
 1. Generate `summary` for all scenes in chapter (planning)
 2. Generate `content` for each scene using its summary (execution)
+
+### 2.5 Scene-Setting Connection Strategy
+
+**Design Philosophy**: Settings are "emotional environments" that amplify cycle phases. Each scene explicitly references one primary setting to ground the narrative and enable setting-specific content generation.
+
+**Implementation**:
+- Each scene has optional `settingId` field (nullable for legacy/ambiguous scenes)
+- Scene summaries generation selects appropriate setting based on:
+  - **Cycle phase match**: Use setting's `cycleAmplification[phase]` to find best fit
+  - **Action requirements**: Physical setting matches scene needs (confined space for confrontation, open space for freedom)
+  - **Variety**: Aim to use all available settings across story, avoiding overuse of single location
+
+**Setting Selection Guidance**:
+
+| Cycle Phase | Setting Selection Strategy |
+|-------------|----------------------------|
+| **Setup** | Introduction/familiar settings (home, normal world) - establish comfort before adversity |
+| **Confrontation** | Confined/adversity-rich settings - use `adversityElements` to create external pressure |
+| **Virtue** | Contrast settings - barren/hostile environment makes virtue more powerful symbolically |
+| **Consequence** | Transformation settings - use `symbolicMeaning` to reflect character change |
+| **Transition** | Bridge settings - hint at new location/adversity through environment |
+
+**Benefits**:
+- ✅ Explicit location tracking for each scene
+- ✅ Query-able scene-setting relationships
+- ✅ Setting-specific image generation
+- ✅ Consistent use of setting's sensory palette
+- ✅ Enables setting-based navigation/filtering
+- ✅ Analytics on setting usage patterns
 
 ---
 
@@ -655,6 +685,7 @@ interface Scene {
 
   // Planning metadata (guides content generation)
   characterFocus: string[]; // Character IDs appearing in this scene
+  settingId?: string; // Setting ID where this scene takes place (references Setting.id, nullable for legacy/ambiguous scenes)
   sensoryAnchors: string[]; // Key sensory details to include (e.g., "rain on metal roof", "smell of smoke")
   dialogueVsDescription: string; // Balance guidance (e.g., "60% dialogue, 40% description")
   suggestedLength: 'short' | 'medium' | 'long'; // short: 300-500, medium: 500-800, long: 800-1000 words
