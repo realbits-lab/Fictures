@@ -2373,7 +2373,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
           {/* Right Sidebar - Studio Agent Chat Only */}
           <Panel defaultSize={25} minSize={15} maxSize={40} style={{ display: 'flex', flexDirection: 'column' }}>
-            <div className="flex-1 min-h-0 pl-2 overflow-y-auto">
+            <div className="h-full pl-2">
               <StudioAgentChat
                 storyId={story.id}
                 storyContext={{
