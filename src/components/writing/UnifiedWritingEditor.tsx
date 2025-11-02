@@ -16,6 +16,7 @@ import { SceneSidebar } from "./SceneSidebar";
 import { CharactersDisplay } from "./CharactersDisplay";
 import { SettingsDisplay } from "./SettingsDisplay";
 import { StudioAgentChat } from "@/components/studio/studio-agent-chat";
+import { ImageContentDisplay } from "./ImageContentDisplay";
 import type {
   HNSStory,
   HNSPart,
@@ -1556,6 +1557,19 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         );
 
       case "scene":
+        // Check if this is a comic view selection - show images only
+        if (currentSelection.format === "comic") {
+          return (
+            <ImageContentDisplay
+              type="scene"
+              format="comic"
+              itemId={currentSelection.sceneId || ""}
+              storyId={story.id}
+            />
+          );
+        }
+
+        // Novel view - show table data
         // Find the selected scene
         let selectedScene = null;
         let selectedSceneChapter = null;
@@ -1813,6 +1827,19 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           return null;
         }
 
+        // Check if this is a comic view selection - show images only
+        if (currentSelection.format === "comic") {
+          return (
+            <ImageContentDisplay
+              type="character"
+              format="comic"
+              itemId={currentSelection.characterId || ""}
+              storyId={story.id}
+            />
+          );
+        }
+
+        // Novel view - show table data
         // Find the specific character by ID
         const selectedCharacter = story.characters?.find((c: any) => c.id === currentSelection.characterId);
 
@@ -2015,6 +2042,19 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           return null;
         }
 
+        // Check if this is a comic view selection - show images only
+        if (currentSelection.format === "comic") {
+          return (
+            <ImageContentDisplay
+              type="setting"
+              format="comic"
+              itemId={currentSelection.settingId || ""}
+              storyId={story.id}
+            />
+          );
+        }
+
+        // Novel view - show table data
         // Find the specific setting by ID
         const selectedSetting = story.settings?.find((s: any) => s.id === currentSelection.settingId);
 

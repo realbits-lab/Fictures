@@ -338,9 +338,9 @@ export function StoryStructureSidebar({
   };
 
   return (
-    <div className="h-full flex flex-col gap-4">
+    <div className="h-full flex flex-col gap-4 overflow-hidden">
       {/* Novel Tree View */}
-      <Card className="flex-1 flex flex-col min-h-0">
+      <Card className="h-1/2 flex flex-col flex-shrink-0">
         <CardHeader className="pb-3 flex-shrink-0">
           <CardTitle className="text-sm flex items-center gap-2">
             <BookOpen className="h-4 w-4" />
@@ -361,7 +361,7 @@ export function StoryStructureSidebar({
       </Card>
 
       {/* Comic Tree View */}
-      <Card className="flex-1 flex flex-col min-h-0">
+      <Card className="h-1/2 flex flex-col flex-shrink-0">
         <CardHeader className="pb-3 flex-shrink-0">
           <CardTitle className="text-sm flex items-center gap-2">
             <BookOpen className="h-4 w-4" />

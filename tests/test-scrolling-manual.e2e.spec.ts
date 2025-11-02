@@ -19,6 +19,9 @@ async function login(page: any) {
   await page.fill('input[type="password"], input[name="password"]', password);
   await page.click('button:has-text("Sign in with Email")');
   await page.waitForLoadState('networkidle');
+
+  // Wait for redirect after successful login
+  await page.waitForURL(/\/(novels|studio|comics|community)/, { timeout: 10000 });
   await page.waitForTimeout(2000);
 
   console.log('Login completed');

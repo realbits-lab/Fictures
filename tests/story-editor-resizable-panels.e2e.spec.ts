@@ -25,17 +25,13 @@ async function login(page: any) {
   await page.goto('/login');  // Use relative URL to work with baseURL
   await page.waitForLoadState('networkidle');
 
-  // Fill email field
   await page.fill('input[type="email"], input[name="email"]', email);
-
-  // Fill password field
   await page.fill('input[type="password"], input[name="password"]', password);
-
-  // Click sign in button
   await page.click('button:has-text("Sign in with Email")');
   await page.waitForLoadState('networkidle');
 
   // Wait for redirect after successful login
+  await page.waitForURL(/\/(novels|studio|comics|community)/, { timeout: 10000 });
   await page.waitForTimeout(2000);
 }
 
@@ -224,30 +220,7 @@ test.describe('Story Editor Resizable Panels Tests', () => {
     console.log('✅ Panel resizing works');
   });
 
-  test('TC-EDITOR-PANELS-006: Verify Story Structure sidebar visible', async ({ page }) => {
-    console.log('📖 Testing Story Structure sidebar...');
-
-    await page.goto('/studio');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1500);
-
-    const storyCard = page.locator('div.cursor-pointer.rounded-lg.shadow-sm').first();
-    if (await storyCard.count() === 0) {
-      console.log('⚠️  No stories found');
-      test.skip();
-      return;
-    }
-
-    await storyCard.click();
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
-
-    // Look for Story Structure heading
-    const structureHeading = page.locator('text=/Story Structure/i').first();
-    await expect(structureHeading).toBeVisible();
-
-    console.log('✅ Story Structure sidebar is visible');
-  });
+  // TC-EDITOR-PANELS-006: Removed - Story Structure heading was removed in sidebar redesign
 
   test('TC-EDITOR-PANELS-007: Verify collapse button is removed', async ({ page }) => {
     console.log('📖 Testing collapse button removal...');
