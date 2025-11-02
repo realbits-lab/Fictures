@@ -44,6 +44,29 @@ async function getLocalStorageCache(page: any, cacheType: string) {
   }, cacheType);
 }
 
+/**
+ * Helper: Get first test story ID from Studio page
+ */
+async function getFirstTestStoryId(page: any): Promise<string | null> {
+  // Try to find a story card link
+  const storyLink = await page.locator('a[href*="/studio/edit/story/"]').first();
+
+  if (await storyLink.count() > 0) {
+    const href = await storyLink.getAttribute('href');
+    const match = href?.match(/\/studio\/edit\/story\/([^\/]+)/);
+    return match ? match[1] : null;
+  }
+
+  // Fallback: Use known test story IDs
+  const testStoryIds = [
+    'g6Jy-EoFLW_TuyxHVjIci',
+    'FjmVo1UY6qRweYQPrOoWP',
+    '4dAQF4PpmSBTRRGxxU7IZ'
+  ];
+
+  return testStoryIds[0];
+}
+
 test.describe('Cache Invalidation: Studio Routes', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to Studio page
@@ -55,8 +78,15 @@ test.describe('Cache Invalidation: Studio Routes', () => {
   });
 
   test('Scene PATCH invalidates writing cache', { timeout: TEST_TIMEOUT }, async ({ page }) => {
-    // Step 1: Navigate to a story editor
-    await page.click('text=Edit'); // Click first Edit button
+    // Step 1: Get test story and navigate to editor
+    const storyId = await getFirstTestStoryId(page);
+    if (!storyId) {
+      console.log('[Test] ⚠️ No test story found, skipping test');
+      test.skip();
+      return;
+    }
+
+    await page.goto(`http://localhost:3000/studio/edit/story/${storyId}`);
     await page.waitForLoadState('networkidle');
 
     // Step 2: Get initial localStorage cache
@@ -93,8 +123,15 @@ test.describe('Cache Invalidation: Studio Routes', () => {
   });
 
   test('Scene DELETE invalidates writing cache', { timeout: TEST_TIMEOUT }, async ({ page }) => {
-    // Step 1: Navigate to a story with multiple scenes
-    await page.click('text=Edit');
+    // Step 1: Get test story and navigate to editor
+    const storyId = await getFirstTestStoryId(page);
+    if (!storyId) {
+      console.log('[Test] ⚠️ No test story found, skipping test');
+      test.skip();
+      return;
+    }
+
+    await page.goto(`http://localhost:3000/studio/edit/story/${storyId}`);
     await page.waitForLoadState('networkidle');
 
     // Step 2: Get initial cache
@@ -138,8 +175,15 @@ test.describe('Cache Invalidation: Studio Routes', () => {
   });
 
   test('Chapter PATCH invalidates writing cache', { timeout: TEST_TIMEOUT }, async ({ page }) => {
-    // Step 1: Navigate to story editor
-    await page.click('text=Edit');
+    // Step 1: Get test story and navigate to editor
+    const storyId = await getFirstTestStoryId(page);
+    if (!storyId) {
+      console.log('[Test] ⚠️ No test story found, skipping test');
+      test.skip();
+      return;
+    }
+
+    await page.goto(`http://localhost:3000/studio/edit/story/${storyId}`);
     await page.waitForLoadState('networkidle');
 
     // Step 2: Get initial cache
