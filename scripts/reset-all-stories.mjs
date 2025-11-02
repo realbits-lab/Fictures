@@ -14,6 +14,7 @@
 
 import postgres from 'postgres';
 import { list, del } from '@vercel/blob';
+import { createClient } from 'redis';
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -46,6 +47,13 @@ const sql = postgres(connectionString);
 const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
 if (!blobToken) {
   console.error('❌ Error: BLOB_READ_WRITE_TOKEN not found in environment');
+  process.exit(1);
+}
+
+// Redis client
+const redisClient = createClient({ url: process.env.REDIS_URL });
+if (!process.env.REDIS_URL) {
+  console.error('❌ Error: REDIS_URL not found in environment');
   process.exit(1);
 }
 
@@ -84,6 +92,7 @@ async function getStatistics() {
     publishingSchedules: 0,
     scheduledPublications: 0,
     blobImages: 0,
+    redisCacheKeys: 0,
   };
 
   // Count database records
@@ -167,6 +176,36 @@ async function getStatistics() {
 
   stats.blobImages = totalBlobs;
 
+  // Count Redis cache keys
+  console.log('🔍 Scanning Redis cache...');
+  try {
+    await redisClient.connect();
+
+    const patterns = [
+      'story:*',
+      'chapter:*',
+      'scene:*',
+      'user:*:stories*',
+      'stories:*',
+      'community:*',
+    ];
+
+    let totalKeys = 0;
+    for (const pattern of patterns) {
+      const keys = await redisClient.keys(pattern);
+      totalKeys += keys.length;
+      if (keys.length > 0) {
+        console.log(`   Pattern "${pattern}": ${keys.length} keys`);
+      }
+    }
+
+    stats.redisCacheKeys = totalKeys;
+    await redisClient.disconnect();
+  } catch (error) {
+    console.error('   ⚠️  Redis scan failed:', error.message);
+    await redisClient.disconnect().catch(() => {});
+  }
+
   return stats;
 }
 
@@ -207,9 +246,12 @@ function displayStatistics(stats) {
   console.log('Vercel Blob Storage:');
   console.log(`  Images:                  ${stats.blobImages}`);
   console.log('');
+  console.log('Redis Cache:');
+  console.log(`  Cache Keys:              ${stats.redisCacheKeys}`);
+  console.log('');
 
-  const totalDbRecords = Object.values(stats).reduce((sum, val) => sum + val, 0) - stats.blobImages;
-  console.log(`Total: ${totalDbRecords} database records + ${stats.blobImages} blob images`);
+  const totalDbRecords = Object.values(stats).reduce((sum, val) => sum + val, 0) - stats.blobImages - stats.redisCacheKeys;
+  console.log(`Total: ${totalDbRecords} database records + ${stats.blobImages} blob images + ${stats.redisCacheKeys} cache keys`);
 }
 
 /**
@@ -349,6 +391,51 @@ async function deleteAllDatabaseRecords() {
 }
 
 /**
+ * Delete all Redis cache keys
+ */
+async function deleteAllRedisCacheKeys() {
+  console.log('\n🗑️  Deleting Redis cache keys...\n');
+
+  try {
+    await redisClient.connect();
+
+    const patterns = [
+      'story:*',
+      'chapter:*',
+      'scene:*',
+      'user:*:stories*',
+      'stories:*',
+      'community:*',
+    ];
+
+    let totalDeleted = 0;
+
+    for (const pattern of patterns) {
+      const keys = await redisClient.keys(pattern);
+
+      if (keys.length > 0) {
+        console.log(`   Deleting ${keys.length} keys matching "${pattern}"...`);
+
+        for (const key of keys) {
+          await redisClient.del(key);
+        }
+
+        totalDeleted += keys.length;
+      }
+    }
+
+    console.log(`\n✅ Deleted ${totalDeleted} cache keys from Redis`);
+    await redisClient.disconnect();
+    return totalDeleted;
+
+  } catch (error) {
+    console.error('   ⚠️  Redis deletion failed:', error.message);
+    await redisClient.disconnect().catch(() => {});
+    return 0;
+  }
+}
+
+/**
  * Main execution
  */
 async function main() {
@@ -376,11 +463,14 @@ async function main() {
     // Execute deletions
     const startTime = Date.now();
 
-    // Delete Blob images first (can run in parallel with DB)
+    // Delete Blob images and DB records in parallel, then cache
     const [blobCount, dbCounts] = await Promise.all([
       deleteAllBlobImages(),
       deleteAllDatabaseRecords(),
     ]);
+
+    // Delete cache keys after DB deletion (some caches reference DB data)
+    const cacheCount = await deleteAllRedisCacheKeys();
 
     const endTime = Date.now();
     const duration = ((endTime - startTime) / 1000).toFixed(2);
@@ -389,6 +479,7 @@ async function main() {
     console.log(`   Duration: ${duration}s`);
     console.log(`   Database records deleted: ${Object.values(dbCounts).reduce((sum, val) => sum + val, 0)}`);
     console.log(`   Blob images deleted: ${blobCount}`);
+    console.log(`   Cache keys deleted: ${cacheCount}`);
 
   } catch (error) {
     console.error('\n❌ Error during reset:', error);

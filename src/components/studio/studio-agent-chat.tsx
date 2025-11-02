@@ -208,8 +208,7 @@ export function StudioAgentChat({
                 <Button
                   variant="outline"
                   className="justify-start text-left h-auto py-3 theme-button"
-                  onClick={(e) => {
-                    e.preventDefault();
+                  onClick={() => {
                     setInput('Show me the details of this story');
                   }}
                 >
@@ -223,8 +222,7 @@ export function StudioAgentChat({
                 <Button
                   variant="outline"
                   className="justify-start text-left h-auto py-3 theme-button"
-                  onClick={(e) => {
-                    e.preventDefault();
+                  onClick={() => {
                     setInput('List all characters in this story');
                   }}
                 >

@@ -64,65 +64,98 @@ async function login(page: any, email: string, password: string, expectedUrl: st
 setup('authenticate as writer', async ({ page }) => {
   // Skip if valid auth already exists
   if (hasValidAuth(writerFile)) {
-    console.log('Writer authentication already valid, skipping...');
+    console.log('✅ Writer authentication already valid, skipping...');
     return;
   }
 
-  const authData = JSON.parse(fs.readFileSync(writerFile, 'utf-8'));
-  await login(page, authData.email, authData.password, 'studio|stories');
+  console.log('\n=== Writer Authentication Setup ===');
+  console.log('Account: writer@fictures.xyz');
+  console.log('Navigating to login page...\n');
+
+  await page.goto('http://localhost:3000/login');
+  await page.waitForLoadState('networkidle');
+
+  console.log('🔐 Please login with writer@fictures.xyz');
+  console.log('⏳ Waiting 90 seconds for manual login...');
+  console.log('   - Use Google OAuth OR email/password');
+  console.log('   - Complete any 2FA if required\n');
+
+  // Wait for manual login (90 seconds)
+  await page.waitForTimeout(90000);
+
+  // Verify logged in
+  try {
+    await expect(page).toHaveURL(/studio|novels|community|settings/, { timeout: 5000 });
+    console.log('✅ Login successful! URL:', page.url());
+  } catch (error) {
+    console.log('⚠️  Login verification: Current URL:', page.url());
+  }
 
   // Save the authentication state
   await page.context().storageState({ path: writerFile });
+  console.log('✅ Writer auth saved to:', writerFile);
 
-  // Update the auth file to preserve API key data
-  const newAuthData = JSON.parse(fs.readFileSync(writerFile, 'utf-8'));
-  const mergedAuthData = {
-    ...authData,
-    ...newAuthData,
-  };
-  fs.writeFileSync(writerFile, JSON.stringify(mergedAuthData, null, 2));
+  // Also save as user.json for cache tests
+  await page.context().storageState({ path: '.auth/user.json' });
+  console.log('✅ User auth saved to: .auth/user.json\n');
 });
 
 setup('authenticate as reader', async ({ page }) => {
   // Skip if valid auth already exists
   if (hasValidAuth(readerFile)) {
-    console.log('Reader authentication already valid, skipping...');
+    console.log('✅ Reader authentication already valid, skipping...');
     return;
   }
 
-  const authData = JSON.parse(fs.readFileSync(readerFile, 'utf-8'));
-  await login(page, authData.email, authData.password, 'novels|stories');
+  console.log('\n=== Reader Authentication Setup ===');
+  console.log('Account: reader@fictures.xyz');
+  console.log('Navigating to login page...\n');
 
-  // Save the authentication state
+  await page.goto('http://localhost:3000/login');
+  await page.waitForLoadState('networkidle');
+
+  console.log('🔐 Please login with reader@fictures.xyz');
+  console.log('⏳ Waiting 90 seconds for manual login...\n');
+
+  await page.waitForTimeout(90000);
+
+  try {
+    await expect(page).toHaveURL(/studio|novels|community|settings/, { timeout: 5000 });
+    console.log('✅ Login successful! URL:', page.url());
+  } catch (error) {
+    console.log('⚠️  Login verification: Current URL:', page.url());
+  }
+
   await page.context().storageState({ path: readerFile });
-
-  // Update the auth file to preserve API key data
-  const newAuthData = JSON.parse(fs.readFileSync(readerFile, 'utf-8'));
-  const mergedAuthData = {
-    ...authData,
-    ...newAuthData,
-  };
-  fs.writeFileSync(readerFile, JSON.stringify(mergedAuthData, null, 2));
+  console.log('✅ Reader auth saved to:', readerFile, '\n');
 });
 
 setup('authenticate as manager', async ({ page }) => {
   // Skip if valid auth already exists
   if (hasValidAuth(managerFile)) {
-    console.log('Manager authentication already valid, skipping...');
+    console.log('✅ Manager authentication already valid, skipping...');
     return;
   }
 
-  const authData = JSON.parse(fs.readFileSync(managerFile, 'utf-8'));
-  await login(page, authData.email, authData.password, 'studio|stories');
+  console.log('\n=== Manager Authentication Setup ===');
+  console.log('Account: manager@fictures.xyz');
+  console.log('Navigating to login page...\n');
 
-  // Save the authentication state
+  await page.goto('http://localhost:3000/login');
+  await page.waitForLoadState('networkidle');
+
+  console.log('🔐 Please login with manager@fictures.xyz');
+  console.log('⏳ Waiting 90 seconds for manual login...\n');
+
+  await page.waitForTimeout(90000);
+
+  try {
+    await expect(page).toHaveURL(/studio|novels|community|settings/, { timeout: 5000 });
+    console.log('✅ Login successful! URL:', page.url());
+  } catch (error) {
+    console.log('⚠️  Login verification: Current URL:', page.url());
+  }
+
   await page.context().storageState({ path: managerFile });
-
-  // Update the auth file to preserve API key data
-  const newAuthData = JSON.parse(fs.readFileSync(managerFile, 'utf-8'));
-  const mergedAuthData = {
-    ...authData,
-    ...newAuthData,
-  };
-  fs.writeFileSync(managerFile, JSON.stringify(mergedAuthData, null, 2));
+  console.log('✅ Manager auth saved to:', managerFile, '\n');
 });

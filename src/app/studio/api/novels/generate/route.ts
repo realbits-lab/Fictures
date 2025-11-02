@@ -250,7 +250,7 @@ export async function POST(request: NextRequest) {
                 id: newId,
                 storyId: generatedStoryId!,
                 authorId: session.user.id,
-                partId: null, // Will be linked later if needed
+                partId: chapter.partId ? partIdMap.get(chapter.partId) || null : null,
                 title: chapter.title,
                 summary: chapter.summary,
                 characterId: chapter.characterId ? characterIdMap.get(chapter.characterId) || null : null,

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.use({
-  storageState: '.auth/user.json'
+  storageState: '.auth/writer-playwright.json'
 });
 
 test('Chat quick action buttons should fill input box', async ({ page }) => {
@@ -14,23 +14,18 @@ test('Chat quick action buttons should fill input box', async ({ page }) => {
   await page.waitForTimeout(1000);
   console.log('✅ Navigated to studio page\n');
 
-  // Find all story links
-  const storyLinks = page.locator('a[href*="/studio/edit/story/"]');
-  const count = await storyLinks.count();
-  console.log(`📊 Found ${count} story links\n`);
+  // Find the story card by clicking on the story title
+  const storyTitle = page.locator('text=Shadows of the Mountain');
+  const titleCount = await storyTitle.count();
+  console.log(`📊 Found ${titleCount} story titles\n`);
 
-  if (count === 0) {
+  if (titleCount === 0) {
     throw new Error('No story found. Please create a story first using the studio/new page.');
   }
 
-  // Get the first story link
-  const firstStoryLink = storyLinks.first();
-  const storyHref = await firstStoryLink.getAttribute('href');
-
-  console.log(`📖 Found story link: ${storyHref}\n`);
-
-  // Navigate to the story editor
-  await page.goto(`http://localhost:3000${storyHref}`);
+  // Click on the story title to navigate to the editor
+  console.log(`📖 Clicking on story: "Shadows of the Mountain"\n`);
+  await storyTitle.first().click();
   await page.waitForLoadState('networkidle');
   await page.waitForTimeout(3000); // Wait for editor to fully load
   console.log('✅ Navigated to story editor page\n');
@@ -48,13 +43,12 @@ test('Chat quick action buttons should fill input box', async ({ page }) => {
 
   // Click the button
   await showDetailsButton.click();
-  await page.waitForTimeout(500);
 
-  // Check if input is filled
+  // Wait for the input value to change
+  await expect(chatInput).toHaveValue('Show me the details of this story', { timeout: 5000 });
+
   const inputValue1 = await chatInput.inputValue();
   console.log(`📝 Input value after clicking: "${inputValue1}"\n`);
-
-  expect(inputValue1).toBe('Show me the details of this story');
   console.log('✅ Test 1 PASSED: Input correctly filled with "Show me the details of this story"\n');
 
   // Clear the input
@@ -69,13 +63,12 @@ test('Chat quick action buttons should fill input box', async ({ page }) => {
 
   // Click the button
   await listCharactersButton.click();
-  await page.waitForTimeout(500);
 
-  // Check if input is filled
+  // Wait for the input value to change
+  await expect(chatInput).toHaveValue('List all characters in this story', { timeout: 5000 });
+
   const inputValue2 = await chatInput.inputValue();
   console.log(`📝 Input value after clicking: "${inputValue2}"\n`);
-
-  expect(inputValue2).toBe('List all characters in this story');
   console.log('✅ Test 2 PASSED: Input correctly filled with "List all characters in this story"\n');
 
   // Test 3: Verify input is NOT auto-submitted
