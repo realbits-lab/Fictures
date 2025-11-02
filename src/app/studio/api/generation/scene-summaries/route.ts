@@ -73,7 +73,7 @@ One of: fear, hope, tension, relief, elevation, catharsis, despair, joy
 ## Setting Selection
 Choose ONE setting from available settings that best fits this scene:
 - Consider the cycle phase (setup, confrontation, virtue, consequence, transition)
-- Use setting's `cycleAmplification` to match emotional needs
+- Use setting's cycleAmplification to match emotional needs
 - Settings can be reused across scenes, but aim for variety
 - Physical setting should match the action (confined space for confrontation, open space for freedom, etc.)
 
@@ -324,7 +324,7 @@ Generate ${scenesPerChapter} scene summaries following the output format.
     });
 
     // Parse structured text into scenes array
-    const scenes = parseScenesFromText(result, characters);
+    const scenes = parseScenesFromText(result, characters, settings);
 
     return NextResponse.json(scenes);
   } catch (error) {
@@ -341,7 +341,8 @@ Generate ${scenesPerChapter} scene summaries following the output format.
 
 function parseScenesFromText(
   text: string,
-  characters: CharacterGenerationResult[]
+  characters: CharacterGenerationResult[],
+  settings: SettingGenerationResult[]
 ): SceneSummaryResult[] {
   const scenes: SceneSummaryResult[] = [];
 

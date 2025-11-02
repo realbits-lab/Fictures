@@ -1,3 +1,7 @@
+---
+title: Studio Agent Implementation Guide
+---
+
 # Studio Agent Implementation Guide
 
 ## Overview

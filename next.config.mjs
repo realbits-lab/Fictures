@@ -1,5 +1,3 @@
-import { createMDX } from 'fumadocs-mdx/next';
-
 const config = {
   experimental: {
     staleTimes: {
@@ -24,11 +22,22 @@ const config = {
       },
     ],
   },
-  // Disable all caching
+  // Disable caching for dynamic content, but allow caching for static assets
   headers: async () => {
     return [
       {
-        source: '/(.*)',
+        // Allow caching for static assets (CSS, JS, images, fonts)
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        // No cache for API routes and dynamic pages
+        source: '/((?!_next/static).*)',
         headers: [
           {
             key: 'Cache-Control',
@@ -48,5 +57,4 @@ const config = {
   },
 };
 
-const withMDX = createMDX();
-export default withMDX(config);
+export default config;

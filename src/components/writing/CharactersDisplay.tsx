@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui";
 import { BeautifulJSONDisplay } from "./BeautifulJSONDisplay";
+import { ContentLoadError } from "@/components/error/ContentLoadError";
 
 interface Character {
   id: string;
@@ -23,6 +24,7 @@ interface CharactersDisplayProps {
 export function CharactersDisplay({ storyData }: CharactersDisplayProps) {
   const [dbCharacters, setDbCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   // Get story ID from the storyData
   const storyId = storyData?.story?.story_id || storyData?.story_id;
@@ -41,10 +43,14 @@ export function CharactersDisplay({ storyData }: CharactersDisplayProps) {
           const data = await response.json();
           // The API returns { characters: [...] }
           setDbCharacters(data.characters || []);
+          setError(null);
         } else {
+          const errorMessage = `Failed to load characters (${response.status})`;
+          setError(new Error(errorMessage));
           console.error('Failed to fetch characters:', response.statusText);
         }
       } catch (error) {
+        setError(error instanceof Error ? error : new Error('Failed to load character data'));
         console.error('Error fetching characters:', error);
       } finally {
         setLoading(false);
@@ -76,6 +82,23 @@ export function CharactersDisplay({ storyData }: CharactersDisplayProps) {
       });
     }
   });
+
+  // Show error state if there was an error loading characters
+  if (error) {
+    return (
+      <ContentLoadError
+        title="Error Loading Characters"
+        message="We encountered a problem loading the character data. Please try again or go back to the story overview."
+        icon="character"
+        onRetry={() => {
+          setError(null);
+          setLoading(true);
+          window.location.reload();
+        }}
+        compact={true}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">

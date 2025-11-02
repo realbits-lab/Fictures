@@ -58,12 +58,20 @@ export default function TestStoryEditorMockup() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-background">
-      {/* Header */}
-      <div className="flex-shrink-0 border-b p-4 bg-card">
-        <h1 className="text-2xl font-bold">Story Editor Mockup - Scroll Test</h1>
-        <p className="text-sm text-muted-foreground">Testing independent vertical scrolling in right sidebar</p>
-      </div>
+    <>
+      <style jsx global>{`
+        html, body {
+          overflow: hidden;
+          height: 100%;
+          overscroll-behavior: none;
+        }
+      `}</style>
+      <div className="h-screen flex flex-col bg-background">
+        {/* Header */}
+        <div className="flex-shrink-0 border-b p-4 bg-card">
+          <h1 className="text-2xl font-bold">Story Editor Mockup - Scroll Test</h1>
+          <p className="text-sm text-muted-foreground">Testing independent vertical scrolling in right sidebar</p>
+        </div>
 
       {/* Main Content Area with PanelGroup */}
       <div className="flex-1 min-h-0 px-4 py-6 overflow-hidden">
@@ -146,6 +154,20 @@ export default function TestStoryEditorMockup() {
                   ))}
                 </div>
               </div>
+
+              {/* Input Box */}
+              <div className="p-4 border-t border-border">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Ask AI assistant..."
+                    className="flex-1 px-3 py-2 text-sm border border-input rounded bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                  <button className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded hover:bg-primary/90">
+                    Send
+                  </button>
+                </div>
+              </div>
             </div>
           </Panel>
         </PanelGroup>
@@ -173,5 +195,6 @@ export default function TestStoryEditorMockup() {
         }}
       />
     </div>
+    </>
   );
 }

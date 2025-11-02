@@ -448,6 +448,11 @@ When modifying data model fields for stories, parts, chapters, scenes, character
   - **Image Optimization**: Automatic generation of 4 variants (AVIF, JPEG × mobile 1x/2x)
 - **Image Storage**: Generated images stored in Vercel Blob with public access
 - **Error Handling**: Implement proper error boundaries and loading states
+- **Error Display**: Always use beautiful, user-friendly error components with proper design
+  - Follow the design patterns from `not-found.tsx` and `ContentLoadError.tsx`
+  - Include decorative icons, helpful messaging, and clear action buttons
+  - Use proper color variables, animations, and responsive design
+  - Never display raw error text or plain error messages
 - **Performance**: Optimize for story writing workflow and database queries
 
 ## Image Generation & Optimization

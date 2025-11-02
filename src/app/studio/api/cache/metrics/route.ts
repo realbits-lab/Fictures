@@ -189,7 +189,7 @@ export async function GET(request: NextRequest) {
           const day = new Date(metric.timestamp).toISOString().slice(0, 10);
 
           if (!dayGroups[day]) {
-            dayGroups[day] = { hits: number; misses: 0, hitRate: 0 };
+            dayGroups[day] = { hits: 0, misses: 0, hitRate: 0 };
           }
 
           if (metric.operation === 'hit') {

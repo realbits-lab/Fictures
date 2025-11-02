@@ -15,7 +15,7 @@
 
 import { useCallback } from 'react';
 import { mutate } from 'swr';
-import { CacheManager } from '../hooks/use-persisted-swr';
+import { cacheManager } from '../hooks/use-persisted-swr';
 import { cacheMetrics } from '../cache/cache-metrics';
 
 /**
@@ -40,9 +40,6 @@ export function useCacheInvalidation() {
    * - SWR memory cache (via mutate)
    */
   const handleCacheInvalidation = useCallback((headers: Headers) => {
-    // Get cache manager instance
-    const cacheManager = CacheManager.getInstance();
-
     // 1. Invalidate localStorage caches based on page types
     const cacheTypes = headers.get('X-Cache-Invalidate');
     if (cacheTypes) {
@@ -91,7 +88,6 @@ export function useCacheInvalidation() {
    * Use when you need to invalidate caches without an API response.
    */
   const invalidatePageCache = useCallback((pageType: ClientCacheType) => {
-    const cacheManager = CacheManager.getInstance();
     cacheManager.invalidatePageCache(pageType);
   }, []);
 
@@ -122,8 +118,6 @@ export function useCacheInvalidation() {
    * Use with caution!
    */
   const clearAllCaches = useCallback(() => {
-    const cacheManager = CacheManager.getInstance();
-
     // Clear all localStorage page caches
     const pageTypes: ClientCacheType[] = [
       'writing',

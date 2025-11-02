@@ -2270,8 +2270,16 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   };
 
   return (
-    <div className="h-screen bg-[rgb(var(--color-background))] flex flex-col">
-      {/* Fixed Header */}
+    <>
+      <style jsx global>{`
+        html, body {
+          overflow: hidden;
+          height: 100%;
+          overscroll-behavior: none;
+        }
+      `}</style>
+      <div className="h-screen bg-[rgb(var(--color-background))] flex flex-col">
+        {/* Fixed Header */}
       <div className="flex-shrink-0 z-50 bg-[rgb(var(--color-background)/95%)] backdrop-blur-[var(--blur)] border-b border-[rgb(var(--color-border))]">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
@@ -2458,5 +2466,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         </PanelGroup>
       </div>
     </div>
+    </>
   );
 }

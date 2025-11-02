@@ -249,7 +249,7 @@ Trigger immediate rollback if:
 
 Use environment variables to control feature rollout:
 
-```env
+```bash
 # .env.production
 ENABLE_CACHE_INVALIDATION=true
 ENABLE_OPTIMISTIC_UPDATES=true

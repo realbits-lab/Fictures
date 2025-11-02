@@ -207,19 +207,16 @@ export function StudioAgentChat({
                 <Button
                   variant="outline"
                   className="justify-start text-left h-auto py-3 theme-button"
-                  onClick={async () => {
+                  onClick={(e) => {
+                    e.preventDefault();
                     const promptText = 'Show me the details of this story';
                     handleInputChange({
                       target: { value: promptText },
                     } as any);
-                    // Small delay to ensure input is set before submitting
+                    // Use handleSubmit directly with a synthetic event
                     setTimeout(() => {
-                      const form = document.querySelector('form');
-                      if (form) {
-                        const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-                        form.dispatchEvent(submitEvent);
-                      }
-                    }, 50);
+                      handleSubmit(new Event('submit') as any);
+                    }, 100);
                   }}
                 >
                   <div className="flex flex-col items-start gap-1">
@@ -232,19 +229,16 @@ export function StudioAgentChat({
                 <Button
                   variant="outline"
                   className="justify-start text-left h-auto py-3 theme-button"
-                  onClick={async () => {
+                  onClick={(e) => {
+                    e.preventDefault();
                     const promptText = 'List all characters in this story';
                     handleInputChange({
                       target: { value: promptText },
                     } as any);
-                    // Small delay to ensure input is set before submitting
+                    // Use handleSubmit directly with a synthetic event
                     setTimeout(() => {
-                      const form = document.querySelector('form');
-                      if (form) {
-                        const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-                        form.dispatchEvent(submitEvent);
-                      }
-                    }, 50);
+                      handleSubmit(new Event('submit') as any);
+                    }, 100);
                   }}
                 >
                   <div className="flex flex-col items-start gap-1">
