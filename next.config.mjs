@@ -5,7 +5,7 @@ const config = {
       static: 0,
     },
   },
-  // Configure image domains for Vercel Blob storage and placeholder images
+  // Configure image domains for Vercel Blob storage and external images
   images: {
     remotePatterns: [
       {

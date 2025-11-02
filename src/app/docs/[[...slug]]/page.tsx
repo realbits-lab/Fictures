@@ -15,9 +15,9 @@ export default async function DocsPage(props: {
   }
 
   return (
-    <div className="flex gap-8">
+    <>
       {/* Main Content */}
-      <article className="flex-1 min-w-0">
+      <article className="pr-0 xl:pr-72">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100">
             {page.metadata.title}
@@ -32,12 +32,12 @@ export default async function DocsPage(props: {
       </article>
 
       {/* Right Panel - Table of Contents */}
-      <aside className="hidden xl:block w-64 flex-shrink-0">
-        <div className="sticky top-24 max-h-[calc(100vh-6rem)] overflow-y-auto">
+      <aside className="hidden xl:block fixed right-0 top-20 bottom-0 w-64 border-l border-gray-200 dark:border-gray-800">
+        <div className="h-full overflow-y-auto px-4 py-6">
           <TableOfContents headings={page.headings} />
         </div>
       </aside>
-    </div>
+    </>
   );
 }
 

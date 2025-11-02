@@ -78,7 +78,7 @@ async function createMockupStories(userId) {
           consequencePattern: 'redemption',
         },
         viewCount: i * 100,
-        imageUrl: `https://placehold.co/1792x1024?text=Story+${i}`,
+        imageUrl: `http://localhost:3000/api/placeholder?width=1792&height=1024&text=Story+${i}`,
       })
       .returning();
 
@@ -145,7 +145,7 @@ async function createMockupScenes(chapterId, userId, storyIndex, chapterIndex) {
       emotionalBeat: 'tension',
       wordCount: content.split(/\s+/).length,
       viewCount: sceneNumber * 10,
-      imageUrl: `https://placehold.co/1344x768?text=Scene+${sceneNumber}`,
+      imageUrl: `http://localhost:3000/api/placeholder?width=1344&height=768&text=Scene+${sceneNumber}`,
     });
   }
 
