@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { comments, users } from '@/lib/db/schema';
+import { comments, users, stories } from '@/lib/db/schema';
 import { eq, and, isNull, desc, not } from 'drizzle-orm';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
+import { getCache } from '@/lib/cache/redis-cache';
 
 export const runtime = 'nodejs';
+
+// Cache TTL configuration
+const CACHE_TTL = {
+  PUBLISHED_CONTENT: 600,  // 10 minutes for published stories (public content)
+  PRIVATE_CONTENT: 180,    // 3 minutes for private content
+};
 
 interface Comment {
   id: string;
@@ -35,16 +42,56 @@ const createCommentSchema = z.object({
   parentCommentId: z.string().optional(),
 });
 
-// GET /api/stories/[id]/comments - Fetch comments for a story
+// GET /api/stories/[id]/comments - Fetch comments for a story with Redis caching
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const startTime = Date.now();
+
   try {
     const { id: storyId } = await params;
     const { searchParams } = new URL(request.url);
     const chapterId = searchParams.get('chapterId');
     const sceneId = searchParams.get('sceneId');
+
+    // Build cache key based on scope
+    let cacheKey = `comments:story:${storyId}`;
+    if (sceneId) {
+      cacheKey = `comments:scene:${sceneId}`;
+    } else if (chapterId) {
+      cacheKey = `comments:chapter:${chapterId}`;
+    }
+
+    // Check if story is published to determine cache strategy
+    const [story] = await db
+      .select({ status: stories.status })
+      .from(stories)
+      .where(eq(stories.id, storyId))
+      .limit(1);
+
+    const isPublished = story?.status === 'published';
+    const publicCacheKey = `${cacheKey}:public`;
+
+    // Try public cache first (for published stories)
+    if (isPublished) {
+      const cached = await getCache().get<{ comments: Comment[] }>(publicCacheKey);
+      if (cached) {
+        const duration = Date.now() - startTime;
+        console.log(`[Comments Cache] ✅ HIT public: ${cacheKey} (${duration}ms)`);
+
+        return new NextResponse(JSON.stringify(cached), {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Cache-Status': 'HIT',
+            'X-Cache-Type': 'public',
+            'Cache-Control': 'public, max-age=600', // 10 minutes CDN cache
+            'X-Server-Timing': `total;dur=${duration}`,
+          },
+        });
+      }
+    }
 
     // Build the where clause
     let whereClause = eq(comments.storyId, storyId);
@@ -82,7 +129,14 @@ export async function GET(
       .orderBy(comments.createdAt);
 
     if (allComments.length === 0) {
-      return NextResponse.json({ comments: [] });
+      const emptyResult = { comments: [] };
+
+      // Cache empty result too (prevents repeated queries for stories with no comments)
+      if (isPublished) {
+        await getCache().set(publicCacheKey, emptyResult, CACHE_TTL.PUBLISHED_CONTENT);
+      }
+
+      return NextResponse.json(emptyResult);
     }
 
     // Separate top-level comments and replies
@@ -111,7 +165,25 @@ export async function GET(
       .map(c => commentMap.get(c.id)!)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-    return NextResponse.json({ comments: result });
+    const response = { comments: result };
+    const duration = Date.now() - startTime;
+
+    // Cache the result
+    if (isPublished) {
+      await getCache().set(publicCacheKey, response, CACHE_TTL.PUBLISHED_CONTENT);
+      console.log(`[Comments Cache] 💾 SET public: ${cacheKey} (${duration}ms, ${result.length} comments)`);
+    }
+
+    return new NextResponse(JSON.stringify(response), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Cache-Status': 'MISS',
+        'X-Cache-Type': isPublished ? 'public' : 'none',
+        'Cache-Control': isPublished ? 'public, max-age=600' : 'private, max-age=180',
+        'X-Server-Timing': `total;dur=${duration}`,
+      },
+    });
   } catch (error) {
     console.error('Error fetching comments:', error);
     return NextResponse.json(
@@ -207,6 +279,27 @@ export async function POST(
       .from(users)
       .where(eq(users.id, session.user.id))
       .limit(1);
+
+    // Invalidate cache for this story/chapter/scene
+    // Build cache keys to invalidate
+    const cacheKeysToInvalidate: string[] = [
+      `comments:story:${storyId}:public`,
+    ];
+
+    if (validatedData.sceneId) {
+      cacheKeysToInvalidate.push(`comments:scene:${validatedData.sceneId}:public`);
+    }
+
+    if (validatedData.chapterId) {
+      cacheKeysToInvalidate.push(`comments:chapter:${validatedData.chapterId}:public`);
+    }
+
+    // Invalidate all relevant caches
+    await Promise.all(
+      cacheKeysToInvalidate.map(key => getCache().del(key))
+    );
+
+    console.log(`[Comments Cache] 🔄 Invalidated caches: ${cacheKeysToInvalidate.join(', ')}`);
 
     return NextResponse.json({
       comment: {

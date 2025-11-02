@@ -420,13 +420,13 @@ export async function POST(request: NextRequest) {
                 const imageResult = await imageResponse.json();
                 console.log(`[Novel Generation] Generated image for character ${character.name}:`, imageResult.originalUrl);
 
-                // Update character record with image URL
+                // Update character record with image URL and optimized variants
                 if (characterDbId) {
                   await db
                     .update(characters)
                     .set({
                       imageUrl: imageResult.originalUrl,
-                      imageVariants: imageResult.variants,
+                      imageVariants: imageResult.optimizedSet,
                       updatedAt: new Date(),
                     })
                     .where(eq(characters.id, characterDbId));
@@ -477,13 +477,13 @@ export async function POST(request: NextRequest) {
                 const imageResult = await imageResponse.json();
                 console.log(`[Novel Generation] Generated image for setting ${setting.name}:`, imageResult.originalUrl);
 
-                // Update setting record with image URL
+                // Update setting record with image URL and optimized variants
                 if (settingDbId) {
                   await db
                     .update(settings)
                     .set({
                       imageUrl: imageResult.originalUrl,
-                      imageVariants: imageResult.variants,
+                      imageVariants: imageResult.optimizedSet,
                       updatedAt: new Date(),
                     })
                     .where(eq(settings.id, settingDbId));
@@ -535,13 +535,13 @@ export async function POST(request: NextRequest) {
                 const imageResult = await imageResponse.json();
                 console.log(`[Novel Generation] Generated image for scene ${scene.title}:`, imageResult.originalUrl);
 
-                // Update scene record with image URL
+                // Update scene record with image URL and optimized variants
                 if (sceneDbId) {
                   await db
                     .update(scenes)
                     .set({
                       imageUrl: imageResult.originalUrl,
-                      imageVariants: imageResult.variants,
+                      imageVariants: imageResult.optimizedSet,
                       updatedAt: new Date(),
                     })
                     .where(eq(scenes.id, sceneDbId));

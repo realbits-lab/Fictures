@@ -1,27 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils/cn';
 import { CommentItem } from './CommentItem';
 import { CommentForm } from './CommentForm';
-
-interface Comment {
-  id: string;
-  content: string;
-  userId: string;
-  userName: string | null;
-  userImage: string | null;
-  parentCommentId: string | null;
-  depth: number;
-  likeCount: number;
-  dislikeCount: number;
-  replyCount: number;
-  isEdited: boolean;
-  isDeleted: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  replies?: Comment[];
-}
+import { useComments, type Comment } from '@/lib/hooks/use-comments';
 
 interface CommentSectionProps {
   storyId: string;
@@ -38,116 +21,43 @@ export function CommentSection({
   currentUserId,
   className,
 }: CommentSectionProps) {
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  // Use optimized comments hook with 3-layer caching
+  const {
+    comments,
+    isLoading: loading,
+    error,
+    invalidate,
+    addOptimisticComment,
+    removeOptimisticComment,
+    updateOptimisticComment,
+  } = useComments({
+    storyId,
+    chapterId,
+    sceneId,
+  });
 
-  const fetchComments = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError('');
+  const handleCommentAdded = async (newComment: Comment) => {
+    // Optimistically update UI
+    addOptimisticComment(newComment);
 
-      let url = `/studio/api/stories/${storyId}/comments`;
-      const params = new URLSearchParams();
-
-      if (sceneId) {
-        params.append('sceneId', sceneId);
-      } else if (chapterId) {
-        params.append('chapterId', chapterId);
-      }
-
-      if (params.toString()) {
-        url += `?${params.toString()}`;
-      }
-
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch comments');
-      }
-
-      const data = await response.json();
-
-      // Keep deleted comments to preserve thread structure
-      // They will be displayed as "[deleted]" placeholders in CommentItem
-      setComments(data.comments || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load comments');
-    } finally {
-      setLoading(false);
-    }
-  }, [storyId, chapterId, sceneId]);
-
-  useEffect(() => {
-    fetchComments();
-  }, [fetchComments]);
-
-  const handleCommentAdded = (newComment: Comment) => {
-    if (newComment.parentCommentId) {
-      setComments((prev) => {
-        const updatedComments = [...prev];
-
-        // Recursive function to find and update parent comment at any depth
-        const addReplyToParent = (comments: Comment[]): boolean => {
-          for (let i = 0; i < comments.length; i++) {
-            if (comments[i].id === newComment.parentCommentId) {
-              // Found the parent - add the reply
-              if (!comments[i].replies) {
-                comments[i].replies = [];
-              }
-              // Check if reply already exists to prevent duplicates
-              const alreadyExists = comments[i].replies!.some(r => r.id === newComment.id);
-              if (!alreadyExists) {
-                comments[i].replies!.push(newComment);
-                comments[i].replyCount += 1;
-              }
-              return true;
-            }
-
-            // Search in nested replies
-            if (comments[i].replies && comments[i].replies!.length > 0) {
-              if (addReplyToParent(comments[i].replies!)) {
-                return true;
-              }
-            }
-          }
-          return false;
-        };
-
-        addReplyToParent(updatedComments);
-        return updatedComments;
-      });
-    } else {
-      setComments((prev) => [newComment, ...prev]);
-    }
+    // Invalidate cache to refetch fresh data from server
+    await invalidate();
   };
 
-  const handleCommentUpdated = (updatedComment: Comment) => {
-    setComments((prev) =>
-      prev.map((comment) =>
-        comment.id === updatedComment.id ? { ...comment, ...updatedComment } : comment
-      )
-    );
+  const handleCommentUpdated = async (updatedComment: Comment) => {
+    // Optimistically update UI
+    updateOptimisticComment(updatedComment.id, updatedComment);
+
+    // Invalidate cache to refetch fresh data from server
+    await invalidate();
   };
 
-  const handleCommentDeleted = (commentId: string) => {
-    setComments((prev) => {
-      // Recursive function to remove comment at any depth
-      const removeComment = (comments: Comment[]): Comment[] => {
-        return comments.filter(comment => {
-          if (comment.id === commentId) {
-            return false; // Remove this comment
-          }
-          // Check nested replies
-          if (comment.replies && comment.replies.length > 0) {
-            comment.replies = removeComment(comment.replies);
-          }
-          return true;
-        });
-      };
+  const handleCommentDeleted = async (commentId: string) => {
+    // Optimistically update UI
+    removeOptimisticComment(commentId);
 
-      return removeComment(prev);
-    });
+    // Invalidate cache to refetch fresh data from server
+    await invalidate();
   };
 
   return (
@@ -177,7 +87,9 @@ export function CommentSection({
 
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          <p className="text-sm text-red-600 dark:text-red-400">
+            {error instanceof Error ? error.message : 'Failed to load comments'}
+          </p>
         </div>
       )}
 
