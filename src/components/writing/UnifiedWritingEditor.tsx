@@ -141,6 +141,50 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   // Collapse states for YAML data displays
   const [storyDataCollapsed, setStoryDataCollapsed] = useState(false);
 
+  // Panel refs for wheel event isolation
+  const leftPanelRef = useRef<HTMLDivElement>(null);
+  const middlePanelRef = useRef<HTMLDivElement>(null);
+  const rightPanelRef = useRef<HTMLDivElement>(null);
+
+  // Completely isolate wheel events for each panel
+  useEffect(() => {
+    const panels = [leftPanelRef.current, middlePanelRef.current, rightPanelRef.current];
+
+    const handleWheel = (e: WheelEvent) => {
+      // ALWAYS prevent default and stop propagation to completely isolate wheel events
+      e.preventDefault();
+      e.stopPropagation();
+
+      const target = e.currentTarget as HTMLElement;
+      const { scrollTop, scrollHeight, clientHeight } = target;
+      const canScroll = scrollHeight > clientHeight;
+
+      // If element can scroll, manually update scrollTop
+      if (canScroll) {
+        const newScrollTop = scrollTop + e.deltaY;
+        const maxScroll = scrollHeight - clientHeight;
+
+        // Clamp scroll position to valid range
+        target.scrollTop = Math.max(0, Math.min(maxScroll, newScrollTop));
+      }
+      // If element cannot scroll, do nothing (event is already prevented)
+    };
+
+    panels.forEach((panel) => {
+      if (panel) {
+        panel.addEventListener('wheel', handleWheel, { passive: false, capture: true });
+      }
+    });
+
+    return () => {
+      panels.forEach((panel) => {
+        if (panel) {
+          panel.removeEventListener('wheel', handleWheel, { capture: true });
+        }
+      });
+    };
+  }, []);
+
   // SWR hook for fetching story data when switching stories
   const [targetStoryId, setTargetStoryId] = useState<string | null>(null);
   const { story: swrStory, isLoading: isLoadingStory, isValidating: isValidatingStory, error: storyError } = useStoryData(targetStoryId);
@@ -2365,8 +2409,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           {/* Left Sidebar - Story Structure Navigation (Tree View) */}
           <Panel defaultSize={25} minSize={15} maxSize={40} style={{ display: 'flex', flexDirection: 'column' }}>
             <div
+              ref={leftPanelRef}
               className="flex-1 min-h-0 pr-2 overflow-y-auto [overscroll-behavior-y:contain]"
-              onWheel={(e) => e.stopPropagation()}
             >
               <StoryStructureSidebar
                 story={story}
@@ -2384,8 +2428,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           {/* Middle Panel - Table Data Display */}
           <Panel defaultSize={50} minSize={30} style={{ display: 'flex', flexDirection: 'column' }}>
             <div
+              ref={middlePanelRef}
               className="flex-1 min-h-0 px-2 overflow-y-auto [overscroll-behavior-y:contain]"
-              onWheel={(e) => e.stopPropagation()}
             >
               {renderEditor()}
             </div>
@@ -2396,8 +2440,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           {/* Right Sidebar - Studio Agent Chat Only */}
           <Panel defaultSize={25} minSize={15} maxSize={40} style={{ display: 'flex', flexDirection: 'column' }}>
             <div
+              ref={rightPanelRef}
               className="h-full pl-2 flex flex-col overflow-y-auto [overscroll-behavior-y:contain]"
-              onWheel={(e) => e.stopPropagation()}
             >
               <StudioAgentChat
                 storyId={story.id}

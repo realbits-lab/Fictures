@@ -2,17 +2,17 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
-import { StudioAgentChat } from '@/components/studio/studio-agent-chat';
 
 export default function TestStoryEditorMockup() {
   const [currentSelection, setCurrentSelection] = useState<any>(null);
   const leftPanelRef = useRef<HTMLDivElement>(null);
   const middlePanelRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
+  const rightChatRef = useRef<HTMLDivElement>(null);
 
   // Completely isolate wheel events for each panel
   useEffect(() => {
-    const panels = [leftPanelRef.current, middlePanelRef.current, rightPanelRef.current];
+    const panels = [leftPanelRef.current, middlePanelRef.current, rightChatRef.current];
 
     const handleWheel = (e: WheelEvent) => {
       // ALWAYS prevent default and stop propagation to completely isolate wheel events
@@ -36,14 +36,14 @@ export default function TestStoryEditorMockup() {
 
     panels.forEach((panel) => {
       if (panel) {
-        panel.addEventListener('wheel', handleWheel, { passive: false });
+        panel.addEventListener('wheel', handleWheel, { passive: false, capture: true });
       }
     });
 
     return () => {
       panels.forEach((panel) => {
         if (panel) {
-          panel.removeEventListener('wheel', handleWheel);
+          panel.removeEventListener('wheel', handleWheel, { capture: true });
         }
       });
     };
@@ -119,23 +119,33 @@ export default function TestStoryEditorMockup() {
 
           <PanelResizeHandle className="w-1 bg-gray-300 dark:bg-gray-700 hover:bg-blue-500 dark:hover:bg-blue-400 transition-colors cursor-col-resize" />
 
-          {/* Right Sidebar - Studio Agent Chat */}
+          {/* Right Sidebar - Mock Chat with Scrollable Messages */}
           <Panel defaultSize={25} minSize={15} maxSize={40} style={{ display: 'flex', flexDirection: 'column' }}>
-            <div
-              ref={rightPanelRef}
-              className="h-full pl-2 flex flex-col overflow-y-auto [overscroll-behavior-y:contain]"
-              onWheel={(e) => e.stopPropagation()}
-            >
-              <StudioAgentChat
-                storyId={mockStory.id}
-                storyContext={{
-                  storyTitle: mockStory.title,
-                  currentSelection: currentSelection,
-                  genre: mockStory.genre,
-                  status: mockStory.status,
-                }}
-                className="flex-1"
-              />
+            <div className="h-full pl-2 flex flex-col">
+              <div
+                ref={rightChatRef}
+                className="flex-1 p-4 overflow-y-auto text-foreground min-h-0 [overscroll-behavior-y:contain]"
+              >
+                <div className="font-bold text-lg mb-4">AI Assistant Chat</div>
+                <div className="text-sm text-muted-foreground mb-4">
+                  ⬇️ SCROLL THIS CHAT - Other panels should NOT scroll
+                </div>
+                <div className="space-y-3">
+                  {Array.from({ length: 30 }, (_, i) => (
+                    <div key={i} className={`p-3 rounded ${i % 2 === 0 ? 'bg-primary/10 ml-4' : 'bg-muted mr-4'}`}>
+                      <div className="font-medium text-xs mb-1">
+                        {i % 2 === 0 ? '🤖 AI Assistant' : '👤 You'}
+                      </div>
+                      <p className="text-sm">
+                        {i % 2 === 0
+                          ? `This is AI message ${Math.floor(i / 2) + 1}. I can help you write your story, suggest plot points, develop characters, and more. Let me know what you need!`
+                          : `This is user message ${Math.floor(i / 2) + 1}. Can you help me with this chapter?`
+                        }
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </Panel>
         </PanelGroup>

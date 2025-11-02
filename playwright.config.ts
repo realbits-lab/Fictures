@@ -22,10 +22,37 @@ export default defineConfig({
       testMatch: /.*\.setup\.ts/,
     },
     {
-      name: 'authenticated',
-      use: { 
+      name: 'writer-tests',
+      use: {
         ...devices['Desktop Chrome'],
-        storageState: '.auth/user.json',
+        storageState: '.auth/writer.json',
+      },
+      // dependencies: ['setup'], // Temporarily disabled
+      testMatch: /.*\.writer\.spec\.ts/,
+    },
+    {
+      name: 'reader-tests',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: '.auth/reader.json',
+      },
+      dependencies: ['setup'],
+      testMatch: /.*\.reader\.spec\.ts/,
+    },
+    {
+      name: 'manager-tests',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: '.auth/manager.json',
+      },
+      dependencies: ['setup'],
+      testMatch: /.*\.manager\.spec\.ts/,
+    },
+    {
+      name: 'authenticated',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: '.auth/writer.json',
       },
       dependencies: ['setup'],
       testMatch: /.*\.authenticated\.spec\.ts/,
