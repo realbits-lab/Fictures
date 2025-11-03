@@ -158,6 +158,20 @@ export const cyclePhaseEnum = pgEnum('cycle_phase', [
   'transition'
 ]);
 
+// Genre enum for stories
+export const genreEnum = pgEnum('genre', [
+  'Fantasy',
+  'Science Fiction',
+  'Romance',
+  'Mystery',
+  'Thriller',
+  'Detective',
+  'Adventure',
+  'Horror',
+  'Historical Fiction',
+  'Contemporary'
+]);
+
 export const emotionalBeatEnum = pgEnum('emotional_beat', [
   'fear',
   'hope',
@@ -205,7 +219,7 @@ export const userPreferences = pgTable('user_preferences', {
 export const stories = pgTable('stories', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
-  genre: varchar('genre', { length: 100 }),
+  genre: genreEnum('genre').notNull(),
   status: statusEnum('status').default('writing').notNull(),
   authorId: text('author_id').references(() => users.id).notNull(),
   viewCount: integer('view_count').default(0),
@@ -257,11 +271,11 @@ export const chapters = pgTable('chapters', {
   status: statusEnum('status').default('writing').notNull(),
   purpose: text('purpose'), // Chapter purpose from story development
   hook: text('hook'), // Chapter hook from story development
-  characterFocus: text('character_focus'), // Main character focus for chapter
   publishedAt: timestamp('published_at'),
   scheduledFor: timestamp('scheduled_for'),
   // Legacy fields removed - HNS-specific fields dropped
   // pacingGoal, actionDialogueRatio, chapterHook were HNS-only and not used by Novels
+  // characterFocus was HNS legacy field - removed in favor of focusCharacters array
   // Adversity-Triumph Engine fields - Nested cycle tracking
   characterId: text('character_id').references(() => characters.id, { onDelete: 'set null' }), // Primary character whose macro arc this advances
   arcPosition: arcPositionEnum('arc_position'), // Position in macro arc: beginning, middle, climax (MACRO moment), or resolution
@@ -304,6 +318,7 @@ export const scenes = pgTable('scenes', {
   emotionalBeat: emotionalBeatEnum('emotional_beat'), // Target emotion: fear, hope, tension, relief, elevation, catharsis, despair, joy
   // Planning metadata (guides content generation) - from novels specification
   characterFocus: json('character_focus').$type<string[]>(), // Character IDs appearing in this scene
+  settingId: text('setting_id').references(() => settings.id), // Setting where this scene takes place (nullable for legacy/ambiguous scenes)
   sensoryAnchors: json('sensory_anchors').$type<string[]>(), // Key sensory details to include (e.g., "rain on metal roof", "smell of smoke")
   dialogueVsDescription: text('dialogue_vs_description'), // Balance guidance: "dialogue-heavy" | "balanced" | "description-heavy"
   suggestedLength: text('suggested_length'), // "short" (300-500) | "medium" (500-800) | "long" (800-1000 words)
@@ -379,43 +394,55 @@ export const sceneViews = pgTable('scene_views', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// Characters table - Story characters with HNS support
+// Characters table - Story characters with Adversity-Triumph Engine
 export const characters = pgTable('characters', {
+  // === IDENTITY ===
   id: text('id').primaryKey(),
-  name: varchar('name', { length: 255 }).notNull(),
   storyId: text('story_id').references(() => stories.id).notNull(),
-  isMain: boolean('is_main').default(false),
-  content: text('content').default(''), // Store all character data as YAML/JSON
-  imageUrl: text('image_url'), // Original character image URL from Vercel Blob
-  imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
-  // HNS fields
-  role: varchar('role', { length: 50 }),
-  archetype: varchar('archetype', { length: 100 }),
-  summary: text('summary'),
-  storyline: text('storyline'),
-  personality: json('personality').$type<{traits: string[]; myers_briggs: string; enneagram: string}>(),
-  backstory: json('backstory').$type<Record<string, string>>(),
-  motivations: json('motivations').$type<{primary: string; secondary: string; fear: string}>(),
-  voice: json('voice').$type<Record<string, unknown>>(),
-  physicalDescription: json('physical_description').$type<Record<string, unknown>>(),
-  visualReferenceId: text('visual_reference_id'),
-  // Adversity-Triumph Engine fields - Character core
+  name: varchar('name', { length: 255 }).notNull(),
+  isMain: boolean('is_main').default(false), // Main characters (2-4) get MACRO arcs
+  summary: text('summary'), // 1-2 sentence essence: "[CoreTrait] [role] [internalFlaw], seeking [externalGoal]"
+
+  // === ADVERSITY-TRIUMPH CORE (The Engine) ===
   coreTrait: text('core_trait'), // THE defining moral virtue: courage, compassion, integrity, loyalty, wisdom, sacrifice
-  internalFlaw: text('internal_flaw'), // Source of adversity - MUST include cause
-  externalGoal: text('external_goal'), // What character THINKS will solve their problem
+  internalFlaw: text('internal_flaw'), // MUST include cause: "[fears/believes/wounded by] X because Y"
+  externalGoal: text('external_goal'), // What they THINK will solve their problem (healing flaw actually will)
+
+  // === CHARACTER DEPTH (For Realistic Portrayal) ===
+  personality: json('personality').$type<{
+    traits: string[];  // Behavioral traits: "impulsive", "optimistic", "stubborn"
+    values: string[];  // What they care about: "family", "honor", "freedom"
+  }>(),
+  backstory: text('backstory'), // Focused history providing motivation context (2-4 paragraphs)
+
+  // === RELATIONSHIPS (Jeong System) ===
   relationships: json('relationships').$type<Record<string, {
     type: 'ally' | 'rival' | 'family' | 'romantic' | 'mentor' | 'adversary';
-    jeongLevel: number;
-    sharedHistory: string;
-    currentDynamic: string;
-  }>>(), // Jeong system tracking
+    jeongLevel: number;      // 0-10: depth of connection (정 - affective bonds)
+    sharedHistory: string;   // What binds them
+    currentDynamic: string;  // Current relationship state
+  }>>(),
+
+  // === PROSE GENERATION ===
+  physicalDescription: json('physical_description').$type<{
+    age: string;               // "mid-30s", "elderly", "young adult"
+    appearance: string;        // Overall look
+    distinctiveFeatures: string; // Memorable details for "show don't tell"
+    style: string;            // How they dress/present themselves
+  }>(),
   voiceStyle: json('voice_style').$type<{
-    tone: string;
-    vocabulary: string;
-    quirks: string[];
-    emotionalRange: string;
-  }>(), // Dialogue generation guide
-  visualStyle: text('visual_style'), // Visual aesthetic: realistic, anime, painterly, cinematic
+    tone: string;             // "warm", "sarcastic", "formal", "gentle"
+    vocabulary: string;       // "simple", "educated", "technical", "poetic"
+    quirks: string[];        // Verbal tics, repeated phrases
+    emotionalRange: string;  // "reserved", "expressive", "volatile"
+  }>(),
+
+  // === VISUAL GENERATION ===
+  imageUrl: text('image_url'), // Original portrait (1024×1024 from DALL-E 3)
+  imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants
+  visualStyle: text('visual_style'), // "realistic" | "anime" | "painterly" | "cinematic"
+
+  // === METADATA ===
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -609,6 +636,10 @@ export const scenesRelations = relations(scenes, ({ one, many }) => ({
   chapter: one(chapters, {
     fields: [scenes.chapterId],
     references: [chapters.id],
+  }),
+  setting: one(settings, {
+    fields: [scenes.settingId],
+    references: [settings.id],
   }),
   comicPanels: many(comicPanels),
 }));

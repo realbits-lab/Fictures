@@ -1,7 +1,3 @@
----
-title: "Schema Synchronization Strategy"
----
-
 # Schema Synchronization Strategy
 
 **Date**: 2025-10-31

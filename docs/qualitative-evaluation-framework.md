@@ -1,7 +1,3 @@
----
-title: "qualitative-evaluation-framework"
----
-
 The Architectonics of Engagement: A Qualitative Framework for Evaluating Web Novels
 
 

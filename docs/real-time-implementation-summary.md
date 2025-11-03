@@ -1,7 +1,3 @@
----
-title: "Real-Time Story Updates - Implementation Summary"
----
-
 # Real-Time Story Updates - Implementation Summary
 
 ## 🎉 Implementation Complete!

@@ -14,38 +14,84 @@ dotenv --file .env.local run node scripts/<script-name>.mjs [arguments] > logs/<
 
 ## Authentication
 
-Most scripts use authentication from `.auth/user.json` which contains:
-- **manager** profile: For admin operations (manager@fictures.xyz)
-- **writer** profile: For story generation and management operations (writer@fictures.xyz)
+Scripts use authentication from separate JSON files in `.auth/` directory:
+- **`.auth/user.json`**: For manager@fictures.xyz (admin operations)
+- **`.auth/writer.json`**: For writer@fictures.xyz (story generation and management)
+- **`.auth/reader.json`**: For reader account (testing reading features)
 
-The authentication file structure:
+Each authentication file contains session cookies required for API authentication:
 ```json
 {
-  "defaultProfile": "manager",
-  "profiles": {
-    "manager": {
-      "email": "manager@fictures.xyz",
-      "userId": "...",
-      "apiKey": "...",
-      "cookies": [...]
-    },
-    "writer": {
-      "email": "writer@fictures.xyz",
-      "userId": "...",
-      "apiKey": "...",
-      "cookies": [...]
+  "cookies": [
+    {
+      "name": "authjs.session-token",
+      "value": "...",
+      "domain": "localhost",
+      ...
     }
-  }
+  ]
 }
 ```
+
+**Important**: Session cookies may expire. If you get 401/Unauthorized errors, re-run the authentication capture script.
 
 ---
 
 ## Story Generation Scripts
 
-### generate-complete-story.mjs
+### generate-novel.mjs
+
+**Purpose**: Generate a complete novel using the Adversity-Triumph Engine (current system).
+
+**Authentication**: Uses `manager@fictures.xyz` from `.auth/user.json`
+
+**Input**:
+- `[story-prompt]` - Story description (uses default if omitted)
+- `--genre <genre>` - Preferred genre (e.g., "fantasy", "sci-fi")
+- `--tone <tone>` - Preferred tone (e.g., "hopeful", "dark")
+- `--characters <n>` - Number of characters (default: 2-4)
+- `--settings <n>` - Number of settings (default: 2-4)
+- `--parts <n>` - Number of parts (default: 3)
+- `--chapters <n>` - Chapters per part (default: 2-3)
+- `--scenes <n>` - Scenes per chapter (default: 3-5)
+
+**Output**:
+- Story ID and title
+- Complete story structure with Adversity-Triumph cycles
+- AI-generated images (story cover, characters, settings, scenes)
+- 4 optimized image variants per image (AVIF/JPEG × mobile 1x/2x)
+- Automated quality evaluation for all scenes
+- Progress logs during generation
+
+**Usage**:
+```bash
+# Generate with default prompt
+dotenv --file .env.local run node scripts/generate-novel.mjs
+
+# Generate with custom prompt
+dotenv --file .env.local run node scripts/generate-novel.mjs "A story about courage and friendship"
+
+# Generate with specific options
+dotenv --file .env.local run node scripts/generate-novel.mjs --genre "fantasy" --tone "hopeful" --characters 3 "Your story idea"
+
+# Background execution with logging
+dotenv --file .env.local run node scripts/generate-novel.mjs "Your prompt" > logs/novel-generation.log 2>&1 &
+```
+
+**Generation Time**: 5-25 minutes depending on complexity
+
+**Direct Links After Generation**:
+- Edit: `http://localhost:3000/studio/edit/story/{storyId}`
+- Read (Novel): `http://localhost:3000/novels/{storyId}`
+- Read (Comic): `http://localhost:3000/comics/{storyId}`
+
+---
+
+### generate-complete-story.mjs (DEPRECATED)
 
 **Purpose**: Generate a complete story using HNS (Hook-Nurture-Satisfy) methodology.
+
+**Status**: ⚠️ DEPRECATED - Use `generate-novel.mjs` instead (Adversity-Triumph Engine)
 
 **Authentication**: Uses `writer@fictures.xyz` from `.auth/user.json`
 

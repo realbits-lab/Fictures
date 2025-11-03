@@ -1,7 +1,3 @@
----
-title: "UI Documentation - Fictures Platform"
----
-
 # UI Documentation - Fictures Platform
 
 Complete guide to the Fictures platform's user interface architecture, styling system, and development guidelines.

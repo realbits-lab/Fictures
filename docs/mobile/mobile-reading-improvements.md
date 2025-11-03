@@ -1,7 +1,3 @@
----
-title: "Mobile Reading Experience Improvements"
----
-
 # Mobile Reading Experience Improvements
 
 ## Problem

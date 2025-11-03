@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
+import React, { useMemo } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui";
 import { TreeView, TreeDataItem } from "@/components/ui/tree-view";
 import {
   BookOpen,
@@ -9,11 +9,7 @@ import {
   Edit3,
   Camera,
   Users,
-  MapPin,
-  Maximize2,
-  Minimize2,
-  PanelLeftClose,
-  PanelLeftOpen
+  MapPin
 } from "lucide-react";
 
 interface Scene {
@@ -37,6 +33,16 @@ interface Part {
   chapters: Chapter[];
 }
 
+interface Character {
+  id: string;
+  name: string;
+}
+
+interface Setting {
+  id: string;
+  name: string;
+}
+
 interface Story {
   id: string;
   title: string;
@@ -44,6 +50,8 @@ interface Story {
   status: string;
   parts: Part[];
   chapters: Chapter[];
+  characters?: Character[];
+  settings?: Setting[];
 }
 
 interface Selection {
@@ -52,6 +60,9 @@ interface Selection {
   partId?: string;
   chapterId?: string;
   sceneId?: string;
+  characterId?: string;
+  settingId?: string;
+  format?: "novel" | "comic"; // Which format the selection is for
 }
 
 interface StoryStructureSidebarProps {
@@ -59,49 +70,27 @@ interface StoryStructureSidebarProps {
   currentSelection?: Selection;
   onSelectionChange?: (selection: Selection) => void;
   validatingStoryId?: string | null;
-  onSidebarCollapse?: (collapsed: boolean) => void;
 }
 
 export function StoryStructureSidebar({
   story,
   currentSelection,
   onSelectionChange,
-  validatingStoryId,
-  onSidebarCollapse
+  validatingStoryId
 }: StoryStructureSidebarProps) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [expandAll, setExpandAll] = useState(true);
-
-  const toggleSidebar = () => {
-    const newCollapsed = !sidebarCollapsed;
-    setSidebarCollapsed(newCollapsed);
-    onSidebarCollapse?.(newCollapsed);
-  };
-
-  // Convert story structure to TreeDataItem format
-  const treeData = useMemo<TreeDataItem[]>(() => {
+  // Function to generate tree data for a specific format
+  const generateTreeData = (format: "novel" | "comic"): TreeDataItem[] => {
     const items: TreeDataItem[] = [];
-
-    // Debug log to check story structure
-    console.log('📊 StoryStructureSidebar - Story structure:', {
-      id: story.id,
-      title: story.title,
-      partsLength: story.parts?.length || 0,
-      chaptersLength: story.chapters?.length || 0,
-      firstPart: story.parts?.[0],
-      firstPartType: typeof story.parts?.[0],
-      hasParts: !!story.parts,
-      partsIsArray: Array.isArray(story.parts)
-    });
 
     // Add story root item
     const storyItem: TreeDataItem = {
-      id: `story-${story.id}`,
+      id: `${format}-story-${story.id}`,
       name: story.title,
       icon: BookOpen,
       onClick: () => onSelectionChange?.({
         level: "story",
-        storyId: story.id
+        storyId: story.id,
+        format
       }),
       children: []
     };
@@ -120,13 +109,14 @@ export function StoryStructureSidebar({
         });
 
         const partItem: TreeDataItem = {
-          id: `part-${part.id}`,
+          id: `${format}-part-${part.id}`,
           name: part.title, // Show only title
           icon: FileText,
           onClick: () => onSelectionChange?.({
             level: "part",
             storyId: story.id,
-            partId: part.id
+            partId: part.id,
+            format
           }),
           children: []
         };
@@ -145,14 +135,15 @@ export function StoryStructureSidebar({
             });
 
             const chapterItem: TreeDataItem = {
-              id: `chapter-${chapter.id}`,
+              id: `${format}-chapter-${chapter.id}`,
               name: chapter.title, // Show only title
               icon: Edit3,
               onClick: () => onSelectionChange?.({
                 level: "chapter",
                 storyId: story.id,
                 partId: part.id,
-                chapterId: chapter.id
+                chapterId: chapter.id,
+                format
               }),
               children: []
             };
@@ -170,7 +161,7 @@ export function StoryStructureSidebar({
               sortedScenes.forEach(scene => {
                 console.log(`        🎭 Adding scene: ${scene.title}`);
                 chapterItem.children?.push({
-                  id: `scene-${scene.id}`,
+                  id: `${format}-scene-${scene.id}`,
                   name: scene.title,
                   icon: Camera,
                   onClick: () => onSelectionChange?.({
@@ -178,7 +169,8 @@ export function StoryStructureSidebar({
                     storyId: story.id,
                     partId: part.id,
                     chapterId: chapter.id,
-                    sceneId: scene.id
+                    sceneId: scene.id,
+                    format
                   })
                 });
               });
@@ -209,13 +201,14 @@ export function StoryStructureSidebar({
         });
 
         const chapterItem: TreeDataItem = {
-          id: `chapter-${chapter.id}`,
+          id: `${format}-chapter-${chapter.id}`,
           name: chapter.title, // Show only title
           icon: Edit3,
           onClick: () => onSelectionChange?.({
             level: "chapter",
             storyId: story.id,
-            chapterId: chapter.id
+            chapterId: chapter.id,
+            format
           }),
           children: []
         };
@@ -233,14 +226,15 @@ export function StoryStructureSidebar({
           sortedScenes.forEach(scene => {
             console.log(`    🎭 Adding scene: ${scene.title}`);
             chapterItem.children?.push({
-              id: `scene-${scene.id}`,
+              id: `${format}-scene-${scene.id}`,
               name: scene.title,
               icon: Camera,
               onClick: () => onSelectionChange?.({
                 level: "scene",
                 storyId: story.id,
                 chapterId: chapter.id,
-                sceneId: scene.id
+                sceneId: scene.id,
+                format
               })
             });
           });
@@ -255,105 +249,134 @@ export function StoryStructureSidebar({
     items.push(storyItem);
     console.log('🌳 Final tree items before Characters/Settings:', items);
 
-    // Add Characters item
-    items.push({
-      id: "characters",
+    // Add Characters item with character list
+    const charactersItem: TreeDataItem = {
+      id: `${format}-characters`,
       name: "Characters",
       icon: Users,
       onClick: () => onSelectionChange?.({
         level: "characters",
-        storyId: story.id
-      })
-    });
+        storyId: story.id,
+        format
+      }),
+      children: []
+    };
 
-    // Add Settings item
-    items.push({
-      id: "settings",
+    // Add individual characters as children
+    if (story.characters && story.characters.length > 0) {
+      story.characters.forEach(character => {
+        charactersItem.children?.push({
+          id: `${format}-character-${character.id}`,
+          name: character.name,
+          icon: Users,
+          onClick: () => onSelectionChange?.({
+            level: "characters",
+            storyId: story.id,
+            characterId: character.id,
+            format
+          })
+        });
+      });
+    }
+
+    items.push(charactersItem);
+
+    // Add Settings item with settings list
+    const settingsItem: TreeDataItem = {
+      id: `${format}-settings`,
       name: "Settings",
       icon: MapPin,
       onClick: () => onSelectionChange?.({
         level: "settings",
-        storyId: story.id
-      })
-    });
+        storyId: story.id,
+        format
+      }),
+      children: []
+    };
+
+    // Add individual settings as children
+    if (story.settings && story.settings.length > 0) {
+      story.settings.forEach(setting => {
+        settingsItem.children?.push({
+          id: `${format}-setting-${setting.id}`,
+          name: setting.name,
+          icon: MapPin,
+          onClick: () => onSelectionChange?.({
+            level: "settings",
+            storyId: story.id,
+            settingId: setting.id,
+            format
+          })
+        });
+      });
+    }
+
+    items.push(settingsItem);
 
     return items;
-  }, [story, onSelectionChange]);
+  };
 
-  // Get initial selected item ID
-  const initialSelectedItemId = useMemo(() => {
-    if (!currentSelection) return undefined;
+  // Generate tree data for both formats
+  const novelTreeData = useMemo(() => generateTreeData("novel"), [story, onSelectionChange]);
+  const comicTreeData = useMemo(() => generateTreeData("comic"), [story, onSelectionChange]);
 
-    if (currentSelection.level === "story") return `story-${story.id}`;
-    if (currentSelection.level === "part" && currentSelection.partId) return `part-${currentSelection.partId}`;
-    if (currentSelection.level === "chapter" && currentSelection.chapterId) return `chapter-${currentSelection.chapterId}`;
-    if (currentSelection.level === "scene" && currentSelection.sceneId) return `scene-${currentSelection.sceneId}`;
-    if (currentSelection.level === "characters") return "characters";
-    if (currentSelection.level === "settings") return "settings";
+  // Get initial selected item ID for each format
+  const getSelectedItemId = (format: "novel" | "comic") => {
+    if (!currentSelection || currentSelection.format !== format) return undefined;
+
+    const prefix = format;
+    if (currentSelection.level === "story") return `${prefix}-story-${story.id}`;
+    if (currentSelection.level === "part" && currentSelection.partId) return `${prefix}-part-${currentSelection.partId}`;
+    if (currentSelection.level === "chapter" && currentSelection.chapterId) return `${prefix}-chapter-${currentSelection.chapterId}`;
+    if (currentSelection.level === "scene" && currentSelection.sceneId) return `${prefix}-scene-${currentSelection.sceneId}`;
+    if (currentSelection.level === "characters" && currentSelection.characterId) return `${prefix}-character-${currentSelection.characterId}`;
+    if (currentSelection.level === "characters") return `${prefix}-characters`;
+    if (currentSelection.level === "settings" && currentSelection.settingId) return `${prefix}-setting-${currentSelection.settingId}`;
+    if (currentSelection.level === "settings") return `${prefix}-settings`;
 
     return undefined;
-  }, [currentSelection, story.id]);
-
-  if (sidebarCollapsed) {
-    return (
-      <div className="fixed left-2 top-1/2 transform -translate-y-1/2 z-50">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={toggleSidebar}
-          className="h-12 w-8 p-0 rounded-full shadow-lg"
-        >
-          <PanelLeftOpen className="h-4 w-4" />
-        </Button>
-      </div>
-    );
-  }
+  };
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <BookOpen className="h-4 w-4" />
-            Story Structure
-            {validatingStoryId === story.id && (
-              <div className="w-3 h-3 border-2 border-gray-400 border-t-blue-400 rounded-full animate-spin opacity-60"
-                   title="Updating story data" />
-            )}
-          </CardTitle>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setExpandAll(!expandAll)}
-              className="h-6 w-6 p-0"
-              title={expandAll ? "Collapse All" : "Expand All"}
-            >
-              {expandAll ? (
-                <Minimize2 className="h-3 w-3" />
-              ) : (
-                <Maximize2 className="h-3 w-3" />
+    <div className="h-full flex flex-col overflow-hidden">
+      {/* Single scrollable area for both tree views */}
+      <div className="flex-1 overflow-y-auto min-h-0 p-2 [overscroll-behavior-y:contain]">
+        <div className="space-y-6">
+          {/* Novel Tree View */}
+          <div>
+            <div className="flex items-center gap-2 mb-3 px-2">
+              <BookOpen className="h-4 w-4" />
+              <h3 className="text-sm font-semibold">📖 Novel View</h3>
+              {validatingStoryId === story.id && (
+                <div className="w-3 h-3 border-2 border-gray-400 border-t-blue-400 rounded-full animate-spin opacity-60"
+                     title="Updating story data" />
               )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleSidebar}
-              className="h-6 w-6 p-0"
-              title="Collapse Sidebar"
-            >
-              <PanelLeftClose className="h-3 w-3" />
-            </Button>
+            </div>
+            <TreeView
+              data={novelTreeData}
+              initialSelectedItemId={getSelectedItemId("novel")}
+              expandAll={true}
+            />
+          </div>
+
+          {/* Comic Tree View */}
+          <div>
+            <div className="flex items-center gap-2 mb-3 px-2">
+              <BookOpen className="h-4 w-4" />
+              <h3 className="text-sm font-semibold">🎨 Comic View</h3>
+              {validatingStoryId === story.id && (
+                <div className="w-3 h-3 border-2 border-gray-400 border-t-blue-400 rounded-full animate-spin opacity-60"
+                     title="Updating story data" />
+              )}
+            </div>
+            <TreeView
+              data={comicTreeData}
+              initialSelectedItemId={getSelectedItemId("comic")}
+              expandAll={true}
+            />
           </div>
         </div>
-      </CardHeader>
-      <CardContent className="pt-0 pb-2 flex-1 overflow-y-auto">
-        <TreeView
-          data={treeData}
-          initialSelectedItemId={initialSelectedItemId}
-          expandAll={expandAll}
-        />
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

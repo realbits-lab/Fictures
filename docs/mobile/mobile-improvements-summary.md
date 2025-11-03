@@ -1,7 +1,3 @@
----
-title: "Mobile Improvements Summary"
----
-
 # Mobile Improvements Summary
 
 **Status:** ✅ IMPLEMENTED

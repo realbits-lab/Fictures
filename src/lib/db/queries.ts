@@ -543,7 +543,6 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
         status: chapters.status,
         purpose: chapters.purpose,
         hook: chapters.hook,
-        characterFocus: chapters.characterFocus,
         publishedAt: chapters.publishedAt,
         scheduledFor: chapters.scheduledFor,
         createdAt: chapters.createdAt,
@@ -631,7 +630,7 @@ export async function getPublishedStories() {
   return publishedStories.map(story => ({
     id: story.id,
     title: story.title,
-    description: story.description || '',
+    summary: story.summary || '', // Story summary from database
     genre: story.genre || 'Fiction',
     status: story.status,
     isPublic: true,
@@ -639,7 +638,6 @@ export async function getPublishedStories() {
     rating: story.rating || 0,
     createdAt: story.createdAt,
     // Adversity-Triumph Engine fields
-    summary: story.summary,
     tone: story.tone,
     moralFramework: story.moralFramework,
     imageUrl: story.imageUrl,
@@ -920,16 +918,18 @@ export async function getCommunityStory(storyId: string) {
     .select({
       id: characters.id,
       name: characters.name,
-      role: characters.role,
-      archetype: characters.archetype,
       summary: characters.summary,
-      storyline: characters.storyline,
+      isMain: characters.isMain,
+      coreTrait: characters.coreTrait,
+      internalFlaw: characters.internalFlaw,
+      externalGoal: characters.externalGoal,
       personality: characters.personality,
       backstory: characters.backstory,
-      motivations: characters.motivations,
+      relationships: characters.relationships,
       physicalDescription: characters.physicalDescription,
+      voiceStyle: characters.voiceStyle,
       imageUrl: characters.imageUrl,
-      isMain: characters.isMain,
+      visualStyle: characters.visualStyle,
     })
     .from(characters)
     .where(eq(characters.storyId, storyId));

@@ -1,7 +1,3 @@
----
-title: "Dual-Format Reading History - Implementation Summary"
----
-
 # Dual-Format Reading History - Implementation Summary
 
 **Date:** October 26, 2025

@@ -1,7 +1,3 @@
----
-title: "Story Card Loading Performance Optimization"
----
-
 # Story Card Loading Performance Optimization
 
 **Date:** October 25, 2025

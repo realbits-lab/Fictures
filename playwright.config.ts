@@ -20,12 +20,42 @@ export default defineConfig({
     {
       name: 'setup',
       testMatch: /.*\.setup\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      name: 'writer-tests',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: '.auth/writer.json',
+      },
+      // dependencies: ['setup'], // Temporarily disabled
+      testMatch: /.*\.writer\.spec\.ts/,
+    },
+    {
+      name: 'reader-tests',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: '.auth/reader.json',
+      },
+      dependencies: ['setup'],
+      testMatch: /.*\.reader\.spec\.ts/,
+    },
+    {
+      name: 'manager-tests',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: '.auth/manager.json',
+      },
+      dependencies: ['setup'],
+      testMatch: /.*\.manager\.spec\.ts/,
     },
     {
       name: 'authenticated',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
-        storageState: '.auth/user.json',
+        storageState: '.auth/writer.json',
       },
       dependencies: ['setup'],
       testMatch: /.*\.authenticated\.spec\.ts/,
@@ -44,6 +74,14 @@ export default defineConfig({
       name: 'mobile',
       use: { ...devices['iPhone 12'] },
       testMatch: /.*\.mobile\.spec\.ts/,
+    },
+    {
+      name: 'cache-tests',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: '.auth/user.json',
+      },
+      testMatch: /cache.*\.spec\.ts/,
     },
   ],
 

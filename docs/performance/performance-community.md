@@ -1,7 +1,3 @@
----
-title: Community Page Performance Optimization
----
-
 **Status:** 🚧 Planned - Implementation in progress
 **Target:** Sub-second perceived load time, instant navigation
 **Date:** November 1, 2025

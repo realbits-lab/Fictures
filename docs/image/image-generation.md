@@ -1,7 +1,3 @@
----
-title: "Story Image Generation"
----
-
 # Story Image Generation
 
 Generate story illustrations using **Google Gemini 2.5 Flash**.

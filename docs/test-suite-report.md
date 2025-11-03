@@ -1,7 +1,3 @@
----
-title: "Fictures E2E Test Suite Report"
----
-
 # Fictures E2E Test Suite Report
 
 **Generated:** 2025-10-26

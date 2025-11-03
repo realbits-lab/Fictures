@@ -129,6 +129,10 @@ Return ONLY the prose narrative, starting immediately with the first paragraph.`
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('✍️  [SCENE CONTENT API] Request received');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
     const body = await request.json() as {
       sceneSummary: SceneSummaryResult;
       characters: CharacterGenerationResult[];
@@ -147,12 +151,23 @@ export async function POST(request: NextRequest) {
 
     const { sceneSummary, characters, settings, chapterContext, storyContext } = body;
 
+    console.log('[SCENE CONTENT API] Request parameters:', {
+      hasSceneSummary: !!sceneSummary,
+      sceneTitle: sceneSummary?.title,
+      cyclePhase: sceneSummary?.cyclePhase,
+      suggestedLength: sceneSummary?.suggestedLength,
+      charactersCount: characters?.length || 0,
+    });
+
     if (!sceneSummary || !characters || !settings) {
+      console.error('❌ [SCENE CONTENT API] Validation failed');
       return NextResponse.json(
         { error: 'Scene summary, characters, and settings are required' },
         { status: 400 }
       );
     }
+
+    console.log('✅ [SCENE CONTENT API] Validation passed');
 
     // Build rich context for scene content generation
     const charactersSection = sceneSummary.characterFocus.map((charId) => {
@@ -244,6 +259,10 @@ Key priorities:
 Generate the prose following the output format (prose only, no metadata).
 `;
 
+    console.log('[SCENE CONTENT API] 🤖 Calling AI generation...');
+    console.log('[SCENE CONTENT API] Model: gemini-2.5-flash, MaxTokens: 4096');
+    console.log('[SCENE CONTENT API] Temperature: 0.8 (creative prose)');
+
     const result = await generateWithGemini({
       prompt: sceneContentContext,
       systemPrompt: SCENE_CONTENT_EXPANSION_PROMPT,
@@ -251,6 +270,8 @@ Generate the prose following the output format (prose only, no metadata).
       temperature: 0.8,
       maxTokens: 4096,
     });
+
+    console.log('[SCENE CONTENT API] ✅ AI generation completed');
 
     // Determine emotional tone from first paragraph
     const firstParagraph = result.split('\n\n')[0];
@@ -260,6 +281,14 @@ Generate the prose following the output format (prose only, no metadata).
       content: result.trim(),
       emotionalTone,
     };
+
+    console.log('[SCENE CONTENT API] Result summary:', {
+      contentLength: response.content.length,
+      wordCount: response.content.split(/\s+/).length,
+      paragraphCount: response.content.split('\n\n').length,
+      emotionalTone: response.emotionalTone,
+    });
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
     return NextResponse.json(response);
   } catch (error) {

@@ -1,8 +1,3 @@
----
-title: Neon Pooled Connection Setup for Vercel
-date: 2025-11-01
----
-
 # Neon Pooled Connection Setup for Vercel
 
 Complete guide to setting up Neon's pooled database connections for optimal performance on Vercel.

@@ -1,7 +1,3 @@
----
-title: "Database Optimization Strategy - PostgreSQL (Neon) & Redis"
----
-
 # Database Optimization Strategy - PostgreSQL (Neon) & Redis
 
 **Date:** October 25, 2025

@@ -250,7 +250,7 @@ function buildSceneImagePrompt(
     : '';
 
   const characterInfo = characters && characters.length > 0
-    ? `Characters: ${characters.map(c => `${c.name} (${c.role})`).join(', ')}.`
+    ? `Characters: ${characters.map(c => c.name).join(', ')}.`
     : '';
 
   return `Professional cinematic scene illustration for "${sceneTitle}".

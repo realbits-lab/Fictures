@@ -1,7 +1,3 @@
----
-title: "Fictures Implementation Patterns Guide"
----
-
 # Fictures Implementation Patterns Guide
 ## For Implementing New Features (e.g., Research)
 

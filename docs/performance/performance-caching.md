@@ -1,7 +1,3 @@
----
-title: "Caching Strategy - Complete Guide"
----
-
 # Caching Strategy - Complete Guide
 
 **Date:** October 25, 2025

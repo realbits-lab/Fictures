@@ -1,7 +1,3 @@
----
-title: Studio API Routes Analysis
----
-
 # Studio API Routes Analysis Report
 
 ## Overview

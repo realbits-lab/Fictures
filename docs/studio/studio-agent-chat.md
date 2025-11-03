@@ -1,7 +1,3 @@
----
-title: "Studio Agent Chat System"
----
-
 # Studio Agent Chat System
 
 This guide explains how to implement an advanced agentic chat system for the Fictures /studio page, combining multi-step reasoning, tool use visualization, and persistent chat history for AI-assisted story generation and editing.

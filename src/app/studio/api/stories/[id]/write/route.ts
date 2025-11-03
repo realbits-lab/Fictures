@@ -6,6 +6,11 @@ import { stories, characters, places } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { createHash } from 'crypto';
 import * as yaml from 'js-yaml';
+import {
+  createInvalidationContext,
+  invalidateEntityCache,
+  getCacheInvalidationHeaders,
+} from '@/lib/cache/unified-invalidation';
 
 export async function GET(
   request: NextRequest,
@@ -277,11 +282,27 @@ export async function PATCH(
       })
       .where(eq(stories.id, id));
 
-    return NextResponse.json({
-      success: true,
-      message: 'Story data saved successfully',
-      updatedAt: new Date().toISOString()
+    // ✅ CACHE INVALIDATION: Invalidate all cache layers
+    const invalidationContext = createInvalidationContext({
+      entityType: 'story',
+      entityId: id,
+      userId: session.user.id,
     });
+
+    // Invalidate server-side caches (Redis)
+    await invalidateEntityCache(invalidationContext);
+
+    // Return with headers for client-side cache invalidation
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Story data saved successfully',
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        headers: getCacheInvalidationHeaders(invalidationContext),
+      }
+    );
 
   } catch (error) {
     console.error('Error saving story data:', error);

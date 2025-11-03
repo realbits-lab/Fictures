@@ -1,7 +1,3 @@
----
-title: "UI Specification - Fictures Platform"
----
-
 # UI Specification - Fictures Platform
 
 ## 1. Overview

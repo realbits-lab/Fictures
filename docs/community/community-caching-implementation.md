@@ -1,7 +1,3 @@
----
-title: "Community Page Caching Implementation"
----
-
 # Community Page Caching Implementation
 
 **Complete 3-layer caching strategy for `/community` pages with performance optimization**

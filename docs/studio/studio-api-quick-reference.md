@@ -1,7 +1,3 @@
----
-title: Studio API Quick Reference
----
-
 # Studio API Quick Reference
 
 ## API Endpoint Summary

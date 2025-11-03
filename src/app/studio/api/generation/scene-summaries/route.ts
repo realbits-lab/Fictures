@@ -70,8 +70,16 @@ One of: fear, hope, tension, relief, elevation, catharsis, despair, joy
 - First ID is POV/focus character
 - Maximum 3-4 characters per scene (avoid crowd scenes)
 
+## Setting Selection
+Choose ONE setting from available settings that best fits this scene:
+- Consider the cycle phase (setup, confrontation, virtue, consequence, transition)
+- Use setting's cycleAmplification to match emotional needs
+- Settings can be reused across scenes, but aim for variety
+- Physical setting should match the action (confined space for confrontation, open space for freedom, etc.)
+
 ## Sensory Anchors
 3-5 specific sensory details that ground the scene:
+- Draw from the selected setting's sensory palette
 - Sight: Specific visual (not generic)
 - Sound: Distinctive audio element
 - Smell: Evocative scent
@@ -152,6 +160,9 @@ Return structured text with clear scene separations:
 ## Summary
 [2-3 sentence scene summary]
 
+## Setting
+[Setting Name from available settings]
+
 ## Cycle Phase
 setup
 
@@ -199,15 +210,22 @@ medium
 5. Cycle phases must follow order: setup → confrontation → virtue → consequence → transition
 6. Emotional beats must ESCALATE tension before virtue, then RELEASE after
 7. Character focus should stay consistent per scene (don't jump POVs mid-scene)
-8. Sensory anchors must be SPECIFIC not generic ("metallic blood taste" not "bad taste")
-9. Confrontation phase needs 2-3 scenes minimum (most of the action)
-10. Each scene summary should clearly state WHAT HAPPENS (action not theme)
+8. Each scene MUST specify a setting from available settings (use exact setting name)
+9. Settings should MATCH cycle phase needs (use cycleAmplification guidance)
+10. Sensory anchors must be SPECIFIC not generic ("metallic blood taste" not "bad taste")
+11. Sensory anchors should DRAW from selected setting's sensory palette
+12. Confrontation phase needs 2-3 scenes minimum (most of the action)
+13. Each scene summary should clearly state WHAT HAPPENS (action not theme)
 
 # OUTPUT
 Return ONLY the structured text, no JSON, no markdown code blocks.`;
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🎬 [SCENE SUMMARIES API] Request received');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
     const body = await request.json() as {
       chapter: ChapterGenerationResult;
       characters: CharacterGenerationResult[];
@@ -216,12 +234,23 @@ export async function POST(request: NextRequest) {
     };
     const { chapter, characters, settings, scenesPerChapter = 6 } = body;
 
+    console.log('[SCENE SUMMARIES API] Request parameters:', {
+      hasChapter: !!chapter,
+      chapterTitle: chapter?.title,
+      charactersCount: characters?.length || 0,
+      settingsCount: settings?.length || 0,
+      scenesPerChapter,
+    });
+
     if (!chapter || !characters || !settings) {
+      console.error('❌ [SCENE SUMMARIES API] Validation failed');
       return NextResponse.json(
         { error: 'Chapter, characters, and settings are required' },
         { status: 400 }
       );
     }
+
+    console.log('✅ [SCENE SUMMARIES API] Validation passed');
 
     // Build context for scene generation
     const charactersSection = chapter.focusCharacters.map((charId) => {
@@ -301,6 +330,9 @@ ${scenesPerChapter < 5 ? `6. Since you have only ${scenesPerChapter} scenes, com
 Generate ${scenesPerChapter} scene summaries following the output format.
 `;
 
+    console.log('[SCENE SUMMARIES API] 🤖 Calling AI generation...');
+    console.log('[SCENE SUMMARIES API] Model: gemini-2.5-flash-lite, MaxTokens: 8192');
+
     const result = await generateWithGemini({
       prompt: scenesContext,
       systemPrompt: SCENE_SUMMARIES_EXPANSION_PROMPT,
@@ -309,8 +341,16 @@ Generate ${scenesPerChapter} scene summaries following the output format.
       maxTokens: 8192,
     });
 
+    console.log('[SCENE SUMMARIES API] ✅ AI generation completed, parsing scenes...');
+
     // Parse structured text into scenes array
-    const scenes = parseScenesFromText(result, characters);
+    const scenes = parseScenesFromText(result, characters, settings);
+
+    console.log('[SCENE SUMMARIES API] Result summary:', {
+      scenesCount: scenes.length,
+      sceneTitles: scenes.map(s => s.title).join(', '),
+    });
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
     return NextResponse.json(scenes);
   } catch (error) {
@@ -327,7 +367,8 @@ Generate ${scenesPerChapter} scene summaries following the output format.
 
 function parseScenesFromText(
   text: string,
-  characters: CharacterGenerationResult[]
+  characters: CharacterGenerationResult[],
+  settings: SettingGenerationResult[]
 ): SceneSummaryResult[] {
   const scenes: SceneSummaryResult[] = [];
 
@@ -345,6 +386,14 @@ function parseScenesFromText(
     // Extract summary
     const summaryMatch = sceneSection.match(/## Summary\s*\n([^\n#]+(?:\n[^\n#]+)*)/);
     const summary = summaryMatch ? summaryMatch[1].trim() : '';
+
+    // Extract setting
+    const settingMatch = sceneSection.match(/## Setting\s*\n([^\n]+)/);
+    const settingName = settingMatch ? settingMatch[1].trim() : null;
+
+    // Map setting name to ID
+    const setting = settings.find(s => s.name === settingName);
+    const settingId = setting?.id || undefined;
 
     // Extract cycle phase
     const cyclePhaseMatch = sceneSection.match(/## Cycle Phase\s*\n([^\n]+)/);
@@ -398,6 +447,7 @@ function parseScenesFromText(
       cyclePhase,
       emotionalBeat,
       characterFocus,
+      settingId,
       sensoryAnchors,
       dialogueVsDescription,
       suggestedLength,

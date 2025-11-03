@@ -1,7 +1,3 @@
----
-title: Schema Simplification - Removing Bi-directional Links
----
-
 # Schema Simplification: Removing Bi-directional Links
 
 **Status:** ✅ Implemented (2025-11-01)

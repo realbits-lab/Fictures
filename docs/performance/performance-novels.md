@@ -1,7 +1,3 @@
----
-title: Novel Reading Performance Optimization
----
-
 **Status:** ✅ Implemented (Phase 1 & Phase 2)
 **Target:** Sub-second perceived load time, instant navigation
 **Date:** November 1, 2025

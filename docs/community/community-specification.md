@@ -1,7 +1,3 @@
----
-title: "Community Feature Specification"
----
-
 # Community Feature Specification
 
 This document outlines the specifications for upgrading the Fictures community features from mock data to full production implementation, including unified reply system, image uploads, rich text editor, and responsive mobile design.

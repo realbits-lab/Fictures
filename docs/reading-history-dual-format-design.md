@@ -1,7 +1,3 @@
----
-title: "Reading History Dual-Format Design"
----
-
 # Reading History Dual-Format Design
 
 ## Overview

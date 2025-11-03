@@ -108,7 +108,7 @@ ${setting?.name}: ${setting?.description} (Mood: ${setting?.mood})
 Sensory: ${[setting?.sensory?.sight?.[0], setting?.sensory?.sound?.[0], setting?.sensory?.smell?.[0]].filter(Boolean).join(" | ")}
 
 == CHARACTERS ==
-${sceneCharacters.map(c => `${c.name} (${c.role})`).join(" | ")}
+${sceneCharacters.map(c => `${c.name}${c.summary ? ` - ${c.summary}` : ''}`).join(" | ")}
 
 == SCENE WRITING DISCIPLINE ==
 
@@ -634,7 +634,7 @@ export async function generateAllSceneContent(
                 chapterNumber: chapter.chapter_number || 1,
                 characterContext: scene.character_ids?.map(charId => {
                   const char = characters.find(c => c.character_id === charId);
-                  return char ? `${char.name} - ${char.role}` : '';
+                  return char ? `${char.name}${char.summary ? ` - ${char.summary}` : ''}` : '';
                 }).filter(Boolean),
               }
             }

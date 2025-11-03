@@ -1,7 +1,3 @@
----
-title: "Image Optimization System"
----
-
 # Image Optimization System
 
 **Last Updated:** 2025-10-29

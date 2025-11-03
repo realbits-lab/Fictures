@@ -1,7 +1,3 @@
----
-title: "UI Development Guide - Fictures Platform"
----
-
 # UI Development Guide - Fictures Platform
 
 ## Overview

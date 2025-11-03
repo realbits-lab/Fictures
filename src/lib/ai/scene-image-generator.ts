@@ -78,9 +78,6 @@ function getStyleForGenre(genre: string): AnimationStyle {
     'historical_fiction': 'realistic',
     'historical': 'realistic',
     'contemporary': 'realistic',
-    'young_adult': 'disney',
-    'children': 'disney',
-    'childrens_literature': 'disney',
   };
 
   // Find matching style or default

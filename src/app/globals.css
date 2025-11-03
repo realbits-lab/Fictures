@@ -1,7 +1,4 @@
-@import 'fumadocs-ui/css/neutral.css';
-@import 'fumadocs-ui/css/preset.css';
 @import "tailwindcss";
-@import "@fuma-comment/react/preset.css";
 
 /* Tailwind v4 Theme Variables - Bridge to runtime theme system */
 @theme {
@@ -420,15 +417,9 @@ body {
 	overscroll-behavior-y: none;
 }
 
-/* Hide Fumadocs mobile TOC header since we use GlobalNavigation */
-header.xl\:hidden {
-	display: none !important;
-}
-
-/* Push Fumadocs sidebar down to account for GNB header (64px) */
+/* Custom layout adjustments */
 aside[class*="fixed"] {
 	top: 64px !important;
-	/* Use theme background color for sidebar instead of card color */
 	background-color: rgb(var(--background)) !important;
 }
 
@@ -652,13 +643,13 @@ body {
 	animation: slide-in 0.3s ease-out;
 }
 
-/* Force Fumadocs TOC to display */
+/* Custom TOC width variables */
 :root {
-	--fd-toc-width: 256px !important;
+	--toc-width: 256px;
 }
 
 @media (max-width: 1279px) {
 	:root {
-		--fd-toc-width: 0px !important;
+		--toc-width: 0px;
 	}
 }

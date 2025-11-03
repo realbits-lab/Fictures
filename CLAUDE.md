@@ -76,12 +76,17 @@ This file provides guidance to Claude Code when working with this repository.
 
 **Authentication Setup for Playwright:**
 
+**Testing Account Priority:**
+- **ALWAYS use writer@fictures.xyz** for testing story editor and writing features
+- Use manager@fictures.xyz only for admin/management specific tests
+- All test scripts should read credentials from `.auth/user.json` profiles
+
 **Option 1: Google OAuth**
 1. **Initial Capture**: Run `dotenv --file .env.local run node scripts/capture-auth-manual.mjs`
    - Opens browser for manual Google login with manager@fictures.xyz account
    - Automatically captures authentication state to `.auth/user.json`
    - Includes NextAuth.js session cookies and Google OAuth tokens
-   - **Testing Account**: Always use manager@fictures.xyz from `.auth/user.json` for web API and UI testing
+   - **Testing Account**: Always use writer@fictures.xyz from `.auth/user.json` for story editing tests
 
 **Option 2: Email/Password Authentication**
 1. **Initial Capture**: Run authentication capture script for email/password
@@ -94,7 +99,34 @@ This file provides guidance to Claude Code when working with this repository.
    - Verifies stored credentials work for automatic authentication
    - Tests navigation to protected routes like `/stories`
 
-3. **Using in Playwright Tests**:
+3. **Programmatic Login in Playwright Tests**:
+   ```javascript
+   // For tests that need fresh authentication without .auth/user.json
+   async function login(page, email, password) {
+     await page.goto('http://localhost:3000/login');
+     await page.waitForLoadState('networkidle');
+
+     // Fill email field
+     await page.fill('input[type="email"], input[name="email"]', email);
+
+     // Fill password field
+     await page.fill('input[type="password"], input[name="password"]', password);
+
+     // Click sign in button
+     await page.click('button:has-text("Sign in with Email")');
+     await page.waitForLoadState('networkidle');
+
+     // Wait for redirect after successful login
+     await page.waitForTimeout(2000);
+   }
+
+   test('example with programmatic login', async ({ page }) => {
+     await login(page, 'user@example.com', 'password123');
+     // Test runs with authenticated session
+   });
+   ```
+
+4. **Using in Playwright Tests with storageState**:
    ```javascript
    // In your Playwright test files
    const { test, expect } = require('@playwright/test');
@@ -109,7 +141,7 @@ This file provides guidance to Claude Code when working with this repository.
    });
    ```
 
-4. **Refreshing Authentication**: When credentials expire, re-run capture script:
+5. **Refreshing Authentication**: When credentials expire, re-run capture script:
    ```bash
    dotenv --file .env.local run node scripts/capture-auth-manual.mjs
    ```
@@ -416,6 +448,11 @@ When modifying data model fields for stories, parts, chapters, scenes, character
   - **Image Optimization**: Automatic generation of 4 variants (AVIF, JPEG × mobile 1x/2x)
 - **Image Storage**: Generated images stored in Vercel Blob with public access
 - **Error Handling**: Implement proper error boundaries and loading states
+- **Error Display**: Always use beautiful, user-friendly error components with proper design
+  - Follow the design patterns from `not-found.tsx` and `ContentLoadError.tsx`
+  - Include decorative icons, helpful messaging, and clear action buttons
+  - Use proper color variables, animations, and responsive design
+  - Never display raw error text or plain error messages
 - **Performance**: Optimize for story writing workflow and database queries
 
 ## Image Generation & Optimization

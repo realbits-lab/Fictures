@@ -1,7 +1,3 @@
----
-title: "Real-Time Update Strategies Comparison"
----
-
 # Real-Time Update Strategies Comparison
 
 ## Quick Decision Matrix

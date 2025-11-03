@@ -1,7 +1,3 @@
----
-title: Fix All Fields Display - Complete Database Field Access
----
-
 # Fix All Fields Display
 
 ## Problem

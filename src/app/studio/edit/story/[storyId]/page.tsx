@@ -26,11 +26,14 @@ export default async function WriteStoryPage({ params }: { params: Promise<{ sto
   console.log(`📊 [SSR] Story has ${storyStructure?.parts?.length || 0} parts with ${storyStructure?.parts?.reduce((sum, p) => sum + (p.chapters?.length || 0), 0) || 0} total chapters`);
 
   if (!storyStructure) {
+    console.log('❌ [SSR] Story structure is null - returning 404');
     notFound();
   }
 
   // Check write permissions - user must be the author for write access
+  console.log(`🔐 [SSR] Checking permissions - Story authorId: ${storyStructure.authorId}, Session userId: ${session.user?.id}`);
   if (storyStructure.authorId !== session.user?.id) {
+    console.log('❌ [SSR] User does not own this story - returning 404');
     notFound();
   }
 

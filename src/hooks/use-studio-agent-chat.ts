@@ -16,7 +16,19 @@ export function useStudioAgentChat({
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | undefined>(chatId);
 
-  const chat = useChat({
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    isLoading,
+    error,
+    reload,
+    stop,
+    append,
+    setMessages,
+    setInput,
+  } = useChat({
     id: currentChatId,
     api: '/studio/api/agent',
     body: {
@@ -48,7 +60,7 @@ export function useStudioAgentChat({
         const response = await fetch(`/studio/api/agent/${currentChatId}/messages`);
         if (response.ok) {
           const { messages } = await response.json();
-          chat.setMessages(messages);
+          setMessages(messages);
         }
       } catch (error) {
         console.error('Failed to load agent chat history:', error);
@@ -59,10 +71,9 @@ export function useStudioAgentChat({
     }
 
     loadChatHistory();
-  }, [currentChatId, historyLoaded]);
+  }, [currentChatId, historyLoaded, setMessages]);
 
   // Track active tools from message parts
-  const { messages } = chat;
   const activeTools = useMemo(() => {
     return messages
       .flatMap((m) => (m as any).toolInvocations || [])
@@ -71,7 +82,17 @@ export function useStudioAgentChat({
   }, [messages]);
 
   return {
-    ...chat,
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    isLoading,
+    error,
+    reload,
+    stop,
+    append,
+    setMessages,
+    setInput,
     loadingHistory,
     historyLoaded,
     activeTools,

@@ -75,9 +75,9 @@ export function useStoryData(storyId: string | null) {
   );
 
   return {
-    story: data,
-    characters: (data as any)?.characters,
-    places: (data as any)?.places,
+    story: (data as any)?.story || data,
+    characters: (data as any)?.characters || [],
+    places: (data as any)?.places || [],
     isOwner: (data as any)?.isOwner ?? false,
     metadata: (data as any)?.metadata,
     isLoading: sessionStatus === 'loading' || isLoading,

@@ -131,13 +131,64 @@ export async function POST(request: NextRequest) {
             }
           }
 
+          // Map AI-generated genre to database enum values
+          const validGenres = [
+            'Fantasy', 'Science Fiction', 'Romance', 'Mystery', 'Thriller',
+            'Detective', 'Adventure', 'Horror', 'Historical Fiction', 'Contemporary'
+          ] as const;
+
+          type ValidGenre = typeof validGenres[number];
+          let genreValue: ValidGenre = 'Contemporary'; // default genre
+
+          if (result.story.genre) {
+            const aiGenre = result.story.genre.trim();
+
+            // Try exact match first (case-insensitive)
+            const exactMatch = validGenres.find(g => g.toLowerCase() === aiGenre.toLowerCase());
+            if (exactMatch) {
+              genreValue = exactMatch;
+            } else {
+              // Smart mapping for common AI-generated genres that don't match enum
+              const genreMapping: Record<string, ValidGenre> = {
+                'cyberpunk': 'Science Fiction',
+                'cyberpunk noir': 'Science Fiction',
+                'noir': 'Mystery',
+                'dystopian': 'Science Fiction',
+                'urban fantasy': 'Fantasy',
+                'epic fantasy': 'Fantasy',
+                'paranormal': 'Fantasy',
+                'suspense': 'Thriller',
+                'psychological thriller': 'Thriller',
+                'action': 'Adventure',
+                'spy': 'Thriller',
+                'western': 'Adventure',
+                'steampunk': 'Science Fiction',
+              };
+
+              const lowerGenre = aiGenre.toLowerCase();
+              if (genreMapping[lowerGenre]) {
+                genreValue = genreMapping[lowerGenre];
+              } else {
+                // Fallback: try to find closest match by checking if genre contains valid genre names
+                for (const validGenre of validGenres) {
+                  if (lowerGenre.includes(validGenre.toLowerCase()) || validGenre.toLowerCase().includes(lowerGenre)) {
+                    genreValue = validGenre;
+                    break;
+                  }
+                }
+              }
+            }
+
+            console.log(`[GENRE MAPPING] AI genre "${result.story.genre}" → DB genre "${genreValue}"`);
+          }
+
           const [storyRecord] = await db
             .insert(stories)
             .values({
               id: generatedStoryId,
               authorId: session.user.id,  // Fixed: Use 'authorId' (correct schema field name)
               title: result.story.title,
-              genre: result.story.genre,
+              genre: genreValue, // Mapped and validated genre value
               summary: result.story.summary, // Adversity-Triumph: General thematic premise
               tone: toneValue, // Adversity-Triumph: Emotional direction (validated enum value)
               moralFramework: result.story.moralFramework, // Adversity-Triumph: Virtue framework
@@ -211,6 +262,13 @@ export async function POST(request: NextRequest) {
             const partRecords = result.parts.map((part, index) => {
               const newId = nanoid();
               partIdMap.set(part.id, newId); // Map temp ID to database ID
+
+              // Map temporary character IDs to database character IDs in characterArcs
+              const mappedCharacterArcs = part.characterArcs.map((arc) => ({
+                ...arc,
+                characterId: characterIdMap.get(arc.characterId) || arc.characterId,
+              }));
+
               return {
                 id: newId,
                 storyId: generatedStoryId!,
@@ -218,7 +276,7 @@ export async function POST(request: NextRequest) {
                 title: part.title,
                 summary: part.summary,
                 orderIndex: part.orderIndex,
-                characterArcs: part.characterArcs,
+                characterArcs: mappedCharacterArcs,
                 createdAt: new Date(),
                 updatedAt: new Date(),
               };
@@ -233,17 +291,23 @@ export async function POST(request: NextRequest) {
             const chapterRecords = result.chapters.map((chapter, index) => {
               const newId = nanoid();
               chapterIdMap.set(chapter.id, newId); // Map temp ID to database ID
+
+              // Map temporary character IDs to database character IDs in focusCharacters array
+              const mappedFocusCharacters = chapter.focusCharacters?.map((charId) =>
+                characterIdMap.get(charId) || charId
+              ) || [];
+
               return {
                 id: newId,
                 storyId: generatedStoryId!,
                 authorId: session.user.id,
-                partId: null, // Will be linked later if needed
+                partId: chapter.partId ? partIdMap.get(chapter.partId) || null : null,
                 title: chapter.title,
                 summary: chapter.summary,
                 characterId: chapter.characterId ? characterIdMap.get(chapter.characterId) || null : null,
                 arcPosition: chapter.arcPosition,
                 contributesToMacroArc: chapter.contributesToMacroArc,
-                focusCharacters: chapter.focusCharacters,
+                focusCharacters: mappedFocusCharacters,
                 adversityType: chapter.adversityType,
                 virtueType: chapter.virtueType,
                 seedsPlanted: chapter.seedsPlanted,
@@ -271,6 +335,14 @@ export async function POST(request: NextRequest) {
               const mappedChapterId = scene.chapterId ? chapterIdMap.get(scene.chapterId) || null : null;
               console.log(`[Novel Generation] Scene ${index + 1}: chapterId=${scene.chapterId}, mapped=${mappedChapterId}`);
 
+              // Map temporary character IDs to database character IDs in characterFocus array
+              const mappedCharacterFocus = scene.characterFocus?.map((charId) =>
+                characterIdMap.get(charId) || charId
+              ) || [];
+
+              // Map temporary setting ID to database setting ID
+              const mappedSettingId = scene.settingId ? settingIdMap.get(scene.settingId) || null : null;
+
               return {
                 id: newId,
                 chapterId: mappedChapterId,
@@ -280,7 +352,8 @@ export async function POST(request: NextRequest) {
                 cyclePhase: scene.cyclePhase,
                 emotionalBeat: scene.emotionalBeat,
                 // Planning metadata from scene summary generation
-                characterFocus: scene.characterFocus || [],
+                characterFocus: mappedCharacterFocus,
+                settingId: mappedSettingId,
                 sensoryAnchors: scene.sensoryAnchors || [],
                 dialogueVsDescription: scene.dialogueVsDescription || 'balanced',
                 suggestedLength: scene.suggestedLength || 'medium',
@@ -402,13 +475,13 @@ export async function POST(request: NextRequest) {
                 const imageResult = await imageResponse.json();
                 console.log(`[Novel Generation] Generated image for character ${character.name}:`, imageResult.originalUrl);
 
-                // Update character record with image URL
+                // Update character record with image URL and optimized variants
                 if (characterDbId) {
                   await db
                     .update(characters)
                     .set({
                       imageUrl: imageResult.originalUrl,
-                      imageVariants: imageResult.variants,
+                      imageVariants: imageResult.optimizedSet,
                       updatedAt: new Date(),
                     })
                     .where(eq(characters.id, characterDbId));
@@ -459,13 +532,13 @@ export async function POST(request: NextRequest) {
                 const imageResult = await imageResponse.json();
                 console.log(`[Novel Generation] Generated image for setting ${setting.name}:`, imageResult.originalUrl);
 
-                // Update setting record with image URL
+                // Update setting record with image URL and optimized variants
                 if (settingDbId) {
                   await db
                     .update(settings)
                     .set({
                       imageUrl: imageResult.originalUrl,
-                      imageVariants: imageResult.variants,
+                      imageVariants: imageResult.optimizedSet,
                       updatedAt: new Date(),
                     })
                     .where(eq(settings.id, settingDbId));
@@ -517,13 +590,13 @@ export async function POST(request: NextRequest) {
                 const imageResult = await imageResponse.json();
                 console.log(`[Novel Generation] Generated image for scene ${scene.title}:`, imageResult.originalUrl);
 
-                // Update scene record with image URL
+                // Update scene record with image URL and optimized variants
                 if (sceneDbId) {
                   await db
                     .update(scenes)
                     .set({
                       imageUrl: imageResult.originalUrl,
-                      imageVariants: imageResult.variants,
+                      imageVariants: imageResult.optimizedSet,
                       updatedAt: new Date(),
                     })
                     .where(eq(scenes.id, sceneDbId));

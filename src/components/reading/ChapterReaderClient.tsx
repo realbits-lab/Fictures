@@ -884,7 +884,7 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
               className="max-w-4xl mx-auto px-8 py-8 pb-24 md:pb-8"
             >
               {/* Scene Content */}
-              <div className="prose prose-lg max-w-none" style={{ color: 'rgb(var(--color-foreground))' }}>
+              <div className="prose prose-lg max-w-none text-gray-900 dark:text-gray-100">
                 {scenesError ? (
                   <div className="text-center py-12 text-red-500 dark:text-red-400">
                     <div className="max-w-md mx-auto">
@@ -921,18 +921,16 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
 
                     {/* Scene Image - Using OptimizedImage with imageVariants */}
                     {(selectedScene.imageUrl || selectedScene.sceneImage?.url) && (
-                      <div className="mb-6">
-                        <div className="rounded-lg overflow-hidden shadow-lg">
-                          <SceneImage
-                            scene={{
-                              title: selectedScene.title,
-                              imageUrl: selectedScene.imageUrl || selectedScene.sceneImage?.url,
-                              imageVariants: selectedScene.imageVariants
-                            }}
-                            className="w-full h-auto object-contain"
-                            priority={false}
-                          />
-                        </div>
+                      <div className="mb-6 w-fit mx-auto rounded-lg overflow-hidden shadow-lg">
+                        <SceneImage
+                          scene={{
+                            title: selectedScene.title,
+                            imageUrl: selectedScene.imageUrl || selectedScene.sceneImage?.url,
+                            imageVariants: selectedScene.imageVariants
+                          }}
+                          className="w-full h-auto block !m-0"
+                          priority={false}
+                        />
                       </div>
                     )}
 

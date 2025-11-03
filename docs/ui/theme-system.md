@@ -1,7 +1,3 @@
----
-title: "Tailwind CSS v4 Theme System - Fictures Platform"
----
-
 # Tailwind CSS v4 Theme System - Fictures Platform
 
 ## 1. Overview
