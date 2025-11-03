@@ -340,17 +340,7 @@ The Studio Agent UI uses a **3-panel adaptive layout** inspired by modern AI int
 
 **Components**:
 
-1. **Header**:
-   ```
-   ┌────────────────────────────────────┐
-   │ 🤖 Studio Agent                    │
-   │ Powered by Adversity-Triumph Engine│
-   │                                    │
-   │ [History] [New Chat] [Pop Out]    │
-   └────────────────────────────────────┘
-   ```
-
-2. **Message Thread** (scrollable):
+1. **Message Thread** (scrollable):
    ```
    ┌────────────────────────────────────────┐
    │ 🤖 Assistant                           │
@@ -388,7 +378,7 @@ The Studio Agent UI uses a **3-panel adaptive layout** inspired by modern AI int
    └────────────────────────────────────────┘
    ```
 
-3. **Tool Execution Cards** (inline with messages):
+2. **Tool Execution Cards** (inline with messages):
    ```
    ┌─────────────────────────────────────┐
    │ 🔧 generateStorySummary             │
@@ -412,13 +402,16 @@ The Studio Agent UI uses a **3-panel adaptive layout** inspired by modern AI int
    └─────────────────────────────────────┘
    ```
 
-4. **Input Area** (bottom):
+3. **Input Area** (bottom):
    ```
    ┌─────────────────────────────────────┐
    │ @mention for context:               │
-   │ - @character Yuna                   │
+   │ - @story [Story Title]              │
+   │ - @part Act I                       │
+   │ - @chapter Chapter 1                │
    │ - @scene Scene 1.2                  │
-   │ - @phase current                    │
+   │ - @character Yuna                   │
+   │ - @setting The Garden               │
    ├─────────────────────────────────────┤
    │ [Textarea: Auto-resize 80-200px]    │
    │ Tell me about your story...         │
@@ -435,24 +428,17 @@ The Studio Agent UI uses a **3-panel adaptive layout** inspired by modern AI int
 
 ### 1.3 Responsive Behavior
 
-**Desktop (>1280px)**:
+**Desktop (>1024px)**:
 - All 3 panels visible
 - Left: 250px, Center: flex-1, Right: 450px
+- Resizable panels with drag handles
 
-**Laptop (1024-1280px)**:
-- Left panel collapsible (hamburger menu)
-- Center + Right panels side-by-side
-- Left: 0/200px (collapsed/open), Center: flex-1, Right: 400px
-
-**Tablet (768-1024px)**:
+**Mobile (<1024px)**:
 - Tab-based layout: [Tree] [Artifact] [Chat]
 - Active tab fills screen
-- Bottom tab bar for switching
-
-**Mobile (<768px)**:
-- Chat-first layout (default view)
-- Floating action button to access Tree/Artifacts
-- Full-screen modals for artifacts
+- Bottom tab bar for switching between panels
+- Chat panel as default view
+- Swipe gestures to switch tabs
 
 ---
 
@@ -475,11 +461,9 @@ interface StoryTreeNavigatorProps {
 
 **Features**:
 - Lazy loading (load children on expand)
-- Virtual scrolling for 100+ items
 - Keyboard navigation (arrow keys, Enter to select)
-- Drag-and-drop reordering
-- Search/filter functionality
 - Collapsible sections
+- Smooth expand/collapse animations
 
 **States**:
 - Loading: Skeleton UI with shimmer
@@ -500,9 +484,13 @@ interface ArtifactViewerProps {
 }
 
 type Artifact =
+  | { type: 'story'; data: Story }
+  | { type: 'part'; data: Part }
+  | { type: 'chapter'; data: Chapter }
+  | { type: 'scene-summary'; data: Scene }
+  | { type: 'scene-content'; data: Scene }
   | { type: 'character'; data: Character }
   | { type: 'setting'; data: Setting }
-  | { type: 'scene'; data: Scene }
   | { type: 'emotional-arc'; data: EmotionalArcData }
   | { type: 'chapter-flow'; data: ChapterFlowData }
   | { type: 'db-change'; data: DbChange }
@@ -616,16 +604,18 @@ interface AgentChatProps {
    - Center panel automatically shows first character card
    - Left tree updates with new character nodes
 
-### 3.2 Database Change Visibility
+### 3.2 Database Change Confirmation
 
-**Every database operation is shown transparently:**
+**Every database operation requires user confirmation before execution:**
 
-1. Agent uses tool: `createCharacter`
-2. Center panel shows:
+1. Agent proposes tool: `createCharacter`
+2. Center panel shows confirmation dialog:
    ```
    ┌──────────────────────────────────┐
    │ 💾 Database Operation            │
    ├──────────────────────────────────┤
+   │ ⚠️ Confirm database change       │
+   │                                  │
    │ Tool: createCharacter            │
    │ Table: characters                │
    │ Action: INSERT                   │
@@ -635,18 +625,20 @@ interface AgentChatProps {
    │   id: "char_abc123",             │
    │   name: "Yuna",                  │
    │   coreTrait: "compassion",       │
-   │   ...                            │
+   │   internalFlaw: "Fears...",      │
+   │   backstory: "In a war...",      │
+   │   imageUrl: "[generated_url]"    │
    │ }                                │
    │                                  │
-   │ Status: ✅ Success (127ms)       │
-   │                                  │
-   │ [View Record] [Rollback]         │
+   │ [✅ Confirm] [❌ Cancel]         │
    └──────────────────────────────────┘
    ```
 
-3. User can:
-   - Click "View Record" → Show full character card
-   - Click "Rollback" → Undo database change (requires confirmation)
+3. User actions:
+   - Click "✅ Confirm" → Execute database operation
+   - Click "❌ Cancel" → Abort operation, return to chat
+
+4. After confirmation, operation executes and shows success message in chat
 
 ### 3.3 Context Management (@-mentions)
 
@@ -658,10 +650,12 @@ interface AgentChatProps {
 **UI behavior**:
 1. As user types `@`, show autocomplete:
    ```
-   @character ...
+   @story ...
+   @part ...
+   @chapter ...
    @scene ...
+   @character ...
    @setting ...
-   @phase ...
    ```
 
 2. After selecting `@character`:
@@ -685,6 +679,14 @@ interface AgentChatProps {
      ]
    }
    ```
+
+**Supported @-mention types:**
+- `@story` - Story title and summary
+- `@part` - Part summary and chapters
+- `@chapter` - Chapter summary and scenes
+- `@scene` - Scene summary or full content
+- `@character` - Character profile
+- `@setting` - Setting details
 
 ### 3.4 Error Handling
 
