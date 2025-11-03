@@ -11,7 +11,7 @@ import { generateStoryImage } from '@/lib/services/image-generation';
 import { db } from '@/lib/db';
 import { comicPanels, scenes } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { convertSceneToScreenplay, type ComicScreenplay } from './screenplay-converter';
+import { convertSceneToToonplay, type ComicToonplay } from './toonplay-converter';
 import { buildPanelCharacterPrompts, extractKeyPhysicalTraits } from '@/lib/services/character-consistency';
 import { calculateTotalHeight, estimateReadingTime } from '@/lib/services/comic-layout';
 
@@ -87,7 +87,7 @@ export interface GeneratedPanel {
 }
 
 export interface ComicPanelGenerationResult {
-  screenplay: ComicScreenplay;
+  toonplay: ComicToonplay;
   panels: GeneratedPanel[];
   metadata: {
     total_generation_time: number;
@@ -119,12 +119,12 @@ export async function generateComicPanels(
   console.log(`   Genre: ${story.genre}`);
 
   // ========================================
-  // STEP 1: Convert Scene to Screenplay
+  // STEP 1: Convert Scene to Toonplay
   // ========================================
 
-  progressCallback?.(0, 100, 'Converting scene to screenplay...');
+  progressCallback?.(0, 100, 'Converting scene to toonplay...');
 
-  const screenplay = await convertSceneToScreenplay({
+  const toonplay = await convertSceneToToonplay({
     scene,
     characters,
     setting,
@@ -132,19 +132,19 @@ export async function generateComicPanels(
     targetPanelCount,
   });
 
-  console.log(`✅ Screenplay generated: ${screenplay.total_panels} panels`);
+  console.log(`✅ Toonplay generated: ${toonplay.total_panels} panels`);
 
-  progressCallback?.(20, 100, `Screenplay ready: ${screenplay.total_panels} panels`);
+  progressCallback?.(20, 100, `Toonplay ready: ${toonplay.total_panels} panels`);
 
   // ========================================
   // STEP 2: Generate Panel Images
   // ========================================
 
   const generatedPanels: GeneratedPanel[] = [];
-  const totalPanels = screenplay.panels.length;
+  const totalPanels = toonplay.panels.length;
 
-  for (let i = 0; i < screenplay.panels.length; i++) {
-    const panelSpec = screenplay.panels[i];
+  for (let i = 0; i < toonplay.panels.length; i++) {
+    const panelSpec = toonplay.panels[i];
     const progress = 20 + Math.floor((i / totalPanels) * 70);
 
     progressCallback?.(
@@ -304,7 +304,7 @@ export async function generateComicPanels(
   console.log(`✅ Scene metadata updated successfully`);
 
   return {
-    screenplay,
+    toonplay,
     panels: generatedPanels,
     metadata: {
       total_generation_time: totalTime,

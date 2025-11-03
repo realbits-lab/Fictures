@@ -294,7 +294,7 @@ async function main() {
     const result = await generateComicPanels(scene.id);
 
     console.log('\n📊 Generation Results:');
-    console.log(`  Screenplay length: ${result.screenplay?.length || 0} characters`);
+    console.log(`  Toonplay length: ${result.toonplay?.length || 0} characters`);
     console.log(`  Panels generated: ${result.panels?.length || 0}`);
 
     if (result.panels) {

@@ -323,7 +323,7 @@ dotenv --file .env.local run node scripts/remove-all-stories.mjs --confirm
 - `--no-regen` - Optional flag to skip regeneration if panels exist
 - `--port <n>` - Optional API port (default: 3000)
 
-**Output**: Scene information, screenplay text, panel details with dialogue and SFX
+**Output**: Scene information, toonplay text, panel details with dialogue and SFX
 
 **Usage**:
 ```bash

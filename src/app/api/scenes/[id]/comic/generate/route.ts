@@ -188,7 +188,11 @@ export async function POST(
                 comicGeneratedAt: updatedScene.comicGeneratedAt,
                 comicVersion: updatedScene.comicVersion,
               },
-              metadata: result.metadata,
+              result: {
+                toonplay: result.toonplay,
+                panels: result.panels,
+                metadata: result.metadata,
+              },
             });
 
             controller.close();
@@ -254,7 +258,7 @@ export async function POST(
           comicVersion: updatedScene.comicVersion,
         },
         result: {
-          screenplay: result.screenplay,
+          toonplay: result.toonplay,
           panels: result.panels.map(p => ({
             id: p.id,
             panel_number: p.panel_number,

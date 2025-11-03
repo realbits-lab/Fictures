@@ -3,7 +3,7 @@
  *
  * POST /api/comic/generate-panels
  *
- * Generates comic panels for a scene using AI-powered screenplay conversion
+ * Generates comic panels for a scene using AI-powered toonplay conversion
  * and image generation. Streams progress updates via Server-Sent Events (SSE).
  */
 
@@ -180,7 +180,7 @@ export async function POST(request: NextRequest) {
           sendEvent({
             type: 'complete',
             result: {
-              screenplay: result.screenplay,
+              toonplay: result.toonplay,
               panels: result.panels.map(p => ({
                 id: p.id,
                 panel_number: p.panel_number,

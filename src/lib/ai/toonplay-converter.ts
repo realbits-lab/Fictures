@@ -1,7 +1,7 @@
 /**
- * Screenplay Converter Service
+ * Toonplay Converter Service
  *
- * Converts narrative scene text into panel-by-panel screenplay format
+ * Converts narrative scene text into panel-by-panel toonplay format
  * optimized for vertical-scroll comics.
  */
 
@@ -56,7 +56,7 @@ export const ComicPanelSpecSchema = z.object({
 // )
 ;
 
-export const ComicScreenplaySchema = z.object({
+export const ComicToonplaySchema = z.object({
   scene_id: z.string(),
   scene_title: z.string(),
   total_panels: z.number().min(1).max(12),
@@ -66,13 +66,13 @@ export const ComicScreenplaySchema = z.object({
 });
 
 export type ComicPanelSpec = z.infer<typeof ComicPanelSpecSchema>;
-export type ComicScreenplay = z.infer<typeof ComicScreenplaySchema>;
+export type ComicToonplay = z.infer<typeof ComicToonplaySchema>;
 
 // ============================================
-// SCREENPLAY CONVERSION
+// TOONPLAY CONVERSION
 // ============================================
 
-export interface ConvertToScreenplayOptions {
+export interface ConvertToToonplayOptions {
   scene: HNSScene;
   characters: HNSCharacter[];
   setting: HNSSetting;
@@ -80,9 +80,9 @@ export interface ConvertToScreenplayOptions {
   targetPanelCount?: number;
 }
 
-export async function convertSceneToScreenplay(
-  options: ConvertToScreenplayOptions
-): Promise<ComicScreenplay> {
+export async function convertSceneToToonplay(
+  options: ConvertToToonplayOptions
+): Promise<ComicToonplay> {
 
   const { scene, characters, setting, storyGenre, targetPanelCount } = options;
 
@@ -115,15 +115,15 @@ export async function convertSceneToScreenplay(
     : scene.emotionalBeat === 'joy' ? 'joyful'
     : 'resolved';
 
-  console.log(`\n🎬 Converting scene to screenplay: "${sceneTitle}"`);
+  console.log(`\n🎬 Converting scene to toonplay: "${sceneTitle}"`);
 
   // Build character descriptions
   const characterDescriptions = characters
     .map(c => `${c.name}: ${c.summary || c.internalFlaw || c.externalGoal || 'pursuing their goals'}`)
     .join('\n');
 
-  // Build screenplay prompt
-  const screenplayPrompt = `You are an expert comic storyboard artist. Convert this narrative scene into a panel-by-panel screenplay optimized for vertical-scroll comics.
+  // Build toonplay prompt
+  const toonplayPrompt = `You are an expert comic storyboard artist. Convert this narrative scene into a panel-by-panel toonplay optimized for vertical-scroll comics.
 
 SCENE INFORMATION:
 Title: ${sceneTitle}
@@ -200,21 +200,21 @@ CAMERA ANGLE GUIDANCE:
 
 IMPORTANT: This is for a ${storyGenre} story. Match the visual style and tone accordingly.
 
-Return your response as a valid JSON object matching the ComicScreenplay schema.`;
+Return your response as a valid JSON object matching the ComicToonplay schema.`;
 
-  console.log(`   Sending screenplay generation request...`);
+  console.log(`   Sending toonplay generation request...`);
 
   const result = await generateObject({
     model: gateway('google/gemini-2.5-flash-lite'),
-    schema: ComicScreenplaySchema,
-    prompt: screenplayPrompt,
+    schema: ComicToonplaySchema,
+    prompt: toonplayPrompt,
     temperature: 0.7,
   });
 
-  const screenplay = result.object;
+  const toonplay = result.object;
 
-  console.log(`   ✅ Screenplay generated: ${screenplay.total_panels} panels`);
-  console.log(`   Panel types: ${screenplay.panels.map(p => p.shot_type).join(', ')}`);
+  console.log(`   ✅ Toonplay generated: ${toonplay.total_panels} panels`);
+  console.log(`   Panel types: ${toonplay.panels.map(p => p.shot_type).join(', ')}`);
 
-  return screenplay;
+  return toonplay;
 }

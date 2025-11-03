@@ -72,7 +72,7 @@ Two different API routes enforce different panel count limits:
 ### Files Affected
 1. `src/app/api/scenes/[id]/comic/generate/route.ts:32-38` (WRONG)
 2. `src/app/api/comic/generate-panels/route.ts:57-63` (CORRECT)
-3. `src/lib/ai/screenplay-converter.ts:59,115-118` (CORRECT)
+3. `src/lib/ai/toonplay-converter.ts:59,115-118` (CORRECT)
 
 ### Current Code
 
@@ -98,9 +98,9 @@ if (targetPanelCount !== undefined && (targetPanelCount < 1 || targetPanelCount 
 }
 ```
 
-**Schema - CORRECT** (`screenplay-converter.ts`):
+**Schema - CORRECT** (`toonplay-converter.ts`):
 ```typescript
-export const ComicScreenplaySchema = z.object({
+export const ComicToonplaySchema = z.object({
   scene_id: z.string(),
   scene_title: z.string(),
   total_panels: z.number().min(1).max(12),  // ✓ Correct: 8-12 range
@@ -108,7 +108,7 @@ export const ComicScreenplaySchema = z.object({
 });
 ```
 
-**AI Prompt - CORRECT** (`screenplay-converter.ts:115-118`):
+**AI Prompt - CORRECT** (`toonplay-converter.ts:115-118`):
 ```typescript
 1. Break the narrative into ${targetPanelCount || '8-12'} visual panels (TARGET: ${targetPanelCount || '8-12'} PANELS)
    - Aim for ${targetPanelCount || 10} panels for optimal pacing
@@ -277,7 +277,7 @@ After fixing these issues:
 
 The documentation was updated to match the **PRIMARY implementation** because:
 
-1. **Screenplay Converter** (correct): Uses 8-12 panels, matches schema
+1. **Toonplay Converter** (correct): Uses 8-12 panels, matches schema
 2. **Main Generation Route** (correct): `/api/comic/generate-panels` allows 1-12
 3. **Frontend** (correct): Uses static 24px spacing, no gutter logic
 4. **Only Issue**: Single API route with wrong validation (easy fix)

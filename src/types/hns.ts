@@ -43,7 +43,7 @@ export interface HNSScene {
   character_ids?: string[]; // Alias for characterFocus
   setting_id?: string; // No longer exists - will be null
 
-  // Derived fields for screenplay conversion
+  // Derived fields for toonplay conversion
   goal?: string; // Derived from summary
   conflict?: string; // Derived from cyclePhase and emotionalBeat
   outcome?: string; // Derived from content
