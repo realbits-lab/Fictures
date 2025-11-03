@@ -292,16 +292,17 @@ export async function generateComicPanels(
   console.log(`   Total Height: ${totalHeight}px`);
   console.log(`   Estimated Reading Time: ${readingTime.formatted}`);
 
-  // Update scene metadata with comics generation info
+  // Update scene metadata with comics generation info and toonplay
   console.log(`\n📝 Updating scene metadata for ${sceneId}...`);
   await db.update(scenes)
     .set({
       comicStatus: 'draft',
+      comicToonplay: toonplay as any, // Store the generated toonplay specification
       comicGeneratedAt: new Date(),
       comicPanelCount: generatedPanels.length,
     })
     .where(eq(scenes.id, sceneId));
-  console.log(`✅ Scene metadata updated successfully`);
+  console.log(`✅ Scene metadata updated successfully (including toonplay)`);
 
   return {
     toonplay,

@@ -5,6 +5,8 @@
  * Adversity-Triumph Engine schema for backward compatibility with comic panel generation.
  */
 
+import type { ComicToonplay } from '@/lib/ai/toonplay-converter';
+
 // ============================================
 // SCENE TYPES
 // ============================================
@@ -32,6 +34,13 @@ export interface HNSScene {
   publishedAt: Date | null;
   scheduledFor: Date | null;
   visibility: 'private' | 'unlisted' | 'public';
+
+  // Comic fields
+  comicStatus?: 'none' | 'draft' | 'published';
+  comicToonplay?: ComicToonplay | null; // Generated toonplay specification
+  comicGeneratedAt?: Date | null;
+  comicPanelCount?: number;
+  comicVersion?: number;
 
   // Timestamps
   createdAt: Date;
