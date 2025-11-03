@@ -153,25 +153,31 @@ export type StudioAgentToolExecution = typeof studioAgentToolExecutions.$inferSe
 export type NewStudioAgentToolExecution = typeof studioAgentToolExecutions.$inferInsert;
 ```
 
-### 2.2 User API Key Extension
+### 2.2 Fictures API Key Integration
 
-Extend `users` table for API key management:
+The Studio Agent uses the existing `api_keys` table for authentication:
 
 ```typescript
-// In lib/db/schema.ts - extend users table
-export const users = pgTable('users', {
-  // ... existing fields
-  id: uuid('id').primaryKey().defaultRandom(),
-  email: varchar('email', { length: 255 }).notNull().unique(),
-  // ...
-
-  // NEW FIELDS for Studio Agent
-  aiGatewayApiKey: text('ai_gateway_api_key'), // Encrypted API key
-  apiKeyCreatedAt: timestamp('api_key_created_at'),
-  apiKeyLastUsed: timestamp('api_key_last_used'),
-  apiKeyValid: boolean('api_key_valid').default(false),
+// lib/db/schema.ts - EXISTING api_keys table
+export const apiKeys = pgTable('api_keys', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  name: varchar('name', { length: 255 }).notNull().default('API Key'),
+  keyHash: varchar('key_hash', { length: 64 }).notNull().unique(), // SHA-256 hash
+  keyPrefix: varchar('key_prefix', { length: 16 }).notNull(), // First 16 chars for UI display
+  scopes: json('scopes').$type<string[]>().default([]).notNull(), // Permissions array
+  lastUsedAt: timestamp('last_used_at'),
+  expiresAt: timestamp('expires_at'),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 ```
+
+**Required Scopes for Studio Agent**:
+- `ai:use` - Use AI writing assistance features (REQUIRED)
+- `stories:write` - Create and edit stories
+- `chapters:write` - Create and edit chapters and scenes
 
 ### 2.3 Migration Commands
 
@@ -345,138 +351,105 @@ export async function getUserStudioChats(userId: string, limit: number = 50) {
 }
 ```
 
-### 3.2 API Key Operations
+### 3.2 Fictures API Key Operations
 
 ```typescript
-// lib/db/user-api-key-operations.ts
-import { db } from './index';
-import { users } from './schema';
-import { eq } from 'drizzle-orm';
-import { encrypt, decrypt } from '@/lib/crypto';
+// lib/db/api-key-operations.ts (uses EXISTING queries from lib/db/queries.ts)
+import { getUserApiKeys, findApiKeyByHash, updateApiKeyLastUsed } from './queries';
+import { hashApiKey, isApiKeyExpired, hasScope } from '@/lib/auth/api-keys';
+import type { ApiScope } from '@/lib/auth/api-keys';
 
-export async function saveUserApiKey(userId: string, apiKey: string) {
-  // Encrypt API key before storage
-  const encrypted = encrypt(apiKey, process.env.ENCRYPTION_KEY!);
+/**
+ * Get active user API key with 'ai:use' scope for Studio Agent
+ */
+export async function getUserActiveApiKey(userId: string) {
+  const apiKeys = await getUserApiKeys(userId);
 
-  await db.update(users)
-    .set({
-      aiGatewayApiKey: encrypted,
-      apiKeyCreatedAt: new Date(),
-      apiKeyValid: true, // Will be validated on next use
-    })
-    .where(eq(users.id, userId));
+  // Find first active key with 'ai:use' scope
+  const validKey = apiKeys.find(key =>
+    key.isActive &&
+    !isApiKeyExpired(key.expiresAt) &&
+    hasScope(key.scopes, 'ai:use')
+  );
+
+  return validKey || null;
 }
 
-export async function getUserApiKey(userId: string): Promise<string | null> {
-  const [user] = await db
-    .select({ aiGatewayApiKey: users.aiGatewayApiKey })
-    .from(users)
-    .where(eq(users.id, userId));
+/**
+ * Validate API key for Studio Agent usage
+ * Checks: active status, expiration, required scopes
+ */
+export async function validateStudioAgentApiKey(userId: string): Promise<{
+  valid: boolean;
+  apiKeyId?: string;
+  scopes?: string[];
+  message?: string;
+}> {
+  const apiKey = await getUserActiveApiKey(userId);
 
-  if (!user?.aiGatewayApiKey) return null;
+  if (!apiKey) {
+    return {
+      valid: false,
+      message: 'No active API key with ai:use scope found. Please create an API key in Settings.',
+    };
+  }
 
-  // Decrypt API key
-  return decrypt(user.aiGatewayApiKey, process.env.ENCRYPTION_KEY!);
+  if (isApiKeyExpired(apiKey.expiresAt)) {
+    return {
+      valid: false,
+      message: 'API key has expired. Please create a new API key in Settings.',
+    };
+  }
+
+  // Check required scopes
+  const requiredScopes: ApiScope[] = ['ai:use', 'stories:write'];
+  const missingScopes = requiredScopes.filter(scope => !hasScope(apiKey.scopes, scope));
+
+  if (missingScopes.length > 0) {
+    return {
+      valid: false,
+      message: `API key missing required scopes: ${missingScopes.join(', ')}`,
+    };
+  }
+
+  // Update last used timestamp
+  await updateApiKeyLastUsed(apiKey.id);
+
+  return {
+    valid: true,
+    apiKeyId: apiKey.id,
+    scopes: apiKey.scopes,
+  };
 }
 
-export async function validateUserApiKey(userId: string): Promise<boolean> {
-  const apiKey = await getUserApiKey(userId);
-  if (!apiKey) return false;
+/**
+ * Check if user has permission for specific operation
+ */
+export async function checkUserApiKeyScope(userId: string, requiredScope: ApiScope): Promise<boolean> {
+  const apiKey = await getUserActiveApiKey(userId);
 
-  try {
-    // Test API call to validate key
-    const response = await fetch('https://ai-gateway.vercel.ai/v1/models', {
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-      },
-    });
-
-    const isValid = response.ok;
-
-    // Update validation status
-    await db.update(users)
-      .set({
-        apiKeyValid: isValid,
-        apiKeyLastUsed: new Date(),
-      })
-      .where(eq(users.id, userId));
-
-    return isValid;
-  } catch (error) {
+  if (!apiKey || isApiKeyExpired(apiKey.expiresAt)) {
     return false;
   }
-}
 
-export async function invalidateUserApiKey(userId: string) {
-  await db.update(users)
-    .set({
-      aiGatewayApiKey: null,
-      apiKeyValid: false,
-    })
-    .where(eq(users.id, userId));
+  return hasScope(apiKey.scopes, requiredScope);
 }
 ```
 
-### 3.3 Encryption Utilities
+### 3.3 API Key Security Notes
 
-```typescript
-// lib/crypto.ts
-import crypto from 'crypto';
+**Storage**: Fictures API keys use SHA-256 hashing (not encryption) via `lib/auth/api-keys.ts`:
+- Full keys are NEVER stored in database
+- Only SHA-256 hash (`keyHash`) is stored for validation
+- Key prefix stored for UI display (`fic_xxxxx`)
+- User provides full key during API calls
 
-const ALGORITHM = 'aes-256-gcm';
-const IV_LENGTH = 16;
-const SALT_LENGTH = 64;
-const TAG_LENGTH = 16;
-const KEY_LENGTH = 32;
-
-export function encrypt(text: string, encryptionKey: string): string {
-  const salt = crypto.randomBytes(SALT_LENGTH);
-  const iv = crypto.randomBytes(IV_LENGTH);
-
-  const key = crypto.pbkdf2Sync(
-    encryptionKey,
-    salt,
-    100000,
-    KEY_LENGTH,
-    'sha512'
-  );
-
-  const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
-  const encrypted = Buffer.concat([
-    cipher.update(text, 'utf8'),
-    cipher.final(),
-  ]);
-
-  const tag = cipher.getAuthTag();
-
-  return Buffer.concat([salt, iv, tag, encrypted]).toString('base64');
-}
-
-export function decrypt(encryptedData: string, encryptionKey: string): string {
-  const buffer = Buffer.from(encryptedData, 'base64');
-
-  const salt = buffer.subarray(0, SALT_LENGTH);
-  const iv = buffer.subarray(SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
-  const tag = buffer.subarray(
-    SALT_LENGTH + IV_LENGTH,
-    SALT_LENGTH + IV_LENGTH + TAG_LENGTH
-  );
-  const encrypted = buffer.subarray(SALT_LENGTH + IV_LENGTH + TAG_LENGTH);
-
-  const key = crypto.pbkdf2Sync(
-    encryptionKey,
-    salt,
-    100000,
-    KEY_LENGTH,
-    'sha512'
-  );
-
-  const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
-  decipher.setAuthTag(tag);
-
-  return decipher.update(encrypted) + decipher.final('utf8');
-}
-```
+**Validation Flow**:
+1. User provides API key in header: `Authorization: Bearer fic_xxxxx_...`
+2. Hash the provided key: `hashApiKey(providedKey)`
+3. Look up hash in database: `findApiKeyByHash(hash)`
+4. Check: active status, expiration, required scopes
+5. Update `lastUsedAt` timestamp
 
 ---
 
@@ -1026,61 +999,106 @@ export const checkPrerequisitesTool = tool({
 });
 
 export const validateContentQualityTool = tool({
-  description: 'Validate content quality based on Adversity-Triumph principles',
+  description: 'Validate content quality using LLM evaluation based on Adversity-Triumph principles',
   parameters: z.object({
     contentType: z.enum(['character', 'setting', 'chapter', 'scene']),
     content: z.record(z.any()).describe('Content to validate'),
+    userId: z.string().describe('User ID for API key retrieval'),
   }),
-  execute: async ({ contentType, content }) => {
-    const issues = [];
-    const warnings = [];
-
-    if (contentType === 'character') {
-      // Check internal flaw has cause
-      if (!content.internalFlaw?.includes('because')) {
-        issues.push('Internal flaw must include CAUSE (use "because")');
-      }
-
-      // Check core trait is valid
-      const validTraits = ['courage', 'compassion', 'integrity', 'sacrifice', 'loyalty', 'wisdom'];
-      if (!validTraits.includes(content.coreTrait)) {
-        issues.push(`Core trait must be one of: ${validTraits.join(', ')}`);
-      }
+  execute: async ({ contentType, content, userId }) => {
+    // Get user's API key
+    const apiKey = await getUserActiveApiKey(userId);
+    if (!apiKey) {
+      throw new Error('No active API key found for content validation');
     }
 
-    if (contentType === 'setting') {
-      // Check sensory details
-      if (!content.sensory?.sight || content.sensory.sight.length < 5) {
-        issues.push('Settings must have at least 5 sight details');
-      }
-      if (!content.sensory?.sound || content.sensory.sound.length < 3) {
-        issues.push('Settings must have at least 3 sound details');
-      }
-    }
+    // Prepare validation prompt based on content type
+    const validationPrompts = {
+      character: `Evaluate this character profile using Adversity-Triumph Engine principles:
 
-    if (contentType === 'scene' && content.cyclePhase === 'virtue') {
-      // Check for transactional language
-      const transactionalPhrases = [
-        'hoping to get',
-        'expecting',
-        'in return',
-        'so that',
-        'in order to receive',
-      ];
+Character Data:
+${JSON.stringify(content, null, 2)}
 
-      for (const phrase of transactionalPhrases) {
-        if (content.content?.toLowerCase().includes(phrase)) {
-          warnings.push(`Possible transactional language: "${phrase}" - virtue should be intrinsically motivated`);
-        }
-      }
-    }
+Check for:
+1. Internal flaw must have CAUSE (format: "fears/believes/wounded by X because Y")
+2. Core trait must be one of: courage, compassion, integrity, sacrifice, loyalty, wisdom
+3. Backstory should explain the internal flaw's origin
+4. External goal should conflict with internal need
 
-    return {
-      valid: issues.length === 0,
-      issues,
-      warnings,
-      qualityScore: issues.length === 0 ? (warnings.length === 0 ? 1.0 : 0.8) : 0.5,
+Return JSON:
+{
+  "valid": boolean,
+  "issues": string[], // Critical problems
+  "warnings": string[], // Suggestions for improvement
+  "qualityScore": number (0-1),
+  "recommendations": string[]
+}`,
+
+      setting: `Evaluate this setting using Adversity-Triumph Engine principles:
+
+Setting Data:
+${JSON.stringify(content, null, 2)}
+
+Check for:
+1. At least 5 sight sensory details
+2. At least 3 sound sensory details
+3. Adversity elements (obstacles, scarcity, danger, social dynamics)
+4. Symbolic meaning aligned with moral framework
+5. Cycle amplification for each phase
+
+Return JSON with same format as character validation.`,
+
+      scene: `Evaluate this scene using Adversity-Triumph Engine principles:
+
+Scene Data:
+${JSON.stringify(content, null, 2)}
+
+Check for:
+1. Intrinsic motivation (NO transactional language: "hoping to get", "in return", "so that", "expecting")
+2. Causal linking (consequences must relate to past actions)
+3. Proper cycle phase execution
+4. Emotional resonance and sensory grounding
+5. Show-don't-tell for emotions
+
+Return JSON with same format.`,
+
+      chapter: `Evaluate this chapter using Adversity-Triumph Engine principles:
+
+Chapter Data:
+${JSON.stringify(content, null, 2)}
+
+Check for:
+1. Complete adversity-triumph cycle
+2. Causal chain integrity
+3. Character arc progression
+4. Seed planting for future payoffs
+
+Return JSON with same format.`,
     };
+
+    // Call LLM for evaluation
+    const { generateText } = await import('ai');
+    const { google } = await import('@ai-sdk/google');
+
+    const result = await generateText({
+      model: google('gemini-2.0-flash-exp'),
+      prompt: validationPrompts[contentType],
+    });
+
+    // Parse JSON response
+    try {
+      const evaluation = JSON.parse(result.text);
+      return evaluation;
+    } catch (error) {
+      // Fallback: return raw text if JSON parsing fails
+      return {
+        valid: true,
+        issues: [],
+        warnings: [],
+        qualityScore: 0.7,
+        recommendations: [result.text],
+      };
+    }
   },
 });
 
@@ -1096,33 +1114,59 @@ export const advisoryTools = {
 // lib/studio/agent-utility-tools.ts
 import { tool } from 'ai';
 import { z } from 'zod';
-import { getUserApiKey, validateUserApiKey } from '@/lib/db/user-api-key-operations';
+import { validateStudioAgentApiKey, checkUserApiKeyScope } from '@/lib/db/api-key-operations';
+import type { ApiScope } from '@/lib/auth/api-keys';
 
-export const getUserApiKeyTool = tool({
-  description: 'Retrieve and validate user\'s AI Gateway API key from database',
+export const validateUserApiKeyTool = tool({
+  description: 'Validate user\'s Fictures API key for Studio Agent usage (checks ai:use and stories:write scopes)',
   parameters: z.object({
     userId: z.string().describe('User ID'),
   }),
   execute: async ({ userId }) => {
-    const apiKey = await getUserApiKey(userId);
+    const validation = await validateStudioAgentApiKey(userId);
 
-    if (!apiKey) {
+    if (!validation.valid) {
       return {
         hasApiKey: false,
         isValid: false,
-        message: 'No API key found. Please add your Vercel AI Gateway API key in Settings.',
+        message: validation.message || 'API key validation failed',
+        scopes: [],
       };
     }
 
-    const isValid = await validateUserApiKey(userId);
-
     return {
       hasApiKey: true,
-      isValid,
-      message: isValid
-        ? 'API key validated successfully'
-        : 'API key is invalid. Please update in Settings.',
+      isValid: true,
+      message: 'API key validated successfully. Ready for story generation.',
+      scopes: validation.scopes,
+      apiKeyId: validation.apiKeyId,
       // Note: Never return the actual API key
+    };
+  },
+});
+
+export const checkApiKeyScopeTool = tool({
+  description: 'Check if user has specific API key scope for an operation',
+  parameters: z.object({
+    userId: z.string().describe('User ID'),
+    requiredScope: z.enum([
+      'ai:use',
+      'stories:read',
+      'stories:write',
+      'stories:delete',
+      'chapters:write',
+      'analytics:read',
+    ] as const).describe('Required scope to check'),
+  }),
+  execute: async ({ userId, requiredScope }) => {
+    const hasPermission = await checkUserApiKeyScope(userId, requiredScope as ApiScope);
+
+    return {
+      hasPermission,
+      scope: requiredScope,
+      message: hasPermission
+        ? `User has ${requiredScope} permission`
+        : `User lacks ${requiredScope} permission. Please update API key scopes in Settings.`,
     };
   },
 });
@@ -1161,7 +1205,8 @@ export const getStoryProgressTool = tool({
 });
 
 export const utilityTools = {
-  getUserApiKey: getUserApiKeyTool,
+  validateUserApiKey: validateUserApiKeyTool,
+  checkApiKeyScope: checkApiKeyScopeTool,
   getStoryProgress: getStoryProgressTool,
 };
 ```
@@ -1205,7 +1250,7 @@ import {
   saveToolExecution,
   updateToolExecution,
 } from '@/lib/db/studio-agent-operations';
-import { getUserApiKey } from '@/lib/db/user-api-key-operations';
+import { validateStudioAgentApiKey } from '@/lib/db/api-key-operations';
 import { studioAgentTools } from '@/lib/studio/agent-tools';
 import { generateId } from 'ai';
 
@@ -1266,8 +1311,8 @@ Your role is to guide writers through creating emotionally resonant stories usin
 
 **Before Using Tools**:
 1. Check prerequisites using checkPrerequisites tool
-2. Validate content quality using validateContentQuality tool
-3. Confirm API key availability using getUserApiKey tool
+2. Validate content quality using validateContentQuality tool (LLM-based evaluation)
+3. Confirm API key availability using validateUserApiKey tool (checks Fictures API key scopes)
 
 **Generation Flow**:
 1. Use generation tool (e.g., generateCharacters)
@@ -1298,10 +1343,10 @@ User: "I want to create a post-war story about healing"
 Agent:
 "Great story concept! Let me guide you through creating this.
 
-First, I'll check if you have an API key configured...
-[Uses getUserApiKey tool]
+First, I'll check if you have a Fictures API key with proper permissions...
+[Uses validateUserApiKey tool]
 
-Perfect! You're all set.
+Perfect! Your API key has 'ai:use' and 'stories:write' scopes. You're all set.
 
 Let's start with Phase 1: Story Summary. This will:
 - Define your moral framework (what virtues matter in a post-war world?)
@@ -1325,13 +1370,13 @@ export async function POST(request: NextRequest) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    // Validate API key
-    const apiKey = await getUserApiKey(session.user.id);
-    if (!apiKey) {
+    // Validate Fictures API key
+    const apiKeyValidation = await validateStudioAgentApiKey(session.user.id);
+    if (!apiKeyValidation.valid) {
       return new Response(
         JSON.stringify({
           error: 'API key required',
-          message: 'Please add your Vercel AI Gateway API key in Settings to use the Studio Agent.',
+          message: apiKeyValidation.message || 'Please create a Fictures API key with ai:use and stories:write scopes in Settings.',
         }),
         { status: 403, headers: { 'Content-Type': 'application/json' } }
       );
@@ -1382,10 +1427,10 @@ export async function POST(request: NextRequest) {
     });
 
     // Stream response with multi-step reasoning
+    // Note: Uses system AI_GATEWAY_API_KEY from environment (Gemini API calls)
+    // User's Fictures API key is for authorization/scopes only
     const result = streamText({
-      model: google('gemini-2.0-flash-exp', {
-        apiKey, // Use user's API key
-      }),
+      model: google('gemini-2.0-flash-exp'),
       system: AGENT_SYSTEM_PROMPT,
       messages: convertToCoreMessages(allMessages),
       tools: studioAgentTools,
@@ -2305,11 +2350,9 @@ AUTH_SECRET="..."
 GOOGLE_CLIENT_ID="..."
 GOOGLE_CLIENT_SECRET="..."
 
-# AI Integration
-AI_GATEWAY_API_KEY="..." # System-wide fallback (optional)
-
-# Encryption
-ENCRYPTION_KEY="..." # 32-character random string for API key encryption
+# AI Integration (for Gemini API calls)
+AI_GATEWAY_API_KEY="..." # Vercel AI Gateway API key (system-wide, NOT user-specific)
+GOOGLE_GENERATIVE_AI_API_KEY="..." # Google AI API key (alternative to AI Gateway)
 
 # Vercel Blob
 BLOB_READ_WRITE_TOKEN="..."
@@ -2317,6 +2360,12 @@ BLOB_READ_WRITE_TOKEN="..."
 # Redis (optional)
 REDIS_URL="..."
 ```
+
+**Note on API Keys**:
+- **System AI Keys** (`AI_GATEWAY_API_KEY`, `GOOGLE_GENERATIVE_AI_API_KEY`): Used for actual Gemini API calls in generation
+- **User Fictures API Keys** (stored in `api_keys` table): Used for authorization and scope checking (who can use what features)
+- Studio Agent validates user has `ai:use` scope before allowing story generation
+- Actual AI calls use system environment variables, not user API keys
 
 ---
 
@@ -2402,11 +2451,13 @@ if (chat.userId !== session.user.id) {
 
 ### 12.2 Data Protection
 
-**API Key Encryption**:
-- AES-256-GCM encryption
-- PBKDF2 key derivation (100,000 iterations)
-- Salt and IV per encrypted value
-- Never exposed to client
+**Fictures API Key Security**:
+- SHA-256 hashing (one-way, irreversible)
+- Full keys NEVER stored in database
+- Only hash and prefix stored
+- Scope-based permission system
+- Expiration date support
+- Never exposed to client (except during initial creation)
 
 **SQL Injection Prevention**:
 - All queries use Drizzle ORM
