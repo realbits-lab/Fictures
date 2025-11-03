@@ -11,7 +11,8 @@ import { generateStoryImage } from '@/lib/services/image-generation';
 import { db } from '@/lib/db';
 import { comicPanels, scenes } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { convertSceneToToonplay, type ComicToonplay } from './toonplay-converter';
+import { type ComicToonplay } from './toonplay-converter';
+import { generateToonplayWithEvaluation } from '@/lib/services/toonplay-improvement-loop';
 import { buildPanelCharacterPrompts, extractKeyPhysicalTraits } from '@/lib/services/character-consistency';
 import { calculateTotalHeight, estimateReadingTime } from '@/lib/services/comic-layout';
 
@@ -89,6 +90,12 @@ export interface GeneratedPanel {
 export interface ComicPanelGenerationResult {
   toonplay: ComicToonplay;
   panels: GeneratedPanel[];
+  evaluation?: {
+    weighted_score: number;
+    passes: boolean;
+    iterations: number;
+    final_report: string;
+  };
   metadata: {
     total_generation_time: number;
     total_panels: number;
@@ -119,22 +126,31 @@ export async function generateComicPanels(
   console.log(`   Genre: ${story.genre}`);
 
   // ========================================
-  // STEP 1: Convert Scene to Toonplay
+  // STEP 1: Generate Toonplay with Quality Evaluation
   // ========================================
 
-  progressCallback?.(0, 100, 'Converting scene to toonplay...');
+  progressCallback?.(0, 100, 'Generating toonplay with quality evaluation...');
 
-  const toonplay = await convertSceneToToonplay({
+  const toonplayResult = await generateToonplayWithEvaluation({
     scene,
     characters,
     setting,
     storyGenre: story.genre,
     targetPanelCount,
+    maxIterations: 2,
+    passingScore: 3.0,
   });
 
-  console.log(`✅ Toonplay generated: ${toonplay.total_panels} panels`);
+  const toonplay = toonplayResult.toonplay;
 
-  progressCallback?.(20, 100, `Toonplay ready: ${toonplay.total_panels} panels`);
+  console.log(`✅ Toonplay generated: ${toonplay.total_panels} panels`);
+  console.log(`   Quality Score: ${toonplayResult.evaluation.weighted_score.toFixed(2)}/5.0 ${toonplayResult.evaluation.passes ? '✅' : '⚠️'}`);
+  console.log(`   Iterations: ${toonplayResult.iterations}`);
+
+  // Log evaluation report
+  console.log('\n' + toonplayResult.final_report);
+
+  progressCallback?.(20, 100, `Toonplay ready: ${toonplay.total_panels} panels (score: ${toonplayResult.evaluation.weighted_score.toFixed(1)}/5.0)`);
 
   // ========================================
   // STEP 2: Generate Panel Images
@@ -307,6 +323,12 @@ export async function generateComicPanels(
   return {
     toonplay,
     panels: generatedPanels,
+    evaluation: {
+      weighted_score: toonplayResult.evaluation.weighted_score,
+      passes: toonplayResult.evaluation.passes,
+      iterations: toonplayResult.iterations,
+      final_report: toonplayResult.final_report,
+    },
     metadata: {
       total_generation_time: totalTime,
       total_panels: generatedPanels.length,

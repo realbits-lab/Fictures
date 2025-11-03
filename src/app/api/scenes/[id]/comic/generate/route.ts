@@ -191,6 +191,7 @@ export async function POST(
               result: {
                 toonplay: result.toonplay,
                 panels: result.panels,
+                evaluation: result.evaluation, // Include quality evaluation results
                 metadata: result.metadata,
               },
             });
@@ -268,6 +269,7 @@ export async function POST(
             dialogue: p.dialogue,
             sfx: p.sfx,
           })),
+          evaluation: result.evaluation, // Include quality evaluation results
           metadata: result.metadata,
         },
       });

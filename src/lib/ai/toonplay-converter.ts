@@ -42,19 +42,17 @@ export const ComicPanelSpecSchema = z.object({
     emphasis: z.enum(['normal', 'large', 'dramatic'])
   })).default([]),
   mood: z.string().default('neutral').describe('Overall emotional tone of the panel')
-})
-// TEMPORARILY DISABLED: Validation causing generation failures
-// .refine(
-//   (data) => {
-//     const hasNarrative = !!data.narrative && data.narrative.trim().length > 0;
-//     const hasDialogue = data.dialogue && data.dialogue.length > 0;
-//     return hasNarrative || hasDialogue;
-//   },
-//   {
-//     message: 'Every panel MUST have either narrative text OR dialogue. No panel can be without text.'
-//   }
-// )
-;
+}).refine(
+  (data) => {
+    // Every panel MUST have either narrative text OR dialogue
+    const hasNarrative = !!data.narrative && data.narrative.trim().length > 0;
+    const hasDialogue = data.dialogue && data.dialogue.length > 0;
+    return hasNarrative || hasDialogue;
+  },
+  {
+    message: 'Every panel MUST have either narrative text OR dialogue. No panel can be without text overlay. This is critical for webtoon readability.'
+  }
+);
 
 export const ComicToonplaySchema = z.object({
   scene_id: z.string(),
@@ -122,7 +120,7 @@ export async function convertSceneToToonplay(
     .map(c => `${c.name}: ${c.summary || c.internalFlaw || c.externalGoal || 'pursuing their goals'}`)
     .join('\n');
 
-  // Build toonplay prompt
+  // Build toonplay prompt with detailed visual grammar from docs/comics/comics-toonplay.md
   const toonplayPrompt = `You are an expert comic storyboard artist. Convert this narrative scene into a panel-by-panel toonplay optimized for vertical-scroll comics.
 
 SCENE INFORMATION:
@@ -143,8 +141,39 @@ ${setting.name}: ${setting.description}
 
 GENRE: ${storyGenre}
 
-INSTRUCTIONS:
-1. Break the narrative into ${targetPanelCount || '8-12'} visual panels (TARGET: ${targetPanelCount || '8-12'} PANELS)
+═══════════════════════════════════════════════════════════════
+CORE PRINCIPLES (THE 5 GOLDEN RULES)
+═══════════════════════════════════════════════════════════════
+
+1. **Dialogue > Description > Narration** (70% / 30% / <5%)
+   - MOST content should be dialogue
+   - Show action visually (description field)
+   - Use narration ONLY for: time/location markers, essential tone, critical info
+   - NEVER use narration for internal monologue or exposition
+
+2. **Show, Don't Tell** (externalize all internal content)
+   - Internal monologue → Externalize through action/expression
+   - Backstory → Quick 2-3 panel flashback (if absolutely necessary)
+   - Emotional state → Dramatic facial expressions, body language
+   - World-building → Visual symbols, environmental storytelling
+
+3. **Space = Time** (panel spacing controls perceived duration)
+   - More space between panels = Longer perceived moment
+   - Less space = Faster perceived moment
+
+4. **Character Consistency** (identical trait descriptions across all panels)
+   - Use EXACT same physical traits in every panel
+
+5. **Distill, Don't Duplicate** (preserve the soul, not the text)
+   - Identify the "soul" of the scene (core emotional beat)
+   - Discard subplots and details that don't translate
+   - NOT a 1:1 translation of source text
+
+═══════════════════════════════════════════════════════════════
+PANEL STRUCTURE INSTRUCTIONS
+═══════════════════════════════════════════════════════════════
+
+1. Break the narrative into ${targetPanelCount || '8-12'} visual panels (TARGET: ${targetPanelCount || 10} PANELS)
    - Aim for ${targetPanelCount || 10} panels for optimal pacing
    - Use more panels for complex action sequences (up to 12)
    - Use fewer panels for quiet, reflective moments (minimum 8)
@@ -157,46 +186,96 @@ INSTRUCTIONS:
    - 0-1 extreme_close_up (climactic moments, critical details, intense emotion)
    - 0-1 over_shoulder or dutch_angle (special moments, tension)
 
-3. Each panel must SHOW the action, not tell (minimize narration)
-
-4. Visual Variety and Pacing:
+3. Visual Variety and Pacing:
    - Vary shot types to maintain visual interest
    - Use establishing shots sparingly (scene openings, major transitions)
    - Alternate between wide/medium shots for rhythm
    - Save close-ups for emotional peaks
    - Build tension with shot progression (wide → medium → close-up)
 
+4. TEXT OVERLAY REQUIREMENT (CRITICAL):
+   - EVERY PANEL MUST HAVE EITHER NARRATIVE OR DIALOGUE - NO EXCEPTIONS
+   - If characters_visible is EMPTY: MUST include "narrative" text
+   - If characters_visible has characters: MUST include at least one "dialogue"
+   - Narrative: <5% of panels, 1-2 sentences, only when necessary
+   - Dialogue: max 2-3 speech bubbles per panel, max 150 chars each
+   - VALIDATION ERROR if a panel has neither
+
 5. Maintain character consistency - reference same physical traits across all panels
 
-6. TEXT OVERLAY REQUIREMENT (CRITICAL - EVERY PANEL MUST HAVE TEXT):
-   - EVERY PANEL MUST HAVE EITHER NARRATIVE OR DIALOGUE - NO EXCEPTIONS
-   - If characters_visible is EMPTY (no characters in panel): MUST include "narrative" text
-   - If characters_visible has characters: MUST include at least one "dialogue"
-   - Narrative text: 1-2 sentences explaining what's happening in the scene
-   - Dialogue: max 2-3 speech bubbles per panel, max 150 chars each
-   - VALIDATION ERROR will occur if a panel has neither narrative nor dialogue
+6. Add sound effects (SFX) for impactful moments (doors, footsteps, impacts, ambient sounds)
 
-7. Add sound effects (SFX) for impactful moments (doors, footsteps, impacts, ambient sounds)
+7. Ensure each panel advances the story - no redundant panels
 
-8. Ensure each panel advances the story - no redundant panels
+═══════════════════════════════════════════════════════════════
+VISUAL GRAMMAR LEXICON
+═══════════════════════════════════════════════════════════════
 
-CHARACTER POSING GUIDANCE:
+Use these cinematography techniques to control narrative and emotional impact:
+
+**CAMERA ANGLES (camera_angle field):**
+- "low angle" = Hero Shot - Makes subject powerful, imposing, dominant, threatening
+- "high angle" or "bird's eye" = Makes subject weak, vulnerable, small, distant
+- "eye level" = Neutral, conversational, equal power dynamic
+- "dutch angle" = Creates unease, tension, disorientation, instability
+
+**SHOT TYPES (shot_type field):**
+- establishing_shot = Establishes location, emphasizes isolation, shows full environment
+- wide_shot = Shows full action, multiple characters, spatial relationships
+- medium_shot = Main storytelling, conversations, character interactions (waist-up)
+- close_up = Captures emotion, creates intimacy, builds tension (head/shoulders)
+- extreme_close_up = Focuses on tiny details (eyes, hands), intense emotion
+- over_shoulder = Conversation, two-person scenes, POV perspective
+
+**LIGHTING (lighting field):**
+- "rim lighting" or "cool edge" = Separates subject from background, creates halo/isolation
+- "chiaroscuro" or "shadow play" = High contrast, drama, mystery, moral ambiguity
+- "harsh overhead fluorescent creating shadows" = Interrogation, tension, harshness
+- "strong side lighting" = Sharp contrast, tension, cyberpunk/noir feel
+- "soft window light" or "diffused natural light" = Calm, neutral, natural, melancholic
+- "warm golden sunset" = Romance, nostalgia, hope, comfort
+- "cold blue moonlight" = Mystery, loneliness, supernatural
+
+**CHARACTER POSING (character_poses field):**
 - Describe exact body language and gestures
 - Include emotional expressions (eyes, mouth, eyebrows)
 - Specify hand positions and arm placement
 - Note if character is moving or static
+- Examples: "arms crossed defensively", "hand reaching out tentatively", "shoulders slumped in defeat"
 
-LIGHTING GUIDANCE:
-- Match mood: "harsh overhead fluorescent" for interrogation, "warm golden sunset" for romance
-- Use dramatic lighting for tension: "strong side lighting creating shadows"
-- Use soft lighting for calm moments: "diffused natural light"
+**MOOD (mood field):**
+Match the emotional tone: tense, romantic, mysterious, hopeful, desperate, triumphant, melancholic, etc.
 
-CAMERA ANGLE GUIDANCE:
-- Low angle: looking up (makes character powerful)
-- High angle: looking down (makes character vulnerable)
-- Eye level: neutral, conversational
-- Dutch angle: tilted (creates unease, action)
-- Over shoulder: conversation, two-person scenes
+═══════════════════════════════════════════════════════════════
+ADAPTATION STRATEGY: "SHOW, DON'T TELL"
+═══════════════════════════════════════════════════════════════
+
+For each narrative element, externalize through visuals:
+
+| Internal Element | External Visualization |
+|------------------|------------------------|
+| "I'm so nervous..." | Character bites lip, hands trembling |
+| Backstory exposition | Quick 2-3 panel flashback, stylized |
+| Character motivation | Silent panels of triggering memory |
+| Emotional state | Dramatic facial expressions, body language |
+| World-building | Visual symbols, environmental storytelling |
+
+NEVER use narration boxes to explain emotions or motivations.
+ALWAYS show through visual action, facial expressions, and dialogue.
+
+═══════════════════════════════════════════════════════════════
+CONTENT PROPORTION TARGET
+═══════════════════════════════════════════════════════════════
+
+📊 Dialogue:        ~70% (Primary story driver - most panels should have dialogue)
+📊 Visual Action:   ~30% (Shown in description field, not told in narration)
+📊 Narration:       <5%  (CRITICAL: Use narration in LESS THAN 5% of panels)
+
+For a ${targetPanelCount || 10}-panel scene:
+- Maximum narration panels: ${Math.ceil((targetPanelCount || 10) * 0.05)} (ideally 0-1 panels)
+- Minimum dialogue panels: ${Math.floor((targetPanelCount || 10) * 0.7)} (7+ panels)
+
+═══════════════════════════════════════════════════════════════
 
 IMPORTANT: This is for a ${storyGenre} story. Match the visual style and tone accordingly.
 
