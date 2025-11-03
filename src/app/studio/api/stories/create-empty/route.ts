@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
         id: `story_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         authorId: userId,
         title,
+        genre: 'unspecified', // Default genre until agent generates it
         status: 'writing',
         // All other fields will be null/default
         // The agent will populate them through generation
