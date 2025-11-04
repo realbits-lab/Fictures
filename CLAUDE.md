@@ -84,27 +84,22 @@ This file provides guidance to Claude Code when working with this repository.
 - Use manager@fictures.xyz only for admin/management specific tests
 - All test scripts should read credentials from `.auth/user.json` profiles
 
-**Option 1: Google OAuth**
-1. **Initial Capture**: Run `dotenv --file .env.local run node scripts/capture-auth-manual.mjs`
-   - Opens browser for manual Google login with manager@fictures.xyz account
-   - Automatically captures authentication state to `.auth/user.json`
-   - Includes NextAuth.js session cookies and Google OAuth tokens
-   - **Testing Account**: Always use writer@fictures.xyz from `.auth/user.json` for story editing tests
+**Email/Password Authentication (Primary Method):**
 
-**Option 2: Email/Password Authentication**
-1. **Initial Capture**: Run authentication capture script for email/password
-   - Opens browser for manual email/password login
-   - Automatically captures authentication state to `.auth/user.json`
-   - Includes NextAuth.js session cookies and credentials
-   - Stored alongside Google OAuth credentials in `.auth/user.json`
+Playwright tests use **direct email/password authentication** via the `/login` page. This approach does NOT use cookies or storage state files.
 
-2. **Testing Automatic Login**: Run `dotenv --file .env.local run node scripts/test-auto-login.mjs`
-   - Verifies stored credentials work for automatic authentication
-   - Tests navigation to protected routes like `/stories`
+1. **Setup Authentication Users**:
+   ```bash
+   # Create all three users (manager, writer, reader) if not exists
+   dotenv --file .env.local run node scripts/setup-auth-users.mjs
 
-3. **Programmatic Login in Playwright Tests**:
+   # Verify users were created correctly
+   dotenv --file .env.local run node scripts/verify-auth-setup.mjs
+   ```
+
+2. **Reusable Login Helper Function**:
    ```javascript
-   // For tests that need fresh authentication without .auth/user.json
+   // Add this function to your Playwright test files
    async function login(page, email, password) {
      await page.goto('http://localhost:3000/login');
      await page.waitForLoadState('networkidle');
@@ -122,32 +117,60 @@ This file provides guidance to Claude Code when working with this repository.
      // Wait for redirect after successful login
      await page.waitForTimeout(2000);
    }
-
-   test('example with programmatic login', async ({ page }) => {
-     await login(page, 'user@example.com', 'password123');
-     // Test runs with authenticated session
-   });
    ```
 
-4. **Using in Playwright Tests with storageState**:
+3. **Using in Playwright Tests**:
    ```javascript
-   // In your Playwright test files
-   const { test, expect } = require('@playwright/test');
+   import { test, expect } from '@playwright/test';
+   import fs from 'fs';
 
-   test.use({
-     storageState: '.auth/user.json'
-   });
+   // Load authentication profiles
+   const authData = JSON.parse(fs.readFileSync('.auth/user.json', 'utf-8'));
 
-   test('authenticated user can access stories', async ({ page }) => {
-     await page.goto('http://localhost:3000/stories');
-     // Test runs with Google authentication
+   test('writer can create stories', async ({ page }) => {
+     // Get writer credentials from auth file
+     const writer = authData.profiles.writer;
+
+     // Login with writer
+     await login(page, writer.email, writer.password);
+
+     // Navigate to story creation
+     await page.goto('http://localhost:3000/studio/new');
+
+     // Test runs with authenticated session
+     // ... your test code ...
    });
    ```
 
-5. **Refreshing Authentication**: When credentials expire, re-run capture script:
-   ```bash
-   dotenv --file .env.local run node scripts/capture-auth-manual.mjs
+4. **Testing with Different User Roles**:
+   ```javascript
+   test.describe('User Role Tests', () => {
+     test('manager can delete stories', async ({ page }) => {
+       const manager = authData.profiles.manager;
+       await login(page, manager.email, manager.password);
+       // Test manager-only features
+     });
+
+     test('writer can edit stories', async ({ page }) => {
+       const writer = authData.profiles.writer;
+       await login(page, writer.email, writer.password);
+       // Test writer features
+     });
+
+     test('reader can only view stories', async ({ page }) => {
+       const reader = authData.profiles.reader;
+       await login(page, reader.email, reader.password);
+       // Test read-only access
+     });
+   });
    ```
+
+**Benefits:**
+- ✅ Simple and direct - No need to manage cookies or storage state files
+- ✅ Fresh authentication - Each test gets a new session
+- ✅ Easy role switching - Just use different credentials
+- ✅ Matches real user flow - Tests actual login process
+- ✅ No session expiration issues - New session for each test
 
 ## Architecture Overview
 

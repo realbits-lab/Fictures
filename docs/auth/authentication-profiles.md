@@ -145,249 +145,344 @@ dotenv --file .env.local run node scripts/verify-reader-password.mjs
 
 ## File Structure
 
-The `.auth/user.json` file contains authentication data structured as follows:
+The `.auth/user.json` file contains minimal authentication data. All other user information (userId, name, role, scopes, etc.) is retrieved from the database when needed.
+
+**Simplified Structure (Only Essential Credentials):**
 
 ```json
 {
   "profiles": {
     "manager": {
-      "userId": "usr_XXXXXXXXXXXXX",
       "email": "manager@fictures.xyz",
-      "name": "Fictures Manager",
-      "role": "manager",
-      "apiKey": "fic_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-      "apiKeyId": "XXXXXXXXXXXXXXXXXXXXX",
-      "apiKeyScopes": ["stories:read", "stories:write"],
-      "cookies": [...],
-      "origins": [...]
+      "password": "[SECURE_PASSWORD_HERE]",
+      "apiKey": "fic_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     },
     "reader": {
-      "userId": "usr_XXXXXXXXXXXXX",
       "email": "reader@fictures.xyz",
       "password": "[SECURE_PASSWORD_HERE]",
-      "name": "Reader User",
-      "username": "reader",
-      "role": "reader",
-      "apiKey": "fic_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-      "apiKeyId": "XXXXXXXXXXXXXXXXXXXXX",
-      "apiKeyScopes": ["stories:read", "stories:write"],
-      "cookies": [],
-      "origins": []
+      "apiKey": "fic_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     },
     "writer": {
-      "userId": "usr_XXXXXXXXXXXXX",
       "email": "writer@fictures.xyz",
       "password": "[SECURE_PASSWORD_HERE]",
-      "name": "Writer User",
-      "username": "writer",
-      "role": "writer",
-      "apiKey": "fic_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-      "apiKeyId": "XXXXXXXXXXXXXXXXXXXXX",
-      "apiKeyScopes": ["stories:read", "stories:write", "stories:delete"],
-      "cookies": [],
-      "origins": []
+      "apiKey": "fic_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     }
-  },
-  "defaultProfile": "manager"
+  }
 }
 ```
+
+**Design Philosophy:**
+- **Store only credentials**: email, password (plain text for testing), apiKey
+- **Retrieve everything else from database**: userId, name, role, scopes, etc.
+- **Single source of truth**: Database is authoritative for user metadata
+- **Simplified auth file**: Easier to manage and less prone to sync issues
+
+## Initial Setup
+
+### Create All Authentication Users
+
+**Quick Setup (Recommended):**
+
+```bash
+dotenv --file .env.local run node scripts/setup-auth-users.mjs
+```
+
+This script uses **Drizzle ORM query builder** to:
+1. Create three user accounts (manager, writer, reader) in the database
+2. Generate secure random passwords (24 characters with special chars)
+3. Hash passwords with PBKDF2 (100,000 iterations, SHA-256)
+4. Create API keys for each user with role-specific scopes
+5. Hash API keys with SHA-256 for secure storage
+6. Write simplified `.auth/user.json` with only essential credentials
+7. Display all credentials in the console output
+
+**Technical Details:**
+- Uses Drizzle ORM's type-safe query builder API
+- Inline schema definitions (no TypeScript imports needed)
+- Automatic snake_case ↔ camelCase conversion
+- Idempotent: Safe to run multiple times (updates existing users)
+
+**Output Example:**
+```
+═══════════════════════════════════════════════════════════
+🔑 USER CREDENTIALS
+═══════════════════════════════════════════════════════════
+
+MANAGER (manager@fictures.xyz):
+  Password: Xy9$mK2pL@7qR4vN8wB5tH1j
+  API Key:  fic_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+
+WRITER (writer@fictures.xyz):
+  Password: Qw3@nM5pB@2rT8vL9xK4yJ7zD1f
+  API Key:  fic_p1q2r3s4t5u6v7w8x9y0z1a2b3c4d5e6
+
+READER (reader@fictures.xyz):
+  Password: Lm6$pR9vW@3tN7kD2xB8yH5jM1q
+  API Key:  fic_f1g2h3i4j5k6l7m8n9o0p1q2r3s4t5u6
+
+═══════════════════════════════════════════════════════════
+```
+
+**Important Notes:**
+- 🔑 **Save credentials immediately** - Passwords shown only during setup
+- 📁 `.auth/user.json` is gitignored and never committed
+- 🧪 Passwords stored as **plain text** in auth file (testing/development only)
+- 🔒 Passwords **hashed with PBKDF2** in database (production-ready)
+- 🔐 API keys **hashed with SHA-256** in database
+- ♻️ **Idempotent script** - Safe to re-run to regenerate credentials
 
 ## Helper Scripts
 
-### Get Current Profile
+### Verify Authentication Setup
+
+**Check that all users were created correctly:**
 
 ```bash
-node scripts/get-auth-profile.mjs
+dotenv --file .env.local run node scripts/verify-auth-setup.mjs
 ```
 
-Shows the currently active authentication profile with full details including:
-- User ID, email, name, and role
-- API key information
-- Available profiles list
+This script uses **Drizzle ORM query builder** to:
+- Query all three authentication users from database
+- Display user metadata (ID, email, name, username, role)
+- Show password status (PBKDF2 hashed)
+- List API keys with scopes for each user
+- Verify database consistency
 
 **Example Output:**
 ```
-=== Current Authentication Profile ===
+🔍 Verifying authentication setup...
 
-Active Profile: manager
-Email: manager@fictures.xyz
-Name: Fictures Manager
-Role: manager
-User ID: [FROM .auth/user.json]
-API Key: [FROM .auth/user.json]
-API Key ID: [FROM .auth/user.json]
-API Scopes: stories:read, stories:write
+✅ Found 3 users:
 
-Available Profiles: manager, reader, writer
+MANAGER - manager@fictures.xyz
+  User ID:  usr_YcGAsYj_dpG_8vkh
+  Name:     Fictures Manager
+  Username: manager
+  Password: ✓ Set (PBKDF2 hashed)
+  Created:  11/4/2025, 2:08:03 PM
+  API Keys: 1 active
+    - manager API Key (fic_00fZ...)
+      Scopes: stories:read, stories:write, stories:delete, stories:publish,
+              chapters:read, chapters:write, chapters:delete, analytics:read,
+              ai:use, community:read, community:write, settings:read,
+              settings:write, admin:all
+
+WRITER - writer@fictures.xyz
+  User ID:  usr_n4aadDs58JkSk4rL
+  Name:     Writer User
+  Username: writer
+  Password: ✓ Set (PBKDF2 hashed)
+  Created:  11/4/2025, 2:08:04 PM
+  API Keys: 1 active
+    - writer API Key (fic_Z1yZ...)
+      Scopes: stories:read, stories:write, chapters:read, chapters:write,
+              analytics:read, ai:use, community:read, community:write,
+              settings:read
+
+READER - reader@fictures.xyz
+  User ID:  usr_YQ8hcacxu85qyQOJ
+  Name:     Reader User
+  Username: reader
+  Password: ✓ Set (PBKDF2 hashed)
+  Created:  11/4/2025, 2:08:04 PM
+  API Keys: 1 active
+    - reader API Key (fic_8NtE...)
+      Scopes: stories:read, chapters:read, analytics:read,
+              community:read, settings:read
+
+✅ Authentication setup verified!
 ```
 
-### Switch Profile
-
-```bash
-# Switch to manager
-node scripts/switch-auth-profile.mjs manager
-
-# Switch to reader
-node scripts/switch-auth-profile.mjs reader
-
-# Switch to writer
-node scripts/switch-auth-profile.mjs writer
-```
-
-Changes the default authentication profile for testing. The script will:
-1. Update the `defaultProfile` field in `.auth/user.json`
-2. Display the switched profile's details
-3. Show credentials if available (password for reader profile)
-
-**Example Output:**
-```
-✓ Switched to profile: reader
-
-Profile Details:
-  Email: reader@fictures.xyz
-  Name: Reader User
-  Role: reader
-  User ID: [FROM .auth/user.json]
-  Password: [FROM .auth/user.json]
-  API Key: [FROM .auth/user.json]
-  API Scopes: stories:read, stories:write
-```
+**Use Cases:**
+- ✅ Verify users created successfully after running setup script
+- 🔍 Debug authentication issues
+- 📊 Audit user accounts and permissions
+- 🔐 Confirm password hashing is working correctly
 
 ## Using with Playwright
 
-### Quick Start: Capturing Fresh Authentication
+### Authentication Approach: Email/Password Login
 
-Before running Playwright tests, you need to capture fresh authentication data and convert it to Playwright format:
+Playwright tests use **direct email/password authentication** via the `/login` page instead of cookies or storage state.
 
-**Step 1: Capture Writer Authentication**
-```bash
-# Capture fresh authentication for writer@fictures.xyz
-dotenv --file .env.local run node scripts/capture-writer-auth.mjs
-```
+### Reusable Login Helper Function
 
-This script will:
-1. Open a browser window
-2. Navigate to `/login` page
-3. Automatically fill in writer@fictures.xyz credentials
-4. Wait for successful login redirect (to `/`, `/studio`, `/novels`, or `/comics`)
-5. Capture session cookies and localStorage
-6. Save to `.auth/user.json` under `profiles.writer`
+Create a reusable login helper function in your Playwright test files:
 
-**Step 2: Create Playwright-Compatible Auth File**
-```bash
-# Convert writer profile to Playwright storage state format
-node scripts/create-playwright-auth.mjs
-```
-
-This script will:
-1. Read `.auth/user.json`
-2. Extract writer profile data (cookies and origins)
-3. Create `.auth/writer-playwright.json` in Playwright's `storageState` format
-
-**Step 3: Use in Playwright Tests**
 ```javascript
-import { test } from '@playwright/test';
+/**
+ * Login helper function for Playwright tests
+ * @param {Page} page - Playwright page object
+ * @param {string} email - User email address
+ * @param {string} password - User password (from .auth/user.json)
+ */
+async function login(page, email, password) {
+  // Navigate to login page
+  await page.goto('http://localhost:3000/login');
+  await page.waitForLoadState('networkidle');
 
-// Use writer authentication
-test.use({ storageState: '.auth/writer-playwright.json' });
+  // Fill email field
+  await page.fill('input[type="email"], input[name="email"]', email);
 
-test('authenticated writer can create stories', async ({ page }) => {
-  await page.goto('http://localhost:3000/studio/new');
-  // Test runs with writer@fictures.xyz authentication
-});
-```
+  // Fill password field
+  await page.fill('input[type="password"], input[name="password"]', password);
 
-### Playwright Storage State Format
+  // Click sign in button
+  await page.click('button:has-text("Sign in with Email")');
+  await page.waitForLoadState('networkidle');
 
-The `.auth/writer-playwright.json` file created by `create-playwright-auth.mjs` follows Playwright's standard format:
-
-```json
-{
-  "cookies": [
-    {
-      "name": "authjs.csrf-token",
-      "value": "...",
-      "domain": "localhost",
-      "path": "/",
-      "expires": -1,
-      "httpOnly": true,
-      "secure": false,
-      "sameSite": "Lax"
-    },
-    {
-      "name": "authjs.session-token",
-      "value": "...",
-      "domain": "localhost",
-      "path": "/",
-      "expires": 1763547081.986371,
-      "httpOnly": true,
-      "secure": false,
-      "sameSite": "Lax"
-    }
-  ],
-  "origins": [
-    {
-      "origin": "http://localhost:3000",
-      "localStorage": [
-        {
-          "name": "swr-cache-/api/stories",
-          "value": "..."
-        }
-      ]
-    }
-  ]
+  // Wait for redirect after successful login
+  await page.waitForTimeout(2000);
 }
 ```
 
-### Manual Profile Loading (Advanced)
+### Using in Playwright Tests
 
-The profile structure is also compatible with dynamic profile loading:
+**Option 1: Direct credentials (for quick tests)**
 
 ```javascript
-const { test } = require('@playwright/test');
-const fs = require('fs');
+import { test, expect } from '@playwright/test';
+
+test('writer can create stories', async ({ page }) => {
+  // Login with writer credentials
+  await login(page, 'writer@fictures.xyz', 'PASSWORD_FROM_AUTH_FILE');
+
+  // Navigate to story creation
+  await page.goto('http://localhost:3000/studio/new');
+
+  // Test runs with authenticated session
+  // ... your test code ...
+});
+```
+
+**Option 2: Load credentials from .auth/user.json (recommended)**
+
+```javascript
+import { test, expect } from '@playwright/test';
+import fs from 'fs';
+
+// Load authentication profiles at test file level
+const authData = JSON.parse(fs.readFileSync('.auth/user.json', 'utf-8'));
+
+test('writer can create stories', async ({ page }) => {
+  // Get writer credentials
+  const writer = authData.profiles.writer;
+
+  // Login with writer
+  await login(page, writer.email, writer.password);
+
+  // Navigate to story creation
+  await page.goto('http://localhost:3000/studio/new');
+
+  // Test runs with authenticated session
+  // ... your test code ...
+});
+```
+
+### Testing with Different User Roles
+
+Each test can authenticate as a different user by using different credentials:
+
+```javascript
+import { test, expect } from '@playwright/test';
+import fs from 'fs';
+
+const authData = JSON.parse(fs.readFileSync('.auth/user.json', 'utf-8'));
+
+test.describe('User Role Tests', () => {
+  test('manager can delete stories', async ({ page }) => {
+    const manager = authData.profiles.manager;
+    await login(page, manager.email, manager.password);
+
+    // Test manager-only features
+    await page.goto('http://localhost:3000/studio');
+    // ... test delete functionality ...
+  });
+
+  test('writer can edit stories', async ({ page }) => {
+    const writer = authData.profiles.writer;
+    await login(page, writer.email, writer.password);
+
+    // Test writer features
+    await page.goto('http://localhost:3000/studio/new');
+    // ... test story creation/editing ...
+  });
+
+  test('reader can only view stories', async ({ page }) => {
+    const reader = authData.profiles.reader;
+    await login(page, reader.email, reader.password);
+
+    // Test reader features (read-only)
+    await page.goto('http://localhost:3000/novels');
+    // ... test read-only access ...
+  });
+});
+```
+
+### Complete Example Test File
+
+```javascript
+// tests/story-creation.spec.ts
+import { test, expect } from '@playwright/test';
+import fs from 'fs';
 
 // Load authentication profiles
 const authData = JSON.parse(fs.readFileSync('.auth/user.json', 'utf-8'));
-const profile = authData.profiles[authData.defaultProfile];
 
-// Use the profile's authentication state
-test.use({
-  storageState: {
-    cookies: profile.cookies,
-    origins: profile.origins
-  }
-});
+// Login helper function
+async function login(page, email, password) {
+  await page.goto('http://localhost:3000/login');
+  await page.waitForLoadState('networkidle');
 
-test('authenticated user can access stories', async ({ page }) => {
-  await page.goto('http://localhost:3000/stories');
-  // Test runs with the default profile's authentication
+  await page.fill('input[type="email"], input[name="email"]', email);
+  await page.fill('input[type="password"], input[name="password"]', password);
+  await page.click('button:has-text("Sign in with Email")');
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(2000);
+}
+
+test.describe('Story Creation', () => {
+  test('writer can create a new story', async ({ page }) => {
+    // Login as writer
+    const writer = authData.profiles.writer;
+    await login(page, writer.email, writer.password);
+
+    // Navigate to story creation
+    await page.goto('http://localhost:3000/studio/new');
+
+    // Fill in story details
+    await page.fill('input[name="title"]', 'Test Story');
+    await page.fill('textarea[name="description"]', 'Test description');
+
+    // Submit form
+    await page.click('button[type="submit"]');
+
+    // Verify story was created
+    await expect(page).toHaveURL(/\/studio\/edit\/.+/);
+  });
+
+  test('reader cannot access story creation', async ({ page }) => {
+    // Login as reader
+    const reader = authData.profiles.reader;
+    await login(page, reader.email, reader.password);
+
+    // Try to access story creation
+    await page.goto('http://localhost:3000/studio/new');
+
+    // Should be redirected or see access denied
+    // ... verify read-only access ...
+  });
 });
 ```
 
-### Testing with Different Profiles
+### Benefits of Email/Password Login Approach
 
-You can test different user roles by switching profiles:
-
-```javascript
-// Test as manager
-const managerProfile = authData.profiles.manager;
-test.use({
-  storageState: {
-    cookies: managerProfile.cookies,
-    origins: managerProfile.origins
-  }
-});
-
-// Test as reader
-const readerProfile = authData.profiles.reader;
-test.use({
-  storageState: {
-    cookies: readerProfile.cookies,
-    origins: readerProfile.origins
-  }
-});
-```
+- ✅ **Simple and direct** - No need to manage cookies or storage state files
+- ✅ **Fresh authentication** - Each test gets a new session
+- ✅ **Easy role switching** - Just use different credentials
+- ✅ **No external dependencies** - Works with just `.auth/user.json`
+- ✅ **Matches real user flow** - Tests actual login process
+- ✅ **No session expiration issues** - New session for each test
 
 ## Security Notes
 
@@ -401,102 +496,175 @@ test.use({
 
 ## Creating New Profiles
 
-To add a new user profile:
+To add a new user profile manually:
 
-1. **Create the user in the database**
+1. **Create the user and API key in the database**
    ```bash
-   dotenv --file .env.local run node scripts/create-user.mjs
+   # Edit scripts/setup-auth-users.mjs and add your new user config
+   # Then run:
+   dotenv --file .env.local run node scripts/setup-auth-users.mjs
    ```
 
-2. **Generate an API key for the user**
-   ```bash
-   dotenv --file .env.local run node scripts/create-api-key.mjs
-   ```
-
-3. **Add the profile to `.auth/user.json`**
+2. **Or manually add to `.auth/user.json`** (simplified structure)
    ```json
    {
      "profiles": {
-       "existing-profile": { ... },
+       "manager": { "email": "...", "password": "...", "apiKey": "..." },
+       "writer": { "email": "...", "password": "...", "apiKey": "..." },
+       "reader": { "email": "...", "password": "...", "apiKey": "..." },
        "new-profile": {
-         "userId": "usr_...",
          "email": "newuser@fictures.xyz",
-         "name": "New User",
-         "role": "reader",
-         "apiKey": "fic_...",
-         "apiKeyId": "...",
-         "apiKeyScopes": ["stories:read", "stories:write"],
-         "cookies": [],
-         "origins": []
+         "password": "your-secure-password",
+         "apiKey": "fic_your-api-key"
        }
-     },
-     "defaultProfile": "manager"
+     }
    }
    ```
 
-4. **Set `defaultProfile` to the new profile name if needed**
-   ```bash
-   node scripts/switch-auth-profile.mjs new-profile
-   ```
+   **Note**: User metadata (name, role, scopes) is stored in the database, not in the auth file.
 
-## Example Scripts
+## Available Scripts
 
-The following scripts are available in `/scripts/` directory:
+The following authentication-related scripts are available in `/scripts/` directory:
 
-- **`create-reader-user.mjs`** - Creates the reader@fictures.xyz user account
-- **`create-reader-api-key.mjs`** - Generates an API key for the reader account
-- **`create-writer-user.mjs`** - Creates the writer@fictures.xyz user account with API key
-- **`check-writer-user.mjs`** - Verifies writer account exists and shows details
-- **`get-manager-account.mjs`** - Fetches manager account information from database
-- **`switch-auth-profile.mjs`** - Profile switcher utility
-- **`get-auth-profile.mjs`** - Current profile viewer and information display
+### Primary Scripts (Drizzle ORM Query Builder)
+
+- **`setup-auth-users.mjs`** ⭐ - **Main setup script** - Creates all three users with passwords and API keys
+  - Uses Drizzle ORM query builder for type-safe database operations
+  - Generates secure passwords and API keys
+  - Idempotent: Safe to run multiple times
+  - Outputs credentials to console and `.auth/user.json`
+
+- **`verify-auth-setup.mjs`** - Verification script - Checks all users were created correctly
+  - Uses Drizzle ORM query builder for database queries
+  - Displays user metadata, password status, and API key scopes
+  - Useful for debugging authentication issues
+
+### Drizzle ORM Implementation Details
+
+Both scripts use modern Drizzle ORM patterns:
+- **Type-safe query builder API** instead of raw SQL
+- **Inline schema definitions** (no TypeScript imports needed)
+- **Automatic snake_case conversion** via `casing: 'snake_case'`
+- **Type-safe operators** like `eq()`, `inArray()` for WHERE clauses
+- **Fluent API**: `.select()`, `.from()`, `.where()`, `.insert()`, `.update()`, `.delete()`
+
+**Example Query Patterns:**
+
+```javascript
+import { drizzle } from 'drizzle-orm/postgres-js';
+import { pgTable, text, varchar } from 'drizzle-orm/pg-core';
+import { eq, inArray } from 'drizzle-orm';
+
+// Define schema inline
+const users = pgTable('users', {
+  id: text('id').primaryKey(),
+  email: text('email').notNull(),
+  name: text('name'),
+  role: userRoleEnum('role').notNull()
+});
+
+// Initialize Drizzle with snake_case mapping
+const db = drizzle(client, {
+  schema: { users },
+  casing: 'snake_case'
+});
+
+// SELECT with WHERE
+const user = await db
+  .select({ id: users.id })
+  .from(users)
+  .where(eq(users.email, 'user@example.com'))
+  .limit(1);
+
+// UPDATE with WHERE
+await db
+  .update(users)
+  .set({ name: 'New Name', role: 'manager' })
+  .where(eq(users.id, userId));
+
+// INSERT
+await db.insert(users).values({
+  id: 'usr_123',
+  email: 'new@example.com',
+  name: 'New User',
+  role: 'reader'
+});
+
+// DELETE with WHERE
+await db.delete(apiKeys).where(eq(apiKeys.userId, userId));
+
+// SELECT with IN operator
+const userList = await db
+  .select()
+  .from(users)
+  .where(inArray(users.email, ['email1@example.com', 'email2@example.com']))
+  .orderBy(users.role);
+```
+
+**Benefits:**
+- ✅ No TypeScript compilation needed (runs as `.mjs`)
+- ✅ Type-safe at runtime through Drizzle's query builder
+- ✅ Automatic field name conversion (camelCase ↔ snake_case)
+- ✅ IntelliSense support for table columns and operators
+- ✅ Consistent with application codebase patterns
 
 ## Testing Workflow
 
-### 1. Running Tests with Manager Profile
+### 1. Initial Setup - Create Users
 
 ```bash
-# Switch to manager profile
-node scripts/switch-auth-profile.mjs manager
+# Create all three authentication users
+dotenv --file .env.local run node scripts/setup-auth-users.mjs
 
-# Run Playwright tests
-dotenv --file .env.local run npx playwright test --headless
+# Verify setup was successful
+dotenv --file .env.local run node scripts/verify-auth-setup.mjs
 ```
 
-### 2. Running Tests with Reader Profile
-
-```bash
-# Switch to reader profile
-node scripts/switch-auth-profile.mjs reader
-
-# Run Playwright tests
-dotenv --file .env.local run npx playwright test --headless
-```
-
-### 3. Running Tests with Writer Profile
-
-```bash
-# Switch to writer profile
-node scripts/switch-auth-profile.mjs writer
-
-# Run Playwright tests
-dotenv --file .env.local run npx playwright test --headless
-```
-
-### 4. Manual Testing with Browser
+### 2. Manual Testing in Browser
 
 ```bash
 # Start development server
 dotenv --file .env.local run pnpm dev > logs/dev-server.log 2>&1 &
 
-# Switch to desired profile
-node scripts/switch-auth-profile.mjs reader
+# Navigate to http://localhost:3000/login
+# Use credentials from .auth/user.json for any profile:
+# - manager@fictures.xyz with password from auth file
+# - writer@fictures.xyz with password from auth file
+# - reader@fictures.xyz with password from auth file
+```
 
-# Capture authentication manually
-dotenv --file .env.local run node scripts/capture-auth-manual.mjs
+### 3. Running Playwright Tests
 
-# Test automatic login
-dotenv --file .env.local run node scripts/test-auto-login.mjs
+For Playwright tests, you'll need to capture authentication state first:
+
+```bash
+# Start dev server if not running
+dotenv --file .env.local run pnpm dev > logs/dev-server.log 2>&1 &
+
+# Capture authentication for writer profile (or any profile you need)
+dotenv --file .env.local run node scripts/capture-writer-auth.mjs
+
+# Run Playwright tests with authenticated state
+dotenv --file .env.local run npx playwright test
+```
+
+### 4. API Testing with API Keys
+
+```bash
+# API keys are stored in .auth/user.json
+# Example using curl:
+
+# Get manager API key from .auth/user.json
+MANAGER_API_KEY=$(cat .auth/user.json | jq -r '.profiles.manager.apiKey')
+
+# Test API endpoint with API key
+curl -H "Authorization: Bearer $MANAGER_API_KEY" \
+     http://localhost:3000/api/stories
+
+# Or use writer/reader API keys
+WRITER_API_KEY=$(cat .auth/user.json | jq -r '.profiles.writer.apiKey')
+READER_API_KEY=$(cat .auth/user.json | jq -r '.profiles.reader.apiKey')
 ```
 
 ## API Key Scopes
@@ -553,35 +721,120 @@ Current API key scopes available:
 
 ## Troubleshooting
 
-### Session Expired
+### Session Expired or Login Fails
 
-If authentication fails with "session expired":
+If authentication fails with "session expired" or incorrect credentials:
 
-1. Recapture authentication state:
+1. **Regenerate credentials:**
    ```bash
-   dotenv --file .env.local run node scripts/capture-auth-manual.mjs
+   # Re-run setup to generate new passwords and API keys
+   dotenv --file .env.local run node scripts/setup-auth-users.mjs
+
+   # This will display new credentials in console
+   # Update your tests/scripts with new passwords from output
    ```
 
-2. Update the profile's cookies and origins in `.auth/user.json`
+2. **Check credentials in auth file:**
+   ```bash
+   # View current credentials
+   cat .auth/user.json
+
+   # Verify user exists in database
+   dotenv --file .env.local run node scripts/verify-auth-setup.mjs
+   ```
 
 ### Invalid API Key
 
 If API requests fail with "invalid API key":
 
-1. Generate a new API key:
+1. **Regenerate API keys:**
    ```bash
-   dotenv --file .env.local run node scripts/create-api-key.mjs
+   # Re-run setup to regenerate all API keys
+   dotenv --file .env.local run node scripts/setup-auth-users.mjs
+
+   # New API keys will be displayed in console
+   # and written to .auth/user.json
    ```
 
-2. Update the profile's `apiKey` and `apiKeyId` in `.auth/user.json`
-
-### Profile Not Found
-
-If switching profiles fails:
-
-1. Check available profiles:
+2. **Verify API key in database:**
    ```bash
-   node scripts/get-auth-profile.mjs
+   # Check that API keys are properly stored
+   dotenv --file .env.local run node scripts/verify-auth-setup.mjs
    ```
 
-2. Verify the profile name matches exactly (case-sensitive)
+### Password Hash Issues
+
+If login fails despite correct password:
+
+1. **Check password hash format:**
+   ```bash
+   # Verify password is PBKDF2 hashed (not bcrypt)
+   dotenv --file .env.local run node scripts/verify-auth-setup.mjs
+
+   # Look for: "Password: ✓ Set (PBKDF2 hashed)"
+   # If hash starts with $2b$, it's bcrypt (wrong!)
+   ```
+
+2. **Regenerate with correct hashing:**
+   ```bash
+   # Re-run setup to regenerate PBKDF2 hashes
+   dotenv --file .env.local run node scripts/setup-auth-users.mjs
+   ```
+
+### Database Connection Issues
+
+If scripts fail with database errors:
+
+1. **Check environment variables:**
+   ```bash
+   # Verify DATABASE_URL is set
+   echo $DATABASE_URL
+
+   # Or check .env.local file
+   grep DATABASE_URL .env.local
+   ```
+
+2. **Test database connection:**
+   ```bash
+   # Try running verify script
+   dotenv --file .env.local run node scripts/verify-auth-setup.mjs
+   ```
+
+## Quick Reference
+
+**Setup Commands:**
+```bash
+# Create all users (run once, or to regenerate credentials)
+dotenv --file .env.local run node scripts/setup-auth-users.mjs
+
+# Verify users were created correctly
+dotenv --file .env.local run node scripts/verify-auth-setup.mjs
+```
+
+**File Locations:**
+- **Auth file**: `.auth/user.json` (gitignored)
+- **Setup script**: `scripts/setup-auth-users.mjs` (Drizzle query builder)
+- **Verify script**: `scripts/verify-auth-setup.mjs` (Drizzle query builder)
+- **Documentation**: `docs/auth/authentication-profiles.md` (this file)
+
+**User Accounts:**
+- `manager@fictures.xyz` - Full admin access (14 scopes)
+- `writer@fictures.xyz` - Read/write access (9 scopes)
+- `reader@fictures.xyz` - Read-only access (5 scopes)
+
+**Auth File Structure:**
+```json
+{
+  "profiles": {
+    "manager": { "email": "...", "password": "...", "apiKey": "..." },
+    "writer": { "email": "...", "password": "...", "apiKey": "..." },
+    "reader": { "email": "...", "password": "...", "apiKey": "..." }
+  }
+}
+```
+
+**Security Notes:**
+- ✅ Passwords hashed with **PBKDF2** (100k iterations, SHA-256) in database
+- ✅ API keys hashed with **SHA-256** in database
+- ⚠️ Plain text passwords in `.auth/user.json` (testing/development only)
+- 🔒 `.auth/` directory is gitignored (never commit credentials)

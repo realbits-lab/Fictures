@@ -14,7 +14,7 @@
 
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { users, apiKeys } from '../src/lib/db/schema.ts';
+import { pgTable, text, varchar, timestamp, json, boolean, pgEnum } from 'drizzle-orm/pg-core';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
 import fs from 'fs';
@@ -23,6 +23,35 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Define schema inline to avoid TypeScript imports
+const userRoleEnum = pgEnum('user_role', ['reader', 'writer', 'manager']);
+
+const users = pgTable('users', {
+  id: text('id').primaryKey(),
+  email: text('email').notNull(),
+  name: text('name'),
+  username: varchar('username', { length: 50 }),
+  password: varchar('password', { length: 255 }),
+  role: userRoleEnum('role').notNull().default('reader'),
+  emailVerified: timestamp('email_verified'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+const apiKeys = pgTable('api_keys', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull(),
+  name: varchar('name', { length: 255 }).notNull().default('API Key'),
+  keyHash: varchar('key_hash', { length: 64 }).notNull(),
+  keyPrefix: varchar('key_prefix', { length: 16 }).notNull(),
+  scopes: json('scopes').notNull().default([]),
+  isActive: boolean('is_active').notNull().default(true),
+  lastUsedAt: timestamp('last_used_at'),
+  expiresAt: timestamp('expires_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
 
 // PBKDF2 password hashing (matching src/lib/auth/password.ts)
 async function hashPassword(password) {
@@ -83,7 +112,7 @@ function generateApiKey() {
 }
 
 // Hash API key for storage
-async function hashApiKey(apiKey) {
+function hashApiKey(apiKey) {
   const hash = crypto.createHash('sha256').update(apiKey).digest('hex');
   return hash;
 }
@@ -154,9 +183,12 @@ async function main() {
 
   console.log('🔐 Setting up authentication users...\n');
 
-  // Connect to database
-  const client = postgres(connectionString, { max: 1 });
-  const db = drizzle(client, { casing: 'snake_case' });
+  // Connect to database using Drizzle
+  const client = postgres(connectionString, { max: 1, prepare: false });
+  const db = drizzle(client, {
+    schema: { users, apiKeys },
+    casing: 'snake_case'
+  });
 
   const authData = {
     profiles: {}
@@ -174,28 +206,33 @@ async function main() {
 
       console.log(`   ✓ Generated secure password (24 chars)`);
 
-      // Check if user exists
-      const existingUser = await db.select().from(users).where(eq(users.email, config.email)).limit(1);
+      // Check if user exists using Drizzle query builder
+      const existingUser = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, config.email))
+        .limit(1);
 
       let userId;
       if (existingUser.length > 0) {
         console.log(`   ℹ User already exists, updating...`);
         userId = existingUser[0].id;
 
-        // Update existing user
-        await db.update(users)
+        // Update existing user using Drizzle query builder
+        await db
+          .update(users)
           .set({
             name: config.name,
             username: config.username,
             password: hashedPassword,
             role: config.role,
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date()
           })
           .where(eq(users.id, userId));
 
         console.log(`   ✓ Updated user account`);
       } else {
-        // Create new user
+        // Create new user using Drizzle query builder
         userId = generateId('usr');
 
         await db.insert(users).values({
@@ -205,9 +242,9 @@ async function main() {
           username: config.username,
           password: hashedPassword,
           role: config.role,
-          emailVerified: new Date().toISOString(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          emailVerified: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date()
         });
 
         console.log(`   ✓ Created user account`);
@@ -215,14 +252,16 @@ async function main() {
 
       // Generate API key
       const apiKey = generateApiKey();
-      const keyHash = await hashApiKey(apiKey);
+      const keyHash = hashApiKey(apiKey);
       const keyPrefix = getApiKeyPrefix(apiKey);
       const apiKeyId = generateId('key');
 
-      // Delete existing API keys for this user
-      await db.delete(apiKeys).where(eq(apiKeys.userId, userId));
+      // Delete existing API keys for this user using Drizzle query builder
+      await db
+        .delete(apiKeys)
+        .where(eq(apiKeys.userId, userId));
 
-      // Create new API key
+      // Create new API key using Drizzle query builder
       await db.insert(apiKeys).values({
         id: apiKeyId,
         userId: userId,
@@ -231,8 +270,8 @@ async function main() {
         keyPrefix: keyPrefix,
         scopes: config.scopes,
         isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        createdAt: new Date(),
+        updatedAt: new Date()
       });
 
       console.log(`   ✓ Created API key`);
