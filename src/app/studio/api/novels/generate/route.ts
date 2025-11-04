@@ -33,21 +33,32 @@ function createSSEMessage(data: ProgressData): string {
 }
 
 export async function POST(request: NextRequest) {
+  console.log('[Novel Generate API] Authenticating request...');
+  console.log('[Novel Generate API] Headers:', {
+    authorization: request.headers.get('authorization') ? 'Bearer ***' : 'none',
+    xApiKey: request.headers.get('x-api-key') ? '***' : 'none',
+  });
+
   // Support both API key and session authentication
   const authResult = await authenticateRequest(request);
 
+  console.log('[Novel Generate API] Auth result:', authResult ? `type: ${authResult.type}, user: ${authResult.user.email}` : 'null');
+
   if (!authResult) {
+    console.log('[Novel Generate API] Unauthorized - no valid authentication');
     return new Response('Unauthorized', { status: 401 });
   }
 
   // Check if user has permission to write stories
   if (!hasRequiredScope(authResult, 'stories:write')) {
+    console.log('[Novel Generate API] Forbidden - missing stories:write scope');
     return new Response(
       JSON.stringify({ error: 'Insufficient permissions. Required scope: stories:write' }),
       { status: 403, headers: { 'Content-Type': 'application/json' } }
     );
   }
 
+  console.log('[Novel Generate API] Authentication successful, proceeding with generation');
   const userId = authResult.user.id;
 
   try {
@@ -198,7 +209,7 @@ export async function POST(request: NextRequest) {
             .insert(stories)
             .values({
               id: generatedStoryId,
-              authorId: session.user.id,  // Fixed: Use 'authorId' (correct schema field name)
+              authorId: userId,  // Use userId from authResult (supports both API key and session auth)
               title: result.story.title,
               genre: genreValue, // Mapped and validated genre value
               summary: result.story.summary, // Adversity-Triumph: General thematic premise

@@ -49,23 +49,34 @@ async function authenticateWithApiKey(request: NextRequest): Promise<AuthResult 
     request.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ||
     null;
 
+  console.log('[Dual Auth] API Key extracted:', apiKey ? `${apiKey.substring(0, 15)}...` : 'none');
+
   if (!apiKey) {
+    console.log('[Dual Auth] No API key found in headers');
     return null;
   }
 
   // Validate API key format
   if (!isValidApiKeyFormat(apiKey)) {
+    console.log('[Dual Auth] API key format invalid');
     return null;
   }
+
+  console.log('[Dual Auth] API key format valid, looking up in database...');
 
   try {
     // Hash the provided key and look it up in database
     const keyHash = hashApiKey(apiKey);
+    console.log('[Dual Auth] API key hash:', keyHash);
+
     const result = await getApiKeyWithUser(keyHash);
 
     if (!result) {
+      console.log('[Dual Auth] No matching API key found in database');
       return null;
     }
+
+    console.log('[Dual Auth] API key found in database, user:', result.user.email);
 
     const { apiKey: dbApiKey, user } = result;
 

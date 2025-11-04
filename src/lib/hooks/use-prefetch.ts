@@ -7,7 +7,7 @@
  * Usage:
  *   const { prefetchOnHover, prefetchOnVisible, prefetchOnIdle } = usePrefetch();
  *
- *   <Link onMouseEnter={() => prefetchOnHover('/api/stories/123')}>
+ *   <Link onMouseEnter={() => prefetchOnHover('/studio/api/stories/123')}>
  *     Story
  *   </Link>
  */
@@ -465,9 +465,9 @@ export const prefetchStrategies = {
     const { prefetchBatch } = usePrefetch();
 
     prefetchBatch([
-      `/api/stories/${storyId}/characters`,
-      `/api/stories/${storyId}/settings`,
-      `/api/stories/${storyId}/chapters`,
+      `/studio/api/stories/${storyId}/characters`,
+      `/studio/api/stories/${storyId}/settings`,
+      `/studio/api/stories/${storyId}/chapters`,
     ]);
   },
 
@@ -479,7 +479,7 @@ export const prefetchStrategies = {
     const { prefetchOnHover } = usePrefetch();
 
     return (storyId: string) => {
-      prefetchOnHover(`/api/stories/${storyId}`);
+      prefetchOnHover(`/studio/api/stories/${storyId}`);
     };
   },
 };

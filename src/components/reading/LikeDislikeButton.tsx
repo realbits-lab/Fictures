@@ -39,13 +39,13 @@ export function LikeDislikeButton({
 
         switch (entityType) {
           case 'story':
-            endpoint = `/writing/api/stories/${entityId}/${voteType}`;
+            endpoint = `/studio/api/stories/${entityId}/${voteType}`;
             break;
           case 'chapter':
-            endpoint = `/writing/api/chapters/${entityId}/${voteType}`;
+            endpoint = `/studio/api/chapters/${entityId}/${voteType}`;
             break;
           case 'scene':
-            endpoint = `/writing/api/scenes/${entityId}/${voteType}`;
+            endpoint = `/studio/api/scenes/${entityId}/${voteType}`;
             break;
           case 'comment':
             endpoint = `/api/comments/${entityId}/${voteType}`;

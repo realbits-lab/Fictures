@@ -67,8 +67,8 @@ export function hashApiKey(key: string): string {
  * Validate API key format
  */
 export function isValidApiKeyFormat(key: string): boolean {
-  // Should match pattern: fic_[12_chars]_[base64url_string]
-  const apiKeyPattern = /^fic_[A-Za-z0-9_-]{12}_[A-Za-z0-9_-]+$/;
+  // Should match pattern: fic_[base64url_string] (minimum 32 chars)
+  const apiKeyPattern = /^fic_[A-Za-z0-9_-]{32,}$/;
   return apiKeyPattern.test(key);
 }
 
