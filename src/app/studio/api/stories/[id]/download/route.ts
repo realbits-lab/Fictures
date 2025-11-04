@@ -85,8 +85,8 @@ export async function GET(
     zip.file('story_metadata.json', JSON.stringify(storyMetadata, null, 2));
 
     // Add HNS data files
-    if (story.hnsData) {
-      zip.file('hns_data/story_hns.json', JSON.stringify(story.hnsData, null, 2));
+    if ((story as any).hnsData) {
+      zip.file('hns_data/story_hns.json', JSON.stringify((story as any).hnsData, null, 2));
     }
 
     // Create HTML file with all content
@@ -237,28 +237,28 @@ export async function GET(
 
     <div class="metadata">`;
 
-    if (story.description) {
+    if (story.summary) {
       html += `
       <h2>Description</h2>
-      <p>${story.description}</p>`;
+      <p>${story.summary}</p>`;
     }
 
-    if (story.premise) {
+    if ((story as any).premise) {
       html += `
       <h2>Premise</h2>
-      <p>${story.premise}</p>`;
+      <p>${(story as any).premise}</p>`;
     }
 
-    if (story.dramaticQuestion) {
+    if ((story as any).dramaticQuestion) {
       html += `
       <h2>Dramatic Question</h2>
-      <p>${story.dramaticQuestion}</p>`;
+      <p>${(story as any).dramaticQuestion}</p>`;
     }
 
-    if (story.theme) {
+    if ((story as any).theme) {
       html += `
       <h2>Theme</h2>
-      <p>${story.theme}</p>`;
+      <p>${(story as any).theme}</p>`;
     }
 
     html += `
@@ -289,14 +289,14 @@ export async function GET(
     <div class="part">
       <h2>Part ${partNum}: ${part.title}</h2>`;
 
-        if (part.description) {
+        if (part.summary) {
           html += `
-      <div class="summary">${part.description}</div>`;
+      <div class="summary">${part.summary}</div>`;
         }
 
         // Add part HNS data
-        if (part.hnsData) {
-          zip.file(`hns_data/parts/part_${partNum}_hns.json`, JSON.stringify(part.hnsData, null, 2));
+        if ((part as any).hnsData) {
+          zip.file(`hns_data/parts/part_${partNum}_hns.json`, JSON.stringify((part as any).hnsData, null, 2));
         }
 
         // Get chapters for this part
@@ -314,10 +314,10 @@ export async function GET(
           }
 
           // Add chapter HNS data
-          if (chapter.hnsData) {
+          if ((chapter as any).hnsData) {
             zip.file(
               `hns_data/chapters/part_${partNum}_chapter_${chapterNum}_hns.json`,
-              JSON.stringify(chapter.hnsData, null, 2)
+              JSON.stringify((chapter as any).hnsData, null, 2)
             );
           }
 
@@ -333,8 +333,8 @@ export async function GET(
           <h4>Scene ${sceneNum}: ${scene.title}</h4>`;
 
             // Add scene image if available
-            if (scene.hnsData && typeof scene.hnsData === 'object' && 'scene_image' in scene.hnsData) {
-              const sceneImage = (scene.hnsData as any).scene_image;
+            if ((scene as any).hnsData && typeof (scene as any).hnsData === 'object' && 'scene_image' in (scene as any).hnsData) {
+              const sceneImage = ((scene as any).hnsData as any).scene_image;
               if (sceneImage && sceneImage.url) {
                 html += `
           <img src="${sceneImage.url}" alt="Scene ${sceneNum}: ${scene.title}" class="scene-image" />`;
@@ -347,10 +347,10 @@ export async function GET(
             }
 
             // Add scene HNS data
-            if (scene.hnsData) {
+            if ((scene as any).hnsData) {
               zip.file(
                 `hns_data/scenes/part_${partNum}_chapter_${chapterNum}_scene_${sceneNum}_hns.json`,
-                JSON.stringify(scene.hnsData, null, 2)
+                JSON.stringify((scene as any).hnsData, null, 2)
               );
             }
 
@@ -380,10 +380,10 @@ export async function GET(
         }
 
         // Add chapter HNS data
-        if (chapter.hnsData) {
+        if ((chapter as any).hnsData) {
           zip.file(
             `hns_data/chapters/chapter_${chapterNum}_hns.json`,
-            JSON.stringify(chapter.hnsData, null, 2)
+            JSON.stringify((chapter as any).hnsData, null, 2)
           );
         }
 
@@ -399,8 +399,8 @@ export async function GET(
         <h4>Scene ${sceneNum}: ${scene.title}</h4>`;
 
           // Add scene image if available
-          if (scene.hnsData && typeof scene.hnsData === 'object' && 'scene_image' in scene.hnsData) {
-            const sceneImage = (scene.hnsData as any).scene_image;
+          if ((scene as any).hnsData && typeof (scene as any).hnsData === 'object' && 'scene_image' in (scene as any).hnsData) {
+            const sceneImage = ((scene as any).hnsData as any).scene_image;
             if (sceneImage && sceneImage.url) {
               html += `
         <img src="${sceneImage.url}" alt="Scene ${sceneNum}: ${scene.title}" class="scene-image" />`;
@@ -413,10 +413,10 @@ export async function GET(
           }
 
           // Add scene HNS data
-          if (scene.hnsData) {
+          if ((scene as any).hnsData) {
             zip.file(
               `hns_data/scenes/chapter_${chapterNum}_scene_${sceneNum}_hns.json`,
-              JSON.stringify(scene.hnsData, null, 2)
+              JSON.stringify((scene as any).hnsData, null, 2)
             );
           }
 
@@ -489,17 +489,17 @@ export async function GET(
         id: c.id,
         name: c.name,
         isMain: c.isMain,
-        role: c.role,
-        archetype: c.archetype,
+        role: (c as any).role,
+        archetype: (c as any).archetype,
         summary: c.summary,
-        storyline: c.storyline,
+        storyline: (c as any).storyline,
         personality: c.personality,
         backstory: c.backstory,
-        motivations: c.motivations,
-        voice: c.voice,
+        motivations: (c as any).motivations,
+        voice: (c as any).voice,
         physicalDescription: c.physicalDescription,
         imageUrl: c.imageUrl,
-        hnsData: c.hnsData,
+        hnsData: (c as any).hnsData,
       }));
 
       zip.file('characters/characters.json', JSON.stringify(charactersData, null, 2));
@@ -521,9 +521,9 @@ export async function GET(
         }
 
         // Add individual character HNS data
-        if (character.hnsData) {
+        if ((character as any).hnsData) {
           const fileName = character.name.replace(/[^a-zA-Z0-9]/g, '_');
-          zip.file(`hns_data/characters/${fileName}_hns.json`, JSON.stringify(character.hnsData, null, 2));
+          zip.file(`hns_data/characters/${fileName}_hns.json`, JSON.stringify((character as any).hnsData, null, 2));
         }
       }
     }
@@ -533,7 +533,7 @@ export async function GET(
       const settingsData = storySettings.map(s => ({
         id: s.id,
         name: s.name,
-        description: s.description,
+        summary: s.summary,
         mood: s.mood,
         sensory: s.sensory,
         visualStyle: s.visualStyle,

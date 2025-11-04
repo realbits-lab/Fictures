@@ -60,7 +60,7 @@ export function ComicPanelGeneratorButton({
     setError(null);
 
     try {
-      const response = await fetch('/api/comic/generate-panels', {
+      const response = await fetch('/comics/api/generate-panels', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

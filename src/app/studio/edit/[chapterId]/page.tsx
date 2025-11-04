@@ -1,6 +1,6 @@
 import { auth } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
-import { UnifiedWritingEditor } from "@/components/writing/UnifiedWritingEditor";
+import { UnifiedWritingEditor } from "@/components/studio/UnifiedWritingEditor";
 import { getChapterWithPart, getStoryWithStructure } from '@/lib/db/queries';
 
 export default async function WritePage({ params }: { params: Promise<{ chapterId: string }> }) {
@@ -41,7 +41,7 @@ export default async function WritePage({ params }: { params: Promise<{ chapterI
     <UnifiedWritingEditor
       story={{
         ...storyStructure,
-        hnsData: storyStructure.hnsData || {}
+        hnsData: (storyStructure as any).hnsData || {}
       } as any}
       initialSelection={initialSelection}
     />

@@ -23,12 +23,7 @@ export async function GET(request: NextRequest) {
 
     // Build response with metadata
     const responseStart = performance.now();
-    const lastUpdated = storiesWithStats.length > 0
-      ? storiesWithStats.reduce((latest, story) =>
-          !latest || (story.updatedAt && story.updatedAt > latest) ? story.updatedAt : latest,
-          null as Date | null
-        )
-      : new Date();
+    const lastUpdated = new Date();
 
     const response = {
       success: true,
@@ -48,7 +43,6 @@ export async function GET(request: NextRequest) {
       storiesData: storiesWithStats.map(story => ({
         id: story.id,
         title: story.title,
-        updatedAt: story.updatedAt,
         totalPosts: story.totalPosts,
         totalMembers: story.totalMembers,
         lastActivity: story.lastActivity

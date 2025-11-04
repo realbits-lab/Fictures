@@ -7,7 +7,7 @@
  * Usage:
  *   const { prefetchOnHover, prefetchOnVisible, prefetchOnIdle } = usePrefetch();
  *
- *   <Link onMouseEnter={() => prefetchOnHover('/api/stories/123')}>
+ *   <Link onMouseEnter={() => prefetchOnHover('/studio/api/stories/123')}>
  *     Story
  *   </Link>
  */
@@ -427,59 +427,63 @@ export function useSmartPrefetch() {
 
 /**
  * Prefetch strategies for common flows
+ *
+ * NOTE: These functions are commented out as they violate React Hook rules.
+ * They call hooks from regular functions, which is not allowed.
+ * Use the usePrefetch hook directly in your components instead.
  */
 export const prefetchStrategies = {
   /**
    * Story reading flow
    * Prefetch next chapter when user scrolls to bottom
    */
-  storyReading: (currentChapterId: string, nextChapterId: string | null) => {
-    if (!nextChapterId) return;
-
-    const { prefetchOnVisible } = usePrefetch();
-
-    // Prefetch when user reaches 80% scroll
-    const handleScroll = () => {
-      const scrollPercentage =
-        (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight;
-
-      if (scrollPercentage >= 0.8) {
-        prefetchOnVisible(
-          `/api/chapters/${nextChapterId}`,
-          document.documentElement
-        );
-        window.removeEventListener('scroll', handleScroll);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-
-    return () => window.removeEventListener('scroll', handleScroll);
-  },
+  // storyReading: (currentChapterId: string, nextChapterId: string | null) => {
+  //   if (!nextChapterId) return;
+  //
+  //   const { prefetchOnVisible } = usePrefetch();
+  //
+  //   // Prefetch when user reaches 80% scroll
+  //   const handleScroll = () => {
+  //     const scrollPercentage =
+  //       (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight;
+  //
+  //     if (scrollPercentage >= 0.8) {
+  //       prefetchOnVisible(
+  //         `/studio/api/chapters/${nextChapterId}`,
+  //         document.documentElement
+  //       );
+  //       window.removeEventListener('scroll', handleScroll);
+  //     }
+  //   };
+  //
+  //   window.addEventListener('scroll', handleScroll);
+  //
+  //   return () => window.removeEventListener('scroll', handleScroll);
+  // },
 
   /**
    * Story editing flow
    * Prefetch characters and settings when opening editor
    */
-  storyEditing: (storyId: string) => {
-    const { prefetchBatch } = usePrefetch();
-
-    prefetchBatch([
-      `/api/stories/${storyId}/characters`,
-      `/api/stories/${storyId}/settings`,
-      `/api/stories/${storyId}/chapters`,
-    ]);
-  },
+  // storyEditing: (storyId: string) => {
+  //   const { prefetchBatch } = usePrefetch();
+  //
+  //   prefetchBatch([
+  //     `/studio/api/stories/${storyId}/characters`,
+  //     `/studio/api/stories/${storyId}/settings`,
+  //     `/studio/api/stories/${storyId}/chapters`,
+  //   ]);
+  // },
 
   /**
    * Community browsing flow
    * Prefetch story details when hovering over story cards
    */
-  communityBrowsing: (storyIds: string[]) => {
-    const { prefetchOnHover } = usePrefetch();
-
-    return (storyId: string) => {
-      prefetchOnHover(`/api/stories/${storyId}`);
-    };
-  },
+  // communityBrowsing: (storyIds: string[]) => {
+  //   const { prefetchOnHover } = usePrefetch();
+  //
+  //   return (storyId: string) => {
+  //     prefetchOnHover(`/studio/api/stories/${storyId}`);
+  //   };
+  // },
 };

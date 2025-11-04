@@ -11,7 +11,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useSession } from 'next/auth/react';
+// import { useSession } from "next/auth/react";
 import { Card, CardContent, Badge, Button } from '@/components/ui';
 import { CommunityStorySidebar } from '@/components/community/CommunityStorySidebar';
 import { CommunityPostsList } from '@/components/community/CommunityPostsList';
@@ -22,30 +22,24 @@ import { useCommunityStory, useCommunityPosts, useRevalidateCommunityPosts } fro
 interface Character {
   id: string;
   name: string;
-  role: string | null;
-  archetype: string | null;
   summary: string | null;
-  storyline: string | null;
-  personality: {
-    traits?: string[];
-    myers_briggs?: string;
-    enneagram?: string;
-  } | null;
-  backstory: Record<string, string> | null;
-  motivations: {
-    primary?: string;
-    secondary?: string;
-    fear?: string;
-  } | null;
-  physicalDescription: Record<string, unknown> | null;
-  imageUrl: string | null;
   isMain: boolean | null;
+  coreTrait: string | null;
+  internalFlaw: string | null;
+  externalGoal: string | null;
+  personality: unknown;
+  backstory: unknown;
+  relationships: unknown;
+  physicalDescription: unknown;
+  voiceStyle: string | null;
+  imageUrl: string | null;
+  visualStyle: string | null;
 }
 
 interface Setting {
   id: string;
   name: string;
-  description: string | null;
+  summary: string | null;
   mood: string | null;
   sensory: Record<string, string[]> | null;
   visualStyle: string | null;
@@ -57,7 +51,7 @@ interface Setting {
 interface StoryData {
   id: string;
   title: string;
-  description: string;
+  summary: string;
   genre: string;
   status: string;
   author: {
@@ -91,9 +85,9 @@ interface Post {
   };
   createdAt: Date;
   updatedAt: Date;
-  viewCount: number;
-  likeCount: number;
-  replyCount: number;
+  viewCount: number | null;
+  likeCount: number | null;
+  replyCount: number | null;
 }
 
 interface CommunityStoryDetailClientProps {
@@ -107,7 +101,8 @@ export function CommunityStoryDetailClient({
   initialPosts,
   storyId
 }: CommunityStoryDetailClientProps) {
-  const { data: session } = useSession();
+  // const { data: session } = useSession();
+  const session = null; // Temporary - TODO: Fix useSession import issue
   const [showCreateForm, setShowCreateForm] = useState(false);
 
   // Use SWR with SSR fallback data
@@ -157,7 +152,7 @@ export function CommunityStoryDetailClient({
                 {story.genre} • by {story.author.name}
               </p>
               <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                {story.description}
+                {story.summary}
               </p>
             </div>
             <Badge variant="success" className="ml-4">

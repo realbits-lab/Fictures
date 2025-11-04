@@ -57,7 +57,7 @@ export default function Error({
             Oops! Something Went Wrong
           </h2>
           <p className="text-lg text-[rgb(var(--color-muted-foreground))] max-w-md mx-auto">
-            We encountered an unexpected error. Don't worry, your data is safe.
+            We encountered an unexpected error. Don&apos;t worry, your data is safe.
             Try refreshing the page or return home.
           </p>
 

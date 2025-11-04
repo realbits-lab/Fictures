@@ -4,7 +4,7 @@ import { Button } from '@/components/ui';
 interface FeaturedStoryData {
   id: string;
   title: string;
-  description: string;
+  summary: string;
   genre: string;
   author: {
     id: string;
@@ -62,7 +62,7 @@ export function FeaturedStory({ initialStory }: FeaturedStoryProps) {
 
               {/* CTA Buttons - MOVED TO TOP */}
               <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <Link href={`/reading/${story.id}`} className="flex-1">
+                <Link href={`/novels/${story.id}`} className="flex-1">
                   <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition-all hover:scale-105">
                     <span className="mr-2">📚</span>
                     Start Reading
@@ -78,7 +78,7 @@ export function FeaturedStory({ initialStory }: FeaturedStoryProps) {
               {/* Description and Author */}
               <div className="mb-6">
                 <p className="text-gray-600 dark:text-gray-400 text-lg mb-4">
-                  {story.description}
+                  {story.summary}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-500">
                   by <span className="font-semibold text-gray-700 dark:text-gray-300">{story.author.name}</span>

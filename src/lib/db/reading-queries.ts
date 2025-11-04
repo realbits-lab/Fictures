@@ -161,7 +161,7 @@ async function fetchChapterScenesForReading(chapterId: string) {
     imageVariants: scenes.imageVariants, // ⚡ CRITICAL: Needed for AVIF optimization
     createdAt: scenes.createdAt,
     updatedAt: scenes.updatedAt,
-    // ❌ SKIPPED: goal, conflict, outcome (HNS fields - removed from schema)
+    // ❌ SKIPPED: goal, conflict, outcome (legacy fields - removed from schema)
     // ❌ SKIPPED: characterFocus, sensoryAnchors, dialogueVsDescription, suggestedLength (planning metadata - studio-only)
   })
     .from(scenes)

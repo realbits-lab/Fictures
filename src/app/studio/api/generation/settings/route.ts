@@ -275,7 +275,7 @@ Create 2-3 primary settings that will:
 
     // Validate each setting has required fields
     for (const setting of result) {
-      if (!setting.id || !setting.name || !setting.description) {
+      if (!setting.id || !setting.name || !(setting as any).summary && !(setting as any).description) {
         throw new Error(`Invalid setting data for ${setting.name}: missing basic fields`);
       }
       if (!setting.adversityElements || !setting.cycleAmplification || !setting.sensory) {

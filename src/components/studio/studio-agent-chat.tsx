@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Send, Wrench, CheckCircle, XCircle, Bot, User, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Message } from 'ai';
+import type { UIMessage } from 'ai';
 
 interface StudioAgentChatProps {
   chatId?: string;
@@ -54,7 +54,7 @@ function ToolExecutionCard({ tool }: { tool: ToolInvocation }) {
           <Wrench className="h-4 w-4" style={{ color: 'rgb(var(--color-muted-foreground))' }} />
           <span className="font-mono text-sm font-medium text-card-foreground">{tool.toolName}</span>
         </div>
-        <Badge variant={isComplete ? (isError ? 'destructive' : 'default') : 'secondary'} className="text-xs theme-badge">
+        <Badge variant={isComplete ? (isError ? 'danger' : 'success') : 'info'} className="text-xs theme-badge">
           {isComplete ? (isError ? 'Error' : 'Complete') : 'Running'}
         </Badge>
       </CardHeader>
@@ -82,8 +82,14 @@ function ToolExecutionCard({ tool }: { tool: ToolInvocation }) {
   );
 }
 
-function AgentMessage({ message }: { message: Message & { toolInvocations?: ToolInvocation[] } }) {
+function AgentMessage({ message }: { message: UIMessage & { toolInvocations?: ToolInvocation[] } }) {
   const isUser = message.role === 'user';
+
+  // Extract text content from message parts
+  const textContent = message.parts
+    .filter(part => part.type === 'text')
+    .map(part => (part as any).text)
+    .join('');
 
   return (
     <div className={cn('flex gap-3 mb-4', isUser ? 'justify-end' : 'justify-start')}>
@@ -110,7 +116,7 @@ function AgentMessage({ message }: { message: Message & { toolInvocations?: Tool
             )}
             style={!isUser ? { color: 'rgb(var(--color-foreground))' } : undefined}
           >
-            {message.content}
+            {textContent}
           </div>
         </div>
 
@@ -242,8 +248,8 @@ export function StudioAgentChat({
               </div>
             </div>
           ) : (
-            messages.map((message) => (
-              <AgentMessage key={message.id} message={message as any} />
+            messages.map((message: any) => (
+              <AgentMessage key={message.id} message={message} />
             ))
           )}
         </div>
@@ -269,7 +275,7 @@ export function StudioAgentChat({
           <Button
             type="submit"
             disabled={isLoading || !input?.trim()}
-            size="icon"
+            size="lg"
             className="h-[60px] w-[60px] shrink-0 theme-button"
           >
             {isLoading ? (

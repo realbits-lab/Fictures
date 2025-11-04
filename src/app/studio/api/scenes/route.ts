@@ -113,9 +113,6 @@ export async function POST(request: NextRequest) {
         title: validatedData.title,
         content: '', // Empty content initially
         orderIndex: validatedData.orderIndex,
-        goal: validatedData.goal,
-        conflict: validatedData.conflict,
-        outcome: validatedData.outcome,
       }
     );
 

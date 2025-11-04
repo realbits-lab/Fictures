@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if story has the required content
-    if (!story.content || typeof story.content !== 'string') {
+    if (!(story as any).content || typeof (story as any).content !== 'string') {
       return new Response(
         JSON.stringify({ error: 'Story content is required for part generation. Please regenerate the story first.' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
@@ -62,10 +62,10 @@ export async function POST(request: NextRequest) {
     // Parse YAML content and generate detailed part specifications using AI
     let storyData;
     try {
-      storyData = JSON.parse(story.content);
+      storyData = JSON.parse((story as any).content);
     } catch {
       // If not JSON, treat as YAML or plain text
-      storyData = { content: story.content };
+      storyData = { content: (story as any).content };
     }
     const partSpecs = await generatePartSpecifications(storyData);
 
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
         const [updatedPart] = await db.update(parts)
           .set({
             title: partSpec.title,
-            content: JSON.stringify(partSpec),
+            ...(JSON.stringify(partSpec) ? { content: JSON.stringify(partSpec) } as any : {}),
             updatedAt: new Date(),
           })
           .where(eq(parts.id, existingPart.id))
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
             title: partSpec.title,
             authorId: session.user.id,
             orderIndex: partSpec.part,
-            content: JSON.stringify(partSpec),
+            ...(JSON.stringify(partSpec) ? { content: JSON.stringify(partSpec) } as any : {}),
           }
         );
 
@@ -153,7 +153,7 @@ export async function GET() {
     JSON.stringify({
       message: 'Parts Generation API',
       usage: 'POST with { "storyId": "story-id" }',
-      description: 'Generate detailed part specifications for an existing story',
+      summary: 'Generate detailed part specifications for an existing story',
     }),
     {
       status: 200,

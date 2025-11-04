@@ -31,7 +31,7 @@ Fictures is a full-stack web application built with Next.js 15 that provides a c
 
 - **Hierarchical Story Structure**: Organize your story into Parts → Chapters → Scenes
 - **AI-Powered Writing Assistant**:
-  - Story generation with HNS (Hierarchical Narrative Schema) framework support
+  - Story generation with Adversity-Triumph Engine methodology
   - Scene content generation (dialogue, description, action)
   - Character development suggestions
   - Story analysis and improvement recommendations
@@ -40,7 +40,7 @@ Fictures is a full-stack web application built with Next.js 15 that provides a c
 - **Rich Text Editor**: ProseMirror/TipTap-based editor with advanced formatting
 - **Character & Setting Management**: Visual character grid with AI-generated images
 - **Auto-save & Version Control**: Never lose your work
-- **Writing Analytics**: Word count tracking, scene evaluation scores
+- **Writing Analysis**: Word count tracking, scene evaluation scores
 - **Story Export**: Download your complete story
 
 ### 📚 Reading & Discovery
@@ -73,11 +73,11 @@ Fictures is a full-stack web application built with Next.js 15 that provides a c
 - **Timeline View**: Visual publication schedule
 - **Status Tracking**: Monitor pending, published, failed publications
 
-### 📊 Analytics & Insights
+### 📊 Analysis & Insights
 
-- **Story Performance**: Views, engagement metrics, reader analytics
+- **Story Performance**: Views, engagement metrics, reader analysis
 - **AI-Generated Insights**: Automated recommendations for story improvement
-- **Session Tracking**: Detailed reading session analytics
+- **Session Tracking**: Detailed reading session analysis
 - **Event Tracking**: 11 event types including page views, likes, comments
 
 ## Tech Stack
@@ -152,7 +152,8 @@ Fictures is a full-stack web application built with Next.js 15 that provides a c
    AI_GATEWAY_API_KEY=your-ai-gateway-key
 
    # Database
-   POSTGRES_URL=your-neon-postgres-url
+   DATABASE_URL=your-neon-postgres-url-pooled
+   DATABASE_URL_UNPOOLED=your-neon-postgres-url-direct
 
    # Storage
    BLOB_READ_WRITE_TOKEN=your-vercel-blob-token
@@ -185,7 +186,7 @@ pnpm db:studio    # Open Drizzle Studio to browse data
 
 ### For Writers
 
-1. **Create a Story**: Navigate to `/writing` and click "New Story"
+1. **Create a Story**: Navigate to `/studio` and click "New Story"
 2. **Define Structure**: Add Parts, Chapters, and Scenes to organize your narrative
 3. **Use AI Assistance**: Click the AI button to generate content, get suggestions, or improve your writing
 4. **Manage Characters**: Use the Character Grid to track your cast
@@ -194,7 +195,7 @@ pnpm db:studio    # Open Drizzle Studio to browse data
 
 ### For Readers
 
-1. **Browse Stories**: Visit `/reading` to discover stories by genre
+1. **Browse Stories**: Visit `/novels` to discover stories by genre
 2. **Read Stories**: Click any story to start reading scene-by-scene
 3. **Immersive Reading**: Scroll down to hide UI, scroll up or tap to show it again
 4. **Engage**: Leave comments, rate scenes, and like your favorite stories
@@ -467,7 +468,8 @@ Configure these in your Vercel project or `.env.local`:
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID | Yes |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth secret | Yes |
 | `AI_GATEWAY_API_KEY` | Vercel AI Gateway key | Yes |
-| `POSTGRES_URL` | PostgreSQL connection string | Yes |
+| `DATABASE_URL` | PostgreSQL pooled connection | Yes |
+| `DATABASE_URL_UNPOOLED` | PostgreSQL direct connection (migrations) | Yes |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob storage token | Yes |
 | `REDIS_URL` | Redis connection string | Yes |
 

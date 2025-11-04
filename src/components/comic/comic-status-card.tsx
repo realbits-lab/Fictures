@@ -47,7 +47,7 @@ export function ComicStatusCard({
     setSuccess(null);
 
     try {
-      const response = await fetch(`/api/scenes/${sceneId}/comic/publish`, {
+      const response = await fetch(`/studio/api/scenes/${sceneId}/comic/publish`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ export function ComicStatusCard({
     setSuccess(null);
 
     try {
-      const response = await fetch(`/api/scenes/${sceneId}/comic/unpublish`, {
+      const response = await fetch(`/studio/api/scenes/${sceneId}/comic/unpublish`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -105,7 +105,7 @@ export function ComicStatusCard({
     setSuccess(null);
 
     try {
-      const response = await fetch(`/api/scenes/${sceneId}/comic/generate`, {
+      const response = await fetch(`/studio/api/scenes/${sceneId}/comic/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,7 +151,7 @@ export function ComicStatusCard({
       case 'none':
       default:
         return (
-          <Badge variant="secondary" className="flex items-center gap-1">
+          <Badge variant="default" className="flex items-center gap-1">
             <AlertCircle className="h-3 w-3" />
             No Comics
           </Badge>

@@ -79,9 +79,6 @@ export async function POST(request: NextRequest) {
           title: `Scene ${sceneSpec.id}: ${sceneSpec.summary}`,
           content: '', // Empty content initially
           orderIndex: sceneSpec.id,
-          goal: sceneSpec.goal,
-          conflict: sceneSpec.obstacle,
-          outcome: sceneSpec.outcome,
         }
       );
 
@@ -132,7 +129,7 @@ export async function GET() {
     JSON.stringify({
       message: 'Scenes Generation API',
       usage: 'POST with { "chapterId": "chapter-id", "sceneCount": 3, "chapterSpecification": {...} }',
-      description: 'Generate detailed scene specifications for a chapter',
+      summary: 'Generate detailed scene specifications for a chapter',
       example: {
         chapterId: "chapter_abc123",
         sceneCount: 3,

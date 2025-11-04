@@ -7,7 +7,7 @@ import { z } from 'zod';
 // ==============================================================================
 
 export const generateStorySummary = tool({
-  description: 'Generate initial story summary from user concept (Phase 1 of 9)',
+  summary: 'Generate initial story summary from user concept (Phase 1 of 9)',
   parameters: z.object({
     storyId: z.string().describe('The story ID to generate summary for'),
     userPrompt: z.string().describe('User story concept, genre, themes'),
@@ -44,7 +44,7 @@ export const generateStorySummary = tool({
 });
 
 export const generateCharacters = tool({
-  description: 'Generate character profiles with AI portraits (Phase 2 of 9)',
+  summary: 'Generate character profiles with AI portraits (Phase 2 of 9)',
   parameters: z.object({
     storyId: z.string().describe('The story ID'),
   }),
@@ -73,7 +73,7 @@ export const generateCharacters = tool({
 });
 
 export const generateSettings = tool({
-  description: 'Generate story locations/settings with environment images (Phase 3 of 9)',
+  summary: 'Generate story locations/settings with environment images (Phase 3 of 9)',
   parameters: z.object({
     storyId: z.string().describe('The story ID'),
   }),
@@ -102,7 +102,7 @@ export const generateSettings = tool({
 });
 
 export const generateParts = tool({
-  description: 'Generate story parts/acts structure (Phase 4 of 9)',
+  summary: 'Generate story parts/acts structure (Phase 4 of 9)',
   parameters: z.object({
     storyId: z.string().describe('The story ID'),
   }),
@@ -131,7 +131,7 @@ export const generateParts = tool({
 });
 
 export const generateChapters = tool({
-  description: 'Generate chapters with outlines (Phase 5 of 9)',
+  summary: 'Generate chapters with outlines (Phase 5 of 9)',
   parameters: z.object({
     storyId: z.string().describe('The story ID'),
     partId: z.string().optional().describe('Optional: generate chapters for specific part'),
@@ -161,7 +161,7 @@ export const generateChapters = tool({
 });
 
 export const generateSceneSummaries = tool({
-  description: 'Generate scene summaries/outlines (Phase 6 of 9)',
+  summary: 'Generate scene summaries/outlines (Phase 6 of 9)',
   parameters: z.object({
     storyId: z.string().describe('The story ID'),
     chapterId: z.string().optional().describe('Optional: generate scenes for specific chapter'),
@@ -191,7 +191,7 @@ export const generateSceneSummaries = tool({
 });
 
 export const generateSceneContent = tool({
-  description: 'Generate full scene prose content (Phase 7 of 9)',
+  summary: 'Generate full scene prose content (Phase 7 of 9)',
   parameters: z.object({
     sceneId: z.string().describe('The scene ID to generate content for'),
   }),
@@ -221,7 +221,7 @@ export const generateSceneContent = tool({
 });
 
 export const evaluateScene = tool({
-  description: 'Evaluate scene quality using Architectonics of Engagement (Phase 8 of 9)',
+  summary: 'Evaluate scene quality using Architectonics of Engagement (Phase 8 of 9)',
   parameters: z.object({
     sceneId: z.string().describe('The scene ID to evaluate'),
   }),
@@ -253,7 +253,7 @@ export const evaluateScene = tool({
 });
 
 export const generateImages = tool({
-  description: 'Generate images for story elements using Gemini 2.5 Flash (Phase 9 of 9)',
+  summary: 'Generate images for story elements using Gemini 2.5 Flash (Phase 9 of 9)',
   parameters: z.object({
     storyId: z.string().describe('The story ID'),
     imageType: z.enum(['story', 'character', 'setting', 'scene']).describe('Type of image to generate'),

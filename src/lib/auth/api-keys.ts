@@ -10,7 +10,7 @@ export const API_SCOPES = {
   'chapters:read': 'Read chapters and scenes',
   'chapters:write': 'Create and edit chapters and scenes',
   'chapters:delete': 'Delete chapters and scenes',
-  'analytics:read': 'View analytics and statistics',
+  'analysis:read': 'View analysis and statistics',
   'ai:use': 'Use AI writing assistance features',
   'community:read': 'Read community posts and discussions',
   'community:write': 'Create community posts and replies',
@@ -25,7 +25,7 @@ export type ApiScope = keyof typeof API_SCOPES;
 export const DEFAULT_SCOPES: ApiScope[] = [
   'stories:read',
   'chapters:read',
-  'analytics:read'
+  'analysis:read'
 ];
 
 // All available scopes
@@ -67,8 +67,8 @@ export function hashApiKey(key: string): string {
  * Validate API key format
  */
 export function isValidApiKeyFormat(key: string): boolean {
-  // Should match pattern: fic_[12_chars]_[base64url_string]
-  const apiKeyPattern = /^fic_[A-Za-z0-9_-]{12}_[A-Za-z0-9_-]+$/;
+  // Should match pattern: fic_[base64url_string] (minimum 32 chars)
+  const apiKeyPattern = /^fic_[A-Za-z0-9_-]{32,}$/;
   return apiKeyPattern.test(key);
 }
 
@@ -124,12 +124,12 @@ export function hasAnyScope(userScopes: string[], requiredScopes: ApiScope[]): b
 /**
  * Get human-readable description for scopes
  */
-export function getScopeDescriptions(scopes: string[]): Array<{scope: string; description: string}> {
+export function getScopeDescriptions(scopes: string[]): Array<{scope: string; summary: string}> {
   return scopes
     .filter(isValidScope)
     .map(scope => ({
       scope,
-      description: API_SCOPES[scope]
+      summary: API_SCOPES[scope]
     }));
 }
 

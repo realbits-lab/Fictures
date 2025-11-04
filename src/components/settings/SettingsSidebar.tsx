@@ -20,7 +20,7 @@ const settingsNavItems: SettingsNavItem[] = [
   { href: "/settings/appearance", label: "Appearance", icon: "🎨" },
   { href: "/settings/notifications", label: "Notifications", icon: "🔔" },
   { href: "/settings/privacy", label: "Privacy & Security", icon: "🔒" },
-  { href: "/settings/analytics", label: "Data & Analytics", icon: "📊" },
+  { href: "/settings/analysis", label: "Data & Analysis", icon: "📊" },
 ];
 
 export function SettingsSidebar() {

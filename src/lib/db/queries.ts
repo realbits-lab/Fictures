@@ -58,7 +58,7 @@ export async function updateUser(userId: string, data: {
   name?: string;
   image?: string;
   emailVerified?: Date;
-  role?: string;
+  role?: 'manager' | 'writer' | 'reader';
 }) {
   const [user] = await db
     .update(users)
@@ -80,8 +80,8 @@ export async function createStory(authorId: string, data: {
   const [story] = await db.insert(stories).values({
     id: storyId,
     title: data.title,
-    description: data.description,
-    genre: data.genre,
+    summary: data.description,
+    genre: data.genre as any,
     authorId,
     status: 'writing',
   }).returning();
@@ -180,13 +180,13 @@ export async function getStoryById(storyId: string, userId?: string) {
 
 export async function updateStory(storyId: string, userId: string, data: Partial<{
   title: string;
-  description: string;
+  summary: string;
   genre: string;
   status: 'writing' | 'published';
 }>) {
   const [updatedStory] = await db
     .update(stories)
-    .set({ ...data, updatedAt: new Date() })
+    .set({ ...(data as any), updatedAt: new Date() })
     .where(and(eq(stories.id, storyId), eq(stories.authorId, userId)))
     .returning();
 
@@ -585,9 +585,9 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
       id: scene.id,
       title: scene.title,
       status: dynamicSceneStatus,
-      goal: scene.goal || '',
-      conflict: scene.conflict || '',
-      outcome: scene.outcome || '',
+      goal: (scene as any).goal || '',
+      conflict: (scene as any).conflict || '',
+      outcome: (scene as any).outcome || '',
       content: sceneContent,
       orderIndex: scene.orderIndex
     };
@@ -941,7 +941,7 @@ export async function getCommunityStory(storyId: string) {
     .select({
       id: settings.id,
       name: settings.name,
-      description: settings.description,
+      summary: (settings as any).summary || (settings as any).description,
       mood: settings.mood,
       sensory: settings.sensory,
       visualStyle: settings.visualStyle,
@@ -959,7 +959,7 @@ export async function getCommunityStory(storyId: string) {
   return {
     id: story.id,
     title: story.title,
-    description: story.description,
+    summary: story.summary,
     genre: story.genre,
     status: story.status,
     author: story.author,

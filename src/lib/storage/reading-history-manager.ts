@@ -10,7 +10,7 @@ import type {
   HistoryItem,
   StorageData,
   AddToHistoryOptions
-} from '@/types/reading-history';
+} from '@/types/novels-history';
 
 const STORAGE_VERSION = 2; // Bumped from 1 to support format separation
 const MAX_ITEMS = 100; // Limit history to prevent localStorage bloat

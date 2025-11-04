@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth';
 import { getStoryById, updateStory, getStoryChapters } from '@/lib/db/queries';
 import { z } from 'zod';
 import { db } from '@/lib/db';
-import { stories, parts, chapters, scenes, characters, places, settings, communityPosts, communityReplies } from '@/lib/db/schema';
+import { stories, parts, chapters, scenes, characters, settings, communityPosts, communityReplies } from '@/lib/db/schema';
 import { eq, inArray } from 'drizzle-orm';
 import { del } from '@vercel/blob';
 
@@ -11,7 +11,7 @@ export const runtime = 'nodejs';
 
 const updateStorySchema = z.object({
   title: z.string().min(1).max(255).optional(),
-  description: z.string().optional(),
+  summary: z.string().optional(),
   genre: z.string().optional(),
   status: z.enum(['writing', 'published']).optional(),
   isPublic: z.boolean().optional(),
@@ -101,8 +101,8 @@ export async function DELETE(
     const imageUrls: string[] = [];
 
     // Get story cover image if it exists in hnsData
-    if (story.hnsData && typeof story.hnsData === 'object' && 'story' in story.hnsData) {
-      const storyData = story.hnsData.story as any;
+    if ((story as any).hnsData && typeof (story as any).hnsData === 'object' && 'story' in (story as any).hnsData) {
+      const storyData = (story as any).hnsData.story as any;
       if (storyData?.coverImageUrl) {
         imageUrls.push(storyData.coverImageUrl);
       }
@@ -157,19 +157,6 @@ export async function DELETE(
     for (const character of storyCharacters) {
       if (character.imageUrl) {
         imageUrls.push(character.imageUrl);
-      }
-    }
-
-    // Get all places and their images
-    const storyPlaces = await db
-      .select()
-      .from(places)
-      .where(eq(places.storyId, id));
-
-    console.log(`Found ${storyPlaces.length} places to delete`);
-    for (const place of storyPlaces) {
-      if (place.imageUrl) {
-        imageUrls.push(place.imageUrl);
       }
     }
 
@@ -256,19 +243,13 @@ export async function DELETE(
       .where(eq(characters.storyId, id));
     console.log('✓ Deleted characters');
 
-    // 7. Delete places (depends on story)
-    await db
-      .delete(places)
-      .where(eq(places.storyId, id));
-    console.log('✓ Deleted places');
-
-    // 8. Delete settings (depends on story)
+    // 7. Delete settings (depends on story)
     await db
       .delete(settings)
       .where(eq(settings.storyId, id));
     console.log('✓ Deleted settings');
 
-    // 9. Delete the story itself
+    // 8. Delete the story itself
     await db
       .delete(stories)
       .where(eq(stories.id, id));
@@ -297,7 +278,7 @@ export async function DELETE(
         chapters: chapterIds.length,
         scenes: storyScenes.length,
         characters: storyCharacters.length,
-        places: storyPlaces.length,
+        places: storySettings.length,
         communityPosts: postIds.length,
         images: successfulDeletions
       }

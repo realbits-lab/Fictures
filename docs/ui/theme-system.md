@@ -624,7 +624,7 @@ className="bg-primary"
 
 ### Example Usage
 - **Button component:** `src/components/ui/button.tsx`
-- **Reading component:** `src/components/reading/ChapterReaderClient.tsx`
+- **Reading component:** `src/components/novels/ChapterReaderClient.tsx`
 - **Dashboard components:** `src/components/dashboard/*`
 
 ---

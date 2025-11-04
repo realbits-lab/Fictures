@@ -20,6 +20,31 @@ export function useStudioAgentChat({
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | undefined>(chatId);
 
+  const chat = useChat({
+    id: currentChatId,
+    api: '/studio/api/agent',
+    body: {
+      chatId: currentChatId,
+      storyContext,
+      agentType,
+    },
+    onResponse: (response: any) => {
+      // Extract chat ID from response headers if this is a new chat
+      const newChatId = response.headers.get('X-Chat-Id');
+      if (newChatId && !currentChatId) {
+        setCurrentChatId(newChatId);
+        onChatCreated?.(newChatId);
+      }
+    },
+    onFinish: () => {
+      // Active tools are automatically cleared via useMemo when messages update
+    },
+    onError: (error: any) => {
+      console.error('[Agent Chat] Error:', error);
+    },
+  } as any);
+
+  // Extract properties from chat (type-safe access)
   const {
     messages,
     input,
@@ -32,29 +57,7 @@ export function useStudioAgentChat({
     append,
     setMessages,
     setInput,
-  } = useChat({
-    id: currentChatId,
-    api: '/studio/api/agent',
-    body: {
-      chatId: currentChatId,
-      storyContext,
-      agentType,
-    },
-    onResponse: (response) => {
-      // Extract chat ID from response headers if this is a new chat
-      const newChatId = response.headers.get('X-Chat-Id');
-      if (newChatId && !currentChatId) {
-        setCurrentChatId(newChatId);
-        onChatCreated?.(newChatId);
-      }
-    },
-    onFinish: () => {
-      // Active tools are automatically cleared via useMemo when messages update
-    },
-    onError: (error) => {
-      console.error('[Agent Chat] Error:', error);
-    },
-  });
+  } = chat as any;
 
   // Load chat history on mount
   useEffect(() => {
@@ -82,7 +85,7 @@ export function useStudioAgentChat({
   // Track active tools from message parts
   const activeTools = useMemo(() => {
     return messages
-      .flatMap((m) => (m as any).toolInvocations || [])
+      .flatMap((m: any) => (m as any).toolInvocations || [])
       .filter((t: any) => t.state === 'call')
       .map((t: any) => t.toolName);
   }, [messages]);

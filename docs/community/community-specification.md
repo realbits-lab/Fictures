@@ -2712,7 +2712,7 @@ function MobilePostList({ posts }: { posts: CommunityPost[] }) {
 - **Email Digests:** Weekly community highlights
 - **RSS Feeds:** Subscribe to story discussions
 - **Discord Integration:** Bridge with Discord servers
-- **Analytics Dashboard:** Author insights on community engagement
+- **Analysis Dashboard:** Author insights on community engagement
 
 ---
 

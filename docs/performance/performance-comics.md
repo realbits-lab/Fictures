@@ -79,8 +79,8 @@ From initial cold start (711ms) to cached warm requests (467ms).
 ```typescript
 const connectionString =
   process.env.DATABASE_URL ||           // Neon pooled (has -pooler suffix)
-  process.env.POSTGRES_URL_POOLED ||
-  process.env.POSTGRES_URL;
+  process.env.DATABASE_URL_POOLED ||
+  process.env.DATABASE_URL;
 
 const client = postgres(connectionString, {
   max: 30,                  // 30 concurrent connections

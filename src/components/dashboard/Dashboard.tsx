@@ -33,7 +33,6 @@ export async function Dashboard() {
     rating: (story.rating || 0) / 10, // Convert from database format (47 = 4.7)
     status: story.status as "draft" | "publishing" | "completed" | "published",
     firstChapterId: story.firstChapterId,
-    storyData: story.content || null,
   }));
 
   return (

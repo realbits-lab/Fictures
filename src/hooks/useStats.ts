@@ -32,7 +32,7 @@ export function useStats() {
     mutate
   } = useSWR<UserStats>(
     // Only fetch if session is loaded (not loading state)
-    status !== 'loading' ? '/api/stats' : null,
+    status !== 'loading' ? '/analysis/api/stats' : null,
     fetcher,
     {
       revalidateOnFocus: false,

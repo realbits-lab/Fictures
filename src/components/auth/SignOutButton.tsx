@@ -2,7 +2,7 @@
 
 import { signOut } from 'next-auth/react';
 import { Button } from '@/components/ui';
-import { trackEngagement } from '@/lib/analytics/google-analytics';
+import { trackEngagement } from '@/lib/analysis/google-analytics';
 
 export function SignOutButton() {
   const handleSignOut = () => {

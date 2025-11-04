@@ -172,7 +172,7 @@ export default function CachePerformancePage() {
       setCurrentPhase('✅ Test Complete!');
     } catch (error) {
       console.error('❌ Test error:', error);
-      setCurrentPhase(`❌ Test failed: ${error.message}`);
+      setCurrentPhase(`❌ Test failed: ${(error as Error).message}`);
     } finally {
       setIsTestRunning(false);
     }
@@ -195,7 +195,7 @@ export default function CachePerformancePage() {
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-4">Test Stories</h2>
           {isLoading && <p>Loading test stories...</p>}
-          {error && <p className="text-red-600">Error loading stories: {error.message}</p>}
+          {error && <p className="text-red-600">Error loading stories: {(error as Error).message}</p>}
           {stories && (
             <div className="grid gap-4">
               {stories.map((story) => (

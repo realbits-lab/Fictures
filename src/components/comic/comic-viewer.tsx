@@ -93,7 +93,7 @@ export function ComicViewer({
         setError(null);
         setData(null); // Reset data when fetching new scene
 
-        const response = await fetch(`/api/comic/${sceneId}/panels`);
+        const response = await fetch(`/comics/api/${sceneId}/panels`);
 
         if (!response.ok) {
           throw new Error(`Failed to fetch panels: ${response.statusText}`);
@@ -202,7 +202,7 @@ export function ComicViewer({
           </h3>
 
           <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
-            We couldn't load the comic panels right now. This might be a temporary hiccup.
+            We couldn&apos;t load the comic panels right now. This might be a temporary hiccup.
             Please try again in a moment.
           </p>
 
@@ -244,7 +244,9 @@ export function ComicViewer({
     );
   }
 
-  // Main render
+  // Main render - TypeScript guard (we know data is not null here due to checks above)
+  if (!data) return null;
+
   return (
     <div className={className}>
       {/* Metadata header */}

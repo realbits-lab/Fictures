@@ -52,7 +52,7 @@ export function useSceneView(
       try {
         console.log(`📊 Tracking ${readingFormat} view for scene: ${sceneId}`);
 
-        const response = await fetch(`/api/scenes/${sceneId}/view`, {
+        const response = await fetch(`/studio/api/scenes/${sceneId}/view`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ export async function getSceneViewStats(sceneId: string): Promise<{
   hasViewedByCurrentUser: boolean;
 } | null> {
   try {
-    const response = await fetch(`/api/scenes/${sceneId}/view`);
+    const response = await fetch(`/studio/api/scenes/${sceneId}/view`);
 
     if (!response.ok) {
       console.error(`Failed to get scene view stats: ${response.statusText}`);

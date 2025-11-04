@@ -47,8 +47,8 @@ These endpoints provide AI-powered analysis and modification of story elements u
 - **File**: `src/app/studio/api/story-analyzer/route.ts` (418 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
-  - `src/components/writing/StoryPromptWriter.tsx` (line 173)
-  - `src/components/writing/AIEditor.tsx` (line 37)
+  - `src/components/studio/StoryPromptWriter.tsx` (line 173)
+  - `src/components/studio/AIEditor.tsx` (line 37)
 - **Function**: Multi-tool story analysis and modification
 - **Tools Available**:
   1. `modifyStoryStructure` - Title, genre, plot, themes, word count
@@ -77,7 +77,7 @@ These endpoints provide AI-powered analysis and modification of story elements u
 - **File**: `src/app/studio/api/chapter-analyzer/route.ts`
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
-  - `src/components/writing/ChapterPromptEditor.tsx` (line 53)
+  - `src/components/studio/ChapterPromptEditor.tsx` (line 53)
 - **Function**: Modify chapter structure based on user requests
 - **Format**: YAML input/output with JSON fallback
 - **Request Schema**:
@@ -99,7 +99,7 @@ These endpoints provide AI-powered analysis and modification of story elements u
 - **File**: `src/app/studio/api/scene-analyzer/route.ts` (178 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
-  - `src/components/writing/ScenePromptEditor.tsx` (line 56)
+  - `src/components/studio/ScenePromptEditor.tsx` (line 56)
 - **Function**: Modify scene structure based on user requests
 - **Format**: YAML input/output with JSON fallback
 - **Request Schema**:
@@ -122,7 +122,7 @@ These endpoints provide AI-powered analysis and modification of story elements u
 - **File**: `src/app/studio/api/part-analyzer/route.ts` (181 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
-  - `src/components/writing/PartPromptEditor.tsx` (line 64)
+  - `src/components/studio/PartPromptEditor.tsx` (line 64)
 - **Function**: Modify story part structure based on user requests
 - **Format**: YAML input/output with JSON fallback
 - **Request Schema**:
@@ -149,7 +149,7 @@ These endpoints provide AI-powered analysis and modification of story elements u
 - **Used In**:
   - `src/hooks/useStories.ts` (line 48)
   - `src/lib/hooks/use-page-cache.ts`
-  - `src/components/writing/UnifiedWritingEditor.tsx` (mutate)
+  - `src/components/studio/UnifiedWritingEditor.tsx` (mutate)
 - **Function**: Get user's stories with metadata for dashboard
 - **Response Schema**:
   ```typescript
@@ -187,7 +187,7 @@ These endpoints provide AI-powered analysis and modification of story elements u
 - **File**: `src/app/studio/api/stories/[id]/route.ts` (311 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
-  - `src/components/writing/StoryMetadataEditor.tsx` (line 34)
+  - `src/components/studio/StoryMetadataEditor.tsx` (line 34)
 - **Function**: Get specific story details
 - **Response**: Story object with metadata, parts, chapters, characters, settings
 
@@ -195,7 +195,7 @@ These endpoints provide AI-powered analysis and modification of story elements u
 - **File**: `src/app/studio/api/stories/[id]/route.ts`
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
-  - `src/components/writing/UnifiedWritingEditor.tsx` (line 1575)
+  - `src/components/studio/UnifiedWritingEditor.tsx` (line 1575)
 - **Function**: Update story metadata
 - **Fields Updatable**: title, description, genre, status, etc.
 
@@ -208,8 +208,8 @@ These endpoints provide AI-powered analysis and modification of story elements u
 - **File**: `src/app/studio/api/stories/[id]/write/route.ts` (292 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
-  - `src/components/writing/StoryPromptWriter.tsx` (line 452)
-  - `src/components/writing/UnifiedWritingEditor.tsx` (line 741)
+  - `src/components/studio/StoryPromptWriter.tsx` (line 452)
+  - `src/components/studio/UnifiedWritingEditor.tsx` (line 741)
 - **Function**: Update story content via AI assistance
 - **Request Schema**:
   ```typescript
@@ -221,7 +221,7 @@ These endpoints provide AI-powered analysis and modification of story elements u
 #### PUT `/studio/api/stories/[id]/visibility`
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
-  - `src/components/writing/UnifiedWritingEditor.tsx` (line 915)
+  - `src/components/studio/UnifiedWritingEditor.tsx` (line 915)
 - **Function**: Toggle story visibility (public/private)
 - **Request Schema**:
   ```typescript
@@ -242,8 +242,8 @@ These endpoints provide AI-powered analysis and modification of story elements u
 #### GET `/studio/api/stories/[id]/characters`
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
-  - `src/components/writing/SceneDisplay.tsx` (line 79)
-  - `src/components/writing/CharactersDisplay.tsx` (line 39)
+  - `src/components/studio/SceneDisplay.tsx` (line 79)
+  - `src/components/studio/CharactersDisplay.tsx` (line 39)
 - **Function**: Get story characters list
 - **Response**:
   ```typescript
@@ -266,8 +266,8 @@ These endpoints provide AI-powered analysis and modification of story elements u
 #### GET `/studio/api/stories/[id]/settings`
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
-  - `src/components/writing/SceneDisplay.tsx` (line 93)
-  - `src/components/writing/SettingsDisplay.tsx` (line 38)
+  - `src/components/studio/SceneDisplay.tsx` (line 93)
+  - `src/components/studio/SettingsDisplay.tsx` (line 38)
 - **Function**: Get story locations/settings
 - **Response**:
   ```typescript
@@ -285,8 +285,8 @@ These endpoints provide AI-powered analysis and modification of story elements u
 - **File**: `src/app/studio/api/stories/[id]/comments/route.ts` (232 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
-  - `src/components/reading/CommentSection.tsx`
-  - `src/components/reading/CommentForm.tsx` (line 136)
+  - `src/components/novels/CommentSection.tsx`
+  - `src/components/novels/CommentForm.tsx` (line 136)
 - **Function**: Get and create story comments
 - **GET Response**:
   ```typescript
@@ -330,7 +330,7 @@ These endpoints provide AI-powered analysis and modification of story elements u
 - **Function**: Get published stories
 - **Response**: Array of published stories with metadata
 
-**Note**: Legacy endpoints `/stories/generate` and `/stories/generate-stream` have been removed. The platform now uses the `/studio/api/generation/*` system with the Adversity-Triumph Engine methodology instead of the old HNS generation system.
+**Note**: The platform uses the unified `/studio/api/generation/*` system with the Adversity-Triumph Engine methodology for all story generation.
 
 ---
 
@@ -355,13 +355,13 @@ These endpoints provide AI-powered analysis and modification of story elements u
 #### PUT `/studio/api/chapters/[id]/write`
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
-  - `src/components/writing/UnifiedWritingEditor.tsx` (line 718)
+  - `src/components/studio/UnifiedWritingEditor.tsx` (line 718)
 - **Function**: Update chapter via AI assistance
 
 #### PUT `/studio/api/chapters/[id]/autosave`
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
-  - `src/components/writing/ChapterEditor.tsx` (line 111)
+  - `src/components/studio/ChapterEditor.tsx` (line 111)
 - **Function**: Auto-save chapter changes
 
 #### POST `/studio/api/chapters/[id]/publish`
@@ -380,7 +380,7 @@ These endpoints provide AI-powered analysis and modification of story elements u
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
   - `src/hooks/useChapterScenes.ts` (line 141)
-  - `src/components/reading/ChapterReaderClient.tsx` (line 282)
+  - `src/components/novels/ChapterReaderClient.tsx` (line 282)
 - **Function**: Get scenes in a chapter
 - **Caching**: ETag-based HTTP caching
 - **Response**:
@@ -425,7 +425,7 @@ These endpoints provide AI-powered analysis and modification of story elements u
 #### PUT `/studio/api/parts/[id]/write`
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
-  - `src/components/writing/UnifiedWritingEditor.tsx` (line 770)
+  - `src/components/studio/UnifiedWritingEditor.tsx` (line 770)
 - **Function**: Update part via AI assistance
 
 #### POST `/studio/api/parts/generate`
@@ -443,14 +443,14 @@ These endpoints provide AI-powered analysis and modification of story elements u
 #### GET `/studio/api/scenes/[id]`
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
-  - `src/components/writing/UnifiedWritingEditor.tsx` (line 695)
+  - `src/components/studio/UnifiedWritingEditor.tsx` (line 695)
 - **Function**: Get scene details
 - **Response**: 195 lines implementation
 
 #### PUT `/studio/api/scenes/[id]`
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
-  - `src/components/writing/UnifiedWritingEditor.tsx` (line 980)
+  - `src/components/studio/UnifiedWritingEditor.tsx` (line 980)
 - **Function**: Update scene
 - **Response**: 195 lines implementation
 

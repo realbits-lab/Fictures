@@ -70,7 +70,7 @@ export async function warmUserStories(userId: string): Promise<void> {
   const startTime = Date.now();
 
   const userStories = await db.query.stories.findMany({
-    where: eq(stories.userId, userId),
+    where: eq(stories.authorId, userId),
     columns: { id: true },
     limit: 20, // Warm user's top 20 stories
     orderBy: [desc(stories.updatedAt)],

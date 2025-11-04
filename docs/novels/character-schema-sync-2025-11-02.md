@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-Synchronized the `characters` table schema with the Adversity-Triumph Engine specification to fix field type mismatches and clearly mark deprecated HNS fields.
+Synchronized the `characters` table schema with the Adversity-Triumph Engine specification to fix field type mismatches and clearly mark deprecated legacy fields.
 
 ## Issues Fixed
 
@@ -45,7 +45,7 @@ const mappedCharacterFocus = scene.characterFocus?.map((charId) =>
 - Migrated existing JSON backstory data to concatenated text
 - Added database comments documenting structure
 
-### 3. Legacy HNS Fields ✅
+### 3. Legacy Fields ✅
 
 **Fields Marked as Deprecated** (NULL for new Adversity-Triumph stories):
 - `content` - Store all character data as YAML/JSON
@@ -58,7 +58,7 @@ const mappedCharacterFocus = scene.characterFocus?.map((charId) =>
 
 **Action**:
 - Added deprecation comments in database schema
-- Kept fields for backward compatibility with existing HNS stories
+- Kept fields for backward compatibility with existing stories
 - New generation code does NOT populate these fields
 
 ## Schema Alignment
@@ -100,15 +100,15 @@ const mappedCharacterFocus = scene.characterFocus?.map((charId) =>
 3. Verify character IDs in `parts.character_arcs`, `chapters.focus_characters`, `scenes.character_focus` match actual database IDs
 
 **For Existing Stories:**
-1. Verify legacy HNS stories still load correctly
+1. Verify legacy stories still load correctly
 2. Verify `backstory` field displays properly (converted from JSON to TEXT)
 3. Check community queries still work with deprecated fields
 
 ## Migration Safety
 
 **Backward Compatibility:** ✅ Maintained
-- Legacy HNS fields kept in schema
-- Existing HNS stories continue to work
+- Legacy fields kept in schema
+- Existing stories continue to work
 - Old `personality` structure still valid JSON
 - `backstory` conversion handles both JSON and TEXT gracefully
 
@@ -142,5 +142,5 @@ The character schema is now fully synchronized across all layers:
 
 **Next Steps:**
 1. Test new story generation to verify character ID mapping works
-2. Monitor for any issues with legacy HNS story display
+2. Monitor for any issues with legacy story display
 3. Plan removal of deprecated fields in future major version

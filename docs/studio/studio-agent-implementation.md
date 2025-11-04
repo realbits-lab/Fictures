@@ -30,7 +30,7 @@ The Studio Agent is an AI-powered editing assistant integrated into the `/studio
 4. **Frontend Components**
    - Custom hook: `src/hooks/use-studio-agent-chat.ts`
    - Chat UI: `src/components/studio/studio-agent-chat.tsx`
-   - Integration: `src/components/writing/UnifiedWritingEditor.tsx`
+   - Integration: `src/components/studio/UnifiedWritingEditor.tsx`
 
 ## Database Schema
 
@@ -181,7 +181,7 @@ Response: Server-Sent Events (SSE) stream with chat ID in headers
 ### Running Migrations
 
 ```bash
-dotenv --file .env.local run psql $POSTGRES_URL -f drizzle/0000_studio_agent_tables.sql
+dotenv --file .env.local run psql $DATABASE_URL -f drizzle/0000_studio_agent_tables.sql
 ```
 
 ### Testing

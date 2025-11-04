@@ -210,7 +210,7 @@ export function CommunityContentClient({ initialStories }: CommunityContentClien
             value={stats.activeToday}
             label="Active Today"
             color="text-blue-600"
-            description="Stories with recent community activity in the past 24 hours."
+            summary="Stories with recent community activity in the past 24 hours."
             details={[
               "Includes stories with new posts or comments",
               "Shows real-time engagement",
@@ -222,7 +222,7 @@ export function CommunityContentClient({ initialStories }: CommunityContentClien
             value={stats.commentsToday}
             label="Comments Today"
             color="text-green-600"
-            description="Total number of comments posted across all stories today."
+            summary="Total number of comments posted across all stories today."
             details={[
               "Counts all discussion replies",
               "Refreshes every 30 minutes",
@@ -234,7 +234,7 @@ export function CommunityContentClient({ initialStories }: CommunityContentClien
             value={stats.averageRating}
             label="Avg Rating"
             color="text-purple-600"
-            description="Average community rating across all published stories."
+            summary="Average community rating across all published stories."
             details={[
               "Based on reader feedback",
               "Calculated from all published stories",
@@ -246,7 +246,7 @@ export function CommunityContentClient({ initialStories }: CommunityContentClien
             value={stats.totalStories}
             label="Stories"
             color="text-orange-600"
-            description="Total number of published stories available in the community."
+            summary="Total number of published stories available in the community."
             details={[
               "Only published stories are shown",
               "Draft stories are not included",
@@ -258,7 +258,7 @@ export function CommunityContentClient({ initialStories }: CommunityContentClien
             value={stats.totalPosts}
             label="Discussions"
             color="text-red-600"
-            description="Total discussion threads across all community stories."
+            summary="Total discussion threads across all community stories."
             details={[
               "Includes all posts and topics",
               "Each story has its own discussions",
@@ -270,7 +270,7 @@ export function CommunityContentClient({ initialStories }: CommunityContentClien
             value={stats.totalMembers}
             label="Members"
             color="text-indigo-600"
-            description="Total unique users who have participated in community discussions."
+            summary="Total unique users who have participated in community discussions."
             details={[
               "Active contributors and readers",
               "Sign in to join the community",

@@ -35,7 +35,7 @@ export function GenreBrowser({ genreCounts = {} }: GenreBrowserProps) {
             return (
               <Link
                 key={genre.name}
-                href={`/reading?genre=${encodeURIComponent(genre.name)}`}
+                href={`/novels?genre=${encodeURIComponent(genre.name)}`}
                 className="group"
               >
                 <div className="relative overflow-hidden rounded-xl p-6 text-center transition-all hover:scale-105 hover:shadow-2xl cursor-pointer">

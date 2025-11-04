@@ -7,6 +7,34 @@ This file provides guidance to Claude Code when working with this repository.
 - **Repository**: https://github.com/realbits-lab/Fictures
 - **Project**: Fictures - AI-powered story writing platform
 
+## Multi-Environment Architecture
+
+**The platform uses environment-based data isolation for development and production.**
+
+**Environment Detection:**
+- Uses `NODE_ENV` environment variable
+- `NODE_ENV=development` → "develop" environment (default)
+- `NODE_ENV=production` → "main" environment (production)
+
+**Data Isolation:**
+1. **Authentication** - Separate user profiles per environment in `.auth/user.json`
+2. **Blob Storage** - Environment-prefixed paths (`main/` or `develop/`)
+
+**Quick Reference:**
+```typescript
+// Load environment-aware profile
+import { loadProfile } from '@/lib/utils/auth-loader';
+const writer = loadProfile('writer'); // Uses current NODE_ENV
+
+// Construct environment-aware blob path
+import { getBlobPath } from '@/lib/utils/blob-path';
+const path = getBlobPath('stories/123/image.png');
+// Returns: "develop/stories/123/image.png" (in development)
+// Returns: "main/stories/123/image.png" (in production)
+```
+
+**Complete Documentation:** [docs/environment-architecture.md](docs/environment-architecture.md)
+
 ## Development Commands
 
 - **Development**: `dotenv --file .env.local run pnpm dev` (runs on port 3000)
@@ -25,27 +53,37 @@ This file provides guidance to Claude Code when working with this repository.
 - Run long-running processes (pnpm dev, npx commands) as background processes
 - Always redirect output streams to logs directory using shell pipes for monitoring
 - Kill existing processes on port 3000 before starting development server
+- **IMPORTANT**: Always remove Next.js cache (`.next/`) before restarting `pnpm dev`
+  - Command: `rm -rf .next && dotenv --file .env.local run pnpm dev`
+  - This ensures code changes are picked up and prevents stale cached code from running
 - Use proper environment variable loading with `dotenv --file .env.local run` prefix
 
 **File Organization Guidelines:**
-- **Test Files**: Always write test files in `tests/` or `__tests__/` directories
-  - E2E tests: `tests/*.spec.ts` (Playwright tests)
-  - Unit tests: `__tests__/*.test.ts` or `__tests__/*.test.tsx` (Jest tests)
-- **Script Files**: Always write script files in `scripts/` directory
+- **Test Files**: Decide directory based on test purpose and longevity
+  - **`test-tests/`**: Temporary test files for quick testing, debugging, or one-time exploration
+  - **`tests/`**: Permanent E2E test files (Playwright tests: `tests/*.spec.ts`)
+  - **`__tests__/`**: Permanent unit test files (Jest tests: `__tests__/*.test.ts` or `__tests__/*.test.tsx`)
+  - When creating test files, evaluate whether they are temporary experiments or permanent test suites
+- **Script Files**: Decide directory based on script purpose and longevity
+  - **`test-scripts/`**: Temporary scripts for testing, debugging, or one-time exploration
+  - **`scripts/`**: Permanent utility scripts for production use
   - See complete script documentation: [scripts/CLAUDE.md](scripts/CLAUDE.md)
   - Story generation, management, testing, and utility scripts
-- **Documentation Files**: All documentation files (`.md` or `.mdx`) MUST include frontmatter
-  - **MANDATORY**: Frontmatter with at least `title` field at the top of every documentation file
-  - Format: `---\ntitle: Document Title\n---` before content
-  - Optional: Use `.mdx` for enhanced documentation with JSX components and interactive examples
-  - Both `.md` and `.mdx` formats are acceptable, but frontmatter is required
+  - When creating scripts, evaluate whether they are temporary experiments or permanent utilities
 
 ## Database Management
 
 **IMPORTANT: Uses Neon PostgreSQL Database**
-- Database operations use Drizzle ORM - see `src/lib/db/schema.ts`
+- Database operations use Drizzle ORM - see `drizzle/schema.ts` (single source of truth)
 - Always prefix commands with `dotenv --file .env.local run` for proper database connectivity
 - DO NOT use Supabase MCP tools - this project uses Neon PostgreSQL
+
+**Database Schema Usage:**
+- **ALWAYS import schema from `drizzle/schema.ts`** - This is the single source of truth for all database tables
+- **NEVER define tables inline** in scripts, API routes, or services
+- **Example**: `import { users, apiKeys, stories, chapters } from '../drizzle/schema.ts'`
+- **Why**: Prevents schema drift, ensures consistency, and maintains type safety across the entire codebase
+- **Applies to**: All scripts, API routes, services, utilities, and test files
 
 **Database Naming Convention:**
 - **Table and column names use snake_case** (e.g., `created_at`, `updated_at`, `email_verified`)
@@ -74,6 +112,12 @@ This file provides guidance to Claude Code when working with this repository.
 - **Test Setup**: Run setup project first for authentication state
 - **Display Mode**: Uses headed mode by default for better debugging visibility
 
+**Test Page for Development:**
+- **Route**: `/test` - Use this page for testing features without authentication during development
+- **Purpose**: Quick access to test pages and components without going through authentication flow
+- **Security**: In production/main environment, access to `/test` route MUST be blocked in middleware
+- **Implementation**: Add middleware check to prevent access when `NODE_ENV=production`
+
 **Authentication Setup for Playwright:**
 
 **Testing Account Priority:**
@@ -81,27 +125,22 @@ This file provides guidance to Claude Code when working with this repository.
 - Use manager@fictures.xyz only for admin/management specific tests
 - All test scripts should read credentials from `.auth/user.json` profiles
 
-**Option 1: Google OAuth**
-1. **Initial Capture**: Run `dotenv --file .env.local run node scripts/capture-auth-manual.mjs`
-   - Opens browser for manual Google login with manager@fictures.xyz account
-   - Automatically captures authentication state to `.auth/user.json`
-   - Includes NextAuth.js session cookies and Google OAuth tokens
-   - **Testing Account**: Always use writer@fictures.xyz from `.auth/user.json` for story editing tests
+**Email/Password Authentication (Primary Method):**
 
-**Option 2: Email/Password Authentication**
-1. **Initial Capture**: Run authentication capture script for email/password
-   - Opens browser for manual email/password login
-   - Automatically captures authentication state to `.auth/user.json`
-   - Includes NextAuth.js session cookies and credentials
-   - Stored alongside Google OAuth credentials in `.auth/user.json`
+Playwright tests use **direct email/password authentication** via the `/login` page. This approach does NOT use cookies or storage state files.
 
-2. **Testing Automatic Login**: Run `dotenv --file .env.local run node scripts/test-auto-login.mjs`
-   - Verifies stored credentials work for automatic authentication
-   - Tests navigation to protected routes like `/stories`
+1. **Setup Authentication Users**:
+   ```bash
+   # Create all three users (manager, writer, reader) if not exists
+   dotenv --file .env.local run node scripts/setup-auth-users.mjs
 
-3. **Programmatic Login in Playwright Tests**:
+   # Verify users were created correctly
+   dotenv --file .env.local run node scripts/verify-auth-setup.mjs
+   ```
+
+2. **Reusable Login Helper Function**:
    ```javascript
-   // For tests that need fresh authentication without .auth/user.json
+   // Add this function to your Playwright test files
    async function login(page, email, password) {
      await page.goto('http://localhost:3000/login');
      await page.waitForLoadState('networkidle');
@@ -119,32 +158,60 @@ This file provides guidance to Claude Code when working with this repository.
      // Wait for redirect after successful login
      await page.waitForTimeout(2000);
    }
-
-   test('example with programmatic login', async ({ page }) => {
-     await login(page, 'user@example.com', 'password123');
-     // Test runs with authenticated session
-   });
    ```
 
-4. **Using in Playwright Tests with storageState**:
+3. **Using in Playwright Tests**:
    ```javascript
-   // In your Playwright test files
-   const { test, expect } = require('@playwright/test');
+   import { test, expect } from '@playwright/test';
+   import fs from 'fs';
 
-   test.use({
-     storageState: '.auth/user.json'
-   });
+   // Load authentication profiles
+   const authData = JSON.parse(fs.readFileSync('.auth/user.json', 'utf-8'));
 
-   test('authenticated user can access stories', async ({ page }) => {
-     await page.goto('http://localhost:3000/stories');
-     // Test runs with Google authentication
+   test('writer can create stories', async ({ page }) => {
+     // Get writer credentials from auth file
+     const writer = authData.profiles.writer;
+
+     // Login with writer
+     await login(page, writer.email, writer.password);
+
+     // Navigate to story creation
+     await page.goto('http://localhost:3000/studio/new');
+
+     // Test runs with authenticated session
+     // ... your test code ...
    });
    ```
 
-5. **Refreshing Authentication**: When credentials expire, re-run capture script:
-   ```bash
-   dotenv --file .env.local run node scripts/capture-auth-manual.mjs
+4. **Testing with Different User Roles**:
+   ```javascript
+   test.describe('User Role Tests', () => {
+     test('manager can delete stories', async ({ page }) => {
+       const manager = authData.profiles.manager;
+       await login(page, manager.email, manager.password);
+       // Test manager-only features
+     });
+
+     test('writer can edit stories', async ({ page }) => {
+       const writer = authData.profiles.writer;
+       await login(page, writer.email, writer.password);
+       // Test writer features
+     });
+
+     test('reader can only view stories', async ({ page }) => {
+       const reader = authData.profiles.reader;
+       await login(page, reader.email, reader.password);
+       // Test read-only access
+     });
+   });
    ```
+
+**Benefits:**
+- ✅ Simple and direct - No need to manage cookies or storage state files
+- ✅ Fresh authentication - Each test gets a new session
+- ✅ Easy role switching - Just use different credentials
+- ✅ Matches real user flow - Tests actual login process
+- ✅ No session expiration issues - New session for each test
 
 ## Architecture Overview
 
@@ -158,7 +225,7 @@ This file provides guidance to Claude Code when working with this repository.
 - **Comics** (🎨) - `/comics` - Browse and read visual/comic format stories (all users)
 - **Community** (💬) - `/community` - Story sharing and discussion (all users)
 - **Publish** (📤) - `/publish` - Publish stories to community (writers/managers only)
-- **Analytics** (📊) - `/analytics` - Story performance metrics (writers/managers only)
+- **Analysis** (📊) - `/analysis` - Story performance metrics (writers/managers only)
 - **Settings** (⚙️) - `/settings` - User preferences (authenticated users)
 
 ### Core Technologies
@@ -184,7 +251,7 @@ src/
 │   ├── comics/            # Comic reading interface
 │   ├── community/         # Story sharing & discussion
 │   ├── publish/           # Publishing & scheduling
-│   ├── analytics/         # Performance metrics
+│   ├── analysis/          # Performance metrics
 │   ├── settings/          # User preferences
 │   └── api/               # Global API endpoints
 ├── components/            # React UI components
@@ -236,10 +303,16 @@ GOOGLE_GENERATIVE_AI_API_KEY=***   # Google AI for Gemini 2.5 Flash (text & imag
 AI_GATEWAY_API_KEY=***             # Vercel AI SDK Gateway API key for AI provider management
 
 # Database & Storage
-POSTGRES_URL=***                   # Neon PostgreSQL
+DATABASE_URL=***                   # Neon PostgreSQL (pooled connection for runtime)
+DATABASE_URL_UNPOOLED=***          # Neon PostgreSQL (direct connection for migrations)
 BLOB_READ_WRITE_TOKEN=***          # Vercel Blob storage for generated images
 REDIS_URL=***                      # Session storage
 ```
+
+**Database Connection Details:**
+- **DATABASE_URL**: Pooled connection (with `-pooler` in hostname) - Use for application runtime
+- **DATABASE_URL_UNPOOLED**: Direct connection (no `-pooler`) - Required for Drizzle migrations
+- Both connections point to the same database, only the connection method differs
 
 ## Development Workflow
 
@@ -319,7 +392,7 @@ dotenv --file .env.local run node scripts/remove-story.mjs STORY_ID > logs/story
   - Setting visuals (1792x1024, 16:9)
   - All optimized variants (AVIF, WebP, JPEG in multiple sizes)
 - **Community data**: posts, likes, replies, bookmarks
-- **Analytics data**: reading sessions, insights, events
+- **Analysis data**: reading sessions, insights, events
 
 **Safety Features:**
 - Confirmation prompts for bulk operations
@@ -407,7 +480,8 @@ When modifying data model fields for stories, parts, chapters, scenes, character
 **Architecture:**
 - **Location**: `docs/novels/novels-development.md` - Complete specification
 - **Methodology**: Adversity-Triumph Engine (Korean Gam-dong narrative psychology)
-- **API Endpoints**: `/studio/api/generation/*` - Generation APIs for story creation
+- **API Endpoint**: `POST /studio/api/novels/generate` - Unified generation API with SSE streaming
+- **Authentication**: Dual auth (API key OR session) - Requires `stories:write` scope
 - **Database**: Novel-specific tables in Neon PostgreSQL (see `drizzle/` migrations)
 - **AI Model**: Gemini 2.5 Flash & Flash Lite (via Google AI API)
 - **Image Generation**: Gemini 2.5 Flash (1344×768, 7:4 aspect ratio)
@@ -416,17 +490,24 @@ When modifying data model fields for stories, parts, chapters, scenes, character
 **Generation Flow:**
 1. Story Summary → 2. Characters → 3. Settings → 4. Parts → 5. Chapters → 6. Scene Summaries → 7. Scene Content → 8. Scene Evaluation → 9. Images
 
+**Quick Start (Minimal Story):**
+```bash
+# Generate smallest complete story (1 part, 1 chapter, 3 scenes, ~5-10 min)
+dotenv --file .env.local run node scripts/generate-minimal-story.mjs
+```
+
 **Documentation Reference:**
 - 📖 **Specification**: `docs/novels/novels-specification.md` - Core concepts and data model
-- 🔧 **Development Guide**: `docs/novels/novels-development.md` - API specs and system prompts
+- 🔧 **Development Guide**: `docs/novels/novels-development.md` - API specs and system prompts (now with dual auth)
 - 🧪 **Testing Guide**: `docs/novels/novels-testing.md` - Validation and quality metrics
 - ⚡ **Optimization**: `docs/novels/novels-optimization.md` - Performance and cost tuning
 - 🗑️ **Removal**: `docs/novels/novels-removal.md` - Deletion workflows
+- 🛠️ **Script**: `scripts/generate-minimal-story.mjs` - Production script for minimal story generation
 
-**Related System:**
-- The existing "Story Generation" system (HNS methodology with `/api/stories/generate-hns`) is separate from the Novels system
-- Novels use Adversity-Triumph Engine, Stories use HNS (Hook-Nurture-Satisfy)
-- Both systems share image generation and optimization infrastructure
+**Generation System:**
+- The platform uses the Adversity-Triumph Engine methodology for novel generation
+- All story generation uses the unified `/studio/api/generation/*` system
+- Image generation and optimization infrastructure is shared across all features
 
 ## Code Guidelines
 
@@ -574,8 +655,8 @@ Every scene generated is automatically:
 - **[CLAUDE.md](CLAUDE.md)** - This file - Project overview and guidelines
 
 **Core Feature Specifications:**
-- **[docs/story-specification.md](docs/story-specification.md)** - Story structure and HNS methodology
-- **[docs/reading-specification.md](docs/reading-specification.md)** - Reading UX, mobile nav, comments, likes
+- **[docs/story-specification.md](docs/story-specification.md)** - Story structure and methodology
+- **[docs/novels-specification.md](docs/novels-specification.md)** - Reading UX, mobile nav, comments, likes
 - **[docs/community-specification.md](docs/community-specification.md)** - Community features and sharing
 
 **Performance & Optimization:**
@@ -621,7 +702,7 @@ Every scene generated is automatically:
 - ✅ Created `docs/caching-strategy.md` - Merged 3 cache-related files into complete guide
 - ✅ Created `docs/image-system-guide.md` - Overview linking 3 image-related files
 - ✅ Created `docs/README.md` - Master documentation index
-- ✅ Updated `docs/reading-specification.md` - Added bottom navigation implementation details
+- ✅ Updated `docs/novels-specification.md` - Added bottom navigation implementation details
 
 **Removed Files (Superseded):**
 - ~~30min-cache-retention.md~~ → Merged into caching-strategy.md
@@ -636,6 +717,9 @@ Every scene generated is automatically:
 - Always write complete, explicit code with all parameters, imports, and statements
 - Every line of code should be production-ready and executable
 - No shortcuts or omissions in code implementation
+- **Whenever you change code files, after finishing all changes, always run TypeScript type checking**:
+  - For changed files only: `pnpm tsc --noEmit <changed-file-paths>` (faster, targeted checking)
+  - For full project validation: `pnpm build` (comprehensive but slower)
 
 **Git and Repository Management:**
 - Always check current git repository URL before using GitHub MCP tools

@@ -18,6 +18,7 @@
 
 import { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
+import { authenticateRequest, hasRequiredScope } from '@/lib/auth/dual-auth';
 import { db } from '@/lib/db';
 import { stories, parts, chapters, scenes, characters, settings } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
@@ -32,11 +33,33 @@ function createSSEMessage(data: ProgressData): string {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await auth();
+  console.log('[Novel Generate API] Authenticating request...');
+  console.log('[Novel Generate API] Headers:', {
+    authorization: request.headers.get('authorization') ? 'Bearer ***' : 'none',
+    xApiKey: request.headers.get('x-api-key') ? '***' : 'none',
+  });
 
-  if (!session?.user?.id) {
+  // Support both API key and session authentication
+  const authResult = await authenticateRequest(request);
+
+  console.log('[Novel Generate API] Auth result:', authResult ? `type: ${authResult.type}, user: ${authResult.user.email}` : 'null');
+
+  if (!authResult) {
+    console.log('[Novel Generate API] Unauthorized - no valid authentication');
     return new Response('Unauthorized', { status: 401 });
   }
+
+  // Check if user has permission to write stories
+  if (!hasRequiredScope(authResult, 'stories:write')) {
+    console.log('[Novel Generate API] Forbidden - missing stories:write scope');
+    return new Response(
+      JSON.stringify({ error: 'Insufficient permissions. Required scope: stories:write' }),
+      { status: 403, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
+  console.log('[Novel Generate API] Authentication successful, proceeding with generation');
+  const userId = authResult.user.id;
 
   try {
     const body = await request.json() as NovelGenerationOptions;
@@ -186,7 +209,7 @@ export async function POST(request: NextRequest) {
             .insert(stories)
             .values({
               id: generatedStoryId,
-              authorId: session.user.id,  // Fixed: Use 'authorId' (correct schema field name)
+              authorId: userId,  // Use userId from authResult (supports both API key and session auth)
               title: result.story.title,
               genre: genreValue, // Mapped and validated genre value
               summary: result.story.summary, // Adversity-Triumph: General thematic premise
@@ -199,11 +222,34 @@ export async function POST(request: NextRequest) {
             .returning();
 
           // Insert characters and create ID mapping
+          // Fixed: Two-pass approach to properly remap relationship IDs
+          console.log('[Novel Generation] Starting character insertion with relationship ID remapping fix');
           const characterIdMap = new Map<string, string>();
           if (result.characters.length > 0) {
-            const characterRecords = result.characters.map((char) => {
+            // First pass: Create all character ID mappings
+            result.characters.forEach((char) => {
               const newId = nanoid();
-              characterIdMap.set(char.id, newId); // Map temp ID to database ID
+              characterIdMap.set(char.id, newId);
+              console.log(`[Novel Generation] Mapped character ${char.name}: ${char.id} → ${newId}`);
+            });
+
+            // Second pass: Build character records with remapped relationship IDs
+            const characterRecords = result.characters.map((char) => {
+              const newId = characterIdMap.get(char.id)!;
+
+              // Remap character IDs in relationships JSON
+              let mappedRelationships = char.relationships;
+              if (char.relationships && typeof char.relationships === 'object') {
+                console.log(`[Novel Generation] Remapping relationships for ${char.name}:`, Object.keys(char.relationships));
+                mappedRelationships = {};
+                for (const [tempCharId, relationshipData] of Object.entries(char.relationships)) {
+                  // Map temporary character ID to database ID
+                  const dbCharId = characterIdMap.get(tempCharId) || tempCharId;
+                  console.log(`[Novel Generation]   ${tempCharId} → ${dbCharId}`);
+                  mappedRelationships[dbCharId] = relationshipData;
+                }
+              }
+
               return {
                 id: newId,
                 storyId: generatedStoryId!,
@@ -215,7 +261,7 @@ export async function POST(request: NextRequest) {
                 externalGoal: char.externalGoal,
                 personality: char.personality,
                 backstory: char.backstory,
-                relationships: char.relationships,
+                relationships: mappedRelationships,
                 physicalDescription: char.physicalDescription,
                 voiceStyle: char.voiceStyle,
                 visualStyle: char.visualStyle,
@@ -237,7 +283,7 @@ export async function POST(request: NextRequest) {
                 id: newId,
                 storyId: generatedStoryId!,
                 name: setting.name,
-                description: setting.description,
+                summary: setting.description,
                 adversityElements: setting.adversityElements,
                 symbolicMeaning: setting.symbolicMeaning,
                 cycleAmplification: setting.cycleAmplification,
@@ -264,7 +310,7 @@ export async function POST(request: NextRequest) {
               partIdMap.set(part.id, newId); // Map temp ID to database ID
 
               // Map temporary character IDs to database character IDs in characterArcs
-              const mappedCharacterArcs = part.characterArcs.map((arc) => ({
+              const mappedCharacterArcs = part.characterArcs.map((arc: any) => ({
                 ...arc,
                 characterId: characterIdMap.get(arc.characterId) || arc.characterId,
               }));
@@ -272,7 +318,7 @@ export async function POST(request: NextRequest) {
               return {
                 id: newId,
                 storyId: generatedStoryId!,
-                authorId: session.user.id,
+                authorId: userId,
                 title: part.title,
                 summary: part.summary,
                 orderIndex: part.orderIndex,
@@ -293,14 +339,14 @@ export async function POST(request: NextRequest) {
               chapterIdMap.set(chapter.id, newId); // Map temp ID to database ID
 
               // Map temporary character IDs to database character IDs in focusCharacters array
-              const mappedFocusCharacters = chapter.focusCharacters?.map((charId) =>
+              const mappedFocusCharacters = chapter.focusCharacters?.map((charId: any) =>
                 characterIdMap.get(charId) || charId
               ) || [];
 
               return {
                 id: newId,
                 storyId: generatedStoryId!,
-                authorId: session.user.id,
+                authorId: userId,
                 partId: chapter.partId ? partIdMap.get(chapter.partId) || null : null,
                 title: chapter.title,
                 summary: chapter.summary,
@@ -336,7 +382,7 @@ export async function POST(request: NextRequest) {
               console.log(`[Novel Generation] Scene ${index + 1}: chapterId=${scene.chapterId}, mapped=${mappedChapterId}`);
 
               // Map temporary character IDs to database character IDs in characterFocus array
-              const mappedCharacterFocus = scene.characterFocus?.map((charId) =>
+              const mappedCharacterFocus = scene.characterFocus?.map((charId: any) =>
                 characterIdMap.get(charId) || charId
               ) || [];
 
@@ -363,7 +409,7 @@ export async function POST(request: NextRequest) {
               };
             });
 
-            await db.insert(scenes).values(sceneRecords);
+            await db.insert(scenes).values(sceneRecords as any);
 
             console.log('[Novel Generation] ✅ All entities created with FK relationships');
           }

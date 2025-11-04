@@ -1,12 +1,12 @@
 import { db } from '@/lib/db';
-import { storyInsights, sceneEvaluations, analyticsEvents, comments, stories, chapters, scenes } from '@/lib/db/schema';
+import { storyInsights, sceneEvaluations, analysisEvents, comments, stories, chapters, scenes } from '@/lib/db/schema';
 import { eq, and, gte, desc, sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
-import OpenAI from 'openai';
+import { generateText } from 'ai';
+import { google } from '@ai-sdk/google';
 
-const openai = new OpenAI({
-  apiKey: process.env.AI_GATEWAY_API_KEY,
-});
+// Use Gemini Flash for analytics insights (fast, cost-effective for text generation)
+const analyticsModel = google('gemini-2.0-flash-exp');
 
 export interface GenerateInsightsParams {
   storyId: string;
@@ -92,7 +92,7 @@ async function generateQualityInsights(story: any): Promise<void> {
     storyId: story.id,
     insightType: 'quality_improvement',
     title: `Improve ${capitalizeFirst(lowestCategory.category)}`,
-    description: `Your ${lowestCategory.category} scores average ${lowestCategory.value.toFixed(1)}/100. ${recommendations.summary}`,
+    summary: `Your ${lowestCategory.category} scores average ${lowestCategory.value.toFixed(1)}/100. ${recommendations.summary}`,
     severity: lowestCategory.value < 60 ? 'warning' : 'info',
     actionItems: recommendations.actionItems,
     metrics: {
@@ -101,7 +101,7 @@ async function generateQualityInsights(story: any): Promise<void> {
       affectedScenes: problemScenes.length,
       scores: avgScores,
     },
-    aiModel: 'gpt-4o-mini',
+    aiModel: 'gemini-2.0-flash-exp',
     confidenceScore: '0.85',
     createdAt: new Date(),
   });
@@ -113,19 +113,19 @@ async function generateEngagementInsights(story: any): Promise<void> {
 
   const engagementData = await db
     .select({
-      date: sql<string>`DATE(${analyticsEvents.timestamp})`,
-      views: sql<number>`COUNT(DISTINCT CASE WHEN ${analyticsEvents.eventType} = 'chapter_read_start' THEN ${analyticsEvents.id} END)`,
-      engagements: sql<number>`COUNT(CASE WHEN ${analyticsEvents.eventType} IN ('comment_created', 'story_liked') THEN ${analyticsEvents.id} END)`,
+      date: sql<string>`DATE(${analysisEvents.timestamp})`,
+      views: sql<number>`COUNT(DISTINCT CASE WHEN ${analysisEvents.eventType} = 'chapter_read_start' THEN ${analysisEvents.id} END)`,
+      engagements: sql<number>`COUNT(CASE WHEN ${analysisEvents.eventType} IN ('comment_created', 'story_liked') THEN ${analysisEvents.id} END)`,
     })
-    .from(analyticsEvents)
+    .from(analysisEvents)
     .where(
       and(
-        eq(analyticsEvents.storyId, story.id),
-        gte(analyticsEvents.timestamp, thirtyDaysAgo)
+        eq(analysisEvents.storyId, story.id),
+        gte(analysisEvents.timestamp, thirtyDaysAgo)
       )
     )
-    .groupBy(sql`DATE(${analyticsEvents.timestamp})`)
-    .orderBy(sql`DATE(${analyticsEvents.timestamp})`);
+    .groupBy(sql`DATE(${analysisEvents.timestamp})`)
+    .orderBy(sql`DATE(${analysisEvents.timestamp})`);
 
   if (engagementData.length < 3) return;
 
@@ -139,7 +139,7 @@ async function generateEngagementInsights(story: any): Promise<void> {
       storyId: story.id,
       insightType: 'engagement_drop',
       title: 'Engagement Declining',
-      description: `Reader engagement has dropped by ${decline.toFixed(0)}% over the last 30 days. Consider publishing new content or engaging with your community.`,
+      summary: `Reader engagement has dropped by ${decline.toFixed(0)}% over the last 30 days. Consider publishing new content or engaging with your community.`,
       severity: decline > 30 ? 'warning' : 'info',
       actionItems: [
         'Publish a new chapter to re-engage readers',
@@ -187,7 +187,7 @@ async function generateReaderFeedbackInsights(story: any): Promise<void> {
     storyId: story.id,
     insightType: 'reader_feedback',
     title: 'Reader Feedback Summary',
-    description: analysis.summary,
+    summary: analysis.summary,
     severity: 'info',
     actionItems: analysis.suggestions,
     metrics: {
@@ -195,7 +195,7 @@ async function generateReaderFeedbackInsights(story: any): Promise<void> {
       sentiment: analysis.sentiment,
       themes: analysis.themes,
     },
-    aiModel: 'gpt-4o-mini',
+    aiModel: 'gemini-2.0-flash-exp',
     confidenceScore: '0.75',
     createdAt: new Date(),
   });
@@ -228,14 +228,13 @@ Format as JSON:
 }`;
 
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
+    const { text } = await generateText({
+      model: analyticsModel,
+      prompt,
       temperature: 0.7,
-      response_format: { type: 'json_object' },
     });
 
-    return JSON.parse(response.choices[0].message.content || '{"summary": "Unable to generate recommendations", "actionItems": []}');
+    return JSON.parse(text || '{"summary": "Unable to generate recommendations", "actionItems": []}');
   } catch (error) {
     console.error('Failed to generate recommendations:', error);
     return {
@@ -270,14 +269,13 @@ Format as JSON:
 }`;
 
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
+    const { text } = await generateText({
+      model: analyticsModel,
+      prompt,
       temperature: 0.5,
-      response_format: { type: 'json_object' },
     });
 
-    return JSON.parse(response.choices[0].message.content || '{"summary": "Unable to analyze", "sentiment": {"positive": 0, "neutral": 0, "negative": 0}, "themes": [], "suggestions": []}');
+    return JSON.parse(text || '{"summary": "Unable to analyze", "sentiment": {"positive": 0, "neutral": 0, "negative": 0}, "themes": [], "suggestions": []}');
   } catch (error) {
     console.error('Failed to analyze sentiment:', error);
     return {

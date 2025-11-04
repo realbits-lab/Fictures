@@ -13,7 +13,7 @@ export interface ImageValidationResult {
   imageVariants: any;
   issues: Array<{
     type: 'missing_url' | 'url_not_accessible' | 'missing_variants';
-    description: string;
+    summary: string;
   }>;
   regenerated: boolean;
 }
@@ -63,7 +63,7 @@ export async function validateSceneImage(
     sceneTitle: string;
     sceneContent: string;
     storyId: string;
-    setting?: { name: string; description: string };
+    setting?: { name: string; summary: string };
     characters?: Array<{ name: string; role: string }>;
   },
   options: ImageValidationOptions = {}
@@ -78,7 +78,7 @@ export async function validateSceneImage(
   if (!imageUrl || imageUrl.trim() === '') {
     issues.push({
       type: 'missing_url',
-      description: 'Scene has no image URL',
+      summary: 'Scene has no image URL',
     });
 
     console.log(`⚠️ Scene ${sceneId} is missing image URL`);
@@ -105,7 +105,7 @@ export async function validateSceneImage(
     if (!isAccessible) {
       issues.push({
         type: 'url_not_accessible',
-        description: `Image URL is not accessible: ${imageUrl}`,
+        summary: `Image URL is not accessible: ${imageUrl}`,
       });
 
       console.log(`⚠️ Scene ${sceneId} image is not accessible: ${imageUrl}`);
@@ -134,7 +134,7 @@ export async function validateSceneImage(
       imageVariants.variants.length === 0) {
     issues.push({
       type: 'missing_variants',
-      description: 'Scene image has no optimized variants',
+      summary: 'Scene image has no optimized variants',
     });
 
     console.log(`⚠️ Scene ${sceneId} is missing optimized image variants`);
@@ -163,7 +163,7 @@ async function regenerateSceneImage(
     sceneTitle: string;
     sceneContent: string;
     storyId: string;
-    setting?: { name: string; description: string };
+    setting?: { name: string; summary: string };
     characters?: Array<{ name: string; role: string }>;
   }
 ): Promise<{
@@ -242,11 +242,11 @@ function extractVisualDescription(content: string, title: string): string {
 function buildSceneImagePrompt(
   visualDescription: string,
   sceneTitle: string,
-  setting?: { name: string; description: string },
+  setting?: { name: string; summary: string },
   characters?: Array<{ name: string; role: string }>
 ): string {
   const settingInfo = setting
-    ? `Setting: ${setting.name}. ${setting.description}.`
+    ? `Setting: ${setting.name}. ${setting.summary}.`
     : '';
 
   const characterInfo = characters && characters.length > 0
@@ -259,7 +259,7 @@ ${settingInfo}
 
 ${characterInfo}
 
-Scene description:
+Scene summary:
 ${visualDescription}
 
 Style: Cinematic widescreen composition, 16:9 aspect ratio, dramatic lighting, vivid colors,
@@ -278,7 +278,7 @@ export async function validateSceneImages(
     sceneTitle: string;
     sceneContent: string;
     storyId: string;
-    setting?: { name: string; description: string };
+    setting?: { name: string; summary: string };
     characters?: Array<{ name: string; role: string }>;
   }>,
   options: ImageValidationOptions = {}

@@ -16,6 +16,7 @@ import { formatSceneContent } from "@/lib/services/scene-formatter";
 interface SceneInput {
   scene_id?: string;
   scene_title: string;
+  chapter_ref?: string;
   pov_character_id?: string;
   setting_id?: string;
   character_ids?: string[];
@@ -28,7 +29,9 @@ interface SceneInput {
 }
 
 interface ChapterInput {
+  chapter_id?: string;
   chapter_title: string;
+  chapter_number?: number;
   summary?: string;
   pacing_goal?: string;
 }
@@ -44,6 +47,7 @@ interface CharacterInput {
   character_id?: string;
   name: string;
   role?: string;
+  summary?: string;
 }
 
 interface SettingInput {
@@ -434,7 +438,7 @@ function generateFallbackSceneContent(scene: SceneInput): string {
   const parts: string[] = [];
 
   // Opening hook (required)
-  parts.push(scene.entry_hook);
+  parts.push(scene.entry_hook || 'The scene begins with an unexpected turn of events.');
   parts.push(''); // Blank line
 
   // Description paragraph (1-3 sentences)
@@ -586,7 +590,6 @@ export async function generateAllSceneContent(
         .update(scenesTable)
         .set({
           content: formattedContent,
-          wordCount: formattedContent.split(/\s+/).length,
           updatedAt: new Date(),
         })
         .where(eq(scenesTable.id, scene.scene_id || ''))

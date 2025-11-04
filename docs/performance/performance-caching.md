@@ -104,7 +104,7 @@ fictures:settings:{storyId}:public           # Settings with adversityElements
 
 **Private Content (User-Specific):**
 ```
-fictures:story:{storyId}:user:{userId}       # Private/writing stories
+fictures:story:{storyId}:user:{userId}       # Private/studio stories
 fictures:story:{storyId}:chapters:user:{userId}
 fictures:scene:{sceneId}:user:{userId}       # Scenes with visibility=private/unlisted
 fictures:user:{userId}:stories:writing       # User's writing-in-progress stories
@@ -366,7 +366,7 @@ Return to Client
 ### Manual Test - 30-Minute Session
 
 ```bash
-# 1. Visit /reading (story list) → instant from memory
+# 1. Visit /novels (story list) → instant from memory
 # 2. Open a story → instant from memory
 # 3. Read for 15 minutes → all scenes instant
 # 4. Navigate back to story list → instant (still within 30min)

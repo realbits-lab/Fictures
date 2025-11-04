@@ -9,9 +9,9 @@ On mobile devices (375px width), the left sidebar takes up most of the screen wi
 - **Mobile (`<7`68px)**: Sidebar hidden by default, accessible via hamburger menu
 - **Desktop (≥768px)**: Sidebar always visible (unchanged from original)
 
-### 2. Key Changes in `src/components/reading/ChapterReaderClient.tsx`
+### 2. Key Changes in `src/components/novels/ChapterReaderClient.tsx`
 
-**Note:** The reading page at `/reading/[id]` uses `ChapterReaderClient.tsx`, not `ChapterReader.tsx`.
+**Note:** The reading page at `/novels/[id]` uses `ChapterReaderClient.tsx`, not `ChapterReader.tsx`.
 
 #### Added State Management
 ```typescript
@@ -101,7 +101,7 @@ className="mb-6 md:mb-8 border-b border-gray-200 dark:border-gray-800 pb-4 md:pb
 
 ## Testing
 - Viewport: 375x667 (iPhone SE)
-- Test page: `/reading/PoAQD-N76wSTiCxwQQCuQ`
+- Test page: `/novels/PoAQD-N76wSTiCxwQQCuQ`
 - Expected behavior:
   1. Sidebar hidden on load
   2. Hamburger button visible in header
@@ -110,7 +110,7 @@ className="mb-6 md:mb-8 border-b border-gray-200 dark:border-gray-800 pb-4 md:pb
   5. Click backdrop to close sidebar
 
 ## Files Modified
-- `src/components/reading/ChapterReaderClient.tsx` (primary changes)
+- `src/components/novels/ChapterReaderClient.tsx` (primary changes)
   - Added mobile sidebar state management
   - Implemented hamburger menu button
   - Added responsive sidebar with slide animation

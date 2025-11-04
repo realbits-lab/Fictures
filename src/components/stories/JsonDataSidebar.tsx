@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useStoryCreation } from './StoryCreationContext';
-import { BeautifulJSONDisplay } from '../writing/BeautifulJSONDisplay';
+import { BeautifulJSONDisplay } from '../studio/BeautifulJSONDisplay';
 import { TreeView, type TreeDataItem } from '@/components/ui/tree-view';
 import { FileText, Users, MapPin, BookOpen, ScrollText, FileIcon } from 'lucide-react';
 

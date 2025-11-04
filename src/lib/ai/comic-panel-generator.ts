@@ -6,10 +6,10 @@
  */
 
 import { nanoid } from 'nanoid';
-import type { HNSScene, HNSCharacter, HNSSetting } from '@/types/hns';
+import type { scenes, characters, settings } from '@/../drizzle/schema';
 import { generateStoryImage } from '@/lib/services/image-generation';
 import { db } from '@/lib/db';
-import { comicPanels, scenes } from '@/lib/db/schema';
+import { comicPanels, scenes as scenesTable } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { type ComicToonplay } from './toonplay-converter';
 import { generateToonplayWithEvaluation } from '@/lib/services/toonplay-improvement-loop';
@@ -67,10 +67,10 @@ function sanitizePromptForContentFilter(originalPrompt: string, attemptNumber: n
 
 export interface GenerateComicPanelsOptions {
   sceneId: string;
-  scene: HNSScene;
-  characters: HNSCharacter[];
-  setting: HNSSetting;
-  story: { story_id: string; genre: string };
+  scene: typeof scenes.$inferSelect;
+  characters: (typeof characters.$inferSelect)[];
+  setting: typeof settings.$inferSelect;
+  story: { story_id: string; genre: string | null };
   targetPanelCount?: number;
   progressCallback?: (current: number, total: number, status: string) => void;
 }
@@ -189,7 +189,7 @@ export async function generateComicPanels(
 
     // Construct full image prompt (use 'mood' not 'atmosphere')
     const imagePrompt = buildPanelImagePrompt({
-      genre: story.genre,
+      genre: story.genre || 'general',
       shotType: panelSpec.shot_type,
       cameraAngle: panelSpec.camera_angle,
       settingFocus: panelSpec.setting_focus,
@@ -197,7 +197,7 @@ export async function generateComicPanels(
       characterPrompts,
       keyTraits,
       lighting: panelSpec.lighting,
-      description: panelSpec.description,
+      summary: panelSpec.summary,
       mood: panelSpec.mood,
     });
 
@@ -243,6 +243,10 @@ export async function generateComicPanels(
       }
     }
 
+    if (!imageResult) {
+      throw new Error('Failed to generate image after all attempts');
+    }
+
     console.log(`   ✅ Image generated: ${imageResult.url}`);
     console.log(`   ✅ Variants: ${imageResult.optimizedSet?.variants.length || 0}`);
 
@@ -258,7 +262,7 @@ export async function generateComicPanels(
       narrative: panelSpec.narrative || null,
       dialogue: panelSpec.dialogue as any,
       sfx: panelSpec.sfx as any,
-      description: panelSpec.description,
+      summary: panelSpec.summary,
       metadata: {
         prompt: imagePrompt,
         characters_visible: panelSpec.characters_visible,
@@ -310,14 +314,14 @@ export async function generateComicPanels(
 
   // Update scene metadata with comics generation info and toonplay
   console.log(`\n📝 Updating scene metadata for ${sceneId}...`);
-  await db.update(scenes)
+  await db.update(scenesTable)
     .set({
       comicStatus: 'draft',
       comicToonplay: toonplay as any, // Store the generated toonplay specification
       comicGeneratedAt: new Date(),
       comicPanelCount: generatedPanels.length,
     })
-    .where(eq(scenes.id, sceneId));
+    .where(eq(scenesTable.id, sceneId));
   console.log(`✅ Scene metadata updated successfully (including toonplay)`);
 
   return {
@@ -352,7 +356,7 @@ interface BuildPanelImagePromptOptions {
   characterPrompts: string;
   keyTraits: string;
   lighting: string;
-  description: string;
+  summary: string;
   mood: string;
 }
 
@@ -366,7 +370,7 @@ function buildPanelImagePrompt(options: BuildPanelImagePromptOptions): string {
     characterPrompts,
     keyTraits,
     lighting,
-    description,
+    summary,
     mood,
   } = options;
 
@@ -378,7 +382,7 @@ CHARACTERS: ${characterPrompts}
 
 LIGHTING: ${lighting}
 
-ACTION: ${description}
+ACTION: ${summary}
 
 MOOD: ${mood}
 

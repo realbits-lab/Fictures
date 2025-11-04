@@ -22,7 +22,7 @@ export const moderationStatusEnum = pgEnum('moderation_status', [
   'rejected'
 ]);
 
-// Event type enum for analytics
+// Event type enum for analysis
 export const eventTypeEnum = pgEnum('event_type', [
   'page_view',
   'story_view',
@@ -215,7 +215,7 @@ export const userPreferences = pgTable('user_preferences', {
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 });
 
-// Stories table - Main story/book entities with HNS support
+// Stories table - Main story/book entities
 export const stories = pgTable('stories', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
@@ -236,7 +236,7 @@ export const stories = pgTable('stories', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Parts table - Story parts/sections with HNS support
+// Parts table - Story parts/sections
 export const parts = pgTable('parts', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
@@ -259,7 +259,7 @@ export const parts = pgTable('parts', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Chapters table - Individual chapters with HNS support
+// Chapters table - Individual chapters
 export const chapters = pgTable('chapters', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
@@ -273,9 +273,9 @@ export const chapters = pgTable('chapters', {
   hook: text('hook'), // Chapter hook from story development
   publishedAt: timestamp('published_at'),
   scheduledFor: timestamp('scheduled_for'),
-  // Legacy fields removed - HNS-specific fields dropped
-  // pacingGoal, actionDialogueRatio, chapterHook were HNS-only and not used by Novels
-  // characterFocus was HNS legacy field - removed in favor of focusCharacters array
+  // Legacy fields removed
+  // pacingGoal, actionDialogueRatio, chapterHook were legacy fields not used by Adversity-Triumph Engine
+  // characterFocus was legacy field - removed in favor of focusCharacters array
   // Adversity-Triumph Engine fields - Nested cycle tracking
   characterId: text('character_id').references(() => characters.id, { onDelete: 'set null' }), // Primary character whose macro arc this advances
   arcPosition: arcPositionEnum('arc_position'), // Position in macro arc: beginning, middle, climax (MACRO moment), or resolution
@@ -285,7 +285,7 @@ export const chapters = pgTable('chapters', {
   virtueType: virtueTypeEnum('virtue_type'), // Moral virtue tested: courage, compassion, integrity, sacrifice, loyalty, wisdom
   seedsPlanted: json('seeds_planted').$type<Array<{
     id: string;
-    description: string;
+    summary: string;
     expectedPayoff: string;
   }>>().default([]), // Setup for future payoffs
   seedsResolved: json('seeds_resolved').$type<Array<{
@@ -300,7 +300,7 @@ export const chapters = pgTable('chapters', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Scenes table - Chapter breakdown with HNS support and publishing
+// Scenes table - Chapter breakdown with publishing support
 export const scenes = pgTable('scenes', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
@@ -312,7 +312,7 @@ export const scenes = pgTable('scenes', {
   imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
   // Scene fields
   summary: text('summary'), // Scene specification (planning layer)
-  // Legacy HNS fields removed: povCharacterId, settingId, narrativeVoice, entryHook, emotionalShift were HNS-only
+  // Legacy fields removed: povCharacterId, settingId, narrativeVoice, entryHook, emotionalShift were legacy fields
   // Adversity-Triumph Engine fields - Cycle phase tracking
   cyclePhase: cyclePhaseEnum('cycle_phase'), // Position in 4-phase cycle: setup, confrontation, virtue, consequence, or transition
   emotionalBeat: emotionalBeatEnum('emotional_beat'), // Target emotion: fear, hope, tension, relief, elevation, catharsis, despair, joy
@@ -367,7 +367,7 @@ export const comicPanels = pgTable('comic_panels', {
   narrative: text('narrative'), // Narrative text for panels without characters
   dialogue: json('dialogue').$type<Array<{character_id: string; text: string; tone?: string}>>(),
   sfx: json('sfx').$type<Array<{text: string; emphasis: 'normal' | 'large' | 'dramatic'}>>(),
-  description: text('description'), // Visual description for image generation
+  summary: text('description'), // Visual description for image generation
 
   // Metadata
   metadata: json('metadata').$type<{
@@ -382,7 +382,7 @@ export const comicPanels = pgTable('comic_panels', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Scene Views table - Tracks individual scene views for analytics
+// Scene Views table - Tracks individual scene views for analysis
 export const sceneViews = pgTable('scene_views', {
   id: text('id').primaryKey().default('gen_random_uuid()::text'),
   sceneId: text('scene_id').references(() => scenes.id, { onDelete: 'cascade' }).notNull(),
@@ -659,12 +659,12 @@ export const charactersRelations = relations(characters, ({ one }) => ({
   }),
 }));
 
-// Settings table (renamed from places for HNS alignment)
+// Settings table (story locations and environments)
 export const settings = pgTable('settings', {
   id: text('id').primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
   storyId: text('story_id').references(() => stories.id).notNull(),
-  description: text('description'),
+  summary: text('description'),
   mood: text('mood'),
   sensory: json('sensory').$type<Record<string, string[]>>(),
   visualStyle: text('visual_style'),
@@ -977,8 +977,8 @@ export const sceneDislikesRelations = relations(sceneDislikes, ({ one }) => ({
   }),
 }));
 
-// Analytics events table - Track all user interactions
-export const analyticsEvents = pgTable('analytics_events', {
+// Analysis events table - Track all user interactions
+export const analysisEvents = pgTable('analytics_events', {
   id: text('id').primaryKey(),
   eventType: eventTypeEnum('event_type').notNull(),
   userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
@@ -988,8 +988,8 @@ export const analyticsEvents = pgTable('analytics_events', {
   sceneId: text('scene_id').references(() => scenes.id, { onDelete: 'cascade' }),
   postId: text('post_id').references(() => communityPosts.id, { onDelete: 'cascade' }),
   metadata: json('metadata').$type<Record<string, unknown>>().default({}),
-  timestamp: timestamp('timestamp').defaultNow().notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+  timestamp: timestamp('timestamp', { mode: 'string' }).defaultNow().notNull(),
+  createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
 });
 
 // Reading sessions table - Track reading sessions
@@ -998,8 +998,8 @@ export const readingSessions = pgTable('reading_sessions', {
   userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }),
   sessionId: text('session_id').notNull(),
   storyId: text('story_id').references(() => stories.id, { onDelete: 'cascade' }),
-  startTime: timestamp('start_time').notNull(),
-  endTime: timestamp('end_time'),
+  startTime: timestamp('start_time', { mode: 'string' }).notNull(),
+  endTime: timestamp('end_time', { mode: 'string' }),
   durationSeconds: integer('duration_seconds'),
   chaptersRead: integer('chapters_read').default(0),
   scenesRead: integer('scenes_read').default(0),
@@ -1007,7 +1007,7 @@ export const readingSessions = pgTable('reading_sessions', {
   sessionType: sessionTypeEnum('session_type').default('continuous'),
   deviceType: varchar('device_type', { length: 20 }),
   completedStory: boolean('completed_story').default(false),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+  createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
 });
 
 // Story insights table - AI-generated insights
@@ -1016,7 +1016,7 @@ export const storyInsights = pgTable('story_insights', {
   storyId: text('story_id').references(() => stories.id, { onDelete: 'cascade' }).notNull(),
   insightType: insightTypeEnum('insight_type').notNull(),
   title: varchar('title', { length: 255 }).notNull(),
-  description: text('description').notNull(),
+  summary: text('description').notNull(),
   severity: varchar('severity', { length: 20 }).default('info'),
   actionItems: json('action_items').$type<string[]>().default([]),
   metrics: json('metrics').$type<Record<string, unknown>>().default({}),
@@ -1028,27 +1028,50 @@ export const storyInsights = pgTable('story_insights', {
   expiresAt: timestamp('expires_at'),
 });
 
+// Daily story metrics table - Aggregated daily analytics
+export const dailyStoryMetrics = pgTable('daily_story_metrics', {
+  id: text('id').primaryKey(),
+  storyId: text('story_id').references(() => stories.id, { onDelete: 'cascade' }).notNull(),
+  date: timestamp('date', { mode: 'string' }).notNull(),
+  totalViews: integer('total_views').default(0),
+  uniqueReaders: integer('unique_readers').default(0),
+  newReaders: integer('new_readers').default(0),
+  comments: integer('comments').default(0),
+  likes: integer('likes').default(0),
+  shares: integer('shares').default(0),
+  bookmarks: integer('bookmarks').default(0),
+  engagementRate: varchar('engagement_rate', { length: 10 }).default('0.00'),
+  avgSessionDuration: integer('avg_session_duration').default(0),
+  totalSessions: integer('total_sessions').default(0),
+  completedSessions: integer('completed_sessions').default(0),
+  completionRate: varchar('completion_rate', { length: 10 }).default('0.00'),
+  avgChaptersPerSession: varchar('avg_chapters_per_session', { length: 10 }).default('0.00'),
+  mobileUsers: integer('mobile_users').default(0),
+  desktopUsers: integer('desktop_users').default(0),
+  createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+});
 
-// Relations for analytics tables
-export const analyticsEventsRelations = relations(analyticsEvents, ({ one }) => ({
+
+// Relations for analysis tables
+export const analysisEventsRelations = relations(analysisEvents, ({ one }) => ({
   user: one(users, {
-    fields: [analyticsEvents.userId],
+    fields: [analysisEvents.userId],
     references: [users.id],
   }),
   story: one(stories, {
-    fields: [analyticsEvents.storyId],
+    fields: [analysisEvents.storyId],
     references: [stories.id],
   }),
   chapter: one(chapters, {
-    fields: [analyticsEvents.chapterId],
+    fields: [analysisEvents.chapterId],
     references: [chapters.id],
   }),
   scene: one(scenes, {
-    fields: [analyticsEvents.sceneId],
+    fields: [analysisEvents.sceneId],
     references: [scenes.id],
   }),
   post: one(communityPosts, {
-    fields: [analyticsEvents.postId],
+    fields: [analysisEvents.postId],
     references: [communityPosts.id],
   }),
 }));
@@ -1071,6 +1094,13 @@ export const storyInsightsRelations = relations(storyInsights, ({ one }) => ({
   }),
 }));
 
+export const dailyStoryMetricsRelations = relations(dailyStoryMetrics, ({ one }) => ({
+  story: one(stories, {
+    fields: [dailyStoryMetrics.storyId],
+    references: [stories.id],
+  }),
+}));
+
 // Publishing schedules table - Automated publishing schedules
 export const publishingSchedules = pgTable('publishing_schedules', {
   id: text('id').primaryKey(),
@@ -1078,7 +1108,7 @@ export const publishingSchedules = pgTable('publishing_schedules', {
   chapterId: text('chapter_id').references(() => chapters.id, { onDelete: 'cascade' }),
   createdBy: text('created_by').references(() => users.id).notNull(),
   name: varchar('name', { length: 255 }).notNull(),
-  description: text('description'),
+  summary: text('description'),
   scheduleType: scheduleTypeEnum('schedule_type').notNull(),
   startDate: text('start_date').notNull(),
   endDate: text('end_date'),

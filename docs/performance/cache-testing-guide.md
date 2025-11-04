@@ -402,7 +402,7 @@ jobs:
 
       - name: Run cache performance tests
         env:
-          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           REDIS_URL: ${{ secrets.REDIS_URL }}
         run: |
           dotenv --file .env.local run node scripts/cache-test-runner.mjs \

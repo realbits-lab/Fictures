@@ -79,7 +79,7 @@ export async function createPublishingSchedule(params: CreateScheduleParams): Pr
     totalPublished: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
-  });
+  } as any);
 
   // Generate scheduled publications
   await generateScheduledPublications(scheduleId, params, scenesToPublish);
@@ -269,4 +269,67 @@ export async function getScheduleProgress(scheduleId: string): Promise<{
   const percentage = total > 0 ? (published / total) * 100 : 0;
 
   return { total, published, pending, failed, percentage };
+}
+
+/**
+ * Pause schedule
+ */
+export async function pauseSchedule(scheduleId: string): Promise<void> {
+  await db
+    .update(publishingSchedules)
+    .set({
+      isActive: false,
+      updatedAt: new Date(),
+    })
+    .where(eq(publishingSchedules.id, scheduleId));
+}
+
+/**
+ * Resume schedule
+ */
+export async function resumeSchedule(scheduleId: string): Promise<void> {
+  await db
+    .update(publishingSchedules)
+    .set({
+      isActive: true,
+      updatedAt: new Date(),
+    })
+    .where(eq(publishingSchedules.id, scheduleId));
+}
+
+/**
+ * Publish a single scene
+ */
+export async function publishScene(sceneId: string, publishedBy: string): Promise<void> {
+  const now = new Date();
+
+  await db
+    .update(scenes)
+    .set({
+      publishedAt: now,
+      visibility: 'public',
+      publishedBy,
+      unpublishedAt: null,
+      unpublishedBy: null,
+      updatedAt: now,
+    })
+    .where(eq(scenes.id, sceneId));
+}
+
+/**
+ * Unpublish a single scene
+ */
+export async function unpublishScene(sceneId: string, unpublishedBy: string): Promise<void> {
+  const now = new Date();
+
+  await db
+    .update(scenes)
+    .set({
+      publishedAt: null,
+      visibility: 'private',
+      unpublishedAt: now,
+      unpublishedBy,
+      updatedAt: now,
+    })
+    .where(eq(scenes.id, sceneId));
 }

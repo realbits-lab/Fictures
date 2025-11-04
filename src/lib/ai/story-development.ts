@@ -3,7 +3,7 @@ import * as yaml from 'js-yaml';
 import { AI_MODELS } from './config';
 import { type Story, type PartSpecification, type ChapterSpecification, type SceneSpecification } from './schemas';
 import { db } from '@/lib/db';
-import { stories, parts, characters, places } from '@/lib/db/schema';
+import { stories, parts, characters, settings } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { RelationshipManager } from '@/lib/db/relationships';
@@ -511,7 +511,7 @@ POV character should be the main protagonist: ${Object.keys(storyConcept.chars).
 }
 
 // Phase 4: Scene Generation
-export async function generateSceneSpecifications(chapterSpec: ChapterSpecification, storyCharacters: any[] = [], storyPlaces: any[] = [], sceneCount: number = 3): Promise<SceneSpecification[]> {
+export async function generateSceneSpecifications(chapterSpec: ChapterSpecification, storyCharacters: any[] = [], storySettings: any[] = [], sceneCount: number = 3): Promise<SceneSpecification[]> {
   const scenes: SceneSpecification[] = [];
 
   for (let i = 1; i <= sceneCount; i++) {
@@ -563,7 +563,7 @@ REQUIREMENTS:
 
 Available characters: ${storyCharacters.map(c => `${c.parsedData?.name || c.id} (${c.parsedData?.role || c.id})`).join(', ') || 'No characters available'}
 
-Available places: ${storyPlaces.map(p => p.parsedData?.name || p.name).join(', ') || 'No places available'}
+Available places: ${storySettings.map(p => p.parsedData?.name || p.name).join(', ') || 'No places available'}
 
 Generate Scene ${i} of Chapter ${chapterSpec.chap}.
 This scene should contribute to the chapter's three-act structure:
@@ -603,7 +603,7 @@ Structure:
 ---
 name: "Character Name"
 role: "Character Role"
-description: "Physical description in one line"
+summary: "Physical description in one line"
 personality: "Personality traits in one line"
 background: "Character history in one line"
 motivations: "What drives them in one line"
@@ -649,7 +649,7 @@ Generate comprehensive character details in YAML format.`
         parsedData = {
           name: key,
           role: char.role || 'Character',
-          description: 'Character description not available due to parsing error'
+          summary: 'Character description not available due to parsing error'
         };
       }
 
@@ -663,11 +663,11 @@ Generate comprehensive character details in YAML format.`
       // Create fallback character
       return {
         id: key,
-        content: `name: "${key}"\nrole: "${char.role || 'Character'}"\ndescription: "Generated with errors"`,
+        content: `name: "${key}"\nrole: "${char.role || 'Character'}"\nsummary: "Generated with errors"`,
         parsedData: {
           name: key,
           role: char.role || 'Character',
-          description: 'Generated with errors'
+          summary: 'Generated with errors'
         }
       };
     }
@@ -694,7 +694,7 @@ Structure:
 ---
 name: "Location Name"
 type: "Location Type"
-description: "Detailed description in one line"
+summary: "Detailed description in one line"
 atmosphere: "Mood and feeling in one line"
 significance: "Importance to story in one line"
 culture: "Cultural aspects in one line"
@@ -737,7 +737,7 @@ Generate comprehensive location details in YAML format.`
         parsedData = {
           name: place,
           type: 'location',
-          description: 'Place description not available due to parsing error'
+          summary: 'Place description not available due to parsing error'
         };
       }
 
@@ -751,11 +751,11 @@ Generate comprehensive location details in YAML format.`
       // Create fallback place
       return {
         name: place,
-        content: `name: "${place}"\ntype: "location"\ndescription: "Generated with errors"`,
+        content: `name: "${place}"\ntype: "location"\nsummary: "Generated with errors"`,
         parsedData: {
           name: place,
           type: 'location',
-          description: 'Generated with errors'
+          summary: 'Generated with errors'
         }
       };
     }
@@ -813,29 +813,15 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
       .values({
         id: currentStoryId,
         title: storyConcept.title || 'Generated Story',
-        description: `${storyConcept.goal} | ${storyConcept.conflict} | ${storyConcept.outcome}`,
-        genre: storyConcept.genre || 'General',
+        summary: `${storyConcept.goal} | ${storyConcept.conflict} | ${storyConcept.outcome}`,
+        genre: storyConcept.genre as any || 'Fantasy',
         authorId: userId,
         status: 'writing',
-        hnsData: storyImageData ? { storyImage: storyImageData } : {},
-        content: JSON.stringify({
-          phase1_story: storyConcept,
-          developmentPhases: {
-            phase1_story: storyConcept
-          }
-        }),
       })
       .onConflictDoUpdate({
         target: [stories.id],
         set: {
           status: 'writing',
-            hnsData: storyImageData ? { storyImage: storyImageData } : {},
-          content: JSON.stringify({
-            phase1_story: storyConcept,
-            developmentPhases: {
-              phase1_story: storyConcept
-            }
-          }),
           updatedAt: new Date()
         }
       });
@@ -848,20 +834,9 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
 
     // Update story after Phase 2
     console.log('💾 Saving Phase 2 data to database...');
-    const [phase2Story] = await db.select().from(stories).where(eq(stories.id, currentStoryId));
-    const phase2Content = phase2Story?.content ? JSON.parse(phase2Story.content as string) : {};
-
     await db.update(stories)
       .set({
         status: 'writing',
-        content: JSON.stringify({
-          ...phase2Content,
-          phase2_parts: partSpecs,
-          developmentPhases: {
-            ...phase2Content.developmentPhases,
-            phase2_parts: partSpecs
-          }
-        }),
         updatedAt: new Date()
       })
       .where(eq(stories.id, currentStoryId));
@@ -880,7 +855,6 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
           title: `Part ${partSpec.part}: ${(partSpec as any).desc || storyConcept.parts[partIndex]?.goal || 'Part ' + (partIndex + 1)}`,
           authorId: userId,
           orderIndex: partSpec.part,
-          content: JSON.stringify(partSpec),
         }
       );
       createdPartIds.push(partId);
@@ -894,20 +868,9 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
 
     // Update story after Phase 3
     console.log('💾 Saving Phase 3 data to database...');
-    const [phase3Story] = await db.select().from(stories).where(eq(stories.id, currentStoryId));
-    const phase3Content = phase3Story?.content ? JSON.parse(phase3Story.content as string) : {};
-
     await db.update(stories)
       .set({
         status: 'writing',
-        content: JSON.stringify({
-          ...phase3Content,
-          phase3_characters: characterData,
-          developmentPhases: {
-            ...phase3Content.developmentPhases,
-            phase3_characters: characterData
-          }
-        }),
         updatedAt: new Date()
       })
       .where(eq(stories.id, currentStoryId));
@@ -920,7 +883,6 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
         name: character.parsedData?.name || character.id,
         storyId: currentStoryId,
         isMain: ['protag', 'antag'].includes(character.id),
-        content: character.content,
       });
     }
     console.log('✅ Phase 3 data and characters saved');
@@ -932,28 +894,9 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
 
     // Update story after Phase 4 with final status
     console.log('💾 Saving Phase 4 data to database...');
-    const [phase4Story] = await db.select().from(stories).where(eq(stories.id, currentStoryId));
-    const phase4Content = phase4Story?.content ? JSON.parse(phase4Story.content as string) : {};
-
-    const completeStory = {
-      ...storyConcept,
-      userId,
-      createdAt: new Date(),
-      partSpecifications: partSpecs,
-      characters: characterData,
-      places: placeData,
-      developmentPhases: {
-        phase1_story: storyConcept,
-        phase2_parts: partSpecs,
-        phase3_characters: characterData,
-        phase4_places: placeData,
-      }
-    };
-
     await db.update(stories)
       .set({
         status: 'published',
-        content: JSON.stringify(completeStory),
         updatedAt: new Date()
       })
       .where(eq(stories.id, currentStoryId));
@@ -961,14 +904,10 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
     // Create places in database
     for (const place of placeData) {
       const placeId = nanoid();
-      await db.insert(places).values({
+      await db.insert(settings).values({
         id: placeId,
         name: place.parsedData?.name || place.name,
         storyId: currentStoryId,
-        isMain: ['primary', 'main'].some(keyword =>
-          (place.parsedData?.significance || '').toLowerCase().includes(keyword)
-        ),
-        content: place.content,
       });
     }
     console.log('✅ Phase 4 data and places saved');
@@ -977,7 +916,8 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
     // Return complete story with database ID
     return {
       id: currentStoryId,
-      ...completeStory
+      title: storyConcept.title || 'Generated Story',
+      genre: storyConcept.genre || 'Fantasy',
     };
 
   } catch (error) {

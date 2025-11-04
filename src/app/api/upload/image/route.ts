@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
 import { auth } from '@/lib/auth';
 import sharp from 'sharp';
+import { getBlobPath } from '@/lib/utils/blob-path';
 
 /**
  * POST /api/upload/image
@@ -66,7 +67,8 @@ export async function POST(request: NextRequest) {
       console.error('Image processing error:', error);
     }
 
-    const filename = `${session.user.id}/${Date.now()}-${file.name}`;
+    const relativePath = `uploads/${session.user.id}/${Date.now()}-${file.name}`;
+    const filename = getBlobPath(relativePath);
 
     const blob = await put(filename, processedBuffer, {
       access: 'public',

@@ -2,8 +2,8 @@ import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { StudioAgentChat } from '@/components/studio/studio-agent-chat';
-import { MainLayout } from '@/components/layouts/main-layout';
-import { getStory } from '@/lib/db/story-operations';
+import { MainLayout } from '@/components/layout';
+import { getStoryById } from '@/lib/db/cached-queries';
 
 interface PageProps {
   params: Promise<{
@@ -35,13 +35,13 @@ export default async function StudioAgentPage({ params, searchParams }: PageProp
   let storyContext: Record<string, any> | undefined;
   if (storyId) {
     try {
-      const story = await getStory(storyId);
-      if (story && story.authorId === session.user.id) {
+      const story = await getStoryById(storyId, session.user.id);
+      if (story && (story as any).authorId === session.user.id) {
         storyContext = {
-          storyId: story.id,
-          title: story.title,
-          genre: story.genre,
-          status: story.status,
+          storyId: (story as any).id,
+          title: (story as any).title,
+          genre: (story as any).genre,
+          status: (story as any).status,
         };
       }
     } catch (error) {

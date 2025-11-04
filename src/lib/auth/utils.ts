@@ -12,7 +12,7 @@ export async function createOAuthUser({
   username: string;
   email: string;
   name?: string;
-  role?: 'admin' | 'writer' | 'reader' | 'moderator';
+  role?: 'manager' | 'writer' | 'reader';
   image?: string;
 }) {
   const newUser = await db.insert(users).values({

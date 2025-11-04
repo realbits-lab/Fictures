@@ -1,1062 +1,490 @@
+---
+title: Scripts Directory Documentation
+---
+
 # Scripts Directory Documentation
 
-This directory contains utility scripts for managing stories, testing features, and maintaining the Fictures platform. All scripts should be run with environment variables loaded from `.env.local`.
+Production utility scripts for managing the Fictures platform. Run with: `dotenv --file .env.local run pnpm exec tsx scripts/<script>.ts`
 
-## General Usage Pattern
+> **Note**: For temporary/testing scripts, see `test-scripts/` directory.
 
-```bash
-# Standard execution pattern
-dotenv --file .env.local run node scripts/<script-name>.mjs [arguments]
+## Documentation Principle
 
-# Background execution with logging
-dotenv --file .env.local run node scripts/<script-name>.mjs [arguments] > logs/<script-name>.log 2>&1 &
-```
+**CRITICAL: This documentation MUST stay synchronized with the scripts directory.**
 
-## Authentication
+When making ANY changes to scripts in this directory:
+1. **Create new script** → Add documentation section below
+2. **Update script** → Update corresponding documentation
+3. **Delete script** → Remove documentation section
+4. **Rename script** → Update all references
 
-Scripts use authentication from separate JSON files in `.auth/` directory:
-- **`.auth/user.json`**: For manager@fictures.xyz (admin operations)
-- **`.auth/writer.json`**: For writer@fictures.xyz (story generation and management)
-- **`.auth/reader.json`**: For reader account (testing reading features)
+**Why**: This file serves as the single source of truth for production scripts. Outdated documentation leads to confusion and errors.
 
-Each authentication file contains session cookies required for API authentication:
-```json
-{
-  "cookies": [
-    {
-      "name": "authjs.session-token",
-      "value": "...",
-      "domain": "localhost",
-      ...
-    }
-  ]
-}
-```
+## Quick Reference
 
-**Important**: Session cookies may expire. If you get 401/Unauthorized errors, re-run the authentication capture script.
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `setup-auth-users.ts` | Create test users | `pnpm exec tsx scripts/setup-auth-users.ts` |
+| `verify-auth-setup.ts` | Verify authentication | `pnpm exec tsx scripts/verify-auth-setup.ts` |
+| `generate-minimal-story.ts` | Generate minimal novel | `pnpm exec tsx scripts/generate-minimal-story.ts` |
+| `generate-comic-panels.ts` | Generate comic panels | `pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID [options]` |
+| `reset-all-stories.ts` | ⚠️ Reset all story data | `pnpm exec tsx scripts/reset-all-stories.ts --confirm` |
 
 ---
 
-## Story Generation Scripts
+## Authentication Setup
 
-### generate-novel.mjs
+### setup-auth-users.ts
 
-**Purpose**: Generate a complete novel using the Adversity-Triumph Engine (current system).
+Creates three test users (manager, writer, reader) with email/password authentication.
 
-**Authentication**: Uses `manager@fictures.xyz` from `.auth/user.json`
-
-**Input**:
-- `[story-prompt]` - Story description (uses default if omitted)
-- `--genre <genre>` - Preferred genre (e.g., "fantasy", "sci-fi")
-- `--tone <tone>` - Preferred tone (e.g., "hopeful", "dark")
-- `--characters <n>` - Number of characters (default: 2-4)
-- `--settings <n>` - Number of settings (default: 2-4)
-- `--parts <n>` - Number of parts (default: 3)
-- `--chapters <n>` - Chapters per part (default: 2-3)
-- `--scenes <n>` - Scenes per chapter (default: 3-5)
-
-**Output**:
-- Story ID and title
-- Complete story structure with Adversity-Triumph cycles
-- AI-generated images (story cover, characters, settings, scenes)
-- 4 optimized image variants per image (AVIF/JPEG × mobile 1x/2x)
-- Automated quality evaluation for all scenes
-- Progress logs during generation
-
-**Usage**:
 ```bash
-# Generate with default prompt
-dotenv --file .env.local run node scripts/generate-novel.mjs
-
-# Generate with custom prompt
-dotenv --file .env.local run node scripts/generate-novel.mjs "A story about courage and friendship"
-
-# Generate with specific options
-dotenv --file .env.local run node scripts/generate-novel.mjs --genre "fantasy" --tone "hopeful" --characters 3 "Your story idea"
-
-# Background execution with logging
-dotenv --file .env.local run node scripts/generate-novel.mjs "Your prompt" > logs/novel-generation.log 2>&1 &
+dotenv --file .env.local run pnpm exec tsx scripts/setup-auth-users.ts
 ```
 
-**Generation Time**: 5-25 minutes depending on complexity
+**Output**: Populates `.auth/user.json` with credentials and API keys.
 
-**Direct Links After Generation**:
-- Edit: `http://localhost:3000/studio/edit/story/{storyId}`
-- Read (Novel): `http://localhost:3000/novels/{storyId}`
-- Read (Comic): `http://localhost:3000/comics/{storyId}`
+### verify-auth-setup.ts
+
+Validates user accounts and API keys.
+
+```bash
+dotenv --file .env.local run pnpm exec tsx scripts/verify-auth-setup.ts
+```
 
 ---
 
-### generate-complete-story.mjs (DEPRECATED)
+## Novel Generation
 
-**Purpose**: Generate a complete story using HNS (Hook-Nurture-Satisfy) methodology.
+### generate-minimal-story.ts
 
-**Status**: ⚠️ DEPRECATED - Use `generate-novel.mjs` instead (Adversity-Triumph Engine)
+**Purpose**: Generate a **minimal-size novel** (fastest generation) using the Adversity-Triumph Engine with API key authentication.
 
-**Authentication**: Uses `writer@fictures.xyz` from `.auth/user.json`
-
-**Input**:
-- `[story-prompt]` - Optional story description (uses default if omitted)
-- `--publish` - Optional flag to auto-publish after generation
-
-**Output**:
-- Story ID
-- Complete story structure in database
-- AI-generated images (characters, settings, scenes)
-- 18 optimized image variants per image
-- Progress logs during generation
-
-**Usage**:
+**Quick Start**:
 ```bash
-# Generate with default prompt
-dotenv --file .env.local run node scripts/generate-complete-story.mjs
-
-# Generate with custom prompt
-dotenv --file .env.local run node scripts/generate-complete-story.mjs "Your story idea"
-
-# Generate and auto-publish
-dotenv --file .env.local run node scripts/generate-complete-story.mjs --publish "Story prompt"
-```
-
-**Generation Time**: 4-20 minutes depending on complexity
-
-### test-novel-generation.mjs
-
-**Purpose**: Test novel generation using Adversity-Triumph Engine.
-
-**Usage**: Testing the novel generation pipeline
-
-### test-novel-generation-comprehensive.mjs
-
-**Purpose**: Comprehensive test of novel generation system.
-
-**Usage**: Full end-to-end novel generation testing
-
-### test-novels-generation-phase-2-1.mjs
-
-**Purpose**: Test novel generation phase 2, part 1.
-
-**Usage**: Phase-specific novel generation testing
-
-### test-novels-generation-phase-2-2.mjs
-
-**Purpose**: Test novel generation phase 2, part 2.
-
-**Usage**: Phase-specific novel generation testing
-
-### test-novels-generation-phase-2-3.mjs
-
-**Purpose**: Test novel generation phase 2, part 3.
-
-**Usage**: Phase-specific novel generation testing
-
----
-
-## Story Management Scripts
-
-### list-stories.mjs
-
-**Purpose**: List all stories with metadata and optional search filtering.
-
-**Authentication**: Uses session from `.auth/user.json`
-
-**Input**:
-- `[search-term]` - Optional search term to filter by title
-
-**Output**: List of stories with title, ID, genre, status, visibility, creation date
-
-**Usage**:
-```bash
-# List all stories
-dotenv --file .env.local run node scripts/list-stories.mjs
-
-# Search by title
-dotenv --file .env.local run node scripts/list-stories.mjs "detective"
-```
-
-### publish-story.mjs
-
-**Purpose**: Change story status from 'writing' to 'published'.
-
-**Authentication**: Uses session from `.auth/user.json`
-
-**Input**: `STORY_ID` - Required story ID to publish
-
-**Output**: Success confirmation, story metadata, community view URL
-
-**Usage**:
-```bash
-dotenv --file .env.local run node scripts/publish-story.mjs STORY_ID
-```
-
-### publish-story-db.mjs
-
-**Purpose**: Publish story directly in database.
-
-**Usage**: Direct database publishing
-
-### publish-all-content.mjs
-
-**Purpose**: Publish all content (stories, chapters, scenes).
-
-**Usage**: Bulk publishing operations
-
-### publish-chapter-and-community.mjs
-
-**Purpose**: Publish chapter and create community post.
-
-**Usage**: Chapter publishing with community integration
-
-### get-story-details.mjs
-
-**Purpose**: Fetch and display detailed story information.
-
-**Authentication**: Uses session from `.auth/user.json`
-
-**Input**: `STORY_ID` - Required story ID
-
-**Output**: Full story metadata, part/chapter/scene counts, character and setting information
-
-**Usage**:
-```bash
-dotenv --file .env.local run node scripts/get-story-details.mjs STORY_ID
-```
-
-### find-story-by-title.mjs
-
-**Purpose**: Find story by title search.
-
-**Usage**: Title-based story lookup
-
-### check-story.mjs
-
-**Purpose**: Check story data integrity.
-
-**Usage**: Story validation
-
----
-
-## Story Removal Scripts
-
-### remove-story.mjs
-
-**Purpose**: Remove a single story with complete cleanup of database records and Vercel Blob images.
-
-**Authentication**: Uses session from `.auth/user.json`
-
-**Input**:
-- `STORY_ID` - Required story ID to remove
-- `--dry-run` - Optional flag to preview deletion without actual removal
-
-**What Gets Removed**:
-- Database records (story, parts, chapters, scenes, characters, settings)
-- Vercel Blob images (ALL images found using list API with prefix `stories/{storyId}/`)
-- Community data (posts, likes, replies, bookmarks)
-- Analytics data (reading sessions, insights, events)
-
-**Performance**: Uses batch deletion for 10-25x faster blob cleanup
-
-**Usage**:
-```bash
-# Dry run (preview only)
-dotenv --file .env.local run node scripts/remove-story.mjs STORY_ID --dry-run
-
-# Actual removal
-dotenv --file .env.local run node scripts/remove-story.mjs STORY_ID
+# Generate minimal story (1 part, 1 chapter, 3 scenes, 2 characters, 2 settings)
+dotenv --file .env.local run pnpm exec tsx scripts/generate-minimal-story.ts
 
 # Background execution
-dotenv --file .env.local run node scripts/remove-story.mjs STORY_ID > logs/story-removal.log 2>&1 &
+dotenv --file .env.local run pnpm exec tsx scripts/generate-minimal-story.ts > logs/minimal-story.log 2>&1 &
 ```
 
-**Safety Features**: 3-second confirmation delay, dry-run mode, transaction-based operations, owner verification
+**Features**:
+- ✅ **Minimal configuration** - Smallest possible complete story
+- ✅ **Fastest generation** - 5-10 minutes total
+- ✅ Direct API authentication (no browser/Playwright needed)
+- ✅ Real-time progress via Server-Sent Events (SSE)
+- ✅ Automatic image generation with 4 optimized variants
+- ✅ Quality evaluation for all scenes
+- ✅ Complete Adversity-Triumph narrative cycle
 
-### remove-all-stories.mjs
+**Default Configuration**:
+- **Parts**: 1 (shortest story structure)
+- **Chapters**: 1 per part
+- **Scenes**: 3 per chapter (minimum for adversity-triumph cycle)
+- **Characters**: 2 (minimum for story dynamics)
+- **Settings**: 2 (minimum for location variety)
+- **Language**: English
+- **Genre**: Contemporary
+- **Tone**: Hopeful
 
-**Purpose**: Remove all stories for a user with complete cleanup.
+**Pipeline** (9 phases):
+1. Story Summary → Moral framework
+2. Characters → Profiles with internal flaws
+3. Settings → Immersive environments
+4. Parts → Story structure
+5. Chapters → Chapter summaries
+6. Scene Summaries → Scene breakdown
+7. Scene Content → Full narrative
+8. Scene Evaluation → Quality assessment
+9. Images → Story cover + character portraits + scene images
 
-**Authentication**: Uses session from `.auth/user.json`
+**Authentication**:
+- Uses writer API key from `.auth/user.json`
+- Requires `stories:write` scope
+- Run `scripts/setup-auth-users.ts` if key doesn't exist
 
-**Input**:
-- `--confirm` - Required flag to proceed with deletion
-- `--dry-run` - Optional flag to preview without deletion
-
-**Usage**:
-```bash
-# Dry run (preview only)
-dotenv --file .env.local run node scripts/remove-all-stories.mjs --dry-run
-
-# Actual removal
-dotenv --file .env.local run node scripts/remove-all-stories.mjs --confirm
-```
-
-### remove-all-stories-manager.mjs
-
-**Purpose**: Remove all stories using manager account.
-
-**Usage**: Manager-level story deletion
-
-### remove-all-stories-api-key.mjs
-
-**Purpose**: Remove all stories using API key authentication.
-
-**Usage**: API key-based deletion
-
-### delete-all-stories-api.mjs
-
-**Purpose**: Delete all stories via API.
-
-**Usage**: API-based story deletion
-
----
-
-## Comic Generation Scripts
-
-### generate-comic-panels-api.mjs
-
-**Purpose**: Generate comic panels for a specific scene using the comic generation API.
-
-**Authentication**: Uses `writer@fictures.xyz` API key from `.auth/user.json`
-
-**Input**:
-- `<scene-id>` - Required scene ID
-- `--panels <n>` - Optional target panel count (1-3, default: auto)
-- `--no-regen` - Optional flag to skip regeneration if panels exist
-- `--port <n>` - Optional API port (default: 3000)
-
-**Output**: Scene information, toonplay text, panel details with dialogue and SFX
-
-**Usage**:
-```bash
-# Generate panels (auto panel count)
-dotenv --file .env.local run node scripts/generate-comic-panels-api.mjs SCENE_ID
-
-# Generate with specific panel count
-dotenv --file .env.local run node scripts/generate-comic-panels-api.mjs SCENE_ID --panels 3
-
-# Don't regenerate if panels exist
-dotenv --file .env.local run node scripts/generate-comic-panels-api.mjs SCENE_ID --no-regen
-```
-
-### generate-comics-direct.mjs
-
-**Purpose**: Direct comic generation using internal services (bypassing API).
-
-**Usage**: Testing comic generation logic directly
-
-### generate-comics-glitch-scene.mjs
-
-**Purpose**: Generate comics for a specific "glitch" scene for testing.
-
-**Usage**: Testing specific scene comic generation
-
-### test-comic-generation.mjs
-
-**Purpose**: Test comic generation functionality.
-
-**Usage**: Comic generation testing
-
-### regenerate-comic-panels.mjs
-
-**Purpose**: Regenerate comic panels for existing scenes.
-
-**Usage**: Panel regeneration
-
-### regenerate-glitch-panels.mjs
-
-**Purpose**: Regenerate panels for glitch scenes.
-
-**Usage**: Panel regeneration for specific scenes
-
-### regenerate-panels-via-api.mjs
-
-**Purpose**: Regenerate panels using API.
-
-**Usage**: API-based panel regeneration
-
-### remove-all-comic-panels.mjs
-
-**Purpose**: Remove all comic panels from database.
-
-**Usage**: Comic panel cleanup
-
-### list-comic-scenes.mjs
-
-**Purpose**: List all scenes with comic panels.
-
-**Usage**: Comic scene inventory
-
-### list-comic-image-urls.mjs
-
-**Purpose**: List all comic image URLs.
-
-**Usage**: Comic image inventory
-
-### check-comic-panels.mjs
-
-**Purpose**: Check comic panel data.
-
-**Usage**: Comic panel verification
-
-### check-panel-text.mjs
-
-**Purpose**: Check panel text content.
-
-**Usage**: Panel text validation
-
----
-
-## Image Generation & Testing Scripts
-
-### test-gemini-generation-simple.mjs
-
-**Purpose**: Test Gemini 2.5 Flash image generation with 7:4 aspect ratio.
-
-**Authentication**: Uses `GOOGLE_GENERATIVE_AI_API_KEY` from environment
+**Generation Time**: 5-10 minutes for minimal story (1 part, 1 chapter, 3 scenes)
 
 **Output**:
-- Image saved to `logs/test-images/gemini-simple-{timestamp}.png`
-- File size and dimension verification (expected: 1344×768)
+- Complete story in database with all metadata
+- AI-generated images (1344×768, 7:4 aspect ratio)
+- 4 optimized variants per image (AVIF + JPEG × mobile 1x/2x)
+- Story details saved to `logs/api-story-generation.json`
 
-**Expected Dimensions**: 1344×768 (7:4 aspect ratio)
+**View Story**:
+- Novel format: `http://localhost:3000/novels/{storyId}`
+- Comic format: `http://localhost:3000/comics/{storyId}`
+- Edit: `http://localhost:3000/studio/edit/story/{storyId}`
 
-**Usage**:
+**Customization**:
+Edit the script to modify `userPrompt`, genre, tone, or counts.
+
+**Prerequisites**:
+- Dev server running: `dotenv --file .env.local run pnpm dev`
+- Valid writer API key in `.auth/user.json`
+- Environment variables: `GOOGLE_GENERATIVE_AI_API_KEY`, `AI_GATEWAY_API_KEY`, `BLOB_READ_WRITE_TOKEN`
+
+**Troubleshooting**:
+- **401 Unauthorized**: Run `scripts/setup-auth-users.ts` to create API keys
+- **Connection refused**: Start dev server with `dotenv --file .env.local run pnpm dev`
+- **Generation fails**: Check `logs/dev-server.log` for errors
+
+---
+
+## Comic Panel Generation
+
+### generate-comic-panels.ts
+
+**Purpose**: Generate 7-12 comic panels for a scene using Toonplay 9-step pipeline with quality evaluation.
+
+**Quick Start**:
 ```bash
-dotenv --file .env.local run node scripts/test-gemini-generation-simple.mjs
+# Preview
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID --dry-run
+
+# Generate
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID
+
+# Force regenerate
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID --force
+
+# Verbose logging
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID --verbose
+
+# Background
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID > logs/comic-panels.log 2>&1 &
 ```
 
-### test-gemini-image-16-9.mjs
+**Options**:
+- `<scene-id>` - **Required** scene ID
+- `--dry-run` - Preview without generating
+- `--force` - Regenerate existing panels
+- `--verbose` - Show detailed logs
 
-**Purpose**: Test Gemini image generation with 16:9 aspect ratio.
+**Pipeline** (9 steps):
+1. Analyze scene structure
+2. Generate panel summaries (7-12 panels)
+3. Create panel content (dialogue, SFX, narrative)
+4. Generate images (Gemini 2.5 Flash, 1344×768px)
+5. Optimize images (4 variants: AVIF + JPEG × mobile 1x/2x)
+6. Evaluate quality (5-category rubric)
+7. Improve if needed (up to 2 cycles if score < 3.0/5.0)
+8. Store panels in database
+9. Update scene comic status to "draft"
 
-**Usage**: Aspect ratio testing
+**Quality Evaluation**:
+- **Categories**: Pacing, Visual Grammar, Character Consistency, Narrative Clarity, Webtoon Adaptation
+- **Scoring**: 1-5 scale (1=Weak, 3=Effective, 5=Exceptional)
+- **Passing**: 3.0/5.0 average
+- **Success**: 70-80% pass first time, 95%+ after 1 improvement cycle
 
-### test-gemini-native-16-9.mjs
-
-**Purpose**: Test Gemini native 16:9 support.
-
-**Usage**: Native aspect ratio testing
-
-### test-gemini-optimization-pipeline.mjs
-
-**Purpose**: End-to-end test of Gemini image generation + optimization pipeline.
-
-**Authentication**: Uses `GOOGLE_GENERATIVE_AI_API_KEY` and `BLOB_READ_WRITE_TOKEN`
+**Performance**:
+- **Time**: 5-15 minutes per scene
+- **Output**: 7-12 panels with 4 optimized image variants each
+- **Format**: Toonplay (70% dialogue, 30% visual action, <5% narration)
 
 **Output**:
-- Original image (1344×768)
-- 4 optimized variants (AVIF/JPEG × mobile 1x/2x)
-- Dimension verification for each variant
-- File size comparison and performance metrics
+- **Database**: Comic panels in `comic_panels` table with full metadata
+- **Images**: Original PNG (1344×768) + 4 optimized variants per panel
+- **Scene**: `comic_status` → "draft", `comic_toonplay` JSON populated
 
-**Usage**:
+**Prerequisites**:
+- Dev server running: `dotenv --file .env.local run pnpm dev`
+- Valid scene ID from database
+- `.auth/user.json` with writer API key
+- `.env.local` with: `GOOGLE_GENERATIVE_AI_API_KEY`, `AI_GATEWAY_API_KEY`, `BLOB_READ_WRITE_TOKEN`
+
+**Troubleshooting**:
+- **"Scene not found"**: Verify scene ID exists in database
+- **"Panels exist"**: Use `--force` to regenerate
+- **Auth errors**: Check `.auth/user.json` has valid writer API key
+- **Image errors**: Verify `GOOGLE_GENERATIVE_AI_API_KEY` in `.env.local`
+- **Blob errors**: Check `BLOB_READ_WRITE_TOKEN` and quota
+- **Quality fails**: Ensure scene has sufficient content detail
+
+**Debug**:
 ```bash
-dotenv --file .env.local run node scripts/test-gemini-optimization-pipeline.mjs
+# Verbose mode
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID --verbose
+
+# Check API logs
+tail -f logs/dev-server.log | grep "generation/toonplay"
 ```
 
-### test-story-image-generation.mjs
-
-**Purpose**: Test story image generation service.
-
-**Usage**: Testing image generation for stories, scenes, characters, and settings
-
-### create-placeholder-images.mjs
-
-**Purpose**: Create placeholder images for missing content.
-
-**Usage**: Generate placeholder images
-
-### create-remaining-placeholders.mjs
-
-**Purpose**: Create remaining placeholder images.
-
-**Usage**: Complete placeholder generation
+**Technical Details**:
+- **API**: `POST /studio/api/generation/toonplay` (SSE stream)
+- **Shot Types**: ESTABLISHING, WIDE, MEDIUM, CLOSE-UP, EXTREME CLOSE-UP, OVER-SHOULDER, POV
+- **Image Optimization**: Mobile-first (1x/2x density), AVIF (modern) + JPEG (fallback), 25-30% smaller
 
 ---
 
-## Database & Cache Scripts
+## Story Data Management
 
-### clear-redis-cache.mjs
+### reset-all-stories.ts
 
-**Purpose**: Clear Redis cache for specific chapter and story.
+**⚠️ DESTRUCTIVE OPERATION - Use with extreme caution!**
 
-**Authentication**: Uses `REDIS_URL` from environment
+**Purpose**: Permanently delete ALL story data from database and Vercel Blob storage. This is a complete reset that removes everything related to stories.
 
-**Input**: Hardcoded chapter ID and story ID in script (edit script to change)
-
-**Cache Keys Cleared**:
-- `chapter:{chapterId}:scenes:public`
-- `chapter:{chapterId}:public`
-- `story:{storyId}:public`
-- `story:{storyId}:chapters:public`
-
-**Usage**:
+**Quick Start**:
 ```bash
-# Edit script to set chapter/story IDs, then run:
-dotenv --file .env.local run node scripts/clear-redis-cache.mjs
+# Preview mode (shows what will be deleted WITHOUT deleting)
+dotenv --file .env.local run pnpm exec tsx scripts/reset-all-stories.ts
+
+# Execute destructive reset (requires --confirm flag)
+dotenv --file .env.local run pnpm exec tsx scripts/reset-all-stories.ts --confirm
+
+# Background execution with logging
+dotenv --file .env.local run pnpm exec tsx scripts/reset-all-stories.ts --confirm > logs/reset-all.log 2>&1 &
 ```
 
-### invalidate-cache.mjs
+**Options**:
+- `--confirm` - **Required** to execute actual deletion (safety flag)
 
-**Purpose**: Invalidate specific caches.
+**What Gets Deleted**:
 
-**Usage**: Targeted cache invalidation
+**Database Records** (6 tables):
+- **stories**: All story metadata and summaries
+- **parts**: All story parts
+- **chapters**: All chapter summaries and metadata
+- **scenes**: All scene content and metadata
+- **characters**: All character profiles and relationships
+- **settings**: All setting descriptions
+- **aiInteractions**: All AI generation history
 
-### check-database-stories.mjs
+**Vercel Blob Files**:
+- **Prefix**: `stories/` (all files under this prefix)
+- **Includes**:
+  - Story cover images (1344×768, 7:4)
+  - Scene images (1344×768, 7:4)
+  - Character portraits (1024×1024)
+  - Setting visuals (1344×768, 7:4)
+  - All optimized variants (AVIF + JPEG × mobile 1x/2x)
+- **Deletion Method**: Batch deletion with pagination (100 files per batch)
 
-**Purpose**: Verify story data in database.
+**Safety Features**:
+- ✅ **Preview Mode**: Default behavior shows what will be deleted without deleting
+- ✅ **Confirmation Flag**: Requires explicit `--confirm` to proceed
+- ✅ **5-Second Delay**: Countdown before execution starts (press Ctrl+C to cancel)
+- ✅ **Admin-Only**: Requires `admin:all` scope (manager account only)
+- ✅ **Detailed Report**: Shows exact deletion counts for transparency
+- ✅ **Audit Log**: Saves deletion report to `logs/reset-all-{timestamp}.json`
 
-**Usage**: Database verification and debugging
+**Performance**:
+- **Database Deletion**: ~2-5 seconds (cascading deletes)
+- **Blob Deletion**: Varies by file count (100 files per batch)
+- **Total Time**: Typically 10-30 seconds depending on blob file count
+- **Max Duration**: 60 seconds (API timeout)
 
-### check-database-via-api.mjs
+**Output Example**:
+```
+✅ RESET COMPLETE
 
-**Purpose**: Check database through API endpoints.
+============================================================
 
-**Usage**: API-based database verification
+📊 Deletion Report:
 
-### check-and-clean-db.ts
+Database Records Deleted:
+  • Stories:         15
+  • Parts:           22
+  • Chapters:        45
+  • Scenes:          135
+  • Characters:      30
+  • Settings:        25
+  • AI Interactions: 428
 
-**Purpose**: Database cleanup and verification (TypeScript).
+Blob Files Deleted:
+  • Total Files:     540
+  • Batches:         6
 
-**Usage**: Comprehensive database maintenance
+Timestamp: 2025-11-04T10:30:45.123Z
 
-### query-stories-db.mjs
+============================================================
 
-**Purpose**: Query stories directly from database.
-
-**Usage**: Direct database queries for debugging
-
-### check-column-naming.mjs
-
-**Purpose**: Check database column naming conventions.
-
-**Usage**: Schema validation
-
-### check-scenes-fields.mjs
-
-**Purpose**: Check scenes table field definitions.
-
-**Usage**: Scenes table schema verification
-
-### deep-cleanup-database.mjs
-
-**Purpose**: Deep database cleanup.
-
-**Usage**: Thorough database maintenance
-
-### cleanup-all-stories.ts
-
-**Purpose**: Clean up all stories (TypeScript).
-
-**Usage**: Comprehensive story cleanup
-
-### cleanup-all-story-data.mjs
-
-**Purpose**: Clean up all story-related data.
-
-**Usage**: Complete data cleanup
-
-### cleanup-test-stories.mjs
-
-**Purpose**: Clean up test stories.
-
-**Usage**: Test data cleanup
-
-### complete-reset.mjs
-
-**Purpose**: Complete system reset.
-
-**Usage**: Full database reset
-
-### reset-all-data.mjs
-
-**Purpose**: Reset all data to initial state.
-
-**Usage**: Data reset
-
----
-
-## Blob Storage Scripts
-
-### cleanup-vercel-blob.mjs
-
-**Purpose**: Clean up all Vercel Blob files under `stories/` prefix.
-
-**Authentication**: Uses `BLOB_READ_WRITE_TOKEN` from environment
-
-**Input**: `--confirm` - Required flag to proceed with deletion
-
-**Output**: Total file count, batch deletion progress, final summary
-
-**Usage**:
-```bash
-# Preview (no deletion)
-dotenv --file .env.local run node scripts/cleanup-vercel-blob.mjs
-
-# Actual deletion
-dotenv --file .env.local run node scripts/cleanup-vercel-blob.mjs --confirm
+📄 Report saved to: logs/reset-all-2025-11-04T10-30-45.json
 ```
 
-**Safety Features**: Requires `--confirm` flag, preview mode, batch processing (100 files at a time)
+**Prerequisites**:
+- Dev server running: `dotenv --file .env.local run pnpm dev`
+- Manager account API key in `.auth/user.json`
+- `.env.local` with: `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `BLOB_READ_WRITE_TOKEN`
 
-### cleanup-story-blobs.mjs
+**Troubleshooting**:
+- **401 Unauthorized**: Manager API key missing or invalid in `.auth/user.json`
+  - Solution: Run `scripts/setup-auth-users.ts` to create manager account
+- **403 Forbidden**: Account lacks `admin:all` scope
+  - Solution: Only manager accounts have this scope (not writer or reader)
+- **ECONNREFUSED**: Dev server not running
+  - Solution: Start server with `dotenv --file .env.local run pnpm dev`
+- **Timeout**: Too many blob files to delete within 60 seconds
+  - Solution: Script will still complete, check logs for actual deletion count
 
-**Purpose**: Clean up blobs for specific story.
+**Debug**:
+```bash
+# Preview without deleting
+dotenv --file .env.local run pnpm exec tsx scripts/reset-all-stories.ts
 
-**Usage**: Targeted blob cleanup
+# Check manager API key
+cat .auth/user.json | jq '.profiles.manager.apiKey'
 
-### list-blob-storage.mjs
+# Monitor API logs
+tail -f logs/dev-server.log | grep "RESET ALL"
+```
 
-**Purpose**: List all blob storage files.
+**Technical Details**:
+- **API**: `POST /studio/api/reset-all` (admin-only endpoint)
+- **Authentication**: Manager API key from `.auth/user.json` profiles
+- **Database**: Cascading deletes in proper order to respect foreign key constraints
+- **Blob Deletion**: Pagination with cursor-based iteration (100 files per batch)
+- **Max Duration**: 60 seconds (defined in API route)
 
-**Usage**: Blob storage inspection
+**Use Cases**:
+- **Development Testing**: Clear all test data between development cycles
+- **Quality Assurance**: Reset to clean state for QA testing
+- **Database Cleanup**: Remove accumulated test stories during development
+- **Fresh Start**: Complete reset before production deployment
 
-### verify-blob-cleanup.mjs
-
-**Purpose**: Verify blob cleanup was successful.
-
-**Usage**: Post-cleanup verification
-
-### verify-blob-paths.mjs
-
-**Purpose**: Verify blob path structure.
-
-**Usage**: Path structure validation
+**⚠️ WARNING**: This operation is **IRREVERSIBLE**. All deleted data cannot be recovered. Always use preview mode first to verify what will be deleted.
 
 ---
 
-## Scene Testing & Formatting Scripts
-
-### test-scene-formatter.mjs
-
-**Purpose**: Test scene formatting rules.
-
-**Usage**: Unit testing for scene formatting logic
-
-### reformat-scenes.mjs
-
-**Purpose**: Reformat existing scene content.
-
-**Usage**: Batch scene content reformatting
-
-### reformat-scenes-sql.mjs
-
-**Purpose**: SQL-based scene reformatting.
-
-**Usage**: Direct database scene reformatting
-
-### reformat-with-verify.mjs
-
-**Purpose**: Reformat scenes with verification.
-
-**Usage**: Safe scene reformatting with checks
-
-### check-scene-content.mjs
-
-**Purpose**: Check scene content for issues.
-
-**Usage**: Scene content validation
-
-### find-story-scene.mjs
-
-**Purpose**: Find specific scene in story.
-
-**Usage**: Scene lookup and debugging
-
-### find-detective-scene.mjs
-
-**Purpose**: Find detective story scenes.
-
-**Usage**: Testing specific story type
-
-### find-glitch-scene.mjs
-
-**Purpose**: Find glitch-related scenes.
-
-**Usage**: Bug reproduction and testing
-
-### advanced-reformat.mjs
-
-**Purpose**: Advanced text reformatting.
-
-**Usage**: Complex formatting operations
-
-### enhanced-reformat.mjs
-
-**Purpose**: Enhanced reformatting with additional features.
-
-**Usage**: Extended formatting capabilities
-
-### proper-dialogue-split.mjs
-
-**Purpose**: Split dialogue properly.
-
-**Usage**: Dialogue formatting
-
-### split-description-dialogue.mjs
-
-**Purpose**: Separate description from dialogue.
-
-**Usage**: Content parsing and formatting
-
-### fix-multi-dialogue.mjs
-
-**Purpose**: Fix multiple dialogue issues.
-
-**Usage**: Dialogue correction
-
-### repair-broken-quotes.mjs
-
-**Purpose**: Fix broken quote marks.
-
-**Usage**: Quote mark correction
-
-### debug-formatter.mjs
-
-**Purpose**: Debug formatting issues.
-
-**Usage**: Formatter debugging
-
-### test-formatter-logic.mjs
-
-**Purpose**: Test formatter logic.
-
-**Usage**: Formatter unit testing
-
-### test-formatter-output.mjs
-
-**Purpose**: Test formatter output.
-
-**Usage**: Formatter integration testing
-
-### test-dialogue-regex.mjs
-
-**Purpose**: Test dialogue regex patterns.
-
-**Usage**: Regex pattern testing
-
-### test-curly-quote.mjs
-
-**Purpose**: Test curly quote handling.
-
-**Usage**: Quote character testing
-
----
-
-## Migration Scripts
-
-### apply-comic-migration.mjs
-
-**Purpose**: Apply comic-related database migrations.
-
-**Usage**: Database schema updates for comics
-
-### create-comic-panels-table.mjs
-
-**Purpose**: Create comic panels table.
-
-**Usage**: Initial comic panels schema
-
-### migrate-comics-to-new-path.mjs
-
-**Purpose**: Migrate comic image paths.
-
-**Usage**: Path structure migration
-
-### migrate-system-directory.mjs
-
-**Purpose**: Migrate system directory structure.
-
-**Usage**: Directory reorganization
-
----
-
-## Authentication Scripts
-
-### capture-manager-auth.mjs
-
-**Purpose**: Capture authentication for manager account.
-
-**Usage**: Manager authentication setup
-
-### capture-writer-auth.mjs
-
-**Purpose**: Capture authentication for writer account.
-
-**Usage**: Writer authentication setup
-
-### create-playwright-auth.mjs
-
-**Purpose**: Create Playwright authentication files.
-
-**Usage**: Playwright test authentication setup
-
-### check-session.mjs
-
-**Purpose**: Check current session validity.
-
-**Usage**: Session verification
-
-### check-api-keys.mjs
-
-**Purpose**: Verify API key configuration.
-
-**Usage**: API key validation
-
----
-
-## User Management Scripts
-
-### create-user.mjs
-
-**Purpose**: Create new user account.
-
-**Usage**: User account creation
-
-### create-manager-user.mjs
-
-**Purpose**: Create manager user account.
-
-**Usage**: Manager account setup
-
-### reset-manager-password.mjs
-
-**Purpose**: Reset manager account password.
-
-**Usage**: Password reset
-
----
-
-## Testing & Debugging Scripts
-
-### test-community-story-performance.mjs
-
-**Purpose**: Test community story performance.
-
-**Usage**: Performance benchmarking
-
-### test-metric-full-click.mjs
-
-**Purpose**: Test full metric click tracking.
-
-**Usage**: Analytics testing
-
-### test-metric-help-icons.mjs
-
-**Purpose**: Test help icon metrics.
-
-**Usage**: UI metrics testing
-
-### test-metric-help-simple.mjs
-
-**Purpose**: Simple metric help testing.
-
-**Usage**: Basic metrics testing
-
-### monitor-story-generation.mjs
-
-**Purpose**: Monitor story generation progress.
-
-**Usage**: Real-time generation monitoring
-
-### debug-community-story.mjs
-
-**Purpose**: Debug community story issues.
-
-**Usage**: Community feature debugging
-
-### debug-update.mjs
-
-**Purpose**: Debug update operations.
-
-**Usage**: Update operation debugging
-
----
-
-## Verification Scripts
-
-### verify-cleanup.mjs
-
-**Purpose**: Verify cleanup operations.
-
-**Usage**: Post-cleanup verification
-
-### verify-complete-cleanup.mjs
-
-**Purpose**: Verify complete cleanup.
-
-**Usage**: Comprehensive cleanup verification
-
-### verify-reading-history-fix.mjs
-
-**Purpose**: Verify reading history fixes.
-
-**Usage**: Reading history validation
-
-### verify-update.mjs
-
-**Purpose**: Verify update operations.
-
-**Usage**: Update verification
-
-### verify-hns-removal.mjs
-
-**Purpose**: Verify HNS system removal.
-
-**Usage**: HNS cleanup verification
-
----
-
-## Shell Scripts
-
-### capture-api-error.sh
-
-**Purpose**: Capture API error responses.
-
-**Usage**: Error logging and debugging (shell script)
-
-### add-frontmatter.sh
-
-**Purpose**: Add frontmatter to markdown files.
-
-**Usage**: Markdown file processing (shell script)
-
-### add-frontmatter.mjs
-
-**Purpose**: Add frontmatter to markdown files (Node.js version).
-
-**Usage**: Markdown file processing
-
----
-
-## SQL Scripts
-
-### drop-all-tables.sql
-
-**Purpose**: Drop all database tables.
-
-**Usage**: Database reset (SQL script)
-
-### reset-story-tables.sql
-
-**Purpose**: Reset story-related tables.
-
-**Usage**: Story table reset (SQL script)
-
----
-
-## Documentation Files
-
-### CLAUDE.md
-
-**Purpose**: This file - Scripts directory overview and usage guide.
-
-### README.md
-
-**Purpose**: Scripts directory README.
-
-### gemini-16-9-findings.md
-
-**Purpose**: Documentation of Gemini 16:9 aspect ratio findings.
-
-**Usage**: Reference for Gemini image generation implementation
-
-### README-gemini-test.md
-
-**Purpose**: Gemini testing documentation.
-
-**Usage**: Testing guide for Gemini features
-
----
-
-## Common Patterns
-
-### Error Handling
-
-All scripts include:
-- Environment variable validation
-- API response error checking
-- Try-catch blocks for async operations
-- Meaningful error messages
-- Exit codes (0 for success, 1 for errors)
+## General Patterns
 
 ### Authentication
 
-Scripts use one of these patterns:
-1. **Session cookie** from `.auth/user.json`
-2. **API key** from `.auth/user.json` writer profile
-3. **Environment variables** (for external services)
+Scripts use `.auth/user.json`:
+```json
+{
+  "profiles": {
+    "manager": { "email": "manager@fictures.xyz", "password": "...", "apiKey": "fic_..." },
+    "writer": { "email": "writer@fictures.xyz", "password": "...", "apiKey": "fic_..." },
+    "reader": { "email": "reader@fictures.xyz", "password": "...", "apiKey": "fic_..." }
+  }
+}
+```
 
-### Logging
+**Setup**: Run `scripts/setup-auth-users.ts` to create users and API keys.
 
-Most scripts support:
-- Console output with emojis for readability
-- Background execution with log file redirection
-- Progress indicators for long operations
-- Summary reports at completion
+### Environment Variables
 
-### Safety Features
+Required in `.env.local`:
+```bash
+# Auth
+AUTH_SECRET=***
+GOOGLE_CLIENT_ID=***
+GOOGLE_CLIENT_SECRET=***
 
-Deletion scripts include:
-- Dry-run mode for preview
-- Confirmation delays before execution
-- Explicit confirmation flags required
-- Batch processing for efficiency
-- Comprehensive reporting
+# AI
+GOOGLE_GENERATIVE_AI_API_KEY=***  # Gemini 2.5 Flash
+AI_GATEWAY_API_KEY=***            # Vercel AI SDK Gateway
+
+# Database & Storage
+DATABASE_URL=***                  # Neon PostgreSQL (pooled)
+DATABASE_URL_UNPOOLED=***         # Neon PostgreSQL (direct)
+BLOB_READ_WRITE_TOKEN=***         # Vercel Blob
+REDIS_URL=***                     # Session storage
+
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+### Execution Patterns
+
+```bash
+# Standard
+dotenv --file .env.local run pnpm exec tsx scripts/<script>.ts [args]
+
+# Background with logging
+dotenv --file .env.local run pnpm exec tsx scripts/<script>.ts [args] > logs/<script>.log 2>&1 &
+
+# Monitor background process
+tail -f logs/<script>.log
+```
+
+### Script Features
+
+All scripts include:
+- ✅ Environment variable validation
+- ✅ Error handling with meaningful messages
+- ✅ Progress indicators for long operations
+- ✅ Exit codes (0=success, 1=error)
+- ✅ Dry-run modes where applicable
+- ✅ Summary reports on completion
 
 ---
 
 ## Best Practices
 
-1. **Always use environment variables**: `dotenv --file .env.local run`
-2. **Background long operations**: Redirect to logs directory
-3. **Test with dry-run first**: Preview changes before executing
-4. **Check authentication**: Ensure `.auth/user.json` is up to date
-5. **Monitor logs**: Check log files for background processes
-6. **Kill port 3000 processes**: Before running dev server
-7. **Use correct profile**: Manager for admin, writer for generation
-
-## Troubleshooting
-
-### Common Issues
-
-**ECONNREFUSED errors**:
-- Ensure dev server is running: `dotenv --file .env.local run pnpm dev`
-
-**Authentication errors**:
-- Check `.auth/user.json` has valid session cookies
-- Re-run authentication capture if expired
-
-**API key errors**:
-- Verify API key in `.auth/user.json` writer profile
-- Check API key scopes include required permissions
-
-**Blob storage errors**:
-- Verify `BLOB_READ_WRITE_TOKEN` in `.env.local`
-- Check Vercel Blob quota limits
-
-**Redis errors**:
-- Verify `REDIS_URL` in `.env.local`
-- Check Redis connection status
+1. **Always prefix with dotenv**: `dotenv --file .env.local run`
+2. **Background long operations**: Redirect to `logs/` directory
+3. **Test with dry-run first**: Preview before executing
+4. **Check auth setup**: Run `verify-auth-setup.ts` if errors
+5. **Monitor logs**: Check `logs/` for background processes
 
 ---
 
-## Script Dependencies
+## Troubleshooting
 
-Most scripts depend on:
-- **Node.js**: Runtime environment
-- **pnpm**: Package manager
-- **dotenv**: Environment variable loading
-- **@vercel/blob**: Blob storage operations
-- **redis**: Cache operations
-- **Next.js app**: Must be running for API scripts
-- **.auth/user.json**: Authentication credentials
-- **.env.local**: Environment configuration
+| Issue | Solution |
+|-------|----------|
+| ECONNREFUSED | Ensure dev server running: `dotenv --file .env.local run pnpm dev` |
+| Auth errors | Run `scripts/setup-auth-users.ts` to create test users |
+| API key errors | Check `.auth/user.json` has valid API keys |
+| Env var errors | Verify `.env.local` exists with all required variables |
 
-## Development Workflow
+---
 
-1. **Start dev server**: `dotenv --file .env.local run pnpm dev`
-2. **List stories**: `node scripts/list-stories.mjs`
-3. **Generate story**: `node scripts/generate-complete-story.mjs "prompt"`
-4. **Test comics**: `node scripts/generate-comic-panels-api.mjs SCENE_ID`
-5. **Clean up**: `node scripts/remove-story.mjs STORY_ID`
-6. **Cache refresh**: Edit and run `node scripts/clear-redis-cache.mjs`
+## Managing Scripts
+
+**IMPORTANT: Always update this CLAUDE.md file when modifying scripts.**
+
+### Adding New Scripts
+
+1. **Create script** in `scripts/` directory
+2. **Add documentation** to this file immediately:
+   - Add entry to Quick Reference table
+   - Add detailed section under appropriate category
+   - Include: Purpose, Usage, Options, Prerequisites, Troubleshooting
+3. **Test thoroughly** before committing
+4. **Update main CLAUDE.md** if part of core workflow
+5. **Commit both** script and documentation together
+
+### Updating Existing Scripts
+
+1. **Modify script** as needed
+2. **Update documentation** in this file:
+   - Update usage examples if commands changed
+   - Update options if flags added/removed
+   - Update prerequisites if requirements changed
+3. **Test changes** thoroughly
+4. **Commit both** script and documentation together
+
+### Deleting Scripts
+
+1. **Remove script** from `scripts/` directory
+2. **Remove documentation** from this file:
+   - Remove from Quick Reference table
+   - Remove detailed section
+   - Update any references in other sections
+3. **Update main CLAUDE.md** if script was referenced there
+4. **Commit all changes** together
+
+**scripts/** (this directory):
+- ✅ Permanent production utilities
+- ✅ Well-tested and documented
+- ✅ Part of standard workflow
+
+**test-scripts/**:
+- 🧪 Temporary testing/debugging
+- 🧪 One-time exploration
+- 🧪 Can be deleted after use
+
+---
+
+## Related Documentation
+
+- [../CLAUDE.md](../CLAUDE.md) - Main project guide
+- [../test-scripts/CLAUDE.md](../test-scripts/CLAUDE.md) - Test scripts
+- [../docs/comics/](../docs/comics/) - Comics documentation
+- [../docs/](../docs/) - API documentation

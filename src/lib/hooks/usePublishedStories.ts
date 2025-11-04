@@ -3,7 +3,7 @@ import useSWR from 'swr';
 interface Story {
   id: string;
   title: string;
-  description: string;
+  summary: string;
   genre: string;
   status: string;
   viewCount: number;

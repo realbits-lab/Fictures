@@ -8,7 +8,7 @@ The story removal system provides safe, comprehensive deletion of stories includ
 - Database records (story, parts, chapters, scenes, characters, settings)
 - Vercel Blob storage images (ALL images via prefix-based discovery)
 - Community data (posts, likes, replies, bookmarks)
-- Analytics data (reading sessions, insights, events)
+- Analysis data (reading sessions, insights, events)
 
 ## Scripts
 
@@ -481,7 +481,7 @@ This will find and remove any orphaned images using the Blob list API.
 
 ### Q: How do I find a story ID?
 **A:**
-- Check the URL when editing: `/writing/{storyId}`
+- Check the URL when editing: `/studio/{storyId}`
 - Use the list script: `node scripts/list-stories.mjs [search]`
 - Use the API: `GET /api/stories`
 - Check database: `SELECT id, title FROM stories`

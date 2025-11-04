@@ -53,7 +53,12 @@ export async function POST(
       // Unlike: Remove the like
       await db
         .delete(sceneLikes)
-        .where(eq(sceneLikes.id, existingLike.id));
+        .where(
+          and(
+            eq(sceneLikes.sceneId, sceneId),
+            eq(sceneLikes.userId, session.user.id)
+          )
+        );
 
       return NextResponse.json({
         liked: false,
@@ -64,7 +69,6 @@ export async function POST(
       await db
         .insert(sceneLikes)
         .values({
-          id: nanoid(),
           sceneId,
           userId: session.user.id,
           createdAt: new Date(),

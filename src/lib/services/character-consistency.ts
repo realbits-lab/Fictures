@@ -6,7 +6,7 @@
  * (no reference image support).
  */
 
-import type { HNSCharacter } from '@/types/hns';
+import type { characters as charactersTable } from '@/../drizzle/schema';
 
 // ============================================
 // CHARACTER VISUAL CACHE
@@ -28,10 +28,9 @@ const characterVisualCache: Map<string, CharacterVisualProfile> = new Map();
  * Build a consistent character description fragment for image prompts
  */
 export function buildCharacterPromptFragment(
-  character: HNSCharacter,
+  character: typeof charactersTable.$inferSelect,
   pose: string
 ): string {
-  // Use 'id' field from database schema (not legacy 'character_id')
   const cacheKey = character.id;
 
   // Check cache first
@@ -51,8 +50,8 @@ export function buildCharacterPromptFragment(
 /**
  * Create a detailed base prompt for a character
  */
-function createCharacterBasePrompt(character: HNSCharacter): string {
-  const physicalDesc = (character as any).physical_description;
+function createCharacterBasePrompt(character: typeof charactersTable.$inferSelect): string {
+  const physicalDesc = character.physicalDescription as any;
 
   // Build detailed physical description
   const parts: string[] = [character.name];
@@ -100,12 +99,11 @@ function createCharacterBasePrompt(character: HNSCharacter): string {
  */
 export function buildPanelCharacterPrompts(
   characterIds: string[],
-  characters: HNSCharacter[],
+  characters: (typeof charactersTable.$inferSelect)[],
   characterPoses: Record<string, string>
 ): string {
   const characterPrompts = characterIds
     .map(charId => {
-      // Use 'id' field from database schema (not legacy 'character_id')
       const character = characters.find(c => c.id === charId);
       if (!character) return '';
 
@@ -142,8 +140,8 @@ export function getCharacterFromCache(characterId: string): CharacterVisualProfi
 /**
  * Extract key physical traits for emphasis in prompts
  */
-export function extractKeyPhysicalTraits(character: HNSCharacter): string[] {
-  const physicalDesc = (character as any).physical_description;
+export function extractKeyPhysicalTraits(character: typeof charactersTable.$inferSelect): string[] {
+  const physicalDesc = character.physicalDescription as any;
   const traits: string[] = [];
 
   if (!physicalDesc) return traits;

@@ -11,7 +11,7 @@ interface ApiKey {
   name: string;
   keyPrefix: string;
   scopes: string[];
-  scopeDescriptions: Array<{scope: string; description: string}>;
+  scopeDescriptions: Array<{scope: string; summary: string}>;
   lastUsedAt: string | null;
   expiresAt: string | null;
   isActive: boolean;
@@ -22,7 +22,7 @@ interface ApiKey {
 
 interface ApiKeyResponse {
   apiKeys: ApiKey[];
-  availableScopes: Array<{scope: string; description: string}>;
+  availableScopes: Array<{scope: string; summary: string}>;
   metadata: {
     total: number;
     active: number;
@@ -33,7 +33,7 @@ interface ApiKeyResponse {
 export default function ApiKeysPage() {
   const { data: session } = useSession();
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [availableScopes, setAvailableScopes] = useState<Array<{scope: string; description: string}>>([]);
+  const [availableScopes, setAvailableScopes] = useState<Array<{scope: string; summary: string}>>([]);
   const [metadata, setMetadata] = useState({ total: 0, active: 0, expired: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
@@ -42,7 +42,7 @@ export default function ApiKeysPage() {
 
   // Form state
   const [keyName, setKeyName] = useState('');
-  const [selectedScopes, setSelectedScopes] = useState<string[]>(['stories:read', 'chapters:read', 'analytics:read']);
+  const [selectedScopes, setSelectedScopes] = useState<string[]>(['stories:read', 'chapters:read', 'analysis:read']);
   const [expirationOption, setExpirationOption] = useState<string>('never');
 
   // Fetch API keys
@@ -108,7 +108,7 @@ export default function ApiKeysPage() {
         setNewApiKey(data.apiKey.key);
         setShowCreateForm(false);
         setKeyName('');
-        setSelectedScopes(['stories:read', 'chapters:read', 'analytics:read']);
+        setSelectedScopes(['stories:read', 'chapters:read', 'analysis:read']);
         setExpirationOption('never');
         await fetchApiKeys();
         toast.success('API key created successfully');
@@ -331,7 +331,7 @@ export default function ApiKeysPage() {
                       <div className="text-sm">
                         <div className="font-medium">{scope.scope}</div>
                         <div className="text-gray-600 dark:text-gray-400 text-xs">
-                          {scope.description}
+                          {scope.summary}
                         </div>
                       </div>
                     </label>

@@ -16,6 +16,7 @@ export interface Comment {
   parentCommentId: string | null;
   depth: number;
   likeCount: number;
+  dislikeCount: number;
   replyCount: number;
   isEdited: boolean;
   isDeleted: boolean;
@@ -119,7 +120,7 @@ export function useComments({ storyId, chapterId, sceneId }: UseCommentsOptions)
   // Use persisted SWR with community cache config (30min TTL)
   const { data, error, isLoading, isValidating, mutate: swrMutate } = usePersistedSWR<CommentsResponse>(
     cacheKey,
-    fetcher,
+    fetcher as (url: string) => Promise<CommentsResponse>,
     CACHE_CONFIGS.community, // 30min TTL, version 1.1.0
     {
       revalidateOnFocus: false, // Don't revalidate on window focus (comments don't change often)

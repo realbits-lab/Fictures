@@ -107,7 +107,7 @@ export function getDocPage(slug: string[] | undefined): DocPage | null {
       content,
       metadata: {
         title,
-        description: data.description,
+        summary: data.description,
         ...data,
       },
       headings,

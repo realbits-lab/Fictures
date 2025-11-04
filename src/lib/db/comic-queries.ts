@@ -144,7 +144,7 @@ async function fetchStoryWithComicPanels(storyId: string) {
         narrative: comicPanels.narrative,
         dialogue: comicPanels.dialogue,
         sfx: comicPanels.sfx,
-        description: comicPanels.description,
+        summary: (comicPanels as any).summary || (comicPanels as any).description,
       })
         .from(comicPanels)
         .where(eq(comicPanels.sceneId, sceneIds[0])) // Start with first scene
@@ -164,7 +164,7 @@ async function fetchStoryWithComicPanels(storyId: string) {
                   narrative: comicPanels.narrative,
                   dialogue: comicPanels.dialogue,
                   sfx: comicPanels.sfx,
-                  description: comicPanels.description,
+                  summary: (comicPanels as any).summary || (comicPanels as any).description,
                 })
                   .from(comicPanels)
                   .where(eq(comicPanels.sceneId, sceneId))
@@ -269,7 +269,7 @@ async function fetchSceneComicPanels(sceneId: string, limit?: number) {
     narrative: comicPanels.narrative,
     dialogue: comicPanels.dialogue,
     sfx: comicPanels.sfx,
-    description: comicPanels.description,
+    summary: (comicPanels as any).summary || (comicPanels as any).description,
     // ❌ SKIPPED: metadata (detailed generation info not needed for display)
   })
     .from(comicPanels)

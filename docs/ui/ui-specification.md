@@ -17,7 +17,7 @@ Fictures is an AI-powered story writing platform built with Next.js 15 and App R
 - **📚 Reading** (`/browse`): Public story browsing - All users
 - **💬 Community** (`/community`): Story discussions and engagement - All users
 - **📤 Publish** (`/publish`): Publication management - Writer/Manager only
-- **📊 Analytics** (`/analytics`): Writing and reader metrics - Writer/Manager only
+- **📊 Analysis** (`/analysis`): Writing and reader metrics - Writer/Manager only
 - **⚙️ Settings** (`/settings`): User preferences - Authenticated users only
 
 **User Menu (Avatar Dropdown):**

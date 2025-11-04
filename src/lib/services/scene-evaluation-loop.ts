@@ -224,7 +224,7 @@ export async function evaluateAndImproveScene(
 
       // Log specific changes
       formatResult.changes.forEach(change => {
-        console.log(`     - ${change.type}: ${change.description}`);
+        console.log(`     - ${change.type}: ${change.summary}`);
       });
     } else {
       console.log(`✓ No formatting changes needed (${Date.now() - formatStartTime}ms)`);
@@ -272,7 +272,7 @@ export async function evaluateAndImproveScene(
       } else if (imageValidation.issues.length > 0) {
         console.log(`⚠️ Image validation found ${imageValidation.issues.length} issues (${Date.now() - imageStartTime}ms)`);
         imageValidation.issues.forEach(issue => {
-          console.log(`     - ${issue.type}: ${issue.description}`);
+          console.log(`     - ${issue.type}: ${issue.summary}`);
         });
       } else {
         console.log(`✓ Image validated successfully (${Date.now() - imageStartTime}ms)`);
@@ -354,9 +354,6 @@ export async function evaluateAndImproveScene(
       await db.update(scenesTable)
         .set({
           content: formattedImprovedContent,  // Use formatted version
-          goal: improved.goal || currentScene.goal,
-          conflict: improved.conflict || currentScene.conflict,
-          outcome: improved.outcome || currentScene.outcome,
           summary: improved.summary || currentScene.summary,
         })
         .where(eq(scenesTable.id, sceneId));

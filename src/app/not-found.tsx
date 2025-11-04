@@ -60,8 +60,8 @@ export default function NotFound() {
             Page Not Found
           </h2>
           <p className="text-lg text-[rgb(var(--color-muted-foreground))] max-w-md mx-auto">
-            The story you're looking for seems to have wandered off into the unknown.
-            Let's get you back to familiar territory.
+            The story you&apos;re looking for seems to have wandered off into the unknown.
+            Let&apos;s get you back to familiar territory.
           </p>
         </div>
 

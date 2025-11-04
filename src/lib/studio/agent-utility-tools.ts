@@ -14,7 +14,7 @@ import {
 // ==============================================================================
 
 export const validateApiKey = tool({
-  description: 'Validate user API key for Studio Agent operations',
+  summary: 'Validate user API key for Studio Agent operations',
   parameters: z.object({
     userId: z.string().describe('The user ID'),
     requiredScopes: z.array(z.string()).optional().describe('Required scopes (e.g., ["ai:use", "stories:write"])'),
@@ -75,7 +75,7 @@ export const validateApiKey = tool({
 });
 
 export const updatePhaseProgress = tool({
-  description: 'Update story generation phase progress in chat session',
+  summary: 'Update story generation phase progress in chat session',
   parameters: z.object({
     chatId: z.string().describe('The chat session ID'),
     phase: z.enum([
@@ -136,7 +136,7 @@ export const updatePhaseProgress = tool({
 });
 
 export const getGenerationProgress = tool({
-  description: 'Get current story generation progress and phase status',
+  summary: 'Get current story generation progress and phase status',
   parameters: z.object({
     chatId: z.string().describe('The chat session ID'),
   }),
@@ -195,7 +195,7 @@ export const getGenerationProgress = tool({
 });
 
 export const createEmptyStory = tool({
-  description: 'Create an empty story shell for "Create New Story" workflow',
+  summary: 'Create an empty story shell for "Create New Story" workflow',
   parameters: z.object({
     userId: z.string().describe('The user ID creating the story'),
     title: z.string().default('Untitled Story').describe('Initial story title'),

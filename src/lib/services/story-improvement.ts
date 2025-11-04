@@ -11,33 +11,17 @@ import type {
 // Improvement schemas
 const ImprovedStorySchema = z.object({
   title: z.string().optional(),
-  description: z.string().optional(),
+  summary: z.string().optional(),
   premise: z.string().optional(),
   dramaticQuestion: z.string().optional(),
   theme: z.string().optional(),
-  hnsData: z.object({
-    narrative_structure: z.string().optional(),
-    story_arc: z.string().optional(),
-    central_conflict: z.string().optional(),
-    emotional_journey: z.string().optional(),
-    thematic_elements: z.array(z.string()).optional(),
-    tone: z.string().optional(),
-    pov_strategy: z.string().optional()
-  }).optional()
 });
 
 const ImprovedPartSchema = z.object({
   title: z.string().optional(),
-  description: z.string().optional(),
-  structuralRole: z.string().optional(),
   summary: z.string().optional(),
+  structuralRole: z.string().optional(),
   keyBeats: z.array(z.string()).optional(),
-  hnsData: z.object({
-    tension_progression: z.string().optional(),
-    narrative_function: z.string().optional(),
-    key_turning_points: z.array(z.string()).optional(),
-    emotional_arc: z.string().optional()
-  }).optional()
 });
 
 const ImprovedChapterSchema = z.object({
@@ -50,15 +34,9 @@ const ImprovedChapterSchema = z.object({
   actionDialogueRatio: z.string().optional(),
   chapterHook: z.object({
     type: z.string(),
-    description: z.string(),
+    summary: z.string(),
     urgency_level: z.string()
   }).optional(),
-  hnsData: z.object({
-    scene_transitions: z.array(z.string()).optional(),
-    tension_beats: z.array(z.string()).optional(),
-    chapter_arc: z.string().optional(),
-    cliffhanger: z.string().optional()
-  }).optional()
 });
 
 const ImprovedSceneSchema = z.object({
@@ -72,13 +50,6 @@ const ImprovedSceneSchema = z.object({
   emotionalShift: z.object({
     from: z.string(),
     to: z.string()
-  }).optional(),
-  hnsData: z.object({
-    sensory_details: z.array(z.string()).optional(),
-    dialogue_goals: z.array(z.string()).optional(),
-    action_beats: z.array(z.string()).optional(),
-    subtext: z.string().optional(),
-    scene_purpose: z.string().optional()
   }).optional(),
   content: z.string().optional() // Add content field for prose improvements
 });
@@ -111,33 +82,17 @@ const ImprovedCharacterSchema = z.object({
     distinguishing_features: z.array(z.string()).optional(),
     mannerisms: z.array(z.string()).optional()
   }).optional(),
-  hnsData: z.object({
-    character_arc: z.string().optional(),
-    relationships: z.record(z.string(), z.string()).optional(),
-    internal_conflict: z.string().optional(),
-    external_conflict: z.string().optional(),
-    growth_trajectory: z.string().optional(),
-    key_scenes: z.array(z.string()).optional()
-  }).optional()
 });
 
 const ImprovedSettingSchema = z.object({
   name: z.string().optional(),
-  description: z.string().optional(),
+  summary: z.string().optional(),
   mood: z.string().optional(),
   sensory: z.record(z.string(), z.array(z.string())).optional(),
   visualStyle: z.string().optional(),
   visualReferences: z.array(z.string()).optional(),
   colorPalette: z.array(z.string()).optional(),
   architecturalStyle: z.string().optional(),
-  hnsData: z.object({
-    atmosphere: z.string().optional(),
-    symbolic_meaning: z.string().optional(),
-    story_function: z.string().optional(),
-    time_period: z.string().optional(),
-    cultural_context: z.string().optional(),
-    environmental_challenges: z.array(z.string()).optional()
-  }).optional()
 });
 
 // Types
@@ -551,11 +506,10 @@ async function improveStory(
 
 ORIGINAL STORY:
 Title: ${story.title}
-Description: ${story.description || 'N/A'}
+Description: ${story.summary || 'N/A'}
 Premise: ${story.premise || 'N/A'}
 Dramatic Question: ${story.dramaticQuestion || 'N/A'}
 Theme: ${story.theme || 'N/A'}
-Current HNS Data: ${JSON.stringify(story.hnsData || {})}
 
 ISSUES TO ADDRESS:
 ${issues.join('\n')}
@@ -575,7 +529,7 @@ Provide improvements that:
 1. Address all identified issues
 2. Enhance weak areas based on scores
 3. Maintain existing strengths
-4. Add comprehensive hnsData for story development
+4. Add comprehensive metadata for story development
 5. ${updateLevel === 'conservative' ? 'Make minimal necessary changes' : updateLevel === 'aggressive' ? 'Make comprehensive improvements' : 'Balance improvements with preservation'}
 
 Return ONLY the fields that need updating. Keep other fields unchanged.`
@@ -585,9 +539,9 @@ Return ONLY the fields that need updating. Keep other fields unchanged.`
     const improvements: string[] = [];
 
     // Track what was improved
-    if (object.description && object.description !== story.description) {
-      changes.push('description');
-      improvements.push('Enhanced story description for clarity');
+    if (object.summary && object.summary !== story.summary) {
+      changes.push('summary');
+      improvements.push('Enhanced story summary for clarity');
     }
     if (object.premise && object.premise !== story.premise) {
       changes.push('premise');
@@ -600,10 +554,6 @@ Return ONLY the fields that need updating. Keep other fields unchanged.`
     if (object.theme && object.theme !== story.theme) {
       changes.push('theme');
       improvements.push('Refined thematic elements');
-    }
-    if (object.hnsData) {
-      changes.push('hnsData');
-      improvements.push('Added comprehensive HNS narrative data');
     }
 
     return {
@@ -649,7 +599,6 @@ Description: ${truncateString(part.description || 'N/A', 500)}
 Structural Role: ${part.structuralRole || 'N/A'}
 Summary: ${truncateString(part.summary || 'N/A', 1000)}
 Key Beats: ${JSON.stringify(part.keyBeats || []).substring(0, 500)}
-Current HNS Data: ${JSON.stringify(part.hnsData || {}).substring(0, 500)}
 
 ISSUES TO ADDRESS:
 ${issues.join('\n')}
@@ -665,7 +614,7 @@ Update Level: ${updateLevel}
 Improve the part to:
 1. Address all identified issues
 2. Enhance structural role and contribution
-3. Add comprehensive hnsData for narrative development
+3. Add comprehensive metadata for narrative development
 4. Maintain consistency with overall story
 5. CRITICAL: Keep title concise (max 50 characters) and clear
 
@@ -675,9 +624,9 @@ Return ONLY the fields that need updating. Ensure all text fields are reasonable
     const changes: string[] = [];
     const improvements: string[] = [];
 
-    if (object.description) {
-      changes.push('description');
-      improvements.push('Enhanced part description');
+    if (object.summary) {
+      changes.push('summary');
+      improvements.push('Enhanced part summary');
     }
     if (object.structuralRole) {
       changes.push('structuralRole');
@@ -690,10 +639,6 @@ Return ONLY the fields that need updating. Ensure all text fields are reasonable
     if (object.keyBeats) {
       changes.push('keyBeats');
       improvements.push('Added/refined key story beats');
-    }
-    if (object.hnsData) {
-      changes.push('hnsData');
-      improvements.push('Added HNS narrative progression data');
     }
 
     // Validate and truncate any overly long fields in the improved data
@@ -756,7 +701,6 @@ Purpose: ${truncateString(chapter.purpose || 'N/A', 500)}
 Hook: ${truncateString(chapter.hook || 'N/A', 500)}
 Pacing Goal: ${truncateString(chapter.pacingGoal || 'N/A', 200)}
 Character Focus: ${truncateString(chapter.characterFocus || 'N/A', 200)}
-Current HNS Data: ${JSON.stringify(chapter.hnsData || {}).substring(0, 500)}
 
 ISSUES TO ADDRESS:
 ${issues.join('\n')}
@@ -774,7 +718,7 @@ Improve the chapter to:
 1. Address all identified issues
 2. Enhance hook and pacing
 3. Clarify chapter purpose
-4. Add comprehensive hnsData for scene development
+4. Add comprehensive metadata for scene development
 
 Return ONLY the fields that need updating.`
     });
@@ -797,10 +741,6 @@ Return ONLY the fields that need updating.`
     if (object.chapterHook) {
       changes.push('chapterHook');
       improvements.push('Added detailed hook structure');
-    }
-    if (object.hnsData) {
-      changes.push('hnsData');
-      improvements.push('Added HNS chapter progression data');
     }
 
     // Validate and truncate any overly long fields in the improved data
@@ -940,7 +880,6 @@ Outcome: ${scene.outcome || 'N/A'}
 Summary: ${scene.summary || 'N/A'}
 Entry Hook: ${scene.entryHook || 'N/A'}
 Emotional Shift: ${JSON.stringify(scene.emotionalShift || {})}
-Current HNS Data: ${JSON.stringify(scene.hnsData || {})}
 
 ISSUES TO ADDRESS:
 ${issues.join('\n')}
@@ -984,10 +923,6 @@ Return ONLY the structural fields that need updating.`
     changes.push('emotionalShift');
     improvements.push('Defined emotional progression');
   }
-  if (object.hnsData) {
-    changes.push('hnsData');
-    improvements.push('Added HNS scene writing data');
-  }
 
   return { data: object, changes, improvements };
 }
@@ -1011,7 +946,6 @@ Conflict: ${enhancedScene.conflict}
 Outcome: ${enhancedScene.outcome}
 Entry Hook: ${enhancedScene.entryHook || 'N/A'}
 Emotional Shift: ${JSON.stringify(enhancedScene.emotionalShift || {})}
-HNS Data: ${JSON.stringify(enhancedScene.hnsData || {})}
 
 ORIGINAL CONTENT (${originalContent.split(/\s+/).length} words):
 ${originalContent}
@@ -1082,7 +1016,6 @@ Archetype: ${character.archetype || 'N/A'}
 Summary: ${character.summary || 'N/A'}
 Motivations: ${JSON.stringify(character.motivations || {})}
 Personality: ${JSON.stringify(character.personality || {})}
-Current HNS Data: ${JSON.stringify(character.hnsData || {})}
 
 ISSUES TO ADDRESS:
 ${issues.join('\n')}
@@ -1127,7 +1060,7 @@ Return ONLY the fields that need updating.`
     }
     if (object.hnsData) {
       changes.push('hnsData');
-      improvements.push('Added HNS character development data');
+      improvements.push('Added character development data');
     }
 
     return {
@@ -1166,7 +1099,6 @@ Description: ${setting.description || 'N/A'}
 Mood: ${setting.mood || 'N/A'}
 Sensory: ${JSON.stringify(setting.sensory || {})}
 Visual Style: ${setting.visualStyle || 'N/A'}
-Current HNS Data: ${JSON.stringify(setting.hnsData || {})}
 
 ISSUES TO ADDRESS:
 ${issues.join('\n')}
@@ -1192,9 +1124,9 @@ Return ONLY the fields that need updating.`
     const changes: string[] = [];
     const improvements: string[] = [];
 
-    if (object.description) {
-      changes.push('description');
-      improvements.push('Enhanced setting description');
+    if (object.summary) {
+      changes.push('summary');
+      improvements.push('Enhanced setting summary');
     }
     if (object.mood) {
       changes.push('mood');
@@ -1206,7 +1138,7 @@ Return ONLY the fields that need updating.`
     }
     if (object.hnsData) {
       changes.push('hnsData');
-      improvements.push('Added HNS setting context data');
+      improvements.push('Added setting context data');
     }
 
     return {
@@ -1236,7 +1168,7 @@ function generateImprovementSummary(changes: any, analysisResult: any): any {
 
   // Categorize improvements
   if (changes.story.fieldsUpdated.includes('hnsData')) {
-    majorImprovements.push('Added comprehensive HNS narrative structure data');
+    majorImprovements.push('Added comprehensive narrative structure data');
   }
   if (changes.story.fieldsUpdated.includes('premise') || changes.story.fieldsUpdated.includes('dramaticQuestion')) {
     majorImprovements.push('Strengthened core story elements');

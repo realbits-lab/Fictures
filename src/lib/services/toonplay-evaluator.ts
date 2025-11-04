@@ -18,7 +18,7 @@ import { generateObject } from 'ai';
 import { gateway } from '@ai-sdk/gateway';
 import { z } from 'zod';
 import type { ComicToonplay } from '@/lib/ai/toonplay-converter';
-import type { HNSScene, HNSCharacter, HNSSetting } from '@/types/hns';
+import type { scenes, characters, settings } from '@/../drizzle/schema';
 
 // ============================================
 // EVALUATION SCHEMA
@@ -76,10 +76,10 @@ export interface ToonplayEvaluationResult extends ToonplayEvaluation {
 
 export interface EvaluateToonplayOptions {
   toonplay: ComicToonplay;
-  sourceScene: HNSScene;
-  characters: HNSCharacter[];
-  setting: HNSSetting;
-  storyGenre: string;
+  sourceScene: typeof scenes.$inferSelect;
+  characters: (typeof characters.$inferSelect)[];
+  setting: typeof settings.$inferSelect;
+  storyGenre: string | null;
 }
 
 export async function evaluateToonplay(
@@ -186,10 +186,10 @@ function calculateToonplayMetrics(toonplay: ComicToonplay) {
 
 function buildEvaluationPrompt(
   toonplay: ComicToonplay,
-  sourceScene: HNSScene,
-  characters: HNSCharacter[],
-  setting: HNSSetting,
-  storyGenre: string,
+  sourceScene: typeof scenes.$inferSelect,
+  characters: (typeof characters.$inferSelect)[],
+  setting: typeof settings.$inferSelect,
+  storyGenre: string | null,
   metrics: ReturnType<typeof calculateToonplayMetrics>
 ): string {
 

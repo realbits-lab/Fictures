@@ -11,7 +11,7 @@ export const runtime = 'nodejs';
 
 const createPartSchema = z.object({
   title: z.string().min(1).max(255),
-  description: z.string().optional(),
+  summary: z.string().optional(),
   storyId: z.string(),
   orderIndex: z.number().min(1),
   content: z.string().optional(),
@@ -95,10 +95,9 @@ export async function POST(request: NextRequest) {
       validatedData.storyId,
       {
         title: validatedData.title,
-        description: validatedData.description,
+        summary: (validatedData as any).summary || (validatedData as any).description,
         authorId: session.user.id,
         orderIndex: validatedData.orderIndex,
-        content: validatedData.content || '',
       }
     );
 

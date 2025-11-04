@@ -24,7 +24,7 @@ export interface SceneFormatterConfig {
 export interface FormattingChange {
   type: 'paragraph_split' | 'spacing_added' | 'spacing_removed' | 'paragraph_merged';
   location: string;
-  description: string;
+  summary: string;
   before: string;
   after: string;
 }
@@ -270,7 +270,7 @@ export function formatSceneContent(
         changes.push({
           type: 'paragraph_split',
           location: `Paragraph ${i + 1}`,
-          description: `Split description paragraph with ${sentenceCount} sentences into ${split.length} paragraphs`,
+          summary: `Split description paragraph with ${sentenceCount} sentences into ${split.length} paragraphs`,
           before: block.content.substring(0, 100) + '...',
           after: split.map(p => p.substring(0, 50) + '...').join(' | '),
         });
@@ -315,7 +315,7 @@ export function formatSceneContent(
       changes.push({
         type: 'spacing_added',
         location: `Between paragraphs ${i} and ${i + 1}`,
-        description: `Ensured blank line between ${previous.type} and ${current.type}`,
+        summary: `Ensured blank line between ${previous.type} and ${current.type}`,
         before: '',
         after: '',
       });
@@ -337,10 +337,10 @@ export function formatSceneContent(
  */
 export function validateSceneFormatting(content: string, config: Partial<SceneFormatterConfig> = {}): {
   isValid: boolean;
-  violations: Array<{ rule: string; description: string; location: string }>;
+  violations: Array<{ rule: string; summary: string; location: string }>;
 } {
   const cfg = { ...DEFAULT_CONFIG, ...config };
-  const violations: Array<{ rule: string; description: string; location: string }> = [];
+  const violations: Array<{ rule: string; summary: string; location: string }> = [];
 
   const blocks = parseBlocks(content);
 
@@ -352,7 +352,7 @@ export function validateSceneFormatting(content: string, config: Partial<SceneFo
       if (sentenceCount > cfg.maxSentencesPerParagraph) {
         violations.push({
           rule: 'max_sentences',
-          description: `Description paragraph has ${sentenceCount} sentences (max: ${cfg.maxSentencesPerParagraph})`,
+          summary: `Description paragraph has ${sentenceCount} sentences (max: ${cfg.maxSentencesPerParagraph})`,
           location: `Paragraph ${index + 1}`,
         });
       }
@@ -360,7 +360,7 @@ export function validateSceneFormatting(content: string, config: Partial<SceneFo
       if (sentenceCount < cfg.minSentencesPerParagraph) {
         violations.push({
           rule: 'min_sentences',
-          description: `Description paragraph has ${sentenceCount} sentences (min: ${cfg.minSentencesPerParagraph})`,
+          summary: `Description paragraph has ${sentenceCount} sentences (min: ${cfg.minSentencesPerParagraph})`,
           location: `Paragraph ${index + 1}`,
         });
       }

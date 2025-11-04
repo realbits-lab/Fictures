@@ -32,11 +32,11 @@ export async function GET(
 
     // Parse HNS data if it exists
     let parsedHnsData = null;
-    if (chapter.hnsData) {
+    if ((chapter as any).hnsData) {
       try {
-        parsedHnsData = typeof chapter.hnsData === 'object'
-          ? chapter.hnsData
-          : JSON.parse(chapter.hnsData as any);
+        parsedHnsData = typeof (chapter as any).hnsData === 'object'
+          ? (chapter as any).hnsData
+          : JSON.parse((chapter as any).hnsData as any);
       } catch (error) {
         console.error('Failed to parse chapter HNS data:', error);
       }
@@ -90,7 +90,7 @@ export async function PATCH(
     // Drizzle ORM will handle JSON serialization automatically
     await db.update(chapters)
       .set({
-        hnsData: hnsData,
+        ...(hnsData ? { hnsData } as any : {}),
         updatedAt: new Date()
       })
       .where(eq(chapters.id, id));

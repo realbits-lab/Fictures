@@ -63,7 +63,7 @@ export async function getCachedUserStories(userId: string) {
       imageVariants: stories.imageVariants, // ✅ INCLUDE: Needed for API response transformation
       // ❌ SKIP heavy fields for list view:
       // - moralFramework - not needed for list
-      // - hnsData - removed from schema (legacy HNS field)
+      // - hnsData - removed from schema (legacy field)
     })
     .from(stories)
     .where(eq(stories.authorId, userId))

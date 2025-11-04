@@ -8,22 +8,22 @@ const readerFeatures = [
   {
     icon: "📚",
     title: "Free Reading",
-    description: "Enjoy unlimited access to thousands of stories across all genres, completely free."
+    summary: "Enjoy unlimited access to thousands of stories across all genres, completely free."
   },
   {
     icon: "🔖",
     title: "Smart Bookmarks",
-    description: "Never lose your place. Automatically sync your reading progress across devices."
+    summary: "Never lose your place. Automatically sync your reading progress across devices."
   },
   {
     icon: "💬",
     title: "Engage with Authors",
-    description: "Comment on chapters, rate stories, and connect with writers and fellow readers."
+    summary: "Comment on chapters, rate stories, and connect with writers and fellow readers."
   },
   {
     icon: "🎯",
     title: "Personalized Discovery",
-    description: "Get story recommendations based on your reading history and preferences."
+    summary: "Get story recommendations based on your reading history and preferences."
   }
 ];
 
@@ -31,12 +31,12 @@ const writerFeatures = [
   {
     icon: "🤖",
     title: "AI Writing Assistant",
-    description: "Get intelligent suggestions and writing guidance powered by advanced AI."
+    summary: "Get intelligent suggestions and writing guidance powered by advanced AI."
   },
   {
     icon: "📊",
     title: "Analytics & Insights",
-    description: "Track your story's performance with detailed reader analytics and engagement metrics."
+    summary: "Track your story's performance with detailed reader analytics and engagement metrics."
   }
 ];
 
@@ -65,7 +65,7 @@ export function HomeFeatures() {
                   {feature.title}
                 </h3>
                 <p className="text-[rgb(var(--color-muted-foreground))] leading-relaxed">
-                  {feature.description}
+                  {feature.summary}
                 </p>
               </div>
             ))}
@@ -96,7 +96,7 @@ export function HomeFeatures() {
                   {feature.title}
                 </h3>
                 <p className="text-[rgb(var(--color-muted-foreground))] leading-relaxed">
-                  {feature.description}
+                  {feature.summary}
                 </p>
               </div>
             ))}

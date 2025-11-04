@@ -2,14 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { put } from '@vercel/blob';
 import { optimizeImage, type OptimizedImageSet, ORIGINAL_IMAGE_SIZE } from './image-optimization';
 import { nanoid } from 'nanoid';
-
-// Placeholder images for fallback when generation fails
-const PLACEHOLDER_IMAGES = {
-  character: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/character-default.png',
-  setting: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/setting-visual.png',
-  scene: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/scene-illustration.png',
-  story: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/story-cover.png',
-} as const;
+import { getBlobPath, getSystemPlaceholderUrl } from '@/lib/utils/blob-path';
 
 export interface GenerateStoryImageParams {
   prompt: string;
@@ -79,6 +72,7 @@ export async function generateStoryImage({
     console.log(`[Image Generation] Calling Gemini 2.5 Flash Image...`);
     const geminiResult = await model.generateContent({
       contents: [{
+        role: 'user',
         parts: [{ text: prompt }]
       }],
       generationConfig: {
@@ -89,14 +83,14 @@ export async function generateStoryImage({
           // We use '16:9' because it's the closest standard option that produces landscape output
           aspectRatio: '16:9',
         },
-      },
+      } as any, // Type assertion for image generation config (not yet in official types)
     });
 
     // Extract image from response
     const response = await geminiResult.response;
     const imagePart = response.candidates?.[0]?.content?.parts?.find(part => part.inlineData);
 
-    if (!imagePart) {
+    if (!imagePart || !imagePart.inlineData) {
       throw new Error('No image data in Gemini response');
     }
 
@@ -106,17 +100,21 @@ export async function generateStoryImage({
   // Generate unique image ID
   const imageId = nanoid();
 
-  // Construct filename based on image type
-  let filename: string;
+  // Construct filename based on image type (without environment prefix)
+  let relativePath: string;
   if (imageType === 'panel' && sceneId && panelNumber !== undefined) {
     // Comic panel path: stories/{storyId}/comics/{sceneId}/panel-{number}.png
-    filename = `stories/${storyId}/comics/${sceneId}/panel-${panelNumber}.png`;
+    relativePath = `stories/${storyId}/comics/${sceneId}/panel-${panelNumber}.png`;
   } else {
     // Standard path: stories/{storyId}/{imageType}/{imageId}.png
-    filename = `stories/${storyId}/${imageType}/${imageId}.png`;
+    relativePath = `stories/${storyId}/${imageType}/${imageId}.png`;
   }
 
+  // Add environment prefix (main/ or develop/)
+  const filename = getBlobPath(relativePath);
+
   console.log(`[Image Generation] Uploading original image to Vercel Blob...`);
+  console.log(`[Image Generation] Path: ${filename}`);
 
   // Upload original to Vercel Blob
   const blob = await put(filename, buffer, {
@@ -174,9 +172,10 @@ export async function generateStoryImage({
  * Used when Gemini generation fails (API errors, rate limits, network issues)
  */
 function createPlaceholderImageResult(
-  imageType: 'story' | 'scene' | 'character' | 'setting'
+  imageType: 'story' | 'scene' | 'character' | 'setting' | 'panel'
 ): GenerateStoryImageResult {
-  const placeholderUrl = PLACEHOLDER_IMAGES[imageType];
+  // Use environment-aware placeholder URLs (main/system or develop/system)
+  const placeholderUrl = getSystemPlaceholderUrl(imageType);
   const imageId = `placeholder-${imageType}-${nanoid()}`;
 
   console.log(`[Image Generation] ⚠️  Using placeholder for ${imageType}: ${placeholderUrl}`);

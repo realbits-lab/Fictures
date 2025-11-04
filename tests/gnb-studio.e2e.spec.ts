@@ -64,7 +64,7 @@ test.describe('GNB - Studio Page Tests', () => {
       console.log('📖 Testing Studio menu item visible...');
 
       // Navigate to reading page (where home redirects)
-      await page.goto('/reading');
+      await page.goto('/novels');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(2000);
 

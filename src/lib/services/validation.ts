@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const StoryValidationSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, "Title is required").max(255),
-  description: z.string().optional(),
+  summary: z.string().optional(),
   genre: z.string().optional(),
   premise: z.string().optional(),
   dramaticQuestion: z.string().optional(),
@@ -23,7 +23,7 @@ export const StoryValidationSchema = z.object({
 export const PartValidationSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, "Part title is required").max(255),
-  description: z.string().optional(),
+  summary: z.string().optional(),
   storyId: z.string().min(1, "Story ID is required"),
   orderIndex: z.number().int().min(0),
   structuralRole: z.string().optional(),
@@ -48,7 +48,7 @@ export const ChapterValidationSchema = z.object({
   sceneIds: z.array(z.string()).optional(),
   chapterHook: z.object({
     type: z.string(),
-    description: z.string(),
+    summary: z.string(),
     urgency_level: z.string()
   }).optional(),
 });
@@ -105,7 +105,7 @@ export const SettingValidationSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, "Setting name is required").max(255),
   storyId: z.string().min(1, "Story ID is required"),
-  description: z.string().optional(),
+  summary: z.string().optional(),
   mood: z.string().optional(),
   sensory: z.record(z.string(), z.array(z.string())).optional(),
   visualStyle: z.string().optional(),

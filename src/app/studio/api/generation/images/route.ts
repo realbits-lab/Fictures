@@ -119,7 +119,7 @@ High quality portrait, centered composition, neutral background, detailed facial
         const sight = setting.sensory.sight.slice(0, 2).join(', ');
         const sound = setting.sensory.sound.slice(0, 1).join(', ');
 
-        prompt = `${setting.name}. ${setting.description.substring(0, 200)}.
+        prompt = `${setting.name}. ${(setting as any).summary?.substring(0, 200) || (setting as any).description?.substring(0, 200) || ''}.
 ${architecturalStyle ? `Architecture: ${architecturalStyle}.` : ''}
 Atmosphere: ${mood}. Visual elements: ${sight}. ${sound}.
 ${colorPalette}
