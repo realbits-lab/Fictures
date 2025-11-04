@@ -96,7 +96,7 @@ async function generateComics() {
 
     // Display results
     console.log('\n📊 Results:');
-    console.log(`  Screenplay length: ${finalResult.screenplay?.length || 0} chars`);
+    console.log(`  Toonplay length: ${finalResult.toonplay?.length || 0} chars`);
     console.log(`  Panels generated: ${finalResult.panels?.length || 0}`);
 
     if (finalResult.panels) {

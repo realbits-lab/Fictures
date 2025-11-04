@@ -6,11 +6,15 @@ import { useEffect, useState, useMemo } from 'react';
 interface UseStudioAgentChatProps {
   chatId?: string;
   storyContext?: Record<string, any>;
+  agentType?: 'generation' | 'editing';
+  onChatCreated?: (chatId: string) => void;
 }
 
 export function useStudioAgentChat({
   chatId,
   storyContext,
+  agentType = 'generation',
+  onChatCreated,
 }: UseStudioAgentChatProps) {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
@@ -34,12 +38,14 @@ export function useStudioAgentChat({
     body: {
       chatId: currentChatId,
       storyContext,
+      agentType,
     },
     onResponse: (response) => {
       // Extract chat ID from response headers if this is a new chat
       const newChatId = response.headers.get('X-Chat-Id');
       if (newChatId && !currentChatId) {
         setCurrentChatId(newChatId);
+        onChatCreated?.(newChatId);
       }
     },
     onFinish: () => {
@@ -81,6 +87,22 @@ export function useStudioAgentChat({
       .map((t: any) => t.toolName);
   }, [messages]);
 
+  // Create new story workflow
+  const createNewStory = async (title: string = 'Untitled Story') => {
+    const response = await fetch('/studio/api/stories/create-empty', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create story');
+    }
+
+    const data = await response.json();
+    return data.storyId;
+  };
+
   return {
     messages,
     input,
@@ -97,5 +119,6 @@ export function useStudioAgentChat({
     historyLoaded,
     activeTools,
     chatId: currentChatId,
+    createNewStory,
   };
 }

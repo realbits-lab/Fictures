@@ -5,6 +5,7 @@
 The comics generation system converts narrative scene text into sequential visual comic panels optimized for vertical-scroll mobile reading. Each scene is transformed into 8-12 comic panels with AI-generated images, dialogue overlays, and sound effects.
 
 **Format**: Mobile-first vertical scrolling with 7:4 landscape panels (1344×768 pixels)
+**Terminology**: We use "toonplay" instead of "screenplay" because toonplay focuses on dialogue and images (perfect for comics), while screenplay focuses on sound and video (for films).
 
 ---
 
@@ -12,7 +13,7 @@ The comics generation system converts narrative scene text into sequential visua
 
 ### Current Implementation
 
-- **Text-to-Screenplay**: Google Gemini 2.5 Flash Lite (via Vercel AI SDK Gateway)
+- **Text-to-Toonplay**: Google Gemini 2.5 Flash Lite (via Vercel AI SDK Gateway)
 - **Image Generation**: Google Gemini 2.5 Flash Image
 - **Image Format**: 1344×768 pixels (7:4 aspect ratio = 1.75:1)
 - **Optimization**: 4 variants (AVIF + JPEG × 2 sizes: mobile 1x, mobile 2x)
@@ -39,7 +40,7 @@ The comics generation system converts narrative scene text into sequential visua
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              STEP 1: Screenplay Conversion                   │
+│              STEP 1: Toonplay Conversion                     │
 │  AI analyzes narrative and generates panel specifications:  │
 │  • Panel count (8-12 panels per scene)                      │
 │  • Shot types (establishing, wide, medium, close-up)        │
@@ -49,14 +50,14 @@ The comics generation system converts narrative scene text into sequential visua
 │  • Visual descriptions for image generation                 │
 │                                                             │
 │  Model: Google Gemini 2.5 Flash Lite via AI SDK Gateway    │
-│  Output: Structured ComicScreenplay JSON                    │
+│  Output: Structured ComicToonplay JSON                      │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
 │              STEP 2: Panel Image Generation                  │
 │  For each panel specification:                             │
-│  1. Build detailed image prompt from screenplay            │
+│  1. Build detailed image prompt from toonplay              │
 │  2. Generate image via Gemini 2.5 Flash (1344×768)        │
 │  3. Create 4 optimized variants (AVIF/JPEG × 2 sizes)     │
 │  4. Upload all images to Vercel Blob Storage               │
@@ -192,13 +193,13 @@ https://[blob].vercel-storage.com/stories/{storyId}/comics/{sceneId}/jpeg/1344x7
 **Response** (Server-Sent Events):
 ```typescript
 // Progress updates
-data: {"type":"progress","current":10,"total":100,"status":"Converting scene to screenplay..."}
+data: {"type":"progress","current":10,"total":100,"status":"Converting scene to toonplay..."}
 data: {"type":"progress","current":20,"total":100,"status":"Generating panel 1/10: establishing_shot"}
 data: {"type":"progress","current":90,"total":100,"status":"Generating panel 10/10: close_up"}
 data: {"type":"progress","current":100,"total":100,"status":"Panel generation complete!"}
 
 // Final result
-data: {"type":"complete","result":{ screenplay, panels, metadata }}
+data: {"type":"complete","result":{ toonplay, panels, metadata }}
 ```
 
 **Authentication:** NextAuth.js session or API key with `ai:use` scope
@@ -304,7 +305,7 @@ export function PanelRenderer({ panel }) {
 
 ## Generation Process Flow
 
-### Screenplay Conversion
+### Toonplay Conversion
 
 **Input:** Scene narrative text (prose)
 
@@ -320,7 +321,7 @@ export function PanelRenderer({ panel }) {
 
 **Output Schema:**
 ```typescript
-interface ComicScreenplay {
+interface ComicToonplay {
   scene_id: string;
   scene_title: string;
   total_panels: number;  // 8-12 (default: 10)
@@ -345,7 +346,7 @@ interface ComicScreenplay {
 ### Image Generation
 
 **Per Panel:**
-1. Build detailed prompt from screenplay
+1. Build detailed prompt from toonplay
 2. Include character consistency references
 3. Specify camera angle and composition
 4. Generate via Gemini 2.5 Flash (1344×768)
@@ -380,7 +381,7 @@ Style: Clean comic linework, vibrant colors, semi-realistic proportions,
 ```
 1. Author navigates to scene in Studio
 2. Click "Generate Comic Panels" button
-3. System converts narrative to screenplay (15-30s)
+3. System converts narrative to toonplay (15-30s)
 4. System generates 8-12 panel images (~3-5 minutes)
 5. Panels saved to database with status: draft
 6. Author reviews panels in preview
@@ -410,7 +411,7 @@ src/
 ├── lib/
 │   ├── ai/
 │   │   ├── comic-panel-generator.ts      # Main orchestrator
-│   │   └── screenplay-converter.ts       # Narrative → Screenplay
+│   │   └── toonplay-converter.ts         # Narrative → Toonplay
 │   ├── services/
 │   │   ├── image-generation.ts           # Gemini 2.5 Flash wrapper
 │   │   ├── image-optimization.ts         # 4-variant generation

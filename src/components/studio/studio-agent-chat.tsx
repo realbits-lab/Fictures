@@ -14,6 +14,8 @@ interface StudioAgentChatProps {
   chatId?: string;
   storyId?: string;
   storyContext?: Record<string, any>;
+  agentType?: 'generation' | 'editing';
+  onChatCreated?: (chatId: string) => void;
   className?: string;
 }
 
@@ -139,6 +141,8 @@ export function StudioAgentChat({
   chatId,
   storyId,
   storyContext,
+  agentType = 'editing',
+  onChatCreated,
   className,
 }: StudioAgentChatProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -158,6 +162,8 @@ export function StudioAgentChat({
       ...storyContext,
       storyId,
     },
+    agentType,
+    onChatCreated,
   });
 
   // Prevent wheel events from propagating to parent when scrolling within this component

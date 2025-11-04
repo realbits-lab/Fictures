@@ -59,6 +59,55 @@ export async function getStudioAgentChatsByUser(
   return query;
 }
 
+/**
+ * Update story generation phase tracking
+ */
+export async function updateStudioAgentChatPhase(
+  chatId: string,
+  phase: string,
+  completed: boolean = false
+): Promise<void> {
+  const chat = await getStudioAgentChat(chatId);
+  if (!chat) throw new Error('Chat not found');
+
+  const completedPhases = completed
+    ? [...((chat.completedPhases as string[]) || []), phase]
+    : (chat.completedPhases as string[]);
+
+  // Determine next phase
+  const phaseOrder = [
+    'story-summary', 'characters', 'settings', 'parts',
+    'chapters', 'scene-summaries', 'scene-content',
+    'evaluation', 'images'
+  ];
+  const currentIndex = phaseOrder.indexOf(phase);
+  const nextPhase = completed && currentIndex < phaseOrder.length - 1
+    ? phaseOrder[currentIndex + 1]
+    : phase;
+
+  await db.update(studioAgentChats)
+    .set({
+      currentPhase: nextPhase,
+      completedPhases: completedPhases as any,
+      updatedAt: new Date(),
+    })
+    .where(eq(studioAgentChats.id, chatId));
+}
+
+/**
+ * Get user studio chats with limit
+ */
+export async function getUserStudioChats(userId: string, limit: number = 50) {
+  const chats = await db
+    .select()
+    .from(studioAgentChats)
+    .where(eq(studioAgentChats.userId, userId))
+    .orderBy(desc(studioAgentChats.updatedAt))
+    .limit(limit);
+
+  return chats;
+}
+
 // ==============================================================================
 // STUDIO AGENT MESSAGE OPERATIONS
 // ==============================================================================

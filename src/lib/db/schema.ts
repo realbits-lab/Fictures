@@ -332,6 +332,7 @@ export const scenes = pgTable('scenes', {
   unpublishedBy: text('unpublished_by').references(() => users.id),
   // Comic publishing fields
   comicStatus: comicStatusEnum('comic_status').default('none').notNull(),
+  comicToonplay: json('comic_toonplay').$type<Record<string, unknown>>(), // Generated toonplay specification (panel breakdown with dialogue, SFX, shot types)
   comicPublishedAt: timestamp('comic_published_at'),
   comicPublishedBy: text('comic_published_by').references(() => users.id),
   comicUnpublishedAt: timestamp('comic_unpublished_at'),

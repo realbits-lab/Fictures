@@ -11,7 +11,8 @@ import { generateStoryImage } from '@/lib/services/image-generation';
 import { db } from '@/lib/db';
 import { comicPanels, scenes } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { convertSceneToScreenplay, type ComicScreenplay } from './screenplay-converter';
+import { type ComicToonplay } from './toonplay-converter';
+import { generateToonplayWithEvaluation } from '@/lib/services/toonplay-improvement-loop';
 import { buildPanelCharacterPrompts, extractKeyPhysicalTraits } from '@/lib/services/character-consistency';
 import { calculateTotalHeight, estimateReadingTime } from '@/lib/services/comic-layout';
 
@@ -87,8 +88,14 @@ export interface GeneratedPanel {
 }
 
 export interface ComicPanelGenerationResult {
-  screenplay: ComicScreenplay;
+  toonplay: ComicToonplay;
   panels: GeneratedPanel[];
+  evaluation?: {
+    weighted_score: number;
+    passes: boolean;
+    iterations: number;
+    final_report: string;
+  };
   metadata: {
     total_generation_time: number;
     total_panels: number;
@@ -119,32 +126,41 @@ export async function generateComicPanels(
   console.log(`   Genre: ${story.genre}`);
 
   // ========================================
-  // STEP 1: Convert Scene to Screenplay
+  // STEP 1: Generate Toonplay with Quality Evaluation
   // ========================================
 
-  progressCallback?.(0, 100, 'Converting scene to screenplay...');
+  progressCallback?.(0, 100, 'Generating toonplay with quality evaluation...');
 
-  const screenplay = await convertSceneToScreenplay({
+  const toonplayResult = await generateToonplayWithEvaluation({
     scene,
     characters,
     setting,
     storyGenre: story.genre,
     targetPanelCount,
+    maxIterations: 2,
+    passingScore: 3.0,
   });
 
-  console.log(`✅ Screenplay generated: ${screenplay.total_panels} panels`);
+  const toonplay = toonplayResult.toonplay;
 
-  progressCallback?.(20, 100, `Screenplay ready: ${screenplay.total_panels} panels`);
+  console.log(`✅ Toonplay generated: ${toonplay.total_panels} panels`);
+  console.log(`   Quality Score: ${toonplayResult.evaluation.weighted_score.toFixed(2)}/5.0 ${toonplayResult.evaluation.passes ? '✅' : '⚠️'}`);
+  console.log(`   Iterations: ${toonplayResult.iterations}`);
+
+  // Log evaluation report
+  console.log('\n' + toonplayResult.final_report);
+
+  progressCallback?.(20, 100, `Toonplay ready: ${toonplay.total_panels} panels (score: ${toonplayResult.evaluation.weighted_score.toFixed(1)}/5.0)`);
 
   // ========================================
   // STEP 2: Generate Panel Images
   // ========================================
 
   const generatedPanels: GeneratedPanel[] = [];
-  const totalPanels = screenplay.panels.length;
+  const totalPanels = toonplay.panels.length;
 
-  for (let i = 0; i < screenplay.panels.length; i++) {
-    const panelSpec = screenplay.panels[i];
+  for (let i = 0; i < toonplay.panels.length; i++) {
+    const panelSpec = toonplay.panels[i];
     const progress = 20 + Math.floor((i / totalPanels) * 70);
 
     progressCallback?.(
@@ -292,20 +308,27 @@ export async function generateComicPanels(
   console.log(`   Total Height: ${totalHeight}px`);
   console.log(`   Estimated Reading Time: ${readingTime.formatted}`);
 
-  // Update scene metadata with comics generation info
+  // Update scene metadata with comics generation info and toonplay
   console.log(`\n📝 Updating scene metadata for ${sceneId}...`);
   await db.update(scenes)
     .set({
       comicStatus: 'draft',
+      comicToonplay: toonplay as any, // Store the generated toonplay specification
       comicGeneratedAt: new Date(),
       comicPanelCount: generatedPanels.length,
     })
     .where(eq(scenes.id, sceneId));
-  console.log(`✅ Scene metadata updated successfully`);
+  console.log(`✅ Scene metadata updated successfully (including toonplay)`);
 
   return {
-    screenplay,
+    toonplay,
     panels: generatedPanels,
+    evaluation: {
+      weighted_score: toonplayResult.evaluation.weighted_score,
+      passes: toonplayResult.evaluation.passes,
+      iterations: toonplayResult.iterations,
+      final_report: toonplayResult.final_report,
+    },
     metadata: {
       total_generation_time: totalTime,
       total_panels: generatedPanels.length,

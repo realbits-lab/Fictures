@@ -5,16 +5,24 @@ import { users, stories } from './schema';
 export const studioAgentChats = pgTable('studio_agent_chats', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  storyId: text('story_id').references(() => stories.id, { onDelete: 'cascade' }), // Optional: link to story being worked on
-  agentType: varchar('agent_type', { length: 50 }).notNull(), // 'editing' (we focus on editing for /studio/edit/story)
+  storyId: text('story_id').references(() => stories.id, { onDelete: 'cascade' }), // Required - created on "Create New Story"
+  agentType: varchar('agent_type', { length: 50 }).notNull().default('generation'), // 'generation' | 'editing'
   title: varchar('title', { length: 255 }).notNull(),
-  context: jsonb('context'), // Story context, selected entity, etc.
+
+  // Story generation progress tracking
+  currentPhase: varchar('current_phase', { length: 50 }), // 'story-summary' | 'characters' | 'settings' | etc.
+  completedPhases: jsonb('completed_phases').$type<string[]>().default([]), // ['story-summary', 'characters']
+  phaseProgress: jsonb('phase_progress').$type<Record<string, number>>().default({}), // { 'scenes': 0.6 }
+
+  // Context and configuration
+  context: jsonb('context'), // Story context, user preferences, etc.
+
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
   userIdIdx: index('studio_agent_chats_user_id_idx').on(table.userId),
   storyIdIdx: index('studio_agent_chats_story_id_idx').on(table.storyId),
-  agentTypeIdx: index('studio_agent_chats_agent_type_idx').on(table.agentType),
+  currentPhaseIdx: index('studio_agent_chats_current_phase_idx').on(table.currentPhase),
 }));
 
 // Studio Agent Messages - Individual messages in chat sessions

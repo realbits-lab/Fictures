@@ -439,7 +439,7 @@ interface ComicStatusCardProps {
 
 ### Panel Count
 - **Typical:** 8-12 panels per scene
-- **Range:** Configured in screenplay-converter.ts
+- **Range:** Configured in toonplay-converter.ts
   - Target: 10 panels for optimal pacing
   - Max: 12 panels for complex action sequences
   - Min: 8 panels for quiet, reflective moments

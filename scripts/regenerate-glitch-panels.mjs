@@ -118,7 +118,7 @@ async function regeneratePanels() {
     }
 
     console.log('📊 Results:');
-    console.log(`  Screenplay: ${finalResult.screenplay ? 'Generated' : 'Missing'}`);
+    console.log(`  Toonplay: ${finalResult.toonplay ? 'Generated' : 'Missing'}`);
     console.log(`  Panels generated: ${finalResult.panels?.length || 0}\n`);
 
     if (finalResult.panels) {

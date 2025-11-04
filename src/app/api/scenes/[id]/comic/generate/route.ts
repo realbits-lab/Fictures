@@ -188,7 +188,12 @@ export async function POST(
                 comicGeneratedAt: updatedScene.comicGeneratedAt,
                 comicVersion: updatedScene.comicVersion,
               },
-              metadata: result.metadata,
+              result: {
+                toonplay: result.toonplay,
+                panels: result.panels,
+                evaluation: result.evaluation, // Include quality evaluation results
+                metadata: result.metadata,
+              },
             });
 
             controller.close();
@@ -254,7 +259,7 @@ export async function POST(
           comicVersion: updatedScene.comicVersion,
         },
         result: {
-          screenplay: result.screenplay,
+          toonplay: result.toonplay,
           panels: result.panels.map(p => ({
             id: p.id,
             panel_number: p.panel_number,
@@ -264,6 +269,7 @@ export async function POST(
             dialogue: p.dialogue,
             sfx: p.sfx,
           })),
+          evaluation: result.evaluation, // Include quality evaluation results
           metadata: result.metadata,
         },
       });

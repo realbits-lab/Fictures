@@ -10,10 +10,47 @@ import {
   saveToolExecution,
   updateToolExecution,
 } from '@/lib/db/studio-agent-operations';
-import { studioAgentCrudTools } from '@/lib/studio/agent-crud-tools';
+import { studioAgentTools } from '@/lib/studio/agent-tools';
 
 export const maxDuration = 60; // Allow longer execution for multi-step reasoning
 export const runtime = 'nodejs'; // Use Node.js runtime for database operations
+
+const GENERATION_AGENT_SYSTEM_PROMPT = `You are a Generation Agent for Fictures, an AI-powered story writing platform.
+
+Your role is to guide writers through the 9-phase Adversity-Triumph Engine story generation process.
+
+THE 9-PHASE GENERATION PIPELINE:
+1. Story Summary - Generate initial concept with genre, themes, moral framework
+2. Characters - Create character profiles with internal flaws and virtues
+3. Settings - Design story locations with atmospheric details
+4. Parts - Structure the story into acts with emotional progression
+5. Chapters - Break down parts into chapters with micro-cycles
+6. Scene Summaries - Outline individual scenes with emotional beats
+7. Scene Content - Generate full narrative prose (max 3 sentences/paragraph)
+8. Evaluation - Quality check using Architectonics of Engagement (≥3.0/4.0)
+9. Images - Generate images for story, characters, settings, scenes
+
+REASONING PROCESS:
+1. Check prerequisites using checkPrerequisites tool
+2. Validate story structure using validateStoryStructure
+3. Suggest next phase using suggestNextPhase
+4. Execute generation tools in sequential order
+5. Update phase progress using updatePhaseProgress
+6. Provide clear feedback and next steps
+
+AVAILABLE TOOLS:
+- Advisory: checkPrerequisites, validateStoryStructure, suggestNextPhase
+- Generation: generateStorySummary, generateCharacters, generateSettings, generateParts, generateChapters, generateSceneSummaries, generateSceneContent, evaluateScene, generateImages
+- Utility: validateApiKey, updatePhaseProgress, getGenerationProgress, createEmptyStory
+- CRUD: Full CRUD operations for all story entities
+
+GUIDELINES:
+- Always check prerequisites before starting a phase
+- Explain the purpose of each phase before generating
+- Update phase progress after completing each phase
+- Show generation progress percentage
+- Provide encouraging feedback and estimated time remaining
+- Guide users through the complete 9-phase journey`;
 
 const EDITING_AGENT_SYSTEM_PROMPT = `You are an Editing Agent for Fictures, an AI-powered story writing platform.
 
@@ -74,7 +111,7 @@ GUIDELINES:
 
 export async function POST(request: NextRequest) {
   try {
-    const { chatId, message, storyContext } = await request.json();
+    const { chatId, message, storyContext, agentType = 'editing' } = await request.json();
 
     // Authentication
     const session = await auth();
@@ -90,7 +127,7 @@ export async function POST(request: NextRequest) {
       chat = await createStudioAgentChat({
         userId,
         storyId: storyContext?.storyId || null,
-        agentType: 'editing',
+        agentType: agentType as 'generation' | 'editing',
         title: message.content.slice(0, 50) + '...',
         context: storyContext,
       });
@@ -126,12 +163,17 @@ export async function POST(request: NextRequest) {
       parts: [{ type: 'text', text: message.content }] as any,
     });
 
+    // Select system prompt and tools based on agent type
+    const systemPrompt = chat.agentType === 'generation'
+      ? GENERATION_AGENT_SYSTEM_PROMPT
+      : EDITING_AGENT_SYSTEM_PROMPT;
+
     // Stream response with multi-step reasoning
     const result = streamText({
       model: google('gemini-2.0-flash-exp'),
-      system: EDITING_AGENT_SYSTEM_PROMPT,
+      system: systemPrompt,
       messages: convertToCoreMessages(allMessages),
-      tools: studioAgentCrudTools,
+      tools: studioAgentTools, // Use all 38 tools
       maxSteps: 10, // Allow up to 10 reasoning steps
 
       // Log tool usage for transparency
