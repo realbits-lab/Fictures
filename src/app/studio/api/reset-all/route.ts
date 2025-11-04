@@ -15,8 +15,9 @@
 import { NextRequest } from 'next/server';
 import { authenticateRequest, hasRequiredScope } from '@/lib/auth/dual-auth';
 import { db } from '@/lib/db';
-import { stories, parts, chapters, scenes, characters, settings, aiInteractions } from '@/lib/db/schema';
+import { stories, parts, chapters, scenes, characters, settings, aiInteractions, comicPanels, sceneViews } from '@/lib/db/schema';
 import { list, del } from '@vercel/blob';
+import { sql } from 'drizzle-orm';
 
 export const maxDuration = 60; // Allow up to 60 seconds for complete cleanup
 
@@ -68,6 +69,8 @@ export async function POST(request: NextRequest) {
     const deletionReport = {
       database: {
         aiInteractions: 0,
+        sceneViews: 0,
+        comicPanels: 0,
         scenes: 0,
         chapters: 0,
         parts: 0,
@@ -84,40 +87,61 @@ export async function POST(request: NextRequest) {
     // 4. Delete all database records (cascading order)
     console.log('📊 [RESET ALL] Deleting database records...');
 
+    // Get counts before deletion
+    const interactionsCount = await db.select({ count: sql`count(*)::int` }).from(aiInteractions);
+    const sceneViewsCount = await db.select({ count: sql`count(*)::int` }).from(sceneViews);
+    const comicPanelsCount = await db.select({ count: sql`count(*)::int` }).from(comicPanels);
+    const scenesCount = await db.select({ count: sql`count(*)::int` }).from(scenes);
+    const chaptersCount = await db.select({ count: sql`count(*)::int` }).from(chapters);
+    const partsCount = await db.select({ count: sql`count(*)::int` }).from(parts);
+    const charactersCount = await db.select({ count: sql`count(*)::int` }).from(characters);
+    const settingsCount = await db.select({ count: sql`count(*)::int` }).from(settings);
+    const storiesCount = await db.select({ count: sql`count(*)::int` }).from(stories);
+
     // Delete AI interactions first (no foreign key dependencies)
-    const deletedInteractions = await db.delete(aiInteractions).returning();
-    deletionReport.database.aiInteractions = deletedInteractions.length;
-    console.log(`   ✓ Deleted ${deletedInteractions.length} AI interactions`);
+    await db.delete(aiInteractions);
+    deletionReport.database.aiInteractions = interactionsCount[0]?.count || 0;
+    console.log(`   ✓ Deleted ${deletionReport.database.aiInteractions} AI interactions`);
+
+    // Delete scene views (depends on scenes)
+    await db.delete(sceneViews);
+    deletionReport.database.sceneViews = sceneViewsCount[0]?.count || 0;
+    console.log(`   ✓ Deleted ${deletionReport.database.sceneViews} scene views`);
+
+    // Delete comic panels (depends on scenes)
+    await db.delete(comicPanels);
+    deletionReport.database.comicPanels = comicPanelsCount[0]?.count || 0;
+    console.log(`   ✓ Deleted ${deletionReport.database.comicPanels} comic panels`);
 
     // Delete scenes (depends on chapters)
-    const deletedScenes = await db.delete(scenes).returning();
-    deletionReport.database.scenes = deletedScenes.length;
-    console.log(`   ✓ Deleted ${deletedScenes.length} scenes`);
+    await db.delete(scenes);
+    deletionReport.database.scenes = scenesCount[0]?.count || 0;
+    console.log(`   ✓ Deleted ${deletionReport.database.scenes} scenes`);
 
     // Delete chapters (depends on parts)
-    const deletedChapters = await db.delete(chapters).returning();
-    deletionReport.database.chapters = deletedChapters.length;
-    console.log(`   ✓ Deleted ${deletedChapters.length} chapters`);
+    await db.delete(chapters);
+    deletionReport.database.chapters = chaptersCount[0]?.count || 0;
+    console.log(`   ✓ Deleted ${deletionReport.database.chapters} chapters`);
 
     // Delete parts (depends on stories)
-    const deletedParts = await db.delete(parts).returning();
-    deletionReport.database.parts = deletedParts.length;
-    console.log(`   ✓ Deleted ${deletedParts.length} parts`);
+    await db.delete(parts);
+    deletionReport.database.parts = partsCount[0]?.count || 0;
+    console.log(`   ✓ Deleted ${deletionReport.database.parts} parts`);
 
     // Delete characters (depends on stories)
-    const deletedCharacters = await db.delete(characters).returning();
-    deletionReport.database.characters = deletedCharacters.length;
-    console.log(`   ✓ Deleted ${deletedCharacters.length} characters`);
+    await db.delete(characters);
+    deletionReport.database.characters = charactersCount[0]?.count || 0;
+    console.log(`   ✓ Deleted ${deletionReport.database.characters} characters`);
 
     // Delete settings (depends on stories)
-    const deletedSettings = await db.delete(settings).returning();
-    deletionReport.database.settings = deletedSettings.length;
-    console.log(`   ✓ Deleted ${deletedSettings.length} settings`);
+    await db.delete(settings);
+    deletionReport.database.settings = settingsCount[0]?.count || 0;
+    console.log(`   ✓ Deleted ${deletionReport.database.settings} settings`);
 
     // Delete stories (parent table)
-    const deletedStories = await db.delete(stories).returning();
-    deletionReport.database.stories = deletedStories.length;
-    console.log(`   ✓ Deleted ${deletedStories.length} stories`);
+    await db.delete(stories);
+    deletionReport.database.stories = storiesCount[0]?.count || 0;
+    console.log(`   ✓ Deleted ${deletionReport.database.stories} stories`);
 
     console.log('\n✅ [RESET ALL] Database cleanup complete\n');
 
