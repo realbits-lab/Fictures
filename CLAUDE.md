@@ -25,6 +25,9 @@ This file provides guidance to Claude Code when working with this repository.
 - Run long-running processes (pnpm dev, npx commands) as background processes
 - Always redirect output streams to logs directory using shell pipes for monitoring
 - Kill existing processes on port 3000 before starting development server
+- **IMPORTANT**: Always remove Next.js cache (`.next/`) before restarting `pnpm dev`
+  - Command: `rm -rf .next && dotenv --file .env.local run pnpm dev`
+  - This ensures code changes are picked up and prevents stale cached code from running
 - Use proper environment variable loading with `dotenv --file .env.local run` prefix
 
 **File Organization Guidelines:**
