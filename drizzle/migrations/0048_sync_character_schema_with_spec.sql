@@ -3,7 +3,7 @@
 -- Purpose: Fix field type mismatches between database and specification
 
 -- 1. Convert backstory from JSON to TEXT
--- For existing HNS stories with JSON backstory, convert to concatenated text
+-- For existing legacy stories with JSON backstory, convert to concatenated text
 -- For new Adversity-Triumph stories, already using text (will remain unchanged)
 
 -- First, convert any existing JSON backstory to text
@@ -34,11 +34,11 @@ END;
 COMMENT ON COLUMN characters.backstory IS 'Focused history providing motivation context (2-4 paragraphs) - TEXT format per Adversity-Triumph specification';
 COMMENT ON COLUMN characters.personality IS 'Character personality with traits[] and values[] - JSON format: {traits: string[], values: string[]}';
 
--- 3. Mark deprecated HNS fields with comments
-COMMENT ON COLUMN characters.content IS 'DEPRECATED - Legacy HNS field, NULL for new Adversity-Triumph stories';
-COMMENT ON COLUMN characters.role IS 'DEPRECATED - Legacy HNS field, replaced by summary, NULL for new stories';
-COMMENT ON COLUMN characters.archetype IS 'DEPRECATED - Legacy HNS field, NULL for new Adversity-Triumph stories';
-COMMENT ON COLUMN characters.storyline IS 'DEPRECATED - Legacy HNS field, NULL for new Adversity-Triumph stories';
-COMMENT ON COLUMN characters.motivations IS 'DEPRECATED - Legacy HNS field, replaced by internalFlaw/externalGoal, NULL for new stories';
-COMMENT ON COLUMN characters.voice IS 'DEPRECATED - Legacy HNS field, replaced by voiceStyle, NULL for new stories';
-COMMENT ON COLUMN characters.visual_reference_id IS 'DEPRECATED - Legacy HNS field, NULL for new Adversity-Triumph stories';
+-- 3. Mark deprecated legacy fields with comments
+COMMENT ON COLUMN characters.content IS 'DEPRECATED - Legacy field, NULL for new Adversity-Triumph stories';
+COMMENT ON COLUMN characters.role IS 'DEPRECATED - Legacy field, replaced by summary, NULL for new stories';
+COMMENT ON COLUMN characters.archetype IS 'DEPRECATED - Legacy field, NULL for new Adversity-Triumph stories';
+COMMENT ON COLUMN characters.storyline IS 'DEPRECATED - Legacy field, NULL for new Adversity-Triumph stories';
+COMMENT ON COLUMN characters.motivations IS 'DEPRECATED - Legacy field, replaced by internalFlaw/externalGoal, NULL for new stories';
+COMMENT ON COLUMN characters.voice IS 'DEPRECATED - Legacy field, replaced by voiceStyle, NULL for new stories';
+COMMENT ON COLUMN characters.visual_reference_id IS 'DEPRECATED - Legacy field, NULL for new Adversity-Triumph stories';

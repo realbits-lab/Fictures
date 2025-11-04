@@ -215,7 +215,7 @@ export const userPreferences = pgTable('user_preferences', {
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 });
 
-// Stories table - Main story/book entities with HNS support
+// Stories table - Main story/book entities
 export const stories = pgTable('stories', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
@@ -236,7 +236,7 @@ export const stories = pgTable('stories', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Parts table - Story parts/sections with HNS support
+// Parts table - Story parts/sections
 export const parts = pgTable('parts', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
@@ -259,7 +259,7 @@ export const parts = pgTable('parts', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Chapters table - Individual chapters with HNS support
+// Chapters table - Individual chapters
 export const chapters = pgTable('chapters', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
@@ -273,9 +273,9 @@ export const chapters = pgTable('chapters', {
   hook: text('hook'), // Chapter hook from story development
   publishedAt: timestamp('published_at'),
   scheduledFor: timestamp('scheduled_for'),
-  // Legacy fields removed - HNS-specific fields dropped
-  // pacingGoal, actionDialogueRatio, chapterHook were HNS-only and not used by Novels
-  // characterFocus was HNS legacy field - removed in favor of focusCharacters array
+  // Legacy fields removed
+  // pacingGoal, actionDialogueRatio, chapterHook were legacy fields not used by Adversity-Triumph Engine
+  // characterFocus was legacy field - removed in favor of focusCharacters array
   // Adversity-Triumph Engine fields - Nested cycle tracking
   characterId: text('character_id').references(() => characters.id, { onDelete: 'set null' }), // Primary character whose macro arc this advances
   arcPosition: arcPositionEnum('arc_position'), // Position in macro arc: beginning, middle, climax (MACRO moment), or resolution
@@ -300,7 +300,7 @@ export const chapters = pgTable('chapters', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Scenes table - Chapter breakdown with HNS support and publishing
+// Scenes table - Chapter breakdown with publishing support
 export const scenes = pgTable('scenes', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
@@ -312,7 +312,7 @@ export const scenes = pgTable('scenes', {
   imageVariants: json('image_variants').$type<Record<string, unknown>>(), // Optimized image variants (AVIF, WebP, JPEG in multiple sizes)
   // Scene fields
   summary: text('summary'), // Scene specification (planning layer)
-  // Legacy HNS fields removed: povCharacterId, settingId, narrativeVoice, entryHook, emotionalShift were HNS-only
+  // Legacy fields removed: povCharacterId, settingId, narrativeVoice, entryHook, emotionalShift were legacy fields
   // Adversity-Triumph Engine fields - Cycle phase tracking
   cyclePhase: cyclePhaseEnum('cycle_phase'), // Position in 4-phase cycle: setup, confrontation, virtue, consequence, or transition
   emotionalBeat: emotionalBeatEnum('emotional_beat'), // Target emotion: fear, hope, tension, relief, elevation, catharsis, despair, joy
@@ -659,7 +659,7 @@ export const charactersRelations = relations(characters, ({ one }) => ({
   }),
 }));
 
-// Settings table (renamed from places for HNS alignment)
+// Settings table (story locations and environments)
 export const settings = pgTable('settings', {
   id: text('id').primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),

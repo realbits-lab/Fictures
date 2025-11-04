@@ -1,6 +1,6 @@
--- Remove HNS-related fields from database
--- This migration removes deprecated hns_data JSONB columns that were part of the old HNS (Hierarchical Narrative Schema) system
--- The platform has migrated to the Adversity-Triumph Engine methodology
+-- Remove legacy hns_data fields from database
+-- This migration removes deprecated hns_data JSONB columns that were part of the old legacy system
+-- The platform uses the Adversity-Triumph Engine methodology
 
 -- Drop indexes first
 DROP INDEX IF EXISTS idx_stories_hns_data;
