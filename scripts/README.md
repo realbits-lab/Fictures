@@ -114,7 +114,7 @@ The script provides:
 - Environment variables configured in `.env.local`:
   - `AI_GATEWAY_API_KEY` - Vercel AI Gateway for text generation
   - `OPENAI_API_KEY` - OpenAI API for image generation
-  - `POSTGRES_URL` - Neon PostgreSQL database
+  - `DATABASE_URL` - Neon PostgreSQL database (pooled connection)
   - `BLOB_READ_WRITE_TOKEN` - Vercel Blob for image storage
 
 ## Claude Code Integration

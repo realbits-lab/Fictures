@@ -152,7 +152,8 @@ Fictures is a full-stack web application built with Next.js 15 that provides a c
    AI_GATEWAY_API_KEY=your-ai-gateway-key
 
    # Database
-   POSTGRES_URL=your-neon-postgres-url
+   DATABASE_URL=your-neon-postgres-url-pooled
+   DATABASE_URL_UNPOOLED=your-neon-postgres-url-direct
 
    # Storage
    BLOB_READ_WRITE_TOKEN=your-vercel-blob-token
@@ -467,7 +468,8 @@ Configure these in your Vercel project or `.env.local`:
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID | Yes |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth secret | Yes |
 | `AI_GATEWAY_API_KEY` | Vercel AI Gateway key | Yes |
-| `POSTGRES_URL` | PostgreSQL connection string | Yes |
+| `DATABASE_URL` | PostgreSQL pooled connection | Yes |
+| `DATABASE_URL_UNPOOLED` | PostgreSQL direct connection (migrations) | Yes |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob storage token | Yes |
 | `REDIS_URL` | Redis connection string | Yes |
 
