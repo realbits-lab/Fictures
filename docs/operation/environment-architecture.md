@@ -69,13 +69,16 @@ console.log(`API Key: ${writer.apiKey}`);
 ```
 {environment}/stories/{storyId}/{imageType}/{imageId}.png
 {environment}/uploads/{userId}/{timestamp}-{filename}
+{environment}/system/placeholders/{imageType}-{variant}.png
 ```
 
 **Examples:**
 ```
 develop/stories/story_abc123/scene/scene_xyz789.png
 develop/uploads/usr_123/1234567890-avatar.jpg
+develop/system/placeholders/character-default.png
 main/stories/story_def456/character/char_abc123.png
+main/system/placeholders/scene-illustration.png
 ```
 
 **Blob Path Utilities:**
@@ -97,7 +100,9 @@ import {
   getSettingVisualPath,
   getComicPanelPath,
   getEnvironmentPrefix,
-  getStoryBlobPrefix
+  getStoryBlobPrefix,
+  getSystemPlaceholderPath,
+  getSystemPlaceholderUrl
 } from '@/lib/utils/blob-path';
 
 // Story cover
@@ -107,6 +112,14 @@ const coverPath = getStoryCoverPath('story_123');
 // Scene image
 const scenePath = getSceneImagePath('story_123', 'scene_456');
 // Returns: "develop/stories/story_123/scenes/scene_456/image.png"
+
+// System placeholder path
+const placeholderPath = getSystemPlaceholderPath('character');
+// Returns: "develop/system/placeholders/character-default.png"
+
+// System placeholder URL
+const placeholderUrl = getSystemPlaceholderUrl('character');
+// Returns: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/system/placeholders/character-default.png"
 
 // Environment prefix for listing
 const prefix = getEnvironmentPrefix();
@@ -313,6 +326,12 @@ AI_GATEWAY_API_KEY=***
 ```
 Vercel Blob Root
 ├── main/
+│   ├── system/
+│   │   └── placeholders/
+│   │       ├── character-default.png
+│   │       ├── scene-illustration.png
+│   │       ├── setting-visual.png
+│   │       └── story-cover.png
 │   ├── stories/
 │   │   └── story_abc123/
 │   │       ├── cover.png
@@ -322,6 +341,12 @@ Vercel Blob Root
 │   └── uploads/
 │       └── usr_123/
 └── develop/
+    ├── system/
+    │   └── placeholders/
+    │       ├── character-default.png
+    │       ├── scene-illustration.png
+    │       ├── setting-visual.png
+    │       └── story-cover.png
     ├── stories/
     │   └── story_xyz789/
     │       ├── cover.png
@@ -331,6 +356,11 @@ Vercel Blob Root
     └── uploads/
         └── usr_456/
 ```
+
+**System Folder Migration:**
+- Legacy `system/` folder → Copied to `main/system/` and `develop/system/`
+- Migration script: `scripts/migrate-system-folder.ts`
+- After migration, legacy `system/` folder can be safely removed
 
 ## Troubleshooting
 

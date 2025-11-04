@@ -2,15 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { put } from '@vercel/blob';
 import { optimizeImage, type OptimizedImageSet, ORIGINAL_IMAGE_SIZE } from './image-optimization';
 import { nanoid } from 'nanoid';
-import { getBlobPath } from '@/lib/utils/blob-path';
-
-// Placeholder images for fallback when generation fails
-const PLACEHOLDER_IMAGES = {
-  character: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/character-default.png',
-  setting: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/setting-visual.png',
-  scene: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/scene-illustration.png',
-  story: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/system/placeholders/story-cover.png',
-} as const;
+import { getBlobPath, getSystemPlaceholderUrl } from '@/lib/utils/blob-path';
 
 export interface GenerateStoryImageParams {
   prompt: string;
@@ -181,7 +173,8 @@ export async function generateStoryImage({
 function createPlaceholderImageResult(
   imageType: 'story' | 'scene' | 'character' | 'setting'
 ): GenerateStoryImageResult {
-  const placeholderUrl = PLACEHOLDER_IMAGES[imageType];
+  // Use environment-aware placeholder URLs (main/system or develop/system)
+  const placeholderUrl = getSystemPlaceholderUrl(imageType);
   const imageId = `placeholder-${imageType}-${nanoid()}`;
 
   console.log(`[Image Generation] ⚠️  Using placeholder for ${imageType}: ${placeholderUrl}`);

@@ -237,7 +237,7 @@ export async function getCommunityStoryForReading(storyId: string) {
         averageRating: story.rating || 0,
         ratingCount: story.ratingCount || 0,
       },
-      characters: storyCharacters,
+      characters: storyCharacters as any,
       settings: storySettings,
     };
 

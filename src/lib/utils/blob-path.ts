@@ -163,3 +163,53 @@ export function isBlobPathInEnvironment(
 ): boolean {
   return path.startsWith(`${env}/`);
 }
+
+/**
+ * Get system placeholder image path
+ *
+ * @param imageType - Type of placeholder image
+ * @param env - Optional environment override
+ * @returns Blob path for system placeholder image
+ *
+ * @example
+ * // In develop environment
+ * getSystemPlaceholderPath('character')
+ * // Returns: 'develop/system/placeholders/character-default.png'
+ */
+export function getSystemPlaceholderPath(
+  imageType: 'character' | 'setting' | 'scene' | 'story',
+  env?: FicturesEnvironment
+): string {
+  const filenames = {
+    character: 'character-default.png',
+    setting: 'setting-visual.png',
+    scene: 'scene-illustration.png',
+    story: 'story-cover.png',
+  };
+  return getBlobPath(`system/placeholders/${filenames[imageType]}`, env);
+}
+
+/**
+ * Get system placeholder image URL
+ *
+ * Constructs full Vercel Blob URL for system placeholder images.
+ * Uses environment-aware paths (main/system or develop/system).
+ *
+ * @param imageType - Type of placeholder image
+ * @param env - Optional environment override
+ * @returns Full Vercel Blob URL for system placeholder image
+ *
+ * @example
+ * // In develop environment
+ * getSystemPlaceholderUrl('character')
+ * // Returns: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/system/placeholders/character-default.png'
+ */
+export function getSystemPlaceholderUrl(
+  imageType: 'character' | 'setting' | 'scene' | 'story',
+  env?: FicturesEnvironment
+): string {
+  const path = getSystemPlaceholderPath(imageType, env);
+  // Vercel Blob base URL (same for all environments)
+  const baseUrl = 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com';
+  return `${baseUrl}/${path}`;
+}

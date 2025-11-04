@@ -8,7 +8,7 @@
 import { generateObject } from 'ai';
 import { gateway } from '@ai-sdk/gateway';
 import { z } from 'zod';
-import type { HNSScene, HNSCharacter, HNSSetting } from '@/types/hns';
+import type { scenes, characters, settings, stories } from '@/../drizzle/schema';
 
 // ============================================
 // SCHEMA DEFINITIONS
@@ -71,9 +71,9 @@ export type ComicToonplay = z.infer<typeof ComicToonplaySchema>;
 // ============================================
 
 export interface ConvertToToonplayOptions {
-  scene: HNSScene;
-  characters: HNSCharacter[];
-  setting: HNSSetting;
+  scene: typeof scenes.$inferSelect;
+  characters: (typeof characters.$inferSelect)[];
+  setting: typeof settings.$inferSelect;
   storyGenre: string;
   targetPanelCount?: number;
 }
@@ -84,10 +84,9 @@ export async function convertSceneToToonplay(
 
   const { scene, characters, setting, storyGenre, targetPanelCount } = options;
 
-  // Safely get scene title (database uses 'title', legacy HNS uses 'scene_title')
   const sceneTitle = scene.title || 'Untitled Scene';
 
-  // Derive legacy fields from new Adversity-Triumph Engine schema
+  // Derive narrative context from Adversity-Triumph Engine schema
   const goal = scene.summary || 'Advance the story';
   const conflict = scene.cyclePhase === 'confrontation'
     ? 'Characters face obstacles and challenges'
@@ -100,7 +99,7 @@ export async function convertSceneToToonplay(
     ? 'Scene transitions to next phase'
     : 'Resolution';
 
-  // Map emotionalBeat to emotional shift
+  // Map emotionalBeat to emotional shift for toonplay context
   const emotionalFrom = scene.emotionalBeat === 'fear' ? 'anxious'
     : scene.emotionalBeat === 'hope' ? 'uncertain'
     : scene.emotionalBeat === 'tension' ? 'tense'

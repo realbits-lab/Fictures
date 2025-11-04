@@ -244,11 +244,13 @@ If generation fails (API errors, rate limits, network issues):
 2. **Graceful degradation:** No database corruption
 3. **Retry logic:** Automatic retry with exponential backoff
 
-Placeholder images:
-- Character: `system/placeholders/character-default.png`
-- Setting: `system/placeholders/setting-visual.png`
-- Scene: `system/placeholders/scene-illustration.png`
-- Story: `system/placeholders/story-cover.png`
+Placeholder images (environment-aware):
+- Character: `{environment}/system/placeholders/character-default.png`
+- Setting: `{environment}/system/placeholders/setting-visual.png`
+- Scene: `{environment}/system/placeholders/scene-illustration.png`
+- Story: `{environment}/system/placeholders/story-cover.png`
+
+Where `{environment}` is either `main` (production) or `develop` (development) based on `NODE_ENV`.
 
 ## Performance
 
