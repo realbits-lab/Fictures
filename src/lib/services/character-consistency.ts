@@ -6,7 +6,7 @@
  * (no reference image support).
  */
 
-import type { characters } from '@/../drizzle/schema';
+import type { characters as charactersTable } from '@/../drizzle/schema';
 
 // ============================================
 // CHARACTER VISUAL CACHE
@@ -28,7 +28,7 @@ const characterVisualCache: Map<string, CharacterVisualProfile> = new Map();
  * Build a consistent character description fragment for image prompts
  */
 export function buildCharacterPromptFragment(
-  character: typeof characters.$inferSelect,
+  character: typeof charactersTable.$inferSelect,
   pose: string
 ): string {
   const cacheKey = character.id;
@@ -50,7 +50,7 @@ export function buildCharacterPromptFragment(
 /**
  * Create a detailed base prompt for a character
  */
-function createCharacterBasePrompt(character: typeof characters.$inferSelect): string {
+function createCharacterBasePrompt(character: typeof charactersTable.$inferSelect): string {
   const physicalDesc = character.physicalDescription as any;
 
   // Build detailed physical description
@@ -99,7 +99,7 @@ function createCharacterBasePrompt(character: typeof characters.$inferSelect): s
  */
 export function buildPanelCharacterPrompts(
   characterIds: string[],
-  characters: (typeof characters.$inferSelect)[],
+  characters: (typeof charactersTable.$inferSelect)[],
   characterPoses: Record<string, string>
 ): string {
   const characterPrompts = characterIds
@@ -140,7 +140,7 @@ export function getCharacterFromCache(characterId: string): CharacterVisualProfi
 /**
  * Extract key physical traits for emphasis in prompts
  */
-export function extractKeyPhysicalTraits(character: typeof characters.$inferSelect): string[] {
+export function extractKeyPhysicalTraits(character: typeof charactersTable.$inferSelect): string[] {
   const physicalDesc = character.physicalDescription as any;
   const traits: string[] = [];
 

@@ -20,18 +20,18 @@ export type AnimationStyle =
 export function generateSceneImagePrompt(
   scene: typeof scenes.$inferSelect,
   story: typeof stories.$inferSelect,
-  characters: (typeof characters.$inferSelect)[],
-  settings: (typeof settings.$inferSelect)[]
+  charactersList: (typeof characters.$inferSelect)[],
+  settingsList: (typeof settings.$inferSelect)[]
 ): string {
   // Get character details from characterFocus field (array of character IDs)
   const characterFocusIds = Array.isArray(scene.characterFocus) ? scene.characterFocus as string[] : [];
   const sceneCharacters = characterFocusIds
-    .map(id => characters.find(c => c.id === id))
+    .map(id => charactersList.find(c => c.id === id))
     .filter(Boolean);
 
   // Get setting details - scenes don't have settingId in the new schema
   // Use the first setting from the story
-  const setting = settings[0];
+  const setting = settingsList[0];
 
   // Build the prompt
   const characterDescriptions = sceneCharacters
@@ -39,14 +39,14 @@ export function generateSceneImagePrompt(
     .map(c => {
       const physicalDesc = c?.physicalDescription as any;
       return physicalDesc?.typical_attire
-        ? `${c.name}: ${physicalDesc.typical_attire}`
+        ? `${c?.name}: ${physicalDesc.typical_attire}`
         : c?.name;
     })
     .filter(Boolean)
     .join(', ');
 
   const settingDescription = setting
-    ? `${setting.name}: ${setting.summary || setting.mood || 'atmospheric scene'}`
+    ? `${setting.name}: ${setting.description || setting.mood || 'atmospheric scene'}`
     : 'atmospheric scene';
 
   const emotionalTone = scene.emotionalBeat
@@ -95,13 +95,13 @@ function getStyleForGenre(genre: string | null): AnimationStyle {
 export async function generateSceneImage(
   scene: typeof scenes.$inferSelect,
   story: typeof stories.$inferSelect,
-  characters: (typeof characters.$inferSelect)[],
-  settings: (typeof settings.$inferSelect)[],
+  charactersList: (typeof characters.$inferSelect)[],
+  settingsList: (typeof settings.$inferSelect)[],
   storyId: string
 ): Promise<{ url: string; prompt: string; style: AnimationStyle }> {
   try {
     // Generate the image prompt
-    const prompt = generateSceneImagePrompt(scene, story, characters, settings);
+    const prompt = generateSceneImagePrompt(scene, story, charactersList, settingsList);
 
     // Determine the style based on genre
     const style = getStyleForGenre(story.genre);
@@ -152,22 +152,22 @@ function getSceneLighting(scene: typeof scenes.$inferSelect): string {
  * Generate images for multiple scenes in batch (mandatory)
  */
 export async function generateSceneImages(
-  scenes: (typeof scenes.$inferSelect)[],
+  scenesList: (typeof scenes.$inferSelect)[],
   story: typeof stories.$inferSelect,
-  characters: (typeof characters.$inferSelect)[],
-  settings: (typeof settings.$inferSelect)[],
+  charactersList: (typeof characters.$inferSelect)[],
+  settingsList: (typeof settings.$inferSelect)[],
   storyId: string,
   progressCallback?: (current: number, total: number) => void
 ): Promise<Map<string, { url: string; prompt: string; style: AnimationStyle }>> {
   const results = new Map<string, { url: string; prompt: string; style: AnimationStyle }>();
 
-  console.log(`🎬 Generating mandatory images for ${scenes.length} scenes...`);
+  console.log(`🎬 Generating mandatory images for ${scenesList.length} scenes...`);
 
-  for (let i = 0; i < scenes.length; i++) {
-    const scene = scenes[i];
+  for (let i = 0; i < scenesList.length; i++) {
+    const scene = scenesList[i];
 
     if (progressCallback) {
-      progressCallback(i + 1, scenes.length);
+      progressCallback(i + 1, scenesList.length);
     }
 
     try {
@@ -180,8 +180,8 @@ export async function generateSceneImages(
       const result = await generateSceneImage(
         scene,
         story,
-        characters,
-        settings,
+        charactersList,
+        settingsList,
         storyId
       );
 
@@ -196,8 +196,8 @@ export async function generateSceneImages(
         const result = await generateSceneImage(
           scene,
           story,
-          characters,
-          settings,
+          charactersList,
+          settingsList,
           storyId
         );
         results.set(scene.id, result);

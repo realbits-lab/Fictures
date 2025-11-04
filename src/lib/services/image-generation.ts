@@ -72,6 +72,7 @@ export async function generateStoryImage({
     console.log(`[Image Generation] Calling Gemini 2.5 Flash Image...`);
     const geminiResult = await model.generateContent({
       contents: [{
+        role: 'user',
         parts: [{ text: prompt }]
       }],
       generationConfig: {
@@ -82,14 +83,14 @@ export async function generateStoryImage({
           // We use '16:9' because it's the closest standard option that produces landscape output
           aspectRatio: '16:9',
         },
-      },
+      } as any, // Type assertion for image generation config (not yet in official types)
     });
 
     // Extract image from response
     const response = await geminiResult.response;
     const imagePart = response.candidates?.[0]?.content?.parts?.find(part => part.inlineData);
 
-    if (!imagePart) {
+    if (!imagePart || !imagePart.inlineData) {
       throw new Error('No image data in Gemini response');
     }
 
@@ -171,7 +172,7 @@ export async function generateStoryImage({
  * Used when Gemini generation fails (API errors, rate limits, network issues)
  */
 function createPlaceholderImageResult(
-  imageType: 'story' | 'scene' | 'character' | 'setting'
+  imageType: 'story' | 'scene' | 'character' | 'setting' | 'panel'
 ): GenerateStoryImageResult {
   // Use environment-aware placeholder URLs (main/system or develop/system)
   const placeholderUrl = getSystemPlaceholderUrl(imageType);

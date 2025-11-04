@@ -136,7 +136,7 @@ CHARACTERS PRESENT:
 ${characterDescriptions}
 
 SETTING:
-${setting.name}: ${setting.summary || setting.mood || 'atmospheric scene'}
+${setting.name}: ${setting.description || setting.mood || 'atmospheric scene'}
 
 GENRE: ${storyGenre}
 

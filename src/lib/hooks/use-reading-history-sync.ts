@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { readingHistoryManager } from '@/lib/storage/reading-history-manager';
-import type { ReadingFormat } from '@/types/novels-history';
+import type { ReadingFormat } from '@/types/reading-history';
 
 /**
  * Hook to sync localStorage reading history to server when user logs in

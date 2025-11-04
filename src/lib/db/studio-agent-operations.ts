@@ -9,7 +9,7 @@ import {
   type StudioAgentChat,
   type StudioAgentMessage,
 } from './schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
 
 // ==============================================================================
 // STUDIO AGENT CHAT OPERATIONS
@@ -46,17 +46,15 @@ export async function getStudioAgentChatsByUser(
   userId: string,
   storyId?: string
 ): Promise<StudioAgentChat[]> {
-  const query = db
+  const whereCondition = storyId
+    ? and(eq(studioAgentChats.userId, userId), eq(studioAgentChats.storyId, storyId))
+    : eq(studioAgentChats.userId, userId);
+
+  return db
     .select()
     .from(studioAgentChats)
-    .where(eq(studioAgentChats.userId, userId))
+    .where(whereCondition)
     .orderBy(desc(studioAgentChats.updatedAt));
-
-  if (storyId) {
-    return query.where(eq(studioAgentChats.storyId, storyId));
-  }
-
-  return query;
 }
 
 /**
@@ -70,9 +68,10 @@ export async function updateStudioAgentChatPhase(
   const chat = await getStudioAgentChat(chatId);
   if (!chat) throw new Error('Chat not found');
 
+  const context = (chat.context as any) || {};
   const completedPhases = completed
-    ? [...((chat.completedPhases as string[]) || []), phase]
-    : (chat.completedPhases as string[]);
+    ? [...((context.completedPhases as string[]) || []), phase]
+    : (context.completedPhases as string[]) || [];
 
   // Determine next phase
   const phaseOrder = [
@@ -87,8 +86,11 @@ export async function updateStudioAgentChatPhase(
 
   await db.update(studioAgentChats)
     .set({
-      currentPhase: nextPhase,
-      completedPhases: completedPhases as any,
+      context: {
+        ...context,
+        currentPhase: nextPhase,
+        completedPhases: completedPhases,
+      } as any,
       updatedAt: new Date(),
     })
     .where(eq(studioAgentChats.id, chatId));
@@ -199,8 +201,12 @@ export async function updateToolExecution(params: {
       completedAt: new Date(),
       executionTimeMs,
     })
-    .where(eq(studioAgentToolExecutions.messageId, params.messageId))
-    .where(eq(studioAgentToolExecutions.toolName, params.toolName));
+    .where(
+      and(
+        eq(studioAgentToolExecutions.messageId, params.messageId),
+        eq(studioAgentToolExecutions.toolName, params.toolName)
+      )
+    );
 }
 
 /**

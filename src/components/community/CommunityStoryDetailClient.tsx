@@ -85,9 +85,9 @@ interface Post {
   };
   createdAt: Date;
   updatedAt: Date;
-  viewCount: number;
-  likeCount: number;
-  replyCount: number;
+  viewCount: number | null;
+  likeCount: number | null;
+  replyCount: number | null;
 }
 
 interface CommunityStoryDetailClientProps {

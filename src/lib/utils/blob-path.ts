@@ -177,14 +177,15 @@ export function isBlobPathInEnvironment(
  * // Returns: 'develop/system/placeholders/character-default.png'
  */
 export function getSystemPlaceholderPath(
-  imageType: 'character' | 'setting' | 'scene' | 'story',
+  imageType: 'character' | 'setting' | 'scene' | 'story' | 'panel',
   env?: FicturesEnvironment
 ): string {
-  const filenames = {
+  const filenames: Record<'character' | 'setting' | 'scene' | 'story' | 'panel', string> = {
     character: 'character-default.png',
     setting: 'setting-visual.png',
     scene: 'scene-illustration.png',
     story: 'story-cover.png',
+    panel: 'panel-illustration.png', // Comic panel placeholder
   };
   return getBlobPath(`system/placeholders/${filenames[imageType]}`, env);
 }
@@ -205,7 +206,7 @@ export function getSystemPlaceholderPath(
  * // Returns: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/system/placeholders/character-default.png'
  */
 export function getSystemPlaceholderUrl(
-  imageType: 'character' | 'setting' | 'scene' | 'story',
+  imageType: 'character' | 'setting' | 'scene' | 'story' | 'panel',
   env?: FicturesEnvironment
 ): string {
   const path = getSystemPlaceholderPath(imageType, env);

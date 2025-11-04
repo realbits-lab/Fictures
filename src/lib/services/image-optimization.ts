@@ -43,7 +43,6 @@ export type DeviceResolution = '1x' | '2x';
 // Quality settings per format
 const QUALITY_SETTINGS: Record<ImageFormat, number> = {
   avif: 75,  // AVIF can maintain quality at lower settings
-  webp: 80,  // WebP good balance
   jpeg: 85,  // JPEG needs higher quality setting
 };
 

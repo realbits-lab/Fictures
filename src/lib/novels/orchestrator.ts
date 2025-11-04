@@ -146,7 +146,7 @@ export async function generateCompleteNovel(
     const storySummary: StorySummaryResult = await storySummaryResponse.json();
     console.log('✅ [ORCHESTRATOR] Story Summary Complete');
     console.log('[ORCHESTRATOR] Story Data:', JSON.stringify({
-      title: storySummary.title,
+      summary: storySummary.summary,
       genre: storySummary.genre,
       charactersCount: storySummary.characters?.length || 0,
     }, null, 2));
@@ -327,10 +327,17 @@ export async function generateCompleteNovel(
       throw new Error(`Parts generation failed: ${error.details || error.error}`);
     }
 
-    const parts: PartGenerationResult[] = await partsResponse.json();
+    const partsRaw: PartGenerationResult[] = await partsResponse.json();
+
+    // Assign unique IDs to each part for tracking
+    const parts = partsRaw.map((part) => ({
+      ...part,
+      id: nanoid(), // Generate unique ID for part
+    }));
+
     console.log('✅ [ORCHESTRATOR] Parts Complete:', parts.length, 'parts');
     console.log('[ORCHESTRATOR] Part Titles:', parts.map(p => p.title).join(', '));
-    console.log('[ORCHESTRATOR] Parts with IDs:', parts.map(p => ({ id: p.id, title: p.title })));
+    console.log('[ORCHESTRATOR] Parts with IDs:', parts.map(p => ({ id: (p as any).id, orderIndex: p.orderIndex, title: p.title })));
 
     // Show completion progress
     console.log(`[ORCHESTRATOR] Emitting parts_progress (100%) - ${parts.length} parts`);
@@ -365,10 +372,10 @@ export async function generateCompleteNovel(
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
       console.log(`\n[ORCHESTRATOR] Processing Part ${i + 1}/${parts.length}: ${part.title}`);
-      console.log('[ORCHESTRATOR] Part ID:', part.id);
+      console.log('[ORCHESTRATOR] Part ID:', (part as any).id);
       console.log('[ORCHESTRATOR] Part character arcs:', part.characterArcs?.length || 0);
 
-      const previousPartChapters = i > 0 ? allChapters.filter(ch => ch.partId === parts[i - 1].id) : [];
+      const previousPartChapters = i > 0 ? allChapters.filter(ch => (ch as any).partId === (parts[i - 1] as any).id) : [];
       console.log('[ORCHESTRATOR] Previous part chapters:', previousPartChapters.length);
 
       const chaptersPayload = {
@@ -379,7 +386,7 @@ export async function generateCompleteNovel(
       };
 
       console.log('[ORCHESTRATOR] Chapters Request:', JSON.stringify({
-        partId: part.id,
+        partId: (part as any).id,
         partTitle: part.title,
         charactersCount: characters.length,
         previousChaptersCount: previousPartChapters.length,
@@ -413,7 +420,7 @@ export async function generateCompleteNovel(
         return {
           ...chapter,
           id: chapterId, // Generate unique ID for chapter
-          partId: part.id, // Link to part
+          partId: (part as any).id, // Link to part
         };
       });
 
@@ -434,7 +441,7 @@ export async function generateCompleteNovel(
 
     const chapters = allChapters;
     console.log('✅ [ORCHESTRATOR] All Chapters Complete:', chapters.length, 'total chapters');
-    console.log('[ORCHESTRATOR] Chapters with IDs:', chapters.map(c => ({ id: c.id, title: c.title, partId: c.partId })));
+    console.log('[ORCHESTRATOR] Chapters with IDs:', chapters.map(c => ({ id: (c as any).id, title: c.title, partId: (c as any).partId })));
 
     await onProgress({
       phase: 'chapters_complete',
@@ -475,7 +482,7 @@ export async function generateCompleteNovel(
       const sceneSummariesWithChapterId = chapterSceneSummaries.map((sceneSummary, sceneIndex) => ({
         ...sceneSummary,
         id: nanoid(), // Generate unique ID for scene
-        chapterId: chapter.id, // Link to chapter
+        chapterId: (chapter as any).id, // Link to chapter
       }));
 
       allSceneSummaries.push(...sceneSummariesWithChapterId);
@@ -514,7 +521,7 @@ export async function generateCompleteNovel(
       const sceneSummary = sceneSummaries[i];
 
       // Find the chapter this scene belongs to
-      const chapter = chapters.find(ch => ch.id === sceneSummary.chapterId);
+      const chapter = chapters.find(ch => (ch as any).id === (sceneSummary as any).chapterId);
       if (!chapter) {
         throw new Error(`Chapter not found for scene ${i + 1}`);
       }
@@ -533,8 +540,8 @@ export async function generateCompleteNovel(
           },
           storyContext: {
             genre: storySummary.genre,
-            tone: storySummary.targetAudience,
-            moralFramework: storySummary.moralFramework.title
+            tone: storySummary.tone,
+            moralFramework: typeof storySummary.moralFramework === 'string' ? storySummary.moralFramework : (storySummary.moralFramework as any)?.title || storySummary.moralFramework
           }
         }),
       });

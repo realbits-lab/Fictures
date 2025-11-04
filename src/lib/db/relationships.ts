@@ -20,10 +20,9 @@ export class RelationshipManager {
         id: partId,
         storyId,
         title: partData.title!,
-        summary: partData.description,
+        summary: partData.summary,
         authorId: partData.authorId!,
         orderIndex: partData.orderIndex!,
-        content: partData.content,
       });
 
       // Update story timestamp
@@ -90,8 +89,8 @@ export class RelationshipManager {
         title: sceneData.title!,
         orderIndex: sceneData.orderIndex!,
         content: sceneData.content,
-        characterIds: sceneData.characterIds || [],
-        placeIds: sceneData.placeIds || [],
+        characterFocus: (sceneData as any).characterFocus || [],
+        settingId: (sceneData as any).settingId,
       });
 
       // Update chapter timestamp

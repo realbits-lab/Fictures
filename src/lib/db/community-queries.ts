@@ -190,7 +190,7 @@ export async function getCommunityStoryForReading(storyId: string) {
       db.select({
         id: settings.id,
         name: settings.name,
-        summary: settings.description,
+        summary: (settings as any).summary || (settings as any).description,
         mood: settings.mood,
         sensory: settings.sensory,
         visualStyle: settings.visualStyle,
@@ -277,9 +277,9 @@ export async function getCommunityPostsForReading(storyId: string) {
       authorId: communityPosts.authorId,
       createdAt: communityPosts.createdAt,
       updatedAt: communityPosts.updatedAt,
-      viewCount: communityPosts.viewCount,
-      likeCount: communityPosts.likeCount,
-      replyCount: communityPosts.replyCount,
+      viewCount: communityPosts.views,
+      likeCount: communityPosts.likes,
+      replyCount: communityPosts.replies,
       // Author data
       authorName: users.name,
       authorUsername: users.username,

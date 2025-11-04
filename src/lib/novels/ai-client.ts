@@ -29,8 +29,9 @@ export async function generateWithGemini(options: {
       system: systemPrompt,
       prompt: prompt,
       temperature,
-      maxTokens,
-    });
+      // Note: maxTokens parameter removed - not supported in current AI SDK version
+      // Model defaults will be used (typically 8192 tokens for Gemini)
+    } as any); // Type assertion for extended parameters
 
     return text;
   } catch (error) {

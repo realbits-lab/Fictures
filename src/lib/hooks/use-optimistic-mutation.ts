@@ -259,7 +259,7 @@ export function createOptimisticIncrement<TData extends Record<string, unknown>>
   amount: number = 1
 ): OptimisticUpdateFn<TData, unknown> {
   return (_, currentData) => {
-    if (!currentData) return currentData as TData;
+    if (!currentData) return currentData as unknown as TData;
     return {
       ...currentData,
       [field]: ((currentData[field] as number) || 0) + amount,
