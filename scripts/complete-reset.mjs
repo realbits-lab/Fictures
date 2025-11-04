@@ -3,7 +3,7 @@
 import { neon } from '@neondatabase/serverless';
 import { list, del } from '@vercel/blob';
 
-const sql = neon(process.env.POSTGRES_URL);
+const sql = neon(process.env.DATABASE_URL);
 
 async function completeReset() {
   console.log('\n🔄 COMPLETE DATABASE AND BLOB RESET\n');

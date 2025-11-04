@@ -24,7 +24,7 @@ async function main() {
   // Check database
   console.log('\n📊 DATABASE STATUS:\n');
   
-  const sql = postgres(process.env.POSTGRES_URL);
+  const sql = postgres(process.env.DATABASE_URL);
   const db = drizzle(sql);
 
   const tables = [

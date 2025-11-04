@@ -13,7 +13,7 @@
 import { neon } from '@neondatabase/serverless';
 import 'dotenv/config';
 
-const sql = neon(process.env.POSTGRES_URL);
+const sql = neon(process.env.DATABASE_URL);
 
 // Get authentication token from .auth/user.json
 const authPath = '.auth/user.json';

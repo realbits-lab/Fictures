@@ -21,7 +21,7 @@ const isDryRun = process.argv.includes('--dry-run');
 const isConfirmed = process.argv.includes('--confirm');
 
 // Initialize database connection
-const sql = neon(process.env.POSTGRES_URL);
+const sql = neon(process.env.DATABASE_URL);
 
 /**
  * Get all comic panels from database

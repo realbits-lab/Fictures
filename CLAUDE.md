@@ -236,10 +236,16 @@ GOOGLE_GENERATIVE_AI_API_KEY=***   # Google AI for Gemini 2.5 Flash (text & imag
 AI_GATEWAY_API_KEY=***             # Vercel AI SDK Gateway API key for AI provider management
 
 # Database & Storage
-POSTGRES_URL=***                   # Neon PostgreSQL
+DATABASE_URL=***                   # Neon PostgreSQL (pooled connection for runtime)
+DATABASE_URL_UNPOOLED=***          # Neon PostgreSQL (direct connection for migrations)
 BLOB_READ_WRITE_TOKEN=***          # Vercel Blob storage for generated images
 REDIS_URL=***                      # Session storage
 ```
+
+**Database Connection Details:**
+- **DATABASE_URL**: Pooled connection (with `-pooler` in hostname) - Use for application runtime
+- **DATABASE_URL_UNPOOLED**: Direct connection (no `-pooler`) - Required for Drizzle migrations
+- Both connections point to the same database, only the connection method differs
 
 ## Development Workflow
 

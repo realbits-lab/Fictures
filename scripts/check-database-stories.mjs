@@ -16,7 +16,7 @@ const __dirname = dirname(__filename);
 // Load environment variables
 config({ path: join(__dirname, '../.env.local') });
 
-const sql = postgres(process.env.POSTGRES_URL, { max: 1 });
+const sql = postgres(process.env.DATABASE_URL, { max: 1 });
 
 async function checkDatabase() {
   try {

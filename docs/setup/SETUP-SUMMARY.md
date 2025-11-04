@@ -31,13 +31,13 @@ Achieved **93.6% performance improvement** through database query optimization a
 ### 3. Connection Pooling Support
 **File**: `src/lib/db/index.ts`
 
-- Added support for pooled connections (DATABASE_URL or POSTGRES_URL_POOLED)
+- Added support for pooled connections (DATABASE_URL or DATABASE_URL_POOLED)
 - Supports up to 10,000 concurrent connections
 - **Impact**: 10-20% additional latency reduction (when configured)
 
 ## ✅ Pooled Connection Already Configured!
 
-Your `DATABASE_URL` and `POSTGRES_URL` **already include `-pooler`** in the hostname, which means you're already using Neon's pooled connections!
+Your `DATABASE_URL` and `DATABASE_URL` **already include `-pooler`** in the hostname, which means you're already using Neon's pooled connections!
 
 **Current Status**:
 - ✅ Using Neon Vercel Integration pooled connection
@@ -115,8 +115,8 @@ const [story, parts, chapters] = await Promise.all([
 - [x] Database indexes created and applied
 - [x] Connection pooling code ready
 - [ ] Get Neon pooled connection string
-- [ ] Add `POSTGRES_URL_POOLED` to `.env.local`
-- [ ] Add `POSTGRES_URL_POOLED` to Vercel
+- [ ] Add `DATABASE_URL_POOLED` to `.env.local`
+- [ ] Add `DATABASE_URL_POOLED` to Vercel
 - [ ] Deploy to production
 - [ ] Verify pooled connection in logs
 - [ ] Monitor performance metrics
@@ -143,7 +143,7 @@ const [story, parts, chapters] = await Promise.all([
 | Database < 500ms | ✅ Achieved 174ms | 93.6% improvement |
 | TTFB < 1s | ✅ Achieved 75ms | 97% improvement |
 | Total Load < 2s | ✅ Achieved 220ms | 92.7% improvement |
-| 10K concurrent users | ⏳ Ready (with pooling) | Requires POSTGRES_URL_POOLED |
+| 10K concurrent users | ⏳ Ready (with pooling) | Requires DATABASE_URL_POOLED |
 
 ## 🔮 Future Optimizations
 

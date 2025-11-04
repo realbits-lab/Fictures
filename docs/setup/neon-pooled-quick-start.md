@@ -28,10 +28,10 @@ postgres://user:password@ep-xxxxx-pooler.us-east-2.aws.neon.tech/dbname
 
 ```bash
 # Replace with your actual pooled connection string
-POSTGRES_URL_POOLED=postgres://user:pass@ep-xxxxx-pooler.region.aws.neon.tech/dbname
+DATABASE_URL_POOLED=postgres://user:pass@ep-xxxxx-pooler.region.aws.neon.tech/dbname
 
-# Keep your existing POSTGRES_URL for migrations
-POSTGRES_URL=postgres://user:pass@ep-xxxxx.region.aws.neon.tech/dbname
+# Keep your existing DATABASE_URL for migrations
+DATABASE_URL=postgres://user:pass@ep-xxxxx.region.aws.neon.tech/dbname
 ```
 
 ### 3. Add to Vercel (Production)
@@ -42,7 +42,7 @@ POSTGRES_URL=postgres://user:pass@ep-xxxxx.region.aws.neon.tech/dbname
 2. Select your project (Fictures)
 3. Settings → Environment Variables
 4. Add new variable:
-   - **Name**: `POSTGRES_URL_POOLED`
+   - **Name**: `DATABASE_URL_POOLED`
    - **Value**: Your pooled connection string from Step 1
    - **Environments**: ✅ Production, ✅ Preview
 5. Click **Save**
@@ -52,12 +52,12 @@ POSTGRES_URL=postgres://user:pass@ep-xxxxx.region.aws.neon.tech/dbname
 
 ```bash
 # Set production environment variable
-vercel env add POSTGRES_URL_POOLED production
+vercel env add DATABASE_URL_POOLED production
 
 # Paste your pooled connection string when prompted
 
 # Set preview environment variable (optional)
-vercel env add POSTGRES_URL_POOLED preview
+vercel env add DATABASE_URL_POOLED preview
 
 # Redeploy
 vercel deploy --prod
@@ -115,15 +115,15 @@ Then update your code to use `DATABASE_URL`:
 // src/lib/db/index.ts
 const connectionString =
   process.env.DATABASE_URL ||           // From Neon integration (pooled)
-  process.env.POSTGRES_URL_POOLED ||    // Manual setup
-  process.env.POSTGRES_URL!;            // Fallback
+  process.env.DATABASE_URL_POOLED ||    // Manual setup
+  process.env.DATABASE_URL!;            // Fallback
 ```
 
 ## Verification Checklist
 
 - [ ] Connection string has `-pooler` suffix
-- [ ] `POSTGRES_URL_POOLED` set in `.env.local`
-- [ ] `POSTGRES_URL_POOLED` set in Vercel (Production + Preview)
+- [ ] `DATABASE_URL_POOLED` set in `.env.local`
+- [ ] `DATABASE_URL_POOLED` set in Vercel (Production + Preview)
 - [ ] Dev server shows "Using Neon pooled connection"
 - [ ] Production deployment shows pooled connection in logs
 - [ ] Page load time improved by ~10-20%
@@ -131,12 +131,12 @@ const connectionString =
 ## Common Issues
 
 ### ❌ "Using direct connection" in logs
-**Problem**: `POSTGRES_URL_POOLED` not set or doesn't have `-pooler` suffix
+**Problem**: `DATABASE_URL_POOLED` not set or doesn't have `-pooler` suffix
 **Fix**: Double-check environment variable and connection string
 
 ### ❌ Migrations fail with "pool_mode error"
 **Problem**: Using pooled connection for migrations
-**Fix**: Keep `POSTGRES_URL` (unpooled) for `drizzle.config.ts`
+**Fix**: Keep `DATABASE_URL` (unpooled) for `drizzle.config.ts`
 
 ### ❌ No performance improvement
 **Problem**: Connection string doesn't actually have `-pooler` suffix

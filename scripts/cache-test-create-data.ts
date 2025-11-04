@@ -14,7 +14,7 @@ import * as schema from '../src/lib/db/schema';
 
 config({ path: '.env.local' });
 
-const sql = neon(process.env.POSTGRES_URL!);
+const sql = neon(process.env.DATABASE_URL!);
 const db = drizzle(sql, { schema });
 
 async function main() {

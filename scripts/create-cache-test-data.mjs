@@ -14,7 +14,7 @@ import { customAlphabet } from 'nanoid';
 const authData = JSON.parse(fs.readFileSync('.auth/user.json', 'utf-8'));
 const userId = authData.userId;
 
-const client = postgres(process.env.POSTGRES_URL);
+const client = postgres(process.env.DATABASE_URL);
 
 // Use nanoid for consistent IDs
 const nanoid = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-', 21);

@@ -252,9 +252,9 @@ if (storyId) {
 console.log('');
 
 // Connect to database
-const connectionString = process.env.POSTGRES_URL;
+const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
-  console.error('❌ Error: POSTGRES_URL environment variable not set');
+  console.error('❌ Error: DATABASE_URL environment variable not set');
   process.exit(1);
 }
 

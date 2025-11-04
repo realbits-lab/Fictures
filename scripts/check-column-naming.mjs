@@ -2,7 +2,7 @@
 
 import { neon } from '@neondatabase/serverless';
 
-const sql = neon(process.env.POSTGRES_URL);
+const sql = neon(process.env.DATABASE_URL);
 
 console.log('\n🔍 CHECKING DATABASE COLUMN NAMING CONVENTIONS\n');
 console.log('='.repeat(80));

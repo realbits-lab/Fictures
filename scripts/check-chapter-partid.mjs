@@ -6,7 +6,7 @@
 
 import postgres from 'postgres';
 
-const sql = postgres(process.env.POSTGRES_URL);
+const sql = postgres(process.env.DATABASE_URL);
 const storyId = 'kfiNwbdYD2BAnC7IAyjps';
 
 console.log(`\n🔍 Checking chapters for story: ${storyId}\n`);

@@ -79,7 +79,7 @@ function repairBrokenQuotes(content) {
   return repairedLines.join('\n');
 }
 
-const sql = postgres(process.env.POSTGRES_URL);
+const sql = postgres(process.env.DATABASE_URL);
 
 async function repair() {
   try {

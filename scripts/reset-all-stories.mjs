@@ -35,9 +35,9 @@ if (!isDryRun && !isConfirmed) {
 }
 
 // Database connection
-const connectionString = process.env.POSTGRES_URL;
+const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
-  console.error('❌ Error: POSTGRES_URL not found in environment');
+  console.error('❌ Error: DATABASE_URL not found in environment');
   process.exit(1);
 }
 

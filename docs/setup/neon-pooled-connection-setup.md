@@ -78,8 +78,8 @@ postgres://user:pass@ep-cool-darkness-123456-pooler.us-east-2.aws.neon.tech/db
 
 ```bash
 # For Production
-POSTGRES_URL=postgres://user:pass@endpoint-pooler.neon.tech/db
-POSTGRES_URL_POOLED=postgres://user:pass@endpoint-pooler.neon.tech/db  # Same as above
+DATABASE_URL=postgres://user:pass@endpoint-pooler.neon.tech/db
+DATABASE_URL_POOLED=postgres://user:pass@endpoint-pooler.neon.tech/db  # Same as above
 
 # For Development (optional - use local .env.local)
 # Can also add these to Vercel for preview deployments
@@ -104,7 +104,7 @@ POSTGRES_URL_POOLED=postgres://user:pass@endpoint-pooler.neon.tech/db  # Same as
 5. **Integration automatically sets**:
    - `DATABASE_URL` (pooled connection)
    - `DATABASE_URL_UNPOOLED` (direct connection)
-   - Legacy variables: `POSTGRES_URL`, `PGHOST`, etc.
+   - Legacy variables: `DATABASE_URL`, `PGHOST`, etc.
 
 #### Neon-Managed Integration (Keep Neon Billing)
 
@@ -124,9 +124,9 @@ DATABASE_URL_UNPOOLED=postgres://user:pass@endpoint.neon.tech/db         # Direc
 
 ### Legacy Naming (PostgreSQL Standard)
 ```bash
-POSTGRES_URL=postgres://user:pass@endpoint-pooler.neon.tech/db          # Pooled
-POSTGRES_URL_POOLED=postgres://user:pass@endpoint-pooler.neon.tech/db   # Pooled (custom)
-POSTGRES_URL_UNPOOLED=postgres://user:pass@endpoint.neon.tech/db        # Direct (custom)
+DATABASE_URL=postgres://user:pass@endpoint-pooler.neon.tech/db          # Pooled
+DATABASE_URL_POOLED=postgres://user:pass@endpoint-pooler.neon.tech/db   # Pooled (custom)
+DATABASE_URL_UNPOOLED=postgres://user:pass@endpoint.neon.tech/db        # Direct (custom)
 ```
 
 ## Update Your Code
@@ -136,9 +136,9 @@ POSTGRES_URL_UNPOOLED=postgres://user:pass@endpoint.neon.tech/db        # Direct
 
 ```typescript
 // Already supports pooled connections!
-const connectionString = process.env.POSTGRES_URL_POOLED || process.env.POSTGRES_URL!;
+const connectionString = process.env.DATABASE_URL_POOLED || process.env.DATABASE_URL!;
 
-if (process.env.POSTGRES_URL_POOLED) {
+if (process.env.DATABASE_URL_POOLED) {
   console.log('🔗 [DB] Using Neon pooled connection for optimal performance');
 } else {
   console.log('🔗 [DB] Using direct connection');
@@ -153,12 +153,12 @@ If using Neon's Vercel integration, update to:
 // Use modern naming from Neon integration
 const connectionString =
   process.env.DATABASE_URL ||           // Neon integration (pooled by default)
-  process.env.POSTGRES_URL_POOLED ||    // Custom pooled
-  process.env.POSTGRES_URL!;            // Fallback
+  process.env.DATABASE_URL_POOLED ||    // Custom pooled
+  process.env.DATABASE_URL!;            // Fallback
 
 if (process.env.DATABASE_URL) {
   console.log('🔗 [DB] Using Neon integration pooled connection');
-} else if (process.env.POSTGRES_URL_POOLED) {
+} else if (process.env.DATABASE_URL_POOLED) {
   console.log('🔗 [DB] Using custom pooled connection');
 } else {
   console.log('🔗 [DB] Using direct connection');
@@ -167,9 +167,9 @@ if (process.env.DATABASE_URL) {
 
 ### Option 2: Keep Current (Manual Setup)
 
-Just set `POSTGRES_URL_POOLED` in Vercel:
+Just set `DATABASE_URL_POOLED` in Vercel:
 1. Get pooled connection string from Neon Console
-2. Add to Vercel as `POSTGRES_URL_POOLED`
+2. Add to Vercel as `DATABASE_URL_POOLED`
 3. Code already supports it!
 
 ## Local Development Setup
@@ -180,11 +180,11 @@ Just set `POSTGRES_URL_POOLED` in Vercel:
 # Get pooled connection string from Neon Console
 # Add to .env.local (NOT committed to git)
 
-POSTGRES_URL=postgres://user:pass@endpoint-pooler.neon.tech/db
-POSTGRES_URL_POOLED=postgres://user:pass@endpoint-pooler.neon.tech/db
+DATABASE_URL=postgres://user:pass@endpoint-pooler.neon.tech/db
+DATABASE_URL_POOLED=postgres://user:pass@endpoint-pooler.neon.tech/db
 
 # For migrations, keep unpooled version
-POSTGRES_URL_UNPOOLED=postgres://user:pass@endpoint.neon.tech/db
+DATABASE_URL_UNPOOLED=postgres://user:pass@endpoint.neon.tech/db
 ```
 
 ### Test Locally
@@ -232,7 +232,7 @@ export default defineConfig({
   dialect: 'postgresql',
   dbCredentials: {
     // Use unpooled for migrations (required for schema changes)
-    url: process.env.POSTGRES_URL_UNPOOLED || process.env.POSTGRES_URL!,
+    url: process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL!,
   },
 });
 ```
@@ -246,8 +246,8 @@ export default defineConfig({
 vercel env ls
 
 # Should show:
-# POSTGRES_URL              Production, Preview
-# POSTGRES_URL_POOLED       Production, Preview (if set manually)
+# DATABASE_URL              Production, Preview
+# DATABASE_URL_POOLED       Production, Preview (if set manually)
 # or
 # DATABASE_URL              Production, Preview (if using integration)
 ```
@@ -256,7 +256,7 @@ vercel env ls
 
 ```bash
 # Test pooled connection
-psql "$POSTGRES_URL_POOLED"
+psql "$DATABASE_URL_POOLED"
 
 # You should connect successfully
 # Connection should route through -pooler endpoint
@@ -306,7 +306,7 @@ curl -w "Time: %{time_total}s\n" https://your-app.vercel.app/novels/STORY_ID
 
 ### Error: "no such pool_mode"
 **Cause**: Using pooled connection for migrations
-**Solution**: Use `POSTGRES_URL_UNPOOLED` for Drizzle commands
+**Solution**: Use `DATABASE_URL_UNPOOLED` for Drizzle commands
 
 ### Error: "prepared statement already exists"
 **Cause**: Using pooled connection with prepared statements

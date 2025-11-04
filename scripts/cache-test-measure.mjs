@@ -20,7 +20,7 @@ import * as schema from '../src/lib/db/schema.ts';
 // Load environment variables
 config({ path: '.env.local' });
 
-const sql = neon(process.env.POSTGRES_URL);
+const sql = neon(process.env.DATABASE_URL);
 const db = drizzle(sql, { schema });
 
 // Test configuration

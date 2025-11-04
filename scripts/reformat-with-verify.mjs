@@ -215,7 +215,7 @@ console.log('');
 console.log('Story ID:', storyId);
 console.log('');
 
-const sql = postgres(process.env.POSTGRES_URL);
+const sql = postgres(process.env.DATABASE_URL);
 
 async function reformat() {
   try {

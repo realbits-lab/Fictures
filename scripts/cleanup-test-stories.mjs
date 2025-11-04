@@ -7,7 +7,7 @@ import { neon } from '@neondatabase/serverless';
 async function cleanupStories() {
   console.log('🗑️  Cleaning up test stories...\n');
 
-  const sql = neon(process.env.POSTGRES_URL);
+  const sql = neon(process.env.DATABASE_URL);
 
   try {
     // Get count of stories before deletion

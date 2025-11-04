@@ -110,7 +110,7 @@ function formatSceneContent(content) {
   return newParagraphs.join('\n\n');
 }
 
-const sql = postgres(process.env.POSTGRES_URL);
+const sql = postgres(process.env.DATABASE_URL);
 
 async function reformat() {
   try {

@@ -15,10 +15,10 @@ const __dirname = dirname(__filename);
 
 config({ path: join(__dirname, '../.env.local') });
 
-const connectionString = process.env.POSTGRES_URL;
+const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-  console.error('❌ POSTGRES_URL not found in environment');
+  console.error('❌ DATABASE_URL not found in environment');
   process.exit(1);
 }
 

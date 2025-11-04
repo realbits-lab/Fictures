@@ -21,7 +21,7 @@ import { list, del } from '@vercel/blob';
 import readline from 'readline';
 
 // Initialize database
-const sql = neon(process.env.POSTGRES_URL);
+const sql = neon(process.env.DATABASE_URL);
 const db = drizzle(sql);
 
 // Parse command line arguments

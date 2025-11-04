@@ -11,7 +11,7 @@ import { randomUUID } from 'crypto';
 const authData = JSON.parse(fs.readFileSync('.auth/user.json', 'utf-8'));
 const writerUserId = authData.profiles.writer.userId;
 
-const client = postgres(process.env.POSTGRES_URL);
+const client = postgres(process.env.DATABASE_URL);
 
 async function createTestStory() {
   try {

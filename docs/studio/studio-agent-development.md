@@ -2230,10 +2230,10 @@ User: "DELETE chapter_123"
 3. **Database Connection Issues**:
    ```bash
    # Test database connection
-   dotenv --file .env.local run psql $POSTGRES_URL -c "SELECT 1"
+   dotenv --file .env.local run psql $DATABASE_URL -c "SELECT 1"
 
    # Check connection string
-   echo $POSTGRES_URL
+   echo $DATABASE_URL
    ```
 
 4. **Validation Errors**:
@@ -2343,7 +2343,7 @@ User: "DELETE chapter_123"
 # .env.local
 
 # Database
-POSTGRES_URL="postgresql://..."
+DATABASE_URL="postgresql://..."
 
 # Authentication
 AUTH_SECRET="..."

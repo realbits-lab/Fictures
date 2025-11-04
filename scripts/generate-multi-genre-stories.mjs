@@ -165,7 +165,7 @@ class StoryOrchestrator {
     // Query database for chapter ID
     return new Promise((resolve) => {
       const child = spawn('dotenv', [
-        '--file', '.env.local', 'run', 'psql', process.env.POSTGRES_URL, '-t', '-c',
+        '--file', '.env.local', 'run', 'psql', process.env.DATABASE_URL, '-t', '-c',
         `SELECT id FROM chapters WHERE story_id = '${storyId}' LIMIT 1;`
       ]);
 
@@ -247,7 +247,7 @@ class StoryOrchestrator {
   async getSceneIds(storyId) {
     return new Promise((resolve) => {
       const child = spawn('dotenv', [
-        '--file', '.env.local', 'run', 'psql', process.env.POSTGRES_URL, '-t', '-c',
+        '--file', '.env.local', 'run', 'psql', process.env.DATABASE_URL, '-t', '-c',
         `SELECT id FROM scenes WHERE chapter_id IN (SELECT id FROM chapters WHERE story_id = '${storyId}') ORDER BY created_at;`
       ]);
 

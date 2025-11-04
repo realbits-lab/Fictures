@@ -5,7 +5,7 @@
 
 import postgres from 'postgres';
 
-const sql = postgres(process.env.POSTGRES_URL);
+const sql = postgres(process.env.DATABASE_URL);
 
 async function checkScene() {
   try {

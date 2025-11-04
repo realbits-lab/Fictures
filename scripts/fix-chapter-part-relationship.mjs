@@ -12,11 +12,11 @@
 
 import postgres from 'postgres';
 
-// Read POSTGRES_URL from environment
-const connectionString = process.env.POSTGRES_URL;
+// Read DATABASE_URL from environment
+const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-  console.error('❌ POSTGRES_URL environment variable not set');
+  console.error('❌ DATABASE_URL environment variable not set');
   process.exit(1);
 }
 

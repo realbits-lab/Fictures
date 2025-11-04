@@ -14,29 +14,24 @@ import * as schema from './schema';
  * ⚡ NETWORK LATENCY OPTIMIZATION: Use Neon pooled connection
  * - Neon's pooled connection reduces connection overhead and network latency by 10-20%
  * - Supports up to 10,000 concurrent connections (vs ~100 for direct)
- * - Automatically uses pooled connection if available
+ * - Uses DATABASE_URL (pooled by default from Neon Vercel Integration)
  *
- * Connection string priority:
- * 1. DATABASE_URL (from Neon Vercel Integration - pooled by default)
- * 2. POSTGRES_URL_POOLED (custom pooled connection)
- * 3. POSTGRES_URL (fallback - may be direct or pooled)
+ * Environment Variables:
+ * - DATABASE_URL: Pooled connection for application runtime (recommended)
+ * - DATABASE_URL_UNPOOLED: Direct connection for migrations only (required for DDL)
  *
- * Setup guide: docs/setup/neon-pooled-quick-start.md
+ * Note: Always use pooled connection (DATABASE_URL) for runtime queries.
+ * Only migrations need unpooled connection (see drizzle.config.ts).
  */
-const connectionString =
-  process.env.DATABASE_URL ||           // Neon Vercel Integration (pooled by default)
-  process.env.POSTGRES_URL_POOLED ||    // Custom pooled connection
-  process.env.POSTGRES_URL!;            // Fallback
+const connectionString = process.env.DATABASE_URL!;
 
-// Log which connection type is being used
-if (process.env.DATABASE_URL) {
-  console.log('🔗 [DB] Using Neon Vercel Integration pooled connection');
-} else if (process.env.POSTGRES_URL_POOLED) {
-  console.log('🔗 [DB] Using custom Neon pooled connection (POSTGRES_URL_POOLED)');
-} else {
-  console.log('🔗 [DB] Using POSTGRES_URL connection (consider adding POSTGRES_URL_POOLED for 10-20% better performance)');
-  console.log('📖 [DB] See: docs/setup/neon-pooled-quick-start.md');
+// Validation: Ensure DATABASE_URL is set
+if (!connectionString) {
+  throw new Error('DATABASE_URL environment variable is not set');
 }
+
+// Log connection info
+console.log('🔗 [DB] Using DATABASE_URL for runtime queries (pooled connection)');
 
 const client = postgres(connectionString, {
   // Disable prefetch as it is not supported for "Transaction" pool mode

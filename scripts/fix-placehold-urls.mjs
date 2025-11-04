@@ -14,7 +14,7 @@ import { sql } from 'drizzle-orm';
 // Load environment variables
 config({ path: '.env.local' });
 
-const sqlClient = neon(process.env.POSTGRES_URL);
+const sqlClient = neon(process.env.DATABASE_URL);
 const db = drizzle(sqlClient);
 
 async function fixPlaceholdUrls() {

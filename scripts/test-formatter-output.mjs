@@ -14,7 +14,7 @@ function isDialogueParagraph(text) {
   return DIALOGUE_PATTERNS.some(pattern => pattern.test(trimmed));
 }
 
-const sql = postgres(process.env.POSTGRES_URL);
+const sql = postgres(process.env.DATABASE_URL);
 
 async function test() {
   try {

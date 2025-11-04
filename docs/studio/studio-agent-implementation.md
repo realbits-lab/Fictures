@@ -181,7 +181,7 @@ Response: Server-Sent Events (SSE) stream with chat ID in headers
 ### Running Migrations
 
 ```bash
-dotenv --file .env.local run psql $POSTGRES_URL -f drizzle/0000_studio_agent_tables.sql
+dotenv --file .env.local run psql $DATABASE_URL -f drizzle/0000_studio_agent_tables.sql
 ```
 
 ### Testing

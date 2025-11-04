@@ -1,6 +1,6 @@
 import { neon } from '@neondatabase/serverless';
 
-const sql = neon(process.env.POSTGRES_URL);
+const sql = neon(process.env.DATABASE_URL);
 const storyId = process.argv[2] || 'kfiNwbdYD2BAnC7IAyjps';
 
 const story = await sql`SELECT * FROM stories WHERE id = ${storyId}`;

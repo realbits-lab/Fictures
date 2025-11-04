@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
 import { eq } from 'drizzle-orm';
 
-const sql = neon(process.env.POSTGRES_URL);
+const sql = neon(process.env.DATABASE_URL);
 const db = drizzle(sql);
 
 const storyId = '55vnp7_fxk5rE7-VQWXIF';
