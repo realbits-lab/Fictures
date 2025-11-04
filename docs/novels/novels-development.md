@@ -160,37 +160,113 @@ Note: Two-step scene generation allows:
 ### 1.2 Complete Generation Flow API
 
 ```typescript
-POST /novels/api/stories/generate-complete
+POST /studio/api/novels/generate
+
+Authentication: Session-based (NextAuth) - requires logged-in user
 
 Request:
 {
   userPrompt: string;
-  autoPublish?: boolean;
+  preferredGenre?: string;
+  preferredTone?: 'hopeful' | 'dark' | 'bittersweet' | 'satirical';
+  characterCount?: number;  // Default: 3
+  settingCount?: number;    // Default: 3
+  partsCount?: number;      // Default: 1
+  chaptersPerPart?: number; // Default: 1
+  scenesPerChapter?: number; // Default: 3
+  language?: string;        // Default: 'English'
 }
 
 Response: Server-Sent Events (SSE)
+
+Progress Events:
 {
-  event: 'progress',
-  data: {
-    phase: 'story' | 'parts' | 'chapters' | 'scenes' | 'content' | 'images' | 'evaluation',
-    progress: number, // 0-100
-    message: string,
-    currentItem?: string
+  phase: 'story_summary_start' | 'story_summary_complete' |
+         'characters_start' | 'characters_progress' | 'characters_complete' |
+         'settings_start' | 'settings_progress' | 'settings_complete' |
+         'parts_start' | 'parts_progress' | 'parts_complete' |
+         'chapters_start' | 'chapters_progress' | 'chapters_complete' |
+         'scene_summaries_start' | 'scene_summaries_progress' | 'scene_summaries_complete' |
+         'scene_content_start' | 'scene_content_progress' | 'scene_content_complete' |
+         'scene_evaluation_start' | 'scene_evaluation_progress' | 'scene_evaluation_complete' |
+         'images_start' | 'images_progress' | 'images_complete',
+  message: string,
+  data?: {
+    // Phase-specific data
+    currentItem?: number,
+    totalItems?: number,
+    percentage?: number,
+    // Completed data (on *_complete events)
+    storySummary?: StorySummaryResult,
+    characters?: Character[],
+    settings?: Setting[],
+    parts?: Part[],
+    chapters?: Chapter[],
+    scenes?: Scene[]
   }
 }
 
 Final Event:
 {
-  event: 'complete',
+  phase: 'complete',
+  message: 'Story generation complete!',
   data: {
     storyId: string,
-    title: string,
-    stats: {
-      parts: number,
-      chapters: number,
-      scenes: number,
-      wordCount: number,
-      generationTime: number
+    story: Story,
+    charactersCount: number,
+    settingsCount: number,
+    partsCount: number,
+    chaptersCount: number,
+    scenesCount: number
+  }
+}
+
+Error Event:
+{
+  phase: 'error',
+  message: string,
+  error: string
+}
+```
+
+**Usage Example:**
+```javascript
+const response = await fetch('/studio/api/novels/generate', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    // Session cookie automatically sent by browser
+  },
+  body: JSON.stringify({
+    userPrompt: 'A story about courage and redemption',
+    preferredGenre: 'Fantasy',
+    preferredTone: 'hopeful',
+    characterCount: 2,
+    settingCount: 2,
+    partsCount: 1,
+    chaptersPerPart: 1,
+    scenesPerChapter: 3,
+  }),
+});
+
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+
+  const text = decoder.decode(value);
+  const lines = text.split('\n');
+
+  for (const line of lines) {
+    if (line.startsWith('data: ')) {
+      const data = JSON.parse(line.slice(6));
+      console.log(`[${data.phase}] ${data.message}`);
+
+      if (data.phase === 'complete') {
+        console.log('Story ID:', data.data.storyId);
+      }
     }
   }
 }
