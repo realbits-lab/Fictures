@@ -440,7 +440,7 @@ console.log(`Hit rate: ${stats.hitRate * 100}%`);
 6. `src/app/community/api/posts/[postId]/replies/route.ts`
 
 **Components:**
-7. `src/components/writing/UnifiedWritingEditor.tsx`
+7. `src/components/studio/UnifiedWritingEditor.tsx`
 
 ---
 

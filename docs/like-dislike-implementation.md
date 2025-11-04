@@ -6,7 +6,7 @@ Added thumbs up/down like and dislike functionality to comments and scenes on re
 ## Completed Work
 
 ### 1. Created LikeDislikeButton Component
-**File**: `src/components/reading/LikeDislikeButton.tsx`
+**File**: `src/components/novels/LikeDislikeButton.tsx`
 
 Features:
 - ✅ Thumbs up/down SVG icons
@@ -52,7 +52,7 @@ Features:
 
 ### ✅ Step 1: Update CommentItem Component
 
-**File**: `src/components/reading/CommentItem.tsx`
+**File**: `src/components/novels/CommentItem.tsx`
 
 Replaced the LikeButton with LikeDislikeButton:
 
@@ -281,7 +281,7 @@ export async function POST(
 
 ### ✅ Step 3: Add Like/Dislike to Scene Display
 
-**File**: `src/components/reading/ChapterReader.tsx`
+**File**: `src/components/novels/ChapterReader.tsx`
 
 Added the LikeDislikeButton after each scene content:
 

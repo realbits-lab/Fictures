@@ -27,5 +27,5 @@ export default async function NewChapterPage({ params }: NewChapterPageProps) {
   const chapter = await createFirstChapter(id, session.user.id);
 
   // Redirect to the chapter editor
-  redirect(`/writing/edit/${chapter.id}`);
+  redirect(`/studio/edit/${chapter.id}`);
 }

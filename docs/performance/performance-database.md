@@ -91,7 +91,7 @@ CREATE INDEX idx_ai_interactions_created ON ai_interactions(created_at DESC);
 ```sql
 -- Composite indexes for common query patterns (Adversity-Triumph optimized)
 CREATE INDEX idx_stories_author_status ON stories(author_id, status);
-CREATE INDEX idx_stories_tone_status ON stories(tone, status); -- Filter by tone + published/writing
+CREATE INDEX idx_stories_tone_status ON stories(tone, status); -- Filter by tone + published/studio
 
 -- Chapters with Adversity-Triumph tracking
 CREATE INDEX idx_chapters_story_status_order ON chapters(story_id, status, order_index);

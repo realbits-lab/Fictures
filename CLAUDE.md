@@ -627,7 +627,7 @@ Every scene generated is automatically:
 
 **Core Feature Specifications:**
 - **[docs/story-specification.md](docs/story-specification.md)** - Story structure and HNS methodology
-- **[docs/reading-specification.md](docs/reading-specification.md)** - Reading UX, mobile nav, comments, likes
+- **[docs/novels-specification.md](docs/novels-specification.md)** - Reading UX, mobile nav, comments, likes
 - **[docs/community-specification.md](docs/community-specification.md)** - Community features and sharing
 
 **Performance & Optimization:**
@@ -673,7 +673,7 @@ Every scene generated is automatically:
 - ✅ Created `docs/caching-strategy.md` - Merged 3 cache-related files into complete guide
 - ✅ Created `docs/image-system-guide.md` - Overview linking 3 image-related files
 - ✅ Created `docs/README.md` - Master documentation index
-- ✅ Updated `docs/reading-specification.md` - Added bottom navigation implementation details
+- ✅ Updated `docs/novels-specification.md` - Added bottom navigation implementation details
 
 **Removed Files (Superseded):**
 - ~~30min-cache-retention.md~~ → Merged into caching-strategy.md

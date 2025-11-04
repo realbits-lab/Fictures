@@ -22,7 +22,7 @@ export const moderationStatusEnum = pgEnum('moderation_status', [
   'rejected'
 ]);
 
-// Event type enum for analytics
+// Event type enum for analysis
 export const eventTypeEnum = pgEnum('event_type', [
   'page_view',
   'story_view',
@@ -382,7 +382,7 @@ export const comicPanels = pgTable('comic_panels', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Scene Views table - Tracks individual scene views for analytics
+// Scene Views table - Tracks individual scene views for analysis
 export const sceneViews = pgTable('scene_views', {
   id: text('id').primaryKey().default('gen_random_uuid()::text'),
   sceneId: text('scene_id').references(() => scenes.id, { onDelete: 'cascade' }).notNull(),
@@ -977,8 +977,8 @@ export const sceneDislikesRelations = relations(sceneDislikes, ({ one }) => ({
   }),
 }));
 
-// Analytics events table - Track all user interactions
-export const analyticsEvents = pgTable('analytics_events', {
+// Analysis events table - Track all user interactions
+export const analysisEvents = pgTable('analytics_events', {
   id: text('id').primaryKey(),
   eventType: eventTypeEnum('event_type').notNull(),
   userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
@@ -1029,26 +1029,26 @@ export const storyInsights = pgTable('story_insights', {
 });
 
 
-// Relations for analytics tables
-export const analyticsEventsRelations = relations(analyticsEvents, ({ one }) => ({
+// Relations for analysis tables
+export const analysisEventsRelations = relations(analysisEvents, ({ one }) => ({
   user: one(users, {
-    fields: [analyticsEvents.userId],
+    fields: [analysisEvents.userId],
     references: [users.id],
   }),
   story: one(stories, {
-    fields: [analyticsEvents.storyId],
+    fields: [analysisEvents.storyId],
     references: [stories.id],
   }),
   chapter: one(chapters, {
-    fields: [analyticsEvents.chapterId],
+    fields: [analysisEvents.chapterId],
     references: [chapters.id],
   }),
   scene: one(scenes, {
-    fields: [analyticsEvents.sceneId],
+    fields: [analysisEvents.sceneId],
     references: [scenes.id],
   }),
   post: one(communityPosts, {
-    fields: [analyticsEvents.postId],
+    fields: [analysisEvents.postId],
     references: [communityPosts.id],
   }),
 }));

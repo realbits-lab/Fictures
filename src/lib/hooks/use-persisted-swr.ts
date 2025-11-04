@@ -269,12 +269,12 @@ class CacheManager {
   // Extract page type from cache key
   private extractPageTypeFromKey(cacheKey: string): string | null {
     // Try to match patterns based on API route paths
-    // Writing page: /writing/api/*
-    if (cacheKey.includes('/writing/') || cacheKey.includes('stories/user') || cacheKey.includes('stories/drafts')) {
+    // Writing page: /studio/api/*
+    if (cacheKey.includes('/studio/') || cacheKey.includes('stories/user') || cacheKey.includes('stories/drafts')) {
       return 'writing';
     }
-    // Reading page: /reading/api/* (includes published, featured, genre)
-    if (cacheKey.includes('/reading/') || cacheKey.includes('stories/published') || cacheKey.includes('stories/featured')) {
+    // Reading page: /novels/api/* (includes published, featured, genre)
+    if (cacheKey.includes('/novels/') || cacheKey.includes('stories/published') || cacheKey.includes('stories/featured')) {
       return 'reading';
     }
     // Community page: /community/api/*

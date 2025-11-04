@@ -1,8 +1,8 @@
 import { Suspense } from 'react';
 import { MainLayout } from '@/components/layout';
-import { ChapterReaderClient } from '@/components/reading/ChapterReaderClient';
-import { StoryHeaderSkeleton, ChapterListSkeleton } from '@/components/reading/ReadingSkeletons';
-import { getStoryForReading } from '@/lib/db/reading-queries';
+import { ChapterReaderClient } from '@/components/novels/ChapterReaderClient';
+import { StoryHeaderSkeleton, ChapterListSkeleton } from '@/components/novels/ReadingSkeletons';
+import { getStoryForReading } from '@/lib/db/novels-queries';
 import { notFound } from 'next/navigation';
 
 interface ReadPageProps {

@@ -78,10 +78,10 @@ Google Analytics event tracking has been added to key user actions throughout th
   - Tracks: `trackStoryEvent.create(storyId)` when story generation completes
 
 ##### Reading Events
-- **File**: `src/components/reading/ChapterReaderClient.tsx`
+- **File**: `src/components/novels/ChapterReaderClient.tsx`
   - Tracks: `trackReading.startReading(storyId, chapterId)` when user starts reading
 
-- **File**: `src/components/reading/LikeButton.tsx`
+- **File**: `src/components/novels/LikeButton.tsx`
   - Tracks: `trackReading.bookmark(storyId)` when user likes a story
   - Tracks: `trackCommunity.like(commentId)` when user likes a comment
 
@@ -89,7 +89,7 @@ Google Analytics event tracking has been added to key user actions throughout th
 - **File**: `src/components/community/CreatePostForm.tsx`
   - Tracks: `trackCommunity.createPost(postId)` when user creates a community post
 
-- **File**: `src/components/reading/CommentForm.tsx`
+- **File**: `src/components/novels/CommentForm.tsx`
   - Tracks: `trackCommunity.comment(storyId)` when user posts a comment
 
 ##### Discovery Events

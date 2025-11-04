@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 
 /**
  * Reset All Story Data Script
@@ -17,10 +17,10 @@
  *
  * Usage:
  *   # Preview mode (shows what will be deleted)
- *   dotenv --file .env.local run node scripts/reset-all-stories.mjs
+ *   dotenv --file .env.local run pnpm exec tsx scripts/reset-all-stories.ts
  *
  *   # Actual reset (destructive!)
- *   dotenv --file .env.local run node scripts/reset-all-stories.mjs --confirm
+ *   dotenv --file .env.local run pnpm exec tsx scripts/reset-all-stories.ts --confirm
  *
  * Prerequisites:
  *   - Dev server running on port 3000

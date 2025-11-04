@@ -34,7 +34,7 @@ Successfully identified and fixed a critical performance bottleneck in the story
 ```
 User clicks story card
     ↓
-1. Navigate to /writing/edit/story/{storyId}
+1. Navigate to /studio/edit/story/{storyId}
     ↓
 2. SSR Page (page.tsx)
     - getStoryWithStructure() called
@@ -48,14 +48,14 @@ User clicks story card
     ↓
 4. SceneDisplay Component (when scene selected)
     - Makes 3 separate SWR API calls:
-      * /writing/api/stories/{id}/scenes/{sceneId}
-      * /writing/api/stories/{id}/characters
-      * /writing/api/stories/{id}/settings
+      * /studio/api/stories/{id}/scenes/{sceneId}
+      * /studio/api/stories/{id}/characters
+      * /studio/api/stories/{id}/settings
 ```
 
 ### Root Cause Identified
 
-**File:** `src/app/writing/edit/story/[storyId]/page.tsx`
+**File:** `src/app/studio/edit/story/[storyId]/page.tsx`
 
 **Problem:**
 ```typescript
@@ -119,7 +119,7 @@ console.log(`⏱️  [CLIENT] Total time from mount to scene render: ${mountDura
 ### 2. Cache Layer Fix
 
 **Modified Files:**
-- `src/app/writing/edit/story/[storyId]/page.tsx`
+- `src/app/studio/edit/story/[storyId]/page.tsx`
 
 **Changes:**
 ```diff
@@ -246,10 +246,10 @@ return (
 ```typescript
 // StoryCard.tsx
 <Link
-  href={`/writing/edit/story/${id}`}
+  href={`/studio/edit/story/${id}`}
   onMouseEnter={() => {
     // Prefetch story structure on hover
-    router.prefetch(`/writing/edit/story/${id}`);
+    router.prefetch(`/studio/edit/story/${id}`);
   }}
 >
 ```
@@ -259,12 +259,12 @@ return (
 ### 3. Combine Multiple API Calls
 
 **Current:** SceneDisplay makes 3 separate calls:
-- `/writing/api/stories/{id}/scenes/{sceneId}`
-- `/writing/api/stories/{id}/characters`
-- `/writing/api/stories/{id}/settings`
+- `/studio/api/stories/{id}/scenes/{sceneId}`
+- `/studio/api/stories/{id}/characters`
+- `/studio/api/stories/{id}/settings`
 
 **Optimization:** Create combined endpoint:
-- `/writing/api/stories/{id}/scenes/{sceneId}/full`
+- `/studio/api/stories/{id}/scenes/{sceneId}/full`
 - Returns scene + related characters + settings in one request
 
 **Expected Benefit:**
@@ -280,7 +280,7 @@ useEffect(() => {
   const firstScene = story.parts[0]?.chapters[0]?.scenes[0];
   if (firstScene) {
     // Prefetch first scene immediately
-    fetch(`/writing/api/stories/${story.id}/scenes/${firstScene.id}`);
+    fetch(`/studio/api/stories/${story.id}/scenes/${firstScene.id}`);
   }
 }, [story]);
 ```
@@ -317,15 +317,15 @@ useEffect(() => {
 
 ## Files Modified
 
-1. **src/app/writing/edit/story/[storyId]/page.tsx**
+1. **src/app/studio/edit/story/[storyId]/page.tsx**
    - Changed import from queries to cached-queries
    - Added comprehensive SSR logging
 
-2. **src/components/writing/UnifiedWritingEditor.tsx**
+2. **src/components/studio/UnifiedWritingEditor.tsx**
    - Added component mount logging
    - Added scene selection logging
 
-3. **src/components/writing/SceneDisplay.tsx**
+3. **src/components/studio/SceneDisplay.tsx**
    - Added SWR fetch logging
    - Added scene data state update logging
 

@@ -10,7 +10,7 @@ export const API_SCOPES = {
   'chapters:read': 'Read chapters and scenes',
   'chapters:write': 'Create and edit chapters and scenes',
   'chapters:delete': 'Delete chapters and scenes',
-  'analytics:read': 'View analytics and statistics',
+  'analysis:read': 'View analysis and statistics',
   'ai:use': 'Use AI writing assistance features',
   'community:read': 'Read community posts and discussions',
   'community:write': 'Create community posts and replies',
@@ -25,7 +25,7 @@ export type ApiScope = keyof typeof API_SCOPES;
 export const DEFAULT_SCOPES: ApiScope[] = [
   'stories:read',
   'chapters:read',
-  'analytics:read'
+  'analysis:read'
 ];
 
 // All available scopes

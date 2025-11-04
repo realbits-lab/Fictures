@@ -165,7 +165,7 @@ Specialized component for in-content ads that blends naturally with story grid.
 />
 ```
 
-## Ad Placements on /reading Page
+## Ad Placements on /novels Page
 
 ### Visual Layout
 

@@ -1,6 +1,6 @@
 import { auth } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
-import { UnifiedWritingEditor } from "@/components/writing/UnifiedWritingEditor";
+import { UnifiedWritingEditor } from "@/components/studio/UnifiedWritingEditor";
 import { getChapterWithPart, getStoryWithStructure } from '@/lib/db/queries';
 
 export default async function WritePage({ params }: { params: Promise<{ chapterId: string }> }) {

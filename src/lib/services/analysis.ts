@@ -40,7 +40,7 @@ function getTimeRange(range: '7d' | '30d' | '90d' | 'all'): TimeRange {
   return { start, end };
 }
 
-export interface StoryAnalytics {
+export interface StoryAnalysis {
   totalReaders: number;
   readerGrowth: number;
   avgRating: number;
@@ -68,10 +68,10 @@ export interface TrendData {
   newReaders: number;
 }
 
-export async function getStoryAnalytics(
+export async function getStoryAnalysis(
   userId: string,
   timeRange: '7d' | '30d' | '90d' | 'all' = '30d'
-): Promise<StoryAnalytics> {
+): Promise<StoryAnalysis> {
   const { start, end } = getTimeRange(timeRange);
 
   const userStories = await db
@@ -308,7 +308,7 @@ async function getTrendData(
   }));
 }
 
-export interface ReaderAnalytics {
+export interface ReaderAnalysis {
   topPosts: any[];
   recentComments: any[];
   demographics: Demographics;
@@ -329,10 +329,10 @@ export interface ReadingPatterns {
   completionRate: number;
 }
 
-export async function getReaderAnalytics(
+export async function getReaderAnalysis(
   userId: string,
   timeRange: '7d' | '30d' | '90d' | 'all' = '30d'
-): Promise<ReaderAnalytics> {
+): Promise<ReaderAnalysis> {
   const { start, end } = getTimeRange(timeRange);
 
   const userStories = await db

@@ -30,7 +30,7 @@ The Studio Agent is an AI-powered editing assistant integrated into the `/studio
 4. **Frontend Components**
    - Custom hook: `src/hooks/use-studio-agent-chat.ts`
    - Chat UI: `src/components/studio/studio-agent-chat.tsx`
-   - Integration: `src/components/writing/UnifiedWritingEditor.tsx`
+   - Integration: `src/components/studio/UnifiedWritingEditor.tsx`
 
 ## Database Schema
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 
 /**
  * Comic Panel Generation Script
@@ -6,9 +6,9 @@
  * Generates comic panels for a specific scene using the Toonplay system.
  *
  * Usage:
- *   dotenv --file .env.local run node scripts/generate-comic-panels.mjs <sceneId>
- *   dotenv --file .env.local run node scripts/generate-comic-panels.mjs <sceneId> --dry-run
- *   dotenv --file .env.local run node scripts/generate-comic-panels.mjs <sceneId> --force
+ *   dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts <sceneId>
+ *   dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts <sceneId> --dry-run
+ *   dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts <sceneId> --force
  *
  * Options:
  *   --dry-run    Preview what would be generated without actually creating panels
@@ -31,10 +31,6 @@
 
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -47,9 +43,9 @@ const isVerbose = args.includes('--verbose');
 if (!sceneId) {
   console.error('❌ Error: Scene ID is required');
   console.log('\nUsage:');
-  console.log('  dotenv --file .env.local run node scripts/generate-comic-panels.mjs <sceneId>');
-  console.log('  dotenv --file .env.local run node scripts/generate-comic-panels.mjs <sceneId> --dry-run');
-  console.log('  dotenv --file .env.local run node scripts/generate-comic-panels.mjs <sceneId> --force');
+  console.log('  dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts <sceneId>');
+  console.log('  dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts <sceneId> --dry-run');
+  console.log('  dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts <sceneId> --force');
   console.log('\nOptions:');
   console.log('  --dry-run    Preview without generating');
   console.log('  --force      Regenerate even if panels exist');

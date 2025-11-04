@@ -25,7 +25,7 @@ Successfully implemented separate reading history tracking for **novel** and **c
 
 ### 2. ✅ Type Definitions
 
-**File:** `src/types/reading-history.ts`
+**File:** `src/types/novels-history.ts`
 
 Created TypeScript types:
 - `ReadingFormat = 'novel' | 'comic'`
@@ -34,7 +34,7 @@ Created TypeScript types:
 
 ### 3. ✅ Reading History Manager
 
-**File:** `src/lib/storage/reading-history-manager.ts`
+**File:** `src/lib/storage/novels-history-manager.ts`
 
 Complete rewrite with format support:
 
@@ -187,18 +187,18 @@ const response = await fetch('/comics/api/history');
 
 ### Modified
 1. `src/lib/db/schema.ts` - Added reading format enum and updated table
-2. `src/lib/storage/reading-history-manager.ts` - Complete rewrite for format support
+2. `src/lib/storage/novels-history-manager.ts` - Complete rewrite for format support
 3. `src/components/browse/StoryGrid.tsx` - Format-aware history tracking
 4. `src/lib/hooks/use-reading-history-sync.ts` - Dual-format sync
 5. `src/app/novels/api/history/route.ts` - Novel format filtering
 6. `src/app/novels/api/history/sync/route.ts` - Novel format sync
 
 ### Created
-1. `src/types/reading-history.ts` - Type definitions
+1. `src/types/novels-history.ts` - Type definitions
 2. `src/app/comics/api/history/route.ts` - Comic history API
 3. `src/app/comics/api/history/sync/route.ts` - Comic history sync
 4. `drizzle/0031_add_reading_format_support.sql` - Migration file
-5. `docs/reading-history-dual-format-design.md` - Design document
+5. `docs/novels-history-dual-format-design.md` - Design document
 6. `test-scripts/test-dual-format-reading-history-simple.mjs` - Test script
 7. `test-scripts/test-dual-format-reading-history.mjs` - E2E test script
 
@@ -222,7 +222,7 @@ const response = await fetch('/comics/api/history');
 
 ## Documentation
 
-- **Design Document**: `docs/reading-history-dual-format-design.md`
+- **Design Document**: `docs/novels-history-dual-format-design.md`
 - **Implementation Summary**: This file
 - **Test Scripts**: `test-scripts/test-dual-format-reading-history-*.mjs`
 

@@ -583,7 +583,7 @@ test('story list updates in real-time when story is published', async ({ page, c
 
   // Open writing page in new tab and publish story
   const writingPage = await context.newPage();
-  await writingPage.goto('http://localhost:3000/writing');
+  await writingPage.goto('http://localhost:3000/studio');
   await writingPage.click('[data-testid="publish-button"]');
 
   // First page should see new story within 2 seconds (via SSE)

@@ -59,7 +59,7 @@ Complete 4-layer caching system with ETag support for `/novels/[id]` comments:
 ## 📝 Comments Performance - Files Modified (2)
 
 1. `src/app/studio/api/stories/[id]/comments/route.ts` - Added Redis caching + ETag
-2. `src/components/reading/CommentSection.tsx` - Updated to use optimized hook
+2. `src/components/novels/CommentSection.tsx` - Updated to use optimized hook
 
 ## 🗄️ Comments Performance - Database Migration (1)
 

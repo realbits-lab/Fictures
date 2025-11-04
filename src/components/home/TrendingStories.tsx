@@ -39,7 +39,7 @@ export function TrendingStories({ stories }: TrendingStoriesProps) {
         {/* Stories Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {stories.map((story) => (
-            <Link key={story.id} href={`/reading/${story.id}`}>
+            <Link key={story.id} href={`/novels/${story.id}`}>
               <Card className="h-full transition-all hover:scale-105 hover:shadow-xl cursor-pointer group">
                 <CardContent className="p-6">
                   {/* Icon */}

@@ -62,7 +62,7 @@ export function FeaturedStory({ initialStory }: FeaturedStoryProps) {
 
               {/* CTA Buttons - MOVED TO TOP */}
               <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <Link href={`/reading/${story.id}`} className="flex-1">
+                <Link href={`/novels/${story.id}`} className="flex-1">
                   <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition-all hover:scale-105">
                     <span className="mr-2">📚</span>
                     Start Reading

@@ -77,7 +77,7 @@ Successfully implemented **Redis Pub/Sub + Server-Sent Events (SSE)** for real-t
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  1. User publishes story via /writing page                  │
+│  1. User publishes story via /studio page                  │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
@@ -232,7 +232,7 @@ await publishEvent(CHANNELS.STORY_PUBLISHED, {
 
 3. **Test in Browser**:
    - Open http://localhost:3000/community in Tab 1
-   - Open http://localhost:3000/writing in Tab 2
+   - Open http://localhost:3000/studio in Tab 2
    - Publish a story in Tab 2
    - Watch Tab 1 update instantly! ⚡
 

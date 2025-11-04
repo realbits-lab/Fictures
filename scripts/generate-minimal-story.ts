@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 
 /**
  * Minimal Story Generation Script
@@ -21,7 +21,7 @@
  * - Scene quality evaluation with automated improvement
  *
  * Usage:
- *   dotenv --file .env.local run node scripts/generate-minimal-story.mjs
+ *   dotenv --file .env.local run pnpm exec tsx scripts/generate-minimal-story.ts
  *
  * Prerequisites:
  *   - Dev server running on port 3000

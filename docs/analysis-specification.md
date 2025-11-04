@@ -2316,4 +2316,4 @@ export function CollapsibleSection({
 ### AI & Recommendations
 - [Content Recommendation Systems](https://developers.google.com/machine-learning/recommendation)
 - [Sentiment Analysis Best Practices](https://monkeylearn.com/sentiment-analysis/)
-- [Writing Quality Metrics](https://www.grammarly.com/blog/writing-analytics/)
+- [Writing Quality Metrics](https://www.grammarly.com/blog/studio-analytics/)

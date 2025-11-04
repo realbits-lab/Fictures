@@ -1155,7 +1155,7 @@ export const checkApiKeyScopeTool = tool({
       'stories:write',
       'stories:delete',
       'chapters:write',
-      'analytics:read',
+      'analysis:read',
     ] as const).describe('Required scope to check'),
   }),
   execute: async ({ userId, requiredScope }) => {

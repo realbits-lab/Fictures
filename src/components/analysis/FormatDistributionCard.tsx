@@ -1,7 +1,7 @@
 /**
  * FormatDistributionCard Component
  *
- * Displays format distribution statistics for analytics
+ * Displays format distribution statistics for analysis
  * - Novel vs Comic view breakdown
  * - Visual progress bars
  * - Percentage and absolute numbers

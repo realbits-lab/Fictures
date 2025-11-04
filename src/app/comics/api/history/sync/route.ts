@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { readingHistory } from '@/lib/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
-import type { HistoryItem, ReadingFormat } from '@/types/reading-history';
+import type { HistoryItem, ReadingFormat } from '@/types/novels-history';
 
 const FORMAT: ReadingFormat = 'comic';
 

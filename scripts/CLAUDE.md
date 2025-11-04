@@ -4,7 +4,7 @@ title: Scripts Directory Documentation
 
 # Scripts Directory Documentation
 
-Production utility scripts for managing the Fictures platform. Run with: `dotenv --file .env.local run node scripts/<script>.mjs`
+Production utility scripts for managing the Fictures platform. Run with: `dotenv --file .env.local run pnpm exec tsx scripts/<script>.ts`
 
 > **Note**: For temporary/testing scripts, see `test-scripts/` directory.
 
@@ -24,49 +24,49 @@ When making ANY changes to scripts in this directory:
 
 | Script | Purpose | Usage |
 |--------|---------|-------|
-| `setup-auth-users.mjs` | Create test users | `node scripts/setup-auth-users.mjs` |
-| `verify-auth-setup.mjs` | Verify authentication | `node scripts/verify-auth-setup.mjs` |
-| `generate-minimal-story.mjs` | Generate minimal novel | `node scripts/generate-minimal-story.mjs` |
-| `generate-comic-panels.mjs` | Generate comic panels | `node scripts/generate-comic-panels.mjs SCENE_ID [options]` |
-| `reset-all-stories.mjs` | ⚠️ Reset all story data | `node scripts/reset-all-stories.mjs --confirm` |
+| `setup-auth-users.ts` | Create test users | `pnpm exec tsx scripts/setup-auth-users.ts` |
+| `verify-auth-setup.ts` | Verify authentication | `pnpm exec tsx scripts/verify-auth-setup.ts` |
+| `generate-minimal-story.ts` | Generate minimal novel | `pnpm exec tsx scripts/generate-minimal-story.ts` |
+| `generate-comic-panels.ts` | Generate comic panels | `pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID [options]` |
+| `reset-all-stories.ts` | ⚠️ Reset all story data | `pnpm exec tsx scripts/reset-all-stories.ts --confirm` |
 
 ---
 
 ## Authentication Setup
 
-### setup-auth-users.mjs
+### setup-auth-users.ts
 
 Creates three test users (manager, writer, reader) with email/password authentication.
 
 ```bash
-dotenv --file .env.local run node scripts/setup-auth-users.mjs
+dotenv --file .env.local run pnpm exec tsx scripts/setup-auth-users.ts
 ```
 
 **Output**: Populates `.auth/user.json` with credentials and API keys.
 
-### verify-auth-setup.mjs
+### verify-auth-setup.ts
 
 Validates user accounts and API keys.
 
 ```bash
-dotenv --file .env.local run node scripts/verify-auth-setup.mjs
+dotenv --file .env.local run pnpm exec tsx scripts/verify-auth-setup.ts
 ```
 
 ---
 
 ## Novel Generation
 
-### generate-minimal-story.mjs
+### generate-minimal-story.ts
 
 **Purpose**: Generate a **minimal-size novel** (fastest generation) using the Adversity-Triumph Engine with API key authentication.
 
 **Quick Start**:
 ```bash
 # Generate minimal story (1 part, 1 chapter, 3 scenes, 2 characters, 2 settings)
-dotenv --file .env.local run node scripts/generate-minimal-story.mjs
+dotenv --file .env.local run pnpm exec tsx scripts/generate-minimal-story.ts
 
 # Background execution
-dotenv --file .env.local run node scripts/generate-minimal-story.mjs > logs/minimal-story.log 2>&1 &
+dotenv --file .env.local run pnpm exec tsx scripts/generate-minimal-story.ts > logs/minimal-story.log 2>&1 &
 ```
 
 **Features**:
@@ -102,7 +102,7 @@ dotenv --file .env.local run node scripts/generate-minimal-story.mjs > logs/mini
 **Authentication**:
 - Uses writer API key from `.auth/user.json`
 - Requires `stories:write` scope
-- Run `scripts/setup-auth-users.mjs` if key doesn't exist
+- Run `scripts/setup-auth-users.ts` if key doesn't exist
 
 **Generation Time**: 5-10 minutes for minimal story (1 part, 1 chapter, 3 scenes)
 
@@ -126,7 +126,7 @@ Edit the script to modify `userPrompt`, genre, tone, or counts.
 - Environment variables: `GOOGLE_GENERATIVE_AI_API_KEY`, `AI_GATEWAY_API_KEY`, `BLOB_READ_WRITE_TOKEN`
 
 **Troubleshooting**:
-- **401 Unauthorized**: Run `scripts/setup-auth-users.mjs` to create API keys
+- **401 Unauthorized**: Run `scripts/setup-auth-users.ts` to create API keys
 - **Connection refused**: Start dev server with `dotenv --file .env.local run pnpm dev`
 - **Generation fails**: Check `logs/dev-server.log` for errors
 
@@ -134,26 +134,26 @@ Edit the script to modify `userPrompt`, genre, tone, or counts.
 
 ## Comic Panel Generation
 
-### generate-comic-panels.mjs
+### generate-comic-panels.ts
 
 **Purpose**: Generate 7-12 comic panels for a scene using Toonplay 9-step pipeline with quality evaluation.
 
 **Quick Start**:
 ```bash
 # Preview
-dotenv --file .env.local run node scripts/generate-comic-panels.mjs SCENE_ID --dry-run
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID --dry-run
 
 # Generate
-dotenv --file .env.local run node scripts/generate-comic-panels.mjs SCENE_ID
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID
 
 # Force regenerate
-dotenv --file .env.local run node scripts/generate-comic-panels.mjs SCENE_ID --force
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID --force
 
 # Verbose logging
-dotenv --file .env.local run node scripts/generate-comic-panels.mjs SCENE_ID --verbose
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID --verbose
 
 # Background
-dotenv --file .env.local run node scripts/generate-comic-panels.mjs SCENE_ID > logs/comic-panels.log 2>&1 &
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID > logs/comic-panels.log 2>&1 &
 ```
 
 **Options**:
@@ -206,7 +206,7 @@ dotenv --file .env.local run node scripts/generate-comic-panels.mjs SCENE_ID > l
 **Debug**:
 ```bash
 # Verbose mode
-dotenv --file .env.local run node scripts/generate-comic-panels.mjs SCENE_ID --verbose
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID --verbose
 
 # Check API logs
 tail -f logs/dev-server.log | grep "generation/toonplay"
@@ -221,7 +221,7 @@ tail -f logs/dev-server.log | grep "generation/toonplay"
 
 ## Story Data Management
 
-### reset-all-stories.mjs
+### reset-all-stories.ts
 
 **⚠️ DESTRUCTIVE OPERATION - Use with extreme caution!**
 
@@ -230,13 +230,13 @@ tail -f logs/dev-server.log | grep "generation/toonplay"
 **Quick Start**:
 ```bash
 # Preview mode (shows what will be deleted WITHOUT deleting)
-dotenv --file .env.local run node scripts/reset-all-stories.mjs
+dotenv --file .env.local run pnpm exec tsx scripts/reset-all-stories.ts
 
 # Execute destructive reset (requires --confirm flag)
-dotenv --file .env.local run node scripts/reset-all-stories.mjs --confirm
+dotenv --file .env.local run pnpm exec tsx scripts/reset-all-stories.ts --confirm
 
 # Background execution with logging
-dotenv --file .env.local run node scripts/reset-all-stories.mjs --confirm > logs/reset-all.log 2>&1 &
+dotenv --file .env.local run pnpm exec tsx scripts/reset-all-stories.ts --confirm > logs/reset-all.log 2>&1 &
 ```
 
 **Options**:
@@ -312,7 +312,7 @@ Timestamp: 2025-11-04T10:30:45.123Z
 
 **Troubleshooting**:
 - **401 Unauthorized**: Manager API key missing or invalid in `.auth/user.json`
-  - Solution: Run `scripts/setup-auth-users.mjs` to create manager account
+  - Solution: Run `scripts/setup-auth-users.ts` to create manager account
 - **403 Forbidden**: Account lacks `admin:all` scope
   - Solution: Only manager accounts have this scope (not writer or reader)
 - **ECONNREFUSED**: Dev server not running
@@ -323,7 +323,7 @@ Timestamp: 2025-11-04T10:30:45.123Z
 **Debug**:
 ```bash
 # Preview without deleting
-dotenv --file .env.local run node scripts/reset-all-stories.mjs
+dotenv --file .env.local run pnpm exec tsx scripts/reset-all-stories.ts
 
 # Check manager API key
 cat .auth/user.json | jq '.profiles.manager.apiKey'
@@ -364,7 +364,7 @@ Scripts use `.auth/user.json`:
 }
 ```
 
-**Setup**: Run `scripts/setup-auth-users.mjs` to create users and API keys.
+**Setup**: Run `scripts/setup-auth-users.ts` to create users and API keys.
 
 ### Environment Variables
 
@@ -393,10 +393,10 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ```bash
 # Standard
-dotenv --file .env.local run node scripts/<script>.mjs [args]
+dotenv --file .env.local run pnpm exec tsx scripts/<script>.ts [args]
 
 # Background with logging
-dotenv --file .env.local run node scripts/<script>.mjs [args] > logs/<script>.log 2>&1 &
+dotenv --file .env.local run pnpm exec tsx scripts/<script>.ts [args] > logs/<script>.log 2>&1 &
 
 # Monitor background process
 tail -f logs/<script>.log
@@ -419,7 +419,7 @@ All scripts include:
 1. **Always prefix with dotenv**: `dotenv --file .env.local run`
 2. **Background long operations**: Redirect to `logs/` directory
 3. **Test with dry-run first**: Preview before executing
-4. **Check auth setup**: Run `verify-auth-setup.mjs` if errors
+4. **Check auth setup**: Run `verify-auth-setup.ts` if errors
 5. **Monitor logs**: Check `logs/` for background processes
 
 ---
@@ -429,7 +429,7 @@ All scripts include:
 | Issue | Solution |
 |-------|----------|
 | ECONNREFUSED | Ensure dev server running: `dotenv --file .env.local run pnpm dev` |
-| Auth errors | Run `scripts/setup-auth-users.mjs` to create test users |
+| Auth errors | Run `scripts/setup-auth-users.ts` to create test users |
 | API key errors | Check `.auth/user.json` has valid API keys |
 | Env var errors | Verify `.env.local` exists with all required variables |
 

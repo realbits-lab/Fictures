@@ -128,7 +128,7 @@ ON reading_history(story_id, reading_format);
 ### 1. Type Definitions
 
 ```typescript
-// src/types/reading-history.ts
+// src/types/novels-history.ts
 export type ReadingFormat = 'novel' | 'comic';
 
 export interface HistoryItem {
@@ -149,7 +149,7 @@ export interface StorageData {
 ### 2. Reading History Manager Updates
 
 ```typescript
-// src/lib/storage/reading-history-manager.ts
+// src/lib/storage/novels-history-manager.ts
 
 class ReadingHistoryManager {
   // Separate storage keys for each format

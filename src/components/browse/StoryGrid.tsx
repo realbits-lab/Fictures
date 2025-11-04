@@ -14,10 +14,10 @@ import {
 } from "@/components/ui/select";
 import { InFeedAd } from "@/components/ads";
 import { trackSearch, trackStoryEvent } from '@/lib/analytics/google-analytics';
-import { readingHistoryManager } from '@/lib/storage/reading-history-manager';
+import { readingHistoryManager } from '@/lib/storage/novels-history-manager';
 import { STORY_GENRES } from '@/lib/constants/genres';
 import { CreateNewStoryButton } from "@/components/studio/create-new-story-button";
-import type { ReadingFormat } from '@/types/reading-history';
+import type { ReadingFormat } from '@/types/novels-history';
 
 interface Story {
   id: string;

@@ -42,7 +42,7 @@ export default function ApiKeysPage() {
 
   // Form state
   const [keyName, setKeyName] = useState('');
-  const [selectedScopes, setSelectedScopes] = useState<string[]>(['stories:read', 'chapters:read', 'analytics:read']);
+  const [selectedScopes, setSelectedScopes] = useState<string[]>(['stories:read', 'chapters:read', 'analysis:read']);
   const [expirationOption, setExpirationOption] = useState<string>('never');
 
   // Fetch API keys
@@ -108,7 +108,7 @@ export default function ApiKeysPage() {
         setNewApiKey(data.apiKey.key);
         setShowCreateForm(false);
         setKeyName('');
-        setSelectedScopes(['stories:read', 'chapters:read', 'analytics:read']);
+        setSelectedScopes(['stories:read', 'chapters:read', 'analysis:read']);
         setExpirationOption('never');
         await fetchApiKeys();
         toast.success('API key created successfully');

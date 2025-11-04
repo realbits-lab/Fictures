@@ -101,7 +101,7 @@ dotenv --file .env.local run node scripts/verify-reader-password.mjs
 - **Scopes** (14 total):
   - **Stories**: read, write, delete, publish
   - **Chapters**: read, write, delete
-  - **Analytics**: read
+  - **Analysis**: read
   - **AI**: use
   - **Community**: read, write
   - **Settings**: read, write
@@ -119,10 +119,10 @@ dotenv --file .env.local run node scripts/verify-reader-password.mjs
 - **Scopes** (5 total - Read-only):
   - **Stories**: read
   - **Chapters**: read
-  - **Analytics**: read
+  - **Analysis**: read
   - **Community**: read
   - **Settings**: read
-- **Features**: Read-only access for viewing content and analytics
+- **Features**: Read-only access for viewing content and analysis
 - **Restrictions**: Cannot write, delete, or publish any content
 
 ### Writer Profile
@@ -134,7 +134,7 @@ dotenv --file .env.local run node scripts/verify-reader-password.mjs
 - **Scopes** (9 total - Read/Write only):
   - **Stories**: read, write
   - **Chapters**: read, write
-  - **Analytics**: read
+  - **Analysis**: read
   - **AI**: use
   - **Community**: read, write
   - **Settings**: read
@@ -263,7 +263,7 @@ MANAGER - manager@fictures.xyz
   API Keys: 1 active
     - manager API Key (fic_00fZ...)
       Scopes: stories:read, stories:write, stories:delete, stories:publish,
-              chapters:read, chapters:write, chapters:delete, analytics:read,
+              chapters:read, chapters:write, chapters:delete, analysis:read,
               ai:use, community:read, community:write, settings:read,
               settings:write, admin:all
 
@@ -276,7 +276,7 @@ WRITER - writer@fictures.xyz
   API Keys: 1 active
     - writer API Key (fic_Z1yZ...)
       Scopes: stories:read, stories:write, chapters:read, chapters:write,
-              analytics:read, ai:use, community:read, community:write,
+              analysis:read, ai:use, community:read, community:write,
               settings:read
 
 READER - reader@fictures.xyz
@@ -287,7 +287,7 @@ READER - reader@fictures.xyz
   Created:  11/4/2025, 2:08:04 PM
   API Keys: 1 active
     - reader API Key (fic_8NtE...)
-      Scopes: stories:read, chapters:read, analytics:read,
+      Scopes: stories:read, chapters:read, analysis:read,
               community:read, settings:read
 
 ✅ Authentication setup verified!
@@ -682,8 +682,8 @@ Current API key scopes available:
 - `chapters:write` - Create and edit chapters and scenes
 - `chapters:delete` - Delete chapters and scenes (Manager only)
 
-### Analytics Scope
-- `analytics:read` - View analytics and statistics (All roles)
+### Analysis Scope
+- `analysis:read` - View analysis and statistics (All roles)
 
 ### AI Scope
 - `ai:use` - Use AI writing assistance features (Manager, Writer)

@@ -543,7 +543,7 @@ export function useResearchContent() {
 ### File Locations
 - Browse component: `/Users/thomasjeon/GitHub/@dev.realbits/Fictures/src/components/browse/`
 - Comic browser: `/Users/thomasjeon/GitHub/@dev.realbits/Fictures/src/components/comic/`
-- Reading component: `/Users/thomasjeon/GitHub/@dev.realbits/Fictures/src/components/reading/`
+- Reading component: `/Users/thomasjeon/GitHub/@dev.realbits/Fictures/src/components/novels/`
 
 ### 4a. Browse/List Page Pattern
 

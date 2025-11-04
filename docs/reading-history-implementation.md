@@ -18,7 +18,7 @@ Previously, reading history only worked for authenticated users via API calls. A
 
 ### Key Components
 
-## 1. Reading History Manager (`/src/lib/storage/reading-history-manager.ts`)
+## 1. Reading History Manager (`/src/lib/storage/novels-history-manager.ts`)
 
 **Purpose**: Centralized manager for localStorage operations
 
@@ -81,7 +81,7 @@ if (!session?.user?.id) {
 
 // ✅ Authenticated user - use API with localStorage fallback
 try {
-  const response = await fetch('/reading/api/history');
+  const response = await fetch('/novels/api/history');
   if (response.ok) {
     const data = await response.json();
     const storyIds = new Set(data.history.map(h => h.storyId));
@@ -115,7 +115,7 @@ if (!session?.user?.id) {
 
 // ✅ Authenticated user - API + localStorage backup
 try {
-  const response = await fetch('/reading/api/history', {
+  const response = await fetch('/novels/api/history', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ storyId }),
@@ -132,11 +132,11 @@ try {
 }
 ```
 
-## 3. Sync API Endpoint (`/src/app/reading/api/history/sync/route.ts`)
+## 3. Sync API Endpoint (`/src/app/novels/api/history/sync/route.ts`)
 
 **Purpose**: Merge localStorage history with server history when user logs in
 
-**Endpoint**: `POST /reading/api/history/sync`
+**Endpoint**: `POST /novels/api/history/sync`
 
 **Request**:
 ```json
@@ -193,10 +193,10 @@ try {
 
 ### Anonymous User Flow
 
-1. User visits `/reading` page (not logged in)
+1. User visits `/novels` page (not logged in)
 2. Clicks on a story
 3. `recordStoryView()` saves to localStorage via `readingHistoryManager`
-4. User navigates back to `/reading`
+4. User navigates back to `/novels`
 5. `fetchHistory()` loads from localStorage
 6. "My History" filter shows stories from localStorage
 
@@ -215,9 +215,9 @@ try {
 1. User already logged in
 2. Clicks on a story
 3. `recordStoryView()` saves to both:
-   - Server via API (`POST /reading/api/history`)
+   - Server via API (`POST /novels/api/history`)
    - localStorage via `readingHistoryManager` (backup)
-4. User navigates back to `/reading`
+4. User navigates back to `/novels`
 5. `fetchHistory()` loads from server API
 6. If API fails, falls back to localStorage
 
@@ -403,13 +403,13 @@ describe('ReadingHistoryManager', () => {
 ```typescript
 test('anonymous user reading history', async ({ page }) => {
   // Visit page as anonymous user
-  await page.goto('/reading');
+  await page.goto('/novels');
 
   // Click on a story
   await page.click('[data-story-id="story1"]');
 
   // Go back
-  await page.goto('/reading');
+  await page.goto('/novels');
 
   // Switch to "My History" filter
   await page.click('button:has-text("My History")');
@@ -426,9 +426,9 @@ test('anonymous user reading history', async ({ page }) => {
 
 test('sync on login', async ({ page }) => {
   // Add stories as anonymous user
-  await page.goto('/reading');
+  await page.goto('/novels');
   await page.click('[data-story-id="story1"]');
-  await page.goto('/reading');
+  await page.goto('/novels');
   await page.click('[data-story-id="story2"]');
 
   // Log in
@@ -437,12 +437,12 @@ test('sync on login', async ({ page }) => {
 
   // Wait for sync
   await page.waitForResponse(response =>
-    response.url().includes('/reading/api/history/sync') &&
+    response.url().includes('/novels/api/history/sync') &&
     response.status() === 200
   );
 
   // Verify history synced to server
-  const response = await page.request.get('/reading/api/history');
+  const response = await page.request.get('/novels/api/history');
   const data = await response.json();
   expect(data.history).toHaveLength(2);
 });
@@ -497,9 +497,9 @@ console.log('Reading History Stats:', {
 - Size: ~200 bytes per item, 20KB for 100 items
 
 ### API Operations
-- GET /reading/api/history: ~100-300ms
-- POST /reading/api/history: ~50-150ms
-- POST /reading/api/history/sync: ~200-500ms (bulk operation)
+- GET /novels/api/history: ~100-300ms
+- POST /novels/api/history: ~50-150ms
+- POST /novels/api/history/sync: ~200-500ms (bulk operation)
 
 ### Optimization
 - ✅ Sync only once per session

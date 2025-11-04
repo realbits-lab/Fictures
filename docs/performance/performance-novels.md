@@ -99,7 +99,7 @@ CREATE INDEX idx_stories_status ON stories(status);
 **Impact:** Prevents full table scans, database execution <0.1ms
 
 #### Query Batching with Promise.all
-**File:** `src/lib/db/reading-queries.ts`
+**File:** `src/lib/db/novels-queries.ts`
 
 ```typescript
 // BEFORE: Sequential queries (3 network roundtrips)
@@ -122,7 +122,7 @@ const [storyResult, storyParts, allChapters] = await Promise.all([
 ---
 
 ### 1. Streaming SSR with Suspense Boundaries
-**Files:** `src/app/novels/[id]/page.tsx`, `src/components/reading/ReadingSkeletons.tsx`
+**Files:** `src/app/novels/[id]/page.tsx`, `src/components/novels/ReadingSkeletons.tsx`
 
 ```tsx
 export default async function ReadPage({ params }: ReadPageProps) {
@@ -152,7 +152,7 @@ export const experimental_ppr = true; // Pre-render static shell
 ---
 
 ### 3. Smart Data Reduction
-**Files:** `src/lib/db/reading-queries.ts`, API routes
+**Files:** `src/lib/db/novels-queries.ts`, API routes
 
 ```typescript
 // Skip studio-only fields, keep imageVariants for AVIF optimization
@@ -186,7 +186,7 @@ const headers = new Headers({
 ---
 
 ### 5. Progressive Scene Loading
-**Files:** `src/components/reading/ProgressiveSceneLoader.tsx`
+**Files:** `src/components/novels/ProgressiveSceneLoader.tsx`
 
 ```tsx
 // Load first 3 scenes immediately, lazy-load rest on scroll
@@ -399,9 +399,9 @@ const CACHE_TTL = {
 ## 📁 Implementation Files
 
 ### Created
-- `src/lib/db/reading-queries.ts` - Optimized queries
-- `src/components/reading/ProgressiveSceneLoader.tsx` - Progressive loader
-- `src/components/reading/ReadingSkeletons.tsx` - Skeleton UI
+- `src/lib/db/novels-queries.ts` - Optimized queries
+- `src/components/novels/ProgressiveSceneLoader.tsx` - Progressive loader
+- `src/components/novels/ReadingSkeletons.tsx` - Skeleton UI
 - `src/lib/cache/story-structure-cache.ts` - **Redis cache utility** ✨
 - `src/lib/cache/invalidation-hooks.ts` - **Cache invalidation hooks** ✨
 - `src/lib/cache/cache-warming.ts` - **Cache warming utilities** ✨

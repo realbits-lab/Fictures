@@ -49,7 +49,7 @@ export function RecentUpdates({ updates }: RecentUpdatesProps) {
         {/* Updates List */}
         <div className="max-w-4xl mx-auto space-y-4">
           {updates.map((update, index) => (
-            <Link key={`${update.storyId}-${update.chapterId}-${index}`} href={`/reading/${update.storyId}`}>
+            <Link key={`${update.storyId}-${update.chapterId}-${index}`} href={`/novels/${update.storyId}`}>
               <Card className="transition-all hover:shadow-lg hover:border-[rgb(var(--color-primary))] cursor-pointer group">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between gap-4">

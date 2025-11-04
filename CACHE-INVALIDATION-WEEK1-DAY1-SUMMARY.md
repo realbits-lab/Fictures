@@ -137,7 +137,7 @@ Updated the following routes with cache invalidation:
 
 ### 5. UnifiedWritingEditor Component Updated ✅
 
-**File:** `src/components/writing/UnifiedWritingEditor.tsx`
+**File:** `src/components/studio/UnifiedWritingEditor.tsx`
 
 **Changes:**
 - Imported `useCacheInvalidation` hook
@@ -443,7 +443,7 @@ All new code is fully typed:
 - `src/lib/hooks/use-cache-invalidation.ts` - Client-side hook
 - `src/lib/hooks/use-mutation-with-cache.ts` - Mutation wrapper
 - `src/app/studio/api/scenes/[id]/route.ts` - Scene API
-- `src/components/writing/UnifiedWritingEditor.tsx` - Editor component
+- `src/components/studio/UnifiedWritingEditor.tsx` - Editor component
 
 ---
 

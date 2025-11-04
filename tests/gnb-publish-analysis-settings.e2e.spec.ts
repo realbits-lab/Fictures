@@ -264,7 +264,7 @@ test.describe('GNB - Cross-Cutting Tests', () => {
 
     await page.setViewportSize({ width: 375, height: 667 });
 
-    const pages = ['/', '/studio', '/reading', '/community', '/publish', '/analysis', '/settings'];
+    const pages = ['/', '/studio', '/novels', '/community', '/publish', '/analysis', '/settings'];
 
     for (const pagePath of pages) {
       await page.goto(pagePath);
@@ -293,7 +293,7 @@ test.describe('GNB - Cross-Cutting Tests', () => {
       errors.push(error.message);
     });
 
-    const pages = ['/', '/studio', '/reading', '/community', '/publish', '/analysis', '/settings'];
+    const pages = ['/', '/studio', '/novels', '/community', '/publish', '/analysis', '/settings'];
 
     for (const pagePath of pages) {
       await page.goto(pagePath);

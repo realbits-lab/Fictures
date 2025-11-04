@@ -1,18 +1,18 @@
 import { Card, CardHeader, CardTitle, CardContent, Button } from "@/components/ui";
 
-export default function DataAnalyticsPage() {
+export default function DataAnalysisPage() {
   return (
     <div className="space-y-6">
-      {/* Analytics Preferences */}
+      {/* Analysis Preferences */}
       <Card>
         <CardHeader>
-          <CardTitle>📊 Analytics Preferences</CardTitle>
+          <CardTitle>📊 Analysis Preferences</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="font-medium text-gray-900 dark:text-gray-100">Detailed Writing Analytics</h4>
+                <h4 className="font-medium text-gray-900 dark:text-gray-100">Detailed Writing Analysis</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Track comprehensive writing metrics and patterns</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -23,7 +23,7 @@ export default function DataAnalyticsPage() {
 
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="font-medium text-gray-900 dark:text-gray-100">Reader Analytics</h4>
+                <h4 className="font-medium text-gray-900 dark:text-gray-100">Reader Analysis</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Track how readers interact with your stories</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -46,7 +46,7 @@ export default function DataAnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="font-medium text-gray-900 dark:text-gray-100">Weekly Reports</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Receive weekly analytics summaries via email</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Receive weekly analysis summaries via email</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only peer" />
@@ -57,7 +57,7 @@ export default function DataAnalyticsPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
-              Analytics Dashboard Layout
+              Analysis Dashboard Layout
             </label>
             <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" defaultValue="Standard View">
               <option>Compact View</option>
@@ -82,7 +82,7 @@ export default function DataAnalyticsPage() {
         <CardContent className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
-              Analytics History
+              Analysis History
             </label>
             <select className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" defaultValue="1 Year">
               <option>1 Month</option>
@@ -93,7 +93,7 @@ export default function DataAnalyticsPage() {
               <option>Forever</option>
             </select>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              How long to keep your analytics data for historical analysis
+              How long to keep your analysis data for historical analysis
             </p>
           </div>
 
@@ -110,8 +110,8 @@ export default function DataAnalyticsPage() {
           </div>
 
           <div className="flex gap-3">
-            <Button variant="outline">Export Analytics Data</Button>
-            <Button variant="outline">Clear Analytics History</Button>
+            <Button variant="outline">Export Analysis Data</Button>
+            <Button variant="outline">Clear Analysis History</Button>
           </div>
         </CardContent>
       </Card>
@@ -191,7 +191,7 @@ export default function DataAnalyticsPage() {
             </div>
             <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">847 KB</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Analytics Data</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Analysis Data</div>
             </div>
             <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
               <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">3.1 MB</div>
@@ -211,7 +211,7 @@ export default function DataAnalyticsPage() {
 
           <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Analytics data is automatically cleaned up based on your retention settings. 
+              Analysis data is automatically cleaned up based on your retention settings.
               Stories and user data are kept until you delete them.
             </p>
           </div>

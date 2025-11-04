@@ -384,7 +384,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
 #### 5.1 Update UnifiedWritingEditor
 
-**File:** `src/components/writing/UnifiedWritingEditor.tsx`
+**File:** `src/components/studio/UnifiedWritingEditor.tsx`
 
 ```typescript
 // Add at top of file

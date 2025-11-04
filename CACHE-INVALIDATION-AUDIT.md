@@ -322,7 +322,7 @@ export async function PATCH(request, { params }) {
 
 **Client-side handler:**
 ```typescript
-// File: src/components/writing/UnifiedWritingEditor.tsx
+// File: src/components/studio/UnifiedWritingEditor.tsx
 
 const handleSave = async () => {
   const response = await fetch(`/studio/api/scenes/${sceneId}`, {

@@ -88,7 +88,7 @@
 export async function publishStory(storyId: string) {
   await db.update(stories).set({ status: 'published' });
   revalidatePath('/community');
-  revalidatePath('/writing');
+  revalidatePath('/studio');
 }
 ```
 
@@ -180,7 +180,7 @@ redis-cli SUBSCRIBE story:published
 
 # 3. Open 2 browser tabs
 # Tab 1: http://localhost:3000/community
-# Tab 2: http://localhost:3000/writing
+# Tab 2: http://localhost:3000/studio
 
 # 4. In Tab 2: Publish a story
 # 5. Watch Tab 1: Should see new story within 1 second
@@ -203,7 +203,7 @@ test.describe('Real-time Story Updates', () => {
 
     // Open writing page in new tab
     const writingPage = await context.newPage();
-    await writingPage.goto('http://localhost:3000/writing');
+    await writingPage.goto('http://localhost:3000/studio');
 
     // Publish a story
     await writingPage.locator('[data-testid="story-item"]').first().click();

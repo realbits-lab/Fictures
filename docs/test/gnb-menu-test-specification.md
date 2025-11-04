@@ -9,8 +9,8 @@ This document outlines comprehensive test cases for all Global Navigation Bar (G
 The application has 7 main navigation items:
 
 1. **Home (/)** - Landing page, accessible to all users
-2. **Writing (/writing)** - Story management dashboard, restricted to writers and managers
-3. **Reading (/reading)** - Browse and read published stories, accessible to all users
+2. **Writing (/studio)** - Story management dashboard, restricted to writers and managers
+3. **Reading (/novels)** - Browse and read published stories, accessible to all users
 4. **Community (/community)** - Community discussions and posts, accessible to all users
 5. **Publish (/publish)** - Publishing workflow, restricted to writers and managers
 6. **Analytics (/analytics)** - Story analytics and statistics, restricted to writers and managers
@@ -80,7 +80,7 @@ The application has 7 main navigation items:
 
 ---
 
-### Writing Page (/writing)
+### Writing Page (/studio)
 
 #### Access Control Tests
 - [x] TC-WRITING-AUTH-001: Anonymous users redirected to sign in
@@ -114,7 +114,7 @@ The application has 7 main navigation items:
 
 ---
 
-### Reading Page (/reading)
+### Reading Page (/novels)
 
 #### Access Control Tests
 - [x] TC-READING-AUTH-001: Anonymous users can access page

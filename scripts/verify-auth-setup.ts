@@ -1,45 +1,19 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 
 /**
  * Verify Authentication Setup
  *
  * Checks that all three users were created correctly in the database
  * with proper passwords and API keys using Drizzle ORM query builder.
+ *
+ * Usage:
+ *   dotenv --file .env.local run pnpm exec tsx scripts/verify-auth-setup.ts
  */
 
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { pgTable, text, varchar, timestamp, json, boolean, pgEnum } from 'drizzle-orm/pg-core';
 import { eq, inArray } from 'drizzle-orm';
-
-// Define schema inline to avoid TypeScript imports
-const userRoleEnum = pgEnum('user_role', ['reader', 'writer', 'manager']);
-
-const users = pgTable('users', {
-  id: text('id').primaryKey(),
-  email: text('email').notNull(),
-  name: text('name'),
-  username: varchar('username', { length: 50 }),
-  password: varchar('password', { length: 255 }),
-  role: userRoleEnum('role').notNull().default('reader'),
-  emailVerified: timestamp('email_verified'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
-
-const apiKeys = pgTable('api_keys', {
-  id: text('id').primaryKey(),
-  userId: text('user_id').notNull(),
-  name: varchar('name', { length: 255 }).notNull().default('API Key'),
-  keyHash: varchar('key_hash', { length: 64 }).notNull(),
-  keyPrefix: varchar('key_prefix', { length: 16 }).notNull(),
-  scopes: json('scopes').notNull().default([]),
-  isActive: boolean('is_active').notNull().default(true),
-  lastUsedAt: timestamp('last_used_at'),
-  expiresAt: timestamp('expires_at'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+import { users, apiKeys } from '../drizzle/schema';
 
 async function main() {
   const connectionString = process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED;

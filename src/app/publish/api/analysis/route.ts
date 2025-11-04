@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get the latest published chapter for analytics
+    // Get the latest published chapter for analysis
     const latestChapter = await db
       .select()
       .from(chapters)
@@ -26,9 +26,9 @@ export async function GET(request: NextRequest) {
       .limit(1);
 
     const chapter = latestChapter[0];
-    
-    // Mock analytics data
-    const publishAnalytics = {
+
+    // Mock analysis data
+    const publishAnalysis = {
       latestChapter: chapter ? {
         id: chapter.id,
         title: chapter.title || 'Latest Chapter',
@@ -62,11 +62,11 @@ export async function GET(request: NextRequest) {
       }
     };
 
-    return NextResponse.json(publishAnalytics);
+    return NextResponse.json(publishAnalysis);
   } catch (error) {
-    console.error("Publish analytics API error:", error);
+    console.error("Publish analysis API error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch publish analytics" },
+      { error: "Failed to fetch publish analysis" },
       { status: 500 }
     );
   }
