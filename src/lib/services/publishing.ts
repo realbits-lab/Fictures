@@ -79,7 +79,7 @@ export async function createPublishingSchedule(params: CreateScheduleParams): Pr
     totalPublished: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
-  });
+  } as any);
 
   // Generate scheduled publications
   await generateScheduledPublications(scheduleId, params, scenesToPublish);

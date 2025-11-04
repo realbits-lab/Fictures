@@ -134,9 +134,6 @@ async function generateVariant(
     case 'avif':
       sharpInstance = sharpInstance.avif({ quality, effort: 6 });
       break;
-    case 'webp':
-      sharpInstance = sharpInstance.webp({ quality, effort: 6 });
-      break;
     case 'jpeg':
       sharpInstance = sharpInstance.jpeg({ quality, progressive: true });
       break;

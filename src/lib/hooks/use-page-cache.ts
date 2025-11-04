@@ -377,7 +377,7 @@ export function usePrivacySettings() {
 // Global app data hooks
 export function useAppStats() {
   return usePersistedSWR(
-    '/api/stats',
+    '/analysis/api/stats',
     fetcher,
     CACHE_CONFIGS.reading,
     {

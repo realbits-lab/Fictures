@@ -224,7 +224,7 @@ export async function evaluateAndImproveScene(
 
       // Log specific changes
       formatResult.changes.forEach(change => {
-        console.log(`     - ${change.type}: ${change.description}`);
+        console.log(`     - ${change.type}: ${change.summary}`);
       });
     } else {
       console.log(`✓ No formatting changes needed (${Date.now() - formatStartTime}ms)`);

@@ -246,7 +246,7 @@ function buildSceneImagePrompt(
   characters?: Array<{ name: string; role: string }>
 ): string {
   const settingInfo = setting
-    ? `Setting: ${setting.name}. ${setting.description}.`
+    ? `Setting: ${setting.name}. ${setting.summary}.`
     : '';
 
   const characterInfo = characters && characters.length > 0
