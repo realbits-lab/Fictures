@@ -269,6 +269,12 @@ export const analyticsEvents = pgTable("analytics_events", {
 	timestamp: timestamp({ mode: 'string' }).defaultNow().notNull(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
+	index("idx_analytics_events_user").using("btree", table.userId.asc().nullsLast().op("text_ops")),
+	index("idx_analytics_events_session").using("btree", table.sessionId.asc().nullsLast().op("text_ops")),
+	index("idx_analytics_events_story").using("btree", table.storyId.asc().nullsLast().op("text_ops")),
+	index("idx_analytics_events_type").using("btree", table.eventType.asc().nullsLast().op("enum_ops")),
+	index("idx_analytics_events_timestamp").using("btree", table.timestamp.asc().nullsLast().op("timestamp_ops")),
+	index("idx_analytics_events_user_timestamp").using("btree", table.userId.asc().nullsLast().op("text_ops"), table.timestamp.asc().nullsLast().op("timestamp_ops")),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
@@ -596,6 +602,10 @@ export const readingSessions = pgTable("reading_sessions", {
 	completedStory: boolean("completed_story").default(false),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
+	index("idx_reading_sessions_user").using("btree", table.userId.asc().nullsLast().op("text_ops")),
+	index("idx_reading_sessions_story").using("btree", table.storyId.asc().nullsLast().op("text_ops")),
+	index("idx_reading_sessions_start_time").using("btree", table.startTime.asc().nullsLast().op("timestamp_ops")),
+	index("idx_reading_sessions_duration").using("btree", table.durationSeconds.asc().nullsLast().op("int4_ops")),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
@@ -652,6 +662,10 @@ export const storyInsights = pgTable("story_insights", {
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 	expiresAt: timestamp("expires_at", { mode: 'string' }),
 }, (table) => [
+	index("idx_story_insights_story").using("btree", table.storyId.asc().nullsLast().op("text_ops")),
+	index("idx_story_insights_type").using("btree", table.insightType.asc().nullsLast().op("enum_ops")),
+	index("idx_story_insights_created").using("btree", table.createdAt.desc().nullsFirst().op("timestamp_ops")),
+	index("idx_story_insights_unread").using("btree", table.storyId.asc().nullsLast().op("text_ops"), table.isRead.asc().nullsLast().op("bool_ops")),
 	foreignKey({
 			columns: [table.storyId],
 			foreignColumns: [stories.id],
@@ -981,4 +995,57 @@ export const sceneLikes = pgTable("scene_likes", {
 			name: "scene_likes_scene_id_scenes_id_fk"
 		}).onDelete("cascade"),
 	primaryKey({ columns: [table.userId, table.sceneId], name: "scene_likes_user_id_scene_id_pk"}),
+]);
+
+export const recommendationFeedback = pgTable("recommendation_feedback", {
+	id: text().primaryKey().notNull(),
+	insightId: text("insight_id").notNull(),
+	userId: text("user_id").notNull(),
+	actionTaken: varchar("action_taken", { length: 50 }).notNull(),
+	feedbackText: text("feedback_text"),
+	wasHelpful: boolean("was_helpful"),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_recommendation_feedback_insight").using("btree", table.insightId.asc().nullsLast().op("text_ops")),
+	index("idx_recommendation_feedback_user").using("btree", table.userId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.insightId],
+			foreignColumns: [storyInsights.id],
+			name: "recommendation_feedback_insight_id_story_insights_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "recommendation_feedback_user_id_users_id_fk"
+		}).onDelete("cascade"),
+]);
+
+export const dailyStoryMetrics = pgTable("daily_story_metrics", {
+	id: text().primaryKey().notNull(),
+	storyId: text("story_id").notNull(),
+	date: timestamp("date", { mode: 'string' }).notNull(),
+	totalViews: integer("total_views").default(0),
+	uniqueReaders: integer("unique_readers").default(0),
+	newReaders: integer("new_readers").default(0),
+	comments: integer("comments").default(0),
+	likes: integer("likes").default(0),
+	shares: integer("shares").default(0),
+	bookmarks: integer("bookmarks").default(0),
+	engagementRate: varchar("engagement_rate", { length: 10 }).default('0'),
+	avgSessionDuration: integer("avg_session_duration").default(0),
+	totalSessions: integer("total_sessions").default(0),
+	completedSessions: integer("completed_sessions").default(0),
+	completionRate: varchar("completion_rate", { length: 10 }).default('0'),
+	avgChaptersPerSession: varchar("avg_chapters_per_session", { length: 10 }).default('0'),
+	mobileUsers: integer("mobile_users").default(0),
+	desktopUsers: integer("desktop_users").default(0),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_daily_metrics_story_date").using("btree", table.storyId.asc().nullsLast().op("text_ops"), table.date.asc().nullsLast().op("timestamp_ops")),
+	unique("daily_metrics_story_date_unique").on(table.storyId, table.date),
+	foreignKey({
+			columns: [table.storyId],
+			foreignColumns: [stories.id],
+			name: "daily_story_metrics_story_id_stories_id_fk"
+		}).onDelete("cascade"),
 ]);

@@ -988,8 +988,8 @@ export const analysisEvents = pgTable('analytics_events', {
   sceneId: text('scene_id').references(() => scenes.id, { onDelete: 'cascade' }),
   postId: text('post_id').references(() => communityPosts.id, { onDelete: 'cascade' }),
   metadata: json('metadata').$type<Record<string, unknown>>().default({}),
-  timestamp: timestamp('timestamp').defaultNow().notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+  timestamp: timestamp('timestamp', { mode: 'string' }).defaultNow().notNull(),
+  createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
 });
 
 // Reading sessions table - Track reading sessions
@@ -998,8 +998,8 @@ export const readingSessions = pgTable('reading_sessions', {
   userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }),
   sessionId: text('session_id').notNull(),
   storyId: text('story_id').references(() => stories.id, { onDelete: 'cascade' }),
-  startTime: timestamp('start_time').notNull(),
-  endTime: timestamp('end_time'),
+  startTime: timestamp('start_time', { mode: 'string' }).notNull(),
+  endTime: timestamp('end_time', { mode: 'string' }),
   durationSeconds: integer('duration_seconds'),
   chaptersRead: integer('chapters_read').default(0),
   scenesRead: integer('scenes_read').default(0),
@@ -1007,7 +1007,7 @@ export const readingSessions = pgTable('reading_sessions', {
   sessionType: sessionTypeEnum('session_type').default('continuous'),
   deviceType: varchar('device_type', { length: 20 }),
   completedStory: boolean('completed_story').default(false),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+  createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
 });
 
 // Story insights table - AI-generated insights
@@ -1026,6 +1026,29 @@ export const storyInsights = pgTable('story_insights', {
   isDismissed: boolean('is_dismissed').default(false),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   expiresAt: timestamp('expires_at'),
+});
+
+// Daily story metrics table - Aggregated daily analytics
+export const dailyStoryMetrics = pgTable('daily_story_metrics', {
+  id: text('id').primaryKey(),
+  storyId: text('story_id').references(() => stories.id, { onDelete: 'cascade' }).notNull(),
+  date: timestamp('date', { mode: 'string' }).notNull(),
+  totalViews: integer('total_views').default(0),
+  uniqueReaders: integer('unique_readers').default(0),
+  newReaders: integer('new_readers').default(0),
+  comments: integer('comments').default(0),
+  likes: integer('likes').default(0),
+  shares: integer('shares').default(0),
+  bookmarks: integer('bookmarks').default(0),
+  engagementRate: varchar('engagement_rate', { length: 10 }).default('0.00'),
+  avgSessionDuration: integer('avg_session_duration').default(0),
+  totalSessions: integer('total_sessions').default(0),
+  completedSessions: integer('completed_sessions').default(0),
+  completionRate: varchar('completion_rate', { length: 10 }).default('0.00'),
+  avgChaptersPerSession: varchar('avg_chapters_per_session', { length: 10 }).default('0.00'),
+  mobileUsers: integer('mobile_users').default(0),
+  desktopUsers: integer('desktop_users').default(0),
+  createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
 });
 
 
@@ -1067,6 +1090,13 @@ export const readingSessionsRelations = relations(readingSessions, ({ one }) => 
 export const storyInsightsRelations = relations(storyInsights, ({ one }) => ({
   story: one(stories, {
     fields: [storyInsights.storyId],
+    references: [stories.id],
+  }),
+}));
+
+export const dailyStoryMetricsRelations = relations(dailyStoryMetrics, ({ one }) => ({
+  story: one(stories, {
+    fields: [dailyStoryMetrics.storyId],
     references: [stories.id],
   }),
 }));

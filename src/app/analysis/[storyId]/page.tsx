@@ -2,9 +2,9 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { hasAnyRole } from '@/lib/auth/permissions';
 import { MainLayout } from "@/components/layout";
-import { AnalyticsLandingPage } from "@/components/analysis/AnalyticsLandingPage";
+import { StoryAnalyticsDashboard } from "@/components/analysis/StoryAnalyticsDashboard";
 
-export default async function AnalysisPage() {
+export default async function StoryAnalyticsPage({ params }: { params: Promise<{ storyId: string }> }) {
   const session = await auth();
 
   if (!session) {
@@ -15,9 +15,11 @@ export default async function AnalysisPage() {
     redirect('/');
   }
 
+  const { storyId } = await params;
+
   return (
     <MainLayout>
-      <AnalyticsLandingPage />
+      <StoryAnalyticsDashboard storyId={storyId} />
     </MainLayout>
   );
 }

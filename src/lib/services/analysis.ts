@@ -103,8 +103,8 @@ export async function getStoryAnalysis(
       and(
         inArray(analysisEvents.storyId, storyIds),
         eq(analysisEvents.eventType, 'story_view'),
-        gte(analysisEvents.timestamp, start),
-        lte(analysisEvents.timestamp, end)
+        gte(analysisEvents.timestamp, start.toISOString()),
+        lte(analysisEvents.timestamp, end.toISOString())
       )
     );
 
@@ -124,8 +124,8 @@ export async function getStoryAnalysis(
       and(
         inArray(analysisEvents.storyId, storyIds),
         eq(analysisEvents.eventType, 'story_view'),
-        gte(analysisEvents.timestamp, previousPeriod.start),
-        lte(analysisEvents.timestamp, previousPeriod.end)
+        gte(analysisEvents.timestamp, previousPeriod.start.toISOString()),
+        lte(analysisEvents.timestamp, previousPeriod.end.toISOString())
       )
     );
 
@@ -209,8 +209,8 @@ async function getStoryPerformanceData(
       and(
         inArray(analysisEvents.storyId, storyIds),
         eq(analysisEvents.eventType, 'story_view'),
-        gte(analysisEvents.timestamp, start),
-        lte(analysisEvents.timestamp, end)
+        gte(analysisEvents.timestamp, start.toISOString()),
+        lte(analysisEvents.timestamp, end.toISOString())
       )
     )
     .groupBy(analysisEvents.storyId);
@@ -252,8 +252,8 @@ async function getStoryPerformanceData(
           and(
             eq(analysisEvents.storyId, story.id),
             eq(analysisEvents.eventType, 'story_view'),
-            gte(analysisEvents.timestamp, previousStart),
-            lte(analysisEvents.timestamp, start)
+            gte(analysisEvents.timestamp, previousStart.toISOString()),
+            lte(analysisEvents.timestamp, start.toISOString())
           )
         );
 
@@ -293,8 +293,8 @@ async function getTrendData(
     .where(
       and(
         inArray(analysisEvents.storyId, storyIds),
-        gte(analysisEvents.timestamp, start),
-        lte(analysisEvents.timestamp, end)
+        gte(analysisEvents.timestamp, start.toISOString()),
+        lte(analysisEvents.timestamp, end.toISOString())
       )
     )
     .groupBy(sql`DATE(${analysisEvents.timestamp})`)
@@ -377,8 +377,8 @@ export async function getReaderAnalysis(
     .where(
       and(
         inArray(analysisEvents.storyId, storyIds),
-        gte(analysisEvents.timestamp, start),
-        lte(analysisEvents.timestamp, end)
+        gte(analysisEvents.timestamp, start.toISOString()),
+        lte(analysisEvents.timestamp, end.toISOString())
       )
     );
 
@@ -412,8 +412,8 @@ async function getReadingPatterns(
       and(
         inArray(analysisEvents.storyId, storyIds),
         eq(analysisEvents.eventType, 'chapter_read_start'),
-        gte(analysisEvents.timestamp, start),
-        lte(analysisEvents.timestamp, end)
+        gte(analysisEvents.timestamp, start.toISOString()),
+        lte(analysisEvents.timestamp, end.toISOString())
       )
     )
     .groupBy(sql`EXTRACT(HOUR FROM ${analysisEvents.timestamp})`)
@@ -429,8 +429,8 @@ async function getReadingPatterns(
     .where(
       and(
         inArray(readingSessions.storyId, storyIds),
-        gte(readingSessions.startTime, start),
-        lte(readingSessions.startTime, end)
+        gte(readingSessions.startTime, start.toISOString()),
+        lte(readingSessions.startTime, end.toISOString())
       )
     );
 
@@ -451,8 +451,8 @@ async function getReadingPatterns(
       and(
         inArray(analysisEvents.storyId, storyIds),
         eq(analysisEvents.eventType, 'story_view'),
-        gte(analysisEvents.timestamp, start),
-        lte(analysisEvents.timestamp, end)
+        gte(analysisEvents.timestamp, start.toISOString()),
+        lte(analysisEvents.timestamp, end.toISOString())
       )
     );
 
