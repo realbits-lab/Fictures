@@ -402,7 +402,7 @@ docs/comics/
 - **🧪 Testing**: [docs/comics/comics-testing.mdx](docs/comics/comics-testing.mdx)
 
 **Quick Reference:**
-- **API**: `/api/comic/generate-panels`
+- **API**: `/comics/api/generate-panels` (POST), `/comics/api/[sceneId]/panels` (GET)
 - **Process**: Scene → Toonplay → Panel Layout → Image Generation
 - **Scripts**: `scripts/generate-comic-panels-api.mjs`
 ```
@@ -411,9 +411,9 @@ docs/comics/
 ```markdown
 src/
 ├── app/
-│   ├── comics/            # Comic reading interface
-│   └── api/
-│       └── comic/         # Comic generation API
+│   ├── comics/
+│   │   └── api/           # Comic generation & retrieval API
+│   └── api/               # Global API endpoints
 ```
 
 ### 4. Add to Navigation (if new route)

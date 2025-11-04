@@ -92,10 +92,10 @@ export function ImageContentDisplay({
 
         if (type === 'scene' && format === 'comic') {
           // Fetch comic panel data
-          endpoint = `/api/comic/${itemId}/panels`;
+          endpoint = `/comics/api/${itemId}/panels`;
         } else if (type === 'scene') {
           // Fetch novel scene data
-          endpoint = `/api/scenes/${itemId}`;
+          endpoint = `/studio/api/scenes/${itemId}`;
         } else if (type === 'character') {
           // Fetch character data
           endpoint = `/api/characters/${itemId}`;

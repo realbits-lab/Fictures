@@ -445,7 +445,7 @@ export const prefetchStrategies = {
 
       if (scrollPercentage >= 0.8) {
         prefetchOnVisible(
-          `/api/chapters/${nextChapterId}`,
+          `/studio/api/chapters/${nextChapterId}`,
           document.documentElement
         );
         window.removeEventListener('scroll', handleScroll);

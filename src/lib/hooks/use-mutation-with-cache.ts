@@ -7,7 +7,7 @@
  * Usage:
  *   const { mutate, isLoading } = useMutationWithCache({
  *     mutationFn: async (data) => {
- *       const response = await fetch('/api/scenes/123', {
+ *       const response = await fetch('/studio/api/scenes/123', {
  *         method: 'PATCH',
  *         body: JSON.stringify(data)
  *       });
@@ -136,7 +136,7 @@ export function useMutationWithCache<TData, TVariables>(
  *
  * Usage:
  *   const updateScene = createFetchMutation<Scene, SceneUpdate>({
- *     url: (data) => `/api/scenes/${data.id}`,
+ *     url: (data) => `/studio/api/scenes/${data.id}`,
  *     method: 'PATCH',
  *   });
  */

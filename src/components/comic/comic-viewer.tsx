@@ -93,7 +93,7 @@ export function ComicViewer({
         setError(null);
         setData(null); // Reset data when fetching new scene
 
-        const response = await fetch(`/api/comic/${sceneId}/panels`);
+        const response = await fetch(`/comics/api/${sceneId}/panels`);
 
         if (!response.ok) {
           throw new Error(`Failed to fetch panels: ${response.statusText}`);

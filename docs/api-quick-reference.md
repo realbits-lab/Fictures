@@ -32,7 +32,7 @@ Components call `/studio/api/*` and `/publish/api/*` but routes are at `/api/*`
 ✅ POST /api/community/posts                    - Create post
 ✅ GET  /api/community/events                   - Event stream (SSE)
 ✅ POST /api/comments/[commentId]/like          - Like comment
-✅ POST /api/comic/generate-panels              - Generate panels
+✅ POST /comics/api/generate-panels             - Generate panels
 ✅ POST /api/generate-image                     - Generate image
 ✅ POST /api/upload/image                       - Upload image
 ✅ POST /api/studio/agent                       - Agent chat

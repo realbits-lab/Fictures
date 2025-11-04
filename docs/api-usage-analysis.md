@@ -143,12 +143,14 @@ This report analyzes the **76 API route handlers** defined in `src/app/api/` and
 
 ### 7. **COMIC API** (2 routes)
 ```
-/api/comic/generate-panels             [POST]           - Generate comic panels
-/api/comic/[sceneId]/panels            [GET]            - Get comic panels
+/comics/api/generate-panels            [POST]           - Generate comic panels
+/comics/api/[sceneId]/panels           [GET]            - Get comic panels
 ```
 
 **Status**: USED
 - ✅ Referenced in comic-panel-generator-button.tsx
+- ✅ Referenced in comic-viewer.tsx
+- ✅ Referenced in ImageContentDisplay.tsx
 
 ---
 
@@ -480,9 +482,21 @@ Line: fetch('/api/upload/image', POST)  ✅ EXISTS
 
 #### **comic-panel-generator-button.tsx** (Component)
 ```typescript
-fetch('/api/comic/generate-panels', POST)  ✅ EXISTS
+fetch('/comics/api/generate-panels', POST)  ✅ EXISTS
 ```
 **Usage**: Generating comic panels
+
+#### **comic-viewer.tsx** (Component)
+```typescript
+fetch('/comics/api/{sceneId}/panels')  ✅ EXISTS
+```
+**Usage**: Fetching comic panels for display
+
+#### **ImageContentDisplay.tsx** (Component)
+```typescript
+fetch('/comics/api/{itemId}/panels')  ✅ EXISTS
+```
+**Usage**: Loading comic panel images
 
 ---
 
@@ -505,7 +519,6 @@ These routes have **no callers** in components or hooks:
 ❌ /api/chapters/[id]/publish
 ❌ /api/chapters/[id]/unpublish
 ❌ /api/chapters/generate
-❌ /api/comic/[sceneId]/panels
 ❌ /api/community/posts/[postId]/replies
 ❌ /api/community/stories/[storyId]/posts
 ❌ /api/community/stories/[storyId]
@@ -531,7 +544,8 @@ These routes **have implementations AND active callers**:
 ```
 ✅ /api/chapters/[id]/scenes               (useChapterScenes.ts)
 ✅ /api/comments/[commentId]/like          (LikeButton.tsx)
-✅ /api/comic/generate-panels              (comic-panel-generator-button.tsx)
+✅ /comics/api/generate-panels             (comic-panel-generator-button.tsx)
+✅ /comics/api/[sceneId]/panels            (comic-viewer.tsx, ImageContentDisplay.tsx)
 ✅ /api/community/events                   (use-community-events.ts - SSE)
 ✅ /api/community/posts                    (CreatePostForm.tsx, CommunityPostsList.tsx)
 ✅ /api/community/posts/[postId]           (CommunityPostsList.tsx)

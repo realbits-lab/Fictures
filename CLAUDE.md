@@ -31,9 +31,11 @@ This file provides guidance to Claude Code when working with this repository.
 - Use proper environment variable loading with `dotenv --file .env.local run` prefix
 
 **File Organization Guidelines:**
-- **Test Files**: Always write test files in `tests/` or `__tests__/` directories
-  - E2E tests: `tests/*.spec.ts` (Playwright tests)
-  - Unit tests: `__tests__/*.test.ts` or `__tests__/*.test.tsx` (Jest tests)
+- **Test Files**: Decide directory based on test purpose and longevity
+  - **`test-tests/`**: Temporary test files for quick testing, debugging, or one-time exploration
+  - **`tests/`**: Permanent E2E test files (Playwright tests: `tests/*.spec.ts`)
+  - **`__tests__/`**: Permanent unit test files (Jest tests: `__tests__/*.test.ts` or `__tests__/*.test.tsx`)
+  - When creating test files, evaluate whether they are temporary experiments or permanent test suites
 - **Script Files**: Decide directory based on script purpose and longevity
   - **`test-scripts/`**: Temporary scripts for testing, debugging, or one-time exploration
   - **`scripts/`**: Permanent utility scripts for production use
@@ -442,7 +444,8 @@ When modifying data model fields for stories, parts, chapters, scenes, character
 **Architecture:**
 - **Location**: `docs/novels/novels-development.md` - Complete specification
 - **Methodology**: Adversity-Triumph Engine (Korean Gam-dong narrative psychology)
-- **API Endpoints**: `/studio/api/generation/*` - Generation APIs for story creation
+- **API Endpoint**: `POST /studio/api/novels/generate` - Unified generation API with SSE streaming
+- **Authentication**: Dual auth (API key OR session) - Requires `stories:write` scope
 - **Database**: Novel-specific tables in Neon PostgreSQL (see `drizzle/` migrations)
 - **AI Model**: Gemini 2.5 Flash & Flash Lite (via Google AI API)
 - **Image Generation**: Gemini 2.5 Flash (1344×768, 7:4 aspect ratio)
@@ -451,12 +454,19 @@ When modifying data model fields for stories, parts, chapters, scenes, character
 **Generation Flow:**
 1. Story Summary → 2. Characters → 3. Settings → 4. Parts → 5. Chapters → 6. Scene Summaries → 7. Scene Content → 8. Scene Evaluation → 9. Images
 
+**Quick Start (Minimal Story):**
+```bash
+# Generate smallest complete story (1 part, 1 chapter, 3 scenes, ~5-10 min)
+dotenv --file .env.local run node scripts/generate-minimal-story.mjs
+```
+
 **Documentation Reference:**
 - 📖 **Specification**: `docs/novels/novels-specification.md` - Core concepts and data model
-- 🔧 **Development Guide**: `docs/novels/novels-development.md` - API specs and system prompts
+- 🔧 **Development Guide**: `docs/novels/novels-development.md` - API specs and system prompts (now with dual auth)
 - 🧪 **Testing Guide**: `docs/novels/novels-testing.md` - Validation and quality metrics
 - ⚡ **Optimization**: `docs/novels/novels-optimization.md` - Performance and cost tuning
 - 🗑️ **Removal**: `docs/novels/novels-removal.md` - Deletion workflows
+- 🛠️ **Script**: `scripts/generate-minimal-story.mjs` - Production script for minimal story generation
 
 **Related System:**
 - The existing "Story Generation" system (HNS methodology with `/api/stories/generate-hns`) is separate from the Novels system

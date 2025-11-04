@@ -162,7 +162,17 @@ Note: Two-step scene generation allows:
 ```typescript
 POST /studio/api/novels/generate
 
-Authentication: Session-based (NextAuth) - requires logged-in user
+Authentication: Dual authentication (supports both methods)
+  - API Key: Send in Authorization header as "Bearer {api_key}"
+  - Session: NextAuth session (logged-in user via browser)
+
+Required Scope: stories:write
+
+Request Headers (API Key method):
+{
+  'Content-Type': 'application/json',
+  'Authorization': 'Bearer fic_...'  // API key from .auth/user.json
+}
 
 Request:
 {
@@ -229,7 +239,34 @@ Error Event:
 }
 ```
 
-**Usage Example:**
+**Usage Examples:**
+
+**Method 1: API Key Authentication (for scripts and automation)**
+```javascript
+// Load API key from .auth/user.json
+const authData = JSON.parse(fs.readFileSync('.auth/user.json', 'utf-8'));
+const apiKey = authData.profiles.writer.apiKey;
+
+const response = await fetch('http://localhost:3000/studio/api/novels/generate', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${apiKey}`,  // API key authentication
+  },
+  body: JSON.stringify({
+    userPrompt: 'A story about courage and redemption',
+    preferredGenre: 'Fantasy',
+    preferredTone: 'hopeful',
+    characterCount: 2,
+    settingCount: 2,
+    partsCount: 1,
+    chaptersPerPart: 1,
+    scenesPerChapter: 3,
+  }),
+});
+```
+
+**Method 2: Session Authentication (for browser/UI)**
 ```javascript
 const response = await fetch('/studio/api/novels/generate', {
   method: 'POST',

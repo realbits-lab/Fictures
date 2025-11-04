@@ -28,6 +28,7 @@ When making ANY changes to scripts in this directory:
 | `verify-auth-setup.mjs` | Verify authentication | `node scripts/verify-auth-setup.mjs` |
 | `generate-minimal-story.mjs` | Generate minimal novel | `node scripts/generate-minimal-story.mjs` |
 | `generate-comic-panels.mjs` | Generate comic panels | `node scripts/generate-comic-panels.mjs SCENE_ID [options]` |
+| `reset-all-stories.mjs` | ⚠️ Reset all story data | `node scripts/reset-all-stories.mjs --confirm` |
 
 ---
 
@@ -215,6 +216,136 @@ tail -f logs/dev-server.log | grep "generation/toonplay"
 - **API**: `POST /studio/api/generation/toonplay` (SSE stream)
 - **Shot Types**: ESTABLISHING, WIDE, MEDIUM, CLOSE-UP, EXTREME CLOSE-UP, OVER-SHOULDER, POV
 - **Image Optimization**: Mobile-first (1x/2x density), AVIF (modern) + JPEG (fallback), 25-30% smaller
+
+---
+
+## Story Data Management
+
+### reset-all-stories.mjs
+
+**⚠️ DESTRUCTIVE OPERATION - Use with extreme caution!**
+
+**Purpose**: Permanently delete ALL story data from database and Vercel Blob storage. This is a complete reset that removes everything related to stories.
+
+**Quick Start**:
+```bash
+# Preview mode (shows what will be deleted WITHOUT deleting)
+dotenv --file .env.local run node scripts/reset-all-stories.mjs
+
+# Execute destructive reset (requires --confirm flag)
+dotenv --file .env.local run node scripts/reset-all-stories.mjs --confirm
+
+# Background execution with logging
+dotenv --file .env.local run node scripts/reset-all-stories.mjs --confirm > logs/reset-all.log 2>&1 &
+```
+
+**Options**:
+- `--confirm` - **Required** to execute actual deletion (safety flag)
+
+**What Gets Deleted**:
+
+**Database Records** (6 tables):
+- **stories**: All story metadata and summaries
+- **parts**: All story parts
+- **chapters**: All chapter summaries and metadata
+- **scenes**: All scene content and metadata
+- **characters**: All character profiles and relationships
+- **settings**: All setting descriptions
+- **aiInteractions**: All AI generation history
+
+**Vercel Blob Files**:
+- **Prefix**: `stories/` (all files under this prefix)
+- **Includes**:
+  - Story cover images (1344×768, 7:4)
+  - Scene images (1344×768, 7:4)
+  - Character portraits (1024×1024)
+  - Setting visuals (1344×768, 7:4)
+  - All optimized variants (AVIF + JPEG × mobile 1x/2x)
+- **Deletion Method**: Batch deletion with pagination (100 files per batch)
+
+**Safety Features**:
+- ✅ **Preview Mode**: Default behavior shows what will be deleted without deleting
+- ✅ **Confirmation Flag**: Requires explicit `--confirm` to proceed
+- ✅ **5-Second Delay**: Countdown before execution starts (press Ctrl+C to cancel)
+- ✅ **Admin-Only**: Requires `admin:all` scope (manager account only)
+- ✅ **Detailed Report**: Shows exact deletion counts for transparency
+- ✅ **Audit Log**: Saves deletion report to `logs/reset-all-{timestamp}.json`
+
+**Performance**:
+- **Database Deletion**: ~2-5 seconds (cascading deletes)
+- **Blob Deletion**: Varies by file count (100 files per batch)
+- **Total Time**: Typically 10-30 seconds depending on blob file count
+- **Max Duration**: 60 seconds (API timeout)
+
+**Output Example**:
+```
+✅ RESET COMPLETE
+
+============================================================
+
+📊 Deletion Report:
+
+Database Records Deleted:
+  • Stories:         15
+  • Parts:           22
+  • Chapters:        45
+  • Scenes:          135
+  • Characters:      30
+  • Settings:        25
+  • AI Interactions: 428
+
+Blob Files Deleted:
+  • Total Files:     540
+  • Batches:         6
+
+Timestamp: 2025-11-04T10:30:45.123Z
+
+============================================================
+
+📄 Report saved to: logs/reset-all-2025-11-04T10-30-45.json
+```
+
+**Prerequisites**:
+- Dev server running: `dotenv --file .env.local run pnpm dev`
+- Manager account API key in `.auth/user.json`
+- `.env.local` with: `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `BLOB_READ_WRITE_TOKEN`
+
+**Troubleshooting**:
+- **401 Unauthorized**: Manager API key missing or invalid in `.auth/user.json`
+  - Solution: Run `scripts/setup-auth-users.mjs` to create manager account
+- **403 Forbidden**: Account lacks `admin:all` scope
+  - Solution: Only manager accounts have this scope (not writer or reader)
+- **ECONNREFUSED**: Dev server not running
+  - Solution: Start server with `dotenv --file .env.local run pnpm dev`
+- **Timeout**: Too many blob files to delete within 60 seconds
+  - Solution: Script will still complete, check logs for actual deletion count
+
+**Debug**:
+```bash
+# Preview without deleting
+dotenv --file .env.local run node scripts/reset-all-stories.mjs
+
+# Check manager API key
+cat .auth/user.json | jq '.profiles.manager.apiKey'
+
+# Monitor API logs
+tail -f logs/dev-server.log | grep "RESET ALL"
+```
+
+**Technical Details**:
+- **API**: `POST /studio/api/reset-all` (admin-only endpoint)
+- **Authentication**: Manager API key from `.auth/user.json` profiles
+- **Database**: Cascading deletes in proper order to respect foreign key constraints
+- **Blob Deletion**: Pagination with cursor-based iteration (100 files per batch)
+- **Max Duration**: 60 seconds (defined in API route)
+
+**Use Cases**:
+- **Development Testing**: Clear all test data between development cycles
+- **Quality Assurance**: Reset to clean state for QA testing
+- **Database Cleanup**: Remove accumulated test stories during development
+- **Fresh Start**: Complete reset before production deployment
+
+**⚠️ WARNING**: This operation is **IRREVERSIBLE**. All deleted data cannot be recovered. Always use preview mode first to verify what will be deleted.
 
 ---
 

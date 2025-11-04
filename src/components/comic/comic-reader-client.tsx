@@ -50,7 +50,7 @@ export function ComicReaderClient({ storyId, initialData }: ComicReaderClientPro
 
       const scenesPromises = availableChapters.map(async (chapter) => {
         try {
-          const response = await fetch(`/api/chapters/${chapter.id}/scenes`);
+          const response = await fetch(`/studio/api/chapters/${chapter.id}/scenes`);
           if (!response.ok) return [];
           const data = await response.json();
 
