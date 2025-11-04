@@ -265,7 +265,7 @@ export async function POST(request: NextRequest) {
 
     const settingsSection = settings.map((setting) => {
       return `## ${setting.name}
-${setting.description.substring(0, 300)}...
+${((setting as any).summary || (setting as any).description || "").substring(0, 300)}...
 
 **Adversity Elements**:
 - Physical: ${setting.adversityElements.physicalObstacles.join(', ')}
@@ -284,7 +284,7 @@ ${setting.description.substring(0, 300)}...
       : 'No seeds to resolve in this chapter';
 
     const seedsPlantSection = chapter.seedsPlanted.length > 0
-      ? chapter.seedsPlanted.map((seed) => `- **${seed.id}**: ${seed.description} (will pay off: ${seed.expectedPayoff})`).join('\n')
+      ? chapter.seedsPlanted.map((seed) => `- **${seed.id}**: ${((seed as any).summary || (seed as any).description || "")} (will pay off: ${seed.expectedPayoff})`).join('\n')
       : 'No new seeds to plant in this chapter';
 
     const scenesContext = `

@@ -169,79 +169,15 @@ export async function POST(request: NextRequest) {
       ? GENERATION_AGENT_SYSTEM_PROMPT
       : EDITING_AGENT_SYSTEM_PROMPT;
 
-    // Stream response with multi-step reasoning
+    // Stream response with tools
     const result = streamText({
       model: google('gemini-2.0-flash-exp'),
       system: systemPrompt,
       messages: convertToCoreMessages(allMessages) as any,
       tools: studioAgentTools, // Use all 38 tools
-      maxToolRoundtrips: 10, // Allow up to 10 reasoning steps
-
-      // Log tool usage for transparency
-      onToolCall: async ({ toolCall }) => {
-        console.log(`[Agent] Tool called: ${toolCall.toolName}`);
-        console.log(`[Agent] Tool args:`, toolCall.args);
-
-        // Save tool execution record
-        await saveToolExecution({
-          messageId: savedUserMessage.id,
-          toolName: toolCall.toolName,
-          toolInput: toolCall.args as any,
-          status: 'executing',
-        });
-      },
-
-      onFinish: async ({ text, toolCalls, toolResults, finishReason, usage }) => {
-        console.log(`[Agent] Finished. Reason: ${finishReason}`);
-        console.log(`[Agent] Usage:`, usage);
-
-        // Save assistant message with all parts
-        const parts = [];
-
-        // Add text parts
-        if (text) {
-          parts.push({ type: 'text', text });
-        }
-
-        // Add tool call parts
-        toolCalls?.forEach((tc) => {
-          parts.push({
-            type: 'tool-call',
-            toolCallId: tc.toolCallId,
-            toolName: tc.toolName,
-            args: tc.args,
-          });
-        });
-
-        // Add tool result parts
-        toolResults?.forEach((tr) => {
-          parts.push({
-            type: 'tool-result',
-            toolCallId: tr.toolCallId,
-            toolName: tr.toolName,
-            result: tr.result,
-          });
-
-          // Update tool execution record
-          updateToolExecution({
-            messageId: savedUserMessage.id,
-            toolName: tr.toolName,
-            toolOutput: tr.result,
-            status: 'completed',
-          });
-        });
-
-        await saveStudioAgentMessage({
-          chatId: chat!.id,
-          role: 'assistant',
-          content: text,
-          parts: parts as any,
-          reasoning: text, // Store the agent's reasoning
-        });
-      },
     });
 
-    return result.toDataStreamResponse({
+    return result.toTextStreamResponse({
       headers: {
         'X-Chat-Id': chat.id,
       },

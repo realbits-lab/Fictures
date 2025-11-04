@@ -192,7 +192,7 @@ export async function POST(request: NextRequest) {
     const settingSection = settings.slice(0, 1).map((setting) => {
       const tasteSection = setting.sensory.taste?.length ? `- Taste: ${setting.sensory.taste.join(', ')}` : '';
       return `## ${setting.name}
-${setting.description.substring(0, 400)}
+${((setting as any).summary || (setting as any).description || '').substring(0, 400)}
 
 **Mood**: ${setting.mood}
 **Emotional Resonance**: ${setting.emotionalResonance}

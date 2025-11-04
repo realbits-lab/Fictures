@@ -1,21 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { mutate } from "swr";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@/components/ui";
 import { useStoryData } from "@/lib/hooks/useStoryData";
 import { useWritingProgress, useWritingSession } from "@/hooks/useStoryWriter";
 import { useCacheInvalidation } from "@/lib/hooks/use-cache-invalidation";
-import { JSONDataDisplay } from "./JSONDataDisplay";
-import { ChapterEditor } from "./ChapterEditor";
-import { SceneEditor, SceneData } from "./SceneEditor";
 import { StoryStructureSidebar } from "./StoryStructureSidebar";
-import { SceneSidebar } from "./SceneSidebar";
-import { CharactersDisplay } from "./CharactersDisplay";
-import { SettingsDisplay } from "./SettingsDisplay";
 import { StudioAgentChat } from "@/components/studio/studio-agent-chat";
 import { ImageContentDisplay } from "./ImageContentDisplay";
 import { ContentLoadError } from "@/components/error/ContentLoadError";
@@ -615,27 +608,6 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       setSceneHasChanges(false);
     }
   }, [currentSelection.level, currentSelection.sceneId, story.parts, story.chapters]);
-
-  // Extract data from the actual story structure
-  const extractedPartData = useMemo(() => {
-    if (!currentSelection.partId || !sampleStoryData?.parts) return null;
-    return sampleStoryData.parts.find(part => part.part_id === currentSelection.partId) || null;
-  }, [currentSelection.partId, sampleStoryData]);
-
-  const extractedChapterData = useMemo(() => {
-    if (!currentSelection.chapterId || !sampleStoryData?.chapters) return null;
-    return sampleStoryData.chapters.find(chapter => chapter.chapter_id === currentSelection.chapterId) || null;
-  }, [currentSelection.chapterId, sampleStoryData]);
-
-  const extractedSceneData = useMemo(() => {
-    if (!currentSelection.sceneId || !sampleStoryData?.scenes) return null;
-    return sampleStoryData.scenes.find(scene => scene.scene_id === currentSelection.sceneId) || null;
-  }, [currentSelection.sceneId, sampleStoryData]);
-
-  // Helper functions for backwards compatibility
-  const getPartData = () => extractedPartData;
-  const getChapterData = () => extractedChapterData;
-  const getSceneData = () => extractedSceneData;
 
   const handleSelectionChange = async (selection: Selection) => {
     // If switching to a different story, trigger SWR fetch

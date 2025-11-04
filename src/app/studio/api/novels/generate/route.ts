@@ -310,7 +310,7 @@ export async function POST(request: NextRequest) {
               partIdMap.set(part.id, newId); // Map temp ID to database ID
 
               // Map temporary character IDs to database character IDs in characterArcs
-              const mappedCharacterArcs = part.characterArcs.map((arc) => ({
+              const mappedCharacterArcs = part.characterArcs.map((arc: any) => ({
                 ...arc,
                 characterId: characterIdMap.get(arc.characterId) || arc.characterId,
               }));
@@ -339,7 +339,7 @@ export async function POST(request: NextRequest) {
               chapterIdMap.set(chapter.id, newId); // Map temp ID to database ID
 
               // Map temporary character IDs to database character IDs in focusCharacters array
-              const mappedFocusCharacters = chapter.focusCharacters?.map((charId) =>
+              const mappedFocusCharacters = chapter.focusCharacters?.map((charId: any) =>
                 characterIdMap.get(charId) || charId
               ) || [];
 
@@ -382,7 +382,7 @@ export async function POST(request: NextRequest) {
               console.log(`[Novel Generation] Scene ${index + 1}: chapterId=${scene.chapterId}, mapped=${mappedChapterId}`);
 
               // Map temporary character IDs to database character IDs in characterFocus array
-              const mappedCharacterFocus = scene.characterFocus?.map((charId) =>
+              const mappedCharacterFocus = scene.characterFocus?.map((charId: any) =>
                 characterIdMap.get(charId) || charId
               ) || [];
 

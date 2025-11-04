@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if part has detailed specification data
-    if (!part.content || typeof part.content !== 'string') {
+    if (!(part as any).content || typeof (part as any).content !== 'string') {
       return new Response(
         JSON.stringify({ error: 'Part specification data is required. Please generate part specifications first.' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if story has the required content
-    if (!story.content || typeof story.content !== 'string') {
+    if (!(story as any).content || typeof (story as any).content !== 'string') {
       return new Response(
         JSON.stringify({ error: 'Story content is required. Please regenerate the story first.' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
@@ -71,14 +71,14 @@ export async function POST(request: NextRequest) {
     // Parse content and generate detailed chapter specifications using AI
     let storyData, partData;
     try {
-      storyData = JSON.parse(story.content);
+      storyData = JSON.parse((story as any).content);
     } catch {
-      storyData = { content: story.content };
+      storyData = { content: (story as any).content };
     }
     try {
-      partData = JSON.parse(part.content);
+      partData = JSON.parse((part as any).content);
     } catch {
-      partData = { content: part.content };
+      partData = { content: (part as any).content };
     }
     const chapterSpecs = await generateChapterSpecifications(
       storyData,
@@ -102,7 +102,6 @@ export async function POST(request: NextRequest) {
           orderIndex: chapterSpec.chap,
           status: 'writing',
           purpose: `Chapter ${chapterSpec.chap} - ${chapterSpec.goal}`,
-          characterFocus: chapterSpec.pov,
         },
         part.id // partId parameter
       );

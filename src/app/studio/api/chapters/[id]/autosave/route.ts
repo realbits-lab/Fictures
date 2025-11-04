@@ -23,10 +23,10 @@ export async function POST(
     }
 
     const body = await request.json();
+    const { content } = body;
 
     const chapter = await updateChapter(id, session.user.id, {
       content,
-      wordCount,
     });
 
     return NextResponse.json({ 

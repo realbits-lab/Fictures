@@ -314,10 +314,10 @@ export async function GET(
           }
 
           // Add chapter HNS data
-          if (chapter.hnsData) {
+          if ((chapter as any).hnsData) {
             zip.file(
               `hns_data/chapters/part_${partNum}_chapter_${chapterNum}_hns.json`,
-              JSON.stringify(chapter.hnsData, null, 2)
+              JSON.stringify((chapter as any).hnsData, null, 2)
             );
           }
 
@@ -380,10 +380,10 @@ export async function GET(
         }
 
         // Add chapter HNS data
-        if (chapter.hnsData) {
+        if ((chapter as any).hnsData) {
           zip.file(
             `hns_data/chapters/chapter_${chapterNum}_hns.json`,
-            JSON.stringify(chapter.hnsData, null, 2)
+            JSON.stringify((chapter as any).hnsData, null, 2)
           );
         }
 
