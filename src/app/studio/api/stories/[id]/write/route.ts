@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getStoryWithStructure } from '@/lib/db/queries';
 import { db } from '@/lib/db';
-import { stories, characters, places } from '@/lib/db/schema';
+import { stories, characters, settings } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { createHash } from 'crypto';
 import * as yaml from 'js-yaml';
@@ -41,28 +41,28 @@ export async function GET(
     // Parse character content data
     const storyCharacters = rawCharacters.map(character => {
       let parsedContent: Record<string, any> = {};
-      if (character.content) {
+      if ((character as any).content) {
         try {
-          if (typeof character.content === 'string') {
+          if (typeof (character as any).content === 'string') {
             // Try to parse as JSON first
             try {
-              parsedContent = JSON.parse(character.content);
+              parsedContent = JSON.parse((character as any).content);
             } catch (jsonError) {
               // If JSON parsing fails, try YAML parsing
               // First convert \n literal strings to actual newlines
-              const cleanedContent = character.content.replace(/\\n/g, '\n');
+              const cleanedContent = (character as any).content.replace(/\\n/g, '\n');
               parsedContent = yaml.load(cleanedContent) as Record<string, any> || {};
             }
-          } else if (typeof character.content === 'object') {
-            parsedContent = character.content;
+          } else if (typeof (character as any).content === 'object') {
+            parsedContent = (character as any).content;
           }
         } catch (error) {
           console.error(`Failed to parse character content for ${character.name}:`, error);
           // Fallback: try to extract basic info from the raw string
-          if (typeof character.content === 'string') {
-            const nameMatch = character.content.match(/name:\s*["']?([^"'\n]+)["']?/);
-            const roleMatch = character.content.match(/role:\s*["']?([^"'\n]+)["']?/);
-            const descMatch = character.content.match(/summary:\s*["']?([^"'\n]+)["']?/);
+          if (typeof (character as any).content === 'string') {
+            const nameMatch = (character as any).content.match(/name:\s*["']?([^"'\n]+)["']?/);
+            const roleMatch = (character as any).content.match(/role:\s*["']?([^"'\n]+)["']?/);
+            const descMatch = (character as any).content.match(/summary:\s*["']?([^"'\n]+)["']?/);
 
             parsedContent = {
               name: nameMatch ? nameMatch[1] : character.name,
@@ -96,8 +96,8 @@ export async function GET(
     });
 
     // Get places for this story
-    const storyPlaces = await db.query.places.findMany({
-      where: eq(places.storyId, id)
+    const storySettings = await db.query.settings.findMany({
+      where: eq(settings.storyId, id)
     });
 
     // Only story owners can edit
@@ -120,13 +120,13 @@ export async function GET(
     let parsedStoryData = null;
 
     // Use hnsData as the primary source (it follows the HNS schema)
-    if (storyWithStructure.hnsData) {
+    if ((storyWithStructure as any).hnsData) {
       try {
         // Handle case where hnsData might already be an object
-        if (typeof storyWithStructure.hnsData === 'object') {
-          parsedHnsData = storyWithStructure.hnsData;
-        } else if (typeof storyWithStructure.hnsData === 'string') {
-          parsedHnsData = JSON.parse(storyWithStructure.hnsData);
+        if (typeof (storyWithStructure as any).hnsData === 'object') {
+          parsedHnsData = (storyWithStructure as any).hnsData;
+        } else if (typeof (storyWithStructure as any).hnsData === 'string') {
+          parsedHnsData = JSON.parse((storyWithStructure as any).hnsData);
         }
       } catch (error) {
         console.error('Failed to parse story hnsData JSON:', error);
@@ -179,7 +179,7 @@ export async function GET(
         chapters: chaptersWithHnsData
       },
       characters: storyCharacters,
-      places: storyPlaces,
+      places: storySettings,
       isOwner,
       metadata: {
         fetchedAt: new Date().toISOString(),
@@ -277,7 +277,7 @@ export async function PATCH(
     // Note: Drizzle ORM automatically handles JSON serialization
     await db.update(stories)
       .set({
-        hnsData: hnsData,
+        ...(hnsData ? { hnsData } as any : {}),
         updatedAt: new Date()
       })
       .where(eq(stories.id, id));

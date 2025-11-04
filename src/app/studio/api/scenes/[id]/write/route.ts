@@ -38,11 +38,11 @@ export async function GET(
 
     // Parse HNS data if it exists
     let parsedHnsData = null;
-    if (scene.hnsData) {
+    if ((scene as any).hnsData) {
       try {
-        parsedHnsData = typeof scene.hnsData === 'object'
-          ? scene.hnsData
-          : JSON.parse(scene.hnsData as any);
+        parsedHnsData = typeof (scene as any).hnsData === 'object'
+          ? (scene as any).hnsData
+          : JSON.parse((scene as any).hnsData as any);
       } catch (error) {
         console.error('Failed to parse scene HNS data:', error);
       }
@@ -102,7 +102,7 @@ export async function PATCH(
     // Drizzle ORM will handle JSON serialization automatically
     await db.update(scenes)
       .set({
-        hnsData: hnsData,
+        ...(hnsData ? { hnsData } as any : {}),
         updatedAt: new Date()
       })
       .where(eq(scenes.id, id));

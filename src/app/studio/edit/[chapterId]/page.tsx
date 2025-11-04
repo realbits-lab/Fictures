@@ -41,7 +41,7 @@ export default async function WritePage({ params }: { params: Promise<{ chapterI
     <UnifiedWritingEditor
       story={{
         ...storyStructure,
-        hnsData: storyStructure.hnsData || {}
+        hnsData: (storyStructure as any).hnsData || {}
       } as any}
       initialSelection={initialSelection}
     />

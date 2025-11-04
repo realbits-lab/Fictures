@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { stories } from '@/lib/db/schema';
+import { nanoid } from 'nanoid';
 
 /**
  * POST /studio/api/stories/create-empty
@@ -29,10 +30,10 @@ export async function POST(request: NextRequest) {
     const [story] = await db
       .insert(stories)
       .values({
-        id: `story_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: nanoid(),
         authorId: userId,
         title,
-        genre: 'unspecified', // Default genre until agent generates it
+        genre: 'Contemporary', // Default genre until agent generates it
         status: 'writing',
         // All other fields will be null/default
         // The agent will populate them through generation

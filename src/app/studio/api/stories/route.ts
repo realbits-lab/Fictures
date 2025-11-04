@@ -32,10 +32,10 @@ export async function GET(request: NextRequest) {
     }
 
     // ⚡ Use Redis-cached query for better performance
-    const stories = await getCachedUserStories(authResult.user.id);
-    
+    const stories = await getCachedUserStories(authResult.user.id) || [];
+
     // Transform the data to match the Dashboard component expectations
-    const transformedStories = stories.map((story) => ({
+    const transformedStories = Array.isArray(stories) ? stories.map((story) => ({
       id: story.id,
       title: story.title,
       summary: story.summary || '', // Story summary for card descriptions
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
       isPublic: story.status === 'published',
       imageUrl: story.imageUrl,
       imageVariants: story.imageVariants,
-    }));
+    })) : [];
 
     const response = {
       stories: transformedStories,
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     // Generate ETag based on user stories data
     const contentForHash = JSON.stringify({
       userId: authResult.user.id,
-      storiesData: stories.map(story => ({
+      storiesData: Array.isArray(stories) ? stories.map(story => ({
         id: story.id,
         title: story.title,
         updatedAt: story.updatedAt,
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
         totalChapters: story.totalChapters,
         rating: story.rating,
         viewCount: story.viewCount
-      })),
+      })) : [],
       totalStories: transformedStories.length,
       lastUpdated: response.metadata.lastUpdated
     });

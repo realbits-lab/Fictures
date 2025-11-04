@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { characters as charactersTable, places as placesTable, stories } from '@/lib/db/schema';
+import { characters as charactersTable, settings as settingsTable, stories } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 
 export const runtime = 'nodejs';
@@ -40,16 +40,16 @@ export async function GET(
       .where(eq(charactersTable.storyId, id))
       .orderBy(charactersTable.createdAt);
 
-    // Fetch places for this story
-    const places = await db
+    // Fetch settings for this story
+    const settings = await db
       .select()
-      .from(placesTable)
-      .where(eq(placesTable.storyId, id))
-      .orderBy(placesTable.createdAt);
+      .from(settingsTable)
+      .where(eq(settingsTable.storyId, id))
+      .orderBy(settingsTable.createdAt);
 
     return NextResponse.json({
       characters,
-      places,
+      settings,
       storyId: id,
       storyTitle: story.title
     });

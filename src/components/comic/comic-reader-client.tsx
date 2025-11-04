@@ -294,9 +294,9 @@ export function ComicReaderClient({ storyId, initialData }: ComicReaderClientPro
             <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               {story.title}
             </h1>
-            {story.summary && (
+            {(story as any).summary && (
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                {story.summary}
+                {(story as any).summary}
               </p>
             )}
             <div className="flex flex-wrap gap-2 text-xs">

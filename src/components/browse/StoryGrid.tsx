@@ -17,7 +17,7 @@ import { trackSearch, trackStoryEvent } from '@/lib/analysis/google-analytics';
 import { readingHistoryManager } from '@/lib/storage/reading-history-manager';
 import { STORY_GENRES } from '@/lib/constants/genres';
 import { CreateNewStoryButton } from "@/components/studio/create-new-story-button";
-import type { ReadingFormat } from '@/types/novels-history';
+import type { ReadingFormat } from '@/types/reading-history';
 
 interface Story {
   id: string;

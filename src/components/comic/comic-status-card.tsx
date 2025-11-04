@@ -151,7 +151,7 @@ export function ComicStatusCard({
       case 'none':
       default:
         return (
-          <Badge variant="secondary" className="flex items-center gap-1">
+          <Badge variant="default" className="flex items-center gap-1">
             <AlertCircle className="h-3 w-3" />
             No Comics
           </Badge>

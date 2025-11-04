@@ -3,7 +3,7 @@ import * as yaml from 'js-yaml';
 import { AI_MODELS } from './config';
 import { type Story, type PartSpecification, type ChapterSpecification, type SceneSpecification } from './schemas';
 import { db } from '@/lib/db';
-import { stories, parts, characters, places } from '@/lib/db/schema';
+import { stories, parts, characters, settings } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { RelationshipManager } from '@/lib/db/relationships';
@@ -511,7 +511,7 @@ POV character should be the main protagonist: ${Object.keys(storyConcept.chars).
 }
 
 // Phase 4: Scene Generation
-export async function generateSceneSpecifications(chapterSpec: ChapterSpecification, storyCharacters: any[] = [], storyPlaces: any[] = [], sceneCount: number = 3): Promise<SceneSpecification[]> {
+export async function generateSceneSpecifications(chapterSpec: ChapterSpecification, storyCharacters: any[] = [], storySettings: any[] = [], sceneCount: number = 3): Promise<SceneSpecification[]> {
   const scenes: SceneSpecification[] = [];
 
   for (let i = 1; i <= sceneCount; i++) {
@@ -563,7 +563,7 @@ REQUIREMENTS:
 
 Available characters: ${storyCharacters.map(c => `${c.parsedData?.name || c.id} (${c.parsedData?.role || c.id})`).join(', ') || 'No characters available'}
 
-Available places: ${storyPlaces.map(p => p.parsedData?.name || p.name).join(', ') || 'No places available'}
+Available places: ${storySettings.map(p => p.parsedData?.name || p.name).join(', ') || 'No places available'}
 
 Generate Scene ${i} of Chapter ${chapterSpec.chap}.
 This scene should contribute to the chapter's three-act structure:

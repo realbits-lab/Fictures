@@ -30,7 +30,7 @@ export async function GET(
     // Check Redis cache first (Layer 3)
     const cacheKey = `${CACHE_CONFIG.PREFIX}:${storyId}:public`;
     if (redis) {
-      const cachedData = await redis.get(cacheKey);
+      const cachedData = await (redis as any).get(cacheKey);
 
       if (cachedData) {
         const duration = Date.now() - startTime;
@@ -118,7 +118,7 @@ export async function GET(
     const ttl = isPublished ? CACHE_CONFIG.TTL_PUBLIC : CACHE_CONFIG.TTL_PRIVATE;
 
     if (redis) {
-      await redis.set(cacheKey, responseData, { ex: ttl });
+      await (redis as any).set(cacheKey, responseData, { ex: ttl });
     }
 
     const duration = Date.now() - startTime;
@@ -179,7 +179,7 @@ export async function PATCH(
     // Invalidate cache
     const cacheKey = `${CACHE_CONFIG.PREFIX}:${storyId}:public`;
     if (redis) {
-      await redis.del(cacheKey);
+      await (redis as any).del(cacheKey);
     }
 
     console.log(`[Cache Test API] Invalidated cache for story ${storyId}`);

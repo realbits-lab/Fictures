@@ -77,7 +77,7 @@ export function InsightCard({ insight, onDismiss, onFeedback }: InsightCardProps
               {insight.title}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {insight.description}
+              {insight.summary}
             </p>
           </div>
         </div>
