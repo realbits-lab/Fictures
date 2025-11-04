@@ -201,9 +201,27 @@ export async function POST(request: NextRequest) {
           // Insert characters and create ID mapping
           const characterIdMap = new Map<string, string>();
           if (result.characters.length > 0) {
-            const characterRecords = result.characters.map((char) => {
+            // First pass: Create all character ID mappings
+            result.characters.forEach((char) => {
               const newId = nanoid();
-              characterIdMap.set(char.id, newId); // Map temp ID to database ID
+              characterIdMap.set(char.id, newId);
+            });
+
+            // Second pass: Build character records with remapped relationship IDs
+            const characterRecords = result.characters.map((char) => {
+              const newId = characterIdMap.get(char.id)!;
+
+              // Remap character IDs in relationships JSON
+              let mappedRelationships = char.relationships;
+              if (char.relationships && typeof char.relationships === 'object') {
+                mappedRelationships = {};
+                for (const [tempCharId, relationshipData] of Object.entries(char.relationships)) {
+                  // Map temporary character ID to database ID
+                  const dbCharId = characterIdMap.get(tempCharId) || tempCharId;
+                  mappedRelationships[dbCharId] = relationshipData;
+                }
+              }
+
               return {
                 id: newId,
                 storyId: generatedStoryId!,
@@ -215,7 +233,7 @@ export async function POST(request: NextRequest) {
                 externalGoal: char.externalGoal,
                 personality: char.personality,
                 backstory: char.backstory,
-                relationships: char.relationships,
+                relationships: mappedRelationships,
                 physicalDescription: char.physicalDescription,
                 voiceStyle: char.voiceStyle,
                 visualStyle: char.visualStyle,
