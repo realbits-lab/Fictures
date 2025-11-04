@@ -26,6 +26,7 @@ export function SceneWriting({
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   // Calculate word count
+  const wordCount = sceneContent.trim().split(/\s+/).filter(word => word.length > 0).length;
 
   // Define handleAutoSave before using it in useEffect
   const handleAutoSave = useCallback(async () => {
@@ -35,7 +36,7 @@ export function SceneWriting({
     try {
       await onSave({
         content: sceneContent,
-        wordCount: wordCount
+        wordCount
       });
       setLastSaved(new Date());
     } catch (error) {

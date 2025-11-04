@@ -70,11 +70,6 @@ const path = getBlobPath('stories/123/image.png');
   - See complete script documentation: [scripts/CLAUDE.md](scripts/CLAUDE.md)
   - Story generation, management, testing, and utility scripts
   - When creating scripts, evaluate whether they are temporary experiments or permanent utilities
-- **Documentation Files**: All documentation files (`.md` or `.mdx`) MUST include frontmatter
-  - **MANDATORY**: Frontmatter with at least `title` field at the top of every documentation file
-  - Format: `---\ntitle: Document Title\n---` before content
-  - Optional: Use `.mdx` for enhanced documentation with JSX components and interactive examples
-  - Both `.md` and `.mdx` formats are acceptable, but frontmatter is required
 
 ## Database Management
 

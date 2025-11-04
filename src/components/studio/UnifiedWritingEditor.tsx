@@ -206,7 +206,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     
     // Cleanup: End session when component unmounts
     return () => {
-      const result = writingSession.endSession();
+      const result = writingSession.endSession() as { duration: number; wordsWritten: number } | null;
       if (result) {
         console.log(`✅ Writing session ended: ${result.duration}ms, ${result.wordsWritten} words written`);
       }
@@ -271,9 +271,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     }
 
     // Convert legacy format to HNSDocument
-    const hnsStory: HNSStory = {
-      story_id: story.id,
-      story_title: story.title || parsedData?.title || "Generated Story",
+    const hnsStory: any = {
+      id: story.id,
+      title: story.title || parsedData?.title || "Generated Story",
       genre: (Array.isArray(story.genre) ? story.genre : [story.genre || parsedData?.genre || "General"]) as any,
       premise: parsedData?.premise || "Story premise",
       dramatic_question: parsedData?.question || parsedData?.dramatic_question || "What is the central question of this story?",
@@ -284,7 +284,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     };
 
     // Convert parts to HNSPart format
-    const hnsParts: HNSPart[] = story.parts.map((part, index) => ({
+    const hnsParts: any[] = story.parts.map((part, index) => ({
       part_id: part.id,
       part_title: part.title,
       structural_role: index === 0 ? 'Act 1: Setup' : index === 1 ? 'Act 2: Confrontation' : 'Act 3: Resolution',
@@ -296,7 +296,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     }));
 
     // Convert chapters to HNSChapter format
-    const hnsChapters: HNSChapter[] = [];
+    const hnsChapters: any[] = [];
     story.parts.forEach((part, partIndex) => {
       part.chapters.forEach((chapter, chapterIndex) => {
         hnsChapters.push({
@@ -318,7 +318,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     });
 
     // Convert scenes to HNSScene format
-    const hnsScenes: HNSScene[] = [];
+    const hnsScenes: any[] = [];
     story.parts.forEach((part) => {
       part.chapters.forEach((chapter) => {
         chapter.scenes?.forEach((scene, sceneIndex) => {
@@ -333,9 +333,9 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
             narrative_voice: 'third_person_limited',
             summary: scene.title,
             entry_hook: "",
-            goal: scene.goal,
-            conflict: scene.conflict,
-            outcome: scene.outcome as HNSScene['outcome'],
+            goal: (scene as any).goal || "",
+            conflict: (scene as any).conflict || "",
+            outcome: (scene as any).outcome || "",
             emotional_shift: {
               from: "",
               to: ""
@@ -598,7 +598,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     // If chapter is marked as published but has no content, force it to draft status
     if (currentChapter && currentChapterStatus === 'published') {
       const hasScenes = currentChapter.scenes && currentChapter.scenes.length > 0;
-      const scenesWithContent = currentChapter.scenes?.filter(s => s.content && s.content.trim() !== '') || [];
+      const scenesWithContent = currentChapter.scenes?.filter(s => (s as any).content && (s as any).content.trim() !== '') || [];
       const hasContent = scenesWithContent.length > 0;
 
       if (!hasContent && scenesWithContent.length === 0) {
@@ -615,6 +615,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
         alert('Cannot publish chapter without scenes. Please add at least one scene before publishing.');
         return;
       }
+      const scenesWithContent = chapterScenes.filter(s => (s as any).content && (s as any).content.trim() !== '');
       if (scenesWithContent.length === 0) {
         alert('Cannot publish chapter with empty scenes. Please add content to at least one scene before publishing.');
         return;
@@ -776,7 +777,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   // Create part data based on actual story data
   const createPartData = (partNum: number, partTitle: string) => {
     // Get part data from actual story data if available
-    const currentPart = sampleStoryData.parts.find(p => p.part_title === partTitle || p.part_id === `part_${partNum}`);
+    const currentPart = sampleStoryData.parts.find((p: any) => p.part_title === partTitle || p.part_id === `part_${partNum}`);
 
     return {
       part: partNum,
@@ -938,7 +939,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                       <tr className="border-b">
                         <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Status</td>
                         <td className="py-2 px-4">
-                          <Badge variant={story.status === 'published' ? 'default' : 'secondary'}>
+                          <Badge variant={story.status === 'published' ? 'success' : 'info'}>
                             {story.status}
                           </Badge>
                         </td>
@@ -1206,11 +1207,11 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                     <tbody>
                       <tr className="border-b">
                         <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800 w-1/3">ID</td>
-                        <td className="py-2 px-4 font-mono text-xs">{selectedChapter.id}</td>
+                        <td className="py-2 px-4 font-mono text-xs">{selectedChapter?.id}</td>
                       </tr>
                       <tr className="border-b">
                         <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Title</td>
-                        <td className="py-2 px-4">{selectedChapter.title}</td>
+                        <td className="py-2 px-4">{selectedChapter?.title}</td>
                       </tr>
                       <tr className="border-b">
                         <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Summary</td>
@@ -1234,13 +1235,13 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                       </tr>
                       <tr className="border-b">
                         <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Order Index</td>
-                        <td className="py-2 px-4">{selectedChapter.orderIndex}</td>
+                        <td className="py-2 px-4">{selectedChapter?.orderIndex}</td>
                       </tr>
                       <tr className="border-b">
                         <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Status</td>
                         <td className="py-2 px-4">
-                          <Badge variant={selectedChapter.status === 'published' ? 'default' : 'secondary'}>
-                            {selectedChapter.status}
+                          <Badge variant={selectedChapter?.status === 'published' ? 'success' : 'info'}>
+                            {selectedChapter?.status}
                           </Badge>
                         </td>
                       </tr>
@@ -1324,7 +1325,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                       </tr>
                       <tr className="border-b">
                         <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Scenes Count</td>
-                        <td className="py-2 px-4">{selectedChapter.scenes?.length || 0}</td>
+                        <td className="py-2 px-4">{selectedChapter?.scenes?.length || 0}</td>
                       </tr>
                       <tr className="border-b">
                         <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Created At</td>
@@ -1627,7 +1628,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
         // Novel view - show table data
         // Find the specific character by ID
-        const selectedCharacter = story.characters?.find((c: any) => c.id === currentSelection.characterId);
+        const selectedCharacter = (story as any).characters?.find((c: any) => c.id === currentSelection.characterId);
 
         if (!selectedCharacter) {
           return (
@@ -1839,7 +1840,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
 
         // Novel view - show table data
         // Find the specific setting by ID
-        const selectedSetting = story.settings?.find((s: any) => s.id === currentSelection.settingId);
+        const selectedSetting = (story as any).settings?.find((s: any) => s.id === currentSelection.settingId);
 
         if (!selectedSetting) {
           return (
@@ -2093,7 +2094,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                   // If chapter is marked as published but has no content, force it to draft status
                   if (currentChapter && currentChapterStatus === 'published') {
                     const hasScenes = currentChapter.scenes && currentChapter.scenes.length > 0;
-                    const scenesWithContent = currentChapter.scenes?.filter(s => s.content && s.content.trim() !== '') || [];
+                    const scenesWithContent = currentChapter.scenes?.filter(s => (s as any).content && (s as any).content.trim() !== '') || [];
                     const hasContent = scenesWithContent.length > 0;
 
                     if (!hasContent && scenesWithContent.length === 0) {
