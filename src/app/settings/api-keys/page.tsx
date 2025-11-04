@@ -331,7 +331,7 @@ export default function ApiKeysPage() {
                       <div className="text-sm">
                         <div className="font-medium">{scope.scope}</div>
                         <div className="text-gray-600 dark:text-gray-400 text-xs">
-                          {scope.description}
+                          {scope.summary}
                         </div>
                       </div>
                     </label>

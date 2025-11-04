@@ -114,9 +114,9 @@ export async function convertSceneToToonplay(
 
   console.log(`\n🎬 Converting scene to toonplay: "${sceneTitle}"`);
 
-  // Build character descriptions
+  // Build character descriptions from Adversity-Triumph Engine fields
   const characterDescriptions = characters
-    .map(c => `${c.name}: ${c.summary || c.internalFlaw || c.externalGoal || 'pursuing their goals'}`)
+    .map(c => `${c.name}: ${c.summary || c.coreTrait || c.internalFlaw || c.externalGoal || 'pursuing their goals'}`)
     .join('\n');
 
   // Build toonplay prompt with detailed visual grammar from docs/comics/comics-toonplay.md
@@ -136,7 +136,7 @@ CHARACTERS PRESENT:
 ${characterDescriptions}
 
 SETTING:
-${setting.name}: ${setting.description}
+${setting.name}: ${setting.summary || setting.mood || 'atmospheric scene'}
 
 GENRE: ${storyGenre}
 

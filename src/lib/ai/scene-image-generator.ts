@@ -3,7 +3,7 @@
  * Generates images for story scenes using Gemini and stores them in Vercel Blob
  */
 
-import { HNSScene, HNSStory, HNSCharacter, HNSSetting } from '@/types/hns';
+import type { scenes, stories, characters, settings } from '@/../drizzle/schema';
 import { generateStoryImage } from '@/lib/services/image-generation';
 
 // Animation styles compatible with DALL-E 3
@@ -18,39 +18,42 @@ export type AnimationStyle =
  * Generate an image prompt for a scene based on its content
  */
 export function generateSceneImagePrompt(
-  scene: HNSScene,
-  story: HNSStory,
-  characters: HNSCharacter[],
-  settings: HNSSetting[]
+  scene: typeof scenes.$inferSelect,
+  story: typeof stories.$inferSelect,
+  characters: (typeof characters.$inferSelect)[],
+  settings: (typeof settings.$inferSelect)[]
 ): string {
-  // Get character details
-  const povCharacter = characters.find(c => c.character_id === scene.pov_character_id);
-  const sceneCharacters = scene.character_ids
-    .map(id => characters.find(c => c.character_id === id))
+  // Get character details from characterFocus field (array of character IDs)
+  const characterFocusIds = Array.isArray(scene.characterFocus) ? scene.characterFocus as string[] : [];
+  const sceneCharacters = characterFocusIds
+    .map(id => characters.find(c => c.id === id))
     .filter(Boolean);
 
-  // Get setting details
-  const setting = settings.find(s => s.setting_id === scene.setting_id);
+  // Get setting details - scenes don't have settingId in the new schema
+  // Use the first setting from the story
+  const setting = settings[0];
 
   // Build the prompt
   const characterDescriptions = sceneCharacters
     .slice(0, 2) // Limit to 2 main characters for clarity
-    .map(c => c?.physical_description ?
-      `${c.name}: ${c.physical_description.typical_attire}` :
-      c?.name
-    )
+    .map(c => {
+      const physicalDesc = c?.physicalDescription as any;
+      return physicalDesc?.typical_attire
+        ? `${c.name}: ${physicalDesc.typical_attire}`
+        : c?.name;
+    })
     .filter(Boolean)
     .join(', ');
 
-  const settingDescription = setting ?
-    `${setting.name}: ${setting.description}` :
-    'atmospheric scene';
+  const settingDescription = setting
+    ? `${setting.name}: ${setting.summary || setting.mood || 'atmospheric scene'}`
+    : 'atmospheric scene';
 
-  const emotionalTone = scene.emotional_shift ?
-    `mood transitioning from ${scene.emotional_shift.from} to ${scene.emotional_shift.to}` :
-    '';
+  const emotionalTone = scene.emotionalBeat
+    ? `${scene.emotionalBeat} emotional tone`
+    : '';
 
-  const actionFocus = scene.summary || scene.goal || 'dramatic moment';
+  const actionFocus = scene.summary || 'dramatic moment';
 
   // Construct the detailed prompt for Gemini
   const prompt = `${actionFocus} in ${settingDescription}.
@@ -64,7 +67,7 @@ Dramatic scene capturing the emotional peak of the moment.`;
 /**
  * Get appropriate animation style based on genre
  */
-function getStyleForGenre(genre: string): AnimationStyle {
+function getStyleForGenre(genre: string | null): AnimationStyle {
   const genreStyles: Record<string, AnimationStyle> = {
     'fantasy': 'fantasy-art',
     'science_fiction': 'realistic',
@@ -81,6 +84,7 @@ function getStyleForGenre(genre: string): AnimationStyle {
   };
 
   // Find matching style or default
+  if (!genre) return 'fantasy-art';
   const lowerGenre = genre.toLowerCase().replace(/[- ']/g, '_');
   return genreStyles[lowerGenre] || 'fantasy-art';
 }
@@ -89,10 +93,10 @@ function getStyleForGenre(genre: string): AnimationStyle {
  * Generate and upload scene image using Gemini
  */
 export async function generateSceneImage(
-  scene: HNSScene,
-  story: HNSStory,
-  characters: HNSCharacter[],
-  settings: HNSSetting[],
+  scene: typeof scenes.$inferSelect,
+  story: typeof stories.$inferSelect,
+  characters: (typeof characters.$inferSelect)[],
+  settings: (typeof settings.$inferSelect)[],
   storyId: string
 ): Promise<{ url: string; prompt: string; style: AnimationStyle }> {
   try {
@@ -102,7 +106,7 @@ export async function generateSceneImage(
     // Determine the style based on genre
     const style = getStyleForGenre(story.genre);
 
-    console.log(`🎨 Generating image for scene: ${scene.scene_title || scene.summary}`);
+    console.log(`🎨 Generating image for scene: ${scene.title || scene.summary}`);
     console.log(`   Style: ${style}`);
     console.log(`   Prompt: ${prompt.substring(0, 100)}...`);
 
@@ -124,7 +128,7 @@ export async function generateSceneImage(
     };
 
   } catch (error) {
-    console.error(`❌ Failed to generate image for scene ${scene.scene_id}:`, error);
+    console.error(`❌ Failed to generate image for scene ${scene.id}:`, error);
 
     // Since images are mandatory, throw the error to be handled upstream
     throw error;
@@ -132,12 +136,12 @@ export async function generateSceneImage(
 }
 
 /**
- * Get appropriate lighting based on scene mood and outcome
+ * Get appropriate lighting based on scene mood and cycle phase
  */
-function getSceneLighting(scene: HNSScene): string {
-  if (scene.outcome === 'failure' || scene.outcome === 'failure_with_discovery') {
+function getSceneLighting(scene: typeof scenes.$inferSelect): string {
+  if (scene.cyclePhase === 'confrontation') {
     return 'dramatic shadows, low key lighting';
-  } else if (scene.outcome === 'success') {
+  } else if (scene.cyclePhase === 'consequence') {
     return 'bright, optimistic lighting';
   } else {
     return 'cinematic lighting, balanced contrast';
@@ -148,10 +152,10 @@ function getSceneLighting(scene: HNSScene): string {
  * Generate images for multiple scenes in batch (mandatory)
  */
 export async function generateSceneImages(
-  scenes: HNSScene[],
-  story: HNSStory,
-  characters: HNSCharacter[],
-  settings: HNSSetting[],
+  scenes: (typeof scenes.$inferSelect)[],
+  story: typeof stories.$inferSelect,
+  characters: (typeof characters.$inferSelect)[],
+  settings: (typeof settings.$inferSelect)[],
   storyId: string,
   progressCallback?: (current: number, total: number) => void
 ): Promise<Map<string, { url: string; prompt: string; style: AnimationStyle }>> {
@@ -181,10 +185,10 @@ export async function generateSceneImages(
         storyId
       );
 
-      results.set(scene.scene_id, result);
+      results.set(scene.id, result);
 
     } catch (error) {
-      console.error(`⚠️ Retrying image generation for scene ${scene.scene_id}...`);
+      console.error(`⚠️ Retrying image generation for scene ${scene.id}...`);
 
       // Retry once on failure since images are mandatory
       try {
@@ -196,11 +200,11 @@ export async function generateSceneImages(
           settings,
           storyId
         );
-        results.set(scene.scene_id, result);
+        results.set(scene.id, result);
       } catch (retryError) {
-        console.error(`❌ Failed to generate mandatory image for scene ${scene.scene_id}:`, retryError);
+        console.error(`❌ Failed to generate mandatory image for scene ${scene.id}:`, retryError);
         // Since images are mandatory, throw an error
-        throw new Error(`Failed to generate mandatory image for scene ${scene.scene_id}: ${retryError}`);
+        throw new Error(`Failed to generate mandatory image for scene ${scene.id}: ${retryError}`);
       }
     }
   }
@@ -213,19 +217,13 @@ export async function generateSceneImages(
  * Update scene with image data
  */
 export function updateSceneWithImage(
-  scene: HNSScene,
+  scene: typeof scenes.$inferSelect,
   imageData: { url: string; prompt: string; style: AnimationStyle }
-): HNSScene {
+): typeof scenes.$inferSelect {
   return {
     ...scene,
-    scene_image: {
-      prompt: imageData.prompt,
-      url: imageData.url,
-      style: imageData.style || 'cinematic',
-      mood: scene.emotional_shift ?
-        `${scene.emotional_shift.from} to ${scene.emotional_shift.to}` :
-        'dramatic',
-      generated_at: new Date().toISOString()
-    }
+    imageUrl: imageData.url,
+    // Note: We don't have a scene_image field in the new schema
+    // Images are stored in imageUrl and imageVariants
   };
 }

@@ -6,10 +6,10 @@
  */
 
 import { nanoid } from 'nanoid';
-import type { HNSScene, HNSCharacter, HNSSetting } from '@/types/hns';
+import type { scenes, characters, settings } from '@/../drizzle/schema';
 import { generateStoryImage } from '@/lib/services/image-generation';
 import { db } from '@/lib/db';
-import { comicPanels, scenes } from '@/lib/db/schema';
+import { comicPanels, scenes as scenesTable } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { type ComicToonplay } from './toonplay-converter';
 import { generateToonplayWithEvaluation } from '@/lib/services/toonplay-improvement-loop';
@@ -67,10 +67,10 @@ function sanitizePromptForContentFilter(originalPrompt: string, attemptNumber: n
 
 export interface GenerateComicPanelsOptions {
   sceneId: string;
-  scene: HNSScene;
-  characters: HNSCharacter[];
-  setting: HNSSetting;
-  story: { story_id: string; genre: string };
+  scene: typeof scenes.$inferSelect;
+  characters: (typeof characters.$inferSelect)[];
+  setting: typeof settings.$inferSelect;
+  story: { story_id: string; genre: string | null };
   targetPanelCount?: number;
   progressCallback?: (current: number, total: number, status: string) => void;
 }

@@ -19,15 +19,16 @@ import { SettingsDisplay } from "./SettingsDisplay";
 import { StudioAgentChat } from "@/components/studio/studio-agent-chat";
 import { ImageContentDisplay } from "./ImageContentDisplay";
 import { ContentLoadError } from "@/components/error/ContentLoadError";
-import type {
-  HNSStory,
-  HNSPart,
-  HNSChapter,
-  HNSScene,
-  HNSCharacter,
-  HNSSetting,
-  HNSDocument
-} from "@/types/hns";
+import type { stories, parts, chapters, scenes, characters, settings } from '@/../drizzle/schema';
+
+// Type aliases for backward compatibility
+type HNSStory = typeof stories.$inferSelect;
+type HNSPart = typeof parts.$inferSelect;
+type HNSChapter = typeof chapters.$inferSelect;
+type HNSScene = typeof scenes.$inferSelect;
+type HNSCharacter = typeof characters.$inferSelect;
+type HNSSetting = typeof settings.$inferSelect;
+type HNSDocument = any; // This was a legacy type, keeping as any for now
 
 // Extended Story interface to include database fields with HNS data
 interface Story {

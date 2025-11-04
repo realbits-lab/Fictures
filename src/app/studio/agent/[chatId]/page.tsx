@@ -16,7 +16,7 @@ interface PageProps {
 
 export const metadata: Metadata = {
   title: 'Studio Agent - Fictures',
-  summary: 'AI-powered story creation and editing assistant',
+  description: 'AI-powered story creation and editing assistant',
 };
 
 export default async function StudioAgentPage({ params, searchParams }: PageProps) {
@@ -36,12 +36,12 @@ export default async function StudioAgentPage({ params, searchParams }: PageProp
   if (storyId) {
     try {
       const story = await getStoryById(storyId, session.user.id);
-      if (story && story.authorId === session.user.id) {
+      if (story && (story as any).authorId === session.user.id) {
         storyContext = {
-          storyId: story.id,
-          title: story.title,
-          genre: story.genre,
-          status: story.status,
+          storyId: (story as any).id,
+          title: (story as any).title,
+          genre: (story as any).genre,
+          status: (story as any).status,
         };
       }
     } catch (error) {

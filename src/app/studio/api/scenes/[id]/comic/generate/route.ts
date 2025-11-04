@@ -4,7 +4,6 @@ import { db } from '@/lib/db';
 import { scenes, chapters, stories, characters, settings, comicPanels } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { generateComicPanels } from '@/lib/ai/comic-panel-generator';
-import type { HNSScene, HNSCharacter, HNSSetting } from '@/types/hns';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300; // 5 minutes
@@ -145,9 +144,9 @@ export async function POST(
             // Database objects now match HNS types - just cast directly
             const result = await generateComicPanels({
               sceneId: id,
-              scene: scene as unknown as HNSScene,
-              characters: storyCharacters as unknown as HNSCharacter[],
-              setting: primarySetting as unknown as HNSSetting,
+              scene: scene as any,
+              characters: storyCharacters as any,
+              setting: primarySetting as any,
               story: {
                 story_id: story.id,
                 genre: story.genre || 'drama',
@@ -223,9 +222,9 @@ export async function POST(
       // Database objects now match HNS types - just cast directly
       const result = await generateComicPanels({
         sceneId: id,
-        scene: scene as unknown as HNSScene,
-        characters: storyCharacters as unknown as HNSCharacter[],
-        setting: primarySetting as unknown as HNSSetting,
+        scene: scene as any,
+        characters: storyCharacters as any,
+        setting: primarySetting as any,
         story: {
           story_id: story.id,
           genre: story.genre || 'drama',

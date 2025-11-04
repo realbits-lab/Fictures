@@ -150,6 +150,7 @@ export async function POST(request: NextRequest) {
       id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       role: 'user' as const,
       content: message.content,
+      parts: [{ type: 'text', text: message.content }] as any,
       createdAt: new Date(),
     };
 
@@ -172,9 +173,9 @@ export async function POST(request: NextRequest) {
     const result = streamText({
       model: google('gemini-2.0-flash-exp'),
       system: systemPrompt,
-      messages: convertToCoreMessages(allMessages),
+      messages: convertToCoreMessages(allMessages) as any,
       tools: studioAgentTools, // Use all 38 tools
-      maxSteps: 10, // Allow up to 10 reasoning steps
+      maxToolRoundtrips: 10, // Allow up to 10 reasoning steps
 
       // Log tool usage for transparency
       onToolCall: async ({ toolCall }) => {
