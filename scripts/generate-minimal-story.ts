@@ -31,15 +31,18 @@
 
 import fs from 'fs';
 import path from 'path';
+import { loadProfile } from '../src/lib/utils/auth-loader';
+import { getEnvDisplayName } from '../src/lib/utils/environment';
 
 const BASE_URL = 'http://localhost:3000';
-const AUTH_FILE = '.auth/user.json';
 
-// Load writer API key
-const authData = JSON.parse(fs.readFileSync(AUTH_FILE, 'utf-8'));
-const writerApiKey = authData.profiles.writer.apiKey;
+// Load writer API key from environment-aware auth
+const writer = loadProfile('writer');
+const writerApiKey = writer.apiKey;
+const currentEnv = getEnvDisplayName();
 
 console.log('🚀 Starting story generation with API key authentication...\n');
+console.log(`🌍 Environment: ${currentEnv}`);
 console.log(`🔑 Using API key: ${writerApiKey.slice(0, 20)}...`);
 console.log('\n' + '='.repeat(60) + '\n');
 

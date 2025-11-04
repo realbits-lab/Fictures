@@ -30,9 +30,10 @@
 
 import fs from 'fs';
 import path from 'path';
+import { loadProfile } from '../src/lib/utils/auth-loader';
+import { getEnvDisplayName } from '../src/lib/utils/environment';
 
 const BASE_URL = 'http://localhost:3000';
-const AUTH_FILE = '.auth/user.json';
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -42,23 +43,25 @@ console.log('🗑️  Reset All Story Data Script');
 console.log('=' .repeat(60));
 console.log();
 
-// Load manager API key
+// Load manager API key from environment-aware auth
+let manager;
 let managerApiKey;
 try {
-  const authData = JSON.parse(fs.readFileSync(AUTH_FILE, 'utf-8'));
-  managerApiKey = authData.profiles.manager.apiKey;
+  manager = loadProfile('manager');
+  managerApiKey = manager.apiKey;
 
   if (!managerApiKey) {
-    throw new Error('Manager API key not found in .auth/user.json');
+    throw new Error('Manager API key not found');
   }
 
+  console.log(`🌍 Environment: ${getEnvDisplayName()}`);
   console.log(`🔑 Using manager API key: ${managerApiKey.slice(0, 20)}...`);
 } catch (error) {
   console.error('❌ Error loading authentication:');
   console.error(`   ${error.message}`);
   console.error();
   console.error('💡 Run this command to create authentication:');
-  console.error('   dotenv --file .env.local run node scripts/setup-auth-users.mjs');
+  console.error('   dotenv --file .env.local run pnpm exec tsx scripts/setup-auth-users.ts');
   process.exit(1);
 }
 

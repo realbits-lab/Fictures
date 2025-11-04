@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { put } from '@vercel/blob';
 import { optimizeImage, type OptimizedImageSet, ORIGINAL_IMAGE_SIZE } from './image-optimization';
 import { nanoid } from 'nanoid';
+import { getBlobPath } from '@/lib/utils/blob-path';
 
 // Placeholder images for fallback when generation fails
 const PLACEHOLDER_IMAGES = {
@@ -106,17 +107,21 @@ export async function generateStoryImage({
   // Generate unique image ID
   const imageId = nanoid();
 
-  // Construct filename based on image type
-  let filename: string;
+  // Construct filename based on image type (without environment prefix)
+  let relativePath: string;
   if (imageType === 'panel' && sceneId && panelNumber !== undefined) {
     // Comic panel path: stories/{storyId}/comics/{sceneId}/panel-{number}.png
-    filename = `stories/${storyId}/comics/${sceneId}/panel-${panelNumber}.png`;
+    relativePath = `stories/${storyId}/comics/${sceneId}/panel-${panelNumber}.png`;
   } else {
     // Standard path: stories/{storyId}/{imageType}/{imageId}.png
-    filename = `stories/${storyId}/${imageType}/${imageId}.png`;
+    relativePath = `stories/${storyId}/${imageType}/${imageId}.png`;
   }
 
+  // Add environment prefix (main/ or develop/)
+  const filename = getBlobPath(relativePath);
+
   console.log(`[Image Generation] Uploading original image to Vercel Blob...`);
+  console.log(`[Image Generation] Path: ${filename}`);
 
   // Upload original to Vercel Blob
   const blob = await put(filename, buffer, {

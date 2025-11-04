@@ -29,7 +29,7 @@ export default function CommunityPage() {
 
     // Show toast notification with action
     toast.success(`New story published: ${event.title}`, {
-      summary: event.genre ? `Genre: ${event.genre}` : undefined,
+      description: event.genre ? `Genre: ${event.genre}` : undefined,
       duration: 5000,
       action: {
         label: 'View',

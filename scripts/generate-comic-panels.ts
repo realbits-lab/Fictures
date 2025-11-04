@@ -29,8 +29,8 @@
  *   - Environment variables in .env.local
  */
 
-import fs from 'fs';
-import path from 'path';
+import { loadProfile } from '../src/lib/utils/auth-loader';
+import { getEnvDisplayName } from '../src/lib/utils/environment';
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -53,23 +53,21 @@ if (!sceneId) {
   process.exit(1);
 }
 
-// Load authentication
-const authPath = path.join(__dirname, '..', '.auth', 'user.json');
-let writerAuth;
+// Load writer authentication from environment-aware auth
+let writer;
 try {
-  const authData = JSON.parse(fs.readFileSync(authPath, 'utf-8'));
-  writerAuth = authData.profiles.writer;
-  if (!writerAuth?.apiKey) {
-    throw new Error('Writer API key not found in .auth/user.json');
+  writer = loadProfile('writer');
+  if (!writer?.apiKey) {
+    throw new Error('Writer API key not found');
   }
 } catch (error) {
   console.error('❌ Error loading authentication:', error.message);
-  console.log('\nMake sure .auth/user.json exists with writer profile and API key');
+  console.log('\nRun: dotenv --file .env.local run pnpm exec tsx scripts/setup-auth-users.ts');
   process.exit(1);
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-const API_KEY = writerAuth.apiKey;
+const API_KEY = writer.apiKey;
 
 /**
  * Fetch scene data from the database
@@ -293,6 +291,7 @@ function displayDryRunPreview(scene, existingPanels) {
 async function main() {
   console.log('🎬 Comic Panel Generation Script');
   console.log('================================\n');
+  console.log(`🌍 Environment: ${getEnvDisplayName()}`);
   console.log(`Scene ID: ${sceneId}`);
   console.log(`Mode: ${isDryRun ? 'DRY RUN' : 'EXECUTE'}`);
   if (isForce) console.log('Force: Enabled (will regenerate existing panels)');

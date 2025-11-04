@@ -113,7 +113,7 @@ export async function GET(
         narrative: panel.narrative,
         dialogue: panel.dialogue,
         sfx: panel.sfx,
-        summary: panel.description,
+        summary: panel.summary,
         metadata: panel.metadata,
       })),
       metadata: {

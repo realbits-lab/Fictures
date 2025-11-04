@@ -11,7 +11,7 @@ export const runtime = 'nodejs';
 
 const generateSchema = z.object({
   context: z.string().min(10).max(5000),
-  type: z.enum(['dialogue', 'description', 'action', 'transition', 'character_thought']),
+  type: z.enum(['dialogue', 'summary', 'action', 'transition', 'character_thought']),
   length: z.enum(['short', 'medium', 'long']).default('medium'),
   style: z.string().optional(),
   sessionId: z.string().optional(),
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     // Create type-specific prompts
     const typePrompts = {
       dialogue: 'Write natural, character-appropriate dialogue that advances the scene.',
-      description: 'Write vivid, immersive description that engages the senses.',
+      summary: 'Write vivid, immersive description that engages the senses.',
       action: 'Write dynamic action sequence that maintains tension and clarity.',
       transition: 'Write a smooth transition that connects scenes or ideas naturally.',
       character_thought: 'Write internal character thoughts that reveal motivation and emotion.',
