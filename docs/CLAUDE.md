@@ -399,18 +399,35 @@ docs/
 
 ### `/publish/` - Publishing & Scheduling
 
-**Purpose**: Story publishing and scheduling features.
+**Purpose**: Weekly scene-by-scene publishing system with automated scheduling.
 
 **Files**:
-- `publish-specification.md` - Publishing feature specifications
+- `publish-specification.md` - ⭐ What, why, and how - conceptual framework
+- `publish-development.md` - Implementation guide with code examples and phases
 
-**Features**:
-- Story publication workflow
-- Scheduled publishing
-- Draft management
-- Visibility controls
+**Key Features**:
+- **Weekly scene scheduling**: Automate scene releases on consistent weekly schedule
+- **Timeline visualization**: Beautiful calendar showing scheduled/published scenes
+- **Manual controls**: One-click publish/unpublish for individual scenes
+- **Vercel cron automation**: Daily cron job publishes scenes at scheduled times
+- **Scene-level granularity**: Publish scenes individually (not just chapters)
 
-**Status**: 📋 Specification only
+**Related**:
+- Database: `publishingSchedules`, `scheduledPublications` tables
+- API: `POST /publish/api/schedules` - Create publishing schedules
+- API: `GET /publish/api/timeline` - Get timeline events
+- API: `GET /publish/api/cron` - Vercel cron job endpoint
+- API: `POST /publish/api/scenes/[id]` - Manual publish scene
+- API: `POST /publish/api/scenes/[id]/unpublish` - Unpublish scene
+- UI: `/publish` - Publishing center
+
+**Technology**:
+- Vercel cron jobs (daily execution at 8:00 AM UTC)
+- PostgreSQL queue system
+- Weekly release schedules (Monday/Friday recommended)
+- Manual override capabilities
+
+**Status**: 📋 Specification complete, implementation pending
 
 ---
 

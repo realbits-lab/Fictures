@@ -189,7 +189,7 @@ export async function generateComicPanels(
 
     // Construct full image prompt (use 'mood' not 'atmosphere')
     const imagePrompt = buildPanelImagePrompt({
-      genre: story.genre,
+      genre: story.genre || 'general',
       shotType: panelSpec.shot_type,
       cameraAngle: panelSpec.camera_angle,
       settingFocus: panelSpec.setting_focus,
@@ -197,7 +197,7 @@ export async function generateComicPanels(
       characterPrompts,
       keyTraits,
       lighting: panelSpec.lighting,
-      summary: panelSpec.description,
+      summary: panelSpec.summary,
       mood: panelSpec.mood,
     });
 
@@ -243,6 +243,10 @@ export async function generateComicPanels(
       }
     }
 
+    if (!imageResult) {
+      throw new Error('Failed to generate image after all attempts');
+    }
+
     console.log(`   ✅ Image generated: ${imageResult.url}`);
     console.log(`   ✅ Variants: ${imageResult.optimizedSet?.variants.length || 0}`);
 
@@ -258,7 +262,7 @@ export async function generateComicPanels(
       narrative: panelSpec.narrative || null,
       dialogue: panelSpec.dialogue as any,
       sfx: panelSpec.sfx as any,
-      summary: panelSpec.description,
+      summary: panelSpec.summary,
       metadata: {
         prompt: imagePrompt,
         characters_visible: panelSpec.characters_visible,
@@ -310,14 +314,14 @@ export async function generateComicPanels(
 
   // Update scene metadata with comics generation info and toonplay
   console.log(`\n📝 Updating scene metadata for ${sceneId}...`);
-  await db.update(scenes)
+  await db.update(scenesTable)
     .set({
       comicStatus: 'draft',
       comicToonplay: toonplay as any, // Store the generated toonplay specification
       comicGeneratedAt: new Date(),
       comicPanelCount: generatedPanels.length,
     })
-    .where(eq(scenes.id, sceneId));
+    .where(eq(scenesTable.id, sceneId));
   console.log(`✅ Scene metadata updated successfully (including toonplay)`);
 
   return {
@@ -366,7 +370,7 @@ function buildPanelImagePrompt(options: BuildPanelImagePromptOptions): string {
     characterPrompts,
     keyTraits,
     lighting,
-    description,
+    summary,
     mood,
   } = options;
 
@@ -378,7 +382,7 @@ CHARACTERS: ${characterPrompts}
 
 LIGHTING: ${lighting}
 
-ACTION: ${description}
+ACTION: ${summary}
 
 MOOD: ${mood}
 

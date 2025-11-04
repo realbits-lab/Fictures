@@ -248,8 +248,8 @@ export function StudioAgentChat({
               </div>
             </div>
           ) : (
-            messages.map((message) => (
-              <AgentMessage key={message.id} message={message as any} />
+            messages.map((message: any) => (
+              <AgentMessage key={message.id} message={message} />
             ))
           )}
         </div>

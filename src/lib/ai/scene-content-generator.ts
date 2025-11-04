@@ -44,6 +44,7 @@ interface CharacterInput {
   character_id?: string;
   name: string;
   role?: string;
+  summary?: string;
 }
 
 interface SettingInput {

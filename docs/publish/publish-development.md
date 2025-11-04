@@ -40,7 +40,7 @@ Complete implementation guide for the weekly scene-by-scene publishing system wi
 │           │                                                           │
 │           ▼                                                           │
 │  ┌──────────────────────────────────────────────┐                   │
-│  │  POST /api/publish/schedules                  │                   │
+│  │  POST /publish/api/schedules                  │                   │
 │  │  - Validate input                             │                   │
 │  │  - Create publishingSchedules record          │                   │
 │  │  - Generate scheduledPublications queue       │                   │
@@ -65,7 +65,7 @@ Complete implementation guide for the weekly scene-by-scene publishing system wi
 │                                   │                                  │
 │                                   ▼                                  │
 │                     ┌──────────────────────────────┐                │
-│                     │  GET /api/publish/cron       │                │
+│                     │  GET /publish/api/cron       │                │
 │                     │  - Query pending publications │                │
 │                     │  - Check if due now          │                │
 │                     │  - Publish scenes            │                │
@@ -75,7 +75,7 @@ Complete implementation guide for the weekly scene-by-scene publishing system wi
 │                                │                                     │
 │                                ▼                                     │
 │                     ┌──────────────────────────────┐                │
-│                     │  POST /api/scenes/[id]/publish│                │
+│                     │  POST /publish/api/scenes/[id]│                │
 │                     │  - Update scene.publishedAt  │                │
 │                     │  - Set scene.visibility       │                │
 │                     │  - Log publishing history    │                │
@@ -194,7 +194,7 @@ dotenv --file .env.local run pnpm db:migrate
 {
   "crons": [
     {
-      "path": "/api/publish/cron",
+      "path": "/publish/api/cron",
       "schedule": "0 8 * * *"
     }
   ]
@@ -208,7 +208,7 @@ dotenv --file .env.local run pnpm db:migrate
 
 ### Cron Job Endpoint
 
-**File**: `src/app/api/publish/cron/route.ts`
+**File**: `src/app/publish/api/cron/route.ts`
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
@@ -363,9 +363,9 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 ### 1. Create Publishing Schedule
 
-**Endpoint**: `POST /api/publish/schedules`
+**Endpoint**: `POST /publish/api/schedules`
 
-**File**: `src/app/api/publish/schedules/route.ts`
+**File**: `src/app/publish/api/schedules/route.ts`
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
@@ -562,9 +562,9 @@ async function generatePublicationQueue(
 
 ### 2. Get Timeline Events
 
-**Endpoint**: `GET /api/publish/timeline`
+**Endpoint**: `GET /publish/api/timeline`
 
-**File**: `src/app/api/publish/timeline/route.ts`
+**File**: `src/app/publish/api/timeline/route.ts`
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
@@ -646,9 +646,9 @@ export async function GET(request: NextRequest) {
 
 ### 3. Manual Scene Publishing
 
-**Endpoint**: `POST /api/publish/scenes/[sceneId]`
+**Endpoint**: `POST /publish/api/scenes/[sceneId]`
 
-**File**: `src/app/api/publish/scenes/[sceneId]/route.ts`
+**File**: `src/app/publish/api/scenes/[sceneId]/route.ts`
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
@@ -699,9 +699,9 @@ export async function POST(
 }
 ```
 
-**Endpoint**: `POST /api/publish/scenes/[sceneId]/unpublish`
+**Endpoint**: `POST /publish/api/scenes/[sceneId]/unpublish`
 
-**File**: `src/app/api/publish/scenes/[sceneId]/unpublish/route.ts`
+**File**: `src/app/publish/api/scenes/[sceneId]/unpublish/route.ts`
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
@@ -869,7 +869,7 @@ export function ScheduleBuilder({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/publish/schedules', {
+      const response = await fetch('/publish/api/schedules', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1026,12 +1026,12 @@ See existing `src/components/publish/PublishTimeline.tsx` - enhance with:
 dotenv --file .env.local run pnpm db:migrate
 
 # Test schedule creation
-curl -X POST http://localhost:3000/api/publish/schedules \
+curl -X POST http://localhost:3000/publish/api/schedules \
   -H "Content-Type: application/json" \
   -d '{"storyId":"...", "name":"Test", "dayOfWeek":1, "publishTime":"09:00", "startDate":"2025-11-11"}'
 
 # Test timeline
-curl http://localhost:3000/api/publish/timeline
+curl http://localhost:3000/publish/api/timeline
 ```
 
 ### Phase 2: Vercel Cron Job (Week 2)
@@ -1052,7 +1052,7 @@ curl http://localhost:3000/api/publish/timeline
 **Testing:**
 ```bash
 # Test cron endpoint locally
-curl -X GET http://localhost:3000/api/publish/cron \
+curl -X GET http://localhost:3000/publish/api/cron \
   -H "Authorization: Bearer YOUR_CRON_SECRET"
 
 # Monitor Vercel deployment logs

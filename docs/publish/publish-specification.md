@@ -222,7 +222,7 @@ Schedule:
 - Database stores `publishingSchedules` (schedule metadata) and `scheduledPublications` (scene queue)
 - Vercel cron job (`vercel.json`) runs daily at 8:00 AM UTC
 - Cron job queries `scheduledPublications` for scenes due today
-- Publishes scenes via existing `/api/scenes/[id]/publish` endpoint
+- Publishes scenes via `/publish/api/scenes/[id]` endpoint
 
 ### 2. Timeline Visualization
 
