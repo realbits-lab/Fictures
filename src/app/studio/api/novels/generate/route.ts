@@ -409,7 +409,7 @@ export async function POST(request: NextRequest) {
               };
             });
 
-            await db.insert(scenes).values(sceneRecords);
+            await db.insert(scenes).values(sceneRecords as any);
 
             console.log('[Novel Generation] ✅ All entities created with FK relationships');
           }
