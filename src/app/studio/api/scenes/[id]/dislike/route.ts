@@ -64,7 +64,12 @@ export async function POST(
       // Remove dislike
       await db
         .delete(sceneDislikes)
-        .where(eq(sceneDislikes.id, existingDislike.id));
+        .where(
+          and(
+            eq(sceneDislikes.sceneId, sceneId),
+            eq(sceneDislikes.userId, session.user.id)
+          )
+        );
 
       // Get updated counts
       const [likeCount] = await db
@@ -88,14 +93,18 @@ export async function POST(
       if (existingLike) {
         await db
           .delete(sceneLikes)
-          .where(eq(sceneLikes.id, existingLike.id));
+          .where(
+            and(
+              eq(sceneLikes.sceneId, sceneId),
+              eq(sceneLikes.userId, session.user.id)
+            )
+          );
       }
 
       // Add dislike
       await db
         .insert(sceneDislikes)
         .values({
-          id: nanoid(),
           sceneId,
           userId: session.user.id,
           createdAt: new Date(),

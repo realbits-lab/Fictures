@@ -101,47 +101,47 @@ export async function POST(request: NextRequest) {
 
     // Delete AI interactions first (no foreign key dependencies)
     await db.delete(aiInteractions);
-    deletionReport.database.aiInteractions = interactionsCount[0]?.count || 0;
+    deletionReport.database.aiInteractions = Number(interactionsCount[0]?.count) || 0;
     console.log(`   ✓ Deleted ${deletionReport.database.aiInteractions} AI interactions`);
 
     // Delete scene views (depends on scenes)
     await db.delete(sceneViews);
-    deletionReport.database.sceneViews = sceneViewsCount[0]?.count || 0;
+    deletionReport.database.sceneViews = Number(sceneViewsCount[0]?.count) || 0;
     console.log(`   ✓ Deleted ${deletionReport.database.sceneViews} scene views`);
 
     // Delete comic panels (depends on scenes)
     await db.delete(comicPanels);
-    deletionReport.database.comicPanels = comicPanelsCount[0]?.count || 0;
+    deletionReport.database.comicPanels = Number(comicPanelsCount[0]?.count) || 0;
     console.log(`   ✓ Deleted ${deletionReport.database.comicPanels} comic panels`);
 
     // Delete scenes (depends on chapters)
     await db.delete(scenes);
-    deletionReport.database.scenes = scenesCount[0]?.count || 0;
+    deletionReport.database.scenes = Number(scenesCount[0]?.count) || 0;
     console.log(`   ✓ Deleted ${deletionReport.database.scenes} scenes`);
 
     // Delete chapters (depends on parts)
     await db.delete(chapters);
-    deletionReport.database.chapters = chaptersCount[0]?.count || 0;
+    deletionReport.database.chapters = Number(chaptersCount[0]?.count) || 0;
     console.log(`   ✓ Deleted ${deletionReport.database.chapters} chapters`);
 
     // Delete parts (depends on stories)
     await db.delete(parts);
-    deletionReport.database.parts = partsCount[0]?.count || 0;
+    deletionReport.database.parts = Number(partsCount[0]?.count) || 0;
     console.log(`   ✓ Deleted ${deletionReport.database.parts} parts`);
 
     // Delete characters (depends on stories)
     await db.delete(characters);
-    deletionReport.database.characters = charactersCount[0]?.count || 0;
+    deletionReport.database.characters = Number(charactersCount[0]?.count) || 0;
     console.log(`   ✓ Deleted ${deletionReport.database.characters} characters`);
 
     // Delete settings (depends on stories)
     await db.delete(settings);
-    deletionReport.database.settings = settingsCount[0]?.count || 0;
+    deletionReport.database.settings = Number(settingsCount[0]?.count) || 0;
     console.log(`   ✓ Deleted ${deletionReport.database.settings} settings`);
 
     // Delete stories (parent table)
     await db.delete(stories);
-    deletionReport.database.stories = storiesCount[0]?.count || 0;
+    deletionReport.database.stories = Number(storiesCount[0]?.count) || 0;
     console.log(`   ✓ Deleted ${deletionReport.database.stories} stories`);
 
     console.log('\n✅ [RESET ALL] Database cleanup complete\n');
