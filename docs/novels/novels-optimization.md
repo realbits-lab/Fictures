@@ -43,7 +43,7 @@ User clicks story card
     ↓
 3. UnifiedWritingEditor Component
     - Receives story structure as props
-    - Parses HNS data
+    - Parses story data
     - Sets up state
     ↓
 4. SceneDisplay Component (when scene selected)

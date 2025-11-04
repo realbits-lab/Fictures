@@ -118,12 +118,12 @@ export const comicPanels = pgTable('comic_panels', {
 });
 ```
 
-**Important**: Database uses different column names than HNS interface:
-- Scenes: `title` (DB) → `scene_title` (HNS), `order_index` (DB) → `scene_number` (HNS)
-- Chapters: `title` (DB) → `chapter_title` (HNS), `order_index` (DB) → `chapter_number` (HNS)
+**Important**: Database uses different column names than the API interface:
+- Scenes: `title` (DB) → `scene_title` (API), `order_index` (DB) → `scene_number` (API)
+- Chapters: `title` (DB) → `chapter_title` (API), `order_index` (DB) → `chapter_number` (API)
 - Parts: `title` (DB), `order_index` (DB)
 
-**Field Mapping**: The API layer maps database columns to HNS interface fields automatically.
+**Field Mapping**: The API layer maps database columns to interface fields automatically.
 
 **Relations:**
 - `scenes` → `comicPanels` (one-to-many)

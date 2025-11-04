@@ -504,10 +504,10 @@ dotenv --file .env.local run node scripts/generate-minimal-story.mjs
 - 🗑️ **Removal**: `docs/novels/novels-removal.md` - Deletion workflows
 - 🛠️ **Script**: `scripts/generate-minimal-story.mjs` - Production script for minimal story generation
 
-**Related System:**
-- The existing "Story Generation" system (HNS methodology with `/api/stories/generate-hns`) is separate from the Novels system
-- Novels use Adversity-Triumph Engine, Stories use HNS (Hook-Nurture-Satisfy)
-- Both systems share image generation and optimization infrastructure
+**Generation System:**
+- The platform uses the Adversity-Triumph Engine methodology for novel generation
+- All story generation uses the unified `/studio/api/generation/*` system
+- Image generation and optimization infrastructure is shared across all features
 
 ## Code Guidelines
 
@@ -655,7 +655,7 @@ Every scene generated is automatically:
 - **[CLAUDE.md](CLAUDE.md)** - This file - Project overview and guidelines
 
 **Core Feature Specifications:**
-- **[docs/story-specification.md](docs/story-specification.md)** - Story structure and HNS methodology
+- **[docs/story-specification.md](docs/story-specification.md)** - Story structure and methodology
 - **[docs/novels-specification.md](docs/novels-specification.md)** - Reading UX, mobile nav, comments, likes
 - **[docs/community-specification.md](docs/community-specification.md)** - Community features and sharing
 

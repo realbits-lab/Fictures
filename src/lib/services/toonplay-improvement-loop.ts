@@ -14,6 +14,11 @@
 import { generateObject } from 'ai';
 import { gateway } from '@ai-sdk/gateway';
 import type { scenes, characters, settings } from '@/../drizzle/schema';
+
+// Type aliases
+type StoryScene = typeof scenes.$inferSelect;
+type StoryCharacter = typeof characters.$inferSelect;
+type StorySetting = typeof settings.$inferSelect;
 import {
   convertSceneToToonplay,
   type ComicToonplay,
@@ -231,9 +236,9 @@ export async function generateToonplayWithEvaluation(
 interface ImproveToonplayOptions {
   currentToonplay: ComicToonplay;
   evaluation: ToonplayEvaluationResult;
-  scene: HNSScene;
-  characters: HNSCharacter[];
-  setting: HNSSetting;
+  scene: StoryScene;
+  characters: StoryCharacter[];
+  setting: StorySetting;
   storyGenre: string;
   targetPanelCount: number;
 }

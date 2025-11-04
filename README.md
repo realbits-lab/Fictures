@@ -31,7 +31,7 @@ Fictures is a full-stack web application built with Next.js 15 that provides a c
 
 - **Hierarchical Story Structure**: Organize your story into Parts → Chapters → Scenes
 - **AI-Powered Writing Assistant**:
-  - Story generation with HNS (Hierarchical Narrative Schema) framework support
+  - Story generation with Adversity-Triumph Engine methodology
   - Scene content generation (dialogue, description, action)
   - Character development suggestions
   - Story analysis and improvement recommendations

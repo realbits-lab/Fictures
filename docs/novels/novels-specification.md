@@ -854,24 +854,19 @@ From "The Last Garden" test story:
 
 ---
 
-## Part VI: Comparison to Current HNS System
+## Part VI: Adversity-Triumph Engine
 
-### Current HNS (Hero's Noble Struggle)
-- Focus: Story metadata (premise, dramatic question, theme)
-- Structure: Hierarchical but not cycle-based
-- Emotional design: Implicit, not engineered
-- Quality control: Scene evaluation after generation
-
-### New Adversity-Triumph System
+### System Overview
 - Focus: Emotional engineering at every level
 - Structure: Hierarchical AND cycle-based (fractal design)
 - Emotional design: Explicit targeting of empathy/elevation/catharsis/Gam-dong
 - Quality control: Cycle validation + scene evaluation + iterative improvement
 
-### Migration Strategy
-- **Keep**: Existing scene evaluation, image generation, publishing flow
-- **Replace**: Theme/part/chapter generation with new APIs
-- **Enhance**: Scene generation with cycle-aware prompts
+### Core Components
+- **Scene Evaluation**: Quality assessment using "Architectonics of Engagement"
+- **Image Generation**: Gemini 2.5 Flash for visual storytelling
+- **Publishing Flow**: Automated scene-by-scene scheduling
+- **Generation Pipeline**: 9-phase system with iterative improvement
 - **Add**: Seed tracking, causal linking validation, emotional metrics
 
 ---

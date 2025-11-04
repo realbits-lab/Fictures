@@ -134,7 +134,7 @@ docs/
 ├── auth/                              # Authentication system
 ├── comics/                            # Comics generation & display
 ├── community/                         # Community features
-├── event-update/                      # Real-time updates
+├── notification/                      # User notification system
 ├── image/                             # Image generation & optimization
 ├── mobile/                            # Mobile UX improvements
 ├── novels/                            # Novel generation (Adversity-Triumph Engine)
@@ -256,18 +256,38 @@ docs/
 
 ---
 
-### `/event-update/` - Real-Time Updates
+### `/notification/` - User Notification System
 
-**Purpose**: Real-time story updates using Server-Sent Events (SSE).
+**Purpose**: Multi-channel notification system for real-time updates and persistent notifications.
 
 **Files**:
-- `real-time-story-updates.md` - Real-time update implementation
-- `real-time-implementation-summary.md` - Implementation summary
-- `real-time-comparison.md` - Comparison of real-time technologies
+- `notification-specification.md` - ⭐ Complete notification system specification
+- `notification-development.md` - Implementation guide with code examples
+- `real-time-story-updates.md` - SSE implementation details
+- `real-time-implementation-summary.md` - SSE completion report
+- `real-time-comparison.md` - Technology comparison (SSE vs WebSocket vs Polling)
 
-**Technology**: Server-Sent Events (SSE) for streaming updates
+**Key Features**:
+- **Real-Time Events**: Server-Sent Events (SSE) with Redis Pub/Sub (`<100ms` latency)
+- **Notification Types**: Story events, social events, community events, system events
+- **Multi-Channel**: In-app real-time, notification center (planned), push (planned), email (planned)
+- **User Preferences**: Granular control over notification types and channels
+- **Rate Limiting**: Anti-spam protection and notification grouping
 
-**Status**: ✅ Implemented
+**Technology Stack**:
+- Server-Sent Events (SSE) via native Web API
+- Redis Pub/Sub (ioredis)
+- PostgreSQL for persistent notifications
+- Web Push API (planned)
+- Email notifications (planned)
+
+**Related**:
+- `src/lib/redis/client.ts` - Redis infrastructure
+- `src/app/api/community/events/route.ts` - SSE endpoint
+- `src/lib/hooks/use-community-events.ts` - React SSE client hook
+- `src/lib/services/notification-service.ts` - Notification service (planned)
+
+**Status**: 🚧 Partial (Real-time SSE implemented, persistent notifications planned)
 
 ---
 

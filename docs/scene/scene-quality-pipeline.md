@@ -508,7 +508,7 @@ curl -X POST http://localhost:3000/api/evaluation/scene \
 - **Scene Evaluation API**: `docs/scene-evaluation-api.md`
 - **Image Optimization**: `docs/image-optimization.md`
 - **Story Generation**: `docs/story-generator-skill.md`
-- **HNS Methodology**: `docs/story-specification.md`
+- **Story Methodology**: `docs/story-specification.md`
 
 ## Summary
 

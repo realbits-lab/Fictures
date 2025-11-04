@@ -330,7 +330,7 @@ These endpoints provide AI-powered analysis and modification of story elements u
 - **Function**: Get published stories
 - **Response**: Array of published stories with metadata
 
-**Note**: Legacy endpoints `/stories/generate` and `/stories/generate-stream` have been removed. The platform now uses the `/studio/api/generation/*` system with the Adversity-Triumph Engine methodology instead of the old HNS generation system.
+**Note**: The platform uses the unified `/studio/api/generation/*` system with the Adversity-Triumph Engine methodology for all story generation.
 
 ---
 

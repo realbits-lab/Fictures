@@ -15,22 +15,21 @@ import { ContentLoadError } from "@/components/error/ContentLoadError";
 import type { stories, parts, chapters, scenes, characters, settings } from '@/../drizzle/schema';
 
 // Type aliases for backward compatibility
-type HNSStory = typeof stories.$inferSelect;
-type HNSPart = typeof parts.$inferSelect;
-type HNSChapter = typeof chapters.$inferSelect;
-type HNSScene = typeof scenes.$inferSelect;
-type HNSCharacter = typeof characters.$inferSelect;
-type HNSSetting = typeof settings.$inferSelect;
-type HNSDocument = any; // This was a legacy type, keeping as any for now
+type StoryPart = typeof parts.$inferSelect;
+type StoryChapter = typeof chapters.$inferSelect;
+type StoryScene = typeof scenes.$inferSelect;
+type StoryCharacter = typeof characters.$inferSelect;
+type StorySetting = typeof settings.$inferSelect;
+type StoryDocument = any; // This was a legacy type, keeping as any for now
 
-// Extended Story interface to include database fields with HNS data
+// Extended Story interface to include database fields
 interface Story {
   id: string;
   title: string;
   genre: string;
   status: string;
   isPublic?: boolean;
-  hnsData?: HNSDocument | Record<string, unknown>;
+  hnsData?: StoryDocument | Record<string, unknown>;
   // Database structure fields for compatibility
   parts: Array<{
     id: string;
@@ -246,7 +245,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   }, [currentSelection, writingProgress]);
 
   // Parse actual story data from database, fallback to default structure if not available
-  const parseStoryData = (): HNSDocument => {
+  const parseStoryData = (): StoryDocument => {
     let parsedData: any = null;
 
     // Use hnsData from the story
@@ -265,12 +264,12 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       }
     }
 
-    // Check if parsed data is already HNSDocument format
+    // Check if parsed data is already StoryDocument format
     if (parsedData && parsedData.story && parsedData.parts && parsedData.chapters) {
-      return parsedData as HNSDocument;
+      return parsedData as StoryDocument;
     }
 
-    // Convert legacy format to HNSDocument
+    // Convert legacy format to StoryDocument
     const hnsStory: any = {
       id: story.id,
       title: story.title || parsedData?.title || "Generated Story",
@@ -283,7 +282,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       parts: parsedData?.parts?.map((p: any) => `part_${p.part || p.id}`) || []
     };
 
-    // Convert parts to HNSPart format
+    // Convert parts to StoryPart format
     const hnsParts: any[] = story.parts.map((part, index) => ({
       part_id: part.id,
       part_title: part.title,
@@ -295,7 +294,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       scene_counts: part.chapters.map(ch => ch.scenes?.length || 0)
     }));
 
-    // Convert chapters to HNSChapter format
+    // Convert chapters to StoryChapter format
     const hnsChapters: any[] = [];
     story.parts.forEach((part, partIndex) => {
       part.chapters.forEach((chapter, chapterIndex) => {
@@ -317,7 +316,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
       });
     });
 
-    // Convert scenes to HNSScene format
+    // Convert scenes to StoryScene format
     const hnsScenes: any[] = [];
     story.parts.forEach((part) => {
       part.chapters.forEach((chapter) => {
@@ -346,8 +345,8 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
     });
 
     // Create empty arrays for characters and settings if not available
-    const hnsCharacters: HNSCharacter[] = parsedData?.characters || [];
-    const hnsSettings: HNSSetting[] = parsedData?.settings || [];
+    const hnsCharacters: StoryCharacter[] = parsedData?.characters || [];
+    const hnsSettings: StorySetting[] = parsedData?.settings || [];
 
     return {
       story: hnsStory,
@@ -360,7 +359,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
   };
 
   // Real story data from database in HNS format
-  const [sampleStoryData, setSampleStoryData] = useState<HNSDocument>(parseStoryData());
+  const [sampleStoryData, setSampleStoryData] = useState<StoryDocument>(parseStoryData());
 
   // Update story data when story prop changes (for real-time updates)
   useEffect(() => {
