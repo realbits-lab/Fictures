@@ -1,10 +1,10 @@
-# Scene View Analytics System
+# Scene View Analysis System
 
 **Complete implementation of per-scene view tracking with novel/comic format breakdown**
 
 ## Overview
 
-This system displays scene-level view statistics in both Community and Analytics pages, with separate tracking for novel (text) and comic (panel) viewing formats.
+This system displays scene-level view statistics in both Community and Analysis pages, with separate tracking for novel (text) and comic (panel) viewing formats.
 
 ### Important Implementation Notes
 
@@ -44,7 +44,7 @@ This system displays scene-level view statistics in both Community and Analytics
 │           ↓                              │
 │  UI Components                           │
 │  ├── Community: Top 5 scenes showcase   │
-│  └── Analytics: Full performance table  │
+│  └── Analysis: Full performance table   │
 │                                          │
 └─────────────────────────────────────────┘
 ```
@@ -201,10 +201,10 @@ Growth/decline indicators with color coding:
 
 **Integration**: Added to `/community/story/[storyId]` page after story header
 
-### 3. Analytics Page Components
+### 3. Analysis Page Components
 
 #### `ScenePerformanceTable`
-**Location**: `src/components/analytics/ScenePerformanceTable.tsx`
+**Location**: `src/components/analysis/ScenePerformanceTable.tsx`
 
 **Features**:
 - Sortable columns (Total, Novel, Comic, Recent)
@@ -218,7 +218,7 @@ Growth/decline indicators with color coding:
 ```
 
 #### `FormatDistributionCard`
-**Location**: `src/components/analytics/FormatDistributionCard.tsx`
+**Location**: `src/components/analysis/FormatDistributionCard.tsx`
 
 **Features**:
 - Novel vs Comic percentage breakdown
@@ -231,7 +231,7 @@ Growth/decline indicators with color coding:
 <FormatDistributionCard storyId="story_123" />
 ```
 
-**Integration**: Added to `/analytics` page in new "Scene Performance" section
+**Integration**: Added to `/analysis` page in new "Scene Performance" section
 
 ## Display Locations
 
@@ -257,18 +257,18 @@ Growth/decline indicators with color coding:
 │ │ 3 │ Ch5, Scene 4                  │  │
 │ │   │ 👁️ 750  📖 600 🎨 150        │  │
 │ └───┴───────────────────────────────┘  │
-│ [View detailed analytics →]             │
+│ [View detailed analysis →]             │
 │                                         │
 │ 💬 Community Discussions                │
 │ ...                                     │
 └─────────────────────────────────────────┘
 ```
 
-### Analytics Page (`/analytics`)
+### Analysis Page (`/analysis`)
 
 ```
 ┌────────────────────────────────────────────────────┐
-│ 📊 Analytics Dashboard                              │
+│ 📊 Analysis Dashboard                               │
 │                                                     │
 │ [Existing metrics cards...]                         │
 │                                                     │
@@ -308,7 +308,7 @@ Growth/decline indicators with color coding:
 
 4. **UI displays** via SWR caching
    - Community: Top 5 scenes cached for 1 minute
-   - Analytics: Full table cached for 5 minutes
+   - Analysis: Full table cached for 5 minutes
 
 ## Performance Optimizations
 
@@ -352,12 +352,12 @@ function CommunityStoryPage({ storyId, isOwner }) {
 }
 ```
 
-### Analytics Page Integration
+### Analysis Page Integration
 ```tsx
-import { ScenePerformanceTable } from '@/components/analytics/ScenePerformanceTable';
-import { FormatDistributionCard } from '@/components/analytics/FormatDistributionCard';
+import { ScenePerformanceTable } from '@/components/analysis/ScenePerformanceTable';
+import { FormatDistributionCard } from '@/components/analysis/FormatDistributionCard';
 
-function AnalyticsDashboard({ storyId }) {
+function AnalysisDashboard({ storyId }) {
   return (
     <div>
       {/* Existing analytics */}
@@ -384,11 +384,11 @@ function AnalyticsDashboard({ storyId }) {
 - [ ] Displays top 5 scenes correctly
 - [ ] Shows novel/comic split accurately
 - [ ] Ranked badges display properly (gold/silver/bronze)
-- [ ] "View detailed analytics" link appears for owner
+- [ ] "View detailed analysis" link appears for owner
 - [ ] Skeleton loader shows during fetch
 - [ ] Empty state displays when no data
 
-**Analytics Page**:
+**Analysis Page**:
 - [ ] Table displays all scenes
 - [ ] Sorting works for all columns (Total, Novel, Comic)
 - [ ] Format distribution bars show correct percentages
@@ -448,7 +448,7 @@ Potential additions for future iterations:
 
 ✅ **Complete Implementation** - All features working as designed
 ✅ **Performance Optimized** - Fast queries with proper indexing
-✅ **User-Friendly** - Intuitive display on both Community and Analytics pages
+✅ **User-Friendly** - Intuitive display on both Community and Analysis pages
 ✅ **Format Tracking** - Separate novel/comic view metrics
 ✅ **Scalable** - Pagination and caching for large datasets
 ✅ **Reusable Components** - Modular UI components for future use

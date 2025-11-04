@@ -111,7 +111,7 @@ export function ComicReaderClient({ storyId, initialData }: ComicReaderClientPro
           </h2>
 
           <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed text-lg">
-            We're having trouble loading this story. Don't worry, it's still here!
+            We&apos;re having trouble loading this story. Don&apos;t worry, it&apos;s still here!
             Try refreshing the page or come back in a few moments.
           </p>
 
@@ -294,9 +294,9 @@ export function ComicReaderClient({ storyId, initialData }: ComicReaderClientPro
             <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               {story.title}
             </h1>
-            {story.description && (
+            {story.summary && (
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                {story.description}
+                {story.summary}
               </p>
             )}
             <div className="flex flex-wrap gap-2 text-xs">

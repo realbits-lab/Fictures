@@ -62,7 +62,6 @@ export async function POST(
       });
     } else {
       await db.insert(postLikes).values({
-        id: nanoid(),
         postId,
         userId: session.user.id,
       });

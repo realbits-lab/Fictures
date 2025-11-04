@@ -11,7 +11,7 @@ import { ProgressIndicator } from './ProgressIndicator';
 import { CommentSection } from './CommentSection';
 import { SceneImage } from '@/components/optimized-image';
 import type { Chapter } from '@/hooks/useStoryReader';
-import { trackReading } from '@/lib/analytics/google-analytics';
+import { trackReading } from '@/lib/analysis/google-analytics';
 
 interface ChapterReaderClientProps {
   storyId: string;
@@ -789,9 +789,9 @@ export function ChapterReaderClient({ storyId, initialData }: ChapterReaderClien
             <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               {story.title}
             </h1>
-            {story.description && (
+            {story.summary && (
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                {story.description}
+                {story.summary}
               </p>
             )}
             <div className="flex flex-wrap gap-2 text-xs">

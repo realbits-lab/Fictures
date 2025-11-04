@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition } from 'react';
 import { cn } from '@/lib/utils/cn';
-import { trackReading, trackCommunity } from '@/lib/analytics/google-analytics';
+import { trackReading, trackCommunity } from '@/lib/analysis/google-analytics';
 
 interface LikeButtonProps {
   entityId: string;

@@ -154,7 +154,7 @@ export async function GET() {
     JSON.stringify({
       message: 'Chapters Generation API',
       usage: 'POST with { "partId": "part-id", "chapterCount": 5 }',
-      description: 'Generate detailed chapter specifications for a story part',
+      summary: 'Generate detailed chapter specifications for a story part',
       example: {
         partId: "part_abc123",
         chapterCount: 5

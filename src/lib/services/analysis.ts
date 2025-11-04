@@ -3,7 +3,7 @@ import {
   stories,
   chapters,
   scenes,
-  analyticsEvents,
+  analysisEvents,
   readingSessions,
   sceneEvaluations,
   communityPosts,
@@ -95,16 +95,16 @@ export async function getStoryAnalysis(
 
   const [readerStats] = await db
     .select({
-      uniqueReaders: sql<number>`COUNT(DISTINCT ${analyticsEvents.userId})`,
-      totalViews: count(analyticsEvents.id),
+      uniqueReaders: sql<number>`COUNT(DISTINCT ${analysisEvents.userId})`,
+      totalViews: count(analysisEvents.id),
     })
-    .from(analyticsEvents)
+    .from(analysisEvents)
     .where(
       and(
-        inArray(analyticsEvents.storyId, storyIds),
-        eq(analyticsEvents.eventType, 'story_view'),
-        gte(analyticsEvents.timestamp, start),
-        lte(analyticsEvents.timestamp, end)
+        inArray(analysisEvents.storyId, storyIds),
+        eq(analysisEvents.eventType, 'story_view'),
+        gte(analysisEvents.timestamp, start),
+        lte(analysisEvents.timestamp, end)
       )
     );
 
@@ -117,15 +117,15 @@ export async function getStoryAnalysis(
 
   const [previousReaderStats] = await db
     .select({
-      uniqueReaders: sql<number>`COUNT(DISTINCT ${analyticsEvents.userId})`,
+      uniqueReaders: sql<number>`COUNT(DISTINCT ${analysisEvents.userId})`,
     })
-    .from(analyticsEvents)
+    .from(analysisEvents)
     .where(
       and(
-        inArray(analyticsEvents.storyId, storyIds),
-        eq(analyticsEvents.eventType, 'story_view'),
-        gte(analyticsEvents.timestamp, previousPeriod.start),
-        lte(analyticsEvents.timestamp, previousPeriod.end)
+        inArray(analysisEvents.storyId, storyIds),
+        eq(analysisEvents.eventType, 'story_view'),
+        gte(analysisEvents.timestamp, previousPeriod.start),
+        lte(analysisEvents.timestamp, previousPeriod.end)
       )
     );
 
@@ -201,19 +201,19 @@ async function getStoryPerformanceData(
 
   const viewCounts = await db
     .select({
-      storyId: analyticsEvents.storyId,
-      views: count(analyticsEvents.id),
+      storyId: analysisEvents.storyId,
+      views: count(analysisEvents.id),
     })
-    .from(analyticsEvents)
+    .from(analysisEvents)
     .where(
       and(
-        inArray(analyticsEvents.storyId, storyIds),
-        eq(analyticsEvents.eventType, 'story_view'),
-        gte(analyticsEvents.timestamp, start),
-        lte(analyticsEvents.timestamp, end)
+        inArray(analysisEvents.storyId, storyIds),
+        eq(analysisEvents.eventType, 'story_view'),
+        gte(analysisEvents.timestamp, start),
+        lte(analysisEvents.timestamp, end)
       )
     )
-    .groupBy(analyticsEvents.storyId);
+    .groupBy(analysisEvents.storyId);
 
   const commentCounts = await db
     .select({
@@ -245,15 +245,15 @@ async function getStoryPerformanceData(
 
       const [previousViews] = await db
         .select({
-          views: count(analyticsEvents.id),
+          views: count(analysisEvents.id),
         })
-        .from(analyticsEvents)
+        .from(analysisEvents)
         .where(
           and(
-            eq(analyticsEvents.storyId, story.id),
-            eq(analyticsEvents.eventType, 'story_view'),
-            gte(analyticsEvents.timestamp, previousStart),
-            lte(analyticsEvents.timestamp, start)
+            eq(analysisEvents.storyId, story.id),
+            eq(analysisEvents.eventType, 'story_view'),
+            gte(analysisEvents.timestamp, previousStart),
+            lte(analysisEvents.timestamp, start)
           )
         );
 
@@ -284,21 +284,21 @@ async function getTrendData(
 ): Promise<TrendData[]> {
   const dailyData = await db
     .select({
-      date: sql<string>`DATE(${analyticsEvents.timestamp})`,
-      views: count(sql`DISTINCT CASE WHEN ${analyticsEvents.eventType} = 'story_view' THEN ${analyticsEvents.id} END`),
-      engagements: count(sql`CASE WHEN ${analyticsEvents.eventType} IN ('comment_created', 'story_liked', 'share') THEN ${analyticsEvents.id} END`),
-      newReaders: count(sql`DISTINCT ${analyticsEvents.userId}`),
+      date: sql<string>`DATE(${analysisEvents.timestamp})`,
+      views: count(sql`DISTINCT CASE WHEN ${analysisEvents.eventType} = 'story_view' THEN ${analysisEvents.id} END`),
+      engagements: count(sql`CASE WHEN ${analysisEvents.eventType} IN ('comment_created', 'story_liked', 'share') THEN ${analysisEvents.id} END`),
+      newReaders: count(sql`DISTINCT ${analysisEvents.userId}`),
     })
-    .from(analyticsEvents)
+    .from(analysisEvents)
     .where(
       and(
-        inArray(analyticsEvents.storyId, storyIds),
-        gte(analyticsEvents.timestamp, start),
-        lte(analyticsEvents.timestamp, end)
+        inArray(analysisEvents.storyId, storyIds),
+        gte(analysisEvents.timestamp, start),
+        lte(analysisEvents.timestamp, end)
       )
     )
-    .groupBy(sql`DATE(${analyticsEvents.timestamp})`)
-    .orderBy(sql`DATE(${analyticsEvents.timestamp})`);
+    .groupBy(sql`DATE(${analysisEvents.timestamp})`)
+    .orderBy(sql`DATE(${analysisEvents.timestamp})`);
 
   return dailyData.map(day => ({
     date: day.date,
@@ -370,15 +370,15 @@ export async function getReaderAnalysis(
 
   const [demographics] = await db
     .select({
-      totalReaders: sql<number>`COUNT(DISTINCT ${analyticsEvents.userId})`,
-      newReaders: sql<number>`COUNT(DISTINCT CASE WHEN ${analyticsEvents.eventType} = 'story_view' THEN ${analyticsEvents.userId} END)`,
+      totalReaders: sql<number>`COUNT(DISTINCT ${analysisEvents.userId})`,
+      newReaders: sql<number>`COUNT(DISTINCT CASE WHEN ${analysisEvents.eventType} = 'story_view' THEN ${analysisEvents.userId} END)`,
     })
-    .from(analyticsEvents)
+    .from(analysisEvents)
     .where(
       and(
-        inArray(analyticsEvents.storyId, storyIds),
-        gte(analyticsEvents.timestamp, start),
-        lte(analyticsEvents.timestamp, end)
+        inArray(analysisEvents.storyId, storyIds),
+        gte(analysisEvents.timestamp, start),
+        lte(analysisEvents.timestamp, end)
       )
     );
 
@@ -404,20 +404,20 @@ async function getReadingPatterns(
 ): Promise<ReadingPatterns> {
   const hourlyData = await db
     .select({
-      hour: sql<number>`EXTRACT(HOUR FROM ${analyticsEvents.timestamp})`,
-      count: count(analyticsEvents.id),
+      hour: sql<number>`EXTRACT(HOUR FROM ${analysisEvents.timestamp})`,
+      count: count(analysisEvents.id),
     })
-    .from(analyticsEvents)
+    .from(analysisEvents)
     .where(
       and(
-        inArray(analyticsEvents.storyId, storyIds),
-        eq(analyticsEvents.eventType, 'chapter_read_start'),
-        gte(analyticsEvents.timestamp, start),
-        lte(analyticsEvents.timestamp, end)
+        inArray(analysisEvents.storyId, storyIds),
+        eq(analysisEvents.eventType, 'chapter_read_start'),
+        gte(analysisEvents.timestamp, start),
+        lte(analysisEvents.timestamp, end)
       )
     )
-    .groupBy(sql`EXTRACT(HOUR FROM ${analyticsEvents.timestamp})`)
-    .orderBy(desc(count(analyticsEvents.id)))
+    .groupBy(sql`EXTRACT(HOUR FROM ${analysisEvents.timestamp})`)
+    .orderBy(desc(count(analysisEvents.id)))
     .limit(24);
 
   const [sessionStats] = await db
@@ -439,20 +439,20 @@ async function getReadingPatterns(
       returnRate: sql<number>`
         (COUNT(DISTINCT CASE
           WHEN EXISTS (
-            SELECT 1 FROM ${analyticsEvents} ae2
-            WHERE ae2.user_id = ${analyticsEvents.userId}
-            AND ae2.timestamp > ${analyticsEvents.timestamp} + INTERVAL '7 days'
-          ) THEN ${analyticsEvents.userId}
-        END)::float / NULLIF(COUNT(DISTINCT ${analyticsEvents.userId}), 0)) * 100
+            SELECT 1 FROM ${analysisEvents} ae2
+            WHERE ae2.user_id = ${analysisEvents.userId}
+            AND ae2.timestamp > ${analysisEvents.timestamp} + INTERVAL '7 days'
+          ) THEN ${analysisEvents.userId}
+        END)::float / NULLIF(COUNT(DISTINCT ${analysisEvents.userId}), 0)) * 100
       `,
     })
-    .from(analyticsEvents)
+    .from(analysisEvents)
     .where(
       and(
-        inArray(analyticsEvents.storyId, storyIds),
-        eq(analyticsEvents.eventType, 'story_view'),
-        gte(analyticsEvents.timestamp, start),
-        lte(analyticsEvents.timestamp, end)
+        inArray(analysisEvents.storyId, storyIds),
+        eq(analysisEvents.eventType, 'story_view'),
+        gte(analysisEvents.timestamp, start),
+        lte(analysisEvents.timestamp, end)
       )
     );
 

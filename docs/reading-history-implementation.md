@@ -183,7 +183,7 @@ try {
 
 **Usage**: Mounted in root layout via `<ReadingHistorySync />` component
 
-## 5. Sync Component (`/src/components/analytics/ReadingHistorySync.tsx`)
+## 5. Sync Component (`/src/components/analysis/ReadingHistorySync.tsx`)
 
 **Purpose**: Wrapper component to use the sync hook in root layout
 

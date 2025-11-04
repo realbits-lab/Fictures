@@ -12,7 +12,7 @@ interface ThemeSelectorProps {
 interface ThemeOption {
 	id: string;
 	name: string;
-	description: string;
+	summary: string;
 	preview: {
 		background: string;
 		foreground: string;
@@ -25,7 +25,7 @@ const themeOptions: ThemeOption[] = [
 	{
 		id: "light",
 		name: "Light",
-		description: "Clean and bright with standard rounded corners",
+		summary: "Clean and bright with standard rounded corners",
 		preview: {
 			background: "rgb(255, 255, 255)",
 			foreground: "rgb(39, 39, 42)",
@@ -36,7 +36,7 @@ const themeOptions: ThemeOption[] = [
 	{
 		id: "dark",
 		name: "Dark",
-		description: "Sleek minimal design with sharp edges",
+		summary: "Sleek minimal design with sharp edges",
 		preview: {
 			background: "rgb(9, 9, 11)",
 			foreground: "rgb(244, 244, 245)",
@@ -47,7 +47,7 @@ const themeOptions: ThemeOption[] = [
 	{
 		id: "ocean",
 		name: "Blue Ocean",
-		description: "Flowing design with gentle curved borders",
+		summary: "Flowing design with gentle curved borders",
 		preview: {
 			background: "rgb(248, 250, 252)",
 			foreground: "rgb(30, 58, 138)",
@@ -58,7 +58,7 @@ const themeOptions: ThemeOption[] = [
 	{
 		id: "purple",
 		name: "Purple Dream",
-		description: "Creative with bold rounded elements and thick borders",
+		summary: "Creative with bold rounded elements and thick borders",
 		preview: {
 			background: "rgb(250, 245, 255)",
 			foreground: "rgb(88, 28, 135)",
@@ -69,7 +69,7 @@ const themeOptions: ThemeOption[] = [
 	{
 		id: "forest",
 		name: "Forest Green",
-		description: "Natural organic feel with small clean corners",
+		summary: "Natural organic feel with small clean corners",
 		preview: {
 			background: "rgb(247, 254, 231)",
 			foreground: "rgb(21, 128, 61)",
@@ -80,7 +80,7 @@ const themeOptions: ThemeOption[] = [
 	{
 		id: "sunset",
 		name: "Warm Sunset",
-		description: "Cozy theme with extra-large rounded elements",
+		summary: "Cozy theme with extra-large rounded elements",
 		preview: {
 			background: "rgb(255, 247, 237)",
 			foreground: "rgb(154, 52, 18)",
@@ -91,7 +91,7 @@ const themeOptions: ThemeOption[] = [
 	{
 		id: "rose",
 		name: "Rose Garden",
-		description: "Elegant refinement with delicate small corners",
+		summary: "Elegant refinement with delicate small corners",
 		preview: {
 			background: "rgb(255, 241, 242)",
 			foreground: "rgb(159, 18, 57)",
@@ -102,7 +102,7 @@ const themeOptions: ThemeOption[] = [
 	{
 		id: "midnight",
 		name: "Midnight",
-		description: "Technical precision with minimal sharp geometry",
+		summary: "Technical precision with minimal sharp geometry",
 		preview: {
 			background: "rgb(15, 23, 42)",
 			foreground: "rgb(241, 245, 249)",

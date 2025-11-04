@@ -156,7 +156,7 @@ export async function updateStory(
   userId: string,
   data: Partial<{
     title: string;
-    description: string;
+    summary: string;
     genre: string;
     status: 'writing' | 'published';
   }>

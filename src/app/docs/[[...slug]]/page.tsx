@@ -66,6 +66,6 @@ export async function generateMetadata(props: {
 
   return {
     title: page.metadata.title,
-    description: page.metadata.description as string | undefined,
+    summary: page.metadata.description as string | undefined,
   };
 }

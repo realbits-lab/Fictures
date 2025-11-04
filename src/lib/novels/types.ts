@@ -7,7 +7,7 @@ export type EmotionalBeat = 'fear' | 'hope' | 'tension' | 'relief' | 'elevation'
 
 export interface Seed {
   id: string;
-  description: string;
+  summary: string;
   expectedPayoff: string;
 }
 
@@ -95,7 +95,7 @@ export interface CharacterGenerationResult {
 export interface SettingGenerationResult {
   id: string;
   name: string;
-  description: string;
+  summary: string;
   adversityElements: {
     physicalObstacles: string[];
     scarcityFactors: string[];

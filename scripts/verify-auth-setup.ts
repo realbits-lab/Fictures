@@ -14,6 +14,8 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { eq, inArray } from 'drizzle-orm';
 import { users, apiKeys } from '../drizzle/schema';
+import { loadAuthData } from '../src/lib/utils/auth-loader';
+import { getFicturesEnv, getEnvDisplayName } from '../src/lib/utils/environment';
 
 async function main() {
   const connectionString = process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED;
@@ -93,7 +95,39 @@ async function main() {
       console.log('');
     }
 
-    console.log('✅ Authentication setup verified!\n');
+    console.log('✅ Database authentication verified!\n');
+
+    // Load and display auth file structure
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('📄 AUTH FILE STRUCTURE (.auth/user.json)');
+    console.log('═══════════════════════════════════════════════════════════\n');
+
+    try {
+      const authData = loadAuthData();
+      const currentEnv = getFicturesEnv();
+      const envDisplay = getEnvDisplayName();
+
+      console.log(`🌍 Current Environment: ${envDisplay} (${currentEnv})\n`);
+
+      // Display both environments
+      for (const env of ['main', 'develop'] as const) {
+        console.log(`${env.toUpperCase()} Environment:`);
+        const profiles = authData[env].profiles;
+
+        for (const [role, profile] of Object.entries(profiles)) {
+          console.log(`  ${role}:`);
+          console.log(`    Email:   ${profile.email}`);
+          console.log(`    API Key: ${profile.apiKey?.substring(0, 20)}...`);
+        }
+        console.log('');
+      }
+
+      console.log('✅ Auth file structure verified!\n');
+      console.log('═══════════════════════════════════════════════════════════\n');
+    } catch (authError) {
+      console.error('⚠️  Warning: Could not load auth file');
+      console.error(`   ${authError.message}\n`);
+    }
 
   } catch (error) {
     console.error('❌ Error:', error.message);

@@ -18,7 +18,7 @@ export async function GET() {
       .select({
         id: stories.id,
         title: stories.title,
-        description: stories.description,
+        summary: stories.summary,
         genre: stories.genre,
         viewCount: stories.viewCount,
         rating: stories.rating,
@@ -83,14 +83,13 @@ export async function GET() {
       story: {
         id: featuredStory.id,
         title: featuredStory.title,
-        description: featuredStory.description,
+        summary: featuredStory.summary,
         genre: featuredStory.genre,
         author: featuredStory.author,
         stats: {
           viewCount: featuredStory.viewCount || 0,
           rating: featuredStory.rating ? featuredStory.rating / 10 : 0,
           ratingCount: featuredStory.ratingCount || 0,
-          wordCount: featuredStory.currentWordCount || 0,
           chapterCount: featuredStory.publishedChapterCount,
         },
       },

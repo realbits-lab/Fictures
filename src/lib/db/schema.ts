@@ -285,7 +285,7 @@ export const chapters = pgTable('chapters', {
   virtueType: virtueTypeEnum('virtue_type'), // Moral virtue tested: courage, compassion, integrity, sacrifice, loyalty, wisdom
   seedsPlanted: json('seeds_planted').$type<Array<{
     id: string;
-    description: string;
+    summary: string;
     expectedPayoff: string;
   }>>().default([]), // Setup for future payoffs
   seedsResolved: json('seeds_resolved').$type<Array<{
@@ -367,7 +367,7 @@ export const comicPanels = pgTable('comic_panels', {
   narrative: text('narrative'), // Narrative text for panels without characters
   dialogue: json('dialogue').$type<Array<{character_id: string; text: string; tone?: string}>>(),
   sfx: json('sfx').$type<Array<{text: string; emphasis: 'normal' | 'large' | 'dramatic'}>>(),
-  description: text('description'), // Visual description for image generation
+  summary: text('description'), // Visual description for image generation
 
   // Metadata
   metadata: json('metadata').$type<{
@@ -664,7 +664,7 @@ export const settings = pgTable('settings', {
   id: text('id').primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
   storyId: text('story_id').references(() => stories.id).notNull(),
-  description: text('description'),
+  summary: text('description'),
   mood: text('mood'),
   sensory: json('sensory').$type<Record<string, string[]>>(),
   visualStyle: text('visual_style'),
@@ -1016,7 +1016,7 @@ export const storyInsights = pgTable('story_insights', {
   storyId: text('story_id').references(() => stories.id, { onDelete: 'cascade' }).notNull(),
   insightType: insightTypeEnum('insight_type').notNull(),
   title: varchar('title', { length: 255 }).notNull(),
-  description: text('description').notNull(),
+  summary: text('description').notNull(),
   severity: varchar('severity', { length: 20 }).default('info'),
   actionItems: json('action_items').$type<string[]>().default([]),
   metrics: json('metrics').$type<Record<string, unknown>>().default({}),
@@ -1078,7 +1078,7 @@ export const publishingSchedules = pgTable('publishing_schedules', {
   chapterId: text('chapter_id').references(() => chapters.id, { onDelete: 'cascade' }),
   createdBy: text('created_by').references(() => users.id).notNull(),
   name: varchar('name', { length: 255 }).notNull(),
-  description: text('description'),
+  summary: text('description'),
   scheduleType: scheduleTypeEnum('schedule_type').notNull(),
   startDate: text('start_date').notNull(),
   endDate: text('end_date'),

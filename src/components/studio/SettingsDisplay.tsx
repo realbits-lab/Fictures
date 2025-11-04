@@ -70,7 +70,7 @@ export function SettingsDisplay({ storyData }: SettingsDisplayProps) {
       allSettings.push({
         id: `hns-${location}-${index}`,
         name: location.charAt(0).toUpperCase() + location.slice(1),
-        description: "To be detailed",
+        summary: "To be detailed",
         type: (hnsSettings.primary || []).includes(location) ? "Primary Location" : "Secondary Location",
         significance: "To be defined"
       });

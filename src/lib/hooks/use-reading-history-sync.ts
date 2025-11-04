@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { readingHistoryManager } from '@/lib/storage/novels-history-manager';
+import { readingHistoryManager } from '@/lib/storage/reading-history-manager';
 import type { ReadingFormat } from '@/types/novels-history';
 
 /**

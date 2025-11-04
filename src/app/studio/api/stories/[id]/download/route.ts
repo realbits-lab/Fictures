@@ -237,10 +237,10 @@ export async function GET(
 
     <div class="metadata">`;
 
-    if (story.description) {
+    if (story.summary) {
       html += `
       <h2>Description</h2>
-      <p>${story.description}</p>`;
+      <p>${story.summary}</p>`;
     }
 
     if (story.premise) {
@@ -533,7 +533,7 @@ export async function GET(
       const settingsData = storySettings.map(s => ({
         id: s.id,
         name: s.name,
-        description: s.description,
+        summary: s.description,
         mood: s.mood,
         sensory: s.sensory,
         visualStyle: s.visualStyle,

@@ -315,7 +315,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
           action_dialogue_ratio: "50:50",
           chapter_hook: {
             type: 'question',
-            description: parsedData?.parts?.[partIndex]?.chapters?.[chapterIndex]?.hook || "",
+            summary: parsedData?.parts?.[partIndex]?.chapters?.[chapterIndex]?.hook || "",
             urgency_level: 'medium'
           },
           scenes: chapter.scenes?.map(s => s.id) || []

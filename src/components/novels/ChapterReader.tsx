@@ -297,9 +297,9 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
             <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               {story.title}
             </h1>
-            {story.description && (
+            {story.summary && (
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                {story.description}
+                {story.summary}
               </p>
             )}
             <div className="flex flex-wrap gap-2 text-xs">

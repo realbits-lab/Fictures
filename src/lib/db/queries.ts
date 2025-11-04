@@ -80,7 +80,7 @@ export async function createStory(authorId: string, data: {
   const [story] = await db.insert(stories).values({
     id: storyId,
     title: data.title,
-    description: data.description,
+    summary: data.description,
     genre: data.genre,
     authorId,
     status: 'writing',
@@ -180,7 +180,7 @@ export async function getStoryById(storyId: string, userId?: string) {
 
 export async function updateStory(storyId: string, userId: string, data: Partial<{
   title: string;
-  description: string;
+  summary: string;
   genre: string;
   status: 'writing' | 'published';
 }>) {
@@ -941,7 +941,7 @@ export async function getCommunityStory(storyId: string) {
     .select({
       id: settings.id,
       name: settings.name,
-      description: settings.description,
+      summary: settings.description,
       mood: settings.mood,
       sensory: settings.sensory,
       visualStyle: settings.visualStyle,
@@ -959,7 +959,7 @@ export async function getCommunityStory(storyId: string) {
   return {
     id: story.id,
     title: story.title,
-    description: story.description,
+    summary: story.summary,
     genre: story.genre,
     status: story.status,
     author: story.author,

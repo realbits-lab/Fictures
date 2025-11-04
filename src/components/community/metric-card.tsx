@@ -8,7 +8,7 @@ export interface MetricCardProps {
   value: string | number;
   label: string;
   color: string;
-  description: string;
+  summary: string;
   details?: string[];
 }
 

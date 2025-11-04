@@ -11,7 +11,7 @@ interface ApiKey {
   name: string;
   keyPrefix: string;
   scopes: string[];
-  scopeDescriptions: Array<{scope: string; description: string}>;
+  scopeDescriptions: Array<{scope: string; summary: string}>;
   lastUsedAt: string | null;
   expiresAt: string | null;
   isActive: boolean;
@@ -22,7 +22,7 @@ interface ApiKey {
 
 interface ApiKeyResponse {
   apiKeys: ApiKey[];
-  availableScopes: Array<{scope: string; description: string}>;
+  availableScopes: Array<{scope: string; summary: string}>;
   metadata: {
     total: number;
     active: number;
@@ -33,7 +33,7 @@ interface ApiKeyResponse {
 export default function ApiKeysPage() {
   const { data: session } = useSession();
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [availableScopes, setAvailableScopes] = useState<Array<{scope: string; description: string}>>([]);
+  const [availableScopes, setAvailableScopes] = useState<Array<{scope: string; summary: string}>>([]);
   const [metadata, setMetadata] = useState({ total: 0, active: 0, expired: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);

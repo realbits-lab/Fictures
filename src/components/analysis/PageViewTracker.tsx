@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { pageview } from '@/lib/analytics/google-analytics';
+import { pageview } from '@/lib/analysis/google-analytics';
 
 /**
  * Client component that tracks page views automatically

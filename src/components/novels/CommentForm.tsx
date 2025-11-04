@@ -4,7 +4,7 @@ import React, { useState, useTransition } from 'react';
 import { cn } from '@/lib/utils/cn';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { trackCommunity } from '@/lib/analytics/google-analytics';
+import { trackCommunity } from '@/lib/analysis/google-analytics';
 
 interface CommentFormProps {
   storyId: string;

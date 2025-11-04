@@ -100,7 +100,7 @@ export async function POST(
     const primarySetting = storySettings[0] || {
       id: 'default',
       name: 'Default Setting',
-      description: 'A generic setting',
+      summary: 'A generic setting',
       mood: 'neutral',
       sensory: null,
       visualStyle: null,

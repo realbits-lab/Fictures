@@ -31,7 +31,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Fictures",
-  description: "AI-powered content creation platform",
+  summary: "AI-powered content creation platform",
 };
 
 export default async function RootLayout({

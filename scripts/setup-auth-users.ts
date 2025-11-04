@@ -9,19 +9,23 @@
  * - reader@fictures.xyz (reader role, read-only access)
  *
  * Generates secure passwords, hashes them with PBKDF2, and creates API keys.
- * Outputs simplified auth file structure with only email, password, and apiKey.
+ * Creates environment-aware auth file with main and develop profiles.
+ * Same credentials are used for both environments initially.
+ *
+ * Environment Detection:
+ * - NODE_ENV=development → uses "develop" profiles
+ * - NODE_ENV=production → uses "main" profiles
  *
  * Usage:
- *   dotenv --file .env.local run tsx scripts/setup-auth-users.ts
+ *   dotenv --file .env.local run pnpm exec tsx scripts/setup-auth-users.ts
  */
 
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
 import { users, apiKeys } from '../drizzle/schema';
+import { saveAuthData, type AuthData } from '../src/lib/utils/auth-loader';
 
 // PBKDF2 password hashing (matching src/lib/auth/password.ts)
 async function hashPassword(password) {
@@ -160,8 +164,21 @@ async function main() {
     casing: 'snake_case'
   });
 
-  const authData = {
-    profiles: {}
+  const authData: AuthData = {
+    main: {
+      profiles: {
+        manager: { email: '', password: '', apiKey: '' },
+        writer: { email: '', password: '', apiKey: '' },
+        reader: { email: '', password: '', apiKey: '' }
+      }
+    },
+    develop: {
+      profiles: {
+        manager: { email: '', password: '', apiKey: '' },
+        writer: { email: '', password: '', apiKey: '' },
+        reader: { email: '', password: '', apiKey: '' }
+      }
+    }
   };
 
   try {
@@ -246,34 +263,30 @@ async function main() {
 
       console.log(`   ✓ Created API key`);
 
-      // Store in auth data (simplified structure)
-      authData.profiles[config.role] = {
+      // Store in auth data for both main and develop environments
+      const profileData = {
         email: config.email,
         password: plainPassword,
         apiKey: apiKey
       };
 
-      console.log(`   ✓ Added to auth profiles`);
+      authData.main.profiles[config.role] = profileData;
+      authData.develop.profiles[config.role] = profileData;
+
+      console.log(`   ✓ Added to both main and develop auth profiles`);
     }
 
-    // Write auth file
-    const authFilePath = path.join(process.cwd(), '.auth', 'user.json');
-    const authDir = path.dirname(authFilePath);
-
-    // Create .auth directory if it doesn't exist
-    if (!fs.existsSync(authDir)) {
-      fs.mkdirSync(authDir, { recursive: true });
-    }
-
-    fs.writeFileSync(authFilePath, JSON.stringify(authData, null, 2), 'utf-8');
+    // Write auth file using utility
+    saveAuthData(authData);
 
     console.log('\n✅ Authentication setup complete!\n');
     console.log('📄 Auth file created: .auth/user.json\n');
     console.log('═══════════════════════════════════════════════════════════');
-    console.log('🔑 USER CREDENTIALS');
+    console.log('🔑 USER CREDENTIALS (both main & develop)');
     console.log('═══════════════════════════════════════════════════════════\n');
 
-    for (const [role, profile] of Object.entries(authData.profiles)) {
+    // Display credentials from develop environment (same as main)
+    for (const [role, profile] of Object.entries(authData.develop.profiles)) {
       console.log(`${role.toUpperCase()} (${profile.email}):`);
       console.log(`  Password: ${profile.password}`);
       console.log(`  API Key:  ${profile.apiKey}`);
@@ -286,6 +299,10 @@ async function main() {
     console.log('  • .auth/user.json is gitignored');
     console.log('  • Passwords are hashed with PBKDF2 in database');
     console.log('  • API keys are hashed with SHA-256 in database');
+    console.log('  • Same credentials used for both main and develop initially');
+    console.log('\n🌍 ENVIRONMENTS:');
+    console.log('  • NODE_ENV=development uses "develop" profiles');
+    console.log('  • NODE_ENV=production uses "main" profiles');
     console.log('\n📚 Documentation: docs/auth/authentication-profiles.md\n');
 
   } catch (error) {

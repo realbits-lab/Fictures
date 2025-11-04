@@ -71,18 +71,18 @@ Provide specific examples of improvements with explanations of why they work bet
 // AI tool definitions for function calling
 export const AI_TOOLS = {
   analyze_text: {
-    description: 'Analyze a piece of writing for structure, pacing, and style',
+    summary: 'Analyze a piece of writing for structure, pacing, and style',
     parameters: {
       type: 'object',
       properties: {
         text: {
           type: 'string',
-          description: 'The text to analyze'
+          summary: 'The text to analyze'
         },
         focus: {
           type: 'string',
           enum: ['structure', 'pacing', 'style', 'character', 'dialogue'],
-          description: 'What aspect to focus the analysis on'
+          summary: 'What aspect to focus the analysis on'
         }
       },
       required: ['text', 'focus']
@@ -90,18 +90,18 @@ export const AI_TOOLS = {
   },
   
   suggest_improvements: {
-    description: 'Suggest specific improvements for a piece of writing',
+    summary: 'Suggest specific improvements for a piece of writing',
     parameters: {
       type: 'object',
       properties: {
         text: {
           type: 'string',
-          description: 'The text to improve'
+          summary: 'The text to improve'
         },
         type: {
           type: 'string',
           enum: ['character', 'dialogue', 'description', 'action', 'transition'],
-          description: 'Type of improvement needed'
+          summary: 'Type of improvement needed'
         }
       },
       required: ['text', 'type']
@@ -109,23 +109,23 @@ export const AI_TOOLS = {
   },
   
   generate_content: {
-    description: 'Generate content based on context and requirements',
+    summary: 'Generate content based on context and requirements',
     parameters: {
       type: 'object',
       properties: {
         context: {
           type: 'string',
-          description: 'Current story context or scene setup'
+          summary: 'Current story context or scene setup'
         },
         type: {
           type: 'string',
           enum: ['dialogue', 'description', 'action', 'transition', 'character_thought'],
-          description: 'Type of content to generate'
+          summary: 'Type of content to generate'
         },
         length: {
           type: 'string',
           enum: ['short', 'medium', 'long'],
-          description: 'Desired length of generated content'
+          summary: 'Desired length of generated content'
         }
       },
       required: ['context', 'type']

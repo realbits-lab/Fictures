@@ -153,7 +153,7 @@ export async function GET() {
     JSON.stringify({
       message: 'Parts Generation API',
       usage: 'POST with { "storyId": "story-id" }',
-      description: 'Generate detailed part specifications for an existing story',
+      summary: 'Generate detailed part specifications for an existing story',
     }),
     {
       status: 200,

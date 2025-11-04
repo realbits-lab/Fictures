@@ -283,7 +283,7 @@ export async function POST(request: NextRequest) {
                 id: newId,
                 storyId: generatedStoryId!,
                 name: setting.name,
-                description: setting.description,
+                summary: setting.description,
                 adversityElements: setting.adversityElements,
                 symbolicMeaning: setting.symbolicMeaning,
                 cycleAmplification: setting.cycleAmplification,

@@ -2,8 +2,8 @@ import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { StudioAgentChat } from '@/components/studio/studio-agent-chat';
-import { MainLayout } from '@/components/layouts/main-layout';
-import { getStory } from '@/lib/db/story-operations';
+import { MainLayout } from '@/components/layout';
+import { getStoryById } from '@/lib/db/cached-queries';
 
 interface PageProps {
   params: Promise<{
@@ -16,7 +16,7 @@ interface PageProps {
 
 export const metadata: Metadata = {
   title: 'Studio Agent - Fictures',
-  description: 'AI-powered story creation and editing assistant',
+  summary: 'AI-powered story creation and editing assistant',
 };
 
 export default async function StudioAgentPage({ params, searchParams }: PageProps) {
@@ -35,7 +35,7 @@ export default async function StudioAgentPage({ params, searchParams }: PageProp
   let storyContext: Record<string, any> | undefined;
   if (storyId) {
     try {
-      const story = await getStory(storyId);
+      const story = await getStoryById(storyId, session.user.id);
       if (story && story.authorId === session.user.id) {
         storyContext = {
           storyId: story.id,

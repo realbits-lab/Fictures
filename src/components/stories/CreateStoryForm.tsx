@@ -7,11 +7,11 @@ import { Button } from '@/components/ui';
 import { Label } from '@/components/ui';
 import { useStoryCreation } from './StoryCreationContext';
 import { toast } from 'sonner';
-import { trackStoryEvent } from '@/lib/analytics/google-analytics';
+import { trackStoryEvent } from '@/lib/analysis/google-analytics';
 
 interface ProgressStep {
   phase: string;
-  description: string;
+  summary: string;
   status: 'pending' | 'in_progress' | 'completed' | 'error';
 }
 
@@ -42,15 +42,15 @@ export function CreateStoryForm() {
 
   // Define the default progress steps for Novel Generation (Adversity-Triumph Engine)
   const getDefaultProgressSteps = (): ProgressStep[] => [
-    { phase: 'Story Summary', description: 'Generating story foundation and moral framework', status: 'pending' },
-    { phase: 'Characters', description: 'Expanding character profiles with detailed arcs', status: 'pending' },
-    { phase: 'Settings', description: 'Creating immersive locations with adversity elements', status: 'pending' },
-    { phase: 'Parts', description: 'Structuring three-act framework with macro arcs', status: 'pending' },
-    { phase: 'Chapters', description: 'Generating detailed chapter structure', status: 'pending' },
-    { phase: 'Scene Summaries', description: 'Breaking down chapters into scene outlines', status: 'pending' },
-    { phase: 'Scene Content', description: 'Generating narrative content for each scene', status: 'pending' },
-    { phase: 'Scene Evaluation', description: 'Evaluating and improving scene quality', status: 'pending' },
-    { phase: 'Images', description: 'Creating AI images for characters and settings', status: 'pending' },
+    { phase: 'Story Summary', summary: 'Generating story foundation and moral framework', status: 'pending' },
+    { phase: 'Characters', summary: 'Expanding character profiles with detailed arcs', status: 'pending' },
+    { phase: 'Settings', summary: 'Creating immersive locations with adversity elements', status: 'pending' },
+    { phase: 'Parts', summary: 'Structuring three-act framework with macro arcs', status: 'pending' },
+    { phase: 'Chapters', summary: 'Generating detailed chapter structure', status: 'pending' },
+    { phase: 'Scene Summaries', summary: 'Breaking down chapters into scene outlines', status: 'pending' },
+    { phase: 'Scene Content', summary: 'Generating narrative content for each scene', status: 'pending' },
+    { phase: 'Scene Evaluation', summary: 'Evaluating and improving scene quality', status: 'pending' },
+    { phase: 'Images', summary: 'Creating AI images for characters and settings', status: 'pending' },
   ];
 
   // Initialize progress steps on component mount to show them by default
@@ -186,7 +186,7 @@ export function CreateStoryForm() {
                     setProgress(prev => prev.map((step, index) =>
                       index === 1 ? {
                         ...step,
-                        description: `Expanding ${data.data.totalCharacters} character profiles with detailed arcs`
+                        summary: `Expanding ${data.data.totalCharacters} character profiles with detailed arcs`
                       } : step
                     ));
                   }
@@ -202,7 +202,7 @@ export function CreateStoryForm() {
                     setProgress(prev => prev.map((step, index) =>
                       index === 1 ? {
                         ...step,
-                        description: `Character ${characterNum} of ${totalCharacters} (${percentage}%)`
+                        summary: `Character ${characterNum} of ${totalCharacters} (${percentage}%)`
                       } : step
                     ));
                   }
@@ -213,7 +213,7 @@ export function CreateStoryForm() {
                     setProgress(prev => prev.map((step, index) =>
                       index === 1 ? {
                         ...step,
-                        description: `${data.data.totalCharacters} characters created`
+                        summary: `${data.data.totalCharacters} characters created`
                       } : step
                     ));
                   }
@@ -234,7 +234,7 @@ export function CreateStoryForm() {
                     setProgress(prev => prev.map((step, index) =>
                       index === 2 ? {
                         ...step,
-                        description: `Creating ${data.data.totalSettings} immersive locations with adversity elements`
+                        summary: `Creating ${data.data.totalSettings} immersive locations with adversity elements`
                       } : step
                     ));
                   }
@@ -250,7 +250,7 @@ export function CreateStoryForm() {
                     setProgress(prev => prev.map((step, index) =>
                       index === 2 ? {
                         ...step,
-                        description: `Setting ${settingNum} of ${totalSettings} (${percentage}%)`
+                        summary: `Setting ${settingNum} of ${totalSettings} (${percentage}%)`
                       } : step
                     ));
                   }
@@ -261,7 +261,7 @@ export function CreateStoryForm() {
                     setProgress(prev => prev.map((step, index) =>
                       index === 2 ? {
                         ...step,
-                        description: `${data.data.totalSettings} settings created`
+                        summary: `${data.data.totalSettings} settings created`
                       } : step
                     ));
                   }
@@ -282,7 +282,7 @@ export function CreateStoryForm() {
                     setProgress(prev => prev.map((step, index) =>
                       index === 3 ? {
                         ...step,
-                        description: `Structuring ${data.data.totalParts}-act framework with macro arcs`
+                        summary: `Structuring ${data.data.totalParts}-act framework with macro arcs`
                       } : step
                     ));
                   }
@@ -298,7 +298,7 @@ export function CreateStoryForm() {
                     setProgress(prev => prev.map((step, index) =>
                       index === 3 ? {
                         ...step,
-                        description: `Part ${partNum} of ${totalParts} (${percentage}%)`
+                        summary: `Part ${partNum} of ${totalParts} (${percentage}%)`
                       } : step
                     ));
                   }
@@ -309,7 +309,7 @@ export function CreateStoryForm() {
                     setProgress(prev => prev.map((step, index) =>
                       index === 3 ? {
                         ...step,
-                        description: `${data.data.totalParts} acts created`
+                        summary: `${data.data.totalParts} acts created`
                       } : step
                     ));
                   }
@@ -336,7 +336,7 @@ export function CreateStoryForm() {
                     setProgress(prev => prev.map((step, index) =>
                       index === 4 ? {
                         ...step,
-                        description: `Part ${partNum} of ${totalParts} (${percentage}%)`
+                        summary: `Part ${partNum} of ${totalParts} (${percentage}%)`
                       } : step
                     ));
                   }
@@ -366,7 +366,7 @@ export function CreateStoryForm() {
                     setProgress(prev => prev.map((step, index) =>
                       index === 5 ? {
                         ...step,
-                        description: `Chapter ${chapterNum} of ${totalChapters} (${percentage}%)`
+                        summary: `Chapter ${chapterNum} of ${totalChapters} (${percentage}%)`
                       } : step
                     ));
                   }
@@ -390,7 +390,7 @@ export function CreateStoryForm() {
                     setProgress(prev => prev.map((step, index) =>
                       index === 6 ? {
                         ...step,
-                        description: `Generating narrative content for ${data.data.totalScenes} scenes...`
+                        summary: `Generating narrative content for ${data.data.totalScenes} scenes...`
                       } : step
                     ));
                   }
@@ -404,7 +404,7 @@ export function CreateStoryForm() {
                     setProgress(prev => prev.map((step, index) =>
                       index === 6 ? {
                         ...step,
-                        description: `Scene ${sceneNum} of ${totalScenes} (${percentage}%)`
+                        summary: `Scene ${sceneNum} of ${totalScenes} (${percentage}%)`
                       } : step
                     ));
                   }
@@ -415,7 +415,7 @@ export function CreateStoryForm() {
                     setProgress(prev => prev.map((step, index) =>
                       index === 6 ? {
                         ...step,
-                        description: `Generated content for ${data.data.completedScenes} scenes`
+                        summary: `Generated content for ${data.data.completedScenes} scenes`
                       } : step
                     ));
                   }
@@ -430,7 +430,7 @@ export function CreateStoryForm() {
                     setProgress(prev => prev.map((step, index) =>
                       index === 7 ? {
                         ...step,
-                        description: data.data.message
+                        summary: data.data.message
                       } : step
                     ));
                   }
@@ -446,7 +446,7 @@ export function CreateStoryForm() {
                     setProgress(prev => prev.map((step, index) =>
                       index === 8 ? {
                         ...step,
-                        description: `Generating ${data.data.totalImages} images...`
+                        summary: `Generating ${data.data.totalImages} images...`
                       } : step
                     ));
                   }
@@ -456,7 +456,7 @@ export function CreateStoryForm() {
                     setProgress(prev => prev.map((step, index) =>
                       index === 8 ? {
                         ...step,
-                        description: data.data.message
+                        summary: data.data.message
                       } : step
                     ));
                   }
@@ -499,7 +499,7 @@ export function CreateStoryForm() {
 
                   // Show detailed error in toast
                   toast.error('Story Generation Error', {
-                    description: errorMessage,
+                    summary: errorMessage,
                     duration: 10000,
                   });
 
@@ -523,7 +523,7 @@ export function CreateStoryForm() {
 
       // Show error in toast with details
       toast.error('Story Generation Failed', {
-        description: errorMsg,
+        summary: errorMsg,
         duration: 10000,
       });
 

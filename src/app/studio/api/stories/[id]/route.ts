@@ -11,7 +11,7 @@ export const runtime = 'nodejs';
 
 const updateStorySchema = z.object({
   title: z.string().min(1).max(255).optional(),
-  description: z.string().optional(),
+  summary: z.string().optional(),
   genre: z.string().optional(),
   status: z.enum(['writing', 'published']).optional(),
   isPublic: z.boolean().optional(),

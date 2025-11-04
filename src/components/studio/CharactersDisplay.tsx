@@ -73,7 +73,7 @@ export function CharactersDisplay({ storyData }: CharactersDisplayProps) {
       allCharacters.push({
         id: `hns-${name}`,
         name: name.charAt(0).toUpperCase() + name.slice(1),
-        description: charData.appearance || "To be described",
+        summary: charData.appearance || "To be described",
         role: charData.role || "Character",
         arc: charData.arc,
         flaw: charData.flaw,

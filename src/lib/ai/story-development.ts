@@ -603,7 +603,7 @@ Structure:
 ---
 name: "Character Name"
 role: "Character Role"
-description: "Physical description in one line"
+summary: "Physical description in one line"
 personality: "Personality traits in one line"
 background: "Character history in one line"
 motivations: "What drives them in one line"
@@ -649,7 +649,7 @@ Generate comprehensive character details in YAML format.`
         parsedData = {
           name: key,
           role: char.role || 'Character',
-          description: 'Character description not available due to parsing error'
+          summary: 'Character description not available due to parsing error'
         };
       }
 
@@ -663,11 +663,11 @@ Generate comprehensive character details in YAML format.`
       // Create fallback character
       return {
         id: key,
-        content: `name: "${key}"\nrole: "${char.role || 'Character'}"\ndescription: "Generated with errors"`,
+        content: `name: "${key}"\nrole: "${char.role || 'Character'}"\nsummary: "Generated with errors"`,
         parsedData: {
           name: key,
           role: char.role || 'Character',
-          description: 'Generated with errors'
+          summary: 'Generated with errors'
         }
       };
     }
@@ -694,7 +694,7 @@ Structure:
 ---
 name: "Location Name"
 type: "Location Type"
-description: "Detailed description in one line"
+summary: "Detailed description in one line"
 atmosphere: "Mood and feeling in one line"
 significance: "Importance to story in one line"
 culture: "Cultural aspects in one line"
@@ -737,7 +737,7 @@ Generate comprehensive location details in YAML format.`
         parsedData = {
           name: place,
           type: 'location',
-          description: 'Place description not available due to parsing error'
+          summary: 'Place description not available due to parsing error'
         };
       }
 
@@ -751,11 +751,11 @@ Generate comprehensive location details in YAML format.`
       // Create fallback place
       return {
         name: place,
-        content: `name: "${place}"\ntype: "location"\ndescription: "Generated with errors"`,
+        content: `name: "${place}"\ntype: "location"\nsummary: "Generated with errors"`,
         parsedData: {
           name: place,
           type: 'location',
-          description: 'Generated with errors'
+          summary: 'Generated with errors'
         }
       };
     }
@@ -813,7 +813,7 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
       .values({
         id: currentStoryId,
         title: storyConcept.title || 'Generated Story',
-        description: `${storyConcept.goal} | ${storyConcept.conflict} | ${storyConcept.outcome}`,
+        summary: `${storyConcept.goal} | ${storyConcept.conflict} | ${storyConcept.outcome}`,
         genre: storyConcept.genre || 'General',
         authorId: userId,
         status: 'writing',

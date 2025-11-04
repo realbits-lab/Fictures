@@ -22,7 +22,7 @@ export function ScheduleBuilder({
 
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
+    summary: '',
     scheduleType: 'daily' as 'daily' | 'weekly' | 'custom' | 'one-time',
     startDate: '',
     endDate: '',
@@ -154,7 +154,7 @@ export function ScheduleBuilder({
         </label>
         <textarea
           value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
           className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           rows={3}
           placeholder="Add notes about this schedule..."

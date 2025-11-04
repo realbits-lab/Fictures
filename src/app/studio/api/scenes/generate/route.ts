@@ -132,7 +132,7 @@ export async function GET() {
     JSON.stringify({
       message: 'Scenes Generation API',
       usage: 'POST with { "chapterId": "chapter-id", "sceneCount": 3, "chapterSpecification": {...} }',
-      description: 'Generate detailed scene specifications for a chapter',
+      summary: 'Generate detailed scene specifications for a chapter',
       example: {
         chapterId: "chapter_abc123",
         sceneCount: 3,

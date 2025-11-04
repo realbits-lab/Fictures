@@ -423,7 +423,7 @@ function parseChaptersFromText(
         if (seedMatch) {
           seedsPlanted.push({
             id: seedMatch[1].trim(),
-            description: seedMatch[2].trim(),
+            summary: seedMatch[2].trim(),
             expectedPayoff: seedMatch[3].trim(),
           });
         }

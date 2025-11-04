@@ -62,12 +62,12 @@ export async function GET(
           if (typeof character.content === 'string') {
             const nameMatch = character.content.match(/name:\s*["']?([^"'\n]+)["']?/);
             const roleMatch = character.content.match(/role:\s*["']?([^"'\n]+)["']?/);
-            const descMatch = character.content.match(/description:\s*["']?([^"'\n]+)["']?/);
+            const descMatch = character.content.match(/summary:\s*["']?([^"'\n]+)["']?/);
 
             parsedContent = {
               name: nameMatch ? nameMatch[1] : character.name,
               role: roleMatch ? roleMatch[1] : null,
-              description: descMatch ? descMatch[1] : null
+              summary: descMatch ? descMatch[1] : null
             };
           }
         }
@@ -77,7 +77,7 @@ export async function GET(
         ...character,
         // Merge parsed content fields with character record
         role: parsedContent.role || null,
-        description: parsedContent.description || null,
+        summary: parsedContent.description || null,
         personality: parsedContent.personality || null,
         background: parsedContent.background || null,
         appearance: parsedContent.appearance || null,

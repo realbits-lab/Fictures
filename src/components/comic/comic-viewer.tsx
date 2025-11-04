@@ -202,7 +202,7 @@ export function ComicViewer({
           </h3>
 
           <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
-            We couldn't load the comic panels right now. This might be a temporary hiccup.
+            We couldn&apos;t load the comic panels right now. This might be a temporary hiccup.
             Please try again in a moment.
           </p>
 

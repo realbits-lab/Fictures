@@ -124,12 +124,12 @@ export function hasAnyScope(userScopes: string[], requiredScopes: ApiScope[]): b
 /**
  * Get human-readable description for scopes
  */
-export function getScopeDescriptions(scopes: string[]): Array<{scope: string; description: string}> {
+export function getScopeDescriptions(scopes: string[]): Array<{scope: string; summary: string}> {
   return scopes
     .filter(isValidScope)
     .map(scope => ({
       scope,
-      description: API_SCOPES[scope]
+      summary: API_SCOPES[scope]
     }));
 }
 

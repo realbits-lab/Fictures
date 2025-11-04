@@ -1,5 +1,5 @@
 import Script from 'next/script';
-import { GA_MEASUREMENT_ID } from '@/lib/analytics/google-analytics';
+import { GA_MEASUREMENT_ID } from '@/lib/analysis/google-analytics';
 
 /**
  * Google Analytics component

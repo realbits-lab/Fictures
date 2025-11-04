@@ -64,7 +64,7 @@ Fixed multiple PostgreSQL schema mismatches:
 **Actual Schema**:
 - `stories`: id, title, summary, genre, status, tone, author_id, view_count, image_url, image_variants, created_at, updated_at, rating, rating_count, moral_framework
 - `chapters`: id, title, summary, story_id, author_id, order_index, status, created_at, updated_at, (plus novel-specific fields)
-- `scenes`: id, title, content, chapter_id, order_index, visibility, created_at, updated_at, (plus comic/analytics fields)
+- `scenes`: id, title, content, chapter_id, order_index, visibility, created_at, updated_at, (plus comic/analysis fields)
 
 ---
 

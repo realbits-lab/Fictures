@@ -39,7 +39,7 @@ interface Character {
 interface Setting {
   id: string;
   name: string;
-  description: string | null;
+  summary: string | null;
   mood: string | null;
   sensory: Record<string, string[]> | null;
   visualStyle: string | null;
@@ -51,7 +51,7 @@ interface Setting {
 interface StoryData {
   id: string;
   title: string;
-  description: string;
+  summary: string;
   genre: string;
   status: string;
   author: {
@@ -182,7 +182,7 @@ export default function StoryCommunityPage() {
                   {story.genre} • by {story.author.name}
                 </p>
                 <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                  {story.description}
+                  {story.summary}
                 </p>
               </div>
               <Badge variant="success" className="ml-4">

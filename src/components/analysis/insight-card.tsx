@@ -8,7 +8,7 @@ interface InsightCardProps {
     id: string;
     insightType: string;
     title: string;
-    description: string;
+    summary: string;
     severity: 'info' | 'warning' | 'critical' | 'success';
     actionItems: string[];
     metrics: Record<string, unknown>;

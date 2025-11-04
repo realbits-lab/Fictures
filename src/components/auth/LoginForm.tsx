@@ -5,7 +5,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { Button } from '@/components/ui';
-import { trackEngagement } from '@/lib/analytics/google-analytics';
+import { trackEngagement } from '@/lib/analysis/google-analytics';
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);

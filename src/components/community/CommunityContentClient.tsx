@@ -87,7 +87,7 @@ export function CommunityContentClient({ initialStories }: CommunityContentClien
     console.log('📚 New story published in real-time:', event.title);
 
     toast.success(`New story published: ${event.title}`, {
-      description: event.genre ? `Genre: ${event.genre}` : undefined,
+      summary: event.genre ? `Genre: ${event.genre}` : undefined,
       duration: 5000,
       action: {
         label: 'View',

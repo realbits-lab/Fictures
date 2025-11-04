@@ -10,7 +10,7 @@ export const runtime = 'nodejs';
 
 const createStorySchema = z.object({
   title: z.string().min(1).max(255),
-  description: z.string().optional(),
+  summary: z.string().optional(),
   genre: z.string().optional(),
 });
 

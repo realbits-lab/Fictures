@@ -190,7 +190,7 @@ export async function getCommunityStoryForReading(storyId: string) {
       db.select({
         id: settings.id,
         name: settings.name,
-        description: settings.description,
+        summary: settings.description,
         mood: settings.mood,
         sensory: settings.sensory,
         visualStyle: settings.visualStyle,
@@ -221,7 +221,7 @@ export async function getCommunityStoryForReading(storyId: string) {
     const result = {
       id: story.id,
       title: story.title,
-      description: story.summary || '',
+      summary: story.summary || '',
       genre: story.genre,
       status: story.status,
       author: {

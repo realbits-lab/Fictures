@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label } from '@/components/ui';
 import { toast } from 'sonner';
-import { trackCommunity } from '@/lib/analytics/google-analytics';
+import { trackCommunity } from '@/lib/analysis/google-analytics';
 
 interface CreatePostFormProps {
   storyId: string;
@@ -13,11 +13,11 @@ interface CreatePostFormProps {
 }
 
 const postTypes = [
-  { value: 'discussion', label: '💭 Discussion', description: 'General story discussion' },
-  { value: 'theory', label: '🤔 Theory', description: 'Character/plot theories' },
-  { value: 'question', label: '❓ Question', description: 'Ask about the story' },
-  { value: 'review', label: '⭐ Review', description: 'Chapter or story review' },
-  { value: 'fan-content', label: '🎨 Fan Content', description: 'Fan art, music, etc.' },
+  { value: 'discussion', label: '💭 Discussion', summary: 'General story discussion' },
+  { value: 'theory', label: '🤔 Theory', summary: 'Character/plot theories' },
+  { value: 'question', label: '❓ Question', summary: 'Ask about the story' },
+  { value: 'review', label: '⭐ Review', summary: 'Chapter or story review' },
+  { value: 'fan-content', label: '🎨 Fan Content', summary: 'Fan art, music, etc.' },
 ];
 
 export function CreatePostForm({ storyId, onPostCreated, onCancel }: CreatePostFormProps) {

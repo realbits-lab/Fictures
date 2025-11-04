@@ -2,7 +2,7 @@
  * Environment Utility
  *
  * Provides consistent environment detection across the application.
- * Supports both runtime (FICTURES_ENV) and build-time (NODE_ENV) detection.
+ * Uses NODE_ENV to determine main (production) vs develop environment.
  */
 
 export type FicturesEnvironment = 'main' | 'develop';
@@ -10,26 +10,19 @@ export type FicturesEnvironment = 'main' | 'develop';
 /**
  * Get the current Fictures environment
  *
- * Priority:
- * 1. FICTURES_ENV environment variable
- * 2. NODE_ENV === 'production' -> 'main'
- * 3. Default to 'develop' for safety
+ * Detection:
+ * - NODE_ENV === 'production' -> 'main' (production)
+ * - NODE_ENV !== 'production' -> 'develop' (development, test, etc.)
  *
  * @returns Current environment ('main' or 'develop')
  */
 export function getFicturesEnv(): FicturesEnvironment {
-  const ficturesEnv = process.env.FICTURES_ENV?.toLowerCase();
-
-  if (ficturesEnv === 'main' || ficturesEnv === 'develop') {
-    return ficturesEnv;
-  }
-
-  // Fallback to NODE_ENV for production detection
+  // Use NODE_ENV for environment detection
   if (process.env.NODE_ENV === 'production') {
     return 'main';
   }
 
-  // Default to develop for safety
+  // Default to develop for all non-production environments
   return 'develop';
 }
 

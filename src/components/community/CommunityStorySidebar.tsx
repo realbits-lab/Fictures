@@ -32,7 +32,7 @@ interface Character {
 interface Setting {
   id: string;
   name: string;
-  description: string | null;
+  summary: string | null;
   mood: string | null;
   sensory: Record<string, string[]> | null;
   visualStyle: string | null;

@@ -9,7 +9,7 @@ import { eq, and } from 'drizzle-orm';
 // ==============================================================================
 
 export const getStory = tool({
-  description: 'Get complete story details including all metadata fields',
+  summary: 'Get complete story details including all metadata fields',
   parameters: z.object({
     storyId: z.string().describe('The story ID to retrieve'),
   }),
@@ -46,7 +46,7 @@ export const getStory = tool({
 });
 
 export const updateStory = tool({
-  description: 'Update story metadata (title, genre, status, summary, tone, moralFramework)',
+  summary: 'Update story metadata (title, genre, status, summary, tone, moralFramework)',
   parameters: z.object({
     storyId: z.string().describe('The story ID to update'),
     updates: z.object({
@@ -85,7 +85,7 @@ export const updateStory = tool({
 // ==============================================================================
 
 export const getPart = tool({
-  description: 'Get part details including title, summary, orderIndex, and character arcs',
+  summary: 'Get part details including title, summary, orderIndex, and character arcs',
   parameters: z.object({
     partId: z.string().describe('The part ID to retrieve'),
   }),
@@ -117,7 +117,7 @@ export const getPart = tool({
 });
 
 export const createPart = tool({
-  description: 'Create a new part in a story',
+  summary: 'Create a new part in a story',
   parameters: z.object({
     storyId: z.string().describe('The story ID'),
     authorId: z.string().describe('The author user ID'),
@@ -151,7 +151,7 @@ export const createPart = tool({
 });
 
 export const updatePart = tool({
-  description: 'Update part details',
+  summary: 'Update part details',
   parameters: z.object({
     partId: z.string().describe('The part ID to update'),
     updates: z.object({
@@ -183,7 +183,7 @@ export const updatePart = tool({
 });
 
 export const deletePart = tool({
-  description: 'Delete a part and all its chapters and scenes (cascade delete)',
+  summary: 'Delete a part and all its chapters and scenes (cascade delete)',
   parameters: z.object({
     partId: z.string().describe('The part ID to delete'),
   }),
@@ -202,7 +202,7 @@ export const deletePart = tool({
 // ==============================================================================
 
 export const getChapter = tool({
-  description: 'Get chapter details including all metadata fields',
+  summary: 'Get chapter details including all metadata fields',
   parameters: z.object({
     chapterId: z.string().describe('The chapter ID to retrieve'),
   }),
@@ -240,7 +240,7 @@ export const getChapter = tool({
 });
 
 export const createChapter = tool({
-  description: 'Create a new chapter in a story or part',
+  summary: 'Create a new chapter in a story or part',
   parameters: z.object({
     storyId: z.string().describe('The story ID'),
     authorId: z.string().describe('The author user ID'),
@@ -277,7 +277,7 @@ export const createChapter = tool({
 });
 
 export const updateChapter = tool({
-  description: 'Update chapter details and metadata',
+  summary: 'Update chapter details and metadata',
   parameters: z.object({
     chapterId: z.string().describe('The chapter ID to update'),
     updates: z.object({
@@ -313,7 +313,7 @@ export const updateChapter = tool({
 });
 
 export const deleteChapter = tool({
-  description: 'Delete a chapter and all its scenes (cascade delete)',
+  summary: 'Delete a chapter and all its scenes (cascade delete)',
   parameters: z.object({
     chapterId: z.string().describe('The chapter ID to delete'),
   }),
@@ -332,7 +332,7 @@ export const deleteChapter = tool({
 // ==============================================================================
 
 export const getScene = tool({
-  description: 'Get scene details including content and all metadata',
+  summary: 'Get scene details including content and all metadata',
   parameters: z.object({
     sceneId: z.string().describe('The scene ID to retrieve'),
   }),
@@ -373,7 +373,7 @@ export const getScene = tool({
 });
 
 export const createScene = tool({
-  description: 'Create a new scene in a chapter',
+  summary: 'Create a new scene in a chapter',
   parameters: z.object({
     chapterId: z.string().describe('The chapter ID'),
     title: z.string().describe('Scene title'),
@@ -408,7 +408,7 @@ export const createScene = tool({
 });
 
 export const updateScene = tool({
-  description: 'Update scene content and metadata',
+  summary: 'Update scene content and metadata',
   parameters: z.object({
     sceneId: z.string().describe('The scene ID to update'),
     updates: z.object({
@@ -443,7 +443,7 @@ export const updateScene = tool({
 });
 
 export const deleteScene = tool({
-  description: 'Delete a scene',
+  summary: 'Delete a scene',
   parameters: z.object({
     sceneId: z.string().describe('The scene ID to delete'),
   }),
@@ -462,7 +462,7 @@ export const deleteScene = tool({
 // ==============================================================================
 
 export const getCharacter = tool({
-  description: 'Get character details including all personality and arc information',
+  summary: 'Get character details including all personality and arc information',
   parameters: z.object({
     characterId: z.string().describe('The character ID to retrieve'),
   }),
@@ -503,7 +503,7 @@ export const getCharacter = tool({
 });
 
 export const createCharacter = tool({
-  description: 'Create a new character in a story',
+  summary: 'Create a new character in a story',
   parameters: z.object({
     storyId: z.string().describe('The story ID'),
     name: z.string().describe('Character name'),
@@ -537,7 +537,7 @@ export const createCharacter = tool({
 });
 
 export const updateCharacter = tool({
-  description: 'Update character details and personality',
+  summary: 'Update character details and personality',
   parameters: z.object({
     characterId: z.string().describe('The character ID to update'),
     updates: z.object({
@@ -575,7 +575,7 @@ export const updateCharacter = tool({
 });
 
 export const deleteCharacter = tool({
-  description: 'Delete a character',
+  summary: 'Delete a character',
   parameters: z.object({
     characterId: z.string().describe('The character ID to delete'),
   }),
@@ -594,7 +594,7 @@ export const deleteCharacter = tool({
 // ==============================================================================
 
 export const getSetting = tool({
-  description: 'Get setting details including mood, sensory details, and visual style',
+  summary: 'Get setting details including mood, sensory details, and visual style',
   parameters: z.object({
     settingId: z.string().describe('The setting ID to retrieve'),
   }),
@@ -615,7 +615,7 @@ export const getSetting = tool({
         id: setting.id,
         name: setting.name,
         storyId: setting.storyId,
-        description: setting.description,
+        summary: setting.description,
         mood: setting.mood,
         sensory: setting.sensory,
         visualStyle: setting.visualStyle,
@@ -631,11 +631,11 @@ export const getSetting = tool({
 });
 
 export const createSetting = tool({
-  description: 'Create a new setting in a story',
+  summary: 'Create a new setting in a story',
   parameters: z.object({
     storyId: z.string().describe('The story ID'),
     name: z.string().describe('Setting name'),
-    description: z.string().optional().describe('Setting description'),
+    summary: z.string().optional().describe('Setting description'),
     mood: z.string().optional().describe('Setting mood'),
   }),
   execute: async ({ storyId, name, description, mood }) => {
@@ -645,7 +645,7 @@ export const createSetting = tool({
         id: `setting_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         storyId,
         name,
-        description: description || null,
+        summary: description || null,
         mood: mood || null,
       })
       .returning();
@@ -662,12 +662,12 @@ export const createSetting = tool({
 });
 
 export const updateSetting = tool({
-  description: 'Update setting details',
+  summary: 'Update setting details',
   parameters: z.object({
     settingId: z.string().describe('The setting ID to update'),
     updates: z.object({
       name: z.string().optional().describe('Setting name'),
-      description: z.string().optional().describe('Setting description'),
+      summary: z.string().optional().describe('Setting description'),
       mood: z.string().optional().describe('Setting mood'),
       architecturalStyle: z.string().optional().describe('Architectural style'),
       symbolicMeaning: z.string().optional().describe('Symbolic meaning'),
@@ -697,7 +697,7 @@ export const updateSetting = tool({
 });
 
 export const deleteSetting = tool({
-  description: 'Delete a setting',
+  summary: 'Delete a setting',
   parameters: z.object({
     settingId: z.string().describe('The setting ID to delete'),
   }),

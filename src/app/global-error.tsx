@@ -235,7 +235,7 @@ export default function GlobalError({
           {/* Error Message */}
           <h1>Critical System Error</h1>
           <p>
-            We've encountered a critical error that affected the entire application.
+            We&apos;ve encountered a critical error that affected the entire application.
             This is unusual and our team has been notified. Please try restarting
             the application.
           </p>

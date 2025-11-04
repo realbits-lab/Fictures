@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getChapterById, getChapterScenes } from '@/lib/db/cached-queries';
 import { getStoryById } from '@/lib/db/cached-queries';
-import { getChapterScenesForReading } from '@/lib/db/novels-queries';
+import { getChapterScenesForReading } from '@/lib/db/reading-queries';
 import { createHash } from 'crypto';
 
 export async function GET(

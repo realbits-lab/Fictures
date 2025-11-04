@@ -197,7 +197,7 @@ export async function generateComicPanels(
       characterPrompts,
       keyTraits,
       lighting: panelSpec.lighting,
-      description: panelSpec.description,
+      summary: panelSpec.description,
       mood: panelSpec.mood,
     });
 
@@ -258,7 +258,7 @@ export async function generateComicPanels(
       narrative: panelSpec.narrative || null,
       dialogue: panelSpec.dialogue as any,
       sfx: panelSpec.sfx as any,
-      description: panelSpec.description,
+      summary: panelSpec.description,
       metadata: {
         prompt: imagePrompt,
         characters_visible: panelSpec.characters_visible,
@@ -352,7 +352,7 @@ interface BuildPanelImagePromptOptions {
   characterPrompts: string;
   keyTraits: string;
   lighting: string;
-  description: string;
+  summary: string;
   mood: string;
 }
 

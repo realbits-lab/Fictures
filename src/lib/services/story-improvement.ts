@@ -11,7 +11,7 @@ import type {
 // Improvement schemas
 const ImprovedStorySchema = z.object({
   title: z.string().optional(),
-  description: z.string().optional(),
+  summary: z.string().optional(),
   premise: z.string().optional(),
   dramaticQuestion: z.string().optional(),
   theme: z.string().optional(),
@@ -28,7 +28,7 @@ const ImprovedStorySchema = z.object({
 
 const ImprovedPartSchema = z.object({
   title: z.string().optional(),
-  description: z.string().optional(),
+  summary: z.string().optional(),
   structuralRole: z.string().optional(),
   summary: z.string().optional(),
   keyBeats: z.array(z.string()).optional(),
@@ -50,7 +50,7 @@ const ImprovedChapterSchema = z.object({
   actionDialogueRatio: z.string().optional(),
   chapterHook: z.object({
     type: z.string(),
-    description: z.string(),
+    summary: z.string(),
     urgency_level: z.string()
   }).optional(),
   hnsData: z.object({
@@ -123,7 +123,7 @@ const ImprovedCharacterSchema = z.object({
 
 const ImprovedSettingSchema = z.object({
   name: z.string().optional(),
-  description: z.string().optional(),
+  summary: z.string().optional(),
   mood: z.string().optional(),
   sensory: z.record(z.string(), z.array(z.string())).optional(),
   visualStyle: z.string().optional(),
@@ -551,7 +551,7 @@ async function improveStory(
 
 ORIGINAL STORY:
 Title: ${story.title}
-Description: ${story.description || 'N/A'}
+Description: ${story.summary || 'N/A'}
 Premise: ${story.premise || 'N/A'}
 Dramatic Question: ${story.dramaticQuestion || 'N/A'}
 Theme: ${story.theme || 'N/A'}
@@ -585,7 +585,7 @@ Return ONLY the fields that need updating. Keep other fields unchanged.`
     const improvements: string[] = [];
 
     // Track what was improved
-    if (object.description && object.description !== story.description) {
+    if (object.description && object.description !== story.summary) {
       changes.push('description');
       improvements.push('Enhanced story description for clarity');
     }

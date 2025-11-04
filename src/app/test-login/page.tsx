@@ -61,8 +61,8 @@ export default function TestLoginPage() {
             <p className="font-medium mb-2">Before testing:</p>
             <ol className="list-decimal list-inside space-y-1 text-gray-700 dark:text-gray-300">
               <li>Open Chrome settings: chrome://settings/passwords</li>
-              <li>Ensure "Offer to save passwords" is enabled</li>
-              <li>Check "Auto Sign-in" is enabled</li>
+              <li>Ensure &quot;Offer to save passwords&quot; is enabled</li>
+              <li>Check &quot;Auto Sign-in&quot; is enabled</li>
               <li>Clear any existing saved passwords for localhost:3000</li>
             </ol>
           </div>
@@ -119,8 +119,8 @@ export default function TestLoginPage() {
             <p className="font-medium mb-2">What should happen:</p>
             <ol className="list-decimal list-inside space-y-1 text-gray-700 dark:text-gray-300">
               <li>Enter any email and password</li>
-              <li>Click "Test Submit"</li>
-              <li>Chrome should show "Save password?" prompt</li>
+              <li>Click &quot;Test Submit&quot;</li>
+              <li>Chrome should show &quot;Save password?&quot; prompt</li>
               <li>If not, password saving may be disabled or blocked</li>
             </ol>
           </div>

@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       if (story) {
         finalPrompt = buildStoryImagePrompt({
           title: story.title,
-          description: story.description || undefined,
+          description: story.summary || undefined,
           genre: story.genre || undefined,
         });
 
@@ -120,49 +120,49 @@ export async function GET() {
   return new Response(
     JSON.stringify({
       message: 'Story Image Generation API',
-      description: 'Generate story illustrations using DALL-E 3 with 16:9 aspect ratio (1792x1024)',
+      summary: 'Generate story illustrations using DALL-E 3 with 16:9 aspect ratio (1792x1024)',
       usage: 'POST with appropriate parameters',
       parameters: {
         prompt: {
           type: 'string',
           required: 'conditional',
-          description: 'Image generation prompt (required if autoPrompt is false)',
+          summary: 'Image generation prompt (required if autoPrompt is false)',
           example: 'A mysterious forest at twilight with ancient trees, cinematic composition',
         },
         storyId: {
           type: 'string',
           required: false,
-          description: 'Story ID for context and ownership verification',
+          summary: 'Story ID for context and ownership verification',
         },
         chapterId: {
           type: 'string',
           required: false,
-          description: 'Chapter ID for organizing generated images',
+          summary: 'Chapter ID for organizing generated images',
         },
         sceneId: {
           type: 'string',
           required: false,
-          description: 'Scene ID for organizing generated images',
+          summary: 'Scene ID for organizing generated images',
         },
         style: {
           type: 'string',
           required: false,
           default: 'vivid',
           options: ['vivid', 'natural'],
-          description: 'Image style - vivid for hyper-real, natural for realistic',
+          summary: 'Image style - vivid for hyper-real, natural for realistic',
         },
         quality: {
           type: 'string',
           required: false,
           default: 'standard',
           options: ['standard', 'hd'],
-          description: 'Image quality level',
+          summary: 'Image quality level',
         },
         autoPrompt: {
           type: 'boolean',
           required: false,
           default: false,
-          description: 'Auto-generate prompt from story context (requires storyId)',
+          summary: 'Auto-generate prompt from story context (requires storyId)',
         },
       },
       response: {

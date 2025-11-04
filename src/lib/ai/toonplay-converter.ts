@@ -25,7 +25,7 @@ export const ComicPanelSpecSchema = z.object({
     'over_shoulder',
     'dutch_angle'
   ]),
-  description: z.string().describe('Detailed visual description for image generation'),
+  summary: z.string().describe('Detailed visual description for image generation'),
   characters_visible: z.array(z.string()).describe('Array of character IDs visible in panel'),
   character_poses: z.record(z.string(), z.string()).describe('Map of character_id to pose description'),
   setting_focus: z.string().describe('Which part of the setting is emphasized'),

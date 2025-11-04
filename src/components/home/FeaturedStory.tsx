@@ -4,7 +4,7 @@ import { Button } from '@/components/ui';
 interface FeaturedStoryData {
   id: string;
   title: string;
-  description: string;
+  summary: string;
   genre: string;
   author: {
     id: string;
@@ -78,7 +78,7 @@ export function FeaturedStory({ initialStory }: FeaturedStoryProps) {
               {/* Description and Author */}
               <div className="mb-6">
                 <p className="text-gray-600 dark:text-gray-400 text-lg mb-4">
-                  {story.description}
+                  {story.summary}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-500">
                   by <span className="font-semibold text-gray-700 dark:text-gray-300">{story.author.name}</span>

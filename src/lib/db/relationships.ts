@@ -20,7 +20,7 @@ export class RelationshipManager {
         id: partId,
         storyId,
         title: partData.title!,
-        description: partData.description,
+        summary: partData.description,
         authorId: partData.authorId!,
         orderIndex: partData.orderIndex!,
         content: partData.content,

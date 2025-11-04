@@ -13,8 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { InFeedAd } from "@/components/ads";
-import { trackSearch, trackStoryEvent } from '@/lib/analytics/google-analytics';
-import { readingHistoryManager } from '@/lib/storage/novels-history-manager';
+import { trackSearch, trackStoryEvent } from '@/lib/analysis/google-analytics';
+import { readingHistoryManager } from '@/lib/storage/reading-history-manager';
 import { STORY_GENRES } from '@/lib/constants/genres';
 import { CreateNewStoryButton } from "@/components/studio/create-new-story-button";
 import type { ReadingFormat } from '@/types/novels-history';

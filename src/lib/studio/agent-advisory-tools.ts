@@ -10,7 +10,7 @@ import { eq, and, count } from 'drizzle-orm';
 // ==============================================================================
 
 export const checkPrerequisites = tool({
-  description: 'Check if prerequisites are met for a specific generation phase',
+  summary: 'Check if prerequisites are met for a specific generation phase',
   parameters: z.object({
     storyId: z.string().describe('The story ID'),
     targetPhase: z.enum([
@@ -181,7 +181,7 @@ export const checkPrerequisites = tool({
 });
 
 export const validateStoryStructure = tool({
-  description: 'Validate story structure integrity and completeness',
+  summary: 'Validate story structure integrity and completeness',
   parameters: z.object({
     storyId: z.string().describe('The story ID to validate'),
   }),
@@ -286,7 +286,7 @@ export const validateStoryStructure = tool({
 });
 
 export const suggestNextPhase = tool({
-  description: 'Suggest the next logical phase based on current story state',
+  summary: 'Suggest the next logical phase based on current story state',
   parameters: z.object({
     storyId: z.string().describe('The story ID'),
   }),
