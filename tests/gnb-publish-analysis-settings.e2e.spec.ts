@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * E2E Tests for Publish, Analytics, and Settings Pages
+ * E2E Tests for Publish, Analysis, and Settings Pages
  *
  * PURPOSE:
  * Tests three distinct authenticated-user pages in a single test file:
  * 1. Publish Page (/publish) - Story publication workflow
- * 2. Analytics Page (/analytics) - Story performance metrics and insights
+ * 2. Analysis Page (/analysis) - Story performance metrics and insights
  * 3. Settings Page (/settings) - User preferences and configuration
  * Plus cross-cutting tests for mobile responsiveness, accessibility, and JavaScript errors.
  *
@@ -17,9 +17,9 @@ import { test, expect } from '@playwright/test';
  * - Performance: Page load < 3 seconds
  * Tests: 4
  *
- * ANALYTICS PAGE (/analytics):
+ * ANALYSIS PAGE (/analysis):
  * - Writer/Manager access control
- * - Analytics dashboard display
+ * - Analysis dashboard display
  * - Menu navigation and highlighting
  * - Performance: Page load < 3 seconds
  * Tests: 4
@@ -40,10 +40,10 @@ import { test, expect } from '@playwright/test';
  *
  * AUTHENTICATION:
  * - ALL tests require authentication using .auth/user.json
- * - Publish/Analytics restricted to writers/managers
+ * - Publish/Analysis restricted to writers/managers
  * - Settings accessible to all authenticated users
  *
- * TOTAL: 16 test cases (4 Publish + 4 Analytics + 5 Settings + 3 Cross-cutting)
+ * TOTAL: 16 test cases (4 Publish + 4 Analysis + 5 Settings + 3 Cross-cutting)
  */
 
 test.describe('GNB - Publish Page Tests', () => {
@@ -110,13 +110,13 @@ test.describe('GNB - Publish Page Tests', () => {
   });
 });
 
-test.describe('GNB - Analytics Page Tests', () => {
+test.describe('GNB - Analysis Page Tests', () => {
   test.use({ storageState: '.auth/user.json' });
 
-  test('TC-ANALYTICS-AUTH-003: Writer/Manager can access Analytics page', async ({ page }) => {
-    console.log('📖 Testing access to Analytics page...');
+  test('TC-ANALYSIS-AUTH-003: Writer/Manager can access Analysis page', async ({ page }) => {
+    console.log('📖 Testing access to Analysis page...');
 
-    await page.goto('/analytics');
+    await page.goto('/analysis');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1500);
 
@@ -124,30 +124,30 @@ test.describe('GNB - Analytics Page Tests', () => {
     expect(hasAccessDenied).toBe(0);
 
     await expect(page.locator('body')).toBeVisible();
-    console.log('✅ Analytics page accessible');
+    console.log('✅ Analysis page accessible');
   });
 
-  test('TC-ANALYTICS-NAV-001: Analytics menu item highlighted when active', async ({ page }) => {
-    console.log('📖 Testing Analytics menu highlight...');
+  test('TC-ANALYSIS-NAV-001: Analysis menu item highlighted when active', async ({ page }) => {
+    console.log('📖 Testing Analysis menu highlight...');
 
-    await page.goto('/analytics');
+    await page.goto('/analysis');
     await page.waitForLoadState('networkidle');
 
-    const analyticsLink = page.locator('a[href="/analytics"]').first();
-    const hasActiveClass = await analyticsLink.evaluate((el) => {
+    const analysisLink = page.locator('a[href="/analysis"]').first();
+    const hasActiveClass = await analysisLink.evaluate((el) => {
       const computedStyle = window.getComputedStyle(el);
       const bgColor = computedStyle.backgroundColor;
       return bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent';
     });
 
     expect(hasActiveClass).toBe(true);
-    console.log('✅ Analytics menu highlighted');
+    console.log('✅ Analysis menu highlighted');
   });
 
-  test('TC-ANALYTICS-CONTENT-001: Analytics dashboard displays', async ({ page }) => {
-    console.log('📖 Testing analytics dashboard display...');
+  test('TC-ANALYSIS-CONTENT-001: Analysis dashboard displays', async ({ page }) => {
+    console.log('📖 Testing analysis dashboard display...');
 
-    await page.goto('/analytics');
+    await page.goto('/analysis');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
 
@@ -157,14 +157,14 @@ test.describe('GNB - Analytics Page Tests', () => {
     const pageText = await page.locator('body').textContent();
     expect(pageText?.length).toBeGreaterThan(50);
 
-    console.log('✅ Analytics dashboard displays');
+    console.log('✅ Analysis dashboard displays');
   });
 
-  test('TC-ANALYTICS-PERF-001: Page loads in under 3 seconds', async ({ page }) => {
-    console.log('📖 Testing Analytics page load time...');
+  test('TC-ANALYSIS-PERF-001: Page loads in under 3 seconds', async ({ page }) => {
+    console.log('📖 Testing Analysis page load time...');
 
     const startTime = Date.now();
-    await page.goto('/analytics');
+    await page.goto('/analysis');
     await page.waitForLoadState('networkidle');
     const loadTime = Date.now() - startTime;
 
@@ -264,7 +264,7 @@ test.describe('GNB - Cross-Cutting Tests', () => {
 
     await page.setViewportSize({ width: 375, height: 667 });
 
-    const pages = ['/', '/studio', '/reading', '/community', '/publish', '/analytics', '/settings'];
+    const pages = ['/', '/studio', '/reading', '/community', '/publish', '/analysis', '/settings'];
 
     for (const pagePath of pages) {
       await page.goto(pagePath);
@@ -293,7 +293,7 @@ test.describe('GNB - Cross-Cutting Tests', () => {
       errors.push(error.message);
     });
 
-    const pages = ['/', '/studio', '/reading', '/community', '/publish', '/analytics', '/settings'];
+    const pages = ['/', '/studio', '/reading', '/community', '/publish', '/analysis', '/settings'];
 
     for (const pagePath of pages) {
       await page.goto(pagePath);

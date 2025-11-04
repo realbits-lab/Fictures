@@ -90,7 +90,7 @@ export function useStoryStats(storyId: string | null) {
   return usePersistedSWR(
     storyId ? `/studio/api/stories/${storyId}/stats` : null,
     fetcher,
-    CACHE_CONFIGS.analytics,
+    CACHE_CONFIGS.analysis,
     {
       revalidateOnFocus: false,
       refreshInterval: 60000, // Refresh every minute for stats
@@ -285,11 +285,11 @@ export function usePublishHistory() {
   );
 }
 
-export function usePublishAnalytics() {
+export function usePublishAnalysis() {
   return usePersistedSWR(
-    '/publish/api/analytics',
+    '/publish/api/analysis',
     fetcher,
-    CACHE_CONFIGS.analytics,
+    CACHE_CONFIGS.analysis,
     {
       revalidateOnFocus: false,
       refreshInterval: 2 * 60 * 1000, // Refresh every 2 minutes
@@ -298,29 +298,29 @@ export function usePublishAnalytics() {
   );
 }
 
-// Analytics page hooks
-export function useStoryAnalytics(timeRange: string = '7d') {
+// Analysis page hooks
+export function useStoryAnalysis(timeRange: string = '7d') {
   return usePersistedSWR(
-    `/analytics/api/stories?range=${timeRange}`,
+    `/analysis/api/stories?range=${timeRange}`,
     fetcher,
-    CACHE_CONFIGS.analytics,
+    CACHE_CONFIGS.analysis,
     {
       revalidateOnFocus: true,
       refreshInterval: 30 * 1000, // Refresh every 30 seconds
       dedupingInterval: 10 * 1000, // Dedupe for 10 seconds
       keepPreviousData: true,
       onSuccess: (data) => {
-        console.log('✅ Story analytics loaded for', timeRange, ':', data?.totalViews || 0, 'views');
+        console.log('✅ Story analysis loaded for', timeRange, ':', data?.totalViews || 0, 'views');
       }
     }
   );
 }
 
-export function useReaderAnalytics(timeRange: string = '7d') {
+export function useReaderAnalysis(timeRange: string = '7d') {
   return usePersistedSWR(
-    `/analytics/api/readers?range=${timeRange}`,
+    `/analysis/api/readers?range=${timeRange}`,
     fetcher,
-    CACHE_CONFIGS.analytics,
+    CACHE_CONFIGS.analysis,
     {
       revalidateOnFocus: false,
       refreshInterval: 60 * 1000, // Refresh every minute
@@ -331,9 +331,9 @@ export function useReaderAnalytics(timeRange: string = '7d') {
 
 export function usePerformanceMetrics(storyId: string | null) {
   return usePersistedSWR(
-    storyId ? `/analytics/api/performance/${storyId}` : null,
+    storyId ? `/analysis/api/performance/${storyId}` : null,
     fetcher,
-    CACHE_CONFIGS.analytics,
+    CACHE_CONFIGS.analysis,
     {
       revalidateOnFocus: false,
       refreshInterval: 2 * 60 * 1000, // Refresh every 2 minutes

@@ -51,9 +51,16 @@ This file provides guidance to Claude Code when working with this repository.
 ## Database Management
 
 **IMPORTANT: Uses Neon PostgreSQL Database**
-- Database operations use Drizzle ORM - see `src/lib/db/schema.ts`
+- Database operations use Drizzle ORM - see `drizzle/schema.ts` (single source of truth)
 - Always prefix commands with `dotenv --file .env.local run` for proper database connectivity
 - DO NOT use Supabase MCP tools - this project uses Neon PostgreSQL
+
+**Database Schema Usage:**
+- **ALWAYS import schema from `drizzle/schema.ts`** - This is the single source of truth for all database tables
+- **NEVER define tables inline** in scripts, API routes, or services
+- **Example**: `import { users, apiKeys, stories, chapters } from '../drizzle/schema.ts'`
+- **Why**: Prevents schema drift, ensures consistency, and maintains type safety across the entire codebase
+- **Applies to**: All scripts, API routes, services, utilities, and test files
 
 **Database Naming Convention:**
 - **Table and column names use snake_case** (e.g., `created_at`, `updated_at`, `email_verified`)
@@ -189,7 +196,7 @@ Playwright tests use **direct email/password authentication** via the `/login` p
 - **Comics** (🎨) - `/comics` - Browse and read visual/comic format stories (all users)
 - **Community** (💬) - `/community` - Story sharing and discussion (all users)
 - **Publish** (📤) - `/publish` - Publish stories to community (writers/managers only)
-- **Analytics** (📊) - `/analytics` - Story performance metrics (writers/managers only)
+- **Analysis** (📊) - `/analysis` - Story performance metrics (writers/managers only)
 - **Settings** (⚙️) - `/settings` - User preferences (authenticated users)
 
 ### Core Technologies
@@ -215,7 +222,7 @@ src/
 │   ├── comics/            # Comic reading interface
 │   ├── community/         # Story sharing & discussion
 │   ├── publish/           # Publishing & scheduling
-│   ├── analytics/         # Performance metrics
+│   ├── analysis/          # Performance metrics
 │   ├── settings/          # User preferences
 │   └── api/               # Global API endpoints
 ├── components/            # React UI components
@@ -356,7 +363,7 @@ dotenv --file .env.local run node scripts/remove-story.mjs STORY_ID > logs/story
   - Setting visuals (1792x1024, 16:9)
   - All optimized variants (AVIF, WebP, JPEG in multiple sizes)
 - **Community data**: posts, likes, replies, bookmarks
-- **Analytics data**: reading sessions, insights, events
+- **Analysis data**: reading sessions, insights, events
 
 **Safety Features:**
 - Confirmation prompts for bulk operations

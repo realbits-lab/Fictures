@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 
 /**
  * Setup Authentication Users
@@ -10,48 +10,18 @@
  *
  * Generates secure passwords, hashes them with PBKDF2, and creates API keys.
  * Outputs simplified auth file structure with only email, password, and apiKey.
+ *
+ * Usage:
+ *   dotenv --file .env.local run tsx scripts/setup-auth-users.ts
  */
 
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { pgTable, text, varchar, timestamp, json, boolean, pgEnum } from 'drizzle-orm/pg-core';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Define schema inline to avoid TypeScript imports
-const userRoleEnum = pgEnum('user_role', ['reader', 'writer', 'manager']);
-
-const users = pgTable('users', {
-  id: text('id').primaryKey(),
-  email: text('email').notNull(),
-  name: text('name'),
-  username: varchar('username', { length: 50 }),
-  password: varchar('password', { length: 255 }),
-  role: userRoleEnum('role').notNull().default('reader'),
-  emailVerified: timestamp('email_verified'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
-
-const apiKeys = pgTable('api_keys', {
-  id: text('id').primaryKey(),
-  userId: text('user_id').notNull(),
-  name: varchar('name', { length: 255 }).notNull().default('API Key'),
-  keyHash: varchar('key_hash', { length: 64 }).notNull(),
-  keyPrefix: varchar('key_prefix', { length: 16 }).notNull(),
-  scopes: json('scopes').notNull().default([]),
-  isActive: boolean('is_active').notNull().default(true),
-  lastUsedAt: timestamp('last_used_at'),
-  expiresAt: timestamp('expires_at'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+import { users, apiKeys } from '../drizzle/schema';
 
 // PBKDF2 password hashing (matching src/lib/auth/password.ts)
 async function hashPassword(password) {
@@ -226,7 +196,7 @@ async function main() {
             username: config.username,
             password: hashedPassword,
             role: config.role,
-            updatedAt: new Date()
+            updatedAt: new Date().toISOString()
           })
           .where(eq(users.id, userId));
 
@@ -242,9 +212,9 @@ async function main() {
           username: config.username,
           password: hashedPassword,
           role: config.role,
-          emailVerified: new Date(),
-          createdAt: new Date(),
-          updatedAt: new Date()
+          emailVerified: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         });
 
         console.log(`   ✓ Created user account`);
@@ -270,8 +240,8 @@ async function main() {
         keyPrefix: keyPrefix,
         scopes: config.scopes,
         isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       });
 
       console.log(`   ✓ Created API key`);
@@ -287,7 +257,7 @@ async function main() {
     }
 
     // Write auth file
-    const authFilePath = path.join(__dirname, '..', '.auth', 'user.json');
+    const authFilePath = path.join(process.cwd(), '.auth', 'user.json');
     const authDir = path.dirname(authFilePath);
 
     // Create .auth directory if it doesn't exist

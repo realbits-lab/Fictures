@@ -1,9 +1,9 @@
 "use client";
 
 import { Card, CardHeader, CardTitle, CardContent, Progress, Badge, Skeleton } from "@/components/ui";
-import { useStoryAnalytics, useReaderAnalytics } from "@/lib/hooks/use-page-cache";
-import { ScenePerformanceTable } from "@/components/analytics/ScenePerformanceTable";
-import { FormatDistributionCard } from "@/components/analytics/FormatDistributionCard";
+import { useStoryAnalysis, useReaderAnalysis } from "@/lib/hooks/use-page-cache";
+import { ScenePerformanceTable } from "@/components/analysis/ScenePerformanceTable";
+import { FormatDistributionCard } from "@/components/analysis/FormatDistributionCard";
 import { useState } from "react";
 
 // Skeleton components for loading states
@@ -57,13 +57,13 @@ function StoryPerformanceSkeleton() {
   );
 }
 
-export function AnalyticsDashboard() {
-  const { data: analyticsData, isLoading: analyticsLoading, error: analyticsError } = useStoryAnalytics('7d');
-  const { data: readerData, isLoading: readerLoading, error: readerError } = useReaderAnalytics('7d');
+export function AnalysisDashboard() {
+  const { data: analysisData, isLoading: analysisLoading, error: analysisError } = useStoryAnalysis('7d');
+  const { data: readerData, isLoading: readerLoading, error: readerError } = useReaderAnalysis('7d');
   const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
 
-  const isLoading = analyticsLoading || readerLoading;
-  const hasError = analyticsError || readerError;
+  const isLoading = analysisLoading || readerLoading;
+  const hasError = analysisError || readerError;
 
   // TODO: Get actual story ID from user's stories - for now using placeholder
   // This should be replaced with actual story selection logic
@@ -75,7 +75,7 @@ export function AnalyticsDashboard() {
       <div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
           <span>📊</span>
-          Analytics Dashboard
+          Analysis Dashboard
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
           Track your stories&rsquo; performance and reader engagement
@@ -90,10 +90,10 @@ export function AnalyticsDashboard() {
           <CardContent className="py-8 text-center">
             <div className="text-4xl mb-4">⚠️</div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              Failed to load analytics data
+              Failed to load analysis data
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              {analyticsError?.message || readerError?.message || 'Unknown error occurred'}
+              {analysisError?.message || readerError?.message || 'Unknown error occurred'}
             </p>
           </CardContent>
         </Card>
@@ -103,11 +103,11 @@ export function AnalyticsDashboard() {
             <CardContent className="py-6">
               <div className="text-center space-y-2">
                 <div className="text-3xl font-bold text-blue-600">
-                  {analyticsData?.totalReaders?.toLocaleString() || '2.4k'}
+                  {analysisData?.totalReaders?.toLocaleString() || '2.4k'}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">Total Readers</div>
                 <div className="flex items-center justify-center text-xs text-green-600">
-                  ↗️ +{analyticsData?.readerGrowth || 12}% this week
+                  ↗️ +{analysisData?.readerGrowth || 12}% this week
                 </div>
               </div>
             </CardContent>
@@ -117,11 +117,11 @@ export function AnalyticsDashboard() {
             <CardContent className="py-6">
               <div className="text-center space-y-2">
                 <div className="text-3xl font-bold text-green-600">
-                  {analyticsData?.avgRating || '4.7'}
+                  {analysisData?.avgRating || '4.7'}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">Avg Rating</div>
                 <div className="flex items-center justify-center text-xs text-green-600">
-                  ↗️ +{analyticsData?.ratingChange || '0.1'} this week
+                  ↗️ +{analysisData?.ratingChange || '0.1'} this week
                 </div>
               </div>
             </CardContent>
@@ -131,11 +131,11 @@ export function AnalyticsDashboard() {
             <CardContent className="py-6">
               <div className="text-center space-y-2">
                 <div className="text-3xl font-bold text-purple-600">
-                  {analyticsData?.totalComments?.toLocaleString() || '1.2k'}
+                  {analysisData?.totalComments?.toLocaleString() || '1.2k'}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">Comments</div>
                 <div className="flex items-center justify-center text-xs text-green-600">
-                  ↗️ +{analyticsData?.commentGrowth || 23}% this week
+                  ↗️ +{analysisData?.commentGrowth || 23}% this week
                 </div>
               </div>
             </CardContent>
@@ -145,11 +145,11 @@ export function AnalyticsDashboard() {
             <CardContent className="py-6">
               <div className="text-center space-y-2">
                 <div className="text-3xl font-bold text-orange-600">
-                  {analyticsData?.engagement || '87'}%
+                  {analysisData?.engagement || '87'}%
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">Engagement</div>
                 <div className="flex items-center justify-center text-xs text-green-600">
-                  ↗️ +{analyticsData?.engagementGrowth || 5}% this week
+                  ↗️ +{analysisData?.engagementGrowth || 5}% this week
                 </div>
               </div>
             </CardContent>

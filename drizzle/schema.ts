@@ -64,7 +64,7 @@ export const characters = pgTable("characters", {
 	name: varchar({ length: 255 }).notNull(),
 	storyId: text("story_id").notNull(),
 	isMain: boolean("is_main").default(false),
-	content: text().default('),
+	content: text().default(''),
 	imageUrl: text("image_url"),
 	imageVariants: json("image_variants"),
 	role: varchar({ length: 50 }),
@@ -682,7 +682,7 @@ export const postViews = pgTable("post_views", {
 export const scenes = pgTable("scenes", {
 	id: text().primaryKey().notNull(),
 	title: varchar({ length: 255 }).notNull(),
-	content: text().default('),
+	content: text().default(''),
 	chapterId: text("chapter_id").notNull(),
 	orderIndex: integer("order_index").notNull(),
 	imageUrl: text("image_url"),
@@ -814,7 +814,7 @@ export const sceneEvaluations = pgTable("scene_evaluations", {
 ]);
 
 export const sceneViews = pgTable("scene_views", {
-	id: text().default('gen_random_uuid()).primaryKey().notNull(),
+	id: text().default('gen_random_uuid()').primaryKey().notNull(),
 	sceneId: text("scene_id").notNull(),
 	userId: text("user_id"),
 	sessionId: text("session_id"),

@@ -1,6 +1,6 @@
-# Analytics & Insights Specification
+# Analysis & Insights Specification
 
-This document outlines the specifications for upgrading the Fictures analytics features from mock data to production-ready implementation with AI-powered insights, quality recommendations, and responsive mobile design.
+This document outlines the specifications for upgrading the Fictures analysis features from mock data to production-ready implementation with AI-powered insights, quality recommendations, and responsive mobile design.
 
 ## Table of Contents
 1. [Current State Analysis](#current-state-analysis)
@@ -20,21 +20,21 @@ This document outlines the specifications for upgrading the Fictures analytics f
 
 ### What Currently Exists
 
-#### Database Analytics Support
+#### Database Analysis Support
 - ✅ `userStats` table with comprehensive metrics
 - ✅ `sceneEvaluations` table with AI-powered quality scores
 - ✅ `aiInteractions` table tracking AI usage
 - ✅ `stories` with `viewCount`, `rating`, `ratingCount`
 - ✅ `communityPosts` with `likes`, `replies`, `views`
 
-#### Analytics API Endpoints (Mock Data)
-- ✅ GET `/api/analytics/stories` - Story performance metrics
-- ✅ GET `/api/analytics/readers` - Reader engagement data
-- ✅ GET `/api/publish/analytics` - Publication insights
+#### Analysis API Endpoints (Mock Data)
+- ✅ GET `/api/analysis/stories` - Story performance metrics
+- ✅ GET `/api/analysis/readers` - Reader engagement data
+- ✅ GET `/api/publish/analysis` - Publication insights
 - ✅ GET `/api/stats` - User statistics
 
 #### Frontend Components
-- ✅ Analytics dashboard page with layout
+- ✅ Analysis dashboard page with layout
 - ✅ Loading skeletons
 - ✅ Data fetching hooks (SWR)
 - ✅ Dark mode support
