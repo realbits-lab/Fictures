@@ -31,9 +31,12 @@ This file provides guidance to Claude Code when working with this repository.
 - **Test Files**: Always write test files in `tests/` or `__tests__/` directories
   - E2E tests: `tests/*.spec.ts` (Playwright tests)
   - Unit tests: `__tests__/*.test.ts` or `__tests__/*.test.tsx` (Jest tests)
-- **Script Files**: Always write script files in `scripts/` directory
+- **Script Files**: Decide directory based on script purpose and longevity
+  - **`test-scripts/`**: Temporary scripts for testing, debugging, or one-time exploration
+  - **`scripts/`**: Permanent utility scripts for production use
   - See complete script documentation: [scripts/CLAUDE.md](scripts/CLAUDE.md)
   - Story generation, management, testing, and utility scripts
+  - When creating scripts, evaluate whether they are temporary experiments or permanent utilities
 - **Documentation Files**: All documentation files (`.md` or `.mdx`) MUST include frontmatter
   - **MANDATORY**: Frontmatter with at least `title` field at the top of every documentation file
   - Format: `---\ntitle: Document Title\n---` before content

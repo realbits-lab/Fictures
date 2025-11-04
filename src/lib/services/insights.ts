@@ -2,11 +2,11 @@ import { db } from '@/lib/db';
 import { storyInsights, sceneEvaluations, analyticsEvents, comments, stories, chapters, scenes } from '@/lib/db/schema';
 import { eq, and, gte, desc, sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
-import OpenAI from 'openai';
+import { generateText } from 'ai';
+import { google } from '@ai-sdk/google';
 
-const openai = new OpenAI({
-  apiKey: process.env.AI_GATEWAY_API_KEY,
-});
+// Use Gemini Flash for analytics insights (fast, cost-effective for text generation)
+const analyticsModel = google('gemini-2.0-flash-exp');
 
 export interface GenerateInsightsParams {
   storyId: string;
@@ -101,7 +101,7 @@ async function generateQualityInsights(story: any): Promise<void> {
       affectedScenes: problemScenes.length,
       scores: avgScores,
     },
-    aiModel: 'gpt-4o-mini',
+    aiModel: 'gemini-2.0-flash-exp',
     confidenceScore: '0.85',
     createdAt: new Date(),
   });
@@ -195,7 +195,7 @@ async function generateReaderFeedbackInsights(story: any): Promise<void> {
       sentiment: analysis.sentiment,
       themes: analysis.themes,
     },
-    aiModel: 'gpt-4o-mini',
+    aiModel: 'gemini-2.0-flash-exp',
     confidenceScore: '0.75',
     createdAt: new Date(),
   });
@@ -228,14 +228,13 @@ Format as JSON:
 }`;
 
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
+    const { text } = await generateText({
+      model: analyticsModel,
+      prompt,
       temperature: 0.7,
-      response_format: { type: 'json_object' },
     });
 
-    return JSON.parse(response.choices[0].message.content || '{"summary": "Unable to generate recommendations", "actionItems": []}');
+    return JSON.parse(text || '{"summary": "Unable to generate recommendations", "actionItems": []}');
   } catch (error) {
     console.error('Failed to generate recommendations:', error);
     return {
@@ -270,14 +269,13 @@ Format as JSON:
 }`;
 
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
+    const { text } = await generateText({
+      model: analyticsModel,
+      prompt,
       temperature: 0.5,
-      response_format: { type: 'json_object' },
     });
 
-    return JSON.parse(response.choices[0].message.content || '{"summary": "Unable to analyze", "sentiment": {"positive": 0, "neutral": 0, "negative": 0}, "themes": [], "suggestions": []}');
+    return JSON.parse(text || '{"summary": "Unable to analyze", "sentiment": {"positive": 0, "neutral": 0, "negative": 0}, "themes": [], "suggestions": []}');
   } catch (error) {
     console.error('Failed to analyze sentiment:', error);
     return {

@@ -102,18 +102,7 @@ export const authConfig = {
           return false; // No email provided
         }
 
-        // Get allowed emails from environment variable
-        const allowedEmailsEnv = process.env.ALLOWED_EMAILS;
-        
-        // If ALLOWED_EMAILS is set, check if user email is in the list
-        if (allowedEmailsEnv) {
-          const allowedEmails = allowedEmailsEnv.split(',').map(email => email.trim());
-          if (!allowedEmails.includes(profile.email)) {
-            return false; // Email not in allowed list
-          }
-        }
-        
-        // Email restriction passed (or no restriction set), now handle database persistence
+        // Handle database persistence
         try {
           // Check if user already exists in database
           const existingUser = await findUserByEmail(profile.email);
