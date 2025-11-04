@@ -95,10 +95,9 @@ export async function POST(request: NextRequest) {
       validatedData.storyId,
       {
         title: validatedData.title,
-        summary: validatedData.description,
+        summary: (validatedData as any).summary || (validatedData as any).description,
         authorId: session.user.id,
         orderIndex: validatedData.orderIndex,
-        content: validatedData.content || '',
       }
     );
 

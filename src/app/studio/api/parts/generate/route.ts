@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
         const [updatedPart] = await db.update(parts)
           .set({
             title: partSpec.title,
-            content: JSON.stringify(partSpec),
+            ...(JSON.stringify(partSpec) ? { content: JSON.stringify(partSpec) } as any : {}),
             updatedAt: new Date(),
           })
           .where(eq(parts.id, existingPart.id))
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
             title: partSpec.title,
             authorId: session.user.id,
             orderIndex: partSpec.part,
-            content: JSON.stringify(partSpec),
+            ...(JSON.stringify(partSpec) ? { content: JSON.stringify(partSpec) } as any : {}),
           }
         );
 

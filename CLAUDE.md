@@ -117,6 +117,12 @@ const path = getBlobPath('stories/123/image.png');
 - **Test Setup**: Run setup project first for authentication state
 - **Display Mode**: Uses headed mode by default for better debugging visibility
 
+**Test Page for Development:**
+- **Route**: `/test` - Use this page for testing features without authentication during development
+- **Purpose**: Quick access to test pages and components without going through authentication flow
+- **Security**: In production/main environment, access to `/test` route MUST be blocked in middleware
+- **Implementation**: Add middleware check to prevent access when `NODE_ENV=production`
+
 **Authentication Setup for Playwright:**
 
 **Testing Account Priority:**
