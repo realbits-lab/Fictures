@@ -30,7 +30,6 @@ const ImprovedPartSchema = z.object({
   title: z.string().optional(),
   summary: z.string().optional(),
   structuralRole: z.string().optional(),
-  summary: z.string().optional(),
   keyBeats: z.array(z.string()).optional(),
   hnsData: z.object({
     tension_progression: z.string().optional(),
@@ -585,9 +584,9 @@ Return ONLY the fields that need updating. Keep other fields unchanged.`
     const improvements: string[] = [];
 
     // Track what was improved
-    if (object.description && object.description !== story.summary) {
-      changes.push('description');
-      improvements.push('Enhanced story description for clarity');
+    if (object.summary && object.summary !== story.summary) {
+      changes.push('summary');
+      improvements.push('Enhanced story summary for clarity');
     }
     if (object.premise && object.premise !== story.premise) {
       changes.push('premise');
@@ -675,9 +674,9 @@ Return ONLY the fields that need updating. Ensure all text fields are reasonable
     const changes: string[] = [];
     const improvements: string[] = [];
 
-    if (object.description) {
-      changes.push('description');
-      improvements.push('Enhanced part description');
+    if (object.summary) {
+      changes.push('summary');
+      improvements.push('Enhanced part summary');
     }
     if (object.structuralRole) {
       changes.push('structuralRole');
@@ -1192,9 +1191,9 @@ Return ONLY the fields that need updating.`
     const changes: string[] = [];
     const improvements: string[] = [];
 
-    if (object.description) {
-      changes.push('description');
-      improvements.push('Enhanced setting description');
+    if (object.summary) {
+      changes.push('summary');
+      improvements.push('Enhanced setting summary');
     }
     if (object.mood) {
       changes.push('mood');
