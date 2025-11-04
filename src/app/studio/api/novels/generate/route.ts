@@ -18,6 +18,7 @@
 
 import { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
+import { authenticateRequest, hasRequiredScope } from '@/lib/auth/dual-auth';
 import { db } from '@/lib/db';
 import { stories, parts, chapters, scenes, characters, settings } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
@@ -32,11 +33,22 @@ function createSSEMessage(data: ProgressData): string {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await auth();
+  // Support both API key and session authentication
+  const authResult = await authenticateRequest(request);
 
-  if (!session?.user?.id) {
+  if (!authResult) {
     return new Response('Unauthorized', { status: 401 });
   }
+
+  // Check if user has permission to write stories
+  if (!hasRequiredScope(authResult, 'stories:write')) {
+    return new Response(
+      JSON.stringify({ error: 'Insufficient permissions. Required scope: stories:write' }),
+      { status: 403, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
+  const userId = authResult.user.id;
 
   try {
     const body = await request.json() as NovelGenerationOptions;
@@ -199,12 +211,15 @@ export async function POST(request: NextRequest) {
             .returning();
 
           // Insert characters and create ID mapping
+          // Fixed: Two-pass approach to properly remap relationship IDs
+          console.log('[Novel Generation] Starting character insertion with relationship ID remapping fix');
           const characterIdMap = new Map<string, string>();
           if (result.characters.length > 0) {
             // First pass: Create all character ID mappings
             result.characters.forEach((char) => {
               const newId = nanoid();
               characterIdMap.set(char.id, newId);
+              console.log(`[Novel Generation] Mapped character ${char.name}: ${char.id} → ${newId}`);
             });
 
             // Second pass: Build character records with remapped relationship IDs
@@ -214,10 +229,12 @@ export async function POST(request: NextRequest) {
               // Remap character IDs in relationships JSON
               let mappedRelationships = char.relationships;
               if (char.relationships && typeof char.relationships === 'object') {
+                console.log(`[Novel Generation] Remapping relationships for ${char.name}:`, Object.keys(char.relationships));
                 mappedRelationships = {};
                 for (const [tempCharId, relationshipData] of Object.entries(char.relationships)) {
                   // Map temporary character ID to database ID
                   const dbCharId = characterIdMap.get(tempCharId) || tempCharId;
+                  console.log(`[Novel Generation]   ${tempCharId} → ${dbCharId}`);
                   mappedRelationships[dbCharId] = relationshipData;
                 }
               }
@@ -290,7 +307,7 @@ export async function POST(request: NextRequest) {
               return {
                 id: newId,
                 storyId: generatedStoryId!,
-                authorId: session.user.id,
+                authorId: userId,
                 title: part.title,
                 summary: part.summary,
                 orderIndex: part.orderIndex,
@@ -318,7 +335,7 @@ export async function POST(request: NextRequest) {
               return {
                 id: newId,
                 storyId: generatedStoryId!,
-                authorId: session.user.id,
+                authorId: userId,
                 partId: chapter.partId ? partIdMap.get(chapter.partId) || null : null,
                 title: chapter.title,
                 summary: chapter.summary,
