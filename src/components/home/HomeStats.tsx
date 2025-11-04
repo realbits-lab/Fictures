@@ -26,8 +26,9 @@ export async function HomeStats() {
   
   // Calculate basic stats
   const totalStories = userStories.length;
+  const totalWords = 0; // TODO: Calculate from scenes/chapters word counts
   const totalReaders = userStories.reduce((sum, story) => sum + (story.viewCount || 0), 0);
-  const avgRating = userStories.length > 0 
+  const avgRating = userStories.length > 0
     ? userStories.reduce((sum, story) => sum + (story.rating || 0), 0) / userStories.length / 10
     : 0;
 

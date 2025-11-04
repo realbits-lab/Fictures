@@ -12,7 +12,7 @@ export interface MetricCardProps {
   details?: string[];
 }
 
-export function MetricCard({ value, label, color, description, details }: MetricCardProps) {
+export function MetricCard({ value, label, color, summary, details }: MetricCardProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -51,7 +51,7 @@ export function MetricCard({ value, label, color, description, details }: Metric
                   {label}
                 </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed text-left">
-                  {description}
+                  {summary}
                 </p>
                 {details && details.length > 0 && (
                   <ul className="text-sm text-gray-500 dark:text-gray-500 space-y-1.5 pl-4 text-left">

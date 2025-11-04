@@ -153,7 +153,7 @@ export function ScheduleBuilder({
           Description (Optional)
         </label>
         <textarea
-          value={formData.description}
+          value={formData.summary}
           onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
           className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           rows={3}

@@ -10,6 +10,11 @@ export interface Scene {
   content: string;
   orderIndex: number;
   status: string;
+  imageUrl?: string | null;
+  imageVariants?: any;
+  sceneImage?: {
+    url?: string;
+  };
 }
 
 export interface Chapter {
@@ -31,7 +36,7 @@ export interface Part {
 export interface Story {
   id: string;
   title: string;
-  description?: string;
+  summary?: string;
   genre?: string;
   status: string;
   parts: Part[];

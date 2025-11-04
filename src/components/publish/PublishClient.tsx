@@ -3,7 +3,7 @@
 import React from "react";
 import { useSession } from 'next-auth/react';
 import { SkeletonLoader } from "@/components/ui";
-import { usePublishStatus, usePublishHistory, usePublishAnalytics } from "@/lib/hooks/use-page-cache";
+import { usePublishStatus, usePublishHistory, usePublishAnalysis } from "@/lib/hooks/use-page-cache";
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Progress } from "@/components/ui";
 import { Skeleton } from "@/components/ui";
 
@@ -141,7 +141,7 @@ export function PublishClient() {
   const { data: session } = useSession();
   const { data: publishStatus, isLoading: statusLoading, error: statusError, mutate: refreshStatus } = usePublishStatus();
   const { data: publishHistory, isLoading: historyLoading, error: historyError } = usePublishHistory();
-  const { data: publishAnalytics, isLoading: analyticsLoading, error: analyticsError } = usePublishAnalytics();
+  const { data: publishAnalytics, isLoading: analyticsLoading, error: analyticsError } = usePublishAnalysis();
   
   const isLoading = statusLoading || historyLoading || analyticsLoading;
   const hasError = statusError || historyError || analyticsError;

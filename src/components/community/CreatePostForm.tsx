@@ -132,7 +132,7 @@ export function CreatePostForm({ storyId, onPostCreated, onCancel }: CreatePostF
                 >
                   <div className="font-medium text-sm mb-1">{type.label}</div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {type.description}
+                    {type.summary}
                   </div>
                 </button>
               ))}

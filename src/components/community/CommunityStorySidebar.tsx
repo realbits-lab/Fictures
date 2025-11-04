@@ -371,9 +371,9 @@ export function CommunityStorySidebar({ currentStoryId, characters, settings }: 
                             {setting.mood}
                           </p>
                         )}
-                        {setting.description && (
+                        {setting.summary && (
                           <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
-                            {setting.description}
+                            {setting.summary}
                           </p>
                         )}
                       </div>
@@ -409,14 +409,14 @@ export function CommunityStorySidebar({ currentStoryId, characters, settings }: 
 
                       {/* Setting Details */}
                       <div className="p-4 space-y-3 bg-white dark:bg-gray-800">
-                        {/* Description */}
-                        {setting.description && (
+                        {/* Summary */}
+                        {setting.summary && (
                           <div>
                             <h5 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
-                              Description
+                              Summary
                             </h5>
                             <p className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed">
-                              {setting.description}
+                              {setting.summary}
                             </p>
                           </div>
                         )}

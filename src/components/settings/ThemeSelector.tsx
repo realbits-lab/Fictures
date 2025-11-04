@@ -215,7 +215,7 @@ function ThemePreview({
 				>
 					<div className="text-sm font-medium">{theme.name}</div>
 					<div className="text-xs opacity-60 mt-1 leading-tight">
-						{theme.description}
+						{theme.summary}
 					</div>
 				</div>
 
@@ -423,7 +423,7 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
 								: currentTheme.name}
 						</div>
 						<div className="text-xs text-[rgb(var(--color-muted-foreground))]">
-							{currentTheme.description}
+							{currentTheme.summary}
 						</div>
 					</div>
 				</div>

@@ -97,6 +97,9 @@ export function ChapterEditor({
   const [yamlLevel, setYamlLevel] = useState<"story" | "part" | "chapter" | "scene">("chapter");
   const [isSaving, setIsSaving] = useState(false);
 
+  // Calculate current word count from content
+  const currentWordCount = content.trim().split(/\s+/).filter(word => word.length > 0).length;
+
   // Initialize lastSaved date on client side to prevent hydration mismatch
   useEffect(() => {
     setLastSaved(new Date());
@@ -151,16 +154,14 @@ export function ChapterEditor({
   useEffect(() => {
     if (!chapterData) return;
 
-    const words = content.trim().split(/\s+/).filter(word => word.length > 0);
-    setCurrentWordCount(words.length);
     setHasUnsavedChanges(true);
 
     // Basic validation
     const errors = [];
-    if (words.length < 100) {
+    if (currentWordCount < 100) {
       errors.push("Chapter should have at least 100 words");
     }
-    if (words.length > chapterData.targetWordCount * 1.5) {
+    if (currentWordCount > 5000 * 1.5) { // Default target is 5000 words
       errors.push("Chapter exceeds recommended length");
     }
     setValidationErrors(errors);
@@ -249,7 +250,7 @@ export function ChapterEditor({
     return `${diffMinutes} minutes ago`;
   };
 
-  const progressPercentage = (currentWordCount / chapterData.targetWordCount) * 100;
+  const progressPercentage = (currentWordCount / 5000) * 100; // Target is 5000 words
 
   const handleSave = async () => {
     if (!onSave || !externalHasChanges) return;

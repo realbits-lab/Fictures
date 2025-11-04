@@ -499,7 +499,7 @@ export function CreateStoryForm() {
 
                   // Show detailed error in toast
                   toast.error('Story Generation Error', {
-                    summary: errorMessage,
+                    description: errorMessage,
                     duration: 10000,
                   });
 
@@ -523,7 +523,7 @@ export function CreateStoryForm() {
 
       // Show error in toast with details
       toast.error('Story Generation Failed', {
-        summary: errorMsg,
+        description: errorMsg,
         duration: 10000,
       });
 
@@ -711,7 +711,7 @@ export function CreateStoryForm() {
                       {step.phase}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {step.description}
+                      {step.summary}
                     </p>
                   </div>
                 </div>

@@ -13,6 +13,9 @@ interface Comment {
   userId: string;
   userName: string | null;
   userImage: string | null;
+  storyId: string;
+  chapterId: string | null;
+  sceneId: string | null;
   parentCommentId: string | null;
   depth: number;
   likeCount: number;

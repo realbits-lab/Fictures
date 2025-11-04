@@ -244,7 +244,9 @@ export function ComicViewer({
     );
   }
 
-  // Main render
+  // Main render - TypeScript guard (we know data is not null here due to checks above)
+  if (!data) return null;
+
   return (
     <div className={className}>
       {/* Metadata header */}

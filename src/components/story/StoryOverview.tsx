@@ -20,6 +20,11 @@ interface StoryOverviewProps {
 }
 
 export function StoryOverview({ story }: StoryOverviewProps) {
+  // Calculate progress percentage from parts
+  const completedParts = story.parts.filter(part => part.completed).length;
+  const progressPercentage = story.parts.length > 0
+    ? (completedParts / story.parts.length) * 100
+    : 0;
 
   return (
     <div className="space-y-6">

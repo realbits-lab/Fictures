@@ -9,6 +9,8 @@ export interface Scene {
   content: string;
   orderIndex: number;
   status: string;
+  imageUrl?: string | null;
+  imageVariants?: any;
   sceneImage?: {
     url?: string;
     prompt?: string;

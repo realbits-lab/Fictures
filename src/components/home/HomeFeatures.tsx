@@ -65,7 +65,7 @@ export function HomeFeatures() {
                   {feature.title}
                 </h3>
                 <p className="text-[rgb(var(--color-muted-foreground))] leading-relaxed">
-                  {feature.description}
+                  {feature.summary}
                 </p>
               </div>
             ))}
@@ -96,7 +96,7 @@ export function HomeFeatures() {
                   {feature.title}
                 </h3>
                 <p className="text-[rgb(var(--color-muted-foreground))] leading-relaxed">
-                  {feature.description}
+                  {feature.summary}
                 </p>
               </div>
             ))}

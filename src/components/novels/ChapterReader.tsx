@@ -31,7 +31,7 @@ interface Part {
 interface Story {
   id: string;
   title: string;
-  description?: string;
+  summary?: string;
   genre?: string;
   status: string;
   parts: Part[];
