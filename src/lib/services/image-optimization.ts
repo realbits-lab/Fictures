@@ -14,6 +14,7 @@
 
 import sharp from 'sharp';
 import { put } from '@vercel/blob';
+import { getBlobPath } from '@/lib/utils/blob-path';
 
 // Image size configuration (7:4 aspect ratio, optimized for Gemini 2.5 Flash Image)
 // Original Gemini output: 1344×768 pixels = 7:4 aspect ratio (1.75:1) - landscape format
@@ -158,7 +159,8 @@ async function uploadVariant(
   imageId: string
 ): Promise<string> {
   const filename = `${imageId}.${format}`;
-  const path = `${basePath}/${format}/${width}x${height}/${filename}`;
+  const relativePath = `${basePath}/${format}/${width}x${height}/${filename}`;
+  const path = getBlobPath(relativePath);
 
   const blob = await put(path, buffer, {
     access: 'public',
@@ -198,7 +200,8 @@ export async function optimizeImage(
     : `stories/${storyId}/${imageType}`;
 
   // Store original (use addRandomSuffix to avoid conflicts)
-  const originalPath = `${basePath}/original/${imageId}.png`;
+  const originalRelativePath = `${basePath}/original/${imageId}.png`;
+  const originalPath = getBlobPath(originalRelativePath);
   const originalBlob = await put(originalPath, originalBuffer, {
     access: 'public',
     contentType: 'image/png',

@@ -7,6 +7,34 @@ This file provides guidance to Claude Code when working with this repository.
 - **Repository**: https://github.com/realbits-lab/Fictures
 - **Project**: Fictures - AI-powered story writing platform
 
+## Multi-Environment Architecture
+
+**The platform uses environment-based data isolation for development and production.**
+
+**Environment Detection:**
+- Uses `NODE_ENV` environment variable
+- `NODE_ENV=development` → "develop" environment (default)
+- `NODE_ENV=production` → "main" environment (production)
+
+**Data Isolation:**
+1. **Authentication** - Separate user profiles per environment in `.auth/user.json`
+2. **Blob Storage** - Environment-prefixed paths (`main/` or `develop/`)
+
+**Quick Reference:**
+```typescript
+// Load environment-aware profile
+import { loadProfile } from '@/lib/utils/auth-loader';
+const writer = loadProfile('writer'); // Uses current NODE_ENV
+
+// Construct environment-aware blob path
+import { getBlobPath } from '@/lib/utils/blob-path';
+const path = getBlobPath('stories/123/image.png');
+// Returns: "develop/stories/123/image.png" (in development)
+// Returns: "main/stories/123/image.png" (in production)
+```
+
+**Complete Documentation:** [docs/environment-architecture.md](docs/environment-architecture.md)
+
 ## Development Commands
 
 - **Development**: `dotenv --file .env.local run pnpm dev` (runs on port 3000)

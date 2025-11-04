@@ -18,6 +18,7 @@ import { db } from '@/lib/db';
 import { stories, parts, chapters, scenes, characters, settings, aiInteractions, comicPanels, sceneViews } from '@/lib/db/schema';
 import { list, del } from '@vercel/blob';
 import { sql } from 'drizzle-orm';
+import { getEnvironmentPrefix } from '@/lib/utils/blob-path';
 
 export const maxDuration = 60; // Allow up to 60 seconds for complete cleanup
 
@@ -153,9 +154,10 @@ export async function POST(request: NextRequest) {
     let batchCount = 0;
 
     do {
-      // List files with pagination
+      // List files with pagination (use environment prefix)
+      const envPrefix = getEnvironmentPrefix();
       const listResult = await list({
-        prefix: 'stories/',
+        prefix: `${envPrefix}stories/`,
         cursor: blobCursor,
         limit: 100, // Process 100 files per batch
       });
