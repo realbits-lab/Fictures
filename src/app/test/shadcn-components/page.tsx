@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-export default function TestComponentsPage() {
+export default function ShadcnComponentsTestPage() {
   return (
     <div className="container mx-auto p-8 space-y-8">
       <div className="space-y-2">

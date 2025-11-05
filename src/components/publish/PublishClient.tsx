@@ -227,10 +227,10 @@ export function PublishClient() {
                        item.status === 'draft' ? '📝 Draft' : 
                        item.status === 'planned' ? '📋 Planned' : '💭 Idea'}
                     </Badge>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       className="w-full mt-2"
-                      variant={item.status === 'ready' ? 'primary' : 'secondary'}
+                      variant={item.status === 'ready' ? 'default' : 'secondary'}
                     >
                       {item.status === 'ready' ? '📤 Publish' : 
                        item.status === 'draft' ? '✏️ Edit' : 

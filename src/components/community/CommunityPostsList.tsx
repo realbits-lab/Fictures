@@ -316,7 +316,7 @@ export function CommunityPostsList({ posts, onPostDeleted }: CommunityPostsListP
         ].map((option) => (
           <Button
             key={option.key}
-            variant={sortBy === option.key ? 'primary' : 'ghost'}
+            variant={sortBy === option.key ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setSortBy(option.key as typeof sortBy)}
             title={option.desc}

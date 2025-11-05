@@ -124,10 +124,9 @@ export function CommentForm({
 
           <Button
             type="submit"
-            variant="primary"
+            variant="default"
             size="sm"
             disabled={isPending || !content.trim()}
-            loading={isPending}
           >
             {mode === 'edit' ? 'Update' : mode === 'reply' ? 'Reply' : 'Post Comment'}
           </Button>

@@ -143,7 +143,7 @@ export function ComicPanelGeneratorButton({
           <Button
             onClick={handleGenerate}
             disabled={disabled}
-            variant="primary"
+            variant="default"
             size="lg"
             className="w-full"
           >
