@@ -1,0 +1,26 @@
+{
+  "name": "fictures-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel --filter web --filter ai-server dev",
+    "dev:web": "pnpm --filter web dev",
+    "dev:ai": "pnpm --filter ai-server dev",
+    "build": "pnpm --filter web build",
+    "build:web": "pnpm --filter web build",
+    "start": "pnpm --filter web start",
+    "lint": "pnpm --filter web lint",
+    "test": "pnpm --filter web test",
+    "test:watch": "pnpm --filter web test:watch",
+    "db:generate": "pnpm --filter web db:generate",
+    "db:migrate": "pnpm --filter web db:migrate",
+    "db:studio": "pnpm --filter web db:studio",
+    "db:push": "pnpm --filter web db:push",
+    "db:pull": "pnpm --filter web db:pull"
+  },
+  "packageManager": "pnpm@9.12.3",
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=9"
+  }
+}
