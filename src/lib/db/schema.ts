@@ -241,7 +241,6 @@ export const parts = pgTable('parts', {
   id: text('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
   storyId: text('story_id').references(() => stories.id).notNull(),
-  authorId: text('author_id').references(() => users.id).notNull(),
   summary: text('summary'), // Multi-character MACRO arcs with progression strategy
   // Adversity-Triumph Engine fields
   orderIndex: integer('order_index').notNull(), // 0, 1, 2 (for acts 1, 2, 3 in three-act structure)
@@ -266,7 +265,6 @@ export const chapters = pgTable('chapters', {
   summary: text('summary'),
   storyId: text('story_id').references(() => stories.id).notNull(),
   partId: text('part_id').references(() => parts.id),
-  authorId: text('author_id').references(() => users.id).notNull(),
   orderIndex: integer('order_index').notNull(),
   status: statusEnum('status').default('writing').notNull(),
   purpose: text('purpose'), // Chapter purpose from story development

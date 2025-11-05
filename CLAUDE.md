@@ -717,9 +717,11 @@ Every scene generated is automatically:
 - Always write complete, explicit code with all parameters, imports, and statements
 - Every line of code should be production-ready and executable
 - No shortcuts or omissions in code implementation
-- **Whenever you change code files, after finishing all changes, always run TypeScript type checking**:
-  - For changed files only: `pnpm tsc --noEmit <changed-file-paths>` (faster, targeted checking)
-  - For full project validation: `pnpm build` (comprehensive but slower)
+- **TypeScript Validation for Next.js Projects:**
+  - **Always use `pnpm build`** for TypeScript validation (this is the only authoritative check)
+  - Next.js generates type definitions (`.next/types/`) during build, so direct `tsc` will give false errors
+  - `pnpm build` runs TypeScript checking with Next.js integration and generated types
+  - **Never use `pnpm tsc --noEmit`** for Next.js projects - it lacks Next.js type generation
 
 **Git and Repository Management:**
 - Always check current git repository URL before using GitHub MCP tools

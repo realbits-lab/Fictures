@@ -25,7 +25,7 @@ export const checkPrerequisites = tool({
       'images',
     ]).describe('The phase to check prerequisites for'),
   }),
-  execute: async ({ storyId, targetPhase }) => {
+  execute: async ({ storyId, targetPhase }: { storyId: string; targetPhase: string }) => {
     // Get story data
     const [story] = await db
       .select()

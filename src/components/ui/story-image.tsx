@@ -12,13 +12,47 @@ interface StoryImageProps {
   width?: number;
   height?: number;
   priority?: boolean;
+  placeholderType?: 'story' | 'character' | 'inline'; // Type of placeholder to use
 }
 
-export function StoryImage({ src, alt, fill, className, sizes, width, height, priority = false }: StoryImageProps) {
+export function StoryImage({ src, alt, fill, className, sizes, width, height, priority = false, placeholderType = 'inline' }: StoryImageProps) {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Select placeholder image based on type
+  const getPlaceholderSrc = () => {
+    switch (placeholderType) {
+      case 'story':
+        return '/images/placeholder-story.svg';
+      case 'character':
+        return '/images/placeholder-character.svg';
+      case 'inline':
+      default:
+        return null;
+    }
+  };
+
+  const placeholderSrc = getPlaceholderSrc();
+
+  // If error or no src, show placeholder
   if (hasError || !src) {
+    // Use image placeholder if specified
+    if (placeholderSrc) {
+      return (
+        <Image
+          src={placeholderSrc}
+          alt={`${alt} (placeholder)`}
+          fill={fill}
+          width={width}
+          height={height}
+          className={className}
+          sizes={sizes}
+          priority={priority}
+        />
+      );
+    }
+
+    // Fallback to inline SVG placeholder
     return (
       <div className={`w-full h-full bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 flex items-center justify-center ${className || ''}`}>
         <svg

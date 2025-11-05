@@ -40,7 +40,7 @@ export function StoryTableView({ stories }: StoryTableViewProps) {
 
   const getVisibilityBadge = (status: string) => {
     if (status === 'published') {
-      return <Badge variant="success">Public</Badge>;
+      return <Badge variant="default">Public</Badge>;
     } else {
       return <Badge variant="default">Private</Badge>;
     }

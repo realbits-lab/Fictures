@@ -159,7 +159,7 @@ export default function PrivacySecurityPage() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             🛡️ Account Security
-            <Badge variant="success">Secure</Badge>
+            <Badge variant="default">Secure</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -170,7 +170,7 @@ export default function PrivacySecurityPage() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">Add an extra layer of security to your account</p>
               </div>
               <div className="flex items-center gap-3">
-                <Badge variant="warning">Disabled</Badge>
+                <Badge variant="destructive">Disabled</Badge>
                 <Button size="sm">Enable 2FA</Button>
               </div>
             </div>

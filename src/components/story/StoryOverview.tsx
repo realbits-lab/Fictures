@@ -37,7 +37,7 @@ export function StoryOverview({ story }: StoryOverviewProps) {
           <div className="flex items-center gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400">
             <span>🏷️ {story.genre}</span>
             <span>📅 Started: {story.startDate}</span>
-            <Badge variant="info">{story.status}</Badge>
+            <Badge variant="secondary">{story.status}</Badge>
           </div>
         </div>
         <div className="flex gap-2">
@@ -57,7 +57,7 @@ export function StoryOverview({ story }: StoryOverviewProps) {
               <span>Progress:</span>
               <span>{Math.round(progressPercentage)}% Complete</span>
             </div>
-            <Progress value={progressPercentage} showValue={false} />
+            <Progress value={progressPercentage} />
           </div>
 
           {/* Parts Overview */}

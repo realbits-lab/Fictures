@@ -1058,10 +1058,11 @@ Return ONLY the fields that need updating.`
       changes.push('voice');
       improvements.push('Defined unique voice characteristics');
     }
-    if (object.hnsData) {
-      changes.push('hnsData');
-      improvements.push('Added character development data');
-    }
+    // Note: hnsData field was removed from character schema
+    // if (object.hnsData) {
+    //   changes.push('hnsData');
+    //   improvements.push('Added character development data');
+    // }
 
     return {
       data: object,
@@ -1136,10 +1137,11 @@ Return ONLY the fields that need updating.`
       changes.push('sensory');
       improvements.push('Added rich sensory details');
     }
-    if (object.hnsData) {
-      changes.push('hnsData');
-      improvements.push('Added setting context data');
-    }
+    // Note: hnsData field was removed from settings schema
+    // if (object.hnsData) {
+    //   changes.push('hnsData');
+    //   improvements.push('Added setting context data');
+    // }
 
     return {
       data: object,

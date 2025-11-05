@@ -1,0 +1,31 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="char-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fef3c7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fce7f3;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" fill="url(#char-gradient)"/>
+
+  <!-- Character silhouette -->
+  <g transform="translate(512, 512)">
+    <!-- Head -->
+    <circle cx="0" cy="-80" r="100" fill="#94a3b8" opacity="0.6"/>
+    <!-- Body -->
+    <ellipse cx="0" cy="80" rx="140" ry="180" fill="#94a3b8" opacity="0.6"/>
+    <!-- Arms -->
+    <ellipse cx="-110" cy="60" rx="40" ry="120" fill="#94a3b8" opacity="0.5" transform="rotate(-20 -110 60)"/>
+    <ellipse cx="110" cy="60" rx="40" ry="120" fill="#94a3b8" opacity="0.5" transform="rotate(20 110 60)"/>
+  </g>
+
+  <!-- Text -->
+  <text x="512" y="900" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="600" fill="#64748b" text-anchor="middle">
+    Character Placeholder
+  </text>
+  <text x="512" y="950" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#94a3b8" text-anchor="middle">
+    1024 × 1024
+  </text>
+</svg>

@@ -187,7 +187,7 @@ function calculateToonplayMetrics(toonplay: ComicToonplay) {
 function buildEvaluationPrompt(
   toonplay: ComicToonplay,
   sourceScene: typeof scenes.$inferSelect,
-  characters: (typeof characters.$inferSelect)[],
+  sceneCharacters: (typeof characters.$inferSelect)[],
   setting: typeof settings.$inferSelect,
   storyGenre: string | null,
   metrics: ReturnType<typeof calculateToonplayMetrics>
@@ -197,14 +197,14 @@ function buildEvaluationPrompt(
   const sceneContent = sourceScene.content;
   const sceneSummary = sourceScene.summary || '';
 
-  const characterNames = characters.map(c => c.name).join(', ');
+  const characterNames = sceneCharacters.map(c => c.name).join(', ');
 
   // Format toonplay for display
   const toonplayFormatted = toonplay.panels.map((p, i) => {
     const dialogueText = p.dialogue?.map(d => `${d.character_id}: "${d.text}"`).join('; ') || 'None';
     const narrativeText = p.narrative || 'None';
     return `Panel ${i + 1} [${p.shot_type}]:
-  Description: ${p.description}
+  Description: ${p.summary}
   Dialogue: ${dialogueText}
   Narrative: ${narrativeText}
   Characters: ${p.characters_visible.join(', ') || 'None'}`;

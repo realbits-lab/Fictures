@@ -21,7 +21,7 @@ export class RelationshipManager {
         storyId,
         title: partData.title!,
         summary: partData.summary,
-        authorId: partData.authorId!,
+        // authorId removed - access via story JOIN
         orderIndex: partData.orderIndex!,
       });
 
@@ -51,7 +51,7 @@ export class RelationshipManager {
         storyId,
         partId: partId || null,
         title: chapterData.title!,
-        authorId: chapterData.authorId!,
+        // authorId removed - access via story JOIN
         orderIndex: chapterData.orderIndex!,
         status: chapterData.status,
         summary: chapterData.summary,

@@ -78,12 +78,12 @@ export function CacheManagerWidget() {
     return 'expired';
   };
 
-  const getHealthBadgeVariant = (health: string) => {
+  const getHealthBadgeVariant = (health: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (health) {
-      case 'fresh': return 'success';
-      case 'stale': return 'warning';
-      case 'expired': return 'danger';
-      default: return 'default';
+      case 'fresh': return 'default';
+      case 'stale': return 'secondary';
+      case 'expired': return 'destructive';
+      default: return 'outline';
     }
   };
 
@@ -173,7 +173,7 @@ export function CacheManagerWidget() {
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    <Badge variant={getHealthBadgeVariant(health)} size="sm">
+                    <Badge variant={getHealthBadgeVariant(health)}>
                       {health}
                     </Badge>
                     <Button 
@@ -218,7 +218,7 @@ export function CacheManagerWidget() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
             <div className="flex items-center gap-2 font-medium text-green-800 dark:text-green-200 mb-1">
-              <Badge variant="success" size="sm">Fresh</Badge>
+              <Badge variant="default">Fresh</Badge>
               Recently cached
             </div>
             <div className="text-green-700 dark:text-green-300">
@@ -228,7 +228,7 @@ export function CacheManagerWidget() {
           
           <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
             <div className="flex items-center gap-2 font-medium text-yellow-800 dark:text-yellow-200 mb-1">
-              <Badge variant="warning" size="sm">Stale</Badge>
+              <Badge variant="destructive">Stale</Badge>
               Aging cache
             </div>
             <div className="text-yellow-700 dark:text-yellow-300">
@@ -238,7 +238,7 @@ export function CacheManagerWidget() {
           
           <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
             <div className="flex items-center gap-2 font-medium text-red-800 dark:text-red-200 mb-1">
-              <Badge variant="danger" size="sm">Expired</Badge>
+              <Badge variant="destructive">Expired</Badge>
               Needs refresh
             </div>
             <div className="text-red-700 dark:text-red-300">

@@ -1,24 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { chapters } from "@/lib/db/schema";
+import { chapters, stories } from "@/lib/db/schema";
 import { eq, and, desc, isNotNull } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get the latest published chapter for analysis
+    // Join with stories table to filter by author
     const latestChapter = await db
-      .select()
+      .select({
+        id: chapters.id,
+        title: chapters.title,
+        publishedAt: chapters.publishedAt,
+        storyId: chapters.storyId,
+      })
       .from(chapters)
+      .innerJoin(stories, eq(chapters.storyId, stories.id))
       .where(
         and(
-          eq(chapters.authorId, session.user.id),
+          eq(stories.authorId, session.user.id),
           isNotNull(chapters.publishedAt)
         )
       )

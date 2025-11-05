@@ -20,10 +20,19 @@ export async function GET(request: NextRequest) {
       .orderBy(desc(stories.updatedAt))
       .limit(10);
 
+    // Get user's chapters by joining with stories
     const userChapters = await db
-      .select()
+      .select({
+        id: chapters.id,
+        title: chapters.title,
+        summary: chapters.summary,
+        status: chapters.status,
+        storyId: chapters.storyId,
+        updatedAt: chapters.updatedAt,
+      })
       .from(chapters)
-      .where(eq(chapters.authorId, session.user.id))
+      .innerJoin(stories, eq(chapters.storyId, stories.id))
+      .where(eq(stories.authorId, session.user.id))
       .orderBy(desc(chapters.updatedAt))
       .limit(20);
 

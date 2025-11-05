@@ -1,46 +1,44 @@
-import React from "react";
-import { cn } from "@/lib/utils/cn";
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
 
-interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-	variant?: "default" | "success" | "warning" | "danger" | "info";
-	size?: "sm" | "md" | "lg";
+import { cn } from "@/lib/utils/index"
+
+const badgeVariants = cva(
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  {
+    variants: {
+      variant: {
+        default:
+          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+        secondary:
+          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        destructive:
+          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+        outline: "text-foreground",
+        success:
+          "border-transparent bg-green-500 text-white hover:bg-green-600",
+        info:
+          "border-transparent bg-blue-500 text-white hover:bg-blue-600",
+        warning:
+          "border-transparent bg-yellow-500 text-white hover:bg-yellow-600",
+        danger:
+          "border-transparent bg-red-500 text-white hover:bg-red-600",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
+export interface BadgeProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> {}
+
+function Badge({ className, variant, ...props }: BadgeProps) {
+  return (
+    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+  )
 }
 
-const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
-	({ className, variant = "default", size = "md", ...props }, ref) => {
-		const baseStyles = [
-			"inline-flex items-center font-medium theme-badge",
-			"border-theme",
-		];
-
-		const variants = {
-			default:
-				"bg-[rgb(var(--color-muted))] text-[rgb(var(--color-muted-foreground))] border-[rgb(var(--color-border))]",
-			success:
-				"bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-700",
-			warning:
-				"bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700",
-			danger:
-				"bg-[rgb(var(--color-destructive)/10%)] text-[rgb(var(--color-destructive))] border-[rgb(var(--color-destructive)/20%)]",
-			info: "bg-[rgb(var(--color-primary)/10%)] text-[rgb(var(--color-primary))] border-[rgb(var(--color-primary)/20%)]",
-		};
-
-		const sizes = {
-			sm: "px-2 py-1 text-xs",
-			md: "px-2.5 py-1.5 text-sm",
-			lg: "px-3 py-2 text-base",
-		};
-
-		return (
-			<span
-				ref={ref}
-				className={cn(baseStyles, variants[variant], sizes[size], className)}
-				{...props}
-			/>
-		);
-	},
-);
-
-Badge.displayName = "Badge";
-
-export { Badge };
+export { Badge, badgeVariants }

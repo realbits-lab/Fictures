@@ -155,7 +155,7 @@ export function CommunityStoryDetailClient({
                 {story.summary}
               </p>
             </div>
-            <Badge variant="success" className="ml-4">
+            <Badge variant="default" className="ml-4">
               🚀 {story.status}
             </Badge>
           </div>
@@ -191,7 +191,7 @@ export function CommunityStoryDetailClient({
             <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
               💬 Community Discussions
             </h2>
-            <Badge variant="info">
+            <Badge variant="secondary">
               {posts.length} posts
             </Badge>
           </div>

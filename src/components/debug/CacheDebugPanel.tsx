@@ -9,7 +9,7 @@
  * Usage:
  *   <CacheDebugPanel />
  *
- * Note: Only render in development or for admin users
+ * Note: Only available in development mode (NODE_ENV=development)
  */
 
 import React, { useState, useEffect } from 'react';

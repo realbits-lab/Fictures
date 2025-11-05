@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 
@@ -46,23 +45,22 @@ export function CreateNewStoryButton() {
   };
 
   return (
-    <Button
+    <button
       onClick={handleCreateNewStory}
       disabled={isCreating}
-      size="lg"
-      className="gap-2"
+      className="inline-flex items-center justify-center rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-sm px-3 py-1.5 text-sm font-medium transition-all hover:bg-[rgb(var(--color-primary))]/90 disabled:opacity-50 disabled:cursor-not-allowed gap-2"
     >
       {isCreating ? (
         <>
-          <Loader2 className="h-5 w-5 animate-spin" />
+          <Loader2 className="h-4 w-4 animate-spin" />
           Creating...
         </>
       ) : (
         <>
-          <Sparkles className="h-5 w-5" />
+          <Sparkles className="h-4 w-4" />
           Create New Story
         </>
       )}
-    </Button>
+    </button>
   );
 }

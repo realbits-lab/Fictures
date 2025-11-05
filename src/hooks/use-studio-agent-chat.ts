@@ -1,6 +1,7 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
 import { useEffect, useState, useMemo } from 'react';
 
 interface UseStudioAgentChatProps {
@@ -20,22 +21,26 @@ export function useStudioAgentChat({
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | undefined>(chatId);
 
+  // Manage input state manually (AI SDK v5+ doesn't provide this)
+  const [input, setInput] = useState('');
+
+  // Create transport with custom API endpoint (AI SDK v5+ approach)
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: '/studio/api/agent',
+        body: {
+          ...(currentChatId ? { chatId: currentChatId } : {}), // Only include chatId if it exists
+          storyContext,
+          agentType,
+        },
+      }),
+    [currentChatId, storyContext, agentType]
+  );
+
   const chat = useChat({
-    id: currentChatId,
-    api: '/studio/api/agent',
-    body: {
-      chatId: currentChatId,
-      storyContext,
-      agentType,
-    },
-    onResponse: (response: any) => {
-      // Extract chat ID from response headers if this is a new chat
-      const newChatId = response.headers.get('X-Chat-Id');
-      if (newChatId && !currentChatId) {
-        setCurrentChatId(newChatId);
-        onChatCreated?.(newChatId);
-      }
-    },
+    ...(currentChatId ? { id: currentChatId } : {}), // Only pass id if it exists
+    transport,
     onFinish: () => {
       // Active tools are automatically cleared via useMemo when messages update
     },
@@ -44,20 +49,49 @@ export function useStudioAgentChat({
     },
   } as any);
 
-  // Extract properties from chat (type-safe access)
+  // Extract properties from chat (AI SDK v5+ API)
   const {
     messages,
-    input,
-    handleInputChange,
-    handleSubmit,
-    isLoading,
+    sendMessage,
+    status,
     error,
-    reload,
     stop,
-    append,
     setMessages,
-    setInput,
   } = chat as any;
+
+  // Create handleInputChange for compatibility
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+  };
+
+  // Create handleSubmit that uses sendMessage (AI SDK v5+ API)
+  const handleSubmit = async (e?: any) => {
+    if (e?.preventDefault) {
+      e.preventDefault();
+    }
+
+    const trimmedInput = input?.trim();
+    if (!trimmedInput || !sendMessage) {
+      console.warn('[Agent Chat] Cannot send message: no input or sendMessage not available');
+      return;
+    }
+
+    try {
+      // Send message using AI SDK v5+ API
+      await sendMessage({
+        role: 'user',
+        content: trimmedInput,
+      });
+
+      // Clear input after sending
+      setInput('');
+    } catch (error) {
+      console.error('[Agent Chat] Failed to send message:', error);
+    }
+  };
+
+  // Derive isLoading from status
+  const isLoading = status === 'in_progress' || status === 'submitted';
 
   // Load chat history on mount
   useEffect(() => {
@@ -113,9 +147,7 @@ export function useStudioAgentChat({
     handleSubmit,
     isLoading,
     error,
-    reload,
     stop,
-    append,
     setMessages,
     setInput,
     loadingHistory,

@@ -136,14 +136,14 @@ export function ComicStatusCard({
     switch (comicStatus) {
       case 'published':
         return (
-          <Badge variant="success" className="flex items-center gap-1">
+          <Badge variant="default" className="flex items-center gap-1">
             <CheckCircle2 className="h-3 w-3" />
             Published
           </Badge>
         );
       case 'draft':
         return (
-          <Badge variant="warning" className="flex items-center gap-1">
+          <Badge variant="destructive" className="flex items-center gap-1">
             <EyeOff className="h-3 w-3" />
             Draft
           </Badge>
@@ -204,8 +204,8 @@ export function ComicStatusCard({
               <Button
                 onClick={handlePublish}
                 disabled={loading}
-                variant="primary"
-                size="md"
+                variant="default"
+                size="default"
                 className="w-full"
               >
                 <Eye className="mr-2 h-4 w-4" />
@@ -215,7 +215,7 @@ export function ComicStatusCard({
                 onClick={handleRegenerate}
                 disabled={loading}
                 variant="outline"
-                size="md"
+                size="default"
                 className="w-full"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
@@ -229,7 +229,7 @@ export function ComicStatusCard({
               onClick={handleUnpublish}
               disabled={loading}
               variant="destructive"
-              size="md"
+              size="default"
               className="w-full"
             >
               <EyeOff className="mr-2 h-4 w-4" />

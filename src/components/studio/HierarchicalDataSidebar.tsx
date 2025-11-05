@@ -233,7 +233,7 @@ export function HierarchicalDataSidebar({
                       {section.id === currentLevel ? "Current" : "Context"}
                     </Badge>
                     {section.editable && (
-                      <Badge variant="info" className="text-xs">
+                      <Badge variant="secondary" className="text-xs">
                         Editable
                       </Badge>
                     )}

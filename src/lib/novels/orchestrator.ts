@@ -18,6 +18,7 @@
 
 import { nanoid } from 'nanoid';
 import { generateJSON } from './ai-client';
+import { applyGenerationDefaults } from './constants';
 import type {
   StoryGenerationContext,
   StorySummaryResult,
@@ -116,15 +117,20 @@ export async function generateCompleteNovel(
       message: 'Generating story foundation and moral framework...',
     });
 
+    // Apply defaults using centralized constants
+    const defaults = applyGenerationDefaults({
+      characterCount: options.characterCount,
+      settingCount: options.settingCount,
+      partsCount: options.partsCount,
+      chaptersPerPart: options.chaptersPerPart,
+      scenesPerChapter: options.scenesPerChapter,
+    });
+
     const storySummaryPayload = {
       userPrompt: options.userPrompt,
       preferredGenre: options.preferredGenre,
       preferredTone: options.preferredTone,
-      characterCount: options.characterCount || 3,
-      settingCount: options.settingCount || 3,
-      partsCount: options.partsCount || 3,
-      chaptersPerPart: options.chaptersPerPart || 3,
-      scenesPerChapter: options.scenesPerChapter || 6,
+      ...defaults,
     } as StoryGenerationContext;
 
     console.log('[ORCHESTRATOR] Story Summary Request:', JSON.stringify(storySummaryPayload, null, 2));

@@ -27,7 +27,6 @@ export const PartValidationSchema = z.object({
   storyId: z.string().min(1, "Story ID is required"),
   orderIndex: z.number().int().min(0),
   structuralRole: z.string().optional(),
-  summary: z.string().optional(),
   keyBeats: z.array(z.string()).optional(),
   chapterIds: z.array(z.string()).optional(),
 });
@@ -153,10 +152,10 @@ export function validateStory(data: unknown): ValidationResult {
     const parsed = StoryValidationSchema.parse(data);
 
     // Additional business logic validation
-    if (!parsed.description) {
+    if (!parsed.summary) {
       warnings.push({
-        field: 'description',
-        message: 'Consider adding a description to help readers understand your story',
+        field: 'summary',
+        message: 'Consider adding a summary to help readers understand your story',
         severity: 'warning',
         type: 'incomplete'
       });
@@ -222,10 +221,10 @@ export function validatePart(data: unknown): ValidationResult {
   try {
     const parsed = PartValidationSchema.parse(data);
 
-    if (!parsed.description) {
+    if (!parsed.summary) {
       warnings.push({
-        field: 'description',
-        message: 'Part description helps readers understand the story arc',
+        field: 'summary',
+        message: 'Part summary helps readers understand the story arc',
         severity: 'warning',
         type: 'incomplete'
       });
@@ -489,10 +488,10 @@ export function validateSetting(data: unknown): ValidationResult {
   try {
     const parsed = SettingValidationSchema.parse(data);
 
-    if (!parsed.description) {
+    if (!parsed.summary) {
       warnings.push({
-        field: 'description',
-        message: 'Setting description creates atmosphere',
+        field: 'summary',
+        message: 'Setting summary creates atmosphere',
         severity: 'warning',
         type: 'incomplete'
       });

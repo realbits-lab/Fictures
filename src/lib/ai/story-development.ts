@@ -853,7 +853,6 @@ export async function generateStoryFromPrompt(userPrompt: string, userId: string
         currentStoryId,
         {
           title: `Part ${partSpec.part}: ${(partSpec as any).desc || storyConcept.parts[partIndex]?.goal || 'Part ' + (partIndex + 1)}`,
-          authorId: userId,
           orderIndex: partSpec.part,
         }
       );

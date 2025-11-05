@@ -200,11 +200,13 @@ export async function createChapter(storyId: string, authorId: string, data: {
   orderIndex: number;
 }) {
   // Use RelationshipManager for bi-directional consistency
+  // Note: authorId parameter kept for backward compatibility but not stored
+  // Author is accessed via story JOIN
   const chapterId = await RelationshipManager.addChapterToStory(
     storyId,
     {
       title: data.title,
-      authorId,
+      // authorId not passed - accessed via story JOIN
       orderIndex: data.orderIndex,
       status: 'writing',
     },
@@ -538,7 +540,6 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
         summary: chapters.summary,
         storyId: chapters.storyId,
         partId: chapters.partId,
-        authorId: chapters.authorId,
         orderIndex: chapters.orderIndex,
         status: chapters.status,
         purpose: chapters.purpose,
