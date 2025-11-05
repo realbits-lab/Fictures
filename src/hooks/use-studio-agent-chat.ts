@@ -20,6 +20,9 @@ export function useStudioAgentChat({
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | undefined>(chatId);
 
+  // Manage input state manually (AI SDK v5+ doesn't provide this)
+  const [input, setInput] = useState('');
+
   const chat = useChat({
     id: currentChatId,
     api: '/studio/api/agent',
@@ -44,20 +47,49 @@ export function useStudioAgentChat({
     },
   } as any);
 
-  // Extract properties from chat (type-safe access)
+  // Extract properties from chat (AI SDK v5+ API)
   const {
     messages,
-    input,
-    handleInputChange,
-    handleSubmit,
-    isLoading,
+    sendMessage,
+    status,
     error,
-    reload,
     stop,
-    append,
     setMessages,
-    setInput,
   } = chat as any;
+
+  // Create handleInputChange for compatibility
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+  };
+
+  // Create handleSubmit that uses sendMessage (AI SDK v5+ API)
+  const handleSubmit = async (e?: any) => {
+    if (e?.preventDefault) {
+      e.preventDefault();
+    }
+
+    const trimmedInput = input?.trim();
+    if (!trimmedInput || !sendMessage) {
+      console.warn('[Agent Chat] Cannot send message: no input or sendMessage not available');
+      return;
+    }
+
+    try {
+      // Send message using AI SDK v5+ API
+      await sendMessage({
+        role: 'user',
+        content: trimmedInput,
+      });
+
+      // Clear input after sending
+      setInput('');
+    } catch (error) {
+      console.error('[Agent Chat] Failed to send message:', error);
+    }
+  };
+
+  // Derive isLoading from status
+  const isLoading = status === 'in_progress' || status === 'submitted';
 
   // Load chat history on mount
   useEffect(() => {
@@ -113,9 +145,7 @@ export function useStudioAgentChat({
     handleSubmit,
     isLoading,
     error,
-    reload,
     stop,
-    append,
     setMessages,
     setInput,
     loadingHistory,
