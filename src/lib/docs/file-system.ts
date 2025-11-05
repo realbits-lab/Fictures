@@ -124,15 +124,22 @@ export function getDocPage(slug: string[] | undefined): DocPage | null {
 function extractHeadings(content: string): Heading[] {
   const headingRegex = /^(#{1,6})\s+(.+)$/gm;
   const headings: Heading[] = [];
+  const idCounts = new Map<string, number>();
   let match;
 
   while ((match = headingRegex.exec(content)) !== null) {
     const level = match[1].length;
     const text = match[2].trim();
-    const id = text
+    const baseId = text
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
+
+    // Ensure unique IDs by appending a counter if duplicate
+    const count = idCounts.get(baseId) || 0;
+    idCounts.set(baseId, count + 1);
+
+    const id = count > 0 ? `${baseId}-${count}` : baseId;
 
     headings.push({ id, text, level });
   }

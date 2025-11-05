@@ -20,18 +20,6 @@ const config = {
         port: '',
         pathname: '/**',
       },
-      {
-        protocol: 'https',
-        hostname: 'placeholder.co',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '3000',
-        pathname: '/api/placeholder',
-      },
     ],
   },
   // Disable caching for dynamic content, but allow caching for static assets

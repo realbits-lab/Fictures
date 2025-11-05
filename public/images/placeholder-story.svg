@@ -1,0 +1,36 @@
+<svg width="1344" height="768" viewBox="0 0 1344 768" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e0f2fe;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ddd6fe;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1344" height="768" fill="url(#bg-gradient)"/>
+
+  <!-- Book icon -->
+  <g transform="translate(572, 284)">
+    <!-- Book cover -->
+    <rect x="20" y="0" width="160" height="200" rx="8" fill="#94a3b8" opacity="0.6"/>
+    <!-- Pages -->
+    <rect x="24" y="4" width="152" height="192" rx="6" fill="white" opacity="0.9"/>
+    <!-- Page lines -->
+    <line x1="40" y1="40" x2="160" y2="40" stroke="#cbd5e1" stroke-width="3" opacity="0.6"/>
+    <line x1="40" y1="60" x2="140" y2="60" stroke="#cbd5e1" stroke-width="3" opacity="0.6"/>
+    <line x1="40" y1="80" x2="155" y2="80" stroke="#cbd5e1" stroke-width="3" opacity="0.6"/>
+    <line x1="40" y1="100" x2="130" y2="100" stroke="#cbd5e1" stroke-width="3" opacity="0.6"/>
+    <line x1="40" y1="120" x2="150" y2="120" stroke="#cbd5e1" stroke-width="3" opacity="0.6"/>
+    <!-- Bookmark -->
+    <path d="M 140 0 L 140 60 L 150 50 L 160 60 L 160 0 Z" fill="#3b82f6" opacity="0.7"/>
+  </g>
+
+  <!-- Text -->
+  <text x="672" y="540" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="600" fill="#64748b" text-anchor="middle">
+    Story Placeholder
+  </text>
+  <text x="672" y="580" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#94a3b8" text-anchor="middle">
+    1344 × 768 (7:4)
+  </text>
+</svg>

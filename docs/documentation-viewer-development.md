@@ -244,7 +244,13 @@ export function slugToPath(slug: string[]): string | null {
     return mdxPath;
   }
 
-  // Try README.md in directory
+  // Try CLAUDE.md in directory (documentation index files)
+  const claudePath = path.join(process.cwd(), 'docs', slugPath, 'CLAUDE.md');
+  if (fs.existsSync(claudePath)) {
+    return claudePath;
+  }
+
+  // Also try README.md in directory (for subdirectories like ui/README.md)
   const readmePath = path.join(process.cwd(), 'docs', slugPath, 'README.md');
   if (fs.existsSync(readmePath)) {
     return readmePath;
@@ -1098,16 +1104,16 @@ import fs from 'fs';
 import path from 'path';
 
 export default function DefaultDocsPage() {
-  // Check if README.md exists
-  const readmePath = path.join(process.cwd(), 'docs', 'README.md');
+  // Use CLAUDE.md as the default landing page (main documentation index)
+  const claudePath = path.join(process.cwd(), 'docs', 'CLAUDE.md');
 
-  if (fs.existsSync(readmePath)) {
-    // Redirect to README
-    redirect('/docs/README');
+  if (fs.existsSync(claudePath)) {
+    // Redirect to CLAUDE.md - the comprehensive documentation index
+    redirect('/docs/CLAUDE');
   }
 
-  // Otherwise redirect to first available doc
-  redirect('/docs/CLAUDE');
+  // Fallback to first available doc if CLAUDE.md doesn't exist
+  redirect('/docs');
 }
 ```
 

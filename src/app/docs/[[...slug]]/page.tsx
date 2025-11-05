@@ -40,7 +40,7 @@ export default async function DocsPage(props: {
               </p>
             )}
           </div>
-          <MarkdownViewer content={page.content} />
+          <MarkdownViewer content={page.content} headings={page.headings} />
         </article>
       }
       tableOfContents={<TableOfContents headings={page.headings} />}
