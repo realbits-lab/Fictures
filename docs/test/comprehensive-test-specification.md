@@ -4,16 +4,27 @@
 
 This document outlines comprehensive test cases for the Fictures platform, including all Global Navigation Bar (GNB) menu items, API endpoints, and cross-cutting concerns. The specification ensures thorough testing of functionality, access control, performance, and user experience across the entire application.
 
-### Recent Updates (v1.1 - 2025-11-05)
+### Recent Updates (v1.2 - 2025-11-05)
 
-**Key Changes to Match Actual Implementation:**
+**Key Changes:**
 
-1. **Home Page Tests**: Simplified from 26+ tests to 6 tests - home now only redirects to `/novels`
-2. **Analytics → Analysis**: Route is `/analysis` not `/analytics` - updated all references throughout
-3. **API Endpoints**: Corrected paths to match actual implementation:
+1. **Studio Agent Tests Added**: Comprehensive test suite for AI-powered writing assistant (6 test categories, 37 test cases)
+   - Navigation, access control, content, functionality, performance, and error handling
+   - Chat interface, message streaming, context awareness, and multi-turn conversations
+2. **Test Data Preparation Section**: Added comprehensive guide for test data setup
+   - Database test data: Authentication users with API keys, test stories, community data, analytics data
+   - Vercel Blob test data: Story images with 4 optimized variants, environment-aware storage
+   - Cleanup and verification procedures
+3. **Feature Removal Updates**:
+   - Removed search functionality tests from `/novels` (not implemented)
+   - Removed bookmark functionality tests from `/novels` and `/comics` (not implemented)
+   - Removed zoom/pan tests from `/comics` (not implemented)
+4. **API Path Verification**: Updated all API endpoint paths to match current codebase structure
+   - Story API: `/studio/api/stories/*` (not `/api/stories/*`)
+   - Generation API: `/studio/api/generation/*` and `/studio/api/novels/generate`
+   - Community API: `/community/api/*` (not `/api/community/*`)
    - Analysis API: `/analysis/api/*` (not `/api/analytics/*`)
-   - Schedule publish: ✅ **Implemented** (verified via database + API routes)
-4. **Performance Metrics**: Updated home page performance targets for redirect-only behavior
+   - Publish API: `/publish/api/*` (scene-level publishing)
 
 **See [Change Log](#change-log) for complete version history.**
 
@@ -95,6 +106,118 @@ The application has 8 main navigation items:
 
 ---
 
+## Test Data Preparation
+
+Before running tests, prepare mockup data for database and Vercel Blob storage using the provided scripts.
+
+### Database Test Data
+
+**Setup Authentication Users:**
+```bash
+# Create all test users (manager, writer, reader) with proper roles
+dotenv --file .env.local run node scripts/setup-auth-users.mjs
+
+# Verify authentication setup
+dotenv --file .env.local run node scripts/verify-auth-setup.mjs
+```
+
+**User Profiles in `.auth/user.json`:**
+- **manager@fictures.xyz**: Manager role (`admin:all` scope) - Full access
+- **writer@fictures.xyz**: Writer role (`stories:write` scope) - Story creation/editing
+- **reader@fictures.xyz**: Reader role (`stories:read` scope) - Read-only access
+
+**API Keys for Each User:**
+Each user profile includes an API key for testing API endpoints:
+- **manager**: Full API access with `admin:all` scope
+- **writer**: Story API access with `stories:write` scope
+- **reader**: Read-only API access with `stories:read` scope
+
+API keys are stored in `.auth/user.json` under each profile's `apiKey` field.
+
+**Generate Test Stories:**
+```bash
+# Generate a minimal test story (1 part, 1 chapter, 3 scenes) - ~5-10 min
+dotenv --file .env.local run node scripts/generate-minimal-story.mjs
+
+# Generate multiple test stories for different scenarios
+dotenv --file .env.local run node test-scripts/generate-test-stories.mjs
+```
+
+**Community Test Data:**
+```bash
+# Create test posts, comments, likes, and bookmarks
+dotenv --file .env.local run node test-scripts/generate-community-data.mjs
+```
+
+**Analytics Test Data:**
+```bash
+# Generate test reading sessions, views, and engagement metrics
+dotenv --file .env.local run node test-scripts/generate-analytics-data.mjs
+```
+
+### Vercel Blob Test Data
+
+**Story Images:**
+Test stories generated via `generate-minimal-story.mjs` automatically include:
+- Story cover images (1344×768, 7:4 aspect ratio)
+- Scene images (1344×768, 7:4 aspect ratio)
+- Character portraits (1344×768, 7:4 aspect ratio)
+- Setting visuals (1344×768, 7:4 aspect ratio)
+- 4 optimized variants per image (AVIF, JPEG × mobile 1x/2x)
+
+**Environment-Aware Storage:**
+Images are stored with environment prefixes:
+- Development: `develop/stories/{storyId}/...`
+- Production: `main/stories/{storyId}/...`
+
+**Manual Image Upload (Optional):**
+```bash
+# Upload test images directly to Vercel Blob
+dotenv --file .env.local run node test-scripts/upload-test-images.mjs
+```
+
+### Cleanup Test Data
+
+**Remove All Test Data:**
+```bash
+# Remove all stories (requires confirmation)
+dotenv --file .env.local run node scripts/remove-all-stories.mjs --confirm
+
+# Remove specific story
+dotenv --file .env.local run node scripts/remove-story.mjs STORY_ID
+
+# Dry run to preview deletion
+dotenv --file .env.local run node scripts/remove-all-stories.mjs --dry-run
+```
+
+**What Gets Removed:**
+- Database records (stories, parts, chapters, scenes, characters, settings)
+- Vercel Blob images (all images with prefix `stories/{storyId}/`)
+- Community data (posts, likes, replies, bookmarks)
+- Analytics data (reading sessions, insights, events)
+
+### Test Data Verification
+
+**Verify Database:**
+```bash
+# Check user accounts and roles
+dotenv --file .env.local run node scripts/verify-auth-setup.mjs
+
+# Check story data
+dotenv --file .env.local run pnpm db:studio
+```
+
+**Verify Blob Storage:**
+```bash
+# List all images in blob storage
+dotenv --file .env.local run node test-scripts/list-blob-images.mjs
+
+# Check image accessibility
+dotenv --file .env.local run node test-scripts/verify-image-urls.mjs
+```
+
+---
+
 ## Detailed Test Cases
 
 ### Home Page (/)
@@ -162,6 +285,65 @@ The application has 8 main navigation items:
 
 ---
 
+### Studio Agent (/studio - AI Writing Assistant)
+
+#### Navigation Tests
+- **TC-AGENT-NAV-001**: Agent chat interface accessible from Studio
+- **TC-AGENT-NAV-002**: Agent button/icon visible in story editor
+- **TC-AGENT-NAV-003**: Agent panel toggles open/close
+- **TC-AGENT-NAV-004**: Agent chat history persists during navigation
+- **TC-AGENT-NAV-005**: Back navigation from agent doesn't lose chat context
+
+#### Access Control Tests
+- **TC-AGENT-AUTH-001**: Anonymous users cannot access agent
+- **TC-AGENT-AUTH-002**: Reader role users cannot access agent
+- **TC-AGENT-AUTH-003**: Writer role users can access agent
+- **TC-AGENT-AUTH-004**: Manager role users can access agent
+- **TC-AGENT-AUTH-005**: Agent button hidden for unauthorized users
+- **TC-AGENT-AUTH-006**: API key authentication works for agent API
+
+#### Content Tests
+- **TC-AGENT-CONTENT-001**: Chat interface displays correctly
+- **TC-AGENT-CONTENT-002**: Message bubbles show sender (user/agent)
+- **TC-AGENT-CONTENT-003**: Streaming messages display progressively
+- **TC-AGENT-CONTENT-004**: Empty state shows welcome message
+- **TC-AGENT-CONTENT-005**: Chat history loads correctly
+- **TC-AGENT-CONTENT-006**: Markdown formatting renders in messages
+- **TC-AGENT-CONTENT-007**: Code blocks display with syntax highlighting
+- **TC-AGENT-CONTENT-008**: Story context displays in chat
+
+#### Functionality Tests
+- **TC-AGENT-FUNC-001**: Send message to agent works
+- **TC-AGENT-FUNC-002**: Agent responds to user messages
+- **TC-AGENT-FUNC-003**: Message streaming works (SSE)
+- **TC-AGENT-FUNC-004**: Multi-turn conversations maintain context
+- **TC-AGENT-FUNC-005**: Agent can suggest scene improvements
+- **TC-AGENT-FUNC-006**: Agent can suggest character development
+- **TC-AGENT-FUNC-007**: Agent can suggest plot ideas
+- **TC-AGENT-FUNC-008**: Clear chat history works
+- **TC-AGENT-FUNC-009**: Copy message to clipboard works
+- **TC-AGENT-FUNC-010**: Regenerate agent response works
+- **TC-AGENT-FUNC-011**: Stop generation works
+- **TC-AGENT-FUNC-012**: Insert agent suggestion into editor works
+
+#### Performance Tests
+- **TC-AGENT-PERF-001**: Agent panel opens in under 500ms
+- **TC-AGENT-PERF-002**: Message send responds within 1 second
+- **TC-AGENT-PERF-003**: Streaming tokens appear smoothly (<100ms latency)
+- **TC-AGENT-PERF-004**: Chat history loads in under 1 second
+- **TC-AGENT-PERF-005**: Agent responds to simple queries in under 3 seconds
+- **TC-AGENT-PERF-006**: Context-aware queries complete in under 5 seconds
+
+#### Error Handling Tests
+- **TC-AGENT-ERROR-001**: API failure shows error message
+- **TC-AGENT-ERROR-002**: Network timeout shows retry option
+- **TC-AGENT-ERROR-003**: Invalid input shows validation error
+- **TC-AGENT-ERROR-004**: Rate limit shows appropriate message
+- **TC-AGENT-ERROR-005**: Streaming interruption handles gracefully
+- **TC-AGENT-ERROR-006**: Context loading failure doesn't crash chat
+
+---
+
 ### Novels Page (/novels)
 
 #### Navigation Tests
@@ -192,10 +374,8 @@ The application has 8 main navigation items:
 - **TC-NOVELS-FUNC-002**: Reading history tracked for auth users
 - **TC-NOVELS-FUNC-003**: Story preview shows correct chapters
 - **TC-NOVELS-FUNC-004**: Comments section functional
-- **TC-NOVELS-FUNC-005**: Search functionality works
-- **TC-NOVELS-FUNC-006**: Bookmark functionality works
-- **TC-NOVELS-FUNC-007**: Reading progress saves correctly
-- **TC-NOVELS-FUNC-008**: Font size/theme controls work
+- **TC-NOVELS-FUNC-005**: Reading progress saves correctly
+- **TC-NOVELS-FUNC-006**: Font size/theme controls work
 
 #### Performance Tests
 - **TC-NOVELS-PERF-001**: Story grid loads in under 2 seconds
@@ -242,10 +422,7 @@ The application has 8 main navigation items:
 - **TC-COMICS-FUNC-002**: Reading history tracked for auth users
 - **TC-COMICS-FUNC-003**: Panel navigation (prev/next) works
 - **TC-COMICS-FUNC-004**: Comments section functional
-- **TC-COMICS-FUNC-005**: Search functionality works
-- **TC-COMICS-FUNC-006**: Bookmark functionality works
-- **TC-COMICS-FUNC-007**: Reading progress saves correctly
-- **TC-COMICS-FUNC-008**: Zoom/pan controls for panels work
+- **TC-COMICS-FUNC-005**: Reading progress saves correctly
 
 #### Performance Tests
 - **TC-COMICS-PERF-001**: Comic grid loads in under 2 seconds
@@ -484,7 +661,7 @@ The application has 8 main navigation items:
 
 ### Story API
 
-#### Create Story (POST /api/stories)
+#### Create Story (POST /studio/api/stories)
 - **TC-API-STORY-001**: Authenticated writer can create story
 - **TC-API-STORY-002**: Anonymous user cannot create story (401)
 - **TC-API-STORY-003**: Reader role cannot create story (403)
@@ -494,7 +671,7 @@ The application has 8 main navigation items:
 - **TC-API-STORY-007**: Duplicate story titles allowed
 - **TC-API-STORY-008**: Story ID generated correctly
 
-#### Get Story (GET /api/stories/:id)
+#### Get Story (GET /studio/api/stories/:id)
 - **TC-API-STORY-009**: Public story accessible to all
 - **TC-API-STORY-010**: Draft story accessible only to author
 - **TC-API-STORY-011**: Non-existent story returns 404
@@ -502,7 +679,7 @@ The application has 8 main navigation items:
 - **TC-API-STORY-013**: Story includes all required fields
 - **TC-API-STORY-014**: Story includes related data (chapters, characters)
 
-#### Update Story (PUT /api/stories/:id)
+#### Update Story (PUT /studio/api/stories/:id)
 - **TC-API-STORY-015**: Story owner can update story
 - **TC-API-STORY-016**: Non-owner cannot update story (403)
 - **TC-API-STORY-017**: Manager can update any story
@@ -511,7 +688,7 @@ The application has 8 main navigation items:
 - **TC-API-STORY-020**: Concurrent updates handled correctly
 - **TC-API-STORY-021**: Status transitions validated correctly
 
-#### Delete Story (DELETE /api/stories/:id)
+#### Delete Story (DELETE /studio/api/stories/:id)
 - **TC-API-STORY-022**: Story owner can delete story
 - **TC-API-STORY-023**: Non-owner cannot delete story (403)
 - **TC-API-STORY-024**: Manager can delete any story
@@ -520,7 +697,7 @@ The application has 8 main navigation items:
 - **TC-API-STORY-027**: Blob images deleted correctly
 - **TC-API-STORY-028**: Soft delete preserves data in archive
 
-#### List Stories (GET /api/stories)
+#### List Stories (GET /studio/api/stories)
 - **TC-API-STORY-029**: Returns paginated list of stories
 - **TC-API-STORY-030**: Filters by status work correctly
 - **TC-API-STORY-031**: Filters by genre work correctly
@@ -531,7 +708,7 @@ The application has 8 main navigation items:
 
 ### Generation API
 
-#### Generate Story (POST /api/studio/api/generation/story)
+#### Generate Story (POST /studio/api/novels/generate)
 - **TC-API-GEN-001**: Authenticated writer can generate story
 - **TC-API-GEN-002**: Invalid input parameters return 400
 - **TC-API-GEN-003**: SSE streaming returns events correctly
@@ -541,24 +718,24 @@ The application has 8 main navigation items:
 - **TC-API-GEN-007**: Concurrent generation requests handled
 - **TC-API-GEN-008**: Generation timeout handled correctly
 
-#### Generate Characters (POST /api/studio/api/generation/characters)
+#### Generate Characters (POST /studio/api/generation/characters)
 - **TC-API-GEN-009**: Character generation works correctly
 - **TC-API-GEN-010**: Character portraits generated
 - **TC-API-GEN-011**: Character traits follow constraints
 - **TC-API-GEN-012**: Multiple characters generated correctly
 
-#### Generate Settings (POST /api/studio/api/generation/settings)
+#### Generate Settings (POST /studio/api/generation/settings)
 - **TC-API-GEN-013**: Setting generation works correctly
 - **TC-API-GEN-014**: Setting images generated
 - **TC-API-GEN-015**: Setting descriptions detailed
 
-#### Generate Scenes (POST /api/studio/api/generation/scenes)
+#### Generate Scene Content (POST /studio/api/generation/scene-content)
 - **TC-API-GEN-016**: Scene generation works correctly
 - **TC-API-GEN-017**: Scene images generated
 - **TC-API-GEN-018**: Scene content follows story arc
 - **TC-API-GEN-019**: Scene evaluation scores returned
 
-#### Generate Images (POST /api/studio/api/generation/images)
+#### Generate Images (POST /studio/api/generation/images)
 - **TC-API-GEN-020**: Image generation works with valid prompt
 - **TC-API-GEN-021**: Image optimization creates 4 variants
 - **TC-API-GEN-022**: Images uploaded to Blob storage
@@ -568,33 +745,33 @@ The application has 8 main navigation items:
 
 ### Community API
 
-#### Create Post (POST /api/community/posts)
+#### Create Post (POST /community/api/posts)
 - **TC-API-COMM-001**: Authenticated user can create post
 - **TC-API-COMM-002**: Anonymous user cannot create post (401)
 - **TC-API-COMM-003**: Post validation works correctly
 - **TC-API-COMM-004**: Post attached to story correctly
 - **TC-API-COMM-005**: Post created with correct metadata
 
-#### Get Posts (GET /api/community/posts)
+#### Get Posts (GET /community/api/posts)
 - **TC-API-COMM-006**: Returns paginated posts
 - **TC-API-COMM-007**: Filter by category works
 - **TC-API-COMM-008**: Filter by story works
 - **TC-API-COMM-009**: Search posts works
 - **TC-API-COMM-010**: Sorting options work
 
-#### Update Post (PUT /api/community/posts/:id)
+#### Update Post (PUT /community/api/posts/:id)
 - **TC-API-COMM-011**: Post owner can update post
 - **TC-API-COMM-012**: Non-owner cannot update post (403)
 - **TC-API-COMM-013**: Manager can update any post
 - **TC-API-COMM-014**: Post validation on update works
 
-#### Delete Post (DELETE /api/community/posts/:id)
+#### Delete Post (DELETE /community/api/posts/:id)
 - **TC-API-COMM-015**: Post owner can delete post
 - **TC-API-COMM-016**: Non-owner cannot delete post (403)
 - **TC-API-COMM-017**: Manager can delete any post
 - **TC-API-COMM-018**: Comments deleted with post
 
-#### Like/Unlike Post (POST /api/community/posts/:id/like)
+#### Like/Unlike Post (POST /community/api/posts/:id/like)
 - **TC-API-COMM-019**: Authenticated user can like post
 - **TC-API-COMM-020**: Anonymous user cannot like (401)
 - **TC-API-COMM-021**: Like count increments correctly
@@ -625,24 +802,24 @@ The application has 8 main navigation items:
 
 ### Publish API
 
-#### Publish Story (POST /api/publish/:id)
-- **TC-API-PUBLISH-001**: Story owner can publish story
-- **TC-API-PUBLISH-002**: Non-owner cannot publish story (403)
-- **TC-API-PUBLISH-003**: Incomplete story cannot be published
-- **TC-API-PUBLISH-004**: Published story status updated
-- **TC-API-PUBLISH-005**: Published story visible in community
+#### Publish Scene (POST /publish/api/scenes/:id)
+- **TC-API-PUBLISH-001**: Story owner can publish scene
+- **TC-API-PUBLISH-002**: Non-owner cannot publish scene (403)
+- **TC-API-PUBLISH-003**: Incomplete scene cannot be published
+- **TC-API-PUBLISH-004**: Published scene status updated
+- **TC-API-PUBLISH-005**: Published scene visible in community
 
-#### Unpublish Story (POST /api/publish/:id/unpublish)
-- **TC-API-PUBLISH-006**: Story owner can unpublish story
+#### Unpublish Scene (POST /publish/api/scenes/:id/unpublish)
+- **TC-API-PUBLISH-006**: Story owner can unpublish scene
 - **TC-API-PUBLISH-007**: Non-owner cannot unpublish (403)
-- **TC-API-PUBLISH-008**: Unpublished story hidden from community
-- **TC-API-PUBLISH-009**: Unpublished story status updated
+- **TC-API-PUBLISH-008**: Unpublished scene hidden from community
+- **TC-API-PUBLISH-009**: Unpublished scene status updated
 
-#### Schedule Publish (POST /api/publish/:id/schedule)
-- **TC-API-PUBLISH-010**: Story can be scheduled for publish
+#### Create Publishing Schedule (POST /publish/api/schedules)
+- **TC-API-PUBLISH-010**: Story can be scheduled for weekly publish
 - **TC-API-PUBLISH-011**: Scheduled publish date validated
-- **TC-API-PUBLISH-012**: Scheduled story published at correct time
-- **TC-API-PUBLISH-013**: Scheduled publish can be cancelled
+- **TC-API-PUBLISH-012**: Scenes published at correct time via cron
+- **TC-API-PUBLISH-013**: Schedule can be updated/cancelled
 
 ### Image API
 
@@ -935,20 +1112,15 @@ The application has 8 main navigation items:
    - **TC-NOVELS-FUNC-002**: Track reading history
    - **TC-NOVELS-FUNC-003**: View chapter preview
    - **TC-NOVELS-FUNC-004**: Post/view comments
-   - **TC-NOVELS-FUNC-005**: Search stories
-   - **TC-NOVELS-FUNC-006**: Bookmark story
-   - **TC-NOVELS-FUNC-007**: Save reading progress
-   - **TC-NOVELS-FUNC-008**: Adjust font/theme
+   - **TC-NOVELS-FUNC-005**: Save reading progress
+   - **TC-NOVELS-FUNC-006**: Adjust font/theme
 
 3. **Comics - Reading Experience** (30 min)
    - **TC-COMICS-FUNC-001**: Rate comic
    - **TC-COMICS-FUNC-002**: Track reading history
    - **TC-COMICS-FUNC-003**: Navigate panels
    - **TC-COMICS-FUNC-004**: Post/view comments
-   - **TC-COMICS-FUNC-005**: Search comics
-   - **TC-COMICS-FUNC-006**: Bookmark comic
-   - **TC-COMICS-FUNC-007**: Save reading progress
-   - **TC-COMICS-FUNC-008**: Zoom/pan panels
+   - **TC-COMICS-FUNC-005**: Save reading progress
 
 4. **Community - Social Features** (30 min)
    - **TC-COMMUNITY-FUNC-001**: Create post button (auth only)
@@ -1816,6 +1988,7 @@ Full mapping of test case IDs to test descriptions available in this document.
 |---------|------|---------|--------|
 | 1.0 | 2025-11-05 | Initial comprehensive test specification | Claude |
 | 1.1 | 2025-11-05 | Updated to match actual implementation:<br>- Simplified Home page tests (redirect only)<br>- Changed Analytics → Analysis throughout<br>- Updated API endpoints to match implementation<br>- Verified schedule publish feature (implemented)<br>- Updated performance metrics for home redirect | Claude |
+| 1.2 | 2025-11-05 | Major updates for alignment with current codebase:<br>- Added Studio Agent test suite (37 test cases)<br>- Added Test Data Preparation section with API keys<br>- Removed unimplemented features (search, bookmark, zoom/pan)<br>- Updated all API paths to match actual implementation<br>- Verified API paths against current codebase structure | Claude |
 
 ### Glossary
 
