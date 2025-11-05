@@ -80,7 +80,7 @@ export function getDocPage(slug: string[] | undefined): DocPage | null {
   try {
     const filePath = slug && slug.length > 0
       ? path.join(DOCS_DIR, ...slug)
-      : path.join(DOCS_DIR, 'index');
+      : path.join(DOCS_DIR, 'CLAUDE');
 
     // Try both .md and .mdx extensions
     let fullPath = '';
