@@ -6,7 +6,7 @@ This document outlines comprehensive test cases for the Fictures platform, inclu
 
 ## GNB Menu Structure
 
-The application has 9 main navigation items:
+The application has 8 main navigation items:
 
 1. **Home (/)** - Landing page, accessible to all users
 2. **Studio (/studio)** - Story creation and management workspace, restricted to writers and managers
@@ -16,7 +16,6 @@ The application has 9 main navigation items:
 6. **Publish (/publish)** - Publishing workflow, restricted to writers and managers
 7. **Analytics (/analytics)** - Story performance metrics, restricted to writers and managers
 8. **Settings (/settings)** - User preferences and account management, requires authentication
-9. **Docs (/docs)** - Documentation and help resources, accessible to all users
 
 ## Access Control Matrix
 
@@ -30,7 +29,6 @@ The application has 9 main navigation items:
 | Publish   | ❌        | ❌     | ✅     | ✅      |
 | Analytics | ❌        | ❌     | ✅     | ✅      |
 | Settings  | ❌        | ✅     | ✅     | ✅      |
-| Docs      | ✅        | ✅     | ✅     | ✅      |
 
 ## Test Categories
 
@@ -471,53 +469,6 @@ The application has 9 main navigation items:
 
 ---
 
-### Docs Page (/docs)
-
-#### Navigation Tests
-- **TC-DOCS-NAV-001**: Docs menu item highlighted when active
-- **TC-DOCS-NAV-002**: Documentation sidebar navigation works
-- **TC-DOCS-NAV-003**: Breadcrumbs show correct hierarchy
-- **TC-DOCS-NAV-004**: Search results navigate to correct pages
-- **TC-DOCS-NAV-005**: Internal doc links work correctly
-
-#### Access Control Tests
-- **TC-DOCS-AUTH-001**: Anonymous users can access documentation
-- **TC-DOCS-AUTH-002**: All authenticated users can access documentation
-- **TC-DOCS-AUTH-003**: Menu item visible to all users
-- **TC-DOCS-AUTH-004**: No authentication required for public docs
-
-#### Content Tests
-- **TC-DOCS-CONTENT-001**: Documentation pages render correctly
-- **TC-DOCS-CONTENT-002**: Table of contents displays
-- **TC-DOCS-CONTENT-003**: Code examples render with syntax highlighting
-- **TC-DOCS-CONTENT-004**: Images in docs display correctly
-- **TC-DOCS-CONTENT-005**: Empty state for missing documentation
-- **TC-DOCS-CONTENT-006**: API reference displays correctly
-
-#### Functionality Tests
-- **TC-DOCS-FUNC-001**: Documentation search works
-- **TC-DOCS-FUNC-002**: Copy code button works
-- **TC-DOCS-FUNC-003**: Anchor links scroll to correct sections
-- **TC-DOCS-FUNC-004**: Feedback/rating on docs works
-- **TC-DOCS-FUNC-005**: Print documentation works
-- **TC-DOCS-FUNC-006**: Version selector works
-- **TC-DOCS-FUNC-007**: External links open in new tabs
-- **TC-DOCS-FUNC-008**: Code playground/sandbox works
-
-#### Performance Tests
-- **TC-DOCS-PERF-001**: Documentation pages load in under 2 seconds
-- **TC-DOCS-PERF-002**: Search is responsive
-- **TC-DOCS-PERF-003**: Navigation between docs is fast
-- **TC-DOCS-PERF-004**: Code syntax highlighting doesn't block rendering
-
-#### Error Handling Tests
-- **TC-DOCS-ERROR-001**: Missing documentation shows 404 page
-- **TC-DOCS-ERROR-002**: Search failure shows error message
-- **TC-DOCS-ERROR-003**: Broken images show fallback
-- **TC-DOCS-ERROR-004**: Invalid anchor links show error
-
----
-
 ## API Test Cases
 
 ### Authentication API
@@ -909,7 +860,6 @@ The application has 9 main navigation items:
    - **TC-NOVELS-AUTH-001**: Novels accessible to all
    - **TC-COMICS-AUTH-001**: Comics accessible to all
    - **TC-COMMUNITY-AUTH-001**: Community viewable by all
-   - **TC-DOCS-AUTH-001**: Docs accessible to all
 
 **Execution Order:**
 1. Run anonymous user tests first
@@ -942,11 +892,10 @@ The application has 9 main navigation items:
    - **TC-PUBLISH-NAV-001**: Publish menu → /publish
    - **TC-ANALYTICS-NAV-001**: Analytics menu → /analytics
    - **TC-SETTINGS-NAV-001**: Settings menu → /settings
-   - **TC-DOCS-NAV-001**: Docs menu → /docs
 
 2. **Active State Highlighting**
    - Verify active menu item highlighted on each page
-   - Test all 9 menu items
+   - Test all 8 menu items
 
 3. **Mobile Menu**
    - **TC-MOBILE-002**: Mobile menu opens/closes
@@ -956,7 +905,6 @@ The application has 9 main navigation items:
 4. **Breadcrumb Navigation**
    - **TC-STUDIO-NAV-005**: Studio breadcrumbs
    - **TC-PUBLISH-NAV-005**: Publish breadcrumbs
-   - **TC-DOCS-NAV-003**: Docs breadcrumbs
 
 5. **Internal Page Navigation**
    - **TC-STUDIO-NAV-004**: Story card → editor
@@ -1460,8 +1408,7 @@ tests/
 │   ├── community.spec.ts       # Community tests
 │   ├── publish.spec.ts         # Publish tests
 │   ├── analytics.spec.ts       # Analytics tests
-│   ├── settings.spec.ts        # Settings tests
-│   └── docs.spec.ts            # Docs tests
+│   └── settings.spec.ts        # Settings tests
 ├── api/
 │   ├── auth.api.spec.ts        # Auth API tests
 │   ├── story.api.spec.ts       # Story API tests
@@ -1623,7 +1570,6 @@ dotenv --file .env.local run node scripts/clean-test-data.mjs
 | Publish | 24/30 | 20 | 4 | 83% |
 | Analytics | 24/30 | 24 | 0 | 100% |
 | Settings | 24/30 | 24 | 0 | 100% |
-| Docs | 24/24 | 24 | 0 | 100% |
 
 **API Coverage:**
 | API Category | Endpoints Tested | Pass Rate |
@@ -1683,7 +1629,6 @@ dotenv --file .env.local run node scripts/clean-test-data.mjs
 | Publish | < 2s | 1.9s | ✅ |
 | Analytics | < 3s | 2.4s | ✅ |
 | Settings | < 2s | 1.3s | ✅ |
-| Docs | < 2s | 1.1s | ✅ |
 
 **Core Web Vitals:**
 | Metric | Target | Actual | Status |

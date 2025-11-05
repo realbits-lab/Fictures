@@ -228,7 +228,7 @@ export function StoryTreeArchitecture({
             <div className="font-semibold truncate">{story.title}</div>
             <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
               <Badge variant="secondary">{story.genre}</Badge>
-              <Badge variant={story.status === 'publishing' ? 'success' : 'default'}>
+              <Badge variant={story.status === 'publishing' ? 'default' : 'secondary'}>
                 {story.status}
               </Badge>
             </div>

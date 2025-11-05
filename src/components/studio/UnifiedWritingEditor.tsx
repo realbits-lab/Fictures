@@ -938,7 +938,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                       <tr className="border-b">
                         <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Status</td>
                         <td className="py-2 px-4">
-                          <Badge variant={story.status === 'published' ? 'success' : 'info'}>
+                          <Badge variant={story.status === 'published' ? 'default' : 'secondary'}>
                             {story.status}
                           </Badge>
                         </td>
@@ -1239,7 +1239,7 @@ export function UnifiedWritingEditor({ story: initialStory, allStories, initialS
                       <tr className="border-b">
                         <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">Status</td>
                         <td className="py-2 px-4">
-                          <Badge variant={selectedChapter?.status === 'published' ? 'success' : 'info'}>
+                          <Badge variant={selectedChapter?.status === 'published' ? 'default' : 'secondary'}>
                             {selectedChapter?.status}
                           </Badge>
                         </td>

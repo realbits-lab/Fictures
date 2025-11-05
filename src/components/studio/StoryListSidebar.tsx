@@ -281,7 +281,7 @@ export function StoryListSidebar({
                   </Button>
                   
                   <Button
-                    variant={isCurrentStory ? "primary" : "ghost"}
+                    variant={isCurrentStory ? "default" : "ghost"}
                     size="sm"
                     className="flex-1 justify-start h-8 text-xs"
                     onClick={() => handleStorySelect(story.id)}

@@ -57,7 +57,7 @@ export function StoryOverview({ story }: StoryOverviewProps) {
               <span>Progress:</span>
               <span>{Math.round(progressPercentage)}% Complete</span>
             </div>
-            <Progress value={progressPercentage} showValue={false} />
+            <Progress value={progressPercentage} />
           </div>
 
           {/* Parts Overview */}

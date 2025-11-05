@@ -219,9 +219,8 @@ export function PublishClient() {
                       {item.title || `Item ${index + 1}`}
                     </div>
                     <div className="text-xs text-gray-500">⏰ {item.time || 'TBD'}</div>
-                    <Badge 
-                      variant={item.status === 'ready' ? 'success' : item.status === 'draft' ? 'warning' : 'info'} 
-                      size="sm"
+                    <Badge
+                      variant={item.status === 'ready' ? 'default' : item.status === 'draft' ? 'secondary' : 'outline'}
                     >
                       {item.status === 'ready' ? '✅ Ready' : 
                        item.status === 'draft' ? '📝 Draft' : 

@@ -10,7 +10,7 @@ import type {
   HistoryItem,
   StorageData,
   AddToHistoryOptions
-} from '@/types/novels-history';
+} from '@/types/reading-history';
 
 const STORAGE_VERSION = 2; // Bumped from 1 to support format separation
 const MAX_ITEMS = 100; // Limit history to prevent localStorage bloat
@@ -369,8 +369,18 @@ class ReadingHistoryManager {
    * Get combined statistics for all formats
    */
   public getAllStats(): {
-    novel: ReturnType<typeof this.getStats>;
-    comic: ReturnType<typeof this.getStats>;
+    novel: {
+      itemCount: number;
+      isAvailable: boolean;
+      storageUsed?: number;
+      format: ReadingFormat;
+    };
+    comic: {
+      itemCount: number;
+      isAvailable: boolean;
+      storageUsed?: number;
+      format: ReadingFormat;
+    };
     total: number;
   } {
     const novelStats = this.getStats('novel');

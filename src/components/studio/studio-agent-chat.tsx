@@ -54,7 +54,7 @@ function ToolExecutionCard({ tool }: { tool: ToolInvocation }) {
           <Wrench className="h-4 w-4" style={{ color: 'rgb(var(--color-muted-foreground))' }} />
           <span className="font-mono text-sm font-medium text-card-foreground">{tool.toolName}</span>
         </div>
-        <Badge variant={isComplete ? (isError ? 'danger' : 'success') : 'info'} className="text-xs theme-badge">
+        <Badge variant={isComplete ? (isError ? 'destructive' : 'default') : 'secondary'} className="text-xs theme-badge">
           {isComplete ? (isError ? 'Error' : 'Complete') : 'Running'}
         </Badge>
       </CardHeader>
@@ -91,8 +91,8 @@ function AgentMessage({ message }: { message: UIMessage & { toolInvocations?: To
         .filter(part => part.type === 'text')
         .map(part => (part as any).text)
         .join('')
-    : typeof message.content === 'string'
-    ? message.content
+    : typeof (message as any).content === 'string'
+    ? (message as any).content
     : '';
 
   return (

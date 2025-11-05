@@ -96,7 +96,6 @@ export async function POST(request: NextRequest) {
       {
         title: validatedData.title,
         summary: (validatedData as any).summary || (validatedData as any).description,
-        authorId: session.user.id,
         orderIndex: validatedData.orderIndex,
       }
     );

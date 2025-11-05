@@ -98,7 +98,6 @@ export async function POST(request: NextRequest) {
         part.storyId,
         {
           title: chapterSpec.title,
-          authorId: session.user.id,
           orderIndex: chapterSpec.chap,
           status: 'writing',
           purpose: `Chapter ${chapterSpec.chap} - ${chapterSpec.goal}`,
