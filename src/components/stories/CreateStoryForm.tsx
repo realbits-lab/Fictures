@@ -8,6 +8,7 @@ import { Label } from '@/components/ui';
 import { useStoryCreation } from './StoryCreationContext';
 import { toast } from 'sonner';
 import { trackStoryEvent } from '@/lib/analysis/google-analytics';
+import { NOVEL_GENERATION_CONSTRAINTS } from '@/lib/novels/constants';
 
 interface ProgressStep {
   phase: string;
@@ -27,11 +28,11 @@ interface StoryData {
 export function CreateStoryForm() {
   const [prompt, setPrompt] = useState('');
   const [language, setLanguage] = useState('English');
-  const [characterCount, setCharacterCount] = useState(3);
-  const [settingCount, setSettingCount] = useState(3);
-  const [partsCount, setPartsCount] = useState(1);
-  const [chaptersPerPart, setChaptersPerPart] = useState(1);
-  const [scenesPerChapter, setScenesPerChapter] = useState(3);
+  const [characterCount, setCharacterCount] = useState(NOVEL_GENERATION_CONSTRAINTS.CHARACTER.DEFAULT);
+  const [settingCount, setSettingCount] = useState(NOVEL_GENERATION_CONSTRAINTS.SETTING.DEFAULT);
+  const [partsCount, setPartsCount] = useState(NOVEL_GENERATION_CONSTRAINTS.PARTS.DEFAULT);
+  const [chaptersPerPart, setChaptersPerPart] = useState(NOVEL_GENERATION_CONSTRAINTS.CHAPTERS_PER_PART.DEFAULT);
+  const [scenesPerChapter, setScenesPerChapter] = useState(NOVEL_GENERATION_CONSTRAINTS.SCENES_PER_CHAPTER.DEFAULT);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isCompleted, setIsCompleted] = useState(false);

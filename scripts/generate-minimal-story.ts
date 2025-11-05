@@ -33,6 +33,7 @@ import fs from 'fs';
 import path from 'path';
 import { loadProfile } from '../src/lib/utils/auth-loader';
 import { getEnvDisplayName } from '../src/lib/utils/environment';
+import { NOVEL_GENERATION_CONSTRAINTS } from '../src/lib/novels/constants';
 
 const BASE_URL = 'http://localhost:3000';
 
@@ -72,11 +73,11 @@ async function generateStory() {
         userPrompt,
         preferredGenre: 'Contemporary',
         preferredTone: 'hopeful',
-        characterCount: 2,    // Minimum for story dynamics
-        settingCount: 2,      // Minimum for location variety
-        partsCount: 1,        // Single part = shortest story
-        chaptersPerPart: 1,   // Single chapter per part
-        scenesPerChapter: 3,  // Minimum for adversity-triumph cycle
+        characterCount: NOVEL_GENERATION_CONSTRAINTS.CHARACTER.DEFAULT,    // Minimum for story dynamics
+        settingCount: NOVEL_GENERATION_CONSTRAINTS.SETTING.DEFAULT,      // Minimum for location variety
+        partsCount: NOVEL_GENERATION_CONSTRAINTS.PARTS.DEFAULT,        // Single part = shortest story
+        chaptersPerPart: NOVEL_GENERATION_CONSTRAINTS.CHAPTERS_PER_PART.DEFAULT,   // Single chapter per part
+        scenesPerChapter: NOVEL_GENERATION_CONSTRAINTS.SCENES_PER_CHAPTER.DEFAULT,  // Minimum for adversity-triumph cycle
         language: 'English',
       }),
     });
