@@ -132,7 +132,7 @@ function CommunityPost({ post, onDelete }: { post: Post; onDelete?: () => void }
                   {typeConfig.icon} {typeConfig.label}
                 </Badge>
                 {post.isPinned && (
-                  <Badge variant="warning" className="text-xs">
+                  <Badge variant="destructive" className="text-xs">
                     📌 Pinned
                   </Badge>
                 )}

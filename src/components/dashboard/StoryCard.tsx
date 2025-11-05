@@ -48,7 +48,7 @@ export function StoryCard({
   const getVisibilityBadge = () => {
     if (status === 'published') {
       return (
-        <Badge variant="success">
+        <Badge variant="default">
           Public
         </Badge>
       );
@@ -73,17 +73,15 @@ export function StoryCard({
       <Card className="h-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] hover:border-blue-400 dark:hover:border-blue-500 cursor-pointer overflow-hidden">
         <CardContent className="p-0 space-y-0">
         {/* Story Image - 16:9 Aspect Ratio */}
-        {imageUrl && (
-          <div className="relative w-full aspect-video bg-[rgb(var(--color-muted))]">
-            <StoryImage
-              src={imageUrl}
-              alt={title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-            />
-          </div>
-        )}
+        <div className="relative w-full aspect-video bg-[rgb(var(--color-muted))]">
+          <StoryImage
+            src={imageUrl || ''}
+            alt={title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+          />
+        </div>
 
         <div className="p-6 space-y-4">
           <div className="flex items-start justify-between">

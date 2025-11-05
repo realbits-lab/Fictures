@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { publishingSchedules, scheduledPublications, stories, chapters, scenes, characters, users, research, communityPosts, communityReplies, studioAgentChats, apiKeys, aiInteractions, analyticsEvents, parts, comments, userPreferences, userStats, readingHistory, readingSessions, settings, storyInsights, postViews, studioAgentMessages, comicPanels, sceneEvaluations, sceneViews, studioAgentToolExecutions, storyLikes, chapterLikes, commentDislikes, commentLikes, postLikes, sceneDislikes, sceneLikes } from "./schema";
+import { publishingSchedules, scheduledPublications, stories, chapters, scenes, characters, users, communityPosts, communityReplies, studioAgentChats, apiKeys, aiInteractions, analyticsEvents, parts, comments, userPreferences, userStats, readingHistory, readingSessions, settings, storyInsights, postViews, studioAgentMessages, comicPanels, sceneEvaluations, sceneViews, studioAgentToolExecutions, storyLikes, chapterLikes, commentDislikes, commentLikes, postLikes, sceneDislikes, sceneLikes } from "./schema";
 
 export const scheduledPublicationsRelations = relations(scheduledPublications, ({one}) => ({
 	publishingSchedule: one(publishingSchedules, {
@@ -68,10 +68,6 @@ export const chaptersRelations = relations(chapters, ({one, many}) => ({
 		fields: [chapters.partId],
 		references: [parts.id]
 	}),
-	user: one(users, {
-		fields: [chapters.authorId],
-		references: [users.id]
-	}),
 	character: one(characters, {
 		fields: [chapters.characterId],
 		references: [characters.id]
@@ -125,22 +121,13 @@ export const charactersRelations = relations(characters, ({one, many}) => ({
 	chapters: many(chapters),
 }));
 
-export const researchRelations = relations(research, ({one}) => ({
-	user: one(users, {
-		fields: [research.authorId],
-		references: [users.id]
-	}),
-}));
-
 export const usersRelations = relations(users, ({many}) => ({
-	research: many(research),
 	stories: many(stories),
 	communityReplies: many(communityReplies),
 	studioAgentChats: many(studioAgentChats),
 	apiKeys: many(apiKeys),
 	aiInteractions: many(aiInteractions),
 	analyticsEvents: many(analyticsEvents),
-	chapters: many(chapters),
 	comments: many(comments),
 	communityPosts_authorId: many(communityPosts, {
 		relationName: "communityPosts_authorId_users_id"
@@ -151,7 +138,6 @@ export const usersRelations = relations(users, ({many}) => ({
 	publishingSchedules: many(publishingSchedules),
 	userPreferences: many(userPreferences),
 	userStats: many(userStats),
-	parts: many(parts),
 	readingHistories: many(readingHistory),
 	readingSessions: many(readingSessions),
 	postViews: many(postViews),
@@ -271,10 +257,6 @@ export const partsRelations = relations(parts, ({one, many}) => ({
 	story: one(stories, {
 		fields: [parts.storyId],
 		references: [stories.id]
-	}),
-	user: one(users, {
-		fields: [parts.authorId],
-		references: [users.id]
 	}),
 }));
 

@@ -28,11 +28,11 @@ interface StoryData {
 export function CreateStoryForm() {
   const [prompt, setPrompt] = useState('');
   const [language, setLanguage] = useState('English');
-  const [characterCount, setCharacterCount] = useState(NOVEL_GENERATION_CONSTRAINTS.CHARACTER.DEFAULT);
-  const [settingCount, setSettingCount] = useState(NOVEL_GENERATION_CONSTRAINTS.SETTING.DEFAULT);
-  const [partsCount, setPartsCount] = useState(NOVEL_GENERATION_CONSTRAINTS.PARTS.DEFAULT);
-  const [chaptersPerPart, setChaptersPerPart] = useState(NOVEL_GENERATION_CONSTRAINTS.CHAPTERS_PER_PART.DEFAULT);
-  const [scenesPerChapter, setScenesPerChapter] = useState(NOVEL_GENERATION_CONSTRAINTS.SCENES_PER_CHAPTER.DEFAULT);
+  const [characterCount, setCharacterCount] = useState<number>(NOVEL_GENERATION_CONSTRAINTS.CHARACTER.DEFAULT);
+  const [settingCount, setSettingCount] = useState<number>(NOVEL_GENERATION_CONSTRAINTS.SETTING.DEFAULT);
+  const [partsCount, setPartsCount] = useState<number>(NOVEL_GENERATION_CONSTRAINTS.PARTS.DEFAULT);
+  const [chaptersPerPart, setChaptersPerPart] = useState<number>(NOVEL_GENERATION_CONSTRAINTS.CHAPTERS_PER_PART.DEFAULT);
+  const [scenesPerChapter, setScenesPerChapter] = useState<number>(NOVEL_GENERATION_CONSTRAINTS.SCENES_PER_CHAPTER.DEFAULT);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isCompleted, setIsCompleted] = useState(false);

@@ -110,6 +110,7 @@ async function generateQualityInsights(story: any): Promise<void> {
 async function generateEngagementInsights(story: any): Promise<void> {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const thirtyDaysAgoString = thirtyDaysAgo.toISOString();
 
   const engagementData = await db
     .select({
@@ -121,7 +122,7 @@ async function generateEngagementInsights(story: any): Promise<void> {
     .where(
       and(
         eq(analysisEvents.storyId, story.id),
-        gte(analysisEvents.timestamp, thirtyDaysAgo)
+        gte(analysisEvents.timestamp, thirtyDaysAgoString)
       )
     )
     .groupBy(sql`DATE(${analysisEvents.timestamp})`)

@@ -307,7 +307,7 @@ export function StoryListSidebar({
 
                 {/* Story Details */}
                 <div className="ml-8 mt-1 flex items-center gap-2 text-xs text-gray-500">
-                  <Badge variant="info" className={`text-xs ${getStatusColor(story.status)}`}>
+                  <Badge variant="secondary" className={`text-xs ${getStatusColor(story.status)}`}>
                     {getStatusIcon(story.status)} {story.status}
                   </Badge>
                   <span>{story.genre}</span>

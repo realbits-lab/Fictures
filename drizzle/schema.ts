@@ -95,23 +95,6 @@ export const characters = pgTable("characters", {
 		}),
 ]);
 
-export const research = pgTable("research", {
-	id: text().primaryKey().notNull(),
-	title: varchar({ length: 500 }).notNull(),
-	content: text().notNull(),
-	authorId: text("author_id").notNull(),
-	tags: json().default([]),
-	viewCount: integer("view_count").default(0).notNull(),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.authorId],
-			foreignColumns: [users.id],
-			name: "research_author_id_users_id_fk"
-		}).onDelete("cascade"),
-]);
-
 export const stories = pgTable("stories", {
 	id: text().primaryKey().notNull(),
 	title: varchar({ length: 255 }).notNull(),
@@ -308,7 +291,6 @@ export const chapters = pgTable("chapters", {
 	summary: text(),
 	storyId: text("story_id").notNull(),
 	partId: text("part_id"),
-	authorId: text("author_id").notNull(),
 	orderIndex: integer("order_index").notNull(),
 	status: status().default('writing').notNull(),
 	purpose: text(),
@@ -342,11 +324,6 @@ export const chapters = pgTable("chapters", {
 			columns: [table.partId],
 			foreignColumns: [parts.id],
 			name: "chapters_part_id_parts_id_fk"
-		}),
-	foreignKey({
-			columns: [table.authorId],
-			foreignColumns: [users.id],
-			name: "chapters_author_id_users_id_fk"
 		}),
 	foreignKey({
 			columns: [table.characterId],
@@ -540,7 +517,6 @@ export const parts = pgTable("parts", {
 	id: text().primaryKey().notNull(),
 	title: varchar({ length: 255 }).notNull(),
 	storyId: text("story_id").notNull(),
-	authorId: text("author_id").notNull(),
 	summary: text(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
@@ -553,11 +529,6 @@ export const parts = pgTable("parts", {
 			columns: [table.storyId],
 			foreignColumns: [stories.id],
 			name: "parts_story_id_stories_id_fk"
-		}),
-	foreignKey({
-			columns: [table.authorId],
-			foreignColumns: [users.id],
-			name: "parts_author_id_users_id_fk"
 		}),
 ]);
 

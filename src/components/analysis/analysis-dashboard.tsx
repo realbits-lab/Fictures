@@ -170,14 +170,14 @@ export function AnalysisDashboard() {
                   <div className="font-medium text-gray-900 dark:text-gray-100">The Shadow Keeper</div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">Urban Fantasy</div>
                 </div>
-                <Badge variant="success">Trending #2</Badge>
+                <Badge variant="default">Trending #2</Badge>
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600 dark:text-gray-400">Reader Retention</span>
                   <span className="font-medium">94%</span>
                 </div>
-                <Progress value={94} variant="success" />
+                <Progress value={94} />
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 👁️ 3,247 views • 💬 126 comments • ❤️ 456 reactions
@@ -191,14 +191,14 @@ export function AnalysisDashboard() {
                     <div className="font-medium text-gray-900 dark:text-gray-100">Dragon Chronicles</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">Epic Fantasy</div>
                   </div>
-                  <Badge variant="info">Rising</Badge>
+                  <Badge variant="secondary">Rising</Badge>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">Reader Retention</span>
                     <span className="font-medium">78%</span>
                   </div>
-                  <Progress value={78} variant="warning" />
+                  <Progress value={78} />
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   👁️ 1,892 views • 💬 67 comments • ❤️ 234 reactions
@@ -243,7 +243,7 @@ export function AnalysisDashboard() {
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       Top Theory Post
                     </span>
-                    <Badge variant="info" size="sm">Hot</Badge>
+                    <Badge variant="secondary">Hot</Badge>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {readerData?.topPost?.title || "&ldquo;Maya&rsquo;s True Power Theory - MASSIVE PLOT TWIST INCOMING!&rdquo;"}
@@ -259,7 +259,7 @@ export function AnalysisDashboard() {
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       Recent Comment
                     </span>
-                    <Badge variant="success" size="sm">Positive</Badge>
+                    <Badge variant="default">Positive</Badge>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {readerData?.recentComment?.text || "&ldquo;The way you write Maya&rsquo;s internal conflict is incredible. Can&rsquo;t wait for the finale!&rdquo;"}
@@ -274,7 +274,7 @@ export function AnalysisDashboard() {
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       Fan Content
                     </span>
-                    <Badge variant="default" size="sm">Art</Badge>
+                    <Badge variant="default">Art</Badge>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {readerData?.fanContent?.title || "&ldquo;Maya vs Void Collector&rdquo; fan art"} by {readerData?.fanContent?.author || '@ArtistPro'}

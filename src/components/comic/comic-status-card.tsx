@@ -136,14 +136,14 @@ export function ComicStatusCard({
     switch (comicStatus) {
       case 'published':
         return (
-          <Badge variant="success" className="flex items-center gap-1">
+          <Badge variant="default" className="flex items-center gap-1">
             <CheckCircle2 className="h-3 w-3" />
             Published
           </Badge>
         );
       case 'draft':
         return (
-          <Badge variant="warning" className="flex items-center gap-1">
+          <Badge variant="destructive" className="flex items-center gap-1">
             <EyeOff className="h-3 w-3" />
             Draft
           </Badge>

@@ -65,8 +65,8 @@ export function StoryNavigationSidebar({ story, currentChapterId }: StoryNavigat
           <div className="flex-1 min-w-0">
             <div className="font-semibold truncate">{story.title}</div>
             <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-              <Badge variant="info" size="sm">{story.genre}</Badge>
-              <Badge variant={story.status === 'publishing' ? 'success' : 'default'} size="sm">
+              <Badge variant="secondary">{story.genre}</Badge>
+              <Badge variant={story.status === 'publishing' ? 'success' : 'default'}>
                 {story.status}
               </Badge>
             </div>
@@ -83,7 +83,7 @@ export function StoryNavigationSidebar({ story, currentChapterId }: StoryNavigat
                   <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                     📚 {part.title}
                   </span>
-                  <Badge variant="info" size="sm">
+                  <Badge variant="secondary">
                     {part.chapters.length}
                   </Badge>
                 </div>

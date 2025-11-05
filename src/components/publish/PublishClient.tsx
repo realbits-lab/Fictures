@@ -248,7 +248,7 @@ export function PublishClient() {
                       <div className="font-medium text-gray-900 dark:text-gray-100">Wed Nov 15</div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">Ch 16: Final Confrontation</div>
                       <div className="text-xs text-gray-500">⏰ 2:00 PM</div>
-                      <Badge variant="success" size="sm">✅ Ready</Badge>
+                      <Badge variant="default">✅ Ready</Badge>
                       <Button size="sm" className="w-full mt-2">📤 Publish</Button>
                     </div>
                   </div>
@@ -258,7 +258,7 @@ export function PublishClient() {
                       <div className="font-medium text-gray-900 dark:text-gray-100">Fri Nov 17</div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">Part III Complete</div>
                       <div className="text-xs text-gray-500">⏰ 6:00 PM</div>
-                      <Badge variant="warning" size="sm">📝 Draft</Badge>
+                      <Badge variant="destructive">📝 Draft</Badge>
                       <Button variant="secondary" size="sm" className="w-full mt-2">✏️ Edit</Button>
                     </div>
                   </div>
@@ -268,7 +268,7 @@ export function PublishClient() {
                       <div className="font-medium text-gray-900 dark:text-gray-100">Mon Nov 20</div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">New Story Announcement</div>
                       <div className="text-xs text-gray-500">⏰ 12:00 PM</div>
-                      <Badge variant="info" size="sm">📋 Planned</Badge>
+                      <Badge variant="secondary">📋 Planned</Badge>
                       <Button variant="ghost" size="sm" className="w-full mt-2">📝 Write</Button>
                     </div>
                   </div>
@@ -278,7 +278,7 @@ export function PublishClient() {
                       <div className="font-medium text-gray-900 dark:text-gray-100">Wed Nov 22</div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">Ch 1: Next Adventure</div>
                       <div className="text-xs text-gray-500">⏰ 2:00 PM</div>
-                      <Badge variant="default" size="sm">💭 Idea</Badge>
+                      <Badge variant="default">💭 Idea</Badge>
                       <Button variant="ghost" size="sm" className="w-full mt-2">📋 Plan</Button>
                     </div>
                   </div>
@@ -303,21 +303,21 @@ export function PublishClient() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <div className="flex items-center gap-2">
                 <span className="text-sm">Word Count:</span>
-                <Badge variant="success" size="sm">
+                <Badge variant="default">
                 </Badge>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm">Target:</span>
-                <Badge variant="success" size="sm">
+                <Badge variant="default">
                 </Badge>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm">Quality Check:</span>
-                <Badge variant="success" size="sm">✅</Badge>
+                <Badge variant="default">✅</Badge>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm">Title:</span>
-                <Badge variant="success" size="sm">
+                <Badge variant="default">
                   {publishStatus?.readyToPublish?.shortTitle || 'Final Confrontation'} ✅
                 </Badge>
               </div>

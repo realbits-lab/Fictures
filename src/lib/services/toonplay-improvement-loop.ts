@@ -97,11 +97,13 @@ export async function generateToonplayWithEvaluation(
 
   console.log(`\n📝 Iteration 0: Initial Toonplay Generation`);
 
+  const safeStoryGenre = storyGenre || 'Unknown';
+
   currentToonplay = await convertSceneToToonplay({
     scene,
     characters,
     setting,
-    storyGenre,
+    storyGenre: safeStoryGenre,
     targetPanelCount,
   });
 
@@ -115,7 +117,7 @@ export async function generateToonplayWithEvaluation(
     sourceScene: scene,
     characters,
     setting,
-    storyGenre,
+    storyGenre: safeStoryGenre,
   });
 
   improvementHistory.push({
@@ -160,7 +162,7 @@ export async function generateToonplayWithEvaluation(
       scene,
       characters,
       setting,
-      storyGenre,
+      storyGenre: safeStoryGenre,
       targetPanelCount,
     });
 
@@ -174,7 +176,7 @@ export async function generateToonplayWithEvaluation(
       sourceScene: scene,
       characters,
       setting,
-      storyGenre,
+      storyGenre: safeStoryGenre,
     });
 
     improvementHistory.push({

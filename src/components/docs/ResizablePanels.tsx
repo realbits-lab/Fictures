@@ -31,6 +31,11 @@ export function ResizablePanels({
   const [isDraggingRight, setIsDraggingRight] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Panel refs for independent scrolling
+  const leftPanelRef = useRef<HTMLDivElement>(null);
+  const middlePanelRef = useRef<HTMLDivElement>(null);
+  const rightPanelRef = useRef<HTMLDivElement>(null);
+
   // Load saved widths from localStorage
   useEffect(() => {
     const savedLeftWidth = localStorage.getItem('docs-left-panel-width');
@@ -109,7 +114,60 @@ export function ResizablePanels({
     };
   }, [isDraggingRight, rightWidth, minRightWidth, maxRightWidth]);
 
+  // Independent scrolling implementation
+  useEffect(() => {
+    const panels = [leftPanelRef.current, middlePanelRef.current, rightPanelRef.current];
+
+    const handleWheel = (e: WheelEvent) => {
+      // ALWAYS prevent default and stop propagation
+      e.preventDefault();
+      e.stopPropagation();
+
+      const target = e.currentTarget as HTMLElement;
+      const { scrollTop, scrollHeight, clientHeight } = target;
+      const canScroll = scrollHeight > clientHeight;
+
+      // If element can scroll, manually update scrollTop
+      if (canScroll) {
+        const newScrollTop = scrollTop + e.deltaY;
+        const maxScroll = scrollHeight - clientHeight;
+
+        // Clamp scroll position to valid range
+        target.scrollTop = Math.max(0, Math.min(maxScroll, newScrollTop));
+      }
+      // If element cannot scroll, do nothing (event already prevented)
+    };
+
+    panels.forEach((panel) => {
+      if (panel) {
+        // Capture phase ensures we intercept events before child elements
+        panel.addEventListener('wheel', handleWheel, {
+          passive: false,
+          capture: true,
+        });
+      }
+    });
+
+    return () => {
+      panels.forEach((panel) => {
+        if (panel) {
+          panel.removeEventListener('wheel', handleWheel, { capture: true });
+        }
+      });
+    };
+  }, []);
+
   return (
+    <>
+      {/* Global scroll prevention */}
+      <style jsx global>{`
+        html,
+        body {
+          overflow: hidden;
+          height: 100%;
+          overscroll-behavior: none;
+        }
+      `}</style>
     <div
       ref={containerRef}
       className="flex-1 flex overflow-hidden"
@@ -120,7 +178,10 @@ export function ResizablePanels({
         className="hidden lg:flex flex-shrink-0 border-r border-gray-200 dark:border-gray-800"
         style={{ width: `${leftWidth}px` }}
       >
-        <div className="flex-1 overflow-y-auto px-4 py-6">
+        <div
+          ref={leftPanelRef}
+          className="flex-1 min-h-0 overflow-y-auto [overscroll-behavior-y:contain] px-4 py-6"
+        >
           {leftPanel}
         </div>
       </aside>
@@ -133,7 +194,10 @@ export function ResizablePanels({
       />
 
       {/* Middle Panel */}
-      <main className="flex-1 overflow-y-auto">
+      <main
+        ref={middlePanelRef}
+        className="flex-1 min-h-0 overflow-y-auto [overscroll-behavior-y:contain]"
+      >
         <div className="container mx-auto max-w-4xl px-4 py-6">
           {middlePanel}
         </div>
@@ -151,10 +215,14 @@ export function ResizablePanels({
         className="hidden xl:flex flex-shrink-0 border-l border-gray-200 dark:border-gray-800"
         style={{ width: `${rightWidth}px` }}
       >
-        <div className="flex-1 overflow-y-auto px-4 py-6">
+        <div
+          ref={rightPanelRef}
+          className="flex-1 min-h-0 overflow-y-auto [overscroll-behavior-y:contain] px-4 py-6"
+        >
           {rightPanel}
         </div>
       </aside>
     </div>
+    </>
   );
 }

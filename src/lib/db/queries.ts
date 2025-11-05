@@ -538,7 +538,6 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
         summary: chapters.summary,
         storyId: chapters.storyId,
         partId: chapters.partId,
-        authorId: chapters.authorId,
         orderIndex: chapters.orderIndex,
         status: chapters.status,
         purpose: chapters.purpose,
