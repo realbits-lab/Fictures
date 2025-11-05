@@ -64,10 +64,14 @@ export default async function RootLayout({
                 closeButton
                 duration={5000}
               />
-              {/* Cache Debug Tools - Available in all environments via keyboard shortcuts */}
+              {/* Cache Debug Tools - Only available in development mode */}
               {/* Ctrl+Shift+D for Debug Panel, Ctrl+Shift+M for Metrics Dashboard */}
-              <CacheDebugPanel />
-              <AdvancedCacheMetricsDashboard />
+              {process.env.NODE_ENV === 'development' && (
+                <>
+                  <CacheDebugPanel />
+                  <AdvancedCacheMetricsDashboard />
+                </>
+              )}
             </AuthModalProvider>
           </SessionProvider>
         </ThemeProvider>
