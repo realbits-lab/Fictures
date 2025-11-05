@@ -85,11 +85,15 @@ function ToolExecutionCard({ tool }: { tool: ToolInvocation }) {
 function AgentMessage({ message }: { message: UIMessage & { toolInvocations?: ToolInvocation[] } }) {
   const isUser = message.role === 'user';
 
-  // Extract text content from message parts
-  const textContent = message.parts
-    .filter(part => part.type === 'text')
-    .map(part => (part as any).text)
-    .join('');
+  // Extract text content from message (AI SDK v5.x can have content as string or parts array)
+  const textContent = message.parts && Array.isArray(message.parts)
+    ? message.parts
+        .filter(part => part.type === 'text')
+        .map(part => (part as any).text)
+        .join('')
+    : typeof message.content === 'string'
+    ? message.content
+    : '';
 
   return (
     <div className={cn('flex gap-3 mb-4', isUser ? 'justify-end' : 'justify-start')}>

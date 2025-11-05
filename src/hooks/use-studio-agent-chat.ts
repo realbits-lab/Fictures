@@ -1,6 +1,7 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
 import { useEffect, useState, useMemo } from 'react';
 
 interface UseStudioAgentChatProps {
@@ -23,22 +24,23 @@ export function useStudioAgentChat({
   // Manage input state manually (AI SDK v5+ doesn't provide this)
   const [input, setInput] = useState('');
 
+  // Create transport with custom API endpoint (AI SDK v5+ approach)
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: '/studio/api/agent',
+        body: {
+          ...(currentChatId ? { chatId: currentChatId } : {}), // Only include chatId if it exists
+          storyContext,
+          agentType,
+        },
+      }),
+    [currentChatId, storyContext, agentType]
+  );
+
   const chat = useChat({
-    id: currentChatId,
-    api: '/studio/api/agent',
-    body: {
-      chatId: currentChatId,
-      storyContext,
-      agentType,
-    },
-    onResponse: (response: any) => {
-      // Extract chat ID from response headers if this is a new chat
-      const newChatId = response.headers.get('X-Chat-Id');
-      if (newChatId && !currentChatId) {
-        setCurrentChatId(newChatId);
-        onChatCreated?.(newChatId);
-      }
-    },
+    ...(currentChatId ? { id: currentChatId } : {}), // Only pass id if it exists
+    transport,
     onFinish: () => {
       // Active tools are automatically cleared via useMemo when messages update
     },
