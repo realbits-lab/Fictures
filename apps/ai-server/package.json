@@ -1,0 +1,15 @@
+{
+  "name": "@fictures/ai-server",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "python -m uvicorn src.main:app --reload --host 0.0.0.0 --port 8000",
+    "start": "python -m uvicorn src.main:app --host 0.0.0.0 --port 8000",
+    "install": "pip install -r requirements.txt",
+    "install:dev": "pip install -r requirements-dev.txt",
+    "format": "black src/",
+    "lint": "ruff check src/",
+    "type-check": "mypy src/",
+    "generate:client": "openapi-typescript-codegen --input http://localhost:8000/openapi.json --output ../api-client/src --client axios"
+  }
+}

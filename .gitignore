@@ -94,3 +94,46 @@ downloads/
 
 # VS Code settings
 .vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Python virtual environments
+apps/ai-server/venv/
+apps/ai-server/env/
+
+# AI Models (large files)
+apps/ai-server/models/
+*.pth
+*.bin
+*.safetensors
+*.ckpt
+*.onnx
+
+# Generated TypeScript types
+packages/api-client/src/generated/
