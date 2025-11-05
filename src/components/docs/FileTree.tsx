@@ -29,7 +29,7 @@ interface FileTreeNodeProps {
 
 function FileTreeNode({ node, level = 0 }: FileTreeNodeProps) {
   const pathname = usePathname();
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const isActive = pathname === `/docs/${node.path}` || pathname === `/docs/${node.path}/`;
 
