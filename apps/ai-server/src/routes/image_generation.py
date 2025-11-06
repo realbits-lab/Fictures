@@ -3,7 +3,7 @@
 import logging
 from fastapi import APIRouter, HTTPException
 from src.schemas.image import ImageGenerationRequest, ImageGenerationResponse
-from src.services.image_service_qwen import qwen_image_service as image_service
+from src.services.image_service_lightning import qwen_lightning_service as image_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -12,9 +12,9 @@ router = APIRouter()
 @router.post("/generate", response_model=ImageGenerationResponse)
 async def generate_image(request: ImageGenerationRequest):
     """
-    Generate image using Stable Diffusion XL.
+    Generate image using Qwen-Image-Lightning.
 
-    This endpoint generates images based on text prompts using the SDXL model.
+    This endpoint generates images based on text prompts using the Lightning model.
     Returns a base64-encoded PNG image.
     """
     try:
@@ -26,14 +26,14 @@ async def generate_image(request: ImageGenerationRequest):
         if request.height and request.height > 2048:
             raise HTTPException(status_code=400, detail="Height too large (max 2048 pixels)")
 
-        # Generate image using service
+        # Generate image using Lightning service
         result = await image_service.generate(
             prompt=request.prompt,
             negative_prompt=request.negative_prompt,
-            width=request.width or 1344,
-            height=request.height or 768,
-            num_inference_steps=request.num_inference_steps or 30,
-            guidance_scale=request.guidance_scale or 7.5,
+            width=request.width or 1024,  # Lightning default: 1024x1024
+            height=request.height or 1024,
+            num_inference_steps=request.num_inference_steps or 8,  # Lightning optimal: 8 steps
+            guidance_scale=request.guidance_scale or 1.0,  # Lightning uses 1.0
             seed=request.seed,
         )
 

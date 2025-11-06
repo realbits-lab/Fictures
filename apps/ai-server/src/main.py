@@ -11,7 +11,7 @@ from src.routes import image_generation
 # Text generation disabled - using full GPU for image generation only
 # from src.routes import text_generation
 # from src.services.text_service import text_service
-from src.services.image_service_qwen import qwen_image_service as image_service
+from src.services.image_service_lightning import qwen_lightning_service as image_service
 
 # Configure logging
 logging.basicConfig(
@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
     """Application lifespan manager for startup and shutdown events."""
     # Startup
     logger.info("Starting Fictures AI Server (Image Generation Only)...")
-    logger.info(f"Image model: {settings.image_model_name}")
+    logger.info(f"Image model: Qwen-Image-Lightning (8-step fast inference)")
     logger.info(f"Text generation: DISABLED (full GPU for images)")
 
     # Initialize services (lazy loading - only when first request comes)
