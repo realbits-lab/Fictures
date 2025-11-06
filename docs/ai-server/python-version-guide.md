@@ -352,7 +352,7 @@ ls /usr/local/bin/python*  # macOS
 ## Next Steps
 
 After setting up Python 3.12:
-1. Follow the [Quick Start Guide](../../docs/ai-server/QUICK-START.md)
+1. Follow the [Quick Start Guide](../../docs/ai-server/quick-start.md)
 2. Read the [Setup Guide](../../docs/ai-server/setup.md)
 3. Check the [API Reference](../../docs/ai-server/api-reference.md)
 

@@ -68,7 +68,7 @@ All requested features have been implemented and documented.
 **Test Files:**
 - `tests/test_text_generation.py` - Text API tests (7 test cases)
 - `tests/test_image_generation.py` - Image API tests (7 test cases)
-- `tests/README.md` - Testing documentation
+- `tests/readme.md` - Testing documentation
 
 **Test Coverage:**
 - ✅ Health checks
@@ -81,8 +81,8 @@ All requested features have been implemented and documented.
 ### 5. Comprehensive Documentation
 
 **Documentation Files:**
-- `docs/ai-server/README.md` - Main documentation index
-- `docs/ai-server/QUICK-START.md` - 10-minute setup guide
+- `docs/ai-server/readme.md` - Main documentation index
+- `docs/ai-server/quick-start.md` - 10-minute setup guide
 - `docs/ai-server/setup.md` - Detailed installation guide
 - `docs/ai-server/api-reference.md` - Complete API documentation
 - `docs/ai-server/architecture.md` - System architecture and design
@@ -115,14 +115,14 @@ apps/ai-server/
 ├── tests/
 │   ├── test_text_generation.py    # Text API tests (NEW)
 │   ├── test_image_generation.py   # Image API tests (NEW)
-│   └── README.md                  # Testing guide (NEW)
+│   └── readme.md                  # Testing guide (NEW)
 ├── .env.example                   # Environment config template (NEW)
 ├── requirements.txt               # Dependencies (updated with vLLM)
 └── README.md                      # Project README (existing)
 
 docs/ai-server/                    # Documentation (NEW)
-├── README.md                      # Documentation index
-├── QUICK-START.md                 # Quick setup guide
+├── readme.md                      # Documentation index
+├── quick-start.md                 # Quick setup guide
 ├── setup.md                       # Detailed setup
 ├── api-reference.md               # API documentation
 └── architecture.md                # Architecture guide
@@ -389,11 +389,11 @@ python tests/test_image_generation.py
 
 ## 📚 Documentation
 
-1. **[Quick Start](../docs/ai-server/QUICK-START.md)** - Get running in 10 minutes
+1. **[Quick Start](../docs/ai-server/quick-start.md)** - Get running in 10 minutes
 2. **[Setup Guide](../docs/ai-server/setup.md)** - Detailed installation
 3. **[API Reference](../docs/ai-server/api-reference.md)** - Complete API docs
 4. **[Architecture](../docs/ai-server/architecture.md)** - System design
-5. **[Tests README](tests/README.md)** - Testing guide
+5. **[Tests README](tests/readme.md)** - Testing guide
 
 ## ✅ Implementation Checklist
 

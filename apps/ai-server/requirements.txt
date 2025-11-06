@@ -5,7 +5,7 @@ pydantic==2.12.4
 pydantic-settings==2.11.0
 
 # AI/ML Libraries
-torch==2.9.0
+torch==2.8.0  # vllm 0.11.0 requires torch==2.8.0
 transformers==4.57.1
 diffusers==0.35.2
 accelerate==1.11.0
@@ -21,4 +21,4 @@ httpx==0.28.1
 aiofiles==25.1.0
 
 # Data processing
-numpy==2.3.4  # vllm 0.8.3+ supports numpy 2.x
+numpy==2.2.6  # vllm 0.8.3+ supports numpy 2.x, numba 0.61.2 requires <2.3

@@ -586,9 +586,25 @@ These documents are in the root `docs/` directory:
 ## 📝 Documentation Best Practices
 
 ### File Naming Conventions
-- Use lowercase with hyphens: `feature-name-specification.md`
-- Use descriptive names: `novels-development.md` not `dev.md`
-- Group related docs in directories
+- **Use lowercase with hyphens**: `feature-name-specification.md` (NOT `Feature-Name-Specification.md`)
+- **Always lowercase filenames**: `readme.md`, `quick-start.md`, `implementation-summary.md`
+- **Exception**: Project root `README.md` and `CLAUDE.md` (uppercase for visibility)
+- **Use descriptive names**: `novels-development.md` not `dev.md`
+- **Group related docs in directories**
+
+**Examples:**
+- ✅ `docs/ai-server/quick-start.md`
+- ✅ `docs/ai-server/implementation-summary.md`
+- ✅ `docs/novels/novels-specification.md`
+- ❌ `docs/ai-server/QUICK-START.md`
+- ❌ `docs/ai-server/README.MD`
+- ❌ `docs/novels/Novels-Specification.md`
+
+**Why lowercase?**
+- Consistent across all platforms (case-sensitive filesystems)
+- Avoids confusion between `README.md`, `Readme.md`, `readme.md`
+- Easier to type and remember
+- Standard practice in modern web development
 
 ### Document Structure
 All documents should include:
