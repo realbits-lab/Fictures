@@ -380,10 +380,11 @@ Open browser to: http://localhost:8000/docs
 
 ## Additional Resources
 
-- **Python Setup Guide**: See `../../docs/ai-server/python-version-guide.md`
-- **Quick Start Guide**: See `../../docs/ai-server/quick-start.md`
-- **Setup Guide**: See `../../docs/ai-server/setup.md`
-- **API Reference**: See `../../docs/ai-server/api-reference.md`
+- **Python Setup Guide**: See `docs/python-version-guide.md`
+- **Quick Start Guide**: See `docs/quick-start.md`
+- **Setup Guide**: See `docs/setup.md`
+- **API Reference**: See `docs/api-reference.md`
+- **Architecture**: See `docs/architecture.md`
 - **Main Repository Guide**: See `../../CLAUDE.md`
 - **FastAPI Docs**: https://fastapi.tiangolo.com/
 - **vLLM Docs**: https://docs.vllm.ai/

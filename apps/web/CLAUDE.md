@@ -35,7 +35,7 @@ const path = getBlobPath('stories/123/image.png');
 // Returns: "main/stories/123/image.png" (in production)
 ```
 
-**Complete Documentation:** [docs/environment-architecture.md](docs/environment-architecture.md)
+**Complete Documentation:** [../../docs/operation/environment-architecture.md](../../docs/operation/environment-architecture.md)
 
 ## Development Commands
 
