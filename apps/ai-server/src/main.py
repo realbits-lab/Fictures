@@ -1,26 +1,58 @@
 """FastAPI main application for Fictures AI Server."""
 
+import logging
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from src.config import settings
 from src.routes import text_generation, image_generation
+from src.services.text_service import text_service
+from src.services.image_service import image_service
+
+# Configure logging
+logging.basicConfig(
+    level=getattr(logging, settings.log_level),
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan manager for startup and shutdown events."""
+    # Startup
+    logger.info("Starting Fictures AI Server...")
+    logger.info(f"Text model: {settings.text_model_name}")
+    logger.info(f"Image model: {settings.image_model_name}")
+
+    # Initialize services (lazy loading - only when first request comes)
+    # Services will initialize themselves on first use
+    logger.info("Services configured for lazy initialization")
+
+    yield
+
+    # Shutdown
+    logger.info("Shutting down Fictures AI Server...")
+    await text_service.shutdown()
+    await image_service.shutdown()
+    logger.info("Shutdown complete")
+
 
 app = FastAPI(
     title="Fictures AI Server",
-    description="Local AI model serving for text and image generation",
+    description="Local AI model serving for text and image generation using vLLM and Stable Diffusion XL",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
-# CORS configuration for Next.js development server
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # Next.js dev server
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=settings.cors_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,27 +65,56 @@ app.include_router(image_generation.router, prefix="/api/v1/images", tags=["imag
 
 @app.get("/")
 async def root():
-    """Root endpoint."""
+    """Root endpoint with API information."""
     return {
         "message": "Fictures AI Server",
         "version": "1.0.0",
-        "docs": "/docs",
-        "health": "/health",
+        "description": "Local AI model serving for text and image generation",
+        "endpoints": {
+            "docs": "/docs",
+            "redoc": "/redoc",
+            "health": "/health",
+            "models": "/api/v1/models",
+        },
     }
 
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
+    text_info = await text_service.get_model_info()
+    image_info = await image_service.get_model_info()
+
     return JSONResponse(
         content={
             "status": "healthy",
             "version": "1.0.0",
+            "models": {
+                "text": text_info,
+                "image": image_info,
+            },
         }
     )
+
+
+@app.get("/api/v1/models")
+async def list_models():
+    """List all available models."""
+    text_info = await text_service.get_model_info()
+    image_info = await image_service.get_model_info()
+
+    return {
+        "text_generation": [text_info],
+        "image_generation": [image_info],
+    }
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(
+        app,
+        host=settings.api_host,
+        port=settings.api_port,
+        workers=settings.workers,
+    )

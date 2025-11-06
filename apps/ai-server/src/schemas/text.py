@@ -46,8 +46,31 @@ class TextGenerationResponse(BaseModel):
         json_schema_extra = {
             "example": {
                 "text": "Once upon a time, in a magical forest...",
-                "model": "llama-3.2-3b",
+                "model": "google/gemma-2b-it",
                 "tokens_used": 512,
                 "finish_reason": "stop",
+            }
+        }
+
+
+class TextStreamResponse(BaseModel):
+    """Response schema for streaming text generation."""
+
+    text: str = Field(..., description="The generated text (cumulative)")
+    model: str = Field(..., description="Model used for generation")
+    tokens_used: int = Field(..., description="Number of tokens generated so far")
+    finish_reason: Optional[str] = Field(
+        default=None, description="Reason for completion (only in final chunk)"
+    )
+    done: bool = Field(..., description="Whether generation is complete")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "text": "Once upon a time...",
+                "model": "google/gemma-2b-it",
+                "tokens_used": 10,
+                "finish_reason": None,
+                "done": False,
             }
         }

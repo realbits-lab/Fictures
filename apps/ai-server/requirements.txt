@@ -10,6 +10,10 @@ transformers==4.46.3
 diffusers==0.32.1
 accelerate==1.1.1
 pillow==11.0.0
+sentencepiece==0.2.0
+
+# vLLM for efficient LLM serving
+vllm==0.6.6
 
 # API utilities
 python-multipart==0.0.17
