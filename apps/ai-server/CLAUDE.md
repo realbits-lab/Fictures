@@ -73,7 +73,7 @@ python --version  # Should show 3.12.7
    ```
 
 **Current Models (require HF auth):**
-- **Text Generation**: `Qwen/Qwen2.5-0.5B-Instruct`
+- **Text Generation**: `Qwen/Qwen3-4B-Instruct-2507` (4B params, 7.6GB, optimized for RTX 4090)
 - **Image Generation**: `stabilityai/stable-diffusion-xl-base-1.0`
 
 ## Development Commands
@@ -139,14 +139,41 @@ apps/ai-server/
 │   └── schemas/                 # Pydantic models
 │       ├── text.py              # Text generation request/response models
 │       └── image.py             # Image generation request/response models
-├── tests/                       # Test files
+├── tests/                       # Permanent test files (pytest)
 │   ├── test_text_generation.py
 │   └── test_image_generation.py
+├── test-scripts/                # Temporary test scripts (ad-hoc testing)
+│   └── test_qwen3.py            # Example: Quick model test
 ├── venv/                        # Python virtual environment
 ├── requirements.txt             # Production dependencies
 ├── requirements-dev.txt         # Development dependencies
 └── PYTHON-VERSION-GUIDE.md     # Detailed Python setup guide
 ```
+
+## File Organization Guidelines
+
+### Test Files and Scripts
+
+**IMPORTANT**: Distinguish between permanent tests and temporary test scripts:
+
+**Permanent Tests (`tests/` directory):**
+- Unit tests with pytest
+- Integration tests
+- Part of CI/CD pipeline
+- Well-documented and maintained
+- Example: `tests/test_text_generation.py`
+
+**Temporary Test Scripts (`test-scripts/` directory):**
+- **Always write temporary test scripts to `test-scripts/` directory**
+- Ad-hoc testing and debugging
+- Quick model validation
+- Exploratory testing
+- One-time experiments
+- NOT part of automated testing
+- Can be deleted after use
+- Example: `test-scripts/test_qwen3.py`
+
+**Rule**: If you're writing a temporary Python script for testing, debugging, or exploration, place it in `test-scripts/`. This keeps the project organized and makes it clear which tests are permanent vs temporary.
 
 ## API Endpoints
 
