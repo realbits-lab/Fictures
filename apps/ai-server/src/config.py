@@ -16,10 +16,12 @@ class Settings(BaseSettings):
     workers: int = 1
 
     # Text Generation Model Configuration
-    text_model_name: str = "google/gemma-2b-it"
-    text_model_path: str = "./models/text/gemma-2b-it"
-    text_max_model_len: int = 4096
-    text_gpu_memory_utilization: float = 0.5
+    # Qwen3-8B-AWQ: 8B params, 4-bit AWQ quantization, optimized for RTX 4090
+    # Latest Qwen3 model with advanced reasoning and thinking mode
+    text_model_name: str = "Qwen/Qwen3-8B-AWQ"
+    text_model_path: str = "./models/text/qwen3-8b-awq"
+    text_max_model_len: int = 32768  # 32K native context (131K with YaRN)
+    text_gpu_memory_utilization: float = 0.70  # Conservative for 8B model to avoid OOM
 
     # Image Generation Model Configuration
     image_model_name: str = "stabilityai/stable-diffusion-xl-base-1.0"
@@ -32,7 +34,8 @@ class Settings(BaseSettings):
 
     # vLLM Configuration
     vllm_tensor_parallel_size: int = 1
-    vllm_max_num_seqs: int = 256
+    vllm_max_num_seqs: int = 128  # Reduced from 256 to avoid OOM during sampler warmup
+    vllm_quantization: str = "awq"  # AWQ quantization for Qwen3-8B-AWQ
 
     # Diffusers Configuration
     diffusers_enable_cpu_offload: bool = False

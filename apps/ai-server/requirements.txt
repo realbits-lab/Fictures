@@ -12,6 +12,9 @@ accelerate==1.11.0
 pillow==12.0.0
 sentencepiece==0.2.1
 
+# Image Generation with Qwen-Image
+diffsynth  # DiffSynth-Studio for optimized Qwen-Image inference
+
 # vLLM for efficient LLM serving
 vllm==0.11.0
 

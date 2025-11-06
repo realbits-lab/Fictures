@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from src.config import settings
 from src.routes import text_generation, image_generation
 from src.services.text_service import text_service
-from src.services.image_service import image_service
+from src.services.image_service_qwen import qwen_image_service as image_service
 
 # Configure logging
 logging.basicConfig(

@@ -73,7 +73,10 @@ python --version  # Should show 3.12.7
    ```
 
 **Current Models (require HF auth):**
-- **Text Generation**: `Qwen/Qwen3-4B-Instruct-2507` (4B params, 7.6GB, optimized for RTX 4090)
+- **Text Generation**: `Qwen/Qwen3-14B-AWQ` (14B params, 4-bit AWQ quantization, ~7-10GB VRAM, optimized for RTX 4090)
+  - 32K native context length (extendable to 131K with YaRN)
+  - Advanced reasoning with thinking mode
+  - Excellent for story writing and creative tasks
 - **Image Generation**: `stabilityai/stable-diffusion-xl-base-1.0`
 
 ## Development Commands
@@ -268,7 +271,7 @@ Create a `.env` file in `apps/ai-server/`:
 
 ```bash
 # Model Configuration
-TEXT_MODEL_NAME=Qwen/Qwen2.5-0.5B-Instruct
+TEXT_MODEL_NAME=Qwen/Qwen3-14B-AWQ
 IMAGE_MODEL_NAME=stabilityai/stable-diffusion-xl-base-1.0
 
 # Server Configuration
@@ -281,7 +284,11 @@ HF_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # GPU Configuration
 CUDA_VISIBLE_DEVICES=0
-GPU_MEMORY_UTILIZATION=0.9
+GPU_MEMORY_UTILIZATION=0.85  # AWQ quantization allows higher utilization
+
+# vLLM Configuration
+VLLM_QUANTIZATION=awq
+TEXT_MAX_MODEL_LEN=32768  # 32K context (can extend to 131K)
 ```
 
 ## Code Guidelines

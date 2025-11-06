@@ -1,4 +1,4 @@
-"""Text generation service using vLLM and Gemma models."""
+"""Text generation service using vLLM with Qwen models (AWQ quantization)."""
 
 import asyncio
 import logging
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class TextGenerationService:
-    """Service for text generation using vLLM with Gemma models."""
+    """Service for text generation using vLLM with Qwen models (AWQ quantization)."""
 
     def __init__(self):
         """Initialize the text generation service."""
@@ -19,17 +19,19 @@ class TextGenerationService:
         self._initialized = False
 
     async def initialize(self):
-        """Initialize the vLLM engine with Gemma model."""
+        """Initialize the vLLM engine with Qwen AWQ model."""
         if self._initialized:
             logger.info("Text generation service already initialized")
             return
 
         try:
             logger.info(f"Initializing vLLM engine with model: {self.model_name}")
+            logger.info(f"Quantization: {settings.vllm_quantization}")
 
-            # Configure vLLM engine arguments
+            # Configure vLLM engine arguments for AWQ quantized model
             engine_args = AsyncEngineArgs(
                 model=self.model_name,
+                quantization=settings.vllm_quantization,  # Enable AWQ quantization
                 tensor_parallel_size=settings.vllm_tensor_parallel_size,
                 max_model_len=settings.text_max_model_len,
                 gpu_memory_utilization=settings.text_gpu_memory_utilization,
