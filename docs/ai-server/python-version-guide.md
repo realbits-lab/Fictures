@@ -1,19 +1,61 @@
-# Python Version Guide for AI Server
+# Python Version & Environment Setup Guide
 
-Guide for using specific Python versions with the Fictures AI Server.
+Complete guide for Python version management and virtual environment setup for the Fictures AI Server.
+
+## Current Project Configuration
+
+- **Python Version**: 3.12.7 (via pyenv)
+- **Virtual Environment**: `venv/` (activated with `source venv/bin/activate`)
+- **Package Manager**: pip (within venv)
+- **Location**: `apps/ai-server/`
+
+## Dependencies Installed
+
+### Core Frameworks
+- torch==2.8.0 (vllm 0.11.0 requirement)
+- vllm==0.11.0 (LLM serving)
+- transformers==4.57.1
+- diffusers==0.35.2
+- accelerate==1.11.0
+
+### API Server
+- fastapi==0.121.0
+- uvicorn==0.38.0
+- pydantic==2.12.4
+
+### Data Processing
+- numpy==2.2.6 (numba 0.61.2 requires <2.3)
+- pillow==12.0.0
+
+### Development Tools
+- black==25.9.0
+- ruff==0.14.3
+- mypy==1.18.2
+- pytest==8.4.2
+- pytest-asyncio==1.2.0
+- pytest-cov==7.0.0
+
+## Version Constraints
+
+**CRITICAL Compatibility Notes:**
+1. **torch**: Must be 2.8.0 (exact version required by vllm 0.11.0)
+2. **numpy**: Must be <2.3 (numba 0.61.2 constraint) but >=2.0 (vllm 0.8.3+ supports numpy 2.x)
+3. **vllm**: 0.11.0 supports numpy 2.x but requires torch==2.8.0
 
 ## Recommended: Python 3.12
 
 Python 3.12 is **recommended** for the AI Server due to:
-- ✅ Latest performance improvements
+- ✅ Latest performance improvements (up to 20% faster async/await)
 - ✅ Better async/await performance
-- ✅ Improved error messages
+- ✅ Improved error messages for debugging
 - ✅ Full compatibility with all dependencies
-- ✅ Long-term support
+- ✅ Long-term support (until 2028)
+- ✅ Faster startup (10-20% faster module loading)
+- ✅ Memory optimizations (lower memory usage)
 
 ## Supported Python Versions
 
-- **Python 3.12** ✅ Recommended
+- **Python 3.12** ✅ Recommended (current project version: 3.12.7)
 - **Python 3.11** ✅ Fully supported
 - **Python 3.10** ✅ Fully supported
 - **Python 3.9** ⚠️ Works but not recommended
@@ -54,7 +96,7 @@ brew link python@3.12
 # Install pyenv if not already installed
 brew install pyenv
 
-# Install Python 3.12
+# Install Python 3.12.7 (current project version)
 pyenv install 3.12.7
 
 # Set as global default
@@ -90,18 +132,18 @@ eval "$(pyenv virtualenv-init -)"
 # Restart shell
 source ~/.bashrc  # or source ~/.zshrc
 
-# Install Python 3.12
-pyenv install 3.12.9
+# Install Python 3.12.7 (current project version)
+pyenv install 3.12.7
 
 # Set global default
-pyenv global 3.12.9
+pyenv global 3.12.7
 
 # Or set for AI server directory only
 cd apps/ai-server
-pyenv local 3.12.9
+pyenv local 3.12.7
 
 # Verify
-python --version  # Should show Python 3.12.9
+python --version  # Should show Python 3.12.7
 ```
 
 ## Creating Virtual Environment with Python 3.12
@@ -128,11 +170,11 @@ python --version
 ```bash
 cd apps/ai-server
 
-# Set Python 3.12 for this directory
-pyenv local 3.12.9
+# Set Python 3.12.7 for this directory
+pyenv local 3.12.7
 
 # Create virtual environment with pyenv
-pyenv virtualenv 3.12.9 fictures-ai-server
+pyenv virtualenv 3.12.7 fictures-ai-server
 
 # Activate
 pyenv activate fictures-ai-server
@@ -141,7 +183,7 @@ pyenv activate fictures-ai-server
 pyenv local fictures-ai-server
 
 # Verify
-python --version  # Should show Python 3.12.9
+python --version  # Should show Python 3.12.7
 ```
 
 ### Method 3: Specify Full Path
@@ -165,7 +207,7 @@ After creating and activating the virtual environment:
 ```bash
 # Check Python version
 python --version
-# Expected: Python 3.12.x
+# Expected: Python 3.12.7
 
 # Check pip version
 pip --version
@@ -185,11 +227,9 @@ source venv/bin/activate
 # Upgrade pip
 pip install --upgrade pip
 
-# Install PyTorch with CUDA 11.8
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-
-# Install remaining dependencies
+# Install dependencies
 pip install -r requirements.txt
+pip install -r requirements-dev.txt
 
 # Verify installations
 python -c "import torch; print(f'PyTorch: {torch.__version__}')"
@@ -197,30 +237,81 @@ python -c "import vllm; print(f'vLLM: {vllm.__version__}')"
 python -c "import diffusers; print(f'Diffusers: {diffusers.__version__}')"
 ```
 
+## Hugging Face Authentication
+
+To use models from Hugging Face (required for text and image generation):
+
+1. **Create account**: https://huggingface.co/join
+2. **Get token**: https://huggingface.co/settings/tokens
+3. **Login**:
+   ```bash
+   source venv/bin/activate
+   huggingface-cli login
+   ```
+   Paste your token when prompted.
+
+## Model Configuration
+
+Current models in `.env`:
+- **Text Generation**: `Qwen/Qwen2.5-0.5B-Instruct` (requires HF auth)
+- **Image Generation**: `stabilityai/stable-diffusion-xl-base-1.0` (requires HF auth)
+
+Both require Hugging Face authentication to download.
+
+## Running the AI Server
+
+```bash
+# Activate virtual environment
+source venv/bin/activate
+
+# Start server
+python -m uvicorn src.main:app --host 0.0.0.0 --port 8000
+
+# Or with auto-reload for development
+python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+## Testing
+
+```bash
+# Run text generation tests (requires server running)
+source venv/bin/activate
+python tests/test_text_generation.py
+
+# Run image generation tests
+python tests/test_image_generation.py
+
+# Run with pytest
+pytest tests/
+```
+
 ## Compatibility Check
 
 All major dependencies support Python 3.12:
 
-| Package | Python 3.12 Support |
-|---------|---------------------|
-| FastAPI | ✅ Yes |
-| Uvicorn | ✅ Yes |
-| Pydantic | ✅ Yes (2.0+) |
-| PyTorch | ✅ Yes (2.1+) |
-| vLLM | ✅ Yes (0.6.0+) |
-| Diffusers | ✅ Yes |
-| Transformers | ✅ Yes |
-| CUDA | ✅ Yes (via PyTorch) |
+| Package | Python 3.12 Support | Current Version |
+|---------|---------------------|-----------------|
+| FastAPI | ✅ Yes | 0.121.0 |
+| Uvicorn | ✅ Yes | 0.38.0 |
+| Pydantic | ✅ Yes (2.0+) | 2.12.4 |
+| PyTorch | ✅ Yes (2.1+) | 2.8.0 |
+| vLLM | ✅ Yes (0.6.0+) | 0.11.0 |
+| Diffusers | ✅ Yes | 0.35.2 |
+| Transformers | ✅ Yes | 4.57.1 |
+| NumPy | ✅ Yes (2.0+) | 2.2.6 |
+| Pillow | ✅ Yes | 12.0.0 |
+| CUDA | ✅ Yes (via PyTorch) | - |
 
 ## Performance Benefits of Python 3.12
 
 Python 3.12 offers several performance improvements:
 
-1. **Faster asyncio** - Up to 20% faster async/await
-2. **Better error messages** - Improved debugging
+1. **Faster asyncio** - Up to 20% faster async/await (critical for FastAPI)
+2. **Better error messages** - Improved debugging with clearer stack traces
 3. **Faster startup** - 10-20% faster module loading
-4. **Memory optimizations** - Lower memory usage
-5. **Better type hints** - Enhanced type checking
+4. **Memory optimizations** - Lower memory usage for long-running processes
+5. **Better type hints** - Enhanced type checking with mypy
+6. **Improved f-strings** - Faster string formatting
 
 ## Troubleshooting
 
@@ -271,9 +362,62 @@ eval "$(pyenv init -)"
 # Restart shell
 exec "$SHELL"
 
-# Install and use Python 3.12
+# Install and use Python 3.12.7
 pyenv install 3.12.7
 pyenv local 3.12.7
+```
+
+### Issue: vLLM AsyncEngineArgs error
+
+**Error**: `AsyncEngineArgs.__init__() got an unexpected keyword argument 'disable_log_requests'`
+
+**Solution**: The `disable_log_requests` parameter was removed in vllm 0.11.0. Do not use this parameter in your code.
+
+### Issue: NumPy version conflict
+
+**Error**: `numba 0.61.2 depends on numpy<2.3`
+
+**Solution**: Use numpy==2.2.6 (latest 2.2.x series that satisfies both vllm and numba constraints)
+
+```bash
+pip install numpy==2.2.6
+```
+
+### Issue: Torch version conflict
+
+**Error**: `vllm 0.11.0 depends on torch==2.8.0`
+
+**Solution**: Use torch==2.8.0 (exact version required)
+
+```bash
+pip install torch==2.8.0
+```
+
+### Issue: Model authentication required
+
+**Error**: `401 Client Error: Unauthorized`
+
+**Solution**: Login with `huggingface-cli login` and provide your Hugging Face token
+
+```bash
+source venv/bin/activate
+huggingface-cli login
+# Paste your token when prompted
+```
+
+### Issue: CUDA out of memory
+
+**Error**: `RuntimeError: CUDA out of memory`
+
+**Solution**:
+- Use smaller models
+- Reduce batch size in your code
+- Adjust `gpu_memory_utilization` parameter in vLLM config (default 0.9)
+- Monitor GPU usage with `nvidia-smi`
+
+```bash
+# Monitor GPU memory
+nvidia-smi -l 1  # Update every 1 second
 ```
 
 ## Complete Setup Example (Python 3.12)
@@ -299,26 +443,26 @@ python --version  # Should show Python 3.12.x
 # 6. Upgrade pip
 pip install --upgrade pip
 
-# 7. Install PyTorch
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-
-# 8. Install dependencies
+# 7. Install dependencies
 pip install -r requirements.txt
+pip install -r requirements-dev.txt
 
-# 9. Verify CUDA
-python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
+# 8. Verify installations
+python -c "import torch; print(f'PyTorch: {torch.__version__}')"
+python -c "import vllm; print(f'vLLM: {vllm.__version__}')"
 
-# 10. Configure environment
+# 9. Configure environment
 cp .env.example .env
+# Edit .env with your configuration
 
-# 11. Authenticate Hugging Face
-pip install huggingface_hub
-hf auth login
+# 10. Authenticate Hugging Face
+huggingface-cli login
+# Paste your token
 
-# 12. Start server
+# 11. Start server
 python -m uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 
-# 13. Test (in another terminal)
+# 12. Test (in another terminal)
 cd apps/ai-server
 source venv/bin/activate
 python tests/test_text_generation.py
@@ -326,12 +470,14 @@ python tests/test_text_generation.py
 
 ## Best Practices
 
-1. **Use Python 3.12** for new installations
+1. **Use Python 3.12.7** - Current project version for consistency
 2. **Use pyenv** for managing multiple Python versions
 3. **Always use virtual environments** - Never install packages globally
 4. **Verify Python version** after activating venv
 5. **Keep pip updated** - `pip install --upgrade pip`
-6. **Document Python version** in your project
+6. **Document Python version** in your project (this file!)
+7. **Pin dependency versions** in requirements.txt
+8. **Test after environment changes** - Run tests to verify compatibility
 
 ## Checking Current Python Version
 
@@ -347,15 +493,49 @@ which python
 # All available Python versions
 ls /usr/bin/python*  # Linux
 ls /usr/local/bin/python*  # macOS
+
+# Check Python in current environment
+python -c "import sys; print(sys.version)"
+python -c "import sys; print(sys.executable)"
+```
+
+## Environment Variables
+
+Create a `.env` file in `apps/ai-server/`:
+
+```bash
+# Model Configuration
+TEXT_MODEL_NAME=Qwen/Qwen2.5-0.5B-Instruct
+IMAGE_MODEL_NAME=stabilityai/stable-diffusion-xl-base-1.0
+
+# Server Configuration
+HOST=0.0.0.0
+PORT=8000
+LOG_LEVEL=info
+
+# Hugging Face
+HF_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# GPU Configuration
+CUDA_VISIBLE_DEVICES=0
+GPU_MEMORY_UTILIZATION=0.9
 ```
 
 ## Next Steps
 
 After setting up Python 3.12:
-1. Follow the [Quick Start Guide](../../docs/ai-server/quick-start.md)
-2. Read the [Setup Guide](../../docs/ai-server/setup.md)
-3. Check the [API Reference](../../docs/ai-server/api-reference.md)
+1. Follow the [Quick Start Guide](quick-start.md)
+2. Read the [Setup Guide](setup.md)
+3. Check the [API Reference](api-reference.md)
+4. Review the [Architecture](architecture.md)
+
+## Related Documentation
+
+- **AI Server CLAUDE.md**: `apps/ai-server/CLAUDE.md` - Complete AI server development guide
+- **Quick Start**: `docs/ai-server/quick-start.md` - Quick start guide
+- **Setup Guide**: `docs/ai-server/setup.md` - Detailed setup instructions
+- **API Reference**: `docs/ai-server/api-reference.md` - API documentation
 
 ---
 
-**Recommended:** Use Python 3.12 with pyenv for the best development experience!
+**Recommended:** Use Python 3.12.7 with pyenv for the best development experience!

@@ -34,7 +34,6 @@ class TextGenerationService:
                 max_model_len=settings.text_max_model_len,
                 gpu_memory_utilization=settings.text_gpu_memory_utilization,
                 max_num_seqs=settings.vllm_max_num_seqs,
-                disable_log_requests=False,
                 trust_remote_code=True,
             )
 
@@ -103,7 +102,7 @@ class TextGenerationService:
                 "text": generated_text,
                 "model": self.model_name,
                 "tokens_used": tokens_used,
-                "finish_reason": finish_reason.value if finish_reason else "unknown",
+                "finish_reason": finish_reason if finish_reason else "unknown",
             }
 
         except Exception as e:
@@ -158,7 +157,7 @@ class TextGenerationService:
                     "text": text,
                     "model": self.model_name,
                     "tokens_used": tokens_used,
-                    "finish_reason": finish_reason.value if finish_reason else None,
+                    "finish_reason": finish_reason if finish_reason else None,
                     "done": finish_reason is not None,
                 }
 

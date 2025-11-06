@@ -1,0 +1,390 @@
+# CLAUDE.md - AI Server
+
+This file provides guidance to Claude Code when working with the Python AI server.
+
+## Application Information
+
+- **Workspace**: apps/ai-server/
+- **Framework**: FastAPI with Python 3.12.7
+- **Purpose**: AI text and image generation services
+- **Port**: 8000
+
+## Python Environment Setup
+
+### Version & Package Manager
+- **Python Version**: 3.12.7 (via pyenv)
+- **Virtual Environment**: `venv/` directory
+- **Package Manager**: pip (within venv)
+- **Dependencies**: See `requirements.txt` and `requirements-dev.txt`
+
+### Environment Activation
+```bash
+# Always activate venv before any Python operations
+source venv/bin/activate
+
+# Verify Python version
+python --version  # Should show 3.12.7
+```
+
+## Core Dependencies
+
+### AI/ML Frameworks
+- **torch**: 2.8.0 (exact version required by vLLM)
+- **vllm**: 0.11.0 (LLM serving framework)
+- **transformers**: 4.57.1 (Hugging Face transformers)
+- **diffusers**: 0.35.2 (Image generation models)
+- **accelerate**: 1.11.0 (PyTorch acceleration library)
+
+### API Server
+- **fastapi**: 0.121.0 (Web framework)
+- **uvicorn**: 0.38.0 (ASGI server)
+- **pydantic**: 2.12.4 (Data validation)
+
+### Data Processing
+- **numpy**: 2.2.6 (latest 2.2.x, required by numba <2.3 constraint)
+- **pillow**: 12.0.0 (Image processing)
+
+### Development Tools
+- **black**: 25.9.0 (Code formatting)
+- **ruff**: 0.14.3 (Linting)
+- **mypy**: 1.18.2 (Type checking)
+- **pytest**: 8.4.2 (Testing framework)
+- **pytest-asyncio**: 1.2.0 (Async testing)
+- **pytest-cov**: 7.0.0 (Coverage reporting)
+
+## Version Constraints
+
+**IMPORTANT Compatibility Notes:**
+1. **torch**: Must be 2.8.0 (exact version required by vllm 0.11.0)
+2. **numpy**: Must be <2.3 (numba 0.61.2 constraint) but >=2.0 (vllm supports numpy 2.x)
+3. **vllm**: 0.11.0 supports numpy 2.x but requires torch==2.8.0
+
+## Hugging Face Authentication
+
+**Required for model downloads:**
+
+1. **Create Account**: https://huggingface.co/join
+2. **Get Token**: https://huggingface.co/settings/tokens
+3. **Login**:
+   ```bash
+   source venv/bin/activate
+   huggingface-cli login
+   # Paste your token when prompted
+   ```
+
+**Current Models (require HF auth):**
+- **Text Generation**: `Qwen/Qwen2.5-0.5B-Instruct`
+- **Image Generation**: `stabilityai/stable-diffusion-xl-base-1.0`
+
+## Development Commands
+
+```bash
+# Install dependencies
+pnpm install          # Install dev dependencies
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+
+# Start development server (with auto-reload)
+pnpm dev
+# Or directly:
+python -m uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+
+# Start production server
+pnpm start
+# Or directly:
+python -m uvicorn src.main:app --host 0.0.0.0 --port 8000
+
+# Code quality
+pnpm format           # Format with black
+pnpm lint             # Lint with ruff
+pnpm type-check       # Type check with mypy
+
+# Generate API client
+pnpm generate:client  # Generates TypeScript client from OpenAPI spec
+```
+
+## Running the Server
+
+### Development Mode (with auto-reload)
+```bash
+source venv/bin/activate
+python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### Production Mode
+```bash
+source venv/bin/activate
+python -m uvicorn src.main:app --host 0.0.0.0 --port 8000
+```
+
+### Background Process (Development)
+```bash
+source venv/bin/activate
+python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload > logs/ai-server.log 2>&1 &
+```
+
+## Project Structure
+
+```
+apps/ai-server/
+├── src/
+│   ├── main.py                  # FastAPI application entry point
+│   ├── config.py                # Configuration management
+│   ├── routes/                  # API route handlers
+│   │   ├── text_generation.py  # Text generation endpoints
+│   │   └── image_generation.py # Image generation endpoints
+│   ├── services/                # Business logic
+│   │   ├── text_service.py     # Text generation service (vLLM)
+│   │   └── image_service.py    # Image generation service (Diffusers)
+│   └── schemas/                 # Pydantic models
+│       ├── text.py              # Text generation request/response models
+│       └── image.py             # Image generation request/response models
+├── tests/                       # Test files
+│   ├── test_text_generation.py
+│   └── test_image_generation.py
+├── venv/                        # Python virtual environment
+├── requirements.txt             # Production dependencies
+├── requirements-dev.txt         # Development dependencies
+└── PYTHON-VERSION-GUIDE.md     # Detailed Python setup guide
+```
+
+## API Endpoints
+
+### Text Generation
+- **POST** `/api/text/generate` - Generate text using vLLM
+- **GET** `/api/text/models` - List available text models
+
+### Image Generation
+- **POST** `/api/image/generate` - Generate images using Stable Diffusion
+- **GET** `/api/image/models` - List available image models
+
+### Documentation
+- **GET** `/docs` - Interactive API documentation (Swagger UI)
+- **GET** `/redoc` - Alternative API documentation (ReDoc)
+- **GET** `/openapi.json` - OpenAPI schema
+
+## Testing
+
+### Unit Tests
+```bash
+source venv/bin/activate
+pytest tests/
+```
+
+### Test with Coverage
+```bash
+source venv/bin/activate
+pytest --cov=src tests/
+```
+
+### Integration Tests (requires server running)
+```bash
+# Terminal 1: Start server
+source venv/bin/activate
+python -m uvicorn src.main:app --host 0.0.0.0 --port 8000
+
+# Terminal 2: Run tests
+source venv/bin/activate
+python tests/test_text_generation.py
+python tests/test_image_generation.py
+```
+
+## Code Style & Quality
+
+### Formatting with Black
+```bash
+source venv/bin/activate
+black src/
+```
+
+### Linting with Ruff
+```bash
+source venv/bin/activate
+ruff check src/
+```
+
+### Type Checking with MyPy
+```bash
+source venv/bin/activate
+mypy src/
+```
+
+## Common Issues & Solutions
+
+### Issue: vLLM AsyncEngineArgs error
+**Error**: `AsyncEngineArgs.__init__() got an unexpected keyword argument 'disable_log_requests'`
+**Solution**: The `disable_log_requests` parameter was removed in vllm 0.11.0. Do not use this parameter.
+
+### Issue: NumPy version conflict
+**Error**: `numba 0.61.2 depends on numpy<2.3`
+**Solution**: Use `numpy==2.2.6` (latest 2.2.x series that satisfies both vllm and numba constraints)
+
+### Issue: Torch version conflict
+**Error**: `vllm 0.11.0 depends on torch==2.8.0`
+**Solution**: Use `torch==2.8.0` (exact version required)
+
+### Issue: Model authentication required
+**Error**: `401 Client Error: Unauthorized`
+**Solution**: Run `huggingface-cli login` and provide your Hugging Face token
+
+### Issue: CUDA out of memory
+**Error**: `RuntimeError: CUDA out of memory`
+**Solution**:
+- Use smaller models
+- Reduce batch size
+- Adjust `gpu_memory_utilization` parameter in vLLM config
+- Monitor GPU usage with `nvidia-smi`
+
+## Environment Variables
+
+Create a `.env` file in `apps/ai-server/`:
+
+```bash
+# Model Configuration
+TEXT_MODEL_NAME=Qwen/Qwen2.5-0.5B-Instruct
+IMAGE_MODEL_NAME=stabilityai/stable-diffusion-xl-base-1.0
+
+# Server Configuration
+HOST=0.0.0.0
+PORT=8000
+LOG_LEVEL=info
+
+# Hugging Face
+HF_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# GPU Configuration
+CUDA_VISIBLE_DEVICES=0
+GPU_MEMORY_UTILIZATION=0.9
+```
+
+## Code Guidelines
+
+**Python-Specific Best Practices:**
+- **Type Hints**: Always use type hints for function parameters and return types
+- **Async/Await**: Use async endpoints for I/O-bound operations
+- **Pydantic Models**: Define request/response schemas using Pydantic
+- **Error Handling**: Use FastAPI HTTPException for API errors
+- **Logging**: Use Python's logging module, configured in `config.py`
+- **Documentation**: Add docstrings to all functions and classes
+
+**Code Quality Standards:**
+- Format code with `black` before committing
+- Run `ruff check` to ensure no linting errors
+- Run `mypy` to verify type hints
+- Write tests for all new endpoints
+- NEVER use ellipsis ("...") as placeholders in production code
+- Every function should have complete implementation
+
+**Example FastAPI Endpoint:**
+```python
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+
+router = APIRouter()
+
+class TextRequest(BaseModel):
+    prompt: str
+    max_tokens: int = 100
+    temperature: float = 0.7
+
+class TextResponse(BaseModel):
+    generated_text: str
+    model: str
+
+@router.post("/generate", response_model=TextResponse)
+async def generate_text(request: TextRequest) -> TextResponse:
+    """
+    Generate text using the configured LLM model.
+
+    Args:
+        request: Text generation request parameters
+
+    Returns:
+        Generated text response
+
+    Raises:
+        HTTPException: If generation fails
+    """
+    try:
+        # Implementation here
+        result = await text_service.generate(
+            prompt=request.prompt,
+            max_tokens=request.max_tokens,
+            temperature=request.temperature
+        )
+        return TextResponse(
+            generated_text=result.text,
+            model=result.model_name
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+```
+
+## Integration with Web Application
+
+The AI server provides services to the Next.js web application:
+- **Text Generation**: Used for story content, character dialogues, scene descriptions
+- **Image Generation**: Used for story covers, character portraits, scene illustrations
+
+**API Client Generation:**
+```bash
+# Generate TypeScript client from OpenAPI schema
+pnpm generate:client
+# Output: ../api-client/src/
+```
+
+## Performance Optimization
+
+### vLLM Optimization
+- Adjust `gpu_memory_utilization` (default 0.9)
+- Use quantization for smaller memory footprint
+- Enable tensor parallelism for multi-GPU setups
+
+### Image Generation Optimization
+- Use `torch.compile()` for faster inference
+- Adjust inference steps (lower = faster, lower quality)
+- Cache models in memory for repeated generations
+
+### API Performance
+- Use async endpoints for concurrent requests
+- Implement request batching for high throughput
+- Add caching for repeated prompts
+- Monitor with FastAPI middleware
+
+## Monitoring & Debugging
+
+### Check Server Health
+```bash
+curl http://localhost:8000/health
+```
+
+### Monitor GPU Usage
+```bash
+nvidia-smi -l 1  # Update every 1 second
+```
+
+### View Logs
+```bash
+tail -f logs/ai-server.log
+```
+
+### Interactive API Testing
+Open browser to: http://localhost:8000/docs
+
+## Git and Repository Management
+
+- **Working Directory**: Always work from `apps/ai-server/`
+- **Commit Messages**: Follow conventional commits format
+- **Branch Strategy**: Use feature branches for new features
+- **Code Review**: Ensure all tests pass before PR
+
+## Additional Resources
+
+- **Python Setup Guide**: See `../../docs/ai-server/python-version-guide.md`
+- **Quick Start Guide**: See `../../docs/ai-server/quick-start.md`
+- **Setup Guide**: See `../../docs/ai-server/setup.md`
+- **API Reference**: See `../../docs/ai-server/api-reference.md`
+- **Main Repository Guide**: See `../../CLAUDE.md`
+- **FastAPI Docs**: https://fastapi.tiangolo.com/
+- **vLLM Docs**: https://docs.vllm.ai/
+- **Diffusers Docs**: https://huggingface.co/docs/diffusers/
