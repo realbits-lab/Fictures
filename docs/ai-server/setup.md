@@ -36,33 +36,63 @@ git clone https://github.com/realbits-lab/Fictures.git
 cd Fictures/apps/ai-server
 ```
 
-### 2. Create Virtual Environment
+### 2. Install Python with pyenv (Recommended)
 
+**Install pyenv:**
 ```bash
-# Option 1: Create with Python 3.12 specifically (recommended)
-python3.12 -m venv venv
+# Install pyenv
+curl https://pyenv.run | bash
 
-# Option 2: Create with default Python version
-python -m venv venv
+# Add to ~/.bashrc or ~/.zshrc
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
 
-# Option 3: Use pyenv to manage Python versions
-# pyenv install 3.12.7
-# pyenv local 3.12.7
-# python -m venv venv
+# Restart shell
+source ~/.bashrc  # or source ~/.zshrc
+
+# Install Python 3.12
+pyenv install 3.12.9
+pyenv global 3.12.9
+
+# Verify
+python --version  # Should show Python 3.12.9
+```
+
+### 3. Create Virtual Environment
+
+**Using pyenv-virtualenv (Recommended):**
+```bash
+cd apps/ai-server
+
+# Create virtual environment with pyenv
+pyenv virtualenv 3.12.9 fictures-ai-server
 
 # Activate virtual environment
-# On Linux/macOS:
-source venv/bin/activate
+pyenv activate fictures-ai-server
 
-# On Windows:
-venv\Scripts\activate
+# Or set local Python version for this directory
+pyenv local fictures-ai-server  # Auto-activates when you cd into this directory
+```
+
+**Alternative: Using venv:**
+```bash
+cd apps/ai-server
+
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+source venv/bin/activate  # Linux/macOS
+venv\Scripts\activate     # Windows
 
 # Verify Python version
 python --version
 # Expected: Python 3.12.x
 ```
 
-### 3. Install Dependencies
+### 4. Install Dependencies
 
 ```bash
 # Install PyTorch with CUDA support first
@@ -82,7 +112,7 @@ pip install -r requirements.txt
 pip install -r requirements-dev.txt
 ```
 
-### 4. Verify Installation
+### 5. Verify Installation
 
 ```bash
 # Check PyTorch CUDA availability
@@ -105,7 +135,7 @@ Diffusers version: 0.32.1
 
 ## Configuration
 
-### 1. Environment Variables
+### 6. Environment Variables
 
 Create `.env` file from example:
 
@@ -149,7 +179,7 @@ LOG_LEVEL=INFO
 LOG_FORMAT=json
 ```
 
-### 2. Download Models
+### 7. Download Models
 
 Models will be automatically downloaded on first use from Hugging Face.
 
@@ -170,11 +200,11 @@ Models will be automatically downloaded on first use from Hugging Face.
 **Alternative: Pre-download Models**
 
 ```bash
-# Install huggingface-cli
-pip install huggingface_hub[cli]
+# Install huggingface_hub
+pip install huggingface_hub
 
-# Login to Hugging Face (required for Gemma)
-huggingface-cli login
+# Login to Hugging Face (opens browser for authentication)
+hf auth login
 
 # Download Gemma 2B
 huggingface-cli download google/gemma-2b-it
@@ -183,7 +213,7 @@ huggingface-cli download google/gemma-2b-it
 huggingface-cli download stabilityai/stable-diffusion-xl-base-1.0
 ```
 
-### 3. Hugging Face Authentication
+### 8. Hugging Face Authentication
 
 Some models (like Gemma) require Hugging Face authentication:
 
@@ -191,8 +221,11 @@ Some models (like Gemma) require Hugging Face authentication:
 2. Get access token from https://huggingface.co/settings/tokens
 3. Login via CLI:
    ```bash
-   huggingface-cli login
-   # Paste your token when prompted
+   # Install huggingface_hub if not already installed
+   pip install huggingface_hub
+
+   # Login (opens browser for authentication)
+   hf auth login
    ```
 4. Accept model license agreements:
    - Gemma: https://huggingface.co/google/gemma-2b-it

@@ -130,40 +130,99 @@ docs/ai-server/                    # Documentation (NEW)
 
 ## 🚀 Quick Start
 
-### 1. Install Dependencies
+### 1. Install Python with pyenv (Recommended)
 
+**Install pyenv:**
+```bash
+# Install pyenv
+curl https://pyenv.run | bash
+
+# Add to ~/.bashrc or ~/.zshrc
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+
+# Restart shell or source config
+source ~/.bashrc  # or source ~/.zshrc
+```
+
+**Install Python 3.11:**
+```bash
+# List available Python versions
+pyenv install --list
+
+# Install Python 3.11 (recommended)
+pyenv install 3.11.9
+
+# Set as global default
+pyenv global 3.11.9
+
+# Verify installation
+python --version  # Should show Python 3.11.9
+```
+
+### 2. Setup Virtual Environment
+
+**Using pyenv-virtualenv (Recommended):**
+```bash
+cd apps/ai-server
+
+# Create virtual environment with pyenv
+pyenv virtualenv 3.11.9 fictures-ai-server
+
+# Activate virtual environment
+pyenv activate fictures-ai-server
+
+# Or set local Python version for this directory
+pyenv local fictures-ai-server  # Auto-activates when you cd into this directory
+```
+
+**Alternative: Using venv:**
 ```bash
 cd apps/ai-server
 python -m venv venv
-source venv/bin/activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+### 3. Install Dependencies
+
+```bash
+# Install PyTorch with CUDA support
 pip install torch --index-url https://download.pytorch.org/whl/cu118
+
+# Install project dependencies
 pip install -r requirements.txt
 ```
 
-### 2. Configure Environment
+### 4. Configure Environment
 
 ```bash
 cp .env.example .env
 # Edit .env if needed (defaults work fine)
 ```
 
-### 3. Authenticate Hugging Face
+### 5. Authenticate Hugging Face
 
 ```bash
+# Install huggingface-hub if not already installed
 pip install huggingface_hub
-huggingface-cli login
-# Accept licenses at:
+
+# Login to Hugging Face (opens browser for authentication)
+hf auth login
+
+# Accept model licenses at:
 # - https://huggingface.co/google/gemma-2b-it
 # - https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0
 ```
 
-### 4. Start Server
+### 6. Start Server
 
 ```bash
 python -m uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### 5. Test API
+### 7. Test API
 
 Visit http://localhost:8000/docs for interactive documentation
 

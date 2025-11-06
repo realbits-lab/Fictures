@@ -75,21 +75,33 @@ python --version
 3. Check "Add Python to PATH"
 4. Verify: `python --version`
 
-### Using pyenv (Cross-platform)
+### Using pyenv (Cross-platform - Recommended)
 
 ```bash
 # Install pyenv
 curl https://pyenv.run | bash
 
-# Install Python 3.12
-pyenv install 3.12.7
+# Add to ~/.bashrc or ~/.zshrc
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
 
-# Set for AI server directory
+# Restart shell
+source ~/.bashrc  # or source ~/.zshrc
+
+# Install Python 3.12
+pyenv install 3.12.9
+
+# Set global default
+pyenv global 3.12.9
+
+# Or set for AI server directory only
 cd apps/ai-server
-pyenv local 3.12.7
+pyenv local 3.12.9
 
 # Verify
-python --version
+python --version  # Should show Python 3.12.9
 ```
 
 ## Creating Virtual Environment with Python 3.12
@@ -111,22 +123,25 @@ python --version
 # Output: Python 3.12.x
 ```
 
-### Method 2: Using pyenv
+### Method 2: Using pyenv-virtualenv (Recommended)
 
 ```bash
 cd apps/ai-server
 
 # Set Python 3.12 for this directory
-pyenv local 3.12.7
+pyenv local 3.12.9
 
-# Create virtual environment (will use 3.12)
-python -m venv venv
+# Create virtual environment with pyenv
+pyenv virtualenv 3.12.9 fictures-ai-server
 
 # Activate
-source venv/bin/activate
+pyenv activate fictures-ai-server
+
+# Or set local to auto-activate
+pyenv local fictures-ai-server
 
 # Verify
-python --version
+python --version  # Should show Python 3.12.9
 ```
 
 ### Method 3: Specify Full Path
@@ -298,7 +313,7 @@ cp .env.example .env
 
 # 11. Authenticate Hugging Face
 pip install huggingface_hub
-huggingface-cli login
+hf auth login
 
 # 12. Start server
 python -m uvicorn src.main:app --reload --host 0.0.0.0 --port 8000

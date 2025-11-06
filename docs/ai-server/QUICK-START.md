@@ -9,22 +9,43 @@ Get the Fictures AI Server running in 10 minutes!
 - 20 GB free disk space
 - CUDA 11.8+ installed
 
-## Step 1: Install Dependencies (3 minutes)
+## Step 1: Install Python with pyenv (Optional but Recommended)
+
+```bash
+# Install pyenv (if not already installed)
+curl https://pyenv.run | bash
+
+# Add to ~/.bashrc or ~/.zshrc
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+
+# Restart shell
+source ~/.bashrc  # or source ~/.zshrc
+
+# Install Python 3.12
+pyenv install 3.12.9
+pyenv global 3.12.9
+```
+
+## Step 2: Install Dependencies (3 minutes)
 
 ```bash
 # Navigate to AI server directory
 cd apps/ai-server
 
-# Create virtual environment with Python 3.12 (recommended)
-python3.12 -m venv venv
+# Create virtual environment
+# Option A: Using pyenv-virtualenv (recommended)
+pyenv virtualenv 3.12.9 fictures-ai-server
+pyenv activate fictures-ai-server
+# Or set local: pyenv local fictures-ai-server
 
-# OR use default Python version
-# python -m venv venv
-
-# Activate virtual environment
+# Option B: Using venv
+python -m venv venv
 source venv/bin/activate  # Linux/macOS
 # OR
-venv\Scripts\activate  # Windows
+# venv\Scripts\activate  # Windows
 
 # Verify Python version
 python --version  # Should show Python 3.12.x
@@ -36,7 +57,7 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 pip install -r requirements.txt
 ```
 
-## Step 2: Configure Environment (1 minute)
+## Step 3: Configure Environment (1 minute)
 
 ```bash
 # Copy example environment file
@@ -57,14 +78,14 @@ CUDA_VISIBLE_DEVICES=0
 LOG_LEVEL=INFO
 ```
 
-## Step 3: Authenticate Hugging Face (2 minutes)
+## Step 4: Authenticate Hugging Face (2 minutes)
 
 ```bash
 # Install Hugging Face CLI
 pip install huggingface_hub
 
-# Login (you'll need an account at huggingface.co)
-huggingface-cli login
+# Login (opens browser for authentication)
+hf auth login
 
 # Accept model licenses:
 # 1. Visit: https://huggingface.co/google/gemma-2b-it
@@ -73,7 +94,7 @@ huggingface-cli login
 # 4. Click "Agree and access repository"
 ```
 
-## Step 4: Start Server (30 seconds)
+## Step 5: Start Server (30 seconds)
 
 ```bash
 # Start the server
@@ -86,7 +107,7 @@ python -m uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 # INFO:     Application startup complete.
 ```
 
-## Step 5: Test API (2 minutes)
+## Step 6: Test API (2 minutes)
 
 ### Open API Documentation
 
@@ -142,7 +163,7 @@ curl -X POST "http://localhost:8000/api/v1/images/generate" \
 python -c "import json, base64; data = json.load(open('response.json')); img = data['image_url'].split(',')[1]; open('output.png', 'wb').write(base64.b64decode(img))"
 ```
 
-## Step 6: Run Tests (5 minutes)
+## Step 7: Run Tests (5 minutes)
 
 ```bash
 # Test text generation API
@@ -205,7 +226,7 @@ DIFFUSERS_ENABLE_CPU_OFFLOAD=true
 ```
 
 **Solution:**
-1. Login: `huggingface-cli login`
+1. Login: `hf auth login`
 2. Accept licenses on Hugging Face website
 3. Restart server
 

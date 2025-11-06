@@ -211,7 +211,7 @@ Error: 401 Unauthorized - Gemma model requires authentication
 **Solution:** Login to Hugging Face
 ```bash
 pip install huggingface_hub
-huggingface-cli login
+hf auth login
 # Accept Gemma license at https://huggingface.co/google/gemma-2b-it
 ```
 
