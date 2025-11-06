@@ -1,10 +1,21 @@
-<a href="https://github.com/realbits-lab/Fictures">
-  <img alt="Fictures - AI-powered story writing and reading platform" src="app/(chat)/opengraph-image.png">
-  <h1 align="center">Fictures</h1>
-</a>
+<h1 align="center">
+  ✍️ Fictures 📖
+</h1>
 
 <p align="center">
   <strong>Where writers meet AI, and stories come alive</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/realbits-lab/Fictures">
+    <img src="https://img.shields.io/github/stars/realbits-lab/Fictures?style=social" alt="GitHub stars">
+  </a>
+  <a href="https://github.com/realbits-lab/Fictures/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/license-AGPL--3.0-blue.svg" alt="License">
+  </a>
+  <a href="https://github.com/realbits-lab/Fictures/issues">
+    <img src="https://img.shields.io/github/issues/realbits-lab/Fictures" alt="Issues">
+  </a>
 </p>
 
 <p align="center">
@@ -22,22 +33,14 @@
 
 **Stories should be fun to write, thrilling to read, and awesome to share.**
 
-Remember the last time you got lost in a good story? That feeling when you couldn't put it down, when you stayed up way too late because "just one more chapter"? That's what we're chasing.
+Most writing platforms treat stories like boring documents. Readers scroll through text like PDFs. Writers struggle alone with blank pages. We think there's a better way.
 
-**The problem:** Most writing platforms treat stories like documents. Boring. Readers treat stories like PDFs. Meh. Writers struggle alone with blank pages and self-doubt. Ouch.
+**Fictures makes:**
+- **Writing** feel like play (with an AI sidekick that actually gets story structure)
+- **Reading** feel like magic (so immersive you forget to check your phone)
+- **Community** feel like hanging with friends who get your story obsession
 
-**The Fictures way:** What if writing felt like playing a creative game? What if reading was so immersive you forget you're staring at a screen? What if your favorite stories had buzzing communities where fans theorize, debate, and geek out together?
-
-We're building a platform where:
-- **Writers** get an AI sidekick that actually understands narrative structure (not just word salad generation)
-- **Readers** discover stories that feel like interactive experiences, not static text
-- **Communities** gather around stories they love, creating theories, fan art, and inside jokes
-
-Think Netflix meets Wattpad meets Discord, but for stories that deserve better than endless scrolling.
-
-**Our promise:** Every feature we build should make storytelling more *fun*—not more complicated. If it's not delightful, we're doing it wrong.
-
-**Current Status**: Production-ready and actually fun to use. The AI doesn't judge your plot holes. 🤖✨
+If it's not delightful, we're doing it wrong. Production-ready and actually fun to use. 🤖✨
 
 ## 📚 Platform Overview
 
@@ -139,8 +142,11 @@ dotenv --file .env.local run pnpm dev
 **What's Coming Next** (Because we're never satisfied)
 
 🎯 **Community & Social**: Writing contests, groups, following system, author profiles
+
 🎮 **Gamification**: Achievements, XP levels, leaderboards (make writing addictive)
+
 🤝 **Collaboration**: Beta reader marketplace, co-authoring, writing workshops
+
 ✍️ **Writing Tools**: Version control, writing goals, outline mode, research notes
 
 **Want something specific?** Drop a feature request in [GitHub Issues](https://github.com/realbits-lab/Fictures/issues)!
@@ -151,7 +157,7 @@ dotenv --file .env.local run pnpm dev
 
 **We love PRs!** Fork it, branch it, code it, test it (`pnpm test`), commit it, push it, PR it. ✨
 
-Full guidelines: [CONTRIBUTING.md](CONTRIBUTING.md)
+Full guidelines: [CONTRIBUTING.md](docs/CONTRIBUTING.md)
 
 **Quick style guide:**
 - TypeScript everything (types are friends, not food)
@@ -172,7 +178,7 @@ Full guidelines: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## 📜 License
 
-MIT License - see [LICENSE](LICENSE). TL;DR: Do what you want, just don't blame us. 😎
+AGPL-3.0 License - see [LICENSE](LICENSE). Open source with network protection. 🛡️
 
 ---
 
