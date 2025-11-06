@@ -81,13 +81,17 @@ class QwenImageLightningService:
         }
         scheduler = FlowMatchEulerDiscreteScheduler.from_config(scheduler_config)
 
-        # Load base Qwen-Image pipeline
-        logger.info("Loading base Qwen-Image pipeline...")
+        # Load base Qwen-Image pipeline with CPU offloading for 24GB GPU
+        logger.info("Loading base Qwen-Image pipeline with CPU offloading...")
         pipeline = DiffusionPipeline.from_pretrained(
             self.base_model,
             scheduler=scheduler,
             torch_dtype=torch.bfloat16,
-        ).to(self.device)
+        )
+
+        # Enable sequential CPU offload for 24GB GPU (more aggressive, slower but fits)
+        logger.info("Enabling sequential CPU offload (moves each component to GPU only when needed)...")
+        pipeline.enable_sequential_cpu_offload()
 
         # Load Lightning LoRA adapter with specific weight file
         logger.info(f"Loading Lightning LoRA adapter: {self.lora_weight_name}...")
