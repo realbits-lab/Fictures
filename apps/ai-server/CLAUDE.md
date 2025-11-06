@@ -309,6 +309,12 @@ TEXT_MAX_MODEL_LEN=32768  # 32K context (can extend to 131K)
 - NEVER use ellipsis ("...") as placeholders in production code
 - Every function should have complete implementation
 
+**File Naming Conventions:**
+- **Documentation files in `docs/`**: Use lowercase file names with hyphens (kebab-case)
+  - ✅ Good: `api-reference.md`, `quick-start.md`, `python-version-guide.md`
+  - ❌ Bad: `API-Reference.md`, `QuickStart.md`, `PYTHON-VERSION-GUIDE.md`
+- This ensures consistency and avoids issues with case-sensitive file systems
+
 **Example FastAPI Endpoint:**
 ```python
 from fastapi import APIRouter, HTTPException
