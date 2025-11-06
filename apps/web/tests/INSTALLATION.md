@@ -34,7 +34,6 @@ GOOGLE_CLIENT_SECRET=***
 
 # AI Integration
 GOOGLE_GENERATIVE_AI_API_KEY=***
-AI_GATEWAY_API_KEY=***
 
 # Database & Storage
 DATABASE_URL=***

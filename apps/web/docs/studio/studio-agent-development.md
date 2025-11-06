@@ -1427,7 +1427,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Stream response with multi-step reasoning
-    // Note: Uses system AI_GATEWAY_API_KEY from environment (Gemini API calls)
+    // Note: Uses system GOOGLE_GENERATIVE_AI_API_KEY from environment (Gemini API calls)
     // User's Fictures API key is for authorization/scopes only
     const result = streamText({
       model: google('gemini-2.0-flash-exp'),
@@ -2351,8 +2351,7 @@ GOOGLE_CLIENT_ID="..."
 GOOGLE_CLIENT_SECRET="..."
 
 # AI Integration (for Gemini API calls)
-AI_GATEWAY_API_KEY="..." # Vercel AI Gateway API key (system-wide, NOT user-specific)
-GOOGLE_GENERATIVE_AI_API_KEY="..." # Google AI API key (alternative to AI Gateway)
+GOOGLE_GENERATIVE_AI_API_KEY="..." # Google AI API key
 
 # Vercel Blob
 BLOB_READ_WRITE_TOKEN="..."
@@ -2362,7 +2361,7 @@ REDIS_URL="..."
 ```
 
 **Note on API Keys**:
-- **System AI Keys** (`AI_GATEWAY_API_KEY`, `GOOGLE_GENERATIVE_AI_API_KEY`): Used for actual Gemini API calls in generation
+- **System AI Keys** (`GOOGLE_GENERATIVE_AI_API_KEY`): Used for actual Gemini API calls in generation
 - **User Fictures API Keys** (stored in `api_keys` table): Used for authorization and scope checking (who can use what features)
 - Studio Agent validates user has `ai:use` scope before allowing story generation
 - Actual AI calls use system environment variables, not user API keys

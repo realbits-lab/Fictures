@@ -148,8 +148,8 @@ Fictures is a full-stack web application built with Next.js 15 that provides a c
    GOOGLE_CLIENT_ID=your-google-client-id
    GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-   # AI Integration (use AI Gateway key instead of provider key)
-   AI_GATEWAY_API_KEY=your-ai-gateway-key
+   # AI Integration
+   GOOGLE_GENERATIVE_AI_API_KEY=your-google-ai-api-key
 
    # Database
    DATABASE_URL=your-neon-postgres-url-pooled
@@ -456,7 +456,7 @@ Tests are configured for CI environments:
 
 ### Deploy to Vercel (Recommended)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Frealbits-lab%2FFictures&env=AUTH_SECRET,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,AI_GATEWAY_API_KEY&project-name=fictures&repository-name=fictures)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Frealbits-lab%2FFictures&env=AUTH_SECRET,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,GOOGLE_GENERATIVE_AI_API_KEY&project-name=fictures&repository-name=fictures)
 
 ### Environment Variables
 
@@ -467,7 +467,7 @@ Configure these in your Vercel project or `.env.local`:
 | `AUTH_SECRET` | NextAuth secret | Yes |
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID | Yes |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth secret | Yes |
-| `AI_GATEWAY_API_KEY` | Vercel AI Gateway key | Yes |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Google AI API key for Gemini | Yes |
 | `DATABASE_URL` | PostgreSQL pooled connection | Yes |
 | `DATABASE_URL_UNPOOLED` | PostgreSQL direct connection (migrations) | Yes |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob storage token | Yes |

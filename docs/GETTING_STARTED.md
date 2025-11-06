@@ -52,10 +52,7 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 
 #### AI Integration
 ```bash
-# Vercel AI Gateway key (recommended)
-AI_GATEWAY_API_KEY=your-ai-gateway-key
-
-# Or direct provider keys
+# Direct provider keys
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 XAI_API_KEY=xai-...

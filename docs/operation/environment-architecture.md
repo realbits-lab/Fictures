@@ -307,7 +307,6 @@ DATABASE_URL=***
 DATABASE_URL_UNPOOLED=***
 BLOB_READ_WRITE_TOKEN=***
 GOOGLE_GENERATIVE_AI_API_KEY=***
-AI_GATEWAY_API_KEY=***
 ```
 
 **No additional environment variables needed!** The system uses `NODE_ENV` which is standard.

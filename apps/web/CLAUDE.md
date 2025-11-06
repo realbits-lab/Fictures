@@ -302,7 +302,6 @@ GOOGLE_CLIENT_SECRET=***
 
 # AI Integration
 GOOGLE_GENERATIVE_AI_API_KEY=***   # Google AI for Gemini 2.5 Flash (text & image generation)
-AI_GATEWAY_API_KEY=***             # Vercel AI SDK Gateway API key for AI provider management
 
 # Database & Storage
 DATABASE_URL=***                   # Neon PostgreSQL (pooled connection for runtime)
@@ -523,7 +522,7 @@ dotenv --file .env.local run node scripts/generate-minimal-story.mjs
   - **Common APIs**: Use `/api/` directory only for global/shared API endpoints
   - **Example**: Studio-related APIs go in `src/app/studio/api/generation/*` instead of `src/app/api/studio/generation/*`
 - **AI Integration**:
-  - **AI SDK**: Use Vercel AI SDK with AI Gateway (AI_GATEWAY_API_KEY)
+  - **AI SDK**: Use Vercel AI SDK
   - **Text Generation**: Gemini 2.5 Flash & Flash Lite via Vercel AI SDK
   - **Scene Evaluation**: Automated quality assessment (part of Novel generation pipeline)
   - **Scene Improvement**: Iterative refinement until quality threshold met

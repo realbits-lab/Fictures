@@ -138,7 +138,6 @@ The API key enables access to these AI capabilities through the Vercel AI SDK.
 GOOGLE_GENERATIVE_AI_API_KEY=AIza...your-key-here
 
 # Other required variables
-AI_GATEWAY_API_KEY=***             # Vercel AI SDK Gateway
 DATABASE_URL=***                   # Neon PostgreSQL
 BLOB_READ_WRITE_TOKEN=***          # Vercel Blob
 ```
