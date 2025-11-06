@@ -5,6 +5,7 @@ import logging
 from typing import Optional, AsyncGenerator
 from vllm import AsyncLLMEngine, AsyncEngineArgs, SamplingParams
 from src.config import settings
+from src.utils.gpu_utils import cleanup_gpu_memory, get_gpu_memory_info
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,14 @@ class TextGenerationService:
             return
 
         try:
+            # Clean GPU memory before loading model
+            logger.info("Preparing GPU for text model loading...")
+            cleanup_gpu_memory(force=True)
+
+            mem_info = get_gpu_memory_info()
+            if mem_info["available"]:
+                logger.info(f"GPU Memory before loading: {mem_info['free']:.2f}GB free")
+
             logger.info(f"Initializing vLLM engine with model: {self.model_name}")
             logger.info(f"Quantization: {settings.vllm_quantization}")
 
@@ -178,12 +187,16 @@ class TextGenerationService:
         }
 
     async def shutdown(self):
-        """Shutdown the vLLM engine."""
+        """Shutdown the vLLM engine and clean up GPU memory."""
         if self.engine:
             logger.info("Shutting down vLLM engine")
             # vLLM doesn't have explicit shutdown, engine will be cleaned up
             self.engine = None
             self._initialized = False
+
+            # Clean up GPU memory after shutdown
+            logger.info("Cleaning up GPU memory after text model shutdown")
+            cleanup_gpu_memory(force=True)
 
 
 # Global service instance

@@ -1,6 +1,7 @@
 """Image generation service using Qwen-Image with DiffSynth-Studio.
 
-Optimized for RTX 4090 24GB with FP8 quantization and CPU offloading.
+Optimized for RTX 4090 24GB with full GPU memory (no CPU offloading).
+Text model is disabled to dedicate full GPU to image generation.
 """
 
 import asyncio
@@ -12,6 +13,7 @@ import torch
 from diffsynth.pipelines.qwen_image import QwenImagePipeline, ModelConfig
 from PIL import Image
 from src.config import settings
+from src.utils.gpu_utils import cleanup_gpu_memory, get_gpu_memory_info
 
 logger = logging.getLogger(__name__)
 
@@ -26,9 +28,9 @@ class QwenImageService:
         self._initialized = False
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
-        # FP8 quantization for RTX 4090 optimization
-        self.use_fp8 = True
-        self.offload_dtype = torch.float8_e4m3fn if self.use_fp8 else torch.bfloat16
+        # No FP8 quantization - using full GPU memory without offloading
+        self.use_fp8 = False
+        self.offload_dtype = torch.bfloat16
 
     async def initialize(self):
         """Initialize the Qwen-Image pipeline with FP8 optimization."""
@@ -37,9 +39,17 @@ class QwenImageService:
             return
 
         try:
+            # Clean GPU memory before loading model
+            logger.info("Preparing GPU for image model loading...")
+            cleanup_gpu_memory(force=True)
+
+            mem_info = get_gpu_memory_info()
+            if mem_info["available"]:
+                logger.info(f"GPU Memory available: {mem_info['free']:.2f}GB free")
+
             logger.info(f"Initializing Qwen-Image pipeline: {self.model_name}")
             logger.info(f"Using device: {self.device}")
-            logger.info(f"FP8 Quantization: {'Enabled' if self.use_fp8 else 'Disabled'}")
+            logger.info(f"Mode: Full GPU (no CPU offloading)")
 
             # Run pipeline loading in executor to avoid blocking
             loop = asyncio.get_event_loop()
@@ -55,31 +65,25 @@ class QwenImageService:
             raise
 
     def _load_pipeline(self) -> QwenImagePipeline:
-        """Load the Qwen-Image pipeline with optimizations (blocking operation)."""
-        logger.info("Loading Qwen-Image model components...")
+        """Load the Qwen-Image pipeline with full GPU memory (blocking operation)."""
+        logger.info("Loading Qwen-Image model components to GPU...")
 
-        # Configure model with FP8 quantization and CPU offloading for RTX 4090
+        # Configure model loading (all on GPU, no CPU offloading)
         model_configs = [
-            # Transformer with FP8 quantization and CPU offloading
+            # Transformer - full GPU
             ModelConfig(
                 model_id=self.model_name,
                 origin_file_pattern="transformer/diffusion_pytorch_model*.safetensors",
-                offload_device="cpu",  # Offload to CPU when not in use
-                offload_dtype=self.offload_dtype,  # FP8 for memory reduction
             ),
-            # Text encoder with FP8 quantization and CPU offloading
+            # Text encoder - full GPU
             ModelConfig(
                 model_id=self.model_name,
                 origin_file_pattern="text_encoder/model*.safetensors",
-                offload_device="cpu",
-                offload_dtype=self.offload_dtype,
             ),
-            # VAE with FP8 quantization and CPU offloading
+            # VAE - full GPU
             ModelConfig(
                 model_id=self.model_name,
                 origin_file_pattern="vae/diffusion_pytorch_model.safetensors",
-                offload_device="cpu",
-                offload_dtype=self.offload_dtype,
             ),
         ]
 
@@ -89,18 +93,18 @@ class QwenImageService:
             origin_file_pattern="tokenizer/",
         )
 
-        logger.info("Creating DiffSynth-Studio pipeline with FP8 optimization...")
+        logger.info("Creating DiffSynth-Studio pipeline with full GPU memory...")
 
-        # Create pipeline with bfloat16 for computation, FP8 for storage
+        # Create pipeline with bfloat16, all components on GPU
         pipeline = QwenImagePipeline.from_pretrained(
-            torch_dtype=torch.bfloat16,  # Computation dtype
+            torch_dtype=torch.bfloat16,
             device=self.device,
             model_configs=model_configs,
             tokenizer_config=tokenizer_config,
         )
 
         logger.info(f"Qwen-Image pipeline loaded successfully")
-        logger.info(f"Memory optimization: FP8 quantization + CPU offloading enabled")
+        logger.info(f"All model components loaded to GPU (no CPU offloading)")
 
         return pipeline
 
@@ -181,12 +185,11 @@ class QwenImageService:
         """Generate image using Qwen-Image (blocking operation)."""
         logger.info(f"Running Qwen-Image inference (steps={num_inference_steps}, seed={seed})...")
 
-        # Generate image with CPU rand_device to avoid device placement errors
+        # Generate image (all on GPU, no device placement issues)
         image = self.pipeline(
             prompt=prompt,
             seed=seed,
             num_inference_steps=num_inference_steps,
-            rand_device='cpu',  # Keep random tensors on CPU with offloading
         )
 
         return image
@@ -207,7 +210,7 @@ class QwenImageService:
             "framework": "DiffSynth-Studio",
             "backend": "Qwen-Image",
             "device": self.device,
-            "optimization": "FP8 quantization + CPU offloading",
+            "optimization": "Full GPU (no CPU offloading)",
             "initialized": self._initialized,
         }
 
@@ -215,11 +218,13 @@ class QwenImageService:
         """Shutdown the pipeline and free resources."""
         if self.pipeline:
             logger.info("Shutting down Qwen-Image pipeline")
-            # Clear CUDA cache if using GPU
-            if self.device == "cuda":
-                torch.cuda.empty_cache()
             self.pipeline = None
             self._initialized = False
+
+            # Clean up GPU memory after shutdown
+            if self.device == "cuda":
+                logger.info("Cleaning up GPU memory after image model shutdown")
+                cleanup_gpu_memory(force=True)
 
 
 # Global service instance

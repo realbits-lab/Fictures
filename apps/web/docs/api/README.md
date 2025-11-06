@@ -13,6 +13,21 @@ Development: http://localhost:3000
 Production: https://fictures.xyz
 ```
 
+## Quick Reference
+
+### Most Used Endpoints
+
+| Endpoint | Method | Description | Auth |
+|----------|--------|-------------|------|
+| `/studio/api/stories` | GET | List user stories | Required |
+| `/studio/api/stories` | POST | Create new story | Required |
+| `/studio/api/novels/generate` | POST | Generate complete novel (SSE) | Required |
+| `/api/images/generate` | POST | Generate AI image | Required |
+| `/analysis/api/track` | POST | Track analytics event | Optional |
+| `/community/api/posts` | POST | Create community post | Required |
+| `/api/auth/register` | POST | Register new user | None |
+| `/api/auth/change-password` | POST | Change password | Required |
+
 ## Authentication
 
 Most API endpoints require authentication using one of the following methods:
@@ -29,29 +44,70 @@ Most API endpoints require authentication using one of the following methods:
 
 ## API Categories
 
-### Authentication APIs
-User registration, login, and password management.
+### Core APIs
+
+**Authentication APIs** - User registration, login, and password management
 - [Authentication APIs](./authentication.md)
 
-### Image APIs
-AI-powered image generation and upload for stories.
+**Image APIs** - AI-powered image generation and upload for stories
 - [Image APIs](./images.md)
 
-### Validation APIs
-Content validation and dialogue formatting services.
+**Validation APIs** - Content validation and dialogue formatting services
 - [Validation APIs](./validation.md)
 
-### User Management APIs
-User role management and profile updates.
+**User Management APIs** - User role management and profile updates
 - [User Management APIs](./users.md)
 
-### Admin APIs
-Administrative operations requiring elevated permissions.
+**Admin APIs** - Administrative operations requiring elevated permissions
 - [Admin APIs](./admin.md)
 
-### Cron APIs
-Scheduled tasks for analytics and maintenance.
+**Cron APIs** - Scheduled tasks for analytics and maintenance
 - [Cron APIs](./cron.md)
+
+### Feature APIs
+
+**Studio APIs** - Story creation, editing, and management
+- [Studio APIs](./studio.md)
+  - Story CRUD operations
+  - AI novel generation
+  - Chapter and scene management
+  - Scene quality evaluation
+
+**Analysis APIs** - Analytics tracking and statistics
+- [Feature APIs - Analysis](./features.md#analysis-apis)
+  - Event tracking
+  - Story statistics
+  - Daily metrics
+
+**Community APIs** - Posts, likes, and replies
+- [Feature APIs - Community](./features.md#community-apis)
+  - Create and manage posts
+  - Like and reply functionality
+  - Story discussions
+
+**Publish APIs** - Scheduling and publishing management
+- [Feature APIs - Publish](./features.md#publish-apis)
+  - Publishing schedules
+  - Timeline management
+  - Automated publishing
+
+**Comics APIs** - Comic panel generation
+- [Feature APIs - Comics](./features.md#comics-apis)
+  - Generate panels
+  - Reading history
+  - Panel management
+
+**Novels APIs** - Reading interface and history
+- [Feature APIs - Novels](./features.md#novels-apis)
+  - Published novels list
+  - Reading history
+  - Progress tracking
+
+**Settings APIs** - User preferences and API keys
+- [Feature APIs - Settings](./features.md#settings-apis)
+  - User settings management
+  - API key CRUD operations
+  - Preferences
 
 ## Common Response Formats
 
