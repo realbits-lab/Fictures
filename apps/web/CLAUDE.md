@@ -645,71 +645,136 @@ Every scene generated is automatically:
 
 ---
 
-## Documentation
+## Documentation Index
 
-**Complete Documentation Index:** See `docs/README.md` for full documentation catalog
+**IMPORTANT: When you change code, update the related documentation IMMEDIATELY.**
 
-### Essential Documentation
+This section provides a complete index of all feature documentation. Each directory contains specialized documentation for specific features.
 
-**For New Developers:**
-- **[docs/README.md](docs/README.md)** - Complete documentation index (start here!)
-- **[CLAUDE.md](CLAUDE.md)** - This file - Project overview and guidelines
+### Core Features
 
-**Core Feature Specifications:**
-- **[docs/story-specification.md](docs/story-specification.md)** - Story structure and methodology
-- **[docs/novels-specification.md](docs/novels-specification.md)** - Reading UX, mobile nav, comments, likes
-- **[docs/community-specification.md](docs/community-specification.md)** - Community features and sharing
+#### Story Generation & Management
+- **[novels/](docs/novels/)** - Novel generation using Adversity-Triumph Engine
+  - `novels-specification.md` - Core concepts and data model
+  - `novels-development.md` - API specs and system prompts
+  - `novels-testing.md` - Validation and quality metrics
+  - `novels-optimization.md` - Performance tuning
+  - `novels-removal.md` - Deletion workflows
 
-**Performance & Optimization:**
-- **[docs/caching-strategy.md](docs/caching-strategy.md)** - ⭐ Complete 3-layer caching guide (SWR, localStorage, Redis)
-  - Consolidates: 30min cache retention, Redis optimization, cache key strategies
-- **[docs/database-optimization-strategy.md](docs/database-optimization-strategy.md)** - PostgreSQL indexes, N+1 fixes, query optimization
+- **[comics/](docs/comics/)** - Comic panel generation and display
+  - Toonplay methodology (70% dialogue, 30% visual action)
+  - Panel generation pipeline
+  - Webtoon reader interface
 
-**AI & Image Generation:**
-- **[docs/image-system-guide.md](docs/image-system-guide.md)** - ⭐ Complete image system overview
-  - Links: image-generation-guide.md, story-image-generation.md, image-optimization.md
-- **[docs/image-optimization.md](docs/image-optimization.md)** - 18-variant optimization system (AVIF/WebP/JPEG)
-- **[docs/scene-evaluation-api.md](docs/scene-evaluation-api.md)** - Automated scene quality evaluation
+- **[studio/](docs/studio/)** - Story creation workspace
+  - AI agent specifications
+  - API quick reference
+  - UI components
 
-**Story Generation & Removal:**
-- **[docs/story-removal.md](docs/story-removal.md)** - Story removal with database and Blob cleanup (10-25x faster batch deletion)
+#### Content Display & Reading
+- **[scene/](docs/scene/)** - Scene quality evaluation and tracking
+  - Quality pipeline
+  - View tracking
+  - Analytics
 
-### Documentation Organization
+- **[image/](docs/image/)** - Image generation and optimization
+  - Generation pipeline (Gemini 2.5 Flash)
+  - 4-variant optimization (AVIF + JPEG × mobile 1x/2x)
+  - Architecture overview
 
-**By Category:**
-- **Setup & Configuration:** Authentication, analytics, AdSense setup
-- **Feature Specs:** Story, reading, community, analytics, publish
-- **AI & Images:** Generation, optimization, evaluation, prompts
-- **Performance:** Caching, database, loading optimizations
-- **Bug Fixes:** Navigation, mobile, data loading fixes
-- **Testing:** E2E test specifications
+#### Community & Engagement
+- **[community/](docs/community/)** - Community features
+  - Story sharing
+  - Comments and discussions
+  - Performance optimizations
 
-**By Status:**
-- ✅ **Implemented:** caching-strategy, image-optimization, database-optimization-strategy
-- 🚧 **Partial:** community-specification, analytics-specification
-- 📋 **Spec Only:** publish-specification, ui-specification
+- **[notification/](docs/notification/)** - Notification system
+  - Real-time updates (SSE)
+  - Multi-channel notifications
+  - User preferences
 
-### Quick Navigation
+- **[publish/](docs/publish/)** - Publishing & scheduling
+  - Weekly scene-by-scene publishing
+  - Timeline visualization
+  - Automated scheduling
 
-**"I want to..."**
-- **Generate images** → Start: `docs/image-system-guide.md`
-- **Improve performance** → Start: `docs/caching-strategy.md`
-- **Understand story system** → Start: `docs/story-specification.md`
-- **Set up project** → Start: `CLAUDE.md` (this file) + `docs/README.md`
+#### Analytics & Monitoring
+- **[analysis/](docs/analysis/)** - Reader analytics & insights
+  - Story performance metrics
+  - Reader engagement tracking
 
-### Recent Documentation Consolidation (2025-10-25)
+- **[analytics/](docs/analytics/)** - Platform analytics setup
+  - Google Analytics 4 integration
+  - Vercel Analytics setup
 
-**Consolidated Files:**
-- ✅ Created `docs/caching-strategy.md` - Merged 3 cache-related files into complete guide
-- ✅ Created `docs/image-system-guide.md` - Overview linking 3 image-related files
-- ✅ Created `docs/README.md` - Master documentation index
-- ✅ Updated `docs/novels-specification.md` - Added bottom navigation implementation details
+- **[adsense/](docs/adsense/)** - Google AdSense integration
+  - Ad placement
+  - Revenue optimization
 
-**Removed Files (Superseded):**
-- ~~30min-cache-retention.md~~ → Merged into caching-strategy.md
-- ~~cache-optimization-report.md~~ → Merged into caching-strategy.md
-- ~~bottom-nav-always-visible.md~~ → Merged into reading-specification.md
-- ~~api-key-generation.md~~ → Removed (generic content)
+#### Authentication & User Management
+- **[auth/](docs/auth/)** - Authentication system
+  - User profiles and roles
+  - API key management
+  - Multi-environment auth
+
+#### UI & UX
+- **[ui/](docs/ui/)** - UI components & design system
+  - Component specifications
+  - Theme system (light/dark mode)
+  - Independent scrolling
+
+- **[mobile/](docs/mobile/)** - Mobile UX improvements
+  - Touch-optimized controls
+  - Mobile-first optimization
+  - Responsive design
+
+#### Performance & Optimization
+- **[performance/](docs/performance/)** - Performance optimization
+  - Caching strategies (SWR, localStorage, Redis)
+  - Database optimization
+  - Blob deletion optimization
+  - Feature-specific optimizations
+
+#### Testing
+- **[test/](docs/test/)** - Testing specifications
+  - E2E test specs (Playwright)
+  - Component testing
+  - Integration tests
+
+### Quick Navigation by Task
+
+**Common Development Tasks:**
+- **Generate novels** → `docs/novels/novels-specification.md`
+- **Optimize images** → `docs/image/image-optimization.md`
+- **Add UI components** → `docs/ui/ui-specification.md`
+- **Improve performance** → `docs/performance/performance-caching.md`
+- **Set up testing** → `docs/test/test-specification.md`
+- **Understand story system** → `docs/novels/novels-specification.md`
+- **Work with community features** → `docs/community/community-specification.md`
+
+### Platform-Wide Documentation
+
+**For documentation affecting multiple apps or the entire platform:**
+- **Platform Architecture**: `../../docs/operation/environment-architecture.md`
+- **Monorepo Structure**: `../../docs/monorepo/`
+- **Root CLAUDE.md**: `../../CLAUDE.md`
+
+### Documentation Standards
+
+**IMPORTANT: Keeping Docs Synchronized**
+
+When you change code, update the related documentation IMMEDIATELY in this order:
+
+1. **FIRST: Update Documentation** - Documentation is the single source of truth
+2. **SECOND: Update Implementation** - Code follows documented specifications
+
+**File Naming Conventions:**
+- **Specifications**: `*-specification.md` - Feature design and architecture
+- **Development**: `*-development.md` - Implementation guides
+- **Testing**: `*-testing.md` - Test strategies and validation
+- **Optimization**: `*-optimization.md` - Performance tuning
+
+**See `../../docs/CLAUDE.md` for complete documentation synchronization guidelines.**
 
 ---
 

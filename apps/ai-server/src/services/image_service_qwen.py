@@ -60,21 +60,21 @@ class QwenImageService:
 
         # Configure model with FP8 quantization and CPU offloading for RTX 4090
         model_configs = [
-            # Transformer with FP8 quantization
+            # Transformer with FP8 quantization and CPU offloading
             ModelConfig(
                 model_id=self.model_name,
                 origin_file_pattern="transformer/diffusion_pytorch_model*.safetensors",
                 offload_device="cpu",  # Offload to CPU when not in use
-                offload_dtype=self.offload_dtype,  # FP8 for 50% memory reduction
+                offload_dtype=self.offload_dtype,  # FP8 for memory reduction
             ),
-            # Text encoder with FP8 quantization
+            # Text encoder with FP8 quantization and CPU offloading
             ModelConfig(
                 model_id=self.model_name,
                 origin_file_pattern="text_encoder/model*.safetensors",
                 offload_device="cpu",
                 offload_dtype=self.offload_dtype,
             ),
-            # VAE with FP8 quantization
+            # VAE with FP8 quantization and CPU offloading
             ModelConfig(
                 model_id=self.model_name,
                 origin_file_pattern="vae/diffusion_pytorch_model.safetensors",
@@ -100,7 +100,7 @@ class QwenImageService:
         )
 
         logger.info(f"Qwen-Image pipeline loaded successfully")
-        logger.info(f"Memory optimization: FP8 offloading enabled (~50% VRAM reduction)")
+        logger.info(f"Memory optimization: FP8 quantization + CPU offloading enabled")
 
         return pipeline
 
@@ -181,11 +181,12 @@ class QwenImageService:
         """Generate image using Qwen-Image (blocking operation)."""
         logger.info(f"Running Qwen-Image inference (steps={num_inference_steps}, seed={seed})...")
 
-        # Generate image
+        # Generate image with CPU rand_device to avoid device placement errors
         image = self.pipeline(
             prompt=prompt,
             seed=seed,
             num_inference_steps=num_inference_steps,
+            rand_device='cpu',  # Keep random tensors on CPU with offloading
         )
 
         return image
