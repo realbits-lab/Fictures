@@ -15,13 +15,19 @@ Get the Fictures AI Server running in 10 minutes!
 # Navigate to AI server directory
 cd apps/ai-server
 
-# Create virtual environment
-python -m venv venv
+# Create virtual environment with Python 3.12 (recommended)
+python3.12 -m venv venv
+
+# OR use default Python version
+# python -m venv venv
 
 # Activate virtual environment
 source venv/bin/activate  # Linux/macOS
 # OR
 venv\Scripts\activate  # Windows
+
+# Verify Python version
+python --version  # Should show Python 3.12.x
 
 # Install PyTorch with CUDA support
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118

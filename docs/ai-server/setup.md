@@ -39,8 +39,16 @@ cd Fictures/apps/ai-server
 ### 2. Create Virtual Environment
 
 ```bash
-# Create virtual environment
+# Option 1: Create with Python 3.12 specifically (recommended)
+python3.12 -m venv venv
+
+# Option 2: Create with default Python version
 python -m venv venv
+
+# Option 3: Use pyenv to manage Python versions
+# pyenv install 3.12.7
+# pyenv local 3.12.7
+# python -m venv venv
 
 # Activate virtual environment
 # On Linux/macOS:
@@ -48,6 +56,10 @@ source venv/bin/activate
 
 # On Windows:
 venv\Scripts\activate
+
+# Verify Python version
+python --version
+# Expected: Python 3.12.x
 ```
 
 ### 3. Install Dependencies
