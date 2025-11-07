@@ -14,13 +14,13 @@ import {
   SCENE_CONTENT_PROMPT,
 } from './system-prompts';
 import {
-  StorySummarySchema,
-  CharacterSchema,
-  SettingSchema,
-  PartSchema,
-  ChapterSchema,
-  SceneSummarySchema,
-} from './schemas';
+  StorySummaryJsonSchema,
+  CharacterJsonSchema,
+  SettingJsonSchema,
+  PartJsonSchema,
+  ChapterJsonSchema,
+  SceneSummaryJsonSchema,
+} from './json-schemas';
 import type {
   PartGenerationResult,
   CharacterGenerationResult,
@@ -136,7 +136,7 @@ Generate a story foundation with:
       temperature: 0.8,
       maxTokens: 8192,
       responseFormat: 'json',
-      responseSchema: StorySummarySchema,
+      responseSchema: StorySummaryJsonSchema,
     });
 
     console.log('[Orchestrator] Story summary response:', {
@@ -188,7 +188,7 @@ Generate character ${i + 1} of ${characterCount} (${i === 0 ? 'main protagonist'
         temperature: 0.9,
         maxTokens: 8192,
         responseFormat: 'json',
-        responseSchema: CharacterSchema,
+        responseSchema: CharacterJsonSchema,
       });
 
       const characterData = JSON.parse(characterResponse.text);
@@ -261,7 +261,7 @@ Return as JSON with this exact structure:
         temperature: 0.85,
         maxTokens: 8192,
         responseFormat: 'json',
-        responseSchema: SettingSchema,
+        responseSchema: SettingJsonSchema,
       });
 
       const settingData = JSON.parse(settingResponse.text);
@@ -326,7 +326,7 @@ Return as JSON:
         temperature: 0.85,
         maxTokens: 8192,
         responseFormat: 'json',
-        responseSchema: PartSchema,
+        responseSchema: PartJsonSchema,
       });
 
       const partData = JSON.parse(partResponse.text);
@@ -388,7 +388,7 @@ Return as JSON:
           temperature: 0.85,
           maxTokens: 8192,
           responseFormat: 'json',
-          responseSchema: ChapterSchema,
+          responseSchema: ChapterJsonSchema,
         });
 
         const chapterData = JSON.parse(chapterResponse.text);
@@ -451,7 +451,7 @@ Return as JSON:
           temperature: 0.8,
           maxTokens: 8192,
           responseFormat: 'json',
-          responseSchema: SceneSummarySchema,
+          responseSchema: SceneSummaryJsonSchema,
         });
 
         const sceneData = JSON.parse(sceneResponse.text);

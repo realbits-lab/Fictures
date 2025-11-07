@@ -85,15 +85,26 @@ class GeminiProvider extends TextGenerationProvider {
       let jsonSchema: any;
       if (request.responseSchema && '_def' in request.responseSchema) {
         // It's a Zod schema
-        jsonSchema = zodToJsonSchema(request.responseSchema as z.ZodType<any>);
+        console.log('[GeminiProvider] Schema _def type:', (request.responseSchema as any)._def?.typeName);
+        console.log('[GeminiProvider] Converting Zod schema to JSON Schema');
+        jsonSchema = zodToJsonSchema(request.responseSchema as z.ZodType<any>, {
+          target: 'openApi3',
+          $refStrategy: 'none',
+        });
+        console.log('[GeminiProvider] Converted schema keys:', Object.keys(jsonSchema));
+        console.log('[GeminiProvider] Converted schema type:', jsonSchema.type);
+        console.log('[GeminiProvider] Converted schema properties:', jsonSchema.properties ? Object.keys(jsonSchema.properties) : 'none');
       } else {
         // It's already a JSON Schema object
+        console.log('[GeminiProvider] Using pre-defined JSON Schema');
         jsonSchema = request.responseSchema;
       }
 
       // Remove $schema field that Gemini doesn't accept
       const { $schema, ...cleanSchema } = jsonSchema;
       generationConfig.responseSchema = cleanSchema;
+
+      console.log('[GeminiProvider] Final schema for Gemini:', JSON.stringify(cleanSchema, null, 2).substring(0, 800));
     }
 
     // Combine system and user prompts
