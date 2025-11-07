@@ -152,6 +152,58 @@ API keys can have different scopes for fine-grained access control:
 - `stories:write` - Create/update stories
 - `admin:all` - Full administrative access
 
+## Generation Mode Configuration
+
+**IMPORTANT**: Due to VRAM constraints, the AI server supports running **only one type of generation at a time** (text OR image).
+
+### Configuration Options
+
+The `GENERATION_MODE` environment variable controls which services are enabled:
+
+| Mode | Services Enabled | VRAM Usage | Use Case |
+|------|------------------|------------|----------|
+| `text` | vLLM text generation only | ~10GB | Story writing, dialogue generation |
+| `image` | ComfyUI image generation only | ~8GB | **Default** - Cover art, illustrations |
+| `both` | Text + Image generation | 24GB+ | High-end GPUs only |
+
+### Switching Between Modes
+
+To switch generation modes:
+
+1. **Edit `.env.local`**:
+   ```bash
+   # For text generation only
+   GENERATION_MODE=text
+
+   # For image generation only (default)
+   GENERATION_MODE=image
+
+   # For both (requires 24GB+ VRAM)
+   GENERATION_MODE=both
+   ```
+
+2. **Restart the server** - Changes take effect on next startup
+
+3. **Verify the mode** - Check startup logs:
+   ```
+   Starting Fictures AI Server (mode: image)...
+   Image generation: ENABLED (Qwen-Image-Lightning v2.0 FP8 via ComfyUI)
+   ```
+
+### API Behavior by Mode
+
+**Text Mode (`GENERATION_MODE=text`)**:
+- ✅ `/api/v1/text/*` endpoints available
+- ❌ `/api/v1/images/*` endpoints return 404
+
+**Image Mode (`GENERATION_MODE=image`)** - Default:
+- ✅ `/api/v1/images/*` endpoints available
+- ❌ `/api/v1/text/*` endpoints return 404
+
+**Both Mode (`GENERATION_MODE=both`)**:
+- ✅ All endpoints available
+- ⚠️ Requires 24GB+ VRAM
+
 ## Development Commands
 
 ```bash
@@ -416,11 +468,21 @@ Required files for Qwen-Image-Lightning:
 
 ## Environment Variables
 
-**Minimal Configuration**: The AI server has been streamlined to require only 2 environment variables.
+**Minimal Configuration**: The AI server has been streamlined to require only 3 core environment variables.
 
-Create a `.env` file in `apps/ai-server/`:
+Create a `.env.local` file in `apps/ai-server/`:
 
 ```bash
+# =============================================================================
+# Generation Mode Configuration
+# =============================================================================
+# Controls which AI generation services are enabled (VRAM-constrained optimization)
+# Options: "text" | "image" | "both"
+# - "text": Only text generation (vLLM, uses ~10GB VRAM)
+# - "image": Only image generation (ComfyUI, uses ~8GB VRAM) [DEFAULT]
+# - "both": Both services (requires 24GB+ VRAM or CPU offload)
+GENERATION_MODE=image
+
 # =============================================================================
 # ComfyUI Configuration (External Image Generation Server)
 # =============================================================================
@@ -444,10 +506,11 @@ DATABASE_URL=postgresql://user:password@host:5432/database
 - `LOG_LEVEL` - Logging level (INFO)
 
 **Notes:**
-- Text generation is **disabled** (full GPU allocated to image generation via ComfyUI)
-- ComfyUI manages its own models and runs externally
+- `GENERATION_MODE` determines which models are loaded at startup (prevents VRAM overload)
+- When switching modes, simply change the environment variable and restart the server
+- ComfyUI manages its own models and runs externally (only used when `GENERATION_MODE` is "image" or "both")
 - API key authentication is **always enabled** (cannot be disabled)
-- No model configuration needed - ComfyUI handles all image generation
+- No manual code changes needed - services load conditionally based on `GENERATION_MODE`
 
 ## Code Guidelines
 
