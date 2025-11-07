@@ -132,7 +132,7 @@ export async function POST(
       .update(communityPosts)
       .set({
         replies: sql`${communityPosts.replies} + 1`,
-        lastActivityAt: new Date(),
+        lastActivityAt: new Date().toISOString(),
       })
       .where(eq(communityPosts.id, postId));
 

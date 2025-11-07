@@ -106,7 +106,7 @@ export async function PUT(request: Request) {
           profileVisibility: body.privacy?.profileVisibility || existingPrefs.profileVisibility,
           showEmail: body.privacy?.showEmail ?? existingPrefs.showEmail,
           showStats: body.privacy?.showStats ?? existingPrefs.showStats,
-          updatedAt: new Date(),
+          updatedAt: new Date().toISOString(),
         })
         .where(eq(userPreferences.userId, session.user.id))
         .returning();

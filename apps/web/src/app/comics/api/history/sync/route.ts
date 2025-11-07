@@ -62,12 +62,12 @@ export async function POST(request: NextRequest) {
 
         if (existing.length > 0) {
           // Entry exists - only update if localStorage timestamp is newer
-          const existingTimestamp = existing[0].lastReadAt.getTime();
+          const existingTimestamp = new Date(existing[0].lastReadAt).getTime();
           if (item.timestamp > existingTimestamp) {
             await db
               .update(readingHistory)
               .set({
-                lastReadAt: new Date(item.timestamp),
+                lastReadAt: new Date(item.timestamp).toISOString(),
                 lastPanelId: item.panelId || existing[0].lastPanelId,
                 lastPageNumber: item.pageNumber !== undefined ? item.pageNumber : existing[0].lastPageNumber,
                 // Don't increment readCount - this is a sync, not a new view
@@ -91,12 +91,12 @@ export async function POST(request: NextRequest) {
             userId: session.user.id,
             storyId: item.storyId,
             readingFormat: FORMAT,
-            lastReadAt: new Date(item.timestamp),
+            lastReadAt: new Date(item.timestamp).toISOString(),
             readCount: 1,
             lastSceneId: null,
             lastPanelId: item.panelId || null,
             lastPageNumber: item.pageNumber !== undefined ? item.pageNumber : null,
-            createdAt: new Date(),
+            createdAt: new Date().toISOString(),
           });
           syncedCount++;
         }

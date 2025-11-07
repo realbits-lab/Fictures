@@ -107,7 +107,7 @@ export async function POST(
         .values({
           sceneId,
           userId: session.user.id,
-          createdAt: new Date(),
+          createdAt: new Date().toISOString(),
         });
 
       // Get updated counts

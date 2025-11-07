@@ -80,7 +80,7 @@ export async function POST(
         readingFormat,
         ipAddress,
         userAgent,
-        viewedAt: new Date(),
+        viewedAt: new Date().toISOString(),
       });
 
       isNewView = true;
@@ -88,7 +88,7 @@ export async function POST(
       // Update scene's unique view count for this format only for new viewers
       const uniqueUpdateData: any = {
         uniqueViewCount: sql`${scenesTable.uniqueViewCount} + 1`,
-        lastViewedAt: new Date(),
+        lastViewedAt: new Date().toISOString(),
       };
 
       if (readingFormat === 'novel') {
@@ -106,7 +106,7 @@ export async function POST(
     // Always update total view count and format-specific view count
     const viewCountUpdateData: any = {
       viewCount: sql`${scenesTable.viewCount} + 1`,
-      lastViewedAt: new Date(),
+      lastViewedAt: new Date().toISOString(),
     };
 
     if (readingFormat === 'novel') {

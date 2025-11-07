@@ -38,7 +38,7 @@ export async function GET(
       },
     });
 
-    if (!scene || !scene.chapter || !('story' in scene.chapter) || !scene.chapter.story) {
+    if (!scene || !scene.chapter) {
       return new Response(JSON.stringify({ error: 'Scene not found' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
@@ -47,7 +47,14 @@ export async function GET(
 
     // Check if story is published or user is owner/admin
     const session = await auth();
-    const story = scene.chapter.story as any;
+    const story = (scene.chapter as any).story;
+
+    if (!story) {
+      return new Response(JSON.stringify({ error: 'Story not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     // Compare user IDs for ownership check
     const isOwner = session?.user?.id === story.authorId;
@@ -113,7 +120,7 @@ export async function GET(
         narrative: panel.narrative,
         dialogue: panel.dialogue,
         sfx: panel.sfx,
-        summary: panel.summary,
+        description: panel.description,
         metadata: panel.metadata,
       })),
       metadata: {

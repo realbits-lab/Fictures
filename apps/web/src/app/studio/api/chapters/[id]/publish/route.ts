@@ -41,7 +41,7 @@ export async function POST(
     // Update the chapter status to published
     const updatedChapter = await updateChapter(chapterId, session.user.id, {
       status: 'published',
-      publishedAt: new Date()
+      publishedAt: new Date().toISOString()
     });
 
     if (!updatedChapter) {

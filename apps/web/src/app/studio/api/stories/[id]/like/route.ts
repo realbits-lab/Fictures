@@ -71,7 +71,7 @@ export async function POST(
         .values({
           storyId,
           userId: session.user.id,
-          createdAt: new Date(),
+          createdAt: new Date().toISOString(),
         });
 
       return NextResponse.json({

@@ -51,9 +51,9 @@ export async function POST(
     const [updatedScene] = await db.update(scenes)
       .set({
         comicStatus: 'draft',
-        comicUnpublishedAt: new Date(),
+        comicUnpublishedAt: new Date().toISOString(),
         comicUnpublishedBy: session.user.id,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       })
       .where(eq(scenes.id, id))
       .returning();

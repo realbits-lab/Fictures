@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
       role: 'user' as const,
       content: messageContent,
       parts: [{ type: 'text', text: messageContent }] as any,
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
     };
 
     const allMessages = [...uiMessages, userMessage];

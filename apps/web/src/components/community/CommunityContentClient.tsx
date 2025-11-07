@@ -26,7 +26,7 @@ interface CommunityStory {
   id: string;
   title: string;
   summary: string;
-  genre: string;
+  genre: string | null;
   status: string;
   coverImage: string | null;
   imageUrl?: string | null;
@@ -37,7 +37,7 @@ interface CommunityStory {
   };
   totalPosts: number;
   totalMembers: number;
-  isActive: boolean;
+  isActive: boolean | string;
   lastActivity: string;
 }
 

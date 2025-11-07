@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { analysisEvents, readingSessions, dailyStoryMetrics } from '@/lib/db/schema';
+import { analyticsEvents, readingSessions, dailyStoryMetrics } from '@/lib/db/schema';
 import { eq, and, gte, lte, count, avg, sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
@@ -35,13 +35,13 @@ export async function GET(request: NextRequest) {
     // Get all unique story IDs that had activity yesterday
     const activeStories = await db
       .selectDistinct({
-        storyId: analysisEvents.storyId,
+        storyId: analyticsEvents.storyId,
       })
-      .from(analysisEvents)
+      .from(analyticsEvents)
       .where(
         and(
-          gte(analysisEvents.timestamp, yesterdayStart),
-          lte(analysisEvents.timestamp, yesterdayEnd)
+          gte(analyticsEvents.timestamp, yesterdayStart),
+          lte(analyticsEvents.timestamp, yesterdayEnd)
         )
       );
 
@@ -66,34 +66,34 @@ export async function GET(request: NextRequest) {
       const [eventMetrics] = await db
         .select({
           totalViews: count(
-            sql`DISTINCT CASE WHEN ${analysisEvents.eventType} = 'story_view' THEN ${analysisEvents.id} END`
+            sql`DISTINCT CASE WHEN ${analyticsEvents.eventType} = 'story_view' THEN ${analyticsEvents.id} END`
           ),
-          uniqueReaders: sql<number>`COUNT(DISTINCT ${analysisEvents.userId})`,
+          uniqueReaders: sql<number>`COUNT(DISTINCT ${analyticsEvents.userId})`,
           comments: count(
-            sql`CASE WHEN ${analysisEvents.eventType} = 'comment_created' THEN 1 END`
+            sql`CASE WHEN ${analyticsEvents.eventType} = 'comment_created' THEN 1 END`
           ),
           likes: count(
-            sql`CASE WHEN ${analysisEvents.eventType} = 'story_liked' THEN 1 END`
+            sql`CASE WHEN ${analyticsEvents.eventType} = 'story_liked' THEN 1 END`
           ),
           shares: count(
-            sql`CASE WHEN ${analysisEvents.eventType} = 'share' THEN 1 END`
+            sql`CASE WHEN ${analyticsEvents.eventType} = 'share' THEN 1 END`
           ),
           bookmarks: count(
-            sql`CASE WHEN ${analysisEvents.eventType} = 'bookmark' THEN 1 END`
+            sql`CASE WHEN ${analyticsEvents.eventType} = 'bookmark' THEN 1 END`
           ),
           mobileUsers: count(
-            sql`DISTINCT CASE WHEN ${analysisEvents.metadata}->>'deviceType' = 'mobile' THEN ${analysisEvents.userId} END`
+            sql`DISTINCT CASE WHEN ${analyticsEvents.metadata}->>'deviceType' = 'mobile' THEN ${analyticsEvents.userId} END`
           ),
           desktopUsers: count(
-            sql`DISTINCT CASE WHEN ${analysisEvents.metadata}->>'deviceType' = 'desktop' THEN ${analysisEvents.userId} END`
+            sql`DISTINCT CASE WHEN ${analyticsEvents.metadata}->>'deviceType' = 'desktop' THEN ${analyticsEvents.userId} END`
           ),
         })
-        .from(analysisEvents)
+        .from(analyticsEvents)
         .where(
           and(
-            eq(analysisEvents.storyId, storyId),
-            gte(analysisEvents.timestamp, yesterdayStart),
-            lte(analysisEvents.timestamp, yesterdayEnd)
+            eq(analyticsEvents.storyId, storyId),
+            gte(analyticsEvents.timestamp, yesterdayStart),
+            lte(analyticsEvents.timestamp, yesterdayEnd)
           )
         );
 

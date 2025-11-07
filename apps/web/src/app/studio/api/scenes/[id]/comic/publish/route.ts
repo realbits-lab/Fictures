@@ -55,10 +55,10 @@ export async function POST(
     const [updatedScene] = await db.update(scenes)
       .set({
         comicStatus: 'published',
-        comicPublishedAt: new Date(),
+        comicPublishedAt: new Date().toISOString(),
         comicPublishedBy: session.user.id,
         comicPanelCount: panels.length,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       })
       .where(eq(scenes.id, id))
       .returning();
