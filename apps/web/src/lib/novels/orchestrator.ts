@@ -13,6 +13,14 @@ import {
   SCENE_SUMMARY_PROMPT,
   SCENE_CONTENT_PROMPT,
 } from './system-prompts';
+import {
+  StorySummarySchema,
+  CharacterSchema,
+  SettingSchema,
+  PartSchema,
+  ChapterSchema,
+  SceneSummarySchema,
+} from './schemas';
 import type {
   PartGenerationResult,
   CharacterGenerationResult,
@@ -121,24 +129,29 @@ Generate a story foundation with:
 2. Genre (specific genre classification)
 3. Summary (2-3 sentences describing the thematic premise and moral framework)
 4. Tone (hopeful, dark, bittersweet, or satirical)
-5. Moral Framework (what virtues are valued in this story?)
-
-Return as JSON:
-{
-  "title": "...",
-  "genre": "...",
-  "summary": "...",
-  "tone": "...",
-  "moralFramework": "..."
-}`;
+5. Moral Framework (what virtues are valued in this story?)`;
 
     const storySummaryResponse = await textGenerationClient.generate({
       prompt: storySummaryPrompt,
       temperature: 0.8,
-      maxTokens: 1000,
+      maxTokens: 16384,
+      responseFormat: 'json',
+      responseSchema: StorySummarySchema,
     });
 
-    const storyData = JSON.parse(storySummaryResponse.text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim());
+    console.log('[Orchestrator] Story summary response:', {
+      text: storySummaryResponse.text,
+      length: storySummaryResponse.text?.length || 0,
+      model: storySummaryResponse.model,
+      tokensUsed: storySummaryResponse.tokensUsed,
+      finishReason: storySummaryResponse.finishReason,
+    });
+
+    if (!storySummaryResponse.text || storySummaryResponse.text.trim() === '') {
+      throw new Error('Empty response from AI model for story summary');
+    }
+
+    const storyData = JSON.parse(storySummaryResponse.text);
 
     onProgress({
       phase: 'story_summary_complete',
@@ -166,44 +179,19 @@ Summary: ${storyData.summary}
 Moral Framework: ${storyData.moralFramework}
 
 Generate character ${i + 1} of ${characterCount} (${i === 0 ? 'main protagonist' : 'supporting character'}):
-
-Return as JSON with this exact structure:
-{
-  "id": "char_${i + 1}",
-  "name": "...",
-  "isMain": ${i === 0},
-  "summary": "...",
-  "coreTrait": "courage|compassion|integrity|loyalty|wisdom|sacrifice",
-  "internalFlaw": "...",
-  "externalGoal": "...",
-  "personality": {
-    "traits": ["...", "...", "..."],
-    "values": ["...", "...", "..."]
-  },
-  "backstory": "...",
-  "relationships": {},
-  "physicalDescription": {
-    "age": "...",
-    "appearance": "...",
-    "distinctiveFeatures": "...",
-    "style": "..."
-  },
-  "voiceStyle": {
-    "tone": "...",
-    "vocabulary": "...",
-    "quirks": ["...", "..."],
-    "emotionalRange": "..."
-  },
-  "visualStyle": "realistic"
-}`;
+- id: "char_${i + 1}"
+- isMain: ${i === 0}
+- visualStyle: "realistic"`;
 
       const characterResponse = await textGenerationClient.generate({
         prompt: characterPrompt,
         temperature: 0.9,
-        maxTokens: 2000,
+        maxTokens: 16384,
+        responseFormat: 'json',
+        responseSchema: CharacterSchema,
       });
 
-      const characterData = JSON.parse(characterResponse.text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim());
+      const characterData = JSON.parse(characterResponse.text);
       characters.push(characterData);
     }
 
@@ -271,10 +259,12 @@ Return as JSON with this exact structure:
       const settingResponse = await textGenerationClient.generate({
         prompt: settingPrompt,
         temperature: 0.85,
-        maxTokens: 2000,
+        maxTokens: 16384,
+        responseFormat: 'json',
+        responseSchema: SettingSchema,
       });
 
-      const settingData = JSON.parse(settingResponse.text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim());
+      const settingData = JSON.parse(settingResponse.text);
       settings.push(settingData);
     }
 
@@ -334,10 +324,12 @@ Return as JSON:
       const partResponse = await textGenerationClient.generate({
         prompt: partPrompt,
         temperature: 0.85,
-        maxTokens: 2000,
+        maxTokens: 16384,
+        responseFormat: 'json',
+        responseSchema: PartSchema,
       });
 
-      const partData = JSON.parse(partResponse.text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim());
+      const partData = JSON.parse(partResponse.text);
       parts.push(partData);
     }
 
@@ -394,10 +386,12 @@ Return as JSON:
         const chapterResponse = await textGenerationClient.generate({
           prompt: chapterPrompt,
           temperature: 0.85,
-          maxTokens: 2000,
+          maxTokens: 16384,
+          responseFormat: 'json',
+          responseSchema: ChapterSchema,
         });
 
-        const chapterData = JSON.parse(chapterResponse.text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim());
+        const chapterData = JSON.parse(chapterResponse.text);
         chapters.push(chapterData);
       }
     }
@@ -455,10 +449,12 @@ Return as JSON:
         const sceneResponse = await textGenerationClient.generate({
           prompt: sceneSummaryPrompt,
           temperature: 0.8,
-          maxTokens: 1000,
+          maxTokens: 16384,
+          responseFormat: 'json',
+          responseSchema: SceneSummarySchema,
         });
 
-        const sceneData = JSON.parse(sceneResponse.text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim());
+        const sceneData = JSON.parse(sceneResponse.text);
         scenesWithSummaries.push(sceneData);
         chapSummaries.push(sceneData);
       }
@@ -501,7 +497,7 @@ Emotional Beat: ${sceneSummary.emotionalBeat}
 Suggested Length: ${sceneSummary.suggestedLength} (300-800 words)
 
 Setting: ${setting ? `${setting.name} - ${setting.description}` : 'Generic setting'}
-Sensory Details: ${sceneSummary.sensoryAnchors.join(', ')}
+Sensory Details: ${sceneSummary.sensoryAnchors ? sceneSummary.sensoryAnchors.join(', ') : 'Use setting-appropriate details'}
 
 Character: ${character ? `${character.name} - ${character.summary}` : 'Unknown character'}
 Voice Style: ${character ? `${character.voiceStyle.tone}, ${character.voiceStyle.vocabulary}` : 'Neutral'}
@@ -513,7 +509,7 @@ Return only the prose content (no JSON, no wrapper).`;
         const contentResponse = await textGenerationClient.generate({
           prompt: sceneContentPrompt,
           temperature: 0.85,
-          maxTokens: 2000,
+          maxTokens: 16384,
         });
 
         const sceneContent = contentResponse.text.trim();

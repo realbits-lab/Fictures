@@ -4,6 +4,8 @@
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { zodToJsonSchema } from 'zod-to-json-schema';
+import { z } from 'zod';
 import type {
   ModelProvider,
   PromptType,
@@ -67,12 +69,32 @@ class GeminiProvider extends TextGenerationProvider {
       model: request.model || this.config.modelName,
     });
 
-    const generationConfig = {
+    // Build generation config
+    const generationConfig: any = {
       temperature: request.temperature ?? this.config.temperature,
       maxOutputTokens: request.maxTokens ?? this.config.maxTokens,
       topP: request.topP ?? 0.95,
       stopSequences: request.stopSequences,
     };
+
+    // Add structured output configuration if JSON format requested
+    if (request.responseFormat === 'json' && request.responseSchema) {
+      generationConfig.responseMimeType = 'application/json';
+
+      // Convert Zod schema to JSON Schema if needed
+      let jsonSchema: any;
+      if (request.responseSchema && '_def' in request.responseSchema) {
+        // It's a Zod schema
+        jsonSchema = zodToJsonSchema(request.responseSchema as z.ZodType<any>);
+      } else {
+        // It's already a JSON Schema object
+        jsonSchema = request.responseSchema;
+      }
+
+      // Remove $schema field that Gemini doesn't accept
+      const { $schema, ...cleanSchema } = jsonSchema;
+      generationConfig.responseSchema = cleanSchema;
+    }
 
     // Combine system and user prompts
     const fullPrompt = request.systemPrompt
@@ -143,18 +165,40 @@ class AIServerProvider extends TextGenerationProvider {
       ? `${request.systemPrompt}\n\n${request.prompt}`
       : request.prompt;
 
+    // Build request body
+    const requestBody: any = {
+      prompt: fullPrompt,
+      max_tokens: request.maxTokens ?? 2048,
+      temperature: request.temperature ?? 0.7,
+      top_p: request.topP ?? 0.9,
+      stop_sequences: request.stopSequences ?? [],
+    };
+
+    // Add structured output configuration if JSON format requested
+    if (request.responseFormat === 'json' && request.responseSchema) {
+      requestBody.response_format = 'json';
+
+      // Convert Zod schema to JSON Schema if needed
+      let jsonSchema: any;
+      if (request.responseSchema && '_def' in request.responseSchema) {
+        // It's a Zod schema
+        jsonSchema = zodToJsonSchema(request.responseSchema as z.ZodType<any>);
+      } else {
+        // It's already a JSON Schema object
+        jsonSchema = request.responseSchema;
+      }
+
+      // Remove $schema field if present
+      const { $schema, ...cleanSchema } = jsonSchema;
+      requestBody.response_schema = cleanSchema;
+    }
+
     const response = await fetch(`${this.config.url}/api/v1/text/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        prompt: fullPrompt,
-        max_tokens: request.maxTokens ?? 2048,
-        temperature: request.temperature ?? 0.7,
-        top_p: request.topP ?? 0.9,
-        stop_sequences: request.stopSequences ?? [],
-      }),
+      body: JSON.stringify(requestBody),
       signal: AbortSignal.timeout(this.config.timeout),
     });
 

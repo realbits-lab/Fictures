@@ -2,6 +2,8 @@
  * Text Generation Types
  */
 
+import type { z } from 'zod';
+
 export type ModelProvider = 'gemini' | 'ai-server';
 
 export type PromptType =
@@ -17,6 +19,19 @@ export interface PromptTemplate {
   userTemplate: string;
 }
 
+/**
+ * Response format for text generation
+ * - 'text': Plain text response (default)
+ * - 'json': Structured JSON response with schema validation
+ */
+export type ResponseFormat = 'text' | 'json';
+
+/**
+ * Schema definition for structured JSON output
+ * Can be a Zod schema, JSON Schema object, or TypeScript type
+ */
+export type ResponseSchema = z.ZodType<any> | Record<string, any>;
+
 export interface TextGenerationRequest {
   prompt: string;
   systemPrompt?: string;
@@ -25,6 +40,10 @@ export interface TextGenerationRequest {
   maxTokens?: number;
   topP?: number;
   stopSequences?: string[];
+
+  // Structured output options
+  responseFormat?: ResponseFormat;
+  responseSchema?: ResponseSchema;
 }
 
 export interface TextGenerationResponse {
@@ -39,6 +58,8 @@ export interface GenerationOptions {
   maxTokens?: number;
   topP?: number;
   stopSequences?: string[];
+  responseFormat?: ResponseFormat;
+  responseSchema?: ResponseSchema;
 }
 
 /**
