@@ -134,7 +134,7 @@ Generate a story foundation with:
     const storySummaryResponse = await textGenerationClient.generate({
       prompt: storySummaryPrompt,
       temperature: 0.8,
-      maxTokens: 16384,
+      maxTokens: 8192,
       responseFormat: 'json',
       responseSchema: StorySummarySchema,
     });
@@ -186,7 +186,7 @@ Generate character ${i + 1} of ${characterCount} (${i === 0 ? 'main protagonist'
       const characterResponse = await textGenerationClient.generate({
         prompt: characterPrompt,
         temperature: 0.9,
-        maxTokens: 16384,
+        maxTokens: 8192,
         responseFormat: 'json',
         responseSchema: CharacterSchema,
       });
@@ -259,7 +259,7 @@ Return as JSON with this exact structure:
       const settingResponse = await textGenerationClient.generate({
         prompt: settingPrompt,
         temperature: 0.85,
-        maxTokens: 16384,
+        maxTokens: 8192,
         responseFormat: 'json',
         responseSchema: SettingSchema,
       });
@@ -324,7 +324,7 @@ Return as JSON:
       const partResponse = await textGenerationClient.generate({
         prompt: partPrompt,
         temperature: 0.85,
-        maxTokens: 16384,
+        maxTokens: 8192,
         responseFormat: 'json',
         responseSchema: PartSchema,
       });
@@ -386,7 +386,7 @@ Return as JSON:
         const chapterResponse = await textGenerationClient.generate({
           prompt: chapterPrompt,
           temperature: 0.85,
-          maxTokens: 16384,
+          maxTokens: 8192,
           responseFormat: 'json',
           responseSchema: ChapterSchema,
         });
@@ -449,7 +449,7 @@ Return as JSON:
         const sceneResponse = await textGenerationClient.generate({
           prompt: sceneSummaryPrompt,
           temperature: 0.8,
-          maxTokens: 16384,
+          maxTokens: 8192,
           responseFormat: 'json',
           responseSchema: SceneSummarySchema,
         });
@@ -509,7 +509,7 @@ Return only the prose content (no JSON, no wrapper).`;
         const contentResponse = await textGenerationClient.generate({
           prompt: sceneContentPrompt,
           temperature: 0.85,
-          maxTokens: 16384,
+          maxTokens: 8192,
         });
 
         const sceneContent = contentResponse.text.trim();
