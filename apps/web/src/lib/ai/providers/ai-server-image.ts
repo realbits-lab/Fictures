@@ -9,6 +9,7 @@ import { getImageDimensions } from '../image-config';
 export interface AIServerConfig {
   url: string;
   timeout: number;
+  apiKey?: string;
 }
 
 export class AIServerImageProvider {
@@ -21,11 +22,18 @@ export class AIServerImageProvider {
   async generate(request: ImageGenerationRequest): Promise<ImageGenerationResponse> {
     const dimensions = getImageDimensions('ai-server', request.aspectRatio);
 
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Add API key if provided
+    if (this.config.apiKey) {
+      headers['Authorization'] = `Bearer ${this.config.apiKey}`;
+    }
+
     const response = await fetch(`${this.config.url}/api/v1/images/generate`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({
         prompt: request.prompt,
         width: dimensions.width,

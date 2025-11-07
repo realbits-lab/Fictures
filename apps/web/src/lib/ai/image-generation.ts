@@ -26,6 +26,7 @@ const getConfig = () => {
     aiServer: {
       url: process.env.AI_SERVER_URL || 'http://localhost:8000',
       timeout: parseInt(process.env.AI_SERVER_TIMEOUT || '120000', 10),
+      apiKey: process.env.AI_SERVER_API_KEY,
     },
   };
 };

@@ -40,13 +40,14 @@ async def generate_image(
             raise HTTPException(status_code=400, detail="Height too large (max 2048 pixels)")
 
         # Generate image using Lightning service
+        # Note: Pydantic defaults are width=1664, height=928 (16:9), steps=4, cfg=1.0
         result = await image_service.generate(
             prompt=request.prompt,
             negative_prompt=request.negative_prompt,
-            width=request.width or 1024,  # Lightning default: 1024x1024
-            height=request.height or 1024,
-            num_inference_steps=request.num_inference_steps or 8,  # Lightning optimal: 8 steps
-            guidance_scale=request.guidance_scale or 1.0,  # Lightning uses 1.0
+            width=request.width,  # Uses Pydantic default: 1664
+            height=request.height,  # Uses Pydantic default: 928
+            num_inference_steps=request.num_inference_steps,  # Uses Pydantic default: 4
+            guidance_scale=request.guidance_scale,  # Uses Pydantic default: 1.0
             seed=request.seed,
         )
 

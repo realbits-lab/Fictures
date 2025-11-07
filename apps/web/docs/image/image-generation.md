@@ -1,31 +1,45 @@
 # Story Image Generation
 
-Generate story illustrations using **Google Gemini 2.5 Flash**.
+Generate story illustrations using **Google Gemini 2.5 Flash** or **Qwen-Image-Lightning** (via AI Server).
 
 ## Model Specifications
 
-| Feature | Gemini 2.5 Flash |
-|---------|------------------|
-| **Aspect Ratios** | 1:1, 16:9, 9:16, 2:3 |
-| **Dimensions** | Varies by aspect ratio (see below) |
-| **Quality** | Standard |
-| **Cost** | Free (during preview) |
-| **Speed** | 5-15 seconds |
-| **Status** | ✅ Primary |
+| Feature | Gemini 2.5 Flash | Qwen-Image-Lightning (AI Server) |
+|---------|------------------|----------------------------------|
+| **Aspect Ratios** | 1:1, 16:9, 9:16, 2:3 | 1:1, 16:9, 9:16, 2:3, 4:3, 3:4 |
+| **Max Dimension** | ~1024px (longer side) | Up to 1664px |
+| **Quality** | Standard | High (FP8 + Lightning v2.0) |
+| **Speed** | 5-15 seconds | 2-5 seconds (4-step inference) |
+| **Cost** | Free (preview) | Self-hosted (GPU required) |
+| **Status** | ✅ Primary (default) | ✅ Optional (AI Server) |
 
 ### Aspect Ratio Configuration
 
-Different image types automatically use appropriate aspect ratios:
+Different image types automatically use appropriate aspect ratios. **Actual dimensions vary by provider:**
+
+#### Gemini 2.5 Flash (Default Provider)
 
 | Image Type | Aspect Ratio | Dimensions | Use Case |
 |------------|--------------|-----------|----------|
-| **Story Cover** | 16:9 | 1792×1024 | Widescreen thumbnails |
+| **Story Cover** | 16:9 | 1024×576 | Widescreen thumbnails |
 | **Character Portrait** | 1:1 | 1024×1024 | Square portraits |
 | **Setting Visual** | 1:1 | 1024×1024 | Square environments |
-| **Scene Image** | 16:9 | 1792×1024 | Widescreen scenes |
-| **Comic Panel** | 9:16 or 2:3 | 1024×1792 / 1024×1536 | Vertical panels |
+| **Scene Image** | 16:9 | 1024×576 | Widescreen scenes |
+| **Comic Panel** | 9:16 or 2:3 | 576×1024 / 683×1024 | Vertical panels |
 
-**Note:** Gemini 2.5 Flash provides fast, cost-effective image generation with flexible aspect ratios.
+**Note:** Gemini dimensions are approximate (~1024px on longer side). Actual dimensions may vary slightly.
+
+#### Qwen-Image-Lightning (AI Server)
+
+| Image Type | Aspect Ratio | Dimensions | Use Case |
+|------------|--------------|-----------|----------|
+| **Story Cover** | 16:9 | 1664×928 | High-res widescreen |
+| **Character Portrait** | 1:1 | 1328×1328 | High-res square |
+| **Setting Visual** | 1:1 | 1328×1328 | High-res environments |
+| **Scene Image** | 16:9 | 1664×928 | High-res widescreen |
+| **Comic Panel** | 9:16 or 2:3 | 928×1664 / 1024×1536 | High-res vertical |
+
+**Note:** Qwen-Image uses official supported resolutions from the model specifications for optimal quality.
 
 ## Quick Start
 
@@ -90,8 +104,8 @@ console.log('Optimized variants:', result.optimizedSet.variants.length);
   originalUrl: "https://blob.vercel-storage.com/stories/123/...",
   blobUrl: "https://blob.vercel-storage.com/stories/123/...",
   dimensions: {
-    width: 1792,
-    height: 1024
+    width: 1024,  // Gemini: varies by aspect ratio
+    height: 576   // Gemini 16:9: 1024×576
   },
   size: 1500000,
   optimizedSet: {
@@ -115,10 +129,10 @@ console.log('Optimized variants:', result.optimizedSet.variants.length);
 
 ## Automatic Image Optimization
 
-Every generated image automatically creates **18 optimized variants**:
-- **Formats:** AVIF, WebP, JPEG
-- **Sizes:** Mobile (640×360, 1280×720), Tablet (1024×576, 2048×1152), Desktop (1440×810, 2880×1620)
-- **Performance:** 87% faster mobile loading, 50% smaller files
+Every generated image automatically creates **4 optimized variants**:
+- **Formats:** AVIF (modern), JPEG (fallback)
+- **Sizes:** Mobile 1x (50% of original), Mobile 2x (original size)
+- **Performance:** 87% faster mobile loading, 50% smaller files via AVIF
 
 See [Image Optimization Guide](./image-optimization.md) for details.
 
@@ -149,10 +163,10 @@ Expected output: Generates test image in `logs/generated-images/`
 
 ```
 "A cyberpunk city street at night with neon signs, rain-soaked pavement,
-dramatic lighting, cinematic composition"
+dramatic lighting, cinematic widescreen composition"
 
 "Ancient library with towering bookshelves reaching into darkness,
-magical glowing books, mysterious atmosphere, 7:4 cinematic composition"
+magical glowing books, mysterious atmosphere, cinematic widescreen composition"
 ```
 
 ### Poor Prompts ❌
@@ -165,7 +179,7 @@ magical glowing books, mysterious atmosphere, 7:4 cinematic composition"
 ### Guidelines
 
 1. **Be specific:** Include setting, mood, lighting, composition details
-2. **Add composition hints:** "cinematic composition" or "7:4 aspect ratio"
+2. **Add composition hints:** "cinematic widescreen" for 16:9, "square composition" for 1:1, "vertical portrait" for 9:16
 3. **Specify mood:** Use descriptive adjectives (mysterious, dramatic, serene)
 4. **Describe visual style:** Mention art style (photorealistic, digital art)
 5. **Use narrative paragraphs:** Better than keyword lists
@@ -330,8 +344,9 @@ try {
 
 **Quality issues:**
 - Use more descriptive prompts
-- Add composition hints ("cinematic", "7:4 aspect ratio")
+- Add composition hints ("cinematic widescreen", "square composition", "vertical portrait")
 - Include specific style references
+- Try different providers (Gemini vs AI Server) for varying quality/resolution
 
 ## Cost Considerations
 
@@ -350,15 +365,23 @@ try {
 
 ## API Limitations
 
-1. **Content Policy:** Gemini follows Google AI content policy
+### Gemini 2.5 Flash
+1. **Content Policy:** Follows Google AI content policy
 2. **Rate Limits:** Check your Google AI API rate limits
 3. **Generation Time:** 5-15 seconds per image
-4. **Fixed Size:** Gemini generates 1344×768 (7:4 ratio)
+4. **Dimensions:** ~1024px on longer side (varies by aspect ratio)
 5. **Preview Period:** May have usage limits during preview
+
+### Qwen-Image-Lightning (AI Server)
+1. **GPU Required:** Requires CUDA-compatible GPU (8GB+ VRAM)
+2. **Fixed Resolutions:** Must use official supported dimensions
+3. **Generation Time:** 2-5 seconds per image (4-step Lightning)
+4. **Self-Hosted:** Runs on your own infrastructure
 
 ## Related Documentation
 
-- [Image Optimization](./image-optimization.md) - 18-variant optimization system
+- [Image Optimization](./image-optimization.md) - 4-variant optimization system (AVIF + JPEG)
 - [Image System Guide](./image-system-guide.md) - Complete overview
 - [Story Download API](../story-download-api.md) - Export stories with images
 - [Vercel Blob Storage](https://vercel.com/docs/storage/vercel-blob) - Storage docs
+- [AI Server Image API](../../ai-server/docs/api/) - Qwen-Image-Lightning setup

@@ -7,20 +7,30 @@ import type { AspectRatio, ImageDimensions, ImageProvider } from './types/image'
 
 /**
  * Size mappings for each provider and aspect ratio
- * Each ratio uses the "fast" size as the default
+ *
+ * AI Server (Qwen-Image-Lightning): Official supported resolutions
+ * - Based on Qwen-Image GitHub specs
+ * - Optimized for quality and performance
+ *
+ * Gemini 2.5 Flash: Approximate dimensions
+ * - Gemini API accepts aspect ratio strings
+ * - Generates ~1024px on longer dimension
+ * - Actual dimensions may vary slightly
  */
 export const SIZE_MAPPINGS: Record<ImageProvider, Record<AspectRatio, ImageDimensions>> = {
   'ai-server': {
-    '1:1': { width: 1024, height: 1024 },     // Fast (default)
-    '16:9': { width: 1792, height: 1024 },    // Fast (default)
-    '9:16': { width: 1024, height: 1792 },    // Fast (default)
-    '2:3': { width: 1024, height: 1536 },     // Fast (default)
+    // Qwen-Image-Lightning official resolutions (from GitHub)
+    '1:1': { width: 1328, height: 1328 },     // Square format
+    '16:9': { width: 1664, height: 928 },     // Widescreen (true 16:9 = 1.793)
+    '9:16': { width: 928, height: 1664 },     // Vertical/portrait
+    '2:3': { width: 1024, height: 1536 },     // Portrait (calculated, 2:3 = 0.667)
   },
   'gemini': {
-    '1:1': { width: 1024, height: 1024 },     // Fast (default)
-    '16:9': { width: 1792, height: 1024 },    // Fast (default)
-    '9:16': { width: 1024, height: 1792 },    // Fast (default)
-    '2:3': { width: 1024, height: 1536 },     // Fast (default)
+    // Gemini 2.5 Flash approximate dimensions (~1024px max)
+    '1:1': { width: 1024, height: 1024 },     // Square
+    '16:9': { width: 1024, height: 576 },     // Widescreen (true 16:9 = 1.778)
+    '9:16': { width: 576, height: 1024 },     // Vertical
+    '2:3': { width: 683, height: 1024 },      // Portrait (2:3 = 0.667)
   },
 };
 
