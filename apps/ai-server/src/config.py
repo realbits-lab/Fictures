@@ -13,47 +13,16 @@ class Settings(BaseSettings):
     # Server Configuration
     api_host: str = "0.0.0.0"
     api_port: int = 8000
-    workers: int = 1
 
-    # Text Generation Model Configuration
-    # Qwen3-8B-AWQ: 8B params, 4-bit AWQ quantization, optimized for RTX 4090
-    # Latest Qwen3 model with advanced reasoning and thinking mode
-    text_model_name: str = "Qwen/Qwen3-8B-AWQ"
-    text_model_path: str = "./models/text/qwen3-8b-awq"
-    text_max_model_len: int = 32768  # 32K native context (131K with YaRN)
-    text_gpu_memory_utilization: float = 0.70  # Conservative for 8B model to avoid OOM
-
-    # Image Generation Model Configuration
-    image_model_name: str = "stabilityai/stable-diffusion-xl-base-1.0"
-    image_model_path: str = "./models/images/stable-diffusion-xl-base-1.0"
-    image_gpu_memory_utilization: float = 0.9
-
-    # ComfyUI Configuration
+    # ComfyUI Configuration (External Image Generation Server)
+    # ComfyUI runs as separate process and manages its own models
     comfyui_url: str = "http://127.0.0.1:8188"
-
-    # GPU Configuration
-    cuda_visible_devices: str = "0"
-    model_cache_dir: str = "~/.cache/huggingface"
-
-    # vLLM Configuration
-    vllm_tensor_parallel_size: int = 1
-    vllm_max_num_seqs: int = 128  # Reduced from 256 to avoid OOM during sampler warmup
-    vllm_quantization: str = "awq"  # AWQ quantization for Qwen3-8B-AWQ
-
-    # Diffusers Configuration
-    diffusers_enable_cpu_offload: bool = False
 
     # CORS Configuration
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
 
-    # Request Limits
-    max_prompt_length: int = 2048
-    max_image_size: int = 2048
-    default_timeout: int = 300
-
     # Logging
     log_level: str = "INFO"
-    log_format: str = "json"
 
     # Database Configuration (for API key authentication)
     database_url: str = ""  # PostgreSQL connection string from web app
