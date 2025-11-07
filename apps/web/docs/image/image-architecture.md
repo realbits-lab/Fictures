@@ -13,26 +13,26 @@ Fictures uses **Google Gemini 2.5 Flash Image** for AI-generated story illustrat
 ```
 AI Prompt Creation
   ↓
-Gemini 2.5 Flash Image (1344×768, 7:4, PNG)
+Gemini 2.5 Flash Image (PNG, aspect ratio varies by type)
   ↓
 Upload to Vercel Blob
   ↓
 Automatic Optimization (4 variants)
-  ├─ AVIF: 2 sizes (672×384, 1344×768)
-  └─ JPEG: 2 sizes (672×384, 1344×768)
+  ├─ AVIF: 2 sizes (mobile 1x, mobile 2x)
+  └─ JPEG: 2 sizes (mobile 1x, mobile 2x)
   ↓
 Database Storage (imageUrl + imageVariants)
 ```
 
-### Image Types
+### Image Types & Aspect Ratios
 
-| Type | Dimensions | Purpose |
-|------|-----------|---------|
-| **Story Cover** | 1344×768 (7:4) | Story thumbnails |
-| **Scene Image** | 1344×768 (7:4) | Scene visuals |
-| **Character Portrait** | 1344×768 (7:4) | Character profiles |
-| **Setting Visual** | 1344×768 (7:4) | Environment images |
-| **Comic Panel** | 1344×768 (7:4) | Panel illustrations |
+| Type | Aspect Ratio | Dimensions | Purpose |
+|------|--------------|-----------|---------|
+| **Story Cover** | 16:9 | 1792×1024 | Widescreen story thumbnails |
+| **Character Portrait** | 1:1 | 1024×1024 | Square character portraits |
+| **Setting Visual** | 1:1 | 1024×1024 | Square environment images |
+| **Scene Image** | 16:9 | 1792×1024 | Widescreen scene visuals |
+| **Comic Panel** | 9:16 or 2:3 | 1024×1792 / 1024×1536 | Vertical panel illustrations |
 
 ## Core Implementation
 
@@ -57,7 +57,7 @@ const result = await generateStoryImage({
 
 ```typescript
 {
-  imageUrl: string;  // Original 1344×768 PNG
+  imageUrl: string;  // Original PNG (dimensions vary by type)
   imageVariants: {
     imageId: string;
     originalUrl: string;

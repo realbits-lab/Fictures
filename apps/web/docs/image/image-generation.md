@@ -6,13 +6,26 @@ Generate story illustrations using **Google Gemini 2.5 Flash**.
 
 | Feature | Gemini 2.5 Flash |
 |---------|------------------|
-| **Size** | 1344×768 (7:4) |
+| **Aspect Ratios** | 1:1, 16:9, 9:16, 2:3 |
+| **Dimensions** | Varies by aspect ratio (see below) |
 | **Quality** | Standard |
 | **Cost** | Free (during preview) |
 | **Speed** | 5-15 seconds |
 | **Status** | ✅ Primary |
 
-**Note:** Gemini 2.5 Flash provides fast, cost-effective image generation suitable for novel illustrations.
+### Aspect Ratio Configuration
+
+Different image types automatically use appropriate aspect ratios:
+
+| Image Type | Aspect Ratio | Dimensions | Use Case |
+|------------|--------------|-----------|----------|
+| **Story Cover** | 16:9 | 1792×1024 | Widescreen thumbnails |
+| **Character Portrait** | 1:1 | 1024×1024 | Square portraits |
+| **Setting Visual** | 1:1 | 1024×1024 | Square environments |
+| **Scene Image** | 16:9 | 1792×1024 | Widescreen scenes |
+| **Comic Panel** | 9:16 or 2:3 | 1024×1792 / 1024×1536 | Vertical panels |
+
+**Note:** Gemini 2.5 Flash provides fast, cost-effective image generation with flexible aspect ratios.
 
 ## Quick Start
 
@@ -57,12 +70,13 @@ console.log('Optimized variants:', result.optimizedSet.variants.length);
 |-----------|------|----------|---------|-------------|
 | `prompt` | string | Yes* | - | Image description |
 | `storyId` | string | Yes | - | Story context for organization |
-| `imageType` | string | No | `story` | `story` \| `scene` \| `character` \| `setting` \| `panel` |
+| `imageType` | string | No | `story` | `story` \| `scene` \| `character` \| `setting` \| `comic-panel` |
 | `chapterId` | string | No | - | Chapter context |
 | `sceneId` | string | No | - | Scene context |
-| `panelNumber` | number | No | - | Panel number (for comics) |
-| `skipOptimization` | boolean | No | `false` | Skip variant generation |
-| `autoPrompt` | boolean | No | `false` | Auto-generate from context |
+| `style` | string | No | `vivid` | `vivid` \| `natural` - Generation style |
+| `quality` | string | No | `standard` | `standard` \| `hd` - Image quality |
+| `seed` | number | No | - | Seed for reproducible results |
+| `aspectRatio` | string | No | auto | Override automatic aspect ratio (1:1, 16:9, 9:16, 2:3) |
 
 *Required unless `autoPrompt: true`
 
@@ -71,16 +85,31 @@ console.log('Optimized variants:', result.optimizedSet.variants.length);
 ```typescript
 {
   success: true,
-  message: "Image generated successfully",
-  image: {
-    url: "https://blob.vercel-storage.com/story-images/...",
-    blobUrl: "https://blob.vercel-storage.com/story-images/...",
-    width: 1344,
-    height: 768,
-    size: 1500000,
-    aspectRatio: "7:4"
+  imageType: "scene",
+  imageId: "img_1234567890_abc123",
+  originalUrl: "https://blob.vercel-storage.com/stories/123/...",
+  blobUrl: "https://blob.vercel-storage.com/stories/123/...",
+  dimensions: {
+    width: 1792,
+    height: 1024
   },
-  prompt: "The final prompt used for generation"
+  size: 1500000,
+  optimizedSet: {
+    imageId: "opt_1234567890_abc123",
+    originalUrl: "https://blob.vercel-storage.com/stories/123/...",
+    variants: [
+      {
+        url: "...",
+        format: "avif",
+        width: 896,
+        height: 512,
+        type: "mobile-1x"
+      },
+      // ... 3 more variants
+    ],
+    generatedAt: "2025-01-07T12:00:00.000Z"
+  },
+  isPlaceholder: false
 }
 ```
 
