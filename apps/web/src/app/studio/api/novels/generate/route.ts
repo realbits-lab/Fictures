@@ -219,8 +219,8 @@ export async function POST(request: NextRequest) {
               tone: toneValue, // Adversity-Triumph: Emotional direction (validated enum value)
               moralFramework: result.story.moralFramework, // Adversity-Triumph: Virtue framework
               status: 'writing',  // Fixed: Use 'writing' instead of 'draft' (valid enum value)
-              createdAt: new Date(),
-              updatedAt: new Date(),
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
             })
             .returning();
 
@@ -268,8 +268,8 @@ export async function POST(request: NextRequest) {
                 physicalDescription: char.physicalDescription,
                 voiceStyle: char.voiceStyle,
                 visualStyle: char.visualStyle,
-                createdAt: new Date(),
-                updatedAt: new Date(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
               };
             });
 
@@ -297,8 +297,8 @@ export async function POST(request: NextRequest) {
                 visualStyle: setting.visualStyle,
                 visualReferences: setting.visualReferences,
                 colorPalette: setting.colorPalette,
-                createdAt: new Date(),
-                updatedAt: new Date(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
               };
             });
 
@@ -326,8 +326,8 @@ export async function POST(request: NextRequest) {
                 summary: part.summary,
                 orderIndex: part.orderIndex,
                 characterArcs: mappedCharacterArcs,
-                createdAt: new Date(),
-                updatedAt: new Date(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
               };
             });
 
@@ -364,8 +364,8 @@ export async function POST(request: NextRequest) {
                 connectsToPreviousChapter: chapter.connectsToPreviousChapter,
                 createsNextAdversity: chapter.createsNextAdversity,
                 orderIndex: index,
-                createdAt: new Date(),
-                updatedAt: new Date(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
               };
             });
 
@@ -407,8 +407,8 @@ export async function POST(request: NextRequest) {
                 dialogueVsDescription: scene.dialogueVsDescription || 'balanced',
                 suggestedLength: scene.suggestedLength || 'medium',
                 orderIndex: index,
-                createdAt: new Date(),
-                updatedAt: new Date(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
               };
             });
 
