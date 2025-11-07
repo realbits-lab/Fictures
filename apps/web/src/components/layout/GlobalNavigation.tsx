@@ -38,13 +38,13 @@ export function GlobalNavigation() {
 
   // Filter navigation items based on user role
   const visibleGnbItems = gnbMenuItems.filter((item) => {
-    // Studio, Publish, Analysis, and Comics are writer/manager specific
-    if (item.href === '/studio' || item.href === '/publish' || item.href === '/analysis' || item.href === '/comics') {
+    // Studio, Publish, and Analysis are writer/manager specific
+    if (item.href === '/studio' || item.href === '/publish' || item.href === '/analysis') {
       return session?.user?.role === 'writer' || session?.user?.role === 'manager';
     }
 
-    // Novels and Community are visible to all users (authenticated or anonymous)
-    if (item.href === '/novels' || item.href === '/community') {
+    // Novels, Comics, and Community are visible to all users (authenticated or anonymous)
+    if (item.href === '/novels' || item.href === '/comics' || item.href === '/community') {
       return true;
     }
 
@@ -75,10 +75,11 @@ export function GlobalNavigation() {
             <Link
               key={item.href}
               href={item.href}
+              data-active={isActiveRoute(item.href) ? "true" : "false"}
               className={cn(
                 "flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                 isActiveRoute(item.href)
-                  ? "bg-[rgb(var(--color-primary)/10%)] text-[rgb(var(--color-primary))]"
+                  ? "bg-[rgb(var(--color-primary)/10%)] text-[rgb(var(--color-primary))] active"
                   : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))]"
               )}
             >
@@ -129,10 +130,11 @@ export function GlobalNavigation() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
+                  data-active={isActiveRoute(item.href) ? "true" : "false"}
                   className={cn(
                     "flex items-center space-x-3 px-4 py-3 rounded-lg text-base font-medium transition-colors",
                     isActiveRoute(item.href)
-                      ? "bg-[rgb(var(--color-primary)/10%)] text-[rgb(var(--color-primary))]"
+                      ? "bg-[rgb(var(--color-primary)/10%)] text-[rgb(var(--color-primary))] active"
                       : "text-[rgb(var(--color-foreground))] hover:bg-[rgb(var(--color-muted))]"
                   )}
                 >

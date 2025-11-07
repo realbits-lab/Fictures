@@ -338,7 +338,7 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
       {sortedStories.length > 0 ? (
         viewMode === "card" ? (
           /* Card View with In-Feed Ads */
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div data-testid="story-grid" className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {sortedStories.map((story, index) => {
               const imageUrl = story.imageUrl;
               const shouldShowAd = (index + 1) % 8 === 0 && index !== sortedStories.length - 1;
@@ -347,6 +347,7 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                 <React.Fragment key={story.id}>
                   {/* Story Card */}
               <div
+                data-testid={pageType === 'community' ? "post-card" : "story-card"}
                 key={story.id}
                 onClick={async () => {
                   // For studio page, navigate to edit page instead of reading page
@@ -395,7 +396,7 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                   </span>
                 </div>
 
-                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2 flex-shrink-0">
+                <h3 data-testid="story-title" className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2 flex-shrink-0">
                   {story.title}
                 </h3>
 
@@ -403,7 +404,10 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                   {story.summary || "No summary available."}
                 </p>
 
-                <div className="text-xs text-gray-500 dark:text-gray-500 mb-3 flex-shrink-0 truncate">
+                <div
+                  data-testid={pageType === 'community' ? "post-author" : undefined}
+                  className="text-xs text-gray-500 dark:text-gray-500 mb-3 flex-shrink-0 truncate"
+                >
                   by {story.author.name}
                 </div>
 
@@ -417,6 +421,15 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
                       <span>⭐</span>
                       <span>{(story.rating || 0).toFixed(1)}</span>
                     </span>
+                    {pageType === 'community' && story.createdAt && (
+                      <span
+                        data-testid="post-timestamp"
+                        className="flex items-center gap-1 flex-shrink-0 truncate"
+                        title={new Date(story.createdAt).toLocaleString()}
+                      >
+                        📅 {new Date(story.createdAt).toLocaleDateString()}
+                      </span>
+                    )}
                   </div>
                 </div>
                 </div>
@@ -536,7 +549,7 @@ export function StoryGrid({ stories = [], currentUserId, pageType = 'reading' }:
           </div>
         )
       ) : (
-        <div className="text-center py-12">
+        <div data-testid="empty-state" className="text-center py-12">
           <div className="text-4xl mb-4">📚</div>
           <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
             No stories found

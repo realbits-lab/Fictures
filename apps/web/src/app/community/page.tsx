@@ -157,7 +157,11 @@ export default function CommunityPage() {
 
           {/* Success state with story grid */}
           {!isLoading && !error && (
-            <StoryGrid stories={stories} currentUserId={session?.user?.id} pageType="community" />
+            <div data-testid="posts-container">
+              <div data-testid="posts-list">
+                <StoryGrid stories={stories} currentUserId={session?.user?.id} pageType="community" />
+              </div>
+            </div>
           )}
         </div>
       </div>
