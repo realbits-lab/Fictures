@@ -50,6 +50,7 @@ logs/
 
 # Test scripts
 test-scripts/
+test-output/
 
 # VS Code
 .vscode/

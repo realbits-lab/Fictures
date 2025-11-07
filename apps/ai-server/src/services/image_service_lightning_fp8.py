@@ -1,11 +1,11 @@
-"""Image generation service using Qwen-Image-Lightning with Diffusers.
+"""Image generation service using Qwen-Image-Lightning with Scaled FP8 base.
 
 Qwen-Image-Lightning is a distilled version that's 12-25× faster than base Qwen-Image.
-Uses LoRA adapter on top of base Qwen-Image model.
+Uses SCALED FP8 base model + v2.0 LoRA adapter to avoid grid artifacts.
 V2.0 improvements: reduced over-saturation, improved skin texture, natural visuals.
-Optimized for RTX 4090 24GB with full GPU memory (no text model).
+Optimized for RTX 4090 24GB - no CPU offloading (full GPU usage).
 
-Compatibility: Uses BF16 base model + BF16-trained V2.0 LoRA (no FP8 artifacts).
+Compatibility: Scaled FP8 base (from LoRA repo) + BF16-trained v2.0 LoRA = no artifacts.
 """
 
 import asyncio
@@ -16,6 +16,7 @@ import math
 from typing import Optional
 import torch
 from diffusers import DiffusionPipeline, FlowMatchEulerDiscreteScheduler
+from diffusers.models import QwenImageTransformer2DModel
 from PIL import Image
 from src.config import settings
 from src.utils.gpu_utils import cleanup_gpu_memory, get_gpu_memory_info
@@ -23,37 +24,39 @@ from src.utils.gpu_utils import cleanup_gpu_memory, get_gpu_memory_info
 logger = logging.getLogger(__name__)
 
 
-class QwenImageLightningService:
-    """Service for image generation using Qwen-Image-Lightning with Diffusers."""
+class QwenImageLightningFP8Service:
+    """Service for image generation using Qwen-Image-Lightning with BF16 base."""
 
     def __init__(self):
-        """Initialize the Qwen-Image-Lightning generation service."""
+        """Initialize the Qwen-Image-Lightning BF16 generation service."""
         self.pipeline: Optional[DiffusionPipeline] = None
         self.base_model = "Qwen/Qwen-Image"
-        self.lightning_lora = "lightx2v/Qwen-Image-Lightning"
+        self.lora_repo = "lightx2v/Qwen-Image-Lightning"
         self.lora_weight_name = "Qwen-Image-Lightning-8steps-V2.0.safetensors"
         self._initialized = False
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
     async def initialize(self):
-        """Initialize the Qwen-Image-Lightning pipeline."""
+        """Initialize the Qwen-Image-Lightning pipeline with Scaled FP8 base."""
         if self._initialized:
-            logger.info("Qwen-Image-Lightning service already initialized")
+            logger.info("Qwen-Image-Lightning Scaled FP8 service already initialized")
             return
 
         try:
             # Clean GPU memory before loading model
-            logger.info("Preparing GPU for Qwen-Image-Lightning loading...")
+            logger.info("Preparing GPU for Qwen-Image-Lightning Scaled FP8 loading...")
             cleanup_gpu_memory(force=True)
 
             mem_info = get_gpu_memory_info()
             if mem_info["available"]:
                 logger.info(f"GPU Memory available: {mem_info['free']:.2f}GB free")
 
-            logger.info(f"Initializing Qwen-Image-Lightning pipeline")
-            logger.info(f"Base model: {self.base_model}")
-            logger.info(f"Lightning LoRA: {self.lightning_lora}")
+            logger.info(f"Initializing Qwen-Image-Lightning with Scaled FP8 base")
+            logger.info(f"Base model components: {self.base_model}")
+            logger.info(f"Scaled FP8 transformer: {self.lora_repo}/Qwen-Image")
+            logger.info(f"LoRA: {self.lora_weight_name}")
             logger.info(f"Using device: {self.device}")
+            logger.info(f"CPU offloading: DISABLED (full GPU mode)")
 
             # Run pipeline loading in executor to avoid blocking
             loop = asyncio.get_event_loop()
@@ -63,15 +66,15 @@ class QwenImageLightningService:
 
             self._initialized = True
 
-            logger.info("Qwen-Image-Lightning pipeline initialized successfully")
+            logger.info("Qwen-Image-Lightning Scaled FP8 pipeline initialized successfully")
 
         except Exception as e:
-            logger.error(f"Failed to initialize Qwen-Image-Lightning pipeline: {e}")
+            logger.error(f"Failed to initialize Qwen-Image-Lightning Scaled FP8 pipeline: {e}")
             raise
 
     def _load_pipeline(self) -> DiffusionPipeline:
-        """Load the Qwen-Image-Lightning pipeline (blocking operation)."""
-        logger.info("Loading Qwen-Image base model with Lightning LoRA...")
+        """Load the Qwen-Image-Lightning pipeline with scaled FP8 base (blocking operation)."""
+        logger.info("Loading scaled FP8 transformer from LoRA repository...")
 
         # Configure scheduler for Lightning (from official example)
         scheduler_config = {
@@ -84,27 +87,49 @@ class QwenImageLightningService:
         }
         scheduler = FlowMatchEulerDiscreteScheduler.from_config(scheduler_config)
 
-        # Load base Qwen-Image pipeline with CPU offloading for 24GB GPU
-        logger.info("Loading base Qwen-Image pipeline with CPU offloading...")
+        # First load the complete base pipeline from Qwen/Qwen-Image
+        logger.info("Loading base Qwen-Image pipeline...")
         pipeline = DiffusionPipeline.from_pretrained(
             self.base_model,
             scheduler=scheduler,
             torch_dtype=torch.bfloat16,
         )
 
-        # Enable sequential CPU offload for 24GB GPU (more aggressive, slower but fits)
-        logger.info("Enabling sequential CPU offload (moves each component to GPU only when needed)...")
-        pipeline.enable_sequential_cpu_offload()
+        # Now load the scaled FP8 transformer separately from LoRA repo
+        # Using from_single_file to load the specific safetensors file
+        logger.info("Loading scaled FP8 transformer (qwen_image_fp8_e4m3fn_scaled.safetensors)...")
+        from huggingface_hub import hf_hub_download
+
+        # Download the scaled FP8 transformer file
+        fp8_transformer_path = hf_hub_download(
+            repo_id=self.lora_repo,
+            filename="Qwen-Image/qwen_image_fp8_e4m3fn_scaled.safetensors",
+            repo_type="model"
+        )
+
+        logger.info(f"Downloaded scaled FP8 transformer to: {fp8_transformer_path}")
+
+        # Load the FP8 transformer from the downloaded file
+        from safetensors.torch import load_file
+        fp8_state_dict = load_file(fp8_transformer_path)
+
+        # Replace the transformer's state dict with the FP8 one
+        logger.info("Replacing transformer with scaled FP8 weights...")
+        pipeline.transformer.load_state_dict(fp8_state_dict, strict=False)
+
+        # DO NOT enable CPU offload - keep everything on GPU
+        logger.info("Loading model directly to GPU (no CPU offloading)...")
+        pipeline.to("cuda")
 
         # Load Lightning LoRA adapter with specific weight file
         logger.info(f"Loading Lightning LoRA adapter: {self.lora_weight_name}...")
         pipeline.load_lora_weights(
-            self.lightning_lora,
+            self.lora_repo,
             weight_name=self.lora_weight_name
         )
 
-        logger.info("Qwen-Image-Lightning pipeline loaded successfully")
-        logger.info("Mode: 8-step fast inference with LoRA")
+        logger.info("Qwen-Image-Lightning Scaled FP8 pipeline loaded successfully")
+        logger.info("Mode: Scaled FP8 base + v2.0 LoRA (8-step, no CPU offload)")
 
         return pipeline
 
@@ -119,7 +144,7 @@ class QwenImageLightningService:
         seed: Optional[int] = None,
     ) -> dict:
         """
-        Generate image using Qwen-Image-Lightning.
+        Generate image using Qwen-Image-Lightning with scaled FP8 base.
 
         Args:
             prompt: Text prompt for image generation
@@ -137,7 +162,7 @@ class QwenImageLightningService:
             await self.initialize()
 
         try:
-            logger.info(f"Generating image with Qwen-Image-Lightning")
+            logger.info(f"Generating image with Qwen-Image-Lightning FP8")
             logger.info(f"Prompt: {prompt[:100]}...")
 
             # Set random seed
@@ -169,7 +194,7 @@ class QwenImageLightningService:
 
             return {
                 "image_url": f"data:image/png;base64,{image_base64}",
-                "model": f"{self.base_model} + {self.lightning_lora}",
+                "model": f"Scaled FP8 Base + {self.lora_weight_name}",
                 "width": actual_width,
                 "height": actual_height,
                 "seed": seed,
@@ -177,7 +202,7 @@ class QwenImageLightningService:
             }
 
         except Exception as e:
-            logger.error(f"Qwen-Image-Lightning generation failed: {e}")
+            logger.error(f"Qwen-Image-Lightning FP8 generation failed: {e}")
             raise
 
     def _generate_image(
@@ -190,8 +215,8 @@ class QwenImageLightningService:
         guidance_scale: float,
         seed: int,
     ) -> Image.Image:
-        """Generate image using Qwen-Image-Lightning (blocking operation)."""
-        logger.info(f"Running Lightning inference (steps={num_inference_steps}, seed={seed})...")
+        """Generate image using Qwen-Image-Lightning Scaled FP8 (blocking operation)."""
+        logger.info(f"Running Lightning Scaled FP8 inference (steps={num_inference_steps}, seed={seed})...")
 
         # Set seed for reproducibility
         generator = torch.Generator(device=self.device).manual_seed(seed)
@@ -220,27 +245,27 @@ class QwenImageLightningService:
     async def get_model_info(self) -> dict:
         """Get information about the loaded model."""
         return {
-            "name": f"{self.base_model} + Lightning LoRA",
+            "name": f"Scaled FP8 Base + Lightning v2.0 LoRA",
             "type": "image-generation",
             "framework": "Diffusers",
             "backend": "Qwen-Image-Lightning",
             "device": self.device,
-            "optimization": "8-step fast inference (12-25× faster)",
+            "optimization": "Scaled FP8 + 8-step fast inference (no CPU offload)",
             "initialized": self._initialized,
         }
 
     async def shutdown(self):
         """Shutdown the pipeline and free resources."""
         if self.pipeline:
-            logger.info("Shutting down Qwen-Image-Lightning pipeline")
+            logger.info("Shutting down Qwen-Image-Lightning Scaled FP8 pipeline")
             self.pipeline = None
             self._initialized = False
 
             # Clean up GPU memory after shutdown
             if self.device == "cuda":
-                logger.info("Cleaning up GPU memory after Lightning shutdown")
+                logger.info("Cleaning up GPU memory after Lightning Scaled FP8 shutdown")
                 cleanup_gpu_memory(force=True)
 
 
 # Global service instance
-qwen_lightning_service = QwenImageLightningService()
+qwen_lightning_fp8_service = QwenImageLightningFP8Service()

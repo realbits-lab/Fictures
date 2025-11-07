@@ -3,7 +3,7 @@
 import logging
 from fastapi import APIRouter, HTTPException
 from src.schemas.image import ImageGenerationRequest, ImageGenerationResponse
-from src.services.image_service_lightning import qwen_lightning_service as image_service
+from src.services.image_service_lightning_fp8 import qwen_lightning_fp8_service as image_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
