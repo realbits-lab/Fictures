@@ -14,7 +14,7 @@ LOG_LEVEL = "INFO"
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(env_file=".env.local", env_file_encoding="utf-8", extra="ignore")
 
     # ComfyUI Configuration (External Image Generation Server)
     # ComfyUI runs as separate process and manages its own models

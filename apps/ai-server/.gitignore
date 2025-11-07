@@ -48,6 +48,9 @@ logs/
 .env
 .env.local
 
+# Authentication files
+.auth/
+
 # Test scripts
 test-scripts/
 test-output/
