@@ -308,15 +308,35 @@ export async function POST(request: NextRequest) {
           // Insert parts and create ID mapping
           const partIdMap = new Map<string, string>();
           if (result.parts.length > 0) {
+            // Create character name-to-ID map for parts (LLM sometimes uses names instead of IDs)
+            const characterNameToIdMap = new Map<string, string>();
+            result.characters.forEach(char => {
+              characterNameToIdMap.set(char.name, characterIdMap.get(char.id)!);
+              console.log(`[Novel Generation] Character name map: "${char.name}" -> ${characterIdMap.get(char.id)}`);
+            });
+            console.log(`[Novel Generation] Character ID map:`, Object.fromEntries(characterIdMap));
+
             const partRecords = result.parts.map((part, index) => {
               const newId = nanoid();
               partIdMap.set(part.id, newId); // Map temp ID to database ID
 
               // Map temporary character IDs to database character IDs in characterArcs
-              const mappedCharacterArcs = part.characterArcs.map((arc: any) => ({
-                ...arc,
-                characterId: characterIdMap.get(arc.characterId) || arc.characterId,
-              }));
+              // Try both ID mapping and name mapping (LLM sometimes uses names)
+              const mappedCharacterArcs = part.characterArcs.map((arc: any) => {
+                console.log(`[Novel Generation] Mapping arc.characterId: "${arc.characterId}"`);
+                let dbCharId = characterIdMap.get(arc.characterId);
+                console.log(`  - Try temp ID map: ${dbCharId || 'null'}`);
+                if (!dbCharId) {
+                  // Fallback: try name-to-ID mapping
+                  dbCharId = characterNameToIdMap.get(arc.characterId);
+                  console.log(`  - Try name map: ${dbCharId || 'null'}`);
+                }
+                console.log(`  - Final result: ${dbCharId || arc.characterId}`);
+                return {
+                  ...arc,
+                  characterId: dbCharId || arc.characterId,
+                };
+              });
 
               return {
                 id: newId,
