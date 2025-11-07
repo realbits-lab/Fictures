@@ -63,11 +63,13 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json() as NovelGenerationOptions;
-    const { userPrompt, preferredGenre, preferredTone, characterCount, settingCount, partsCount, chaptersPerPart, scenesPerChapter, language } = body;
+    const { userPrompt, preferredGenre, preferredTone, characterCount, settingCount, partsCount, chaptersPerPart, scenesPerChapter, language, skipImages } = body;
 
     if (!userPrompt?.trim()) {
       return new Response('User prompt is required', { status: 400 });
     }
+
+    console.log('[Novel Generate API] Options:', { userPrompt: userPrompt.substring(0, 50) + '...', skipImages });
 
     // Create SSE stream
     const encoder = new TextEncoder();
@@ -123,6 +125,7 @@ export async function POST(request: NextRequest) {
               chaptersPerPart,
               scenesPerChapter,
               language,
+              skipImages,
             },
             onProgress
           );
@@ -415,22 +418,24 @@ export async function POST(request: NextRequest) {
           }
 
           // Phase 9: Generate images (now that we have actual storyId)
-          const totalImages = 1 + result.characters.length + result.settings.length + result.scenes.length; // +1 for story cover
-          let completedImages = 0;
+          // Skip if skipImages flag is set
+          if (!skipImages) {
+            const totalImages = 1 + result.characters.length + result.settings.length + result.scenes.length; // +1 for story cover
+            let completedImages = 0;
 
-          controller.enqueue(
-            encoder.encode(
-              createSSEMessage({
-                phase: 'images_start',
-                message: 'Generating story cover, character, setting, and scene images...',
-                data: {
-                  totalImages,
-                },
-              })
-            )
-          );
+            controller.enqueue(
+              encoder.encode(
+                createSSEMessage({
+                  phase: 'images_start',
+                  message: 'Generating story cover, character, setting, and scene images...',
+                  data: {
+                    totalImages,
+                  },
+                })
+              )
+            );
 
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
           // Generate story cover image
           try {
@@ -659,18 +664,37 @@ export async function POST(request: NextRequest) {
             }
           }
 
-          controller.enqueue(
-            encoder.encode(
-              createSSEMessage({
-                phase: 'images_complete',
-                message: 'All images generated',
-                data: {
-                  completedImages,
-                  totalImages,
-                },
-              })
-            )
-          );
+            controller.enqueue(
+              encoder.encode(
+                createSSEMessage({
+                  phase: 'images_complete',
+                  message: 'All images generated',
+                  data: {
+                    completedImages,
+                    totalImages,
+                  },
+                })
+              )
+            );
+          } else {
+            console.log('[Novel Generation] Skipping image generation (skipImages=true)');
+            try {
+              controller.enqueue(
+                encoder.encode(
+                  createSSEMessage({
+                    phase: 'images_complete',
+                    message: 'Image generation skipped',
+                    data: {
+                      completedImages: 0,
+                      totalImages: 0,
+                    },
+                  })
+                )
+              );
+            } catch (error) {
+              console.log('SSE stream closed, continuing...');
+            }
+          }
 
           // Send completion message
           controller.enqueue(
