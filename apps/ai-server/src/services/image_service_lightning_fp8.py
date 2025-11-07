@@ -88,18 +88,10 @@ class QwenImageLightningFP8Service:
         }
         scheduler = FlowMatchEulerDiscreteScheduler.from_config(scheduler_config)
 
-        # First load the complete base pipeline from Qwen/Qwen-Image
-        logger.info("Loading base Qwen-Image pipeline...")
-        pipeline = DiffusionPipeline.from_pretrained(
-            self.base_model,
-            scheduler=scheduler,
-            torch_dtype=torch.bfloat16,
-        )
-
-        # Now load the scaled FP8 transformer separately from LoRA repo
-        # Using from_single_file to load the specific safetensors file
-        logger.info("Loading scaled FP8 transformer (qwen_image_fp8_e4m3fn_scaled.safetensors)...")
+        # Load scaled FP8 transformer directly with proper dtype
+        logger.info("Loading scaled FP8 transformer from LoRA repository...")
         from huggingface_hub import hf_hub_download
+        from safetensors.torch import load_file
 
         # Download the scaled FP8 transformer file
         fp8_transformer_path = hf_hub_download(
@@ -110,13 +102,31 @@ class QwenImageLightningFP8Service:
 
         logger.info(f"Downloaded scaled FP8 transformer to: {fp8_transformer_path}")
 
-        # Load the FP8 transformer from the downloaded file
-        from safetensors.torch import load_file
+        # Load FP8 state dict
+        logger.info("Loading FP8 weights with layerwise casting...")
         fp8_state_dict = load_file(fp8_transformer_path)
 
-        # Replace the transformer's state dict with the FP8 one
-        logger.info("Replacing transformer with scaled FP8 weights...")
-        pipeline.transformer.load_state_dict(fp8_state_dict, strict=False)
+        # Convert FP8 weights to BF16 for computation (layerwise casting)
+        logger.info("Converting FP8 storage to BF16 compute dtype...")
+        bf16_state_dict = {}
+        for key, tensor in fp8_state_dict.items():
+            if tensor.dtype == torch.float8_e4m3fn:
+                # Upcast FP8 to BF16 for computation
+                bf16_state_dict[key] = tensor.to(torch.bfloat16)
+            else:
+                bf16_state_dict[key] = tensor
+
+        # Load the rest of the pipeline components (VAE, text encoder, etc.)
+        logger.info("Loading base Qwen-Image pipeline components (VAE, CLIP, etc.)...")
+        pipeline = DiffusionPipeline.from_pretrained(
+            self.base_model,
+            scheduler=scheduler,
+            torch_dtype=torch.bfloat16,
+        )
+
+        # Replace transformer weights with upcast FP8 weights
+        logger.info("Replacing transformer with scaled FP8 weights (upcast to BF16)...")
+        pipeline.transformer.load_state_dict(bf16_state_dict, strict=False)
 
         # Enable sequential CPU offload for 24GB GPU
         # The scaled FP8 transformer is now loaded, but we still need offloading

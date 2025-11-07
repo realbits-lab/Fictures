@@ -2,10 +2,10 @@
 
 Qwen-Image-Lightning is a distilled version that's 12-25× faster than base Qwen-Image.
 Uses LoRA adapter on top of base Qwen-Image model.
-V2.0 improvements: reduced over-saturation, improved skin texture, natural visuals.
+V1.0 stable version - tested and working without artifacts.
 Optimized for RTX 4090 24GB with full GPU memory (no text model).
 
-Compatibility: Uses BF16 base model + BF16-trained V2.0 LoRA (no FP8 artifacts).
+Compatibility: Uses BF16 base model + V1.0 LoRA (confirmed artifact-free).
 """
 
 import asyncio
@@ -31,7 +31,7 @@ class QwenImageLightningService:
         self.pipeline: Optional[DiffusionPipeline] = None
         self.base_model = "Qwen/Qwen-Image"
         self.lightning_lora = "lightx2v/Qwen-Image-Lightning"
-        self.lora_weight_name = "Qwen-Image-Lightning-8steps-V2.0.safetensors"
+        self.lora_weight_name = "Qwen-Image-Lightning-8steps-V1.0.safetensors"
         self._initialized = False
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 

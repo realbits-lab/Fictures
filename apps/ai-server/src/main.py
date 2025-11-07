@@ -11,7 +11,7 @@ from src.routes import image_generation
 # Text generation disabled - using full GPU for image generation only
 # from src.routes import text_generation
 # from src.services.text_service import text_service
-from src.services.image_service_lightning_fp8 import qwen_lightning_fp8_service as image_service
+from src.services.image_service_lightning import qwen_lightning_service as image_service
 
 # Configure logging
 logging.basicConfig(
