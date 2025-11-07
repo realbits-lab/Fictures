@@ -26,7 +26,7 @@
  * Prerequisites:
  *   - Dev server running on port 3000
  *   - Valid writer API key in .auth/user.json
- *   - Environment variables: GOOGLE_GENERATIVE_AI_API_KEY, AI_GATEWAY_API_KEY, BLOB_READ_WRITE_TOKEN
+ *   - Environment variables: GOOGLE_GENERATIVE_AI_API_KEY, BLOB_READ_WRITE_TOKEN
  */
 
 import fs from 'fs';

@@ -1,3 +1,5 @@
+# AI Server .gitignore
+
 # Python
 __pycache__/
 *.py[cod]
@@ -10,7 +12,7 @@ venv/
 env/
 ENV/
 
-# Distribution / packaging
+# Python packaging
 build/
 develop-eggs/
 dist/
@@ -23,35 +25,35 @@ parts/
 sdist/
 var/
 wheels/
+pip-wheel-metadata/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
-# AI Models (large files - do not commit)
+# AI Models (large files)
 models/
 *.pth
 *.bin
 *.safetensors
 *.ckpt
 *.onnx
-*.pkl
-*.h5
 
-# Environment variables
+# Logs
+logs/
+*.log
+
+# Environment files
 .env
 .env.local
 
-# IDE
+# Authentication files
+.auth/
+
+# Test scripts
+test-scripts/
+test-output/
+
+# VS Code
 .vscode/
-.idea/
-*.swp
-*.swo
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Logs
-*.log
-logs/

@@ -1,24 +1,34 @@
 # FastAPI and ASGI server
-fastapi==0.115.5
-uvicorn[standard]==0.32.1
-pydantic==2.10.3
-pydantic-settings==2.6.1
+fastapi==0.121.0
+uvicorn[standard]==0.38.0
+pydantic==2.12.4
+pydantic-settings==2.11.0
 
 # AI/ML Libraries
-torch==2.5.1
-transformers==4.46.3
-diffusers==0.32.1
-accelerate==1.1.1
-pillow==11.0.0
-sentencepiece==0.2.0
+torch==2.8.0  # vllm 0.11.0 requires torch==2.8.0
+transformers==4.57.1
+diffusers==0.35.2
+accelerate==1.11.0
+pillow==12.0.0
+sentencepiece==0.2.1
+
+# Image Generation with Qwen-Image
+diffsynth  # DiffSynth-Studio for optimized Qwen-Image inference
 
 # vLLM for efficient LLM serving
-vllm==0.6.6
+vllm==0.11.0
 
 # API utilities
-python-multipart==0.0.17
+python-multipart==0.0.20
 httpx==0.28.1
-aiofiles==24.1.0
+aiofiles==25.1.0
+
+# Database and Authentication
+psycopg2-binary==2.9.10  # PostgreSQL adapter
+bcrypt==4.2.1  # Password hashing for API key verification
 
 # Data processing
-numpy==2.1.3
+numpy==2.2.6  # vllm 0.8.3+ supports numpy 2.x, numba 0.61.2 requires <2.3
+
+# ComfyUI for FP8 support
+comfyui

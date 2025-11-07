@@ -123,7 +123,7 @@ Edit the script to modify `userPrompt`, genre, tone, or counts.
 **Prerequisites**:
 - Dev server running: `dotenv --file .env.local run pnpm dev`
 - Valid writer API key in `.auth/user.json`
-- Environment variables: `GOOGLE_GENERATIVE_AI_API_KEY`, `AI_GATEWAY_API_KEY`, `BLOB_READ_WRITE_TOKEN`
+- Environment variables: `GOOGLE_GENERATIVE_AI_API_KEY`, `BLOB_READ_WRITE_TOKEN`
 
 **Troubleshooting**:
 - **401 Unauthorized**: Run `scripts/setup-auth-users.ts` to create API keys
@@ -193,7 +193,7 @@ dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCEN
 - Dev server running: `dotenv --file .env.local run pnpm dev`
 - Valid scene ID from database
 - `.auth/user.json` with writer API key
-- `.env.local` with: `GOOGLE_GENERATIVE_AI_API_KEY`, `AI_GATEWAY_API_KEY`, `BLOB_READ_WRITE_TOKEN`
+- `.env.local` with: `GOOGLE_GENERATIVE_AI_API_KEY`, `BLOB_READ_WRITE_TOKEN`
 
 **Troubleshooting**:
 - **"Scene not found"**: Verify scene ID exists in database
@@ -377,7 +377,6 @@ GOOGLE_CLIENT_SECRET=***
 
 # AI
 GOOGLE_GENERATIVE_AI_API_KEY=***  # Gemini 2.5 Flash
-AI_GATEWAY_API_KEY=***            # Vercel AI SDK Gateway
 
 # Database & Storage
 DATABASE_URL=***                  # Neon PostgreSQL (pooled)

@@ -1,24 +1,37 @@
 """Image generation API routes."""
 
 import logging
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from src.schemas.image import ImageGenerationRequest, ImageGenerationResponse
-from src.services.image_service import image_service
+from src.services.image_service_comfyui_api import qwen_comfyui_api_service as image_service
+from src.auth import require_api_key, AuthResult
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
 @router.post("/generate", response_model=ImageGenerationResponse)
-async def generate_image(request: ImageGenerationRequest):
+async def generate_image(
+    request: ImageGenerationRequest,
+    auth: AuthResult = Depends(require_api_key)
+):
     """
-    Generate image using Stable Diffusion XL.
+    Generate image using Qwen-Image-Lightning.
 
-    This endpoint generates images based on text prompts using the SDXL model.
+    This endpoint generates images based on text prompts using the Lightning model.
     Returns a base64-encoded PNG image.
+
+    **Authentication**: Requires valid API key with `stories:write` scope.
     """
     try:
-        logger.info(f"Received image generation request. Prompt: {request.prompt[:100]}...")
+        # Check if user has required scope
+        if not auth.has_scope("stories:write"):
+            raise HTTPException(
+                status_code=403,
+                detail="Insufficient permissions. Required scope: stories:write"
+            )
+
+        logger.info(f"Received image generation request from user {auth.email}. Prompt: {request.prompt[:100]}...")
 
         # Validate dimensions
         if request.width and request.width > 2048:
@@ -26,14 +39,15 @@ async def generate_image(request: ImageGenerationRequest):
         if request.height and request.height > 2048:
             raise HTTPException(status_code=400, detail="Height too large (max 2048 pixels)")
 
-        # Generate image using service
+        # Generate image using Lightning service
+        # Note: Pydantic defaults are width=1664, height=928 (16:9), steps=4, cfg=1.0
         result = await image_service.generate(
             prompt=request.prompt,
             negative_prompt=request.negative_prompt,
-            width=request.width or 1344,
-            height=request.height or 768,
-            num_inference_steps=request.num_inference_steps or 30,
-            guidance_scale=request.guidance_scale or 7.5,
+            width=request.width,  # Uses Pydantic default: 1664
+            height=request.height,  # Uses Pydantic default: 928
+            num_inference_steps=request.num_inference_steps,  # Uses Pydantic default: 4
+            guidance_scale=request.guidance_scale,  # Uses Pydantic default: 1.0
             seed=request.seed,
         )
 
@@ -47,8 +61,13 @@ async def generate_image(request: ImageGenerationRequest):
 
 
 @router.get("/models")
-async def list_image_models():
-    """List available image generation models."""
+async def list_image_models(auth: AuthResult = Depends(require_api_key)):
+    """
+    List available image generation models.
+
+    **Authentication**: Requires valid API key.
+    """
+    logger.info(f"Listing image models for user {auth.email}")
     model_info = await image_service.get_model_info()
 
     return {

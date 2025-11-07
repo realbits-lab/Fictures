@@ -63,11 +63,13 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json() as NovelGenerationOptions;
-    const { userPrompt, preferredGenre, preferredTone, characterCount, settingCount, partsCount, chaptersPerPart, scenesPerChapter, language } = body;
+    const { userPrompt, preferredGenre, preferredTone, characterCount, settingCount, partsCount, chaptersPerPart, scenesPerChapter, language, skipImages } = body;
 
     if (!userPrompt?.trim()) {
       return new Response('User prompt is required', { status: 400 });
     }
+
+    console.log('[Novel Generate API] Options:', { userPrompt: userPrompt.substring(0, 50) + '...', skipImages });
 
     // Create SSE stream
     const encoder = new TextEncoder();
@@ -123,6 +125,7 @@ export async function POST(request: NextRequest) {
               chaptersPerPart,
               scenesPerChapter,
               language,
+              skipImages,
             },
             onProgress
           );
@@ -216,8 +219,8 @@ export async function POST(request: NextRequest) {
               tone: toneValue, // Adversity-Triumph: Emotional direction (validated enum value)
               moralFramework: result.story.moralFramework, // Adversity-Triumph: Virtue framework
               status: 'writing',  // Fixed: Use 'writing' instead of 'draft' (valid enum value)
-              createdAt: new Date(),
-              updatedAt: new Date(),
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
             })
             .returning();
 
@@ -265,8 +268,8 @@ export async function POST(request: NextRequest) {
                 physicalDescription: char.physicalDescription,
                 voiceStyle: char.voiceStyle,
                 visualStyle: char.visualStyle,
-                createdAt: new Date(),
-                updatedAt: new Date(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
               };
             });
 
@@ -294,8 +297,8 @@ export async function POST(request: NextRequest) {
                 visualStyle: setting.visualStyle,
                 visualReferences: setting.visualReferences,
                 colorPalette: setting.colorPalette,
-                createdAt: new Date(),
-                updatedAt: new Date(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
               };
             });
 
@@ -305,15 +308,35 @@ export async function POST(request: NextRequest) {
           // Insert parts and create ID mapping
           const partIdMap = new Map<string, string>();
           if (result.parts.length > 0) {
+            // Create character name-to-ID map for parts (LLM sometimes uses names instead of IDs)
+            const characterNameToIdMap = new Map<string, string>();
+            result.characters.forEach(char => {
+              characterNameToIdMap.set(char.name, characterIdMap.get(char.id)!);
+              console.log(`[Novel Generation] Character name map: "${char.name}" -> ${characterIdMap.get(char.id)}`);
+            });
+            console.log(`[Novel Generation] Character ID map:`, Object.fromEntries(characterIdMap));
+
             const partRecords = result.parts.map((part, index) => {
               const newId = nanoid();
               partIdMap.set(part.id, newId); // Map temp ID to database ID
 
               // Map temporary character IDs to database character IDs in characterArcs
-              const mappedCharacterArcs = part.characterArcs.map((arc: any) => ({
-                ...arc,
-                characterId: characterIdMap.get(arc.characterId) || arc.characterId,
-              }));
+              // Try both ID mapping and name mapping (LLM sometimes uses names)
+              const mappedCharacterArcs = part.characterArcs.map((arc: any) => {
+                console.log(`[Novel Generation] Mapping arc.characterId: "${arc.characterId}"`);
+                let dbCharId = characterIdMap.get(arc.characterId);
+                console.log(`  - Try temp ID map: ${dbCharId || 'null'}`);
+                if (!dbCharId) {
+                  // Fallback: try name-to-ID mapping
+                  dbCharId = characterNameToIdMap.get(arc.characterId);
+                  console.log(`  - Try name map: ${dbCharId || 'null'}`);
+                }
+                console.log(`  - Final result: ${dbCharId || arc.characterId}`);
+                return {
+                  ...arc,
+                  characterId: dbCharId || arc.characterId,
+                };
+              });
 
               return {
                 id: newId,
@@ -323,8 +346,8 @@ export async function POST(request: NextRequest) {
                 summary: part.summary,
                 orderIndex: part.orderIndex,
                 characterArcs: mappedCharacterArcs,
-                createdAt: new Date(),
-                updatedAt: new Date(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
               };
             });
 
@@ -361,8 +384,8 @@ export async function POST(request: NextRequest) {
                 connectsToPreviousChapter: chapter.connectsToPreviousChapter,
                 createsNextAdversity: chapter.createsNextAdversity,
                 orderIndex: index,
-                createdAt: new Date(),
-                updatedAt: new Date(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
               };
             });
 
@@ -378,13 +401,22 @@ export async function POST(request: NextRequest) {
             const sceneRecords = result.scenes.map((scene, index) => {
               const newId = nanoid();
               sceneIdMap.set(scene.id, newId); // Map temp ID to database ID
-              const mappedChapterId = scene.chapterId ? chapterIdMap.get(scene.chapterId) || null : null;
-              console.log(`[Novel Generation] Scene ${index + 1}: chapterId=${scene.chapterId}, mapped=${mappedChapterId}`);
+
+              // Try to map chapter ID, fallback to first chapter if mapping fails
+              let mappedChapterId = scene.chapterId ? chapterIdMap.get(scene.chapterId) : null;
+              if (!mappedChapterId && chapterIdMap.size > 0) {
+                // Fallback: use the first (and usually only) chapter
+                mappedChapterId = Array.from(chapterIdMap.values())[0];
+                console.log(`[Novel Generation] Scene ${index + 1}: chapterId=${scene.chapterId} not found, using first chapter: ${mappedChapterId}`);
+              } else {
+                console.log(`[Novel Generation] Scene ${index + 1}: chapterId=${scene.chapterId}, mapped=${mappedChapterId}`);
+              }
 
               // Map temporary character IDs to database character IDs in characterFocus array
-              const mappedCharacterFocus = scene.characterFocus?.map((charId: any) =>
-                characterIdMap.get(charId) || charId
-              ) || [];
+              // Filter out invalid IDs (like character names that LLM might hallucinate)
+              const mappedCharacterFocus = scene.characterFocus
+                ?.map((charId: any) => characterIdMap.get(charId))
+                .filter((id: any) => id !== undefined) || [];
 
               // Map temporary setting ID to database setting ID
               const mappedSettingId = scene.settingId ? settingIdMap.get(scene.settingId) || null : null;
@@ -404,8 +436,8 @@ export async function POST(request: NextRequest) {
                 dialogueVsDescription: scene.dialogueVsDescription || 'balanced',
                 suggestedLength: scene.suggestedLength || 'medium',
                 orderIndex: index,
-                createdAt: new Date(),
-                updatedAt: new Date(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
               };
             });
 
@@ -415,22 +447,24 @@ export async function POST(request: NextRequest) {
           }
 
           // Phase 9: Generate images (now that we have actual storyId)
-          const totalImages = 1 + result.characters.length + result.settings.length + result.scenes.length; // +1 for story cover
-          let completedImages = 0;
+          // Skip if skipImages flag is set
+          if (!skipImages) {
+            const totalImages = 1 + result.characters.length + result.settings.length + result.scenes.length; // +1 for story cover
+            let completedImages = 0;
 
-          controller.enqueue(
-            encoder.encode(
-              createSSEMessage({
-                phase: 'images_start',
-                message: 'Generating story cover, character, setting, and scene images...',
-                data: {
-                  totalImages,
-                },
-              })
-            )
-          );
+            controller.enqueue(
+              encoder.encode(
+                createSSEMessage({
+                  phase: 'images_start',
+                  message: 'Generating story cover, character, setting, and scene images...',
+                  data: {
+                    totalImages,
+                  },
+                })
+              )
+            );
 
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
           // Generate story cover image
           try {
@@ -659,18 +693,37 @@ export async function POST(request: NextRequest) {
             }
           }
 
-          controller.enqueue(
-            encoder.encode(
-              createSSEMessage({
-                phase: 'images_complete',
-                message: 'All images generated',
-                data: {
-                  completedImages,
-                  totalImages,
-                },
-              })
-            )
-          );
+            controller.enqueue(
+              encoder.encode(
+                createSSEMessage({
+                  phase: 'images_complete',
+                  message: 'All images generated',
+                  data: {
+                    completedImages,
+                    totalImages,
+                  },
+                })
+              )
+            );
+          } else {
+            console.log('[Novel Generation] Skipping image generation (skipImages=true)');
+            try {
+              controller.enqueue(
+                encoder.encode(
+                  createSSEMessage({
+                    phase: 'images_complete',
+                    message: 'Image generation skipped',
+                    data: {
+                      completedImages: 0,
+                      totalImages: 0,
+                    },
+                  })
+                )
+              );
+            } catch (error) {
+              console.log('SSE stream closed, continuing...');
+            }
+          }
 
           // Send completion message
           controller.enqueue(

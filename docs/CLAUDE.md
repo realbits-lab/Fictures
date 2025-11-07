@@ -125,34 +125,113 @@ This approach ensured:
 
 ## 📂 Directory Structure
 
+**Monorepo Documentation Organization:**
+
 ```
-docs/
-├── CLAUDE.md                          # This file - Documentation guide
-├── adsense/                           # Google AdSense integration
-├── analysis/                          # Reader analytics & insights
-├── analytics/                         # Platform analytics setup
-├── auth/                              # Authentication system
-├── comics/                            # Comics generation & display
-├── community/                         # Community features
-├── notification/                      # User notification system
-├── image/                             # Image generation & optimization
-├── mobile/                            # Mobile UX improvements
-├── novels/                            # Novel generation (Adversity-Triumph Engine)
-├── operation/                         # Operational guides
-├── performance/                       # Performance optimization
-├── publish/                           # Publishing & scheduling
-├── scene/                             # Scene quality & tracking
-├── studio/                            # Studio workspace
-├── test/                              # Testing specifications
-├── ui/                                # UI components & themes
-└── *.md                               # Project-level reports
+Fictures/
+├── docs/                              # Platform-wide documentation
+│   ├── CLAUDE.md                      # This file - Documentation guide
+│   ├── monorepo/                      # Monorepo architecture docs
+│   └── operation/                     # Platform operations (environment, API keys)
+│
+├── apps/
+│   ├── web/
+│   │   ├── CLAUDE.md                  # Web app development guide
+│   │   └── docs/                      # Web app documentation
+│   │       ├── README.md              # Web docs index
+│   │       ├── novels/                # Novel generation (Adversity-Triumph Engine)
+│   │       ├── comics/                # Comics generation & display
+│   │       ├── studio/                # Studio workspace
+│   │       ├── publish/               # Publishing & scheduling
+│   │       ├── scene/                 # Scene quality & tracking
+│   │       ├── image/                 # Image generation & optimization
+│   │       ├── ui/                    # UI components & themes
+│   │       ├── mobile/                # Mobile UX improvements
+│   │       ├── adsense/               # Google AdSense integration
+│   │       ├── analytics/             # Platform analytics setup
+│   │       ├── analysis/              # Reader analytics & insights
+│   │       ├── auth/                  # Authentication system
+│   │       ├── community/             # Community features
+│   │       ├── notification/          # User notification system
+│   │       ├── performance/           # Performance optimization
+│   │       └── test/                  # Testing specifications
+│   │
+│   └── ai-server/
+│       ├── CLAUDE.md                  # AI server development guide
+│       └── docs/                      # AI server documentation
+│           ├── readme.md              # AI server docs index
+│           ├── quick-start.md         # Quick start guide
+│           ├── setup.md               # Setup instructions
+│           ├── architecture.md        # System architecture
+│           ├── api-reference.md       # API documentation
+│           └── python-version-guide.md # Python setup guide
 ```
 
 ---
 
-## 📁 Directory Details
+## 📁 Platform-Wide Documentation
 
-### `/adsense/` - Google AdSense Integration
+This root `docs/` directory contains only platform-wide documentation that applies to the entire monorepo.
+
+### `/monorepo/` - Monorepo Architecture
+
+**Purpose**: Monorepo structure and organization documentation.
+
+**Status**: 📋 Documentation
+
+---
+
+### `/operation/` - Operational Guides
+
+**Purpose**: Platform-wide operational documentation.
+
+**Files**:
+- `environment-architecture.md` - Multi-environment architecture (main/develop)
+- `google-ai-api-key-setup.md` - Google AI API key setup
+- `test-page-protection.md` - Test page security
+
+**Status**: ✅ Implemented
+
+---
+
+## 📁 Application-Specific Documentation
+
+For detailed feature documentation, see the respective app's `docs/` directory:
+
+### Web Application Docs
+
+**Location**: `apps/web/docs/`
+
+**Access**: See [apps/web/docs/README.md](../apps/web/docs/README.md) for complete web app documentation index
+
+**Key Categories**:
+- **Story Generation**: novels/, comics/, studio/, publish/, scene/
+- **UI/UX**: ui/, mobile/, image/
+- **Community**: community/, notification/, auth/
+- **Analytics**: adsense/, analytics/, analysis/
+- **Performance**: performance/
+- **Testing**: test/
+
+### AI Server Docs
+
+**Location**: `apps/ai-server/docs/`
+
+**Access**: See [apps/ai-server/docs/readme.md](../apps/ai-server/docs/readme.md) for AI server documentation
+
+**Key Files**:
+- `quick-start.md` - Quick start guide
+- `setup.md` - Setup instructions
+- `architecture.md` - System architecture
+- `api-reference.md` - API documentation
+- `python-version-guide.md` - Python setup guide
+
+---
+
+## 📄 Legacy Content (Archived)
+
+The following sections document features that were previously in the root docs directory but have been moved to app-specific locations:
+
+### `/adsense/` → `apps/web/docs/adsense/` - Google AdSense Integration
 
 **Purpose**: Documentation for Google AdSense integration and monetization.
 
@@ -560,35 +639,55 @@ These documents are in the root `docs/` directory:
 ## 🔍 Quick Navigation by Topic
 
 ### Getting Started
-1. **Project Setup**: `/CLAUDE.md` (root) - Main project guide
-2. **Authentication**: `auth/authentication-profiles.md`
-3. **Environment Setup**: `operation/environment-architecture.md`
-4. **Scripts**: `/scripts/CLAUDE.md`
+1. **Project Setup**: `/CLAUDE.md` (root) - Main monorepo guide
+2. **Web App Setup**: `/apps/web/CLAUDE.md` - Next.js development guide
+3. **AI Server Setup**: `/apps/ai-server/CLAUDE.md` - Python development guide
+4. **Environment Setup**: `operation/environment-architecture.md` - Platform-wide
 
-### Core Features
-1. **Novel Generation**: `novels/novels-specification.md` → `novels/novels-development.md`
-2. **Comics**: `comics/comics-architecture.md` → `comics/comics-generation.md`
-3. **Image System**: `image/image-architecture.md`
-4. **Studio**: `studio/studio-api-quick-reference.md`
+### Web Application Features
+See [apps/web/docs/README.md](../apps/web/docs/README.md) for complete index.
 
-### Performance & Optimization
-1. **Caching**: `performance/performance-caching.md`
-2. **Database**: `performance/performance-database.md`
-3. **Images**: `image/image-optimization.md`
+**Quick Links**:
+1. **Novel Generation**: `apps/web/docs/novels/novels-specification.md`
+2. **Comics**: `apps/web/docs/comics/comics-architecture.md`
+3. **Image System**: `apps/web/docs/image/image-architecture.md`
+4. **Studio**: `apps/web/docs/studio/studio-api-quick-reference.md`
+5. **Performance**: `apps/web/docs/performance/performance-caching.md`
+6. **UI Development**: `apps/web/docs/ui/ui-development.md`
 
-### Development Workflows
-1. **API Development**: `studio/studio-api-quick-reference.md`
-2. **Testing**: `test/gnb-menu-test-specification.md`
-3. **UI Development**: `ui/ui-development.md`
+### AI Server
+See [apps/ai-server/docs/readme.md](../apps/ai-server/docs/readme.md) for complete guide.
+
+**Quick Links**:
+1. **Quick Start**: `apps/ai-server/docs/quick-start.md`
+2. **Python Setup**: `apps/ai-server/docs/python-version-guide.md`
+3. **Architecture**: `apps/ai-server/docs/architecture.md`
+4. **API Reference**: `apps/ai-server/docs/api-reference.md`
 
 ---
 
 ## 📝 Documentation Best Practices
 
 ### File Naming Conventions
-- Use lowercase with hyphens: `feature-name-specification.md`
-- Use descriptive names: `novels-development.md` not `dev.md`
-- Group related docs in directories
+- **Use lowercase with hyphens**: `feature-name-specification.md` (NOT `Feature-Name-Specification.md`)
+- **Always lowercase filenames**: `readme.md`, `quick-start.md`, `implementation-summary.md`
+- **Exception**: Project root `README.md` and `CLAUDE.md` (uppercase for visibility)
+- **Use descriptive names**: `novels-development.md` not `dev.md`
+- **Group related docs in directories**
+
+**Examples:**
+- ✅ `docs/ai-server/quick-start.md`
+- ✅ `docs/ai-server/implementation-summary.md`
+- ✅ `docs/novels/novels-specification.md`
+- ❌ `docs/ai-server/QUICK-START.md`
+- ❌ `docs/ai-server/README.MD`
+- ❌ `docs/novels/Novels-Specification.md`
+
+**Why lowercase?**
+- Consistent across all platforms (case-sensitive filesystems)
+- Avoids confusion between `README.md`, `Readme.md`, `readme.md`
+- Easier to type and remember
+- Standard practice in modern web development
 
 ### Document Structure
 All documents should include:
@@ -624,11 +723,14 @@ All documents should include:
 
 ## 📚 Related Documentation
 
-- **Main Project Guide**: `/CLAUDE.md` (root)
-- **Scripts Documentation**: `/scripts/CLAUDE.md`
-- **Test Scripts Documentation**: `/test-scripts/CLAUDE.md`
+- **Main Project Guide**: `/CLAUDE.md` (root) - Monorepo overview
+- **Web App Guide**: `/apps/web/CLAUDE.md` - Next.js development
+- **Web App Docs Index**: `/apps/web/docs/README.md` - Complete web docs
+- **AI Server Guide**: `/apps/ai-server/CLAUDE.md` - Python development
+- **AI Server Docs Index**: `/apps/ai-server/docs/readme.md` - Complete AI server docs
+- **Scripts Documentation**: `/apps/web/scripts/CLAUDE.md` - Web app scripts
 
 ---
 
-**Last Updated**: 2025-11-04
-**Status**: ✅ Current
+**Last Updated**: 2025-11-06
+**Status**: ✅ Current (Reorganized for monorepo structure)
