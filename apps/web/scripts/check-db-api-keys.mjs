@@ -89,8 +89,8 @@ async function main() {
 
       if (authFileKey) {
         const latestDbPrefix = keys[0].key_prefix;
-        const authFilePrefix = authFileKey.split('_')[0] + '_' + authFileKey.split('_')[1];
-        const prefixMatches = authFilePrefix === latestDbPrefix;
+        // Check if auth file key starts with the DB prefix
+        const prefixMatches = authFileKey.startsWith(latestDbPrefix);
 
         console.log(`   Auth file (${environment}): ${authFileKey}`);
         console.log(`   DB prefix: ${latestDbPrefix}`);

@@ -33,7 +33,8 @@ const __dirname = path.dirname(__filename);
 // Configuration
 const AUTH_FILE_PATH = path.join(__dirname, '../.auth/user.json');
 const PASSWORD_LENGTH = 24;
-const API_KEY_LENGTH = 16; // Length without 'fic_' prefix
+const API_KEY_MIN_LENGTH = 16; // Minimum length without 'fic_' prefix
+const API_KEY_MAX_LENGTH = 64; // Maximum length without 'fic_' prefix (generous limit)
 const API_KEY_PREFIX = 'fic_';
 
 // Validation rules
@@ -49,7 +50,8 @@ const VALIDATION_RULES = {
   },
   apiKey: {
     prefix: API_KEY_PREFIX,
-    lengthAfterPrefix: API_KEY_LENGTH,
+    minLengthAfterPrefix: API_KEY_MIN_LENGTH,
+    maxLengthAfterPrefix: API_KEY_MAX_LENGTH,
     allowedChars: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_',
   },
 };
@@ -153,8 +155,10 @@ function validateApiKey(apiKey) {
     : apiKey;
 
   // Check length
-  if (keyPart.length !== rules.lengthAfterPrefix) {
-    errors.push(`Invalid length (${keyPart.length} chars after prefix, expected ${rules.lengthAfterPrefix})`);
+  if (keyPart.length < rules.minLengthAfterPrefix) {
+    errors.push(`Too short (${keyPart.length} chars after prefix, min ${rules.minLengthAfterPrefix})`);
+  } else if (keyPart.length > rules.maxLengthAfterPrefix) {
+    errors.push(`Too long (${keyPart.length} chars after prefix, max ${rules.maxLengthAfterPrefix})`);
   }
 
   // Check allowed characters
