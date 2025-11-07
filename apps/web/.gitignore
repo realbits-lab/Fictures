@@ -84,6 +84,7 @@ test-scripts/
 
 # Test tests directory
 test-tests/
+test-output/
 
 # Output directory
 @output/
