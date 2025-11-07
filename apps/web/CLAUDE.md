@@ -47,14 +47,28 @@ const path = getBlobPath('stories/123/image.png');
 ## Development Process Guidelines
 
 **Running Development Server:**
-- Always use `dotenv --file .env.local run pnpm dev` as background process
-- Check port 3000 availability first - kill existing process if needed
-- Redirect output to logs directory: `dotenv --file .env.local run pnpm dev > logs/dev-server.log 2>&1 &`
+- **ALWAYS use port 3000** - The development server MUST run on port 3000
+- **ALWAYS kill any process using port 3000 first** before starting the server
+- Always run as background process with output redirected to logs directory
+- Standard command sequence:
+  ```bash
+  # Kill any process on port 3000
+  lsof -ti :3000 | xargs -r kill -9
+
+  # Remove Next.js cache and start dev server on port 3000
+  rm -rf .next && dotenv --file .env.local run pnpm dev > logs/dev-server.log 2>&1 &
+
+  # Wait and verify server is running on port 3000
+  sleep 15 && tail -10 logs/dev-server.log
+  ```
 
 **Process Management Principles:**
 - Run long-running processes (pnpm dev, npx commands) as background processes
 - Always redirect output streams to logs directory using shell pipes for monitoring
-- Kill existing processes on port 3000 before starting development server
+- **CRITICAL**: ALWAYS kill existing processes on port 3000 before starting development server
+  - Use: `lsof -ti :3000 | xargs -r kill -9`
+  - Never let Next.js automatically choose a different port (3001, 3002, etc.)
+  - The application MUST run on port 3000 for proper API endpoint configuration
 - **IMPORTANT**: Always remove Next.js cache (`.next/`) before restarting `pnpm dev`
   - Command: `rm -rf .next && dotenv --file .env.local run pnpm dev`
   - This ensures code changes are picked up and prevents stale cached code from running

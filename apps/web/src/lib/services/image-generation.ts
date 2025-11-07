@@ -8,6 +8,7 @@
 import { put } from '@vercel/blob';
 import { generateImage } from '@/lib/ai/image-generation';
 import type { AspectRatio } from '@/lib/ai/types/image';
+import { getBlobPath } from '@/lib/utils/blob-path';
 
 /**
  * Image type for story assets
@@ -134,20 +135,20 @@ export async function generateStoryImage(
     console.log(`[IMAGE-GEN] Model: ${result.model}, Provider: ${result.provider}`);
     console.log(`[IMAGE-GEN] Dimensions: ${result.width}×${result.height}`);
 
-    // Build blob path
+    // Build environment-aware blob path
     let blobPath: string;
     if (imageType === 'story') {
-      blobPath = `stories/${storyId}/cover.png`;
+      blobPath = getBlobPath(`stories/${storyId}/cover.png`);
     } else if (imageType === 'character') {
-      blobPath = `stories/${storyId}/characters/${Date.now()}.png`;
+      blobPath = getBlobPath(`stories/${storyId}/characters/${Date.now()}.png`);
     } else if (imageType === 'setting') {
-      blobPath = `stories/${storyId}/settings/${Date.now()}.png`;
+      blobPath = getBlobPath(`stories/${storyId}/settings/${Date.now()}.png`);
     } else if (imageType === 'scene' && chapterId && sceneId) {
-      blobPath = `stories/${storyId}/chapters/${chapterId}/scenes/${sceneId}/image.png`;
+      blobPath = getBlobPath(`stories/${storyId}/chapters/${chapterId}/scenes/${sceneId}/image.png`);
     } else if (imageType === 'comic-panel' && chapterId && sceneId) {
-      blobPath = `stories/${storyId}/chapters/${chapterId}/scenes/${sceneId}/panel.png`;
+      blobPath = getBlobPath(`stories/${storyId}/chapters/${chapterId}/scenes/${sceneId}/panel.png`);
     } else {
-      blobPath = `stories/${storyId}/${imageType}/${Date.now()}.png`;
+      blobPath = getBlobPath(`stories/${storyId}/${imageType}/${Date.now()}.png`);
     }
 
     console.log(`[IMAGE-GEN] Uploading to Vercel Blob: ${blobPath}`);
