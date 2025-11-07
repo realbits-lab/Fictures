@@ -147,6 +147,8 @@ apps/ai-server/
 │   └── test_image_generation.py
 ├── test-scripts/                # Temporary test scripts (ad-hoc testing)
 │   └── test_qwen3.py            # Example: Quick model test
+├── test-output/                 # Generated image files (gitignored)
+│   └── *.png                    # Test-generated images
 ├── venv/                        # Python virtual environment
 ├── requirements.txt             # Production dependencies
 ├── requirements-dev.txt         # Development dependencies
