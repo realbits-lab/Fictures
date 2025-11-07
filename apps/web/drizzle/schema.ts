@@ -72,7 +72,7 @@ export const characters = pgTable("characters", {
 	summary: text(),
 	storyline: text(),
 	personality: json(),
-	backstory: json(),
+	backstory: text(),
 	motivations: json(),
 	voice: json(),
 	physicalDescription: json("physical_description"),
