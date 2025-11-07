@@ -381,13 +381,22 @@ export async function POST(request: NextRequest) {
             const sceneRecords = result.scenes.map((scene, index) => {
               const newId = nanoid();
               sceneIdMap.set(scene.id, newId); // Map temp ID to database ID
-              const mappedChapterId = scene.chapterId ? chapterIdMap.get(scene.chapterId) || null : null;
-              console.log(`[Novel Generation] Scene ${index + 1}: chapterId=${scene.chapterId}, mapped=${mappedChapterId}`);
+
+              // Try to map chapter ID, fallback to first chapter if mapping fails
+              let mappedChapterId = scene.chapterId ? chapterIdMap.get(scene.chapterId) : null;
+              if (!mappedChapterId && chapterIdMap.size > 0) {
+                // Fallback: use the first (and usually only) chapter
+                mappedChapterId = Array.from(chapterIdMap.values())[0];
+                console.log(`[Novel Generation] Scene ${index + 1}: chapterId=${scene.chapterId} not found, using first chapter: ${mappedChapterId}`);
+              } else {
+                console.log(`[Novel Generation] Scene ${index + 1}: chapterId=${scene.chapterId}, mapped=${mappedChapterId}`);
+              }
 
               // Map temporary character IDs to database character IDs in characterFocus array
-              const mappedCharacterFocus = scene.characterFocus?.map((charId: any) =>
-                characterIdMap.get(charId) || charId
-              ) || [];
+              // Filter out invalid IDs (like character names that LLM might hallucinate)
+              const mappedCharacterFocus = scene.characterFocus
+                ?.map((charId: any) => characterIdMap.get(charId))
+                .filter((id: any) => id !== undefined) || [];
 
               // Map temporary setting ID to database setting ID
               const mappedSettingId = scene.settingId ? settingIdMap.get(scene.settingId) || null : null;
