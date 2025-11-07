@@ -79,6 +79,79 @@ python --version  # Should show 3.12.7
   - Excellent for story writing and creative tasks
 - **Image Generation**: `stabilityai/stable-diffusion-xl-base-1.0`
 
+## API Authentication
+
+**IMPORTANT**: All API endpoints require authentication via API key. Authentication is always enabled and cannot be disabled.
+
+### Authentication Method
+
+The AI server validates API keys against the web application's PostgreSQL database. API keys are stored securely using bcrypt hashing.
+
+**Required Header Formats:**
+```bash
+# Option 1: Authorization header (recommended)
+Authorization: Bearer YOUR_API_KEY
+
+# Option 2: x-api-key header
+x-api-key: YOUR_API_KEY
+```
+
+### Getting API Keys for Testing
+
+**For development and testing**, API keys are stored in `.auth/user.json`:
+
+```bash
+# View your API key from user.json
+cat .auth/user.json | jq -r '.apiKey'
+```
+
+**Example API Request:**
+```bash
+# Using Authorization header
+curl -X POST "http://localhost:8000/api/v1/images/generate" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $(cat .auth/user.json | jq -r '.apiKey')" \
+  -d '{
+    "prompt": "A beautiful sunset over mountains",
+    "width": 1024,
+    "height": 1024,
+    "num_inference_steps": 4,
+    "guidance_scale": 1.0
+  }'
+
+# Using x-api-key header
+curl -X POST "http://localhost:8000/api/v1/images/generate" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: $(cat .auth/user.json | jq -r '.apiKey')" \
+  -d '{
+    "prompt": "A beautiful sunset over mountains",
+    "width": 1024,
+    "height": 1024,
+    "num_inference_steps": 4,
+    "guidance_scale": 1.0
+  }'
+```
+
+### Database Configuration
+
+The AI server requires a PostgreSQL database connection for API key validation:
+
+```bash
+# Set in .env file
+DATABASE_URL=postgresql://user:password@host-pooler.region.aws.neon.tech:5432/database
+```
+
+**Note**: Use the same DATABASE_URL from the web application (pooled connection URL).
+
+### Authentication Scopes
+
+API keys can have different scopes for fine-grained access control:
+- `images:read` - View image generation information
+- `images:write` - Generate images
+- `stories:read` - Read story data
+- `stories:write` - Create/update stories
+- `admin:all` - Full administrative access
+
 ## Development Commands
 
 ```bash
@@ -343,32 +416,38 @@ Required files for Qwen-Image-Lightning:
 
 ## Environment Variables
 
+**Minimal Configuration**: The AI server has been streamlined to require only 2 environment variables.
+
 Create a `.env` file in `apps/ai-server/`:
 
 ```bash
-# Model Configuration
-TEXT_MODEL_NAME=Qwen/Qwen3-14B-AWQ
-IMAGE_MODEL_NAME=stabilityai/stable-diffusion-xl-base-1.0
-
-# ComfyUI Configuration
+# =============================================================================
+# ComfyUI Configuration (External Image Generation Server)
+# =============================================================================
+# ComfyUI runs as a separate HTTP server and manages its own models
+# Install ComfyUI at: ~/.local/comfyui (see above for installation instructions)
 COMFYUI_URL=http://127.0.0.1:8188
 
-# Server Configuration
-HOST=0.0.0.0
-PORT=8000
-LOG_LEVEL=info
-
-# Hugging Face
-HF_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-# GPU Configuration
-CUDA_VISIBLE_DEVICES=0
-GPU_MEMORY_UTILIZATION=0.85  # AWQ quantization allows higher utilization
-
-# vLLM Configuration
-VLLM_QUANTIZATION=awq
-TEXT_MAX_MODEL_LEN=32768  # 32K context (can extend to 131K)
+# =============================================================================
+# Authentication & Database
+# =============================================================================
+# Database Configuration (for API key authentication)
+# Use the same DATABASE_URL from the web application (pooled connection)
+# Example: postgresql://user:password@host-pooler.region.aws.neon.tech:5432/database
+DATABASE_URL=postgresql://user:password@host:5432/database
 ```
+
+**Constants (hardcoded in `config.py`):**
+- `API_HOST` - Server host (0.0.0.0)
+- `API_PORT` - Server port (8000)
+- `CORS_ORIGINS` - Allowed CORS origins (localhost:3000, 127.0.0.1:3000)
+- `LOG_LEVEL` - Logging level (INFO)
+
+**Notes:**
+- Text generation is **disabled** (full GPU allocated to image generation via ComfyUI)
+- ComfyUI manages its own models and runs externally
+- API key authentication is **always enabled** (cannot be disabled)
+- No model configuration needed - ComfyUI handles all image generation
 
 ## Code Guidelines
 

@@ -204,15 +204,6 @@ async def require_api_key(
             user_id = auth.user_id
             ...
     """
-    # If authentication is disabled, return a mock auth result
-    if not settings.require_api_key:
-        logger.warning("⚠️ API key authentication is DISABLED - using mock user")
-        return AuthResult(
-            user_id="dev_user",
-            email="dev@localhost",
-            scopes=["admin:all"]
-        )
-
     # Extract API key from headers
     api_key = await get_api_key_from_header(authorization, x_api_key)
 

@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from src.config import settings
+from src.config import settings, API_HOST, API_PORT, CORS_ORIGINS, LOG_LEVEL
 from src.routes import image_generation
 # Text generation disabled - using full GPU for image generation only
 # from src.routes import text_generation
@@ -15,7 +15,7 @@ from src.services.image_service_comfyui_api import qwen_comfyui_api_service as i
 
 # Configure logging
 logging.basicConfig(
-    level=getattr(logging, settings.log_level),
+    level=getattr(logging, LOG_LEVEL),
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ app = FastAPI(
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -119,7 +119,6 @@ if __name__ == "__main__":
 
     uvicorn.run(
         app,
-        host=settings.api_host,
-        port=settings.api_port,
-        workers=settings.workers,
+        host=API_HOST,
+        port=API_PORT,
     )
