@@ -25,3 +25,6 @@ aiofiles==25.1.0
 
 # Data processing
 numpy==2.2.6  # vllm 0.8.3+ supports numpy 2.x, numba 0.61.2 requires <2.3
+
+# ComfyUI for FP8 support
+comfyui

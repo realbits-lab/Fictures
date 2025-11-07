@@ -3,9 +3,10 @@
 Qwen-Image-Lightning is a distilled version that's 12-25× faster than base Qwen-Image.
 Uses SCALED FP8 base model + v2.0 LoRA adapter to avoid grid artifacts.
 V2.0 improvements: reduced over-saturation, improved skin texture, natural visuals.
-Optimized for RTX 4090 24GB - no CPU offloading (full GPU usage).
+Optimized for RTX 4090 24GB with sequential CPU offloading.
 
 Compatibility: Scaled FP8 base (from LoRA repo) + BF16-trained v2.0 LoRA = no artifacts.
+The scaled FP8 variant has proper scaling to work with BF16 LoRAs without grid patterns.
 """
 
 import asyncio
@@ -56,7 +57,7 @@ class QwenImageLightningFP8Service:
             logger.info(f"Scaled FP8 transformer: {self.lora_repo}/Qwen-Image")
             logger.info(f"LoRA: {self.lora_weight_name}")
             logger.info(f"Using device: {self.device}")
-            logger.info(f"CPU offloading: DISABLED (full GPU mode)")
+            logger.info(f"CPU offloading: ENABLED (sequential, required for 24GB)")
 
             # Run pipeline loading in executor to avoid blocking
             loop = asyncio.get_event_loop()
@@ -117,9 +118,10 @@ class QwenImageLightningFP8Service:
         logger.info("Replacing transformer with scaled FP8 weights...")
         pipeline.transformer.load_state_dict(fp8_state_dict, strict=False)
 
-        # DO NOT enable CPU offload - keep everything on GPU
-        logger.info("Loading model directly to GPU (no CPU offloading)...")
-        pipeline.to("cuda")
+        # Enable sequential CPU offload for 24GB GPU
+        # The scaled FP8 transformer is now loaded, but we still need offloading
+        logger.info("Enabling sequential CPU offload (required for 24GB GPU)...")
+        pipeline.enable_sequential_cpu_offload()
 
         # Load Lightning LoRA adapter with specific weight file
         logger.info(f"Loading Lightning LoRA adapter: {self.lora_weight_name}...")
@@ -129,7 +131,7 @@ class QwenImageLightningFP8Service:
         )
 
         logger.info("Qwen-Image-Lightning Scaled FP8 pipeline loaded successfully")
-        logger.info("Mode: Scaled FP8 base + v2.0 LoRA (8-step, no CPU offload)")
+        logger.info("Mode: Scaled FP8 base + v2.0 LoRA (8-step, with CPU offload)")
 
         return pipeline
 
@@ -250,7 +252,7 @@ class QwenImageLightningFP8Service:
             "framework": "Diffusers",
             "backend": "Qwen-Image-Lightning",
             "device": self.device,
-            "optimization": "Scaled FP8 + 8-step fast inference (no CPU offload)",
+            "optimization": "Scaled FP8 + 8-step fast inference (CPU offload)",
             "initialized": self._initialized,
         }
 
