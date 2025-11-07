@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
           .set({
             title: partSpec.title,
             ...(JSON.stringify(partSpec) ? { content: JSON.stringify(partSpec) } as any : {}),
-            updatedAt: new Date(),
+            updatedAt: new Date().toISOString(),
           })
           .where(eq(parts.id, existingPart.id))
           .returning();

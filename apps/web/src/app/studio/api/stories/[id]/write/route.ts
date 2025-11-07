@@ -278,7 +278,7 @@ export async function PATCH(
     await db.update(stories)
       .set({
         ...(hnsData ? { hnsData } as any : {}),
-        updatedAt: new Date()
+        updatedAt: new Date().toISOString()
       })
       .where(eq(stories.id, id));
 

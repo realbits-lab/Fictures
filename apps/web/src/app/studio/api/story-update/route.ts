@@ -151,7 +151,7 @@ async function applyImprovements(
     if (improvementResult.improved.story && improvementResult.changes.story.fieldsUpdated.length > 0) {
       const storyUpdate = {
         ...improvementResult.improved.story,
-        updatedAt: new Date()
+        updatedAt: new Date().toISOString()
       };
       delete storyUpdate.id;
       delete storyUpdate.authorId;
@@ -171,7 +171,7 @@ async function applyImprovements(
       if (changeLog && changeLog.fieldsUpdated.length > 0) {
         const partUpdate = {
           ...part,
-          updatedAt: new Date()
+          updatedAt: new Date().toISOString()
         };
         delete partUpdate.id;
         delete partUpdate.storyId;
@@ -193,7 +193,7 @@ async function applyImprovements(
       if (changeLog && changeLog.fieldsUpdated.length > 0) {
         const chapterUpdate = {
           ...chapter,
-          updatedAt: new Date()
+          updatedAt: new Date().toISOString()
         };
         delete chapterUpdate.id;
         delete chapterUpdate.storyId;
@@ -216,7 +216,7 @@ async function applyImprovements(
       if (changeLog && changeLog.fieldsUpdated.length > 0) {
         const sceneUpdate = {
           ...scene,
-          updatedAt: new Date()
+          updatedAt: new Date().toISOString()
         };
         delete sceneUpdate.id;
         delete sceneUpdate.chapterId;
@@ -237,7 +237,7 @@ async function applyImprovements(
       if (changeLog && changeLog.fieldsUpdated.length > 0) {
         const characterUpdate = {
           ...character,
-          updatedAt: new Date()
+          updatedAt: new Date().toISOString()
         };
         delete characterUpdate.id;
         delete characterUpdate.storyId;
@@ -258,7 +258,7 @@ async function applyImprovements(
       if (changeLog && changeLog.fieldsUpdated.length > 0) {
         const settingUpdate = {
           ...setting,
-          updatedAt: new Date()
+          updatedAt: new Date().toISOString()
         };
         delete settingUpdate.id;
         delete settingUpdate.storyId;
@@ -330,7 +330,7 @@ export async function PATCH(request: NextRequest) {
         .update(stories)
         .set({
           ...validatedRequest.improvements.story,
-          updatedAt: new Date()
+          updatedAt: new Date().toISOString()
         })
         .where(eq(stories.id, validatedRequest.storyId))
         .returning();

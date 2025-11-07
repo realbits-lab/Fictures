@@ -275,7 +275,7 @@ export async function POST(
         .update(comments)
         .set({
           replyCount: parentComment[0].depth + 1,
-          updatedAt: new Date()
+          updatedAt: new Date().toISOString()
         })
         .where(eq(comments.id, validatedData.parentCommentId));
     }
@@ -297,8 +297,8 @@ export async function POST(
         replyCount: 0,
         isEdited: false,
         isDeleted: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       })
       .returning();
 

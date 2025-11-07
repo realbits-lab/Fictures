@@ -96,7 +96,7 @@ export async function PATCH(
     const [updatedPart] = await db.update(parts)
       .set({
         ...validatedData,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       })
       .where(eq(parts.id, id))
       .returning();

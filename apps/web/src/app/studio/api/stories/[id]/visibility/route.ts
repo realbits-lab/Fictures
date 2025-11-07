@@ -71,7 +71,7 @@ export async function PUT(
       .update(stories)
       .set({
         status: newStatus,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       })
       .where(eq(stories.id, storyId))
       .returning({

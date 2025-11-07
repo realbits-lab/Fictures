@@ -164,7 +164,7 @@ export async function PATCH(
       .update(stories)
       .set({
         ...body,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       })
       .where(eq(stories.id, storyId))
       .returning();

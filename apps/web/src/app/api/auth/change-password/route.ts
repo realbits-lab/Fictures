@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       .update(users)
       .set({
         password: hashedPassword,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       })
       .where(eq(users.id, session.user.id));
 

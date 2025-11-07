@@ -111,7 +111,7 @@ export async function PATCH(
     const [updatedScene] = await db.update(scenes)
       .set({
         ...validatedData,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       })
       .where(eq(scenes.id, id))
       .returning();
@@ -134,8 +134,8 @@ export async function PATCH(
         await db.update(chapters)
           .set({
             status: 'published',
-            publishedAt: new Date(),
-            updatedAt: new Date(),
+            publishedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
           })
           .where(eq(chapters.id, chapter.id));
 

@@ -507,7 +507,7 @@ export async function POST(request: NextRequest) {
                 .set({
                   imageUrl: imageResult.originalUrl,
                   imageVariants: imageResult.optimizedSet,
-                  updatedAt: new Date(),
+                  updatedAt: new Date().toISOString(),
                 })
                 .where(eq(stories.id, generatedStoryId!));
             } else {
@@ -562,7 +562,7 @@ export async function POST(request: NextRequest) {
                     .set({
                       imageUrl: imageResult.originalUrl,
                       imageVariants: imageResult.optimizedSet,
-                      updatedAt: new Date(),
+                      updatedAt: new Date().toISOString(),
                     })
                     .where(eq(characters.id, characterDbId));
                 }
@@ -619,7 +619,7 @@ export async function POST(request: NextRequest) {
                     .set({
                       imageUrl: imageResult.originalUrl,
                       imageVariants: imageResult.optimizedSet,
-                      updatedAt: new Date(),
+                      updatedAt: new Date().toISOString(),
                     })
                     .where(eq(settings.id, settingDbId));
                 }
@@ -677,7 +677,7 @@ export async function POST(request: NextRequest) {
                     .set({
                       imageUrl: imageResult.originalUrl,
                       imageVariants: imageResult.optimizedSet,
-                      updatedAt: new Date(),
+                      updatedAt: new Date().toISOString(),
                     })
                     .where(eq(scenes.id, sceneDbId));
                 }

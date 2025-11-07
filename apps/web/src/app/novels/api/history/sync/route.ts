@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
             lastSceneId: item.sceneId || null,
             lastPanelId: item.panelId || null,
             lastPageNumber: item.pageNumber || null,
-            createdAt: new Date(),
+            createdAt: new Date().toISOString(),
           });
           syncedCount++;
         }

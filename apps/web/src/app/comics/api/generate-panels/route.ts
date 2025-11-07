@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (!scene || !scene.chapter || !('story' in scene.chapter) || !scene.chapter.story) {
+    if (!scene || !scene.chapter) {
       return new Response(JSON.stringify({ error: 'Scene not found' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
@@ -81,7 +81,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract story for type safety
-    const story = scene.chapter.story;
+    const story = (scene.chapter as any).story;
+
+    if (!story) {
+      return new Response(JSON.stringify({ error: 'Story not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     // Verify ownership
     if (story.authorId !== authResult.user.id) {
@@ -139,8 +146,8 @@ export async function POST(request: NextRequest) {
       symbolicMeaning: null,
       cycleAmplification: null,
       emotionalResonance: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     // Set up SSE streaming

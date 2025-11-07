@@ -62,7 +62,7 @@ export async function DELETE(
       .update(communityPosts)
       .set({
         isDeleted: true,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       })
       .where(eq(communityPosts.id, postId));
 

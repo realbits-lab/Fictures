@@ -113,8 +113,8 @@ export async function POST(
       symbolicMeaning: null,
       cycleAmplification: null,
       emotionalResonance: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     // Check if client wants SSE
@@ -166,10 +166,10 @@ export async function POST(
             const [updatedScene] = await db.update(scenes)
               .set({
                 comicStatus: 'draft',
-                comicGeneratedAt: new Date(),
+                comicGeneratedAt: new Date().toISOString(),
                 comicPanelCount: result.panels.length,
                 comicVersion: (scene.comicVersion || 0) + 1,
-                updatedAt: new Date(),
+                updatedAt: new Date().toISOString(),
               })
               .where(eq(scenes.id, id))
               .returning();
@@ -236,10 +236,10 @@ export async function POST(
       const [updatedScene] = await db.update(scenes)
         .set({
           comicStatus: 'draft',
-          comicGeneratedAt: new Date(),
+          comicGeneratedAt: new Date().toISOString(),
           comicPanelCount: result.panels.length,
           comicVersion: (scene.comicVersion || 0) + 1,
-          updatedAt: new Date(),
+          updatedAt: new Date().toISOString(),
         })
         .where(eq(scenes.id, id))
         .returning();

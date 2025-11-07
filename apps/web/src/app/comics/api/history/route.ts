@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
       await db
         .update(readingHistory)
         .set({
-          lastReadAt: new Date(),
+          lastReadAt: new Date().toISOString(),
           readCount: existing[0].readCount + 1,
           lastPanelId: panelId || existing[0].lastPanelId,
           lastPageNumber: pageNumber !== undefined ? pageNumber : existing[0].lastPageNumber,
@@ -110,12 +110,12 @@ export async function POST(request: NextRequest) {
         userId: session.user.id,
         storyId,
         readingFormat: FORMAT,
-        lastReadAt: new Date(),
+        lastReadAt: new Date().toISOString(),
         readCount: 1,
         lastSceneId: null,
         lastPanelId: panelId || null,
         lastPageNumber: pageNumber !== undefined ? pageNumber : null,
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
       });
 
       return NextResponse.json({
