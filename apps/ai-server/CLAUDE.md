@@ -282,6 +282,65 @@ mypy src/
 - Adjust `gpu_memory_utilization` parameter in vLLM config
 - Monitor GPU usage with `nvidia-smi`
 
+## ComfyUI Setup (for Advanced Image Generation)
+
+**ComfyUI** is used for advanced image generation workflows with Qwen-Image models.
+It runs as a **standalone HTTP server** (not a submodule).
+
+### Installation
+
+Install ComfyUI in your user home directory:
+
+```bash
+# Create installation directory
+mkdir -p ~/.local/comfyui
+
+# Clone ComfyUI
+cd ~/.local/comfyui
+git clone https://github.com/comfyanonymous/ComfyUI.git .
+
+# Install dependencies (requires Python 3.12.7)
+pip install -r requirements.txt
+```
+
+### Running ComfyUI Server
+
+**Start ComfyUI server** before using image generation:
+
+```bash
+# Development mode (manual start)
+cd ~/.local/comfyui
+python main.py --listen 127.0.0.1 --port 8188
+
+# Production mode (background process)
+cd ~/.local/comfyui
+nohup python main.py --listen 127.0.0.1 --port 8188 > comfyui.log 2>&1 &
+```
+
+**Default URL**: http://127.0.0.1:8188
+
+### Configuration
+
+The AI server connects to ComfyUI via HTTP API. Configure the URL in your `.env` file:
+
+```bash
+COMFYUI_URL=http://127.0.0.1:8188
+```
+
+### Model Files
+
+Place Qwen-Image model files in ComfyUI directories:
+- **UNET models**: `~/.local/comfyui/models/unet/`
+- **CLIP models**: `~/.local/comfyui/models/clip/`
+- **VAE models**: `~/.local/comfyui/models/vae/`
+- **LoRA models**: `~/.local/comfyui/models/loras/`
+
+Required files for Qwen-Image-Lightning:
+- `qwen_image_fp8_e4m3fn_scaled.safetensors` (UNET)
+- `qwen_2.5_vl_7b_fp8_scaled.safetensors` (CLIP)
+- `qwen_image_vae.safetensors` (VAE)
+- `qwen-image-lightning-v2.0-4step-fp8.safetensors` (LoRA)
+
 ## Environment Variables
 
 Create a `.env` file in `apps/ai-server/`:
@@ -290,6 +349,9 @@ Create a `.env` file in `apps/ai-server/`:
 # Model Configuration
 TEXT_MODEL_NAME=Qwen/Qwen3-14B-AWQ
 IMAGE_MODEL_NAME=stabilityai/stable-diffusion-xl-base-1.0
+
+# ComfyUI Configuration
+COMFYUI_URL=http://127.0.0.1:8188
 
 # Server Configuration
 HOST=0.0.0.0

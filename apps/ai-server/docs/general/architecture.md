@@ -263,9 +263,10 @@ ComfyUI lacks built-in monitoring and structured logging.
 ### ComfyUI Backend
 
 **ComfyUI Server:**
-- Git submodule: `comfyui/` directory
-- Repository: https://github.com/comfyanonymous/ComfyUI.git
-- Workflow-based node processing system
+- **Installation**: Standalone in user directory (`~/.local/comfyui`)
+- **Repository**: https://github.com/comfyanonymous/ComfyUI.git
+- **Architecture**: Workflow-based node processing system
+- **Communication**: HTTP API (port 8188)
 
 **AI/ML Libraries:**
 - **PyTorch 2.8.0** - Deep learning framework (exact version required)
@@ -287,15 +288,15 @@ ComfyUI lacks built-in monitoring and structured logging.
 
 **Model Files:**
 ```
-comfyui/models/
-├── diffusion_models/
+~/.local/comfyui/models/
+├── unet/
 │   └── qwen_image_fp8_e4m3fn_scaled.safetensors    (20GB)
-├── text_encoders/
+├── clip/
 │   └── qwen_2.5_vl_7b_fp8_scaled.safetensors       (8.8GB)
 ├── vae/
 │   └── qwen_image_vae.safetensors                  (243MB)
 └── loras/
-    └── Qwen-Image-Lightning-4steps-V2.0.safetensors (1.6GB)
+    └── qwen-image-lightning-v2.0-4step-fp8.safetensors (1.6GB)
 ```
 
 **Total Storage:** ~30GB
@@ -878,30 +879,40 @@ python main.py \
 
 **Model Paths:**
 ComfyUI automatically finds models in:
-- `comfyui/models/diffusion_models/`
-- `comfyui/models/text_encoders/`
-- `comfyui/models/vae/`
-- `comfyui/models/loras/`
+- `~/.local/comfyui/models/unet/`
+- `~/.local/comfyui/models/clip/`
+- `~/.local/comfyui/models/vae/`
+- `~/.local/comfyui/models/loras/`
 
 ## Deployment
 
 ### Development Setup
 
+**Prerequisites:**
+Install ComfyUI in user home directory (see CLAUDE.md for installation instructions):
+```bash
+mkdir -p ~/.local/comfyui
+cd ~/.local/comfyui
+git clone https://github.com/comfyanonymous/ComfyUI.git .
+pip install -r requirements.txt
+```
+
 **1. Start ComfyUI Server:**
 ```bash
-cd comfyui
+cd ~/.local/comfyui
 python main.py --listen 127.0.0.1 --port 8188
 ```
 
 **2. Start FastAPI Server:**
 ```bash
+cd apps/ai-server
 source venv/bin/activate
 python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 **3. Start Web Frontend:**
 ```bash
-cd ../web
+cd apps/web
 pnpm dev  # Port 3000
 ```
 
@@ -918,7 +929,7 @@ After=network.target
 [Service]
 Type=simple
 User=fictures
-WorkingDirectory=/app/ai-server/comfyui
+WorkingDirectory=/home/fictures/.local/comfyui
 Environment=CUDA_VISIBLE_DEVICES=0
 ExecStart=/usr/bin/python3 main.py --listen 127.0.0.1 --port 8188
 Restart=always

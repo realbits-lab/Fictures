@@ -2,25 +2,38 @@
 
 import logging
 from typing import List
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import StreamingResponse
 from src.schemas.text import TextGenerationRequest, TextGenerationResponse, TextStreamResponse
 from src.services.text_service import text_service
+from src.auth import require_api_key, AuthResult
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
 @router.post("/generate", response_model=TextGenerationResponse)
-async def generate_text(request: TextGenerationRequest):
+async def generate_text(
+    request: TextGenerationRequest,
+    auth: AuthResult = Depends(require_api_key)
+):
     """
     Generate text using vLLM with Gemma model.
 
     This endpoint generates text synchronously and returns the complete result.
     For streaming responses, use the /stream endpoint.
+
+    **Authentication**: Requires valid API key with `stories:write` scope.
     """
     try:
-        logger.info(f"Received text generation request. Prompt length: {len(request.prompt)}")
+        # Check if user has required scope
+        if not auth.has_scope("stories:write"):
+            raise HTTPException(
+                status_code=403,
+                detail="Insufficient permissions. Required scope: stories:write"
+            )
+
+        logger.info(f"Received text generation request from user {auth.email}. Prompt length: {len(request.prompt)}")
 
         # Validate prompt length
         if len(request.prompt) > 8000:
@@ -45,15 +58,27 @@ async def generate_text(request: TextGenerationRequest):
 
 
 @router.post("/stream")
-async def stream_text(request: TextGenerationRequest):
+async def stream_text(
+    request: TextGenerationRequest,
+    auth: AuthResult = Depends(require_api_key)
+):
     """
     Generate text using vLLM with streaming response.
 
     This endpoint generates text progressively and streams the results as they are generated.
     Use this for real-time text generation in the UI.
+
+    **Authentication**: Requires valid API key with `stories:write` scope.
     """
     try:
-        logger.info(f"Received streaming text generation request. Prompt length: {len(request.prompt)}")
+        # Check if user has required scope
+        if not auth.has_scope("stories:write"):
+            raise HTTPException(
+                status_code=403,
+                detail="Insufficient permissions. Required scope: stories:write"
+            )
+
+        logger.info(f"Received streaming text generation request from user {auth.email}. Prompt length: {len(request.prompt)}")
 
         # Validate prompt length
         if len(request.prompt) > 8000:
@@ -85,8 +110,13 @@ async def stream_text(request: TextGenerationRequest):
 
 
 @router.get("/models")
-async def list_text_models():
-    """List available text generation models."""
+async def list_text_models(auth: AuthResult = Depends(require_api_key)):
+    """
+    List available text generation models.
+
+    **Authentication**: Requires valid API key.
+    """
+    logger.info(f"Listing text models for user {auth.email}")
     model_info = await text_service.get_model_info()
 
     return {

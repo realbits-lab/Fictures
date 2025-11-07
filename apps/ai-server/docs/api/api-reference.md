@@ -10,7 +10,99 @@ http://localhost:8000
 
 ## Authentication
 
-Currently, the API does not require authentication. This will be added in future versions.
+**All API endpoints require authentication using API keys.**
+
+The AI server validates API keys against the web application's PostgreSQL database, ensuring consistent authentication across all services. This simple database-only approach uses just **2 database queries per request** for efficient authentication (~15-30ms overhead).
+
+For complete authentication documentation, see [Authentication Guide](../general/authentication.md).
+
+### Authentication Methods
+
+API keys can be provided in two ways:
+
+1. **Authorization Header (Recommended)**:
+   ```
+   Authorization: Bearer YOUR_API_KEY
+   ```
+
+2. **x-api-key Header (Alternative)**:
+   ```
+   x-api-key: YOUR_API_KEY
+   ```
+
+### Required Scopes
+
+Different endpoints require different permission scopes:
+
+| Endpoint | Required Scope | Description |
+|----------|----------------|-------------|
+| `POST /api/v1/text/generate` | `stories:write` | Generate text |
+| `POST /api/v1/text/stream` | `stories:write` | Stream text generation |
+| `GET /api/v1/text/models` | Any valid API key | List text models |
+| `POST /api/v1/images/generate` | `stories:write` | Generate images |
+| `GET /api/v1/images/models` | Any valid API key | List image models |
+
+### Scope Hierarchy
+
+- `admin:all` - Full access to all endpoints
+- `stories:write` - Create and modify stories (implies `stories:read`)
+- `stories:read` - Read story data only
+
+### Error Responses
+
+**401 Unauthorized** - Missing or invalid API key:
+```json
+{
+  "detail": "API key required. Provide via 'Authorization: Bearer YOUR_API_KEY' or 'x-api-key: YOUR_API_KEY' header"
+}
+```
+
+**403 Forbidden** - Insufficient permissions:
+```json
+{
+  "detail": "Insufficient permissions. Required scope: stories:write"
+}
+```
+
+### Getting API Keys
+
+API keys are managed through the web application at `/settings/api-keys`:
+
+1. Navigate to `/settings/api-keys` in the web app
+2. Create a new API key with required scopes (`stories:write` recommended)
+3. Copy the generated key (shown only once)
+4. Store securely (keys are hashed with bcrypt in the database)
+5. Use the key in your requests to the AI server
+
+The AI server queries the same `api_keys` table, validating keys by prefix matching and bcrypt hash verification.
+
+### Example Request
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/images/generate" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY_HERE" \
+  -d '{
+    "prompt": "A beautiful sunset over mountains",
+    "width": 1024,
+    "height": 1024
+  }'
+```
+
+### Disabling Authentication (Development Only)
+
+For development purposes, authentication can be disabled by setting:
+
+```bash
+REQUIRE_API_KEY=false
+```
+
+When disabled, all requests are authorized as a mock user with `admin:all` scope. No database connection is required in this mode.
+
+**⚠️ WARNING**:
+- Never use in production
+- Bypasses all security checks
+- Only for local debugging
 
 ---
 
@@ -141,6 +233,7 @@ Generate text using vLLM with Gemma model.
 ```bash
 curl -X POST "http://localhost:8000/api/v1/text/generate" \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
     "prompt": "Write a haiku about programming",
     "max_tokens": 50,
@@ -152,8 +245,11 @@ curl -X POST "http://localhost:8000/api/v1/text/generate" \
 ```python
 import httpx
 import asyncio
+import os
 
 async def generate_text():
+    api_key = os.getenv("AI_SERVER_API_KEY")  # Store API key in environment
+
     async with httpx.AsyncClient() as client:
         response = await client.post(
             "http://localhost:8000/api/v1/text/generate",
@@ -162,6 +258,7 @@ async def generate_text():
                 "max_tokens": 50,
                 "temperature": 0.7,
             },
+            headers={"Authorization": f"Bearer {api_key}"},
             timeout=300.0,
         )
         result = response.json()
@@ -192,8 +289,11 @@ data: {"text": "Once upon a time, in a magical forest...", "model": "google/gemm
 import httpx
 import asyncio
 import json
+import os
 
 async def stream_text():
+    api_key = os.getenv("AI_SERVER_API_KEY")
+
     async with httpx.AsyncClient() as client:
         async with client.stream(
             "POST",
@@ -203,6 +303,7 @@ async def stream_text():
                 "max_tokens": 200,
                 "temperature": 0.8,
             },
+            headers={"Authorization": f"Bearer {api_key}"},
             timeout=300.0,
         ) as response:
             async for line in response.aiter_lines():
@@ -218,9 +319,14 @@ asyncio.run(stream_text())
 **JavaScript Fetch API Example:**
 ```javascript
 async function streamText() {
+  const apiKey = process.env.AI_SERVER_API_KEY;  // Store API key securely
+
   const response = await fetch('http://localhost:8000/api/v1/text/stream', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
     body: JSON.stringify({
       prompt: 'Write a story about a robot',
       max_tokens: 200,
@@ -327,6 +433,7 @@ Generate image using Stable Diffusion XL.
 ```bash
 curl -X POST "http://localhost:8000/api/v1/images/generate" \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
     "prompt": "A beautiful sunset over mountains",
     "width": 1024,
@@ -344,9 +451,12 @@ python -c "import json, base64; data = json.load(open('response.json')); img = d
 import httpx
 import asyncio
 import base64
+import os
 from pathlib import Path
 
 async def generate_image():
+    api_key = os.getenv("AI_SERVER_API_KEY")
+
     async with httpx.AsyncClient(timeout=300.0) as client:
         response = await client.post(
             "http://localhost:8000/api/v1/images/generate",
@@ -359,6 +469,7 @@ async def generate_image():
                 "guidance_scale": 7.5,
                 "seed": 42,
             },
+            headers={"Authorization": f"Bearer {api_key}"},
         )
 
         result = response.json()
@@ -376,9 +487,14 @@ asyncio.run(generate_image())
 **JavaScript Example:**
 ```javascript
 async function generateImage() {
+  const apiKey = process.env.AI_SERVER_API_KEY;
+
   const response = await fetch('http://localhost:8000/api/v1/images/generate', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
     body: JSON.stringify({
       prompt: 'A beautiful sunset over mountains, digital art',
       negative_prompt: 'blurry, low quality',
@@ -441,6 +557,8 @@ All endpoints return standard HTTP error codes with JSON error messages.
 | Code | Meaning | Description |
 |------|---------|-------------|
 | 400 | Bad Request | Invalid parameters (e.g., prompt too long) |
+| 401 | Unauthorized | Missing or invalid API key |
+| 403 | Forbidden | Valid API key but insufficient permissions |
 | 422 | Unprocessable Entity | Validation error (e.g., wrong type) |
 | 500 | Internal Server Error | Server error during generation |
 | 503 | Service Unavailable | Model not loaded or GPU error |

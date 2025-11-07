@@ -23,6 +23,10 @@ python-multipart==0.0.20
 httpx==0.28.1
 aiofiles==25.1.0
 
+# Database and Authentication
+psycopg2-binary==2.9.10  # PostgreSQL adapter
+bcrypt==4.2.1  # Password hashing for API key verification
+
 # Data processing
 numpy==2.2.6  # vllm 0.8.3+ supports numpy 2.x, numba 0.61.2 requires <2.3
 

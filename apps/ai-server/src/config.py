@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     image_model_path: str = "./models/images/stable-diffusion-xl-base-1.0"
     image_gpu_memory_utilization: float = 0.9
 
+    # ComfyUI Configuration
+    comfyui_url: str = "http://127.0.0.1:8188"
+
     # GPU Configuration
     cuda_visible_devices: str = "0"
     model_cache_dir: str = "~/.cache/huggingface"
@@ -51,6 +54,12 @@ class Settings(BaseSettings):
     # Logging
     log_level: str = "INFO"
     log_format: str = "json"
+
+    # Database Configuration (for API key authentication)
+    database_url: str = ""  # PostgreSQL connection string from web app
+
+    # Authentication
+    require_api_key: bool = True  # Set to False to disable authentication
 
     @property
     def cors_origins_list(self) -> List[str]:

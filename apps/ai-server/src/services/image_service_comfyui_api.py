@@ -25,13 +25,14 @@ logger = logging.getLogger(__name__)
 class QwenImageComfyUIAPIService:
     """Service for image generation using ComfyUI HTTP API with Qwen-Image FP8."""
 
-    def __init__(self, comfyui_url: str = "http://127.0.0.1:8188"):
+    def __init__(self, comfyui_url: str = None):
         """Initialize the ComfyUI API service.
 
         Args:
-            comfyui_url: URL of the running ComfyUI server
+            comfyui_url: URL of the running ComfyUI server (defaults to config.settings.comfyui_url)
         """
-        self.comfyui_url = comfyui_url
+        from src.config import settings
+        self.comfyui_url = comfyui_url or settings.comfyui_url
         self._initialized = False
         self.device = "cuda"
 
