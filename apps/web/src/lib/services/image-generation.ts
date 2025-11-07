@@ -279,14 +279,15 @@ async function generateOptimizedVariants(params: {
  * Helper function for constructing optimized image prompts
  */
 export function buildStoryImagePrompt(params: {
-  imageType: StoryImageType;
+  imageType?: StoryImageType;
   title?: string;
-  description: string;
+  description?: string;
+  genre?: string;
   style?: string;
   mood?: string;
   additionalDetails?: string[];
 }): string {
-  const { imageType, title, description, style, mood, additionalDetails = [] } = params;
+  const { imageType = 'story', title, description = '', genre, style, mood, additionalDetails = [] } = params;
 
   const aspectRatio = getAspectRatioForImageType(imageType);
   const aspectRatioDesc = aspectRatio === '1:1' ? 'square composition' :
@@ -299,6 +300,7 @@ export function buildStoryImagePrompt(params: {
 
   if (imageType === 'story') {
     prompt = `Book cover illustration${title ? ` for "${title}"` : ''}. ${description}.`;
+    if (genre) prompt += ` Genre: ${genre}.`;
     if (mood) prompt += ` Mood: ${mood}.`;
     if (style) prompt += ` Visual style: ${style}.`;
     prompt += ` Professional book cover design, ${aspectRatioDesc}, dramatic and engaging.`;

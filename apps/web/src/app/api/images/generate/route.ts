@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
 
       if (story) {
         finalPrompt = buildStoryImagePrompt({
+          imageType: 'story',
           title: story.title,
           description: story.summary || undefined,
           genre: story.genre || undefined,
@@ -66,10 +67,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Generate image using DALL-E 3
+    // Determine image type based on context
+    const imageType = sceneId ? 'scene' : 'story';
+
+    // Generate image
     const result = await generateStoryImage({
       prompt: finalPrompt,
       storyId,
+      imageType,
       chapterId,
       sceneId,
       style,
