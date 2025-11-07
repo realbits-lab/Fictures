@@ -39,12 +39,12 @@ from nodes import (
     CLIPLoader,
     VAELoader,
     CLIPTextEncode,
-    EmptySD3LatentImage,
+    EmptyLatentImage,
     VAEDecode,
     KSampler,
     LoraLoaderModelOnly,
-    ModelSamplingAuraFlow,
 )
+from comfy_extras.nodes_model_advanced import ModelSamplingAuraFlow
 
 logger = logging.getLogger(__name__)
 
@@ -57,11 +57,11 @@ class QwenImageComfyUIService:
         self._initialized = False
         self.device = "cuda"
 
-        # Model files (will be downloaded if not present)
+        # Model files (matching ComfyUI workflow)
         self.unet_model = "qwen_image_fp8_e4m3fn_scaled.safetensors"
         self.clip_model = "qwen_2.5_vl_7b_fp8_scaled.safetensors"
         self.vae_model = "qwen_image_vae.safetensors"
-        self.lora_model = "Qwen-Image-Lightning-8steps-V2.0.safetensors"
+        self.lora_model = "Qwen-Image-Lightning-4steps-V2.0.safetensors"  # 4-step as per workflow
 
         # ComfyUI nodes
         self.unet_loader = UNETLoader()
@@ -70,7 +70,7 @@ class QwenImageComfyUIService:
         self.lora_loader = LoraLoaderModelOnly()
         self.model_sampling = ModelSamplingAuraFlow()
         self.clip_encode = CLIPTextEncode()
-        self.empty_latent = EmptySD3LatentImage()
+        self.empty_latent = EmptyLatentImage()
         self.ksampler = KSampler()
         self.vae_decode = VAEDecode()
 
@@ -122,19 +122,19 @@ class QwenImageComfyUIService:
         negative_prompt: Optional[str] = None,
         width: int = 1024,
         height: int = 1024,
-        num_inference_steps: int = 8,  # Lightning optimized for 8 steps
+        num_inference_steps: int = 4,  # 4-step Lightning v2.0 LoRA
         guidance_scale: float = 1.0,   # Lightning uses true_cfg_scale=1.0
         seed: Optional[int] = None,
     ) -> dict:
         """
-        Generate image using ComfyUI with scaled FP8 + v2.0 LoRA.
+        Generate image using ComfyUI with scaled FP8 + 4-step v2.0 LoRA.
 
         Args:
             prompt: Text prompt for image generation
             negative_prompt: Negative prompt (typically empty for Lightning)
             width: Image width in pixels (default 1024)
             height: Image height in pixels (default 1024)
-            num_inference_steps: Number of steps (default 8 for Lightning)
+            num_inference_steps: Number of steps (default 4 for 4-step Lightning v2.0)
             guidance_scale: Guidance scale (default 1.0 for Lightning)
             seed: Random seed for reproducibility
 
@@ -213,8 +213,7 @@ class QwenImageComfyUIService:
         logger.info("Loading CLIP...")
         clip_result = self.clip_loader.load_clip(
             clip_name=self.clip_model,
-            type="qwen_image",
-            clip_type="default"
+            type="qwen_image"
         )
         clip = clip_result[0]
 
@@ -235,7 +234,7 @@ class QwenImageComfyUIService:
 
         # Step 3: Apply model sampling
         logger.info("Configuring model sampling...")
-        sampling_result = self.model_sampling.patch(
+        sampling_result = self.model_sampling.patch_aura(
             model=model,
             shift=3.0
         )

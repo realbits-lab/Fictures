@@ -178,6 +178,21 @@ apps/ai-server/
 
 **Rule**: If you're writing a temporary Python script for testing, debugging, or exploration, place it in `test-scripts/`. This keeps the project organized and makes it clear which tests are permanent vs temporary.
 
+### Generated Image Files
+
+**IMPORTANT**: All generated image files must be stored in the `test-output/` directory:
+
+**Image Output (`test-output/` directory):**
+- **Always save generated images to `test-output/` directory**
+- All test-generated images, including API test outputs
+- Image generation validation outputs
+- Development and debugging image outputs
+- Keeps generated files organized and separate from source code
+- Already included in `.gitignore` to avoid committing large binary files
+- Example: `test-output/webtoon_fight.png`, `test-output/comfyui_api_fp8_v2_test.png`
+
+**Rule**: Whenever you generate any image files during testing, development, or API validation, always save them to `test-output/`. This ensures consistency, keeps the project organized, and prevents generated files from cluttering other directories.
+
 ## API Endpoints
 
 ### Text Generation
