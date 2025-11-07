@@ -47,6 +47,27 @@ class CacheMetricsManager {
     return this.metrics;
   }
 
+  getStats() {
+    const metrics = Array.from(this.metrics.entries()).map(([key, value]) => ({
+      key,
+      ...value,
+    }));
+
+    const totalHits = metrics.reduce((sum, m) => sum + m.hits, 0);
+    const totalMisses = metrics.reduce((sum, m) => sum + m.misses, 0);
+    const hitRate = totalHits + totalMisses > 0
+      ? (totalHits / (totalHits + totalMisses)) * 100
+      : 0;
+
+    return {
+      metrics,
+      totalHits,
+      totalMisses,
+      hitRate,
+      cacheCount: this.metrics.size,
+    };
+  }
+
   clear() {
     this.metrics.clear();
   }

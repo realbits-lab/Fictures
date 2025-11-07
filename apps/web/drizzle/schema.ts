@@ -700,6 +700,7 @@ export const scenes = pgTable("scenes", {
 	cyclePhase: cyclePhase("cycle_phase"),
 	emotionalBeat: emotionalBeat("emotional_beat"),
 	characterFocus: jsonb("character_focus").default([]),
+	settingId: text("setting_id"),
 	sensoryAnchors: jsonb("sensory_anchors").default([]),
 	dialogueVsDescription: text("dialogue_vs_description"),
 	suggestedLength: text("suggested_length"),
