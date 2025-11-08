@@ -249,9 +249,10 @@ Playwright tests use **direct email/password authentication** via the `/login` p
 - **Database**: PostgreSQL (Neon) with Drizzle ORM
 - **Authentication**: NextAuth.js v5 with Google OAuth and email/password
 - **AI Integration**:
+  - **ai-server**: Python FastAPI service for AI text and image generation (port 8000)
   - Google Gemini 2.5 Flash & Flash Lite via Vercel AI SDK (text generation)
   - Google Gemini 2.5 Flash (image generation - 7:4 aspect ratio, 1344×768)
-  - Vercel AI SDK Gateway for API management
+  - Direct provider API integration (no AI SDK Gateway)
 - **Storage**: Vercel Blob for generated images
 - **Styling**: Tailwind CSS v4
 
@@ -261,21 +262,67 @@ Playwright tests use **direct email/password authentication** via the `/login` p
 src/
 ├── app/                    # Next.js App Router
 │   ├── auth/              # Authentication routes
+│   ├── login/             # Login page
 │   ├── studio/            # Story creation & management workspace
+│   │   ├── new/           # New story creation
+│   │   ├── edit/          # Story editing interface
+│   │   ├── agent/         # AI agent features
+│   │   ├── [id]/          # Story detail page
 │   │   └── api/           # Studio API endpoints (generation, scenes, chapters)
 │   ├── novels/            # Novel reading interface
+│   │   ├── [id]/          # Novel reader by story ID
+│   │   └── api/           # Novel-specific APIs
 │   ├── comics/            # Comic reading interface
+│   │   ├── [id]/          # Comic reader by story ID
+│   │   └── api/           # Comic-specific APIs
 │   ├── community/         # Story sharing & discussion
+│   │   ├── story/         # Community story pages
+│   │   └── api/           # Community APIs
 │   ├── publish/           # Publishing & scheduling
+│   │   └── api/           # Publishing APIs
 │   ├── analysis/          # Performance metrics
+│   │   ├── [storyId]/     # Story-specific analytics
+│   │   └── api/           # Analytics APIs
 │   ├── settings/          # User preferences
+│   │   ├── appearance/    # Appearance settings
+│   │   ├── privacy/       # Privacy settings
+│   │   ├── writing/       # Writing preferences
+│   │   ├── analysis/      # Analytics settings
+│   │   ├── api-keys/      # API key management
+│   │   └── api/           # Settings APIs
+│   ├── test/              # Test pages for development
+│   │   ├── shadcn-components/ # UI component testing
+│   │   └── cache-performance/ # Cache performance testing
 │   └── api/               # Global API endpoints
+│       ├── auth/          # Auth APIs
+│       ├── users/         # User management APIs
+│       ├── images/        # Image processing APIs
+│       ├── validation/    # Validation APIs
+│       ├── upload/        # File upload APIs
+│       ├── admin/         # Admin APIs
+│       ├── placeholder/   # Placeholder APIs
+│       └── cron/          # Cron job endpoints
 ├── components/            # React UI components
+│   ├── ui/               # shadcn/ui components
+│   ├── ads/              # Ad components
+│   └── settings/         # Settings components
+├── contexts/             # React context providers
 ├── lib/
-│   ├── auth/             # NextAuth configuration
+│   ├── ai/               # AI integration layer
+│   │   ├── providers/    # AI provider adapters
+│   │   └── types/        # AI type definitions
+│   ├── auth/             # NextAuth configuration & utilities
+│   ├── cache/            # Cache management (Redis, in-memory)
+│   ├── redis/            # Redis client and utilities
 │   ├── db/               # Database schema (Drizzle ORM)
+│   ├── studio/           # Studio-specific services
 │   ├── novels/           # Novel generation services
-│   ├── services/         # Shared services (image, evaluation, formatting)
+│   ├── evaluation/       # Content evaluation services
+│   ├── services/         # Shared services (image, formatting, validation)
+│   ├── storage/          # Blob storage utilities
+│   ├── monitoring/       # Application monitoring
+│   ├── constants/        # Application constants
+│   ├── utils/            # Utility functions
 │   └── hooks/            # Custom React hooks
 └── types/                # TypeScript definitions
 ```
@@ -290,7 +337,6 @@ src/
 - **scenes**: Chapter breakdown for detailed writing
 - **characters**: Story character management
 - **settings**: Story-specific settings and configurations
-- **aiInteractions**: AI writing assistance tracking
 - **communityPosts**: Basic story sharing features
 
 ### Key Features
@@ -303,25 +349,92 @@ src/
 - **Image Optimization**: 4 variants per image (AVIF, JPEG × 2 sizes) for optimal performance
 - **Scene Evaluation**: Automated quality assessment and iterative improvement
 - **Community Sharing**: Basic story publication and discovery
-- **Progress Tracking**: Word counts and writing statistics
+- **Progress Tracking**: Writing statistics
 
 ## Environment Setup
 
+**Setup Instructions:**
+1. Copy `.env.example` to `.env.local`
+2. Fill in your actual values
+3. **NEVER commit `.env.local` to version control**
+
 **Required Environment Variables:**
 ```bash
+# =============================================================================
+# AI Server Configuration
+# =============================================================================
+AI_SERVER_TIMEOUT="120000"
+AI_SERVER_URL="http://localhost:8000"
+
+# =============================================================================
 # Authentication
-AUTH_SECRET=***
-GOOGLE_CLIENT_ID=***
-GOOGLE_CLIENT_SECRET=***
+# =============================================================================
+# NextAuth secret (generate with: openssl rand -base64 32)
+AUTH_SECRET="your-auth-secret-here"
 
-# AI Integration
-GOOGLE_GENERATIVE_AI_API_KEY=***   # Google AI for Gemini 2.5 Flash (text & image generation)
+# Google OAuth
+GOOGLE_CLIENT_ID="your-google-client-id.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
 
-# Database & Storage
-DATABASE_URL=***                   # Neon PostgreSQL (pooled connection for runtime)
-DATABASE_URL_UNPOOLED=***          # Neon PostgreSQL (direct connection for migrations)
-BLOB_READ_WRITE_TOKEN=***          # Vercel Blob storage for generated images
-REDIS_URL=***                      # Session storage
+# Google Generative AI API Key (for Gemini models)
+GOOGLE_GENERATIVE_AI_API_KEY="your-google-ai-api-key"
+
+# =============================================================================
+# Database Configuration
+# =============================================================================
+# Neon PostgreSQL Database (pooled connection for runtime)
+DATABASE_URL="postgresql://user:password@host-pooler.region.aws.neon.tech:5432/database?sslmode=require"
+
+# Neon PostgreSQL Database (direct connection for migrations)
+DATABASE_URL_UNPOOLED="postgresql://user:password@host.region.aws.neon.tech:5432/database?sslmode=require"
+
+# =============================================================================
+# Storage
+# =============================================================================
+# Vercel Blob Storage
+BLOB_READ_WRITE_TOKEN="vercel_blob_rw_your-token-here"
+
+# =============================================================================
+# ComfyUI Configuration (Image Generation)
+# =============================================================================
+# ComfyUI server URL (external image generation server)
+# Install ComfyUI at ~/.local/comfyui and run separately
+COMFYUI_URL="http://127.0.0.1:8188"
+
+# =============================================================================
+# Gemini Model Configuration
+# =============================================================================
+GEMINI_MODEL_NAME="gemini-2.5-flash-mini"
+GEMINI_MAX_TOKENS="8192"
+GEMINI_TEMPERATURE="0.7"
+
+# =============================================================================
+# Text Generation Provider
+# =============================================================================
+# Options: "ai-server" | "gemini"
+TEXT_GENERATION_PROVIDER="ai-server"
+
+# =============================================================================
+# Analytics & Monitoring
+# =============================================================================
+# Google Analytics
+NEXT_PUBLIC_GA_MEASUREMENT_ID="G-XXXXXXXXXX"
+
+# Google AdSense
+NEXT_PUBLIC_GOOGLE_ADSENSE_ID="ca-pub-XXXXXXXXXXXXXXXX"
+
+# =============================================================================
+# Session Storage
+# =============================================================================
+# Redis URL for session management
+REDIS_URL="redis://default:password@host:port"
+
+# =============================================================================
+# Vercel Deployment (Auto-generated by Vercel CLI)
+# =============================================================================
+# This token is automatically generated when deploying to Vercel
+# You don't need to manually set this for local development
+VERCEL_OIDC_TOKEN="auto-generated-by-vercel-cli"
 ```
 
 **Database Connection Details:**

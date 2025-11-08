@@ -378,11 +378,10 @@ interface Character {
     imageId: string;
     originalUrl: string;
     variants: Array<{
-      format: 'avif' | 'webp' | 'jpeg';
+      format: 'avif' | 'jpeg';
       width: number;
       height: number;
       url: string;
-      size: number;
     }>;
     generatedAt: string;
   };
@@ -481,11 +480,10 @@ interface Setting {
     imageId: string;
     originalUrl: string;
     variants: Array<{
-      format: 'avif' | 'webp' | 'jpeg';
+      format: 'avif' | 'jpeg';
       width: number;
       height: number;
       url: string;
-      size: number;
     }>;
     generatedAt: string;
   };
@@ -537,30 +535,43 @@ interface Setting {
 ```typescript
 // Story table
 interface Story {
+  // === IDENTITY ===
   id: string;
-  userId: string;
+  authorId: string;
+  title: string;
 
-  // NEW: Consistent with part/chapter naming
+  // === ADVERSITY-TRIUMPH CORE ===
   summary: string; // General thematic premise and moral framework
-
-  // Metadata
   genre: string;
-  tone: string; // "hopeful" | "dark" | "bittersweet" | "satirical"
-  moralFramework: string; // "What virtues are valued in this world?"
+  tone: 'hopeful' | 'dark' | 'bittersweet' | 'satirical';
+  moralFramework: string; // What virtues are valued in this world?
 
-  // Main characters reference (stored in characters table)
-  // 2-4 main characters with isMain=true
+  // === PUBLISHING & ENGAGEMENT ===
+  status: 'writing' | 'published';
+  viewCount: number;
+  rating: number;
+  ratingCount: number;
 
-  // Settings reference (stored in settings table)
-  // 2-6 primary settings where story unfolds
+  // === VISUAL ===
+  imageUrl?: string;
+  imageVariants?: {
+    imageId: string;
+    originalUrl: string;
+    variants: Array<{
+      format: 'avif' | 'jpeg';
+      width: number;
+      height: number;
+      url: string;
+    }>;
+    generatedAt: string;
+  };
 
-  // Deprecated (keep for migration)
-  premise?: string;
-  dramaticQuestion?: string;
-  theme?: string; // Deprecated - migrated to summary
-
+  // === METADATA ===
   createdAt: Date;
   updatedAt: Date;
+
+  // Note: Main characters (2-4 with isMain=true) stored in characters table
+  // Note: Settings (2-6 primary) stored in settings table
 }
 ```
 
@@ -569,16 +580,15 @@ interface Story {
 ```typescript
 // Part table
 interface Part {
+  // === IDENTITY ===
   id: string;
   storyId: string;
-
-  actNumber: number; // 1, 2, or 3
   title: string;
 
-  // NEW: MACRO adversity-triumph arcs with progression planning
-  summary: string; // Multi-character MACRO arcs with progression strategy
+  // === ADVERSITY-TRIUMPH CORE (Act Structure) ===
+  summary: string; // MACRO adversity-triumph arcs per character with progression planning
 
-  // Tracking structure - ENHANCED for nested cycles
+  // === MACRO ARC TRACKING (Nested Cycles) ===
   characterArcs: {
     characterId: string; // References Character.id
 
@@ -592,18 +602,17 @@ interface Part {
     macroConsequence: string;    // Earned payoff for virtue
     macroNewAdversity: string;   // How resolution creates next act's challenge
 
-    // NEW: Progression planning
+    // Progression planning
     estimatedChapters: number;     // 2-4 typical
     arcPosition: 'primary' | 'secondary';  // Primary arcs get more chapters
     progressionStrategy: string;    // How does this unfold gradually?
     // Example: "Gradual escalation across 3 chapters: setup → crisis → resolution"
   }[];
 
-  // Deprecated
-  description?: string;
-  thematicFocus?: string;
+  // === ORDERING ===
+  orderIndex: number; // Act number / order
 
-  order: number;
+  // === METADATA ===
   createdAt: Date;
   updatedAt: Date;
 }
@@ -614,26 +623,26 @@ interface Part {
 ```typescript
 // Chapter table
 interface Chapter {
+  // === IDENTITY ===
   id: string;
-  partId: string;
   storyId: string;
-
+  partId: string;
   title: string;
 
-  // NEW: Single adversity-triumph cycle
-  summary: string;
+  // === ADVERSITY-TRIUMPH CORE (Micro Cycle) ===
+  summary: string; // ONE complete adversity-triumph cycle
 
-  // NEW: Nested cycle tracking (links micro-cycle to macro arc)
+  // === NESTED CYCLE TRACKING (Links micro-cycle to macro arc) ===
   characterId: string; // References Character.id (the character whose macro arc this chapter advances)
   arcPosition: 'beginning' | 'middle' | 'climax' | 'resolution'; // 'climax' = MACRO moment
   contributesToMacroArc: string; // How this chapter advances the macro arc
 
-  // Cycle tracking
+  // === CYCLE TRACKING ===
   focusCharacters: string[]; // Character ID(s)
   adversityType: 'internal' | 'external' | 'both';
   virtueType: 'courage' | 'compassion' | 'integrity' | 'sacrifice' | 'loyalty' | 'wisdom';
 
-  // Causal linking for earned luck
+  // === CAUSAL LINKING (For Earned Luck) ===
   seedsPlanted: {
     id: string;
     description: string;
@@ -647,15 +656,19 @@ interface Chapter {
     payoffDescription: string;
   }[];
 
-  // Connection to narrative flow
+  // === CONNECTION TO NARRATIVE FLOW ===
   connectsToPreviousChapter: string; // How previous resolution created this adversity
   createsNextAdversity: string; // How this resolution creates next problem
 
-  // Deprecated
-  description?: string;
-  dramaticQuestion?: string;
+  // === PUBLISHING ===
+  status: 'writing' | 'published';
+  publishedAt?: Date;
+  scheduledFor?: Date;
 
-  order: number;
+  // === ORDERING ===
+  orderIndex: number;
+
+  // === METADATA ===
   createdAt: Date;
   updatedAt: Date;
 }
@@ -666,67 +679,78 @@ interface Chapter {
 ```typescript
 // Scene table
 interface Scene {
+  // === IDENTITY ===
   id: string;
   chapterId: string;
-  storyId: string;
-
   title: string;
 
-  // NEW: Scene specification (planning layer)
+  // === SCENE SPECIFICATION (Planning Layer) ===
   summary: string; // Scene specification: what happens, emotional beat, purpose, sensory anchors
 
-  // Cycle phase tracking
+  // === CYCLE PHASE TRACKING ===
   cyclePhase: 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition';
   emotionalBeat: 'fear' | 'hope' | 'tension' | 'relief' | 'elevation' | 'catharsis' | 'despair' | 'joy';
 
-  // Planning metadata (guides content generation)
+  // === PLANNING METADATA (Guides Content Generation) ===
   characterFocus: string[]; // Character IDs appearing in this scene
   settingId?: string; // Setting ID where this scene takes place (references Setting.id, nullable for legacy/ambiguous scenes)
   sensoryAnchors: string[]; // Key sensory details to include (e.g., "rain on metal roof", "smell of smoke")
   dialogueVsDescription: string; // Balance guidance (e.g., "60% dialogue, 40% description")
   suggestedLength: 'short' | 'medium' | 'long'; // short: 300-500, medium: 500-800, long: 800-1000 words
 
-  // Generated prose (execution layer)
+  // === GENERATED PROSE (Execution Layer) ===
   content: string; // Full prose narrative generated from summary
 
-  // Existing fields
+  // === VISUAL ===
   imageUrl?: string;
-  imageVariants?: ImageVariants;
+  imageVariants?: {
+    imageId: string;
+    originalUrl: string;
+    variants: Array<{
+      format: 'avif' | 'jpeg';
+      width: number;
+      height: number;
+      url: string;
+    }>;
+    generatedAt: string;
+  };
 
-  order: number;
+  // === PUBLISHING (Novel Format) ===
+  visibility: 'public' | 'private';
+  publishedAt?: Date;
+  publishedBy?: string;
+  unpublishedAt?: Date;
+  unpublishedBy?: string;
+  scheduledFor?: Date;
+  autoPublish: boolean;
+
+  // === COMIC FORMAT ===
+  comicStatus: 'none' | 'generating' | 'published' | 'unpublished';
+  comicPublishedAt?: Date;
+  comicPublishedBy?: string;
+  comicUnpublishedAt?: Date;
+  comicUnpublishedBy?: string;
+  comicGeneratedAt?: Date;
+  comicPanelCount: number;
+  comicVersion: number;
+
+  // === ANALYTICS ===
+  viewCount: number;
+  uniqueViewCount: number;
+  novelViewCount: number;
+  novelUniqueViewCount: number;
+  comicViewCount: number;
+  comicUniqueViewCount: number;
+  lastViewedAt?: Date;
+
+  // === ORDERING ===
+  orderIndex: number;
+
+  // === METADATA ===
   createdAt: Date;
   updatedAt: Date;
 }
 ```
-
-### 3.7 Migration Strategy
-
-**Phase 1**: Add new fields alongside existing
-- Story: Add `summary`, `genre`, `tone`, `moralFramework`
-- Character: Add `isMain`, `summary`, `coreTrait`, `internalFlaw`, `externalGoal`, `relationships`, `voiceStyle`
-- Setting: Add `adversityElements`, `symbolicMeaning`, `cycleAmplification`, `emotionalResonance`
-- Part: Add `summary`, `characterArcs`
-- Chapter: Add `summary`, cycle tracking fields
-- Scene: Add `summary`, `cyclePhase`, `emotionalBeat`, `characterFocus`, `sensoryAnchors`, `dialogueVsDescription`, `suggestedLength`
-
-**Phase 2**: Migrate existing data
-- Convert old `premise` + `dramaticQuestion` + `theme` → new `summary`
-- Convert old part `description` → new `summary`
-- Convert old chapter `description` → new `summary`
-- Scene `summary` starts empty (new field, no migration needed)
-
-**Phase 3**: Deprecate old fields
-- Mark `premise`, `dramaticQuestion`, `theme` as optional in schema
-- Remove from UI
-- Remove from new story generation
-
-**Naming Consistency**:
-All hierarchical levels now use `summary` for their planning/specification layer:
-- `Story.summary`: General thematic premise and moral framework
-- `Part.summary`: Adversity-triumph cycles for this act
-- `Chapter.summary`: Single adversity-triumph cycle
-- `Scene.summary`: Scene specification (what happens, purpose, sensory anchors)
-- `Scene.content`: Full prose narrative (execution layer)
 
 ---
 
@@ -781,79 +805,6 @@ From "The Last Garden" test story:
 
 ---
 
-## Part V: Implementation Roadmap
-
-### Phase 1: Database Schema (Week 1-2)
-
-**Tasks**:
-1. Add new fields to existing tables (theme, summary, cycle tracking)
-2. Create migration script for existing stories
-3. Update TypeScript types
-4. Implement database access layer for new fields
-
-**Deliverables**:
-- Updated schema.ts with new fields
-- Migration script: `scripts/migrate-to-adversity-triumph.mjs`
-- Updated types in `src/types/`
-
-### Phase 2: Generation APIs (Week 3-4)
-
-**Tasks**:
-1. Implement story summary generation endpoint
-2. Implement part summary generation endpoint
-3. Implement chapter summary generation endpoint
-4. Implement scene specification generation endpoint
-5. Update scene content generation with cycle-aware prompts
-
-**Deliverables**:
-- `/api/generation/story-summary`
-- `/api/generation/parts`
-- `/api/generation/chapters`
-- `/api/generation/scene-summaries`
-- Updated `/api/generation/scene-content`
-
-### Phase 3: Complete Flow Integration (Week 5-6)
-
-**Tasks**:
-1. Update `scripts/generate-complete-story.mjs` to use new APIs
-2. Implement seed planting and resolution tracking
-3. Add causal linking visualization (optional UI feature)
-4. Test full generation flow end-to-end
-
-**Deliverables**:
-- Updated story generation script
-- Seed tracking system
-- Complete adversity-triumph cycle generation working
-
-### Phase 4: Evaluation & Optimization (Week 7-8)
-
-**Tasks**:
-1. Integrate scene evaluation with cycle phase awareness
-2. Add cycle-specific quality metrics
-3. Optimize prompts based on generation results
-4. A/B test emotional resonance with test readers
-
-**Deliverables**:
-- Enhanced scene evaluation for cycle phases
-- Prompt optimization based on testing
-- Quality metrics dashboard
-
-### Phase 5: Documentation & Testing (Week 9-10)
-
-**Tasks**:
-1. Complete API documentation
-2. Write developer guide
-3. Create example stories using new system
-4. Comprehensive testing suite
-
-**Deliverables**:
-- Complete API docs
-- Developer implementation guide
-- 5+ example stories showcasing system
-- Test suite with 80%+ coverage
-
----
-
 ## Part VI: Adversity-Triumph Engine
 
 ### System Overview
@@ -868,43 +819,3 @@ From "The Last Garden" test story:
 - **Publishing Flow**: Automated scene-by-scene scheduling
 - **Generation Pipeline**: 9-phase system with iterative improvement
 - **Add**: Seed tracking, causal linking validation, emotional metrics
-
----
-
-## Part VII: References
-
-This architecture is grounded in:
-
-1. **"The Architecture of Affect" Research Document**
-   - Adversity-Triumph Engine mechanics
-   - Causally-linked serendipity principles
-   - Emotional trigger taxonomy
-   - Gam-dong, Jeong, Han concepts
-
-2. **Narrative Theory**
-   - Three-Act Structure (Aristotle, Syd Field)
-   - The Hero's Journey (Joseph Campbell)
-   - Character Arc Theory (internal + external conflict)
-
-3. **Psychology**
-   - Moral elevation (Haidt)
-   - Catharsis (Aristotelian interpretation)
-   - Narrative transportation (Green & Brock)
-   - Empathy through fiction (Mar & Oatley)
-
-4. **Cultural Studies**
-   - Korean drama narrative techniques
-   - Affective interludes
-   - Jeong-based storytelling
-
----
-
-## Conclusion
-
-This specification transforms story generation from plot-driven to **emotion-driven**, using the Cyclic Adversity-Triumph Engine as the core mechanism for creating profound emotional resonance.
-
-**Key Innovation**: Every level of the narrative hierarchy (story → part → chapter → scene) is structured around adversity-triumph cycles, with each cycle designed to trigger specific emotions (empathy → moral elevation → catharsis → Gam-dong).
-
-**Implementation Priority**: Focus on system prompt engineering first—this is where 80% of the quality comes from. The data model and APIs are just scaffolding for the prompts to work effectively.
-
-**Expected Outcome**: Stories that don't just entertain, but move readers deeply through the careful architecture of moral beauty, earned triumph, and the affirmation of human virtue.

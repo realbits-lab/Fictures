@@ -60,31 +60,46 @@ export const scheduledPublications = pgTable("scheduled_publications", {
 ]);
 
 export const characters = pgTable("characters", {
+	// === IDENTITY ===
 	id: text().primaryKey().notNull(),
-	name: varchar({ length: 255 }).notNull(),
 	storyId: text("story_id").notNull(),
-	isMain: boolean("is_main").default(false),
-	content: text().default(''),
-	imageUrl: text("image_url"),
+	name: varchar({ length: 255 }).notNull(),
+	isMain: boolean("is_main").default(false), // Main characters (2-4) get MACRO arcs
+	summary: text(), // 1-2 sentence essence: "[CoreTrait] [role] [internalFlaw], seeking [externalGoal]"
+
+	// === ADVERSITY-TRIUMPH CORE (The Engine) ===
+	coreTrait: text("core_trait"), // THE defining moral virtue: "courage" | "compassion" | "integrity" | "loyalty" | "wisdom" | "sacrifice"
+	internalFlaw: text("internal_flaw"), // MUST include cause: "[fears/believes/wounded by] X because Y"
+	externalGoal: text("external_goal"), // What they THINK will solve their problem (healing flaw actually will)
+
+	// === CHARACTER DEPTH (For Realistic Portrayal) ===
+	personality: json(), // { traits: string[], values: string[] }
+	backstory: text(), // Focused history providing motivation context (2-4 paragraphs)
+
+	// === RELATIONSHIPS (Jeong System) ===
+	relationships: json(), // { [characterId]: { type, jeongLevel, sharedHistory, currentDynamic } }
+
+	// === PROSE GENERATION ===
+	physicalDescription: json("physical_description"), // { age, appearance, distinctiveFeatures, style }
+	voiceStyle: json("voice_style"), // { tone, vocabulary, quirks, emotionalRange }
+
+	// === VISUAL GENERATION ===
+	imageUrl: text("image_url"), // Original portrait (1024×1024 from DALL-E 3)
 	imageVariants: json("image_variants"),
-	role: varchar({ length: 50 }),
-	archetype: varchar({ length: 100 }),
-	summary: text(),
-	storyline: text(),
-	personality: json(),
-	backstory: text(),
-	motivations: json(),
-	voice: json(),
-	physicalDescription: json("physical_description"),
-	visualReferenceId: text("visual_reference_id"),
+	visualStyle: text("visual_style"), // "realistic" | "anime" | "painterly" | "cinematic"
+
+	// === METADATA ===
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-	coreTrait: text("core_trait"),
-	internalFlaw: text("internal_flaw"),
-	externalGoal: text("external_goal"),
-	relationships: json(),
-	voiceStyle: json("voice_style"),
-	visualStyle: text("visual_style"),
+
+	// === DEPRECATED (Legacy fields) ===
+	content: text().default(''),
+	role: varchar({ length: 50 }),
+	archetype: varchar({ length: 100 }),
+	storyline: text(),
+	motivations: json(),
+	voice: json(),
+	visualReferenceId: text("visual_reference_id"),
 }, (table) => [
 	index("idx_characters_story_id").using("btree", table.storyId.asc().nullsLast().op("text_ops")),
 	index("idx_characters_story_main").using("btree", table.storyId.asc().nullsLast().op("text_ops"), table.isMain.desc().nullsFirst().op("text_ops")),
@@ -95,22 +110,93 @@ export const characters = pgTable("characters", {
 		}),
 ]);
 
-export const stories = pgTable("stories", {
+export const settings = pgTable("settings", {
+	// === IDENTITY ===
 	id: text().primaryKey().notNull(),
-	title: varchar({ length: 255 }).notNull(),
-	genre: varchar({ length: 100 }),
-	status: status().default('writing').notNull(),
+	storyId: text("story_id").notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	description: text(), // Comprehensive paragraph (3-5 sentences)
+
+	// === ADVERSITY-TRIUMPH CORE (The Engine) ===
+	// adversityElements: {
+	//   physicalObstacles: string[];  // Environmental challenges
+	//   scarcityFactors: string[];    // Limited resources that force choices
+	//   dangerSources: string[];      // Threats from environment
+	//   socialDynamics: string[];     // Community factors
+	// }
+	adversityElements: json("adversity_elements"),
+	symbolicMeaning: text("symbolic_meaning"), // How setting reflects story's moral framework (1-2 sentences)
+	// cycleAmplification: {
+	//   setup: string;         // How setting establishes adversity
+	//   confrontation: string; // How setting intensifies conflict
+	//   virtue: string;        // How setting contrasts/witnesses moral beauty
+	//   consequence: string;   // How setting transforms or reveals
+	//   transition: string;    // How setting hints at new problems
+	// }
+	cycleAmplification: json("cycle_amplification"),
+
+	// === EMOTIONAL ATMOSPHERE ===
+	mood: text(), // Primary emotional quality: "oppressive and surreal", "hopeful but fragile"
+	emotionalResonance: text("emotional_resonance"), // What emotion this amplifies: "isolation", "hope", "fear", "connection"
+
+	// === SENSORY IMMERSION (For Prose Generation) ===
+	// sensory: {
+	//   sight: string[];   // Visual details (5-10 items)
+	//   sound: string[];   // Auditory elements (3-7 items)
+	//   smell: string[];   // Olfactory details (2-5 items)
+	//   touch: string[];   // Tactile sensations (2-5 items)
+	//   taste: string[];   // Flavor elements (0-2 items, optional)
+	// }
+	sensory: json(),
+	architecturalStyle: text("architectural_style"), // Structural design language (if applicable)
+
+	// === VISUAL GENERATION ===
+	imageUrl: text("image_url"), // Original environment image (1792×1024, 16:9 from DALL-E 3)
+	imageVariants: json("image_variants"),
+	visualStyle: text("visual_style"), // "realistic" | "anime" | "painterly" | "cinematic"
+	visualReferences: json("visual_references"), // Style inspirations: ["Blade Runner 2049", "Studio Ghibli countryside"]
+	colorPalette: json("color_palette"), // Dominant colors: ["warm golds", "dusty browns", "deep greens"]
+
+	// === METADATA ===
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_settings_story_id").using("btree", table.storyId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.storyId],
+			foreignColumns: [stories.id],
+			name: "settings_story_id_stories_id_fk"
+		}),
+]);
+
+export const stories = pgTable("stories", {
+	// === IDENTITY ===
+	id: text().primaryKey().notNull(),
 	authorId: text("author_id").notNull(),
+	title: varchar({ length: 255 }).notNull(),
+
+	// === ADVERSITY-TRIUMPH CORE ===
+	summary: text(), // General thematic premise and moral framework
+	genre: varchar({ length: 100 }),
+	tone: tone(), // "hopeful" | "dark" | "bittersweet" | "satirical"
+	moralFramework: text("moral_framework"), // What virtues are valued in this world?
+
+	// === PUBLISHING & ENGAGEMENT ===
+	status: status().default('writing').notNull(),
 	viewCount: integer("view_count").default(0),
 	rating: integer().default(0),
 	ratingCount: integer("rating_count").default(0),
+
+	// === VISUAL ===
 	imageUrl: text("image_url"),
 	imageVariants: json("image_variants"),
+
+	// === METADATA ===
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-	summary: text(),
-	tone: tone(),
-	moralFramework: text("moral_framework"),
+
+	// Note: Main characters (2-4 with isMain=true) stored in characters table
+	// Note: Settings (2-6 primary) stored in settings table
 }, (table) => [
 	index("idx_stories_author_id").using("btree", table.authorId.asc().nullsLast().op("text_ops")),
 	index("idx_stories_status").using("btree", table.status.asc().nullsLast().op("enum_ops")),
@@ -120,6 +206,204 @@ export const stories = pgTable("stories", {
 			columns: [table.authorId],
 			foreignColumns: [users.id],
 			name: "stories_author_id_users_id_fk"
+		}),
+]);
+
+export const parts = pgTable("parts", {
+	// === IDENTITY ===
+	id: text().primaryKey().notNull(),
+	storyId: text("story_id").notNull(),
+	title: varchar({ length: 255 }).notNull(),
+
+	// === ADVERSITY-TRIUMPH CORE (Act Structure) ===
+	summary: text(), // MACRO adversity-triumph arcs per character with progression planning
+
+	// === MACRO ARC TRACKING (Nested Cycles) ===
+	// characterArcs: Array<{
+	//   characterId: string;
+	//   macroAdversity: { internal, external };
+	//   macroVirtue: string;
+	//   macroConsequence: string;
+	//   macroNewAdversity: string;
+	//   estimatedChapters: number;
+	//   arcPosition: 'primary' | 'secondary';
+	//   progressionStrategy: string;
+	// }>
+	characterArcs: json("character_arcs"),
+
+	// === ORDERING ===
+	orderIndex: integer("order_index"), // Act number / order
+
+	// === METADATA ===
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+
+	// === DEPRECATED (Legacy fields) ===
+	// description, thematicFocus removed - migrated to summary
+}, (table) => [
+	index("idx_parts_order_index").using("btree", table.orderIndex.asc().nullsLast().op("int4_ops")),
+	index("idx_parts_story_id").using("btree", table.storyId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.storyId],
+			foreignColumns: [stories.id],
+			name: "parts_story_id_stories_id_fk"
+		}),
+]);
+
+export const chapters = pgTable("chapters", {
+	// === IDENTITY ===
+	id: text().primaryKey().notNull(),
+	storyId: text("story_id").notNull(),
+	partId: text("part_id"),
+	title: varchar({ length: 255 }).notNull(),
+
+	// === ADVERSITY-TRIUMPH CORE (Micro Cycle) ===
+	summary: text(), // ONE complete adversity-triumph cycle
+
+	// === NESTED CYCLE TRACKING (Links micro-cycle to macro arc) ===
+	characterId: text("character_id"), // References Character.id (the character whose macro arc this chapter advances)
+	arcPosition: arcPosition("arc_position"), // 'beginning' | 'middle' | 'climax' | 'resolution' (climax = MACRO moment)
+	contributesToMacroArc: text("contributes_to_macro_arc"), // How this chapter advances the macro arc
+
+	// === CYCLE TRACKING ===
+	focusCharacters: json("focus_characters").default([]), // Character ID(s)
+	adversityType: adversityType("adversity_type"), // 'internal' | 'external' | 'both'
+	virtueType: virtueType("virtue_type"), // 'courage' | 'compassion' | 'integrity' | 'sacrifice' | 'loyalty' | 'wisdom'
+
+	// === CAUSAL LINKING (For Earned Luck) ===
+	// seedsPlanted: Array<{ id, description, expectedPayoff }>
+	seedsPlanted: json("seeds_planted").default([]),
+	// seedsResolved: Array<{ sourceChapterId, sourceSceneId, seedId, payoffDescription }>
+	seedsResolved: json("seeds_resolved").default([]),
+
+	// === CONNECTION TO NARRATIVE FLOW ===
+	connectsToPreviousChapter: text("connects_to_previous_chapter"), // How previous resolution created this adversity
+	createsNextAdversity: text("creates_next_adversity"), // How this resolution creates next problem
+
+	// === PUBLISHING ===
+	status: status().default('writing').notNull(),
+	publishedAt: timestamp("published_at", { mode: 'string' }),
+	scheduledFor: timestamp("scheduled_for", { mode: 'string' }),
+
+	// === ORDERING ===
+	orderIndex: integer("order_index").notNull(),
+
+	// === METADATA ===
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_chapters_order_index").using("btree", table.orderIndex.asc().nullsLast().op("int4_ops")),
+	index("idx_chapters_part_id").using("btree", table.partId.asc().nullsLast().op("text_ops")),
+	index("idx_chapters_status").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	index("idx_chapters_story_id").using("btree", table.storyId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.storyId],
+			foreignColumns: [stories.id],
+			name: "chapters_story_id_stories_id_fk"
+		}),
+	foreignKey({
+			columns: [table.partId],
+			foreignColumns: [parts.id],
+			name: "chapters_part_id_parts_id_fk"
+		}),
+	foreignKey({
+			columns: [table.characterId],
+			foreignColumns: [characters.id],
+			name: "chapters_characterId_characters_id_fk"
+		}).onDelete("set null"),
+]);
+
+export const scenes = pgTable("scenes", {
+	// === IDENTITY ===
+	id: text().primaryKey().notNull(),
+	chapterId: text("chapter_id").notNull(),
+	title: varchar({ length: 255 }).notNull(),
+
+	// === SCENE SPECIFICATION (Planning Layer) ===
+	summary: text(), // Scene specification: what happens, emotional beat, purpose, sensory anchors
+
+	// === CYCLE PHASE TRACKING ===
+	cyclePhase: cyclePhase("cycle_phase"), // 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition'
+	emotionalBeat: emotionalBeat("emotional_beat"), // 'fear' | 'hope' | 'tension' | 'relief' | 'elevation' | 'catharsis' | 'despair' | 'joy'
+
+	// === PLANNING METADATA (Guides Content Generation) ===
+	characterFocus: jsonb("character_focus").default([]), // Character IDs appearing in this scene
+	settingId: text("setting_id"), // Setting ID where this scene takes place (references Setting.id, nullable for legacy/ambiguous scenes)
+	sensoryAnchors: jsonb("sensory_anchors").default([]), // Key sensory details to include (e.g., "rain on metal roof", "smell of smoke")
+	dialogueVsDescription: text("dialogue_vs_description"), // Balance guidance (e.g., "60% dialogue, 40% description")
+	suggestedLength: text("suggested_length"), // 'short' | 'medium' | 'long' (short: 300-500, medium: 500-800, long: 800-1000 words)
+
+	// === GENERATED PROSE (Execution Layer) ===
+	content: text().default(''), // Full prose narrative generated from summary
+
+	// === VISUAL ===
+	imageUrl: text("image_url"),
+	imageVariants: json("image_variants"),
+
+	// === PUBLISHING (Novel Format) ===
+	visibility: visibility().default('private').notNull(),
+	publishedAt: timestamp("published_at", { mode: 'string' }),
+	publishedBy: text("published_by"),
+	unpublishedAt: timestamp("unpublished_at", { mode: 'string' }),
+	unpublishedBy: text("unpublished_by"),
+	scheduledFor: timestamp("scheduled_for", { mode: 'string' }),
+	autoPublish: boolean("auto_publish").default(false),
+
+	// === COMIC FORMAT ===
+	comicStatus: comicStatus("comic_status").default('none').notNull(),
+	comicPublishedAt: timestamp("comic_published_at", { mode: 'string' }),
+	comicPublishedBy: text("comic_published_by"),
+	comicUnpublishedAt: timestamp("comic_unpublished_at", { mode: 'string' }),
+	comicUnpublishedBy: text("comic_unpublished_by"),
+	comicGeneratedAt: timestamp("comic_generated_at", { mode: 'string' }),
+	comicPanelCount: integer("comic_panel_count").default(0),
+	comicVersion: integer("comic_version").default(1),
+
+	// === ANALYTICS ===
+	viewCount: integer("view_count").default(0).notNull(),
+	uniqueViewCount: integer("unique_view_count").default(0).notNull(),
+	novelViewCount: integer("novel_view_count").default(0).notNull(),
+	novelUniqueViewCount: integer("novel_unique_view_count").default(0).notNull(),
+	comicViewCount: integer("comic_view_count").default(0).notNull(),
+	comicUniqueViewCount: integer("comic_unique_view_count").default(0).notNull(),
+	lastViewedAt: timestamp("last_viewed_at", { mode: 'string' }),
+
+	// === ORDERING ===
+	orderIndex: integer("order_index").notNull(),
+
+	// === METADATA ===
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_scenes_chapter_id").using("btree", table.chapterId.asc().nullsLast().op("text_ops")),
+	index("idx_scenes_character_focus").using("gin", table.characterFocus.asc().nullsLast().op("jsonb_ops")),
+	index("idx_scenes_order_index").using("btree", table.orderIndex.asc().nullsLast().op("int4_ops")),
+	index("idx_scenes_suggested_length").using("btree", table.suggestedLength.asc().nullsLast().op("text_ops")),
+	index("idx_scenes_visibility").using("btree", table.visibility.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+			columns: [table.chapterId],
+			foreignColumns: [chapters.id],
+			name: "scenes_chapter_id_chapters_id_fk"
+		}),
+	foreignKey({
+			columns: [table.publishedBy],
+			foreignColumns: [users.id],
+			name: "scenes_published_by_users_id_fk"
+		}),
+	foreignKey({
+			columns: [table.unpublishedBy],
+			foreignColumns: [users.id],
+			name: "scenes_unpublished_by_users_id_fk"
+		}),
+	foreignKey({
+			columns: [table.comicPublishedBy],
+			foreignColumns: [users.id],
+			name: "scenes_comic_published_by_users_id_fk"
+		}),
+	foreignKey({
+			columns: [table.comicUnpublishedBy],
+			foreignColumns: [users.id],
+			name: "scenes_comic_unpublished_by_users_id_fk"
 		}),
 ]);
 
@@ -283,53 +567,6 @@ export const analyticsEvents = pgTable("analytics_events", {
 			foreignColumns: [communityPosts.id],
 			name: "analytics_events_post_id_community_posts_id_fk"
 		}).onDelete("cascade"),
-]);
-
-export const chapters = pgTable("chapters", {
-	id: text().primaryKey().notNull(),
-	title: varchar({ length: 255 }).notNull(),
-	summary: text(),
-	storyId: text("story_id").notNull(),
-	partId: text("part_id"),
-	orderIndex: integer("order_index").notNull(),
-	status: status().default('writing').notNull(),
-	purpose: text(),
-	hook: text(),
-	characterFocus: text("character_focus"),
-	publishedAt: timestamp("published_at", { mode: 'string' }),
-	scheduledFor: timestamp("scheduled_for", { mode: 'string' }),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-	characterId: text("character_id"),
-	arcPosition: arcPosition("arc_position"),
-	contributesToMacroArc: text("contributes_to_macro_arc"),
-	focusCharacters: json("focus_characters").default([]),
-	adversityType: adversityType("adversity_type"),
-	virtueType: virtueType("virtue_type"),
-	seedsPlanted: json("seeds_planted").default([]),
-	seedsResolved: json("seeds_resolved").default([]),
-	connectsToPreviousChapter: text("connects_to_previous_chapter"),
-	createsNextAdversity: text("creates_next_adversity"),
-}, (table) => [
-	index("idx_chapters_order_index").using("btree", table.orderIndex.asc().nullsLast().op("int4_ops")),
-	index("idx_chapters_part_id").using("btree", table.partId.asc().nullsLast().op("text_ops")),
-	index("idx_chapters_status").using("btree", table.status.asc().nullsLast().op("enum_ops")),
-	index("idx_chapters_story_id").using("btree", table.storyId.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.storyId],
-			foreignColumns: [stories.id],
-			name: "chapters_story_id_stories_id_fk"
-		}),
-	foreignKey({
-			columns: [table.partId],
-			foreignColumns: [parts.id],
-			name: "chapters_part_id_parts_id_fk"
-		}),
-	foreignKey({
-			columns: [table.characterId],
-			foreignColumns: [characters.id],
-			name: "chapters_characterId_characters_id_fk"
-		}).onDelete("set null"),
 ]);
 
 export const comments = pgTable("comments", {
@@ -513,25 +750,6 @@ export const userStats = pgTable("user_stats", {
 		}),
 ]);
 
-export const parts = pgTable("parts", {
-	id: text().primaryKey().notNull(),
-	title: varchar({ length: 255 }).notNull(),
-	storyId: text("story_id").notNull(),
-	summary: text(),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-	orderIndex: integer("order_index"),
-	characterArcs: json("character_arcs"),
-}, (table) => [
-	index("idx_parts_order_index").using("btree", table.orderIndex.asc().nullsLast().op("int4_ops")),
-	index("idx_parts_story_id").using("btree", table.storyId.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.storyId],
-			foreignColumns: [stories.id],
-			name: "parts_story_id_stories_id_fk"
-		}),
-]);
-
 export const readingHistory = pgTable("reading_history", {
 	id: text().primaryKey().notNull(),
 	userId: text("user_id").notNull(),
@@ -589,34 +807,6 @@ export const readingSessions = pgTable("reading_sessions", {
 		}).onDelete("cascade"),
 ]);
 
-export const settings = pgTable("settings", {
-	id: text().primaryKey().notNull(),
-	name: varchar({ length: 255 }).notNull(),
-	storyId: text("story_id").notNull(),
-	description: text(),
-	mood: text(),
-	sensory: json(),
-	visualStyle: text("visual_style"),
-	visualReferences: json("visual_references"),
-	colorPalette: json("color_palette"),
-	architecturalStyle: text("architectural_style"),
-	imageUrl: text("image_url"),
-	imageVariants: json("image_variants"),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-	adversityElements: json("adversity_elements"),
-	symbolicMeaning: text("symbolic_meaning"),
-	cycleAmplification: json("cycle_amplification"),
-	emotionalResonance: text("emotional_resonance"),
-}, (table) => [
-	index("idx_settings_story_id").using("btree", table.storyId.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.storyId],
-			foreignColumns: [stories.id],
-			name: "settings_story_id_stories_id_fk"
-		}),
-]);
-
 export const storyInsights = pgTable("story_insights", {
 	id: text().primaryKey().notNull(),
 	storyId: text("story_id").notNull(),
@@ -662,79 +852,6 @@ export const postViews = pgTable("post_views", {
 			foreignColumns: [users.id],
 			name: "post_views_user_id_users_id_fk"
 		}).onDelete("cascade"),
-]);
-
-export const scenes = pgTable("scenes", {
-	id: text().primaryKey().notNull(),
-	title: varchar({ length: 255 }).notNull(),
-	content: text().default(''),
-	chapterId: text("chapter_id").notNull(),
-	orderIndex: integer("order_index").notNull(),
-	imageUrl: text("image_url"),
-	imageVariants: json("image_variants"),
-	summary: text(),
-	publishedAt: timestamp("published_at", { mode: 'string' }),
-	scheduledFor: timestamp("scheduled_for", { mode: 'string' }),
-	visibility: visibility().default('private').notNull(),
-	autoPublish: boolean("auto_publish").default(false),
-	publishedBy: text("published_by"),
-	unpublishedAt: timestamp("unpublished_at", { mode: 'string' }),
-	unpublishedBy: text("unpublished_by"),
-	comicStatus: comicStatus("comic_status").default('none').notNull(),
-	comicPublishedAt: timestamp("comic_published_at", { mode: 'string' }),
-	comicPublishedBy: text("comic_published_by"),
-	comicUnpublishedAt: timestamp("comic_unpublished_at", { mode: 'string' }),
-	comicUnpublishedBy: text("comic_unpublished_by"),
-	comicGeneratedAt: timestamp("comic_generated_at", { mode: 'string' }),
-	comicPanelCount: integer("comic_panel_count").default(0),
-	comicVersion: integer("comic_version").default(1),
-	viewCount: integer("view_count").default(0).notNull(),
-	uniqueViewCount: integer("unique_view_count").default(0).notNull(),
-	novelViewCount: integer("novel_view_count").default(0).notNull(),
-	novelUniqueViewCount: integer("novel_unique_view_count").default(0).notNull(),
-	comicViewCount: integer("comic_view_count").default(0).notNull(),
-	comicUniqueViewCount: integer("comic_unique_view_count").default(0).notNull(),
-	lastViewedAt: timestamp("last_viewed_at", { mode: 'string' }),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-	cyclePhase: cyclePhase("cycle_phase"),
-	emotionalBeat: emotionalBeat("emotional_beat"),
-	characterFocus: jsonb("character_focus").default([]),
-	settingId: text("setting_id"),
-	sensoryAnchors: jsonb("sensory_anchors").default([]),
-	dialogueVsDescription: text("dialogue_vs_description"),
-	suggestedLength: text("suggested_length"),
-}, (table) => [
-	index("idx_scenes_chapter_id").using("btree", table.chapterId.asc().nullsLast().op("text_ops")),
-	index("idx_scenes_character_focus").using("gin", table.characterFocus.asc().nullsLast().op("jsonb_ops")),
-	index("idx_scenes_order_index").using("btree", table.orderIndex.asc().nullsLast().op("int4_ops")),
-	index("idx_scenes_suggested_length").using("btree", table.suggestedLength.asc().nullsLast().op("text_ops")),
-	index("idx_scenes_visibility").using("btree", table.visibility.asc().nullsLast().op("enum_ops")),
-	foreignKey({
-			columns: [table.chapterId],
-			foreignColumns: [chapters.id],
-			name: "scenes_chapter_id_chapters_id_fk"
-		}),
-	foreignKey({
-			columns: [table.publishedBy],
-			foreignColumns: [users.id],
-			name: "scenes_published_by_users_id_fk"
-		}),
-	foreignKey({
-			columns: [table.unpublishedBy],
-			foreignColumns: [users.id],
-			name: "scenes_unpublished_by_users_id_fk"
-		}),
-	foreignKey({
-			columns: [table.comicPublishedBy],
-			foreignColumns: [users.id],
-			name: "scenes_comic_published_by_users_id_fk"
-		}),
-	foreignKey({
-			columns: [table.comicUnpublishedBy],
-			foreignColumns: [users.id],
-			name: "scenes_comic_unpublished_by_users_id_fk"
-		}),
 ]);
 
 export const studioAgentMessages = pgTable("studio_agent_messages", {

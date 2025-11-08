@@ -60,6 +60,15 @@ cd apps/ai-server
 - **Commit format**: Follow conventional commit message format
 - Always check current git repository URL before using GitHub tools
 
+## Database Management
+
+### Schema Source of Truth
+
+- **Documentation SSOT**: `apps/web/docs/novels/novels-specification.md` defines the canonical data model
+- **Code SSOT**: `apps/web/drizzle/schema.ts` is the executable schema (code cannot reference markdown)
+- **Principle**: `drizzle/schema.ts` MUST always follow and reflect `novels-specification.md`
+- When updating schema, modify specification first, then update schema.ts to match
+
 ## Documentation
 
 - **Root docs/**: Platform-wide documentation
