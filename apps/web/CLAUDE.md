@@ -472,7 +472,7 @@ The platform uses the Adversity-Triumph Engine for novel generation, creating em
 
 **Output:**
 - Complete story structure with moral framework
-- Character profiles with AI-generated portraits (1344×768, 7:4)
+- Character profiles with AI-generated portraits
 - Immersive settings with environment images
 - Full narrative content with 4 optimized image variants per image
 - Automatic quality evaluation and improvement
@@ -487,47 +487,63 @@ The platform uses the Adversity-Triumph Engine for novel generation, creating em
 
 ## Story Removal
 
-**Complete Story Removal Scripts:**
-- **Single story**: `scripts/remove-story.mjs`
-- **All stories**: `scripts/remove-all-stories.mjs`
-- **Authentication**: Uses writer@fictures.xyz from `.auth/user.json`
-- **API Endpoint**: `DELETE /api/stories/{id}` (cascading deletion)
+**⚠️ DESTRUCTIVE OPERATION - Story Data Deletion**
+
+**Available Scripts:**
+- **Remove single story**: `scripts/remove-story.ts`
+  - **Authentication**: Uses writer or manager API key from `.auth/user.json`
+  - **API Endpoint**: `POST /studio/api/remove-story` (writer/admin endpoint)
+  - **Scope**: Deletes one story and all related data
+- **Reset all stories**: `scripts/reset-all-stories.ts`
+  - **Authentication**: Uses manager API key from `.auth/user.json`
+  - **API Endpoint**: `POST /studio/api/reset-all` (admin-only)
+  - **Scope**: Deletes ALL stories and related data
 
 **Usage:**
 ```bash
-# Remove single story
-dotenv --file .env.local run node scripts/remove-story.mjs STORY_ID
+# Remove single story - Preview mode
+dotenv --file .env.local run pnpm exec tsx scripts/remove-story.ts STORY_ID
 
-# Dry run to preview deletion
-dotenv --file .env.local run node scripts/remove-story.mjs STORY_ID --dry-run
+# Remove single story - Execute removal
+dotenv --file .env.local run pnpm exec tsx scripts/remove-story.ts STORY_ID --confirm
 
-# Remove all stories (requires confirmation)
-dotenv --file .env.local run node scripts/remove-all-stories.mjs --confirm
+# Reset all stories - Preview mode
+dotenv --file .env.local run pnpm exec tsx scripts/reset-all-stories.ts
 
-# Dry run for all stories
-dotenv --file .env.local run node scripts/remove-all-stories.mjs --dry-run
+# Reset all stories - Execute reset
+dotenv --file .env.local run pnpm exec tsx scripts/reset-all-stories.ts --confirm
 
 # Background execution with logging
-dotenv --file .env.local run node scripts/remove-story.mjs STORY_ID > logs/story-removal.log 2>&1 &
+dotenv --file .env.local run pnpm exec tsx scripts/remove-story.ts STORY_ID --confirm > logs/remove-story.log 2>&1 &
+dotenv --file .env.local run pnpm exec tsx scripts/reset-all-stories.ts --confirm > logs/reset-all.log 2>&1 &
 ```
 
 **What Gets Removed:**
-- **Database records**: story, parts, chapters, scenes, characters, settings
-- **Vercel Blob images**: ALL images found using Vercel Blob list API by prefix `stories/{storyId}/`
-  - Story cover images (1792x1024, 16:9)
-  - Scene images (1792x1024, 16:9)
-  - Character portraits (1024x1024)
-  - Setting visuals (1792x1024, 16:9)
-  - All optimized variants (AVIF, WebP, JPEG in multiple sizes)
-- **Community data**: posts, likes, replies, bookmarks
-- **Analysis data**: reading sessions, insights, events
+
+**Single Story (`remove-story.ts`):**
+- **Database records**: One story and all related parts, chapters, scenes, characters, settings
+- **Vercel Blob images**: All files under `stories/{storyId}/` prefix
+  - Story cover image and variants
+  - Scene images and all variants
+  - Character portraits and variants
+  - Setting visuals and variants
+
+**All Stories (`reset-all-stories.ts`):**
+- **Database records**: ALL stories, parts, chapters, scenes, characters, settings
+- **Vercel Blob images**: ALL images under `stories/` prefix (all story data)
+
+**Common Details:**
+- **Image specs**: Story/scene (1344×768, 7:4), character (1024×1024), setting (1344×768, 7:4)
+- **Optimized variants**: AVIF + JPEG × mobile 1x/2x per image
+- **Deletion method**: Batch deletion (100 files per batch)
 
 **Safety Features:**
-- Confirmation prompts for bulk operations
-- Dry-run mode to preview deletions
-- Transaction-based for atomicity
-- Audit logging of deletions
-- Owner verification (only story owner or admin can delete)
+- ✅ Preview mode by default (no deletion without `--confirm`)
+- ✅ 5-second countdown before execution (Ctrl+C to cancel)
+- ✅ Detailed deletion report with exact counts
+- ✅ Audit log saved to `logs/` directory
+- ✅ `remove-story.ts`: Requires `stories:write` or `admin:all` scope (writer/manager)
+- ✅ `reset-all-stories.ts`: Requires `admin:all` scope (manager only)
 
 ## Novel Generation
 
