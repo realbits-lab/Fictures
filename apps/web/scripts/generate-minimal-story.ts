@@ -29,23 +29,23 @@
  *   - Environment variables: GOOGLE_GENERATIVE_AI_API_KEY, BLOB_READ_WRITE_TOKEN
  */
 
-import fs from 'fs';
-import path from 'path';
-import { loadProfile } from '../src/lib/utils/auth-loader';
-import { getEnvDisplayName } from '../src/lib/utils/environment';
-import { NOVEL_GENERATION_CONSTRAINTS } from '../src/lib/novels/constants';
+import fs from "fs";
+import path from "path";
+import { NOVEL_GENERATION_CONSTRAINTS } from "../src/lib/novels/constants";
+import { loadProfile } from "../src/lib/utils/auth-loader";
+import { getEnvDisplayName } from "../src/lib/utils/environment";
 
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = "http://localhost:3000";
 
 // Load writer API key from environment-aware auth
-const writer = loadProfile('writer');
+const writer = loadProfile("writer");
 const writerApiKey = writer.apiKey;
 const currentEnv = getEnvDisplayName();
 
-console.log('🚀 Starting story generation with API key authentication...\n');
+console.log("🚀 Starting story generation with API key authentication...\n");
 console.log(`🌍 Environment: ${currentEnv}`);
 console.log(`🔑 Using API key: ${writerApiKey.slice(0, 20)}...`);
-console.log('\n' + '='.repeat(60) + '\n');
+console.log("\n" + "=".repeat(60) + "\n");
 
 // Simple story prompt for minimal generation
 const userPrompt = `
@@ -54,138 +54,155 @@ Genre: Contemporary drama
 Tone: Hopeful and uplifting
 `.trim();
 
-console.log('📝 Story Prompt:');
+console.log("📝 Story Prompt:");
 console.log(userPrompt);
-console.log('\n' + '='.repeat(60) + '\n');
+console.log("\n" + "=".repeat(60) + "\n");
 
 async function generateStory() {
-  try {
-    const startTime = Date.now();
+	try {
+		const startTime = Date.now();
 
-    // Call the novel generation API with API key
-    const response = await fetch(`${BASE_URL}/studio/api/novels/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${writerApiKey}`,  // API key in Authorization header
-      },
-      body: JSON.stringify({
-        userPrompt,
-        preferredGenre: 'Contemporary',
-        preferredTone: 'hopeful',
-        characterCount: NOVEL_GENERATION_CONSTRAINTS.CHARACTER.DEFAULT,    // Minimum for story dynamics
-        settingCount: NOVEL_GENERATION_CONSTRAINTS.SETTING.DEFAULT,      // Minimum for location variety
-        partsCount: NOVEL_GENERATION_CONSTRAINTS.PARTS.DEFAULT,        // Single part = shortest story
-        chaptersPerPart: NOVEL_GENERATION_CONSTRAINTS.CHAPTERS_PER_PART.DEFAULT,   // Single chapter per part
-        scenesPerChapter: NOVEL_GENERATION_CONSTRAINTS.SCENES_PER_CHAPTER.DEFAULT,  // Minimum for adversity-triumph cycle
-        language: 'English',
-      }),
-    });
+		// Call the novel generation API with API key
+		const response = await fetch(`${BASE_URL}/studio/api/novels/generate`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${writerApiKey}`, // API key in Authorization header
+			},
+			body: JSON.stringify({
+				userPrompt,
+				preferredGenre: "Contemporary",
+				preferredTone: "hopeful",
+				characterCount: NOVEL_GENERATION_CONSTRAINTS.CHARACTER.DEFAULT, // Minimum for story dynamics
+				settingCount: NOVEL_GENERATION_CONSTRAINTS.SETTING.DEFAULT, // Minimum for location variety
+				partsCount: NOVEL_GENERATION_CONSTRAINTS.PARTS.DEFAULT, // Single part = shortest story
+				chaptersPerPart: NOVEL_GENERATION_CONSTRAINTS.CHAPTERS_PER_PART.DEFAULT, // Single chapter per part
+				scenesPerChapter:
+					NOVEL_GENERATION_CONSTRAINTS.SCENES_PER_CHAPTER.DEFAULT, // Minimum for adversity-triumph cycle
+				language: "English",
+			}),
+		});
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`API Error (${response.status}): ${error}`);
-    }
+		if (!response.ok) {
+			const error = await response.text();
+			throw new Error(`API Error (${response.status}): ${error}`);
+		}
 
-    // Read SSE stream
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    let storyId = null;
+		// Read SSE stream
+		const reader = response.body.getReader();
+		const decoder = new TextDecoder();
+		let buffer = "";
+		let storyId = null;
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
 
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || ''; // Keep incomplete line in buffer
+			buffer += decoder.decode(value, { stream: true });
+			const lines = buffer.split("\n");
+			buffer = lines.pop() || ""; // Keep incomplete line in buffer
 
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = JSON.parse(line.slice(6));
-          const { phase, message, data: eventData } = data;
+			for (const line of lines) {
+				if (line.startsWith("data: ")) {
+					const data = JSON.parse(line.slice(6));
+					const { phase, message, data: eventData } = data;
 
-          // Log progress
-          if (phase.endsWith('_start')) {
-            const phaseName = phase.replace('_start', '').replace(/_/g, ' ').toUpperCase();
-            console.log(`\n🎬 ${phaseName}`);
-            console.log(`   ${message}`);
-          } else if (phase.endsWith('_progress')) {
-            if (eventData?.currentItem && eventData?.totalItems) {
-              console.log(`   [${eventData.currentItem}/${eventData.totalItems}] ${message}`);
-            } else {
-              console.log(`   → ${message}`);
-            }
-          } else if (phase.endsWith('_complete')) {
-            const phaseName = phase.replace('_complete', '').replace(/_/g, ' ').toUpperCase();
-            console.log(`   ✅ ${phaseName} COMPLETE`);
-          } else if (phase === 'complete') {
-            // Final completion event
-            storyId = eventData.storyId;
-            const endTime = Date.now();
-            const totalTime = (endTime - startTime) / 1000;
+					// Log progress
+					if (phase.endsWith("_start")) {
+						const phaseName = phase
+							.replace("_start", "")
+							.replace(/_/g, " ")
+							.toUpperCase();
+						console.log(`\n🎬 ${phaseName}`);
+						console.log(`   ${message}`);
+					} else if (phase.endsWith("_progress")) {
+						if (eventData?.currentItem && eventData?.totalItems) {
+							console.log(
+								`   [${eventData.currentItem}/${eventData.totalItems}] ${message}`,
+							);
+						} else {
+							console.log(`   → ${message}`);
+						}
+					} else if (phase.endsWith("_complete")) {
+						const phaseName = phase
+							.replace("_complete", "")
+							.replace(/_/g, " ")
+							.toUpperCase();
+						console.log(`   ✅ ${phaseName} COMPLETE`);
+					} else if (phase === "complete") {
+						// Final completion event
+						storyId = eventData.storyId;
+						const endTime = Date.now();
+						const totalTime = (endTime - startTime) / 1000;
 
-            console.log('\n' + '='.repeat(60));
-            console.log('✅ STORY GENERATION COMPLETE!\n');
-            console.log(`Story ID: ${storyId}`);
-            console.log(`Title: ${eventData.story?.title || '(untitled)'}`);
-            console.log(`\nStats:`);
-            console.log(`  - Parts: ${eventData.partsCount}`);
-            console.log(`  - Chapters: ${eventData.chaptersCount}`);
-            console.log(`  - Scenes: ${eventData.scenesCount}`);
-            console.log(`  - Characters: ${eventData.charactersCount}`);
-            console.log(`  - Settings: ${eventData.settingsCount}`);
-            console.log(`\n  - Generation Time: ${totalTime.toFixed(1)}s (${(totalTime / 60).toFixed(1)} minutes)`);
-            console.log('\n' + '='.repeat(60));
+						console.log("\n" + "=".repeat(60));
+						console.log("✅ STORY GENERATION COMPLETE!\n");
+						console.log(`Story ID: ${storyId}`);
+						console.log(`Title: ${eventData.story?.title || "(untitled)"}`);
+						console.log(`\nStats:`);
+						console.log(`  - Parts: ${eventData.partsCount}`);
+						console.log(`  - Chapters: ${eventData.chaptersCount}`);
+						console.log(`  - Scenes: ${eventData.scenesCount}`);
+						console.log(`  - Characters: ${eventData.charactersCount}`);
+						console.log(`  - Settings: ${eventData.settingsCount}`);
+						console.log(
+							`\n  - Generation Time: ${totalTime.toFixed(1)}s (${(totalTime / 60).toFixed(1)} minutes)`,
+						);
+						console.log("\n" + "=".repeat(60));
 
-            // Save story details
-            const logDir = 'logs';
-            if (!fs.existsSync(logDir)) {
-              fs.mkdirSync(logDir, { recursive: true });
-            }
-            const logFile = path.join(logDir, 'api-story-generation.json');
-            fs.writeFileSync(logFile, JSON.stringify({
-              storyId,
-              title: eventData.story?.title,
-              stats: {
-                parts: eventData.partsCount,
-                chapters: eventData.chaptersCount,
-                scenes: eventData.scenesCount,
-                characters: eventData.charactersCount,
-                settings: eventData.settingsCount,
-                generationTime: totalTime,
-              },
-              generatedAt: new Date().toISOString(),
-            }, null, 2));
-            console.log(`\n📄 Story details saved to: ${logFile}`);
+						// Save story details
+						const logDir = "logs";
+						if (!fs.existsSync(logDir)) {
+							fs.mkdirSync(logDir, { recursive: true });
+						}
+						const logFile = path.join(logDir, "api-story-generation.json");
+						fs.writeFileSync(
+							logFile,
+							JSON.stringify(
+								{
+									storyId,
+									title: eventData.story?.title,
+									stats: {
+										parts: eventData.partsCount,
+										chapters: eventData.chaptersCount,
+										scenes: eventData.scenesCount,
+										characters: eventData.charactersCount,
+										settings: eventData.settingsCount,
+										generationTime: totalTime,
+									},
+									generatedAt: new Date().toISOString(),
+								},
+								null,
+								2,
+							),
+						);
+						console.log(`\n📄 Story details saved to: ${logFile}`);
 
-            console.log(`\n🌐 View story at:`);
-            console.log(`   Novel format: ${BASE_URL}/novels/${storyId}`);
-            console.log(`   Comic format: ${BASE_URL}/comics/${storyId}`);
-            console.log(`   Edit: ${BASE_URL}/studio/edit/story/${storyId}`);
-          } else if (phase === 'error') {
-            console.error(`\n❌ ERROR: ${message}`);
-            if (data.error) {
-              console.error(`   Details: ${data.error}`);
-            }
-          }
-        }
-      }
-    }
+						console.log(`\n🌐 View story at:`);
+						console.log(`   Novel format: ${BASE_URL}/novels/${storyId}`);
+						console.log(`   Comic format: ${BASE_URL}/comics/${storyId}`);
+						console.log(`   Edit: ${BASE_URL}/studio/edit/story/${storyId}`);
+					} else if (phase === "error") {
+						console.error(`\n❌ ERROR: ${message}`);
+						if (data.error) {
+							console.error(`   Details: ${data.error}`);
+						}
+					}
+				}
+			}
+		}
 
-    if (!storyId) {
-      throw new Error('Story generation completed but no story ID received');
-    }
-
-  } catch (error) {
-    console.error('\n❌ Generation failed:', error.message);
-    if (error.stack) {
-      console.error('\nStack trace:');
-      console.error(error.stack);
-    }
-    process.exit(1);
-  }
+		if (!storyId) {
+			throw new Error("Story generation completed but no story ID received");
+		}
+	} catch (error) {
+		console.error("\n❌ Generation failed:", error.message);
+		if (error.stack) {
+			console.error("\nStack trace:");
+			console.error(error.stack);
+		}
+		process.exit(1);
+	}
 }
 
 // Run generation

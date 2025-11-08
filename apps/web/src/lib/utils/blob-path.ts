@@ -5,7 +5,7 @@
  * All blob paths are prefixed with environment (main/develop) for data isolation.
  */
 
-import { getFicturesEnv, type FicturesEnvironment } from './environment';
+import { type FicturesEnvironment, getFicturesEnv } from "./environment";
 
 /**
  * Construct environment-aware blob path
@@ -24,12 +24,12 @@ import { getFicturesEnv, type FicturesEnvironment } from './environment';
  * // Returns: 'main/stories/story_123/cover.png'
  */
 export function getBlobPath(path: string, env?: FicturesEnvironment): string {
-  const environment = env || getFicturesEnv();
+	const environment = env || getFicturesEnv();
 
-  // Remove leading slash if present
-  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+	// Remove leading slash if present
+	const cleanPath = path.startsWith("/") ? path.slice(1) : path;
 
-  return `${environment}/${cleanPath}`;
+	return `${environment}/${cleanPath}`;
 }
 
 /**
@@ -39,8 +39,11 @@ export function getBlobPath(path: string, env?: FicturesEnvironment): string {
  * @param env - Optional environment override
  * @returns Blob path for story cover image
  */
-export function getStoryCoverPath(storyId: string, env?: FicturesEnvironment): string {
-  return getBlobPath(`stories/${storyId}/cover.png`, env);
+export function getStoryCoverPath(
+	storyId: string,
+	env?: FicturesEnvironment,
+): string {
+	return getBlobPath(`stories/${storyId}/cover.png`, env);
 }
 
 /**
@@ -52,11 +55,11 @@ export function getStoryCoverPath(storyId: string, env?: FicturesEnvironment): s
  * @returns Blob path for scene image
  */
 export function getSceneImagePath(
-  storyId: string,
-  sceneId: string,
-  env?: FicturesEnvironment
+	storyId: string,
+	sceneId: string,
+	env?: FicturesEnvironment,
 ): string {
-  return getBlobPath(`stories/${storyId}/scenes/${sceneId}/image.png`, env);
+	return getBlobPath(`stories/${storyId}/scenes/${sceneId}/image.png`, env);
 }
 
 /**
@@ -68,11 +71,14 @@ export function getSceneImagePath(
  * @returns Blob path for character portrait
  */
 export function getCharacterPortraitPath(
-  storyId: string,
-  characterId: string,
-  env?: FicturesEnvironment
+	storyId: string,
+	characterId: string,
+	env?: FicturesEnvironment,
 ): string {
-  return getBlobPath(`stories/${storyId}/characters/${characterId}/portrait.png`, env);
+	return getBlobPath(
+		`stories/${storyId}/characters/${characterId}/portrait.png`,
+		env,
+	);
 }
 
 /**
@@ -84,11 +90,14 @@ export function getCharacterPortraitPath(
  * @returns Blob path for setting visual
  */
 export function getSettingVisualPath(
-  storyId: string,
-  settingId: string,
-  env?: FicturesEnvironment
+	storyId: string,
+	settingId: string,
+	env?: FicturesEnvironment,
 ): string {
-  return getBlobPath(`stories/${storyId}/settings/${settingId}/visual.png`, env);
+	return getBlobPath(
+		`stories/${storyId}/settings/${settingId}/visual.png`,
+		env,
+	);
 }
 
 /**
@@ -101,15 +110,15 @@ export function getSettingVisualPath(
  * @returns Blob path for comic panel image
  */
 export function getComicPanelPath(
-  storyId: string,
-  sceneId: string,
-  panelNumber: number,
-  env?: FicturesEnvironment
+	storyId: string,
+	sceneId: string,
+	panelNumber: number,
+	env?: FicturesEnvironment,
 ): string {
-  return getBlobPath(
-    `stories/${storyId}/scenes/${sceneId}/panels/panel-${panelNumber}.png`,
-    env
-  );
+	return getBlobPath(
+		`stories/${storyId}/scenes/${sceneId}/panels/panel-${panelNumber}.png`,
+		env,
+	);
 }
 
 /**
@@ -124,8 +133,8 @@ export function getComicPanelPath(
  * const blobs = await list({ prefix: prefix + 'stories/' });
  */
 export function getEnvironmentPrefix(env?: FicturesEnvironment): string {
-  const environment = env || getFicturesEnv();
-  return `${environment}/`;
+	const environment = env || getFicturesEnv();
+	return `${environment}/`;
 }
 
 /**
@@ -135,8 +144,11 @@ export function getEnvironmentPrefix(env?: FicturesEnvironment): string {
  * @param env - Optional environment override
  * @returns Blob prefix for all story-related files
  */
-export function getStoryBlobPrefix(storyId: string, env?: FicturesEnvironment): string {
-  return getBlobPath(`stories/${storyId}/`, env);
+export function getStoryBlobPrefix(
+	storyId: string,
+	env?: FicturesEnvironment,
+): string {
+	return getBlobPath(`stories/${storyId}/`, env);
 }
 
 /**
@@ -145,9 +157,11 @@ export function getStoryBlobPrefix(storyId: string, env?: FicturesEnvironment): 
  * @param url - Full blob URL
  * @returns Environment extracted from URL, or null if not found
  */
-export function extractEnvironmentFromUrl(url: string): FicturesEnvironment | null {
-  const match = url.match(/\/(main|develop)\//);
-  return match ? (match[1] as FicturesEnvironment) : null;
+export function extractEnvironmentFromUrl(
+	url: string,
+): FicturesEnvironment | null {
+	const match = url.match(/\/(main|develop)\//);
+	return match ? (match[1] as FicturesEnvironment) : null;
 }
 
 /**
@@ -158,10 +172,10 @@ export function extractEnvironmentFromUrl(url: string): FicturesEnvironment | nu
  * @returns True if path belongs to specified environment
  */
 export function isBlobPathInEnvironment(
-  path: string,
-  env: FicturesEnvironment
+	path: string,
+	env: FicturesEnvironment,
 ): boolean {
-  return path.startsWith(`${env}/`);
+	return path.startsWith(`${env}/`);
 }
 
 /**
@@ -177,17 +191,20 @@ export function isBlobPathInEnvironment(
  * // Returns: 'develop/system/placeholders/character-default.png'
  */
 export function getSystemPlaceholderPath(
-  imageType: 'character' | 'setting' | 'scene' | 'story' | 'panel',
-  env?: FicturesEnvironment
+	imageType: "character" | "setting" | "scene" | "story" | "panel",
+	env?: FicturesEnvironment,
 ): string {
-  const filenames: Record<'character' | 'setting' | 'scene' | 'story' | 'panel', string> = {
-    character: 'character-default.png',
-    setting: 'setting-visual.png',
-    scene: 'scene-illustration.png',
-    story: 'story-cover.png',
-    panel: 'panel-illustration.png', // Comic panel placeholder
-  };
-  return getBlobPath(`system/placeholders/${filenames[imageType]}`, env);
+	const filenames: Record<
+		"character" | "setting" | "scene" | "story" | "panel",
+		string
+	> = {
+		character: "character-default.png",
+		setting: "setting-visual.png",
+		scene: "scene-illustration.png",
+		story: "story-cover.png",
+		panel: "panel-illustration.png", // Comic panel placeholder
+	};
+	return getBlobPath(`system/placeholders/${filenames[imageType]}`, env);
 }
 
 /**
@@ -206,11 +223,11 @@ export function getSystemPlaceholderPath(
  * // Returns: 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/system/placeholders/character-default.png'
  */
 export function getSystemPlaceholderUrl(
-  imageType: 'character' | 'setting' | 'scene' | 'story' | 'panel',
-  env?: FicturesEnvironment
+	imageType: "character" | "setting" | "scene" | "story" | "panel",
+	env?: FicturesEnvironment,
 ): string {
-  const path = getSystemPlaceholderPath(imageType, env);
-  // Vercel Blob base URL (same for all environments)
-  const baseUrl = 'https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com';
-  return `${baseUrl}/${path}`;
+	const path = getSystemPlaceholderPath(imageType, env);
+	// Vercel Blob base URL (same for all environments)
+	const baseUrl = "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com";
+	return `${baseUrl}/${path}`;
 }

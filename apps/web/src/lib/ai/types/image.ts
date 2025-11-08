@@ -3,38 +3,38 @@
  * Provider-agnostic interfaces for image generation
  */
 
-export type ImageProvider = 'gemini' | 'ai-server';
+export type ImageProvider = "gemini" | "ai-server";
 
 /**
  * Supported aspect ratios
  */
-export type AspectRatio = '1:1' | '16:9' | '9:16' | '2:3';
+export type AspectRatio = "1:1" | "16:9" | "9:16" | "2:3";
 
 /**
  * Image generation request
  */
 export interface ImageGenerationRequest {
-  prompt: string;
-  aspectRatio: AspectRatio;
-  seed?: number;
+	prompt: string;
+	aspectRatio: AspectRatio;
+	seed?: number;
 }
 
 /**
  * Image generation response
  */
 export interface ImageGenerationResponse {
-  imageUrl: string;
-  model: string;
-  width: number;
-  height: number;
-  seed?: number;
-  provider: ImageProvider;
+	imageUrl: string;
+	model: string;
+	width: number;
+	height: number;
+	seed?: number;
+	provider: ImageProvider;
 }
 
 /**
  * Image dimensions
  */
 export interface ImageDimensions {
-  width: number;
-  height: number;
+	width: number;
+	height: number;
 }

@@ -1,7 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { generateJSON } from '@/lib/novels/ai-client';
-import { CHARACTER_GENERATION_PROMPT } from '@/lib/novels/system-prompts';
-import type { StorySummaryResult, CharacterGenerationResult } from '@/lib/novels/types';
+import { type NextRequest, NextResponse } from "next/server";
+import { generateJSON } from "@/lib/novels/ai-client";
+import { CHARACTER_GENERATION_PROMPT } from "@/lib/novels/system-prompts";
+import type {
+	CharacterGenerationResult,
+	StorySummaryResult,
+} from "@/lib/novels/types";
 
 const CHARACTER_EXPANSION_PROMPT = `${CHARACTER_GENERATION_PROMPT}
 
@@ -123,114 +126,144 @@ Return JSON array with this structure:
 Return ONLY the JSON array, no markdown formatting, no explanations.`;
 
 export async function POST(request: NextRequest) {
-  try {
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('👥 [CHARACTERS API] Request received');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+	try {
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		console.log("👥 [CHARACTERS API] Request received");
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-    const body = await request.json() as { storySummary: StorySummaryResult };
-    const { storySummary } = body;
+		const body = (await request.json()) as { storySummary: StorySummaryResult };
+		const { storySummary } = body;
 
-    console.log('[CHARACTERS API] Request summary:', {
-      hasStorySummary: !!storySummary,
-      genre: storySummary?.genre,
-      tone: storySummary?.tone,
-      characterCount: storySummary?.characters?.length || 0,
-      characterNames: storySummary?.characters?.map(c => c.name).join(', ') || '(none)',
-    });
+		console.log("[CHARACTERS API] Request summary:", {
+			hasStorySummary: !!storySummary,
+			genre: storySummary?.genre,
+			tone: storySummary?.tone,
+			characterCount: storySummary?.characters?.length || 0,
+			characterNames:
+				storySummary?.characters?.map((c) => c.name).join(", ") || "(none)",
+		});
 
-    if (!storySummary || !storySummary.characters || storySummary.characters.length < 2) {
-      console.error('❌ [CHARACTERS API] Validation failed:', {
-        hasStorySummary: !!storySummary,
-        hasCharacters: !!storySummary?.characters,
-        characterCount: storySummary?.characters?.length || 0,
-      });
-      return NextResponse.json(
-        { error: 'Valid story summary with at least 2 characters is required' },
-        { status: 400 }
-      );
-    }
+		if (
+			!storySummary ||
+			!storySummary.characters ||
+			storySummary.characters.length < 2
+		) {
+			console.error("❌ [CHARACTERS API] Validation failed:", {
+				hasStorySummary: !!storySummary,
+				hasCharacters: !!storySummary?.characters,
+				characterCount: storySummary?.characters?.length || 0,
+			});
+			return NextResponse.json(
+				{ error: "Valid story summary with at least 2 characters is required" },
+				{ status: 400 },
+			);
+		}
 
-    console.log('✅ [CHARACTERS API] Validation passed');
+		console.log("✅ [CHARACTERS API] Validation passed");
 
-    // Build context for character expansion
-    const characterContext = `
+		// Build context for character expansion
+		const characterContext = `
 # STORY CONTEXT
 Genre: ${storySummary.genre}
 Tone: ${storySummary.tone}
 Moral Framework: ${storySummary.moralFramework}
 
 # BASIC CHARACTER DATA
-${storySummary.characters.map((char, idx) => `
+${storySummary.characters
+	.map(
+		(char, idx) => `
 ${idx + 1}. ${char.name}
    - Core Trait: ${char.coreTrait}
    - Internal Flaw: ${char.internalFlaw}
    - External Goal: ${char.externalGoal}
-`).join('\n')}
+`,
+	)
+	.join("\n")}
 
 Expand these characters into complete profiles following the requirements.
 `;
 
-    console.log('[CHARACTERS API] 🤖 Calling AI generation...');
-    console.log('[CHARACTERS API] Model: gemini-2.5-flash-lite');
-    console.log('[CHARACTERS API] Temperature: 0.8');
+		console.log("[CHARACTERS API] 🤖 Calling AI generation...");
+		console.log("[CHARACTERS API] Model: gemini-2.5-flash-lite");
+		console.log("[CHARACTERS API] Temperature: 0.8");
 
-    const result = await generateJSON<CharacterGenerationResult[]>({
-      prompt: characterContext,
-      systemPrompt: CHARACTER_EXPANSION_PROMPT,
-      model: 'gemini-2.5-flash-lite',
-      temperature: 0.8,
-    });
+		const result = await generateJSON<CharacterGenerationResult[]>({
+			prompt: characterContext,
+			systemPrompt: CHARACTER_EXPANSION_PROMPT,
+			model: "gemini-2.5-flash-lite",
+			temperature: 0.8,
+		});
 
-    console.log('[CHARACTERS API] ✅ AI generation completed');
-    console.log('[CHARACTERS API] Result summary:', {
-      isArray: Array.isArray(result),
-      count: Array.isArray(result) ? result.length : 0,
-      expectedCount: storySummary.characters.length,
-      characterNames: Array.isArray(result) ? result.map(c => c.name).join(', ') : '(invalid)',
-    });
+		console.log("[CHARACTERS API] ✅ AI generation completed");
+		console.log("[CHARACTERS API] Result summary:", {
+			isArray: Array.isArray(result),
+			count: Array.isArray(result) ? result.length : 0,
+			expectedCount: storySummary.characters.length,
+			characterNames: Array.isArray(result)
+				? result.map((c) => c.name).join(", ")
+				: "(invalid)",
+		});
 
-    // Validate result
-    if (!Array.isArray(result) || result.length !== storySummary.characters.length) {
-      console.error('❌ [CHARACTERS API] Validation failed: wrong number of characters');
-      throw new Error('Invalid character generation result: wrong number of characters');
-    }
+		// Validate result
+		if (
+			!Array.isArray(result) ||
+			result.length !== storySummary.characters.length
+		) {
+			console.error(
+				"❌ [CHARACTERS API] Validation failed: wrong number of characters",
+			);
+			throw new Error(
+				"Invalid character generation result: wrong number of characters",
+			);
+		}
 
-    // Validate each character has required fields
-    for (const char of result) {
-      if (!char.id || !char.name || !char.personality || !char.backstory || !char.relationships) {
-        throw new Error(`Invalid character data for ${char.name}: missing required fields`);
-      }
-    }
+		// Validate each character has required fields
+		for (const char of result) {
+			if (
+				!char.id ||
+				!char.name ||
+				!char.personality ||
+				!char.backstory ||
+				!char.relationships
+			) {
+				throw new Error(
+					`Invalid character data for ${char.name}: missing required fields`,
+				);
+			}
+		}
 
-    // Validate relationship bidirectionality
-    const charIds = result.map(c => c.id);
-    for (const char of result) {
-      const relatedIds = Object.keys(char.relationships);
-      for (const relId of relatedIds) {
-        if (!charIds.includes(relId)) {
-          throw new Error(`Invalid relationship: ${char.id} references non-existent character ${relId}`);
-        }
-        // Check if reciprocal relationship exists
-        const relatedChar = result.find(c => c.id === relId);
-        if (!relatedChar || !relatedChar.relationships[char.id]) {
-          throw new Error(`Missing reciprocal relationship: ${relId} → ${char.id}`);
-        }
-      }
-    }
+		// Validate relationship bidirectionality
+		const charIds = result.map((c) => c.id);
+		for (const char of result) {
+			const relatedIds = Object.keys(char.relationships);
+			for (const relId of relatedIds) {
+				if (!charIds.includes(relId)) {
+					throw new Error(
+						`Invalid relationship: ${char.id} references non-existent character ${relId}`,
+					);
+				}
+				// Check if reciprocal relationship exists
+				const relatedChar = result.find((c) => c.id === relId);
+				if (!relatedChar || !relatedChar.relationships[char.id]) {
+					throw new Error(
+						`Missing reciprocal relationship: ${relId} → ${char.id}`,
+					);
+				}
+			}
+		}
 
-    console.log('✅ [CHARACTERS API] All validations passed, returning result');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+		console.log("✅ [CHARACTERS API] All validations passed, returning result");
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-    return NextResponse.json(result);
-  } catch (error) {
-    console.error('Character generation error:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to generate characters',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    );
-  }
+		return NextResponse.json(result);
+	} catch (error) {
+		console.error("Character generation error:", error);
+		return NextResponse.json(
+			{
+				error: "Failed to generate characters",
+				details: error instanceof Error ? error.message : "Unknown error",
+			},
+			{ status: 500 },
+		);
+	}
 }

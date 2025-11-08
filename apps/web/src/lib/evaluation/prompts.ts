@@ -1,21 +1,26 @@
-import type { EvaluationContext } from './schemas';
+import type { EvaluationContext } from "./schemas";
 
 /**
  * Build evaluation prompt based on the Architectonics of Engagement framework
  * Adapted for scene-level evaluation from the qualitative evaluation framework
  */
-export function buildEvaluationPrompt(sceneContent: string, context?: EvaluationContext): string {
-  const contextSection = context ? `
+export function buildEvaluationPrompt(
+	sceneContent: string,
+	context?: EvaluationContext,
+): string {
+	const contextSection = context
+		? `
 ## Story Context
 
-${context.storyGenre ? `- **Genre**: ${context.storyGenre}` : ''}
-${context.arcPosition ? `- **Arc Position**: ${context.arcPosition}` : ''}
-${context.chapterNumber ? `- **Chapter Number**: ${context.chapterNumber}` : ''}
-${context.previousSceneSummary ? `- **Previous Scene**: ${context.previousSceneSummary}` : ''}
-${context.characterContext && context.characterContext.length > 0 ? `- **Key Characters**: ${context.characterContext.join(', ')}` : ''}
-` : '';
+${context.storyGenre ? `- **Genre**: ${context.storyGenre}` : ""}
+${context.arcPosition ? `- **Arc Position**: ${context.arcPosition}` : ""}
+${context.chapterNumber ? `- **Chapter Number**: ${context.chapterNumber}` : ""}
+${context.previousSceneSummary ? `- **Previous Scene**: ${context.previousSceneSummary}` : ""}
+${context.characterContext && context.characterContext.length > 0 ? `- **Key Characters**: ${context.characterContext.join(", ")}` : ""}
+`
+		: "";
 
-  return `You are Alex, an expert web novel editor and content strategist, specializing in scene-level evaluation based on "The Architectonics of Engagement" framework.
+	return `You are Alex, an expert web novel editor and content strategist, specializing in scene-level evaluation based on "The Architectonics of Engagement" framework.
 
 ## Your Role
 

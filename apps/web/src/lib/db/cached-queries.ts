@@ -1,14 +1,14 @@
-import { withCache, invalidateCache, getCache } from '../cache/redis-cache';
-import { measureAsync } from '../cache/performance-logger';
-import * as queries from './queries';
-import { db } from './index';
-import * as schema from './schema';
-import { eq, asc } from 'drizzle-orm';
+import { asc, eq } from "drizzle-orm";
+import { measureAsync } from "../cache/performance-logger";
+import { getCache, invalidateCache, withCache } from "../cache/redis-cache";
+import { db } from "./index";
+import * as queries from "./queries";
+import * as schema from "./schema";
 
 const CACHE_TTL = {
-  PUBLISHED_CONTENT: 3600,   // 1 hour for published (shared by all users) - Extended from 10min for better performance
-  PRIVATE_CONTENT: 180,      // 3 minutes for private (user-specific)
-  LIST: 600,                 // 10 minutes for lists - Extended from 5min
+	PUBLISHED_CONTENT: 3600, // 1 hour for published (shared by all users) - Extended from 10min for better performance
+	PRIVATE_CONTENT: 180, // 3 minutes for private (user-specific)
+	LIST: 600, // 10 minutes for lists - Extended from 5min
 };
 
 /**
@@ -19,223 +19,249 @@ const CACHE_TTL = {
  */
 
 export async function getStoryById(storyId: string, userId?: string) {
-  return measureAsync(
-    'getStoryById',
-    async () => {
-      // Try public cache first (most stories are published)
-      const publicCacheKey = `story:${storyId}:public`;
-      const cachedPublic = await getCache().get(publicCacheKey);
+	return measureAsync(
+		"getStoryById",
+		async () => {
+			// Try public cache first (most stories are published)
+			const publicCacheKey = `story:${storyId}:public`;
+			const cachedPublic = await getCache().get(publicCacheKey);
 
-      if (cachedPublic) {
-        console.log(`[Cache] HIT public story: ${storyId}`);
-        return cachedPublic;
-      }
+			if (cachedPublic) {
+				console.log(`[Cache] HIT public story: ${storyId}`);
+				return cachedPublic;
+			}
 
-      // If user is authenticated, try user-specific cache
-      if (userId) {
-        const userCacheKey = `story:${storyId}:user:${userId}`;
-        const cachedUser = await getCache().get(userCacheKey);
+			// If user is authenticated, try user-specific cache
+			if (userId) {
+				const userCacheKey = `story:${storyId}:user:${userId}`;
+				const cachedUser = await getCache().get(userCacheKey);
 
-        if (cachedUser) {
-          console.log(`[Cache] HIT user-specific story: ${storyId}`);
-          return cachedUser;
-        }
-      }
+				if (cachedUser) {
+					console.log(`[Cache] HIT user-specific story: ${storyId}`);
+					return cachedUser;
+				}
+			}
 
-      // Cache miss - fetch from database
-      const story = await queries.getStoryById(storyId, userId);
+			// Cache miss - fetch from database
+			const story = await queries.getStoryById(storyId, userId);
 
-      if (!story) return null;
+			if (!story) return null;
 
-      // Cache based on story status
-      const isPublished = story.status === 'published';
+			// Cache based on story status
+			const isPublished = story.status === "published";
 
-      if (isPublished) {
-        // Published stories: Shared cache for ALL users
-        await getCache().set(publicCacheKey, story, CACHE_TTL.PUBLISHED_CONTENT);
-        console.log(`[Cache] SET public story: ${storyId} (shared by all users)`);
-      } else if (userId) {
-        // Private stories: User-specific cache
-        const userCacheKey = `story:${storyId}:user:${userId}`;
-        await getCache().set(userCacheKey, story, CACHE_TTL.PRIVATE_CONTENT);
-        console.log(`[Cache] SET private story: ${storyId} (user: ${userId})`);
-      }
+			if (isPublished) {
+				// Published stories: Shared cache for ALL users
+				await getCache().set(
+					publicCacheKey,
+					story,
+					CACHE_TTL.PUBLISHED_CONTENT,
+				);
+				console.log(
+					`[Cache] SET public story: ${storyId} (shared by all users)`,
+				);
+			} else if (userId) {
+				// Private stories: User-specific cache
+				const userCacheKey = `story:${storyId}:user:${userId}`;
+				await getCache().set(userCacheKey, story, CACHE_TTL.PRIVATE_CONTENT);
+				console.log(`[Cache] SET private story: ${storyId} (user: ${userId})`);
+			}
 
-      return story;
-    },
-    { storyId, userId, cached: true }
-  ).then(r => r.result);
+			return story;
+		},
+		{ storyId, userId, cached: true },
+	).then((r) => r.result);
 }
 
 export async function getStoryChapters(storyId: string, userId?: string) {
-  return measureAsync(
-    'getStoryChapters',
-    async () => {
-      // First check if story is published (from cache or DB)
-      const story: any = await getStoryById(storyId, userId);
-      if (!story) return [];
+	return measureAsync(
+		"getStoryChapters",
+		async () => {
+			// First check if story is published (from cache or DB)
+			const story: any = await getStoryById(storyId, userId);
+			if (!story) return [];
 
-      const isPublished = story.status === 'published';
-      const cacheKey = isPublished
-        ? `story:${storyId}:chapters:public`
-        : `story:${storyId}:chapters:user:${userId}`;
+			const isPublished = story.status === "published";
+			const cacheKey = isPublished
+				? `story:${storyId}:chapters:public`
+				: `story:${storyId}:chapters:user:${userId}`;
 
-      return withCache(
-        cacheKey,
-        () => queries.getStoryChapters(storyId, userId),
-        isPublished ? CACHE_TTL.PUBLISHED_CONTENT : CACHE_TTL.PRIVATE_CONTENT
-      );
-    },
-    { storyId, userId, cached: true }
-  ).then(r => r.result);
+			return withCache(
+				cacheKey,
+				() => queries.getStoryChapters(storyId, userId),
+				isPublished ? CACHE_TTL.PUBLISHED_CONTENT : CACHE_TTL.PRIVATE_CONTENT,
+			);
+		},
+		{ storyId, userId, cached: true },
+	).then((r) => r.result);
 }
 
 export async function getChapterById(chapterId: string, userId?: string) {
-  return measureAsync(
-    'getChapterById',
-    async () => {
-      // Try public cache first
-      const publicCacheKey = `chapter:${chapterId}:public`;
-      const cachedPublic = await getCache().get(publicCacheKey);
+	return measureAsync(
+		"getChapterById",
+		async () => {
+			// Try public cache first
+			const publicCacheKey = `chapter:${chapterId}:public`;
+			const cachedPublic = await getCache().get(publicCacheKey);
 
-      if (cachedPublic) return cachedPublic;
+			if (cachedPublic) return cachedPublic;
 
-      // Fetch from database
-      const chapter = await queries.getChapterById(chapterId, userId);
+			// Fetch from database
+			const chapter = await queries.getChapterById(chapterId, userId);
 
-      if (!chapter) return null;
+			if (!chapter) return null;
 
-      // Chapters from published stories are cached publicly
-      // (We assume if user can access it, it's either published or they're the author)
-      await getCache().set(publicCacheKey, chapter, CACHE_TTL.PUBLISHED_CONTENT);
+			// Chapters from published stories are cached publicly
+			// (We assume if user can access it, it's either published or they're the author)
+			await getCache().set(
+				publicCacheKey,
+				chapter,
+				CACHE_TTL.PUBLISHED_CONTENT,
+			);
 
-      return chapter;
-    },
-    { chapterId, userId, cached: true }
-  ).then(r => r.result);
+			return chapter;
+		},
+		{ chapterId, userId, cached: true },
+	).then((r) => r.result);
 }
 
-export async function getChapterScenes(chapterId: string, userId?: string, isPublishedStory: boolean = false) {
-  return measureAsync(
-    'getChapterScenes',
-    async () => {
-      // Use appropriate cache based on story publish status
-      const cacheKey = isPublishedStory
-        ? `chapter:${chapterId}:scenes:public`
-        : userId
-        ? `chapter:${chapterId}:scenes:user:${userId}`
-        : null;
+export async function getChapterScenes(
+	chapterId: string,
+	userId?: string,
+	isPublishedStory: boolean = false,
+) {
+	return measureAsync(
+		"getChapterScenes",
+		async () => {
+			// Use appropriate cache based on story publish status
+			const cacheKey = isPublishedStory
+				? `chapter:${chapterId}:scenes:public`
+				: userId
+					? `chapter:${chapterId}:scenes:user:${userId}`
+					: null;
 
-      // Try cache first
-      if (cacheKey) {
-        const cached = await getCache().get(cacheKey);
-        if (cached) {
-          console.log(`[Cache] HIT ${isPublishedStory ? 'public' : 'user-specific'} chapter scenes: ${chapterId}`);
-          return cached;
-        }
-      }
+			// Try cache first
+			if (cacheKey) {
+				const cached = await getCache().get(cacheKey);
+				if (cached) {
+					console.log(
+						`[Cache] HIT ${isPublishedStory ? "public" : "user-specific"} chapter scenes: ${chapterId}`,
+					);
+					return cached;
+				}
+			}
 
-      // Cache miss - fetch from database
-      console.log(`[Cache] MISS chapter scenes: ${chapterId}`);
-      const scenes = await db
-        .select()
-        .from(schema.scenes)
-        .where(eq(schema.scenes.chapterId, chapterId))
-        .orderBy(asc(schema.scenes.orderIndex));
+			// Cache miss - fetch from database
+			console.log(`[Cache] MISS chapter scenes: ${chapterId}`);
+			const scenes = await db
+				.select()
+				.from(schema.scenes)
+				.where(eq(schema.scenes.chapterId, chapterId))
+				.orderBy(asc(schema.scenes.orderIndex));
 
-      // Scene images are now in imageUrl field directly
-      const scenesWithImages = scenes.map(scene => ({
-        ...scene,
-        sceneImage: scene.imageUrl || null
-      }));
+			// Scene images are now in imageUrl field directly
+			const scenesWithImages = scenes.map((scene) => ({
+				...scene,
+				sceneImage: scene.imageUrl || null,
+			}));
 
-      // Cache the result
-      if (cacheKey) {
-        const ttl = isPublishedStory ? CACHE_TTL.PUBLISHED_CONTENT : CACHE_TTL.PRIVATE_CONTENT;
-        await getCache().set(cacheKey, scenesWithImages, ttl);
-        console.log(`[Cache] SET ${isPublishedStory ? 'public' : 'user-specific'} chapter scenes: ${chapterId}`);
-      }
+			// Cache the result
+			if (cacheKey) {
+				const ttl = isPublishedStory
+					? CACHE_TTL.PUBLISHED_CONTENT
+					: CACHE_TTL.PRIVATE_CONTENT;
+				await getCache().set(cacheKey, scenesWithImages, ttl);
+				console.log(
+					`[Cache] SET ${isPublishedStory ? "public" : "user-specific"} chapter scenes: ${chapterId}`,
+				);
+			}
 
-      return scenesWithImages;
-    },
-    { chapterId, userId, isPublishedStory, cached: true }
-  ).then(r => r.result);
+			return scenesWithImages;
+		},
+		{ chapterId, userId, isPublishedStory, cached: true },
+	).then((r) => r.result);
 }
 
 export async function getSceneById(sceneId: string, userId?: string) {
-  return measureAsync(
-    'getSceneById',
-    async () => {
-      // Try public cache first
-      const publicCacheKey = `scene:${sceneId}:public`;
-      const cachedPublic = await getCache().get(publicCacheKey);
+	return measureAsync(
+		"getSceneById",
+		async () => {
+			// Try public cache first
+			const publicCacheKey = `scene:${sceneId}:public`;
+			const cachedPublic = await getCache().get(publicCacheKey);
 
-      if (cachedPublic) {
-        console.log(`[Cache] HIT public scene: ${sceneId}`);
-        return cachedPublic;
-      }
+			if (cachedPublic) {
+				console.log(`[Cache] HIT public scene: ${sceneId}`);
+				return cachedPublic;
+			}
 
-      // If user is authenticated, try user-specific cache
-      if (userId) {
-        const userCacheKey = `scene:${sceneId}:user:${userId}`;
-        const cachedUser = await getCache().get(userCacheKey);
+			// If user is authenticated, try user-specific cache
+			if (userId) {
+				const userCacheKey = `scene:${sceneId}:user:${userId}`;
+				const cachedUser = await getCache().get(userCacheKey);
 
-        if (cachedUser) {
-          console.log(`[Cache] HIT user-specific scene: ${sceneId}`);
-          return cachedUser;
-        }
-      }
+				if (cachedUser) {
+					console.log(`[Cache] HIT user-specific scene: ${sceneId}`);
+					return cachedUser;
+				}
+			}
 
-      // Cache miss - fetch from database
-      const scene = await queries.getSceneById(sceneId, userId);
+			// Cache miss - fetch from database
+			const scene = await queries.getSceneById(sceneId, userId);
 
-      if (!scene) return null;
+			if (!scene) return null;
 
-      // Check if scene is from a published story
-      const isPublished = scene.story?.status === 'published';
+			// Check if scene is from a published story
+			const isPublished = scene.story?.status === "published";
 
-      if (isPublished) {
-        // Published scenes: Shared cache for ALL users
-        await getCache().set(publicCacheKey, scene, CACHE_TTL.PUBLISHED_CONTENT);
-        console.log(`[Cache] SET public scene: ${sceneId} (shared by all users)`);
-      } else if (userId) {
-        // Private scenes: User-specific cache
-        const userCacheKey = `scene:${sceneId}:user:${userId}`;
-        await getCache().set(userCacheKey, scene, CACHE_TTL.PRIVATE_CONTENT);
-        console.log(`[Cache] SET private scene: ${sceneId} (user: ${userId})`);
-      }
+			if (isPublished) {
+				// Published scenes: Shared cache for ALL users
+				await getCache().set(
+					publicCacheKey,
+					scene,
+					CACHE_TTL.PUBLISHED_CONTENT,
+				);
+				console.log(
+					`[Cache] SET public scene: ${sceneId} (shared by all users)`,
+				);
+			} else if (userId) {
+				// Private scenes: User-specific cache
+				const userCacheKey = `scene:${sceneId}:user:${userId}`;
+				await getCache().set(userCacheKey, scene, CACHE_TTL.PRIVATE_CONTENT);
+				console.log(`[Cache] SET private scene: ${sceneId} (user: ${userId})`);
+			}
 
-      return scene;
-    },
-    { sceneId, userId, cached: true }
-  ).then(r => r.result);
+			return scene;
+		},
+		{ sceneId, userId, cached: true },
+	).then((r) => r.result);
 }
 
 export async function getStoryWithStructure(
-  storyId: string,
-  includeScenes: boolean = true,
-  userId?: string
+	storyId: string,
+	includeScenes: boolean = true,
+	userId?: string,
 ) {
-  return measureAsync(
-    'getStoryWithStructure',
-    async () => {
-      // Check story status first
-      const story: any = await getStoryById(storyId, userId);
-      if (!story) return null;
+	return measureAsync(
+		"getStoryWithStructure",
+		async () => {
+			// Check story status first
+			const story: any = await getStoryById(storyId, userId);
+			if (!story) return null;
 
-      const isPublished = story.status === 'published';
-      const cacheKey = isPublished
-        ? `story:${storyId}:structure:scenes:${includeScenes}:public`
-        : `story:${storyId}:structure:scenes:${includeScenes}:user:${userId}`;
+			const isPublished = story.status === "published";
+			const cacheKey = isPublished
+				? `story:${storyId}:structure:scenes:${includeScenes}:public`
+				: `story:${storyId}:structure:scenes:${includeScenes}:user:${userId}`;
 
-      return withCache(
-        cacheKey,
-        () => queries.getStoryWithStructure(storyId, includeScenes, userId),
-        isPublished ? CACHE_TTL.PUBLISHED_CONTENT : CACHE_TTL.PRIVATE_CONTENT
-      );
-    },
-    { storyId, includeScenes, userId, cached: true }
-  ).then(r => r.result);
+			return withCache(
+				cacheKey,
+				() => queries.getStoryWithStructure(storyId, includeScenes, userId),
+				isPublished ? CACHE_TTL.PUBLISHED_CONTENT : CACHE_TTL.PRIVATE_CONTENT,
+			);
+		},
+		{ storyId, includeScenes, userId, cached: true },
+	).then((r) => r.result);
 }
 
 /**
@@ -248,80 +274,85 @@ export async function getStoryWithStructure(
  * - Batched queries for 67% faster performance
  * - Redis caching with 1-hour TTL for published content
  */
-export async function getStoryWithComicPanels(storyId: string, userId?: string) {
-  return measureAsync(
-    'getStoryWithComicPanels',
-    async () => {
-      // Use optimized comic queries for better performance
-      const { getStoryWithComicPanels: fetchOptimized } = await import('./comic-queries');
-      return fetchOptimized(storyId);
-    },
-    { storyId, userId, cached: true }
-  ).then(r => r.result);
+export async function getStoryWithComicPanels(
+	storyId: string,
+	userId?: string,
+) {
+	return measureAsync(
+		"getStoryWithComicPanels",
+		async () => {
+			// Use optimized comic queries for better performance
+			const { getStoryWithComicPanels: fetchOptimized } = await import(
+				"./comic-queries"
+			);
+			return fetchOptimized(storyId);
+		},
+		{ storyId, userId, cached: true },
+	).then((r) => r.result);
 }
 
 export async function getUserStories(userId: string) {
-  const cacheKey = `user:${userId}:stories`;
+	const cacheKey = `user:${userId}:stories`;
 
-  return measureAsync(
-    'getUserStories',
-    async () => {
-      return withCache(
-        cacheKey,
-        () => queries.getUserStories(userId),
-        CACHE_TTL.LIST
-      );
-    },
-    { userId, cached: true }
-  ).then(r => r.result);
+	return measureAsync(
+		"getUserStories",
+		async () => {
+			return withCache(
+				cacheKey,
+				() => queries.getUserStories(userId),
+				CACHE_TTL.LIST,
+			);
+		},
+		{ userId, cached: true },
+	).then((r) => r.result);
 }
 
 export async function getUserStoriesWithFirstChapter(userId: string) {
-  const cacheKey = `user:${userId}:stories:with-first-chapter`;
+	const cacheKey = `user:${userId}:stories:with-first-chapter`;
 
-  return measureAsync(
-    'getUserStoriesWithFirstChapter',
-    async () => {
-      return withCache(
-        cacheKey,
-        () => queries.getUserStoriesWithFirstChapter(userId),
-        CACHE_TTL.LIST
-      );
-    },
-    { userId, cached: true }
-  ).then(r => r.result);
+	return measureAsync(
+		"getUserStoriesWithFirstChapter",
+		async () => {
+			return withCache(
+				cacheKey,
+				() => queries.getUserStoriesWithFirstChapter(userId),
+				CACHE_TTL.LIST,
+			);
+		},
+		{ userId, cached: true },
+	).then((r) => r.result);
 }
 
 export async function getPublishedStories() {
-  const cacheKey = 'stories:published';
+	const cacheKey = "stories:published";
 
-  return measureAsync(
-    'getPublishedStories',
-    async () => {
-      return withCache(
-        cacheKey,
-        () => queries.getPublishedStories(),
-        CACHE_TTL.PUBLISHED_CONTENT
-      );
-    },
-    { cached: true }
-  ).then(r => r.result);
+	return measureAsync(
+		"getPublishedStories",
+		async () => {
+			return withCache(
+				cacheKey,
+				() => queries.getPublishedStories(),
+				CACHE_TTL.PUBLISHED_CONTENT,
+			);
+		},
+		{ cached: true },
+	).then((r) => r.result);
 }
 
 export async function getCommunityStories() {
-  const cacheKey = 'community:stories:all';
+	const cacheKey = "community:stories:all";
 
-  return measureAsync(
-    'getCommunityStories',
-    async () => {
-      return withCache(
-        cacheKey,
-        () => queries.getCommunityStories(),
-        300 // 5 minutes TTL for community stories (more dynamic than published list)
-      );
-    },
-    { cached: true }
-  ).then(r => r.result);
+	return measureAsync(
+		"getCommunityStories",
+		async () => {
+			return withCache(
+				cacheKey,
+				() => queries.getCommunityStories(),
+				300, // 5 minutes TTL for community stories (more dynamic than published list)
+			);
+		},
+		{ cached: true },
+	).then((r) => r.result);
 }
 
 /**
@@ -337,19 +368,19 @@ export async function getCommunityStories() {
  * @param storyId - Story ID to fetch
  */
 export async function getCommunityStory(storyId: string) {
-  const cacheKey = `community:story:${storyId}:public`;
+	const cacheKey = `community:story:${storyId}:public`;
 
-  return measureAsync(
-    'getCommunityStory',
-    async () => {
-      return withCache(
-        cacheKey,
-        () => queries.getCommunityStory(storyId),
-        CACHE_TTL.PUBLISHED_CONTENT // 1 hour
-      );
-    },
-    { storyId, cached: true }
-  ).then(r => r.result);
+	return measureAsync(
+		"getCommunityStory",
+		async () => {
+			return withCache(
+				cacheKey,
+				() => queries.getCommunityStory(storyId),
+				CACHE_TTL.PUBLISHED_CONTENT, // 1 hour
+			);
+		},
+		{ storyId, cached: true },
+	).then((r) => r.result);
 }
 
 /**
@@ -365,19 +396,19 @@ export async function getCommunityStory(storyId: string) {
  * @param storyId - Story ID to fetch posts for
  */
 export async function getCommunityPosts(storyId: string) {
-  const cacheKey = `community:story:${storyId}:posts:public`;
+	const cacheKey = `community:story:${storyId}:posts:public`;
 
-  return measureAsync(
-    'getCommunityPosts',
-    async () => {
-      return withCache(
-        cacheKey,
-        () => queries.getCommunityPosts(storyId),
-        CACHE_TTL.PUBLISHED_CONTENT // 1 hour
-      );
-    },
-    { storyId, cached: true }
-  ).then(r => r.result);
+	return measureAsync(
+		"getCommunityPosts",
+		async () => {
+			return withCache(
+				cacheKey,
+				() => queries.getCommunityPosts(storyId),
+				CACHE_TTL.PUBLISHED_CONTENT, // 1 hour
+			);
+		},
+		{ storyId, cached: true },
+	).then((r) => r.result);
 }
 
 /**
@@ -389,211 +420,203 @@ export async function getCommunityPosts(storyId: string) {
  * - Keep imageVariants for AVIF optimization
  */
 
-import * as communityQueries from './community-queries';
+import * as communityQueries from "./community-queries";
 
 export async function getCommunityStoriesOptimized() {
-  const cacheKey = 'community:stories:all:optimized';
+	const cacheKey = "community:stories:all:optimized";
 
-  return measureAsync(
-    'getCommunityStoriesOptimized',
-    async () => {
-      return withCache(
-        cacheKey,
-        () => communityQueries.getCommunityStoriesForReading(),
-        600 // 10 minutes TTL (increased from 5min for better cache hit rate)
-      );
-    },
-    { cached: true }
-  ).then(r => r.result);
+	return measureAsync(
+		"getCommunityStoriesOptimized",
+		async () => {
+			return withCache(
+				cacheKey,
+				() => communityQueries.getCommunityStoriesForReading(),
+				600, // 10 minutes TTL (increased from 5min for better cache hit rate)
+			);
+		},
+		{ cached: true },
+	).then((r) => r.result);
 }
 
 export async function getCommunityStoryOptimized(storyId: string) {
-  const cacheKey = `community:story:${storyId}:optimized`;
+	const cacheKey = `community:story:${storyId}:optimized`;
 
-  return measureAsync(
-    'getCommunityStoryOptimized',
-    async () => {
-      return withCache(
-        cacheKey,
-        () => communityQueries.getCommunityStoryForReading(storyId),
-        CACHE_TTL.PUBLISHED_CONTENT // 1 hour
-      );
-    },
-    { storyId, cached: true }
-  ).then(r => r.result);
+	return measureAsync(
+		"getCommunityStoryOptimized",
+		async () => {
+			return withCache(
+				cacheKey,
+				() => communityQueries.getCommunityStoryForReading(storyId),
+				CACHE_TTL.PUBLISHED_CONTENT, // 1 hour
+			);
+		},
+		{ storyId, cached: true },
+	).then((r) => r.result);
 }
 
 export async function getCommunityPostsOptimized(storyId: string) {
-  const cacheKey = `community:story:${storyId}:posts:optimized`;
+	const cacheKey = `community:story:${storyId}:posts:optimized`;
 
-  return measureAsync(
-    'getCommunityPostsOptimized',
-    async () => {
-      return withCache(
-        cacheKey,
-        () => communityQueries.getCommunityPostsForReading(storyId),
-        CACHE_TTL.PUBLISHED_CONTENT // 1 hour
-      );
-    },
-    { storyId, cached: true }
-  ).then(r => r.result);
+	return measureAsync(
+		"getCommunityPostsOptimized",
+		async () => {
+			return withCache(
+				cacheKey,
+				() => communityQueries.getCommunityPostsForReading(storyId),
+				CACHE_TTL.PUBLISHED_CONTENT, // 1 hour
+			);
+		},
+		{ storyId, cached: true },
+	).then((r) => r.result);
 }
 
 export async function getChapterWithPart(chapterId: string, userId?: string) {
-  const publicCacheKey = `chapter:${chapterId}:with-part:public`;
+	const publicCacheKey = `chapter:${chapterId}:with-part:public`;
 
-  return measureAsync(
-    'getChapterWithPart',
-    async () => {
-      return withCache(
-        publicCacheKey,
-        () => queries.getChapterWithPart(chapterId, userId),
-        CACHE_TTL.PUBLISHED_CONTENT
-      );
-    },
-    { chapterId, userId, cached: true }
-  ).then(r => r.result);
+	return measureAsync(
+		"getChapterWithPart",
+		async () => {
+			return withCache(
+				publicCacheKey,
+				() => queries.getChapterWithPart(chapterId, userId),
+				CACHE_TTL.PUBLISHED_CONTENT,
+			);
+		},
+		{ chapterId, userId, cached: true },
+	).then((r) => r.result);
 }
 
 // Write operations with smart cache invalidation
 export async function updateStory(
-  storyId: string,
-  userId: string,
-  data: Partial<{
-    title: string;
-    summary: string;
-    genre: string;
-    status: 'writing' | 'published';
-  }>
+	storyId: string,
+	userId: string,
+	data: Partial<{
+		title: string;
+		summary: string;
+		genre: string;
+		status: "writing" | "published";
+	}>,
 ) {
-  const result = await measureAsync(
-    'updateStory',
-    () => queries.updateStory(storyId, userId, data),
-    { storyId, userId }
-  );
+	const result = await measureAsync(
+		"updateStory",
+		() => queries.updateStory(storyId, userId, data),
+		{ storyId, userId },
+	);
 
-  // Invalidate both public and user-specific caches
-  await invalidateCache([
-    `story:${storyId}:public`,              // Public cache
-    `story:${storyId}:user:${userId}`,      // User cache
-    `story:${storyId}:*`,                   // All story variants
-    `user:${userId}:stories*`,               // User's story lists
-    `stories:published`,                     // Published stories list
-    `community:stories:all`,                 // Community stories list
-  ]);
+	// Invalidate both public and user-specific caches
+	await invalidateCache([
+		`story:${storyId}:public`, // Public cache
+		`story:${storyId}:user:${userId}`, // User cache
+		`story:${storyId}:*`, // All story variants
+		`user:${userId}:stories*`, // User's story lists
+		`stories:published`, // Published stories list
+		`community:stories:all`, // Community stories list
+	]);
 
-  return result.result;
+	return result.result;
 }
 
 export async function updateChapter(
-  chapterId: string,
-  userId: string,
-  data: Partial<{
-    title: string;
-    content: string;
-    status: 'writing' | 'published';
-    publishedAt: Date;
-    scheduledFor: Date;
-  }>
+	chapterId: string,
+	userId: string,
+	data: Partial<{
+		title: string;
+		content: string;
+		status: "writing" | "published";
+		publishedAt: Date;
+		scheduledFor: Date;
+	}>,
 ) {
-  const result = await measureAsync(
-    'updateChapter',
-    () => queries.updateChapter(chapterId, userId, data),
-    { chapterId, userId }
-  );
+	const result = await measureAsync(
+		"updateChapter",
+		() => queries.updateChapter(chapterId, userId, data),
+		{ chapterId, userId },
+	);
 
-  const chapter = result.result;
-  if (chapter) {
-    await invalidateCache([
-      `chapter:${chapterId}:*`,                 // All chapter variants
-      `story:${chapter.storyId}:*`,             // All story variants
-      `user:${userId}:stories*`,                 // User's story lists
-      `stories:published`,                       // Published stories list
-      `community:stories:all`,                   // Community stories list
-    ]);
-  }
+	const chapter = result.result;
+	if (chapter) {
+		await invalidateCache([
+			`chapter:${chapterId}:*`, // All chapter variants
+			`story:${chapter.storyId}:*`, // All story variants
+			`user:${userId}:stories*`, // User's story lists
+			`stories:published`, // Published stories list
+			`community:stories:all`, // Community stories list
+		]);
+	}
 
-  return chapter;
+	return chapter;
 }
 
 export async function createStory(
-  authorId: string,
-  data: {
-    title: string;
-    description?: string;
-    genre?: string;
-    targetWordCount?: number;
-  }
+	authorId: string,
+	data: {
+		title: string;
+		description?: string;
+		genre?: string;
+		targetWordCount?: number;
+	},
 ) {
-  const result = await measureAsync(
-    'createStory',
-    () => queries.createStory(authorId, data),
-    { authorId }
-  );
+	const result = await measureAsync(
+		"createStory",
+		() => queries.createStory(authorId, data),
+		{ authorId },
+	);
 
-  await invalidateCache([
-    `user:${authorId}:stories*`,
-  ]);
+	await invalidateCache([`user:${authorId}:stories*`]);
 
-  return result.result;
+	return result.result;
 }
 
 export async function createChapter(
-  storyId: string,
-  authorId: string,
-  data: {
-    title: string;
-    partId?: string;
-    orderIndex: number;
-    targetWordCount?: number;
-  }
+	storyId: string,
+	authorId: string,
+	data: {
+		title: string;
+		partId?: string;
+		orderIndex: number;
+		targetWordCount?: number;
+	},
 ) {
-  const result = await measureAsync(
-    'createChapter',
-    () => queries.createChapter(storyId, authorId, data),
-    { storyId, authorId }
-  );
+	const result = await measureAsync(
+		"createChapter",
+		() => queries.createChapter(storyId, authorId, data),
+		{ storyId, authorId },
+	);
 
-  await invalidateCache([
-    `story:${storyId}:*`,
-    `user:${authorId}:stories*`,
-  ]);
+	await invalidateCache([`story:${storyId}:*`, `user:${authorId}:stories*`]);
 
-  return result.result;
+	return result.result;
 }
 
 export async function createFirstChapter(storyId: string, authorId: string) {
-  const result = await measureAsync(
-    'createFirstChapter',
-    () => queries.createFirstChapter(storyId, authorId),
-    { storyId, authorId }
-  );
+	const result = await measureAsync(
+		"createFirstChapter",
+		() => queries.createFirstChapter(storyId, authorId),
+		{ storyId, authorId },
+	);
 
-  await invalidateCache([
-    `story:${storyId}:*`,
-    `user:${authorId}:stories*`,
-  ]);
+	await invalidateCache([`story:${storyId}:*`, `user:${authorId}:stories*`]);
 
-  return result.result;
+	return result.result;
 }
 
 // Re-export non-cached functions
 export {
-  findUserByEmail,
-  createUser,
-  createUserWithPassword,
-  updateUser,
-  updateUserStats,
-  calculateSceneStatus,
-  calculateChapterStatus,
-  calculatePartStatus,
-  calculateStoryStatus,
-  createApiKey,
-  getUserApiKeys,
-  findApiKeyByHash,
-  updateApiKeyLastUsed,
-  updateApiKey,
-  deleteApiKey,
-  revokeApiKey,
-  getApiKeyWithUser,
-} from './queries';
+	calculateChapterStatus,
+	calculatePartStatus,
+	calculateSceneStatus,
+	calculateStoryStatus,
+	createApiKey,
+	createUser,
+	createUserWithPassword,
+	deleteApiKey,
+	findApiKeyByHash,
+	findUserByEmail,
+	getApiKeyWithUser,
+	getUserApiKeys,
+	revokeApiKey,
+	updateApiKey,
+	updateApiKeyLastUsed,
+	updateUser,
+	updateUserStats,
+} from "./queries";

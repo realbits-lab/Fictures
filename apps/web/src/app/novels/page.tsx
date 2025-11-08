@@ -1,10 +1,10 @@
-import { MainLayout } from "@/components/layout";
 import { Browse } from "@/components/browse";
+import { MainLayout } from "@/components/layout";
 
 export default function BrowsePage() {
-  return (
-    <MainLayout>
-      <Browse />
-    </MainLayout>
-  );
+	return (
+		<MainLayout>
+			<Browse />
+		</MainLayout>
+	);
 }

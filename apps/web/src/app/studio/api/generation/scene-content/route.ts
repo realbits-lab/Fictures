@@ -1,7 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { generateWithGemini } from '@/lib/novels/ai-client';
-import { SCENE_CONTENT_PROMPT_V11 } from '@/lib/novels/system-prompts';
-import type { SceneSummaryResult, CharacterGenerationResult, SettingGenerationResult, SceneContentResult } from '@/lib/novels/types';
+import { type NextRequest, NextResponse } from "next/server";
+import { generateWithGemini } from "@/lib/novels/ai-client";
+import { SCENE_CONTENT_PROMPT_V11 } from "@/lib/novels/system-prompts";
+import type {
+	CharacterGenerationResult,
+	SceneContentResult,
+	SceneSummaryResult,
+	SettingGenerationResult,
+} from "@/lib/novels/types";
 
 const SCENE_CONTENT_EXPANSION_PROMPT = `${SCENE_CONTENT_PROMPT_V11}
 
@@ -128,71 +133,78 @@ Based on scene's suggested length:
 Return ONLY the prose narrative, starting immediately with the first paragraph.`;
 
 export async function POST(request: NextRequest) {
-  try {
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('✍️  [SCENE CONTENT API] Request received');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+	try {
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		console.log("✍️  [SCENE CONTENT API] Request received");
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-    const body = await request.json() as {
-      sceneSummary: SceneSummaryResult;
-      characters: CharacterGenerationResult[];
-      settings: SettingGenerationResult[];
-      chapterContext: {
-        title: string;
-        summary: string;
-        virtueType: string;
-      };
-      storyContext: {
-        genre: string;
-        tone: string;
-        moralFramework: string;
-      };
-    };
+		const body = (await request.json()) as {
+			sceneSummary: SceneSummaryResult;
+			characters: CharacterGenerationResult[];
+			settings: SettingGenerationResult[];
+			chapterContext: {
+				title: string;
+				summary: string;
+				virtueType: string;
+			};
+			storyContext: {
+				genre: string;
+				tone: string;
+				moralFramework: string;
+			};
+		};
 
-    const { sceneSummary, characters, settings, chapterContext, storyContext } = body;
+		const { sceneSummary, characters, settings, chapterContext, storyContext } =
+			body;
 
-    console.log('[SCENE CONTENT API] Request parameters:', {
-      hasSceneSummary: !!sceneSummary,
-      sceneTitle: sceneSummary?.title,
-      cyclePhase: sceneSummary?.cyclePhase,
-      suggestedLength: sceneSummary?.suggestedLength,
-      charactersCount: characters?.length || 0,
-    });
+		console.log("[SCENE CONTENT API] Request parameters:", {
+			hasSceneSummary: !!sceneSummary,
+			sceneTitle: sceneSummary?.title,
+			cyclePhase: sceneSummary?.cyclePhase,
+			suggestedLength: sceneSummary?.suggestedLength,
+			charactersCount: characters?.length || 0,
+		});
 
-    if (!sceneSummary || !characters || !settings) {
-      console.error('❌ [SCENE CONTENT API] Validation failed');
-      return NextResponse.json(
-        { error: 'Scene summary, characters, and settings are required' },
-        { status: 400 }
-      );
-    }
+		if (!sceneSummary || !characters || !settings) {
+			console.error("❌ [SCENE CONTENT API] Validation failed");
+			return NextResponse.json(
+				{ error: "Scene summary, characters, and settings are required" },
+				{ status: 400 },
+			);
+		}
 
-    console.log('✅ [SCENE CONTENT API] Validation passed');
+		console.log("✅ [SCENE CONTENT API] Validation passed");
 
-    // Build rich context for scene content generation
-    const charactersSection = sceneSummary.characterFocus.map((charId) => {
-      const char = characters.find(c => c.id === charId);
-      if (!char) return '';
-      return `## ${char.name}
+		// Build rich context for scene content generation
+		const charactersSection = sceneSummary.characterFocus
+			.map((charId) => {
+				const char = characters.find((c) => c.id === charId);
+				if (!char) return "";
+				return `## ${char.name}
 **Core Trait**: ${char.coreTrait}
 **Internal Flaw**: ${char.internalFlaw}
 
 **Voice Style**:
 - Tone: ${char.voiceStyle.tone}
 - Vocabulary: ${char.voiceStyle.vocabulary}
-- Quirks: ${char.voiceStyle.quirks.join(', ')}
+- Quirks: ${char.voiceStyle.quirks.join(", ")}
 - Emotional Range: ${char.voiceStyle.emotionalRange}
 
-**Personality**: ${char.personality.traits.join(', ')}
-**Values**: ${char.personality.values.join(', ')}
+**Personality**: ${char.personality.traits.join(", ")}
+**Values**: ${char.personality.values.join(", ")}
 
 **Physical**: ${char.physicalDescription.appearance}`;
-    }).join('\n\n');
+			})
+			.join("\n\n");
 
-    const settingSection = settings.slice(0, 1).map((setting) => {
-      const tasteSection = setting.sensory.taste?.length ? `- Taste: ${setting.sensory.taste.join(', ')}` : '';
-      return `## ${setting.name}
-${((setting as any).summary || (setting as any).description || '').substring(0, 400)}
+		const settingSection = settings
+			.slice(0, 1)
+			.map((setting) => {
+				const tasteSection = setting.sensory.taste?.length
+					? `- Taste: ${setting.sensory.taste.join(", ")}`
+					: "";
+				return `## ${setting.name}
+${((setting as any).summary || (setting as any).description || "").substring(0, 400)}
 
 **Mood**: ${setting.mood}
 **Emotional Resonance**: ${setting.emotionalResonance}
@@ -200,24 +212,31 @@ ${((setting as any).summary || (setting as any).description || '').substring(0, 
 **Cycle Amplification (${sceneSummary.cyclePhase})**: ${setting.cycleAmplification[sceneSummary.cyclePhase]}
 
 **Sensory Details**:
-- Sight: ${setting.sensory.sight.join(', ')}
-- Sound: ${setting.sensory.sound.join(', ')}
-- Smell: ${setting.sensory.smell.join(', ')}
-- Touch: ${setting.sensory.touch.join(', ')}
+- Sight: ${setting.sensory.sight.join(", ")}
+- Sound: ${setting.sensory.sound.join(", ")}
+- Smell: ${setting.sensory.smell.join(", ")}
+- Touch: ${setting.sensory.touch.join(", ")}
 ${tasteSection}`;
-    }).join('\n\n');
+			})
+			.join("\n\n");
 
-    const sensoryAnchorsSection = sceneSummary.sensoryAnchors.map((anchor) => `- ${anchor}`).join('\n');
+		const sensoryAnchorsSection = sceneSummary.sensoryAnchors
+			.map((anchor) => `- ${anchor}`)
+			.join("\n");
 
-    const lengthTarget = sceneSummary.suggestedLength === 'short' ? '400-600'
-      : sceneSummary.suggestedLength === 'medium' ? '600-800'
-      : '800-1000';
+		const lengthTarget =
+			sceneSummary.suggestedLength === "short"
+				? "400-600"
+				: sceneSummary.suggestedLength === "medium"
+					? "600-800"
+					: "800-1000";
 
-    const virtueNote = sceneSummary.cyclePhase === 'virtue'
-      ? '⭐ THIS IS A VIRTUE SCENE - 800-1000 words, slow ceremonial pacing, emotional lingering'
-      : `Maintain ${sceneSummary.cyclePhase} phase energy`;
+		const virtueNote =
+			sceneSummary.cyclePhase === "virtue"
+				? "⭐ THIS IS A VIRTUE SCENE - 800-1000 words, slow ceremonial pacing, emotional lingering"
+				: `Maintain ${sceneSummary.cyclePhase} phase energy`;
 
-    const sceneContentContext = `
+		const sceneContentContext = `
 # SCENE SPECIFICATION
 Title: ${sceneSummary.title}
 Summary: ${sceneSummary.summary}
@@ -259,46 +278,46 @@ Key priorities:
 Generate the prose following the output format (prose only, no metadata).
 `;
 
-    console.log('[SCENE CONTENT API] 🤖 Calling AI generation...');
-    console.log('[SCENE CONTENT API] Model: gemini-2.5-flash, MaxTokens: 4096');
-    console.log('[SCENE CONTENT API] Temperature: 0.8 (creative prose)');
+		console.log("[SCENE CONTENT API] 🤖 Calling AI generation...");
+		console.log("[SCENE CONTENT API] Model: gemini-2.5-flash, MaxTokens: 4096");
+		console.log("[SCENE CONTENT API] Temperature: 0.8 (creative prose)");
 
-    const result = await generateWithGemini({
-      prompt: sceneContentContext,
-      systemPrompt: SCENE_CONTENT_EXPANSION_PROMPT,
-      model: 'gemini-2.5-flash',
-      temperature: 0.8,
-      maxTokens: 4096,
-    });
+		const result = await generateWithGemini({
+			prompt: sceneContentContext,
+			systemPrompt: SCENE_CONTENT_EXPANSION_PROMPT,
+			model: "gemini-2.5-flash",
+			temperature: 0.8,
+			maxTokens: 4096,
+		});
 
-    console.log('[SCENE CONTENT API] ✅ AI generation completed');
+		console.log("[SCENE CONTENT API] ✅ AI generation completed");
 
-    // Determine emotional tone from first paragraph
-    const firstParagraph = result.split('\n\n')[0];
-    const emotionalTone = sceneSummary.emotionalBeat;
+		// Determine emotional tone from first paragraph
+		const firstParagraph = result.split("\n\n")[0];
+		const emotionalTone = sceneSummary.emotionalBeat;
 
-    const response: SceneContentResult = {
-      content: result.trim(),
-      emotionalTone,
-    };
+		const response: SceneContentResult = {
+			content: result.trim(),
+			emotionalTone,
+		};
 
-    console.log('[SCENE CONTENT API] Result summary:', {
-      contentLength: response.content.length,
-      wordCount: response.content.split(/\s+/).length,
-      paragraphCount: response.content.split('\n\n').length,
-      emotionalTone: response.emotionalTone,
-    });
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+		console.log("[SCENE CONTENT API] Result summary:", {
+			contentLength: response.content.length,
+			wordCount: response.content.split(/\s+/).length,
+			paragraphCount: response.content.split("\n\n").length,
+			emotionalTone: response.emotionalTone,
+		});
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-    return NextResponse.json(response);
-  } catch (error) {
-    console.error('Scene content generation error:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to generate scene content',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    );
-  }
+		return NextResponse.json(response);
+	} catch (error) {
+		console.error("Scene content generation error:", error);
+		return NextResponse.json(
+			{
+				error: "Failed to generate scene content",
+				details: error instanceof Error ? error.message : "Unknown error",
+			},
+			{ status: 500 },
+		);
+	}
 }

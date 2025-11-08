@@ -10,49 +10,49 @@
  * - reader@fictures.xyz: Reader role (stories:read scope) - Read-only access
  */
 
-import { Page, expect } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
+import { expect, type Page } from "@playwright/test";
+import fs from "fs";
+import path from "path";
 
 export interface AuthProfile {
-  email: string;
-  password: string;
-  role: string;
-  userId: string;
-  apiKey?: string;
+	email: string;
+	password: string;
+	role: string;
+	userId: string;
+	apiKey?: string;
 }
 
 export interface AuthData {
-  profiles: {
-    manager: AuthProfile;
-    writer: AuthProfile;
-    reader: AuthProfile;
-  };
+	profiles: {
+		manager: AuthProfile;
+		writer: AuthProfile;
+		reader: AuthProfile;
+	};
 }
 
 /**
  * Load authentication data from .auth/user.json
  */
 export function loadAuthData(): AuthData {
-  const authPath = path.resolve(process.cwd(), '.auth/user.json');
+	const authPath = path.resolve(process.cwd(), ".auth/user.json");
 
-  if (!fs.existsSync(authPath)) {
-    throw new Error(
-      'Authentication file not found. Run: dotenv --file .env.local run node scripts/setup-auth-users.mjs'
-    );
-  }
+	if (!fs.existsSync(authPath)) {
+		throw new Error(
+			"Authentication file not found. Run: dotenv --file .env.local run node scripts/setup-auth-users.mjs",
+		);
+	}
 
-  const authData = JSON.parse(fs.readFileSync(authPath, 'utf-8'));
+	const authData = JSON.parse(fs.readFileSync(authPath, "utf-8"));
 
-  // Validate required profiles
-  const requiredRoles = ['manager', 'writer', 'reader'];
-  for (const role of requiredRoles) {
-    if (!authData.profiles[role]) {
-      throw new Error(`Missing ${role} profile in .auth/user.json`);
-    }
-  }
+	// Validate required profiles
+	const requiredRoles = ["manager", "writer", "reader"];
+	for (const role of requiredRoles) {
+		if (!authData.profiles[role]) {
+			throw new Error(`Missing ${role} profile in .auth/user.json`);
+		}
+	}
 
-  return authData as AuthData;
+	return authData as AuthData;
 }
 
 /**
@@ -63,42 +63,44 @@ export function loadAuthData(): AuthData {
  * @returns AuthProfile of the logged-in user
  */
 export async function loginAs(
-  page: Page,
-  role: 'manager' | 'writer' | 'reader'
+	page: Page,
+	role: "manager" | "writer" | "reader",
 ): Promise<AuthProfile> {
-  const authData = loadAuthData();
-  const profile = authData.profiles[role];
+	const authData = loadAuthData();
+	const profile = authData.profiles[role];
 
-  // Navigate to login page
-  await page.goto('/login');
-  await page.waitForLoadState('networkidle');
+	// Navigate to login page
+	await page.goto("/login");
+	await page.waitForLoadState("networkidle");
 
-  // Fill email field
-  const emailInput = page.locator('input[type="email"], input[name="email"]');
-  await expect(emailInput).toBeVisible({ timeout: 5000 });
-  await emailInput.fill(profile.email);
+	// Fill email field
+	const emailInput = page.locator('input[type="email"], input[name="email"]');
+	await expect(emailInput).toBeVisible({ timeout: 5000 });
+	await emailInput.fill(profile.email);
 
-  // Fill password field
-  const passwordInput = page.locator('input[type="password"], input[name="password"]');
-  await expect(passwordInput).toBeVisible({ timeout: 5000 });
-  await passwordInput.fill(profile.password);
+	// Fill password field
+	const passwordInput = page.locator(
+		'input[type="password"], input[name="password"]',
+	);
+	await expect(passwordInput).toBeVisible({ timeout: 5000 });
+	await passwordInput.fill(profile.password);
 
-  // Click sign in button
-  const signInButton = page.locator('button:has-text("Sign in with Email")');
-  await expect(signInButton).toBeVisible({ timeout: 5000 });
-  await signInButton.click();
+	// Click sign in button
+	const signInButton = page.locator('button:has-text("Sign in with Email")');
+	await expect(signInButton).toBeVisible({ timeout: 5000 });
+	await signInButton.click();
 
-  // Wait for login to complete
-  await page.waitForLoadState('networkidle');
+	// Wait for login to complete
+	await page.waitForLoadState("networkidle");
 
-  // Wait for redirect after successful login
-  await page.waitForTimeout(2000);
+	// Wait for redirect after successful login
+	await page.waitForTimeout(2000);
 
-  // Verify login successful (should not be on /login anymore)
-  const currentUrl = page.url();
-  expect(currentUrl).not.toContain('/login');
+	// Verify login successful (should not be on /login anymore)
+	const currentUrl = page.url();
+	expect(currentUrl).not.toContain("/login");
 
-  return profile;
+	return profile;
 }
 
 /**
@@ -108,16 +110,20 @@ export async function loginAs(
  * @param email - User email
  * @param password - User password
  */
-export async function login(page: Page, email: string, password: string): Promise<void> {
-  await page.goto('/login');
-  await page.waitForLoadState('networkidle');
+export async function login(
+	page: Page,
+	email: string,
+	password: string,
+): Promise<void> {
+	await page.goto("/login");
+	await page.waitForLoadState("networkidle");
 
-  await page.fill('input[type="email"], input[name="email"]', email);
-  await page.fill('input[type="password"], input[name="password"]', password);
-  await page.click('button:has-text("Sign in with Email")');
+	await page.fill('input[type="email"], input[name="email"]', email);
+	await page.fill('input[type="password"], input[name="password"]', password);
+	await page.click('button:has-text("Sign in with Email")');
 
-  await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(2000);
+	await page.waitForLoadState("networkidle");
+	await page.waitForTimeout(2000);
 }
 
 /**
@@ -126,13 +132,15 @@ export async function login(page: Page, email: string, password: string): Promis
  * @param page - Playwright Page object
  */
 export async function logout(page: Page): Promise<void> {
-  // Click user menu or logout button (adjust selector based on UI)
-  const logoutButton = page.locator('button:has-text("Logout"), button:has-text("Sign out")');
+	// Click user menu or logout button (adjust selector based on UI)
+	const logoutButton = page.locator(
+		'button:has-text("Logout"), button:has-text("Sign out")',
+	);
 
-  if (await logoutButton.isVisible()) {
-    await logoutButton.click();
-    await page.waitForLoadState('networkidle');
-  }
+	if (await logoutButton.isVisible()) {
+		await logoutButton.click();
+		await page.waitForLoadState("networkidle");
+	}
 }
 
 /**
@@ -142,12 +150,12 @@ export async function logout(page: Page): Promise<void> {
  * @returns true if user is authenticated
  */
 export async function isAuthenticated(page: Page): Promise<boolean> {
-  // Try to access a protected route and check if redirected
-  const response = await page.goto('/studio');
-  const url = page.url();
+	// Try to access a protected route and check if redirected
+	const response = await page.goto("/studio");
+	const url = page.url();
 
-  // If redirected to login, user is not authenticated
-  return !url.includes('/login') && !url.includes('/auth/signin');
+	// If redirected to login, user is not authenticated
+	return !url.includes("/login") && !url.includes("/auth/signin");
 }
 
 /**
@@ -156,15 +164,15 @@ export async function isAuthenticated(page: Page): Promise<boolean> {
  * @param role - User role: 'manager', 'writer', or 'reader'
  * @returns API key string
  */
-export function getApiKey(role: 'manager' | 'writer' | 'reader'): string {
-  const authData = loadAuthData();
-  const profile = authData.profiles[role];
+export function getApiKey(role: "manager" | "writer" | "reader"): string {
+	const authData = loadAuthData();
+	const profile = authData.profiles[role];
 
-  if (!profile.apiKey) {
-    throw new Error(`No API key found for ${role} profile`);
-  }
+	if (!profile.apiKey) {
+		throw new Error(`No API key found for ${role} profile`);
+	}
 
-  return profile.apiKey;
+	return profile.apiKey;
 }
 
 /**
@@ -173,12 +181,14 @@ export function getApiKey(role: 'manager' | 'writer' | 'reader'): string {
  * @param role - User role: 'manager', 'writer', or 'reader'
  * @returns Authorization header object
  */
-export function getAuthHeaders(role: 'manager' | 'writer' | 'reader'): Record<string, string> {
-  const apiKey = getApiKey(role);
-  return {
-    'Authorization': `Bearer ${apiKey}`,
-    'Content-Type': 'application/json',
-  };
+export function getAuthHeaders(
+	role: "manager" | "writer" | "reader",
+): Record<string, string> {
+	const apiKey = getApiKey(role);
+	return {
+		Authorization: `Bearer ${apiKey}`,
+		"Content-Type": "application/json",
+	};
 }
 
 /**
@@ -187,11 +197,11 @@ export function getAuthHeaders(role: 'manager' | 'writer' | 'reader'): Record<st
  * @param page - Playwright Page object
  */
 export async function waitForSession(page: Page): Promise<void> {
-  await page.waitForTimeout(1000);
+	await page.waitForTimeout(1000);
 
-  // Optionally verify session by checking for user data
-  const response = await page.request.get('/api/auth/session');
-  expect(response.ok()).toBeTruthy();
+	// Optionally verify session by checking for user data
+	const response = await page.request.get("/api/auth/session");
+	expect(response.ok()).toBeTruthy();
 }
 
 /**
@@ -200,9 +210,9 @@ export async function waitForSession(page: Page): Promise<void> {
  * @param page - Playwright Page object
  */
 export async function clearAuth(page: Page): Promise<void> {
-  await page.context().clearCookies();
-  await page.evaluate(() => {
-    localStorage.clear();
-    sessionStorage.clear();
-  });
+	await page.context().clearCookies();
+	await page.evaluate(() => {
+		localStorage.clear();
+		sessionStorage.clear();
+	});
 }

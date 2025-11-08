@@ -22,6 +22,6 @@
  * ```
  */
 
-export { AdSenseScript } from './AdSenseScript';
-export { AdUnit } from './AdUnit';
-export { InFeedAd } from './InFeedAd';
+export { AdSenseScript } from "./AdSenseScript";
+export { AdUnit } from "./AdUnit";
+export { InFeedAd } from "./InFeedAd";

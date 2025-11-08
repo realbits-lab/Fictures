@@ -1,7 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { generateJSON } from '@/lib/novels/ai-client';
-import { SCENE_EVALUATION_PROMPT } from '@/lib/novels/system-prompts';
-import type { SceneEvaluationResult, SceneEvaluationScore, SceneEvaluationFeedback } from '@/lib/novels/types';
+import { type NextRequest, NextResponse } from "next/server";
+import { generateJSON } from "@/lib/novels/ai-client";
+import { SCENE_EVALUATION_PROMPT } from "@/lib/novels/system-prompts";
+import type {
+	SceneEvaluationFeedback,
+	SceneEvaluationResult,
+	SceneEvaluationScore,
+} from "@/lib/novels/types";
 
 const SCENE_EVALUATION_EXPANSION_PROMPT = `${SCENE_EVALUATION_PROMPT}
 
@@ -109,116 +113,122 @@ Return JSON with this exact structure:
 Return ONLY the JSON object, no markdown formatting, no explanations.`;
 
 export async function POST(request: NextRequest) {
-  try {
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('⭐ [SCENE EVALUATION API] Request received');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+	try {
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		console.log("⭐ [SCENE EVALUATION API] Request received");
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-    const body = await request.json() as {
-      sceneContent: string;
-      sceneContext?: {
-        title?: string;
-        cyclePhase?: string;
-        emotionalBeat?: string;
-        genre?: string;
-      };
-    };
+		const body = (await request.json()) as {
+			sceneContent: string;
+			sceneContext?: {
+				title?: string;
+				cyclePhase?: string;
+				emotionalBeat?: string;
+				genre?: string;
+			};
+		};
 
-    const { sceneContent, sceneContext = {} } = body;
+		const { sceneContent, sceneContext = {} } = body;
 
-    console.log('[SCENE EVALUATION API] Request parameters:', {
-      contentLength: sceneContent?.length || 0,
-      wordCount: sceneContent ? sceneContent.split(/\s+/).length : 0,
-      sceneTitle: sceneContext.title,
-      cyclePhase: sceneContext.cyclePhase,
-    });
+		console.log("[SCENE EVALUATION API] Request parameters:", {
+			contentLength: sceneContent?.length || 0,
+			wordCount: sceneContent ? sceneContent.split(/\s+/).length : 0,
+			sceneTitle: sceneContext.title,
+			cyclePhase: sceneContext.cyclePhase,
+		});
 
-    if (!sceneContent || sceneContent.trim().length < 100) {
-      console.error('❌ [SCENE EVALUATION API] Validation failed: content too short');
-      return NextResponse.json(
-        { error: 'Valid scene content is required (minimum 100 characters)' },
-        { status: 400 }
-      );
-    }
+		if (!sceneContent || sceneContent.trim().length < 100) {
+			console.error(
+				"❌ [SCENE EVALUATION API] Validation failed: content too short",
+			);
+			return NextResponse.json(
+				{ error: "Valid scene content is required (minimum 100 characters)" },
+				{ status: 400 },
+			);
+		}
 
-    console.log('✅ [SCENE EVALUATION API] Validation passed');
+		console.log("✅ [SCENE EVALUATION API] Validation passed");
 
-    // Build evaluation prompt
-    const evaluationPrompt = `
+		// Build evaluation prompt
+		const evaluationPrompt = `
 # SCENE TO EVALUATE
 
 ${sceneContent}
 
-${sceneContext.title ? `\n# SCENE CONTEXT\nTitle: ${sceneContext.title}` : ''}
-${sceneContext.cyclePhase ? `Cycle Phase: ${sceneContext.cyclePhase}` : ''}
-${sceneContext.emotionalBeat ? `Emotional Beat: ${sceneContext.emotionalBeat}` : ''}
-${sceneContext.genre ? `Genre: ${sceneContext.genre}` : ''}
+${sceneContext.title ? `\n# SCENE CONTEXT\nTitle: ${sceneContext.title}` : ""}
+${sceneContext.cyclePhase ? `Cycle Phase: ${sceneContext.cyclePhase}` : ""}
+${sceneContext.emotionalBeat ? `Emotional Beat: ${sceneContext.emotionalBeat}` : ""}
+${sceneContext.genre ? `Genre: ${sceneContext.genre}` : ""}
 
 # YOUR TASK
 Evaluate this scene across all 5 quality categories.
 Provide scores and specific feedback following the output format.
 `;
 
-    console.log('[SCENE EVALUATION API] 🤖 Calling AI generation...');
-    console.log('[SCENE EVALUATION API] Model: gemini-2.5-flash-lite');
-    console.log('[SCENE EVALUATION API] Temperature: 0.3 (consistent evaluation)');
+		console.log("[SCENE EVALUATION API] 🤖 Calling AI generation...");
+		console.log("[SCENE EVALUATION API] Model: gemini-2.5-flash-lite");
+		console.log(
+			"[SCENE EVALUATION API] Temperature: 0.3 (consistent evaluation)",
+		);
 
-    const result = await generateJSON<SceneEvaluationResult>({
-      prompt: evaluationPrompt,
-      systemPrompt: SCENE_EVALUATION_EXPANSION_PROMPT,
-      model: 'gemini-2.5-flash-lite',
-      temperature: 0.3, // Lower temperature for consistent evaluation
-    });
+		const result = await generateJSON<SceneEvaluationResult>({
+			prompt: evaluationPrompt,
+			systemPrompt: SCENE_EVALUATION_EXPANSION_PROMPT,
+			model: "gemini-2.5-flash-lite",
+			temperature: 0.3, // Lower temperature for consistent evaluation
+		});
 
-    console.log('[SCENE EVALUATION API] ✅ AI generation completed');
+		console.log("[SCENE EVALUATION API] ✅ AI generation completed");
 
-    // Validate result structure
-    if (!result.scores || !result.feedback) {
-      console.error('❌ [SCENE EVALUATION API] Invalid evaluation result');
-      throw new Error('Invalid evaluation result: missing required fields');
-    }
+		// Validate result structure
+		if (!result.scores || !result.feedback) {
+			console.error("❌ [SCENE EVALUATION API] Invalid evaluation result");
+			throw new Error("Invalid evaluation result: missing required fields");
+		}
 
-    // Validate scores are in range
-    const { scores } = result;
-    for (const [category, score] of Object.entries(scores)) {
-      if (typeof score !== 'number' || score < 1.0 || score > 4.0) {
-        throw new Error(`Invalid score for ${category}: ${score} (must be 1.0-4.0)`);
-      }
-    }
+		// Validate scores are in range
+		const { scores } = result;
+		for (const [category, score] of Object.entries(scores)) {
+			if (typeof score !== "number" || score < 1.0 || score > 4.0) {
+				throw new Error(
+					`Invalid score for ${category}: ${score} (must be 1.0-4.0)`,
+				);
+			}
+		}
 
-    // Calculate overall score if not provided
-    if (!result.overallScore) {
-      result.overallScore = (
-        scores.plot +
-        scores.character +
-        scores.pacing +
-        scores.prose +
-        scores.worldBuilding
-      ) / 5;
-    }
+		// Calculate overall score if not provided
+		if (!result.overallScore) {
+			result.overallScore =
+				(scores.plot +
+					scores.character +
+					scores.pacing +
+					scores.prose +
+					scores.worldBuilding) /
+				5;
+		}
 
-    // Set iteration to 1 if not provided
-    if (!result.iteration) {
-      result.iteration = 1;
-    }
+		// Set iteration to 1 if not provided
+		if (!result.iteration) {
+			result.iteration = 1;
+		}
 
-    console.log('[SCENE EVALUATION API] Result summary:', {
-      overallScore: result.overallScore,
-      passing: result.overallScore >= 3.0,
-      scores: result.scores,
-      hasImprovements: (result.feedback.improvements?.length || 0) > 0,
-    });
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+		console.log("[SCENE EVALUATION API] Result summary:", {
+			overallScore: result.overallScore,
+			passing: result.overallScore >= 3.0,
+			scores: result.scores,
+			hasImprovements: (result.feedback.improvements?.length || 0) > 0,
+		});
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-    return NextResponse.json(result);
-  } catch (error) {
-    console.error('Scene evaluation error:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to evaluate scene',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    );
-  }
+		return NextResponse.json(result);
+	} catch (error) {
+		console.error("Scene evaluation error:", error);
+		return NextResponse.json(
+			{
+				error: "Failed to evaluate scene",
+				details: error instanceof Error ? error.message : "Unknown error",
+			},
+			{ status: 500 },
+		);
+	}
 }

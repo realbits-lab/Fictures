@@ -1,7 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { generateWithGemini } from '@/lib/novels/ai-client';
-import { SCENE_SUMMARIES_PROMPT } from '@/lib/novels/system-prompts';
-import type { ChapterGenerationResult, CharacterGenerationResult, SettingGenerationResult, SceneSummaryResult, CyclePhase, EmotionalBeat } from '@/lib/novels/types';
+import { type NextRequest, NextResponse } from "next/server";
+import { generateWithGemini } from "@/lib/novels/ai-client";
+import { SCENE_SUMMARIES_PROMPT } from "@/lib/novels/system-prompts";
+import type {
+	ChapterGenerationResult,
+	CharacterGenerationResult,
+	CyclePhase,
+	EmotionalBeat,
+	SceneSummaryResult,
+	SettingGenerationResult,
+} from "@/lib/novels/types";
 
 const SCENE_SUMMARIES_EXPANSION_PROMPT = `${SCENE_SUMMARIES_PROMPT}
 
@@ -221,73 +228,86 @@ medium
 Return ONLY the structured text, no JSON, no markdown code blocks.`;
 
 export async function POST(request: NextRequest) {
-  try {
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('🎬 [SCENE SUMMARIES API] Request received');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+	try {
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		console.log("🎬 [SCENE SUMMARIES API] Request received");
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-    const body = await request.json() as {
-      chapter: ChapterGenerationResult;
-      characters: CharacterGenerationResult[];
-      settings: SettingGenerationResult[];
-      scenesPerChapter?: number;
-    };
-    const { chapter, characters, settings, scenesPerChapter = 6 } = body;
+		const body = (await request.json()) as {
+			chapter: ChapterGenerationResult;
+			characters: CharacterGenerationResult[];
+			settings: SettingGenerationResult[];
+			scenesPerChapter?: number;
+		};
+		const { chapter, characters, settings, scenesPerChapter = 6 } = body;
 
-    console.log('[SCENE SUMMARIES API] Request parameters:', {
-      hasChapter: !!chapter,
-      chapterTitle: chapter?.title,
-      charactersCount: characters?.length || 0,
-      settingsCount: settings?.length || 0,
-      scenesPerChapter,
-    });
+		console.log("[SCENE SUMMARIES API] Request parameters:", {
+			hasChapter: !!chapter,
+			chapterTitle: chapter?.title,
+			charactersCount: characters?.length || 0,
+			settingsCount: settings?.length || 0,
+			scenesPerChapter,
+		});
 
-    if (!chapter || !characters || !settings) {
-      console.error('❌ [SCENE SUMMARIES API] Validation failed');
-      return NextResponse.json(
-        { error: 'Chapter, characters, and settings are required' },
-        { status: 400 }
-      );
-    }
+		if (!chapter || !characters || !settings) {
+			console.error("❌ [SCENE SUMMARIES API] Validation failed");
+			return NextResponse.json(
+				{ error: "Chapter, characters, and settings are required" },
+				{ status: 400 },
+			);
+		}
 
-    console.log('✅ [SCENE SUMMARIES API] Validation passed');
+		console.log("✅ [SCENE SUMMARIES API] Validation passed");
 
-    // Build context for scene generation
-    const charactersSection = chapter.focusCharacters.map((charId) => {
-      const char = characters.find(c => c.id === charId);
-      if (!char) return '';
-      return `## ${char.name}
+		// Build context for scene generation
+		const charactersSection = chapter.focusCharacters
+			.map((charId) => {
+				const char = characters.find((c) => c.id === charId);
+				if (!char) return "";
+				return `## ${char.name}
 - Core Trait: ${char.coreTrait}
 - Internal Flaw: ${char.internalFlaw}
 - Voice: ${char.voiceStyle.tone}, ${char.voiceStyle.vocabulary}
 - Emotional Range: ${char.voiceStyle.emotionalRange}`;
-    }).join('\n\n');
+			})
+			.join("\n\n");
 
-    const settingsSection = settings.map((setting) => {
-      return `## ${setting.name}
+		const settingsSection = settings
+			.map((setting) => {
+				return `## ${setting.name}
 ${((setting as any).summary || (setting as any).description || "").substring(0, 300)}...
 
 **Adversity Elements**:
-- Physical: ${setting.adversityElements.physicalObstacles.join(', ')}
-- Dangers: ${setting.adversityElements.dangerSources.join(', ')}
+- Physical: ${setting.adversityElements.physicalObstacles.join(", ")}
+- Dangers: ${setting.adversityElements.dangerSources.join(", ")}
 
 **Cycle Amplification for Virtue Phase**: ${setting.cycleAmplification.virtue}
 
 **Sensory Palette**:
-- Sight: ${setting.sensory.sight.slice(0, 2).join(', ')}
-- Sound: ${setting.sensory.sound.slice(0, 2).join(', ')}
-- Smell: ${setting.sensory.smell.slice(0, 2).join(', ')}`;
-    }).join('\n\n');
+- Sight: ${setting.sensory.sight.slice(0, 2).join(", ")}
+- Sound: ${setting.sensory.sound.slice(0, 2).join(", ")}
+- Smell: ${setting.sensory.smell.slice(0, 2).join(", ")}`;
+			})
+			.join("\n\n");
 
-    const seedsResolveSection = chapter.seedsResolved.length > 0
-      ? chapter.seedsResolved.map((seed) => `- **${seed.seedId}**: ${seed.payoffDescription}`).join('\n')
-      : 'No seeds to resolve in this chapter';
+		const seedsResolveSection =
+			chapter.seedsResolved.length > 0
+				? chapter.seedsResolved
+						.map((seed) => `- **${seed.seedId}**: ${seed.payoffDescription}`)
+						.join("\n")
+				: "No seeds to resolve in this chapter";
 
-    const seedsPlantSection = chapter.seedsPlanted.length > 0
-      ? chapter.seedsPlanted.map((seed) => `- **${seed.id}**: ${((seed as any).summary || (seed as any).description || "")} (will pay off: ${seed.expectedPayoff})`).join('\n')
-      : 'No new seeds to plant in this chapter';
+		const seedsPlantSection =
+			chapter.seedsPlanted.length > 0
+				? chapter.seedsPlanted
+						.map(
+							(seed) =>
+								`- **${seed.id}**: ${(seed as any).summary || (seed as any).description || ""} (will pay off: ${seed.expectedPayoff})`,
+						)
+						.join("\n")
+				: "No new seeds to plant in this chapter";
 
-    const scenesContext = `
+		const scenesContext = `
 # CHAPTER CONTEXT
 Title: ${chapter.title}
 Summary: ${chapter.summary}
@@ -325,134 +345,157 @@ Remember:
 3. Character voices should be distinct (use voice style info)
 4. Resolve any seeds that should pay off in this chapter
 5. Plant any seeds that should set up future payoffs
-${scenesPerChapter < 5 ? `6. Since you have only ${scenesPerChapter} scenes, compress phases efficiently while maintaining the virtue peak` : ''}
+${scenesPerChapter < 5 ? `6. Since you have only ${scenesPerChapter} scenes, compress phases efficiently while maintaining the virtue peak` : ""}
 
 Generate ${scenesPerChapter} scene summaries following the output format.
 `;
 
-    console.log('[SCENE SUMMARIES API] 🤖 Calling AI generation...');
-    console.log('[SCENE SUMMARIES API] Model: gemini-2.5-flash-lite, MaxTokens: 8192');
+		console.log("[SCENE SUMMARIES API] 🤖 Calling AI generation...");
+		console.log(
+			"[SCENE SUMMARIES API] Model: gemini-2.5-flash-lite, MaxTokens: 8192",
+		);
 
-    const result = await generateWithGemini({
-      prompt: scenesContext,
-      systemPrompt: SCENE_SUMMARIES_EXPANSION_PROMPT,
-      model: 'gemini-2.5-flash-lite',
-      temperature: 0.7,
-      maxTokens: 8192,
-    });
+		const result = await generateWithGemini({
+			prompt: scenesContext,
+			systemPrompt: SCENE_SUMMARIES_EXPANSION_PROMPT,
+			model: "gemini-2.5-flash-lite",
+			temperature: 0.7,
+			maxTokens: 8192,
+		});
 
-    console.log('[SCENE SUMMARIES API] ✅ AI generation completed, parsing scenes...');
+		console.log(
+			"[SCENE SUMMARIES API] ✅ AI generation completed, parsing scenes...",
+		);
 
-    // Parse structured text into scenes array
-    const scenes = parseScenesFromText(result, characters, settings);
+		// Parse structured text into scenes array
+		const scenes = parseScenesFromText(result, characters, settings);
 
-    console.log('[SCENE SUMMARIES API] Result summary:', {
-      scenesCount: scenes.length,
-      sceneTitles: scenes.map(s => s.title).join(', '),
-    });
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+		console.log("[SCENE SUMMARIES API] Result summary:", {
+			scenesCount: scenes.length,
+			sceneTitles: scenes.map((s) => s.title).join(", "),
+		});
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-    return NextResponse.json(scenes);
-  } catch (error) {
-    console.error('Scene summaries generation error:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to generate scene summaries',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    );
-  }
+		return NextResponse.json(scenes);
+	} catch (error) {
+		console.error("Scene summaries generation error:", error);
+		return NextResponse.json(
+			{
+				error: "Failed to generate scene summaries",
+				details: error instanceof Error ? error.message : "Unknown error",
+			},
+			{ status: 500 },
+		);
+	}
 }
 
 function parseScenesFromText(
-  text: string,
-  characters: CharacterGenerationResult[],
-  settings: SettingGenerationResult[]
+	text: string,
+	characters: CharacterGenerationResult[],
+	settings: SettingGenerationResult[],
 ): SceneSummaryResult[] {
-  const scenes: SceneSummaryResult[] = [];
+	const scenes: SceneSummaryResult[] = [];
 
-  // Split by scene headers
-  const sceneSections = text.split(/# SCENE \d+:/);
+	// Split by scene headers
+	const sceneSections = text.split(/# SCENE \d+:/);
 
-  // Process each scene (skip first empty split)
-  for (let i = 1; i < sceneSections.length; i++) {
-    const sceneSection = sceneSections[i];
+	// Process each scene (skip first empty split)
+	for (let i = 1; i < sceneSections.length; i++) {
+		const sceneSection = sceneSections[i];
 
-    // Extract title
-    const titleMatch = sceneSection.match(/^([^\n]+)/);
-    const title = titleMatch ? titleMatch[1].trim() : `Scene ${i}`;
+		// Extract title
+		const titleMatch = sceneSection.match(/^([^\n]+)/);
+		const title = titleMatch ? titleMatch[1].trim() : `Scene ${i}`;
 
-    // Extract summary
-    const summaryMatch = sceneSection.match(/## Summary\s*\n([^\n#]+(?:\n[^\n#]+)*)/);
-    const summary = summaryMatch ? summaryMatch[1].trim() : '';
+		// Extract summary
+		const summaryMatch = sceneSection.match(
+			/## Summary\s*\n([^\n#]+(?:\n[^\n#]+)*)/,
+		);
+		const summary = summaryMatch ? summaryMatch[1].trim() : "";
 
-    // Extract setting
-    const settingMatch = sceneSection.match(/## Setting\s*\n([^\n]+)/);
-    const settingName = settingMatch ? settingMatch[1].trim() : null;
+		// Extract setting
+		const settingMatch = sceneSection.match(/## Setting\s*\n([^\n]+)/);
+		const settingName = settingMatch ? settingMatch[1].trim() : null;
 
-    // Map setting name to ID
-    const setting = settings.find(s => s.name === settingName);
-    const settingId = setting?.id || undefined;
+		// Map setting name to ID
+		const setting = settings.find((s) => s.name === settingName);
+		const settingId = setting?.id || undefined;
 
-    // Extract cycle phase
-    const cyclePhaseMatch = sceneSection.match(/## Cycle Phase\s*\n([^\n]+)/);
-    const cyclePhase = cyclePhaseMatch ? cyclePhaseMatch[1].trim() as CyclePhase : 'setup';
+		// Extract cycle phase
+		const cyclePhaseMatch = sceneSection.match(/## Cycle Phase\s*\n([^\n]+)/);
+		const cyclePhase = cyclePhaseMatch
+			? (cyclePhaseMatch[1].trim() as CyclePhase)
+			: "setup";
 
-    // Extract emotional beat
-    const emotionalBeatMatch = sceneSection.match(/## Emotional Beat\s*\n([^\n]+)/);
-    const emotionalBeat = emotionalBeatMatch ? emotionalBeatMatch[1].trim() as EmotionalBeat : 'tension';
+		// Extract emotional beat
+		const emotionalBeatMatch = sceneSection.match(
+			/## Emotional Beat\s*\n([^\n]+)/,
+		);
+		const emotionalBeat = emotionalBeatMatch
+			? (emotionalBeatMatch[1].trim() as EmotionalBeat)
+			: "tension";
 
-    // Extract character focus
-    const characterFocusSection = sceneSection.match(/## Character Focus\s*\n((?:- [^\n]+\n?)+)/);
-    const characterFocus = [];
-    if (characterFocusSection) {
-      const lines = characterFocusSection[1].split('\n');
-      for (const line of lines) {
-        const charMatch = line.match(/- ([^(]+)/);
-        if (charMatch) {
-          const charName = charMatch[1].trim();
-          const char = characters.find(c => c.name === charName);
-          if (char) characterFocus.push(char.id);
-        }
-      }
-    }
+		// Extract character focus
+		const characterFocusSection = sceneSection.match(
+			/## Character Focus\s*\n((?:- [^\n]+\n?)+)/,
+		);
+		const characterFocus = [];
+		if (characterFocusSection) {
+			const lines = characterFocusSection[1].split("\n");
+			for (const line of lines) {
+				const charMatch = line.match(/- ([^(]+)/);
+				if (charMatch) {
+					const charName = charMatch[1].trim();
+					const char = characters.find((c) => c.name === charName);
+					if (char) characterFocus.push(char.id);
+				}
+			}
+		}
 
-    // Extract sensory anchors
-    const sensoryAnchorsSection = sceneSection.match(/## Sensory Anchors\s*\n((?:- [^\n]+\n?)+)/);
-    const sensoryAnchors = [];
-    if (sensoryAnchorsSection) {
-      const lines = sensoryAnchorsSection[1].split('\n');
-      for (const line of lines) {
-        const match = line.match(/- (.+)/);
-        if (match) sensoryAnchors.push(match[1].trim());
-      }
-    }
+		// Extract sensory anchors
+		const sensoryAnchorsSection = sceneSection.match(
+			/## Sensory Anchors\s*\n((?:- [^\n]+\n?)+)/,
+		);
+		const sensoryAnchors = [];
+		if (sensoryAnchorsSection) {
+			const lines = sensoryAnchorsSection[1].split("\n");
+			for (const line of lines) {
+				const match = line.match(/- (.+)/);
+				if (match) sensoryAnchors.push(match[1].trim());
+			}
+		}
 
-    // Extract dialogue vs description
-    const dialogueVsDescriptionMatch = sceneSection.match(/## Dialogue vs Description\s*\n([^\n]+)/);
-    const dialogueVsDescription = dialogueVsDescriptionMatch
-      ? dialogueVsDescriptionMatch[1].trim() as 'dialogue-heavy' | 'balanced' | 'description-heavy'
-      : 'balanced';
+		// Extract dialogue vs description
+		const dialogueVsDescriptionMatch = sceneSection.match(
+			/## Dialogue vs Description\s*\n([^\n]+)/,
+		);
+		const dialogueVsDescription = dialogueVsDescriptionMatch
+			? (dialogueVsDescriptionMatch[1].trim() as
+					| "dialogue-heavy"
+					| "balanced"
+					| "description-heavy")
+			: "balanced";
 
-    // Extract suggested length
-    const suggestedLengthMatch = sceneSection.match(/## Suggested Length\s*\n([^\n]+)/);
-    const suggestedLength = suggestedLengthMatch
-      ? suggestedLengthMatch[1].trim() as 'short' | 'medium' | 'long'
-      : 'medium';
+		// Extract suggested length
+		const suggestedLengthMatch = sceneSection.match(
+			/## Suggested Length\s*\n([^\n]+)/,
+		);
+		const suggestedLength = suggestedLengthMatch
+			? (suggestedLengthMatch[1].trim() as "short" | "medium" | "long")
+			: "medium";
 
-    scenes.push({
-      title,
-      summary,
-      cyclePhase,
-      emotionalBeat,
-      characterFocus,
-      settingId,
-      sensoryAnchors,
-      dialogueVsDescription,
-      suggestedLength,
-    });
-  }
+		scenes.push({
+			title,
+			summary,
+			cyclePhase,
+			emotionalBeat,
+			characterFocus,
+			settingId,
+			sensoryAnchors,
+			dialogueVsDescription,
+			suggestedLength,
+		});
+	}
 
-  return scenes;
+	return scenes;
 }

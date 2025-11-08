@@ -1,6 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { generateJSON } from '@/lib/novels/ai-client';
-import type { StorySummaryResult, StoryGenerationContext } from '@/lib/novels/types';
+import { type NextRequest, NextResponse } from "next/server";
+import { generateJSON } from "@/lib/novels/ai-client";
+import type {
+	StoryGenerationContext,
+	StorySummaryResult,
+} from "@/lib/novels/types";
 
 const STORY_SUMMARY_SYSTEM_PROMPT = `# ROLE AND CONTEXT
 You are an expert story architect with deep knowledge of narrative psychology, moral philosophy, and the principles of emotional resonance in fiction. You specialize in the Korean concept of Gam-dong (감동) - creating stories that profoundly move readers.
@@ -77,54 +80,56 @@ Generate a JSON object with the following structure:
 Return ONLY the JSON object, no explanations, no markdown formatting.`;
 
 export async function POST(request: NextRequest) {
-  try {
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('📚 [STORY SUMMARY API] Request received');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+	try {
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		console.log("📚 [STORY SUMMARY API] Request received");
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-    const body = await request.json() as StoryGenerationContext;
-    const {
-      userPrompt,
-      preferredGenre,
-      preferredTone,
-      characterCount = 3,
-      settingCount = 3,
-      partsCount = 3,
-      chaptersPerPart = 3,
-      scenesPerChapter = 6
-    } = body;
+		const body = (await request.json()) as StoryGenerationContext;
+		const {
+			userPrompt,
+			preferredGenre,
+			preferredTone,
+			characterCount = 3,
+			settingCount = 3,
+			partsCount = 3,
+			chaptersPerPart = 3,
+			scenesPerChapter = 6,
+		} = body;
 
-    console.log('[STORY SUMMARY API] Request parameters:', {
-      userPromptLength: userPrompt?.length || 0,
-      userPromptPreview: userPrompt?.substring(0, 100) || '(empty)',
-      preferredGenre,
-      preferredTone,
-      characterCount,
-      settingCount,
-      partsCount,
-      chaptersPerPart,
-      scenesPerChapter,
-      totalChapters: partsCount * chaptersPerPart,
-      totalScenes: partsCount * chaptersPerPart * scenesPerChapter,
-    });
+		console.log("[STORY SUMMARY API] Request parameters:", {
+			userPromptLength: userPrompt?.length || 0,
+			userPromptPreview: userPrompt?.substring(0, 100) || "(empty)",
+			preferredGenre,
+			preferredTone,
+			characterCount,
+			settingCount,
+			partsCount,
+			chaptersPerPart,
+			scenesPerChapter,
+			totalChapters: partsCount * chaptersPerPart,
+			totalScenes: partsCount * chaptersPerPart * scenesPerChapter,
+		});
 
-    if (!userPrompt) {
-      console.error('❌ [STORY SUMMARY API] Validation failed: User prompt is missing');
-      return NextResponse.json(
-        { error: 'User prompt is required' },
-        { status: 400 }
-      );
-    }
+		if (!userPrompt) {
+			console.error(
+				"❌ [STORY SUMMARY API] Validation failed: User prompt is missing",
+			);
+			return NextResponse.json(
+				{ error: "User prompt is required" },
+				{ status: 400 },
+			);
+		}
 
-    console.log('✅ [STORY SUMMARY API] Validation passed');
+		console.log("✅ [STORY SUMMARY API] Validation passed");
 
-    const promptWithPreferences = `
+		const promptWithPreferences = `
 # USER INPUT
 ${userPrompt}
 
 # PREFERENCES
-${preferredGenre ? `Preferred Genre: ${preferredGenre}` : ''}
-${preferredTone ? `Preferred Tone: ${preferredTone}` : ''}
+${preferredGenre ? `Preferred Genre: ${preferredGenre}` : ""}
+${preferredTone ? `Preferred Tone: ${preferredTone}` : ""}
 
 # STORY STRUCTURE CONSTRAINTS (MUST FOLLOW EXACTLY)
 Character Count: ${characterCount}
@@ -140,51 +145,57 @@ IMPORTANT: The story must be designed to work within these exact structure const
 Generate the story foundation following the output format.
 `.trim();
 
-    console.log('[STORY SUMMARY API] 🤖 Calling AI generation...');
-    console.log('[STORY SUMMARY API] Model: gemini-2.5-flash-lite');
-    console.log('[STORY SUMMARY API] Temperature: 0.7');
+		console.log("[STORY SUMMARY API] 🤖 Calling AI generation...");
+		console.log("[STORY SUMMARY API] Model: gemini-2.5-flash-lite");
+		console.log("[STORY SUMMARY API] Temperature: 0.7");
 
-    const result = await generateJSON<StorySummaryResult>({
-      prompt: promptWithPreferences,
-      systemPrompt: STORY_SUMMARY_SYSTEM_PROMPT,
-      model: 'gemini-2.5-flash-lite',
-      temperature: 0.7,
-    });
+		const result = await generateJSON<StorySummaryResult>({
+			prompt: promptWithPreferences,
+			systemPrompt: STORY_SUMMARY_SYSTEM_PROMPT,
+			model: "gemini-2.5-flash-lite",
+			temperature: 0.7,
+		});
 
-    console.log('[STORY SUMMARY API] ✅ AI generation completed');
-    console.log('[STORY SUMMARY API] Result summary:', {
-      hasSummary: !!result.summary,
-      summaryLength: result.summary?.length || 0,
-      genre: result.genre,
-      tone: result.tone,
-      hasMoralFramework: !!result.moralFramework,
-      charactersCount: result.characters?.length || 0,
-      characterNames: result.characters?.map(c => c.name).join(', ') || '(none)',
-    });
+		console.log("[STORY SUMMARY API] ✅ AI generation completed");
+		console.log("[STORY SUMMARY API] Result summary:", {
+			hasSummary: !!result.summary,
+			summaryLength: result.summary?.length || 0,
+			genre: result.genre,
+			tone: result.tone,
+			hasMoralFramework: !!result.moralFramework,
+			charactersCount: result.characters?.length || 0,
+			characterNames:
+				result.characters?.map((c) => c.name).join(", ") || "(none)",
+		});
 
-    // Validate result
-    if (!result.summary || !result.moralFramework || !result.characters || result.characters.length < 2) {
-      console.error('❌ [STORY SUMMARY API] Validation failed:', {
-        hasSummary: !!result.summary,
-        hasMoralFramework: !!result.moralFramework,
-        hasCharacters: !!result.characters,
-        charactersCount: result.characters?.length || 0,
-      });
-      throw new Error('Invalid story summary result');
-    }
+		// Validate result
+		if (
+			!result.summary ||
+			!result.moralFramework ||
+			!result.characters ||
+			result.characters.length < 2
+		) {
+			console.error("❌ [STORY SUMMARY API] Validation failed:", {
+				hasSummary: !!result.summary,
+				hasMoralFramework: !!result.moralFramework,
+				hasCharacters: !!result.characters,
+				charactersCount: result.characters?.length || 0,
+			});
+			throw new Error("Invalid story summary result");
+		}
 
-    console.log('✅ [STORY SUMMARY API] Validation passed, returning result');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+		console.log("✅ [STORY SUMMARY API] Validation passed, returning result");
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-    return NextResponse.json(result);
-  } catch (error) {
-    console.error('Story summary generation error:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to generate story summary',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    );
-  }
+		return NextResponse.json(result);
+	} catch (error) {
+		console.error("Story summary generation error:", error);
+		return NextResponse.json(
+			{
+				error: "Failed to generate story summary",
+				details: error instanceof Error ? error.message : "Unknown error",
+			},
+			{ status: 500 },
+		);
+	}
 }

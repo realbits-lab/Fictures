@@ -314,8 +314,8 @@ export const stories = pgTable(
 		index("idx_stories_status_updated")
 			.using(
 				"btree",
-				table.status.asc().nullsLast().op("timestamp_ops"),
-				table.updatedAt.desc().nullsFirst().op("enum_ops"),
+				table.status.asc().nullsLast().op("enum_ops"),
+				table.updatedAt.desc().nullsFirst().op("timestamp_ops"),
 			)
 			.where(sql`(status = 'published'::status)`),
 		index("idx_stories_view_count_published")

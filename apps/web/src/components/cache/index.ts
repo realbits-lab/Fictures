@@ -1,1 +1,1 @@
-export { CacheManagerWidget } from './CacheManagerWidget';
+export { CacheManagerWidget } from "./CacheManagerWidget";

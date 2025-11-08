@@ -1,7 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { generateJSON } from '@/lib/novels/ai-client';
-import { SETTINGS_GENERATION_PROMPT } from '@/lib/novels/system-prompts';
-import type { StorySummaryResult, SettingGenerationResult } from '@/lib/novels/types';
+import { type NextRequest, NextResponse } from "next/server";
+import { generateJSON } from "@/lib/novels/ai-client";
+import { SETTINGS_GENERATION_PROMPT } from "@/lib/novels/system-prompts";
+import type {
+	SettingGenerationResult,
+	StorySummaryResult,
+} from "@/lib/novels/types";
 
 const SETTINGS_EXPANSION_PROMPT = `${SETTINGS_GENERATION_PROMPT}
 
@@ -200,33 +203,35 @@ Return JSON array of 2-3 primary settings:
 Return ONLY the JSON array, no markdown formatting, no explanations.`;
 
 export async function POST(request: NextRequest) {
-  try {
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('🏛️  [SETTINGS API] Request received');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+	try {
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		console.log("🏛️  [SETTINGS API] Request received");
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-    const body = await request.json() as { storySummary: StorySummaryResult };
-    const { storySummary } = body;
+		const body = (await request.json()) as { storySummary: StorySummaryResult };
+		const { storySummary } = body;
 
-    console.log('[SETTINGS API] Request summary:', {
-      hasStorySummary: !!storySummary,
-      genre: storySummary?.genre,
-      tone: storySummary?.tone,
-      characterCount: storySummary?.characters?.length || 0,
-    });
+		console.log("[SETTINGS API] Request summary:", {
+			hasStorySummary: !!storySummary,
+			genre: storySummary?.genre,
+			tone: storySummary?.tone,
+			characterCount: storySummary?.characters?.length || 0,
+		});
 
-    if (!storySummary) {
-      console.error('❌ [SETTINGS API] Validation failed: Story summary is missing');
-      return NextResponse.json(
-        { error: 'Story summary is required' },
-        { status: 400 }
-      );
-    }
+		if (!storySummary) {
+			console.error(
+				"❌ [SETTINGS API] Validation failed: Story summary is missing",
+			);
+			return NextResponse.json(
+				{ error: "Story summary is required" },
+				{ status: 400 },
+			);
+		}
 
-    console.log('✅ [SETTINGS API] Validation passed');
+		console.log("✅ [SETTINGS API] Validation passed");
 
-    // Build context for settings generation
-    const settingsContext = `
+		// Build context for settings generation
+		const settingsContext = `
 # STORY CONTEXT
 Summary: ${storySummary.summary}
 Genre: ${storySummary.genre}
@@ -236,12 +241,16 @@ Tone: ${storySummary.tone}
 ${storySummary.moralFramework}
 
 # CHARACTERS (for understanding who will use these settings)
-${storySummary.characters.map((char, idx) => `
+${storySummary.characters
+	.map(
+		(char, idx) => `
 ${idx + 1}. ${char.name}
    - Core Trait: ${char.coreTrait}
    - Internal Flaw: ${char.internalFlaw}
    - External Goal: ${char.externalGoal}
-`).join('\n')}
+`,
+	)
+	.join("\n")}
 
 Create 2-3 primary settings that will:
 1. Generate external adversity for these characters
@@ -249,70 +258,103 @@ Create 2-3 primary settings that will:
 3. Create distinct emotional atmospheres for different story phases
 `;
 
-    console.log('[SETTINGS API] 🤖 Calling AI generation...');
-    console.log('[SETTINGS API] Model: gemini-2.5-flash-lite');
-    console.log('[SETTINGS API] Temperature: 0.8');
+		console.log("[SETTINGS API] 🤖 Calling AI generation...");
+		console.log("[SETTINGS API] Model: gemini-2.5-flash-lite");
+		console.log("[SETTINGS API] Temperature: 0.8");
 
-    const result = await generateJSON<SettingGenerationResult[]>({
-      prompt: settingsContext,
-      systemPrompt: SETTINGS_EXPANSION_PROMPT,
-      model: 'gemini-2.5-flash-lite',
-      temperature: 0.8,
-    });
+		const result = await generateJSON<SettingGenerationResult[]>({
+			prompt: settingsContext,
+			systemPrompt: SETTINGS_EXPANSION_PROMPT,
+			model: "gemini-2.5-flash-lite",
+			temperature: 0.8,
+		});
 
-    console.log('[SETTINGS API] ✅ AI generation completed');
-    console.log('[SETTINGS API] Result summary:', {
-      isArray: Array.isArray(result),
-      count: Array.isArray(result) ? result.length : 0,
-      settingNames: Array.isArray(result) ? result.map(s => s.name).join(', ') : '(invalid)',
-    });
+		console.log("[SETTINGS API] ✅ AI generation completed");
+		console.log("[SETTINGS API] Result summary:", {
+			isArray: Array.isArray(result),
+			count: Array.isArray(result) ? result.length : 0,
+			settingNames: Array.isArray(result)
+				? result.map((s) => s.name).join(", ")
+				: "(invalid)",
+		});
 
-    // Validate result
-    if (!Array.isArray(result) || result.length < 2 || result.length > 3) {
-      console.error('❌ [SETTINGS API] Validation failed: should return 2-3 settings');
-      throw new Error('Invalid settings generation result: should return 2-3 settings');
-    }
+		// Validate result
+		if (!Array.isArray(result) || result.length < 2 || result.length > 3) {
+			console.error(
+				"❌ [SETTINGS API] Validation failed: should return 2-3 settings",
+			);
+			throw new Error(
+				"Invalid settings generation result: should return 2-3 settings",
+			);
+		}
 
-    // Validate each setting has required fields
-    for (const setting of result) {
-      if (!setting.id || !setting.name || !(setting as any).summary && !(setting as any).description) {
-        throw new Error(`Invalid setting data for ${setting.name}: missing basic fields`);
-      }
-      if (!setting.adversityElements || !setting.cycleAmplification || !setting.sensory) {
-        throw new Error(`Invalid setting data for ${setting.name}: missing required structures`);
-      }
-      // Validate adversity elements
-      const { adversityElements } = setting;
-      if (!adversityElements.physicalObstacles?.length || !adversityElements.dangerSources?.length) {
-        throw new Error(`Invalid setting data for ${setting.name}: missing adversity elements`);
-      }
-      // Validate cycle amplification has all phases
-      const { cycleAmplification } = setting;
-      const requiredPhases = ['setup', 'confrontation', 'virtue', 'consequence', 'transition'];
-      for (const phase of requiredPhases) {
-        if (!cycleAmplification[phase as keyof typeof cycleAmplification]) {
-          throw new Error(`Invalid setting data for ${setting.name}: missing ${phase} in cycle amplification`);
-        }
-      }
-      // Validate sensory details
-      const { sensory } = setting;
-      if (!sensory.sight?.length || !sensory.sound?.length) {
-        throw new Error(`Invalid setting data for ${setting.name}: missing sensory details`);
-      }
-    }
+		// Validate each setting has required fields
+		for (const setting of result) {
+			if (
+				!setting.id ||
+				!setting.name ||
+				(!(setting as any).summary && !(setting as any).description)
+			) {
+				throw new Error(
+					`Invalid setting data for ${setting.name}: missing basic fields`,
+				);
+			}
+			if (
+				!setting.adversityElements ||
+				!setting.cycleAmplification ||
+				!setting.sensory
+			) {
+				throw new Error(
+					`Invalid setting data for ${setting.name}: missing required structures`,
+				);
+			}
+			// Validate adversity elements
+			const { adversityElements } = setting;
+			if (
+				!adversityElements.physicalObstacles?.length ||
+				!adversityElements.dangerSources?.length
+			) {
+				throw new Error(
+					`Invalid setting data for ${setting.name}: missing adversity elements`,
+				);
+			}
+			// Validate cycle amplification has all phases
+			const { cycleAmplification } = setting;
+			const requiredPhases = [
+				"setup",
+				"confrontation",
+				"virtue",
+				"consequence",
+				"transition",
+			];
+			for (const phase of requiredPhases) {
+				if (!cycleAmplification[phase as keyof typeof cycleAmplification]) {
+					throw new Error(
+						`Invalid setting data for ${setting.name}: missing ${phase} in cycle amplification`,
+					);
+				}
+			}
+			// Validate sensory details
+			const { sensory } = setting;
+			if (!sensory.sight?.length || !sensory.sound?.length) {
+				throw new Error(
+					`Invalid setting data for ${setting.name}: missing sensory details`,
+				);
+			}
+		}
 
-    console.log('✅ [SETTINGS API] All validations passed, returning result');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+		console.log("✅ [SETTINGS API] All validations passed, returning result");
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-    return NextResponse.json(result);
-  } catch (error) {
-    console.error('Settings generation error:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to generate settings',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    );
-  }
+		return NextResponse.json(result);
+	} catch (error) {
+		console.error("Settings generation error:", error);
+		return NextResponse.json(
+			{
+				error: "Failed to generate settings",
+				details: error instanceof Error ? error.message : "Unknown error",
+			},
+			{ status: 500 },
+		);
+	}
 }

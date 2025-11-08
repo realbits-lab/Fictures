@@ -1,13 +1,20 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1730785600000,
-      "tag": "0000_consolidated_schema",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "postgresql",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "7",
+			"when": 1730785600000,
+			"tag": "0000_consolidated_schema",
+			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "7",
+			"when": 1762575777820,
+			"tag": "0001_fancy_molecule_man",
+			"breakpoints": true
+		}
+	]
 }

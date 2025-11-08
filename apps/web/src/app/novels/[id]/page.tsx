@@ -1,12 +1,15 @@
-import { Suspense } from 'react';
-import { MainLayout } from '@/components/layout';
-import { ChapterReaderClient } from '@/components/novels/ChapterReaderClient';
-import { StoryHeaderSkeleton, ChapterListSkeleton } from '@/components/novels/ReadingSkeletons';
-import { getStoryForReading } from '@/lib/db/reading-queries';
-import { notFound } from 'next/navigation';
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
+import { MainLayout } from "@/components/layout";
+import { ChapterReaderClient } from "@/components/novels/ChapterReaderClient";
+import {
+	ChapterListSkeleton,
+	StoryHeaderSkeleton,
+} from "@/components/novels/ReadingSkeletons";
+import { getStoryForReading } from "@/lib/db/reading-queries";
 
 interface ReadPageProps {
-  params: Promise<{ id: string }>;
+	params: Promise<{ id: string }>;
 }
 
 // ⚡ Strategy 2: Partial Prerendering (PPR)
@@ -23,32 +26,34 @@ export const experimental_ppr = true;
 // Split loading into progressive chunks for faster perceived performance
 
 async function StoryHeader({ storyId }: { storyId: string }) {
-  const pageLoadStart = Date.now();
-  console.log('\n🚀 [SSR-Stream] StoryHeader loading started');
+	const pageLoadStart = Date.now();
+	console.log("\n🚀 [SSR-Stream] StoryHeader loading started");
 
-  // ⚡ Strategy 3: Use optimized reading query (skips studio fields, keeps imageVariants)
-  const story = await getStoryForReading(storyId);
+	// ⚡ Strategy 3: Use optimized reading query (skips studio fields, keeps imageVariants)
+	const story = await getStoryForReading(storyId);
 
-  const loadDuration = Date.now() - pageLoadStart;
-  console.log(`✅ [SSR-Stream] StoryHeader loaded in ${loadDuration}ms (optimized query)`);
+	const loadDuration = Date.now() - pageLoadStart;
+	console.log(
+		`✅ [SSR-Stream] StoryHeader loaded in ${loadDuration}ms (optimized query)`,
+	);
 
-  if (!story) {
-    notFound();
-  }
+	if (!story) {
+		notFound();
+	}
 
-  return <ChapterReaderClient storyId={storyId} initialData={story} />;
+	return <ChapterReaderClient storyId={storyId} initialData={story} />;
 }
 
 export default async function ReadPage({ params }: ReadPageProps) {
-  const { id } = await params;
-  console.log(`📖 [SSR] Streaming page for story: ${id}`);
+	const { id } = await params;
+	console.log(`📖 [SSR] Streaming page for story: ${id}`);
 
-  return (
-    <MainLayout>
-      {/* Stream story content progressively */}
-      <Suspense fallback={<StoryHeaderSkeleton />}>
-        <StoryHeader storyId={id} />
-      </Suspense>
-    </MainLayout>
-  );
+	return (
+		<MainLayout>
+			{/* Stream story content progressively */}
+			<Suspense fallback={<StoryHeaderSkeleton />}>
+				<StoryHeader storyId={id} />
+			</Suspense>
+		</MainLayout>
+	);
 }

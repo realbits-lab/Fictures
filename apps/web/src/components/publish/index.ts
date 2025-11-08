@@ -1,1 +1,1 @@
-export { PublishClient } from './PublishClient';
+export { PublishClient } from "./PublishClient";

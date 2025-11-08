@@ -1,7 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { generateWithGemini } from '@/lib/novels/ai-client';
-import { PARTS_GENERATION_PROMPT } from '@/lib/novels/system-prompts';
-import type { StorySummaryResult, CharacterGenerationResult, PartGenerationResult } from '@/lib/novels/types';
+import { type NextRequest, NextResponse } from "next/server";
+import { generateWithGemini } from "@/lib/novels/ai-client";
+import { PARTS_GENERATION_PROMPT } from "@/lib/novels/system-prompts";
+import type {
+	CharacterGenerationResult,
+	PartGenerationResult,
+	StorySummaryResult,
+} from "@/lib/novels/types";
 
 const PARTS_EXPANSION_PROMPT = `${PARTS_GENERATION_PROMPT}
 
@@ -194,48 +198,53 @@ External: [External problem forcing action]
 Return ONLY the structured text, no JSON, no markdown code blocks.`;
 
 export async function POST(request: NextRequest) {
-  try {
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('🎭 [PARTS API] Request received');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+	try {
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		console.log("🎭 [PARTS API] Request received");
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-    const body = await request.json() as {
-      storySummary: StorySummaryResult;
-      characters: CharacterGenerationResult[];
-      partsCount?: number;
-      chaptersPerPart?: number;
-    };
-    const { storySummary, characters, partsCount = 3, chaptersPerPart = 3 } = body;
+		const body = (await request.json()) as {
+			storySummary: StorySummaryResult;
+			characters: CharacterGenerationResult[];
+			partsCount?: number;
+			chaptersPerPart?: number;
+		};
+		const {
+			storySummary,
+			characters,
+			partsCount = 3,
+			chaptersPerPart = 3,
+		} = body;
 
-    console.log('[PARTS API] Request parameters:', {
-      hasStorySummary: !!storySummary,
-      charactersCount: characters?.length || 0,
-      partsCount,
-      chaptersPerPart,
-      totalChapters: partsCount * chaptersPerPart,
-    });
+		console.log("[PARTS API] Request parameters:", {
+			hasStorySummary: !!storySummary,
+			charactersCount: characters?.length || 0,
+			partsCount,
+			chaptersPerPart,
+			totalChapters: partsCount * chaptersPerPart,
+		});
 
-    if (!storySummary || !characters || characters.length < 2) {
-      console.error('❌ [PARTS API] Validation failed');
-      return NextResponse.json(
-        { error: 'Story summary and at least 2 characters are required' },
-        { status: 400 }
-      );
-    }
+		if (!storySummary || !characters || characters.length < 2) {
+			console.error("❌ [PARTS API] Validation failed");
+			return NextResponse.json(
+				{ error: "Story summary and at least 2 characters are required" },
+				{ status: 400 },
+			);
+		}
 
-    console.log('✅ [PARTS API] Validation passed');
+		console.log("✅ [PARTS API] Validation passed");
 
-    // Identify main characters
-    const mainCharacters = characters.filter(c => c.isMain);
-    if (mainCharacters.length === 0) {
-      return NextResponse.json(
-        { error: 'At least one main character is required' },
-        { status: 400 }
-      );
-    }
+		// Identify main characters
+		const mainCharacters = characters.filter((c) => c.isMain);
+		if (mainCharacters.length === 0) {
+			return NextResponse.json(
+				{ error: "At least one main character is required" },
+				{ status: 400 },
+			);
+		}
 
-    // Build context for part generation
-    const partsContext = `
+		// Build context for part generation
+		const partsContext = `
 # STORY CONTEXT
 Summary: ${storySummary.summary}
 Genre: ${storySummary.genre}
@@ -250,173 +259,197 @@ Chapters per Part: ${chaptersPerPart}
 TOTAL CHAPTERS: ${partsCount * chaptersPerPart}
 
 # CHARACTERS
-${characters.map((char) => `
-## ${char.name} (${char.isMain ? 'MAIN' : 'Supporting'})
+${characters
+	.map(
+		(char) => `
+## ${char.name} (${char.isMain ? "MAIN" : "Supporting"})
 - Core Trait: ${char.coreTrait}
 - Internal Flaw: ${char.internalFlaw}
 - External Goal: ${char.externalGoal}
 - Backstory Summary: ${char.backstory.substring(0, 200)}...
-- Key Values: ${char.personality.values.join(', ')}
-`).join('\n')}
+- Key Values: ${char.personality.values.join(", ")}
+`,
+	)
+	.join("\n")}
 
 # YOUR TASK
-Design MACRO adversity-triumph arcs for each main character across EXACTLY ${partsCount} part${partsCount > 1 ? 's' : ''} (acts).
+Design MACRO adversity-triumph arcs for each main character across EXACTLY ${partsCount} part${partsCount > 1 ? "s" : ""} (acts).
 Each MACRO arc will later decompose into approximately ${chaptersPerPart} chapters.
 
-${partsCount === 1 ? `
+${
+	partsCount === 1
+		? `
 IMPORTANT: Since this is a single-part story, compress the traditional three-act structure into ONE complete arc:
 - Setup adversity quickly
 - Build to climax efficiently
 - Resolve within ${chaptersPerPart} chapters
-` : partsCount === 2 ? `
+`
+		: partsCount === 2
+			? `
 IMPORTANT: For a two-part structure:
 - Part 1: Setup and rising action (build adversity)
 - Part 2: Climax and resolution (resolve conflict)
-` : `
+`
+			: `
 IMPORTANT: For a three-part structure (traditional):
 - Part 1 (Act 1): Setup and first trials
 - Part 2 (Act 2): Escalation and dark night
 - Part 3 (Act 3): Climax and resolution
-`}
+`
+}
 
 Generate the ${partsCount}-part structure following the output format. Create EXACTLY ${partsCount} parts with clear adversity-triumph arcs.
 `;
 
-    console.log('[PARTS API] 🤖 Calling AI generation...');
-    console.log('[PARTS API] Model: gemini-2.5-flash');
-    console.log('[PARTS API] Temperature: 0.7, MaxTokens: 8192');
+		console.log("[PARTS API] 🤖 Calling AI generation...");
+		console.log("[PARTS API] Model: gemini-2.5-flash");
+		console.log("[PARTS API] Temperature: 0.7, MaxTokens: 8192");
 
-    const result = await generateWithGemini({
-      prompt: partsContext,
-      systemPrompt: PARTS_EXPANSION_PROMPT,
-      model: 'gemini-2.5-flash',
-      temperature: 0.7,
-      maxTokens: 8192,
-    });
+		const result = await generateWithGemini({
+			prompt: partsContext,
+			systemPrompt: PARTS_EXPANSION_PROMPT,
+			model: "gemini-2.5-flash",
+			temperature: 0.7,
+			maxTokens: 8192,
+		});
 
-    console.log('[PARTS API] ✅ AI generation completed');
-    console.log('[PARTS API] Parsing structured text into parts array...');
+		console.log("[PARTS API] ✅ AI generation completed");
+		console.log("[PARTS API] Parsing structured text into parts array...");
 
-    // Parse structured text into parts array
-    const parts = parsePartsFromText(result, characters, partsCount);
+		// Parse structured text into parts array
+		const parts = parsePartsFromText(result, characters, partsCount);
 
-    console.log('[PARTS API] Result summary:', {
-      partsCount: parts.length,
-      partTitles: parts.map(p => p.title).join(', '),
-    });
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+		console.log("[PARTS API] Result summary:", {
+			partsCount: parts.length,
+			partTitles: parts.map((p) => p.title).join(", "),
+		});
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-    return NextResponse.json(parts);
-  } catch (error) {
-    console.error('Parts generation error:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to generate parts',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    );
-  }
+		return NextResponse.json(parts);
+	} catch (error) {
+		console.error("Parts generation error:", error);
+		return NextResponse.json(
+			{
+				error: "Failed to generate parts",
+				details: error instanceof Error ? error.message : "Unknown error",
+			},
+			{ status: 500 },
+		);
+	}
 }
 
 function parsePartsFromText(
-  text: string,
-  characters: CharacterGenerationResult[],
-  partsCount: number
+	text: string,
+	characters: CharacterGenerationResult[],
+	partsCount: number,
 ): PartGenerationResult[] {
-  const parts: PartGenerationResult[] = [];
+	const parts: PartGenerationResult[] = [];
 
-  // Split by acts (support both "ACT" and "PART" headers)
-  const actSections = text.split(/# (?:ACT|PART) \d+:/);
+	// Split by acts (support both "ACT" and "PART" headers)
+	const actSections = text.split(/# (?:ACT|PART) \d+:/);
 
-  // Process each act (skip first empty split)
-  for (let actNum = 1; actNum <= partsCount; actNum++) {
-    const actSection = actSections[actNum];
-    if (!actSection) continue;
+	// Process each act (skip first empty split)
+	for (let actNum = 1; actNum <= partsCount; actNum++) {
+		const actSection = actSections[actNum];
+		if (!actSection) continue;
 
-    // Extract act title
-    const titleMatch = actSection.match(/^([^\n]+)/);
-    const title = titleMatch ? titleMatch[1].trim() : `Act ${actNum}`;
+		// Extract act title
+		const titleMatch = actSection.match(/^([^\n]+)/);
+		const title = titleMatch ? titleMatch[1].trim() : `Act ${actNum}`;
 
-    // Extract summary
-    const summaryMatch = actSection.match(/## Summary\s*\n([^\n#]+)/);
-    const summary = summaryMatch ? summaryMatch[1].trim() : '';
+		// Extract summary
+		const summaryMatch = actSection.match(/## Summary\s*\n([^\n#]+)/);
+		const summary = summaryMatch ? summaryMatch[1].trim() : "";
 
-    // Extract character arcs
-    const characterArcs = [];
+		// Extract character arcs
+		const characterArcs = [];
 
-    // For Act 2 in 3-part structure, handle 2A and 2B subsections
-    if (actNum === 2 && partsCount === 3) {
-      // Split into 2A and 2B
-      const [_, part2A, part2B] = actSection.split(/## Part 2[AB]:/);
+		// For Act 2 in 3-part structure, handle 2A and 2B subsections
+		if (actNum === 2 && partsCount === 3) {
+			// Split into 2A and 2B
+			const [_, part2A, part2B] = actSection.split(/## Part 2[AB]:/);
 
-      if (part2A) {
-        const arcs2A = extractCharacterArcs(part2A, characters);
-        characterArcs.push(...arcs2A);
-      }
+			if (part2A) {
+				const arcs2A = extractCharacterArcs(part2A, characters);
+				characterArcs.push(...arcs2A);
+			}
 
-      if (part2B) {
-        const arcs2B = extractCharacterArcs(part2B, characters);
-        characterArcs.push(...arcs2B);
-      }
-    } else {
-      // Single part or other acts
-      const arcs = extractCharacterArcs(actSection, characters);
-      characterArcs.push(...arcs);
-    }
+			if (part2B) {
+				const arcs2B = extractCharacterArcs(part2B, characters);
+				characterArcs.push(...arcs2B);
+			}
+		} else {
+			// Single part or other acts
+			const arcs = extractCharacterArcs(actSection, characters);
+			characterArcs.push(...arcs);
+		}
 
-    parts.push({
-      orderIndex: actNum - 1, // Convert act number (1-3) to 0-based index (0-2)
-      title,
-      summary,
-      characterArcs,
-    });
-  }
+		parts.push({
+			orderIndex: actNum - 1, // Convert act number (1-3) to 0-based index (0-2)
+			title,
+			summary,
+			characterArcs,
+		});
+	}
 
-  return parts;
+	return parts;
 }
 
 function extractCharacterArcs(
-  text: string,
-  characters: CharacterGenerationResult[]
+	text: string,
+	characters: CharacterGenerationResult[],
 ): any[] {
-  const arcs = [];
+	const arcs = [];
 
-  // Find all character arc sections
-  const characterSections = text.split(/## ([^#\n]+) - (Primary|Secondary) Arc/);
+	// Find all character arc sections
+	const characterSections = text.split(
+		/## ([^#\n]+) - (Primary|Secondary) Arc/,
+	);
 
-  for (let i = 1; i < characterSections.length; i += 3) {
-    const characterName = characterSections[i].trim();
-    const arcPosition = characterSections[i + 1].toLowerCase() as 'primary' | 'secondary';
-    const arcContent = characterSections[i + 2];
+	for (let i = 1; i < characterSections.length; i += 3) {
+		const characterName = characterSections[i].trim();
+		const arcPosition = characterSections[i + 1].toLowerCase() as
+			| "primary"
+			| "secondary";
+		const arcContent = characterSections[i + 2];
 
-    // Find character by name
-    const character = characters.find(c => c.name === characterName);
-    if (!character) continue;
+		// Find character by name
+		const character = characters.find((c) => c.name === characterName);
+		if (!character) continue;
 
-    // Extract arc fields
-    const internalMatch = arcContent.match(/Internal:\s*([^\n]+)/);
-    const externalMatch = arcContent.match(/External:\s*([^\n]+)/);
-    const virtueMatch = arcContent.match(/### MACRO Virtue\s*\n([^\n#]+)/);
-    const consequenceMatch = arcContent.match(/### MACRO Consequence\s*\n([^\n#]+)/);
-    const newAdversityMatch = arcContent.match(/### MACRO New Adversity\s*\n([^\n#]+)/);
-    const chaptersMatch = arcContent.match(/### Estimated Chapters\s*\n([^\n#]+)/);
-    const strategyMatch = arcContent.match(/### Progression Strategy\s*\n([^\n#]+)/);
+		// Extract arc fields
+		const internalMatch = arcContent.match(/Internal:\s*([^\n]+)/);
+		const externalMatch = arcContent.match(/External:\s*([^\n]+)/);
+		const virtueMatch = arcContent.match(/### MACRO Virtue\s*\n([^\n#]+)/);
+		const consequenceMatch = arcContent.match(
+			/### MACRO Consequence\s*\n([^\n#]+)/,
+		);
+		const newAdversityMatch = arcContent.match(
+			/### MACRO New Adversity\s*\n([^\n#]+)/,
+		);
+		const chaptersMatch = arcContent.match(
+			/### Estimated Chapters\s*\n([^\n#]+)/,
+		);
+		const strategyMatch = arcContent.match(
+			/### Progression Strategy\s*\n([^\n#]+)/,
+		);
 
-    arcs.push({
-      characterId: character.id,
-      macroAdversity: {
-        internal: internalMatch ? internalMatch[1].trim() : '',
-        external: externalMatch ? externalMatch[1].trim() : '',
-      },
-      macroVirtue: virtueMatch ? virtueMatch[1].trim() : '',
-      macroConsequence: consequenceMatch ? consequenceMatch[1].trim() : '',
-      macroNewAdversity: newAdversityMatch ? newAdversityMatch[1].trim() : '',
-      estimatedChapters: chaptersMatch ? parseInt(chaptersMatch[1].match(/\d+/)?.[0] || '3') : 3,
-      arcPosition,
-      progressionStrategy: strategyMatch ? strategyMatch[1].trim() : '',
-    });
-  }
+		arcs.push({
+			characterId: character.id,
+			macroAdversity: {
+				internal: internalMatch ? internalMatch[1].trim() : "",
+				external: externalMatch ? externalMatch[1].trim() : "",
+			},
+			macroVirtue: virtueMatch ? virtueMatch[1].trim() : "",
+			macroConsequence: consequenceMatch ? consequenceMatch[1].trim() : "",
+			macroNewAdversity: newAdversityMatch ? newAdversityMatch[1].trim() : "",
+			estimatedChapters: chaptersMatch
+				? parseInt(chaptersMatch[1].match(/\d+/)?.[0] || "3")
+				: 3,
+			arcPosition,
+			progressionStrategy: strategyMatch ? strategyMatch[1].trim() : "",
+		});
+	}
 
-  return arcs;
+	return arcs;
 }

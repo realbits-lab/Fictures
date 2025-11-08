@@ -1,15 +1,15 @@
-import { nanoid } from 'nanoid';
-import { db } from '@/lib/db';
-import { analysisEvents } from '@/lib/db/schema';
+import { nanoid } from "nanoid";
+import { db } from "@/lib/db";
+import { analysisEvents } from "@/lib/db/schema";
 
 interface TrackEventParams {
-  eventType: string;
-  userId?: string | null;
-  storyId?: string;
-  chapterId?: string;
-  sceneId?: string;
-  postId?: string;
-  metadata?: Record<string, unknown>;
+	eventType: string;
+	userId?: string | null;
+	storyId?: string;
+	chapterId?: string;
+	sceneId?: string;
+	postId?: string;
+	metadata?: Record<string, unknown>;
 }
 
 /**
@@ -36,35 +36,35 @@ interface TrackEventParams {
  * ```
  */
 export async function trackEvent({
-  eventType,
-  userId,
-  storyId,
-  chapterId,
-  sceneId,
-  postId,
-  metadata = {},
+	eventType,
+	userId,
+	storyId,
+	chapterId,
+	sceneId,
+	postId,
+	metadata = {},
 }: TrackEventParams): Promise<void> {
-  try {
-    // Get or create session ID from metadata
-    const sessionId = (metadata.sessionId as string) || nanoid();
+	try {
+		// Get or create session ID from metadata
+		const sessionId = (metadata.sessionId as string) || nanoid();
 
-    await db.insert(analysisEvents).values({
-      id: nanoid(),
-      eventType: eventType as any,
-      userId: userId || null,
-      sessionId,
-      storyId: storyId || null,
-      chapterId: chapterId || null,
-      sceneId: sceneId || null,
-      postId: postId || null,
-      metadata,
-      timestamp: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-    });
-  } catch (error) {
-    // Log error but don't throw - analytics failures should not break user experience
-    console.error('Failed to track event:', error);
-  }
+		await db.insert(analysisEvents).values({
+			id: nanoid(),
+			eventType: eventType as any,
+			userId: userId || null,
+			sessionId,
+			storyId: storyId || null,
+			chapterId: chapterId || null,
+			sceneId: sceneId || null,
+			postId: postId || null,
+			metadata,
+			timestamp: new Date().toISOString(),
+			createdAt: new Date().toISOString(),
+		});
+	} catch (error) {
+		// Log error but don't throw - analytics failures should not break user experience
+		console.error("Failed to track event:", error);
+	}
 }
 
 /**
@@ -75,26 +75,28 @@ export async function trackEvent({
  * @param events - Array of event tracking parameters
  * @returns Promise<void>
  */
-export async function trackEventsBatch(events: TrackEventParams[]): Promise<void> {
-  try {
-    const now = new Date().toISOString();
+export async function trackEventsBatch(
+	events: TrackEventParams[],
+): Promise<void> {
+	try {
+		const now = new Date().toISOString();
 
-    const eventRecords = events.map((event) => ({
-      id: nanoid(),
-      eventType: event.eventType as any,
-      userId: event.userId || null,
-      sessionId: (event.metadata?.sessionId as string) || nanoid(),
-      storyId: event.storyId || null,
-      chapterId: event.chapterId || null,
-      sceneId: event.sceneId || null,
-      postId: event.postId || null,
-      metadata: event.metadata || {},
-      timestamp: now,
-      createdAt: now,
-    }));
+		const eventRecords = events.map((event) => ({
+			id: nanoid(),
+			eventType: event.eventType as any,
+			userId: event.userId || null,
+			sessionId: (event.metadata?.sessionId as string) || nanoid(),
+			storyId: event.storyId || null,
+			chapterId: event.chapterId || null,
+			sceneId: event.sceneId || null,
+			postId: event.postId || null,
+			metadata: event.metadata || {},
+			timestamp: now,
+			createdAt: now,
+		}));
 
-    await db.insert(analysisEvents).values(eventRecords);
-  } catch (error) {
-    console.error('Failed to track events batch:', error);
-  }
+		await db.insert(analysisEvents).values(eventRecords);
+	} catch (error) {
+		console.error("Failed to track events batch:", error);
+	}
 }
