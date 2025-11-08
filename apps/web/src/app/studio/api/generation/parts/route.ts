@@ -1,9 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { generateParts } from "@/lib/studio/generators";
 import type {
 	CharacterGenerationResult,
 	StorySummaryResult,
-} from "@/lib/novels/types";
-import { generateParts } from "@/lib/studio/generators";
+} from "@/lib/studio/generators/ai-types";
 
 export async function POST(request: NextRequest) {
 	try {

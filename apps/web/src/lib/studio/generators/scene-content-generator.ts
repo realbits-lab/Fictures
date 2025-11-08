@@ -8,7 +8,7 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { textGenerationClient } from "@/lib/novels/ai-client";
+import { textGenerationClient } from "./ai-client";
 import type {
 	GenerateSceneContentParams,
 	GenerateSceneContentResult,

@@ -1,10 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { generateImages } from "@/lib/studio/generators";
 import type {
 	CharacterGenerationResult,
 	SceneSummaryResult,
 	SettingGenerationResult,
-} from "@/lib/novels/types";
-import { generateImages } from "@/lib/studio/generators";
+} from "@/lib/studio/generators/ai-types";
 
 interface StoryData {
 	title: string;

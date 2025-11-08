@@ -9,7 +9,7 @@ import type {
 	Scene,
 	Setting,
 	StorySummaryResult,
-} from "@/lib/novels/types";
+} from "./ai-types";
 
 // ============================================================================
 // Base Generator Interfaces

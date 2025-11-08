@@ -10,7 +10,7 @@ import {
 	saveToolExecution,
 	updateToolExecution,
 } from "@/lib/db/studio-agent-operations";
-import { studioAgentTools } from "@/lib/studio/agent-tools";
+import { studioAgentTools } from "@/lib/studio/agent/agent-tools";
 
 export const maxDuration = 60; // Allow longer execution for multi-step reasoning
 export const runtime = "nodejs"; // Use Node.js runtime for database operations

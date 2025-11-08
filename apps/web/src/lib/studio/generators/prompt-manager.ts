@@ -3,7 +3,7 @@
  * Manages separate prompts for each model provider (Gemini, AI Server)
  */
 
-import type { ModelProvider, PromptTemplate, PromptType } from "./types";
+import type { ModelProvider, PromptTemplate, PromptType } from "./ai-types";
 
 class PromptManager {
 	private prompts: Record<ModelProvider, Record<PromptType, PromptTemplate>>;

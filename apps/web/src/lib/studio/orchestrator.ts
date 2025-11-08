@@ -11,7 +11,7 @@ import type {
 	PartGenerationResult,
 	SceneSummaryResult,
 	SettingGenerationResult,
-} from "@/lib/novels/types";
+} from "@/lib/studio/generators/ai-types";
 import {
 	generateChapters,
 	generateCharacters,

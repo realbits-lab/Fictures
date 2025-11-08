@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
-import type { StorySummaryResult } from "@/lib/novels/types";
 import { generateSettings } from "@/lib/studio/generators";
+import type { StorySummaryResult } from "@/lib/studio/generators/ai-types";
 
 export async function POST(request: NextRequest) {
 	try {

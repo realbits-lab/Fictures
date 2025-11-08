@@ -1,11 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { generateSceneSummaries } from "@/lib/studio/generators";
 import type {
 	ChapterGenerationResult,
 	CharacterGenerationResult,
 	SettingGenerationResult,
 	StorySummaryResult,
-} from "@/lib/novels/types";
-import { generateSceneSummaries } from "@/lib/studio/generators";
+} from "@/lib/studio/generators/ai-types";
 
 export async function POST(request: NextRequest) {
 	try {
