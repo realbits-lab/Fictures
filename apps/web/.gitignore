@@ -95,3 +95,8 @@ downloads/
 
 # VS Code settings
 .vscode/
+
+# Drizzle auto-generated files (DO NOT COMMIT)
+# Source of truth: src/lib/db/schema.ts
+drizzle/schema.ts
+drizzle/relations.ts
