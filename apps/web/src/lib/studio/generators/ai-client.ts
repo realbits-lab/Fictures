@@ -89,7 +89,9 @@ class GeminiProvider extends TextGenerationProvider {
 			let jsonSchema: any;
 			if (request.responseSchema && "_def" in request.responseSchema) {
 				// It's a Zod schema - use native z.toJSONSchema()
-				console.log("[GeminiProvider] Converting Zod schema to JSON Schema (native)");
+				console.log(
+					"[GeminiProvider] Converting Zod schema to JSON Schema (native)",
+				);
 				jsonSchema = z.toJSONSchema(request.responseSchema as z.ZodType<any>, {
 					target: "openapi-3.0",
 					$refStrategy: "none",
@@ -288,9 +290,8 @@ class GeminiProvider extends TextGenerationProvider {
 
 			for (const [key, value] of Object.entries(schema)) {
 				// Skip fields that Gemini doesn't support
-				// Note: As of Nov 2025, Gemini supports anyOf, $ref, and most JSON Schema keywords
-				// We only need to remove $schema
-				if (key === "$schema") {
+				// Note: Gemini does NOT support additionalProperties or $schema
+				if (key === "$schema" || key === "additionalProperties") {
 					continue;
 				}
 
