@@ -9,9 +9,9 @@
  */
 
 import { textGenerationClient } from "./ai-client";
-import type { CyclePhase } from "./types";
 import { SceneSummaryJsonSchema } from "./json-schemas.generated";
 import type {
+	CyclePhase,
 	GenerateSceneSummariesParams,
 	GenerateSceneSummariesResult,
 } from "./types";

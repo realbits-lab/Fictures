@@ -9,33 +9,50 @@
 
 import { z } from "zod";
 import {
+	aiStoryGenerationSchema,
 	insertChapterSchema,
 	insertCharacterSchema,
 	insertPartSchema,
 	insertSceneSchema,
 	insertSettingSchema,
-	insertStorySchema,
 } from "./zod-schemas.generated";
 
 /**
- * Remove $schema field that Gemini doesn't accept
+ * Remove fields that Gemini doesn't accept and recursively clean the schema
  */
-const removeSchemaField = (schema: Record<string, unknown>) => {
-	// biome-ignore lint/correctness/noUnusedVariables: $schema is intentionally removed
-	const { $schema, ...rest } = schema;
-	return rest;
+const cleanGeminiSchema = (obj: unknown): unknown => {
+	if (obj === null || obj === undefined) {
+		return obj;
+	}
+
+	if (Array.isArray(obj)) {
+		return obj.map((item) => cleanGeminiSchema(item));
+	}
+
+	if (typeof obj === "object") {
+		const cleaned: Record<string, unknown> = {};
+		for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+			// Skip fields that Gemini doesn't support
+			if (key === "$schema" || key === "additionalProperties") {
+				continue;
+			}
+			cleaned[key] = cleanGeminiSchema(value);
+		}
+		return cleaned;
+	}
+
+	return obj;
 };
 
 /**
  * Convert Zod schema to JSON Schema for Gemini API using Zod's built-in method
  */
 const toGeminiJsonSchema = (zodSchema: z.ZodType) => {
-	return removeSchemaField(
-		z.toJSONSchema(zodSchema, {
-			target: "openapi-3.0",
-			$refStrategy: "none",
-		}),
-	);
+	const jsonSchema = z.toJSONSchema(zodSchema, {
+		target: "openapi-3.0",
+		$refStrategy: "none",
+	});
+	return cleanGeminiSchema(jsonSchema) as Record<string, unknown>;
 };
 
 // ============================================================================
@@ -44,8 +61,9 @@ const toGeminiJsonSchema = (zodSchema: z.ZodType) => {
 
 /**
  * JSON Schema for Story generation (Gemini structured output)
+ * Uses minimal schema to avoid Gemini validation issues with complex fields
  */
-export const StorySummaryJsonSchema = toGeminiJsonSchema(insertStorySchema);
+export const StoryJsonSchema = toGeminiJsonSchema(aiStoryGenerationSchema);
 
 // ============================================================================
 // Character JSON Schema
@@ -97,7 +115,7 @@ export const SceneSummaryJsonSchema = toGeminiJsonSchema(insertSceneSchema);
 // ============================================================================
 
 export const jsonSchemas = {
-	story: StorySummaryJsonSchema,
+	story: StoryJsonSchema,
 	character: CharacterJsonSchema,
 	setting: SettingJsonSchema,
 	part: PartJsonSchema,

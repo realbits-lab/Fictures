@@ -8,10 +8,11 @@
  * Database operations are handled by the caller (API route).
  */
 
+import type { z } from "zod";
 import { textGenerationClient } from "./ai-client";
-import { StorySummaryJsonSchema } from "./json-schemas.generated";
+import { StoryJsonSchema } from "./json-schemas.generated";
 import type { GenerateStoryParams, GenerateStoryResult } from "./types";
-import type { Story } from "./zod-schemas.generated";
+import type { aiStoryGenerationSchema } from "./zod-schemas.generated";
 
 /**
  * Generate story foundation from user prompt
@@ -37,7 +38,7 @@ export async function generateStory(
 			temperature: 0.8,
 			maxTokens: 8192,
 			responseFormat: "json",
-			responseSchema: StorySummaryJsonSchema,
+			responseSchema: StoryJsonSchema,
 		},
 	);
 
@@ -53,10 +54,13 @@ export async function generateStory(
 		throw new Error("Empty response from AI model for story");
 	}
 
-	const storyData: Story = JSON.parse(response.text);
+	// Parse and validate using the AI generation schema
+	const storyData: z.infer<typeof aiStoryGenerationSchema> = JSON.parse(
+		response.text,
+	);
 
-	// Validate result
-	if (!storyData.title || !storyData.genre || !storyData.moralFramework) {
+	// Validate result (title and tone are required in the schema)
+	if (!storyData.title) {
 		throw new Error("Invalid story data generated - missing required fields");
 	}
 

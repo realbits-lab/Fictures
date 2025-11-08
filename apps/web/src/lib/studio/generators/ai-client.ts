@@ -6,6 +6,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
+import { promptManager } from "./prompt-manager";
 import type {
 	GenerationOptions,
 	ModelProvider,
@@ -13,7 +14,6 @@ import type {
 	TextGenerationRequest,
 	TextGenerationResponse,
 } from "./types";
-import { promptManager } from "./prompt-manager";
 
 /**
  * Environment configuration

@@ -1,25 +1,17 @@
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
+import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import { auth } from "@/lib/auth";
 import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
-import {
-	createStory,
-	getUserStories,
-	getUserStoriesWithFirstChapter,
-} from "@/lib/db/queries";
+import { db } from "@/lib/db";
+import { stories } from "@/lib/db/schema";
 import {
 	getCachedUserStories,
 	invalidateStudioCache,
 } from "@/lib/db/studio-queries";
+import { generateStory } from "@/lib/studio/generators/story-generator";
+import type { GenerateStoryParams } from "@/lib/studio/generators/types";
 
 export const runtime = "nodejs";
-
-const createStorySchema = z.object({
-	title: z.string().min(1).max(255),
-	summary: z.string().optional(),
-	genre: z.string().optional(),
-});
 
 // GET /api/stories - Get user's stories with detailed data for dashboard
 export async function GET(request: NextRequest) {
@@ -132,43 +124,150 @@ export async function GET(request: NextRequest) {
 	}
 }
 
-// POST /api/stories - Create a new story
+// POST /api/stories - Generate and create a new story using AI
 export async function POST(request: NextRequest) {
 	try {
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		console.log("📚 [STORIES API] POST request received");
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
 		const authResult = await authenticateRequest(request);
 
 		if (!authResult) {
+			console.error("❌ [STORIES API] Authentication failed");
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
 		// Check if user has permission to write stories
 		if (!hasRequiredScope(authResult, "stories:write")) {
+			console.error("❌ [STORIES API] Insufficient scopes:", {
+				required: "stories:write",
+				actual: authResult.scopes,
+			});
 			return NextResponse.json(
 				{ error: "Insufficient permissions. Required scope: stories:write" },
 				{ status: 403 },
 			);
 		}
 
+		console.log("✅ [STORIES API] Authentication successful:", {
+			type: authResult.type,
+			userId: authResult.user.id,
+			email: authResult.user.email,
+		});
+
+		// Parse request body
 		const body = await request.json();
-		const validatedData = createStorySchema.parse(body);
+		const {
+			userPrompt,
+			language = "English",
+			preferredGenre,
+			preferredTone,
+		} = body;
 
-		const story = await createStory(authResult.user.id, validatedData);
+		console.log("[STORIES API] Request parameters:", {
+			userPromptLength: userPrompt?.length || 0,
+			userPromptPreview: userPrompt?.substring(0, 100) || "(empty)",
+			language,
+			preferredGenre,
+			preferredTone,
+		});
 
-		// ⚡ Invalidate cache after creating new story
-		await invalidateStudioCache(authResult.user.id);
-
-		return NextResponse.json({ story }, { status: 201 });
-	} catch (error) {
-		if (error instanceof z.ZodError) {
+		// Validate required parameters
+		if (!userPrompt || typeof userPrompt !== "string") {
+			console.error("❌ [STORIES API] Validation failed: userPrompt missing");
 			return NextResponse.json(
-				{ error: "Invalid input", details: error.issues },
+				{ error: "userPrompt is required and must be a string" },
 				{ status: 400 },
 			);
 		}
 
-		console.error("Error creating story:", error);
+		console.log("✅ [STORIES API] Validation passed");
+
+		// Generate story using story-generator
+		console.log("[STORIES API] 🤖 Calling story generator...");
+		const generateParams: GenerateStoryParams = {
+			userId: authResult.user.id,
+			userPrompt,
+			language,
+			preferredGenre,
+			preferredTone,
+		};
+
+		const generationResult = await generateStory(generateParams);
+
+		console.log("[STORIES API] ✅ Story generation completed:", {
+			title: generationResult.story.title,
+			genre: generationResult.story.genre,
+			tone: generationResult.story.tone,
+			generationTime: generationResult.metadata.generationTime,
+		});
+
+		// Save story to database
+		console.log("[STORIES API] 💾 Saving story to database...");
+		const storyId = `story_${nanoid(16)}`;
+
+		const [savedStory] = await db
+			.insert(stories)
+			.values({
+				id: storyId,
+				authorId: authResult.user.id,
+				title: generationResult.story.title || "Untitled Story",
+				summary: generationResult.story.summary || null,
+				genre: generationResult.story.genre || null,
+				tone: generationResult.story.tone || "hopeful",
+				moralFramework: generationResult.story.moralFramework || null,
+				status: "writing",
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			})
+			.returning();
+
+		console.log("[STORIES API] ✅ Story saved to database:", {
+			storyId: savedStory.id,
+			title: savedStory.title,
+		});
+
+		// ⚡ Invalidate cache after creating new story
+		await invalidateStudioCache(authResult.user.id);
+		console.log("[STORIES API] ✅ Cache invalidated");
+
+		console.log("✅ [STORIES API] Request completed successfully");
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+
+		// Return the created story with metadata
 		return NextResponse.json(
-			{ error: "Internal server error" },
+			{
+				success: true,
+				story: {
+					id: savedStory.id,
+					title: savedStory.title,
+					summary: savedStory.summary,
+					genre: savedStory.genre,
+					tone: savedStory.tone,
+					moralFramework: savedStory.moralFramework,
+					status: savedStory.status,
+					authorId: savedStory.authorId,
+					createdAt: savedStory.createdAt,
+					updatedAt: savedStory.updatedAt,
+				},
+				metadata: {
+					generationTime: generationResult.metadata.generationTime,
+					model: generationResult.metadata.model,
+				},
+			},
+			{ status: 201 },
+		);
+	} catch (error) {
+		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		console.error("❌ [STORIES API] Error:", error);
+		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+
+		return NextResponse.json(
+			{
+				error: "Failed to generate and save story",
+				details: error instanceof Error ? error.message : "Unknown error",
+			},
 			{ status: 500 },
 		);
 	}
