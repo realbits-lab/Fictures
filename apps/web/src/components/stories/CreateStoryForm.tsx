@@ -175,7 +175,7 @@ export function CreateStoryForm() {
 
 		try {
 			// Use fetch with streaming for Novel generation (Adversity-Triumph Engine)
-			const response = await fetch("/studio/api/novels/generate", {
+			const response = await fetch("/studio/api/generation", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

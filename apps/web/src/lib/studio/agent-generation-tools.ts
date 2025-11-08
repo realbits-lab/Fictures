@@ -14,7 +14,7 @@ export const generateStorySummary = tool({
 	}),
 	execute: async ({ storyId, userPrompt }) => {
 		// Call existing generation API
-		const response = await fetch("/studio/api/generation/story-summary", {
+		const response = await fetch("/studio/api/generation/story", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({

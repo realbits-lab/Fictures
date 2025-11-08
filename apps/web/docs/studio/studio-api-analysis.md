@@ -472,11 +472,11 @@ These endpoints provide AI-powered analysis and modification of story elements u
 
 These endpoints implement the 9-phase Adversity-Triumph Engine novel generation system.
 
-#### POST `/studio/api/generation/story-summary`
-- **Phase**: 1 - Story Summary Generation
+#### POST `/studio/api/generation/story`
+- **Phase**: 1 - Story Generation
 - **Status**: ✅ ACTIVELY USED
-- **Used In**: `src/lib/novels/orchestrator.ts` (line 132)
-- **Function**: Generate initial story summary
+- **Used In**: `src/lib/novels/orchestrator.ts`, `src/lib/studio/agent-generation-tools.ts`
+- **Function**: Generate initial story foundation
 - **Input**: Story concept, genre, themes
 
 #### POST `/studio/api/generation/characters`
@@ -550,7 +550,7 @@ These endpoints implement the 9-phase Adversity-Triumph Engine novel generation 
 - **Phase**: 9 - Image Generation
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
-  - `src/app/studio/api/novels/generate/route.ts` (4 calls)
+  - `src/app/studio/api/generation/route.ts` (4 calls)
   - `src/lib/novels/orchestrator.ts`
 - **Function**: Generate images for story elements
 - **Features**:
@@ -564,8 +564,8 @@ These endpoints implement the 9-phase Adversity-Triumph Engine novel generation 
 
 ### 8. Novels APIs (1 endpoint)
 
-#### POST `/studio/api/novels/generate`
-- **File**: `src/app/studio/api/novels/generate/route.ts` (648 lines)
+#### POST `/studio/api/generation`
+- **File**: `src/app/studio/api/generation/route.ts` (648 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Used In**: `src/components/stories/CreateStoryForm.tsx` (line 119)
 - **Function**: Main entry point for novel generation

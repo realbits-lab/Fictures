@@ -13,7 +13,7 @@ test.describe("Generation API", () => {
 		test("TC-API-GEN-002: Invalid input parameters return 400", async ({
 			request,
 		}) => {
-			const response = await request.post("/studio/api/novels/generate", {
+			const response = await request.post("/studio/api/generation", {
 				headers: getAuthHeaders("writer"),
 				data: {
 					// Invalid or missing required parameters

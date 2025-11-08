@@ -126,7 +126,7 @@
 9. Images             → /generation/images
 ```
 
-**Entry Point**: `POST /studio/api/novels/generate`
+**Entry Point**: `POST /studio/api/generation`
 
 ---
 

@@ -666,7 +666,7 @@ When modifying data model fields for stories, parts, chapters, scenes, character
 **Architecture:**
 - **Location**: `docs/novels/novels-development.md` - Complete specification
 - **Methodology**: Adversity-Triumph Engine (Korean Gam-dong narrative psychology)
-- **API Endpoint**: `POST /studio/api/novels/generate` - Unified generation API with SSE streaming
+- **API Endpoint**: `POST /studio/api/generation` - Unified generation API with SSE streaming
 - **Authentication**: Dual auth (API key OR session) - Requires `stories:write` scope
 - **Database**: Novel-specific tables in Neon PostgreSQL (see `drizzle/` migrations)
 - **AI Model**: Gemini 2.5 Flash & Flash Lite (via Google AI API)

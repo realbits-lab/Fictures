@@ -29,8 +29,8 @@
  *   - Environment variables: GOOGLE_GENERATIVE_AI_API_KEY, BLOB_READ_WRITE_TOKEN
  */
 
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { NOVEL_GENERATION_CONSTRAINTS } from "../src/lib/novels/constants";
 import { loadProfile } from "../src/lib/utils/auth-loader";
 import { getEnvDisplayName } from "../src/lib/utils/environment";
@@ -45,7 +45,7 @@ const currentEnv = getEnvDisplayName();
 console.log("🚀 Starting story generation with API key authentication...\n");
 console.log(`🌍 Environment: ${currentEnv}`);
 console.log(`🔑 Using API key: ${writerApiKey.slice(0, 20)}...`);
-console.log("\n" + "=".repeat(60) + "\n");
+console.log(`\n${"=".repeat(60)}\n`);
 
 // Simple story prompt for minimal generation
 const userPrompt = `
@@ -56,14 +56,14 @@ Tone: Hopeful and uplifting
 
 console.log("📝 Story Prompt:");
 console.log(userPrompt);
-console.log("\n" + "=".repeat(60) + "\n");
+console.log(`\n${"=".repeat(60)}\n`);
 
 async function generateStory() {
 	try {
 		const startTime = Date.now();
 
 		// Call the novel generation API with API key
-		const response = await fetch(`${BASE_URL}/studio/api/novels/generate`, {
+		const response = await fetch(`${BASE_URL}/studio/api/generation`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -135,7 +135,7 @@ async function generateStory() {
 						const endTime = Date.now();
 						const totalTime = (endTime - startTime) / 1000;
 
-						console.log("\n" + "=".repeat(60));
+						console.log(`\n${"=".repeat(60)}`);
 						console.log("✅ STORY GENERATION COMPLETE!\n");
 						console.log(`Story ID: ${storyId}`);
 						console.log(`Title: ${eventData.story?.title || "(untitled)"}`);
@@ -148,7 +148,7 @@ async function generateStory() {
 						console.log(
 							`\n  - Generation Time: ${totalTime.toFixed(1)}s (${(totalTime / 60).toFixed(1)} minutes)`,
 						);
-						console.log("\n" + "=".repeat(60));
+						console.log(`\n${"=".repeat(60)}`);
 
 						// Save story details
 						const logDir = "logs";

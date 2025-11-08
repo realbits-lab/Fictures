@@ -21,8 +21,8 @@ This document provides comprehensive implementation specifications for the novel
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  API 1: Story Summary Generation                                 │
-│  POST /novels/api/generation/story-summary                              │
+│  API 1: Story Generation                                         │
+│  POST /studio/api/generation/story                               │
 │                                                                   │
 │  System Prompt Focus:                                            │
 │  - Extract general thematic premise, NOT detailed plot           │
@@ -160,7 +160,7 @@ Note: Two-step scene generation allows:
 ### 1.2 Complete Generation Flow API
 
 ```typescript
-POST /studio/api/novels/generate
+POST /studio/api/generation
 
 Authentication: Dual authentication (supports both methods)
   - API Key: Send in Authorization header as "Bearer {api_key}"
@@ -247,7 +247,7 @@ Error Event:
 const authData = JSON.parse(fs.readFileSync('.auth/user.json', 'utf-8'));
 const apiKey = authData.profiles.writer.apiKey;
 
-const response = await fetch('http://localhost:3000/studio/api/novels/generate', {
+const response = await fetch('http://localhost:3000/studio/api/generation', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -268,7 +268,7 @@ const response = await fetch('http://localhost:3000/studio/api/novels/generate',
 
 **Method 2: Session Authentication (for browser/UI)**
 ```javascript
-const response = await fetch('/studio/api/novels/generate', {
+const response = await fetch('/studio/api/generation', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -313,11 +313,11 @@ while (true) {
 
 ## Part II: API Specifications with Ultra-Detailed System Prompts
 
-### 2.1 Story Summary Generation API
+### 2.1 Story Generation API
 
 #### Endpoint
 ```typescript
-POST /novels/api/generation/story-summary
+POST /studio/api/generation/story
 
 Request:
 {

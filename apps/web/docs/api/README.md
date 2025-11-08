@@ -21,7 +21,7 @@ Production: https://fictures.xyz
 |----------|--------|-------------|------|
 | `/studio/api/stories` | GET | List user stories | Required |
 | `/studio/api/stories` | POST | Create new story | Required |
-| `/studio/api/novels/generate` | POST | Generate complete novel (SSE) | Required |
+| `/studio/api/generation` | POST | Generate complete novel (SSE) | Required |
 | `/api/images/generate` | POST | Generate AI image | Required |
 | `/analysis/api/track` | POST | Track analytics event | Optional |
 | `/community/api/posts` | POST | Create community post | Required |

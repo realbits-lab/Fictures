@@ -304,7 +304,7 @@ API keys are stored in the `api_keys` table with the following fields:
 
 ```bash
 # Using Authorization header (recommended)
-curl -X POST http://localhost:3000/studio/api/novels/generate \
+curl -X POST http://localhost:3000/studio/api/generation \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY_HERE" \
   -d '{
@@ -313,7 +313,7 @@ curl -X POST http://localhost:3000/studio/api/novels/generate \
   }'
 
 # Using x-api-key header (alternative)
-curl -X POST http://localhost:3000/studio/api/novels/generate \
+curl -X POST http://localhost:3000/studio/api/generation \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_API_KEY_HERE" \
   -d '{
@@ -414,7 +414,7 @@ The following endpoints support both session and API key authentication:
 
 | Endpoint | Required Scope | Description |
 |----------|----------------|-------------|
-| `POST /studio/api/novels/generate` | `stories:write` | Generate complete novel |
+| `POST /studio/api/generation` | `stories:write` | Generate complete novel |
 | `POST /studio/api/stories` | `stories:write` | Create new story |
 | `GET /studio/api/stories` | `stories:read` | List user stories |
 | `POST /api/images/generate` | `stories:write` | Generate AI images |
