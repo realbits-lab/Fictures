@@ -19,7 +19,6 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
 import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { db } from "@/lib/db";
 import {
@@ -101,7 +100,7 @@ export async function POST(request: NextRequest) {
 		}
 
 		console.log("[Novel Generate API] Options:", {
-			userPrompt: userPrompt.substring(0, 50) + "...",
+			userPrompt: `${userPrompt.substring(0, 50)}...`,
 			skipImages,
 		});
 
@@ -111,19 +110,19 @@ export async function POST(request: NextRequest) {
 			async start(controller) {
 				try {
 					let generatedStoryId: string | null = null;
-					let generatedStory: any = null;
-					let generatedCharacters: any[] = [];
-					let generatedSettings: any[] = [];
-					let generatedParts: any[] = [];
-					let generatedChapters: any[] = [];
-					const generatedScenes: any[] = [];
+					let _generatedStory: any = null;
+					let _generatedCharacters: any[] = [];
+					let _generatedSettings: any[] = [];
+					let _generatedParts: any[] = [];
+					let _generatedChapters: any[] = [];
+					const _generatedScenes: any[] = [];
 
 					// Progress callback to stream updates
 					const onProgress = async (progress: ProgressData) => {
 						// Try to send SSE message, but continue if controller is closed
 						try {
 							controller.enqueue(encoder.encode(createSSEMessage(progress)));
-						} catch (error) {
+						} catch (_error) {
 							// Controller may be closed if client disconnected or timeout occurred
 							// This is not fatal - we continue with database insertion
 							console.log(
@@ -132,16 +131,16 @@ export async function POST(request: NextRequest) {
 						}
 
 						// Store data for database insertion
-						if (progress.phase === "story_summary_complete") {
-							generatedStory = progress.data?.storySummary;
+						if (progress.phase === "story_complete") {
+							_generatedStory = progress.data?.story;
 						} else if (progress.phase === "characters_complete") {
-							generatedCharacters = progress.data?.characters || [];
+							_generatedCharacters = progress.data?.characters || [];
 						} else if (progress.phase === "settings_complete") {
-							generatedSettings = progress.data?.settings || [];
+							_generatedSettings = progress.data?.settings || [];
 						} else if (progress.phase === "parts_complete") {
-							generatedParts = progress.data?.parts || [];
+							_generatedParts = progress.data?.parts || [];
 						} else if (progress.phase === "chapters_complete") {
-							generatedChapters = progress.data?.chapters || [];
+							_generatedChapters = progress.data?.chapters || [];
 						} else if (progress.phase === "scene_summaries_complete") {
 							// Scene summaries are integrated into scenes
 						} else if (progress.phase === "scene_content_complete") {
@@ -176,7 +175,7 @@ export async function POST(request: NextRequest) {
 								}),
 							),
 						);
-					} catch (error) {
+					} catch (_error) {
 						console.log(
 							"SSE stream closed, continuing with database insertion...",
 						);
@@ -400,7 +399,7 @@ export async function POST(request: NextRequest) {
 							Object.fromEntries(characterIdMap),
 						);
 
-						const partRecords = result.parts.map((part, index) => {
+						const partRecords = result.parts.map((part, _index) => {
 							const newId = nanoid();
 							partIdMap.set(part.id, newId); // Map temp ID to database ID
 
@@ -894,7 +893,7 @@ export async function POST(request: NextRequest) {
 									}),
 								),
 							);
-						} catch (error) {
+						} catch (_error) {
 							console.log("SSE stream closed, continuing...");
 						}
 					}

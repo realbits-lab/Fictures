@@ -12,7 +12,7 @@ export type PromptType =
 	| "scene_summary"
 	| "character_dialogue"
 	| "setting_description"
-	| "story_summary";
+	| "story";
 
 export interface PromptTemplate {
 	system: string;

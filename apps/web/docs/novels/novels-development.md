@@ -191,7 +191,7 @@ Response: Server-Sent Events (SSE)
 
 Progress Events:
 {
-  phase: 'story_summary_start' | 'story_summary_complete' |
+  phase: 'story_start' | 'story_complete' |
          'characters_start' | 'characters_progress' | 'characters_complete' |
          'settings_start' | 'settings_progress' | 'settings_complete' |
          'parts_start' | 'parts_progress' | 'parts_complete' |
@@ -207,7 +207,7 @@ Progress Events:
     totalItems?: number,
     percentage?: number,
     // Completed data (on *_complete events)
-    storySummary?: StorySummaryResult,
+    story?: StoryResult,
     characters?: Character[],
     settings?: Setting[],
     parts?: Part[],

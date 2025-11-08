@@ -5,7 +5,6 @@
  * Streams progress updates via callback function.
  */
 
-import { nanoid } from "nanoid";
 import { textGenerationClient } from "./ai-client";
 import {
 	ChapterJsonSchema,
@@ -23,14 +22,12 @@ import {
 	STORY_SUMMARY_PROMPT,
 } from "./system-prompts";
 import type {
-	ArcPosition,
 	ChapterGenerationResult,
 	CharacterGenerationResult,
 	CyclePhase,
 	PartGenerationResult,
 	SceneSummaryResult,
 	SettingGenerationResult,
-	VirtueType,
 } from "./types";
 
 /**
@@ -54,8 +51,8 @@ export interface NovelGenerationOptions {
  */
 export interface ProgressData {
 	phase:
-		| "story_summary_start"
-		| "story_summary_complete"
+		| "story_start"
+		| "story_complete"
 		| "characters_start"
 		| "characters_progress"
 		| "characters_complete"
@@ -132,13 +129,13 @@ export async function generateCompleteNovel(
 	} = options;
 
 	try {
-		// Phase 1: Generate Story Summary
+		// Phase 1: Generate Story
 		onProgress({
-			phase: "story_summary_start",
-			message: "Generating story summary...",
+			phase: "story_start",
+			message: "Generating story foundation...",
 		});
 
-		const storySummaryPrompt = `${STORY_SUMMARY_PROMPT}
+		const storyPrompt = `${STORY_SUMMARY_PROMPT}
 
 User Request: ${userPrompt}
 Preferred Genre: ${preferredGenre || "Any"}
@@ -152,32 +149,32 @@ Generate a story foundation with:
 4. Tone (hopeful, dark, bittersweet, or satirical)
 5. Moral Framework (what virtues are valued in this story?)`;
 
-		const storySummaryResponse = await textGenerationClient.generate({
-			prompt: storySummaryPrompt,
+		const storyResponse = await textGenerationClient.generate({
+			prompt: storyPrompt,
 			temperature: 0.8,
 			maxTokens: 8192,
 			responseFormat: "json",
 			responseSchema: StorySummaryJsonSchema,
 		});
 
-		console.log("[Orchestrator] Story summary response:", {
-			text: storySummaryResponse.text,
-			length: storySummaryResponse.text?.length || 0,
-			model: storySummaryResponse.model,
-			tokensUsed: storySummaryResponse.tokensUsed,
-			finishReason: storySummaryResponse.finishReason,
+		console.log("[Orchestrator] Story response:", {
+			text: storyResponse.text,
+			length: storyResponse.text?.length || 0,
+			model: storyResponse.model,
+			tokensUsed: storyResponse.tokensUsed,
+			finishReason: storyResponse.finishReason,
 		});
 
-		if (!storySummaryResponse.text || storySummaryResponse.text.trim() === "") {
-			throw new Error("Empty response from AI model for story summary");
+		if (!storyResponse.text || storyResponse.text.trim() === "") {
+			throw new Error("Empty response from AI model for story");
 		}
 
-		const storyData = JSON.parse(storySummaryResponse.text);
+		const storyData = JSON.parse(storyResponse.text);
 
 		onProgress({
-			phase: "story_summary_complete",
-			message: "Story summary generated",
-			data: { storySummary: storyData },
+			phase: "story_complete",
+			message: "Story foundation generated",
+			data: { story: storyData },
 		});
 
 		// Phase 2: Generate Characters

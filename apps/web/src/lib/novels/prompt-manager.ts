@@ -82,10 +82,10 @@ Time of Day: {timeOfDay}
 Create a vivid description that establishes atmosphere and supports the scene's emotional tone.`,
 			},
 
-			story_summary: {
+			story: {
 				system: `You are a story development expert who creates compelling story concepts.
-Generate story summaries that establish clear themes, conflicts, and emotional arcs.`,
-				userTemplate: `Create a story summary with the following parameters:
+Generate story foundations that establish clear themes, conflicts, and emotional arcs.`,
+				userTemplate: `Create a story foundation with the following parameters:
 
 Genre: {genre}
 Themes: {themes}

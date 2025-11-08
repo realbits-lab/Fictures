@@ -52,14 +52,14 @@ export function CreateStoryForm() {
 	const [error, setError] = useState("");
 	const [isCompleted, setIsCompleted] = useState(false);
 	const [generatedStoryId, setGeneratedStoryId] = useState<string | null>(null);
-	const [storyData, setStoryData] = useState<StoryData>({});
+	const [_storyData, setStoryData] = useState<StoryData>({});
 	const { setJsonData, clearJsonData } = useStoryCreation();
 	const router = useRouter();
 
 	// Define the default progress steps for Novel Generation (Adversity-Triumph Engine)
 	const getDefaultProgressSteps = (): ProgressStep[] => [
 		{
-			phase: "Story Summary",
+			phase: "Story",
 			summary: "Generating story foundation and moral framework",
 			status: "pending",
 		},
@@ -146,7 +146,7 @@ export function CreateStoryForm() {
 		console.log("✨ Form reset - ready for new story generation");
 	};
 
-	const simulateProgress = async (totalDuration: number) => {
+	const _simulateProgress = async (totalDuration: number) => {
 		const steps = initializeProgress();
 		const stepDuration = totalDuration / steps.length;
 
@@ -224,25 +224,21 @@ export function CreateStoryForm() {
 							);
 
 							switch (data.phase) {
-								// Phase 1: Story Summary
-								case "story_summary_start":
+								// Phase 1: Story
+								case "story_start":
 									updateProgress(0, "in_progress");
 									break;
-								case "story_summary_complete":
+								case "story_complete":
 									updateProgress(0, "completed");
-									if (data.data?.storySummary) {
+									if (data.data?.story) {
 										setStoryData((prev) => ({
 											...prev,
-											story: data.data.storySummary,
+											story: data.data.story,
 										}));
 										// @ts-expect-error
 										setJsonData((prev) => ({
 											...prev,
-											storyJson: JSON.stringify(
-												data.data.storySummary,
-												null,
-												2,
-											),
+											storyJson: JSON.stringify(data.data.story, null, 2),
 										}));
 									}
 									break;
@@ -803,7 +799,9 @@ export function CreateStoryForm() {
 									min="1"
 									max="5"
 									value={characterCount}
-									onChange={(e) => setCharacterCount(parseInt(e.target.value))}
+									onChange={(e) =>
+										setCharacterCount(parseInt(e.target.value, 10))
+									}
 									disabled={isLoading}
 									className="w-full"
 								/>
@@ -817,7 +815,9 @@ export function CreateStoryForm() {
 									min="1"
 									max="5"
 									value={settingCount}
-									onChange={(e) => setSettingCount(parseInt(e.target.value))}
+									onChange={(e) =>
+										setSettingCount(parseInt(e.target.value, 10))
+									}
 									disabled={isLoading}
 									className="w-full"
 								/>
@@ -831,7 +831,7 @@ export function CreateStoryForm() {
 									min="1"
 									max="3"
 									value={partsCount}
-									onChange={(e) => setPartsCount(parseInt(e.target.value))}
+									onChange={(e) => setPartsCount(parseInt(e.target.value, 10))}
 									disabled={isLoading}
 									className="w-full"
 								/>
@@ -847,7 +847,9 @@ export function CreateStoryForm() {
 									min="1"
 									max="5"
 									value={chaptersPerPart}
-									onChange={(e) => setChaptersPerPart(parseInt(e.target.value))}
+									onChange={(e) =>
+										setChaptersPerPart(parseInt(e.target.value, 10))
+									}
 									disabled={isLoading}
 									className="w-full"
 								/>
@@ -864,7 +866,7 @@ export function CreateStoryForm() {
 									max="8"
 									value={scenesPerChapter}
 									onChange={(e) =>
-										setScenesPerChapter(parseInt(e.target.value))
+										setScenesPerChapter(parseInt(e.target.value, 10))
 									}
 									disabled={isLoading}
 									className="w-full"

@@ -121,7 +121,7 @@ The system includes pre-configured prompt templates:
 3. **`scene_summary`** - Break chapters into scene summaries
 4. **`character_dialogue`** - Generate authentic character conversations
 5. **`setting_description`** - Create vivid location descriptions
-6. **`story_summary`** - Develop story concepts and premises
+6. **`story`** - Develop story concepts and premises
 
 ### Customizing Prompts Per Model
 
