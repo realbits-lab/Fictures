@@ -154,8 +154,12 @@ export interface SceneSummaryResult {
 	dialogueVsDescription: string;
 	suggestedLength: "short" | "medium" | "long";
 	characterFocus: string[];
+	settingId?: string; // Setting ID where this scene takes place
 	sensoryAnchors: string[];
 }
+
+// Scene type alias for compatibility with generators
+export type Scene = SceneSummaryResult;
 
 export interface SceneContentResult {
 	content: string;

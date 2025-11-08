@@ -4,10 +4,7 @@ import type {
 	SceneSummaryResult,
 	SettingGenerationResult,
 } from "@/lib/novels/types";
-import {
-	type GenerateStoryImageParams,
-	generateStoryImage,
-} from "@/lib/services/image-generation";
+import { generateImages } from "@/lib/studio/generators";
 
 interface StoryData {
 	title: string;
@@ -63,164 +60,98 @@ export async function POST(request: NextRequest) {
 		}
 
 		console.log("✅ [IMAGES API] Validation passed");
+		console.log(`[IMAGES API] 🎨 Calling images generator for ${imageType}...`);
 
-		// Build image generation prompt based on type
-		let prompt: string;
-		let params: GenerateStoryImageParams;
+		// Prepare data based on image type
+		let storyData: StoryData | undefined;
+		let characters: CharacterGenerationResult[] | undefined;
+		let settings: SettingGenerationResult[] | undefined;
+		let scenes: (SceneSummaryResult & { content?: string })[] | undefined;
 
 		switch (imageType) {
-			case "story": {
-				const story = targetData as StoryData;
-
-				// Build story cover image prompt
-				const genreVisual = story.genre || "dramatic story";
-				const toneVisual = story.tone || "captivating";
-				const summary = story.summary.substring(0, 250); // Limit summary length
-
-				prompt = `Book cover illustration for "${story.title}". ${summary}.
-Genre: ${genreVisual}. Tone: ${toneVisual}.
-Cinematic widescreen composition, professional book cover art, dramatic and engaging visual.
-High quality illustration, 7:4 aspect ratio, story cover design.`;
-
-				params = {
-					prompt: prompt.trim(),
-					storyId,
-					imageType: "story",
-					style: "vivid", // Story covers benefit from vivid style
-					quality: "standard",
-				};
+			case "story":
+				storyData = targetData as StoryData;
 				break;
-			}
-
-			case "character": {
-				const char = targetData as CharacterGenerationResult;
-
-				// Build character portrait prompt
-				const visualStyle =
-					char.visualStyle || "realistic portrait, professional photography";
-				const description = char.physicalDescription;
-				const personality = char.personality.traits.join(", ");
-
-				prompt = `Portrait of ${char.name}. ${description.appearance}. ${description.distinctiveFeatures}.
-Personality: ${personality}. Style: ${description.style}.
-Visual aesthetic: ${visualStyle}.
-High quality portrait, centered composition, neutral background, detailed facial features.`;
-
-				params = {
-					prompt: prompt.trim(),
-					storyId,
-					imageType: "character",
-					style: "natural", // Portraits work better with natural style
-					quality: "standard",
-				};
+			case "character":
+				characters = [targetData as CharacterGenerationResult];
 				break;
-			}
-
-			case "setting": {
-				const setting = targetData as SettingGenerationResult;
-
-				// Build setting visual prompt
-				const visualStyle = setting.visualStyle || "cinematic landscape";
-				const mood = setting.mood;
-				const architecturalStyle = setting.architecturalStyle || "";
-				const colorPalette =
-					setting.colorPalette.length > 0
-						? `Color palette: ${setting.colorPalette.slice(0, 4).join(", ")}`
-						: "";
-
-				// Use first 2 sensory details for each sense
-				const sight = setting.sensory.sight.slice(0, 2).join(", ");
-				const sound = setting.sensory.sound.slice(0, 1).join(", ");
-
-				prompt = `${setting.name}. ${(setting as any).summary?.substring(0, 200) || (setting as any).description?.substring(0, 200) || ""}.
-${architecturalStyle ? `Architecture: ${architecturalStyle}.` : ""}
-Atmosphere: ${mood}. Visual elements: ${sight}. ${sound}.
-${colorPalette}
-Visual style: ${visualStyle}. Cinematic widescreen composition, dramatic lighting.`;
-
-				params = {
-					prompt: prompt.trim(),
-					storyId,
-					imageType: "setting",
-					style: "vivid", // Settings benefit from vivid style
-					quality: "standard",
-				};
+			case "setting":
+				settings = [targetData as SettingGenerationResult];
 				break;
-			}
-
-			case "scene": {
-				const scene = targetData as SceneSummaryResult & { content?: string };
-
-				// Build scene illustration prompt
-				// If we have scene content, extract visual description from first paragraphs
-				let visualDescription = scene.summary;
-				if (scene.content) {
-					// Extract first 2-3 paragraphs for visual context
-					const paragraphs = scene.content.split("\n\n").slice(0, 3).join(" ");
-					visualDescription = paragraphs.substring(0, 300);
-				}
-
-				// Use sensory anchors for rich visual details
-				const sensoryDetails = scene.sensoryAnchors.slice(0, 3).join(", ");
-
-				prompt = `Scene: ${scene.title}. ${visualDescription}.
-Emotional tone: ${scene.emotionalBeat}. Visual details: ${sensoryDetails}.
-Cinematic widescreen composition, story illustration style, dramatic moment capture.`;
-
-				params = {
-					prompt: prompt.trim(),
-					storyId,
-					imageType: "scene",
-					chapterId,
-					sceneId,
-					style: "vivid",
-					quality: "standard",
-				};
+			case "scene":
+				scenes = [targetData as SceneSummaryResult & { content?: string }];
 				break;
-			}
-
-			default:
-				return NextResponse.json(
-					{ error: `Invalid imageType: ${imageType}` },
-					{ status: 400 },
-				);
 		}
 
-		// Generate image using existing service
-		console.log(
-			`[IMAGES API] 🎨 Generating ${imageType} image for story ${storyId}`,
-		);
-		console.log(`[IMAGES API] Prompt preview: ${prompt.substring(0, 150)}...`);
-		console.log(
-			`[IMAGES API] Style: ${params.style}, Quality: ${params.quality}`,
-		);
-
-		const result = await generateStoryImage(params);
+		// Use the common generator (does NOT save to database)
+		const generationResult = await generateImages({
+			storyId,
+			userId: "temp_user_id",
+			story: storyData
+				? {
+						id: storyId,
+						userId: "temp_user_id",
+						title: storyData.title,
+						genre: storyData.genre,
+						tone: storyData.tone,
+						summary: storyData.summary,
+						moralFramework: "",
+						createdAt: new Date(),
+						updatedAt: new Date(),
+					}
+				: undefined,
+			characters: characters?.map((c) => ({
+				...c,
+				id: c.id || "temp_char_id",
+				storyId,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			})),
+			settings: settings?.map((s) => ({
+				...s,
+				id: s.id || "temp_setting_id",
+				storyId,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			})),
+			scenes: scenes?.map((s) => ({
+				...s,
+				id: sceneId || "temp_scene_id",
+				chapterId: chapterId || "temp_chapter_id",
+				content: s.content || "",
+				emotionalTone: s.emotionalBeat,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			})),
+			imageTypes: [imageType],
+		});
 
 		console.log("[IMAGES API] ✅ Image generation completed");
 		console.log("[IMAGES API] Result summary:", {
-			imageId: result.imageId,
-			dimensions: `${result.width}×${result.height}`,
-			size: result.size,
-			hasOptimizedSet: !!result.optimizedSet,
-			variantsCount: result.optimizedSet?.variants?.length || 0,
+			imagesGenerated: generationResult.generatedImages.length,
+			generationTime: generationResult.metadata.generationTime,
 		});
 		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-		// Return result with all URLs
+		// Return the first (and only) image result in the expected format
+		const imageResult = generationResult.generatedImages[0];
+		if (!imageResult) {
+			throw new Error("No image generated");
+		}
+
 		return NextResponse.json({
 			success: true,
 			imageType,
-			imageId: result.imageId,
-			originalUrl: result.url,
-			blobUrl: result.blobUrl,
+			imageId: imageResult.entityId,
+			originalUrl: imageResult.imageUrl,
+			blobUrl: imageResult.imageUrl,
 			dimensions: {
-				width: result.width,
-				height: result.height,
+				width: 1344,
+				height: 768,
 			},
-			size: result.size,
-			optimizedSet: result.optimizedSet,
-			isPlaceholder: result.isPlaceholder,
+			size: 0, // Not provided by generator
+			optimizedSet: imageResult.variants,
+			isPlaceholder: false,
 		});
 	} catch (error) {
 		console.error("[API 9] Image generation error:", error);
