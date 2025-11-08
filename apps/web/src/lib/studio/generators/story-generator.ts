@@ -10,9 +10,11 @@
 
 import type { z } from "zod";
 import { textGenerationClient } from "./ai-client";
-import { StoryJsonSchema } from "./json-schemas.generated";
+import { promptManager } from "./prompt-manager";
 import type { GenerateStoryParams, GenerateStoryResult } from "./types";
-import type { aiStoryGenerationSchema } from "./zod-schemas.generated";
+import { aiStoryGenerationSchema } from "./zod-schemas.generated";
+
+type AIStoryGenerationData = z.infer<typeof aiStoryGenerationSchema>;
 
 /**
  * Generate story foundation from user prompt
@@ -25,8 +27,9 @@ export async function generateStory(
 ): Promise<GenerateStoryResult> {
 	const startTime = Date.now();
 
-	// Generate story data using template
-	const response = await textGenerationClient.generateWithTemplate(
+	// Get the prompt template
+	const { system, user } = promptManager.getPrompt(
+		textGenerationClient.getProviderType(),
 		"story",
 		{
 			userPrompt: params.userPrompt,
@@ -34,47 +37,43 @@ export async function generateStory(
 			tone: params.preferredTone || "hopeful",
 			language: params.language || "English",
 		},
-		{
-			temperature: 0.8,
-			maxTokens: 8192,
-			responseFormat: "json",
-			responseSchema: StoryJsonSchema,
-		},
 	);
 
-	console.log("[story-generator] AI response:", {
-		text: response.text,
-		length: response.text?.length || 0,
-		model: response.model,
-		tokensUsed: response.tokensUsed,
-		finishReason: response.finishReason,
+	console.log(
+		"[story-generator] Using generateStructured method with manual schema",
+	);
+
+	// Generate story data using structured output method
+	// NOTE: We use manual schema (aiStoryGenerationSchema) instead of .pick() on insertStorySchema
+	// because drizzle-zod schemas don't convert well to JSON Schema when using .pick()
+	const storyData =
+		await textGenerationClient.generateStructured<AIStoryGenerationData>(
+			user,
+			aiStoryGenerationSchema,
+			{
+				systemPrompt: system,
+				temperature: 0.8,
+				maxTokens: 8192,
+			},
+		);
+
+	console.log("[story-generator] Story generated:", {
+		title: storyData.title,
+		genre: storyData.genre,
+		tone: storyData.tone,
 	});
-
-	if (!response.text || response.text.trim() === "") {
-		throw new Error("Empty response from AI model for story");
-	}
-
-	// Parse and validate using the AI generation schema
-	const storyData: z.infer<typeof aiStoryGenerationSchema> = JSON.parse(
-		response.text,
-	);
 
 	// Validate result (title and tone are required in the schema)
 	if (!storyData.title) {
 		throw new Error("Invalid story data generated - missing required fields");
 	}
 
-	console.log("[story-generator] Story generated:", {
-		title: storyData.title,
-		genre: storyData.genre,
-	});
-
 	return {
 		story: storyData,
 		storyId: "", // Populated by caller after database save
 		metadata: {
 			generationTime: Date.now() - startTime,
-			model: response.model,
+			model: textGenerationClient.getProviderType(),
 		},
 	};
 }

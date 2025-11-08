@@ -14,7 +14,6 @@
 		"type-check:watch": "tsgo --noEmit --watch --preserveWatchOutput",
 		"test": "jest",
 		"test:watch": "jest --watch",
-		"generate:schemas": "tsx scripts/generate-schemas.ts",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",

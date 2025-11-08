@@ -157,15 +157,17 @@ src/lib/
 | `chapters` table | `insertChapterSchema` | `InsertChapter` | `ChapterJsonSchema` |
 | `scenes` table | `insertSceneSchema` | `InsertScene` | `SceneSummaryJsonSchema` |
 
-## Schema Generation Script
+## Schema Generation Process
 
-**File:** `scripts/generate-schemas.ts`
+**How It Works:**
 
-**Purpose:** Documentation of the automatic schema generation flow
+The schema generation happens automatically through TypeScript imports and exports:
 
-**Run:** `pnpm generate:schemas`
+1. **Zod schemas** are generated from Drizzle schema using `drizzle-zod` in `src/lib/studio/generators/zod-schemas.generated.ts`
+2. **JSON schemas** are generated from Zod schemas using `zod-to-json-schema` in `src/lib/studio/generators/json-schemas.generated.ts`
+3. All generated files are TypeScript files compiled and type-checked during the build process
 
-**Note:** The actual generation happens through TypeScript imports and exports. The generated files are TypeScript files that are compiled and type-checked during the build process.
+**No manual generation script is needed** - the schemas are automatically updated when you import and use them in the codebase.
 
 ## Benefits
 
@@ -396,4 +398,5 @@ export const insertCharacterSchema = createInsertSchema(characters, {
 - **Zod Documentation:** https://zod.dev/
 - **zod-to-json-schema:** https://github.com/StefanTerdell/zod-to-json-schema
 - **Database Schema:** `src/lib/db/schema.ts`
-- **Generation Script:** `scripts/generate-schemas.ts`
+- **Generated Zod Schemas:** `src/lib/studio/generators/zod-schemas.generated.ts`
+- **Generated JSON Schemas:** `src/lib/studio/generators/json-schemas.generated.ts`

@@ -4,8 +4,7 @@
  */
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import type { z } from "zod";
-import { zodToJsonSchema } from "zod-to-json-schema";
+import { z } from "zod";
 import { promptManager } from "./prompt-manager";
 import type {
 	GenerationOptions,
@@ -89,14 +88,10 @@ class GeminiProvider extends TextGenerationProvider {
 			// Convert Zod schema to JSON Schema if needed
 			let jsonSchema: any;
 			if (request.responseSchema && "_def" in request.responseSchema) {
-				// It's a Zod schema
-				console.log(
-					"[GeminiProvider] Schema _def type:",
-					(request.responseSchema as any)._def?.typeName,
-				);
-				console.log("[GeminiProvider] Converting Zod schema to JSON Schema");
-				jsonSchema = zodToJsonSchema(request.responseSchema as z.ZodType<any>, {
-					target: "openApi3",
+				// It's a Zod schema - use native z.toJSONSchema()
+				console.log("[GeminiProvider] Converting Zod schema to JSON Schema (native)");
+				jsonSchema = z.toJSONSchema(request.responseSchema as z.ZodType<any>, {
+					target: "openapi-3.0",
 					$refStrategy: "none",
 				});
 				console.log(
@@ -175,6 +170,138 @@ class GeminiProvider extends TextGenerationProvider {
 			}
 		}
 	}
+
+	/**
+	 * Generate structured output using Gemini's native JSON schema support
+	 *
+	 * This method uses Gemini's responseMimeType and responseSchema config
+	 * to enforce strict schema validation, following the official pattern from:
+	 * https://ai.google.dev/gemini-api/docs/structured-output
+	 *
+	 * @param prompt - The generation prompt
+	 * @param zodSchema - Zod schema defining the expected output structure
+	 * @param options - Additional generation options
+	 * @returns Parsed and validated object matching the schema
+	 */
+	async generateStructured<T>(
+		prompt: string,
+		zodSchema: z.ZodType<T>,
+		options?: {
+			systemPrompt?: string;
+			model?: string;
+			temperature?: number;
+			maxTokens?: number;
+			topP?: number;
+		},
+	): Promise<T> {
+		const model = this.client.getGenerativeModel({
+			model: options?.model || this.config.modelName,
+		});
+
+		// Convert Zod schema to JSON Schema using Zod's native method
+		console.log(
+			"[GeminiProvider] generateStructured - Converting Zod to JSON Schema (native)",
+		);
+
+		const jsonSchema = z.toJSONSchema(zodSchema, {
+			target: "openapi-3.0",
+			$refStrategy: "none",
+		});
+
+		console.log(
+			"[GeminiProvider] Full JSON Schema:",
+			JSON.stringify(jsonSchema, null, 2),
+		);
+		console.log("[GeminiProvider] Schema type:", jsonSchema.type);
+		console.log(
+			"[GeminiProvider] Schema properties:",
+			jsonSchema.properties ? Object.keys(jsonSchema.properties) : "none",
+		);
+
+		// Remove fields that Gemini doesn't support
+		// Gemini's recent updates (Nov 2025) support most JSON Schema keywords,
+		// but $schema should still be removed
+		const cleanedSchema = this.cleanJsonSchema(jsonSchema);
+
+		console.log(
+			"[GeminiProvider] Cleaned schema sample:",
+			JSON.stringify(cleanedSchema, null, 2).substring(0, 800),
+		);
+
+		// Build generation config with structured output
+		const generationConfig: any = {
+			temperature: options?.temperature ?? this.config.temperature,
+			maxOutputTokens: options?.maxTokens ?? this.config.maxTokens,
+			topP: options?.topP ?? 0.95,
+			responseMimeType: "application/json",
+			responseSchema: cleanedSchema,
+		};
+
+		// Combine system and user prompts
+		const fullPrompt = options?.systemPrompt
+			? `${options.systemPrompt}\n\n${prompt}`
+			: prompt;
+
+		const result = await model.generateContent({
+			contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
+			generationConfig,
+		});
+
+		const response = result.response;
+		const text = response.text();
+
+		console.log("[GeminiProvider] generateStructured - Response received");
+		console.log("[GeminiProvider] Response length:", text?.length || 0);
+		console.log(
+			"[GeminiProvider] Tokens used:",
+			response.usageMetadata?.totalTokenCount,
+		);
+
+		if (!text || text.trim() === "") {
+			throw new Error("Empty response from Gemini structured output");
+		}
+
+		// Parse and validate the JSON response
+		const parsed = JSON.parse(text);
+
+		// Validate against the Zod schema to ensure type safety
+		const validated = zodSchema.parse(parsed);
+
+		return validated;
+	}
+
+	/**
+	 * Clean JSON Schema to remove fields that Gemini doesn't support
+	 * Recursively processes nested objects and arrays
+	 */
+	private cleanJsonSchema(schema: any): any {
+		if (schema === null || schema === undefined) {
+			return schema;
+		}
+
+		if (Array.isArray(schema)) {
+			return schema.map((item) => this.cleanJsonSchema(item));
+		}
+
+		if (typeof schema === "object") {
+			const cleaned: Record<string, any> = {};
+
+			for (const [key, value] of Object.entries(schema)) {
+				// Skip fields that Gemini doesn't support
+				// Note: As of Nov 2025, Gemini supports anyOf, $ref, and most JSON Schema keywords
+				// We only need to remove $schema
+				if (key === "$schema") {
+					continue;
+				}
+
+				cleaned[key] = this.cleanJsonSchema(value);
+			}
+
+			return cleaned;
+		}
+
+		return schema;
+	}
 }
 
 /**
@@ -211,8 +338,11 @@ class AIServerProvider extends TextGenerationProvider {
 			// Convert Zod schema to JSON Schema if needed
 			let jsonSchema: any;
 			if (request.responseSchema && "_def" in request.responseSchema) {
-				// It's a Zod schema
-				jsonSchema = zodToJsonSchema(request.responseSchema as z.ZodType<any>);
+				// It's a Zod schema - use native z.toJSONSchema()
+				jsonSchema = z.toJSONSchema(request.responseSchema as z.ZodType<any>, {
+					target: "openapi-3.0",
+					$refStrategy: "none",
+				});
 			} else {
 				// It's already a JSON Schema object
 				jsonSchema = request.responseSchema;
@@ -369,6 +499,67 @@ class TextGenerationWrapper {
 			systemPrompt: system,
 			...options,
 		});
+	}
+
+	/**
+	 * Generate structured output using Gemini's native JSON schema support
+	 *
+	 * This method enforces strict schema validation at the API level,
+	 * ensuring the AI output matches your Zod schema exactly.
+	 *
+	 * @example
+	 * ```typescript
+	 * import { z } from 'zod';
+	 *
+	 * const schema = z.object({
+	 *   title: z.string(),
+	 *   genre: z.string(),
+	 *   tone: z.enum(['hopeful', 'dark', 'bittersweet']),
+	 * });
+	 *
+	 * const result = await textGenerationClient.generateStructured(
+	 *   'Generate a story about a brave knight',
+	 *   schema,
+	 *   { temperature: 0.8 }
+	 * );
+	 * // result is fully typed as { title: string; genre: string; tone: ... }
+	 * ```
+	 *
+	 * @param prompt - The generation prompt
+	 * @param zodSchema - Zod schema defining the expected output structure
+	 * @param options - Additional generation options
+	 * @returns Parsed and validated object matching the schema
+	 */
+	async generateStructured<T>(
+		prompt: string,
+		zodSchema: z.ZodType<T>,
+		options?: {
+			systemPrompt?: string;
+			model?: string;
+			temperature?: number;
+			maxTokens?: number;
+			topP?: number;
+		},
+	): Promise<T> {
+		// Only Gemini provider supports structured output natively
+		if (this.provider instanceof GeminiProvider) {
+			return this.provider.generateStructured(prompt, zodSchema, options);
+		}
+
+		// Fallback for other providers - use regular generation and parse
+		const response = await this.generate({
+			prompt,
+			systemPrompt: options?.systemPrompt,
+			model: options?.model,
+			temperature: options?.temperature,
+			maxTokens: options?.maxTokens,
+			topP: options?.topP,
+			responseFormat: "json",
+			responseSchema: zodSchema,
+		});
+
+		const parsed = JSON.parse(response.text);
+		return zodSchema.parse(parsed);
 	}
 
 	/**
