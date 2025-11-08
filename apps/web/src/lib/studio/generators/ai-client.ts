@@ -12,7 +12,7 @@ import type {
 	PromptType,
 	TextGenerationRequest,
 	TextGenerationResponse,
-} from "./ai-types";
+} from "./types";
 import { promptManager } from "./prompt-manager";
 
 /**

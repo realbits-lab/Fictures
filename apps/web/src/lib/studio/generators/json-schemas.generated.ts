@@ -2,12 +2,12 @@
  * Auto-generated JSON Schemas from Zod schemas
  * DO NOT EDIT MANUALLY
  *
- * Flow: Drizzle schema.ts → drizzle-zod → Zod schemas → zod-to-json-schema → JSON schemas
+ * Flow: Drizzle schema.ts → drizzle-zod → Zod schemas → z.toJSONSchema() → JSON schemas
  *
  * These JSON schemas are used for Gemini's structured output API.
  */
 
-import { zodToJsonSchema } from "zod-to-json-schema";
+import { z } from "zod";
 import {
 	insertChapterSchema,
 	insertCharacterSchema,
@@ -20,18 +20,19 @@ import {
 /**
  * Remove $schema field that Gemini doesn't accept
  */
-const removeSchemaField = (schema: any) => {
+const removeSchemaField = (schema: Record<string, unknown>) => {
+	// biome-ignore lint/correctness/noUnusedVariables: $schema is intentionally removed
 	const { $schema, ...rest } = schema;
 	return rest;
 };
 
 /**
- * Convert Zod schema to JSON Schema for Gemini API
+ * Convert Zod schema to JSON Schema for Gemini API using Zod's built-in method
  */
-const toGeminiJsonSchema = (zodSchema: any) => {
+const toGeminiJsonSchema = (zodSchema: z.ZodType) => {
 	return removeSchemaField(
-		zodToJsonSchema(zodSchema, {
-			target: "openApi3",
+		z.toJSONSchema(zodSchema, {
+			target: "openapi-3.0",
 			$refStrategy: "none",
 		}),
 	);

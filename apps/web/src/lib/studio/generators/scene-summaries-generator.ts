@@ -9,7 +9,7 @@
  */
 
 import { textGenerationClient } from "./ai-client";
-import type { CyclePhase } from "./ai-types";
+import type { CyclePhase } from "./types";
 import { SceneSummaryJsonSchema } from "./json-schemas.generated";
 import type {
 	GenerateSceneSummariesParams,

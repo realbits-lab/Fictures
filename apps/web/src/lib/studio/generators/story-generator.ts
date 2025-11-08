@@ -9,9 +9,9 @@
  */
 
 import { textGenerationClient } from "./ai-client";
-import type { StorySummaryResult } from "./ai-types";
 import { StorySummaryJsonSchema } from "./json-schemas.generated";
 import type { GenerateStoryParams, GenerateStoryResult } from "./types";
+import type { Story } from "./zod-schemas.generated";
 
 /**
  * Generate story foundation from user prompt
@@ -53,7 +53,7 @@ export async function generateStory(
 		throw new Error("Empty response from AI model for story");
 	}
 
-	const storyData: StorySummaryResult = JSON.parse(response.text);
+	const storyData: Story = JSON.parse(response.text);
 
 	// Validate result
 	if (!storyData.title || !storyData.genre || !storyData.moralFramework) {

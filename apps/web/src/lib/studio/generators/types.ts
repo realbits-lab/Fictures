@@ -1,15 +1,120 @@
 /**
- * Common types for all generators
+ * Generator Types
+ *
+ * Contains all types for the story generation system:
+ * - AI system infrastructure types
+ * - Generator function parameter/result types
+ * - Entity types are in zod-schemas.generated.ts
  */
 
-import type { StorySummaryResult } from "./ai-types";
+import type { z } from "zod";
 import type {
 	Chapter,
 	Character,
 	Part,
 	Scene,
 	Setting,
+	Story,
 } from "./zod-schemas.generated";
+
+// ============================================================================
+// AI Provider Types
+// ============================================================================
+
+export type ModelProvider = "gemini" | "ai-server";
+
+export type PromptType =
+	| "story"
+	| "character"
+	| "setting"
+	| "part"
+	| "chapter"
+	| "scene_summary"
+	| "scene_content"
+	| "character_dialogue"
+	| "setting_description";
+
+export interface PromptTemplate {
+	system: string;
+	userTemplate: string;
+}
+
+// ============================================================================
+// Text Generation Request/Response Types
+// ============================================================================
+
+/**
+ * Response format for text generation
+ * - 'text': Plain text response (default)
+ * - 'json': Structured JSON response with schema validation
+ */
+export type ResponseFormat = "text" | "json";
+
+/**
+ * Schema definition for structured JSON output
+ * Can be a Zod schema, JSON Schema object, or TypeScript type
+ */
+export type ResponseSchema = z.ZodType<any> | Record<string, any>;
+
+export interface TextGenerationRequest {
+	prompt: string;
+	systemPrompt?: string;
+	model?: string;
+	temperature?: number;
+	maxTokens?: number;
+	topP?: number;
+	stopSequences?: string[];
+
+	// Structured output options
+	responseFormat?: ResponseFormat;
+	responseSchema?: ResponseSchema;
+}
+
+export interface TextGenerationResponse {
+	text: string;
+	model: string;
+	tokensUsed?: number;
+	finishReason?: string;
+}
+
+export interface GenerationOptions {
+	temperature?: number;
+	maxTokens?: number;
+	topP?: number;
+	stopSequences?: string[];
+	responseFormat?: ResponseFormat;
+	responseSchema?: ResponseSchema;
+}
+
+// ============================================================================
+// Story Cycle Types (used across generators)
+// ============================================================================
+
+/**
+ * Virtue types used in the Adversity-Triumph Engine
+ */
+export type VirtueType =
+	| "courage"
+	| "compassion"
+	| "integrity"
+	| "loyalty"
+	| "wisdom"
+	| "sacrifice";
+
+/**
+ * Chapter arc position in story structure
+ */
+export type ArcPosition = "beginning" | "middle" | "climax" | "resolution";
+
+/**
+ * Adversity-Triumph cycle phases for scene structure
+ */
+export type CyclePhase =
+	| "setup"
+	| "confrontation"
+	| "virtue"
+	| "consequence"
+	| "transition";
 
 // ============================================================================
 // Base Generator Interfaces
@@ -40,7 +145,7 @@ export interface GenerateStoryParams {
 }
 
 export interface GenerateStoryResult {
-	story: StorySummaryResult;
+	story: Story;
 	storyId: string;
 	metadata: GeneratorMetadata;
 }
@@ -52,7 +157,7 @@ export interface GenerateStoryResult {
 export interface GenerateCharactersParams {
 	storyId: string;
 	userId: string;
-	story: StorySummaryResult;
+	story: Story;
 	characterCount: number;
 	language?: string;
 	onProgress?: ProgressCallback;
@@ -73,7 +178,7 @@ export interface GenerateCharactersResult {
 export interface GenerateSettingsParams {
 	storyId: string;
 	userId: string;
-	story: StorySummaryResult;
+	story: Story;
 	settingCount: number;
 	language?: string;
 	onProgress?: ProgressCallback;
@@ -94,7 +199,7 @@ export interface GenerateSettingsResult {
 export interface GeneratePartsParams {
 	storyId: string;
 	userId: string;
-	story: StorySummaryResult;
+	story: Story;
 	characters: Character[];
 	settings: Setting[];
 	partsCount: number;
@@ -117,7 +222,7 @@ export interface GeneratePartsResult {
 export interface GenerateChaptersParams {
 	storyId: string;
 	userId: string;
-	story: StorySummaryResult;
+	story: Story;
 	parts: Part[];
 	characters: Character[];
 	settings: Setting[];
@@ -141,7 +246,7 @@ export interface GenerateChaptersResult {
 export interface GenerateSceneSummariesParams {
 	storyId: string;
 	userId: string;
-	story: StorySummaryResult;
+	story: Story;
 	chapters: Chapter[];
 	characters: Character[];
 	settings: Setting[];
@@ -167,7 +272,7 @@ export interface GenerateSceneContentParams {
 	userId: string;
 	scene: Scene;
 	chapter: Chapter;
-	story: StorySummaryResult;
+	story: Story;
 	characters: Character[];
 	settings: Setting[];
 	language?: string;
@@ -186,7 +291,7 @@ export interface GenerateSceneContentResult {
 export interface EvaluateSceneParams {
 	sceneId: string;
 	content: string;
-	story: StorySummaryResult;
+	story: Story;
 	maxIterations?: number;
 }
 
@@ -213,7 +318,7 @@ export interface EvaluateSceneResult {
 export interface GenerateImagesParams {
 	storyId: string;
 	userId: string;
-	story?: StorySummaryResult;
+	story?: Story;
 	characters?: Character[];
 	settings?: Setting[];
 	scenes?: Scene[];
