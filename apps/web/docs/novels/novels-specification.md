@@ -442,7 +442,7 @@ interface Setting {
   id: string;
   storyId: string;
   name: string;
-  description: string; // Comprehensive paragraph (3-5 sentences)
+  summary: string; // Comprehensive paragraph (3-5 sentences)
 
   // === ADVERSITY-TRIUMPH CORE (The Engine) ===
   adversityElements: {

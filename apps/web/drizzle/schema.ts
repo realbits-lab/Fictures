@@ -70,7 +70,7 @@ export const settings = pgTable("settings", {
 	id: text().primaryKey().notNull(),
 	storyId: text("story_id").notNull(),
 	name: varchar({ length: 255 }).notNull(),
-	description: text(), // Comprehensive paragraph (3-5 sentences)
+	summary: text(), // Comprehensive paragraph (3-5 sentences)
 
 	// === ADVERSITY-TRIUMPH CORE (The Engine) ===
 	// adversityElements: {
@@ -192,9 +192,6 @@ export const parts = pgTable("parts", {
 	// === METADATA ===
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-
-	// === DEPRECATED (Legacy fields) ===
-	// description, thematicFocus removed - migrated to summary
 }, (table) => [
 	index("idx_parts_order_index").using("btree", table.orderIndex.asc().nullsLast().op("int4_ops")),
 	index("idx_parts_story_id").using("btree", table.storyId.asc().nullsLast().op("text_ops")),
