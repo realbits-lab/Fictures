@@ -2,14 +2,14 @@
  * Common types for all generators
  */
 
+import type { StorySummaryResult } from "./ai-types";
 import type {
 	Chapter,
 	Character,
 	Part,
 	Scene,
 	Setting,
-	StorySummaryResult,
-} from "./ai-types";
+} from "./zod-schemas.generated";
 
 // ============================================================================
 // Base Generator Interfaces

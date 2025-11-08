@@ -1,9 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { generateParts } from "@/lib/studio/generators";
-import type {
-	CharacterGenerationResult,
-	StorySummaryResult,
-} from "@/lib/studio/generators/ai-types";
+import type { StorySummaryResult } from "@/lib/studio/generators/ai-types";
+import type { Character } from "@/lib/studio/generators/zod-schemas.generated";
 
 export async function POST(request: NextRequest) {
 	try {
@@ -13,7 +11,7 @@ export async function POST(request: NextRequest) {
 
 		const body = (await request.json()) as {
 			storySummary: StorySummaryResult;
-			characters: CharacterGenerationResult[];
+			characters: Character[];
 			partsCount?: number;
 			chaptersPerPart?: number;
 		};

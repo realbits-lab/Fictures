@@ -1,10 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { generateSceneContent } from "@/lib/studio/generators";
 import type {
-	CharacterGenerationResult,
-	SceneSummaryResult,
-	SettingGenerationResult,
-} from "@/lib/studio/generators/ai-types";
+	Character,
+	Scene,
+	Setting,
+} from "@/lib/studio/generators/zod-schemas.generated";
 
 interface ChapterContext {
 	title: string;
@@ -25,9 +25,9 @@ export async function POST(request: NextRequest) {
 		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
 		const body = (await request.json()) as {
-			sceneSummary: SceneSummaryResult;
-			characters: CharacterGenerationResult[];
-			settings: SettingGenerationResult[];
+			sceneSummary: Scene;
+			characters: Character[];
+			settings: Setting[];
 			chapterContext: ChapterContext;
 			storyContext: StoryContext;
 		};

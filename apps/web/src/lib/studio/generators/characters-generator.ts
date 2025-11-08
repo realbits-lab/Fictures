@@ -9,12 +9,12 @@
  */
 
 import { textGenerationClient } from "./ai-client";
-import type { Character } from "./ai-types";
-import { CharacterJsonSchema } from "./json-schemas";
+import { CharacterJsonSchema } from "./json-schemas.generated";
 import type {
 	GenerateCharactersParams,
 	GenerateCharactersResult,
 } from "./types";
+import type { Character } from "./zod-schemas.generated";
 
 /**
  * Generate character profiles for a story

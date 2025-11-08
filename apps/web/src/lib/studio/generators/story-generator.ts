@@ -10,7 +10,7 @@
 
 import { textGenerationClient } from "./ai-client";
 import type { StorySummaryResult } from "./ai-types";
-import { StorySummaryJsonSchema } from "./json-schemas";
+import { StorySummaryJsonSchema } from "./json-schemas.generated";
 import type { GenerateStoryParams, GenerateStoryResult } from "./types";
 
 /**

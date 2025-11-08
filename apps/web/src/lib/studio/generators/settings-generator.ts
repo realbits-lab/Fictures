@@ -9,9 +9,9 @@
  */
 
 import { textGenerationClient } from "./ai-client";
-import type { Setting } from "./ai-types";
-import { SettingJsonSchema } from "./json-schemas";
+import { SettingJsonSchema } from "./json-schemas.generated";
 import type { GenerateSettingsParams, GenerateSettingsResult } from "./types";
+import type { Setting } from "./zod-schemas.generated";
 
 /**
  * Generate story settings

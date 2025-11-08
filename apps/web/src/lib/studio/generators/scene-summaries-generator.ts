@@ -9,12 +9,13 @@
  */
 
 import { textGenerationClient } from "./ai-client";
-import type { CyclePhase, Scene } from "./ai-types";
-import { SceneSummaryJsonSchema } from "./json-schemas";
+import type { CyclePhase } from "./ai-types";
+import { SceneSummaryJsonSchema } from "./json-schemas.generated";
 import type {
 	GenerateSceneSummariesParams,
 	GenerateSceneSummariesResult,
 } from "./types";
+import type { Scene } from "./zod-schemas.generated";
 
 /**
  * Generate scene summaries for all chapters

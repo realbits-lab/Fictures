@@ -9,9 +9,9 @@
  */
 
 import { textGenerationClient } from "./ai-client";
-import type { Chapter } from "./ai-types";
-import { ChapterJsonSchema } from "./json-schemas";
+import { ChapterJsonSchema } from "./json-schemas.generated";
 import type { GenerateChaptersParams, GenerateChaptersResult } from "./types";
+import type { Chapter } from "./zod-schemas.generated";
 
 /**
  * Generate story chapters

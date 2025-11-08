@@ -9,9 +9,9 @@
  */
 
 import { textGenerationClient } from "./ai-client";
-import type { Part } from "./ai-types";
-import { PartJsonSchema } from "./json-schemas";
+import { PartJsonSchema } from "./json-schemas.generated";
 import type { GeneratePartsParams, GeneratePartsResult } from "./types";
+import type { Part } from "./zod-schemas.generated";
 
 /**
  * Generate story parts (acts)

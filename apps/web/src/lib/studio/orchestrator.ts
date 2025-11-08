@@ -6,12 +6,12 @@
  */
 
 import type {
-	ChapterGenerationResult,
-	CharacterGenerationResult,
-	PartGenerationResult,
-	SceneSummaryResult,
-	SettingGenerationResult,
-} from "@/lib/studio/generators/ai-types";
+	Chapter,
+	Character,
+	Part,
+	Scene,
+	Setting,
+} from "@/lib/studio/generators/zod-schemas.generated";
 import {
 	generateChapters,
 	generateCharacters,
@@ -86,14 +86,14 @@ export interface GeneratedNovelResult {
 		tone: string;
 		moralFramework: string;
 	};
-	characters: CharacterGenerationResult[];
-	settings: SettingGenerationResult[];
-	parts: PartGenerationResult[];
-	chapters: ChapterGenerationResult[];
+	characters: Character[];
+	settings: Setting[];
+	parts: Part[];
+	chapters: Chapter[];
 	scenes: SceneWithContent[];
 }
 
-interface SceneWithContent extends SceneSummaryResult {
+interface SceneWithContent extends Scene {
 	id: string;
 	chapterId: string;
 	content: string;
@@ -287,7 +287,7 @@ export async function generateCompleteNovel(
 		const scenesWithSummaries = sceneSummariesResult.scenes;
 
 		// Build chapter-to-scene mapping for later use
-		const chapterSceneMap = new Map<string, SceneSummaryResult[]>();
+		const chapterSceneMap = new Map<string, Scene[]>();
 		let sceneIdx = 0;
 		for (const chapter of chapters) {
 			const chapSummaries = scenesWithSummaries.slice(
