@@ -23,42 +23,6 @@ export const virtueType = pgEnum("virtue_type", ['courage', 'compassion', 'integ
 export const visibility = pgEnum("visibility", ['private', 'unlisted', 'public'])
 
 
-export const scheduledPublications = pgTable("scheduled_publications", {
-	id: text().primaryKey().notNull(),
-	scheduleId: text("schedule_id"),
-	storyId: text("story_id").notNull(),
-	chapterId: text("chapter_id"),
-	sceneId: text("scene_id"),
-	scheduledFor: timestamp("scheduled_for", { mode: 'string' }).notNull(),
-	publishedAt: timestamp("published_at", { mode: 'string' }),
-	status: publicationStatus().default('pending').notNull(),
-	errorMessage: text("error_message"),
-	retryCount: integer("retry_count").default(0),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.scheduleId],
-			foreignColumns: [publishingSchedules.id],
-			name: "scheduled_publications_schedule_id_publishing_schedules_id_fk"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.storyId],
-			foreignColumns: [stories.id],
-			name: "scheduled_publications_story_id_stories_id_fk"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.chapterId],
-			foreignColumns: [chapters.id],
-			name: "scheduled_publications_chapter_id_chapters_id_fk"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.sceneId],
-			foreignColumns: [scenes.id],
-			name: "scheduled_publications_scene_id_scenes_id_fk"
-		}).onDelete("cascade"),
-]);
-
 export const characters = pgTable("characters", {
 	// === IDENTITY ===
 	id: text().primaryKey().notNull(),
@@ -91,15 +55,6 @@ export const characters = pgTable("characters", {
 	// === METADATA ===
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-
-	// === DEPRECATED (Legacy fields) ===
-	content: text().default(''),
-	role: varchar({ length: 50 }),
-	archetype: varchar({ length: 100 }),
-	storyline: text(),
-	motivations: json(),
-	voice: json(),
-	visualReferenceId: text("visual_reference_id"),
 }, (table) => [
 	index("idx_characters_story_id").using("btree", table.storyId.asc().nullsLast().op("text_ops")),
 	index("idx_characters_story_main").using("btree", table.storyId.asc().nullsLast().op("text_ops"), table.isMain.desc().nullsFirst().op("text_ops")),
@@ -1136,5 +1091,41 @@ export const dailyStoryMetrics = pgTable("daily_story_metrics", {
 			columns: [table.storyId],
 			foreignColumns: [stories.id],
 			name: "daily_story_metrics_story_id_stories_id_fk"
+		}).onDelete("cascade"),
+]);
+
+export const scheduledPublications = pgTable("scheduled_publications", {
+	id: text().primaryKey().notNull(),
+	scheduleId: text("schedule_id"),
+	storyId: text("story_id").notNull(),
+	chapterId: text("chapter_id"),
+	sceneId: text("scene_id"),
+	scheduledFor: timestamp("scheduled_for", { mode: 'string' }).notNull(),
+	publishedAt: timestamp("published_at", { mode: 'string' }),
+	status: publicationStatus().default('pending').notNull(),
+	errorMessage: text("error_message"),
+	retryCount: integer("retry_count").default(0),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.scheduleId],
+			foreignColumns: [publishingSchedules.id],
+			name: "scheduled_publications_schedule_id_publishing_schedules_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.storyId],
+			foreignColumns: [stories.id],
+			name: "scheduled_publications_story_id_stories_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.chapterId],
+			foreignColumns: [chapters.id],
+			name: "scheduled_publications_chapter_id_chapters_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.sceneId],
+			foreignColumns: [scenes.id],
+			name: "scheduled_publications_scene_id_scenes_id_fk"
 		}).onDelete("cascade"),
 ]);
