@@ -702,6 +702,18 @@ dotenv --file .env.local run node scripts/generate-minimal-story.mjs
 - **Environment Variables**: Always prefix commands with `dotenv --file .env.local run`
 - **Authentication**: Use NextAuth.js session management throughout
 - **Database**: All operations through Drizzle ORM - see `src/lib/db/`
+- **Code Organization by Purpose**:
+  - **`studio`**: Creation/generation functionality (write operations)
+    - Story generation, editing, and management
+    - AI-powered content creation
+    - Location: `src/lib/studio/`, `src/app/studio/`
+  - **`novels`**: Novel reading/viewing functionality (read operations)
+    - Story display and reading experience
+    - Location: `src/lib/novels/` (minimal), `src/app/novels/`
+  - **`comics`**: Comic reading/viewing functionality (read operations)
+    - Comic panel display and reader interface
+    - Location: `src/app/comics/`
+  - **Principle**: If you write generation-related code, relate it to `studio`. If you write reading-related code, relate it to `novels` or `comics`.
 - **API Route Organization**:
   - **Page-specific APIs**: Create API routes under the related page directory (e.g., `/studio/api/`, `/analytics/api/`)
   - **Common APIs**: Use `/api/` directory only for global/shared API endpoints
@@ -851,11 +863,12 @@ Every scene generated is automatically:
 - Always write complete, explicit code with all parameters, imports, and statements
 - Every line of code should be production-ready and executable
 - No shortcuts or omissions in code implementation
-- **TypeScript Validation for Next.js Projects:**
-  - **Always use `pnpm build`** for TypeScript validation (this is the only authoritative check)
-  - Next.js generates type definitions (`.next/types/`) during build, so direct `tsc` will give false errors
-  - `pnpm build` runs TypeScript checking with Next.js integration and generated types
-  - **Never use `pnpm tsc --noEmit`** for Next.js projects - it lacks Next.js type generation
+- **TypeScript Validation:**
+  - **TypeScript Native**: This project uses Microsoft's TypeScript Native (`@typescript/native-preview`) for 10x faster type checking
+  - **Command**: `pnpm type-check` or `pnpm type-check:watch` (uses `tsgo` instead of `tsc`)
+  - **Performance**: TypeScript Native provides significant performance improvements (8-10x faster) while maintaining full compatibility
+  - **Build validation**: `pnpm build` for authoritative type checking with Next.js integration
+  - **Configuration**: `tsconfig.json` configured for TypeScript Native (no `baseUrl`, uses relative paths)
 
 **Git and Repository Management:**
 - Always check current git repository URL before using GitHub MCP tools

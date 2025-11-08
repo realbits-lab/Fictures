@@ -7,6 +7,99 @@ This document provides comprehensive implementation specifications for the novel
 **Related Documents:**
 - 📖 **Specification** (`novels-specification.md`): Core concepts, data model, and theoretical foundation
 - 🧪 **Testing Guide** (`novels-testing.md`): Validation methods, quality metrics, and test strategies
+- 🏗️ **Generator Refactoring** (`generator-refactoring-plan.md`): Common generator library architecture
+
+---
+
+## Part 0: Code Architecture (Common Generator Library)
+
+### 0.1 Architectural Decision: Studio vs Novels
+
+**Purpose Separation:**
+- **`src/lib/studio/`**: Creation/generation functionality (write operations)
+- **`src/lib/novels/`**: Reading/viewing functionality (read operations)
+
+### 0.2 Generator Library Structure
+
+**Problem**: Code duplication between orchestrator and individual API endpoints
+- Same generation logic exists in `orchestrator.ts` AND `api/generation/*/route.ts`
+- Changes require updates in multiple places
+- Risk of inconsistency
+
+**Solution**: Common generator library at `src/lib/studio/generators/`
+
+```
+src/lib/studio/
+├── generators/                        # Common generator functions
+│   ├── index.ts                      # Export all generators
+│   ├── story-generator.ts            # Story generation
+│   ├── characters-generator.ts       # Character generation
+│   ├── settings-generator.ts         # Setting generation
+│   ├── parts-generator.ts            # Parts generation
+│   ├── chapters-generator.ts         # Chapters generation
+│   ├── scene-summaries-generator.ts  # Scene summaries generation
+│   ├── scene-content-generator.ts    # Scene content generation
+│   ├── scene-evaluation-generator.ts # Scene evaluation
+│   └── images-generator.ts           # Image generation
+└── agent-*.ts                         # Existing agent tools
+
+src/lib/novels/
+├── orchestrator.ts                    # Uses studio generators
+├── types.ts                          # Shared types
+├── system-prompts.ts                 # Shared prompts
+└── ai-client.ts                      # AI integration
+```
+
+**Benefits:**
+- ✅ Single source of truth (DRY principle)
+- ✅ Unified API and individual endpoints use same functions
+- ✅ Easier testing and maintenance
+- ✅ Guaranteed consistency
+
+**Usage Pattern:**
+
+```typescript
+// In orchestrator
+import { generateCharacters } from '@/lib/studio/generators';
+
+// In API endpoint
+import { generateCharacters } from '@/lib/studio/generators';
+
+// Both use the exact same function
+const result = await generateCharacters({
+  storyId,
+  userId,
+  story,
+  characterCount,
+});
+```
+
+**Generator Function Signature Example:**
+
+```typescript
+export interface GenerateCharactersParams {
+  storyId: string;
+  userId: string;
+  story: StorySummaryResult;
+  characterCount: number;
+  language?: string;
+  onProgress?: (current: number, total: number) => void;
+}
+
+export interface GenerateCharactersResult {
+  characters: Character[];
+  metadata: {
+    totalGenerated: number;
+    generationTime: number;
+  };
+}
+
+export async function generateCharacters(
+  params: GenerateCharactersParams
+): Promise<GenerateCharactersResult>;
+```
+
+**Implementation Status**: Planned - See `generator-refactoring-plan.md` for full details
 
 ---
 
