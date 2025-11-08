@@ -141,12 +141,10 @@ This approach is **mandatory** for:
 1. Change code in src/lib/auth/dual-auth.ts
 2. Update apps/web/docs/api/authentication.md
 3. Verify examples in documentation still work
-4. Commit both code and documentation together
 
-# ❌ INCORRECT: Committing code without updating docs
+# ❌ INCORRECT: Updating code without updating docs
 1. Change code in src/lib/auth/dual-auth.ts
-2. Commit code
-3. (Documentation becomes outdated)
+2. (Documentation becomes outdated)
 ```
 
 **Remember**: Documentation is not optional. It is a critical part of the codebase and must be maintained with the same rigor as the code itself.
