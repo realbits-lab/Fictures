@@ -12,7 +12,7 @@ import {
 	Label,
 } from "@/components/ui";
 import { trackStoryEvent } from "@/lib/analysis/google-analytics";
-import { NOVEL_GENERATION_CONSTRAINTS } from "@/lib/novels/constants";
+import { NOVEL_GENERATION_CONSTRAINTS } from "@/lib/studio/constants";
 import { useStoryCreation } from "./StoryCreationContext";
 
 interface ProgressStep {

@@ -8,9 +8,9 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { StorySummaryJsonSchema } from "@/lib/novels/json-schemas";
 import { textGenerationClient } from "./ai-client";
 import type { StorySummaryResult } from "./ai-types";
+import { StorySummaryJsonSchema } from "./json-schemas";
 import type { GenerateStoryParams, GenerateStoryResult } from "./types";
 
 /**
