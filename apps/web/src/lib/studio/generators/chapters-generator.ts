@@ -10,7 +10,6 @@
 
 import { textGenerationClient } from "@/lib/novels/ai-client";
 import { ChapterJsonSchema } from "@/lib/novels/json-schemas";
-import { CHAPTERS_GENERATION_PROMPT } from "@/lib/novels/system-prompts";
 import type { Chapter } from "@/lib/novels/types";
 import type { GenerateChaptersParams, GenerateChaptersResult } from "./types";
 
@@ -38,44 +37,39 @@ export async function generateChapters(
 				onProgress(chapterIndex, parts.length * chaptersPerPart);
 			}
 
-			// Build chapter prompt
-			const chapterPrompt = `${CHAPTERS_GENERATION_PROMPT}
+			// Get character arc for this chapter (simplified - using first character)
+			const focusCharacter = characters[0];
+			const characterArc = part.characterArcs?.find(
+				(arc) => arc.characterId === focusCharacter.id,
+			);
 
-Generate Chapter ${chapterIndex} for ${part.title}.
-
-Story Context:
-Title: ${story.title}
-Part: ${part.title}
-Part Summary: ${part.summary}
-
-Previous Chapter: ${chapters.length > 0 ? chapters[chapters.length - 1].summary : "None (this is the first chapter)"}
-
-Return as JSON:
-{
-  "id": "chapter_${chapterIndex}",
-  "partId": "${part.id}",
-  "title": "Chapter ${chapterIndex}: ...",
-  "summary": "...",
-  "characterId": "${characters[0].id}",
-  "arcPosition": "${i === 0 ? "beginning" : i === chaptersPerPart - 1 ? "climax" : "middle"}",
-  "contributesToMacroArc": "...",
-  "focusCharacters": ["${characters[0].id}"],
-  "adversityType": "both",
-  "virtueType": "courage",
-  "seedsPlanted": [],
-  "seedsResolved": [],
-  "connectsToPreviousChapter": "${chapters.length > 0 ? "Previous chapter resolution creates this adversity" : "Story beginning"}",
-  "createsNextAdversity": "..."
-}`;
-
-			// Generate chapter
-			const response = await textGenerationClient.generate({
-				prompt: chapterPrompt,
-				temperature: 0.85,
-				maxTokens: 8192,
-				responseFormat: "json",
-				responseSchema: ChapterJsonSchema,
-			});
+			// Generate chapter using template
+			const response = await textGenerationClient.generateWithTemplate(
+				"chapter",
+				{
+					chapterNumber: String(chapterIndex),
+					totalChapters: String(parts.length * chaptersPerPart),
+					partTitle: part.title,
+					storyTitle: story.title,
+					storyGenre: story.genre,
+					storySummary: story.summary,
+					partSummary: part.summary,
+					characterName: focusCharacter.name,
+					characterFlaw: focusCharacter.internalFlaw || "unresolved fear",
+					characterArc:
+						characterArc?.macroAdversity?.internal || "personal growth",
+					previousChapterContext:
+						chapters.length > 0
+							? chapters[chapters.length - 1].summary
+							: "None (this is the first chapter)",
+				},
+				{
+					temperature: 0.85,
+					maxTokens: 8192,
+					responseFormat: "json",
+					responseSchema: ChapterJsonSchema,
+				},
+			);
 
 			const chapterData = JSON.parse(response.text);
 			chapters.push(chapterData);

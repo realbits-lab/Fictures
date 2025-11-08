@@ -10,7 +10,6 @@
 
 import { textGenerationClient } from "@/lib/novels/ai-client";
 import { StorySummaryJsonSchema } from "@/lib/novels/json-schemas";
-import { STORY_SUMMARY_PROMPT } from "@/lib/novels/system-prompts";
 import type { StorySummaryResult } from "@/lib/novels/types";
 import type { GenerateStoryParams, GenerateStoryResult } from "./types";
 
@@ -25,29 +24,22 @@ export async function generateStory(
 ): Promise<GenerateStoryResult> {
 	const startTime = Date.now();
 
-	// Build prompt
-	const prompt = `${STORY_SUMMARY_PROMPT}
-
-User Request: ${params.userPrompt}
-Preferred Genre: ${params.preferredGenre || "Any"}
-Preferred Tone: ${params.preferredTone || "hopeful"}
-Language: ${params.language || "English"}
-
-Generate a story foundation with:
-1. Title (engaging and memorable)
-2. Genre (specific genre classification)
-3. Summary (2-3 sentences describing the thematic premise and moral framework)
-4. Tone (hopeful, dark, bittersweet, or satirical)
-5. Moral Framework (what virtues are valued in this story?)`;
-
-	// Generate story data
-	const response = await textGenerationClient.generate({
-		prompt,
-		temperature: 0.8,
-		maxTokens: 8192,
-		responseFormat: "json",
-		responseSchema: StorySummaryJsonSchema,
-	});
+	// Generate story data using template
+	const response = await textGenerationClient.generateWithTemplate(
+		"story",
+		{
+			userPrompt: params.userPrompt,
+			genre: params.preferredGenre || "Any",
+			tone: params.preferredTone || "hopeful",
+			language: params.language || "English",
+		},
+		{
+			temperature: 0.8,
+			maxTokens: 8192,
+			responseFormat: "json",
+			responseSchema: StorySummaryJsonSchema,
+		},
+	);
 
 	console.log("[story-generator] AI response:", {
 		text: response.text,

@@ -10,7 +10,6 @@
 
 import { textGenerationClient } from "@/lib/novels/ai-client";
 import { SceneSummaryJsonSchema } from "@/lib/novels/json-schemas";
-import { SCENE_SUMMARY_PROMPT } from "@/lib/novels/system-prompts";
 import type { CyclePhase, Scene } from "@/lib/novels/types";
 import type {
 	GenerateSceneSummariesParams,
@@ -51,40 +50,29 @@ export async function generateSceneSummaries(
 			];
 			const cyclePhase = cyclePhases[Math.min(i, cyclePhases.length - 1)];
 
-			// Build scene summary prompt
-			const sceneSummaryPrompt = `${SCENE_SUMMARY_PROMPT}
+			// Build settings string
+			const settingsStr = settings
+				.map((s, idx) => `${idx + 1}. ${s.name}: ${s.description}`)
+				.join("\n");
 
-Generate scene ${i + 1} of ${scenesPerChapter} for this chapter.
-
-Chapter Context:
-Title: ${chapter.title}
-Summary: ${chapter.summary}
-Cycle Phase: ${cyclePhase}
-
-Setting Options:
-${settings.map((s, idx) => `${idx + 1}. ${s.name}: ${s.description}`).join("\n")}
-
-Return as JSON:
-{
-  "title": "Scene ${i + 1}: ...",
-  "summary": "...",
-  "cyclePhase": "${cyclePhase}",
-  "emotionalBeat": "...",
-  "dialogueVsDescription": "balanced",
-  "suggestedLength": "medium",
-  "characterFocus": ["${chapter.characterId}"],
-  "settingId": "${settings[i % settings.length].id}",
-  "sensoryAnchors": ["...", "...", "..."]
-}`;
-
-			// Generate scene summary
-			const response = await textGenerationClient.generate({
-				prompt: sceneSummaryPrompt,
-				temperature: 0.8,
-				maxTokens: 8192,
-				responseFormat: "json",
-				responseSchema: SceneSummaryJsonSchema,
-			});
+			// Generate scene summary using template
+			const response = await textGenerationClient.generateWithTemplate(
+				"scene_summary",
+				{
+					sceneNumber: String(i + 1),
+					sceneCount: String(scenesPerChapter),
+					chapterTitle: chapter.title,
+					chapterSummary: chapter.summary,
+					cyclePhase,
+					settings: settingsStr,
+				},
+				{
+					temperature: 0.8,
+					maxTokens: 8192,
+					responseFormat: "json",
+					responseSchema: SceneSummaryJsonSchema,
+				},
+			);
 
 			const sceneData = JSON.parse(response.text);
 			scenes.push(sceneData);

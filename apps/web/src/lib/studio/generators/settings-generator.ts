@@ -33,59 +33,24 @@ export async function generateSettings(
 			onProgress(i + 1, settingCount);
 		}
 
-		// Build setting prompt
-		const settingPrompt = `Generate a story setting that serves as an emotional environment for the Adversity-Triumph narrative framework.
-
-Story Context:
-Title: ${story.title}
-Genre: ${story.genre}
-Summary: ${story.summary}
-Moral Framework: ${story.moralFramework}
-
-Generate setting ${i + 1} of ${settingCount}:
-
-Return as JSON with this exact structure:
-{
-  "id": "setting_${i + 1}",
-  "name": "...",
-  "description": "...",
-  "adversityElements": {
-    "physicalObstacles": ["...", "..."],
-    "scarcityFactors": ["...", "..."],
-    "dangerSources": ["...", "..."],
-    "socialDynamics": ["...", "..."]
-  },
-  "symbolicMeaning": "...",
-  "cycleAmplification": {
-    "setup": "...",
-    "confrontation": "...",
-    "virtue": "...",
-    "consequence": "...",
-    "transition": "..."
-  },
-  "mood": "...",
-  "emotionalResonance": "...",
-  "sensory": {
-    "sight": ["...", "...", "..."],
-    "sound": ["...", "...", "..."],
-    "smell": ["...", "..."],
-    "touch": ["...", "..."],
-    "taste": []
-  },
-  "architecturalStyle": "...",
-  "visualStyle": "realistic",
-  "visualReferences": ["...", "..."],
-  "colorPalette": ["...", "...", "..."]
-}`;
-
-		// Generate setting
-		const response = await textGenerationClient.generate({
-			prompt: settingPrompt,
-			temperature: 0.85,
-			maxTokens: 8192,
-			responseFormat: "json",
-			responseSchema: SettingJsonSchema,
-		});
+		// Generate setting using template
+		const response = await textGenerationClient.generateWithTemplate(
+			"setting",
+			{
+				settingNumber: String(i + 1),
+				settingCount: String(settingCount),
+				storyTitle: story.title,
+				storyGenre: story.genre,
+				storySummary: story.summary,
+				moralFramework: story.moralFramework,
+			},
+			{
+				temperature: 0.85,
+				maxTokens: 8192,
+				responseFormat: "json",
+				responseSchema: SettingJsonSchema,
+			},
+		);
 
 		const settingData = JSON.parse(response.text);
 		settings.push(settingData);

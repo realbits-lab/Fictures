@@ -10,7 +10,6 @@
 
 import { textGenerationClient } from "@/lib/novels/ai-client";
 import { CharacterJsonSchema } from "@/lib/novels/json-schemas";
-import { CHARACTER_GENERATION_PROMPT } from "@/lib/novels/system-prompts";
 import type { Character } from "@/lib/novels/types";
 import type {
 	GenerateCharactersParams,
@@ -37,29 +36,26 @@ export async function generateCharacters(
 			onProgress(i + 1, characterCount);
 		}
 
-		// Build character prompt
-		const characterPrompt = `${CHARACTER_GENERATION_PROMPT}
-
-Story Context:
-Title: ${story.title}
-Genre: ${story.genre}
-Summary: ${story.summary}
-Moral Framework: ${story.moralFramework}
-
-Generate character ${i + 1} of ${characterCount} (${i === 0 ? "main protagonist" : "supporting character"}):
-- id: "char_${i + 1}"
-- isMain: ${i === 0}
-- visualStyle: "realistic"
-- language: ${language}`;
-
-		// Generate character
-		const response = await textGenerationClient.generate({
-			prompt: characterPrompt,
-			temperature: 0.9,
-			maxTokens: 8192,
-			responseFormat: "json",
-			responseSchema: CharacterJsonSchema,
-		});
+		// Generate character using template
+		const response = await textGenerationClient.generateWithTemplate(
+			"character",
+			{
+				characterNumber: String(i + 1),
+				characterCount: String(characterCount),
+				storyTitle: story.title,
+				storyGenre: story.genre,
+				storySummary: story.summary,
+				moralFramework: story.moralFramework,
+				characterType: i === 0 ? "main protagonist" : "supporting character",
+				language,
+			},
+			{
+				temperature: 0.9,
+				maxTokens: 8192,
+				responseFormat: "json",
+				responseSchema: CharacterJsonSchema,
+			},
+		);
 
 		const characterData = JSON.parse(response.text);
 		characters.push(characterData);

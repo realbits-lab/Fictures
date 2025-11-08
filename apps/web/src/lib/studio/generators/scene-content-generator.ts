@@ -9,7 +9,6 @@
  */
 
 import { textGenerationClient } from "@/lib/novels/ai-client";
-import { SCENE_CONTENT_PROMPT } from "@/lib/novels/system-prompts";
 import type {
 	GenerateSceneContentParams,
 	GenerateSceneContentResult,
@@ -33,32 +32,31 @@ export async function generateSceneContent(
 		scene.characterFocus?.includes(c.id),
 	);
 
-	// Build scene content prompt
-	const sceneContentPrompt = `${SCENE_CONTENT_PROMPT}
-
-Generate prose content for this scene.
-
-Scene Summary: ${scene.summary}
-Cycle Phase: ${scene.cyclePhase}
-Emotional Beat: ${scene.emotionalBeat}
-Suggested Length: ${scene.suggestedLength} (300-800 words)
-
-Setting: ${setting ? `${setting.name} - ${setting.description}` : "Generic setting"}
-Sensory Details: ${scene.sensoryAnchors ? scene.sensoryAnchors.join(", ") : "Use setting-appropriate details"}
-
-Character: ${character ? `${character.name} - ${character.summary}` : "Unknown character"}
-Voice Style: ${character ? `${character.voiceStyle.tone}, ${character.voiceStyle.vocabulary}` : "Neutral"}
-
-Write the scene content in ${language}. Use strong sensory details, natural dialogue, and mobile-optimized formatting (max 3 sentences per paragraph).
-
-Return only the prose content (no JSON, no wrapper).`;
-
-	// Generate scene content
-	const response = await textGenerationClient.generate({
-		prompt: sceneContentPrompt,
-		temperature: 0.85,
-		maxTokens: 8192,
-	});
+	// Generate scene content using template
+	const response = await textGenerationClient.generateWithTemplate(
+		"scene_content",
+		{
+			sceneSummary: scene.summary,
+			cyclePhase: scene.cyclePhase,
+			emotionalBeat: scene.emotionalBeat || "neutral",
+			suggestedLength: scene.suggestedLength || "medium",
+			settingDescription: setting
+				? `${setting.name} - ${setting.description}`
+				: "Generic setting",
+			sensoryAnchors: scene.sensoryAnchors
+				? scene.sensoryAnchors.join(", ")
+				: "Use setting-appropriate details",
+			characterName: character ? character.name : "Unknown character",
+			voiceStyle: character
+				? `${character.voiceStyle.tone}, ${character.voiceStyle.vocabulary}`
+				: "Neutral",
+			language,
+		},
+		{
+			temperature: 0.85,
+			maxTokens: 8192,
+		},
+	);
 
 	const content = response.text.trim();
 	const wordCount = content.split(/\s+/).length;

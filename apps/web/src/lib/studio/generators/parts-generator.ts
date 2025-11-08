@@ -33,51 +33,29 @@ export async function generateParts(
 			onProgress(i + 1, partsCount);
 		}
 
-		// Build part prompt
-		const partPrompt = `Generate Part ${i + 1} (Act ${i + 1}) for the story using the Adversity-Triumph Engine.
+		// Build character list string
+		const charactersStr = characters
+			.map((c) => `- ${c.name}: ${c.coreTrait} (flaw: ${c.internalFlaw})`)
+			.join("\n");
 
-Story Context:
-Title: ${story.title}
-Genre: ${story.genre}
-Summary: ${story.summary}
-Moral Framework: ${story.moralFramework}
-
-Characters:
-${characters.map((c) => `- ${c.name}: ${c.coreTrait} (flaw: ${c.internalFlaw})`).join("\n")}
-
-Generate a part with MACRO adversity-triumph arcs for each character.
-
-Return as JSON:
-{
-  "id": "part_${i + 1}",
-  "title": "Act ${i + 1}: ...",
-  "summary": "...",
-  "orderIndex": ${i},
-  "characterArcs": [
-    {
-      "characterId": "char_1",
-      "macroAdversity": {
-        "internal": "...",
-        "external": "..."
-      },
-      "macroVirtue": "...",
-      "macroConsequence": "...",
-      "macroNewAdversity": "...",
-      "estimatedChapters": 1,
-      "arcPosition": "primary",
-      "progressionStrategy": "..."
-    }
-  ]
-}`;
-
-		// Generate part
-		const response = await textGenerationClient.generate({
-			prompt: partPrompt,
-			temperature: 0.85,
-			maxTokens: 8192,
-			responseFormat: "json",
-			responseSchema: PartJsonSchema,
-		});
+		// Generate part using template
+		const response = await textGenerationClient.generateWithTemplate(
+			"part",
+			{
+				partNumber: String(i + 1),
+				storyTitle: story.title,
+				storyGenre: story.genre,
+				storySummary: story.summary,
+				moralFramework: story.moralFramework,
+				characters: charactersStr,
+			},
+			{
+				temperature: 0.85,
+				maxTokens: 8192,
+				responseFormat: "json",
+				responseSchema: PartJsonSchema,
+			},
+		);
 
 		const partData = JSON.parse(response.text);
 		parts.push(partData);

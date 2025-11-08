@@ -7,12 +7,15 @@ import type { z } from "zod";
 export type ModelProvider = "gemini" | "ai-server";
 
 export type PromptType =
-	| "chapter_generation"
-	| "scene_content"
+	| "story"
+	| "character"
+	| "setting"
+	| "part"
+	| "chapter"
 	| "scene_summary"
+	| "scene_content"
 	| "character_dialogue"
-	| "setting_description"
-	| "story";
+	| "setting_description";
 
 export interface PromptTemplate {
 	system: string;
