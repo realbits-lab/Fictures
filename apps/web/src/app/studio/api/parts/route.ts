@@ -8,41 +8,13 @@ import { characters, parts, settings, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateParts } from "@/lib/studio/generators/parts-generator";
 import type { GeneratePartsParams } from "@/lib/studio/generators/types";
+import type {
+	GeneratePartsErrorResponse,
+	GeneratePartsRequest,
+	GeneratePartsResponse,
+} from "../types";
 
 export const runtime = "nodejs";
-
-// ============================================================================
-// Request/Response Type Definitions
-// ============================================================================
-
-/**
- * API request body for part generation
- */
-interface GeneratePartsRequest {
-	storyId: string;
-	partsCount?: number;
-	language?: string;
-}
-
-/**
- * API response body for successful part generation
- */
-interface GeneratePartsResponse {
-	success: true;
-	parts: Array<any>;
-	metadata: {
-		totalGenerated: number;
-		generationTime: number;
-	};
-}
-
-/**
- * API error response body
- */
-interface GeneratePartsErrorResponse {
-	error: string;
-	details?: any;
-}
 
 /**
  * Validation schema for generating parts

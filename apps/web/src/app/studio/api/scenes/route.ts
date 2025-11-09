@@ -17,41 +17,13 @@ import { chapters, scenes, settings, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateSceneSummaries } from "@/lib/studio/generators/scene-summaries-generator";
 import type { GenerateSceneSummariesParams } from "@/lib/studio/generators/types";
+import type {
+	GenerateSceneSummariesErrorResponse,
+	GenerateSceneSummariesRequest,
+	GenerateSceneSummariesResponse,
+} from "../types";
 
 export const runtime = "nodejs";
-
-// ============================================================================
-// Request/Response Type Definitions
-// ============================================================================
-
-/**
- * API request body for scene summary generation
- */
-interface GenerateSceneSummariesRequest {
-	storyId: string;
-	scenesPerChapter?: number;
-	language?: string;
-}
-
-/**
- * API response body for successful scene summary generation
- */
-interface GenerateSceneSummariesResponse {
-	success: true;
-	scenes: Array<any>;
-	metadata: {
-		totalGenerated: number;
-		generationTime: number;
-	};
-}
-
-/**
- * API error response body
- */
-interface GenerateSceneSummariesErrorResponse {
-	error: string;
-	details?: any;
-}
 
 /**
  * Validation schema for generating scene summaries

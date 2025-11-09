@@ -17,40 +17,13 @@ import { settings, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateSettings } from "@/lib/studio/generators/settings-generator";
 import type { GenerateSettingsParams } from "@/lib/studio/generators/types";
+import type {
+	GenerateSettingsErrorResponse,
+	GenerateSettingsRequest,
+	GenerateSettingsResponse,
+} from "../types";
 
 export const runtime = "nodejs";
-
-// ============================================================================
-// Request/Response Type Definitions
-// ============================================================================
-
-/**
- * API request body for setting generation
- */
-interface GenerateSettingsRequest {
-	storyId: string;
-	settingCount?: number;
-}
-
-/**
- * API response body for successful setting generation
- */
-interface GenerateSettingsResponse {
-	success: true;
-	settings: Array<any>;
-	metadata: {
-		totalGenerated: number;
-		generationTime: number;
-	};
-}
-
-/**
- * API error response body
- */
-interface GenerateSettingsErrorResponse {
-	error: string;
-	details?: any;
-}
 
 /**
  * Validation schema for generating settings

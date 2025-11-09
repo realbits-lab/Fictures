@@ -17,60 +17,13 @@ import { characters, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateCharacters } from "@/lib/studio/generators/characters-generator";
 import type { GenerateCharactersParams } from "@/lib/studio/generators/types";
+import type {
+	GenerateCharactersErrorResponse,
+	GenerateCharactersRequest,
+	GenerateCharactersResponse,
+} from "../types";
 
 export const runtime = "nodejs";
-
-// ============================================================================
-// Request/Response Type Definitions
-// ============================================================================
-
-/**
- * API request body for character generation
- */
-interface GenerateCharactersRequest {
-	storyId: string;
-	characterCount?: number;
-	language?: string;
-}
-
-/**
- * API response body for successful character generation
- */
-interface GenerateCharactersResponse {
-	success: true;
-	characters: Array<{
-		id: string;
-		storyId: string;
-		name: string;
-		isMain: boolean;
-		summary: string | null;
-		coreTrait: string | null;
-		internalFlaw: string | null;
-		externalGoal: string | null;
-		personality: any | null;
-		backstory: string | null;
-		relationships: any | null;
-		physicalDescription: any | null;
-		voiceStyle: any | null;
-		imageUrl: string | null;
-		imageVariants: any | null;
-		visualStyle: string | null;
-		createdAt: Date;
-		updatedAt: Date;
-	}>;
-	metadata: {
-		totalGenerated: number;
-		generationTime: number;
-	};
-}
-
-/**
- * API error response body
- */
-interface GenerateCharactersErrorResponse {
-	error: string;
-	details?: any;
-}
 
 /**
  * Validation schema for generating characters

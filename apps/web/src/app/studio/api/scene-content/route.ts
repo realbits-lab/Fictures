@@ -15,40 +15,13 @@ import { characters, scenes, settings, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateSceneContent } from "@/lib/studio/generators/scene-content-generator";
 import type { GenerateSceneContentParams } from "@/lib/studio/generators/types";
+import type {
+	GenerateSceneContentErrorResponse,
+	GenerateSceneContentRequest,
+	GenerateSceneContentResponse,
+} from "../types";
 
 export const runtime = "nodejs";
-
-// ============================================================================
-// Request/Response Type Definitions
-// ============================================================================
-
-/**
- * API request body for scene content generation
- */
-interface GenerateSceneContentRequest {
-	sceneId: string;
-	language?: string;
-}
-
-/**
- * API response body for successful scene content generation
- */
-interface GenerateSceneContentResponse {
-	success: true;
-	scene: any;
-	metadata: {
-		wordCount: number;
-		generationTime: number;
-	};
-}
-
-/**
- * API error response body
- */
-interface GenerateSceneContentErrorResponse {
-	error: string;
-	details?: any;
-}
 
 /**
  * Validation schema for generating scene content

@@ -10,53 +10,13 @@ import {
 } from "@/lib/db/studio-queries";
 import { generateStory } from "@/lib/studio/generators/story-generator";
 import type { GenerateStoryParams } from "@/lib/studio/generators/types";
+import type {
+	GenerateStoryErrorResponse,
+	GenerateStoryRequest,
+	GenerateStoryResponse,
+} from "../types";
 
 export const runtime = "nodejs";
-
-// ============================================================================
-// Request/Response Type Definitions
-// ============================================================================
-
-/**
- * API request body for story generation
- */
-interface GenerateStoryRequest {
-	userPrompt: string;
-	language?: string;
-	preferredGenre?: string;
-	preferredTone?: "hopeful" | "dark" | "bittersweet" | "satirical";
-}
-
-/**
- * API response body for successful story generation
- */
-interface GenerateStoryResponse {
-	success: true;
-	story: {
-		id: string;
-		authorId: string;
-		title: string;
-		summary: string | null;
-		genre: string | null;
-		tone: string;
-		moralFramework: string | null;
-		status: string;
-		createdAt: Date;
-		updatedAt: Date;
-	};
-	metadata: {
-		generationTime: number;
-		model?: string;
-	};
-}
-
-/**
- * API error response body
- */
-interface GenerateStoryErrorResponse {
-	error: string;
-	details?: string;
-}
 
 // GET /api/stories - Get user's stories with detailed data for dashboard
 export async function GET(request: NextRequest) {

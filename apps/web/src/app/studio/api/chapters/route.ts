@@ -16,41 +16,13 @@ import { chapters, characters, parts, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateChapters } from "@/lib/studio/generators/chapters-generator";
 import type { GenerateChaptersParams } from "@/lib/studio/generators/types";
+import type {
+	GenerateChaptersErrorResponse,
+	GenerateChaptersRequest,
+	GenerateChaptersResponse,
+} from "../types";
 
 export const runtime = "nodejs";
-
-// ============================================================================
-// Request/Response Type Definitions
-// ============================================================================
-
-/**
- * API request body for chapter generation
- */
-interface GenerateChaptersRequest {
-	storyId: string;
-	chaptersPerPart?: number;
-	language?: string;
-}
-
-/**
- * API response body for successful chapter generation
- */
-interface GenerateChaptersResponse {
-	success: true;
-	chapters: Array<any>;
-	metadata: {
-		totalGenerated: number;
-		generationTime: number;
-	};
-}
-
-/**
- * API error response body
- */
-interface GenerateChaptersErrorResponse {
-	error: string;
-	details?: any;
-}
 
 /**
  * Validation schema for generating chapters
