@@ -12,8 +12,8 @@ import { textGenerationClient } from "./ai-client";
 import { promptManager } from "./prompt-manager";
 import type { GenerateStoryParams, GenerateStoryResult } from "./types";
 import {
-  type GeneratedStoryData,
-  generatedStorySchema,
+	type GeneratedStoryData,
+	generatedStorySchema,
 } from "./zod-schemas.generated";
 
 /**
@@ -23,60 +23,60 @@ import {
  * @returns Story data (caller responsible for database save)
  */
 export async function generateStory(
-  params: GenerateStoryParams
+	params: GenerateStoryParams,
 ): Promise<GenerateStoryResult> {
-  const startTime: number = Date.now();
+	const startTime: number = Date.now();
 
-  // 1. Extract and set default parameters
-  const {
-    userPrompt,
-    preferredGenre = "Any",
-    preferredTone = "hopeful",
-    language = "English",
-  }: GenerateStoryParams = params;
+	// 1. Extract and set default parameters
+	const {
+		userPrompt,
+		preferredGenre = "Any",
+		preferredTone = "hopeful",
+		language = "English",
+	}: GenerateStoryParams = params;
 
-  // 2. Get the prompt template for story generation
-  const { system, user }: { system: string; user: string } =
-    promptManager.getPrompt(textGenerationClient.getProviderType(), "story", {
-      userPrompt,
-      genre: preferredGenre,
-      tone: preferredTone,
-      language,
-    });
+	// 2. Get the prompt template for story generation
+	const { system, user }: { system: string; user: string } =
+		promptManager.getPrompt(textGenerationClient.getProviderType(), "story", {
+			userPrompt,
+			genre: preferredGenre,
+			tone: preferredTone,
+			language,
+		});
 
-  console.log(
-    "[story-generator] Using generateStructured method with manual schema"
-  );
+	console.log(
+		"[story-generator] Using generateStructured method with manual schema",
+	);
 
-  // 3. Generate story data using structured output method
-  const storyData: GeneratedStoryData =
-    await textGenerationClient.generateStructured(user, generatedStorySchema, {
-      systemPrompt: system,
-      temperature: 0.8,
-      maxTokens: 4096,
-    });
+	// 3. Generate story data using structured output method
+	const storyData: GeneratedStoryData =
+		await textGenerationClient.generateStructured(user, generatedStorySchema, {
+			systemPrompt: system,
+			temperature: 0.8,
+			maxTokens: 4096,
+		});
 
-  console.log("[story-generator] Story generated:", {
-    summary: storyData.summary,
-    title: storyData.title,
-    genre: storyData.genre,
-    tone: storyData.tone,
-    moralFramework: storyData.moralFramework,
-  });
+	console.log("[story-generator] Story generated:", {
+		summary: storyData.summary,
+		title: storyData.title,
+		genre: storyData.genre,
+		tone: storyData.tone,
+		moralFramework: storyData.moralFramework,
+	});
 
-  // 4. Validate result (title and tone are required in the schema)
-  if (!storyData.title) {
-    throw new Error("Invalid story data generated - missing required fields");
-  }
+	// 4. Validate result (title and tone are required in the schema)
+	if (!storyData.title) {
+		throw new Error("Invalid story data generated - missing required fields");
+	}
 
-  // 5. Build and return result with metadata
-  const result: GenerateStoryResult = {
-    story: storyData,
-    metadata: {
-      generationTime: Date.now() - startTime,
-      model: textGenerationClient.getProviderType(),
-    },
-  };
+	// 5. Build and return result with metadata
+	const result: GenerateStoryResult = {
+		story: storyData,
+		metadata: {
+			generationTime: Date.now() - startTime,
+			model: textGenerationClient.getProviderType(),
+		},
+	};
 
-  return result;
+	return result;
 }
