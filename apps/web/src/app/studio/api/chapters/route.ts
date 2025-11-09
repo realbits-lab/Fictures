@@ -222,18 +222,15 @@ export async function POST(request: NextRequest) {
             const chapterForInsert = {
                 ...validatedChapter,
                 contributesToMacroArc:
-                    validatedChapter.contributesToMacroArc &&
-                    validatedChapter.contributesToMacroArc.trim()
+                    validatedChapter.contributesToMacroArc?.trim()
                         ? validatedChapter.contributesToMacroArc.trim()
                         : null,
                 connectsToPreviousChapter:
-                    validatedChapter.connectsToPreviousChapter &&
-                    validatedChapter.connectsToPreviousChapter.trim()
+                    validatedChapter.connectsToPreviousChapter?.trim()
                         ? validatedChapter.connectsToPreviousChapter.trim()
                         : null,
                 createsNextAdversity:
-                    validatedChapter.createsNextAdversity &&
-                    validatedChapter.createsNextAdversity.trim()
+                    validatedChapter.createsNextAdversity?.trim()
                         ? validatedChapter.createsNextAdversity.trim()
                         : null,
             };
