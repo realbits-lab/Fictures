@@ -214,10 +214,11 @@ export async function POST(request: NextRequest) {
 					updatedAt: new Date(),
 				});
 
-			const [savedSetting] = (await db
+			const savedSettingArray: Setting[] = (await db
 				.insert(settings)
 				.values(validatedSetting)
 				.returning()) as Setting[];
+			const savedSetting: Setting = savedSettingArray[0];
 
 			savedSettings.push(savedSetting);
 		}

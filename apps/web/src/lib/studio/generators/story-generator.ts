@@ -53,7 +53,7 @@ export async function generateStory(
 		await textGenerationClient.generateStructured(user, generatedStorySchema, {
 			systemPrompt: system,
 			temperature: 0.8,
-			maxTokens: 8192,
+			maxTokens: 4096,
 		});
 
 	console.log("[story-generator] Story generated:", {

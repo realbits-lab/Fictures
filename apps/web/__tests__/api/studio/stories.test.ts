@@ -82,11 +82,11 @@ describe("Story Generation API", () => {
 		expect(successData.metadata).toBeDefined();
 
 		// ============================================================================
-		// 9. Verify ALL story object attributes (as defined in GenerateStoryResponse)
+		// 9. Verify ALL story object attributes (15 total fields from Story type)
 		// ============================================================================
 		const { story }: { story: GenerateStoryResponse["story"] } = successData;
 
-		// 10. Verify identity fields
+		// 10. Identity fields (id, authorId, title)
 		expect(story.id).toBeDefined();
 		expect(typeof story.id).toBe("string");
 		expect(story.id).toMatch(/^story_/);
@@ -98,7 +98,7 @@ describe("Story Generation API", () => {
 		expect(typeof story.title).toBe("string");
 		expect(story.title.length).toBeGreaterThan(0);
 
-		// Adversity-Triumph Core fields
+		// 11. Adversity-Triumph Core fields (summary, genre, tone, moralFramework)
 		// summary can be null, so check for string or null
 		expect(story.summary === null || typeof story.summary === "string").toBe(
 			true,
@@ -118,12 +118,34 @@ describe("Story Generation API", () => {
 			story.moralFramework === null || typeof story.moralFramework === "string",
 		).toBe(true);
 
-		// Publishing & Engagement fields
+		// 12. Publishing & Engagement fields (status, viewCount, rating, ratingCount)
 		expect(story.status).toBeDefined();
 		expect(typeof story.status).toBe("string");
 		expect(story.status).toBe("writing"); // Should be 'writing' for new stories
 
-		// Metadata fields
+		expect(story.viewCount).toBeDefined();
+		expect(typeof story.viewCount).toBe("number");
+		expect(story.viewCount).toBe(0); // Should be 0 for new stories
+
+		expect(story.rating).toBeDefined();
+		expect(typeof story.rating).toBe("number");
+		expect(story.rating).toBe(0); // Should be 0 for new stories
+
+		expect(story.ratingCount).toBeDefined();
+		expect(typeof story.ratingCount).toBe("number");
+		expect(story.ratingCount).toBe(0); // Should be 0 for new stories
+
+		// 13. Visual fields (imageUrl, imageVariants)
+		expect(story.imageUrl === null || typeof story.imageUrl === "string").toBe(
+			true,
+		);
+
+		// imageVariants can be null or an object
+		expect(
+			story.imageVariants === null || typeof story.imageVariants === "object",
+		).toBe(true);
+
+		// 14. Metadata fields (createdAt, updatedAt)
 		expect(story.createdAt).toBeDefined();
 		// createdAt should be a string (timestamp from database)
 		expect(typeof story.createdAt).toBe("string");
@@ -160,6 +182,11 @@ describe("Story Generation API", () => {
 			`  Moral Framework: ${story.moralFramework?.substring(0, 80)}...`,
 		);
 		console.log(`  Status: ${story.status}`);
+		console.log(`  View Count: ${story.viewCount}`);
+		console.log(`  Rating: ${story.rating}`);
+		console.log(`  Rating Count: ${story.ratingCount}`);
+		console.log(`  Image URL: ${story.imageUrl || "N/A"}`);
+		console.log(`  Image Variants: ${story.imageVariants ? "Present" : "N/A"}`);
 		console.log(`  Author ID: ${story.authorId}`);
 		console.log(`  Created: ${story.createdAt}`);
 		console.log(`  Updated: ${story.updatedAt}`);

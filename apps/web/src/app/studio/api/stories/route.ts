@@ -240,10 +240,11 @@ export async function POST(request: NextRequest) {
 				updatedAt: new Date(),
 			});
 
-		const [savedStory] = (await db
+		const savedStoryArray: Story[] = (await db
 			.insert(stories)
 			.values(storyData)
 			.returning()) as Story[];
+		const savedStory: Story = savedStoryArray[0];
 
 		console.log("[STORIES API] ✅ Story saved to database:", {
 			storyId: savedStory.id,
