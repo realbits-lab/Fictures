@@ -54,12 +54,9 @@ export async function POST(request: NextRequest) {
 		// Use the common generator (does NOT save to database)
 		const generationResult = await generateParts({
 			storyId: "temp_story_id", // API route doesn't have storyId yet
-			userId: "temp_user_id", // API route doesn't have userId yet
 			story: storySummary,
 			characters: characters,
-			settings: [], // Parts generator doesn't use settings in its current implementation
 			partsCount,
-			language: "English",
 		});
 
 		console.log("[PARTS API] ✅ Parts generation completed");

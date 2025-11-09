@@ -34,10 +34,8 @@ export async function POST(request: NextRequest) {
 		// Use the common generator (does NOT save to database)
 		const generationResult = await generateSettings({
 			storyId: "temp_story_id", // API route doesn't have storyId yet
-			userId: "temp_user_id", // API route doesn't have userId yet
 			story: storySummary,
 			settingCount: 3, // Default to 3 settings (2-3 is the standard)
-			language: "English",
 		});
 
 		console.log("[SETTINGS API] ✅ Settings generation completed");

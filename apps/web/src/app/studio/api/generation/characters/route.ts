@@ -42,7 +42,6 @@ export async function POST(request: NextRequest) {
 		// Use the common generator (does NOT save to database)
 		const generationResult = await generateCharacters({
 			storyId: "temp_story_id", // API route doesn't have storyId yet
-			userId: "temp_user_id", // API route doesn't have userId yet
 			story: storySummary,
 			characterCount: storySummary.characters.length,
 			language: "English",

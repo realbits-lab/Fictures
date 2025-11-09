@@ -125,6 +125,11 @@ export interface GeneratorMetadata {
 	model?: string;
 }
 
+export interface ArrayGeneratorMetadata {
+	totalGenerated: number;
+	generationTime: number;
+}
+
 export interface GeneratorResult<T> {
 	data: T;
 	metadata: GeneratorMetadata;
@@ -162,10 +167,7 @@ export interface GenerateCharactersParams {
 
 export interface GenerateCharactersResult {
 	characters: Character[];
-	metadata: {
-		totalGenerated: number;
-		generationTime: number;
-	};
+	metadata: ArrayGeneratorMetadata;
 }
 
 // ============================================================================
@@ -181,10 +183,7 @@ export interface GenerateSettingsParams {
 
 export interface GenerateSettingsResult {
 	settings: Setting[];
-	metadata: {
-		totalGenerated: number;
-		generationTime: number;
-	};
+	metadata: ArrayGeneratorMetadata;
 }
 
 // ============================================================================
@@ -201,10 +200,7 @@ export interface GeneratePartsParams {
 
 export interface GeneratePartsResult {
 	parts: Part[];
-	metadata: {
-		totalGenerated: number;
-		generationTime: number;
-	};
+	metadata: ArrayGeneratorMetadata;
 }
 
 // ============================================================================
@@ -222,10 +218,7 @@ export interface GenerateChaptersParams {
 
 export interface GenerateChaptersResult {
 	chapters: Chapter[];
-	metadata: {
-		totalGenerated: number;
-		generationTime: number;
-	};
+	metadata: ArrayGeneratorMetadata;
 }
 
 // ============================================================================
@@ -242,10 +235,7 @@ export interface GenerateSceneSummariesParams {
 
 export interface GenerateSceneSummariesResult {
 	scenes: Scene[];
-	metadata: {
-		totalGenerated: number;
-		generationTime: number;
-	};
+	metadata: ArrayGeneratorMetadata;
 }
 
 // ============================================================================
@@ -313,8 +303,5 @@ export interface GenerateImagesResult {
 		imageUrl: string;
 		variants: any;
 	}[];
-	metadata: {
-		totalGenerated: number;
-		generationTime: number;
-	};
+	metadata: ArrayGeneratorMetadata;
 }

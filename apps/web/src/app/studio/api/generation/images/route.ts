@@ -86,11 +86,9 @@ export async function POST(request: NextRequest) {
 		// Use the common generator (does NOT save to database)
 		const generationResult = await generateImages({
 			storyId,
-			userId: "temp_user_id",
 			story: storyData
 				? {
 						id: storyId,
-						userId: "temp_user_id",
 						title: storyData.title,
 						genre: storyData.genre,
 						tone: storyData.tone,

@@ -26,16 +26,22 @@ export async function generateStory(
 	params: GenerateStoryParams,
 ): Promise<GenerateStoryResult> {
 	const startTime = Date.now();
+	const {
+		userPrompt,
+		preferredGenre = "Any",
+		preferredTone = "hopeful",
+		language = "English",
+	} = params;
 
 	// Get the prompt template
 	const { system, user } = promptManager.getPrompt(
 		textGenerationClient.getProviderType(),
 		"story",
 		{
-			userPrompt: params.userPrompt,
-			genre: params.preferredGenre || "Any",
-			tone: params.preferredTone || "hopeful",
-			language: params.language || "English",
+			userPrompt,
+			genre: preferredGenre,
+			tone: preferredTone,
+			language,
 		},
 	);
 

@@ -55,13 +55,9 @@ export async function POST(request: NextRequest) {
 		// Use the common generator (does NOT save to database)
 		const generationResult = await generateSceneSummaries({
 			storyId: "temp_story_id", // API route doesn't have storyId yet
-			userId: "temp_user_id", // API route doesn't have userId yet
-			story: storySummary,
 			chapters,
-			characters,
 			settings,
 			scenesPerChapter,
-			language: "English",
 		});
 
 		console.log(
