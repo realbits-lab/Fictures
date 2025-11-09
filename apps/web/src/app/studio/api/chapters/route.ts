@@ -18,8 +18,8 @@ import { generateChapters } from "@/lib/studio/generators/chapters-generator";
 import type { GenerateChaptersParams } from "@/lib/studio/generators/types";
 import {
     type Chapter,
-    insertChapterSchema,
     type Character,
+    insertChapterSchema,
     type Part,
     type Story,
 } from "@/lib/studio/generators/zod-schemas.generated";
@@ -184,18 +184,32 @@ export async function POST(request: NextRequest) {
             const now: string = new Date().toISOString();
 
             // Validate chapter data before insert
-            const validatedChapter: ReturnType<typeof insertChapterSchema.parse> =
-                insertChapterSchema.parse({
-                    id: chapterId,
-                    storyId: validatedData.storyId,
-                    partId: chapterData.partId || null,
-                    title: chapterData.title || `Chapter ${i + 1}`,
-                    summary: chapterData.summary || null,
-                    orderIndex: i + 1,
-                    status: "writing",
-                    createdAt: now,
-                    updatedAt: now,
-                });
+            const validatedChapter: ReturnType<
+                typeof insertChapterSchema.parse
+            > = insertChapterSchema.parse({
+                id: chapterId,
+                storyId: validatedData.storyId,
+                partId: chapterData.partId || null,
+                title: chapterData.title || `Chapter ${i + 1}`,
+                summary: chapterData.summary || null,
+                characterId: chapterData.characterId || null,
+                arcPosition: chapterData.arcPosition || null,
+                contributesToMacroArc: chapterData.contributesToMacroArc || null,
+                focusCharacters: chapterData.focusCharacters || [],
+                adversityType: chapterData.adversityType || null,
+                virtueType: chapterData.virtueType || null,
+                seedsPlanted: chapterData.seedsPlanted || [],
+                seedsResolved: chapterData.seedsResolved || [],
+                connectsToPreviousChapter:
+                    chapterData.connectsToPreviousChapter || null,
+                createsNextAdversity: chapterData.createsNextAdversity || null,
+                status: "writing",
+                publishedAt: null,
+                scheduledFor: null,
+                orderIndex: i + 1,
+                createdAt: now,
+                updatedAt: now,
+            });
 
             const savedChapterResult: Chapter[] = (await db
                 .insert(chapters)
