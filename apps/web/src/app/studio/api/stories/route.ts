@@ -137,7 +137,8 @@ export async function POST(request: NextRequest) {
 		console.log("📚 [STORIES API] POST request received");
 		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-		const authResult = await authenticateRequest(request);
+		const authResult: Awaited<ReturnType<typeof authenticateRequest>> =
+			await authenticateRequest(request);
 
 		if (!authResult) {
 			console.error("❌ [STORIES API] Authentication failed");
@@ -163,13 +164,14 @@ export async function POST(request: NextRequest) {
 		});
 
 		// Parse request body with type safety
-		const body = (await request.json()) as GenerateStoryRequest;
+		const body: GenerateStoryRequest =
+			(await request.json()) as GenerateStoryRequest;
 		const {
 			userPrompt,
 			language = "English",
 			preferredGenre,
 			preferredTone,
-		} = body;
+		}: GenerateStoryRequest = body;
 
 		console.log("[STORIES API] Request parameters:", {
 			userPromptLength: userPrompt?.length || 0,
@@ -199,7 +201,8 @@ export async function POST(request: NextRequest) {
 			preferredTone,
 		};
 
-		const generationResult = await generateStory(generateParams);
+		const generationResult: Awaited<ReturnType<typeof generateStory>> =
+			await generateStory(generateParams);
 
 		console.log("[STORIES API] ✅ Story generation completed:", {
 			title: generationResult.story.title,
@@ -210,21 +213,27 @@ export async function POST(request: NextRequest) {
 
 		// Save story to database with validation
 		console.log("[STORIES API] 💾 Validating and saving story to database...");
-		const storyId = `story_${nanoid(16)}`;
+		const storyId: string = `story_${nanoid(16)}`;
 
 		// Validate story data before insert
-		const storyData = insertStorySchema.parse({
-			id: storyId,
-			authorId: authResult.user.id,
-			title: generationResult.story.title || "Untitled Story",
-			summary: generationResult.story.summary || null,
-			genre: generationResult.story.genre || null,
-			tone: generationResult.story.tone || "hopeful",
-			moralFramework: generationResult.story.moralFramework || null,
-			status: "writing",
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		});
+		const storyData: ReturnType<typeof insertStorySchema.parse> =
+			insertStorySchema.parse({
+				id: storyId,
+				authorId: authResult.user.id,
+				title: generationResult.story.title || "Untitled Story",
+				summary: generationResult.story.summary || null,
+				genre: generationResult.story.genre || null,
+				tone: generationResult.story.tone || "hopeful",
+				moralFramework: generationResult.story.moralFramework || null,
+				status: "writing",
+				viewCount: 0,
+				rating: 0,
+				ratingCount: 0,
+				imageUrl: null,
+				imageVariants: null,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			});
 
 		const [savedStory] = await db.insert(stories).values(storyData).returning();
 
@@ -249,11 +258,11 @@ export async function POST(request: NextRequest) {
 				title: savedStory.title,
 				summary: savedStory.summary,
 				genre: savedStory.genre,
-				tone: savedStory.tone,
+				tone: savedStory.tone || "hopeful",
 				moralFramework: savedStory.moralFramework,
 				status: savedStory.status,
-				createdAt: savedStory.createdAt,
-				updatedAt: savedStory.updatedAt,
+				createdAt: new Date(savedStory.createdAt),
+				updatedAt: new Date(savedStory.updatedAt),
 			},
 			metadata: {
 				generationTime: generationResult.metadata.generationTime,

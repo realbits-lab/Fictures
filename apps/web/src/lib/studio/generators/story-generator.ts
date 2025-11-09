@@ -25,25 +25,22 @@ import {
 export async function generateStory(
 	params: GenerateStoryParams,
 ): Promise<GenerateStoryResult> {
-	const startTime = Date.now();
+	const startTime: number = Date.now();
 	const {
 		userPrompt,
 		preferredGenre = "Any",
 		preferredTone = "hopeful",
 		language = "English",
-	} = params;
+	}: GenerateStoryParams = params;
 
 	// Get the prompt template
-	const { system, user } = promptManager.getPrompt(
-		textGenerationClient.getProviderType(),
-		"story",
-		{
+	const { system, user }: { system: string; user: string } =
+		promptManager.getPrompt(textGenerationClient.getProviderType(), "story", {
 			userPrompt,
 			genre: preferredGenre,
 			tone: preferredTone,
 			language,
-		},
-	);
+		});
 
 	console.log(
 		"[story-generator] Using generateStructured method with manual schema",
@@ -70,11 +67,13 @@ export async function generateStory(
 		throw new Error("Invalid story data generated - missing required fields");
 	}
 
-	return {
+	const result: GenerateStoryResult = {
 		story: storyData,
 		metadata: {
 			generationTime: Date.now() - startTime,
 			model: textGenerationClient.getProviderType(),
 		},
 	};
+
+	return result;
 }
