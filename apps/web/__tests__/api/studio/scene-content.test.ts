@@ -7,7 +7,7 @@
  *   dotenv --file .env.local run pnpm test __tests__/api/studio/scene-content.test.ts
  */
 
-import { loadWriterAuth } from "@/__tests__/helpers/auth-loader";
+import { loadWriterAuth } from "../../helpers/auth-loader";
 
 // Load writer authentication
 const apiKey: string = loadWriterAuth();

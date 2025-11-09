@@ -7,12 +7,12 @@
  *   dotenv --file .env.local run pnpm test __tests__/api/studio/stories.test.ts
  */
 
-import { loadWriterAuth } from "@/__tests__/helpers/auth-loader";
 import type {
     GenerateStoryErrorResponse,
     GenerateStoryRequest,
     GenerateStoryResponse,
 } from "@/app/studio/api/types";
+import { loadWriterAuth } from "../../helpers/auth-loader";
 
 // Load writer authentication
 const apiKey: string = loadWriterAuth();

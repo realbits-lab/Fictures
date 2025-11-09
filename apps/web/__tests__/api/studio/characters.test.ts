@@ -7,12 +7,12 @@
  *   dotenv --file .env.local run pnpm test __tests__/api/studio/characters.test.ts
  */
 
-import { loadWriterAuth } from "@/__tests__/helpers/auth-loader";
 import type {
     GenerateCharactersErrorResponse,
     GenerateCharactersRequest,
     GenerateCharactersResponse,
 } from "@/app/studio/api/types";
+import { loadWriterAuth } from "../../helpers/auth-loader";
 
 // Load writer authentication
 const apiKey: string = loadWriterAuth();
@@ -102,37 +102,134 @@ describe("Character Generation API", () => {
         // 7. Cast to success response type
         const successData = data as GenerateCharactersResponse;
 
-        // 8. Verify response structure
+        // ============================================================================
+        // 8. Verify ALL top-level response structure
+        // ============================================================================
         expect(successData.success).toBe(true);
         expect(successData.characters).toBeDefined();
         expect(Array.isArray(successData.characters)).toBe(true);
         expect(successData.characters.length).toBe(3);
         expect(successData.metadata).toBeDefined();
 
-        // 9. Verify metadata
+        // ============================================================================
+        // 9. Verify ALL metadata attributes
+        // ============================================================================
         const {
             metadata,
         }: { metadata: GenerateCharactersResponse["metadata"] } = successData;
         expect(metadata.totalGenerated).toBe(3);
         expect(metadata.generationTime).toBeGreaterThan(0);
 
-        // 10. Verify characters data
+        // ============================================================================
+        // 10. Verify ALL character attributes for ALL characters (not just index 0)
+        // ============================================================================
         const {
             characters,
         }: { characters: GenerateCharactersResponse["characters"] } =
             successData;
-        const firstCharacter = characters[0];
-        expect(firstCharacter.id).toMatch(/^char_/);
-        expect(firstCharacter.storyId).toBe(testStoryId);
-        expect(firstCharacter.name).toBeDefined();
-        expect(typeof firstCharacter.name).toBe("string");
-        expect(firstCharacter.isMain).toBeDefined();
-        expect(typeof firstCharacter.isMain).toBe("boolean");
-        expect(firstCharacter.coreTrait).toBeDefined();
-        expect(firstCharacter.internalFlaw).toBeDefined();
-        expect(firstCharacter.externalGoal).toBeDefined();
 
-        // 11. Log success details
+        // 11. Loop through ALL characters and verify each one
+        for (let idx = 0; idx < characters.length; idx++) {
+            const character = characters[idx];
+
+            // === IDENTITY FIELDS ===
+            expect(character.id).toMatch(/^char_/);
+            expect(character.storyId).toBe(testStoryId);
+            expect(character.name).toBeDefined();
+            expect(typeof character.name).toBe("string");
+            expect(character.name.length).toBeGreaterThan(0);
+
+            expect(character.isMain).toBeDefined();
+            expect(typeof character.isMain).toBe("boolean");
+
+            // summary can be null or string
+            expect(
+                character.summary === null ||
+                    typeof character.summary === "string",
+            ).toBe(true);
+
+            // === ADVERSITY-TRIUMPH CORE FIELDS ===
+            expect(character.coreTrait).toBeDefined();
+            expect(typeof character.coreTrait).toBe("string");
+            if (character.coreTrait) {
+                expect(character.coreTrait.length).toBeGreaterThan(0);
+            }
+
+            expect(character.internalFlaw).toBeDefined();
+            expect(typeof character.internalFlaw).toBe("string");
+            if (character.internalFlaw) {
+                expect(character.internalFlaw.length).toBeGreaterThan(0);
+            }
+
+            expect(character.externalGoal).toBeDefined();
+            expect(typeof character.externalGoal).toBe("string");
+            if (character.externalGoal) {
+                expect(character.externalGoal.length).toBeGreaterThan(0);
+            }
+
+            // === CHARACTER DEPTH FIELDS ===
+            // personality can be null or object
+            expect(
+                character.personality === null ||
+                    typeof character.personality === "object",
+            ).toBe(true);
+
+            // backstory can be null or string
+            expect(
+                character.backstory === null ||
+                    typeof character.backstory === "string",
+            ).toBe(true);
+
+            // === RELATIONSHIPS (JEONG SYSTEM) ===
+            // relationships can be null or object
+            expect(
+                character.relationships === null ||
+                    typeof character.relationships === "object",
+            ).toBe(true);
+
+            // === PROSE GENERATION FIELDS ===
+            // physicalDescription can be null or object
+            expect(
+                character.physicalDescription === null ||
+                    typeof character.physicalDescription === "object",
+            ).toBe(true);
+
+            // voiceStyle can be null or object
+            expect(
+                character.voiceStyle === null ||
+                    typeof character.voiceStyle === "object",
+            ).toBe(true);
+
+            // === VISUAL GENERATION FIELDS ===
+            // imageUrl can be null or string
+            expect(
+                character.imageUrl === null ||
+                    typeof character.imageUrl === "string",
+            ).toBe(true);
+
+            // imageVariants can be null or object
+            expect(
+                character.imageVariants === null ||
+                    typeof character.imageVariants === "object",
+            ).toBe(true);
+
+            // visualStyle can be null or string
+            expect(
+                character.visualStyle === null ||
+                    typeof character.visualStyle === "string",
+            ).toBe(true);
+
+            // === METADATA FIELDS ===
+            expect(character.createdAt).toBeDefined();
+            expect(typeof character.createdAt).toBe("string");
+
+            expect(character.updatedAt).toBeDefined();
+            expect(typeof character.updatedAt).toBe("string");
+        }
+
+        // ============================================================================
+        // 12. Log success details
+        // ============================================================================
         console.log("✅ Characters generated successfully:");
         console.log(`  Total Generated: ${characters.length}`);
         console.log(`  Generation Time: ${metadata.generationTime}ms`);
@@ -145,6 +242,26 @@ describe("Character Generation API", () => {
             console.log(`     Core Trait: ${char.coreTrait}`);
             console.log(`     Internal Flaw: ${char.internalFlaw}`);
             console.log(`     External Goal: ${char.externalGoal}`);
+            console.log(
+                `     Summary: ${char.summary?.substring(0, 80) || "N/A"}...`,
+            );
+            console.log(
+                `     Backstory: ${char.backstory ? "Present" : "N/A"}`,
+            );
+            console.log(
+                `     Personality: ${char.personality ? "Present" : "N/A"}`,
+            );
+            console.log(
+                `     Physical Description: ${char.physicalDescription ? "Present" : "N/A"}`,
+            );
+            console.log(
+                `     Voice Style: ${char.voiceStyle ? "Present" : "N/A"}`,
+            );
+            console.log(`     Image URL: ${char.imageUrl || "N/A"}`);
+            console.log(
+                `     Image Variants: ${char.imageVariants ? "Present" : "N/A"}`,
+            );
+            console.log(`     Visual Style: ${char.visualStyle || "N/A"}`);
         }
     }, 60000);
 });
