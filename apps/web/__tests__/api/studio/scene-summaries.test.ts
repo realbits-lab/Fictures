@@ -70,7 +70,7 @@ describe("Scene Summary API", () => {
 
             if (testChapterId) {
                 const scenesResponse = await fetch(
-                    `http://localhost:3000/studio/api/scenes?chapterId=${testChapterId}`,
+                    `http://localhost:3000/studio/api/scene-summaries?chapterId=${testChapterId}`,
                     {
                         headers: { "x-api-key": apiKey },
                     },
