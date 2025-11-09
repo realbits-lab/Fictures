@@ -62,15 +62,17 @@ export async function generateCharacters(
                 characterNumber: String(i + 1),
                 characterCount: String(characterCount),
                 storyTitle: story.title,
-                storyGenre: story.genre,
-                storySummary: story.summary,
-                moralFramework: story.moralFramework,
+                storyGenre: story.genre ?? "General Fiction",
+                storySummary:
+                    story.summary ?? "A story of adversity and triumph",
+                moralFramework:
+                    story.moralFramework ?? "Universal human virtues",
                 characterType,
                 language,
             },
             {
                 temperature: 0.9,
-                maxTokens: 8192,
+                maxTokens: 4096,
                 responseFormat: "json",
                 responseSchema: CharacterJsonSchema,
             },
