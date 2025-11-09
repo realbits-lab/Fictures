@@ -79,7 +79,10 @@ describe("Parts API", () => {
         );
 
         // 6. Validate characters response
-        const charactersData = await charactersResponse.json();
+        const charactersData: {
+            success: boolean;
+            characters: Array<{ id: string }>;
+        } = await charactersResponse.json();
         if (!charactersResponse.ok) {
             console.error("❌ Failed to generate characters:", charactersData);
             throw new Error("Test setup failed: could not generate characters");
@@ -131,7 +134,8 @@ describe("Parts API", () => {
             }
 
             // 7. Cast to success response type
-            const successData = data as GeneratePartsResponse;
+            const successData: GeneratePartsResponse =
+                data as GeneratePartsResponse;
 
             // 8. Verify response structure
             expect(successData.success).toBe(true);
@@ -146,8 +150,8 @@ describe("Parts API", () => {
                 successData;
             expect(parts.length).toBe(2);
 
-            for (let idx = 0; idx < parts.length; idx++) {
-                const part = parts[idx];
+            for (let idx: number = 0; idx < parts.length; idx++) {
+                const part: GeneratePartsResponse["parts"][number] = parts[idx];
 
                 // === IDENTITY FIELDS ===
                 expect(part.id).toMatch(/^part_/);

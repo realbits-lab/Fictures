@@ -27,17 +27,9 @@ import type {
     GenerateCharactersRequest,
     GenerateCharactersResponse,
 } from "../types";
+import { generateCharactersSchema } from "../validation-schemas";
 
 export const runtime = "nodejs";
-
-/**
- * Validation schema for generating characters
- */
-const generateCharactersSchema = z.object({
-    storyId: z.string(),
-    characterCount: z.number().min(1).max(10).optional().default(3),
-    language: z.string().optional().default("English"),
-});
 
 /**
  * GET /studio/api/characters

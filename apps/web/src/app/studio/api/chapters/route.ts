@@ -21,17 +21,9 @@ import type {
     GenerateChaptersRequest,
     GenerateChaptersResponse,
 } from "../types";
+import { generateChaptersSchema } from "../validation-schemas";
 
 export const runtime = "nodejs";
-
-/**
- * Validation schema for generating chapters
- */
-const generateChaptersSchema = z.object({
-    storyId: z.string(),
-    chaptersPerPart: z.number().min(1).max(10).optional().default(3),
-    language: z.string().optional().default("English"),
-});
 
 /**
  * POST /studio/api/chapters

@@ -27,16 +27,9 @@ import type {
     GenerateSettingsRequest,
     GenerateSettingsResponse,
 } from "../types";
+import { generateSettingsSchema } from "../validation-schemas";
 
 export const runtime = "nodejs";
-
-/**
- * Validation schema for generating settings
- */
-const generateSettingsSchema = z.object({
-    storyId: z.string(),
-    settingCount: z.number().min(1).max(10).optional().default(3),
-});
 
 /**
  * GET /studio/api/settings

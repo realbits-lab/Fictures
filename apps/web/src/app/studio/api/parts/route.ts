@@ -17,17 +17,9 @@ import type {
     GeneratePartsRequest,
     GeneratePartsResponse,
 } from "../types";
+import { generatePartsSchema } from "../validation-schemas";
 
 export const runtime = "nodejs";
-
-/**
- * Validation schema for generating parts
- */
-const generatePartsSchema = z.object({
-    storyId: z.string(),
-    partsCount: z.number().min(1).max(10).optional().default(3),
-    language: z.string().optional().default("English"),
-});
 
 // GET /api/parts - Get parts for a story
 export async function GET(request: NextRequest) {
