@@ -70,7 +70,6 @@ export async function generateStory(
 
 	return {
 		story: storyData,
-		storyId: "", // Populated by caller after database save
 		metadata: {
 			generationTime: Date.now() - startTime,
 			model: textGenerationClient.getProviderType(),

@@ -137,7 +137,6 @@ export type ProgressCallback = (current: number, total: number) => void;
 // ============================================================================
 
 export interface GenerateStoryParams {
-	userId: string;
 	userPrompt: string;
 	language?: string;
 	preferredGenre?: string;
@@ -146,7 +145,6 @@ export interface GenerateStoryParams {
 
 export interface GenerateStoryResult {
 	story: Story;
-	storyId: string;
 	metadata: GeneratorMetadata;
 }
 

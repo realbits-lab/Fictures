@@ -187,7 +187,6 @@ export async function POST(request: NextRequest) {
 		// Generate story using story-generator
 		console.log("[STORIES API] 🤖 Calling story generator...");
 		const generateParams: GenerateStoryParams = {
-			userId: authResult.user.id,
 			userPrompt,
 			language,
 			preferredGenre,
@@ -241,13 +240,13 @@ export async function POST(request: NextRequest) {
 				success: true,
 				story: {
 					id: savedStory.id,
+					authorId: savedStory.authorId,
 					title: savedStory.title,
 					summary: savedStory.summary,
 					genre: savedStory.genre,
 					tone: savedStory.tone,
 					moralFramework: savedStory.moralFramework,
 					status: savedStory.status,
-					authorId: savedStory.authorId,
 					createdAt: savedStory.createdAt,
 					updatedAt: savedStory.updatedAt,
 				},
