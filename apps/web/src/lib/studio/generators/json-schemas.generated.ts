@@ -9,9 +9,9 @@
 
 import { z } from "zod";
 import {
-	aiStoryGenerationSchema,
+	generatedCharacterSchema,
+	generatedStorySchema,
 	insertChapterSchema,
-	insertCharacterSchema,
 	insertPartSchema,
 	insertSceneSchema,
 	insertSettingSchema,
@@ -63,7 +63,7 @@ const toGeminiJsonSchema = (zodSchema: z.ZodType) => {
  * JSON Schema for Story generation (Gemini structured output)
  * Uses minimal schema to avoid Gemini validation issues with complex fields
  */
-export const StoryJsonSchema = toGeminiJsonSchema(aiStoryGenerationSchema);
+export const StoryJsonSchema = toGeminiJsonSchema(generatedStorySchema);
 
 // ============================================================================
 // Character JSON Schema
@@ -71,8 +71,9 @@ export const StoryJsonSchema = toGeminiJsonSchema(aiStoryGenerationSchema);
 
 /**
  * JSON Schema for Character generation (Gemini structured output)
+ * Uses generatedCharacterSchema to avoid Gemini validation issues with DB-specific fields
  */
-export const CharacterJsonSchema = toGeminiJsonSchema(insertCharacterSchema);
+export const CharacterJsonSchema = toGeminiJsonSchema(generatedCharacterSchema);
 
 // ============================================================================
 // Setting JSON Schema
