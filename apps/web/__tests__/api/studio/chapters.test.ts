@@ -11,28 +11,15 @@
  *   dotenv --file .env.local run pnpm test __tests__/api/studio/chapters.test.ts
  */
 
-import fs from "node:fs";
-import path from "node:path";
+import { loadWriterAuth } from "@/__tests__/helpers/auth-loader";
 import type {
     GenerateChaptersErrorResponse,
     GenerateChaptersRequest,
     GenerateChaptersResponse,
 } from "@/app/studio/api/types";
 
-// Load authentication profiles
-const authFilePath: string = path.join(process.cwd(), ".auth/user.json");
-const authData: {
-    [key: string]: { profiles: { writer: { apiKey?: string } } };
-} = JSON.parse(fs.readFileSync(authFilePath, "utf-8"));
-
-// Use develop environment writer profile (has stories:write scope)
-const environment: "main" | "develop" =
-    process.env.NODE_ENV === "production" ? "main" : "develop";
-const writer: { apiKey?: string } = authData[environment].profiles.writer;
-
-if (!writer?.apiKey) {
-    throw new Error("❌ Writer API key not found in .auth/user.json");
-}
+// Load writer authentication
+const apiKey: string = loadWriterAuth();
 
 describe("Chapters API", () => {
     let testStoryId: string;
@@ -43,7 +30,6 @@ describe("Chapters API", () => {
         console.log("🔧 Setting up test story...");
 
         // 1. Prepare story request
-        const apiKey: string = writer.apiKey as string;
         const storyResponse: Response = await fetch(
             "http://localhost:3000/studio/api/stories",
             {
@@ -98,7 +84,7 @@ describe("Chapters API", () => {
             await partsResponse.json();
 
         // 7. Store test part ID if available
-        if (partsResponse.ok && partsData.parts?.length > 0) {
+        if (partsResponse.ok && partsData.parts && partsData.parts.length > 0) {
             testPartId = partsData.parts[0].id;
             console.log(`✅ Test part created: ${testPartId}`);
         } else {
@@ -122,7 +108,6 @@ describe("Chapters API", () => {
             };
 
             // 3. Send POST request to chapters generation API
-            const apiKey: string = writer.apiKey as string;
             const response: Response = await fetch(
                 "http://localhost:3000/studio/api/chapters",
                 {

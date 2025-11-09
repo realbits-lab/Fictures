@@ -7,28 +7,15 @@
  *   dotenv --file .env.local run pnpm test __tests__/api/studio/settings.test.ts
  */
 
-import fs from "node:fs";
-import path from "node:path";
+import { loadWriterAuth } from "@/__tests__/helpers/auth-loader";
 import type {
     GenerateSettingsErrorResponse,
     GenerateSettingsRequest,
     GenerateSettingsResponse,
 } from "@/app/studio/api/types";
 
-// Load authentication profiles
-const authFilePath: string = path.join(process.cwd(), ".auth/user.json");
-const authData: {
-    [key: string]: { profiles: { writer: { apiKey?: string } } };
-} = JSON.parse(fs.readFileSync(authFilePath, "utf-8"));
-
-// Use develop environment writer profile (has stories:write scope)
-const environment: "main" | "develop" =
-    process.env.NODE_ENV === "production" ? "main" : "develop";
-const writer: { apiKey?: string } = authData[environment].profiles.writer;
-
-if (!writer?.apiKey) {
-    throw new Error("❌ Writer API key not found in .auth/user.json");
-}
+// Load writer authentication
+const apiKey: string = loadWriterAuth();
 
 describe("Setting API", () => {
     let testStoryId: string;
@@ -37,7 +24,6 @@ describe("Setting API", () => {
         console.log("🔧 Setting up test story...");
 
         // 1. Prepare story request
-        const apiKey: string = writer.apiKey as string;
         const response: Response = await fetch(
             "http://localhost:3000/studio/api/stories",
             {
@@ -74,12 +60,10 @@ describe("Setting API", () => {
         // 1. Prepare request body with proper TypeScript type
         const requestBody: GenerateSettingsRequest = {
             storyId: testStoryId,
-            settingsCount: 2, // Generate 2 settings for faster testing
-            language: "English",
+            settingCount: 2, // Generate 2 settings for faster testing
         };
 
         // 2. Send POST request to settings generation API
-        const apiKey: string = writer.apiKey as string;
         const response: Response = await fetch(
             "http://localhost:3000/studio/api/settings",
             {
@@ -134,7 +118,7 @@ describe("Setting API", () => {
         expect(firstSetting.storyId).toBe(testStoryId);
         expect(firstSetting.name).toBeDefined();
         expect(typeof firstSetting.name).toBe("string");
-        expect(firstSetting.description).toBeDefined();
+        expect(firstSetting.summary).toBeDefined();
 
         // 11. Log success details
         console.log("✅ Settings generated successfully:");
@@ -145,9 +129,9 @@ describe("Setting API", () => {
             console.log(`  ${idx + 1}. ${setting.name}`);
             console.log(`     ID: ${setting.id}`);
             console.log(
-                `     Description: ${setting.description?.substring(0, 80) || "N/A"}...`,
+                `     Summary: ${setting.summary?.substring(0, 80) || "N/A"}...`,
             );
-            console.log(`     Timeframe: ${setting.timeframe || "N/A"}`);
+            console.log(`     Mood: ${setting.mood || "N/A"}`);
         }
     }, 60000);
 });

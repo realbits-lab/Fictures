@@ -11,28 +11,15 @@
  *   dotenv --file .env.local run pnpm test __tests__/api/studio/parts.test.ts
  */
 
-import fs from "node:fs";
-import path from "node:path";
+import { loadWriterAuth } from "@/__tests__/helpers/auth-loader";
 import type {
     GeneratePartsErrorResponse,
     GeneratePartsRequest,
     GeneratePartsResponse,
 } from "@/app/studio/api/types";
 
-// Load authentication profiles
-const authFilePath: string = path.join(process.cwd(), ".auth/user.json");
-const authData: {
-    [key: string]: { profiles: { writer: { apiKey?: string } } };
-} = JSON.parse(fs.readFileSync(authFilePath, "utf-8"));
-
-// Use develop environment writer profile (has stories:write scope)
-const environment: "main" | "develop" =
-    process.env.NODE_ENV === "production" ? "main" : "develop";
-const writer: { apiKey?: string } = authData[environment].profiles.writer;
-
-if (!writer?.apiKey) {
-    throw new Error("❌ Writer API key not found in .auth/user.json");
-}
+// Load writer authentication
+const apiKey: string = loadWriterAuth();
 
 describe("Parts API", () => {
     let testStoryId: string;
@@ -42,7 +29,6 @@ describe("Parts API", () => {
         console.log("🔧 Setting up test story...");
 
         // 1. Prepare story request
-        const apiKey: string = writer.apiKey as string;
         const storyResponse: Response = await fetch(
             "http://localhost:3000/studio/api/stories",
             {
@@ -85,7 +71,6 @@ describe("Parts API", () => {
             };
 
             // 2. Send POST request to parts generation API
-            const apiKey: string = writer.apiKey as string;
             const response: Response = await fetch(
                 "http://localhost:3000/studio/api/parts",
                 {
@@ -161,7 +146,6 @@ describe("Parts API", () => {
     describe("GET /studio/api/parts", () => {
         it("should fetch parts for a story", async () => {
             // 1. Send GET request with storyId query parameter
-            const apiKey: string = writer.apiKey as string;
             const response: Response = await fetch(
                 `http://localhost:3000/studio/api/parts?storyId=${testStoryId}`,
                 {
@@ -206,7 +190,6 @@ describe("Parts API", () => {
 
         it("should require storyId parameter", async () => {
             // 1. Send GET request without storyId parameter
-            const apiKey: string = writer.apiKey as string;
             const response: Response = await fetch(
                 "http://localhost:3000/studio/api/parts",
                 {

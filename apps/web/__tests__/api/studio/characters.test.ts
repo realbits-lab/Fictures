@@ -7,28 +7,15 @@
  *   dotenv --file .env.local run pnpm test __tests__/api/studio/characters.test.ts
  */
 
-import fs from "node:fs";
-import path from "node:path";
+import { loadWriterAuth } from "@/__tests__/helpers/auth-loader";
 import type {
     GenerateCharactersErrorResponse,
     GenerateCharactersRequest,
     GenerateCharactersResponse,
 } from "@/app/studio/api/types";
 
-// Load authentication profiles
-const authFilePath: string = path.join(process.cwd(), ".auth/user.json");
-const authData: {
-    [key: string]: { profiles: { writer: { apiKey?: string } } };
-} = JSON.parse(fs.readFileSync(authFilePath, "utf-8"));
-
-// Use develop environment writer profile (has stories:write scope)
-const environment: "main" | "develop" =
-    process.env.NODE_ENV === "production" ? "main" : "develop";
-const writer: { apiKey?: string } = authData[environment].profiles.writer;
-
-if (!writer?.apiKey) {
-    throw new Error("❌ Writer API key not found in .auth/user.json");
-}
+// Load writer authentication
+const apiKey: string = loadWriterAuth();
 
 describe("Character Generation API", () => {
     let testStoryId: string;
@@ -38,7 +25,6 @@ describe("Character Generation API", () => {
         console.log("🔧 Setting up test story...");
 
         // 1. Prepare story request
-        const apiKey: string = writer.apiKey as string;
         const response: Response = await fetch(
             "http://localhost:3000/studio/api/stories",
             {
@@ -80,7 +66,6 @@ describe("Character Generation API", () => {
         };
 
         // 2. Send POST request to characters generation API
-        const apiKey: string = writer.apiKey as string;
         const response: Response = await fetch(
             "http://localhost:3000/studio/api/characters",
             {
