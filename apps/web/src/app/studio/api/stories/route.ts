@@ -10,6 +10,7 @@ import {
 } from "@/lib/db/studio-queries";
 import { generateStory } from "@/lib/studio/generators/story-generator";
 import type { GenerateStoryParams } from "@/lib/studio/generators/types";
+import { insertStorySchema } from "@/lib/studio/generators/zod-schemas.generated";
 import type {
 	GenerateStoryErrorResponse,
 	GenerateStoryRequest,
@@ -207,25 +208,25 @@ export async function POST(request: NextRequest) {
 			generationTime: generationResult.metadata.generationTime,
 		});
 
-		// Save story to database
-		console.log("[STORIES API] 💾 Saving story to database...");
+		// Save story to database with validation
+		console.log("[STORIES API] 💾 Validating and saving story to database...");
 		const storyId = `story_${nanoid(16)}`;
 
-		const [savedStory] = await db
-			.insert(stories)
-			.values({
-				id: storyId,
-				authorId: authResult.user.id,
-				title: generationResult.story.title || "Untitled Story",
-				summary: generationResult.story.summary || null,
-				genre: generationResult.story.genre || null,
-				tone: generationResult.story.tone || "hopeful",
-				moralFramework: generationResult.story.moralFramework || null,
-				status: "writing",
-				createdAt: new Date(),
-				updatedAt: new Date(),
-			})
-			.returning();
+		// Validate story data before insert
+		const storyData = insertStorySchema.parse({
+			id: storyId,
+			authorId: authResult.user.id,
+			title: generationResult.story.title || "Untitled Story",
+			summary: generationResult.story.summary || null,
+			genre: generationResult.story.genre || null,
+			tone: generationResult.story.tone || "hopeful",
+			moralFramework: generationResult.story.moralFramework || null,
+			status: "writing",
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		});
+
+		const [savedStory] = await db.insert(stories).values(storyData).returning();
 
 		console.log("[STORIES API] ✅ Story saved to database:", {
 			storyId: savedStory.id,

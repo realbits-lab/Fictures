@@ -30,6 +30,13 @@ import {
 	stories,
 } from "@/lib/db/schema";
 import {
+	insertChapterSchema,
+	insertCharacterSchema,
+	insertPartSchema,
+	insertSceneSchema,
+	insertSettingSchema,
+} from "@/lib/studio/generators/zod-schemas.generated";
+import {
 	generateCompleteNovel,
 	type NovelGenerationOptions,
 	type ProgressData,
@@ -331,7 +338,8 @@ export async function POST(request: NextRequest) {
 								}
 							}
 
-							return {
+							// Validate character data before insert
+							return insertCharacterSchema.parse({
 								id: newId,
 								storyId: generatedStoryId!,
 								name: char.name,
@@ -348,7 +356,7 @@ export async function POST(request: NextRequest) {
 								visualStyle: char.visualStyle,
 								createdAt: new Date().toISOString(),
 								updatedAt: new Date().toISOString(),
-							};
+							});
 						});
 
 						await db.insert(characters).values(characterRecords);
@@ -360,7 +368,9 @@ export async function POST(request: NextRequest) {
 						const settingRecords = result.settings.map((setting) => {
 							const newId = nanoid();
 							settingIdMap.set(setting.id, newId); // Map temp ID to database ID
-							return {
+
+							// Validate setting data before insert
+							return insertSettingSchema.parse({
 								id: newId,
 								storyId: generatedStoryId!,
 								name: setting.name,
@@ -377,7 +387,7 @@ export async function POST(request: NextRequest) {
 								colorPalette: setting.colorPalette,
 								createdAt: new Date().toISOString(),
 								updatedAt: new Date().toISOString(),
-							};
+							});
 						});
 
 						await db.insert(settings).values(settingRecords);
@@ -423,7 +433,8 @@ export async function POST(request: NextRequest) {
 								};
 							});
 
-							return {
+							// Validate part data before insert
+							return insertPartSchema.parse({
 								id: newId,
 								storyId: generatedStoryId!,
 								authorId: userId,
@@ -433,7 +444,7 @@ export async function POST(request: NextRequest) {
 								characterArcs: mappedCharacterArcs,
 								createdAt: new Date().toISOString(),
 								updatedAt: new Date().toISOString(),
-							};
+							});
 						});
 
 						await db.insert(parts).values(partRecords);
@@ -452,7 +463,8 @@ export async function POST(request: NextRequest) {
 									(charId: any) => characterIdMap.get(charId) || charId,
 								) || [];
 
-							return {
+							// Validate chapter data before insert
+							return insertChapterSchema.parse({
 								id: newId,
 								storyId: generatedStoryId!,
 								authorId: userId,
@@ -476,7 +488,7 @@ export async function POST(request: NextRequest) {
 								orderIndex: index,
 								createdAt: new Date().toISOString(),
 								updatedAt: new Date().toISOString(),
-							};
+							});
 						});
 
 						await db.insert(chapters).values(chapterRecords);
@@ -529,7 +541,8 @@ export async function POST(request: NextRequest) {
 								? settingIdMap.get(scene.settingId) || null
 								: null;
 
-							return {
+							// Validate scene data before insert
+							return insertSceneSchema.parse({
 								id: newId,
 								chapterId: mappedChapterId,
 								title: scene.title || `Scene ${index + 1}`, // Fallback title if missing
@@ -547,10 +560,10 @@ export async function POST(request: NextRequest) {
 								orderIndex: index,
 								createdAt: new Date().toISOString(),
 								updatedAt: new Date().toISOString(),
-							};
+							});
 						});
 
-						await db.insert(scenes).values(sceneRecords as any);
+						await db.insert(scenes).values(sceneRecords);
 
 						console.log(
 							"[Novel Generation] ✅ All entities created with FK relationships",
