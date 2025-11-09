@@ -55,6 +55,11 @@ export const aiStoryGenerationSchema = z.object({
 	moralFramework: z.string().nullable(),
 });
 
+/**
+ * TypeScript type for AI-generated story data
+ */
+export type AIStoryGenerationData = z.infer<typeof aiStoryGenerationSchema>;
+
 // ============================================================================
 // Character Schemas
 // ============================================================================

@@ -9,6 +9,7 @@
 
 import type { z } from "zod";
 import type {
+	AIStoryGenerationData,
 	Chapter,
 	Character,
 	Part,
@@ -149,7 +150,7 @@ export interface GenerateStoryParams {
 }
 
 export interface GenerateStoryResult {
-	story: Story;
+	story: AIStoryGenerationData;
 	metadata: GeneratorMetadata;
 }
 

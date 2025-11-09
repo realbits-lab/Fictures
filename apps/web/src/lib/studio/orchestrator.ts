@@ -127,7 +127,6 @@ export async function generateCompleteNovel(
 		});
 
 		const storyResult = await generateStory({
-			userId: "", // Not needed for orchestrator (no DB save)
 			userPrompt,
 			language,
 			preferredGenre,
@@ -150,7 +149,6 @@ export async function generateCompleteNovel(
 
 		const charactersResult = await generateCharacters({
 			storyId: "", // Not needed for orchestrator (no DB save)
-			userId: "", // Not needed for orchestrator (no DB save)
 			story: storyData,
 			characterCount,
 			language,
@@ -179,10 +177,8 @@ export async function generateCompleteNovel(
 
 		const settingsResult = await generateSettings({
 			storyId: "", // Not needed for orchestrator (no DB save)
-			userId: "", // Not needed for orchestrator (no DB save)
 			story: storyData,
 			settingCount,
-			language,
 			onProgress: (current, total) => {
 				onProgress({
 					phase: "settings_progress",
@@ -208,12 +204,9 @@ export async function generateCompleteNovel(
 
 		const partsResult = await generateParts({
 			storyId: "", // Not needed for orchestrator (no DB save)
-			userId: "", // Not needed for orchestrator (no DB save)
 			story: storyData,
 			characters,
-			settings,
 			partsCount,
-			language,
 			onProgress: (current, total) => {
 				onProgress({
 					phase: "parts_progress",
@@ -236,13 +229,10 @@ export async function generateCompleteNovel(
 
 		const chaptersResult = await generateChapters({
 			storyId: "", // Not needed for orchestrator (no DB save)
-			userId: "", // Not needed for orchestrator (no DB save)
 			story: storyData,
 			parts,
 			characters,
-			settings,
 			chaptersPerPart,
-			language,
 			onProgress: (current, total) => {
 				onProgress({
 					phase: "chapters_progress",
@@ -268,13 +258,9 @@ export async function generateCompleteNovel(
 
 		const sceneSummariesResult = await generateSceneSummaries({
 			storyId: "", // Not needed for orchestrator (no DB save)
-			userId: "", // Not needed for orchestrator (no DB save)
-			story: storyData,
 			chapters,
-			characters,
 			settings,
 			scenesPerChapter,
-			language,
 			onProgress: (current, total) => {
 				onProgress({
 					phase: "scene_summaries_progress",
@@ -329,10 +315,7 @@ export async function generateCompleteNovel(
 				// Generate content for this scene using common generator
 				const sceneContentResult = await generateSceneContent({
 					sceneId: `scene_${sceneIndex}`,
-					userId: "", // Not needed for orchestrator (no DB save)
 					scene: sceneSummary,
-					chapter,
-					story: storyData,
 					characters,
 					settings,
 					language,
