@@ -1,10 +1,50 @@
 /**
  * Generator Types
  *
- * Contains all types for the story generation system:
- * - AI system infrastructure types
- * - Generator function parameter/result types
- * - Entity types are in zod-schemas.generated.ts
+ * Layer: Service (Business Logic)
+ * Used by: src/lib/studio/generators/* services
+ * Related:
+ * - API types: src/app/studio/api/types.ts
+ * - Domain types: src/lib/ai/types/image.ts
+ * - Entity types: ./zod-schemas.generated.ts
+ * - Global types: src/types/index.ts
+ *
+ * ## Purpose
+ * Defines internal function parameters and results for story generation business logic.
+ * These types represent the service layer contract between route handlers and generators.
+ *
+ * ## Naming Convention
+ * Follows unified naming pattern: Generate{Entity}{Suffix}
+ *
+ * Type Suffixes:
+ * - Params: Function input parameters (internal service input)
+ * - Result: Function output results (internal service output)
+ * - Metadata: Generation metadata and statistics
+ *
+ * ## Architecture
+ * API Layer (api/types.ts) → Service Layer (this file) → Domain Layer (ai/types)
+ *
+ * Route handlers map between API and Service types:
+ * - API Request → Service Params (route extracts and validates)
+ * - Service Result → API Response (route formats for HTTP)
+ *
+ * ## Available Generators
+ * - generateStory - Story summary generation
+ * - generateCharacters - Character profiles generation
+ * - generateSettings - Story settings generation
+ * - generateParts - Story parts generation
+ * - generateChapters - Chapter summaries generation
+ * - generateSceneSummaries - Scene summaries generation
+ * - generateSceneContent - Scene content generation
+ * - evaluateScene - Scene quality evaluation
+ * - generateImages - Image generation for all entity types
+ *
+ * ## Type Organization
+ * - AI Provider Types - Model providers and prompt infrastructure
+ * - Text Generation - Text generation request/response
+ * - Story Cycle Types - Adversity-Triumph Engine concepts
+ * - Base Generator Interfaces - Common generator patterns
+ * - Entity-specific Generators - One section per entity type
  */
 
 import type { z } from "zod";

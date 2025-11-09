@@ -1,6 +1,33 @@
 /**
  * Image Generation Types
- * Provider-agnostic interfaces for image generation
+ *
+ * Layer: Domain (Core AI Concepts)
+ * Used by: src/lib/ai/providers/* and src/lib/studio/generators/*
+ * Related:
+ * - Service types: src/lib/studio/generators/types.ts
+ * - API types: src/app/studio/api/types.ts
+ * - Global types: src/types/index.ts
+ *
+ * ## Purpose
+ * Defines provider-agnostic interfaces for AI image generation.
+ * These types represent core domain concepts independent of specific AI providers.
+ *
+ * ## Naming Convention
+ * Domain-focused naming:
+ * - {Concept}: Core domain types (ImageProvider, AspectRatio)
+ * - {Concept}Request: Domain request patterns
+ * - {Concept}Response: Domain response patterns
+ *
+ * ## Architecture
+ * Domain Layer (this file) ← Service Layer (generators/types.ts) ← API Layer (api/types.ts)
+ *
+ * Providers implement domain interfaces:
+ * - GeminiImageProvider implements ImageGenerationRequest/Response
+ * - AIServerImageProvider implements ImageGenerationRequest/Response
+ *
+ * ## Supported Providers
+ * - gemini: Google Gemini 2.5 Flash (via Vercel AI SDK)
+ * - ai-server: Python FastAPI service with Stable Diffusion
  */
 
 export type ImageProvider = "gemini" | "ai-server";

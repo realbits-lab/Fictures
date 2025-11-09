@@ -1,13 +1,40 @@
 /**
  * Studio API Request/Response Type Definitions
  *
- * Centralized type definitions for all Studio API generator endpoints.
- * Follows unified naming convention: Generate{Entity}{Suffix}
+ * Layer: API (HTTP Contracts)
+ * Used by: src/app/studio/api/* routes
+ * Related:
+ * - Service types: src/lib/studio/generators/types.ts
+ * - Domain types: src/lib/ai/types/image.ts
+ * - Global types: src/types/index.ts
+ *
+ * ## Purpose
+ * Defines the HTTP API contract for all Studio generator endpoints.
+ * These types represent the data exchanged between client and server.
+ *
+ * ## Naming Convention
+ * Follows unified naming pattern: Generate{Entity}{Suffix}
  *
  * Type Suffixes:
- * - Request: HTTP request body (API layer)
- * - Response: HTTP success response (API layer)
- * - ErrorResponse: HTTP error response (API layer)
+ * - Request: HTTP request body (what client sends)
+ * - Response: HTTP success response (what server returns on success)
+ * - ErrorResponse: HTTP error response (what server returns on error)
+ *
+ * ## Architecture
+ * API Layer (this file) → Service Layer (generators/types.ts) → Domain Layer (ai/types)
+ *
+ * API types are mapped to service types in route handlers:
+ * - GenerateStoryRequest → GenerateStoryParams (service input)
+ * - GenerateStoryResult (service output) → GenerateStoryResponse
+ *
+ * ## Available Endpoints
+ * - POST /studio/api/stories - Generate story summary
+ * - POST /studio/api/characters - Generate characters
+ * - POST /studio/api/settings - Generate story settings
+ * - POST /studio/api/parts - Generate story parts
+ * - POST /studio/api/chapters - Generate chapters
+ * - POST /studio/api/scenes - Generate scene summaries
+ * - POST /studio/api/scene-content - Generate scene content
  */
 
 // ============================================================================

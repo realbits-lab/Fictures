@@ -1,4 +1,33 @@
+/**
+ * Validation and Evaluation Types
+ *
+ * Layer: Shared (Cross-cutting Concerns)
+ * Used by: Multiple modules across API, service, and UI layers
+ * Related:
+ * - API types: src/app/studio/api/types.ts
+ * - Service types: src/lib/studio/generators/types.ts
+ * - Global types: src/types/index.ts
+ *
+ * ## Purpose
+ * Defines types for story validation and quality evaluation functionality.
+ * These are cross-cutting concerns used throughout the application.
+ *
+ * ## Type Categories
+ * - Validation Types: Schema validation, completeness checking
+ * - Evaluation Types: Quality scoring, feedback generation
+ * - API Types: Request/response for validation/evaluation endpoints
+ * - Improvement Types: Story improvement and refinement
+ *
+ * ## Usage Context
+ * - Validation: Pre-publish checks, data integrity verification
+ * - Evaluation: Quality assessment using "Architectonics of Engagement"
+ * - Improvement: AI-powered content enhancement and refinement
+ */
+
+// ============================================================================
 // Validation Types
+// ============================================================================
+
 export interface ValidationResult {
 	isValid: boolean;
 	errors: ValidationError[];
@@ -40,7 +69,10 @@ export interface FullValidationResult {
 	totalWarnings: number;
 }
 
+// ============================================================================
 // Evaluation Types
+// ============================================================================
+
 export interface EvaluationScore {
 	score: number;
 	category: string;
@@ -132,7 +164,10 @@ export interface CrossReferenceAnalysis {
 	suggestions: string[];
 }
 
+// ============================================================================
 // API Request/Response Types
+// ============================================================================
+
 export interface ValidationRequest {
 	type:
 		| "story"
@@ -212,7 +247,10 @@ export interface QuickEvaluationResult {
 	suggestions: string[];
 }
 
+// ============================================================================
 // Story Improvement Types
+// ============================================================================
+
 export interface StoryImprovementRequest {
 	analysisResult: {
 		validation?: FullValidationResult;

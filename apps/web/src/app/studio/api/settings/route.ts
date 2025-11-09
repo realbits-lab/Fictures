@@ -17,6 +17,7 @@ import { settings, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateSettings } from "@/lib/studio/generators/settings-generator";
 import type { GenerateSettingsParams } from "@/lib/studio/generators/types";
+import { insertSettingSchema } from "@/lib/studio/generators/zod-schemas.generated";
 import type {
 	GenerateSettingsErrorResponse,
 	GenerateSettingsRequest,
@@ -186,26 +187,32 @@ export async function POST(request: NextRequest) {
 
 		for (const settingData of generationResult.settings) {
 			const settingId = `setting_${nanoid(16)}`;
+
+			// Validate setting data before insert
+			const validatedSetting = insertSettingSchema.parse({
+				id: settingId,
+				storyId: validatedData.storyId,
+				name: settingData.name || "Unnamed Setting",
+				summary: settingData.description || null,
+				adversityElements: settingData.adversityElements || null,
+				cycleAmplification: settingData.cycleAmplification || null,
+				sensory: settingData.sensory || null,
+				mood: settingData.mood || null,
+				symbolicMeaning: settingData.symbolicMeaning || null,
+				emotionalResonance: settingData.emotionalResonance || null,
+				architecturalStyle: settingData.architecturalStyle || null,
+				visualStyle: settingData.visualStyle || null,
+				visualReferences: settingData.visualReferences || null,
+				colorPalette: settingData.colorPalette || null,
+				imageUrl: null,
+				imageVariants: null,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			});
+
 			const [savedSetting] = await db
 				.insert(settings)
-				.values({
-					id: settingId,
-					storyId: validatedData.storyId,
-					name: settingData.name || "Unnamed Setting",
-					description: settingData.description || null,
-					timeframe: settingData.timeframe || null,
-					socialStructure: settingData.socialStructure || null,
-					geographyClimate: settingData.geographyClimate || null,
-					adversityElements: settingData.adversityElements || null,
-					cycleAmplification: settingData.cycleAmplification || null,
-					sensory: settingData.sensory || null,
-					mood: settingData.mood || null,
-					imageUrl: null,
-					imageVariants: null,
-					visualStyle: null,
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				})
+				.values(validatedSetting)
 				.returning();
 
 			savedSettings.push(savedSetting);
