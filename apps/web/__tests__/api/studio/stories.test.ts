@@ -41,13 +41,14 @@ describe("Story Generation API", () => {
         };
 
         // 2. Send POST request to story generation API
+        const apiKey: string = writer.apiKey as string;
         const response: Response = await fetch(
             "http://localhost:3000/studio/api/stories",
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-api-key": writer.apiKey,
+                    "x-api-key": apiKey,
                 },
                 body: JSON.stringify(requestBody),
             },
