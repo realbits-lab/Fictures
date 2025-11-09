@@ -207,7 +207,6 @@ export async function POST(request: NextRequest) {
         // 7. Generate parts using AI
         console.log("[PARTS API] 🤖 Calling parts generator...");
         const generateParams: GeneratePartsParams = {
-            storyId: validatedData.storyId,
             story,
             characters: storyCharacters,
             partsCount: validatedData.partsCount,

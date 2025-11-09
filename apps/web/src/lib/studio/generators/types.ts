@@ -230,7 +230,6 @@ export interface GenerateSettingsResult {
 // ============================================================================
 
 export interface GeneratePartsParams {
-    storyId: string;
     story: Story;
     characters: Character[];
     partsCount: number;
