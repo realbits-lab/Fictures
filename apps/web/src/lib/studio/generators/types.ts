@@ -264,7 +264,6 @@ export interface GenerateChaptersResult {
 // ============================================================================
 
 export interface GenerateSceneSummariesParams {
-    storyId: string;
     chapters: Chapter[];
     settings: Setting[];
     scenesPerChapter: number;

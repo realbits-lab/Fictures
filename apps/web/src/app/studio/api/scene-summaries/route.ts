@@ -18,8 +18,10 @@ import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateSceneSummaries } from "@/lib/studio/generators/scene-summaries-generator";
 import type { GenerateSceneSummariesParams } from "@/lib/studio/generators/types";
 import {
+    type Chapter,
     insertSceneSchema,
     type Scene,
+    type Setting,
 } from "@/lib/studio/generators/zod-schemas.generated";
 import type {
     GenerateSceneSummariesErrorResponse,
@@ -277,9 +279,8 @@ export async function POST(request: NextRequest) {
             "[SCENE SUMMARIES API] 🤖 Calling scene summaries generator...",
         );
         const generateParams: GenerateSceneSummariesParams = {
-            storyId: validatedData.storyId,
-            chapters: storyChapters as any,
-            settings: storySettings as any,
+            chapters: storyChapters as Chapter[],
+            settings: storySettings as Setting[],
             scenesPerChapter: validatedData.scenesPerChapter,
         };
 

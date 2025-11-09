@@ -53,7 +53,7 @@ export async function generateSceneSummaries(
 
 			// Build settings string
 			const settingsStr = settings
-				.map((s, idx) => `${idx + 1}. ${s.name}: ${s.description}`)
+				.map((s, idx) => `${idx + 1}. ${s.name}: ${s.summary}`)
 				.join("\n");
 
 			// Generate scene summary using template
@@ -63,7 +63,7 @@ export async function generateSceneSummaries(
 					sceneNumber: String(i + 1),
 					sceneCount: String(scenesPerChapter),
 					chapterTitle: chapter.title,
-					chapterSummary: chapter.summary,
+					chapterSummary: chapter.summary ?? "Chapter summary not available",
 					cyclePhase,
 					settings: settingsStr,
 				},
