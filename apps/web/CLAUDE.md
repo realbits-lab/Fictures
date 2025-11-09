@@ -120,6 +120,35 @@ pnpm biome check --write
 **Best Practice:**
 Always include the `--write` flag to automatically apply safe fixes. Review the output to ensure all changes are intentional.
 
+**CRITICAL: Always run type-check after Biome formatting**
+
+After finishing file changes and running Biome format/lint, you MUST verify TypeScript types for the changed files:
+
+```bash
+# 1. Format and lint specific files with Biome
+pnpm biome check --write path/to/file1.ts path/to/file2.tsx
+
+# 2. Run TypeScript type checking on the same files
+pnpm type-check path/to/file1.ts path/to/file2.tsx
+```
+
+**Important:**
+- **ONLY check types for files you changed**, not the entire project
+- This keeps type-checking fast and focused on your changes
+- Avoids getting overwhelmed by unrelated type errors in other files
+
+**Why this matters:**
+- Biome handles formatting and linting, but does NOT perform TypeScript type checking
+- Type errors can break the build even if Biome passes
+- `pnpm type-check` uses TypeScript Native (`tsgo`) for fast type validation
+- Catches type issues before they cause runtime errors or build failures
+
+**When to run type-check:**
+- After modifying TypeScript files
+- After Biome formatting
+- Before committing changes
+- Before creating pull requests
+
 ## Database Management
 
 **IMPORTANT: Uses Neon PostgreSQL Database**
@@ -148,6 +177,13 @@ Always include the `--write` flag to automatically apply safe fixes. Review the 
 - In raw SQL queries, use snake_case without quotes: `created_at`, `updated_at`
 - Drizzle ORM schema definitions use camelCase in TypeScript, but map to snake_case in PostgreSQL
 - Example: TypeScript `createdAt` → PostgreSQL `created_at`
+
+**Date Field Handling:**
+- **ALWAYS use `.toISOString()` when storing Date objects to database**
+- This ensures consistent ISO 8601 format across all date fields
+- Example: `createdAt: new Date().toISOString()`
+- Applies to all timestamp fields: `created_at`, `updated_at`, `published_at`, etc.
+- **Why**: PostgreSQL stores timestamps in a specific format, and `.toISOString()` ensures compatibility and prevents timezone issues
 
 **Database Commands:**
 - **Generate migrations**: `pnpm db:generate`

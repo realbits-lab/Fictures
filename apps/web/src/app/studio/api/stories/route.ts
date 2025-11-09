@@ -235,6 +235,7 @@ export async function POST(request: NextRequest) {
             "[STORIES API] 💾 Validating and saving story to database...",
         );
         const storyId: string = `story_${nanoid(16)}`;
+        const now: string = new Date().toISOString();
 
         const storyData: ReturnType<typeof insertStorySchema.parse> =
             insertStorySchema.parse({
@@ -251,8 +252,8 @@ export async function POST(request: NextRequest) {
                 ratingCount: 0,
                 imageUrl: null,
                 imageVariants: null,
-                createdAt: new Date(),
-                updatedAt: new Date(),
+                createdAt: now,
+                updatedAt: now,
             });
 
         const savedStoryArray: Story[] = (await db

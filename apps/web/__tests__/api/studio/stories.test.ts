@@ -47,7 +47,7 @@ describe("Story Generation API", () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${writer.apiKey}`,
+                    "x-api-key": writer.apiKey,
                 },
                 body: JSON.stringify(requestBody),
             },
