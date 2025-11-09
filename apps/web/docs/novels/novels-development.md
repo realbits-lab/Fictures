@@ -99,7 +99,90 @@ export async function generateCharacters(
 ): Promise<GenerateCharactersResult>;
 ```
 
-**Implementation Status**: Planned - See `generator-refactoring-plan.md` for full details
+**Implementation Status**: ✅ Implemented - See sections below for current architecture
+
+### 0.3 Type Naming Convention
+
+**Unified Naming Pattern**: `{Verb}{Noun}{Suffix}`
+
+All types follow a consistent "Generate" verb pattern across all layers:
+
+**Verbs:**
+- `Generate` - For actions/requests/parameters (present tense)
+- `Generated` - For data/results (past participle)
+
+**Suffixes:**
+- `Request` - API request body (HTTP layer)
+- `Response` - API response body (HTTP layer)
+- `ErrorResponse` - API error response (HTTP layer)
+- `Params` - Generator function parameters (function layer)
+- `Result` - Generator function return type (function layer)
+- `Data` - Generated data objects (data layer)
+- `Schema` - Zod validation schemas (validation layer)
+
+**Type Hierarchy for Story Generation:**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ API Layer (route.ts)                                    │
+├─────────────────────────────────────────────────────────┤
+│ GenerateStoryRequest          (HTTP request body)       │
+│   ↓ destructured to                                     │
+│ GenerateStoryParams           (generator input)         │
+│   ↓ passed to generateStory()                           │
+├─────────────────────────────────────────────────────────┤
+│ Generator Layer (story-generator.ts)                    │
+├─────────────────────────────────────────────────────────┤
+│ GenerateStoryResult           (generator output)        │
+│   ├─ story: GeneratedStoryData                          │
+│   └─ metadata: GeneratorMetadata                        │
+│   ↓ used to construct                                   │
+├─────────────────────────────────────────────────────────┤
+│ API Layer (route.ts)                                    │
+├─────────────────────────────────────────────────────────┤
+│ GenerateStoryResponse         (HTTP success response)   │
+│   ├─ story: SavedStory (with id, authorId, etc.)        │
+│   └─ metadata: GeneratorMetadata                        │
+│                                                          │
+│ GenerateStoryErrorResponse    (HTTP error response)     │
+│   ├─ error: string                                      │
+│   └─ details?: string                                   │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Complete Type List for Story Generation:**
+
+**API Layer** (`src/app/studio/api/stories/route.ts`):
+- `GenerateStoryRequest` - API request body
+- `GenerateStoryResponse` - API success response
+- `GenerateStoryErrorResponse` - API error response
+
+**Generator Layer** (`src/lib/studio/generators/types.ts`):
+- `GenerateStoryParams` - Generator function parameters
+- `GenerateStoryResult` - Generator function return type
+
+**Data Layer** (`src/lib/studio/generators/zod-schemas.generated.ts`):
+- `GeneratedStoryData` - AI-generated story data (partial Story)
+- `generatedStorySchema` - Zod schema for story generation
+
+**Benefits of Unified Naming:**
+- ✅ **Consistency**: All types use "Generate" verb family
+- ✅ **Clarity**: Type name immediately indicates its purpose and layer
+- ✅ **Scalability**: Pattern applies to all generators (Character, Scene, etc.)
+- ✅ **Searchability**: Easy to find all generation-related types
+- ✅ **Self-Documenting**: Type names reflect the actual operation
+
+**Example Application to Other Generators:**
+
+Characters:
+- `GenerateCharactersRequest`, `GenerateCharactersResponse`
+- `GenerateCharactersParams`, `GenerateCharactersResult`
+- `GeneratedCharacterData`, `generatedCharacterSchema`
+
+Scenes:
+- `GenerateSceneRequest`, `GenerateSceneResponse`
+- `GenerateSceneContentParams`, `GenerateSceneContentResult`
+- `GeneratedSceneData`, `generatedSceneSchema`
 
 ---
 

@@ -18,9 +18,9 @@ export const runtime = "nodejs";
 // ============================================================================
 
 /**
- * Request body for story creation
+ * API request body for story generation
  */
-interface CreateStoryRequest {
+interface GenerateStoryRequest {
 	userPrompt: string;
 	language?: string;
 	preferredGenre?: string;
@@ -28,9 +28,9 @@ interface CreateStoryRequest {
 }
 
 /**
- * Response body for successful story creation
+ * API response body for successful story generation
  */
-interface CreateStoryResponse {
+interface GenerateStoryResponse {
 	success: true;
 	story: {
 		id: string;
@@ -51,9 +51,9 @@ interface CreateStoryResponse {
 }
 
 /**
- * Error response body
+ * API error response body
  */
-interface ErrorResponse {
+interface GenerateStoryErrorResponse {
 	error: string;
 	details?: string;
 }
@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
 		});
 
 		// Parse request body with type safety
-		const body = (await request.json()) as CreateStoryRequest;
+		const body = (await request.json()) as GenerateStoryRequest;
 		const {
 			userPrompt,
 			language = "English",
@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
 		// Validate required parameters
 		if (!userPrompt || typeof userPrompt !== "string") {
 			console.error("❌ [STORIES API] Validation failed: userPrompt missing");
-			const errorResponse: ErrorResponse = {
+			const errorResponse: GenerateStoryErrorResponse = {
 				error: "userPrompt is required and must be a string",
 			};
 			return NextResponse.json(errorResponse, { status: 400 });
@@ -280,7 +280,7 @@ export async function POST(request: NextRequest) {
 		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
 		// Return the created story with metadata (typed response)
-		const response: CreateStoryResponse = {
+		const response: GenerateStoryResponse = {
 			success: true,
 			story: {
 				id: savedStory.id,
@@ -306,7 +306,7 @@ export async function POST(request: NextRequest) {
 		console.error("❌ [STORIES API] Error:", error);
 		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-		const errorResponse: ErrorResponse = {
+		const errorResponse: GenerateStoryErrorResponse = {
 			error: "Failed to generate and save story",
 			details: error instanceof Error ? error.message : "Unknown error",
 		};

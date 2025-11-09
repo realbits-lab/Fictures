@@ -20,13 +20,44 @@ import type { GenerateSettingsParams } from "@/lib/studio/generators/types";
 
 export const runtime = "nodejs";
 
+// ============================================================================
+// Request/Response Type Definitions
+// ============================================================================
+
+/**
+ * API request body for setting generation
+ */
+interface GenerateSettingsRequest {
+	storyId: string;
+	settingCount?: number;
+}
+
+/**
+ * API response body for successful setting generation
+ */
+interface GenerateSettingsResponse {
+	success: true;
+	settings: Array<any>;
+	metadata: {
+		totalGenerated: number;
+		generationTime: number;
+	};
+}
+
+/**
+ * API error response body
+ */
+interface GenerateSettingsErrorResponse {
+	error: string;
+	details?: any;
+}
+
 /**
  * Validation schema for generating settings
  */
 const generateSettingsSchema = z.object({
 	storyId: z.string(),
 	settingCount: z.number().min(1).max(10).optional().default(3),
-	language: z.string().optional().default("English"),
 });
 
 /**
@@ -130,8 +161,8 @@ export async function POST(request: NextRequest) {
 			email: authResult.user.email,
 		});
 
-		// Parse and validate request body
-		const body = await request.json();
+		// Parse and validate request body with type safety
+		const body = (await request.json()) as GenerateSettingsRequest;
 		const validatedData = generateSettingsSchema.parse(body);
 
 		console.log("[SETTINGS API] Request parameters:", {
@@ -218,35 +249,35 @@ export async function POST(request: NextRequest) {
 		console.log("✅ [SETTINGS API] Request completed successfully");
 		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-		return NextResponse.json(
-			{
-				success: true,
-				settings: savedSettings,
-				metadata: {
-					totalGenerated: savedSettings.length,
-					generationTime: generationResult.metadata.generationTime,
-				},
+		// Return typed response
+		const response: GenerateSettingsResponse = {
+			success: true,
+			settings: savedSettings,
+			metadata: {
+				totalGenerated: savedSettings.length,
+				generationTime: generationResult.metadata.generationTime,
 			},
-			{ status: 201 },
-		);
+		};
+
+		return NextResponse.json(response, { status: 201 });
 	} catch (error) {
 		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 		console.error("❌ [SETTINGS API] Error:", error);
 		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
 		if (error instanceof z.ZodError) {
-			return NextResponse.json(
-				{ error: "Invalid input", details: error.issues },
-				{ status: 400 },
-			);
+			const errorResponse: GenerateSettingsErrorResponse = {
+				error: "Invalid input",
+				details: error.issues,
+			};
+			return NextResponse.json(errorResponse, { status: 400 });
 		}
 
-		return NextResponse.json(
-			{
-				error: "Failed to generate and save settings",
-				details: error instanceof Error ? error.message : "Unknown error",
-			},
-			{ status: 500 },
-		);
+		const errorResponse: GenerateSettingsErrorResponse = {
+			error: "Failed to generate and save settings",
+			details: error instanceof Error ? error.message : "Unknown error",
+		};
+
+		return NextResponse.json(errorResponse, { status: 500 });
 	}
 }

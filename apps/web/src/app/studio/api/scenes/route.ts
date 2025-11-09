@@ -20,6 +20,39 @@ import type { GenerateSceneSummariesParams } from "@/lib/studio/generators/types
 
 export const runtime = "nodejs";
 
+// ============================================================================
+// Request/Response Type Definitions
+// ============================================================================
+
+/**
+ * API request body for scene summary generation
+ */
+interface GenerateSceneSummariesRequest {
+	storyId: string;
+	scenesPerChapter?: number;
+	language?: string;
+}
+
+/**
+ * API response body for successful scene summary generation
+ */
+interface GenerateSceneSummariesResponse {
+	success: true;
+	scenes: Array<any>;
+	metadata: {
+		totalGenerated: number;
+		generationTime: number;
+	};
+}
+
+/**
+ * API error response body
+ */
+interface GenerateSceneSummariesErrorResponse {
+	error: string;
+	details?: any;
+}
+
 /**
  * Validation schema for generating scene summaries
  */
@@ -139,8 +172,8 @@ export async function POST(request: NextRequest) {
 			email: authResult.user.email,
 		});
 
-		// Parse and validate request body
-		const body = await request.json();
+		// Parse and validate request body with type safety
+		const body = (await request.json()) as GenerateSceneSummariesRequest;
 		const validatedData = generateScenesSchema.parse(body);
 
 		console.log("[SCENES API] Request parameters:", {
@@ -246,35 +279,35 @@ export async function POST(request: NextRequest) {
 		console.log("✅ [SCENES API] Request completed successfully");
 		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-		return NextResponse.json(
-			{
-				success: true,
-				scenes: savedScenes,
-				metadata: {
-					totalGenerated: savedScenes.length,
-					generationTime: generationResult.metadata.generationTime,
-				},
+		// Return typed response
+		const response: GenerateSceneSummariesResponse = {
+			success: true,
+			scenes: savedScenes,
+			metadata: {
+				totalGenerated: savedScenes.length,
+				generationTime: generationResult.metadata.generationTime,
 			},
-			{ status: 201 },
-		);
+		};
+
+		return NextResponse.json(response, { status: 201 });
 	} catch (error) {
 		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 		console.error("❌ [SCENES API] Error:", error);
 		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
 		if (error instanceof z.ZodError) {
-			return NextResponse.json(
-				{ error: "Invalid input", details: error.issues },
-				{ status: 400 },
-			);
+			const errorResponse: GenerateSceneSummariesErrorResponse = {
+				error: "Invalid input",
+				details: error.issues,
+			};
+			return NextResponse.json(errorResponse, { status: 400 });
 		}
 
-		return NextResponse.json(
-			{
-				error: "Failed to generate and save scene summaries",
-				details: error instanceof Error ? error.message : "Unknown error",
-			},
-			{ status: 500 },
-		);
+		const errorResponse: GenerateSceneSummariesErrorResponse = {
+			error: "Failed to generate and save scene summaries",
+			details: error instanceof Error ? error.message : "Unknown error",
+		};
+
+		return NextResponse.json(errorResponse, { status: 500 });
 	}
 }

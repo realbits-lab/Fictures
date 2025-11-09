@@ -19,6 +19,39 @@ import type { GenerateChaptersParams } from "@/lib/studio/generators/types";
 
 export const runtime = "nodejs";
 
+// ============================================================================
+// Request/Response Type Definitions
+// ============================================================================
+
+/**
+ * API request body for chapter generation
+ */
+interface GenerateChaptersRequest {
+	storyId: string;
+	chaptersPerPart?: number;
+	language?: string;
+}
+
+/**
+ * API response body for successful chapter generation
+ */
+interface GenerateChaptersResponse {
+	success: true;
+	chapters: Array<any>;
+	metadata: {
+		totalGenerated: number;
+		generationTime: number;
+	};
+}
+
+/**
+ * API error response body
+ */
+interface GenerateChaptersErrorResponse {
+	error: string;
+	details?: any;
+}
+
 /**
  * Validation schema for generating chapters
  */
@@ -65,8 +98,8 @@ export async function POST(request: NextRequest) {
 			email: authResult.user.email,
 		});
 
-		// Parse and validate request body
-		const body = await request.json();
+		// Parse and validate request body with type safety
+		const body = (await request.json()) as GenerateChaptersRequest;
 		const validatedData = generateChaptersSchema.parse(body);
 
 		console.log("[CHAPTERS API] Request parameters:", {
@@ -181,35 +214,35 @@ export async function POST(request: NextRequest) {
 		console.log("✅ [CHAPTERS API] Request completed successfully");
 		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-		return NextResponse.json(
-			{
-				success: true,
-				chapters: savedChapters,
-				metadata: {
-					totalGenerated: savedChapters.length,
-					generationTime: generationResult.metadata.generationTime,
-				},
+		// Return typed response
+		const response: GenerateChaptersResponse = {
+			success: true,
+			chapters: savedChapters,
+			metadata: {
+				totalGenerated: savedChapters.length,
+				generationTime: generationResult.metadata.generationTime,
 			},
-			{ status: 201 },
-		);
+		};
+
+		return NextResponse.json(response, { status: 201 });
 	} catch (error) {
 		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 		console.error("❌ [CHAPTERS API] Error:", error);
 		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
 		if (error instanceof z.ZodError) {
-			return NextResponse.json(
-				{ error: "Invalid input", details: error.issues },
-				{ status: 400 },
-			);
+			const errorResponse: GenerateChaptersErrorResponse = {
+				error: "Invalid input",
+				details: error.issues,
+			};
+			return NextResponse.json(errorResponse, { status: 400 });
 		}
 
-		return NextResponse.json(
-			{
-				error: "Failed to generate and save chapters",
-				details: error instanceof Error ? error.message : "Unknown error",
-			},
-			{ status: 500 },
-		);
+		const errorResponse: GenerateChaptersErrorResponse = {
+			error: "Failed to generate and save chapters",
+			details: error instanceof Error ? error.message : "Unknown error",
+		};
+
+		return NextResponse.json(errorResponse, { status: 500 });
 	}
 }

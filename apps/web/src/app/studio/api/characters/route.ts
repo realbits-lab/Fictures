@@ -20,6 +20,58 @@ import type { GenerateCharactersParams } from "@/lib/studio/generators/types";
 
 export const runtime = "nodejs";
 
+// ============================================================================
+// Request/Response Type Definitions
+// ============================================================================
+
+/**
+ * API request body for character generation
+ */
+interface GenerateCharactersRequest {
+	storyId: string;
+	characterCount?: number;
+	language?: string;
+}
+
+/**
+ * API response body for successful character generation
+ */
+interface GenerateCharactersResponse {
+	success: true;
+	characters: Array<{
+		id: string;
+		storyId: string;
+		name: string;
+		isMain: boolean;
+		summary: string | null;
+		coreTrait: string | null;
+		internalFlaw: string | null;
+		externalGoal: string | null;
+		personality: any | null;
+		backstory: string | null;
+		relationships: any | null;
+		physicalDescription: any | null;
+		voiceStyle: any | null;
+		imageUrl: string | null;
+		imageVariants: any | null;
+		visualStyle: string | null;
+		createdAt: Date;
+		updatedAt: Date;
+	}>;
+	metadata: {
+		totalGenerated: number;
+		generationTime: number;
+	};
+}
+
+/**
+ * API error response body
+ */
+interface GenerateCharactersErrorResponse {
+	error: string;
+	details?: any;
+}
+
 /**
  * Validation schema for generating characters
  */
@@ -132,8 +184,8 @@ export async function POST(request: NextRequest) {
 			email: authResult.user.email,
 		});
 
-		// Parse and validate request body
-		const body = await request.json();
+		// Parse and validate request body with type safety
+		const body = (await request.json()) as GenerateCharactersRequest;
 		const validatedData = generateCharactersSchema.parse(body);
 
 		console.log("[CHARACTERS API] Request parameters:", {
@@ -223,35 +275,35 @@ export async function POST(request: NextRequest) {
 		console.log("✅ [CHARACTERS API] Request completed successfully");
 		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-		return NextResponse.json(
-			{
-				success: true,
-				characters: savedCharacters,
-				metadata: {
-					totalGenerated: savedCharacters.length,
-					generationTime: generationResult.metadata.generationTime,
-				},
+		// Return typed response
+		const response: GenerateCharactersResponse = {
+			success: true,
+			characters: savedCharacters,
+			metadata: {
+				totalGenerated: savedCharacters.length,
+				generationTime: generationResult.metadata.generationTime,
 			},
-			{ status: 201 },
-		);
+		};
+
+		return NextResponse.json(response, { status: 201 });
 	} catch (error) {
 		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 		console.error("❌ [CHARACTERS API] Error:", error);
 		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
 		if (error instanceof z.ZodError) {
-			return NextResponse.json(
-				{ error: "Invalid input", details: error.issues },
-				{ status: 400 },
-			);
+			const errorResponse: GenerateCharactersErrorResponse = {
+				error: "Invalid input",
+				details: error.issues,
+			};
+			return NextResponse.json(errorResponse, { status: 400 });
 		}
 
-		return NextResponse.json(
-			{
-				error: "Failed to generate and save characters",
-				details: error instanceof Error ? error.message : "Unknown error",
-			},
-			{ status: 500 },
-		);
+		const errorResponse: GenerateCharactersErrorResponse = {
+			error: "Failed to generate and save characters",
+			details: error instanceof Error ? error.message : "Unknown error",
+		};
+
+		return NextResponse.json(errorResponse, { status: 500 });
 	}
 }

@@ -43,11 +43,11 @@ export type Story = z.infer<typeof selectStorySchema>;
 export type InsertStory = z.infer<typeof insertStorySchema>;
 
 /**
- * Minimal schema for AI story generation (only fields AI generates)
+ * Minimal schema for story generation (only fields AI generates)
  * Manually defined to avoid Gemini JSON schema validation issues with complex fields
  * Fields must match insertStorySchema but without database-specific fields
  */
-export const aiStoryGenerationSchema = z.object({
+export const generatedStorySchema = z.object({
 	title: z.string().max(255),
 	summary: z.string().nullable(),
 	genre: z.string().max(100).nullable(),
@@ -56,9 +56,9 @@ export const aiStoryGenerationSchema = z.object({
 });
 
 /**
- * TypeScript type for AI-generated story data
+ * TypeScript type for generated story data (AI output)
  */
-export type AIStoryGenerationData = z.infer<typeof aiStoryGenerationSchema>;
+export type GeneratedStoryData = z.infer<typeof generatedStorySchema>;
 
 // ============================================================================
 // Character Schemas

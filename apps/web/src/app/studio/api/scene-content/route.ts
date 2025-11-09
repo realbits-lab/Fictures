@@ -18,6 +18,38 @@ import type { GenerateSceneContentParams } from "@/lib/studio/generators/types";
 
 export const runtime = "nodejs";
 
+// ============================================================================
+// Request/Response Type Definitions
+// ============================================================================
+
+/**
+ * API request body for scene content generation
+ */
+interface GenerateSceneContentRequest {
+	sceneId: string;
+	language?: string;
+}
+
+/**
+ * API response body for successful scene content generation
+ */
+interface GenerateSceneContentResponse {
+	success: true;
+	scene: any;
+	metadata: {
+		wordCount: number;
+		generationTime: number;
+	};
+}
+
+/**
+ * API error response body
+ */
+interface GenerateSceneContentErrorResponse {
+	error: string;
+	details?: any;
+}
+
 /**
  * Validation schema for generating scene content
  */
@@ -63,8 +95,8 @@ export async function POST(request: NextRequest) {
 			email: authResult.user.email,
 		});
 
-		// Parse and validate request body
-		const body = await request.json();
+		// Parse and validate request body with type safety
+		const body = (await request.json()) as GenerateSceneContentRequest;
 		const validatedData = generateSceneContentSchema.parse(body);
 
 		console.log("[SCENE-CONTENT API] Request parameters:", {
@@ -159,35 +191,35 @@ export async function POST(request: NextRequest) {
 		console.log("✅ [SCENE-CONTENT API] Request completed successfully");
 		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-		return NextResponse.json(
-			{
-				success: true,
-				scene: updatedScene,
-				metadata: {
-					wordCount: generationResult.wordCount,
-					generationTime: generationResult.metadata.generationTime,
-				},
+		// Return typed response
+		const response: GenerateSceneContentResponse = {
+			success: true,
+			scene: updatedScene,
+			metadata: {
+				wordCount: generationResult.wordCount,
+				generationTime: generationResult.metadata.generationTime,
 			},
-			{ status: 200 },
-		);
+		};
+
+		return NextResponse.json(response, { status: 200 });
 	} catch (error) {
 		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 		console.error("❌ [SCENE-CONTENT API] Error:", error);
 		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
 		if (error instanceof z.ZodError) {
-			return NextResponse.json(
-				{ error: "Invalid input", details: error.issues },
-				{ status: 400 },
-			);
+			const errorResponse: GenerateSceneContentErrorResponse = {
+				error: "Invalid input",
+				details: error.issues,
+			};
+			return NextResponse.json(errorResponse, { status: 400 });
 		}
 
-		return NextResponse.json(
-			{
-				error: "Failed to generate and save scene content",
-				details: error instanceof Error ? error.message : "Unknown error",
-			},
-			{ status: 500 },
-		);
+		const errorResponse: GenerateSceneContentErrorResponse = {
+			error: "Failed to generate and save scene content",
+			details: error instanceof Error ? error.message : "Unknown error",
+		};
+
+		return NextResponse.json(errorResponse, { status: 500 });
 	}
 }

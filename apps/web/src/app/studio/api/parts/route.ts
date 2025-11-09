@@ -11,6 +11,42 @@ import type { GeneratePartsParams } from "@/lib/studio/generators/types";
 
 export const runtime = "nodejs";
 
+// ============================================================================
+// Request/Response Type Definitions
+// ============================================================================
+
+/**
+ * API request body for part generation
+ */
+interface GeneratePartsRequest {
+	storyId: string;
+	partsCount?: number;
+	language?: string;
+}
+
+/**
+ * API response body for successful part generation
+ */
+interface GeneratePartsResponse {
+	success: true;
+	parts: Array<any>;
+	metadata: {
+		totalGenerated: number;
+		generationTime: number;
+	};
+}
+
+/**
+ * API error response body
+ */
+interface GeneratePartsErrorResponse {
+	error: string;
+	details?: any;
+}
+
+/**
+ * Validation schema for generating parts
+ */
 const generatePartsSchema = z.object({
 	storyId: z.string(),
 	partsCount: z.number().min(1).max(10).optional().default(3),
@@ -107,8 +143,8 @@ export async function POST(request: NextRequest) {
 			email: authResult.user.email,
 		});
 
-		// Parse and validate request body
-		const body = await request.json();
+		// Parse and validate request body with type safety
+		const body = (await request.json()) as GeneratePartsRequest;
 		const validatedData = generatePartsSchema.parse(body);
 
 		console.log("[PARTS API] Request parameters:", {
@@ -211,35 +247,35 @@ export async function POST(request: NextRequest) {
 		console.log("✅ [PARTS API] Request completed successfully");
 		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-		return NextResponse.json(
-			{
-				success: true,
-				parts: savedParts,
-				metadata: {
-					totalGenerated: savedParts.length,
-					generationTime: generationResult.metadata.generationTime,
-				},
+		// Return typed response
+		const response: GeneratePartsResponse = {
+			success: true,
+			parts: savedParts,
+			metadata: {
+				totalGenerated: savedParts.length,
+				generationTime: generationResult.metadata.generationTime,
 			},
-			{ status: 201 },
-		);
+		};
+
+		return NextResponse.json(response, { status: 201 });
 	} catch (error) {
 		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 		console.error("❌ [PARTS API] Error:", error);
 		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
 		if (error instanceof z.ZodError) {
-			return NextResponse.json(
-				{ error: "Invalid input", details: error.issues },
-				{ status: 400 },
-			);
+			const errorResponse: GeneratePartsErrorResponse = {
+				error: "Invalid input",
+				details: error.issues,
+			};
+			return NextResponse.json(errorResponse, { status: 400 });
 		}
 
-		return NextResponse.json(
-			{
-				error: "Failed to generate and save parts",
-				details: error instanceof Error ? error.message : "Unknown error",
-			},
-			{ status: 500 },
-		);
+		const errorResponse: GeneratePartsErrorResponse = {
+			error: "Failed to generate and save parts",
+			details: error instanceof Error ? error.message : "Unknown error",
+		};
+
+		return NextResponse.json(errorResponse, { status: 500 });
 	}
 }
