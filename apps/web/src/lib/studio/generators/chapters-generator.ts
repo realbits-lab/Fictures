@@ -56,8 +56,18 @@ export async function generateChapters(
 
             // 4. Get character arc for this chapter (simplified - using first character)
             const focusCharacter = characters[0];
-            const characterArc = part.characterArcs?.find(
-                (arc) => arc.characterId === focusCharacter.id,
+            const characterArcs = part.characterArcs as
+                | Array<{
+                      characterId: string;
+                      macroAdversity?: { internal?: string; external?: string };
+                  }>
+                | null
+                | undefined;
+            const characterArc = characterArcs?.find(
+                (arc: {
+                    characterId: string;
+                    macroAdversity?: { internal?: string; external?: string };
+                }) => arc.characterId === focusCharacter.id,
             );
 
             console.log(
@@ -80,7 +90,7 @@ export async function generateChapters(
                     storyGenre: story.genre ?? "General Fiction",
                     storySummary:
                         story.summary ?? "A story of adversity and triumph",
-                    partSummary: part.summary,
+                    partSummary: part.summary ?? "Part of the story",
                     characterName: focusCharacter.name,
                     characterFlaw:
                         focusCharacter.internalFlaw || "unresolved fear",
@@ -89,7 +99,8 @@ export async function generateChapters(
                         "personal growth",
                     previousChapterContext:
                         chapters.length > 0
-                            ? chapters[chapters.length - 1].summary
+                            ? chapters[chapters.length - 1].summary ??
+                              "Previous chapter"
                             : "None (this is the first chapter)",
                 },
                 {

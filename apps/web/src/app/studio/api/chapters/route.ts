@@ -17,6 +17,7 @@ import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateChapters } from "@/lib/studio/generators/chapters-generator";
 import type { GenerateChaptersParams } from "@/lib/studio/generators/types";
 import {
+    type Chapter,
     insertChapterSchema,
     type Character,
     type Part,
@@ -175,7 +176,7 @@ export async function POST(request: NextRequest) {
 
         // 8. Save generated chapters to database
         console.log("[CHAPTERS API] 💾 Saving chapters to database...");
-        const savedChapters: Array<typeof chapters.$inferSelect> = [];
+        const savedChapters: Chapter[] = [];
 
         for (let i = 0; i < generationResult.chapters.length; i++) {
             const chapterData = generationResult.chapters[i];
@@ -196,13 +197,11 @@ export async function POST(request: NextRequest) {
                     updatedAt: now,
                 });
 
-            const savedChapterResult: Array<typeof chapters.$inferSelect> =
-                await db
-                    .insert(chapters)
-                    .values(validatedChapter)
-                    .returning();
-            const savedChapter: typeof chapters.$inferSelect =
-                savedChapterResult[0];
+            const savedChapterResult: Chapter[] = (await db
+                .insert(chapters)
+                .values(validatedChapter)
+                .returning()) as Chapter[];
+            const savedChapter: Chapter = savedChapterResult[0];
 
             savedChapters.push(savedChapter);
         }
