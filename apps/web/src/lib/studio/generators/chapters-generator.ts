@@ -99,8 +99,8 @@ export async function generateChapters(
                         "personal growth",
                     previousChapterContext:
                         chapters.length > 0
-                            ? chapters[chapters.length - 1].summary ??
-                              "Previous chapter"
+                            ? (chapters[chapters.length - 1].summary ??
+                              "Previous chapter")
                             : "None (this is the first chapter)",
                 },
                 {
@@ -117,6 +117,11 @@ export async function generateChapters(
 
             // 6. Parse and validate chapter data
             const chapterData: Chapter = JSON.parse(response.text) as Chapter;
+
+            // 7. Explicitly set partId from the actual part being processed
+            // (AI might generate incorrect partId like "part-1" instead of actual DB ID)
+            chapterData.partId = part.id;
+
             chapters.push(chapterData);
 
             console.log(

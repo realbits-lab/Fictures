@@ -194,15 +194,21 @@ export async function POST(request: NextRequest) {
                 summary: chapterData.summary || null,
                 characterId: chapterData.characterId || null,
                 arcPosition: chapterData.arcPosition || null,
-                contributesToMacroArc: chapterData.contributesToMacroArc || null,
+                contributesToMacroArc: chapterData.contributesToMacroArc?.trim()
+                    ? chapterData.contributesToMacroArc.trim()
+                    : null,
                 focusCharacters: chapterData.focusCharacters || [],
                 adversityType: chapterData.adversityType || null,
                 virtueType: chapterData.virtueType || null,
                 seedsPlanted: chapterData.seedsPlanted || [],
                 seedsResolved: chapterData.seedsResolved || [],
                 connectsToPreviousChapter:
-                    chapterData.connectsToPreviousChapter || null,
-                createsNextAdversity: chapterData.createsNextAdversity || null,
+                    chapterData.connectsToPreviousChapter?.trim()
+                        ? chapterData.connectsToPreviousChapter.trim()
+                        : null,
+                createsNextAdversity: chapterData.createsNextAdversity?.trim()
+                    ? chapterData.createsNextAdversity.trim()
+                    : null,
                 status: "writing",
                 publishedAt: null,
                 scheduledFor: null,
@@ -211,13 +217,53 @@ export async function POST(request: NextRequest) {
                 updatedAt: now,
             });
 
-            const savedChapterResult: Chapter[] = (await db
-                .insert(chapters)
-                .values(validatedChapter)
-                .returning()) as Chapter[];
-            const savedChapter: Chapter = savedChapterResult[0];
+            // 8. Transform empty strings to null before database insert
+            //    (Zod schema may convert null to empty string for text fields)
+            const chapterForInsert = {
+                ...validatedChapter,
+                contributesToMacroArc:
+                    validatedChapter.contributesToMacroArc &&
+                    validatedChapter.contributesToMacroArc.trim()
+                        ? validatedChapter.contributesToMacroArc.trim()
+                        : null,
+                connectsToPreviousChapter:
+                    validatedChapter.connectsToPreviousChapter &&
+                    validatedChapter.connectsToPreviousChapter.trim()
+                        ? validatedChapter.connectsToPreviousChapter.trim()
+                        : null,
+                createsNextAdversity:
+                    validatedChapter.createsNextAdversity &&
+                    validatedChapter.createsNextAdversity.trim()
+                        ? validatedChapter.createsNextAdversity.trim()
+                        : null,
+            };
 
-            savedChapters.push(savedChapter);
+            try {
+                const savedChapterResult: Chapter[] = (await db
+                    .insert(chapters)
+                    .values(chapterForInsert)
+                    .returning()) as Chapter[];
+                const savedChapter: Chapter = savedChapterResult[0];
+
+                savedChapters.push(savedChapter);
+            } catch (dbError) {
+                console.error(
+                    "[CHAPTERS API] ❌ Database insert error for chapter:",
+                    {
+                        title: chapterForInsert.title,
+                        error: dbError,
+                        errorMessage:
+                            dbError instanceof Error
+                                ? dbError.message
+                                : "Unknown",
+                        cause:
+                            dbError instanceof Error && dbError.cause
+                                ? dbError.cause
+                                : "N/A",
+                    },
+                );
+                throw dbError;
+            }
         }
 
         console.log(
