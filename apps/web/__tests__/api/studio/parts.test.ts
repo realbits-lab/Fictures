@@ -13,155 +13,220 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import type {
+    GeneratePartsErrorResponse,
+    GeneratePartsRequest,
+    GeneratePartsResponse,
+} from "@/app/studio/api/types";
 
 // Load authentication profiles
-const authFilePath = path.join(process.cwd(), ".auth/user.json");
-const authData = JSON.parse(fs.readFileSync(authFilePath, "utf-8"));
+const authFilePath: string = path.join(process.cwd(), ".auth/user.json");
+const authData: {
+    [key: string]: { profiles: { writer: { apiKey?: string } } };
+} = JSON.parse(fs.readFileSync(authFilePath, "utf-8"));
 
 // Use develop environment writer profile (has stories:write scope)
-const environment = process.env.NODE_ENV === "production" ? "main" : "develop";
-const writer = authData[environment].profiles.writer;
+const environment: "main" | "develop" =
+    process.env.NODE_ENV === "production" ? "main" : "develop";
+const writer: { apiKey?: string } = authData[environment].profiles.writer;
 
 if (!writer?.apiKey) {
-	throw new Error("❌ Writer API key not found in .auth/user.json");
+    throw new Error("❌ Writer API key not found in .auth/user.json");
 }
 
 describe("Parts API", () => {
-	let testStoryId: string;
+    let testStoryId: string;
 
-	// Setup: Create a test story first
-	beforeAll(async () => {
-		console.log("🔧 Setting up test story...");
+    // Setup: Create a test story first
+    beforeAll(async () => {
+        console.log("🔧 Setting up test story...");
 
-		const storyResponse = await fetch("http://localhost:3000/studio/api/stories", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"x-api-key": writer.apiKey,
-			},
-			body: JSON.stringify({
-				userPrompt: "A short fantasy adventure for testing parts generation",
-				language: "English",
-				preferredGenre: "Fantasy",
-				preferredTone: "hopeful",
-			}),
-		});
+        // 1. Prepare story request
+        const apiKey: string = writer.apiKey as string;
+        const storyResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/stories",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify({
+                    userPrompt:
+                        "A short fantasy adventure for testing parts generation",
+                    language: "English",
+                    preferredGenre: "Fantasy",
+                    preferredTone: "hopeful",
+                }),
+            },
+        );
 
-		const storyData = await storyResponse.json();
+        // 2. Parse response
+        const storyData: { story: { id: string } } = await storyResponse.json();
 
-		if (!storyResponse.ok) {
-			console.error("❌ Failed to create test story:", storyData);
-			throw new Error("Test setup failed: could not create story");
-		}
+        // 3. Validate response
+        if (!storyResponse.ok) {
+            console.error("❌ Failed to create test story:", storyData);
+            throw new Error("Test setup failed: could not create story");
+        }
 
-		testStoryId = storyData.story.id;
-		console.log(`✅ Test story created: ${testStoryId}`);
-	}, 120000); // 2 minute timeout for story creation
+        // 4. Store test story ID
+        testStoryId = storyData.story.id;
+        console.log(`✅ Test story created: ${testStoryId}`);
+    }, 120000); // 2 minute timeout for story creation
 
-	describe("POST /studio/api/parts", () => {
-		it("should generate parts for a story", async () => {
-			const requestBody = {
-				storyId: testStoryId,
-				partsCount: 2, // Generate 2 parts for faster testing
-				language: "English",
-			};
+    describe("POST /studio/api/parts", () => {
+        it("should generate parts for a story", async () => {
+            // 1. Prepare request body with proper TypeScript type
+            const requestBody: GeneratePartsRequest = {
+                storyId: testStoryId,
+                partsCount: 2, // Generate 2 parts for faster testing
+                language: "English",
+            };
 
-			const response = await fetch("http://localhost:3000/studio/api/parts", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					"x-api-key": writer.apiKey,
-				},
-				body: JSON.stringify(requestBody),
-			});
+            // 2. Send POST request to parts generation API
+            const apiKey: string = writer.apiKey as string;
+            const response: Response = await fetch(
+                "http://localhost:3000/studio/api/parts",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-api-key": apiKey,
+                    },
+                    body: JSON.stringify(requestBody),
+                },
+            );
 
-			const data = await response.json();
+            // 3. Parse response data with proper typing
+            const data: GeneratePartsResponse | GeneratePartsErrorResponse =
+                await response.json();
 
-			// Log error if request failed
-			if (!response.ok) {
-				console.error("❌ Parts API Error:", data);
-			}
+            // 4. Log error if request failed
+            if (!response.ok) {
+                console.error("❌ Parts API Error:", data);
+                expect(response.ok).toBe(true); // Force fail with proper error logged
+            }
 
-			// Verify response status
-			expect(response.status).toBe(201);
+            // 5. Verify response status
+            expect(response.status).toBe(201);
 
-			// Verify response structure
-			expect(data.success).toBe(true);
-			expect(data.parts).toBeDefined();
-			expect(Array.isArray(data.parts)).toBe(true);
-			expect(data.metadata).toBeDefined();
+            // 6. Type guard to ensure we have success response
+            if (!("success" in data) || !data.success) {
+                throw new Error("Expected GeneratePartsResponse but got error");
+            }
 
-			// Verify parts data
-			expect(data.parts.length).toBe(2);
-			for (const part of data.parts) {
-				expect(part.id).toMatch(/^part_/);
-				expect(part.storyId).toBe(testStoryId);
-				expect(part.title).toBeDefined();
-				expect(typeof part.title).toBe("string");
-				expect(part.orderIndex).toBeGreaterThan(0);
-			}
+            // 7. Cast to success response type
+            const successData = data as GeneratePartsResponse;
 
-			// Verify metadata
-			expect(data.metadata.totalGenerated).toBe(2);
-			expect(data.metadata.generationTime).toBeGreaterThan(0);
+            // 8. Verify response structure
+            expect(successData.success).toBe(true);
+            expect(successData.parts).toBeDefined();
+            expect(Array.isArray(successData.parts)).toBe(true);
+            expect(successData.metadata).toBeDefined();
 
-			console.log("✅ Parts generated successfully:");
-			console.log(`  Total: ${data.parts.length}`);
-			console.log(`  Generation time: ${data.metadata.generationTime}ms`);
-			for (const part of data.parts) {
-				console.log(`  - ${part.title} (${part.id})`);
-			}
-		}, 180000); // 3 minute timeout for parts generation
-	});
+            // 9. Verify parts data
+            const { parts }: { parts: GeneratePartsResponse["parts"] } =
+                successData;
+            expect(parts.length).toBe(2);
+            for (const part of parts) {
+                expect(part.id).toMatch(/^part_/);
+                expect(part.storyId).toBe(testStoryId);
+                expect(part.title).toBeDefined();
+                expect(typeof part.title).toBe("string");
+                expect(part.orderIndex).toBeGreaterThan(0);
+            }
 
-	describe("GET /studio/api/parts", () => {
-		it("should fetch parts for a story", async () => {
-			const response = await fetch(
-				`http://localhost:3000/studio/api/parts?storyId=${testStoryId}`,
-				{
-					method: "GET",
-					headers: {
-						"x-api-key": writer.apiKey,
-					},
-				},
-			);
+            // 10. Verify metadata
+            const {
+                metadata,
+            }: { metadata: GeneratePartsResponse["metadata"] } = successData;
+            expect(metadata.totalGenerated).toBe(2);
+            expect(metadata.generationTime).toBeGreaterThan(0);
 
-			const data = await response.json();
+            // 11. Log success details
+            console.log("✅ Parts generated successfully:");
+            console.log(`  Total: ${parts.length}`);
+            console.log(`  Generation time: ${metadata.generationTime}ms`);
+            for (const part of parts) {
+                console.log(`  - ${part.title} (${part.id})`);
+                console.log(`    Order: ${part.orderIndex}`);
+                console.log(
+                    `    Summary: ${part.summary?.substring(0, 80) || "N/A"}...`,
+                );
+            }
+        }, 180000); // 3 minute timeout for parts generation
+    });
 
-			// Verify response status
-			expect(response.status).toBe(200);
+    describe("GET /studio/api/parts", () => {
+        it("should fetch parts for a story", async () => {
+            // 1. Send GET request with storyId query parameter
+            const apiKey: string = writer.apiKey as string;
+            const response: Response = await fetch(
+                `http://localhost:3000/studio/api/parts?storyId=${testStoryId}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "x-api-key": apiKey,
+                    },
+                },
+            );
 
-			// Verify response structure
-			expect(data.parts).toBeDefined();
-			expect(Array.isArray(data.parts)).toBe(true);
+            // 2. Parse response data
+            const data: {
+                parts: Array<{
+                    id: string;
+                    storyId: string;
+                    story: { id: string };
+                }>;
+            } = await response.json();
 
-			// Verify parts data
-			for (const part of data.parts) {
-				expect(part.id).toMatch(/^part_/);
-				expect(part.storyId).toBe(testStoryId);
-				expect(part.story).toBeDefined();
-				expect(part.story.id).toBe(testStoryId);
-			}
+            // 3. Verify response status
+            expect(response.status).toBe(200);
 
-			console.log("✅ Fetched parts successfully:");
-			console.log(`  Total: ${data.parts.length}`);
-		}, 30000);
+            // 4. Verify response structure
+            expect(data.parts).toBeDefined();
+            expect(Array.isArray(data.parts)).toBe(true);
 
-		it("should require storyId parameter", async () => {
-			const response = await fetch("http://localhost:3000/studio/api/parts", {
-				method: "GET",
-				headers: {
-					"x-api-key": writer.apiKey,
-				},
-			});
+            // 5. Verify parts data
+            for (const part of data.parts) {
+                expect(part.id).toMatch(/^part_/);
+                expect(part.storyId).toBe(testStoryId);
+                expect(part.story).toBeDefined();
+                expect(part.story.id).toBe(testStoryId);
+            }
 
-			const data = await response.json();
+            // 6. Log success details
+            console.log("✅ Fetched parts successfully:");
+            console.log(`  Total: ${data.parts.length}`);
+            for (const part of data.parts) {
+                console.log(`  - ${part.id}`);
+            }
+        }, 30000);
 
-			// Should fail with 400 Bad Request
-			expect(response.status).toBe(400);
-			expect(data.error).toContain("storyId");
+        it("should require storyId parameter", async () => {
+            // 1. Send GET request without storyId parameter
+            const apiKey: string = writer.apiKey as string;
+            const response: Response = await fetch(
+                "http://localhost:3000/studio/api/parts",
+                {
+                    method: "GET",
+                    headers: {
+                        "x-api-key": apiKey,
+                    },
+                },
+            );
 
-			console.log("✅ Correctly rejected request without storyId");
-		}, 30000);
-	});
+            // 2. Parse error response
+            const data: { error: string } = await response.json();
+
+            // 3. Verify error response
+            expect(response.status).toBe(400);
+            expect(data.error).toContain("storyId");
+
+            // 4. Log validation success
+            console.log("✅ Correctly rejected request without storyId");
+            console.log(`  Error: ${data.error}`);
+        }, 30000);
+    });
 });

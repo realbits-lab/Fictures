@@ -9,97 +9,145 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import type {
+    GenerateSettingsErrorResponse,
+    GenerateSettingsRequest,
+    GenerateSettingsResponse,
+} from "@/app/studio/api/types";
 
-const authFilePath = path.join(process.cwd(), ".auth/user.json");
-const authData = JSON.parse(fs.readFileSync(authFilePath, "utf-8"));
+// Load authentication profiles
+const authFilePath: string = path.join(process.cwd(), ".auth/user.json");
+const authData: {
+    [key: string]: { profiles: { writer: { apiKey?: string } } };
+} = JSON.parse(fs.readFileSync(authFilePath, "utf-8"));
 
-const environment = process.env.NODE_ENV === "production" ? "main" : "develop";
-const writer = authData[environment].profiles.writer;
+// Use develop environment writer profile (has stories:write scope)
+const environment: "main" | "develop" =
+    process.env.NODE_ENV === "production" ? "main" : "develop";
+const writer: { apiKey?: string } = authData[environment].profiles.writer;
 
 if (!writer?.apiKey) {
-	throw new Error("❌ Writer API key not found in .auth/user.json");
+    throw new Error("❌ Writer API key not found in .auth/user.json");
 }
 
 describe("Setting API", () => {
-	let testStoryId: string;
+    let testStoryId: string;
 
-	beforeAll(async () => {
-		const response = await fetch("http://localhost:3000/studio/api/stories", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"x-api-key": writer.apiKey,
-			},
-			body: JSON.stringify({
-				userPrompt: "A test story for setting testing",
-				language: "English",
-				preferredGenre: "Fantasy",
-				preferredTone: "dark",
-			}),
-		});
+    beforeAll(async () => {
+        console.log("🔧 Setting up test story...");
 
-		const data = await response.json();
-		if (!response.ok) {
-			throw new Error(`Failed to create test story: ${JSON.stringify(data)}`);
-		}
+        // 1. Prepare story request
+        const apiKey: string = writer.apiKey as string;
+        const response: Response = await fetch(
+            "http://localhost:3000/studio/api/stories",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify({
+                    userPrompt: "A test story for setting testing",
+                    language: "English",
+                    preferredGenre: "Fantasy",
+                    preferredTone: "dark",
+                }),
+            },
+        );
 
-		testStoryId = data.story.id;
-		console.log(`✅ Test story created: ${testStoryId}`);
-	}, 120000);
+        // 2. Parse story response
+        const data: { story: { id: string } } = await response.json();
 
-	it("should create a setting via POST /studio/api/settings", async () => {
-		const requestBody = {
-			storyId: testStoryId,
-			name: "Dark Forest of Trials",
-			description: "A mystical forest where shadows come alive and test the courage of those who enter",
-			timeframe: "Medieval times, autumn season",
-			socialStructure: "Isolated from civilization, ruled by ancient forest spirits",
-			geographyClimate: "Dense woodland with perpetual mist, cool and damp climate",
-			adversityElements: {
-				physicalObstacles: ["Treacherous paths", "Thorny undergrowth", "Deep ravines"],
-				scarcityFactors: ["Limited food", "No fresh water", "Darkness"],
-				dangerSources: ["Wild beasts", "Forest spirits", "Poisonous plants"],
-				socialDynamics: ["Spirits test worthiness", "Ancient curses", "Forbidden zones"],
-			},
-			cycleAmplification: {
-				setup: "The forest appears tranquil at first",
-				confrontation: "Shadows begin to move and whisper",
-				virtue: "Characters must show courage to proceed",
-				consequence: "The forest either grants passage or traps the unworthy",
-				transition: "Each trial leads deeper into the heart of darkness",
-			},
-			sensory: {
-				sight: ["Twisted tree branches", "Glowing mushrooms", "Moving shadows"],
-				sound: ["Rustling leaves", "Distant howls", "Whispers in unknown tongues"],
-				smell: ["Damp earth", "Decaying vegetation", "Sweet poison flowers"],
-				touch: ["Rough bark", "Cold mist", "Thorny vines"],
-				taste: ["Bitter berries", "Metallic fear"],
-			},
-		};
+        // 3. Validate story response
+        if (!response.ok) {
+            throw new Error(
+                `Failed to create test story: ${JSON.stringify(data)}`,
+            );
+        }
 
-		const response = await fetch("http://localhost:3000/studio/api/settings", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"x-api-key": writer.apiKey,
-			},
-			body: JSON.stringify(requestBody),
-		});
+        // 4. Store test story ID
+        testStoryId = data.story.id;
+        console.log(`✅ Test story created: ${testStoryId}`);
+    }, 120000);
 
-		const data = await response.json();
+    it("should generate settings via POST /studio/api/settings", async () => {
+        // 1. Prepare request body with proper TypeScript type
+        const requestBody: GenerateSettingsRequest = {
+            storyId: testStoryId,
+            settingsCount: 2, // Generate 2 settings for faster testing
+            language: "English",
+        };
 
-		if (!response.ok) {
-			console.error("❌ API Error:", data);
-		}
+        // 2. Send POST request to settings generation API
+        const apiKey: string = writer.apiKey as string;
+        const response: Response = await fetch(
+            "http://localhost:3000/studio/api/settings",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify(requestBody),
+            },
+        );
 
-		expect(response.status).toBe(201);
-		expect(data.success).toBe(true);
-		expect(data.setting).toBeDefined();
-		expect(data.setting.id).toMatch(/^setting_/);
-		expect(data.setting.name).toBe("Dark Forest of Trials");
+        // 3. Parse response data with proper typing
+        const data: GenerateSettingsResponse | GenerateSettingsErrorResponse =
+            await response.json();
 
-		console.log("✅ Setting created successfully:");
-		console.log(`  ID: ${data.setting.id}`);
-		console.log(`  Name: ${data.setting.name}`);
-	}, 10000);
+        // 4. Log error if request failed
+        if (!response.ok) {
+            console.error("❌ Settings API Error:", data);
+            expect(response.ok).toBe(true); // Force fail with proper error logged
+        }
+
+        // 5. Verify response status
+        expect(response.status).toBe(201);
+
+        // 6. Type guard to ensure we have success response
+        if (!("success" in data) || !data.success) {
+            throw new Error("Expected GenerateSettingsResponse but got error");
+        }
+
+        // 7. Cast to success response type
+        const successData = data as GenerateSettingsResponse;
+
+        // 8. Verify response structure
+        expect(successData.success).toBe(true);
+        expect(successData.settings).toBeDefined();
+        expect(Array.isArray(successData.settings)).toBe(true);
+        expect(successData.settings.length).toBe(2);
+        expect(successData.metadata).toBeDefined();
+
+        // 9. Verify metadata
+        const { metadata }: { metadata: GenerateSettingsResponse["metadata"] } =
+            successData;
+        expect(metadata.totalGenerated).toBe(2);
+        expect(metadata.generationTime).toBeGreaterThan(0);
+
+        // 10. Verify settings data
+        const { settings }: { settings: GenerateSettingsResponse["settings"] } =
+            successData;
+        const firstSetting = settings[0];
+        expect(firstSetting.id).toMatch(/^setting_/);
+        expect(firstSetting.storyId).toBe(testStoryId);
+        expect(firstSetting.name).toBeDefined();
+        expect(typeof firstSetting.name).toBe("string");
+        expect(firstSetting.description).toBeDefined();
+
+        // 11. Log success details
+        console.log("✅ Settings generated successfully:");
+        console.log(`  Total Generated: ${settings.length}`);
+        console.log(`  Generation Time: ${metadata.generationTime}ms`);
+        for (let idx = 0; idx < settings.length; idx++) {
+            const setting = settings[idx];
+            console.log(`  ${idx + 1}. ${setting.name}`);
+            console.log(`     ID: ${setting.id}`);
+            console.log(
+                `     Description: ${setting.description?.substring(0, 80) || "N/A"}...`,
+            );
+            console.log(`     Timeframe: ${setting.timeframe || "N/A"}`);
+        }
+    }, 60000);
 });

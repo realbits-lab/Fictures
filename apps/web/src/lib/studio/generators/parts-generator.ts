@@ -20,62 +20,89 @@ import type { Part } from "./zod-schemas.generated";
  * @returns Parts data (caller responsible for database save)
  */
 export async function generateParts(
-	params: GeneratePartsParams,
+    params: GeneratePartsParams,
 ): Promise<GeneratePartsResult> {
-	const startTime = Date.now();
-	const { story, characters, partsCount, onProgress } = params;
+    const startTime: number = Date.now();
 
-	const parts: Part[] = [];
+    // 1. Extract and set default parameters
+    const { story, characters, partsCount, onProgress }: GeneratePartsParams =
+        params;
 
-	for (let i = 0; i < partsCount; i++) {
-		// Report progress
-		if (onProgress) {
-			onProgress(i + 1, partsCount);
-		}
+    const parts: Part[] = [];
 
-		// Build character list string
-		const charactersStr = characters
-			.map((c) => `- ${c.name}: ${c.coreTrait} (flaw: ${c.internalFlaw})`)
-			.join("\n");
+    // 2. Generate each part in sequence
+    for (let i = 0; i < partsCount; i++) {
+        console.log(
+            `[parts-generator] 🎬 Generating part ${i + 1}/${partsCount}...`,
+        );
 
-		// Generate part using template
-		const response = await textGenerationClient.generateWithTemplate(
-			"part",
-			{
-				partNumber: String(i + 1),
-				storyTitle: story.title,
-				storyGenre: story.genre,
-				storySummary: story.summary,
-				moralFramework: story.moralFramework,
-				characters: charactersStr,
-			},
-			{
-				temperature: 0.85,
-				maxTokens: 8192,
-				responseFormat: "json",
-				responseSchema: PartJsonSchema,
-			},
-		);
+        // 3. Report progress callback if provided
+        if (onProgress) {
+            onProgress(i + 1, partsCount);
+        }
 
-		const partData = JSON.parse(response.text);
-		parts.push(partData);
+        // 4. Build character list string
+        const charactersStr: string = characters
+            .map((c) => `- ${c.name}: ${c.coreTrait} (flaw: ${c.internalFlaw})`)
+            .join("\n");
 
-		console.log(`[parts-generator] Generated part ${i + 1}/${partsCount}:`, {
-			title: partData.title,
-			characterArcs: partData.characterArcs?.length || 0,
-		});
-	}
+        console.log(
+            `[parts-generator] Character list prepared: ${characters.length} characters`,
+        );
 
-	console.log("[parts-generator] All parts generated:", {
-		count: parts.length,
-		generationTime: Date.now() - startTime,
-	});
+        // 5. Generate part using template
+        const response: Awaited<
+            ReturnType<typeof textGenerationClient.generateWithTemplate>
+        > = await textGenerationClient.generateWithTemplate(
+            "part",
+            {
+                partNumber: String(i + 1),
+                storyTitle: story.title,
+                storyGenre: story.genre,
+                storySummary: story.summary,
+                moralFramework: story.moralFramework,
+                characters: charactersStr,
+            },
+            {
+                temperature: 0.85,
+                maxTokens: 8192,
+                responseFormat: "json",
+                responseSchema: PartJsonSchema,
+            },
+        );
 
-	return {
-		parts,
-		metadata: {
-			totalGenerated: parts.length,
-			generationTime: Date.now() - startTime,
-		},
-	};
+        console.log(`[parts-generator] AI response received for part ${i + 1}`);
+
+        // 6. Parse and validate part data
+        const partData: Part = JSON.parse(response.text) as Part;
+        parts.push(partData);
+
+        console.log(
+            `[parts-generator] ✅ Generated part ${i + 1}/${partsCount}:`,
+            {
+                title: partData.title,
+                summary: partData.summary?.substring(0, 50) || "N/A",
+                characterArcs: partData.characterArcs?.length || 0,
+            },
+        );
+    }
+
+    // 7. Calculate total generation time
+    const totalTime: number = Date.now() - startTime;
+
+    console.log("[parts-generator] ✅ All parts generated successfully:", {
+        count: parts.length,
+        generationTime: totalTime,
+    });
+
+    // 8. Build and return result with metadata
+    const result: GeneratePartsResult = {
+        parts,
+        metadata: {
+            totalGenerated: parts.length,
+            generationTime: totalTime,
+        },
+    };
+
+    return result;
 }

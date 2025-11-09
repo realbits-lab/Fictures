@@ -20,60 +20,84 @@ import type { Setting } from "./zod-schemas.generated";
  * @returns Settings data (caller responsible for database save)
  */
 export async function generateSettings(
-	params: GenerateSettingsParams,
+    params: GenerateSettingsParams,
 ): Promise<GenerateSettingsResult> {
-	const startTime = Date.now();
-	const { story, settingCount, onProgress } = params;
+    const startTime: number = Date.now();
 
-	const settings: Setting[] = [];
+    // 1. Extract and set default parameters
+    const { story, settingCount, onProgress }: GenerateSettingsParams = params;
 
-	for (let i = 0; i < settingCount; i++) {
-		// Report progress
-		if (onProgress) {
-			onProgress(i + 1, settingCount);
-		}
+    const settings: Setting[] = [];
 
-		// Generate setting using template
-		const response = await textGenerationClient.generateWithTemplate(
-			"setting",
-			{
-				settingNumber: String(i + 1),
-				settingCount: String(settingCount),
-				storyTitle: story.title,
-				storyGenre: story.genre,
-				storySummary: story.summary,
-				moralFramework: story.moralFramework,
-			},
-			{
-				temperature: 0.85,
-				maxTokens: 8192,
-				responseFormat: "json",
-				responseSchema: SettingJsonSchema,
-			},
-		);
+    // 2. Generate each setting in sequence
+    for (let i = 0; i < settingCount; i++) {
+        console.log(
+            `[settings-generator] 🏰 Generating setting ${i + 1}/${settingCount}...`,
+        );
 
-		const settingData = JSON.parse(response.text);
-		settings.push(settingData);
+        // 3. Report progress callback if provided
+        if (onProgress) {
+            onProgress(i + 1, settingCount);
+        }
 
-		console.log(
-			`[settings-generator] Generated setting ${i + 1}/${settingCount}:`,
-			{
-				name: settingData.name,
-				mood: settingData.mood,
-			},
-		);
-	}
+        // 4. Generate setting using template
+        const response: Awaited<
+            ReturnType<typeof textGenerationClient.generateWithTemplate>
+        > = await textGenerationClient.generateWithTemplate(
+            "setting",
+            {
+                settingNumber: String(i + 1),
+                settingCount: String(settingCount),
+                storyTitle: story.title,
+                storyGenre: story.genre,
+                storySummary: story.summary,
+                moralFramework: story.moralFramework,
+            },
+            {
+                temperature: 0.85,
+                maxTokens: 8192,
+                responseFormat: "json",
+                responseSchema: SettingJsonSchema,
+            },
+        );
 
-	console.log("[settings-generator] All settings generated:", {
-		count: settings.length,
-		generationTime: Date.now() - startTime,
-	});
+        console.log(
+            `[settings-generator] AI response received for setting ${i + 1}`,
+        );
 
-	return {
-		settings,
-		metadata: {
-			totalGenerated: settings.length,
-			generationTime: Date.now() - startTime,
-		},
-	};
+        // 5. Parse and validate setting data
+        const settingData: Setting = JSON.parse(response.text) as Setting;
+        settings.push(settingData);
+
+        console.log(
+            `[settings-generator] ✅ Generated setting ${i + 1}/${settingCount}:`,
+            {
+                name: settingData.name,
+                mood: settingData.mood,
+                description: settingData.description?.substring(0, 50) || "N/A",
+            },
+        );
+    }
+
+    // 6. Calculate total generation time
+    const totalTime: number = Date.now() - startTime;
+
+    console.log(
+        "[settings-generator] ✅ All settings generated successfully:",
+        {
+            count: settings.length,
+            generationTime: totalTime,
+        },
+    );
+
+    // 7. Build and return result with metadata
+    const result: GenerateSettingsResult = {
+        settings,
+        metadata: {
+            totalGenerated: settings.length,
+            generationTime: totalTime,
+        },
+    };
+
+    return result;
 }

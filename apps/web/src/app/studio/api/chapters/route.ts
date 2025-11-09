@@ -17,9 +17,9 @@ import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateChapters } from "@/lib/studio/generators/chapters-generator";
 import type { GenerateChaptersParams } from "@/lib/studio/generators/types";
 import type {
-	GenerateChaptersErrorResponse,
-	GenerateChaptersRequest,
-	GenerateChaptersResponse,
+    GenerateChaptersErrorResponse,
+    GenerateChaptersRequest,
+    GenerateChaptersResponse,
 } from "../types";
 
 export const runtime = "nodejs";
@@ -28,9 +28,9 @@ export const runtime = "nodejs";
  * Validation schema for generating chapters
  */
 const generateChaptersSchema = z.object({
-	storyId: z.string(),
-	chaptersPerPart: z.number().min(1).max(10).optional().default(3),
-	language: z.string().optional().default("English"),
+    storyId: z.string(),
+    chaptersPerPart: z.number().min(1).max(10).optional().default(3),
+    language: z.string().optional().default("English"),
 });
 
 /**
@@ -41,180 +41,203 @@ const generateChaptersSchema = z.object({
  * Required scope: stories:write
  */
 export async function POST(request: NextRequest) {
-	console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-	console.log("📚 [CHAPTERS API] POST request received");
-	console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log("📚 [CHAPTERS API] POST request received");
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-	try {
-		const authResult = await authenticateRequest(request);
+    try {
+        // 1. Authenticate the request
+        const authResult: Awaited<ReturnType<typeof authenticateRequest>> =
+            await authenticateRequest(request);
 
-		if (!authResult) {
-			console.error("❌ [CHAPTERS API] Authentication failed");
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
+        if (!authResult) {
+            console.error("❌ [CHAPTERS API] Authentication failed");
+            return NextResponse.json(
+                { error: "Unauthorized" },
+                { status: 401 },
+            );
+        }
 
-		if (!hasRequiredScope(authResult, "stories:write")) {
-			console.error("❌ [CHAPTERS API] Insufficient scopes:", {
-				required: "stories:write",
-				actual: authResult.scopes,
-			});
-			return NextResponse.json(
-				{ error: "Insufficient permissions. Required scope: stories:write" },
-				{ status: 403 },
-			);
-		}
+        // 2. Check if user has permission to write stories
+        if (!hasRequiredScope(authResult, "stories:write")) {
+            console.error("❌ [CHAPTERS API] Insufficient scopes:", {
+                required: "stories:write",
+                actual: authResult.scopes,
+            });
+            return NextResponse.json(
+                {
+                    error: "Insufficient permissions. Required scope: stories:write",
+                },
+                { status: 403 },
+            );
+        }
 
-		console.log("✅ [CHAPTERS API] Authentication successful:", {
-			type: authResult.type,
-			userId: authResult.user.id,
-			email: authResult.user.email,
-		});
+        console.log("✅ [CHAPTERS API] Authentication successful:", {
+            type: authResult.type,
+            userId: authResult.user.id,
+            email: authResult.user.email,
+        });
 
-		// Parse and validate request body with type safety
-		const body = (await request.json()) as GenerateChaptersRequest;
-		const validatedData = generateChaptersSchema.parse(body);
+        // 3. Parse and validate request body with type safety
+        const body: GenerateChaptersRequest =
+            (await request.json()) as GenerateChaptersRequest;
+        const validatedData: z.infer<typeof generateChaptersSchema> =
+            generateChaptersSchema.parse(body);
 
-		console.log("[CHAPTERS API] Request parameters:", {
-			storyId: validatedData.storyId,
-			chaptersPerPart: validatedData.chaptersPerPart,
-			language: validatedData.language,
-		});
+        console.log("[CHAPTERS API] Request parameters:", {
+            storyId: validatedData.storyId,
+            chaptersPerPart: validatedData.chaptersPerPart,
+            language: validatedData.language,
+        });
 
-		// Fetch story and verify ownership
-		const [story] = await db
-			.select()
-			.from(stories)
-			.where(eq(stories.id, validatedData.storyId));
+        // 4. Fetch story and verify ownership
+        const storyResult: Array<typeof stories.$inferSelect> = await db
+            .select()
+            .from(stories)
+            .where(eq(stories.id, validatedData.storyId));
+        const story: typeof stories.$inferSelect | undefined = storyResult[0];
 
-		if (!story) {
-			console.error("❌ [CHAPTERS API] Story not found");
-			return NextResponse.json({ error: "Story not found" }, { status: 404 });
-		}
+        if (!story) {
+            console.error("❌ [CHAPTERS API] Story not found");
+            return NextResponse.json(
+                { error: "Story not found" },
+                { status: 404 },
+            );
+        }
 
-		if (story.authorId !== authResult.user.id) {
-			console.error("❌ [CHAPTERS API] Access denied - not story author");
-			return NextResponse.json({ error: "Access denied" }, { status: 403 });
-		}
+        if (story.authorId !== authResult.user.id) {
+            console.error("❌ [CHAPTERS API] Access denied - not story author");
+            return NextResponse.json(
+                { error: "Access denied" },
+                { status: 403 },
+            );
+        }
 
-		console.log("✅ [CHAPTERS API] Story verified:", {
-			id: story.id,
-			title: story.title,
-		});
+        console.log("✅ [CHAPTERS API] Story verified:", {
+            id: story.id,
+            title: story.title,
+        });
 
-		// Fetch parts for the story
-		const storyParts = await db
-			.select()
-			.from(parts)
-			.where(eq(parts.storyId, validatedData.storyId))
-			.orderBy(parts.orderIndex);
+        // 5. Fetch parts for the story
+        const storyParts: Array<typeof parts.$inferSelect> = await db
+            .select()
+            .from(parts)
+            .where(eq(parts.storyId, validatedData.storyId))
+            .orderBy(parts.orderIndex);
 
-		if (storyParts.length === 0) {
-			console.error("❌ [CHAPTERS API] No parts found for story");
-			return NextResponse.json(
-				{ error: "Story must have parts before generating chapters" },
-				{ status: 400 },
-			);
-		}
+        if (storyParts.length === 0) {
+            console.error("❌ [CHAPTERS API] No parts found for story");
+            return NextResponse.json(
+                { error: "Story must have parts before generating chapters" },
+                { status: 400 },
+            );
+        }
 
-		console.log(`✅ [CHAPTERS API] Found ${storyParts.length} parts`);
+        console.log(`✅ [CHAPTERS API] Found ${storyParts.length} parts`);
 
-		// Fetch characters for the story
-		const storyCharacters = await db
-			.select()
-			.from(characters)
-			.where(eq(characters.storyId, validatedData.storyId));
+        // 6. Fetch characters for the story
+        const storyCharacters: Array<typeof characters.$inferSelect> = await db
+            .select()
+            .from(characters)
+            .where(eq(characters.storyId, validatedData.storyId));
 
-		if (storyCharacters.length === 0) {
-			console.error("❌ [CHAPTERS API] No characters found for story");
-			return NextResponse.json(
-				{ error: "Story must have characters before generating chapters" },
-				{ status: 400 },
-			);
-		}
+        if (storyCharacters.length === 0) {
+            console.error("❌ [CHAPTERS API] No characters found for story");
+            return NextResponse.json(
+                {
+                    error: "Story must have characters before generating chapters",
+                },
+                { status: 400 },
+            );
+        }
 
-		console.log(`✅ [CHAPTERS API] Found ${storyCharacters.length} characters`);
+        console.log(
+            `✅ [CHAPTERS API] Found ${storyCharacters.length} characters`,
+        );
 
-		// Generate chapters using AI
-		console.log("[CHAPTERS API] 🤖 Calling chapters generator...");
-		const generateParams: GenerateChaptersParams = {
-			storyId: validatedData.storyId,
-			story: story as any,
-			parts: storyParts as any,
-			characters: storyCharacters as any,
-			chaptersPerPart: validatedData.chaptersPerPart,
-		};
+        // 7. Generate chapters using AI
+        console.log("[CHAPTERS API] 🤖 Calling chapters generator...");
+        const generateParams: GenerateChaptersParams = {
+            storyId: validatedData.storyId,
+            story: story as any,
+            parts: storyParts as any,
+            characters: storyCharacters as any,
+            chaptersPerPart: validatedData.chaptersPerPart,
+        };
 
-		const generationResult = await generateChapters(generateParams);
+        const generationResult: Awaited<ReturnType<typeof generateChapters>> =
+            await generateChapters(generateParams);
 
-		console.log("[CHAPTERS API] ✅ Chapters generation completed:", {
-			count: generationResult.chapters.length,
-			generationTime: generationResult.metadata.generationTime,
-		});
+        console.log("[CHAPTERS API] ✅ Chapters generation completed:", {
+            count: generationResult.chapters.length,
+            generationTime: generationResult.metadata.generationTime,
+        });
 
-		// Save generated chapters to database
-		console.log("[CHAPTERS API] 💾 Saving chapters to database...");
-		const savedChapters = [];
+        // 8. Save generated chapters to database
+        console.log("[CHAPTERS API] 💾 Saving chapters to database...");
+        const savedChapters: Array<typeof chapters.$inferSelect> = [];
 
-		for (let i = 0; i < generationResult.chapters.length; i++) {
-			const chapterData = generationResult.chapters[i];
-			const chapterId = await RelationshipManager.addChapterToPart(
-				chapterData.partId,
-				{
-					title: chapterData.title || `Chapter ${i + 1}`,
-					summary: chapterData.summary || null,
-					orderIndex: i + 1,
-				},
-			);
+        for (let i = 0; i < generationResult.chapters.length; i++) {
+            const chapterData = generationResult.chapters[i];
+            const chapterId: string =
+                await RelationshipManager.addChapterToPart(chapterData.partId, {
+                    title: chapterData.title || `Chapter ${i + 1}`,
+                    summary: chapterData.summary || null,
+                    orderIndex: i + 1,
+                });
 
-			const [savedChapter] = await db
-				.select()
-				.from(chapters)
-				.where(eq(chapters.id, chapterId))
-				.limit(1);
+            const savedChapterResult: Array<typeof chapters.$inferSelect> =
+                await db
+                    .select()
+                    .from(chapters)
+                    .where(eq(chapters.id, chapterId))
+                    .limit(1);
+            const savedChapter: typeof chapters.$inferSelect =
+                savedChapterResult[0];
 
-			savedChapters.push(savedChapter);
-		}
+            savedChapters.push(savedChapter);
+        }
 
-		console.log(
-			`[CHAPTERS API] ✅ Saved ${savedChapters.length} chapters to database`,
-		);
+        console.log(
+            `[CHAPTERS API] ✅ Saved ${savedChapters.length} chapters to database`,
+        );
 
-		// Invalidate cache
-		await invalidateStudioCache(authResult.user.id);
-		console.log("[CHAPTERS API] ✅ Cache invalidated");
+        // 9. Invalidate cache
+        await invalidateStudioCache(authResult.user.id);
+        console.log("[CHAPTERS API] ✅ Cache invalidated");
 
-		console.log("✅ [CHAPTERS API] Request completed successfully");
-		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+        console.log("✅ [CHAPTERS API] Request completed successfully");
+        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-		// Return typed response
-		const response: GenerateChaptersResponse = {
-			success: true,
-			chapters: savedChapters,
-			metadata: {
-				totalGenerated: savedChapters.length,
-				generationTime: generationResult.metadata.generationTime,
-			},
-		};
+        // 10. Return typed response
+        const response: GenerateChaptersResponse = {
+            success: true,
+            chapters: savedChapters,
+            metadata: {
+                totalGenerated: savedChapters.length,
+                generationTime: generationResult.metadata.generationTime,
+            },
+        };
 
-		return NextResponse.json(response, { status: 201 });
-	} catch (error) {
-		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-		console.error("❌ [CHAPTERS API] Error:", error);
-		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+        return NextResponse.json(response, { status: 201 });
+    } catch (error) {
+        console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        console.error("❌ [CHAPTERS API] Error:", error);
+        console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-		if (error instanceof z.ZodError) {
-			const errorResponse: GenerateChaptersErrorResponse = {
-				error: "Invalid input",
-				details: error.issues,
-			};
-			return NextResponse.json(errorResponse, { status: 400 });
-		}
+        if (error instanceof z.ZodError) {
+            const errorResponse: GenerateChaptersErrorResponse = {
+                error: "Invalid input",
+                details: error.issues,
+            };
+            return NextResponse.json(errorResponse, { status: 400 });
+        }
 
-		const errorResponse: GenerateChaptersErrorResponse = {
-			error: "Failed to generate and save chapters",
-			details: error instanceof Error ? error.message : "Unknown error",
-		};
+        const errorResponse: GenerateChaptersErrorResponse = {
+            error: "Failed to generate and save chapters",
+            details: error instanceof Error ? error.message : "Unknown error",
+        };
 
-		return NextResponse.json(errorResponse, { status: 500 });
-	}
+        return NextResponse.json(errorResponse, { status: 500 });
+    }
 }
