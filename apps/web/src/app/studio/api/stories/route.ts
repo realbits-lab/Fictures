@@ -13,6 +13,51 @@ import type { GenerateStoryParams } from "@/lib/studio/generators/types";
 
 export const runtime = "nodejs";
 
+// ============================================================================
+// Request/Response Type Definitions
+// ============================================================================
+
+/**
+ * Request body for story creation
+ */
+interface CreateStoryRequest {
+	userPrompt: string;
+	language?: string;
+	preferredGenre?: string;
+	preferredTone?: "hopeful" | "dark" | "bittersweet" | "satirical";
+}
+
+/**
+ * Response body for successful story creation
+ */
+interface CreateStoryResponse {
+	success: true;
+	story: {
+		id: string;
+		authorId: string;
+		title: string;
+		summary: string | null;
+		genre: string | null;
+		tone: string;
+		moralFramework: string | null;
+		status: string;
+		createdAt: Date;
+		updatedAt: Date;
+	};
+	metadata: {
+		generationTime: number;
+		model?: string;
+	};
+}
+
+/**
+ * Error response body
+ */
+interface ErrorResponse {
+	error: string;
+	details?: string;
+}
+
 // GET /api/stories - Get user's stories with detailed data for dashboard
 export async function GET(request: NextRequest) {
 	try {
@@ -156,8 +201,8 @@ export async function POST(request: NextRequest) {
 			email: authResult.user.email,
 		});
 
-		// Parse request body
-		const body = await request.json();
+		// Parse request body with type safety
+		const body = (await request.json()) as CreateStoryRequest;
 		const {
 			userPrompt,
 			language = "English",
@@ -176,10 +221,10 @@ export async function POST(request: NextRequest) {
 		// Validate required parameters
 		if (!userPrompt || typeof userPrompt !== "string") {
 			console.error("❌ [STORIES API] Validation failed: userPrompt missing");
-			return NextResponse.json(
-				{ error: "userPrompt is required and must be a string" },
-				{ status: 400 },
-			);
+			const errorResponse: ErrorResponse = {
+				error: "userPrompt is required and must be a string",
+			};
+			return NextResponse.json(errorResponse, { status: 400 });
 		}
 
 		console.log("✅ [STORIES API] Validation passed");
@@ -234,40 +279,38 @@ export async function POST(request: NextRequest) {
 		console.log("✅ [STORIES API] Request completed successfully");
 		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-		// Return the created story with metadata
-		return NextResponse.json(
-			{
-				success: true,
-				story: {
-					id: savedStory.id,
-					authorId: savedStory.authorId,
-					title: savedStory.title,
-					summary: savedStory.summary,
-					genre: savedStory.genre,
-					tone: savedStory.tone,
-					moralFramework: savedStory.moralFramework,
-					status: savedStory.status,
-					createdAt: savedStory.createdAt,
-					updatedAt: savedStory.updatedAt,
-				},
-				metadata: {
-					generationTime: generationResult.metadata.generationTime,
-					model: generationResult.metadata.model,
-				},
+		// Return the created story with metadata (typed response)
+		const response: CreateStoryResponse = {
+			success: true,
+			story: {
+				id: savedStory.id,
+				authorId: savedStory.authorId,
+				title: savedStory.title,
+				summary: savedStory.summary,
+				genre: savedStory.genre,
+				tone: savedStory.tone,
+				moralFramework: savedStory.moralFramework,
+				status: savedStory.status,
+				createdAt: savedStory.createdAt,
+				updatedAt: savedStory.updatedAt,
 			},
-			{ status: 201 },
-		);
+			metadata: {
+				generationTime: generationResult.metadata.generationTime,
+				model: generationResult.metadata.model,
+			},
+		};
+
+		return NextResponse.json(response, { status: 201 });
 	} catch (error) {
 		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 		console.error("❌ [STORIES API] Error:", error);
 		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-		return NextResponse.json(
-			{
-				error: "Failed to generate and save story",
-				details: error instanceof Error ? error.message : "Unknown error",
-			},
-			{ status: 500 },
-		);
+		const errorResponse: ErrorResponse = {
+			error: "Failed to generate and save story",
+			details: error instanceof Error ? error.message : "Unknown error",
+		};
+
+		return NextResponse.json(errorResponse, { status: 500 });
 	}
 }
