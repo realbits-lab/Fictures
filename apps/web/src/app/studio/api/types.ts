@@ -37,7 +37,14 @@
  * - POST /studio/api/scene-content - Generate scene content
  */
 
-import type { Story } from "@/lib/studio/generators/zod-schemas.generated";
+import type {
+	Chapter,
+	Character,
+	Part,
+	Scene,
+	Setting,
+	Story,
+} from "@/lib/studio/generators/zod-schemas.generated";
 
 // ============================================================================
 // Story Generation
@@ -76,26 +83,7 @@ export interface GenerateCharactersRequest {
 
 export interface GenerateCharactersResponse {
 	success: true;
-	characters: Array<{
-		id: string;
-		storyId: string;
-		name: string;
-		isMain: boolean;
-		summary: string | null;
-		coreTrait: string | null;
-		internalFlaw: string | null;
-		externalGoal: string | null;
-		personality: any | null;
-		backstory: string | null;
-		relationships: any | null;
-		physicalDescription: any | null;
-		voiceStyle: any | null;
-		imageUrl: string | null;
-		imageVariants: any | null;
-		visualStyle: string | null;
-		createdAt: Date;
-		updatedAt: Date;
-	}>;
+	characters: Character[];
 	metadata: {
 		totalGenerated: number;
 		generationTime: number;
@@ -118,7 +106,7 @@ export interface GenerateSettingsRequest {
 
 export interface GenerateSettingsResponse {
 	success: true;
-	settings: Array<any>;
+	settings: Setting[];
 	metadata: {
 		totalGenerated: number;
 		generationTime: number;
@@ -142,7 +130,7 @@ export interface GeneratePartsRequest {
 
 export interface GeneratePartsResponse {
 	success: true;
-	parts: Array<any>;
+	parts: Part[];
 	metadata: {
 		totalGenerated: number;
 		generationTime: number;
@@ -166,7 +154,7 @@ export interface GenerateChaptersRequest {
 
 export interface GenerateChaptersResponse {
 	success: true;
-	chapters: Array<any>;
+	chapters: Chapter[];
 	metadata: {
 		totalGenerated: number;
 		generationTime: number;
@@ -190,7 +178,7 @@ export interface GenerateSceneSummariesRequest {
 
 export interface GenerateSceneSummariesResponse {
 	success: true;
-	scenes: Array<any>;
+	scenes: Scene[];
 	metadata: {
 		totalGenerated: number;
 		generationTime: number;
@@ -213,7 +201,7 @@ export interface GenerateSceneContentRequest {
 
 export interface GenerateSceneContentResponse {
 	success: true;
-	scene: any;
+	scene: Scene;
 	metadata: {
 		wordCount: number;
 		generationTime: number;

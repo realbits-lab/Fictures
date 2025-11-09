@@ -17,7 +17,10 @@ import { settings, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateSettings } from "@/lib/studio/generators/settings-generator";
 import type { GenerateSettingsParams } from "@/lib/studio/generators/types";
-import { insertSettingSchema } from "@/lib/studio/generators/zod-schemas.generated";
+import {
+	insertSettingSchema,
+	type Setting,
+} from "@/lib/studio/generators/zod-schemas.generated";
 import type {
 	GenerateSettingsErrorResponse,
 	GenerateSettingsRequest,
@@ -183,37 +186,38 @@ export async function POST(request: NextRequest) {
 
 		// Save generated settings to database
 		console.log("[SETTINGS API] 💾 Saving settings to database...");
-		const savedSettings = [];
+		const savedSettings: Setting[] = [];
 
 		for (const settingData of generationResult.settings) {
-			const settingId = `setting_${nanoid(16)}`;
+			const settingId: string = `setting_${nanoid(16)}`;
 
 			// Validate setting data before insert
-			const validatedSetting = insertSettingSchema.parse({
-				id: settingId,
-				storyId: validatedData.storyId,
-				name: settingData.name || "Unnamed Setting",
-				summary: settingData.description || null,
-				adversityElements: settingData.adversityElements || null,
-				cycleAmplification: settingData.cycleAmplification || null,
-				sensory: settingData.sensory || null,
-				mood: settingData.mood || null,
-				symbolicMeaning: settingData.symbolicMeaning || null,
-				emotionalResonance: settingData.emotionalResonance || null,
-				architecturalStyle: settingData.architecturalStyle || null,
-				visualStyle: settingData.visualStyle || null,
-				visualReferences: settingData.visualReferences || null,
-				colorPalette: settingData.colorPalette || null,
-				imageUrl: null,
-				imageVariants: null,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-			});
+			const validatedSetting: ReturnType<typeof insertSettingSchema.parse> =
+				insertSettingSchema.parse({
+					id: settingId,
+					storyId: validatedData.storyId,
+					name: settingData.name || "Unnamed Setting",
+					summary: settingData.description || null,
+					adversityElements: settingData.adversityElements || null,
+					cycleAmplification: settingData.cycleAmplification || null,
+					sensory: settingData.sensory || null,
+					mood: settingData.mood || null,
+					symbolicMeaning: settingData.symbolicMeaning || null,
+					emotionalResonance: settingData.emotionalResonance || null,
+					architecturalStyle: settingData.architecturalStyle || null,
+					visualStyle: settingData.visualStyle || null,
+					visualReferences: settingData.visualReferences || null,
+					colorPalette: settingData.colorPalette || null,
+					imageUrl: null,
+					imageVariants: null,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				});
 
-			const [savedSetting] = await db
+			const [savedSetting] = (await db
 				.insert(settings)
 				.values(validatedSetting)
-				.returning();
+				.returning()) as Setting[];
 
 			savedSettings.push(savedSetting);
 		}
