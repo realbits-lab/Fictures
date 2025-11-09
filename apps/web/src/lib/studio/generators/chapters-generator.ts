@@ -77,8 +77,9 @@ export async function generateChapters(
                     totalChapters: String(parts.length * chaptersPerPart),
                     partTitle: part.title,
                     storyTitle: story.title,
-                    storyGenre: story.genre,
-                    storySummary: story.summary,
+                    storyGenre: story.genre ?? "General Fiction",
+                    storySummary:
+                        story.summary ?? "A story of adversity and triumph",
                     partSummary: part.summary,
                     characterName: focusCharacter.name,
                     characterFlaw:

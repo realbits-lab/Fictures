@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
 
         for (const settingData of generationResult.settings) {
             const settingId: string = `setting_${nanoid(16)}`;
-            const now: Date = new Date();
+            const now: string = new Date().toISOString();
 
             // 7. Validate setting data before insert
             const validatedSetting: ReturnType<
@@ -230,7 +230,7 @@ export async function POST(request: NextRequest) {
                 id: settingId,
                 storyId: validatedData.storyId,
                 name: settingData.name || "Unnamed Setting",
-                summary: settingData.description || null,
+                summary: settingData.summary || null,
                 adversityElements: settingData.adversityElements || null,
                 cycleAmplification: settingData.cycleAmplification || null,
                 sensory: settingData.sensory || null,
@@ -238,9 +238,9 @@ export async function POST(request: NextRequest) {
                 symbolicMeaning: settingData.symbolicMeaning || null,
                 emotionalResonance: settingData.emotionalResonance || null,
                 architecturalStyle: settingData.architecturalStyle || null,
-                visualStyle: settingData.visualStyle || null,
-                visualReferences: settingData.visualReferences || null,
-                colorPalette: settingData.colorPalette || null,
+                visualStyle: null,
+                visualReferences: null,
+                colorPalette: null,
                 imageUrl: null,
                 imageVariants: null,
                 createdAt: now,

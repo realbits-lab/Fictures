@@ -49,9 +49,11 @@ export async function generateSettings(
                 settingNumber: String(i + 1),
                 settingCount: String(settingCount),
                 storyTitle: story.title,
-                storyGenre: story.genre,
-                storySummary: story.summary,
-                moralFramework: story.moralFramework,
+                storyGenre: story.genre ?? "General Fiction",
+                storySummary:
+                    story.summary ?? "A story of adversity and triumph",
+                moralFramework:
+                    story.moralFramework ?? "Universal human virtues",
             },
             {
                 temperature: 0.85,

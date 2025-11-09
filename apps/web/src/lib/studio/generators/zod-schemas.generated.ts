@@ -216,6 +216,28 @@ export type Setting = z.infer<typeof selectSettingSchema>;
  */
 export type InsertSetting = z.infer<typeof insertSettingSchema>;
 
+/**
+ * Minimal schema for setting generation (only fields AI generates)
+ * Manually defined to avoid Gemini JSON schema validation issues with complex fields
+ * Fields must match insertSettingSchema but without database-specific fields
+ */
+export const generatedSettingSchema = z.object({
+    name: z.string().max(255),
+    summary: z.string().nullable(),
+    adversityElements: adversityElementsSchema.nullable(),
+    symbolicMeaning: z.string().nullable(),
+    cycleAmplification: cycleAmplificationSchema.nullable(),
+    mood: z.string().nullable(),
+    sensory: sensorySchema.nullable(),
+    emotionalResonance: z.string().nullable(),
+    architecturalStyle: z.string().nullable(),
+});
+
+/**
+ * TypeScript type for generated setting data (AI output)
+ */
+export type GeneratedSettingData = z.infer<typeof generatedSettingSchema>;
+
 // ============================================================================
 // Part Schemas
 // ============================================================================

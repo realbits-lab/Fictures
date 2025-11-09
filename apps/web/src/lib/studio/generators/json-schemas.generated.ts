@@ -10,11 +10,11 @@
 import { z } from "zod";
 import {
 	generatedCharacterSchema,
+	generatedSettingSchema,
 	generatedStorySchema,
 	insertChapterSchema,
 	insertPartSchema,
 	insertSceneSchema,
-	insertSettingSchema,
 } from "./zod-schemas.generated";
 
 /**
@@ -81,8 +81,9 @@ export const CharacterJsonSchema = toGeminiJsonSchema(generatedCharacterSchema);
 
 /**
  * JSON Schema for Setting generation (Gemini structured output)
+ * Uses generatedSettingSchema to avoid Gemini validation issues with DB-specific fields
  */
-export const SettingJsonSchema = toGeminiJsonSchema(insertSettingSchema);
+export const SettingJsonSchema = toGeminiJsonSchema(generatedSettingSchema);
 
 // ============================================================================
 // Part JSON Schema
