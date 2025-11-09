@@ -1,16 +1,18 @@
 import { eq } from "drizzle-orm";
+import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { db } from "@/lib/db";
-import { RelationshipManager } from "@/lib/db/relationships";
 import { characters, parts, settings, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateParts } from "@/lib/studio/generators/parts-generator";
 import type { GeneratePartsParams } from "@/lib/studio/generators/types";
-import type {
-    Character,
-    Story,
+import {
+    type Character,
+    insertPartSchema,
+    type Part,
+    type Story,
 } from "@/lib/studio/generators/zod-schemas.generated";
 import type {
     GeneratePartsErrorResponse,
@@ -221,27 +223,35 @@ export async function POST(request: NextRequest) {
 
         // 8. Save generated parts to database
         console.log("[PARTS API] 💾 Saving parts to database...");
-        const savedParts: Array<typeof parts.$inferSelect> = [];
+        const savedParts: Part[] = [];
 
         for (let i = 0; i < generationResult.parts.length; i++) {
             const partData = generationResult.parts[i];
-            const partId: string = await RelationshipManager.addPartToStory(
-                validatedData.storyId,
-                {
+            const partId: string = `part_${nanoid(16)}`;
+            const now: Date = new Date();
+
+            // Validate part data before insert
+            const validatedPart: ReturnType<typeof insertPartSchema.parse> =
+                insertPartSchema.parse({
+                    id: partId,
+                    storyId: validatedData.storyId,
                     title: partData.title || `Part ${i + 1}`,
                     summary: partData.summary || null,
+                    characterArcs: partData.characterArcs || null,
                     orderIndex: i + 1,
-                },
-            );
+                    createdAt: now.toISOString(),
+                    updatedAt: now.toISOString(),
+                });
 
-            const savedPartResult: Array<typeof parts.$inferSelect> = await db
-                .select()
-                .from(parts)
-                .where(eq(parts.id, partId))
-                .limit(1);
-            const savedPart: typeof parts.$inferSelect = savedPartResult[0];
+            const savedPartResult: Part[] = (await db
+                .insert(parts)
+                .values(validatedPart)
+                .returning()) as Part[];
 
+            const savedPart: Part = savedPartResult[0];
             savedParts.push(savedPart);
+
+            console.log(`[PARTS API] ✅ Saved part: ${savedPart.title}`);
         }
 
         console.log(
