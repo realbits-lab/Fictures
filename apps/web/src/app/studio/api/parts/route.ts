@@ -1,26 +1,31 @@
-import { and, eq } from "drizzle-orm";
-import { nanoid } from "nanoid";
+import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
+import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { db } from "@/lib/db";
 import { RelationshipManager } from "@/lib/db/relationships";
-import { parts, stories } from "@/lib/db/schema";
+import { characters, parts, settings, stories } from "@/lib/db/schema";
+import { invalidateStudioCache } from "@/lib/db/studio-queries";
+import { generateParts } from "@/lib/studio/generators/parts-generator";
+import type { GeneratePartsParams } from "@/lib/studio/generators/types";
 
 export const runtime = "nodejs";
 
-const createPartSchema = z.object({
-	title: z.string().min(1).max(255),
-	summary: z.string().optional(),
+const generatePartsSchema = z.object({
 	storyId: z.string(),
-	orderIndex: z.number().min(1),
-	content: z.string().optional(),
+	partsCount: z.number().min(1).max(10).optional().default(3),
+	language: z.string().optional().default("English"),
 });
 
 // GET /api/parts - Get parts for a story
 export async function GET(request: NextRequest) {
 	try {
-		const session = await auth();
+		const authResult = await authenticateRequest(request);
+
+		if (!authResult) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+
 		const { searchParams } = new URL(request.url);
 		const storyId = searchParams.get("storyId");
 
@@ -40,12 +45,8 @@ export async function GET(request: NextRequest) {
 			return NextResponse.json({ error: "Story not found" }, { status: 404 });
 		}
 
-		// Check access permissions
-		// Allow access if user is the author or story is published
-		if (
-			!session?.user?.id ||
-			(story.authorId !== session.user.id && story.status !== "published")
-		) {
+		// Check access permissions - only allow author access for now
+		if (story.authorId !== authResult.user.id) {
 			return NextResponse.json({ error: "Access denied" }, { status: 403 });
 		}
 
@@ -75,68 +76,160 @@ export async function GET(request: NextRequest) {
 	}
 }
 
-// POST /api/parts - Create a new part
+// POST /api/parts - Generate parts using AI
 export async function POST(request: NextRequest) {
 	try {
-		const session = await auth();
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		console.log("📚 [PARTS API] POST request received");
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-		if (!session?.user?.id) {
+		const authResult = await authenticateRequest(request);
+
+		if (!authResult) {
+			console.error("❌ [PARTS API] Authentication failed");
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		const body = await request.json();
-		const validatedData = createPartSchema.parse(body);
+		if (!hasRequiredScope(authResult, "stories:write")) {
+			console.error("❌ [PARTS API] Insufficient scopes:", {
+				required: "stories:write",
+				actual: authResult.scopes,
+			});
+			return NextResponse.json(
+				{ error: "Insufficient permissions. Required scope: stories:write" },
+				{ status: 403 },
+			);
+		}
 
-		// Verify user owns the story
+		console.log("✅ [PARTS API] Authentication successful:", {
+			type: authResult.type,
+			userId: authResult.user.id,
+			email: authResult.user.email,
+		});
+
+		// Parse and validate request body
+		const body = await request.json();
+		const validatedData = generatePartsSchema.parse(body);
+
+		console.log("[PARTS API] Request parameters:", {
+			storyId: validatedData.storyId,
+			partsCount: validatedData.partsCount,
+			language: validatedData.language,
+		});
+
+		// Fetch story and verify ownership
 		const [story] = await db
 			.select()
 			.from(stories)
 			.where(eq(stories.id, validatedData.storyId));
-		if (!story || story.authorId !== session.user.id) {
-			return NextResponse.json(
-				{ error: "Story not found or access denied" },
-				{ status: 404 },
-			);
+
+		if (!story) {
+			console.error("❌ [PARTS API] Story not found");
+			return NextResponse.json({ error: "Story not found" }, { status: 404 });
 		}
 
-		// Check if orderIndex is unique for this story
-		const existingPart = await db
-			.select()
-			.from(parts)
-			.where(
-				and(
-					eq(parts.storyId, validatedData.storyId),
-					eq(parts.orderIndex, validatedData.orderIndex),
-				),
-			);
+		if (story.authorId !== authResult.user.id) {
+			console.error("❌ [PARTS API] Access denied - not story author");
+			return NextResponse.json({ error: "Access denied" }, { status: 403 });
+		}
 
-		if (existingPart.length > 0) {
+		console.log("✅ [PARTS API] Story verified:", {
+			id: story.id,
+			title: story.title,
+		});
+
+		// Fetch characters for the story
+		const storyCharacters = await db
+			.select()
+			.from(characters)
+			.where(eq(characters.storyId, validatedData.storyId));
+
+		if (storyCharacters.length === 0) {
+			console.error("❌ [PARTS API] No characters found for story");
 			return NextResponse.json(
-				{ error: "A part with this order index already exists for this story" },
+				{ error: "Story must have characters before generating parts" },
 				{ status: 400 },
 			);
 		}
 
-		// Create the part using RelationshipManager for bi-directional consistency
-		const partId = await RelationshipManager.addPartToStory(
-			validatedData.storyId,
-			{
-				title: validatedData.title,
-				summary:
-					(validatedData as any).summary || (validatedData as any).description,
-				orderIndex: validatedData.orderIndex,
-			},
-		);
+		console.log(`✅ [PARTS API] Found ${storyCharacters.length} characters`);
 
-		// Get the created part for response
-		const [newPart] = await db
+		// Fetch settings for the story
+		const storySettings = await db
 			.select()
-			.from(parts)
-			.where(eq(parts.id, partId))
-			.limit(1);
+			.from(settings)
+			.where(eq(settings.storyId, validatedData.storyId));
 
-		return NextResponse.json({ part: newPart }, { status: 201 });
+		console.log(`[PARTS API] Found ${storySettings.length} settings`);
+
+		// Generate parts using AI
+		console.log("[PARTS API] 🤖 Calling parts generator...");
+		const generateParams: GeneratePartsParams = {
+			storyId: validatedData.storyId,
+			userId: authResult.user.id,
+			story: story as any,
+			characters: storyCharacters as any,
+			settings: storySettings as any,
+			partsCount: validatedData.partsCount,
+			language: validatedData.language,
+		};
+
+		const generationResult = await generateParts(generateParams);
+
+		console.log("[PARTS API] ✅ Parts generation completed:", {
+			count: generationResult.parts.length,
+			generationTime: generationResult.metadata.generationTime,
+		});
+
+		// Save generated parts to database
+		console.log("[PARTS API] 💾 Saving parts to database...");
+		const savedParts = [];
+
+		for (let i = 0; i < generationResult.parts.length; i++) {
+			const partData = generationResult.parts[i];
+			const partId = await RelationshipManager.addPartToStory(
+				validatedData.storyId,
+				{
+					title: partData.title || `Part ${i + 1}`,
+					summary: partData.summary || null,
+					orderIndex: i + 1,
+				},
+			);
+
+			const [savedPart] = await db
+				.select()
+				.from(parts)
+				.where(eq(parts.id, partId))
+				.limit(1);
+
+			savedParts.push(savedPart);
+		}
+
+		console.log(`[PARTS API] ✅ Saved ${savedParts.length} parts to database`);
+
+		// Invalidate cache
+		await invalidateStudioCache(authResult.user.id);
+		console.log("[PARTS API] ✅ Cache invalidated");
+
+		console.log("✅ [PARTS API] Request completed successfully");
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+
+		return NextResponse.json(
+			{
+				success: true,
+				parts: savedParts,
+				metadata: {
+					totalGenerated: savedParts.length,
+					generationTime: generationResult.metadata.generationTime,
+				},
+			},
+			{ status: 201 },
+		);
 	} catch (error) {
+		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		console.error("❌ [PARTS API] Error:", error);
+		console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+
 		if (error instanceof z.ZodError) {
 			return NextResponse.json(
 				{ error: "Invalid input", details: error.issues },
@@ -144,9 +237,11 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		console.error("Error creating part:", error);
 		return NextResponse.json(
-			{ error: "Internal server error" },
+			{
+				error: "Failed to generate and save parts",
+				details: error instanceof Error ? error.message : "Unknown error",
+			},
 			{ status: 500 },
 		);
 	}

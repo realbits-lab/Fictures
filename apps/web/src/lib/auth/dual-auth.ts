@@ -29,22 +29,14 @@ export type AuthResult = {
  * Authenticate a request using either API key or session
  *
  * Priority:
- * 1. Authorization header (Bearer token / API key)
- * 2. x-api-key header
- * 3. NextAuth session
+ * 1. x-api-key header
+ * 2. NextAuth session
  */
 export async function authenticateRequest(
 	request: NextRequest,
 ): Promise<AuthResult | null> {
 	// Try API key authentication first
-	const authHeader = request.headers.get("authorization");
 	const apiKeyHeader = request.headers.get("x-api-key");
-
-	if (authHeader?.startsWith("Bearer ")) {
-		const apiKey = authHeader.substring(7); // Remove 'Bearer ' prefix
-		const result = await authenticateApiKey(apiKey);
-		if (result) return result;
-	}
 
 	if (apiKeyHeader) {
 		const result = await authenticateApiKey(apiKeyHeader);
