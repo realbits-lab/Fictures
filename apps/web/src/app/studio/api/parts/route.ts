@@ -166,12 +166,9 @@ export async function POST(request: NextRequest) {
 		console.log("[PARTS API] 🤖 Calling parts generator...");
 		const generateParams: GeneratePartsParams = {
 			storyId: validatedData.storyId,
-			userId: authResult.user.id,
 			story: story as any,
 			characters: storyCharacters as any,
-			settings: storySettings as any,
 			partsCount: validatedData.partsCount,
-			language: validatedData.language,
 		};
 
 		const generationResult = await generateParts(generateParams);

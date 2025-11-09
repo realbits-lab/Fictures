@@ -167,7 +167,6 @@ export async function POST(request: NextRequest) {
 		console.log("[CHARACTERS API] 🤖 Calling characters generator...");
 		const generateParams: GenerateCharactersParams = {
 			storyId: validatedData.storyId,
-			userId: authResult.user.id,
 			story: story as any,
 			characterCount: validatedData.characterCount,
 			language: validatedData.language,
@@ -199,9 +198,9 @@ export async function POST(request: NextRequest) {
 					externalGoal: characterData.externalGoal || null,
 					personality: characterData.personality || null,
 					backstory: characterData.backstory || null,
+					relationships: characterData.relationships || null,
 					physicalDescription: characterData.physicalDescription || null,
 					voiceStyle: characterData.voiceStyle || null,
-					relationships: characterData.relationships || null,
 					imageUrl: null,
 					imageVariants: null,
 					visualStyle: null,

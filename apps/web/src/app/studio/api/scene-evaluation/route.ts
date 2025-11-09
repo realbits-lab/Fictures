@@ -117,8 +117,6 @@ export async function POST(request: NextRequest) {
 		// Evaluate scene using AI
 		console.log("[SCENE-EVALUATION API] 🤖 Calling scene evaluator...");
 		const evaluateParams: EvaluateSceneParams = {
-			sceneId: validatedData.sceneId,
-			userId: authResult.user.id,
 			content: scene.content,
 			story: story as any,
 			maxIterations: validatedData.maxIterations,

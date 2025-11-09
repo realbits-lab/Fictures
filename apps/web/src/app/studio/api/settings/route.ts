@@ -165,10 +165,8 @@ export async function POST(request: NextRequest) {
 		console.log("[SETTINGS API] 🤖 Calling settings generator...");
 		const generateParams: GenerateSettingsParams = {
 			storyId: validatedData.storyId,
-			userId: authResult.user.id,
 			story: story as any,
 			settingCount: validatedData.settingCount,
-			language: validatedData.language,
 		};
 
 		const generationResult = await generateSettings(generateParams);

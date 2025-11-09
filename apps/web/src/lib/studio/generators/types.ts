@@ -156,7 +156,6 @@ export interface GenerateStoryResult {
 
 export interface GenerateCharactersParams {
 	storyId: string;
-	userId: string;
 	story: Story;
 	characterCount: number;
 	language?: string;
@@ -177,10 +176,8 @@ export interface GenerateCharactersResult {
 
 export interface GenerateSettingsParams {
 	storyId: string;
-	userId: string;
 	story: Story;
 	settingCount: number;
-	language?: string;
 	onProgress?: ProgressCallback;
 }
 
@@ -198,12 +195,9 @@ export interface GenerateSettingsResult {
 
 export interface GeneratePartsParams {
 	storyId: string;
-	userId: string;
 	story: Story;
 	characters: Character[];
-	settings: Setting[];
 	partsCount: number;
-	language?: string;
 	onProgress?: ProgressCallback;
 }
 
@@ -221,13 +215,10 @@ export interface GeneratePartsResult {
 
 export interface GenerateChaptersParams {
 	storyId: string;
-	userId: string;
 	story: Story;
 	parts: Part[];
 	characters: Character[];
-	settings: Setting[];
 	chaptersPerPart: number;
-	language?: string;
 	onProgress?: ProgressCallback;
 }
 
@@ -245,13 +236,9 @@ export interface GenerateChaptersResult {
 
 export interface GenerateSceneSummariesParams {
 	storyId: string;
-	userId: string;
-	story: Story;
 	chapters: Chapter[];
-	characters: Character[];
 	settings: Setting[];
 	scenesPerChapter: number;
-	language?: string;
 	onProgress?: ProgressCallback;
 }
 
@@ -269,10 +256,7 @@ export interface GenerateSceneSummariesResult {
 
 export interface GenerateSceneContentParams {
 	sceneId: string;
-	userId: string;
 	scene: Scene;
-	chapter: Chapter;
-	story: Story;
 	characters: Character[];
 	settings: Setting[];
 	language?: string;
@@ -289,7 +273,6 @@ export interface GenerateSceneContentResult {
 // ============================================================================
 
 export interface EvaluateSceneParams {
-	sceneId: string;
 	content: string;
 	story: Story;
 	maxIterations?: number;
@@ -317,7 +300,6 @@ export interface EvaluateSceneResult {
 
 export interface GenerateImagesParams {
 	storyId: string;
-	userId: string;
 	story?: Story;
 	characters?: Character[];
 	settings?: Setting[];

@@ -126,7 +126,6 @@ export async function POST(request: NextRequest) {
 		console.log("[SCENE-CONTENT API] 🤖 Calling scene content generator...");
 		const generateParams: GenerateSceneContentParams = {
 			sceneId: validatedData.sceneId,
-			userId: authResult.user.id,
 			scene: scene as any,
 			characters: storyCharacters as any,
 			settings: storySettings as any,

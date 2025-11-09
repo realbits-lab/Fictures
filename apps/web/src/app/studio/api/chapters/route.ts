@@ -133,12 +133,10 @@ export async function POST(request: NextRequest) {
 		console.log("[CHAPTERS API] 🤖 Calling chapters generator...");
 		const generateParams: GenerateChaptersParams = {
 			storyId: validatedData.storyId,
-			userId: authResult.user.id,
 			story: story as any,
 			parts: storyParts as any,
 			characters: storyCharacters as any,
 			chaptersPerPart: validatedData.chaptersPerPart,
-			language: validatedData.language,
 		};
 
 		const generationResult = await generateChapters(generateParams);

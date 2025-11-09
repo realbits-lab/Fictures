@@ -1,7 +1,7 @@
 /**
  * Jest Test Suite for /studio/api/characters
  *
- * Tests character creation API with real API calls.
+ * Tests AI-powered character generation API with real API calls.
  *
  * Run:
  *   dotenv --file .env.local run pnpm test __tests__/api/studio/characters.test.ts
@@ -22,7 +22,7 @@ if (!writer?.apiKey) {
 	throw new Error("❌ Writer API key not found in .auth/user.json");
 }
 
-describe("Character API", () => {
+describe("Character Generation API", () => {
 	let testStoryId: string;
 
 	// First create a test story to use
@@ -50,42 +50,24 @@ describe("Character API", () => {
 		console.log(`✅ Test story created: ${testStoryId}`);
 	}, 120000);
 
-	it("should create a character via POST /studio/api/characters", async () => {
+	it("should generate characters via POST /studio/api/characters", async () => {
 		const requestBody = {
 			storyId: testStoryId,
-			name: "Sir Galahad",
-			isMain: true,
-			summary: "A courageous knight seeking to prove his worth",
-			coreTrait: "courage",
-			internalFlaw: "Pride and overconfidence",
-			externalGoal: "Must prove himself to the kingdom",
-			personality: {
-				traits: ["brave", "noble", "impulsive"],
-				values: ["honor", "justice", "loyalty"],
-			},
-			physicalDescription: {
-				age: "25 years old",
-				appearance: "Tall and muscular with golden hair",
-				distinctiveFeatures: "Scar across left cheek",
-				style: "Wears polished silver armor",
-			},
-			voiceStyle: {
-				tone: "Confident and commanding",
-				vocabulary: "Formal and archaic",
-				quirks: ["Often quotes old proverbs", "Uses thee and thou"],
-				emotionalRange: "Reserved but passionate when provoked",
-			},
-			backstory: "Raised as an orphan, trained to become a knight",
+			characterCount: 3,
+			language: "English",
 		};
 
-		const response = await fetch("http://localhost:3000/studio/api/characters", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"x-api-key": writer.apiKey,
+		const response = await fetch(
+			"http://localhost:3000/studio/api/characters",
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"x-api-key": writer.apiKey,
+				},
+				body: JSON.stringify(requestBody),
 			},
-			body: JSON.stringify(requestBody),
-		});
+		);
 
 		const data = await response.json();
 
@@ -95,14 +77,32 @@ describe("Character API", () => {
 
 		expect(response.status).toBe(201);
 		expect(data.success).toBe(true);
-		expect(data.character).toBeDefined();
-		expect(data.character.id).toMatch(/^char_/);
-		expect(data.character.name).toBe("Sir Galahad");
-		expect(data.character.isMain).toBe(true);
-		expect(data.character.coreTrait).toBe("courage");
+		expect(data.characters).toBeDefined();
+		expect(Array.isArray(data.characters)).toBe(true);
+		expect(data.characters.length).toBe(3);
+		expect(data.metadata).toBeDefined();
+		expect(data.metadata.totalGenerated).toBe(3);
+		expect(data.metadata.generationTime).toBeGreaterThan(0);
 
-		console.log("✅ Character created successfully:");
-		console.log(`  ID: ${data.character.id}`);
-		console.log(`  Name: ${data.character.name}`);
-	}, 10000);
+		// Verify first character structure
+		const firstCharacter = data.characters[0];
+		expect(firstCharacter.id).toMatch(/^char_/);
+		expect(firstCharacter.storyId).toBe(testStoryId);
+		expect(firstCharacter.name).toBeDefined();
+		expect(typeof firstCharacter.name).toBe("string");
+		expect(firstCharacter.isMain).toBeDefined();
+		expect(typeof firstCharacter.isMain).toBe("boolean");
+		expect(firstCharacter.coreTrait).toBeDefined();
+		expect(firstCharacter.internalFlaw).toBeDefined();
+		expect(firstCharacter.externalGoal).toBeDefined();
+
+		console.log("✅ Characters generated successfully:");
+		console.log(`  Total Generated: ${data.characters.length}`);
+		console.log(`  Generation Time: ${data.metadata.generationTime}ms`);
+		data.characters.forEach((char: any, idx: number) => {
+			console.log(
+				`  ${idx + 1}. ${char.name} (${char.isMain ? "Main" : "Supporting"})`,
+			);
+		});
+	}, 60000);
 });

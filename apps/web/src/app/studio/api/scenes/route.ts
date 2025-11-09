@@ -199,12 +199,9 @@ export async function POST(request: NextRequest) {
 		console.log("[SCENES API] 🤖 Calling scene summaries generator...");
 		const generateParams: GenerateSceneSummariesParams = {
 			storyId: validatedData.storyId,
-			userId: authResult.user.id,
-			story: story as any,
 			chapters: storyChapters as any,
 			settings: storySettings as any,
 			scenesPerChapter: validatedData.scenesPerChapter,
-			language: validatedData.language,
 		};
 
 		const generationResult = await generateSceneSummaries(generateParams);
