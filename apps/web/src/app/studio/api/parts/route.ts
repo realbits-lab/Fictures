@@ -9,6 +9,10 @@ import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateParts } from "@/lib/studio/generators/parts-generator";
 import type { GeneratePartsParams } from "@/lib/studio/generators/types";
 import type {
+    Character,
+    Story,
+} from "@/lib/studio/generators/zod-schemas.generated";
+import type {
     GeneratePartsErrorResponse,
     GeneratePartsRequest,
     GeneratePartsResponse,
@@ -51,11 +55,11 @@ export async function GET(request: NextRequest) {
         }
 
         // 3. Get story and check access
-        const storyResult: Array<typeof stories.$inferSelect> = await db
+        const storyResult: Story[] = (await db
             .select()
             .from(stories)
-            .where(eq(stories.id, storyId));
-        const story: typeof stories.$inferSelect | undefined = storyResult[0];
+            .where(eq(stories.id, storyId))) as Story[];
+        const story: Story | undefined = storyResult[0];
 
         if (!story) {
             return NextResponse.json(
@@ -151,11 +155,11 @@ export async function POST(request: NextRequest) {
         });
 
         // 4. Fetch story and verify ownership
-        const storyResult: Array<typeof stories.$inferSelect> = await db
+        const storyResult: Story[] = (await db
             .select()
             .from(stories)
-            .where(eq(stories.id, validatedData.storyId));
-        const story: typeof stories.$inferSelect | undefined = storyResult[0];
+            .where(eq(stories.id, validatedData.storyId))) as Story[];
+        const story: Story | undefined = storyResult[0];
 
         if (!story) {
             console.error("❌ [PARTS API] Story not found");
@@ -179,10 +183,12 @@ export async function POST(request: NextRequest) {
         });
 
         // 5. Fetch characters for the story
-        const storyCharacters: Array<typeof characters.$inferSelect> = await db
+        const storyCharacters: Character[] = (await db
             .select()
             .from(characters)
-            .where(eq(characters.storyId, validatedData.storyId));
+            .where(
+                eq(characters.storyId, validatedData.storyId),
+            )) as Character[];
 
         if (storyCharacters.length === 0) {
             console.error("❌ [PARTS API] No characters found for story");
@@ -208,8 +214,8 @@ export async function POST(request: NextRequest) {
         console.log("[PARTS API] 🤖 Calling parts generator...");
         const generateParams: GeneratePartsParams = {
             storyId: validatedData.storyId,
-            story: story as any,
-            characters: storyCharacters as any,
+            story,
+            characters: storyCharacters,
             partsCount: validatedData.partsCount,
         };
 

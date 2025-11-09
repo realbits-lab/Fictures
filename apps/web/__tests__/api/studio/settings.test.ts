@@ -110,17 +110,113 @@ describe("Setting API", () => {
         expect(metadata.totalGenerated).toBe(2);
         expect(metadata.generationTime).toBeGreaterThan(0);
 
-        // 10. Verify settings data
+        // ============================================================================
+        // 10. Verify ALL setting attributes for ALL settings (not just index 0)
+        // ============================================================================
         const { settings }: { settings: GenerateSettingsResponse["settings"] } =
             successData;
-        const firstSetting = settings[0];
-        expect(firstSetting.id).toMatch(/^setting_/);
-        expect(firstSetting.storyId).toBe(testStoryId);
-        expect(firstSetting.name).toBeDefined();
-        expect(typeof firstSetting.name).toBe("string");
-        expect(firstSetting.summary).toBeDefined();
 
-        // 11. Log success details
+        // 11. Loop through ALL settings and verify each one
+        for (let idx = 0; idx < settings.length; idx++) {
+            const setting = settings[idx];
+
+            // === IDENTITY FIELDS ===
+            expect(setting.id).toMatch(/^setting_/);
+            expect(setting.storyId).toBe(testStoryId);
+            expect(setting.name).toBeDefined();
+            expect(typeof setting.name).toBe("string");
+            expect(setting.name.length).toBeGreaterThan(0);
+
+            // summary can be null or string
+            expect(
+                setting.summary === null || typeof setting.summary === "string",
+            ).toBe(true);
+
+            // === ADVERSITY-TRIUMPH CORE ===
+            // adversityElements can be null or object
+            expect(
+                setting.adversityElements === null ||
+                    typeof setting.adversityElements === "object",
+            ).toBe(true);
+
+            // symbolicMeaning can be null or string
+            expect(
+                setting.symbolicMeaning === null ||
+                    typeof setting.symbolicMeaning === "string",
+            ).toBe(true);
+
+            // cycleAmplification can be null or object
+            expect(
+                setting.cycleAmplification === null ||
+                    typeof setting.cycleAmplification === "object",
+            ).toBe(true);
+
+            // === EMOTIONAL ATMOSPHERE ===
+            // mood can be null or string
+            expect(
+                setting.mood === null || typeof setting.mood === "string",
+            ).toBe(true);
+
+            // emotionalResonance can be null or string
+            expect(
+                setting.emotionalResonance === null ||
+                    typeof setting.emotionalResonance === "string",
+            ).toBe(true);
+
+            // === SENSORY IMMERSION ===
+            // sensory can be null or object
+            expect(
+                setting.sensory === null || typeof setting.sensory === "object",
+            ).toBe(true);
+
+            // architecturalStyle can be null or string
+            expect(
+                setting.architecturalStyle === null ||
+                    typeof setting.architecturalStyle === "string",
+            ).toBe(true);
+
+            // === VISUAL GENERATION ===
+            // imageUrl can be null or string
+            expect(
+                setting.imageUrl === null ||
+                    typeof setting.imageUrl === "string",
+            ).toBe(true);
+
+            // imageVariants can be null or object
+            expect(
+                setting.imageVariants === null ||
+                    typeof setting.imageVariants === "object",
+            ).toBe(true);
+
+            // visualStyle can be null or string
+            expect(
+                setting.visualStyle === null ||
+                    typeof setting.visualStyle === "string",
+            ).toBe(true);
+
+            // visualReferences can be null or object
+            expect(
+                setting.visualReferences === null ||
+                    typeof setting.visualReferences === "object",
+            ).toBe(true);
+
+            // colorPalette can be null or object
+            expect(
+                setting.colorPalette === null ||
+                    typeof setting.colorPalette === "object",
+            ).toBe(true);
+
+            // === METADATA FIELDS ===
+            expect(setting.createdAt).toBeDefined();
+            expect(typeof setting.createdAt).toBe("string");
+
+            expect(setting.updatedAt).toBeDefined();
+            expect(typeof setting.updatedAt).toBe("string");
+        }
+
+        // ============================================================================
+        // 12. Log success details
+        // ============================================================================
         console.log("✅ Settings generated successfully:");
         console.log(`  Total Generated: ${settings.length}`);
         console.log(`  Generation Time: ${metadata.generationTime}ms`);

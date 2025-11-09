@@ -24,7 +24,7 @@ const apiKey: string = loadWriterAuth();
 describe("Parts API", () => {
     let testStoryId: string;
 
-    // Setup: Create a test story first
+    // Setup: Create a test story and characters first
     beforeAll(async () => {
         console.log("🔧 Setting up test story...");
 
@@ -59,7 +59,36 @@ describe("Parts API", () => {
         // 4. Store test story ID
         testStoryId = storyData.story.id;
         console.log(`✅ Test story created: ${testStoryId}`);
-    }, 120000); // 2 minute timeout for story creation
+
+        // 5. Generate characters (required for parts generation)
+        console.log("🔧 Generating characters...");
+        const charactersResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/characters",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify({
+                    storyId: testStoryId,
+                    characterCount: 2,
+                    language: "English",
+                }),
+            },
+        );
+
+        // 6. Validate characters response
+        const charactersData = await charactersResponse.json();
+        if (!charactersResponse.ok) {
+            console.error("❌ Failed to generate characters:", charactersData);
+            throw new Error("Test setup failed: could not generate characters");
+        }
+
+        console.log(
+            `✅ Characters generated: ${charactersData.characters.length}`,
+        );
+    }, 180000); // 3 minute timeout for story + character creation
 
     describe("POST /studio/api/parts", () => {
         it("should generate parts for a story", async () => {
@@ -110,26 +139,66 @@ describe("Parts API", () => {
             expect(Array.isArray(successData.parts)).toBe(true);
             expect(successData.metadata).toBeDefined();
 
-            // 9. Verify parts data
+            // ============================================================================
+            // 9. Verify ALL part attributes for ALL parts
+            // ============================================================================
             const { parts }: { parts: GeneratePartsResponse["parts"] } =
                 successData;
             expect(parts.length).toBe(2);
-            for (const part of parts) {
+
+            for (let idx = 0; idx < parts.length; idx++) {
+                const part = parts[idx];
+
+                // === IDENTITY FIELDS ===
                 expect(part.id).toMatch(/^part_/);
                 expect(part.storyId).toBe(testStoryId);
                 expect(part.title).toBeDefined();
                 expect(typeof part.title).toBe("string");
-                expect(part.orderIndex).toBeGreaterThan(0);
+                expect(part.title.length).toBeGreaterThan(0);
+
+                // === ADVERSITY-TRIUMPH CORE ===
+                // summary can be null or string
+                expect(
+                    part.summary === null || typeof part.summary === "string",
+                ).toBe(true);
+
+                // === MACRO ARC TRACKING ===
+                // characterArcs can be null or object (array)
+                expect(
+                    part.characterArcs === null ||
+                        typeof part.characterArcs === "object",
+                ).toBe(true);
+
+                // === ORDERING ===
+                // orderIndex can be null or number
+                expect(
+                    part.orderIndex === null ||
+                        typeof part.orderIndex === "number",
+                ).toBe(true);
+                if (part.orderIndex !== null) {
+                    expect(part.orderIndex).toBeGreaterThan(0);
+                }
+
+                // === METADATA FIELDS ===
+                expect(part.createdAt).toBeDefined();
+                expect(typeof part.createdAt).toBe("string");
+
+                expect(part.updatedAt).toBeDefined();
+                expect(typeof part.updatedAt).toBe("string");
             }
 
+            // ============================================================================
             // 10. Verify metadata
+            // ============================================================================
             const {
                 metadata,
             }: { metadata: GeneratePartsResponse["metadata"] } = successData;
             expect(metadata.totalGenerated).toBe(2);
             expect(metadata.generationTime).toBeGreaterThan(0);
 
+            // ============================================================================
             // 11. Log success details
+            // ============================================================================
             console.log("✅ Parts generated successfully:");
             console.log(`  Total: ${parts.length}`);
             console.log(`  Generation time: ${metadata.generationTime}ms`);

@@ -76,7 +76,7 @@ export async function generateSettings(
             {
                 name: settingData.name,
                 mood: settingData.mood,
-                description: settingData.description?.substring(0, 50) || "N/A",
+                summary: settingData.summary,
             },
         );
     }

@@ -20,6 +20,7 @@ import type { GenerateSettingsParams } from "@/lib/studio/generators/types";
 import {
     insertSettingSchema,
     type Setting,
+    type Story,
 } from "@/lib/studio/generators/zod-schemas.generated";
 import type {
     GenerateSettingsErrorResponse,
@@ -173,11 +174,11 @@ export async function POST(request: NextRequest) {
         });
 
         // 4. Fetch story and verify ownership
-        const storyResult: Array<typeof stories.$inferSelect> = await db
+        const storyResult: Story[] = (await db
             .select()
             .from(stories)
-            .where(eq(stories.id, validatedData.storyId));
-        const story: typeof stories.$inferSelect | undefined = storyResult[0];
+            .where(eq(stories.id, validatedData.storyId))) as Story[];
+        const story: Story | undefined = storyResult[0];
 
         if (!story) {
             console.error("❌ [SETTINGS API] Story not found");
@@ -203,7 +204,7 @@ export async function POST(request: NextRequest) {
         // 5. Generate settings using AI
         console.log("[SETTINGS API] 🤖 Calling settings generator...");
         const generateParams: GenerateSettingsParams = {
-            story: story as any,
+            story,
             settingCount: validatedData.settingCount,
         };
 
@@ -232,17 +233,17 @@ export async function POST(request: NextRequest) {
                 name: settingData.name || "Unnamed Setting",
                 summary: settingData.summary || null,
                 adversityElements: settingData.adversityElements || null,
-                cycleAmplification: settingData.cycleAmplification || null,
-                sensory: settingData.sensory || null,
-                mood: settingData.mood || null,
                 symbolicMeaning: settingData.symbolicMeaning || null,
+                cycleAmplification: settingData.cycleAmplification || null,
+                mood: settingData.mood || null,
                 emotionalResonance: settingData.emotionalResonance || null,
+                sensory: settingData.sensory || null,
                 architecturalStyle: settingData.architecturalStyle || null,
-                visualStyle: null,
-                visualReferences: null,
-                colorPalette: null,
                 imageUrl: null,
                 imageVariants: null,
+                visualStyle: settingData.visualStyle || null,
+                visualReferences: settingData.visualReferences || null,
+                colorPalette: settingData.colorPalette || null,
                 createdAt: now,
                 updatedAt: now,
             });
