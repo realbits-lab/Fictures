@@ -26,6 +26,8 @@ export async function generateStory(
 	params: GenerateStoryParams,
 ): Promise<GenerateStoryResult> {
 	const startTime: number = Date.now();
+
+	// 1. Extract and set default parameters
 	const {
 		userPrompt,
 		preferredGenre = "Any",
@@ -33,7 +35,7 @@ export async function generateStory(
 		language = "English",
 	}: GenerateStoryParams = params;
 
-	// Get the prompt template
+	// 2. Get the prompt template for story generation
 	const { system, user }: { system: string; user: string } =
 		promptManager.getPrompt(textGenerationClient.getProviderType(), "story", {
 			userPrompt,
@@ -46,9 +48,7 @@ export async function generateStory(
 		"[story-generator] Using generateStructured method with manual schema",
 	);
 
-	// Generate story data using structured output method
-	// NOTE: We use manual schema (generatedStorySchema) instead of .pick() on insertStorySchema
-	// because drizzle-zod schemas don't convert well to JSON Schema when using .pick()
+	// 3. Generate story data using structured output method
 	const storyData: GeneratedStoryData =
 		await textGenerationClient.generateStructured(user, generatedStorySchema, {
 			systemPrompt: system,
@@ -62,11 +62,12 @@ export async function generateStory(
 		tone: storyData.tone,
 	});
 
-	// Validate result (title and tone are required in the schema)
+	// 4. Validate result (title and tone are required in the schema)
 	if (!storyData.title) {
 		throw new Error("Invalid story data generated - missing required fields");
 	}
 
+	// 5. Build and return result with metadata
 	const result: GenerateStoryResult = {
 		story: storyData,
 		metadata: {

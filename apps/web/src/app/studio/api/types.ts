@@ -37,6 +37,8 @@
  * - POST /studio/api/scene-content - Generate scene content
  */
 
+import type { Story } from "@/lib/studio/generators/zod-schemas.generated";
+
 // ============================================================================
 // Story Generation
 // ============================================================================
@@ -50,18 +52,7 @@ export interface GenerateStoryRequest {
 
 export interface GenerateStoryResponse {
 	success: true;
-	story: {
-		id: string;
-		authorId: string;
-		title: string;
-		summary: string | null;
-		genre: string | null;
-		tone: string;
-		moralFramework: string | null;
-		status: string;
-		createdAt: Date;
-		updatedAt: Date;
-	};
+	story: Story;
 	metadata: {
 		generationTime: number;
 		model?: string;

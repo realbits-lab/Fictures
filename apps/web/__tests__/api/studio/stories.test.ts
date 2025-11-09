@@ -32,7 +32,7 @@ if (!writer?.apiKey) {
 
 describe("Story Generation API", () => {
 	it("should generate and save story via POST /studio/api/stories", async () => {
-		// Use proper TypeScript type for request
+		// 1. Prepare request body with proper TypeScript type
 		const requestBody: GenerateStoryRequest = {
 			userPrompt: "A short story about a brave knight on a quest",
 			language: "English",
@@ -40,6 +40,7 @@ describe("Story Generation API", () => {
 			preferredTone: "hopeful",
 		};
 
+		// 2. Send POST request to story generation API
 		const response: Response = await fetch(
 			"http://localhost:3000/studio/api/stories",
 			{
@@ -52,40 +53,40 @@ describe("Story Generation API", () => {
 			},
 		);
 
-		// Type the response data
+		// 3. Parse response data with proper typing
 		const data: GenerateStoryResponse | GenerateStoryErrorResponse =
 			await response.json();
 
-		// Log error if request failed
+		// 4. Log error if request failed
 		if (!response.ok) {
 			console.error("❌ API Error:", data);
 			expect(response.ok).toBe(true); // Force fail with proper error logged
 		}
 
-		// Verify response status
+		// 5. Verify response status
 		expect(response.status).toBe(201);
 
-		// Type guard to ensure we have success response
+		// 6. Type guard to ensure we have success response
 		if (!("success" in data) || !data.success) {
 			throw new Error("Expected GenerateStoryResponse but got error");
 		}
 
-		// Now TypeScript knows data is GenerateStoryResponse
+		// 7. Cast to success response type
 		const successData = data as GenerateStoryResponse;
 
 		// ============================================================================
-		// Verify ALL top-level response structure
+		// 8. Verify ALL top-level response structure
 		// ============================================================================
 		expect(successData.success).toBe(true);
 		expect(successData.story).toBeDefined();
 		expect(successData.metadata).toBeDefined();
 
 		// ============================================================================
-		// Verify ALL story object attributes (as defined in GenerateStoryResponse)
+		// 9. Verify ALL story object attributes (as defined in GenerateStoryResponse)
 		// ============================================================================
 		const { story }: { story: GenerateStoryResponse["story"] } = successData;
 
-		// Identity fields
+		// 10. Verify identity fields
 		expect(story.id).toBeDefined();
 		expect(typeof story.id).toBe("string");
 		expect(story.id).toMatch(/^story_/);
@@ -124,20 +125,12 @@ describe("Story Generation API", () => {
 
 		// Metadata fields
 		expect(story.createdAt).toBeDefined();
-		// createdAt should be a valid date (can be Date object or ISO string)
-		expect(
-			story.createdAt instanceof Date ||
-				typeof story.createdAt === "string" ||
-				typeof story.createdAt === "object",
-		).toBe(true);
+		// createdAt should be a string (timestamp from database)
+		expect(typeof story.createdAt).toBe("string");
 
 		expect(story.updatedAt).toBeDefined();
-		// updatedAt should be a valid date (can be Date object or ISO string)
-		expect(
-			story.updatedAt instanceof Date ||
-				typeof story.updatedAt === "string" ||
-				typeof story.updatedAt === "object",
-		).toBe(true);
+		// updatedAt should be a string (timestamp from database)
+		expect(typeof story.updatedAt).toBe("string");
 
 		// ============================================================================
 		// Verify ALL metadata attributes (as defined in GenerateStoryResponse)

@@ -10,7 +10,10 @@ import {
 } from "@/lib/db/studio-queries";
 import { generateStory } from "@/lib/studio/generators/story-generator";
 import type { GenerateStoryParams } from "@/lib/studio/generators/types";
-import { insertStorySchema } from "@/lib/studio/generators/zod-schemas.generated";
+import {
+	insertStorySchema,
+	type Story,
+} from "@/lib/studio/generators/zod-schemas.generated";
 import type {
 	GenerateStoryErrorResponse,
 	GenerateStoryRequest,
@@ -22,13 +25,14 @@ export const runtime = "nodejs";
 // GET /api/stories - Get user's stories with detailed data for dashboard
 export async function GET(request: NextRequest) {
 	try {
+		// 1. Authenticate the request
 		const authResult = await authenticateRequest(request);
 
 		if (!authResult) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		// Check if user has permission to read stories
+		// 2. Check if user has permission to read stories
 		if (!hasRequiredScope(authResult, "stories:read")) {
 			return NextResponse.json(
 				{ error: "Insufficient permissions. Required scope: stories:read" },
@@ -36,15 +40,15 @@ export async function GET(request: NextRequest) {
 			);
 		}
 
-		// ⚡ Use Redis-cached query for better performance
+		// 3. Fetch user stories from Redis cache
 		const stories = (await getCachedUserStories(authResult.user.id)) || [];
 
-		// Transform the data to match the Dashboard component expectations
+		// 4. Transform data to match Dashboard component expectations
 		const transformedStories = Array.isArray(stories)
 			? stories.map((story) => ({
 					id: story.id,
 					title: story.title,
-					summary: story.summary || "", // Story summary for card descriptions
+					summary: story.summary || "",
 					genre: story.genre || "General",
 					parts: {
 						completed: story.completedParts || 0,
@@ -55,7 +59,7 @@ export async function GET(request: NextRequest) {
 						total: story.totalChapters || 0,
 					},
 					readers: story.viewCount || 0,
-					rating: (story.rating || 0) / 10, // Convert from database format (47 = 4.7)
+					rating: (story.rating || 0) / 10,
 					status: story.status as
 						| "draft"
 						| "publishing"
@@ -68,6 +72,7 @@ export async function GET(request: NextRequest) {
 				}))
 			: [];
 
+		// 5. Build response object with metadata
 		const response = {
 			stories: transformedStories,
 			metadata: {
@@ -78,7 +83,7 @@ export async function GET(request: NextRequest) {
 			},
 		};
 
-		// Generate ETag based on user stories data
+		// 6. Generate ETag for cache validation
 		const contentForHash = JSON.stringify({
 			userId: authResult.user.id,
 			storiesData: Array.isArray(stories)
@@ -98,13 +103,13 @@ export async function GET(request: NextRequest) {
 		});
 		const etag = createHash("md5").update(contentForHash).digest("hex");
 
-		// Check if client has the same version
+		// 7. Check if client has the same version
 		const clientETag = request.headers.get("if-none-match");
 		if (clientETag === etag) {
 			return new NextResponse(null, { status: 304 });
 		}
 
-		// Set cache headers optimized for user dashboard (medium cache)
+		// 8. Set cache headers optimized for user dashboard
 		const headers = new Headers({
 			"Content-Type": "application/json",
 			ETag: etag,
@@ -137,6 +142,7 @@ export async function POST(request: NextRequest) {
 		console.log("📚 [STORIES API] POST request received");
 		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
+		// 1. Authenticate the request
 		const authResult: Awaited<ReturnType<typeof authenticateRequest>> =
 			await authenticateRequest(request);
 
@@ -145,7 +151,7 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		// Check if user has permission to write stories
+		// 2. Check if user has permission to write stories
 		if (!hasRequiredScope(authResult, "stories:write")) {
 			console.error("❌ [STORIES API] Insufficient scopes:", {
 				required: "stories:write",
@@ -163,7 +169,7 @@ export async function POST(request: NextRequest) {
 			email: authResult.user.email,
 		});
 
-		// Parse request body with type safety
+		// 3. Parse request body with type safety
 		const body: GenerateStoryRequest =
 			(await request.json()) as GenerateStoryRequest;
 		const {
@@ -181,7 +187,7 @@ export async function POST(request: NextRequest) {
 			preferredTone,
 		});
 
-		// Validate required parameters
+		// 4. Validate required parameters
 		if (!userPrompt || typeof userPrompt !== "string") {
 			console.error("❌ [STORIES API] Validation failed: userPrompt missing");
 			const errorResponse: GenerateStoryErrorResponse = {
@@ -192,7 +198,7 @@ export async function POST(request: NextRequest) {
 
 		console.log("✅ [STORIES API] Validation passed");
 
-		// Generate story using story-generator
+		// 5. Generate story using story-generator
 		console.log("[STORIES API] 🤖 Calling story generator...");
 		const generateParams: GenerateStoryParams = {
 			userPrompt,
@@ -211,11 +217,10 @@ export async function POST(request: NextRequest) {
 			generationTime: generationResult.metadata.generationTime,
 		});
 
-		// Save story to database with validation
+		// 6. Validate and save story to database
 		console.log("[STORIES API] 💾 Validating and saving story to database...");
 		const storyId: string = `story_${nanoid(16)}`;
 
-		// Validate story data before insert
 		const storyData: ReturnType<typeof insertStorySchema.parse> =
 			insertStorySchema.parse({
 				id: storyId,
@@ -235,35 +240,27 @@ export async function POST(request: NextRequest) {
 				updatedAt: new Date(),
 			});
 
-		const [savedStory] = await db.insert(stories).values(storyData).returning();
+		const [savedStory] = (await db
+			.insert(stories)
+			.values(storyData)
+			.returning()) as Story[];
 
 		console.log("[STORIES API] ✅ Story saved to database:", {
 			storyId: savedStory.id,
 			title: savedStory.title,
 		});
 
-		// ⚡ Invalidate cache after creating new story
+		// 7. Invalidate cache after creating new story
 		await invalidateStudioCache(authResult.user.id);
 		console.log("[STORIES API] ✅ Cache invalidated");
 
 		console.log("✅ [STORIES API] Request completed successfully");
 		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-		// Return the created story with metadata (typed response)
+		// 8. Return the created story with metadata
 		const response: GenerateStoryResponse = {
 			success: true,
-			story: {
-				id: savedStory.id,
-				authorId: savedStory.authorId,
-				title: savedStory.title,
-				summary: savedStory.summary,
-				genre: savedStory.genre,
-				tone: savedStory.tone || "hopeful",
-				moralFramework: savedStory.moralFramework,
-				status: savedStory.status,
-				createdAt: new Date(savedStory.createdAt),
-				updatedAt: new Date(savedStory.updatedAt),
-			},
+			story: savedStory,
 			metadata: {
 				generationTime: generationResult.metadata.generationTime,
 				model: generationResult.metadata.model,
