@@ -17,6 +17,11 @@ import { characters, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateCharacters } from "@/lib/studio/generators/characters-generator";
 import type { GenerateCharactersParams } from "@/lib/studio/generators/types";
+import {
+    type Character,
+    insertCharacterSchema,
+    type Story,
+} from "@/lib/studio/generators/zod-schemas.generated";
 import type {
     GenerateCharactersErrorResponse,
     GenerateCharactersRequest,
@@ -173,11 +178,11 @@ export async function POST(request: NextRequest) {
         });
 
         // 4. Fetch story and verify ownership
-        const storyResult: Array<typeof stories.$inferSelect> = await db
+        const storyResult: Story[] = (await db
             .select()
             .from(stories)
-            .where(eq(stories.id, validatedData.storyId));
-        const story: typeof stories.$inferSelect | undefined = storyResult[0];
+            .where(eq(stories.id, validatedData.storyId))) as Story[];
+        const story: Story | undefined = storyResult[0];
 
         if (!story) {
             console.error("❌ [CHARACTERS API] Story not found");
@@ -205,8 +210,7 @@ export async function POST(request: NextRequest) {
         // 5. Generate characters using AI
         console.log("[CHARACTERS API] 🤖 Calling characters generator...");
         const generateParams: GenerateCharactersParams = {
-            storyId: validatedData.storyId,
-            story: story as any,
+            story,
             characterCount: validatedData.characterCount,
             language: validatedData.language,
         };
@@ -221,40 +225,42 @@ export async function POST(request: NextRequest) {
 
         // 6. Save generated characters to database
         console.log("[CHARACTERS API] 💾 Saving characters to database...");
-        const savedCharacters: Array<typeof characters.$inferSelect> = [];
+        const savedCharacters: Character[] = [];
 
         for (const characterData of generationResult.characters) {
             const characterId: string = `char_${nanoid(16)}`;
-            const now: Date = new Date();
+            const now: string = new Date().toISOString();
 
-            const savedCharacterResult: Array<typeof characters.$inferSelect> =
-                await db
-                    .insert(characters)
-                    .values({
-                        id: characterId,
-                        storyId: validatedData.storyId,
-                        name: characterData.name || "Unnamed Character",
-                        isMain: characterData.isMain || false,
-                        summary: characterData.summary || null,
-                        coreTrait: characterData.coreTrait || null,
-                        internalFlaw: characterData.internalFlaw || null,
-                        externalGoal: characterData.externalGoal || null,
-                        personality: characterData.personality || null,
-                        backstory: characterData.backstory || null,
-                        relationships: characterData.relationships || null,
-                        physicalDescription:
-                            characterData.physicalDescription || null,
-                        voiceStyle: characterData.voiceStyle || null,
-                        imageUrl: null,
-                        imageVariants: null,
-                        visualStyle: null,
-                        createdAt: now,
-                        updatedAt: now,
-                    })
-                    .returning();
+            // 7. Validate character data before insertion
+            const validatedCharacter: ReturnType<
+                typeof insertCharacterSchema.parse
+            > = insertCharacterSchema.parse({
+                id: characterId,
+                storyId: validatedData.storyId,
+                name: characterData.name || "Unnamed Character",
+                isMain: characterData.isMain ?? false,
+                summary: characterData.summary ?? null,
+                coreTrait: characterData.coreTrait ?? null,
+                internalFlaw: characterData.internalFlaw ?? null,
+                externalGoal: characterData.externalGoal ?? null,
+                personality: characterData.personality ?? null,
+                backstory: characterData.backstory ?? null,
+                relationships: null, // Relationships are built separately
+                physicalDescription: characterData.physicalDescription ?? null,
+                voiceStyle: characterData.voiceStyle ?? null,
+                imageUrl: null,
+                imageVariants: null,
+                visualStyle: null,
+                createdAt: now,
+                updatedAt: now,
+            });
 
-            const savedCharacter: typeof characters.$inferSelect =
-                savedCharacterResult[0];
+            // 8. Insert validated character data into database
+            const savedCharacterArray: Character[] = (await db
+                .insert(characters)
+                .values(validatedCharacter)
+                .returning()) as Character[];
+            const savedCharacter: Character = savedCharacterArray[0];
             savedCharacters.push(savedCharacter);
 
             console.log(
@@ -266,14 +272,14 @@ export async function POST(request: NextRequest) {
             `[CHARACTERS API] ✅ Saved ${savedCharacters.length} characters to database`,
         );
 
-        // 7. Invalidate cache
+        // 10. Invalidate cache
         await invalidateStudioCache(authResult.user.id);
         console.log("[CHARACTERS API] ✅ Cache invalidated");
 
         console.log("✅ [CHARACTERS API] Request completed successfully");
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-        // 8. Return typed response
+        // 11. Return typed response
         const response: GenerateCharactersResponse = {
             success: true,
             characters: savedCharacters,

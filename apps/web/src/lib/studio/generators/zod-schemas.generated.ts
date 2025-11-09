@@ -8,12 +8,12 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import {
-	chapters,
-	characters,
-	parts,
-	scenes,
-	settings,
-	stories,
+    chapters,
+    characters,
+    parts,
+    scenes,
+    settings,
+    stories,
 } from "@/lib/db/schema";
 
 // ============================================================================
@@ -24,7 +24,7 @@ import {
  * Zod schema for inserting a new story
  */
 export const insertStorySchema = createInsertSchema(stories, {
-	tone: z.enum(["hopeful", "dark", "bittersweet", "satirical"]),
+    tone: z.enum(["hopeful", "dark", "bittersweet", "satirical"]),
 });
 
 /**
@@ -48,11 +48,11 @@ export type InsertStory = z.infer<typeof insertStorySchema>;
  * Fields must match insertStorySchema but without database-specific fields
  */
 export const generatedStorySchema = z.object({
-	title: z.string().max(255),
-	summary: z.string().nullable(),
-	genre: z.string().max(100).nullable(),
-	tone: z.enum(["hopeful", "dark", "bittersweet", "satirical"]),
-	moralFramework: z.string().nullable(),
+    title: z.string().max(255),
+    summary: z.string().nullable(),
+    genre: z.string().max(100).nullable(),
+    tone: z.enum(["hopeful", "dark", "bittersweet", "satirical"]),
+    moralFramework: z.string().nullable(),
 });
 
 /**
@@ -68,45 +68,45 @@ export type GeneratedStoryData = z.infer<typeof generatedStorySchema>;
  * Nested schema for character personality
  */
 const personalitySchema = z.object({
-	traits: z.array(z.string()),
-	values: z.array(z.string()),
+    traits: z.array(z.string()),
+    values: z.array(z.string()),
 });
 
 /**
  * Nested schema for character physical description
  */
 const physicalDescriptionSchema = z.object({
-	age: z.string(),
-	appearance: z.string(),
-	distinctiveFeatures: z.string(),
-	style: z.string(),
+    age: z.string(),
+    appearance: z.string(),
+    distinctiveFeatures: z.string(),
+    style: z.string(),
 });
 
 /**
  * Nested schema for character voice style
  */
 const voiceStyleSchema = z.object({
-	tone: z.string(),
-	vocabulary: z.string(),
-	quirks: z.array(z.string()),
-	emotionalRange: z.string(),
+    tone: z.string(),
+    vocabulary: z.string(),
+    quirks: z.array(z.string()),
+    emotionalRange: z.string(),
 });
 
 /**
  * Zod schema for inserting a new character
  */
 export const insertCharacterSchema = createInsertSchema(characters, {
-	coreTrait: z.enum([
-		"courage",
-		"compassion",
-		"integrity",
-		"loyalty",
-		"wisdom",
-		"sacrifice",
-	]),
-	personality: personalitySchema,
-	physicalDescription: physicalDescriptionSchema,
-	voiceStyle: voiceStyleSchema,
+    coreTrait: z.enum([
+        "courage",
+        "compassion",
+        "integrity",
+        "loyalty",
+        "wisdom",
+        "sacrifice",
+    ]),
+    personality: personalitySchema,
+    physicalDescription: physicalDescriptionSchema,
+    voiceStyle: voiceStyleSchema,
 });
 
 /**
@@ -124,6 +124,38 @@ export type Character = z.infer<typeof selectCharacterSchema>;
  */
 export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
 
+/**
+ * Minimal schema for character generation (only fields AI generates)
+ * Manually defined to avoid Gemini JSON schema validation issues with complex fields
+ * Fields must match insertCharacterSchema but without database-specific fields
+ */
+export const generatedCharacterSchema = z.object({
+    name: z.string().max(255),
+    isMain: z.boolean(),
+    summary: z.string().nullable(),
+    coreTrait: z
+        .enum([
+            "courage",
+            "compassion",
+            "integrity",
+            "loyalty",
+            "wisdom",
+            "sacrifice",
+        ])
+        .nullable(),
+    internalFlaw: z.string().nullable(),
+    externalGoal: z.string().nullable(),
+    personality: personalitySchema.nullable(),
+    backstory: z.string().nullable(),
+    physicalDescription: physicalDescriptionSchema.nullable(),
+    voiceStyle: voiceStyleSchema.nullable(),
+});
+
+/**
+ * TypeScript type for generated character data (AI output)
+ */
+export type GeneratedCharacterData = z.infer<typeof generatedCharacterSchema>;
+
 // ============================================================================
 // Setting Schemas
 // ============================================================================
@@ -132,41 +164,41 @@ export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
  * Nested schema for setting adversity elements
  */
 const adversityElementsSchema = z.object({
-	physicalObstacles: z.array(z.string()),
-	scarcityFactors: z.array(z.string()),
-	dangerSources: z.array(z.string()),
-	socialDynamics: z.array(z.string()),
+    physicalObstacles: z.array(z.string()),
+    scarcityFactors: z.array(z.string()),
+    dangerSources: z.array(z.string()),
+    socialDynamics: z.array(z.string()),
 });
 
 /**
  * Nested schema for setting cycle amplification
  */
 const cycleAmplificationSchema = z.object({
-	setup: z.string(),
-	confrontation: z.string(),
-	virtue: z.string(),
-	consequence: z.string(),
-	transition: z.string(),
+    setup: z.string(),
+    confrontation: z.string(),
+    virtue: z.string(),
+    consequence: z.string(),
+    transition: z.string(),
 });
 
 /**
  * Nested schema for setting sensory details
  */
 const sensorySchema = z.object({
-	sight: z.array(z.string()),
-	sound: z.array(z.string()),
-	smell: z.array(z.string()),
-	touch: z.array(z.string()),
-	taste: z.array(z.string()).optional(),
+    sight: z.array(z.string()),
+    sound: z.array(z.string()),
+    smell: z.array(z.string()),
+    touch: z.array(z.string()),
+    taste: z.array(z.string()).optional(),
 });
 
 /**
  * Zod schema for inserting a new setting
  */
 export const insertSettingSchema = createInsertSchema(settings, {
-	adversityElements: adversityElementsSchema,
-	cycleAmplification: cycleAmplificationSchema,
-	sensory: sensorySchema,
+    adversityElements: adversityElementsSchema,
+    cycleAmplification: cycleAmplificationSchema,
+    sensory: sensorySchema,
 });
 
 /**
@@ -192,24 +224,24 @@ export type InsertSetting = z.infer<typeof insertSettingSchema>;
  * Nested schema for character arcs within a part
  */
 const characterArcSchema = z.object({
-	characterId: z.string(),
-	macroAdversity: z.object({
-		internal: z.string(),
-		external: z.string(),
-	}),
-	macroVirtue: z.string(),
-	macroConsequence: z.string(),
-	macroNewAdversity: z.string(),
-	estimatedChapters: z.number(),
-	arcPosition: z.enum(["primary", "secondary"]),
-	progressionStrategy: z.string(),
+    characterId: z.string(),
+    macroAdversity: z.object({
+        internal: z.string(),
+        external: z.string(),
+    }),
+    macroVirtue: z.string(),
+    macroConsequence: z.string(),
+    macroNewAdversity: z.string(),
+    estimatedChapters: z.number(),
+    arcPosition: z.enum(["primary", "secondary"]),
+    progressionStrategy: z.string(),
 });
 
 /**
  * Zod schema for inserting a new part
  */
 export const insertPartSchema = createInsertSchema(parts, {
-	characterArcs: z.array(characterArcSchema),
+    characterArcs: z.array(characterArcSchema),
 });
 
 /**
@@ -235,38 +267,38 @@ export type InsertPart = z.infer<typeof insertPartSchema>;
  * Nested schema for seeds planted in a chapter
  */
 const seedPlantedSchema = z.object({
-	id: z.string(),
-	description: z.string(),
-	expectedPayoff: z.string(),
+    id: z.string(),
+    description: z.string(),
+    expectedPayoff: z.string(),
 });
 
 /**
  * Nested schema for seeds resolved in a chapter
  */
 const seedResolvedSchema = z.object({
-	sourceChapterId: z.string(),
-	sourceSceneId: z.string(),
-	seedId: z.string(),
-	payoffDescription: z.string(),
+    sourceChapterId: z.string(),
+    sourceSceneId: z.string(),
+    seedId: z.string(),
+    payoffDescription: z.string(),
 });
 
 /**
  * Zod schema for inserting a new chapter
  */
 export const insertChapterSchema = createInsertSchema(chapters, {
-	arcPosition: z.enum(["beginning", "middle", "climax", "resolution"]),
-	focusCharacters: z.array(z.string()),
-	adversityType: z.enum(["internal", "external", "both"]),
-	virtueType: z.enum([
-		"courage",
-		"compassion",
-		"integrity",
-		"sacrifice",
-		"loyalty",
-		"wisdom",
-	]),
-	seedsPlanted: z.array(seedPlantedSchema),
-	seedsResolved: z.array(seedResolvedSchema),
+    arcPosition: z.enum(["beginning", "middle", "climax", "resolution"]),
+    focusCharacters: z.array(z.string()),
+    adversityType: z.enum(["internal", "external", "both"]),
+    virtueType: z.enum([
+        "courage",
+        "compassion",
+        "integrity",
+        "sacrifice",
+        "loyalty",
+        "wisdom",
+    ]),
+    seedsPlanted: z.array(seedPlantedSchema),
+    seedsResolved: z.array(seedResolvedSchema),
 });
 
 /**
@@ -292,27 +324,27 @@ export type InsertChapter = z.infer<typeof insertChapterSchema>;
  * Zod schema for inserting a new scene
  */
 export const insertSceneSchema = createInsertSchema(scenes, {
-	cyclePhase: z.enum([
-		"setup",
-		"confrontation",
-		"virtue",
-		"consequence",
-		"transition",
-	]),
-	emotionalBeat: z.enum([
-		"fear",
-		"hope",
-		"tension",
-		"relief",
-		"elevation",
-		"catharsis",
-		"despair",
-		"joy",
-	]),
-	characterFocus: z.array(z.string()),
-	sensoryAnchors: z.array(z.string()),
-	suggestedLength: z.enum(["short", "medium", "long"]).optional(),
-	dialogueVsDescription: z.string().optional(),
+    cyclePhase: z.enum([
+        "setup",
+        "confrontation",
+        "virtue",
+        "consequence",
+        "transition",
+    ]),
+    emotionalBeat: z.enum([
+        "fear",
+        "hope",
+        "tension",
+        "relief",
+        "elevation",
+        "catharsis",
+        "despair",
+        "joy",
+    ]),
+    characterFocus: z.array(z.string()),
+    sensoryAnchors: z.array(z.string()),
+    suggestedLength: z.enum(["short", "medium", "long"]).optional(),
+    dialogueVsDescription: z.string().optional(),
 });
 
 /**
@@ -335,10 +367,10 @@ export type InsertScene = z.infer<typeof insertSceneSchema>;
 // ============================================================================
 
 export const schemas = {
-	story: { insert: insertStorySchema, select: selectStorySchema },
-	character: { insert: insertCharacterSchema, select: selectCharacterSchema },
-	setting: { insert: insertSettingSchema, select: selectSettingSchema },
-	part: { insert: insertPartSchema, select: selectPartSchema },
-	chapter: { insert: insertChapterSchema, select: selectChapterSchema },
-	scene: { insert: insertSceneSchema, select: selectSceneSchema },
+    story: { insert: insertStorySchema, select: selectStorySchema },
+    character: { insert: insertCharacterSchema, select: selectCharacterSchema },
+    setting: { insert: insertSettingSchema, select: selectSettingSchema },
+    part: { insert: insertPartSchema, select: selectPartSchema },
+    chapter: { insert: insertChapterSchema, select: selectChapterSchema },
+    scene: { insert: insertSceneSchema, select: selectSceneSchema },
 } as const;

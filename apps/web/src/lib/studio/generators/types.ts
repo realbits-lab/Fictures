@@ -49,13 +49,13 @@
 
 import type { z } from "zod";
 import type {
-	Chapter,
-	Character,
-	GeneratedStoryData,
-	Part,
-	Scene,
-	Setting,
-	Story,
+    Chapter,
+    Character,
+    GeneratedStoryData,
+    Part,
+    Scene,
+    Setting,
+    Story,
 } from "./zod-schemas.generated";
 
 // ============================================================================
@@ -65,19 +65,19 @@ import type {
 export type ModelProvider = "gemini" | "ai-server";
 
 export type PromptType =
-	| "story"
-	| "character"
-	| "setting"
-	| "part"
-	| "chapter"
-	| "scene_summary"
-	| "scene_content"
-	| "character_dialogue"
-	| "setting_description";
+    | "story"
+    | "character"
+    | "setting"
+    | "part"
+    | "chapter"
+    | "scene_summary"
+    | "scene_content"
+    | "character_dialogue"
+    | "setting_description";
 
 export interface PromptTemplate {
-	system: string;
-	userTemplate: string;
+    system: string;
+    userTemplate: string;
 }
 
 // ============================================================================
@@ -98,33 +98,33 @@ export type ResponseFormat = "text" | "json";
 export type ResponseSchema = z.ZodType<any> | Record<string, any>;
 
 export interface TextGenerationRequest {
-	prompt: string;
-	systemPrompt?: string;
-	model?: string;
-	temperature?: number;
-	maxTokens?: number;
-	topP?: number;
-	stopSequences?: string[];
+    prompt: string;
+    systemPrompt?: string;
+    model?: string;
+    temperature?: number;
+    maxTokens?: number;
+    topP?: number;
+    stopSequences?: string[];
 
-	// Structured output options
-	responseFormat?: ResponseFormat;
-	responseSchema?: ResponseSchema;
+    // Structured output options
+    responseFormat?: ResponseFormat;
+    responseSchema?: ResponseSchema;
 }
 
 export interface TextGenerationResponse {
-	text: string;
-	model: string;
-	tokensUsed?: number;
-	finishReason?: string;
+    text: string;
+    model: string;
+    tokensUsed?: number;
+    finishReason?: string;
 }
 
 export interface GenerationOptions {
-	temperature?: number;
-	maxTokens?: number;
-	topP?: number;
-	stopSequences?: string[];
-	responseFormat?: ResponseFormat;
-	responseSchema?: ResponseSchema;
+    temperature?: number;
+    maxTokens?: number;
+    topP?: number;
+    stopSequences?: string[];
+    responseFormat?: ResponseFormat;
+    responseSchema?: ResponseSchema;
 }
 
 // ============================================================================
@@ -135,12 +135,12 @@ export interface GenerationOptions {
  * Virtue types used in the Adversity-Triumph Engine
  */
 export type VirtueType =
-	| "courage"
-	| "compassion"
-	| "integrity"
-	| "loyalty"
-	| "wisdom"
-	| "sacrifice";
+    | "courage"
+    | "compassion"
+    | "integrity"
+    | "loyalty"
+    | "wisdom"
+    | "sacrifice";
 
 /**
  * Chapter arc position in story structure
@@ -151,29 +151,29 @@ export type ArcPosition = "beginning" | "middle" | "climax" | "resolution";
  * Adversity-Triumph cycle phases for scene structure
  */
 export type CyclePhase =
-	| "setup"
-	| "confrontation"
-	| "virtue"
-	| "consequence"
-	| "transition";
+    | "setup"
+    | "confrontation"
+    | "virtue"
+    | "consequence"
+    | "transition";
 
 // ============================================================================
 // Base Generator Interfaces
 // ============================================================================
 
 export interface GeneratorMetadata {
-	generationTime: number;
-	model?: string;
+    generationTime: number;
+    model?: string;
 }
 
 export interface ArrayGeneratorMetadata {
-	totalGenerated: number;
-	generationTime: number;
+    totalGenerated: number;
+    generationTime: number;
 }
 
 export interface GeneratorResult<T> {
-	data: T;
-	metadata: GeneratorMetadata;
+    data: T;
+    metadata: GeneratorMetadata;
 }
 
 export type ProgressCallback = (current: number, total: number) => void;
@@ -183,15 +183,15 @@ export type ProgressCallback = (current: number, total: number) => void;
 // ============================================================================
 
 export interface GenerateStoryParams {
-	userPrompt: string;
-	language?: string;
-	preferredGenre?: string;
-	preferredTone?: string;
+    userPrompt: string;
+    language?: string;
+    preferredGenre?: string;
+    preferredTone?: string;
 }
 
 export interface GenerateStoryResult {
-	story: GeneratedStoryData;
-	metadata: GeneratorMetadata;
+    story: GeneratedStoryData;
+    metadata: GeneratorMetadata;
 }
 
 // ============================================================================
@@ -199,16 +199,15 @@ export interface GenerateStoryResult {
 // ============================================================================
 
 export interface GenerateCharactersParams {
-	storyId: string;
-	story: Story;
-	characterCount: number;
-	language?: string;
-	onProgress?: ProgressCallback;
+    story: Story;
+    characterCount: number;
+    language?: string;
+    onProgress?: ProgressCallback;
 }
 
 export interface GenerateCharactersResult {
-	characters: Character[];
-	metadata: ArrayGeneratorMetadata;
+    characters: Character[];
+    metadata: ArrayGeneratorMetadata;
 }
 
 // ============================================================================
@@ -216,15 +215,14 @@ export interface GenerateCharactersResult {
 // ============================================================================
 
 export interface GenerateSettingsParams {
-	storyId: string;
-	story: Story;
-	settingCount: number;
-	onProgress?: ProgressCallback;
+    story: Story;
+    settingCount: number;
+    onProgress?: ProgressCallback;
 }
 
 export interface GenerateSettingsResult {
-	settings: Setting[];
-	metadata: ArrayGeneratorMetadata;
+    settings: Setting[];
+    metadata: ArrayGeneratorMetadata;
 }
 
 // ============================================================================
@@ -232,16 +230,16 @@ export interface GenerateSettingsResult {
 // ============================================================================
 
 export interface GeneratePartsParams {
-	storyId: string;
-	story: Story;
-	characters: Character[];
-	partsCount: number;
-	onProgress?: ProgressCallback;
+    storyId: string;
+    story: Story;
+    characters: Character[];
+    partsCount: number;
+    onProgress?: ProgressCallback;
 }
 
 export interface GeneratePartsResult {
-	parts: Part[];
-	metadata: ArrayGeneratorMetadata;
+    parts: Part[];
+    metadata: ArrayGeneratorMetadata;
 }
 
 // ============================================================================
@@ -249,17 +247,17 @@ export interface GeneratePartsResult {
 // ============================================================================
 
 export interface GenerateChaptersParams {
-	storyId: string;
-	story: Story;
-	parts: Part[];
-	characters: Character[];
-	chaptersPerPart: number;
-	onProgress?: ProgressCallback;
+    storyId: string;
+    story: Story;
+    parts: Part[];
+    characters: Character[];
+    chaptersPerPart: number;
+    onProgress?: ProgressCallback;
 }
 
 export interface GenerateChaptersResult {
-	chapters: Chapter[];
-	metadata: ArrayGeneratorMetadata;
+    chapters: Chapter[];
+    metadata: ArrayGeneratorMetadata;
 }
 
 // ============================================================================
@@ -267,16 +265,16 @@ export interface GenerateChaptersResult {
 // ============================================================================
 
 export interface GenerateSceneSummariesParams {
-	storyId: string;
-	chapters: Chapter[];
-	settings: Setting[];
-	scenesPerChapter: number;
-	onProgress?: ProgressCallback;
+    storyId: string;
+    chapters: Chapter[];
+    settings: Setting[];
+    scenesPerChapter: number;
+    onProgress?: ProgressCallback;
 }
 
 export interface GenerateSceneSummariesResult {
-	scenes: Scene[];
-	metadata: ArrayGeneratorMetadata;
+    scenes: Scene[];
+    metadata: ArrayGeneratorMetadata;
 }
 
 // ============================================================================
@@ -284,17 +282,17 @@ export interface GenerateSceneSummariesResult {
 // ============================================================================
 
 export interface GenerateSceneContentParams {
-	sceneId: string;
-	scene: Scene;
-	characters: Character[];
-	settings: Setting[];
-	language?: string;
+    sceneId: string;
+    scene: Scene;
+    characters: Character[];
+    settings: Setting[];
+    language?: string;
 }
 
 export interface GenerateSceneContentResult {
-	content: string;
-	wordCount: number;
-	metadata: GeneratorMetadata;
+    content: string;
+    wordCount: number;
+    metadata: GeneratorMetadata;
 }
 
 // ============================================================================
@@ -302,25 +300,25 @@ export interface GenerateSceneContentResult {
 // ============================================================================
 
 export interface EvaluateSceneParams {
-	content: string;
-	story: Story;
-	maxIterations?: number;
+    content: string;
+    story: Story;
+    maxIterations?: number;
 }
 
 export interface EvaluateSceneResult {
-	finalContent: string;
-	score: number;
-	categories: {
-		plot: number;
-		character: number;
-		pacing: number;
-		prose: number;
-		worldBuilding: number;
-	};
-	feedback: string;
-	iterations: number;
-	improved: boolean;
-	metadata: GeneratorMetadata;
+    finalContent: string;
+    score: number;
+    categories: {
+        plot: number;
+        character: number;
+        pacing: number;
+        prose: number;
+        worldBuilding: number;
+    };
+    feedback: string;
+    iterations: number;
+    improved: boolean;
+    metadata: GeneratorMetadata;
 }
 
 // ============================================================================
@@ -328,21 +326,21 @@ export interface EvaluateSceneResult {
 // ============================================================================
 
 export interface GenerateImagesParams {
-	storyId: string;
-	story?: Story;
-	characters?: Character[];
-	settings?: Setting[];
-	scenes?: Scene[];
-	imageTypes: ("story" | "character" | "setting" | "scene")[];
-	onProgress?: ProgressCallback;
+    storyId: string;
+    story?: Story;
+    characters?: Character[];
+    settings?: Setting[];
+    scenes?: Scene[];
+    imageTypes: ("story" | "character" | "setting" | "scene")[];
+    onProgress?: ProgressCallback;
 }
 
 export interface GenerateImagesResult {
-	generatedImages: {
-		type: "story" | "character" | "setting" | "scene";
-		entityId: string;
-		imageUrl: string;
-		variants: any;
-	}[];
-	metadata: ArrayGeneratorMetadata;
+    generatedImages: {
+        type: "story" | "character" | "setting" | "scene";
+        entityId: string;
+        imageUrl: string;
+        variants: any;
+    }[];
+    metadata: ArrayGeneratorMetadata;
 }

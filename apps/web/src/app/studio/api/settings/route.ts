@@ -203,7 +203,6 @@ export async function POST(request: NextRequest) {
         // 5. Generate settings using AI
         console.log("[SETTINGS API] 🤖 Calling settings generator...");
         const generateParams: GenerateSettingsParams = {
-            storyId: validatedData.storyId,
             story: story as any,
             settingCount: validatedData.settingCount,
         };
