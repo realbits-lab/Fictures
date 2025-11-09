@@ -122,20 +122,22 @@ Always include the `--write` flag to automatically apply safe fixes. Review the 
 
 **CRITICAL: Always run type-check after Biome formatting**
 
-After finishing file changes and running Biome format/lint, you MUST verify TypeScript types for the changed files:
+After finishing file changes and running Biome format/lint, you MUST verify TypeScript types:
 
 ```bash
 # 1. Format and lint specific files with Biome
 pnpm biome check --write path/to/file1.ts path/to/file2.tsx
 
-# 2. Run TypeScript type checking on the same files
-pnpm type-check path/to/file1.ts path/to/file2.tsx
+# 2. Run TypeScript type checking on ENTIRE project (tsgo limitation with path aliases)
+pnpm type-check 2>&1 | grep -E "(file1|file2)"
 ```
 
-**Important:**
-- **ONLY check types for files you changed**, not the entire project
-- This keeps type-checking fast and focused on your changes
-- Avoids getting overwhelmed by unrelated type errors in other files
+**Important - TypeScript Native (tsgo) Path Alias Limitation:**
+- ✅ **DO**: Run `pnpm type-check` on entire project (path aliases work correctly)
+- ❌ **DON'T**: Run `pnpm type-check path/to/file.ts` (path aliases like `@/` fail)
+- **Why**: `tsgo` cannot resolve `@/` imports when checking individual files
+- **Solution**: Check entire project, then grep for your changed files to see relevant errors
+- **Alternative**: Use `pnpm build` for comprehensive type checking with Next.js integration
 
 **Why this matters:**
 - Biome handles formatting and linting, but does NOT perform TypeScript type checking
