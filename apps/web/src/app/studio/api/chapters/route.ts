@@ -7,15 +7,21 @@
  */
 
 import { eq } from "drizzle-orm";
+import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { db } from "@/lib/db";
-import { RelationshipManager } from "@/lib/db/relationships";
 import { chapters, characters, parts, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateChapters } from "@/lib/studio/generators/chapters-generator";
 import type { GenerateChaptersParams } from "@/lib/studio/generators/types";
+import {
+    insertChapterSchema,
+    type Character,
+    type Part,
+    type Story,
+} from "@/lib/studio/generators/zod-schemas.generated";
 import type {
     GenerateChaptersErrorResponse,
     GenerateChaptersRequest,
@@ -83,11 +89,11 @@ export async function POST(request: NextRequest) {
         });
 
         // 4. Fetch story and verify ownership
-        const storyResult: Array<typeof stories.$inferSelect> = await db
+        const storyResult: Story[] = (await db
             .select()
             .from(stories)
-            .where(eq(stories.id, validatedData.storyId));
-        const story: typeof stories.$inferSelect | undefined = storyResult[0];
+            .where(eq(stories.id, validatedData.storyId))) as Story[];
+        const story: Story | undefined = storyResult[0];
 
         if (!story) {
             console.error("❌ [CHAPTERS API] Story not found");
@@ -111,11 +117,11 @@ export async function POST(request: NextRequest) {
         });
 
         // 5. Fetch parts for the story
-        const storyParts: Array<typeof parts.$inferSelect> = await db
+        const storyParts: Part[] = (await db
             .select()
             .from(parts)
             .where(eq(parts.storyId, validatedData.storyId))
-            .orderBy(parts.orderIndex);
+            .orderBy(parts.orderIndex)) as Part[];
 
         if (storyParts.length === 0) {
             console.error("❌ [CHAPTERS API] No parts found for story");
@@ -128,10 +134,12 @@ export async function POST(request: NextRequest) {
         console.log(`✅ [CHAPTERS API] Found ${storyParts.length} parts`);
 
         // 6. Fetch characters for the story
-        const storyCharacters: Array<typeof characters.$inferSelect> = await db
+        const storyCharacters: Character[] = (await db
             .select()
             .from(characters)
-            .where(eq(characters.storyId, validatedData.storyId));
+            .where(
+                eq(characters.storyId, validatedData.storyId),
+            )) as Character[];
 
         if (storyCharacters.length === 0) {
             console.error("❌ [CHAPTERS API] No characters found for story");
@@ -151,9 +159,9 @@ export async function POST(request: NextRequest) {
         console.log("[CHAPTERS API] 🤖 Calling chapters generator...");
         const generateParams: GenerateChaptersParams = {
             storyId: validatedData.storyId,
-            story: story as any,
-            parts: storyParts as any,
-            characters: storyCharacters as any,
+            story,
+            parts: storyParts,
+            characters: storyCharacters,
             chaptersPerPart: validatedData.chaptersPerPart,
         };
 
@@ -171,19 +179,28 @@ export async function POST(request: NextRequest) {
 
         for (let i = 0; i < generationResult.chapters.length; i++) {
             const chapterData = generationResult.chapters[i];
-            const chapterId: string =
-                await RelationshipManager.addChapterToPart(chapterData.partId, {
+            const chapterId: string = `chapter_${nanoid(16)}`;
+            const now: string = new Date().toISOString();
+
+            // Validate chapter data before insert
+            const validatedChapter: ReturnType<typeof insertChapterSchema.parse> =
+                insertChapterSchema.parse({
+                    id: chapterId,
+                    storyId: validatedData.storyId,
+                    partId: chapterData.partId || null,
                     title: chapterData.title || `Chapter ${i + 1}`,
                     summary: chapterData.summary || null,
                     orderIndex: i + 1,
+                    status: "writing",
+                    createdAt: now,
+                    updatedAt: now,
                 });
 
             const savedChapterResult: Array<typeof chapters.$inferSelect> =
                 await db
-                    .select()
-                    .from(chapters)
-                    .where(eq(chapters.id, chapterId))
-                    .limit(1);
+                    .insert(chapters)
+                    .values(validatedChapter)
+                    .returning();
             const savedChapter: typeof chapters.$inferSelect =
                 savedChapterResult[0];
 
