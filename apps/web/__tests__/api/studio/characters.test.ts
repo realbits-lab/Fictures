@@ -11,6 +11,7 @@ import type {
     GenerateCharactersErrorResponse,
     GenerateCharactersRequest,
     GenerateCharactersResponse,
+    GenerateStoryRequest,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
@@ -24,7 +25,15 @@ describe("Character Generation API", () => {
     beforeAll(async () => {
         console.log("🔧 Setting up test story...");
 
-        // 1. Prepare story request
+        // 1. Prepare story request body with proper TypeScript type
+        const storyRequestBody: GenerateStoryRequest = {
+            userPrompt: "A test story for character testing",
+            language: "English",
+            preferredGenre: "Fantasy",
+            preferredTone: "hopeful",
+        };
+
+        // 2. Send POST request to story creation API
         const response: Response = await fetch(
             "http://localhost:3000/studio/api/stories",
             {
@@ -33,26 +42,21 @@ describe("Character Generation API", () => {
                     "Content-Type": "application/json",
                     "x-api-key": apiKey,
                 },
-                body: JSON.stringify({
-                    userPrompt: "A test story for character testing",
-                    language: "English",
-                    preferredGenre: "Fantasy",
-                    preferredTone: "hopeful",
-                }),
+                body: JSON.stringify(storyRequestBody),
             },
         );
 
-        // 2. Parse story response
+        // 3. Parse story response
         const data: { story: { id: string } } = await response.json();
 
-        // 3. Validate story response
+        // 4. Validate story response
         if (!response.ok) {
             throw new Error(
                 `Failed to create test story: ${JSON.stringify(data)}`,
             );
         }
 
-        // 4. Store test story ID
+        // 5. Store test story ID
         testStoryId = data.story.id;
         console.log(`✅ Test story created: ${testStoryId}`);
     }, 120000);
