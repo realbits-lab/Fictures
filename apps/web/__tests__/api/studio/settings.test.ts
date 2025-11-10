@@ -190,22 +190,16 @@ describe("Setting API", () => {
                     typeof setting.imageVariants === "object",
             ).toBe(true);
 
-            // visualStyle can be null or string
-            expect(
-                setting.visualStyle === null ||
-                    typeof setting.visualStyle === "string",
-            ).toBe(true);
-
-            // visualReferences can be null or object
+            // visualReferences should be an array or null
             expect(
                 setting.visualReferences === null ||
-                    typeof setting.visualReferences === "object",
+                    Array.isArray(setting.visualReferences),
             ).toBe(true);
 
-            // colorPalette can be null or object
+            // colorPalette should be an array or null
             expect(
                 setting.colorPalette === null ||
-                    typeof setting.colorPalette === "object",
+                    Array.isArray(setting.colorPalette),
             ).toBe(true);
 
             // === METADATA FIELDS ===

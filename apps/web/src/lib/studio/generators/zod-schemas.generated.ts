@@ -245,32 +245,87 @@ export type GeneratedCharacterData = z.infer<typeof GeneratedCharacterSchema>;
  * Nested schema for setting adversity elements
  */
 const adversityElementsSchema = z.object({
-    physicalObstacles: z.array(z.string()),
-    scarcityFactors: z.array(z.string()),
-    dangerSources: z.array(z.string()),
-    socialDynamics: z.array(z.string()),
+    physicalObstacles: z
+        .array(z.string())
+        .describe(
+            "Environmental challenges: harsh desert heat, crumbling infrastructure",
+        ),
+    scarcityFactors: z
+        .array(z.string())
+        .describe(
+            "Limited resources that force choices: water shortage, food scarcity",
+        ),
+    dangerSources: z
+        .array(z.string())
+        .describe(
+            "Threats from environment: unstable buildings, hostile wildlife",
+        ),
+    socialDynamics: z
+        .array(z.string())
+        .describe(
+            "Community factors: distrust between neighbors, gang territories",
+        ),
 });
 
 /**
  * Nested schema for setting cycle amplification
  */
 const cycleAmplificationSchema = z.object({
-    setup: z.string(),
-    confrontation: z.string(),
-    virtue: z.string(),
-    consequence: z.string(),
-    transition: z.string(),
+    setup: z
+        .string()
+        .describe(
+            "How setting establishes adversity: oppressive heat weighs on characters",
+        ),
+    confrontation: z
+        .string()
+        .describe(
+            "How setting intensifies conflict: confined space forces interaction",
+        ),
+    virtue: z
+        .string()
+        .describe(
+            "How setting contrasts/witnesses moral beauty: barren land vs. act of nurture",
+        ),
+    consequence: z
+        .string()
+        .describe(
+            "How setting transforms or reveals: garden blooms, proving hope possible",
+        ),
+    transition: z
+        .string()
+        .describe("How setting hints at new problems: storm clouds gathering"),
 });
 
 /**
  * Nested schema for setting sensory details
  */
 const sensorySchema = z.object({
-    sight: z.array(z.string()),
-    sound: z.array(z.string()),
-    smell: z.array(z.string()),
-    touch: z.array(z.string()),
-    taste: z.array(z.string()).optional(),
+    sight: z
+        .array(z.string())
+        .describe(
+            "Visual details (5-10 items): cracked asphalt, faded paint, rust-stained walls",
+        ),
+    sound: z
+        .array(z.string())
+        .describe(
+            "Auditory elements (3-7 items): wind rattling leaves, distant sirens, children's laughter",
+        ),
+    smell: z
+        .array(z.string())
+        .describe(
+            "Olfactory details (2-5 items): damp earth, cooking spices, gasoline",
+        ),
+    touch: z
+        .array(z.string())
+        .describe(
+            "Tactile sensations (2-5 items): rough concrete, cool breeze, gritty dust",
+        ),
+    taste: z
+        .array(z.string())
+        .optional()
+        .describe(
+            "Flavor elements (0-2 items, optional): metallic tang, bitter smoke",
+        ),
 });
 
 /**
@@ -303,27 +358,56 @@ export type InsertSetting = z.infer<typeof insertSettingSchema>;
  * Fields must match insertSettingSchema but without database-specific fields
  */
 export const GeneratedSettingSchema = z.object({
-    name: z.string().max(255),
-    summary: z.string().nullable(),
-    adversityElements: adversityElementsSchema.nullable(),
-    symbolicMeaning: z.string().nullable(),
-    cycleAmplification: cycleAmplificationSchema.nullable(),
-    mood: z.string().nullable(),
-    sensory: sensorySchema.nullable(),
-    emotionalResonance: z.string().nullable(),
-    architecturalStyle: z.string().nullable(),
+    name: z
+        .string()
+        .max(255)
+        .describe(
+            "Setting name: The Last Garden, Refugee Camp, Downtown Market",
+        ),
+    summary: z
+        .string()
+        .describe(
+            "Comprehensive paragraph (3-5 sentences) describing the setting's physical and emotional characteristics",
+        ),
+    adversityElements: adversityElementsSchema.describe(
+        "External conflict sources from the environment that create obstacles for characters",
+    ),
+    symbolicMeaning: z
+        .string()
+        .describe(
+            "How setting reflects story's moral framework (1-2 sentences): Destroyed city represents broken trust and loss of community",
+        ),
+    cycleAmplification: cycleAmplificationSchema.describe(
+        "How the setting amplifies each phase of the adversity-triumph cycle through atmosphere and environment",
+    ),
+    mood: z
+        .string()
+        .describe(
+            "Primary emotional quality: oppressive and surreal, hopeful but fragile, tense and uncertain",
+        ),
+    emotionalResonance: z
+        .string()
+        .describe(
+            "What emotion this setting amplifies: isolation, hope, fear, connection, despair",
+        ),
+    sensory: sensorySchema.describe(
+        "Concrete sensory details for show-don't-tell prose writing",
+    ),
+    architecturalStyle: z
+        .string()
+        .describe(
+            "Structural design language if applicable: brutalist concrete, traditional wooden, modern glass and steel",
+        ),
     visualReferences: z
-        .array(
-            z.object({ category: z.string(), examples: z.array(z.string()) }),
-        )
-        .nullable(),
+        .array(z.string())
+        .describe(
+            "Style inspirations: Blade Runner 2049, Studio Ghibli countryside, Mad Max Fury Road",
+        ),
     colorPalette: z
-        .object({
-            primary: z.array(z.string()),
-            accent: z.array(z.string()),
-            atmosphere: z.array(z.string()),
-        })
-        .nullable(),
+        .array(z.string())
+        .describe(
+            "Dominant colors: warm golds, dusty browns, deep greens, ash gray, rust red",
+        ),
 });
 
 /**

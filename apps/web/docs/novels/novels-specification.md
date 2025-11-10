@@ -623,7 +623,6 @@ interface Setting {
     }>;
     generatedAt: string;
   };
-  visualStyle: string;              // "realistic" | "anime" | "painterly" | "cinematic"
   visualReferences: string[];       // Style inspirations: ["Blade Runner 2049", "Studio Ghibli countryside"]
   colorPalette: string[];           // Dominant colors: ["warm golds", "dusty browns", "deep greens"]
 

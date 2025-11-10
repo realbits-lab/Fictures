@@ -195,31 +195,122 @@ Return a character with rich internal psychology, unique voice, and compelling a
 
 # SETTING DESIGN PHILOSOPHY
 
-Settings are not just backdrops - they are ACTIVE PARTICIPANTS in the adversity-triumph cycle:
-- **Adversity Elements**: How the environment creates obstacles and challenges
-- **Symbolic Meaning**: What the setting represents thematically
-- **Cycle Amplification**: How the setting enhances each phase of the cycle
-- **Emotional Resonance**: How the environment reflects character inner states
+Settings are **emotional environments** that create external adversity, amplify cycle phases through atmosphere, and serve as symbolic mirrors for character transformation.
+
+Settings are ACTIVE PARTICIPANTS in the adversity-triumph cycle:
+- **Adversity Elements**: Environmental challenges that force character choices
+- **Symbolic Meaning**: How setting reflects story's moral framework
+- **Cycle Amplification**: How atmosphere shifts with each narrative phase
+- **Emotional Resonance**: How environment reflects character inner states
+- **Sensory Immersion**: Concrete details that ground abstract emotions
+
+# ADVERSITY ELEMENTS (Critical)
+
+The setting MUST create external conflict through four categories:
+
+1. **Physical Obstacles**: Tangible environmental challenges
+   - Examples: harsh weather, difficult terrain, crumbling infrastructure
+
+2. **Scarcity Factors**: Limited resources forcing moral choices
+   - Examples: water shortage, food scarcity, limited shelter
+
+3. **Danger Sources**: Threats requiring courage/sacrifice
+   - Examples: unstable buildings, hostile wildlife, natural disasters
+
+4. **Social Dynamics**: Community factors creating interpersonal conflict
+   - Examples: distrust between neighbors, gang territories, class divisions
+
+# SYMBOLIC MEANING
+
+Connect setting to story's moral framework (1-2 sentences):
+- Example: "Destroyed city represents broken trust and loss of community—garden becomes symbol of healing and renewal"
+
+# CYCLE AMPLIFICATION
+
+Specify HOW setting amplifies each phase (guides scene content generation):
+
+- **Setup**: How environment establishes adversity
+  - Example: "oppressive heat weighs on characters"
+- **Confrontation**: How setting intensifies conflict
+  - Example: "confined space forces interaction"
+- **Virtue**: How setting contrasts/witnesses moral beauty
+  - Example: "barren land vs. act of nurture"
+- **Consequence**: How setting transforms or reveals
+  - Example: "garden blooms, proving hope possible"
+- **Transition**: How setting hints at new problems
+  - Example: "storm clouds gathering"
+
+# SENSORY IMMERSION (For Prose Generation)
+
+Provide SPECIFIC sensory details (not generic):
+- **Sight**: Visual details (5-10 items) - "wind rattling dry leaves" NOT "nature sounds"
+- **Sound**: Auditory elements (3-7 items)
+- **Smell**: Olfactory details (2-5 items)
+- **Touch**: Tactile sensations (2-5 items)
+- **Taste**: Flavor elements (0-2 items, optional)
+
+# VISUAL GENERATION
+
+- **Visual Style**: "realistic" | "anime" | "painterly" | "cinematic"
+- **Visual References**: Style inspirations (e.g., "Blade Runner 2049", "Studio Ghibli countryside")
+- **Color Palette**: Dominant colors (e.g., "warm golds", "dusty browns", "deep greens")
 
 # QUALITY STANDARDS
 
-- Use specific, concrete sensory details
-- Create settings that challenge characters
+- Use specific, concrete sensory details (not generic)
+- Create settings that actively challenge characters
 - Ensure symbolic coherence with story themes
-- Make the environment feel alive and dynamic`,
+- Make the environment feel alive and dynamic
+- Balance adversity with atmospheric richness`,
                 userTemplate: `Generate setting {settingNumber} of {settingCount} for the story:
 
 Story Context:
 Title: {storyTitle}
 Genre: {storyGenre}
+Tone: {storyTone}
 Summary: {storySummary}
 Moral Framework: {moralFramework}
 
-Create a setting that:
-- Provides physical/emotional obstacles aligned with story themes
-- Contains rich sensory details
-- Symbolizes key story concepts
-- Amplifies the adversity-triumph cycle`,
+Create a comprehensive setting with:
+
+1. **Name**: Evocative location name
+2. **Summary**: Comprehensive paragraph (3-5 sentences) describing overall environment
+
+3. **Adversity Elements** (Critical - specify all four):
+   - Physical Obstacles: [List specific environmental challenges]
+   - Scarcity Factors: [List limited resources]
+   - Danger Sources: [List environmental threats]
+   - Social Dynamics: [List community factors]
+
+4. **Symbolic Meaning**: What does this setting represent thematically? (1-2 sentences)
+
+5. **Cycle Amplification** (How setting enhances each phase):
+   - Setup: [How environment establishes adversity]
+   - Confrontation: [How setting intensifies conflict]
+   - Virtue: [How setting contrasts/witnesses moral beauty]
+   - Consequence: [How setting transforms or reveals]
+   - Transition: [How setting hints at new problems]
+
+6. **Emotional Atmosphere**:
+   - Mood: Primary emotional quality (e.g., "oppressive and surreal", "hopeful but fragile")
+   - Emotional Resonance: What emotion this amplifies (e.g., "isolation", "hope", "fear", "connection")
+
+7. **Sensory Immersion** (Provide specific, concrete details):
+   - Sight: [5-10 specific visual details]
+   - Sound: [3-7 specific auditory elements]
+   - Smell: [2-5 specific olfactory details]
+   - Touch: [2-5 specific tactile sensations]
+   - Taste: [0-2 flavor elements, if applicable]
+   - Architectural Style: [Structural design language, if applicable]
+
+8. **Visual Generation** (For image creation):
+   - Visual Style: [Choose: realistic | anime | painterly | cinematic]
+   - Visual References: [List style inspirations]
+   - Color Palette: [List dominant colors]
+
+Language: {language}
+
+Ensure the setting actively participates in the adversity-triumph cycle and provides rich sensory details for immersive prose generation.`,
             },
 
             part: {

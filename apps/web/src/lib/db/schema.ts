@@ -175,6 +175,7 @@ export const characters = pgTable(
         // === VISUAL GENERATION ===
         imageUrl: text("image_url"), // Original portrait (1024×1024 from DALL-E 3)
         imageVariants: json("image_variants"),
+        visualStyle: text("visual_style"), // "realistic" | "anime" | "painterly" | "cinematic"
 
         // === METADATA ===
         createdAt: timestamp("created_at", { mode: "string" })
@@ -247,8 +248,8 @@ export const settings = pgTable(
         // === VISUAL GENERATION ===
         imageUrl: text("image_url"), // Original environment image (1792×1024, 16:9 from DALL-E 3)
         imageVariants: json("image_variants"),
-        visualReferences: json("visual_references"), // Style inspirations: ["Blade Runner 2049", "Studio Ghibli countryside"]
-        colorPalette: json("color_palette"), // Dominant colors: ["warm golds", "dusty browns", "deep greens"]
+        visualReferences: json("visual_references").$type<string[]>(), // Style inspirations: ["Blade Runner 2049", "Studio Ghibli countryside"]
+        colorPalette: json("color_palette").$type<string[]>(), // Dominant colors: ["warm golds", "dusty browns", "deep greens"]
 
         // === METADATA ===
         createdAt: timestamp("created_at", { mode: "string" })

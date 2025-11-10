@@ -29,6 +29,27 @@
       "when": 1762783334892,
       "tag": "0003_misty_giant_man",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1762783679559,
+      "tag": "0004_simple_tarantula",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1762783736875,
+      "tag": "0005_tan_jigsaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1762783762445,
+      "tag": "0006_wooden_mastermind",
+      "breakpoints": true
     }
   ]
 }
