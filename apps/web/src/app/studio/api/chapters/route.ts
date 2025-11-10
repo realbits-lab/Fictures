@@ -6,26 +6,11 @@
  * Authentication: Dual auth (API key OR session) with stories:write scope required
  */
 
-import { eq } from "drizzle-orm";
-import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
-import { db } from "@/lib/db";
-import { chapters, characters, parts, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
-import { generateChapters } from "@/lib/studio/generators/chapters-generator";
-import type {
-    GenerateChaptersParams,
-    GenerateChaptersResult,
-} from "@/lib/studio/generators/types";
-import {
-    type Chapter,
-    type Character,
-    insertChapterSchema,
-    type Part,
-    type Story,
-} from "@/lib/studio/generators/zod-schemas.generated";
+import { chapterService } from "@/lib/studio/services";
 import type {
     GenerateChaptersErrorResponse,
     GenerateChaptersRequest,
@@ -92,212 +77,36 @@ export async function POST(request: NextRequest) {
             language: validatedData.language,
         });
 
-        // 4. Fetch story and verify ownership
-        const storyResult: Story[] = (await db
-            .select()
-            .from(stories)
-            .where(eq(stories.id, validatedData.storyId))) as Story[];
-        const story: Story | undefined = storyResult[0];
-
-        if (!story) {
-            console.error("❌ [CHAPTERS API] Story not found");
-            return NextResponse.json(
-                { error: "Story not found" },
-                { status: 404 },
-            );
-        }
-
-        if (story.authorId !== authResult.user.id) {
-            console.error("❌ [CHAPTERS API] Access denied - not story author");
-            return NextResponse.json(
-                { error: "Access denied" },
-                { status: 403 },
-            );
-        }
-
-        console.log("✅ [CHAPTERS API] Story verified:", {
-            id: story.id,
-            title: story.title,
-        });
-
-        // 5. Fetch parts for the story
-        const storyParts: Part[] = (await db
-            .select()
-            .from(parts)
-            .where(eq(parts.storyId, validatedData.storyId))
-            .orderBy(parts.orderIndex)) as Part[];
-
-        if (storyParts.length === 0) {
-            console.error("❌ [CHAPTERS API] No parts found for story");
-            return NextResponse.json(
-                { error: "Story must have parts before generating chapters" },
-                { status: 400 },
-            );
-        }
-
-        console.log(`✅ [CHAPTERS API] Found ${storyParts.length} parts`);
-
-        // 6. Fetch characters for the story
-        const storyCharacters: Character[] = (await db
-            .select()
-            .from(characters)
-            .where(
-                eq(characters.storyId, validatedData.storyId),
-            )) as Character[];
-
-        if (storyCharacters.length === 0) {
-            console.error("❌ [CHAPTERS API] No characters found for story");
-            return NextResponse.json(
-                {
-                    error: "Story must have characters before generating chapters",
-                },
-                { status: 400 },
-            );
-        }
-
-        console.log(
-            `✅ [CHAPTERS API] Found ${storyCharacters.length} characters`,
-        );
-
-        // 7. Generate chapters using AI
-        console.log("[CHAPTERS API] 🤖 Calling chapters generator...");
-        const generateParams: GenerateChaptersParams = {
+        // 4. Generate using service (handles fetch, validation, generation, persistence)
+        console.log("[CHAPTERS API] 🤖 Calling chapter service...");
+        const serviceResult = await chapterService.generateAndSave({
             storyId: validatedData.storyId,
-            story,
-            parts: storyParts,
-            characters: storyCharacters,
             chaptersPerPart: validatedData.chaptersPerPart,
-        };
-
-        const generationResult: GenerateChaptersResult =
-            await generateChapters(generateParams);
-
-        console.log("[CHAPTERS API] ✅ Chapters generation completed:", {
-            count: generationResult.chapters.length,
-            generationTime: generationResult.metadata.generationTime,
+            userId: authResult.user.id,
         });
 
-        // 8. Save generated chapters to database
-        console.log("[CHAPTERS API] 💾 Saving chapters to database...");
-        const savedChapters: Chapter[] = [];
-
-        for (let i = 0; i < generationResult.chapters.length; i++) {
-            const chapterData = generationResult.chapters[i];
-            const chapterId: string = `chapter_${nanoid(16)}`;
-            const now: string = new Date().toISOString();
-
-            // 9. Calculate which part this chapter belongs to
-            // Chapters are generated in order: part1_ch1, part1_ch2, ..., part2_ch1, part2_ch2, ...
-            const partIndex: number = Math.floor(
-                i / validatedData.chaptersPerPart,
-            );
-            const currentPart: Part = storyParts[partIndex];
-            const currentPartId: string | null = currentPart?.id || null;
-
-            // 10. Get focus character (using first character as default)
-            const focusCharacterId: string | null =
-                storyCharacters.length > 0 ? storyCharacters[0].id : null;
-
-            // Validate chapter data before insert
-            const validatedChapter: ReturnType<
-                typeof insertChapterSchema.parse
-            > = insertChapterSchema.parse({
-                id: chapterId,
-                storyId: validatedData.storyId,
-                partId: currentPartId,
-                title: chapterData.title || `Chapter ${i + 1}`,
-                summary: chapterData.summary || null,
-                characterId: focusCharacterId,
-                arcPosition: chapterData.arcPosition || null,
-                contributesToMacroArc: chapterData.contributesToMacroArc?.trim()
-                    ? chapterData.contributesToMacroArc.trim()
-                    : null,
-                focusCharacters: chapterData.focusCharacters || [],
-                adversityType: chapterData.adversityType || null,
-                virtueType: chapterData.virtueType || null,
-                seedsPlanted: chapterData.seedsPlanted || [],
-                seedsResolved: chapterData.seedsResolved || [],
-                connectsToPreviousChapter:
-                    chapterData.connectsToPreviousChapter?.trim()
-                        ? chapterData.connectsToPreviousChapter.trim()
-                        : null,
-                createsNextAdversity: chapterData.createsNextAdversity?.trim()
-                    ? chapterData.createsNextAdversity.trim()
-                    : null,
-                status: "writing",
-                publishedAt: null,
-                scheduledFor: null,
-                orderIndex: i + 1,
-                createdAt: now,
-                updatedAt: now,
-            });
-
-            // 11. Transform empty strings to null before database insert
-            //    (Zod schema may convert null to empty string for text fields)
-            const chapterForInsert = {
-                ...validatedChapter,
-                contributesToMacroArc:
-                    validatedChapter.contributesToMacroArc?.trim()
-                        ? validatedChapter.contributesToMacroArc.trim()
-                        : null,
-                connectsToPreviousChapter:
-                    validatedChapter.connectsToPreviousChapter?.trim()
-                        ? validatedChapter.connectsToPreviousChapter.trim()
-                        : null,
-                createsNextAdversity:
-                    validatedChapter.createsNextAdversity?.trim()
-                        ? validatedChapter.createsNextAdversity.trim()
-                        : null,
-            };
-
-            try {
-                const savedChapterResult: Chapter[] = (await db
-                    .insert(chapters)
-                    .values(chapterForInsert)
-                    .returning()) as Chapter[];
-                const savedChapter: Chapter = savedChapterResult[0];
-
-                savedChapters.push(savedChapter);
-            } catch (dbError) {
-                console.error(
-                    "[CHAPTERS API] ❌ Database insert error for chapter:",
-                    {
-                        title: chapterForInsert.title,
-                        error: dbError,
-                        errorMessage:
-                            dbError instanceof Error
-                                ? dbError.message
-                                : "Unknown",
-                        cause:
-                            dbError instanceof Error &&
-                            "cause" in dbError &&
-                            dbError.cause
-                                ? dbError.cause
-                                : "N/A",
-                    },
-                );
-                throw dbError;
-            }
-        }
-
         console.log(
-            `[CHAPTERS API] ✅ Saved ${savedChapters.length} chapters to database`,
+            "[CHAPTERS API] ✅ Chapters generation and save completed:",
+            {
+                count: serviceResult.chapters.length,
+                generationTime: serviceResult.metadata.generationTime,
+            },
         );
 
-        // 12. Invalidate cache
+        // 5. Invalidate cache
         await invalidateStudioCache(authResult.user.id);
         console.log("[CHAPTERS API] ✅ Cache invalidated");
 
         console.log("✅ [CHAPTERS API] Request completed successfully");
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-        // 10. Return typed response
+        // 6. Return typed response
         const response: GenerateChaptersResponse = {
             success: true,
-            chapters: savedChapters,
+            chapters: serviceResult.chapters,
             metadata: {
-                totalGenerated: savedChapters.length,
-                generationTime: generationResult.metadata.generationTime,
+                totalGenerated: serviceResult.chapters.length,
+                generationTime: serviceResult.metadata.generationTime,
             },
         };
 

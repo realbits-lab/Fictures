@@ -479,7 +479,6 @@ Setting Name: ${setting.name}
 Description: ${setting.description || "N/A"}
 Mood: ${setting.mood || "N/A"}
 Sensory Details: ${JSON.stringify(setting.sensory || {})}
-Visual Style: ${setting.visualStyle || "N/A"}
 Architectural Style: ${setting.architecturalStyle || "N/A"}
 
 Rate:

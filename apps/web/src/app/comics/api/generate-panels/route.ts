@@ -159,7 +159,6 @@ export async function POST(request: NextRequest) {
 			summary: "A generic setting",
 			mood: "neutral",
 			sensory: null,
-			visualStyle: null,
 			visualReferences: null,
 			colorPalette: null,
 			architecturalStyle: null,

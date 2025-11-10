@@ -388,7 +388,6 @@ export async function POST(request: NextRequest): Promise<Response> {
                                     physicalDescription:
                                         char.physicalDescription,
                                     voiceStyle: char.voiceStyle,
-                                    visualStyle: char.visualStyle,
                                     createdAt: new Date().toISOString(),
                                     updatedAt: new Date().toISOString(),
                                 });
@@ -423,7 +422,6 @@ export async function POST(request: NextRequest): Promise<Response> {
                                     sensory: setting.sensory,
                                     architecturalStyle:
                                         setting.architecturalStyle,
-                                    visualStyle: setting.visualStyle,
                                     visualReferences: setting.visualReferences,
                                     colorPalette: setting.colorPalette,
                                     createdAt: new Date().toISOString(),

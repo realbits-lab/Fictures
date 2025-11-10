@@ -41,7 +41,6 @@ interface Setting {
 	summary: string | null;
 	mood: string | null;
 	sensory: Record<string, string[]> | null;
-	visualStyle: string | null;
 	architecturalStyle: string | null;
 	colorPalette: string[] | null;
 	imageUrl: string | null;
@@ -455,18 +454,6 @@ export function CommunityStorySidebar({
 														</h5>
 														<p className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed">
 															{setting.summary}
-														</p>
-													</div>
-												)}
-
-												{/* Visual Style */}
-												{setting.visualStyle && (
-													<div>
-														<h5 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
-															Visual Style
-														</h5>
-														<p className="text-sm text-gray-900 dark:text-gray-100">
-															{setting.visualStyle}
 														</p>
 													</div>
 												)}

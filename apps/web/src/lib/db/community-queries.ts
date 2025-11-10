@@ -202,7 +202,6 @@ export async function getCommunityStoryForReading(storyId: string) {
 						physicalDescription: characters.physicalDescription,
 						voiceStyle: characters.voiceStyle,
 						imageUrl: characters.imageUrl,
-						visualStyle: characters.visualStyle,
 					})
 					.from(characters)
 					.where(eq(characters.storyId, storyId))
@@ -216,7 +215,6 @@ export async function getCommunityStoryForReading(storyId: string) {
 						summary: (settings as any).summary || (settings as any).description,
 						mood: settings.mood,
 						sensory: settings.sensory,
-						visualStyle: settings.visualStyle,
 						architecturalStyle: settings.architecturalStyle,
 						colorPalette: settings.colorPalette,
 						imageUrl: settings.imageUrl,

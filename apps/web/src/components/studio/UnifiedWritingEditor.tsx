@@ -2608,14 +2608,6 @@ export function UnifiedWritingEditor({
 											</tr>
 											<tr className="border-b">
 												<td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">
-													Visual Style
-												</td>
-												<td className="py-2 px-4">
-													{selectedCharacter.visualStyle || "N/A"}
-												</td>
-											</tr>
-											<tr className="border-b">
-												<td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">
 													Created At
 												</td>
 												<td className="py-2 px-4">
@@ -2745,14 +2737,6 @@ export function UnifiedWritingEditor({
 													) : (
 														"N/A"
 													)}
-												</td>
-											</tr>
-											<tr className="border-b">
-												<td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">
-													Visual Style
-												</td>
-												<td className="py-2 px-4">
-													{selectedSetting.visualStyle || "N/A"}
 												</td>
 											</tr>
 											<tr className="border-b">

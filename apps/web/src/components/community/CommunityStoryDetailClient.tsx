@@ -37,7 +37,6 @@ interface Character {
 	physicalDescription: unknown;
 	voiceStyle: string | null;
 	imageUrl: string | null;
-	visualStyle: string | null;
 }
 
 interface Setting {
@@ -46,7 +45,6 @@ interface Setting {
 	summary: string | null;
 	mood: string | null;
 	sensory: Record<string, string[]> | null;
-	visualStyle: string | null;
 	architecturalStyle: string | null;
 	colorPalette: string[] | null;
 	imageUrl: string | null;

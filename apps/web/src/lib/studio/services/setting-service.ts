@@ -1,0 +1,116 @@
+/**
+ * Setting Service
+ *
+ * Service layer for setting generation and database persistence.
+ */
+
+import { eq } from "drizzle-orm";
+import { nanoid } from "nanoid";
+import { db } from "@/lib/db";
+import { settings, stories } from "@/lib/db/schema";
+import { generateSettings } from "../generators/settings-generator";
+import type {
+    GenerateSettingsParams,
+    GenerateSettingsResult,
+} from "../generators/types";
+import {
+    insertSettingSchema,
+    type Setting,
+    type Story,
+} from "../generators/zod-schemas.generated";
+
+export interface GenerateSettingsServiceParams {
+    storyId: string;
+    settingCount: number;
+    userId: string;
+}
+
+export interface GenerateSettingsServiceResult {
+    settings: Setting[];
+    metadata: {
+        totalGenerated: number;
+        generationTime: number;
+    };
+}
+
+export class SettingService {
+    async generateAndSave(
+        params: GenerateSettingsServiceParams,
+    ): Promise<GenerateSettingsServiceResult> {
+        const { storyId, settingCount, userId } = params;
+
+        // 1. Fetch and verify story
+        const storyResult: Story[] = (await db
+            .select()
+            .from(stories)
+            .where(eq(stories.id, storyId))) as Story[];
+
+        const story: Story | undefined = storyResult[0];
+
+        if (!story) {
+            throw new Error(`Story not found: ${storyId}`);
+        }
+
+        // 2. Verify ownership
+        if (story.authorId !== userId) {
+            throw new Error(
+                "Access denied: You do not have permission to modify this story",
+            );
+        }
+
+        // 3. Generate settings using pure generator
+        const generateParams: GenerateSettingsParams = {
+            story,
+            settingCount,
+        };
+
+        const generationResult: GenerateSettingsResult =
+            await generateSettings(generateParams);
+
+        // 4. Save settings to database
+        const savedSettings: Setting[] = [];
+        const now: string = new Date().toISOString();
+
+        for (const settingData of generationResult.settings) {
+            const settingId: string = `setting_${nanoid(16)}`;
+
+            const validatedSetting = insertSettingSchema.parse({
+                id: settingId,
+                storyId,
+                name: settingData.name || "Unnamed Setting",
+                summary: settingData.summary || null,
+                adversityElements: settingData.adversityElements || null,
+                symbolicMeaning: settingData.symbolicMeaning || null,
+                cycleAmplification: settingData.cycleAmplification || null,
+                mood: settingData.mood || null,
+                emotionalResonance: settingData.emotionalResonance || null,
+                sensory: settingData.sensory || null,
+                architecturalStyle: settingData.architecturalStyle || null,
+                imageUrl: null,
+                imageVariants: null,
+                visualReferences: settingData.visualReferences || null,
+                colorPalette: settingData.colorPalette || null,
+                createdAt: now,
+                updatedAt: now,
+            });
+
+            const savedSettingArray: Setting[] = (await db
+                .insert(settings)
+                .values(validatedSetting)
+                .returning()) as Setting[];
+            const savedSetting: Setting = savedSettingArray[0];
+            savedSettings.push(savedSetting);
+        }
+
+        // 5. Return result
+        return {
+            settings: savedSettings,
+            metadata: {
+                totalGenerated: generationResult.metadata.totalGenerated,
+                generationTime: generationResult.metadata.generationTime,
+            },
+        };
+    }
+}
+
+export const settingService = new SettingService();

@@ -8,25 +8,13 @@
  */
 
 import { eq } from "drizzle-orm";
-import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { db } from "@/lib/db";
-import { chapters, scenes, settings, stories } from "@/lib/db/schema";
+import { chapters, scenes, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
-import { generateSceneSummaries } from "@/lib/studio/generators/scene-summaries-generator";
-import type {
-    GenerateSceneSummariesParams,
-    GenerateSceneSummariesResult,
-} from "@/lib/studio/generators/types";
-import {
-    type Chapter,
-    insertSceneSchema,
-    type Scene,
-    type Setting,
-    type Story,
-} from "@/lib/studio/generators/zod-schemas.generated";
+import { sceneSummariesService } from "@/lib/studio/services";
 import type {
     GenerateSceneSummariesErrorResponse,
     GenerateSceneSummariesRequest,
@@ -181,202 +169,38 @@ export async function POST(request: NextRequest) {
             language: validatedData.language,
         });
 
-        // 4. Fetch story and verify ownership
-        const storyResults = await db
-            .select()
-            .from(stories)
-            .where(eq(stories.id, validatedData.storyId));
-
-        const story: Story | undefined = storyResults[0] as Story | undefined;
-
-        if (!story) {
-            console.error("❌ [SCENE SUMMARIES API] Story not found");
-            return NextResponse.json(
-                { error: "Story not found" },
-                { status: 404 },
-            );
-        }
-
-        if (story.authorId !== authResult.user.id) {
-            console.error(
-                "❌ [SCENE SUMMARIES API] Access denied - not story author",
-            );
-            return NextResponse.json(
-                { error: "Access denied" },
-                { status: 403 },
-            );
-        }
-
-        console.log("✅ [SCENE SUMMARIES API] Story verified:", {
-            id: story.id,
-            title: story.title,
+        // 4. Generate using service (handles fetch, validation, generation, persistence)
+        console.log(
+            "[SCENE SUMMARIES API] 🤖 Calling scene summaries service...",
+        );
+        const serviceResult = await sceneSummariesService.generateAndSave({
+            storyId: validatedData.storyId,
+            scenesPerChapter: validatedData.scenesPerChapter ?? 3,
+            userId: authResult.user.id,
         });
 
-        // 5. Fetch chapters for the story
-        const storyChapters = (await db
-            .select()
-            .from(chapters)
-            .where(eq(chapters.storyId, validatedData.storyId))
-            .orderBy(chapters.orderIndex)) as Chapter[];
-
-        if (storyChapters.length === 0) {
-            console.error(
-                "❌ [SCENE SUMMARIES API] No chapters found for story",
-            );
-            return NextResponse.json(
-                { error: "Story must have chapters before generating scenes" },
-                { status: 400 },
-            );
-        }
-
         console.log(
-            `✅ [SCENE SUMMARIES API] Found ${storyChapters.length} chapters`,
-        );
-
-        // 6. Fetch settings for the story
-        const storySettings = (await db
-            .select()
-            .from(settings)
-            .where(eq(settings.storyId, validatedData.storyId))) as Setting[];
-
-        console.log(
-            `[SCENE SUMMARIES API] Found ${storySettings.length} settings`,
-        );
-
-        // 7. Generate scene summaries using AI
-        console.log(
-            "[SCENE SUMMARIES API] 🤖 Calling scene summaries generator...",
-        );
-        const generateParams: GenerateSceneSummariesParams = {
-            chapters: storyChapters,
-            settings: storySettings,
-            scenesPerChapter: validatedData.scenesPerChapter ?? 3,
-        };
-
-        const generationResult: GenerateSceneSummariesResult =
-            await generateSceneSummaries(generateParams);
-
-        console.log(
-            "[SCENE SUMMARIES API] ✅ Scene summaries generation completed:",
+            "[SCENE SUMMARIES API] ✅ Scene summaries generation and save completed:",
             {
-                count: generationResult.scenes.length,
-                generationTime: generationResult.metadata.generationTime,
+                count: serviceResult.scenes.length,
+                generationTime: serviceResult.metadata.generationTime,
             },
         );
 
-        // 8. Save generated scene summaries to database
-        console.log(
-            "[SCENE SUMMARIES API] 💾 Saving scene summaries to database...",
-        );
-        const savedScenes: Scene[] = [];
-
-        for (let i = 0; i < generationResult.scenes.length; i++) {
-            const sceneData: (typeof generationResult.scenes)[number] =
-                generationResult.scenes[i];
-            const sceneId: string = `scene_${nanoid(16)}`;
-            const now: string = new Date().toISOString();
-
-            // Calculate which chapter this scene belongs to
-            // Scenes are generated in order: chapter1_scene1, chapter1_scene2, ..., chapter2_scene1, chapter2_scene2, ...
-            const chapterIndex: number = Math.floor(
-                i / (validatedData.scenesPerChapter ?? 3),
-            );
-            const currentChapter: Chapter = storyChapters[chapterIndex];
-            const currentChapterId: string = currentChapter.id;
-
-            // Validate scene data before insert
-            const validatedScene: z.infer<typeof insertSceneSchema> =
-                insertSceneSchema.parse({
-                    // === IDENTITY ===
-                    id: sceneId,
-                    chapterId: currentChapterId,
-                    title: sceneData.title || `Scene ${i + 1}`,
-
-                    // === SCENE SPECIFICATION (Planning Layer) ===
-                    summary: sceneData.summary || null,
-
-                    // === CYCLE PHASE TRACKING ===
-                    cyclePhase: sceneData.cyclePhase || null,
-                    emotionalBeat: sceneData.emotionalBeat || null,
-
-                    // === PLANNING METADATA (Guides Content Generation) ===
-                    characterFocus: sceneData.characterFocus || [],
-                    settingId: sceneData.settingId || null,
-                    sensoryAnchors: sceneData.sensoryAnchors || [],
-                    dialogueVsDescription:
-                        sceneData.dialogueVsDescription || null,
-                    suggestedLength: sceneData.suggestedLength || null,
-
-                    // === GENERATED PROSE (Execution Layer) ===
-                    content: "",
-
-                    // === VISUAL ===
-                    imageUrl: null,
-                    imageVariants: null,
-
-                    // === PUBLISHING (Novel Format) ===
-                    visibility: "private",
-                    publishedAt: null,
-                    publishedBy: null,
-                    unpublishedAt: null,
-                    unpublishedBy: null,
-                    scheduledFor: null,
-                    autoPublish: false,
-
-                    // === COMIC FORMAT ===
-                    comicStatus: "none",
-                    comicPublishedAt: null,
-                    comicPublishedBy: null,
-                    comicUnpublishedAt: null,
-                    comicUnpublishedBy: null,
-                    comicGeneratedAt: null,
-                    comicPanelCount: 0,
-                    comicVersion: 1,
-
-                    // === ANALYTICS ===
-                    viewCount: 0,
-                    uniqueViewCount: 0,
-                    novelViewCount: 0,
-                    novelUniqueViewCount: 0,
-                    comicViewCount: 0,
-                    comicUniqueViewCount: 0,
-                    lastViewedAt: null,
-
-                    // === ORDERING ===
-                    orderIndex: i + 1,
-
-                    // === METADATA ===
-                    createdAt: now,
-                    updatedAt: now,
-                });
-
-            const savedSceneResults: Scene[] = (await db
-                .insert(scenes)
-                .values(validatedScene)
-                .returning()) as Scene[];
-
-            const savedScene: Scene = savedSceneResults[0];
-            savedScenes.push(savedScene);
-        }
-
-        console.log(
-            `[SCENE SUMMARIES API] ✅ Saved ${savedScenes.length} scene summaries to database`,
-        );
-
-        // 9. Invalidate cache
+        // 5. Invalidate cache
         await invalidateStudioCache(authResult.user.id);
         console.log("[SCENE SUMMARIES API] ✅ Cache invalidated");
 
         console.log("✅ [SCENE SUMMARIES API] Request completed successfully");
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-        // 10. Return typed response
+        // 6. Return typed response
         const response: GenerateSceneSummariesResponse = {
             success: true,
-            scenes: savedScenes,
+            scenes: serviceResult.scenes,
             metadata: {
-                totalGenerated: savedScenes.length,
-                generationTime: generationResult.metadata.generationTime,
+                totalGenerated: serviceResult.scenes.length,
+                generationTime: serviceResult.metadata.generationTime,
             },
         };
 

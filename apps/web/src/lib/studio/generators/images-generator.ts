@@ -75,7 +75,7 @@ export async function generateImages(
 			imageCount++;
 			if (onProgress) onProgress(imageCount, totalImages);
 
-			const prompt = `Character portrait: ${character.name}. ${character.summary}. Appearance: ${character.appearance.physicalDescription}. Style: ${character.visualStyle || "realistic"}, professional character art.`;
+			const prompt = `Character portrait: ${character.name}. ${character.summary}. Appearance: ${character.appearance.physicalDescription}. Professional character art, realistic style.`;
 
 			const result = await generateStoryImage({
 				prompt,
@@ -106,7 +106,7 @@ export async function generateImages(
 			imageCount++;
 			if (onProgress) onProgress(imageCount, totalImages);
 
-			const prompt = `Setting illustration: ${setting.name}. ${setting.description}. Mood: ${setting.mood}. Sensory details: ${setting.sensory?.sight?.join(", ")}. Style: ${setting.visualStyle || "realistic"}, cinematic environment art.`;
+			const prompt = `Setting illustration: ${setting.name}. ${setting.description}. Mood: ${setting.mood}. Sensory details: ${setting.sensory?.sight?.join(", ")}. Cinematic environment art, realistic style.`;
 
 			const result = await generateStoryImage({
 				prompt,

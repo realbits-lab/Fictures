@@ -1,22 +1,12 @@
 import { eq } from "drizzle-orm";
-import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { db } from "@/lib/db";
-import { characters, parts, settings, stories } from "@/lib/db/schema";
+import { parts, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
-import { generateParts } from "@/lib/studio/generators/parts-generator";
-import type {
-    GeneratePartsParams,
-    GeneratePartsResult,
-} from "@/lib/studio/generators/types";
-import {
-    type Character,
-    insertPartSchema,
-    type Part,
-    type Story,
-} from "@/lib/studio/generators/zod-schemas.generated";
+import type { Story } from "@/lib/studio/generators/zod-schemas.generated";
+import { partService } from "@/lib/studio/services";
 import type {
     GeneratePartsErrorResponse,
     GeneratePartsRequest,
@@ -151,129 +141,33 @@ export async function POST(request: NextRequest) {
             language: validatedData.language,
         });
 
-        // 4. Fetch story and verify ownership
-        const storyResult: Story[] = (await db
-            .select()
-            .from(stories)
-            .where(eq(stories.id, validatedData.storyId))) as Story[];
-        const story: Story | undefined = storyResult[0];
-
-        if (!story) {
-            console.error("❌ [PARTS API] Story not found");
-            return NextResponse.json(
-                { error: "Story not found" },
-                { status: 404 },
-            );
-        }
-
-        if (story.authorId !== authResult.user.id) {
-            console.error("❌ [PARTS API] Access denied - not story author");
-            return NextResponse.json(
-                { error: "Access denied" },
-                { status: 403 },
-            );
-        }
-
-        console.log("✅ [PARTS API] Story verified:", {
-            id: story.id,
-            title: story.title,
-        });
-
-        // 5. Fetch characters for the story
-        const storyCharacters: Character[] = (await db
-            .select()
-            .from(characters)
-            .where(
-                eq(characters.storyId, validatedData.storyId),
-            )) as Character[];
-
-        if (storyCharacters.length === 0) {
-            console.error("❌ [PARTS API] No characters found for story");
-            return NextResponse.json(
-                { error: "Story must have characters before generating parts" },
-                { status: 400 },
-            );
-        }
-
-        console.log(
-            `✅ [PARTS API] Found ${storyCharacters.length} characters`,
-        );
-
-        // 6. Fetch settings for the story
-        const storySettings: Array<typeof settings.$inferSelect> = await db
-            .select()
-            .from(settings)
-            .where(eq(settings.storyId, validatedData.storyId));
-
-        console.log(`[PARTS API] Found ${storySettings.length} settings`);
-
-        // 7. Generate parts using AI
-        console.log("[PARTS API] 🤖 Calling parts generator...");
-        const generateParams: GeneratePartsParams = {
-            story,
-            characters: storyCharacters,
+        // 4. Generate using service (handles fetch, validation, generation, persistence)
+        console.log("[PARTS API] 🤖 Calling part service...");
+        const serviceResult = await partService.generateAndSave({
+            storyId: validatedData.storyId,
             partsCount: validatedData.partsCount,
-        };
-
-        const generationResult: GeneratePartsResult =
-            await generateParts(generateParams);
-
-        console.log("[PARTS API] ✅ Parts generation completed:", {
-            count: generationResult.parts.length,
-            generationTime: generationResult.metadata.generationTime,
+            userId: authResult.user.id,
         });
 
-        // 8. Save generated parts to database
-        console.log("[PARTS API] 💾 Saving parts to database...");
-        const savedParts: Part[] = [];
+        console.log("[PARTS API] ✅ Parts generation and save completed:", {
+            count: serviceResult.parts.length,
+            generationTime: serviceResult.metadata.generationTime,
+        });
 
-        for (let i = 0; i < generationResult.parts.length; i++) {
-            const partData = generationResult.parts[i];
-            const partId: string = `part_${nanoid(16)}`;
-            const now: Date = new Date();
-
-            // Validate part data before insert
-            const validatedPart: ReturnType<typeof insertPartSchema.parse> =
-                insertPartSchema.parse({
-                    id: partId,
-                    storyId: validatedData.storyId,
-                    title: partData.title || `Part ${i + 1}`,
-                    summary: partData.summary || null,
-                    characterArcs: partData.characterArcs || null,
-                    orderIndex: i + 1,
-                    createdAt: now.toISOString(),
-                    updatedAt: now.toISOString(),
-                });
-
-            const savedPartResult: Part[] = (await db
-                .insert(parts)
-                .values(validatedPart)
-                .returning()) as Part[];
-
-            const savedPart: Part = savedPartResult[0];
-            savedParts.push(savedPart);
-
-            console.log(`[PARTS API] ✅ Saved part: ${savedPart.title}`);
-        }
-
-        console.log(
-            `[PARTS API] ✅ Saved ${savedParts.length} parts to database`,
-        );
-
-        // 9. Invalidate cache
+        // 5. Invalidate cache
         await invalidateStudioCache(authResult.user.id);
         console.log("[PARTS API] ✅ Cache invalidated");
 
         console.log("✅ [PARTS API] Request completed successfully");
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-        // 10. Return typed response
+        // 6. Return typed response
         const response: GeneratePartsResponse = {
             success: true,
-            parts: savedParts,
+            parts: serviceResult.parts,
             metadata: {
-                totalGenerated: savedParts.length,
-                generationTime: generationResult.metadata.generationTime,
+                totalGenerated: serviceResult.parts.length,
+                generationTime: serviceResult.metadata.generationTime,
             },
         };
 

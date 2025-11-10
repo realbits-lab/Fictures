@@ -124,7 +124,6 @@ export async function POST(
 			summary: "A generic setting",
 			mood: "neutral",
 			sensory: null,
-			visualStyle: null,
 			visualReferences: null,
 			colorPalette: null,
 			architecturalStyle: null,

@@ -583,7 +583,6 @@ export async function GET(
 				summary: s.summary,
 				mood: s.mood,
 				sensory: s.sensory,
-				visualStyle: s.visualStyle,
 				visualReferences: s.visualReferences,
 				colorPalette: s.colorPalette,
 				architecturalStyle: s.architecturalStyle,

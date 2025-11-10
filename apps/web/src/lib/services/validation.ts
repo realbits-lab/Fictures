@@ -128,7 +128,6 @@ export const SettingValidationSchema = z.object({
 	summary: z.string().optional(),
 	mood: z.string().optional(),
 	sensory: z.record(z.string(), z.array(z.string())).optional(),
-	visualStyle: z.string().optional(),
 	visualReferences: z.array(z.string()).optional(),
 	colorPalette: z.array(z.string()).optional(),
 	architecturalStyle: z.string().optional(),
@@ -561,7 +560,7 @@ export function validateSetting(data: unknown): ValidationResult {
 		const stats = calculateStats(
 			parsed,
 			["name", "storyId"],
-			["description", "mood", "sensory", "visualStyle"],
+			["description", "mood", "sensory"],
 		);
 
 		return {

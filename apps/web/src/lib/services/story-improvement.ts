@@ -101,7 +101,6 @@ const ImprovedSettingSchema = z.object({
 	summary: z.string().optional(),
 	mood: z.string().optional(),
 	sensory: z.record(z.string(), z.array(z.string())).optional(),
-	visualStyle: z.string().optional(),
 	visualReferences: z.array(z.string()).optional(),
 	colorPalette: z.array(z.string()).optional(),
 	architecturalStyle: z.string().optional(),
@@ -1362,7 +1361,6 @@ Name: ${setting.name}
 Description: ${setting.description || "N/A"}
 Mood: ${setting.mood || "N/A"}
 Sensory: ${JSON.stringify(setting.sensory || {})}
-Visual Style: ${setting.visualStyle || "N/A"}
 
 ISSUES TO ADDRESS:
 ${issues.join("\n")}

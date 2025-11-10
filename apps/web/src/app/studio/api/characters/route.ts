@@ -8,23 +8,13 @@
  */
 
 import { eq } from "drizzle-orm";
-import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { db } from "@/lib/db";
 import { characters, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
-import { generateCharacters } from "@/lib/studio/generators/characters-generator";
-import type {
-    GenerateCharactersParams,
-    GenerateCharactersResult,
-} from "@/lib/studio/generators/types";
-import {
-    type Character,
-    insertCharacterSchema,
-    type Story,
-} from "@/lib/studio/generators/zod-schemas.generated";
+import { characterService } from "@/lib/studio/services";
 import type {
     GenerateCharactersErrorResponse,
     GenerateCharactersRequest,
@@ -172,115 +162,37 @@ export async function POST(request: NextRequest) {
             language: validatedData.language,
         });
 
-        // 4. Fetch story and verify ownership
-        const storyResult: Story[] = (await db
-            .select()
-            .from(stories)
-            .where(eq(stories.id, validatedData.storyId))) as Story[];
-        const story: Story | undefined = storyResult[0];
-
-        if (!story) {
-            console.error("❌ [CHARACTERS API] Story not found");
-            return NextResponse.json(
-                { error: "Story not found" },
-                { status: 404 },
-            );
-        }
-
-        if (story.authorId !== authResult.user.id) {
-            console.error(
-                "❌ [CHARACTERS API] Access denied - not story author",
-            );
-            return NextResponse.json(
-                { error: "Access denied" },
-                { status: 403 },
-            );
-        }
-
-        console.log("✅ [CHARACTERS API] Story verified:", {
-            id: story.id,
-            title: story.title,
-        });
-
-        // 5. Generate characters using AI
-        console.log("[CHARACTERS API] 🤖 Calling characters generator...");
-        const generateParams: GenerateCharactersParams = {
-            story,
+        // 4. Generate using service (handles fetch, validation, generation, persistence)
+        console.log("[CHARACTERS API] 🤖 Calling character service...");
+        const serviceResult = await characterService.generateAndSave({
+            storyId: validatedData.storyId,
             characterCount: validatedData.characterCount,
             language: validatedData.language,
-        };
-
-        const generationResult: GenerateCharactersResult =
-            await generateCharacters(generateParams);
-
-        console.log("[CHARACTERS API] ✅ Characters generation completed:", {
-            count: generationResult.characters.length,
-            generationTime: generationResult.metadata.generationTime,
+            userId: authResult.user.id,
         });
 
-        // 6. Save generated characters to database
-        console.log("[CHARACTERS API] 💾 Saving characters to database...");
-        const savedCharacters: Character[] = [];
-
-        for (const characterData of generationResult.characters) {
-            const characterId: string = `char_${nanoid(16)}`;
-            const now: string = new Date().toISOString();
-
-            // 7. Validate character data before insertion
-            const validatedCharacter: ReturnType<
-                typeof insertCharacterSchema.parse
-            > = insertCharacterSchema.parse({
-                id: characterId,
-                storyId: validatedData.storyId,
-                name: characterData.name || "Unnamed Character",
-                isMain: characterData.isMain ?? false,
-                summary: characterData.summary ?? null,
-                coreTrait: characterData.coreTrait ?? null,
-                internalFlaw: characterData.internalFlaw ?? null,
-                externalGoal: characterData.externalGoal ?? null,
-                personality: characterData.personality ?? null,
-                backstory: characterData.backstory ?? null,
-                relationships: null, // Relationships are built separately
-                physicalDescription: characterData.physicalDescription ?? null,
-                voiceStyle: characterData.voiceStyle ?? null,
-                imageUrl: null,
-                imageVariants: null,
-                visualStyle: null,
-                createdAt: now,
-                updatedAt: now,
-            });
-
-            // 8. Insert validated character data into database
-            const savedCharacterArray: Character[] = (await db
-                .insert(characters)
-                .values(validatedCharacter)
-                .returning()) as Character[];
-            const savedCharacter: Character = savedCharacterArray[0];
-            savedCharacters.push(savedCharacter);
-
-            console.log(
-                `[CHARACTERS API] ✅ Saved character: ${savedCharacter.name}`,
-            );
-        }
-
         console.log(
-            `[CHARACTERS API] ✅ Saved ${savedCharacters.length} characters to database`,
+            "[CHARACTERS API] ✅ Characters generation and save completed:",
+            {
+                count: serviceResult.characters.length,
+                generationTime: serviceResult.metadata.generationTime,
+            },
         );
 
-        // 10. Invalidate cache
+        // 5. Invalidate cache
         await invalidateStudioCache(authResult.user.id);
         console.log("[CHARACTERS API] ✅ Cache invalidated");
 
         console.log("✅ [CHARACTERS API] Request completed successfully");
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-        // 11. Return typed response
+        // 6. Return typed response
         const response: GenerateCharactersResponse = {
             success: true,
-            characters: savedCharacters,
+            characters: serviceResult.characters,
             metadata: {
-                totalGenerated: savedCharacters.length,
-                generationTime: generationResult.metadata.generationTime,
+                totalGenerated: serviceResult.characters.length,
+                generationTime: serviceResult.metadata.generationTime,
             },
         };
 

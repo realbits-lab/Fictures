@@ -1,22 +1,11 @@
 import { createHash } from "node:crypto";
-import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
-import { db } from "@/lib/db";
-import { stories } from "@/lib/db/schema";
 import {
     getCachedUserStories,
     invalidateStudioCache,
 } from "@/lib/db/studio-queries";
-import { generateStory } from "@/lib/studio/generators/story-generator";
-import type {
-    GenerateStoryParams,
-    GenerateStoryResult,
-} from "@/lib/studio/generators/types";
-import {
-    insertStorySchema,
-    type Story,
-} from "@/lib/studio/generators/zod-schemas.generated";
+import { storyService } from "@/lib/studio/services";
 import type {
     GenerateStoryErrorResponse,
     GenerateStoryRequest,
@@ -214,76 +203,36 @@ export async function POST(request: NextRequest) {
 
         console.log("✅ [STORIES API] Validation passed");
 
-        // 5. Generate story using story-generator
-        console.log("[STORIES API] 🤖 Calling story generator...");
-        const generateParams: GenerateStoryParams = {
+        // 4. Generate using service (handles generation and persistence)
+        console.log("[STORIES API] 🤖 Calling story service...");
+        const serviceResult = await storyService.generateAndSave({
             userPrompt,
             language,
             preferredGenre,
             preferredTone,
-        };
-
-        const generationResult: GenerateStoryResult =
-            await generateStory(generateParams);
-
-        console.log("[STORIES API] ✅ Story generation completed:", {
-            title: generationResult.story.title,
-            genre: generationResult.story.genre,
-            tone: generationResult.story.tone,
-            generationTime: generationResult.metadata.generationTime,
+            userId: authResult.user.id,
         });
 
-        // 6. Validate and save story to database
-        console.log(
-            "[STORIES API] 💾 Validating and saving story to database...",
-        );
-        const storyId: string = `story_${nanoid(16)}`;
-        const now: string = new Date().toISOString();
-
-        const storyData: ReturnType<typeof insertStorySchema.parse> =
-            insertStorySchema.parse({
-                id: storyId,
-                authorId: authResult.user.id,
-                title: generationResult.story.title || "Untitled Story",
-                summary: generationResult.story.summary || null,
-                genre: generationResult.story.genre || null,
-                tone: generationResult.story.tone || "hopeful",
-                moralFramework: generationResult.story.moralFramework || null,
-                status: "writing",
-                viewCount: 0,
-                rating: 0,
-                ratingCount: 0,
-                imageUrl: null,
-                imageVariants: null,
-                createdAt: now,
-                updatedAt: now,
-            });
-
-        const savedStoryArray: Story[] = (await db
-            .insert(stories)
-            .values(storyData)
-            .returning()) as Story[];
-        const savedStory: Story = savedStoryArray[0];
-
-        console.log("[STORIES API] ✅ Story saved to database:", {
-            storyId: savedStory.id,
-            title: savedStory.title,
+        console.log("[STORIES API] ✅ Story generation and save completed:", {
+            storyId: serviceResult.story.id,
+            title: serviceResult.story.title,
+            generationTime: serviceResult.metadata.generationTime,
         });
 
-        // 7. Invalidate cache after creating new story
+        // 5. Invalidate cache after creating new story
         await invalidateStudioCache(authResult.user.id);
         console.log("[STORIES API] ✅ Cache invalidated");
 
         console.log("✅ [STORIES API] Request completed successfully");
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-        // 8. Return the created story with metadata
+        // 6. Return the created story with metadata
         const response: GenerateStoryResponse = {
             success: true,
-            story: savedStory,
+            story: serviceResult.story,
             metadata: {
-                generationTime: generationResult.metadata.generationTime,
-                model: generationResult.metadata.model,
+                generationTime: serviceResult.metadata.generationTime,
+                model: serviceResult.metadata.model,
             },
         };
 

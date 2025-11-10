@@ -231,7 +231,6 @@ export const GeneratedSettingSchema = z.object({
     sensory: sensorySchema.nullable(),
     emotionalResonance: z.string().nullable(),
     architecturalStyle: z.string().nullable(),
-    visualStyle: z.string().nullable(),
     visualReferences: z
         .array(
             z.object({ category: z.string(), examples: z.array(z.string()) }),

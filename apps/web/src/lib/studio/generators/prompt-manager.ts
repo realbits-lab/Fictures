@@ -32,8 +32,8 @@ Language: {language}
 
 Generate a story foundation with:
 1. Title (engaging and memorable)
-2. Genre (specific genre classification)
-3. Summary (2-3 sentences describing the thematic premise and moral framework)
+2. Summary (2-3 sentences describing the thematic premise and moral framework)
+3. Genre (specific genre classification)
 4. Tone (hopeful, dark, bittersweet, or satirical)
 5. Moral Framework (what virtues are valued in this story?)`,
 			},

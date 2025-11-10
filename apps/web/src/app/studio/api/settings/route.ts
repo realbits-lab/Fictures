@@ -8,23 +8,13 @@
  */
 
 import { eq } from "drizzle-orm";
-import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { db } from "@/lib/db";
 import { settings, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
-import { generateSettings } from "@/lib/studio/generators/settings-generator";
-import type {
-    GenerateSettingsParams,
-    GenerateSettingsResult,
-} from "@/lib/studio/generators/types";
-import {
-    insertSettingSchema,
-    type Setting,
-    type Story,
-} from "@/lib/studio/generators/zod-schemas.generated";
+import { settingService } from "@/lib/studio/services";
 import type {
     GenerateSettingsErrorResponse,
     GenerateSettingsRequest,
@@ -169,112 +159,36 @@ export async function POST(request: NextRequest) {
             settingCount: validatedData.settingCount,
         });
 
-        // 4. Fetch story and verify ownership
-        const storyResult: Story[] = (await db
-            .select()
-            .from(stories)
-            .where(eq(stories.id, validatedData.storyId))) as Story[];
-        const story: Story | undefined = storyResult[0];
-
-        if (!story) {
-            console.error("❌ [SETTINGS API] Story not found");
-            return NextResponse.json(
-                { error: "Story not found" },
-                { status: 404 },
-            );
-        }
-
-        if (story.authorId !== authResult.user.id) {
-            console.error("❌ [SETTINGS API] Access denied - not story author");
-            return NextResponse.json(
-                { error: "Access denied" },
-                { status: 403 },
-            );
-        }
-
-        console.log("✅ [SETTINGS API] Story verified:", {
-            id: story.id,
-            title: story.title,
-        });
-
-        // 5. Generate settings using AI
-        console.log("[SETTINGS API] 🤖 Calling settings generator...");
-        const generateParams: GenerateSettingsParams = {
-            story,
+        // 4. Generate using service (handles fetch, validation, generation, persistence)
+        console.log("[SETTINGS API] 🤖 Calling setting service...");
+        const serviceResult = await settingService.generateAndSave({
+            storyId: validatedData.storyId,
             settingCount: validatedData.settingCount,
-        };
-
-        const generationResult: GenerateSettingsResult =
-            await generateSettings(generateParams);
-
-        console.log("[SETTINGS API] ✅ Settings generation completed:", {
-            count: generationResult.settings.length,
-            generationTime: generationResult.metadata.generationTime,
+            userId: authResult.user.id,
         });
-
-        // 6. Save generated settings to database
-        console.log("[SETTINGS API] 💾 Saving settings to database...");
-        const savedSettings: Setting[] = [];
-
-        for (const settingData of generationResult.settings) {
-            const settingId: string = `setting_${nanoid(16)}`;
-            const now: string = new Date().toISOString();
-
-            // 7. Validate setting data before insert
-            const validatedSetting: ReturnType<
-                typeof insertSettingSchema.parse
-            > = insertSettingSchema.parse({
-                id: settingId,
-                storyId: validatedData.storyId,
-                name: settingData.name || "Unnamed Setting",
-                summary: settingData.summary || null,
-                adversityElements: settingData.adversityElements || null,
-                symbolicMeaning: settingData.symbolicMeaning || null,
-                cycleAmplification: settingData.cycleAmplification || null,
-                mood: settingData.mood || null,
-                emotionalResonance: settingData.emotionalResonance || null,
-                sensory: settingData.sensory || null,
-                architecturalStyle: settingData.architecturalStyle || null,
-                imageUrl: null,
-                imageVariants: null,
-                visualStyle: settingData.visualStyle || null,
-                visualReferences: settingData.visualReferences || null,
-                colorPalette: settingData.colorPalette || null,
-                createdAt: now,
-                updatedAt: now,
-            });
-
-            const savedSettingArray: Setting[] = (await db
-                .insert(settings)
-                .values(validatedSetting)
-                .returning()) as Setting[];
-            const savedSetting: Setting = savedSettingArray[0];
-
-            savedSettings.push(savedSetting);
-
-            console.log(
-                `[SETTINGS API] ✅ Saved setting: ${savedSetting.name}`,
-            );
-        }
 
         console.log(
-            `[SETTINGS API] ✅ Saved ${savedSettings.length} settings to database`,
+            "[SETTINGS API] ✅ Settings generation and save completed:",
+            {
+                count: serviceResult.settings.length,
+                generationTime: serviceResult.metadata.generationTime,
+            },
         );
 
-        // 8. Invalidate cache
+        // 5. Invalidate cache
         await invalidateStudioCache(authResult.user.id);
         console.log("[SETTINGS API] ✅ Cache invalidated");
 
         console.log("✅ [SETTINGS API] Request completed successfully");
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-        // 9. Return typed response
+        // 6. Return typed response
         const response: GenerateSettingsResponse = {
             success: true,
-            settings: savedSettings,
+            settings: serviceResult.settings,
             metadata: {
-                totalGenerated: savedSettings.length,
-                generationTime: generationResult.metadata.generationTime,
+                totalGenerated: serviceResult.settings.length,
+                generationTime: serviceResult.metadata.generationTime,
             },
         };
 
