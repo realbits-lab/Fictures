@@ -12,11 +12,11 @@
  */
 
 import type {
-    GenerateCharactersRequest,
-    GenerateCharactersResponse,
     GenerateChaptersErrorResponse,
     GenerateChaptersRequest,
     GenerateChaptersResponse,
+    GenerateCharactersRequest,
+    GenerateCharactersResponse,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 

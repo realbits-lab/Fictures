@@ -8,8 +8,8 @@
  */
 
 import type {
-    GenerateCharactersRequest,
     GenerateChaptersRequest,
+    GenerateCharactersRequest,
     GeneratePartsRequest,
     GenerateSceneSummariesErrorResponse,
     GenerateSceneSummariesRequest,
@@ -33,7 +33,7 @@ describe("Scene Summary API", () => {
             userPrompt: "A test story for scene summary testing",
             language: "English",
             preferredGenre: "Fantasy",
-            preferredTone: "adventurous",
+            preferredTone: "hopeful",
         };
 
         const storyResponse: Response = await fetch(

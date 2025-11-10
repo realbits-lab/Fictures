@@ -325,6 +325,15 @@ export interface GenerateSceneSummariesParams {
     onProgress?: ProgressCallback;
 }
 
+export interface SceneSummaryPromptParams extends Record<string, string> {
+    sceneNumber: string;
+    sceneCount: string;
+    chapterTitle: string;
+    chapterSummary: string;
+    cyclePhase: string;
+    settings: string;
+}
+
 export interface GenerateSceneSummariesResult {
     scenes: GeneratedSceneSummaryData[];
     metadata: ArrayGeneratorMetadata;
@@ -340,6 +349,18 @@ export interface GenerateSceneContentParams {
     characters: Character[];
     settings: Setting[];
     language?: string;
+}
+
+export interface SceneContentPromptParams extends Record<string, string> {
+    sceneSummary: string;
+    cyclePhase: string;
+    emotionalBeat: string;
+    suggestedLength: string;
+    settingDescription: string;
+    sensoryAnchors: string;
+    characterName: string;
+    voiceStyle: string;
+    language: string;
 }
 
 export interface GenerateSceneContentResult {

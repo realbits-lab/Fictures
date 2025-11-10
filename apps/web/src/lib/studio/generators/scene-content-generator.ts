@@ -13,6 +13,7 @@ import { promptManager } from "./prompt-manager";
 import type {
     GenerateSceneContentParams,
     GenerateSceneContentResult,
+    SceneContentPromptParams,
 } from "./types";
 
 /**

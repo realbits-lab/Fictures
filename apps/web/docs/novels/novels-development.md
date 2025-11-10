@@ -122,67 +122,114 @@ All types follow a consistent "Generate" verb pattern across all layers:
 
 **Type Hierarchy for Story Generation:**
 
+Focus on **data types** and their transformation through the generation pipeline.
+
 ```
-┌─────────────────────────────────────────────────────────┐
-│ API Layer (route.ts)                                    │
-├─────────────────────────────────────────────────────────┤
-│ Request Body (inline object)                            │
-│   ↓ extracted to requestBody const variable             │
-│   ↓ with explicit type annotation                       │
-│   ↓ destructured to                                     │
-│ GenerateStoryParams           (generator input)         │
-│   ↓ passed to generateStory()                           │
-├─────────────────────────────────────────────────────────┤
-│ Generator Layer (story-generator.ts)                    │
-├─────────────────────────────────────────────────────────┤
-│ promptParams const variable   (prompt input)            │
-│   ↓ with StoryPromptParams type (inline annotation)     │
-│   ↓ passed to promptManager.getPrompt()                 │
-│                                                          │
-│ generateStructured()          (AI call)                 │
-│   ↓ with GeneratedStorySchema (Zod validation)          │
-│   ↓ returns                                             │
-│ GeneratedStoryData            (validated AI output)     │
-│   ↓ used in                                             │
-├─────────────────────────────────────────────────────────┤
-│ Generator Result                                        │
-├─────────────────────────────────────────────────────────┤
-│ GenerateStoryResult           (generator output)        │
-│   ├─ story: GeneratedStoryData                          │
-│   └─ metadata: GeneratorMetadata                        │
-│   ↓ returned to API layer                               │
-├─────────────────────────────────────────────────────────┤
-│ API Layer (route.ts)                                    │
-├─────────────────────────────────────────────────────────┤
-│ Response (constructed from GenerateStoryResult)         │
-│   ├─ story data saved to database (with id, etc.)       │
-│   └─ metadata: GeneratorMetadata                        │
-│                                                          │
-│ Error Response (if generation fails)                    │
-│   ├─ error: string                                      │
-│   └─ details?: string                                   │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. INPUT DATA TYPES                                              │
+├─────────────────────────────────────────────────────────────────┤
+│ API Request → GenerateStoryParams                               │
+│ {                                                                │
+│   userPrompt: string                                            │
+│   language?: string                                             │
+│   preferredGenre?: string                                       │
+│   preferredTone?: string                                        │
+│ }                                                                │
+│                                                                  │
+│ Prompt Input → StoryPromptParams (inline type)                  │
+│ {                                                                │
+│   userPrompt: string                                            │
+│   genre: string                                                 │
+│   tone: string                                                  │
+│   language: string                                              │
+│ }                                                                │
+├─────────────────────────────────────────────────────────────────┤
+│ 2. AI-GENERATED DATA TYPES (Zod Validated)                      │
+├─────────────────────────────────────────────────────────────────┤
+│ GeneratedStoryData (from GeneratedStorySchema)                  │
+│ {                                                                │
+│   title: string                                                 │
+│   summary: string | null                                        │
+│   genre: string | null                                          │
+│   tone: "hopeful" | "dark" | "bittersweet" | "satirical"       │
+│   moralFramework: string | null                                 │
+│ }                                                                │
+│                                                                  │
+│ Zod Schema: GeneratedStorySchema                                │
+│ JSON Schema: StoryJsonSchema (for Gemini structured output)     │
+├─────────────────────────────────────────────────────────────────┤
+│ 3. OUTPUT DATA TYPES                                            │
+├─────────────────────────────────────────────────────────────────┤
+│ GenerateStoryResult                                             │
+│ {                                                                │
+│   story: GeneratedStoryData      ← AI-generated fields only    │
+│   metadata: GeneratorMetadata                                   │
+│ }                                                                │
+│                                                                  │
+│ GeneratorMetadata                                               │
+│ {                                                                │
+│   generationTime: number                                        │
+│   model?: string                                                │
+│ }                                                                │
+│                                                                  │
+│ Database Story (saved with additional fields)                   │
+│ {                                                                │
+│   id: string                    ← Database-generated            │
+│   authorId: string              ← From user context             │
+│   title: string                 ← From GeneratedStoryData       │
+│   summary: string | null        ← From GeneratedStoryData       │
+│   genre: string | null          ← From GeneratedStoryData       │
+│   tone: string                  ← From GeneratedStoryData       │
+│   moralFramework: string | null ← From GeneratedStoryData       │
+│   createdAt: string             ← Database-generated            │
+│   updatedAt: string             ← Database-generated            │
+│   ...other database fields                                      │
+│ }                                                                │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-**Complete Type List for Story Generation:**
+**Data Type Organization by Layer:**
 
-**API Layer** (`src/app/studio/api/generation/story/route.ts`):
-- Request body uses inline typed const variable (no named type)
-- Response body uses inline object (no named type)
-- Error response uses inline object (no named type)
-
-**Generator Layer** (`src/lib/studio/generators/types.ts`):
-- `GenerateStoryParams` - Generator function parameters
-- `StoryPromptParams` - Prompt template parameters (inline type annotation)
-- `GenerateStoryResult` - Generator function return type
+**1. Generator Layer** (`src/lib/studio/generators/types.ts`):
+- `GenerateStoryParams` - Function input parameters
+- `GenerateStoryResult` - Function output with AI data + metadata
 - `GeneratorMetadata` - Generation timing and model info
 
-**Data Layer** (`src/lib/studio/generators/zod-schemas.generated.ts`):
-- `GeneratedStorySchema` - Zod schema for AI-generated story data
-- `GeneratedStoryData` - TypeScript type (inferred from GeneratedStorySchema)
+**2. Zod Schema Layer** (`src/lib/studio/generators/zod-schemas.generated.ts`):
+- `GeneratedStorySchema` - Zod schema defining AI-generated fields only
+- `GeneratedStoryData` - TypeScript type inferred from schema
 
-**JSON Schema Layer** (`src/lib/studio/generators/json-schemas.generated.ts`):
-- `StoryJsonSchema` - JSON Schema for Gemini structured output (generated from GeneratedStorySchema)
+**3. JSON Schema Layer** (`src/lib/studio/generators/json-schemas.generated.ts`):
+- `StoryJsonSchema` - JSON Schema for Gemini's structured output API
+
+**4. Database Layer** (`src/lib/db/schema.ts`):
+- `Story` - Complete database entity (AI fields + DB fields)
+- `InsertStory` - Insert schema (Drizzle ORM)
+
+**Key Data Type Principles:**
+
+1. **Generated vs Database Types**:
+   - `GeneratedStoryData`: AI-generated fields only (no id, timestamps, etc.)
+   - `Story`: Complete database entity with all fields
+   - Why separate? AI doesn't know database IDs or timestamps
+
+2. **Type Flow**:
+   ```
+   User Input → GenerateStoryParams
+              → AI Generation → GeneratedStoryData (Zod validated)
+              → GenerateStoryResult (data + metadata)
+              → Database Save → Story (complete entity)
+   ```
+
+3. **Validation Hierarchy**:
+   - Zod Schema (`GeneratedStorySchema`) validates AI output
+   - JSON Schema (`StoryJsonSchema`) guides AI structured output
+   - Database schema validates final persistence
+
+4. **Why "Generated" Prefix?**:
+   - Distinguishes AI-generated partial data from complete database entities
+   - Makes it clear these types are for generation pipeline, not general use
+   - Example: `GeneratedStoryData` vs `Story` (database entity)
 
 **Benefits of Unified Naming:**
 - ✅ **Consistency**: All types use "Generate" verb family

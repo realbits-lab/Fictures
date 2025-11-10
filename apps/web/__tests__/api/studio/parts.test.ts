@@ -17,7 +17,6 @@ import type {
     GeneratePartsErrorResponse,
     GeneratePartsRequest,
     GeneratePartsResponse,
-    GetPartsResponse,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
@@ -231,7 +230,13 @@ describe("Parts API", () => {
             );
 
             // 2. Parse response data
-            const data: GetPartsResponse = await response.json();
+            const data: {
+                parts: Array<{
+                    id: string;
+                    storyId: string;
+                    story: { id: string };
+                }>;
+            } = await response.json();
 
             // 3. Verify response status
             expect(response.status).toBe(200);
