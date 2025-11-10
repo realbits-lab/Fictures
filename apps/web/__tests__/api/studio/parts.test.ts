@@ -17,6 +17,7 @@ import type {
     GeneratePartsErrorResponse,
     GeneratePartsRequest,
     GeneratePartsResponse,
+    GenerateStoryRequest,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
@@ -30,7 +31,16 @@ describe("Parts API", () => {
     beforeAll(async () => {
         console.log("🔧 Setting up test story...");
 
-        // 1. Prepare story request
+        // 1. Prepare story request body with proper TypeScript type
+        const storyRequestBody: GenerateStoryRequest = {
+            userPrompt:
+                "A short fantasy adventure for testing parts generation",
+            language: "English",
+            preferredGenre: "Fantasy",
+            preferredTone: "hopeful",
+        };
+
+        // 2. Send POST request to story creation API
         const storyResponse: Response = await fetch(
             "http://localhost:3000/studio/api/stories",
             {
@@ -39,30 +49,24 @@ describe("Parts API", () => {
                     "Content-Type": "application/json",
                     "x-api-key": apiKey,
                 },
-                body: JSON.stringify({
-                    userPrompt:
-                        "A short fantasy adventure for testing parts generation",
-                    language: "English",
-                    preferredGenre: "Fantasy",
-                    preferredTone: "hopeful",
-                }),
+                body: JSON.stringify(storyRequestBody),
             },
         );
 
-        // 2. Parse response
+        // 3. Parse response
         const storyData: { story: { id: string } } = await storyResponse.json();
 
-        // 3. Validate response
+        // 4. Validate response
         if (!storyResponse.ok) {
             console.error("❌ Failed to create test story:", storyData);
             throw new Error("Test setup failed: could not create story");
         }
 
-        // 4. Store test story ID
+        // 5. Store test story ID
         testStoryId = storyData.story.id;
         console.log(`✅ Test story created: ${testStoryId}`);
 
-        // 5. Generate characters (required for parts generation)
+        // 6. Generate characters (required for parts generation)
         console.log("🔧 Generating characters...");
         const charactersRequestBody: GenerateCharactersRequest = {
             storyId: testStoryId,
@@ -82,7 +86,7 @@ describe("Parts API", () => {
             },
         );
 
-        // 6. Validate characters response
+        // 7. Validate characters response
         const charactersData: GenerateCharactersResponse =
             await charactersResponse.json();
         if (!charactersResponse.ok) {
