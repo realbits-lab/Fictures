@@ -9,9 +9,9 @@
  */
 
 import { textGenerationClient } from "./ai-client";
-import { SettingJsonSchema } from "./json-schemas.generated";
+import { promptManager } from "./prompt-manager";
 import type { GenerateSettingsParams, GenerateSettingsResult } from "./types";
-import type { Setting } from "./zod-schemas.generated";
+import { type GeneratedSettingData, generatedSettingSchema } from "./zod-schemas.generated";
 
 /**
  * Generate story settings
@@ -27,7 +27,7 @@ export async function generateSettings(
     // 1. Extract and set default parameters
     const { story, settingCount, onProgress }: GenerateSettingsParams = params;
 
-    const settings: Setting[] = [];
+    const settings: GeneratedSettingData[] = [];
 
     // 2. Generate each setting in sequence
     for (let i = 0; i < settingCount; i++) {

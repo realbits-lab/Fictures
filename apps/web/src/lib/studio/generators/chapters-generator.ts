@@ -9,9 +9,9 @@
  */
 
 import { textGenerationClient } from "./ai-client";
-import { ChapterJsonSchema } from "./json-schemas.generated";
+import { promptManager } from "./prompt-manager";
 import type { GenerateChaptersParams, GenerateChaptersResult } from "./types";
-import type { Chapter } from "./zod-schemas.generated";
+import { insertChapterSchema, type Chapter } from "./zod-schemas.generated";
 
 /**
  * Generate story chapters
@@ -77,10 +77,12 @@ export async function generateChapters(
                 `[chapters-generator] Character arc: ${characterArc?.macroAdversity?.internal || "personal growth"}`,
             );
 
-            // 5. Generate chapter using template
-            const response: Awaited<
-                ReturnType<typeof textGenerationClient.generateWithTemplate>
-            > = await textGenerationClient.generateWithTemplate(
+            // 5. Get the prompt template for chapter generation
+            const {
+                system: systemPrompt,
+                user: userPromptText,
+            }: { system: string; user: string } = promptManager.getPrompt(
+                textGenerationClient.getProviderType(),
                 "chapter",
                 {
                     chapterNumber: String(chapterIndex),
@@ -103,20 +105,23 @@ export async function generateChapters(
                               "Previous chapter")
                             : "None (this is the first chapter)",
                 },
-                {
-                    temperature: 0.85,
-                    maxTokens: 8192,
-                    responseFormat: "json",
-                    responseSchema: ChapterJsonSchema,
-                },
             );
 
             console.log(
-                `[chapters-generator] AI response received for chapter ${chapterIndex}`,
+                `[chapters-generator] Generating chapter ${chapterIndex} using structured output`,
             );
 
-            // 6. Parse and validate chapter data
-            const chapterData: Chapter = JSON.parse(response.text) as Chapter;
+            // 6. Generate chapter using structured output
+            const chapterData: Chapter =
+                await textGenerationClient.generateStructured(
+                    userPromptText,
+                    insertChapterSchema,
+                    {
+                        systemPrompt,
+                        temperature: 0.85,
+                        maxTokens: 8192,
+                    },
+                );
 
             // 7. Explicitly set partId from the actual part being processed
             // (AI might generate incorrect partId like "part-1" instead of actual DB ID)

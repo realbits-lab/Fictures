@@ -9,13 +9,13 @@
  */
 
 import { textGenerationClient } from "./ai-client";
-import { SceneSummaryJsonSchema } from "./json-schemas.generated";
+import { promptManager } from "./prompt-manager";
 import type {
 	CyclePhase,
 	GenerateSceneSummariesParams,
 	GenerateSceneSummariesResult,
 } from "./types";
-import type { Scene } from "./zod-schemas.generated";
+import { insertSceneSchema, type Scene } from "./zod-schemas.generated";
 
 /**
  * Generate scene summaries for all chapters
@@ -56,8 +56,12 @@ export async function generateSceneSummaries(
 				.map((s, idx) => `${idx + 1}. ${s.name}: ${s.summary}`)
 				.join("\n");
 
-			// Generate scene summary using template
-			const response = await textGenerationClient.generateWithTemplate(
+			// Get the prompt template for scene summary generation
+			const {
+				system: systemPrompt,
+				user: userPromptText,
+			}: { system: string; user: string } = promptManager.getPrompt(
+				textGenerationClient.getProviderType(),
 				"scene_summary",
 				{
 					sceneNumber: String(i + 1),
@@ -67,15 +71,19 @@ export async function generateSceneSummaries(
 					cyclePhase,
 					settings: settingsStr,
 				},
+			);
+
+			// Generate scene summary using structured output
+			const sceneData: Scene = await textGenerationClient.generateStructured(
+				userPromptText,
+				insertSceneSchema,
 				{
+					systemPrompt,
 					temperature: 0.8,
 					maxTokens: 8192,
-					responseFormat: "json",
-					responseSchema: SceneSummaryJsonSchema,
 				},
 			);
 
-			const sceneData = JSON.parse(response.text);
 			scenes.push(sceneData);
 
 			console.log(

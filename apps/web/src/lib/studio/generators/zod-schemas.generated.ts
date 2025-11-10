@@ -221,7 +221,7 @@ export type InsertSetting = z.infer<typeof insertSettingSchema>;
  * Manually defined to avoid Gemini JSON schema validation issues with complex fields
  * Fields must match insertSettingSchema but without database-specific fields
  */
-export const generatedSettingSchema = z.object({
+export const GeneratedSettingSchema = z.object({
     name: z.string().max(255),
     summary: z.string().nullable(),
     adversityElements: adversityElementsSchema.nullable(),
@@ -236,7 +236,7 @@ export const generatedSettingSchema = z.object({
 /**
  * TypeScript type for generated setting data (AI output)
  */
-export type GeneratedSettingData = z.infer<typeof generatedSettingSchema>;
+export type GeneratedSettingData = z.infer<typeof GeneratedSettingSchema>;
 
 // ============================================================================
 // Part Schemas
@@ -280,6 +280,22 @@ export type Part = z.infer<typeof selectPartSchema>;
  * TypeScript type for inserting a Part
  */
 export type InsertPart = z.infer<typeof insertPartSchema>;
+
+/**
+ * Minimal schema for part generation (only fields AI generates)
+ * Manually defined to avoid Gemini JSON schema validation issues with complex fields
+ * Fields must match insertPartSchema but without database-specific fields
+ */
+export const GeneratedPartSchema = z.object({
+    title: z.string().max(255),
+    summary: z.string().nullable(),
+    characterArcs: z.array(characterArcSchema).nullable(),
+});
+
+/**
+ * TypeScript type for generated part data (AI output)
+ */
+export type GeneratedPartData = z.infer<typeof GeneratedPartSchema>;
 
 // ============================================================================
 // Chapter Schemas
@@ -338,6 +354,41 @@ export type Chapter = z.infer<typeof selectChapterSchema>;
  */
 export type InsertChapter = z.infer<typeof insertChapterSchema>;
 
+/**
+ * Minimal schema for chapter generation (only fields AI generates)
+ * Manually defined to avoid Gemini JSON schema validation issues with complex fields
+ * Fields must match insertChapterSchema but without database-specific fields
+ */
+export const GeneratedChapterSchema = z.object({
+    title: z.string().max(255),
+    summary: z.string().nullable(),
+    arcPosition: z
+        .enum(["beginning", "middle", "climax", "resolution"])
+        .nullable(),
+    contributesToMacroArc: z.string().nullable(),
+    focusCharacters: z.array(z.string()).nullable(),
+    adversityType: z.enum(["internal", "external", "both"]).nullable(),
+    virtueType: z
+        .enum([
+            "courage",
+            "compassion",
+            "integrity",
+            "sacrifice",
+            "loyalty",
+            "wisdom",
+        ])
+        .nullable(),
+    seedsPlanted: z.array(seedPlantedSchema).nullable(),
+    seedsResolved: z.array(seedResolvedSchema).nullable(),
+    connectsToPreviousChapter: z.string().nullable(),
+    createsNextAdversity: z.string().nullable(),
+});
+
+/**
+ * TypeScript type for generated chapter data (AI output)
+ */
+export type GeneratedChapterData = z.infer<typeof GeneratedChapterSchema>;
+
 // ============================================================================
 // Scene Schemas
 // ============================================================================
@@ -383,6 +434,41 @@ export type Scene = z.infer<typeof selectSceneSchema>;
  * TypeScript type for inserting a Scene
  */
 export type InsertScene = z.infer<typeof insertSceneSchema>;
+
+/**
+ * Minimal schema for scene generation (only fields AI generates)
+ * Manually defined to avoid Gemini JSON schema validation issues with complex fields
+ * Fields must match insertSceneSchema but without database-specific fields
+ */
+export const GeneratedSceneSchema = z.object({
+    title: z.string().max(255),
+    summary: z.string().nullable(),
+    cyclePhase: z
+        .enum(["setup", "confrontation", "virtue", "consequence", "transition"])
+        .nullable(),
+    emotionalBeat: z
+        .enum([
+            "fear",
+            "hope",
+            "tension",
+            "relief",
+            "elevation",
+            "catharsis",
+            "despair",
+            "joy",
+        ])
+        .nullable(),
+    characterFocus: z.array(z.string()).nullable(),
+    settingId: z.string().nullable(),
+    sensoryAnchors: z.array(z.string()).nullable(),
+    dialogueVsDescription: z.string().nullable(),
+    suggestedLength: z.enum(["short", "medium", "long"]).nullable(),
+});
+
+/**
+ * TypeScript type for generated scene data (AI output)
+ */
+export type GeneratedSceneData = z.infer<typeof GeneratedSceneSchema>;
 
 // ============================================================================
 // Re-export for convenience

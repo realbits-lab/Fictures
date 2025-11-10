@@ -9,12 +9,12 @@
  */
 
 import { textGenerationClient } from "./ai-client";
-import { CharacterJsonSchema } from "./json-schemas.generated";
+import { promptManager } from "./prompt-manager";
 import type {
     GenerateCharactersParams,
     GenerateCharactersResult,
 } from "./types";
-import type { Character } from "./zod-schemas.generated";
+import { type GeneratedCharacterData, GeneratedCharacterSchema } from "./zod-schemas.generated";
 
 /**
  * Generate character profiles for a story
@@ -35,7 +35,7 @@ export async function generateCharacters(
         onProgress,
     }: GenerateCharactersParams = params;
 
-    const characters: Character[] = [];
+    const characters: GeneratedCharacterData[] = [];
 
     // 2. Generate each character in sequence
     for (let i = 0; i < characterCount; i++) {
@@ -53,10 +53,12 @@ export async function generateCharacters(
             i === 0 ? "main protagonist" : "supporting character";
         console.log(`[characters-generator] Character type: ${characterType}`);
 
-        // 5. Generate character using template
-        const response: Awaited<
-            ReturnType<typeof textGenerationClient.generateWithTemplate>
-        > = await textGenerationClient.generateWithTemplate(
+        // 5. Get the prompt template for character generation
+        const {
+            system: systemPrompt,
+            user: userPromptText,
+        }: { system: string; user: string } = promptManager.getPrompt(
+            textGenerationClient.getProviderType(),
             "character",
             {
                 characterNumber: String(i + 1),
@@ -70,20 +72,24 @@ export async function generateCharacters(
                 characterType,
                 language,
             },
-            {
-                temperature: 0.9,
-                maxTokens: 4096,
-                responseFormat: "json",
-                responseSchema: CharacterJsonSchema,
-            },
         );
 
         console.log(
-            `[characters-generator] AI response received for character ${i + 1}`,
+            `[characters-generator] Generating character ${i + 1} using structured output`,
         );
 
-        // 6. Parse and validate character data
-        const characterData: Character = JSON.parse(response.text) as Character;
+        // 6. Generate character using structured output
+        const characterData: GeneratedCharacterData =
+            await textGenerationClient.generateStructured(
+                userPromptText,
+                GeneratedCharacterSchema,
+                {
+                    systemPrompt,
+                    temperature: 0.9,
+                    maxTokens: 4096,
+                },
+            );
+
         characters.push(characterData);
 
         console.log(
