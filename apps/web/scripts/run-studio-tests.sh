@@ -13,14 +13,30 @@ cd "$(dirname "$0")/.."
 # Create logs directory if it doesn't exist
 mkdir -p ../../logs
 
-# Define test files
-declare -A TESTS=(
-  ["stories"]="__tests__/api/studio/stories.test.ts"
-  ["characters"]="__tests__/api/studio/characters.test.ts"
-  ["parts"]="__tests__/api/studio/parts.test.ts"
-  ["settings"]="__tests__/api/studio/settings.test.ts"
-  ["scenes"]="__tests__/api/studio/scenes.test.ts"
-)
+# Function to get test file path
+get_test_file() {
+  local test_name=$1
+  case "$test_name" in
+    stories)
+      echo "__tests__/api/studio/stories.test.ts"
+      ;;
+    characters)
+      echo "__tests__/api/studio/characters.test.ts"
+      ;;
+    parts)
+      echo "__tests__/api/studio/parts.test.ts"
+      ;;
+    settings)
+      echo "__tests__/api/studio/settings.test.ts"
+      ;;
+    scenes)
+      echo "__tests__/api/studio/scenes.test.ts"
+      ;;
+    *)
+      echo ""
+      ;;
+  esac
+}
 
 # Function to run a single test
 run_test() {
@@ -42,11 +58,15 @@ if [ $# -eq 0 ] || [ "$1" == "all" ]; then
   echo "🚀 Running all studio API tests..."
   echo ""
 
-  for test_name in "${!TESTS[@]}"; do
-    if [ -f "${TESTS[$test_name]}" ]; then
-      run_test "$test_name" "${TESTS[$test_name]}"
+  # List of all tests
+  all_tests="stories characters parts settings scenes"
+
+  for test_name in $all_tests; do
+    test_file=$(get_test_file "$test_name")
+    if [ -n "$test_file" ] && [ -f "$test_file" ]; then
+      run_test "$test_name" "$test_file"
     else
-      echo "⚠️  Test file not found: ${TESTS[$test_name]}"
+      echo "⚠️  Test file not found: $test_file"
     fi
   done
 
@@ -54,17 +74,18 @@ if [ $# -eq 0 ] || [ "$1" == "all" ]; then
   echo "📊 Check logs in ../../logs/ directory"
 else
   test_name=$1
+  test_file=$(get_test_file "$test_name")
 
-  if [ -n "${TESTS[$test_name]}" ]; then
-    if [ -f "${TESTS[$test_name]}" ]; then
-      run_test "$test_name" "${TESTS[$test_name]}"
+  if [ -n "$test_file" ]; then
+    if [ -f "$test_file" ]; then
+      run_test "$test_name" "$test_file"
     else
-      echo "❌ Test file not found: ${TESTS[$test_name]}"
+      echo "❌ Test file not found: $test_file"
       exit 1
     fi
   else
     echo "❌ Unknown test: $test_name"
-    echo "Available tests: ${!TESTS[@]}"
+    echo "Available tests: stories, characters, parts, settings, scenes"
     exit 1
   fi
 fi

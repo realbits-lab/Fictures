@@ -14,7 +14,7 @@ Synchronized the `characters` table schema with the Adversity-Triumph Engine spe
 - `chapters.focus_characters[]`
 - `scenes.character_focus[]`
 
-**Fix**: Added ID mapping in `src/app/studio/api/generation/route.ts`:
+**Fix**: Added ID mapping in `src/app/studio/api/novels/route.ts`:
 ```typescript
 // Parts
 const mappedCharacterArcs = part.characterArcs.map((arc) => ({
@@ -95,7 +95,7 @@ const mappedCharacterFocus = scene.characterFocus?.map((charId) =>
 ## Testing Recommendations
 
 **For New Stories:**
-1. Generate a new story using `/studio/api/generation`
+1. Generate a new story using `/studio/api/novels`
 2. Verify all character fields are populated correctly
 3. Verify character IDs in `parts.character_arcs`, `chapters.focus_characters`, `scenes.character_focus` match actual database IDs
 
@@ -123,7 +123,7 @@ const mappedCharacterFocus = scene.characterFocus?.map((charId) =>
 - `src/lib/db/schema.ts` - Updated character table definition
 
 **Generation Code:**
-- `src/app/studio/api/generation/route.ts` - Fixed ID mapping for parts, chapters, scenes
+- `src/app/studio/api/novels/route.ts` - Fixed ID mapping for parts, chapters, scenes
 
 **Migration:**
 - `drizzle/migrations/0048_sync_character_schema_with_spec.sql` - Database structure changes

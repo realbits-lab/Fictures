@@ -243,7 +243,7 @@ Client Response
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 1: Story Generation                                         │
-│  POST /studio/api/generation/story                               │
+│  POST /studio/api/novels/story                               │
 │                                                                   │
 │  System Prompt Focus:                                            │
 │  - Extract general thematic premise, NOT detailed plot           │
@@ -381,7 +381,7 @@ Note: Two-step scene generation allows:
 ### 1.2 Complete Generation Flow API
 
 ```typescript
-POST /studio/api/generation
+POST /studio/api/novels
 
 Authentication: Dual authentication (supports both methods)
   - API Key: Send in Authorization header as "Bearer {api_key}"
@@ -468,7 +468,7 @@ Error Event:
 const authData = JSON.parse(fs.readFileSync('.auth/user.json', 'utf-8'));
 const apiKey = authData.profiles.writer.apiKey;
 
-const response = await fetch('http://localhost:3000/studio/api/generation', {
+const response = await fetch('http://localhost:3000/studio/api/novels', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -489,7 +489,7 @@ const response = await fetch('http://localhost:3000/studio/api/generation', {
 
 **Method 2: Session Authentication (for browser/UI)**
 ```javascript
-const response = await fetch('/studio/api/generation', {
+const response = await fetch('/studio/api/novels', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -538,7 +538,7 @@ while (true) {
 
 #### Endpoint
 ```typescript
-POST /studio/api/generation/story
+POST /studio/api/novels/story
 
 Request:
 {

@@ -330,7 +330,7 @@ These endpoints provide AI-powered analysis and modification of story elements u
 - **Function**: Get published stories
 - **Response**: Array of published stories with metadata
 
-**Note**: The platform uses the unified `/studio/api/generation/*` system with the Adversity-Triumph Engine methodology for all story generation.
+**Note**: The platform uses the unified `/studio/api/novels/*` system with the Adversity-Triumph Engine methodology for all story generation.
 
 ---
 
@@ -472,56 +472,56 @@ These endpoints provide AI-powered analysis and modification of story elements u
 
 These endpoints implement the 9-phase Adversity-Triumph Engine novel generation system.
 
-#### POST `/studio/api/generation/story`
+#### POST `/studio/api/novels/story`
 - **Phase**: 1 - Story Generation
 - **Status**: ✅ ACTIVELY USED
 - **Used In**: `src/lib/novels/orchestrator.ts`, `src/lib/studio/agent-generation-tools.ts`
 - **Function**: Generate initial story foundation
 - **Input**: Story concept, genre, themes
 
-#### POST `/studio/api/generation/characters`
+#### POST `/studio/api/novels/characters`
 - **Phase**: 2 - Character Generation
-- **File**: `src/app/studio/api/generation/characters/route.ts` (201 lines)
+- **File**: `src/app/studio/api/novels/characters/route.ts` (201 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Used In**: `src/lib/novels/orchestrator.ts` (line 183)
 - **Function**: Generate story characters
 - **Output**: Character profiles with AI-generated portraits
 
-#### POST `/studio/api/generation/settings`
+#### POST `/studio/api/novels/settings`
 - **Phase**: 3 - Settings Generation
-- **File**: `src/app/studio/api/generation/settings/route.ts` (289 lines)
+- **File**: `src/app/studio/api/novels/settings/route.ts` (289 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Used In**: `src/lib/novels/orchestrator.ts` (line 242)
 - **Function**: Generate story locations/settings
 - **Output**: Setting descriptions with environment images
 
-#### POST `/studio/api/generation/parts`
+#### POST `/studio/api/novels/parts`
 - **Phase**: 4 - Parts Generation
-- **File**: `src/app/studio/api/generation/parts/route.ts` (394 lines)
+- **File**: `src/app/studio/api/novels/parts/route.ts` (394 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Used In**: `src/lib/novels/orchestrator.ts` (line 316)
 - **Function**: Generate story parts (structure)
 - **Output**: Parts with goals, conflicts, emotional progression
 
-#### POST `/studio/api/generation/chapters`
+#### POST `/studio/api/novels/chapters`
 - **Phase**: 5 - Chapters Generation
-- **File**: `src/app/studio/api/generation/chapters/route.ts` (477 lines)
+- **File**: `src/app/studio/api/novels/chapters/route.ts` (477 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Used In**: `src/lib/novels/orchestrator.ts` (line 389)
 - **Function**: Generate chapters
 - **Output**: Chapter structure with outlines
 
-#### POST `/studio/api/generation/scene-summaries`
+#### POST `/studio/api/novels/scene-summaries`
 - **Phase**: 6 - Scene Summaries Generation
-- **File**: `src/app/studio/api/generation/scene-summaries/route.ts` (408 lines)
+- **File**: `src/app/studio/api/novels/scene-summaries/route.ts` (408 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Used In**: `src/lib/novels/orchestrator.ts` (line 456)
 - **Function**: Generate scene summaries
 - **Output**: Scene outlines with goals
 
-#### POST `/studio/api/generation/scene-content`
+#### POST `/studio/api/novels/scene-content`
 - **Phase**: 7 - Scene Content Generation
-- **File**: `src/app/studio/api/generation/scene-content/route.ts` (275 lines)
+- **File**: `src/app/studio/api/novels/scene-content/route.ts` (275 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Used In**: `src/lib/novels/orchestrator.ts` (line 522)
 - **Function**: Generate full scene content
@@ -531,9 +531,9 @@ These endpoints implement the 9-phase Adversity-Triumph Engine novel generation 
   - Emotional beats
   - Scene formatting with max 3 sentences per paragraph
 
-#### POST `/studio/api/generation/scene-evaluation`
+#### POST `/studio/api/novels/scene-evaluation`
 - **Phase**: 8 - Scene Evaluation
-- **File**: `src/app/studio/api/generation/scene-evaluation/route.ts` (195 lines)
+- **File**: `src/app/studio/api/novels/scene-evaluation/route.ts` (195 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Function**: Evaluate scene quality
 - **Framework**: Architectonics of Engagement
@@ -546,11 +546,11 @@ These endpoints implement the 9-phase Adversity-Triumph Engine novel generation 
 - **Passing Score**: 3.0/4.0 ("Effective" level)
 - **Max Iterations**: 2 improvement cycles
 
-#### POST `/studio/api/generation/images`
+#### POST `/studio/api/novels/images`
 - **Phase**: 9 - Image Generation
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
-  - `src/app/studio/api/generation/route.ts` (4 calls)
+  - `src/app/studio/api/novels/route.ts` (4 calls)
   - `src/lib/novels/orchestrator.ts`
 - **Function**: Generate images for story elements
 - **Features**:
@@ -564,8 +564,8 @@ These endpoints implement the 9-phase Adversity-Triumph Engine novel generation 
 
 ### 8. Novels APIs (1 endpoint)
 
-#### POST `/studio/api/generation`
-- **File**: `src/app/studio/api/generation/route.ts` (648 lines)
+#### POST `/studio/api/novels`
+- **File**: `src/app/studio/api/novels/route.ts` (648 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Used In**: `src/components/stories/CreateStoryForm.tsx` (line 119)
 - **Function**: Main entry point for novel generation
@@ -730,7 +730,7 @@ Routes that may need review:
 1. Characters-Places (possible duplicate - may overlap with /characters and /settings endpoints)
 
 ### ✅ Legacy APIs Removed (2025-11-01)
-Superseded by `/studio/api/generation/*` with Adversity-Triumph Engine:
+Superseded by `/studio/api/novels/*` with Adversity-Triumph Engine:
 1. ~~Story Generate (legacy HNS)~~ - **REMOVED**
 2. ~~Story Generate Stream (legacy HNS)~~ - **REMOVED**
 

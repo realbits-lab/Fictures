@@ -6,7 +6,7 @@
 
 1. **Code Duplication**: Generation logic exists in two places:
    - `src/lib/novels/orchestrator.ts` - Inline generation for unified API
-   - `src/app/studio/api/generation/*/route.ts` - Individual API endpoints
+   - `src/app/studio/api/novels/*/route.ts` - Individual API endpoints
 
 2. **Maintenance Burden**: Changes to generation logic require updates in multiple places
 
@@ -33,7 +33,7 @@ export async function generateCompleteNovel(params) {
 
 ### Individual API Endpoints
 ```
-src/app/studio/api/generation/
+src/app/studio/api/novels/
 ├── route.ts                    # Unified generation (uses orchestrator)
 ├── characters/route.ts         # Individual character generation
 ├── settings/route.ts           # Individual setting generation
@@ -136,7 +136,7 @@ export async function generateCompleteNovel(params) {
 
 **2. In Individual API Endpoints:**
 ```typescript
-// src/app/studio/api/generation/characters/route.ts
+// src/app/studio/api/novels/characters/route.ts
 import { generateCharacters } from '@/lib/studio/generators';
 
 export async function POST(request: NextRequest) {

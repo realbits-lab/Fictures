@@ -10,7 +10,7 @@
 This document outlines the synchronization strategy between three critical components:
 1. **Specification** (`docs/novels/novels-specification.md`) - The authoritative design document
 2. **Database Schema** (`src/lib/db/schema.ts` + Drizzle migrations) - The data layer
-3. **Generation Code** (`src/lib/novels/` + `src/app/studio/api/generation/`) - The implementation
+3. **Generation Code** (`src/lib/novels/` + `src/app/studio/api/novels/`) - The implementation
 
 **Core Principle**: **Documentation-First Development** - The specification document is the single source of truth, and all code must synchronize with it.
 
@@ -62,7 +62,7 @@ This document outlines the synchronization strategy between three critical compo
                         ↓
 ┌──────────────────────────────────────────────────────┐
 │ 4. UPDATE GENERATION CODE                            │
-│    src/lib/novels/ + src/app/studio/api/generation/  │
+│    src/lib/novels/ + src/app/studio/api/novels/  │
 │    - Update AI prompts to use new fields             │
 │    - Update database queries and inserts             │
 │    - Update API responses                            │
@@ -141,7 +141,7 @@ Manually sync interfaces with schema.ts definitions
 
 **Locations**:
 - `src/lib/novels/` - Core generation logic, orchestrator, AI client
-- `src/app/studio/api/generation/` - API endpoints for each generation phase
+- `src/app/studio/api/novels/` - API endpoints for each generation phase
 
 **Update Triggers**:
 - After schema changes
@@ -259,7 +259,7 @@ pnpm db:generate
 **Symptom**: Generated data doesn't populate new fields
 
 **Fix**:
-1. Locate the generation API endpoint (e.g., `src/app/studio/api/generation/characters/route.ts`)
+1. Locate the generation API endpoint (e.g., `src/app/studio/api/novels/characters/route.ts`)
 2. Update system prompt to request new fields
 3. Update prompt context to include field descriptions
 4. Update database insert to save new fields

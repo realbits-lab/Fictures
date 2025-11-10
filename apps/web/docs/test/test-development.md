@@ -960,7 +960,7 @@ dotenv --file .env.local run node scripts/setup-test-data.mjs
 | GET /api/stories | < 500ms | 320ms | ✅ |
 | POST /api/stories | < 500ms | 420ms | ✅ |
 | GET /api/community/posts | < 500ms | 280ms | ✅ |
-| POST /api/studio/api/generation/* | < 5s | 3.2s | ✅ |
+| POST /api/studio/api/novels/* | < 5s | 3.2s | ✅ |
 
 **Lighthouse Scores:**
 | Page | Performance | Accessibility | Best Practices | SEO |

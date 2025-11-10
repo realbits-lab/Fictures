@@ -214,7 +214,7 @@ tail -f logs/dev-server.log | grep "generation/toonplay"
 ```
 
 **Technical Details**:
-- **API**: `POST /studio/api/generation/toonplay` (SSE stream)
+- **API**: `POST /studio/api/novels/toonplay` (SSE stream)
 - **Shot Types**: ESTABLISHING, WIDE, MEDIUM, CLOSE-UP, EXTREME CLOSE-UP, OVER-SHOULDER, POV
 - **Image Optimization**: Mobile-first (1x/2x density), AVIF (modern) + JPEG (fallback), 25-30% smaller
 

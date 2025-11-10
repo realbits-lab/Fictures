@@ -543,7 +543,7 @@ The platform uses the Adversity-Triumph Engine for novel generation, creating em
 
 **Quick Reference:**
 - **UI**: `/studio/new` - Novel creation page
-- **API**: `/studio/api/generation/*` - Generation endpoints (SSE streaming)
+- **API**: `/studio/api/novels/*` - Generation endpoints (SSE streaming)
 - **Model**: Gemini 2.5 Flash & Flash Lite (via Vercel AI SDK)
 
 **Generation Pipeline:**
@@ -704,7 +704,7 @@ When modifying data model fields for stories, parts, chapters, scenes, character
 **Architecture:**
 - **Location**: `docs/novels/novels-development.md` - Complete specification
 - **Methodology**: Adversity-Triumph Engine (Korean Gam-dong narrative psychology)
-- **API Endpoint**: `POST /studio/api/generation` - Unified generation API with SSE streaming
+- **API Endpoint**: `POST /studio/api/novels` - Unified generation API with SSE streaming
 - **Authentication**: Dual auth (API key OR session) - Requires `stories:write` scope
 - **Database**: Novel-specific tables in Neon PostgreSQL (see `drizzle/` migrations)
 - **AI Model**: Gemini 2.5 Flash & Flash Lite (via Google AI API)
@@ -730,7 +730,7 @@ dotenv --file .env.local run node scripts/generate-minimal-story.mjs
 
 **Generation System:**
 - The platform uses the Adversity-Triumph Engine methodology for novel generation
-- All story generation uses the unified `/studio/api/generation/*` system
+- All story generation uses the unified `/studio/api/novels/*` system
 - Image generation and optimization infrastructure is shared across all features
 
 ## Code Guidelines
@@ -755,7 +755,7 @@ dotenv --file .env.local run node scripts/generate-minimal-story.mjs
 - **API Route Organization**:
   - **Page-specific APIs**: Create API routes under the related page directory (e.g., `/studio/api/`, `/analytics/api/`)
   - **Common APIs**: Use `/api/` directory only for global/shared API endpoints
-  - **Example**: Studio-related APIs go in `src/app/studio/api/generation/*` instead of `src/app/api/studio/generation/*`
+  - **Example**: Studio-related APIs go in `src/app/studio/api/novels/*` instead of `src/app/api/studio/generation/*`
 - **AI Integration**:
   - **AI SDK**: Use Vercel AI SDK
   - **Text Generation**: Gemini 2.5 Flash & Flash Lite via Vercel AI SDK
@@ -787,7 +787,7 @@ dotenv --file .env.local run node scripts/generate-minimal-story.mjs
 
 ### Image Generation
 - **Service**: `src/lib/novels/` - Novel generation handles image creation
-- **API Endpoint**: POST `/studio/api/generation/images` - Generate story illustrations
+- **API Endpoint**: POST `/studio/api/novels/images` - Generate story illustrations
 - **Model**: Gemini 2.5 Flash via Vercel AI SDK
 - **Original Format**: 1344×768 pixels (7:4 aspect ratio), PNG
 - **Quality**: Standard quality for all image types
