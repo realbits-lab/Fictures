@@ -22,6 +22,8 @@
  */
 
 import { z } from "zod";
+import { STORY_GENRES } from "@/lib/constants/genres";
+import { STORY_TONES } from "@/lib/constants/tones";
 
 // ============================================================================
 // Story Generation
@@ -33,10 +35,8 @@ import { z } from "zod";
 export const generateStorySchema = z.object({
     userPrompt: z.string().min(1),
     language: z.string().optional().default("English"),
-    preferredGenre: z.string().optional(),
-    preferredTone: z
-        .enum(["hopeful", "dark", "bittersweet", "satirical"])
-        .optional(),
+    preferredGenre: z.enum(STORY_GENRES).optional(),
+    preferredTone: z.enum(STORY_TONES).optional(),
 });
 
 // ============================================================================

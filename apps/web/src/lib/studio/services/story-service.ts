@@ -5,6 +5,8 @@
  */
 
 import { nanoid } from "nanoid";
+import type { StoryGenre } from "@/lib/constants/genres";
+import type { StoryTone } from "@/lib/constants/tones";
 import { db } from "@/lib/db";
 import { stories } from "@/lib/db/schema";
 import { generateStory } from "../generators/story-generator";
@@ -20,8 +22,8 @@ import {
 export interface GenerateStoryServiceParams {
     userPrompt: string;
     language?: string;
-    preferredGenre?: string;
-    preferredTone?: "hopeful" | "dark" | "bittersweet" | "satirical";
+    preferredGenre?: StoryGenre;
+    preferredTone?: StoryTone;
     userId: string;
 }
 

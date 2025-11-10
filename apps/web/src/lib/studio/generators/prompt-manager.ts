@@ -6,24 +6,45 @@
 import type { ModelProvider, PromptTemplate, PromptType } from "./types";
 
 class PromptManager {
-	private prompts: Record<ModelProvider, Record<PromptType, PromptTemplate>>;
+    private prompts: Record<ModelProvider, Record<PromptType, PromptTemplate>>;
 
-	constructor() {
-		this.prompts = {
-			gemini: this.initializeGeminiPrompts(),
-			"ai-server": this.initializeAIServerPrompts(),
-		};
-	}
+    constructor() {
+        this.prompts = {
+            gemini: this.initializeGeminiPrompts(),
+            "ai-server": this.initializeAIServerPrompts(),
+        };
+    }
 
-	/**
-	 * Initialize Gemini-specific prompts
-	 */
-	private initializeGeminiPrompts(): Record<PromptType, PromptTemplate> {
-		return {
-			story: {
-				system: `You are a story development expert who creates compelling story concepts.
-Generate story foundations that establish clear themes, conflicts, and emotional arcs.`,
-				userTemplate: `Create a story foundation with the following parameters:
+    /**
+     * Initialize Gemini-specific prompts
+     */
+    private initializeGeminiPrompts(): Record<PromptType, PromptTemplate> {
+        return {
+            story: {
+                system: `You are a story development expert who creates compelling story concepts.
+Generate story foundations that establish clear themes, conflicts, and emotional arcs.
+
+# AVAILABLE GENRES
+Fantasy, Romance, SciFi, Mystery, Horror, Action, Isekai, LitRPG, Cultivation, Slice, Paranormal, Dystopian, Historical, LGBTQ
+
+# AVAILABLE TONES AND GUIDANCE
+
+**Hopeful**: Optimistic narratives emphasizing positive outcomes and character growth
+- Emotional: Warmth, inspiration, light overcoming darkness, faith in humanity
+- Focus: Resilience, redemption arcs, meaningful connections, earned victories
+
+**Dark**: Grim narratives exploring moral complexity, tragedy, and harsh realities
+- Emotional: Tension, dread, moral ambiguity, harsh consequences, psychological depth
+- Focus: Difficult choices, moral compromise, tragic outcomes, psychological realism
+
+**Bittersweet**: Emotionally nuanced narratives balancing joy and sorrow, victory and loss
+- Emotional: Melancholy beauty, poignant reflection, mixed emotions, nostalgic resonance
+- Focus: Balance triumph with sacrifice, happiness with loss, growth with letting go
+
+**Satirical**: Witty narratives using humor and irony to expose flaws and absurdities
+- Emotional: Sharp wit, irony, social commentary, absurd humor, critical observation
+- Focus: Use irony and exaggeration to critique society, institutions, or human nature`,
+                userTemplate: `Create a story foundation with the following parameters:
 
 User Request: {userPrompt}
 Preferred Genre: {genre}
@@ -33,13 +54,13 @@ Language: {language}
 Generate a story foundation with:
 1. Title (engaging and memorable)
 2. Summary (2-3 sentences describing the thematic premise and moral framework)
-3. Genre (specific genre classification)
-4. Tone (hopeful, dark, bittersweet, or satirical)
+3. Genre (must be one of: Fantasy, Romance, SciFi, Mystery, Horror, Action, Isekai, LitRPG, Cultivation, Slice, Paranormal, Dystopian, Historical, LGBTQ)
+4. Tone (must be one of: hopeful, dark, bittersweet, satirical - follow the guidance for the selected tone)
 5. Moral Framework (what virtues are valued in this story?)`,
-			},
+            },
 
-			character: {
-				system: `You are a character development specialist who creates multi-dimensional story characters.
+            character: {
+                system: `You are a character development specialist who creates multi-dimensional story characters.
 
 # CHARACTER DESIGN PHILOSOPHY
 
@@ -64,7 +85,7 @@ Great characters are defined by:
 - Ensure supporting characters have their own goals and arcs
 - Make antagonists complex (not purely evil)
 - Include characters who challenge the protagonist's worldview`,
-				userTemplate: `Generate character {characterNumber} of {characterCount} for the story:
+                userTemplate: `Generate character {characterNumber} of {characterCount} for the story:
 
 Story Context:
 Title: {storyTitle}
@@ -76,10 +97,10 @@ Character Type: {characterType}
 Language: {language}
 
 Return a character with rich internal psychology, unique voice, and compelling arc potential.`,
-			},
+            },
 
-			setting: {
-				system: `You are a world-building expert who creates immersive settings that serve the Adversity-Triumph Engine.
+            setting: {
+                system: `You are a world-building expert who creates immersive settings that serve the Adversity-Triumph Engine.
 
 # SETTING DESIGN PHILOSOPHY
 
@@ -95,7 +116,7 @@ Settings are not just backdrops - they are ACTIVE PARTICIPANTS in the adversity-
 - Create settings that challenge characters
 - Ensure symbolic coherence with story themes
 - Make the environment feel alive and dynamic`,
-				userTemplate: `Generate setting {settingNumber} of {settingCount} for the story:
+                userTemplate: `Generate setting {settingNumber} of {settingCount} for the story:
 
 Story Context:
 Title: {storyTitle}
@@ -108,10 +129,10 @@ Create a setting that:
 - Contains rich sensory details
 - Symbolizes key story concepts
 - Amplifies the adversity-triumph cycle`,
-			},
+            },
 
-			part: {
-				system: `You are a narrative architect who designs story parts (acts) using the Adversity-Triumph Engine.
+            part: {
+                system: `You are a narrative architect who designs story parts (acts) using the Adversity-Triumph Engine.
 
 # PART STRUCTURE PHILOSOPHY
 
@@ -127,7 +148,7 @@ Each part represents a MACRO adversity-triumph cycle:
 - Arcs should interweave and create meaningful conflicts
 - Primary characters get more chapter focus
 - Supporting characters provide contrast and challenge`,
-				userTemplate: `Generate Part {partNumber} (Act {partNumber}) for the story:
+                userTemplate: `Generate Part {partNumber} (Act {partNumber}) for the story:
 
 Story Context:
 Title: {storyTitle}
@@ -139,10 +160,10 @@ Characters:
 {characters}
 
 Create a part with MACRO adversity-triumph arcs for each character, ensuring the part builds toward a meaningful climax and transition.`,
-			},
+            },
 
-			chapter: {
-				system: `You are a master story architect specializing in the Adversity-Triumph narrative framework.
+            chapter: {
+                system: `You are a master story architect specializing in the Adversity-Triumph narrative framework.
 
 # CORE PHILOSOPHY
 
@@ -183,7 +204,7 @@ Each chapter follows this complete 4-phase structure:
 4. Causal linking is MANDATORY (previous consequence → current adversity)
 5. Seeds planted early must resolve later
 6. Emotional engagement takes priority over plot convenience`,
-				userTemplate: `Generate chapter {chapterNumber} of {totalChapters} for {partTitle}:
+                userTemplate: `Generate chapter {chapterNumber} of {totalChapters} for {partTitle}:
 
 Story Context:
 Title: {storyTitle}
@@ -200,10 +221,10 @@ Character Arc: {characterArc}
 Previous Chapter Context: {previousChapterContext}
 
 Generate a complete adversity-triumph cycle that advances the character arc and part narrative.`,
-			},
+            },
 
-			scene_summary: {
-				system: `You are a narrative architect who breaks chapters into compelling scene sequences.
+            scene_summary: {
+                system: `You are a narrative architect who breaks chapters into compelling scene sequences.
 
 # SCENE DESIGN PRINCIPLES
 
@@ -228,7 +249,7 @@ Each scene must:
 - Avoid repetitive scene structures
 - Build toward chapter climax
 - Create natural breathing room for readers`,
-				userTemplate: `Generate scene {sceneNumber} of {sceneCount} for the chapter:
+                userTemplate: `Generate scene {sceneNumber} of {sceneCount} for the chapter:
 
 Chapter Context:
 Title: {chapterTitle}
@@ -239,10 +260,10 @@ Setting Options:
 {settings}
 
 Create a scene summary that flows naturally from the previous scene and builds toward the chapter's climax.`,
-			},
+            },
 
-			scene_content: {
-				system: `You are a skilled scene writer who creates immersive, emotionally engaging narrative content.
+            scene_content: {
+                system: `You are a skilled scene writer who creates immersive, emotionally engaging narrative content.
 
 # WRITING STYLE
 
@@ -266,7 +287,7 @@ Create a scene summary that flows naturally from the previous scene and builds t
 - Ensure dialogue advances plot or reveals character
 - Maintain consistent tone and pacing
 - Create visual imagery readers can picture clearly`,
-				userTemplate: `Write the full scene content for:
+                userTemplate: `Write the full scene content for:
 
 Scene Summary: {sceneSummary}
 Cycle Phase: {cyclePhase}
@@ -282,104 +303,107 @@ Voice Style: {voiceStyle}
 Language: {language}
 
 Write the scene content using strong sensory details, natural dialogue, and mobile-optimized formatting (max 3 sentences per paragraph).`,
-			},
+            },
 
-			character_dialogue: {
-				system: `You are a dialogue specialist who writes authentic character conversations.
+            character_dialogue: {
+                system: `You are a dialogue specialist who writes authentic character conversations.
 Each character has a unique voice reflecting their personality, background, and emotional state.`,
-				userTemplate: `Write dialogue between the following characters:
+                userTemplate: `Write dialogue between the following characters:
 
 Characters: {characters}
 Scene Context: {context}
 Emotional Tone: {tone}
 
 Ensure each character's voice is distinct and the dialogue advances the plot naturally.`,
-			},
+            },
 
-			setting_description: {
-				system: `You are a world-building expert who creates immersive setting descriptions.
+            setting_description: {
+                system: `You are a world-building expert who creates immersive setting descriptions.
 Use sensory details to make locations feel real and atmospheric.`,
-				userTemplate: `Describe the following setting:
+                userTemplate: `Describe the following setting:
 
 Location: {location}
 Mood: {mood}
 Time of Day: {timeOfDay}
 
 Create a vivid description that establishes atmosphere and supports the scene's emotional tone.`,
-			},
-		};
-	}
+            },
+        };
+    }
 
-	/**
-	 * Initialize AI Server (Qwen-3) specific prompts
-	 * Initially copied from Gemini prompts, can be customized per model
-	 */
-	private initializeAIServerPrompts(): Record<PromptType, PromptTemplate> {
-		// Start with Gemini prompts as baseline
-		const geminiPrompts = this.initializeGeminiPrompts();
+    /**
+     * Initialize AI Server (Qwen-3) specific prompts
+     * Initially copied from Gemini prompts, can be customized per model
+     */
+    private initializeAIServerPrompts(): Record<PromptType, PromptTemplate> {
+        // Start with Gemini prompts as baseline
+        const geminiPrompts = this.initializeGeminiPrompts();
 
-		// Clone and customize for Qwen-3 if needed
-		// For now, using same prompts - can be tuned later based on model performance
-		return {
-			...geminiPrompts,
-			// Example customization for Qwen-3:
-			// chapter_generation: {
-			//   system: "Qwen-3 optimized system prompt...",
-			//   userTemplate: "Qwen-3 optimized user template..."
-			// }
-		};
-	}
+        // Clone and customize for Qwen-3 if needed
+        // For now, using same prompts - can be tuned later based on model performance
+        return {
+            ...geminiPrompts,
+            // Example customization for Qwen-3:
+            // chapter_generation: {
+            //   system: "Qwen-3 optimized system prompt...",
+            //   userTemplate: "Qwen-3 optimized user template..."
+            // }
+        };
+    }
 
-	/**
-	 * Get prompt for specific provider and type
-	 */
-	getPrompt(
-		provider: ModelProvider,
-		promptType: PromptType,
-		variables: Record<string, string> = {},
-	): { system: string; user: string } {
-		const template = this.prompts[provider][promptType];
+    /**
+     * Get prompt for specific provider and type
+     */
+    getPrompt(
+        provider: ModelProvider,
+        promptType: PromptType,
+        variables: Record<string, string> = {},
+    ): { system: string; user: string } {
+        const template = this.prompts[provider][promptType];
 
-		if (!template) {
-			throw new Error(
-				`Prompt not found for provider: ${provider}, type: ${promptType}`,
-			);
-		}
+        if (!template) {
+            throw new Error(
+                `Prompt not found for provider: ${provider}, type: ${promptType}`,
+            );
+        }
 
-		// Replace variables in user template
-		let userPrompt = template.userTemplate;
-		Object.entries(variables).forEach(([key, value]) => {
-			userPrompt = userPrompt.replace(new RegExp(`\\{${key}\\}`, "g"), value);
-		});
+        // Replace variables in user template
+        let userPrompt = template.userTemplate;
+        Object.entries(variables).forEach(([key, value]) => {
+            userPrompt = userPrompt.replace(
+                new RegExp(`\\{${key}\\}`, "g"),
+                value,
+            );
+        });
 
-		return {
-			system: template.system,
-			user: userPrompt,
-		};
-	}
+        return {
+            system: template.system,
+            user: userPrompt,
+        };
+    }
 
-	/**
-	 * Update prompt for specific provider and type
-	 */
-	updatePrompt(
-		provider: ModelProvider,
-		promptType: PromptType,
-		updates: Partial<PromptTemplate>,
-	): void {
-		const current = this.prompts[provider][promptType];
+    /**
+     * Update prompt for specific provider and type
+     */
+    updatePrompt(
+        provider: ModelProvider,
+        promptType: PromptType,
+        updates: Partial<PromptTemplate>,
+    ): void {
+        const current = this.prompts[provider][promptType];
 
-		this.prompts[provider][promptType] = {
-			system: updates.system ?? current.system,
-			userTemplate: updates.userTemplate ?? current.userTemplate,
-		};
-	}
+        this.prompts[provider][promptType] = {
+            system: updates.system ?? current.system,
+            userTemplate: updates.userTemplate ?? current.userTemplate,
+        };
+    }
 
-	/**
-	 * Get all prompts for a provider
-	 */
-	getAllPrompts(provider: ModelProvider): Record<PromptType, PromptTemplate> {
-		return this.prompts[provider];
-	}
+    /**
+     * Get all prompts for a provider
+     */
+    getAllPrompts(provider: ModelProvider): Record<PromptType, PromptTemplate> {
+        return this.prompts[provider];
+    }
 }
 
 // Global singleton instance

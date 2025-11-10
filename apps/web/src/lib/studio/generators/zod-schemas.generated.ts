@@ -7,6 +7,8 @@
 
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
+import { STORY_GENRES } from "@/lib/constants/genres";
+import { STORY_TONES } from "@/lib/constants/tones";
 import {
     chapters,
     characters,
@@ -24,7 +26,7 @@ import {
  * Zod schema for inserting a new story
  */
 export const insertStorySchema = createInsertSchema(stories, {
-    tone: z.enum(["hopeful", "dark", "bittersweet", "satirical"]),
+    tone: z.enum(STORY_TONES),
 });
 
 /**
@@ -48,11 +50,30 @@ export type InsertStory = z.infer<typeof insertStorySchema>;
  * Fields must match insertStorySchema but without database-specific fields
  */
 export const GeneratedStorySchema = z.object({
-    title: z.string().max(255),
-    summary: z.string().nullable(),
-    genre: z.string().max(100).nullable(),
-    tone: z.enum(["hopeful", "dark", "bittersweet", "satirical"]),
-    moralFramework: z.string().nullable(),
+    title: z
+        .string()
+        .max(255)
+        .describe("The story title - engaging and memorable"),
+    summary: z
+        .string()
+        .describe(
+            "2-3 sentences describing the thematic premise and moral framework",
+        ),
+    genre: z
+        .enum(STORY_GENRES as [string, ...string[]])
+        .describe(
+            "Story genre - must be one of: Fantasy, Romance, SciFi, Mystery, Horror, Action, Isekai, LitRPG, Cultivation, Slice, Paranormal, Dystopian, Historical, LGBTQ",
+        ),
+    tone: z
+        .enum(STORY_TONES)
+        .describe(
+            "Story tone - must be one of: hopeful, dark, bittersweet, satirical",
+        ),
+    moralFramework: z
+        .string()
+        .describe(
+            "The virtues valued in this story and moral questions explored",
+        ),
 });
 
 /**

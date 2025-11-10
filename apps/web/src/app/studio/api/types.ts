@@ -38,6 +38,8 @@
  * - POST /studio/api/scene-evaluation - Evaluate and improve scene quality
  */
 
+import type { StoryGenre } from "@/lib/constants/genres";
+import type { StoryTone } from "@/lib/constants/tones";
 import type {
     Chapter,
     Character,
@@ -54,8 +56,8 @@ import type {
 export interface GenerateStoryRequest {
     userPrompt: string;
     language?: string;
-    preferredGenre?: string;
-    preferredTone?: "hopeful" | "dark" | "bittersweet" | "satirical";
+    preferredGenre?: StoryGenre;
+    preferredTone?: StoryTone;
 }
 
 export interface GenerateStoryResponse {

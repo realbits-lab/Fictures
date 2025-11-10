@@ -15,12 +15,23 @@ import {
     uuid,
     varchar,
 } from "drizzle-orm/pg-core";
+import { STORY_GENRES } from "@/lib/constants/genres";
+import { STORY_TONES } from "@/lib/constants/tones";
 
 export const adversityType = pgEnum("adversity_type", [
     "internal",
     "external",
     "both",
 ]);
+
+export const genre = pgEnum(
+    "genre",
+    STORY_GENRES as unknown as [string, ...string[]],
+);
+export const tone = pgEnum(
+    "tone",
+    STORY_TONES as unknown as [string, ...string[]],
+);
 export const arcPosition = pgEnum("arc_position", [
     "beginning",
     "middle",
@@ -119,12 +130,6 @@ export const shotType = pgEnum("shot_type", [
     "dutch_angle",
 ]);
 export const status = pgEnum("status", ["writing", "published"]);
-export const tone = pgEnum("tone", [
-    "hopeful",
-    "dark",
-    "bittersweet",
-    "satirical",
-]);
 export const userRole = pgEnum("user_role", ["reader", "writer", "manager"]);
 export const virtueType = pgEnum("virtue_type", [
     "courage",
@@ -275,7 +280,7 @@ export const stories = pgTable(
 
         // === ADVERSITY-TRIUMPH CORE ===
         summary: text(), // General thematic premise and moral framework
-        genre: varchar({ length: 100 }),
+        genre: genre(),
         tone: tone(), // "hopeful" | "dark" | "bittersweet" | "satirical"
         moralFramework: text("moral_framework"), // What virtues are valued in this world?
 

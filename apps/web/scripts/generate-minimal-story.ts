@@ -50,7 +50,7 @@ console.log(`\n${"=".repeat(60)}\n`);
 // Simple story prompt for minimal generation
 const userPrompt = `
 A simple story about a young artist who overcomes their fear of showing their work to others.
-Genre: Contemporary drama
+Genre: Slice of life
 Tone: Hopeful and uplifting
 `.trim();
 
@@ -71,7 +71,7 @@ async function generateStory() {
             },
             body: JSON.stringify({
                 userPrompt,
-                preferredGenre: "Contemporary",
+                preferredGenre: "Slice",
                 preferredTone: "hopeful",
                 characterCount: NOVEL_GENERATION_CONSTRAINTS.CHARACTER.DEFAULT, // Minimum for story dynamics
                 settingCount: NOVEL_GENERATION_CONSTRAINTS.SETTING.DEFAULT, // Minimum for location variety

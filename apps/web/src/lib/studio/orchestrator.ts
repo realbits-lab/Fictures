@@ -5,6 +5,8 @@
  * Streams progress updates via callback function.
  */
 
+import { GENRE, type StoryGenre } from "@/lib/constants/genres";
+import type { StoryTone } from "@/lib/constants/tones";
 import type {
     Chapter,
     Character,
@@ -47,8 +49,8 @@ import type {
  */
 export interface GenerateNovelParams {
     userPrompt: string;
-    preferredGenre?: string;
-    preferredTone?: "hopeful" | "dark" | "bittersweet" | "satirical";
+    preferredGenre?: StoryGenre;
+    preferredTone?: StoryTone;
     characterCount?: number; // Default: 3
     settingCount?: number; // Default: 3
     partsCount?: number; // Default: 1
@@ -127,7 +129,7 @@ export async function generateCompleteNovel(
 ): Promise<GeneratedNovelResult> {
     const {
         userPrompt,
-        preferredGenre,
+        preferredGenre = "Slice", // Default to Slice of Life genre
         preferredTone = "hopeful",
         characterCount = 3,
         settingCount = 3,
@@ -394,8 +396,9 @@ export async function generateCompleteNovel(
                     story: {
                         id: storyResult.story.id,
                         title: storyResult.story.title,
-                        genre: storyResult.story.genre || "Contemporary",
-                        moralFramework: storyResult.story.moralFramework || "courage",
+                        genre: storyResult.story.genre || GENRE.SLICE,
+                        moralFramework:
+                            storyResult.story.moralFramework || "courage",
                         summary: storyResult.story.summary || "",
                         tone: storyResult.story.tone || "hopeful",
                     },

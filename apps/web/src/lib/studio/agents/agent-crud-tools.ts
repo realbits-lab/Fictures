@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
+import { STORY_TONES } from "@/lib/constants/tones";
 import { db } from "@/lib/db";
 import {
     chapters,
@@ -68,10 +69,7 @@ export const updateStory = tool({
                 .string()
                 .optional()
                 .describe("Story summary and thematic premise"),
-            tone: z
-                .enum(["hopeful", "dark", "bittersweet", "satirical"])
-                .optional()
-                .describe("Emotional tone"),
+            tone: z.enum(STORY_TONES).optional().describe("Emotional tone"),
             moralFramework: z
                 .string()
                 .optional()

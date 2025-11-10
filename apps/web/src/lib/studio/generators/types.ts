@@ -189,8 +189,8 @@ export type ProgressCallback = (current: number, total: number) => void;
 export interface GenerateStoryParams {
     userPrompt: string;
     language?: string;
-    preferredGenre?: string;
-    preferredTone?: string;
+    preferredGenre?: import("@/lib/constants/genres").StoryGenre;
+    preferredTone?: import("@/lib/constants/tones").StoryTone;
 }
 
 export interface StoryPromptParams extends Record<string, string> {
@@ -379,10 +379,10 @@ export interface GenerateSceneContentResult {
 export interface SceneEvaluationStoryContext {
     id: string;
     title: string;
-    genre: string;
+    genre: import("@/lib/constants/genres").StoryGenre;
     moralFramework: string;
     summary: string;
-    tone: "hopeful" | "dark" | "bittersweet" | "satirical";
+    tone: import("@/lib/constants/tones").StoryTone;
 }
 
 export interface EvaluateSceneParams {

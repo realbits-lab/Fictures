@@ -18,6 +18,7 @@
  */
 
 import { eq } from "drizzle-orm";
+import { GENRE } from "@/lib/constants/genres";
 import { db } from "@/lib/db";
 import { chapters, scenes, stories } from "@/lib/db/schema";
 import { evaluateScene } from "../generators/scene-evaluation-generator";
@@ -50,10 +51,10 @@ export interface EvaluateSceneWithDataParams {
     story: {
         id: string;
         title: string;
-        genre: string;
+        genre: import("@/lib/constants/genres").StoryGenre;
         moralFramework: string;
         summary: string;
-        tone: "hopeful" | "dark" | "bittersweet" | "satirical";
+        tone: import("@/lib/constants/tones").StoryTone;
     };
     userId?: string; // Optional: For ownership verification
     maxIterations?: number;
@@ -158,7 +159,7 @@ export class SceneEvaluationService {
             {
                 id: story.id,
                 title: story.title,
-                genre: story.genre || "Contemporary",
+                genre: story.genre || GENRE.SLICE,
                 moralFramework: story.moralFramework || "courage",
                 summary: story.summary || "",
                 tone: story.tone || "hopeful",

@@ -20,6 +20,7 @@ import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import type { NextRequest } from "next/server";
 import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
+import { GENRE, STORY_GENRES, type StoryGenre } from "@/lib/constants/genres";
 import { db } from "@/lib/db";
 import {
     chapters,
@@ -239,21 +240,10 @@ export async function POST(request: NextRequest): Promise<Response> {
                     }
 
                     // Map AI-generated genre to database enum values
-                    const validGenres = [
-                        "Fantasy",
-                        "Science Fiction",
-                        "Romance",
-                        "Mystery",
-                        "Thriller",
-                        "Detective",
-                        "Adventure",
-                        "Horror",
-                        "Historical Fiction",
-                        "Contemporary",
-                    ] as const;
+                    const validGenres = STORY_GENRES;
 
-                    type ValidGenre = (typeof validGenres)[number];
-                    let genreValue: ValidGenre = "Contemporary"; // default genre
+                    type ValidGenre = StoryGenre;
+                    let genreValue: ValidGenre = GENRE.SLICE; // default genre
 
                     if (result.story.genre) {
                         const aiGenre = result.story.genre.trim();
@@ -267,19 +257,52 @@ export async function POST(request: NextRequest): Promise<Response> {
                         } else {
                             // Smart mapping for common AI-generated genres that don't match enum
                             const genreMapping: Record<string, ValidGenre> = {
-                                cyberpunk: "Science Fiction",
-                                "cyberpunk noir": "Science Fiction",
-                                noir: "Mystery",
-                                dystopian: "Science Fiction",
-                                "urban fantasy": "Fantasy",
-                                "epic fantasy": "Fantasy",
-                                paranormal: "Fantasy",
-                                suspense: "Thriller",
-                                "psychological thriller": "Thriller",
-                                action: "Adventure",
-                                spy: "Thriller",
-                                western: "Adventure",
-                                steampunk: "Science Fiction",
+                                "science fiction": GENRE.SCIFI,
+                                scifi: GENRE.SCIFI,
+                                "sci-fi": GENRE.SCIFI,
+                                cyberpunk: GENRE.SCIFI,
+                                "cyberpunk noir": GENRE.SCIFI,
+                                steampunk: GENRE.SCIFI,
+                                "space opera": GENRE.SCIFI,
+                                noir: GENRE.MYSTERY,
+                                detective: GENRE.MYSTERY,
+                                "urban fantasy": GENRE.FANTASY,
+                                "epic fantasy": GENRE.FANTASY,
+                                paranormal: GENRE.PARANORMAL,
+                                vampire: GENRE.PARANORMAL,
+                                werewolf: GENRE.PARANORMAL,
+                                supernatural: GENRE.PARANORMAL,
+                                suspense: GENRE.MYSTERY,
+                                thriller: GENRE.ACTION,
+                                "psychological thriller": GENRE.MYSTERY,
+                                action: GENRE.ACTION,
+                                adventure: GENRE.ACTION,
+                                spy: GENRE.ACTION,
+                                western: GENRE.ACTION,
+                                wuxia: GENRE.CULTIVATION,
+                                xianxia: GENRE.CULTIVATION,
+                                murim: GENRE.CULTIVATION,
+                                "martial arts": GENRE.CULTIVATION,
+                                "game world": GENRE.LITRPG,
+                                "video game": GENRE.LITRPG,
+                                rpg: GENRE.LITRPG,
+                                system: GENRE.LITRPG,
+                                transmigration: GENRE.ISEKAI,
+                                reincarnation: GENRE.ISEKAI,
+                                portal: GENRE.ISEKAI,
+                                "other world": GENRE.ISEKAI,
+                                "slice of life": GENRE.SLICE,
+                                contemporary: GENRE.SLICE,
+                                "daily life": GENRE.SLICE,
+                                "post-apocalyptic": GENRE.DYSTOPIAN,
+                                apocalypse: GENRE.DYSTOPIAN,
+                                "boys love": GENRE.LGBTQ,
+                                "girls love": GENRE.LGBTQ,
+                                bl: GENRE.LGBTQ,
+                                gl: GENRE.LGBTQ,
+                                yaoi: GENRE.LGBTQ,
+                                yuri: GENRE.LGBTQ,
+                                "historical fiction": GENRE.HISTORICAL,
                             };
 
                             const lowerGenre = aiGenre.toLowerCase();

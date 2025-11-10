@@ -34,8 +34,8 @@ export async function generateStory(
     // 1. Extract and set default parameters
     const {
         userPrompt,
-        preferredGenre = "Any",
-        preferredTone = "hopeful",
+        preferredGenre = "Slice" as const, // Default to Slice of Life genre
+        preferredTone = "hopeful" as const,
         language = "English",
     }: GenerateStoryParams = params;
 
