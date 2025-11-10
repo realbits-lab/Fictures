@@ -63,6 +63,7 @@ export async function generateCharacters(
             characterCount: String(characterCount),
             storyTitle: story.title,
             storyGenre: story.genre ?? "General Fiction",
+            storyTone: story.tone ?? "hopeful",
             storySummary: story.summary ?? "A story of adversity and triumph",
             moralFramework: story.moralFramework ?? "Universal human virtues",
             characterType,

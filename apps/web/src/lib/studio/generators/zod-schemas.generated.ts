@@ -7,6 +7,7 @@
 
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
+import { CORE_TRAITS } from "@/lib/constants/core-traits";
 import { STORY_GENRES } from "@/lib/constants/genres";
 import { STORY_TONES } from "@/lib/constants/tones";
 import {
@@ -89,42 +90,75 @@ export type GeneratedStoryData = z.infer<typeof GeneratedStorySchema>;
  * Nested schema for character personality
  */
 const personalitySchema = z.object({
-    traits: z.array(z.string()),
-    values: z.array(z.string()),
+    traits: z
+        .array(z.string())
+        .describe(
+            "Behavioral characteristics that shape how the character acts - examples: impulsive, optimistic, stubborn, cautious, charismatic",
+        ),
+    values: z
+        .array(z.string())
+        .describe(
+            "Core beliefs and principles the character cares about - examples: family, honor, freedom, justice, loyalty",
+        ),
 });
 
 /**
  * Nested schema for character physical description
  */
 const physicalDescriptionSchema = z.object({
-    age: z.string(),
-    appearance: z.string(),
-    distinctiveFeatures: z.string(),
-    style: z.string(),
+    age: z
+        .string()
+        .describe(
+            "Character's age description - examples: early 20s, mid-30s, elderly, young adult, teenage",
+        ),
+    appearance: z
+        .string()
+        .describe(
+            "Overall physical appearance and first impression - includes build, height, general look",
+        ),
+    distinctiveFeatures: z
+        .string()
+        .describe(
+            "Memorable physical traits that make the character recognizable - examples: scar on left cheek, piercing green eyes, silver streak in hair",
+        ),
+    style: z
+        .string()
+        .describe(
+            "How the character dresses and presents themselves - clothing choices, grooming, accessories",
+        ),
 });
 
 /**
  * Nested schema for character voice style
  */
 const voiceStyleSchema = z.object({
-    tone: z.string(),
-    vocabulary: z.string(),
-    quirks: z.array(z.string()),
-    emotionalRange: z.string(),
+    tone: z
+        .string()
+        .describe(
+            "Overall vocal quality and emotional coloring - examples: warm, sarcastic, formal, gentle, harsh, cheerful",
+        ),
+    vocabulary: z
+        .string()
+        .describe(
+            "Language complexity and word choice - examples: simple, educated, technical, poetic, street slang, archaic",
+        ),
+    quirks: z
+        .array(z.string())
+        .describe(
+            "Verbal tics, repeated phrases, or unique speech patterns - examples: 'you know', clears throat often, speaks in questions",
+        ),
+    emotionalRange: z
+        .string()
+        .describe(
+            "How expressively the character shows emotions through speech - examples: reserved, expressive, volatile, stoic, animated",
+        ),
 });
 
 /**
  * Zod schema for inserting a new character
  */
 export const insertCharacterSchema = createInsertSchema(characters, {
-    coreTrait: z.enum([
-        "courage",
-        "compassion",
-        "integrity",
-        "loyalty",
-        "wisdom",
-        "sacrifice",
-    ]),
+    coreTrait: z.enum(CORE_TRAITS),
     personality: personalitySchema,
     physicalDescription: physicalDescriptionSchema,
     voiceStyle: voiceStyleSchema,
@@ -151,25 +185,51 @@ export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
  * Fields must match insertCharacterSchema but without database-specific fields
  */
 export const GeneratedCharacterSchema = z.object({
-    name: z.string().max(255),
-    isMain: z.boolean(),
-    summary: z.string().nullable(),
+    name: z
+        .string()
+        .max(255)
+        .describe(
+            "Character's full name - should be memorable and fit the genre",
+        ),
+    isMain: z
+        .boolean()
+        .describe(
+            "Whether this is a main character (true) or supporting character (false)",
+        ),
+    summary: z
+        .string()
+        .describe(
+            "2-3 sentence overview of the character's role and significance in the story",
+        ),
     coreTrait: z
-        .enum([
-            "courage",
-            "compassion",
-            "integrity",
-            "loyalty",
-            "wisdom",
-            "sacrifice",
-        ])
-        .nullable(),
-    internalFlaw: z.string().nullable(),
-    externalGoal: z.string().nullable(),
-    personality: personalitySchema.nullable(),
-    backstory: z.string().nullable(),
-    physicalDescription: physicalDescriptionSchema.nullable(),
-    voiceStyle: voiceStyleSchema.nullable(),
+        .enum(CORE_TRAITS)
+        .describe(
+            "The primary virtue this character embodies - must be one of: courage, compassion, integrity, loyalty, wisdom, sacrifice",
+        ),
+    internalFlaw: z
+        .string()
+        .describe(
+            "The character's internal weakness or psychological challenge that creates internal adversity",
+        ),
+    externalGoal: z
+        .string()
+        .describe(
+            "The character's external objective or desire that drives their actions and creates external adversity",
+        ),
+    personality: personalitySchema.describe(
+        "Character's personality traits and values that shape their behavior and decisions",
+    ),
+    backstory: z
+        .string()
+        .describe(
+            "Character's history and formative experiences that explain their current state and motivations",
+        ),
+    physicalDescription: physicalDescriptionSchema.describe(
+        "Detailed physical appearance including age, looks, distinctive features, and style",
+    ),
+    voiceStyle: voiceStyleSchema.describe(
+        "How the character speaks and expresses themselves - tone, vocabulary, quirks, and emotional range",
+    ),
 });
 
 /**
@@ -360,14 +420,7 @@ export const insertChapterSchema = createInsertSchema(chapters, {
     arcPosition: z.enum(["beginning", "middle", "climax", "resolution"]),
     focusCharacters: z.array(z.string()),
     adversityType: z.enum(["internal", "external", "both"]),
-    virtueType: z.enum([
-        "courage",
-        "compassion",
-        "integrity",
-        "sacrifice",
-        "loyalty",
-        "wisdom",
-    ]),
+    virtueType: z.enum(CORE_TRAITS),
     seedsPlanted: z.array(seedPlantedSchema),
     seedsResolved: z.array(seedResolvedSchema),
 });
@@ -401,16 +454,7 @@ export const GeneratedChapterSchema = z.object({
     contributesToMacroArc: z.string().nullable(),
     focusCharacters: z.array(z.string()).nullable(),
     adversityType: z.enum(["internal", "external", "both"]).nullable(),
-    virtueType: z
-        .enum([
-            "courage",
-            "compassion",
-            "integrity",
-            "sacrifice",
-            "loyalty",
-            "wisdom",
-        ])
-        .nullable(),
+    virtueType: z.enum(CORE_TRAITS).nullable(),
     seedsPlanted: z.array(seedPlantedSchema).nullable(),
     seedsResolved: z.array(seedResolvedSchema).nullable(),
     connectsToPreviousChapter: z.string().nullable(),

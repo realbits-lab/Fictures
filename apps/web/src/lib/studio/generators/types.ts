@@ -221,6 +221,7 @@ export interface CharacterPromptParams extends Record<string, string> {
     characterCount: string;
     storyTitle: string;
     storyGenre: string;
+    storyTone: string;
     storySummary: string;
     moralFramework: string;
     characterType: string;

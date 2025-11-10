@@ -84,19 +84,110 @@ Great characters are defined by:
 - Create characters of varying ages, backgrounds, perspectives
 - Ensure supporting characters have their own goals and arcs
 - Make antagonists complex (not purely evil)
-- Include characters who challenge the protagonist's worldview`,
+- Include characters who challenge the protagonist's worldview
+
+# GENRE CATALOG - Use these to guide character creation
+
+**Fantasy** 🧙 - Magical worlds and supernatural elements
+- Key Elements: Magic systems, mythical creatures, epic quests, chosen ones, supernatural powers
+- Emotional Appeal: Wonder, escapism, heroism, transformation
+- Character Focus: Internal growth through external magic/power obstacles
+
+**Romance** 💖 - Love stories and relationships
+- Key Elements: Emotional connections, relationship development, intimacy, partnership challenges
+- Emotional Appeal: Love, passion, connection, emotional fulfillment
+- Character Focus: Relationship adversity tests emotional maturity
+
+**SciFi** 🚀 - Future technology and space exploration
+- Key Elements: Advanced technology, space travel, AI, time travel, alternate realities
+- Emotional Appeal: Innovation, exploration, intellectual curiosity, futurism
+- Character Focus: Technological challenges reveal human depth
+
+**Mystery** 🔍 - Puzzles and investigation
+- Key Elements: Clues, red herrings, detective work, plot twists, intellectual challenges
+- Emotional Appeal: Curiosity, suspense, intellectual satisfaction, revelation
+- Character Focus: Investigation challenges reveal character depth
+
+**Horror** 👻 - Fear and supernatural terror
+- Key Elements: Monsters, psychological terror, survival, supernatural threats
+- Emotional Appeal: Fear, adrenaline, catharsis through terror, thrill
+- Character Focus: Fear forces courage and moral choices
+
+**Action** ⚡ - Fast-paced battles and adventures
+- Key Elements: Combat sequences, chase scenes, physical conflict, high stakes
+- Emotional Appeal: Excitement, adrenaline, vicarious thrill, empowerment
+- Character Focus: Physical conflict requires moral strength
+
+**Isekai** 🌀 - Reborn or transported to new worlds
+- Key Elements: World transition, second chances, power growth, parallel worlds
+- Emotional Appeal: Escapism, wish fulfillment, transformation, new beginnings
+- Character Focus: New world challenges test core values
+
+**LitRPG** 🎮 - Game-like systems and progression
+- Key Elements: Stats and leveling, skill trees, quests, game mechanics
+- Emotional Appeal: Strategic satisfaction, measurable growth, gaming appeal
+- Character Focus: System limitations force strategic virtue
+
+**Cultivation** ⚔️ - Martial arts and power progression
+- Key Elements: Qi/energy systems, martial arts, power levels, spiritual growth
+- Emotional Appeal: Mastery, self-improvement, power fantasy, discipline
+- Character Focus: Power progression mirrors spiritual growth
+
+**Slice** ☕ - Everyday moments and relationships
+- Key Elements: Daily life, subtle emotions, character studies, mundane beauty
+- Emotional Appeal: Comfort, relatability, gentle warmth, peaceful reflection
+- Character Focus: Small adversities create meaningful moments
+
+**Paranormal** 🌙 - Vampires, werewolves, and supernatural beings
+- Key Elements: Supernatural creatures, hidden worlds, forbidden love, dual identities
+- Emotional Appeal: Dark romance, mystique, forbidden attraction
+- Character Focus: Supernatural nature tests humanity/morality
+
+**Dystopian** 🏚️ - Dark futures and oppressive societies
+- Key Elements: Totalitarian governments, post-apocalyptic worlds, social commentary
+- Emotional Appeal: Social awareness, cautionary tales, rebellion, hope in darkness
+- Character Focus: Oppression challenges moral integrity
+
+**Historical** 📜 - Stories set in the past
+- Key Elements: Period-accurate settings, historical events, cultural context
+- Emotional Appeal: Nostalgia, education, cultural appreciation
+- Character Focus: Period constraints force timeless choices
+
+**LGBTQ** 🏳️‍🌈 - LGBTQ+ romance and stories
+- Key Elements: Queer relationships, identity exploration, coming out
+- Emotional Appeal: Identity affirmation, representation, authentic love stories
+- Character Focus: Identity adversity demonstrates authentic courage
+
+# TONE CATALOG - Use these to guide character emotional range
+
+**Hopeful** - Optimistic narratives emphasizing positive outcomes and character growth
+- Emotional: Warmth, inspiration, light overcoming darkness, faith in humanity
+- Character Arc: Focus on resilience, redemption arcs, meaningful connections, earned victories
+
+**Dark** - Grim narratives exploring moral complexity, tragedy, and harsh realities
+- Emotional: Tension, dread, moral ambiguity, harsh consequences, psychological depth
+- Character Arc: Difficult choices, moral compromise, tragic outcomes, psychological realism
+
+**Bittersweet** - Emotionally nuanced narratives balancing joy and sorrow, victory and loss
+- Emotional: Melancholy beauty, poignant reflection, mixed emotions, nostalgic resonance
+- Character Arc: Balance triumph with sacrifice, happiness with loss, growth with letting go
+
+**Satirical** - Witty narratives using humor and irony to expose flaws and absurdities
+- Emotional: Sharp wit, irony, social commentary, absurd humor, critical observation
+- Character Arc: Use irony to critique, expose absurdities through character decisions`,
                 userTemplate: `Generate character {characterNumber} of {characterCount} for the story:
 
 Story Context:
 Title: {storyTitle}
 Genre: {storyGenre}
+Tone: {storyTone}
 Summary: {storySummary}
 Moral Framework: {moralFramework}
 
 Character Type: {characterType}
 Language: {language}
 
-Return a character with rich internal psychology, unique voice, and compelling arc potential.`,
+Return a character with rich internal psychology, unique voice, and compelling arc potential that aligns with the genre's key elements and tone's emotional characteristics.`,
             },
 
             setting: {

@@ -15,6 +15,7 @@ import {
     uuid,
     varchar,
 } from "drizzle-orm/pg-core";
+import { CORE_TRAITS } from "@/lib/constants/core-traits";
 import { STORY_GENRES } from "@/lib/constants/genres";
 import { STORY_TONES } from "@/lib/constants/tones";
 
@@ -131,14 +132,14 @@ export const shotType = pgEnum("shot_type", [
 ]);
 export const status = pgEnum("status", ["writing", "published"]);
 export const userRole = pgEnum("user_role", ["reader", "writer", "manager"]);
-export const virtueType = pgEnum("virtue_type", [
-    "courage",
-    "compassion",
-    "integrity",
-    "sacrifice",
-    "loyalty",
-    "wisdom",
-]);
+export const coreTrait = pgEnum(
+    "core_trait",
+    CORE_TRAITS as unknown as [string, ...string[]],
+);
+export const virtueType = pgEnum(
+    "virtue_type",
+    CORE_TRAITS as unknown as [string, ...string[]],
+);
 export const visibility = pgEnum("visibility", [
     "private",
     "unlisted",
@@ -156,7 +157,7 @@ export const characters = pgTable(
         summary: text(), // 1-2 sentence essence: "[CoreTrait] [role] [internalFlaw], seeking [externalGoal]"
 
         // === ADVERSITY-TRIUMPH CORE (The Engine) ===
-        coreTrait: text("core_trait"), // THE defining moral virtue: "courage" | "compassion" | "integrity" | "loyalty" | "wisdom" | "sacrifice"
+        coreTrait: coreTrait("core_trait"), // THE defining moral virtue: courage | compassion | integrity | loyalty | wisdom | sacrifice
         internalFlaw: text("internal_flaw"), // MUST include cause: "[fears/believes/wounded by] X because Y"
         externalGoal: text("external_goal"), // What they THINK will solve their problem (healing flaw actually will)
 
