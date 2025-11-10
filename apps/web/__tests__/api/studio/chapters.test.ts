@@ -17,6 +17,8 @@ import type {
     GenerateChaptersResponse,
     GenerateCharactersRequest,
     GenerateCharactersResponse,
+    GeneratePartsRequest,
+    GenerateStoryRequest,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
@@ -32,6 +34,13 @@ describe("Chapters API", () => {
         console.log("🔧 Setting up test story...");
 
         // 1. Prepare story request
+        const storyRequestBody: GenerateStoryRequest = {
+            userPrompt: "A short fantasy tale for testing chapter creation",
+            language: "English",
+            preferredGenre: "Fantasy",
+            preferredTone: "hopeful",
+        };
+
         const storyResponse: Response = await fetch(
             "http://localhost:3000/studio/api/stories",
             {
@@ -40,13 +49,7 @@ describe("Chapters API", () => {
                     "Content-Type": "application/json",
                     "x-api-key": apiKey,
                 },
-                body: JSON.stringify({
-                    userPrompt:
-                        "A short fantasy tale for testing chapter creation",
-                    language: "English",
-                    preferredGenre: "Fantasy",
-                    preferredTone: "hopeful",
-                }),
+                body: JSON.stringify(storyRequestBody),
             },
         );
 
@@ -97,6 +100,12 @@ describe("Chapters API", () => {
 
         // 6. Create parts for testing chapters with partId
         console.log("🔧 Generating parts for story...");
+        const partsRequestBody: GeneratePartsRequest = {
+            storyId: testStoryId,
+            partsCount: 1,
+            language: "English",
+        };
+
         const partsResponse: Response = await fetch(
             "http://localhost:3000/studio/api/parts",
             {
@@ -105,11 +114,7 @@ describe("Chapters API", () => {
                     "Content-Type": "application/json",
                     "x-api-key": apiKey,
                 },
-                body: JSON.stringify({
-                    storyId: testStoryId,
-                    partsCount: 1,
-                    language: "English",
-                }),
+                body: JSON.stringify(partsRequestBody),
             },
         );
 

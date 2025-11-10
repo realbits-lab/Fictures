@@ -186,16 +186,28 @@ export async function POST(request: NextRequest) {
             const chapterId: string = `chapter_${nanoid(16)}`;
             const now: string = new Date().toISOString();
 
+            // 9. Calculate which part this chapter belongs to
+            // Chapters are generated in order: part1_ch1, part1_ch2, ..., part2_ch1, part2_ch2, ...
+            const partIndex: number = Math.floor(
+                i / validatedData.chaptersPerPart,
+            );
+            const currentPart: Part = storyParts[partIndex];
+            const currentPartId: string | null = currentPart?.id || null;
+
+            // 10. Get focus character (using first character as default)
+            const focusCharacterId: string | null =
+                storyCharacters.length > 0 ? storyCharacters[0].id : null;
+
             // Validate chapter data before insert
             const validatedChapter: ReturnType<
                 typeof insertChapterSchema.parse
             > = insertChapterSchema.parse({
                 id: chapterId,
                 storyId: validatedData.storyId,
-                partId: chapterData.partId || null,
+                partId: currentPartId,
                 title: chapterData.title || `Chapter ${i + 1}`,
                 summary: chapterData.summary || null,
-                characterId: chapterData.characterId || null,
+                characterId: focusCharacterId,
                 arcPosition: chapterData.arcPosition || null,
                 contributesToMacroArc: chapterData.contributesToMacroArc?.trim()
                     ? chapterData.contributesToMacroArc.trim()
@@ -220,7 +232,7 @@ export async function POST(request: NextRequest) {
                 updatedAt: now,
             });
 
-            // 8. Transform empty strings to null before database insert
+            // 11. Transform empty strings to null before database insert
             //    (Zod schema may convert null to empty string for text fields)
             const chapterForInsert = {
                 ...validatedChapter,
@@ -257,7 +269,9 @@ export async function POST(request: NextRequest) {
                                 ? dbError.message
                                 : "Unknown",
                         cause:
-                            dbError instanceof Error && dbError.cause
+                            dbError instanceof Error &&
+                            "cause" in dbError &&
+                            dbError.cause
                                 ? dbError.cause
                                 : "N/A",
                     },
@@ -270,7 +284,7 @@ export async function POST(request: NextRequest) {
             `[CHAPTERS API] ✅ Saved ${savedChapters.length} chapters to database`,
         );
 
-        // 9. Invalidate cache
+        // 12. Invalidate cache
         await invalidateStudioCache(authResult.user.id);
         console.log("[CHAPTERS API] ✅ Cache invalidated");
 
