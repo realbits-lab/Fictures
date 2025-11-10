@@ -93,7 +93,7 @@ export interface GenerateCharactersResponse {
 
 export interface GenerateCharactersErrorResponse {
     error: string;
-    details?: any;
+    details?: unknown;
 }
 
 // ============================================================================
@@ -116,7 +116,7 @@ export interface GenerateSettingsResponse {
 
 export interface GenerateSettingsErrorResponse {
     error: string;
-    details?: any;
+    details?: unknown;
 }
 
 // ============================================================================
@@ -140,7 +140,7 @@ export interface GeneratePartsResponse {
 
 export interface GeneratePartsErrorResponse {
     error: string;
-    details?: any;
+    details?: unknown;
 }
 
 // ============================================================================
@@ -164,7 +164,7 @@ export interface GenerateChaptersResponse {
 
 export interface GenerateChaptersErrorResponse {
     error: string;
-    details?: any;
+    details?: unknown;
 }
 
 // ============================================================================
@@ -188,7 +188,7 @@ export interface GenerateSceneSummariesResponse {
 
 export interface GenerateSceneSummariesErrorResponse {
     error: string;
-    details?: any;
+    details?: unknown;
 }
 
 // ============================================================================
@@ -211,7 +211,7 @@ export interface GenerateSceneContentResponse {
 
 export interface GenerateSceneContentErrorResponse {
     error: string;
-    details?: any;
+    details?: unknown;
 }
 
 // ============================================================================
@@ -249,5 +249,5 @@ export interface EvaluateSceneResponse {
 
 export interface EvaluateSceneErrorResponse {
     error: string;
-    details?: any;
+    details?: unknown;
 }
