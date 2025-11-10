@@ -2,7 +2,7 @@
  * Scene Summaries API Route
  *
  * GET /studio/api/scene-summaries - Get scenes for a chapter
- * POST /studio/api/scene-summaries - Generate scene summaries using AI OR update a single scene summary
+ * POST /studio/api/scene-summaries - Generate scene summaries using AI
  *
  * Authentication: Dual auth (API key OR session) with stories:write scope required
  */
@@ -22,6 +22,7 @@ import {
     insertSceneSchema,
     type Scene,
     type Setting,
+    type Story,
 } from "@/lib/studio/generators/zod-schemas.generated";
 import type {
     GenerateSceneSummariesErrorResponse,
@@ -31,14 +32,6 @@ import type {
 import { generateSceneSummariesSchema } from "../validation-schemas";
 
 export const runtime = "nodejs";
-
-/**
- * Validation schema for updating a single scene summary
- */
-const updateSceneSummarySchema = z.object({
-    sceneId: z.string(),
-    summary: z.string(),
-});
 
 /**
  * GET /studio/api/scene-summaries
@@ -132,9 +125,7 @@ export async function GET(request: NextRequest) {
 /**
  * POST /studio/api/scene-summaries
  *
- * Two modes:
- * 1. Generate scene summaries for a story using AI (requires storyId)
- * 2. Update a single scene summary (requires sceneId)
+ * Generate scene summaries for a story using AI
  *
  * Required scope: stories:write
  */
@@ -175,38 +166,12 @@ export async function POST(request: NextRequest) {
             email: authResult.user.email,
         });
 
-        // 3. Parse request body to determine mode
-        const body = await request.json();
-
-        // Check if this is an update request (has sceneId) or generation request (has storyId)
-        if (body.sceneId) {
-            // Mode 1: Update single scene summary
-            console.log("[SCENE SUMMARIES API] Mode: Update single scene");
-            const validatedData = updateSceneSummarySchema.parse(body);
-
-            const [updatedScene] = await db
-                .update(scenes)
-                .set({
-                    summary: validatedData.summary,
-                    updatedAt: new Date().toISOString(),
-                })
-                .where(eq(scenes.id, validatedData.sceneId))
-                .returning();
-
-            console.log("✅ [SCENE SUMMARIES API] Scene summary updated");
-            console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-
-            return NextResponse.json(
-                { success: true, scene: updatedScene },
-                { status: 200 },
+        // 3. Parse and validate request body
+        const body: unknown = await request.json();
+        const validatedData: GenerateSceneSummariesRequest =
+            generateSceneSummariesSchema.parse(
+                body as GenerateSceneSummariesRequest,
             );
-        }
-
-        // Mode 2: Generate scene summaries using AI
-        console.log("[SCENE SUMMARIES API] Mode: Generate scene summaries");
-        const validatedData = generateSceneSummariesSchema.parse(
-            body as GenerateSceneSummariesRequest,
-        );
 
         console.log("[SCENE SUMMARIES API] Request parameters:", {
             storyId: validatedData.storyId,
@@ -215,10 +180,12 @@ export async function POST(request: NextRequest) {
         });
 
         // 4. Fetch story and verify ownership
-        const [story] = await db
+        const storyResults = await db
             .select()
             .from(stories)
             .where(eq(stories.id, validatedData.storyId));
+
+        const story: Story | undefined = storyResults[0] as Story | undefined;
 
         if (!story) {
             console.error("❌ [SCENE SUMMARIES API] Story not found");
@@ -244,11 +211,11 @@ export async function POST(request: NextRequest) {
         });
 
         // 5. Fetch chapters for the story
-        const storyChapters = await db
+        const storyChapters = (await db
             .select()
             .from(chapters)
             .where(eq(chapters.storyId, validatedData.storyId))
-            .orderBy(chapters.orderIndex);
+            .orderBy(chapters.orderIndex)) as Chapter[];
 
         if (storyChapters.length === 0) {
             console.error(
@@ -265,10 +232,10 @@ export async function POST(request: NextRequest) {
         );
 
         // 6. Fetch settings for the story
-        const storySettings = await db
+        const storySettings = (await db
             .select()
             .from(settings)
-            .where(eq(settings.storyId, validatedData.storyId));
+            .where(eq(settings.storyId, validatedData.storyId))) as Setting[];
 
         console.log(
             `[SCENE SUMMARIES API] Found ${storySettings.length} settings`,
@@ -279,12 +246,14 @@ export async function POST(request: NextRequest) {
             "[SCENE SUMMARIES API] 🤖 Calling scene summaries generator...",
         );
         const generateParams: GenerateSceneSummariesParams = {
-            chapters: storyChapters as Chapter[],
-            settings: storySettings as Setting[],
-            scenesPerChapter: validatedData.scenesPerChapter,
+            chapters: storyChapters,
+            settings: storySettings,
+            scenesPerChapter: validatedData.scenesPerChapter ?? 3,
         };
 
-        const generationResult = await generateSceneSummaries(generateParams);
+        const generationResult: Awaited<
+            ReturnType<typeof generateSceneSummaries>
+        > = await generateSceneSummaries(generateParams);
 
         console.log(
             "[SCENE SUMMARIES API] ✅ Scene summaries generation completed:",
@@ -301,29 +270,83 @@ export async function POST(request: NextRequest) {
         const savedScenes: Scene[] = [];
 
         for (let i = 0; i < generationResult.scenes.length; i++) {
-            const sceneData = generationResult.scenes[i];
-            const sceneId = `scene_${nanoid(16)}`;
-            const now = new Date().toISOString();
+            const sceneData: (typeof generationResult.scenes)[number] =
+                generationResult.scenes[i];
+            const sceneId: string = `scene_${nanoid(16)}`;
+            const now: string = new Date().toISOString();
 
             // Validate scene data before insert
-            const validatedScene = insertSceneSchema.parse({
-                id: sceneId,
-                chapterId: sceneData.chapterId,
-                title: sceneData.title || `Scene ${i + 1}`,
-                summary: sceneData.summary || null,
-                content: null,
-                imageUrl: null,
-                imageVariants: null,
-                orderIndex: i + 1,
-                createdAt: now,
-                updatedAt: now,
-            });
+            const validatedScene: z.infer<typeof insertSceneSchema> =
+                insertSceneSchema.parse({
+                    // === IDENTITY ===
+                    id: sceneId,
+                    chapterId: sceneData.chapterId,
+                    title: sceneData.title || `Scene ${i + 1}`,
 
-            const [savedScene] = (await db
+                    // === SCENE SPECIFICATION (Planning Layer) ===
+                    summary: sceneData.summary || null,
+
+                    // === CYCLE PHASE TRACKING ===
+                    cyclePhase: sceneData.cyclePhase || null,
+                    emotionalBeat: sceneData.emotionalBeat || null,
+
+                    // === PLANNING METADATA (Guides Content Generation) ===
+                    characterFocus: sceneData.characterFocus || [],
+                    settingId: sceneData.settingId || null,
+                    sensoryAnchors: sceneData.sensoryAnchors || [],
+                    dialogueVsDescription:
+                        sceneData.dialogueVsDescription || null,
+                    suggestedLength: sceneData.suggestedLength || null,
+
+                    // === GENERATED PROSE (Execution Layer) ===
+                    content: "",
+
+                    // === VISUAL ===
+                    imageUrl: null,
+                    imageVariants: null,
+
+                    // === PUBLISHING (Novel Format) ===
+                    visibility: "private",
+                    publishedAt: null,
+                    publishedBy: null,
+                    unpublishedAt: null,
+                    unpublishedBy: null,
+                    scheduledFor: null,
+                    autoPublish: false,
+
+                    // === COMIC FORMAT ===
+                    comicStatus: "none",
+                    comicPublishedAt: null,
+                    comicPublishedBy: null,
+                    comicUnpublishedAt: null,
+                    comicUnpublishedBy: null,
+                    comicGeneratedAt: null,
+                    comicPanelCount: 0,
+                    comicVersion: 1,
+
+                    // === ANALYTICS ===
+                    viewCount: 0,
+                    uniqueViewCount: 0,
+                    novelViewCount: 0,
+                    novelUniqueViewCount: 0,
+                    comicViewCount: 0,
+                    comicUniqueViewCount: 0,
+                    lastViewedAt: null,
+
+                    // === ORDERING ===
+                    orderIndex: i + 1,
+
+                    // === METADATA ===
+                    createdAt: now,
+                    updatedAt: now,
+                });
+
+            const savedSceneResults: Scene[] = (await db
                 .insert(scenes)
                 .values(validatedScene)
                 .returning()) as Scene[];
 
+            const savedScene: Scene = savedSceneResults[0];
             savedScenes.push(savedScene);
         }
 

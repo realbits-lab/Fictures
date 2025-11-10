@@ -25,6 +25,18 @@ describe("Scene Summary API", () => {
         console.log("🔧 Setting up test story...");
 
         // 1. Create test story (no auto-generation)
+        const storyRequestBody: {
+            userPrompt: string;
+            language: string;
+            preferredGenre: string;
+            preferredTone: string;
+        } = {
+            userPrompt: "A test story for scene summary testing",
+            language: "English",
+            preferredGenre: "Fantasy",
+            preferredTone: "adventurous",
+        };
+
         const storyResponse: Response = await fetch(
             "http://localhost:3000/studio/api/stories",
             {
@@ -33,12 +45,7 @@ describe("Scene Summary API", () => {
                     "Content-Type": "application/json",
                     "x-api-key": apiKey,
                 },
-                body: JSON.stringify({
-                    userPrompt: "A test story for scene summary testing",
-                    language: "English",
-                    preferredGenre: "Fantasy",
-                    preferredTone: "adventurous",
-                }),
+                body: JSON.stringify(storyRequestBody),
             },
         );
 
@@ -54,6 +61,16 @@ describe("Scene Summary API", () => {
 
         // 2. Generate characters
         console.log("🔧 Generating characters...");
+        const charactersRequestBody: {
+            storyId: string;
+            characterCount: number;
+            language: string;
+        } = {
+            storyId: testStoryId,
+            characterCount: 2,
+            language: "English",
+        };
+
         const charactersResponse: Response = await fetch(
             "http://localhost:3000/studio/api/characters",
             {
@@ -62,11 +79,7 @@ describe("Scene Summary API", () => {
                     "Content-Type": "application/json",
                     "x-api-key": apiKey,
                 },
-                body: JSON.stringify({
-                    storyId: testStoryId,
-                    characterCount: 2,
-                    language: "English",
-                }),
+                body: JSON.stringify(charactersRequestBody),
             },
         );
 
@@ -83,6 +96,16 @@ describe("Scene Summary API", () => {
 
         // 3. Generate parts
         console.log("🔧 Generating parts for story...");
+        const partsRequestBody: {
+            storyId: string;
+            partCount: number;
+            language: string;
+        } = {
+            storyId: testStoryId,
+            partCount: 1,
+            language: "English",
+        };
+
         const partsResponse: Response = await fetch(
             "http://localhost:3000/studio/api/parts",
             {
@@ -91,11 +114,7 @@ describe("Scene Summary API", () => {
                     "Content-Type": "application/json",
                     "x-api-key": apiKey,
                 },
-                body: JSON.stringify({
-                    storyId: testStoryId,
-                    partCount: 1,
-                    language: "English",
-                }),
+                body: JSON.stringify(partsRequestBody),
             },
         );
 
@@ -111,6 +130,16 @@ describe("Scene Summary API", () => {
 
         // 4. Generate chapters
         console.log("🔧 Generating chapters...");
+        const chaptersRequestBody: {
+            storyId: string;
+            chaptersPerPart: number;
+            language: string;
+        } = {
+            storyId: testStoryId,
+            chaptersPerPart: 1,
+            language: "English",
+        };
+
         const chaptersResponse: Response = await fetch(
             "http://localhost:3000/studio/api/chapters",
             {
@@ -119,11 +148,7 @@ describe("Scene Summary API", () => {
                     "Content-Type": "application/json",
                     "x-api-key": apiKey,
                 },
-                body: JSON.stringify({
-                    storyId: testStoryId,
-                    chaptersPerPart: 1,
-                    language: "English",
-                }),
+                body: JSON.stringify(chaptersRequestBody),
             },
         );
 

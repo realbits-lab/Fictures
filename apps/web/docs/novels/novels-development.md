@@ -162,7 +162,7 @@ All types follow a consistent "Generate" verb pattern across all layers:
 - `GenerateStoryResult` - Generator function return type
 
 **Data Layer** (`src/lib/studio/generators/zod-schemas.generated.ts`):
-- `GeneratedStoryData` - AI-generated story data (partial Story)
+- `GeneratedStoryData` - AI-generated story data TypeScript type of generatedStorySchema (partial Story)
 - `generatedStorySchema` - Zod schema for story generation
 
 **Benefits of Unified Naming:**
