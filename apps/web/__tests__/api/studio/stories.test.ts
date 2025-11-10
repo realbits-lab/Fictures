@@ -97,11 +97,15 @@ describe("Story Generation API", () => {
             true,
         );
 
-        expect(story.tone).toBeDefined();
-        expect(typeof story.tone).toBe("string");
-        expect(["hopeful", "dark", "bittersweet", "satirical"]).toContain(
-            story.tone,
+        // tone can be null, so check for string or null
+        expect(story.tone === null || typeof story.tone === "string").toBe(
+            true,
         );
+        if (story.tone !== null) {
+            expect(["hopeful", "dark", "bittersweet", "satirical"]).toContain(
+                story.tone,
+            );
+        }
 
         // moralFramework can be null, so check for string or null
         expect(

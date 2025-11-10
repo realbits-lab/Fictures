@@ -509,8 +509,8 @@ interface Character {
   };
 
   // === VISUAL GENERATION ===
-  imageUrl?: string;  // Original portrait (1024×1024 from DALL-E 3)
-  imageVariants?: {
+  imageUrl: string | null;  // Original portrait (1024×1024 from DALL-E 3)
+  imageVariants: {
     imageId: string;
     originalUrl: string;
     variants: Array<{
@@ -520,8 +520,8 @@ interface Character {
       url: string;
     }>;
     generatedAt: string;
-  };
-  visualStyle?: string; // "realistic" | "anime" | "painterly" | "cinematic"
+  } | null;
+  visualStyle: string | null; // "realistic" | "anime" | "painterly" | "cinematic"
 
   // === METADATA ===
   createdAt: Date;
@@ -606,13 +606,13 @@ interface Setting {
     sound: string[];                // Auditory elements (3-7 items)
     smell: string[];                // Olfactory details (2-5 items)
     touch: string[];                // Tactile sensations (2-5 items)
-    taste: string[];                // Flavor elements (0-2 items, optional)
+    taste: string[] | null;         // Flavor elements (0-2 items, optional - can be null)
   };
-  architecturalStyle?: string;      // Structural design language (if applicable)
+  architecturalStyle: string | null; // Structural design language (if applicable)
 
   // === VISUAL GENERATION ===
-  imageUrl?: string;  // Original environment image (1792×1024, 16:9 from DALL-E 3)
-  imageVariants?: {
+  imageUrl: string | null;  // Original environment image (1792×1024, 16:9 from DALL-E 3)
+  imageVariants: {
     imageId: string;
     originalUrl: string;
     variants: Array<{
@@ -622,7 +622,7 @@ interface Setting {
       url: string;
     }>;
     generatedAt: string;
-  };
+  } | null;
   visualReferences: string[];       // Style inspirations: ["Blade Runner 2049", "Studio Ghibli countryside"]
   colorPalette: string[];           // Dominant colors: ["warm golds", "dusty browns", "deep greens"]
 
@@ -802,7 +802,7 @@ interface Chapter {
   contributesToMacroArc: string | null; // How this chapter advances the macro arc
 
   // === CYCLE TRACKING ===
-  focusCharacters: unknown; // JSON array of Character IDs, default: []
+  focusCharacters: string[]; // Array of Character IDs, default: []
   adversityType: 'internal' | 'external' | 'both' | null;
   virtueType: 'courage' | 'compassion' | 'integrity' | 'sacrifice' | 'loyalty' | 'wisdom' | null;
 
@@ -856,8 +856,13 @@ interface Chapter {
 
 ### 3.6 Scene Schema
 
+**Important**: Scene has two schema definitions:
+- **Database Schema** (below): Allows nulls for flexibility during creation/editing
+- **Generation Schema** (`GeneratedSceneSummarySchema`): All fields required for AI generation
+
 ```typescript
 // Scene table (from src/lib/db/schema.ts)
+// Database storage schema - allows nulls for flexibility
 interface Scene {
   // === IDENTITY ===
   id: string;
@@ -872,11 +877,11 @@ interface Scene {
   emotionalBeat: 'fear' | 'hope' | 'tension' | 'relief' | 'elevation' | 'catharsis' | 'despair' | 'joy' | null;
 
   // === PLANNING METADATA (Guides Content Generation) ===
-  characterFocus: unknown; // JSONB array of Character IDs, default: []
+  characterFocus: string[]; // Array of Character IDs, default: []
   settingId: string | null; // Setting ID where this scene takes place (references Setting.id, nullable for legacy/ambiguous scenes)
-  sensoryAnchors: unknown; // JSONB array of sensory details, default: []
+  sensoryAnchors: string[]; // Array of sensory details, default: []
   dialogueVsDescription: string | null; // Balance guidance (e.g., "60% dialogue, 40% description")
-  suggestedLength: string | null; // 'short' | 'medium' | 'long' (short: 300-500, medium: 500-800, long: 800-1000 words)
+  suggestedLength: 'short' | 'medium' | 'long' | null; // short: 300-500, medium: 500-800, long: 800-1000 words
 
   // === GENERATED PROSE (Execution Layer) ===
   content: string; // Full prose narrative generated from summary, default: ""
@@ -937,15 +942,62 @@ interface Scene {
 - Database columns use snake_case (e.g., `chapter_id`, `image_url`, `published_at`)
 - JSONB fields: `characterFocus`, `sensoryAnchors`
 
-**Nullability:**
+**Nullability (Database Schema):**
 - Core identity fields (id, chapterId, title, visibility, orderIndex) are NOT NULL
-- Content generation fields (summary, content, cyclePhase, emotionalBeat) are nullable or have defaults
+- Content generation fields (summary, cyclePhase, emotionalBeat, settingId, dialogueVsDescription, suggestedLength) are nullable to allow:
+  - Manual editing and draft states
+  - Legacy scenes created before schema updates
+  - Incremental scene development
+- Generated prose (content) has default empty string
+- JSONB arrays (characterFocus, sensoryAnchors) have default empty array values
 - All publishing and analytics fields are nullable or have default values
-- JSONB arrays have default empty array values
+
+**Nullability (Generation Schema):**
+- ✅ ALL fields are required - AI must provide complete scene specifications
+- ⚠️ This is enforced at the Zod schema level, not the database level
+- 🔄 When AI generates scenes, all fields must be present and valid
 
 **Code Reference:**
-- **Schema**: `src/lib/db/schema.ts:470-591` - Complete scene table definition
-- **Enums**: `cyclePhase` (line 51-57), `emotionalBeat` (line 58-67), `visibility` (line 142-146), `comicStatus` (line 41-45)
+- **Database Schema**: `src/lib/db/schema.ts:470-591` - Complete scene table definition
+- **Generation Schema**: `src/lib/studio/generators/zod-schemas.generated.ts:740-785` - AI generation schema
+- **Enums**: `cyclePhase` (line 62-67), `emotionalBeat` (line 68-73), `visibility` (line 142-146), `comicStatus` (line 48-52)
+- **Enum Constants**: `CYCLE_PHASES`, `EMOTIONAL_BEATS`, `SUGGESTED_LENGTHS` (line 681-706)
+
+#### Scene Generation Schema
+
+The `GeneratedSceneSummarySchema` is used by AI to generate scene summaries. Unlike the database schema, **all fields are required** to ensure complete scene specifications:
+
+```typescript
+// GeneratedSceneSummarySchema (from zod-schemas.generated.ts)
+// AI generation schema - all fields required
+interface GeneratedSceneSummary {
+  title: string;                    // Scene title - descriptive and engaging
+  summary: string;                  // Scene specification: what happens, emotional beat, purpose, and key moments
+  cyclePhase: CyclePhase;          // Position in adversity-triumph cycle (required)
+  emotionalBeat: EmotionalBeat;    // Target emotional response (required)
+  characterFocus: string[];         // Array of character IDs (required, can be empty array)
+  settingId: string;               // Setting ID where scene takes place (required)
+  sensoryAnchors: string[];        // Concrete sensory details (required, can be empty array)
+  dialogueVsDescription: string;   // Balance guidance (required, e.g., "60% dialogue, 40% description")
+  suggestedLength: SuggestedLength; // Recommended word count (required)
+}
+
+// Enum types
+type CyclePhase = 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition';
+type EmotionalBeat = 'fear' | 'hope' | 'tension' | 'relief' | 'elevation' | 'catharsis' | 'despair' | 'joy';
+type SuggestedLength = 'short' | 'medium' | 'long';
+```
+
+**Key Differences from Database Schema:**
+- ✅ All fields are **required** (no nulls)
+- ✅ Enum types are strictly typed using exported constants
+- ✅ Arrays cannot be null (use empty arrays instead)
+- ✅ Comprehensive `.describe()` annotations guide AI generation
+- ⚠️ `settingId` is required (AI must always assign a setting)
+
+**Why Two Schemas?**
+- **Database**: Flexible for manual editing, legacy data, and incomplete scenes
+- **Generation**: Strict requirements ensure AI produces complete, valid scene specifications
 
 ---
 

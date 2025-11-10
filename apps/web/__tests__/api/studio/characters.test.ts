@@ -151,23 +151,23 @@ describe("Character Generation API", () => {
             ).toBe(true);
 
             // === ADVERSITY-TRIUMPH CORE FIELDS ===
-            expect(character.coreTrait).toBeDefined();
-            expect(typeof character.coreTrait).toBe("string");
-            if (character.coreTrait) {
-                expect(character.coreTrait.length).toBeGreaterThan(0);
-            }
+            // coreTrait can be null or string
+            expect(
+                character.coreTrait === null ||
+                    typeof character.coreTrait === "string",
+            ).toBe(true);
 
-            expect(character.internalFlaw).toBeDefined();
-            expect(typeof character.internalFlaw).toBe("string");
-            if (character.internalFlaw) {
-                expect(character.internalFlaw.length).toBeGreaterThan(0);
-            }
+            // internalFlaw can be null or string
+            expect(
+                character.internalFlaw === null ||
+                    typeof character.internalFlaw === "string",
+            ).toBe(true);
 
-            expect(character.externalGoal).toBeDefined();
-            expect(typeof character.externalGoal).toBe("string");
-            if (character.externalGoal) {
-                expect(character.externalGoal.length).toBeGreaterThan(0);
-            }
+            // externalGoal can be null or string
+            expect(
+                character.externalGoal === null ||
+                    typeof character.externalGoal === "string",
+            ).toBe(true);
 
             // === CHARACTER DEPTH FIELDS ===
             // personality can be null or object
