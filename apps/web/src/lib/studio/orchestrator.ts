@@ -22,7 +22,10 @@ import {
     generateSettings,
     generateStory,
 } from "./generators";
+import { evaluateScene } from "./generators/scene-evaluation-generator";
 import type {
+    EvaluateSceneParams,
+    EvaluateSceneResult,
     GenerateChaptersParams,
     GenerateChaptersResult,
     GenerateCharactersParams,
@@ -53,6 +56,8 @@ export interface GenerateNovelParams {
     scenesPerChapter?: number; // Default: 3
     language?: string; // Default: 'English'
     skipImages?: boolean; // Default: false (for testing without image generation)
+    enableSceneEvaluation?: boolean; // Default: false (enable scene quality evaluation)
+    maxEvaluationIterations?: number; // Default: 2 (max improvement iterations per scene)
 }
 
 /**
@@ -130,7 +135,9 @@ export async function generateCompleteNovel(
         chaptersPerPart = 1,
         scenesPerChapter = 3,
         language = "English",
-        skipImages = false,
+        skipImages: _skipImages = false,
+        enableSceneEvaluation = false,
+        maxEvaluationIterations = 2,
     } = options;
 
     try {
@@ -360,8 +367,75 @@ export async function generateCompleteNovel(
             message: `Generated ${scenes.length} scenes with content`,
         });
 
-        // 8. Scene evaluation (Phase 8 of 9) - Optional, can be added later
-        // For now, we'll skip evaluation and just return the generated content
+        // 8. Scene evaluation (Phase 8 of 9)
+        if (enableSceneEvaluation) {
+            onProgress({
+                phase: "scene_evaluation_start",
+                message: "Evaluating and improving scene quality...",
+            });
+
+            const evaluatedScenes: Scene[] = [];
+            let evaluatedCount = 0;
+
+            for (const scene of scenes) {
+                evaluatedCount++;
+                onProgress({
+                    phase: "scene_evaluation_progress",
+                    message: `Evaluating scene ${evaluatedCount}/${scenes.length}...`,
+                    data: {
+                        currentItem: evaluatedCount,
+                        totalItems: scenes.length,
+                    },
+                });
+
+                // 8.1. Evaluate scene using pure generator (no DB save in orchestrator)
+                const evaluateParams: EvaluateSceneParams = {
+                    content: scene.content || "",
+                    story: {
+                        id: storyResult.story.id,
+                        title: storyResult.story.title,
+                        genre: storyResult.story.genre || "Contemporary",
+                        moralFramework: storyResult.story.moralFramework || "courage",
+                        summary: storyResult.story.summary || "",
+                        tone: storyResult.story.tone || "hopeful",
+                    },
+                    maxIterations: maxEvaluationIterations,
+                };
+
+                const evaluationResult: EvaluateSceneResult =
+                    await evaluateScene(evaluateParams);
+
+                // 8.2. Update scene with improved content
+                const evaluatedScene: Scene = {
+                    ...scene,
+                    content: evaluationResult.finalContent,
+                };
+
+                evaluatedScenes.push(evaluatedScene);
+
+                console.log(
+                    `[Orchestrator] Scene ${evaluatedCount}/${scenes.length} evaluated:`,
+                    {
+                        score: evaluationResult.score,
+                        iterations: evaluationResult.iterations,
+                        improved: evaluationResult.improved,
+                    },
+                );
+            }
+
+            onProgress({
+                phase: "scene_evaluation_complete",
+                message: `Evaluated ${evaluatedScenes.length} scenes`,
+            });
+
+            // Replace scenes with evaluated scenes
+            scenes.length = 0;
+            scenes.push(...evaluatedScenes);
+        } else {
+            console.log(
+                "[Orchestrator] Scene evaluation skipped (enableSceneEvaluation=false)",
+            );
+        }
 
         // 9. Return the complete novel
         const result: GeneratedNovelResult = {

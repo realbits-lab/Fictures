@@ -372,9 +372,22 @@ export interface GenerateSceneContentResult {
 // Scene Evaluation Generator
 // ============================================================================
 
+/**
+ * Story context for scene evaluation
+ * Only requires the fields actually used by the evaluation logic
+ */
+export interface SceneEvaluationStoryContext {
+    id: string;
+    title: string;
+    genre: string;
+    moralFramework: string;
+    summary: string;
+    tone: "hopeful" | "dark" | "bittersweet" | "satirical";
+}
+
 export interface EvaluateSceneParams {
     content: string;
-    story: Story;
+    story: SceneEvaluationStoryContext;
     maxIterations?: number;
 }
 
