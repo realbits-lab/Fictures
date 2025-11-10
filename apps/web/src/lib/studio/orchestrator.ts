@@ -39,9 +39,9 @@ import type {
 } from "./generators/types";
 
 /**
- * Novel Generation Options
+ * Generate Novel Parameters
  */
-export interface NovelGenerationOptions {
+export interface GenerateNovelParams {
     userPrompt: string;
     preferredGenre?: string;
     preferredTone?: "hopeful" | "dark" | "bittersweet" | "satirical";
@@ -89,12 +89,12 @@ export interface ProgressData {
         | "error";
     message: string;
     data?: {
-        story?: GeneratedNovelResult["story"];
+        story?: Story;
         characters?: Character[];
         settings?: Setting[];
         parts?: Part[];
         chapters?: Chapter[];
-        scenes?: SceneWithContent[];
+        scenes?: Scene[];
         currentItem?: number;
         totalItems?: number;
     };
@@ -104,31 +104,19 @@ export interface ProgressData {
  * Generated Novel Result
  */
 export interface GeneratedNovelResult {
-    story: {
-        title: string;
-        genre: string;
-        summary: string;
-        tone: string;
-        moralFramework: string;
-    };
+    story: Story;
     characters: Character[];
     settings: Setting[];
     parts: Part[];
     chapters: Chapter[];
-    scenes: SceneWithContent[];
-}
-
-interface SceneWithContent extends Scene {
-    id: string;
-    chapterId: string;
-    content: string;
+    scenes: Scene[];
 }
 
 /**
  * Main Orchestrator Function
  */
 export async function generateCompleteNovel(
-    options: NovelGenerationOptions,
+    options: GenerateNovelParams,
     onProgress: (progress: ProgressData) => void,
 ): Promise<GeneratedNovelResult> {
     const {
@@ -174,7 +162,7 @@ export async function generateCompleteNovel(
         });
 
         const charactersParams: Omit<GenerateCharactersParams, "story"> & {
-            story: GeneratedNovelResult["story"];
+            story: Story;
         } = {
             story: storyResult.story,
             characterCount,
@@ -206,7 +194,7 @@ export async function generateCompleteNovel(
         });
 
         const settingsParams: Omit<GenerateSettingsParams, "story"> & {
-            story: GeneratedNovelResult["story"];
+            story: Story;
         } = {
             story: storyResult.story,
             settingCount,
@@ -236,7 +224,7 @@ export async function generateCompleteNovel(
         });
 
         const partsParams: Omit<GeneratePartsParams, "story"> & {
-            story: GeneratedNovelResult["story"];
+            story: Story;
         } = {
             story: storyResult.story,
             characters: charactersResult.characters,
@@ -267,7 +255,7 @@ export async function generateCompleteNovel(
         });
 
         const chaptersParams: Omit<GenerateChaptersParams, "story"> & {
-            story: GeneratedNovelResult["story"];
+            story: Story;
         } = {
             storyId: "", // Not needed for orchestrator (no DB save)
             story: storyResult.story,
@@ -338,7 +326,7 @@ export async function generateCompleteNovel(
             message: "Generating scene content...",
         });
 
-        const scenes: SceneWithContent[] = [];
+        const scenes: Scene[] = [];
         let sceneIndex = 0;
 
         for (const chapter of chaptersResult.chapters) {
@@ -368,7 +356,7 @@ export async function generateCompleteNovel(
                 const sceneContentResult: GenerateSceneContentResult =
                     await generateSceneContent(sceneContentParams);
 
-                const sceneWithContent: SceneWithContent = {
+                const sceneWithContent: Scene = {
                     id: `scene_${sceneIndex}`,
                     chapterId: chapter.id,
                     ...sceneSummary,
