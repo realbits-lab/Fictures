@@ -22,7 +22,7 @@ import { loadWriterAuth } from "../../helpers/auth-loader";
 const apiKey: string = loadWriterAuth();
 
 describe("Parts API", () => {
-    let testStoryId: string;
+    let testStoryId: string = "";
 
     // Setup: Create a test story and characters first
     beforeAll(async () => {
@@ -150,9 +150,7 @@ describe("Parts API", () => {
                 successData;
             expect(parts.length).toBe(2);
 
-            for (let idx: number = 0; idx < parts.length; idx++) {
-                const part: GeneratePartsResponse["parts"][number] = parts[idx];
-
+            for (const part of parts) {
                 // === IDENTITY FIELDS ===
                 expect(part.id).toMatch(/^part_/);
                 expect(part.storyId).toBe(testStoryId);

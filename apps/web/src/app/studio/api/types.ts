@@ -35,15 +35,16 @@
  * - POST /studio/api/chapters - Generate chapters
  * - POST /studio/api/scenes - Generate scene summaries
  * - POST /studio/api/scene-content - Generate scene content
+ * - POST /studio/api/scene-evaluation - Evaluate and improve scene quality
  */
 
 import type {
-	Chapter,
-	Character,
-	Part,
-	Scene,
-	Setting,
-	Story,
+    Chapter,
+    Character,
+    Part,
+    Scene,
+    Setting,
+    Story,
 } from "@/lib/studio/generators/zod-schemas.generated";
 
 // ============================================================================
@@ -51,24 +52,24 @@ import type {
 // ============================================================================
 
 export interface GenerateStoryRequest {
-	userPrompt: string;
-	language?: string;
-	preferredGenre?: string;
-	preferredTone?: "hopeful" | "dark" | "bittersweet" | "satirical";
+    userPrompt: string;
+    language?: string;
+    preferredGenre?: string;
+    preferredTone?: "hopeful" | "dark" | "bittersweet" | "satirical";
 }
 
 export interface GenerateStoryResponse {
-	success: true;
-	story: Story;
-	metadata: {
-		generationTime: number;
-		model?: string;
-	};
+    success: true;
+    story: Story;
+    metadata: {
+        generationTime: number;
+        model?: string;
+    };
 }
 
 export interface GenerateStoryErrorResponse {
-	error: string;
-	details?: string;
+    error: string;
+    details?: string;
 }
 
 // ============================================================================
@@ -76,23 +77,23 @@ export interface GenerateStoryErrorResponse {
 // ============================================================================
 
 export interface GenerateCharactersRequest {
-	storyId: string;
-	characterCount?: number;
-	language?: string;
+    storyId: string;
+    characterCount?: number;
+    language?: string;
 }
 
 export interface GenerateCharactersResponse {
-	success: true;
-	characters: Character[];
-	metadata: {
-		totalGenerated: number;
-		generationTime: number;
-	};
+    success: true;
+    characters: Character[];
+    metadata: {
+        totalGenerated: number;
+        generationTime: number;
+    };
 }
 
 export interface GenerateCharactersErrorResponse {
-	error: string;
-	details?: any;
+    error: string;
+    details?: any;
 }
 
 // ============================================================================
@@ -100,22 +101,22 @@ export interface GenerateCharactersErrorResponse {
 // ============================================================================
 
 export interface GenerateSettingsRequest {
-	storyId: string;
-	settingCount?: number;
+    storyId: string;
+    settingCount?: number;
 }
 
 export interface GenerateSettingsResponse {
-	success: true;
-	settings: Setting[];
-	metadata: {
-		totalGenerated: number;
-		generationTime: number;
-	};
+    success: true;
+    settings: Setting[];
+    metadata: {
+        totalGenerated: number;
+        generationTime: number;
+    };
 }
 
 export interface GenerateSettingsErrorResponse {
-	error: string;
-	details?: any;
+    error: string;
+    details?: any;
 }
 
 // ============================================================================
@@ -123,23 +124,23 @@ export interface GenerateSettingsErrorResponse {
 // ============================================================================
 
 export interface GeneratePartsRequest {
-	storyId: string;
-	partsCount?: number;
-	language?: string;
+    storyId: string;
+    partsCount?: number;
+    language?: string;
 }
 
 export interface GeneratePartsResponse {
-	success: true;
-	parts: Part[];
-	metadata: {
-		totalGenerated: number;
-		generationTime: number;
-	};
+    success: true;
+    parts: Part[];
+    metadata: {
+        totalGenerated: number;
+        generationTime: number;
+    };
 }
 
 export interface GeneratePartsErrorResponse {
-	error: string;
-	details?: any;
+    error: string;
+    details?: any;
 }
 
 // ============================================================================
@@ -147,23 +148,23 @@ export interface GeneratePartsErrorResponse {
 // ============================================================================
 
 export interface GenerateChaptersRequest {
-	storyId: string;
-	chaptersPerPart?: number;
-	language?: string;
+    storyId: string;
+    chaptersPerPart?: number;
+    language?: string;
 }
 
 export interface GenerateChaptersResponse {
-	success: true;
-	chapters: Chapter[];
-	metadata: {
-		totalGenerated: number;
-		generationTime: number;
-	};
+    success: true;
+    chapters: Chapter[];
+    metadata: {
+        totalGenerated: number;
+        generationTime: number;
+    };
 }
 
 export interface GenerateChaptersErrorResponse {
-	error: string;
-	details?: any;
+    error: string;
+    details?: any;
 }
 
 // ============================================================================
@@ -171,23 +172,23 @@ export interface GenerateChaptersErrorResponse {
 // ============================================================================
 
 export interface GenerateSceneSummariesRequest {
-	storyId: string;
-	scenesPerChapter?: number;
-	language?: string;
+    storyId: string;
+    scenesPerChapter?: number;
+    language?: string;
 }
 
 export interface GenerateSceneSummariesResponse {
-	success: true;
-	scenes: Scene[];
-	metadata: {
-		totalGenerated: number;
-		generationTime: number;
-	};
+    success: true;
+    scenes: Scene[];
+    metadata: {
+        totalGenerated: number;
+        generationTime: number;
+    };
 }
 
 export interface GenerateSceneSummariesErrorResponse {
-	error: string;
-	details?: any;
+    error: string;
+    details?: any;
 }
 
 // ============================================================================
@@ -195,20 +196,58 @@ export interface GenerateSceneSummariesErrorResponse {
 // ============================================================================
 
 export interface GenerateSceneContentRequest {
-	sceneId: string;
-	language?: string;
+    sceneId: string;
+    language?: string;
 }
 
 export interface GenerateSceneContentResponse {
-	success: true;
-	scene: Scene;
-	metadata: {
-		wordCount: number;
-		generationTime: number;
-	};
+    success: true;
+    scene: Scene;
+    metadata: {
+        wordCount: number;
+        generationTime: number;
+    };
 }
 
 export interface GenerateSceneContentErrorResponse {
-	error: string;
-	details?: any;
+    error: string;
+    details?: any;
+}
+
+// ============================================================================
+// Scene Evaluation
+// ============================================================================
+
+export interface EvaluateSceneRequest {
+    sceneId: string;
+    maxIterations?: number;
+}
+
+export interface EvaluateSceneResponse {
+    success: true;
+    scene: Scene;
+    evaluation: {
+        score: number;
+        categories: {
+            plot: number;
+            character: number;
+            pacing: number;
+            prose: number;
+            worldBuilding: number;
+        };
+        feedback: {
+            strengths: string[];
+            improvements: string[];
+        };
+        iterations: number;
+        improved: boolean;
+    };
+    metadata: {
+        generationTime: number;
+    };
+}
+
+export interface EvaluateSceneErrorResponse {
+    error: string;
+    details?: any;
 }

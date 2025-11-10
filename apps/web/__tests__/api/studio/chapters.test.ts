@@ -22,8 +22,8 @@ import { loadWriterAuth } from "../../helpers/auth-loader";
 const apiKey: string = loadWriterAuth();
 
 describe("Chapters API", () => {
-    let testStoryId: string;
-    let testPartId: string;
+    let testStoryId: string = "";
+    let testPartId: string = "";
 
     // Setup: Create a test story
     beforeAll(async () => {
@@ -191,10 +191,7 @@ describe("Chapters API", () => {
             }: { chapters: GenerateChaptersResponse["chapters"] } = successData;
             expect(chapters.length).toBeGreaterThan(0);
 
-            for (let idx: number = 0; idx < chapters.length; idx++) {
-                const chapter: GenerateChaptersResponse["chapters"][number] =
-                    chapters[idx];
-
+            for (const chapter of chapters) {
                 // === IDENTITY FIELDS ===
                 expect(chapter.id).toMatch(/^chapter_/);
                 expect(chapter.storyId).toBe(testStoryId);

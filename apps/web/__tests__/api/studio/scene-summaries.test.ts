@@ -7,21 +7,25 @@
  *   dotenv --file .env.local run pnpm test __tests__/api/studio/scene-summaries.test.ts
  */
 
-import type { GenerateSceneSummariesResponse } from "@/app/studio/api/types";
+import type {
+    GenerateSceneSummariesErrorResponse,
+    GenerateSceneSummariesRequest,
+    GenerateSceneSummariesResponse,
+} from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
 // Load writer authentication
 const apiKey: string = loadWriterAuth();
 
 describe("Scene Summary API", () => {
-    let testStoryId: string;
-    let testChapterId: string;
+    let testStoryId: string = "";
+    let testChapterId: string = "";
 
     beforeAll(async () => {
         console.log("🔧 Setting up test story...");
 
         // 1. Create test story (no auto-generation)
-        const storyResponse = await fetch(
+        const storyResponse: Response = await fetch(
             "http://localhost:3000/studio/api/stories",
             {
                 method: "POST",
@@ -38,7 +42,7 @@ describe("Scene Summary API", () => {
             },
         );
 
-        const storyData = await storyResponse.json();
+        const storyData: { story: { id: string } } = await storyResponse.json();
         if (!storyResponse.ok) {
             throw new Error(
                 `Failed to create test story: ${JSON.stringify(storyData)}`,
@@ -50,7 +54,7 @@ describe("Scene Summary API", () => {
 
         // 2. Generate characters
         console.log("🔧 Generating characters...");
-        const charactersResponse = await fetch(
+        const charactersResponse: Response = await fetch(
             "http://localhost:3000/studio/api/characters",
             {
                 method: "POST",
@@ -66,7 +70,8 @@ describe("Scene Summary API", () => {
             },
         );
 
-        const charactersData = await charactersResponse.json();
+        const charactersData: { characters: Array<{ id: string }> } =
+            await charactersResponse.json();
         if (!charactersResponse.ok) {
             throw new Error(
                 `Failed to generate characters: ${JSON.stringify(charactersData)}`,
@@ -78,7 +83,7 @@ describe("Scene Summary API", () => {
 
         // 3. Generate parts
         console.log("🔧 Generating parts for story...");
-        const partsResponse = await fetch(
+        const partsResponse: Response = await fetch(
             "http://localhost:3000/studio/api/parts",
             {
                 method: "POST",
@@ -94,7 +99,8 @@ describe("Scene Summary API", () => {
             },
         );
 
-        const partsData = await partsResponse.json();
+        const partsData: { parts: Array<{ id: string }> } =
+            await partsResponse.json();
         if (!partsResponse.ok) {
             throw new Error(
                 `Failed to generate parts: ${JSON.stringify(partsData)}`,
@@ -105,7 +111,7 @@ describe("Scene Summary API", () => {
 
         // 4. Generate chapters
         console.log("🔧 Generating chapters...");
-        const chaptersResponse = await fetch(
+        const chaptersResponse: Response = await fetch(
             "http://localhost:3000/studio/api/chapters",
             {
                 method: "POST",
@@ -121,7 +127,8 @@ describe("Scene Summary API", () => {
             },
         );
 
-        const chaptersData = await chaptersResponse.json();
+        const chaptersData: { chapters: Array<{ id: string }> } =
+            await chaptersResponse.json();
         if (!chaptersResponse.ok) {
             throw new Error(
                 `Failed to generate chapters: ${JSON.stringify(chaptersData)}`,
@@ -135,8 +142,14 @@ describe("Scene Summary API", () => {
     it("should generate scene summaries via POST /studio/api/scene-summaries", async () => {
         console.log("🔧 Generating scene summaries...");
 
-        const scenesPerChapter: number = 3;
+        // 1. Prepare request body with proper TypeScript type
+        const requestBody: GenerateSceneSummariesRequest = {
+            storyId: testStoryId,
+            scenesPerChapter: 3,
+            language: "English",
+        };
 
+        // 2. Send POST request to scene summaries generation API
         const response: Response = await fetch(
             "http://localhost:3000/studio/api/scene-summaries",
             {
@@ -145,68 +158,83 @@ describe("Scene Summary API", () => {
                     "Content-Type": "application/json",
                     "x-api-key": apiKey,
                 },
-                body: JSON.stringify({
-                    storyId: testStoryId,
-                    scenesPerChapter: scenesPerChapter,
-                    language: "English",
-                }),
+                body: JSON.stringify(requestBody),
             },
         );
 
-        const data: GenerateSceneSummariesResponse = await response.json();
+        // 3. Parse response data with proper typing
+        const data:
+            | GenerateSceneSummariesResponse
+            | GenerateSceneSummariesErrorResponse = await response.json();
 
+        // 4. Log error if request failed
         if (!response.ok) {
-            console.error("❌ API Error:", data);
+            console.error("❌ Scene Summaries API Error:", data);
+            expect(response.ok).toBe(true); // Force fail with proper error logged
         }
 
-        // ========================================================================
-        // Validate ALL fields of GenerateSceneSummariesResponse
-        // ========================================================================
-
-        // 1. Validate HTTP status
+        // 5. Verify response status
         expect(response.status).toBe(201);
 
-        // 2. Validate 'success' field (required, must be true)
-        expect(data).toHaveProperty("success");
-        expect(data.success).toBe(true);
-        expect(typeof data.success).toBe("boolean");
+        // 6. Type guard to ensure we have success response
+        if (!("success" in data) || !data.success) {
+            throw new Error(
+                "Expected GenerateSceneSummariesResponse but got error",
+            );
+        }
 
-        // 3. Validate 'scenes' field (required, must be array of Scene objects)
-        expect(data).toHaveProperty("scenes");
-        expect(Array.isArray(data.scenes)).toBe(true);
-        expect(data.scenes.length).toBeGreaterThan(0);
-        expect(data.scenes.length).toBe(scenesPerChapter); // Should match request
+        // 7. Cast to success response type
+        const successData: GenerateSceneSummariesResponse =
+            data as GenerateSceneSummariesResponse;
 
-        // 4. Validate 'metadata' field (required object)
-        expect(data).toHaveProperty("metadata");
-        expect(typeof data.metadata).toBe("object");
-        expect(data.metadata).not.toBeNull();
+        // ========================================================================
+        // 8. Verify ALL fields of GenerateSceneSummariesResponse
+        // ========================================================================
 
-        // 4a. Validate 'metadata.totalGenerated' (required number)
-        expect(data.metadata).toHaveProperty("totalGenerated");
-        expect(typeof data.metadata.totalGenerated).toBe("number");
-        expect(data.metadata.totalGenerated).toBe(data.scenes.length);
+        // 8a. Validate 'success' field (required, must be true)
+        expect(successData.success).toBe(true);
 
-        // 4b. Validate 'metadata.generationTime' (required number, positive)
-        expect(data.metadata).toHaveProperty("generationTime");
-        expect(typeof data.metadata.generationTime).toBe("number");
-        expect(data.metadata.generationTime).toBeGreaterThan(0);
+        // 8b. Validate 'scenes' field (required, must be array of Scene objects)
+        expect(successData).toHaveProperty("scenes");
+        expect(Array.isArray(successData.scenes)).toBe(true);
+        expect(successData.scenes.length).toBeGreaterThan(0);
+        expect(successData.scenes.length).toBe(requestBody.scenesPerChapter); // Should match request
 
-        // 5. Ensure no extra fields in response (type safety)
-        const responseKeys: string[] = Object.keys(data);
+        // 8c. Validate 'metadata' field (required object)
+        expect(successData).toHaveProperty("metadata");
+        expect(typeof successData.metadata).toBe("object");
+        expect(successData.metadata).not.toBeNull();
+
+        // 8d. Validate 'metadata.totalGenerated' (required number)
+        expect(successData.metadata).toHaveProperty("totalGenerated");
+        expect(typeof successData.metadata.totalGenerated).toBe("number");
+        expect(successData.metadata.totalGenerated).toBe(
+            successData.scenes.length,
+        );
+
+        // 8e. Validate 'metadata.generationTime' (required number, positive)
+        expect(successData.metadata).toHaveProperty("generationTime");
+        expect(typeof successData.metadata.generationTime).toBe("number");
+        expect(successData.metadata.generationTime).toBeGreaterThan(0);
+
+        // 8f. Ensure no extra fields in response (type safety)
+        const responseKeys: string[] = Object.keys(successData);
         expect(responseKeys.sort()).toEqual(["metadata", "scenes", "success"]);
 
-        // 6. Ensure no extra fields in metadata
-        const metadataKeys: string[] = Object.keys(data.metadata);
+        // 8g. Ensure no extra fields in metadata
+        const metadataKeys: string[] = Object.keys(successData.metadata);
         expect(metadataKeys.sort()).toEqual([
             "generationTime",
             "totalGenerated",
         ]);
 
         // ========================================================================
-        // Validate ALL fields of Scene objects in the array
+        // 9. Validate ALL fields of Scene objects in the array
         // ========================================================================
-        for (const scene of data.scenes) {
+        const { scenes }: { scenes: GenerateSceneSummariesResponse["scenes"] } =
+            successData;
+
+        for (const scene of scenes) {
             // === IDENTITY ===
             expect(scene).toHaveProperty("id");
             expect(typeof scene.id).toBe("string");
@@ -346,12 +374,21 @@ describe("Scene Summary API", () => {
             expect(typeof scene.updatedAt).toBe("string");
         }
 
+        // 10. Verify metadata
+        const {
+            metadata,
+        }: { metadata: GenerateSceneSummariesResponse["metadata"] } =
+            successData;
+        expect(metadata.totalGenerated).toBeGreaterThan(0);
+        expect(metadata.generationTime).toBeGreaterThan(0);
+
+        // 11. Log success details
         console.log("✅ Scene summaries generated successfully:");
-        console.log(`  Total scenes: ${data.scenes.length}`);
-        console.log(`  Generation time: ${data.metadata.generationTime}ms`);
+        console.log(`  Total scenes: ${scenes.length}`);
+        console.log(`  Generation time: ${metadata.generationTime}ms`);
 
         // Log each scene
-        for (const scene of data.scenes) {
+        for (const scene of scenes) {
             console.log(`  - ${scene.title} (${scene.id})`);
             console.log(`    Chapter ID: ${scene.chapterId}`);
             console.log(`    Order: ${scene.orderIndex}`);

@@ -18,7 +18,7 @@ import { loadWriterAuth } from "../../helpers/auth-loader";
 const apiKey: string = loadWriterAuth();
 
 describe("Setting API", () => {
-    let testStoryId: string;
+    let testStoryId: string = "";
 
     beforeAll(async () => {
         console.log("🔧 Setting up test story...");
@@ -117,9 +117,7 @@ describe("Setting API", () => {
             successData;
 
         // 11. Loop through ALL settings and verify each one
-        for (let idx = 0; idx < settings.length; idx++) {
-            const setting = settings[idx];
-
+        for (const setting of settings) {
             // === IDENTITY FIELDS ===
             expect(setting.id).toMatch(/^setting_/);
             expect(setting.storyId).toBe(testStoryId);
@@ -220,8 +218,7 @@ describe("Setting API", () => {
         console.log("✅ Settings generated successfully:");
         console.log(`  Total Generated: ${settings.length}`);
         console.log(`  Generation Time: ${metadata.generationTime}ms`);
-        for (let idx = 0; idx < settings.length; idx++) {
-            const setting = settings[idx];
+        for (const [idx, setting] of settings.entries()) {
             console.log(`  ${idx + 1}. ${setting.name}`);
             console.log(`     ID: ${setting.id}`);
             console.log(

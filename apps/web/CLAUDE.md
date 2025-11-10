@@ -772,6 +772,70 @@ dotenv --file .env.local run node scripts/generate-minimal-story.mjs
   - Never display raw error text or plain error messages
 - **Performance**: Optimize for story writing workflow and database queries
 
+**TypeScript Coding Standards:**
+- **Use `const` over `let`**: Prefer immutable variables whenever possible
+  - Only use `let` when reassignment is truly necessary
+  - Immutable variables provide better code safety and optimization opportunities
+  - Example:
+    ```typescript
+    // ✅ Good: Use const for values that don't change
+    const apiKey: string = loadWriterAuth();
+    const requestBody: GenerateChaptersRequest = { storyId, chaptersPerPart: 2 };
+
+    // ❌ Bad: Using let when value doesn't change
+    let apiKey = loadWriterAuth();
+    let requestBody = { storyId, chaptersPerPart: 2 };
+    ```
+
+- **Explicit Type Annotations**: Always specify types for better code clarity and type safety
+  - **Required**: Function/method signatures (parameters and return types)
+  - **Required**: Variable declarations when type isn't obvious from initialization
+  - **Required**: API request/response data structures
+  - **Optional**: Local variables where TypeScript can correctly infer the type
+  - Example:
+    ```typescript
+    // ✅ Good: Explicit types for clarity
+    const response: Response = await fetch(url);
+    const data: GenerateChaptersResponse | GenerateChaptersErrorResponse = await response.json();
+    const chapters: Chapter[] = data.chapters;
+
+    // ❌ Bad: Missing type annotations
+    const response = await fetch(url);
+    const data = await response.json();
+    const chapters = data.chapters;
+    ```
+
+- **Use Variables for API Request Bodies**: Always create typed variables for request body data
+  - Improves code readability and maintainability
+  - Enables type checking and autocompletion
+  - Makes debugging easier with clear variable names
+  - Example:
+    ```typescript
+    // ✅ Good: Separate variable with explicit type
+    const requestBody: GenerateChaptersRequest = {
+      storyId: testStoryId,
+      chaptersPerPart: 2,
+      language: "English",
+    };
+
+    const response: Response = await fetch("/studio/api/chapters", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody),
+    });
+
+    // ❌ Bad: Inline object without type checking
+    const response = await fetch("/studio/api/chapters", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        storyId: testStoryId,
+        chaptersPerPart: 2,
+        language: "English",
+      }),
+    });
+    ```
+
 ## Image Generation & Optimization
 
 **Complete Image System Documentation:**

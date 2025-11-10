@@ -18,7 +18,7 @@ import { loadWriterAuth } from "../../helpers/auth-loader";
 const apiKey: string = loadWriterAuth();
 
 describe("Character Generation API", () => {
-    let testStoryId: string;
+    let testStoryId: string = "";
 
     // First create a test story to use
     beforeAll(async () => {
@@ -129,9 +129,7 @@ describe("Character Generation API", () => {
             successData;
 
         // 11. Loop through ALL characters and verify each one
-        for (let idx = 0; idx < characters.length; idx++) {
-            const character = characters[idx];
-
+        for (const character of characters) {
             // === IDENTITY FIELDS ===
             expect(character.id).toMatch(/^char_/);
             expect(character.storyId).toBe(testStoryId);
@@ -233,8 +231,7 @@ describe("Character Generation API", () => {
         console.log("✅ Characters generated successfully:");
         console.log(`  Total Generated: ${characters.length}`);
         console.log(`  Generation Time: ${metadata.generationTime}ms`);
-        for (let idx = 0; idx < characters.length; idx++) {
-            const char = characters[idx];
+        for (const [idx, char] of characters.entries()) {
             console.log(
                 `  ${idx + 1}. ${char.name} (${char.isMain ? "Main" : "Supporting"})`,
             );
