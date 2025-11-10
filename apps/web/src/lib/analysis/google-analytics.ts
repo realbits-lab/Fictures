@@ -3,6 +3,10 @@
  * Provides type-safe wrappers for Google Analytics tracking
  */
 
+// Export GA Measurement ID for use in components
+export const GA_MEASUREMENT_ID: string =
+	process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "";
+
 // Check if gtag is available (Google Analytics script loaded)
 declare global {
 	interface Window {
@@ -83,5 +87,18 @@ export function trackSceneRead(sceneId: string): void {
 		action: "read_scene",
 		category: "Scene",
 		label: sceneId,
+	});
+}
+
+/**
+ * Track user engagement events
+ * @param action - The engagement action (e.g., 'click', 'scroll', 'hover')
+ * @param target - The target element or feature
+ */
+export function trackEngagement(action: string, target: string): void {
+	event({
+		action,
+		category: "Engagement",
+		label: target,
 	});
 }

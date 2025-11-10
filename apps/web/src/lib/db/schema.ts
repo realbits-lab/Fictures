@@ -208,7 +208,7 @@ export const settings = pgTable(
         id: text().primaryKey().notNull(),
         storyId: text("story_id").notNull(),
         name: varchar({ length: 255 }).notNull(),
-        summary: text(), // Comprehensive paragraph (3-5 sentences)
+        summary: text().notNull(), // Comprehensive paragraph (3-5 sentences)
 
         // === ADVERSITY-TRIUMPH CORE (The Engine) ===
         // adversityElements: {
@@ -217,8 +217,8 @@ export const settings = pgTable(
         //   dangerSources: string[];      // Threats from environment
         //   socialDynamics: string[];     // Community factors
         // }
-        adversityElements: json("adversity_elements"),
-        symbolicMeaning: text("symbolic_meaning"), // How setting reflects story's moral framework (1-2 sentences)
+        adversityElements: json("adversity_elements").notNull(),
+        symbolicMeaning: text("symbolic_meaning").notNull(), // How setting reflects story's moral framework (1-2 sentences)
         // cycleAmplification: {
         //   setup: string;         // How setting establishes adversity
         //   confrontation: string; // How setting intensifies conflict
@@ -226,11 +226,11 @@ export const settings = pgTable(
         //   consequence: string;   // How setting transforms or reveals
         //   transition: string;    // How setting hints at new problems
         // }
-        cycleAmplification: json("cycle_amplification"),
+        cycleAmplification: json("cycle_amplification").notNull(),
 
         // === EMOTIONAL ATMOSPHERE ===
-        mood: text(), // Primary emotional quality: "oppressive and surreal", "hopeful but fragile"
-        emotionalResonance: text("emotional_resonance"), // What emotion this amplifies: "isolation", "hope", "fear", "connection"
+        mood: text().notNull(), // Primary emotional quality: "oppressive and surreal", "hopeful but fragile"
+        emotionalResonance: text("emotional_resonance").notNull(), // What emotion this amplifies: "isolation", "hope", "fear", "connection"
 
         // === SENSORY IMMERSION (For Prose Generation) ===
         // sensory: {
@@ -240,14 +240,14 @@ export const settings = pgTable(
         //   touch: string[];   // Tactile sensations (2-5 items)
         //   taste: string[];   // Flavor elements (0-2 items, optional)
         // }
-        sensory: json(),
-        architecturalStyle: text("architectural_style"), // Structural design language (if applicable)
+        sensory: json().notNull(),
+        architecturalStyle: text("architectural_style").notNull(), // Structural design language (if applicable)
 
         // === VISUAL GENERATION ===
         imageUrl: text("image_url"), // Original environment image (1792×1024, 16:9 from DALL-E 3)
         imageVariants: json("image_variants"),
-        visualReferences: json("visual_references").$type<string[]>(), // Style inspirations: ["Blade Runner 2049", "Studio Ghibli countryside"]
-        colorPalette: json("color_palette").$type<string[]>(), // Dominant colors: ["warm golds", "dusty browns", "deep greens"]
+        visualReferences: json("visual_references").$type<string[]>().notNull(), // Style inspirations: ["Blade Runner 2049", "Studio Ghibli countryside"]
+        colorPalette: json("color_palette").$type<string[]>().notNull(), // Dominant colors: ["warm golds", "dusty browns", "deep greens"]
 
         // === METADATA ===
         createdAt: timestamp("created_at", { mode: "string" })
