@@ -341,7 +341,7 @@ export const parts = pgTable(
         title: varchar({ length: 255 }).notNull(),
 
         // === ADVERSITY-TRIUMPH CORE (Act Structure) ===
-        summary: text(), // MACRO adversity-triumph arcs per character with progression planning
+        summary: text().notNull(), // MACRO adversity-triumph arcs per character with progression planning
 
         // === MACRO ARC TRACKING (Nested Cycles) ===
         // characterArcs: Array<{
@@ -354,10 +354,10 @@ export const parts = pgTable(
         //   arcPosition: 'primary' | 'secondary';
         //   progressionStrategy: string;
         // }>
-        characterArcs: json("character_arcs"),
+        characterArcs: json("character_arcs").notNull(),
 
         // === ORDERING ===
-        orderIndex: integer("order_index"), // Act number / order
+        orderIndex: integer("order_index").notNull(), // Act number / order
 
         // === METADATA ===
         createdAt: timestamp("created_at", { mode: "string" })
@@ -390,36 +390,36 @@ export const chapters = pgTable(
         // === IDENTITY ===
         id: text().primaryKey().notNull(),
         storyId: text("story_id").notNull(),
-        partId: text("part_id"),
+        partId: text("part_id").notNull(),
         title: varchar({ length: 255 }).notNull(),
 
         // === ADVERSITY-TRIUMPH CORE (Micro Cycle) ===
-        summary: text(), // ONE complete adversity-triumph cycle
+        summary: text().notNull(), // ONE complete adversity-triumph cycle
 
         // === NESTED CYCLE TRACKING (Links micro-cycle to macro arc) ===
-        characterId: text("character_id"), // References Character.id (the character whose macro arc this chapter advances)
-        arcPosition: arcPosition("arc_position"), // 'beginning' | 'middle' | 'climax' | 'resolution' (climax = MACRO moment)
-        contributesToMacroArc: text("contributes_to_macro_arc"), // How this chapter advances the macro arc
+        characterId: text("character_id").notNull(), // References Character.id (the character whose macro arc this chapter advances)
+        arcPosition: arcPosition("arc_position").notNull(), // 'beginning' | 'middle' | 'climax' | 'resolution' (climax = MACRO moment)
+        contributesToMacroArc: text("contributes_to_macro_arc").notNull(), // How this chapter advances the macro arc
 
         // === CYCLE TRACKING ===
-        focusCharacters: json("focus_characters").default([]), // Character ID(s)
-        adversityType: adversityType("adversity_type"), // 'internal' | 'external' | 'both'
-        virtueType: virtueType("virtue_type"), // 'courage' | 'compassion' | 'integrity' | 'sacrifice' | 'loyalty' | 'wisdom'
+        focusCharacters: json("focus_characters").default([]).notNull(), // Character ID(s)
+        adversityType: adversityType("adversity_type").notNull(), // 'internal' | 'external' | 'both'
+        virtueType: virtueType("virtue_type").notNull(), // 'courage' | 'compassion' | 'integrity' | 'sacrifice' | 'loyalty' | 'wisdom'
 
         // === CAUSAL LINKING (For Earned Luck) ===
         // seedsPlanted: Array<{ id, description, expectedPayoff }>
-        seedsPlanted: json("seeds_planted").default([]),
+        seedsPlanted: json("seeds_planted").default([]).notNull(),
         // seedsResolved: Array<{ sourceChapterId, sourceSceneId, seedId, payoffDescription }>
-        seedsResolved: json("seeds_resolved").default([]),
+        seedsResolved: json("seeds_resolved").default([]).notNull(),
 
         // === CONNECTION TO NARRATIVE FLOW ===
-        connectsToPreviousChapter: text("connects_to_previous_chapter"), // How previous resolution created this adversity
-        createsNextAdversity: text("creates_next_adversity"), // How this resolution creates next problem
+        connectsToPreviousChapter: text("connects_to_previous_chapter").notNull(), // How previous resolution created this adversity
+        createsNextAdversity: text("creates_next_adversity").notNull(), // How this resolution creates next problem
 
         // === PUBLISHING ===
         status: status().default("writing").notNull(),
-        publishedAt: timestamp("published_at", { mode: "string" }),
-        scheduledFor: timestamp("scheduled_for", { mode: "string" }),
+        publishedAt: timestamp("published_at", { mode: "string" }).notNull(),
+        scheduledFor: timestamp("scheduled_for", { mode: "string" }).notNull(),
 
         // === ORDERING ===
         orderIndex: integer("order_index").notNull(),
@@ -476,21 +476,21 @@ export const scenes = pgTable(
         title: varchar({ length: 255 }).notNull(),
 
         // === SCENE SPECIFICATION (Planning Layer) ===
-        summary: text(), // Scene specification: what happens, emotional beat, purpose, sensory anchors
+        summary: text().notNull(), // Scene specification: what happens, emotional beat, purpose, sensory anchors
 
         // === CYCLE PHASE TRACKING ===
-        cyclePhase: cyclePhase("cycle_phase"), // 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition'
-        emotionalBeat: emotionalBeat("emotional_beat"), // 'fear' | 'hope' | 'tension' | 'relief' | 'elevation' | 'catharsis' | 'despair' | 'joy'
+        cyclePhase: cyclePhase("cycle_phase").notNull(), // 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition'
+        emotionalBeat: emotionalBeat("emotional_beat").notNull(), // 'fear' | 'hope' | 'tension' | 'relief' | 'elevation' | 'catharsis' | 'despair' | 'joy'
 
         // === PLANNING METADATA (Guides Content Generation) ===
-        characterFocus: jsonb("character_focus").default([]), // Character IDs appearing in this scene
-        settingId: text("setting_id"), // Setting ID where this scene takes place (references Setting.id, nullable for legacy/ambiguous scenes)
-        sensoryAnchors: jsonb("sensory_anchors").default([]), // Key sensory details to include (e.g., "rain on metal roof", "smell of smoke")
-        dialogueVsDescription: text("dialogue_vs_description"), // Balance guidance (e.g., "60% dialogue, 40% description")
-        suggestedLength: text("suggested_length"), // 'short' | 'medium' | 'long' (short: 300-500, medium: 500-800, long: 800-1000 words)
+        characterFocus: jsonb("character_focus").default([]).notNull(), // Character IDs appearing in this scene
+        settingId: text("setting_id").notNull(), // Setting ID where this scene takes place (references Setting.id, nullable for legacy/ambiguous scenes)
+        sensoryAnchors: jsonb("sensory_anchors").default([]).notNull(), // Key sensory details to include (e.g., "rain on metal roof", "smell of smoke")
+        dialogueVsDescription: text("dialogue_vs_description").notNull(), // Balance guidance (e.g., "60% dialogue, 40% description")
+        suggestedLength: text("suggested_length").notNull(), // 'short' | 'medium' | 'long' (short: 300-500, medium: 500-800, long: 800-1000 words)
 
         // === GENERATED PROSE (Execution Layer) ===
-        content: text().default(""), // Full prose narrative generated from summary
+        content: text().default("").notNull(), // Full prose narrative generated from summary
 
         // === VISUAL ===
         imageUrl: text("image_url"),
@@ -503,7 +503,7 @@ export const scenes = pgTable(
         unpublishedAt: timestamp("unpublished_at", { mode: "string" }),
         unpublishedBy: text("unpublished_by"),
         scheduledFor: timestamp("scheduled_for", { mode: "string" }),
-        autoPublish: boolean("auto_publish").default(false),
+        autoPublish: boolean("auto_publish").default(false).notNull(),
 
         // === COMIC FORMAT ===
         comicStatus: comicStatus("comic_status").default("none").notNull(),
@@ -514,8 +514,8 @@ export const scenes = pgTable(
         }),
         comicUnpublishedBy: text("comic_unpublished_by"),
         comicGeneratedAt: timestamp("comic_generated_at", { mode: "string" }),
-        comicPanelCount: integer("comic_panel_count").default(0),
-        comicVersion: integer("comic_version").default(1),
+        comicPanelCount: integer("comic_panel_count").default(0).notNull(),
+        comicVersion: integer("comic_version").default(1).notNull(),
 
         // === ANALYTICS ===
         viewCount: integer("view_count").default(0).notNull(),

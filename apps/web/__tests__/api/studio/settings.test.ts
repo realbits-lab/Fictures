@@ -129,78 +129,70 @@ describe("Setting API", () => {
             expect(typeof setting.name).toBe("string");
             expect(setting.name.length).toBeGreaterThan(0);
 
-            // summary can be null or string
-            expect(
-                setting.summary === null || typeof setting.summary === "string",
-            ).toBe(true);
+            // === REQUIRED FIELDS (notNull in schema) ===
+            // summary MUST be a string (notNull)
+            expect(setting.summary).toBeDefined();
+            expect(typeof setting.summary).toBe("string");
+            expect(setting.summary.length).toBeGreaterThan(0);
 
             // === ADVERSITY-TRIUMPH CORE ===
-            // adversityElements can be null or object
-            expect(
-                setting.adversityElements === null ||
-                    typeof setting.adversityElements === "object",
-            ).toBe(true);
+            // adversityElements MUST be an object (notNull)
+            expect(setting.adversityElements).toBeDefined();
+            expect(typeof setting.adversityElements).toBe("object");
+            expect(setting.adversityElements).not.toBeNull();
 
-            // symbolicMeaning can be null or string
-            expect(
-                setting.symbolicMeaning === null ||
-                    typeof setting.symbolicMeaning === "string",
-            ).toBe(true);
+            // symbolicMeaning MUST be a string (notNull)
+            expect(setting.symbolicMeaning).toBeDefined();
+            expect(typeof setting.symbolicMeaning).toBe("string");
+            expect(setting.symbolicMeaning.length).toBeGreaterThan(0);
 
-            // cycleAmplification can be null or object
-            expect(
-                setting.cycleAmplification === null ||
-                    typeof setting.cycleAmplification === "object",
-            ).toBe(true);
+            // cycleAmplification MUST be an object (notNull)
+            expect(setting.cycleAmplification).toBeDefined();
+            expect(typeof setting.cycleAmplification).toBe("object");
+            expect(setting.cycleAmplification).not.toBeNull();
 
             // === EMOTIONAL ATMOSPHERE ===
-            // mood can be null or string
-            expect(
-                setting.mood === null || typeof setting.mood === "string",
-            ).toBe(true);
+            // mood MUST be a string (notNull)
+            expect(setting.mood).toBeDefined();
+            expect(typeof setting.mood).toBe("string");
+            expect(setting.mood.length).toBeGreaterThan(0);
 
-            // emotionalResonance can be null or string
-            expect(
-                setting.emotionalResonance === null ||
-                    typeof setting.emotionalResonance === "string",
-            ).toBe(true);
+            // emotionalResonance MUST be a string (notNull)
+            expect(setting.emotionalResonance).toBeDefined();
+            expect(typeof setting.emotionalResonance).toBe("string");
+            expect(setting.emotionalResonance.length).toBeGreaterThan(0);
 
             // === SENSORY IMMERSION ===
-            // sensory can be null or object
-            expect(
-                setting.sensory === null || typeof setting.sensory === "object",
-            ).toBe(true);
+            // sensory MUST be an object (notNull)
+            expect(setting.sensory).toBeDefined();
+            expect(typeof setting.sensory).toBe("object");
+            expect(setting.sensory).not.toBeNull();
 
-            // architecturalStyle can be null or string
-            expect(
-                setting.architecturalStyle === null ||
-                    typeof setting.architecturalStyle === "string",
-            ).toBe(true);
+            // architecturalStyle MUST be a string (notNull)
+            expect(setting.architecturalStyle).toBeDefined();
+            expect(typeof setting.architecturalStyle).toBe("string");
+            expect(setting.architecturalStyle.length).toBeGreaterThan(0);
 
             // === VISUAL GENERATION ===
-            // imageUrl can be null or string
+            // imageUrl CAN be null or string (nullable)
             expect(
                 setting.imageUrl === null ||
                     typeof setting.imageUrl === "string",
             ).toBe(true);
 
-            // imageVariants can be null or object
+            // imageVariants CAN be null or object (nullable)
             expect(
                 setting.imageVariants === null ||
                     typeof setting.imageVariants === "object",
             ).toBe(true);
 
-            // visualReferences should be an array or null
-            expect(
-                setting.visualReferences === null ||
-                    Array.isArray(setting.visualReferences),
-            ).toBe(true);
+            // visualReferences MUST be an array (notNull)
+            expect(setting.visualReferences).toBeDefined();
+            expect(Array.isArray(setting.visualReferences)).toBe(true);
 
-            // colorPalette should be an array or null
-            expect(
-                setting.colorPalette === null ||
-                    Array.isArray(setting.colorPalette),
-            ).toBe(true);
+            // colorPalette MUST be an array (notNull)
+            expect(setting.colorPalette).toBeDefined();
+            expect(Array.isArray(setting.colorPalette)).toBe(true);
 
             // === METADATA FIELDS ===
             expect(setting.createdAt).toBeDefined();
