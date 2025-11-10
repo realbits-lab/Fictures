@@ -8,9 +8,13 @@
  */
 
 import type {
+    GenerateCharactersRequest,
+    GenerateChaptersRequest,
+    GeneratePartsRequest,
     GenerateSceneSummariesErrorResponse,
     GenerateSceneSummariesRequest,
     GenerateSceneSummariesResponse,
+    GenerateStoryRequest,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
@@ -25,12 +29,7 @@ describe("Scene Summary API", () => {
         console.log("🔧 Setting up test story...");
 
         // 1. Create test story (no auto-generation)
-        const storyRequestBody: {
-            userPrompt: string;
-            language: string;
-            preferredGenre: string;
-            preferredTone: string;
-        } = {
+        const storyRequestBody: GenerateStoryRequest = {
             userPrompt: "A test story for scene summary testing",
             language: "English",
             preferredGenre: "Fantasy",
@@ -61,11 +60,7 @@ describe("Scene Summary API", () => {
 
         // 2. Generate characters
         console.log("🔧 Generating characters...");
-        const charactersRequestBody: {
-            storyId: string;
-            characterCount: number;
-            language: string;
-        } = {
+        const charactersRequestBody: GenerateCharactersRequest = {
             storyId: testStoryId,
             characterCount: 2,
             language: "English",
@@ -96,13 +91,9 @@ describe("Scene Summary API", () => {
 
         // 3. Generate parts
         console.log("🔧 Generating parts for story...");
-        const partsRequestBody: {
-            storyId: string;
-            partCount: number;
-            language: string;
-        } = {
+        const partsRequestBody: GeneratePartsRequest = {
             storyId: testStoryId,
-            partCount: 1,
+            partsCount: 1,
             language: "English",
         };
 
@@ -130,11 +121,7 @@ describe("Scene Summary API", () => {
 
         // 4. Generate chapters
         console.log("🔧 Generating chapters...");
-        const chaptersRequestBody: {
-            storyId: string;
-            chaptersPerPart: number;
-            language: string;
-        } = {
+        const chaptersRequestBody: GenerateChaptersRequest = {
             storyId: testStoryId,
             chaptersPerPart: 1,
             language: "English",

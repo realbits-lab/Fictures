@@ -12,6 +12,8 @@
  */
 
 import type {
+    GenerateCharactersRequest,
+    GenerateCharactersResponse,
     GenerateChaptersErrorResponse,
     GenerateChaptersRequest,
     GenerateChaptersResponse,
@@ -63,6 +65,12 @@ describe("Chapters API", () => {
 
         // 5. Generate characters (required for parts generation)
         console.log("🔧 Generating characters...");
+        const charactersRequestBody: GenerateCharactersRequest = {
+            storyId: testStoryId,
+            characterCount: 2,
+            language: "English",
+        };
+
         const charactersResponse: Response = await fetch(
             "http://localhost:3000/studio/api/characters",
             {
@@ -71,18 +79,12 @@ describe("Chapters API", () => {
                     "Content-Type": "application/json",
                     "x-api-key": apiKey,
                 },
-                body: JSON.stringify({
-                    storyId: testStoryId,
-                    characterCount: 2,
-                    language: "English",
-                }),
+                body: JSON.stringify(charactersRequestBody),
             },
         );
 
-        const charactersData: {
-            success: boolean;
-            characters: Array<{ id: string }>;
-        } = await charactersResponse.json();
+        const charactersData: GenerateCharactersResponse =
+            await charactersResponse.json();
 
         if (!charactersResponse.ok) {
             console.error("❌ Failed to generate characters:", charactersData);

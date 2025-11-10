@@ -126,25 +126,39 @@ All types follow a consistent "Generate" verb pattern across all layers:
 ┌─────────────────────────────────────────────────────────┐
 │ API Layer (route.ts)                                    │
 ├─────────────────────────────────────────────────────────┤
-│ GenerateStoryRequest          (HTTP request body)       │
+│ Request Body (inline object)                            │
+│   ↓ extracted to requestBody const variable             │
+│   ↓ with explicit type annotation                       │
 │   ↓ destructured to                                     │
 │ GenerateStoryParams           (generator input)         │
 │   ↓ passed to generateStory()                           │
 ├─────────────────────────────────────────────────────────┤
 │ Generator Layer (story-generator.ts)                    │
 ├─────────────────────────────────────────────────────────┤
+│ promptParams const variable   (prompt input)            │
+│   ↓ with StoryPromptParams type (inline annotation)     │
+│   ↓ passed to promptManager.getPrompt()                 │
+│                                                          │
+│ generateStructured()          (AI call)                 │
+│   ↓ with GeneratedStorySchema (Zod validation)          │
+│   ↓ returns                                             │
+│ GeneratedStoryData            (validated AI output)     │
+│   ↓ used in                                             │
+├─────────────────────────────────────────────────────────┤
+│ Generator Result                                        │
+├─────────────────────────────────────────────────────────┤
 │ GenerateStoryResult           (generator output)        │
 │   ├─ story: GeneratedStoryData                          │
 │   └─ metadata: GeneratorMetadata                        │
-│   ↓ used to construct                                   │
+│   ↓ returned to API layer                               │
 ├─────────────────────────────────────────────────────────┤
 │ API Layer (route.ts)                                    │
 ├─────────────────────────────────────────────────────────┤
-│ GenerateStoryResponse         (HTTP success response)   │
-│   ├─ story: SavedStory (with id, authorId, etc.)        │
+│ Response (constructed from GenerateStoryResult)         │
+│   ├─ story data saved to database (with id, etc.)       │
 │   └─ metadata: GeneratorMetadata                        │
 │                                                          │
-│ GenerateStoryErrorResponse    (HTTP error response)     │
+│ Error Response (if generation fails)                    │
 │   ├─ error: string                                      │
 │   └─ details?: string                                   │
 └─────────────────────────────────────────────────────────┘
@@ -152,18 +166,23 @@ All types follow a consistent "Generate" verb pattern across all layers:
 
 **Complete Type List for Story Generation:**
 
-**API Layer** (`src/app/studio/api/stories/route.ts`):
-- `GenerateStoryRequest` - API request body
-- `GenerateStoryResponse` - API success response
-- `GenerateStoryErrorResponse` - API error response
+**API Layer** (`src/app/studio/api/generation/story/route.ts`):
+- Request body uses inline typed const variable (no named type)
+- Response body uses inline object (no named type)
+- Error response uses inline object (no named type)
 
 **Generator Layer** (`src/lib/studio/generators/types.ts`):
 - `GenerateStoryParams` - Generator function parameters
+- `StoryPromptParams` - Prompt template parameters (inline type annotation)
 - `GenerateStoryResult` - Generator function return type
+- `GeneratorMetadata` - Generation timing and model info
 
 **Data Layer** (`src/lib/studio/generators/zod-schemas.generated.ts`):
-- `GeneratedStoryData` - AI-generated story data TypeScript type of generatedStorySchema (partial Story)
-- `generatedStorySchema` - Zod schema for story generation
+- `GeneratedStorySchema` - Zod schema for AI-generated story data
+- `GeneratedStoryData` - TypeScript type (inferred from GeneratedStorySchema)
+
+**JSON Schema Layer** (`src/lib/studio/generators/json-schemas.generated.ts`):
+- `StoryJsonSchema` - JSON Schema for Gemini structured output (generated from GeneratedStorySchema)
 
 **Benefits of Unified Naming:**
 - ✅ **Consistency**: All types use "Generate" verb family
@@ -175,14 +194,26 @@ All types follow a consistent "Generate" verb pattern across all layers:
 **Example Application to Other Generators:**
 
 Characters:
-- `GenerateCharactersRequest`, `GenerateCharactersResponse`
-- `GenerateCharactersParams`, `GenerateCharactersResult`
-- `GeneratedCharacterData`, `generatedCharacterSchema`
+- API: Inline typed const variables (no named Request/Response types)
+- Generator: `GenerateCharactersParams`, `GenerateCharactersResult`, `CharacterPromptParams` (inline)
+- Data: `GeneratedCharacterSchema`, `GeneratedCharacterData`
+- JSON: `CharacterJsonSchema`
 
-Scenes:
-- `GenerateSceneRequest`, `GenerateSceneResponse`
-- `GenerateSceneContentParams`, `GenerateSceneContentResult`
-- `GeneratedSceneData`, `generatedSceneSchema`
+Scene Summaries:
+- API: Inline typed const variables (no named Request/Response types)
+- Generator: `GenerateSceneSummariesParams`, `GenerateSceneSummariesResult`, `SceneSummaryPromptParams` (inline)
+- Data: `GeneratedSceneSummarySchema`, `GeneratedSceneSummaryData`
+- JSON: `SceneSummaryJsonSchema`
+
+Scene Content:
+- API: Inline typed const variables (no named Request/Response types)
+- Generator: `GenerateSceneContentParams`, `GenerateSceneContentResult`
+- Data: Returns plain string (prose), not structured data - no schema needed
+
+Scene Evaluation:
+- API: Inline typed const variables (no named Request/Response types)
+- Generator: `EvaluateSceneParams`, `EvaluateSceneResult`
+- Data: `GeneratedSceneEvaluationSchema`, `GeneratedSceneEvaluationData`
 
 ---
 

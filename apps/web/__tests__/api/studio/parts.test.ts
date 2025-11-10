@@ -12,9 +12,12 @@
  */
 
 import type {
+    GenerateCharactersRequest,
+    GenerateCharactersResponse,
     GeneratePartsErrorResponse,
     GeneratePartsRequest,
     GeneratePartsResponse,
+    GetPartsResponse,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
@@ -62,6 +65,12 @@ describe("Parts API", () => {
 
         // 5. Generate characters (required for parts generation)
         console.log("🔧 Generating characters...");
+        const charactersRequestBody: GenerateCharactersRequest = {
+            storyId: testStoryId,
+            characterCount: 2,
+            language: "English",
+        };
+
         const charactersResponse: Response = await fetch(
             "http://localhost:3000/studio/api/characters",
             {
@@ -70,19 +79,13 @@ describe("Parts API", () => {
                     "Content-Type": "application/json",
                     "x-api-key": apiKey,
                 },
-                body: JSON.stringify({
-                    storyId: testStoryId,
-                    characterCount: 2,
-                    language: "English",
-                }),
+                body: JSON.stringify(charactersRequestBody),
             },
         );
 
         // 6. Validate characters response
-        const charactersData: {
-            success: boolean;
-            characters: Array<{ id: string }>;
-        } = await charactersResponse.json();
+        const charactersData: GenerateCharactersResponse =
+            await charactersResponse.json();
         if (!charactersResponse.ok) {
             console.error("❌ Failed to generate characters:", charactersData);
             throw new Error("Test setup failed: could not generate characters");
@@ -228,13 +231,7 @@ describe("Parts API", () => {
             );
 
             // 2. Parse response data
-            const data: {
-                parts: Array<{
-                    id: string;
-                    storyId: string;
-                    story: { id: string };
-                }>;
-            } = await response.json();
+            const data: GetPartsResponse = await response.json();
 
             // 3. Verify response status
             expect(response.status).toBe(200);
