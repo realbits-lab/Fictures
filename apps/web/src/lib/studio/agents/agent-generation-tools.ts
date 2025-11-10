@@ -14,13 +14,18 @@ export const generateStorySummary = tool({
     }),
     execute: async ({ storyId, userPrompt }) => {
         // Call existing generation API
+        const requestBody: {
+            storyId: string;
+            concept: string;
+        } = {
+            storyId,
+            concept: userPrompt,
+        };
+
         const response = await fetch("/studio/api/generation/story", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                storyId,
-                concept: userPrompt,
-            }),
+            body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
@@ -49,10 +54,16 @@ export const generateCharacters = tool({
         storyId: z.string().describe("The story ID"),
     }),
     execute: async ({ storyId }) => {
+        const requestBody: {
+            storyId: string;
+        } = {
+            storyId,
+        };
+
         const response = await fetch("/studio/api/characters", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ storyId }),
+            body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
@@ -79,10 +90,16 @@ export const generateSettings = tool({
         storyId: z.string().describe("The story ID"),
     }),
     execute: async ({ storyId }) => {
+        const requestBody: {
+            storyId: string;
+        } = {
+            storyId,
+        };
+
         const response = await fetch("/studio/api/settings", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ storyId }),
+            body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
@@ -108,10 +125,16 @@ export const generateParts = tool({
         storyId: z.string().describe("The story ID"),
     }),
     execute: async ({ storyId }) => {
+        const requestBody: {
+            storyId: string;
+        } = {
+            storyId,
+        };
+
         const response = await fetch("/studio/api/parts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ storyId }),
+            body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
@@ -141,10 +164,18 @@ export const generateChapters = tool({
             .describe("Optional: generate chapters for specific part"),
     }),
     execute: async ({ storyId, partId }) => {
+        const requestBody: {
+            storyId: string;
+            partId?: string;
+        } = {
+            storyId,
+            partId,
+        };
+
         const response = await fetch("/studio/api/chapters", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ storyId, partId }),
+            body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
@@ -174,10 +205,18 @@ export const generateSceneSummaries = tool({
             .describe("Optional: generate scenes for specific chapter"),
     }),
     execute: async ({ storyId, chapterId }) => {
+        const requestBody: {
+            storyId: string;
+            chapterId?: string;
+        } = {
+            storyId,
+            chapterId,
+        };
+
         const response = await fetch("/studio/api/scene-summaries", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ storyId, chapterId }),
+            body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
@@ -203,10 +242,16 @@ export const generateSceneContent = tool({
         sceneId: z.string().describe("The scene ID to generate content for"),
     }),
     execute: async ({ sceneId }) => {
+        const requestBody: {
+            sceneId: string;
+        } = {
+            sceneId,
+        };
+
         const response = await fetch("/studio/api/scene-content", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ sceneId }),
+            body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
@@ -234,12 +279,18 @@ export const evaluateScene = tool({
         sceneId: z.string().describe("The scene ID to evaluate"),
     }),
     execute: async ({ sceneId }) => {
+        const requestBody: {
+            sceneId: string;
+        } = {
+            sceneId,
+        };
+
         const response = await fetch(
             "/studio/api/generation/scene-evaluation",
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ sceneId }),
+                body: JSON.stringify(requestBody),
             },
         );
 
@@ -279,14 +330,20 @@ export const generateImages = tool({
             ),
     }),
     execute: async ({ storyId, imageType, entityId }) => {
+        const requestBody: {
+            storyId: string;
+            imageType: "story" | "character" | "setting" | "scene";
+            entityId?: string;
+        } = {
+            storyId,
+            imageType,
+            entityId,
+        };
+
         const response = await fetch("/studio/api/generation/images", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                storyId,
-                imageType,
-                entityId,
-            }),
+            body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
