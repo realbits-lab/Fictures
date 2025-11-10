@@ -15,6 +15,10 @@ import {
     uuid,
     varchar,
 } from "drizzle-orm/pg-core";
+import {
+    CHAPTER_ARC_POSITIONS,
+    CHARACTER_ARC_POSITIONS,
+} from "@/lib/constants/arc-positions";
 import { CORE_TRAITS } from "@/lib/constants/core-traits";
 import { STORY_GENRES } from "@/lib/constants/genres";
 import { STORY_TONES } from "@/lib/constants/tones";
@@ -33,12 +37,14 @@ export const tone = pgEnum(
     "tone",
     STORY_TONES as unknown as [string, ...string[]],
 );
-export const arcPosition = pgEnum("arc_position", [
-    "beginning",
-    "middle",
-    "climax",
-    "resolution",
-]);
+export const arcPosition = pgEnum(
+    "arc_position",
+    CHAPTER_ARC_POSITIONS as unknown as [string, ...string[]],
+);
+export const characterArcPosition = pgEnum(
+    "character_arc_position",
+    CHARACTER_ARC_POSITIONS as unknown as [string, ...string[]],
+);
 export const comicStatus = pgEnum("comic_status", [
     "none",
     "draft",

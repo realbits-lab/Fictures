@@ -7,6 +7,10 @@
 
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
+import {
+    CHAPTER_ARC_POSITIONS,
+    CHARACTER_ARC_POSITIONS,
+} from "@/lib/constants/arc-positions";
 import { CORE_TRAITS } from "@/lib/constants/core-traits";
 import { STORY_GENRES } from "@/lib/constants/genres";
 import { STORY_TONES } from "@/lib/constants/tones";
@@ -423,17 +427,53 @@ export type GeneratedSettingData = z.infer<typeof GeneratedSettingSchema>;
  * Nested schema for character arcs within a part
  */
 const characterArcSchema = z.object({
-    characterId: z.string(),
-    macroAdversity: z.object({
-        internal: z.string(),
-        external: z.string(),
-    }),
-    macroVirtue: z.string(),
-    macroConsequence: z.string(),
-    macroNewAdversity: z.string(),
-    estimatedChapters: z.number(),
-    arcPosition: z.enum(["primary", "secondary"]),
-    progressionStrategy: z.string(),
+    characterId: z
+        .string()
+        .describe("Unique identifier for the character in this arc"),
+    macroAdversity: z
+        .object({
+            internal: z
+                .string()
+                .describe(
+                    "Internal conflict or psychological challenge the character faces",
+                ),
+            external: z
+                .string()
+                .describe(
+                    "External obstacles or adversity the character must overcome",
+                ),
+        })
+        .describe(
+            "Dual adversity structure combining internal and external challenges",
+        ),
+    macroVirtue: z
+        .string()
+        .describe(
+            "The core virtue or moral strength displayed to overcome adversity",
+        ),
+    macroConsequence: z
+        .string()
+        .describe(
+            "The outcome or impact of demonstrating virtue in facing adversity",
+        ),
+    macroNewAdversity: z
+        .string()
+        .describe(
+            "New challenges or complications that arise from the consequences",
+        ),
+    estimatedChapters: z
+        .number()
+        .describe("Expected number of chapters to develop this character arc"),
+    arcPosition: z
+        .enum(CHARACTER_ARC_POSITIONS)
+        .describe(
+            "Priority level of this character arc - primary (main focus) or secondary (supporting)",
+        ),
+    progressionStrategy: z
+        .string()
+        .describe(
+            "Plan for how the character's development will unfold across chapters",
+        ),
 });
 
 /**
@@ -464,9 +504,22 @@ export type InsertPart = z.infer<typeof insertPartSchema>;
  * Fields must match insertPartSchema but without database-specific fields
  */
 export const GeneratedPartSchema = z.object({
-    title: z.string().max(255),
-    summary: z.string().nullable(),
-    characterArcs: z.array(characterArcSchema).nullable(),
+    title: z
+        .string()
+        .max(255)
+        .describe(
+            "Part title - should reflect the major story arc or theme of this section",
+        ),
+    summary: z
+        .string()
+        .describe(
+            "2-3 sentence overview of this part's narrative arc and character development",
+        ),
+    characterArcs: z
+        .array(characterArcSchema)
+        .describe(
+            "Collection of character development arcs that unfold during this part",
+        ),
 });
 
 /**
@@ -501,7 +554,9 @@ const seedResolvedSchema = z.object({
  * Zod schema for inserting a new chapter
  */
 export const insertChapterSchema = createInsertSchema(chapters, {
-    arcPosition: z.enum(["beginning", "middle", "climax", "resolution"]),
+    arcPosition: z.enum(
+        CHAPTER_ARC_POSITIONS as unknown as [string, ...string[]],
+    ),
     focusCharacters: z.array(z.string()),
     adversityType: z.enum(["internal", "external", "both"]),
     virtueType: z.enum(CORE_TRAITS),
@@ -530,19 +585,58 @@ export type InsertChapter = z.infer<typeof insertChapterSchema>;
  * Fields must match insertChapterSchema but without database-specific fields
  */
 export const GeneratedChapterSchema = z.object({
-    title: z.string().max(255),
-    summary: z.string().nullable(),
+    title: z
+        .string()
+        .max(255)
+        .describe("Chapter title - engaging and descriptive"),
+    summary: z
+        .string()
+        .describe(
+            "2-3 sentence overview of the chapter's events and character development",
+        ),
     arcPosition: z
-        .enum(["beginning", "middle", "climax", "resolution"])
-        .nullable(),
-    contributesToMacroArc: z.string().nullable(),
-    focusCharacters: z.array(z.string()).nullable(),
-    adversityType: z.enum(["internal", "external", "both"]).nullable(),
-    virtueType: z.enum(CORE_TRAITS).nullable(),
-    seedsPlanted: z.array(seedPlantedSchema).nullable(),
-    seedsResolved: z.array(seedResolvedSchema).nullable(),
-    connectsToPreviousChapter: z.string().nullable(),
-    createsNextAdversity: z.string().nullable(),
+        .enum(CHAPTER_ARC_POSITIONS as unknown as [string, ...string[]])
+        .describe(
+            "Position in the macro story arc - must be one of: beginning, middle, climax, resolution",
+        ),
+    contributesToMacroArc: z
+        .string()
+        .describe(
+            "How this chapter advances the overall story arc and character development",
+        ),
+    focusCharacters: z
+        .array(z.string())
+        .describe(
+            "Array of character IDs who are the primary focus of this chapter",
+        ),
+    adversityType: z
+        .enum(["internal", "external", "both"])
+        .describe(
+            "Type of adversity faced - internal (psychological), external (physical/social), or both",
+        ),
+    virtueType: z
+        .enum(CORE_TRAITS)
+        .describe(
+            "Core virtue demonstrated in this chapter - must be one of: courage, compassion, integrity, loyalty, wisdom, sacrifice",
+        ),
+    seedsPlanted: z
+        .array(seedPlantedSchema)
+        .describe(
+            "Narrative elements introduced in this chapter for future payoff",
+        ),
+    seedsResolved: z
+        .array(seedResolvedSchema)
+        .describe("Previously planted seeds that are resolved in this chapter"),
+    connectsToPreviousChapter: z
+        .string()
+        .describe(
+            "How this chapter connects to and builds on the previous one",
+        ),
+    createsNextAdversity: z
+        .string()
+        .describe(
+            "New adversity or complication introduced for the next chapter",
+        ),
 });
 
 /**

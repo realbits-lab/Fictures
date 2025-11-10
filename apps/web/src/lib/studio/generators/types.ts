@@ -48,6 +48,7 @@
  */
 
 import type { z } from "zod";
+import type { ChapterArcPosition } from "@/lib/constants/arc-positions";
 import type {
     Chapter,
     Character,
@@ -148,8 +149,9 @@ export type VirtueType =
 
 /**
  * Chapter arc position in story structure
+ * Re-exported from constants for backward compatibility
  */
-export type ArcPosition = "beginning" | "middle" | "climax" | "resolution";
+export type ArcPosition = ChapterArcPosition;
 
 /**
  * Adversity-Triumph cycle phases for scene structure
