@@ -51,6 +51,11 @@ import type { z } from "zod";
 import type {
     Chapter,
     Character,
+    GeneratedChapterData,
+    GeneratedCharacterData,
+    GeneratedPartData,
+    GeneratedSceneData,
+    GeneratedSettingData,
     GeneratedStoryData,
     Part,
     Scene,
@@ -206,7 +211,7 @@ export interface GenerateCharactersParams {
 }
 
 export interface GenerateCharactersResult {
-    characters: Character[];
+    characters: GeneratedCharacterData[];
     metadata: ArrayGeneratorMetadata;
 }
 
@@ -221,7 +226,7 @@ export interface GenerateSettingsParams {
 }
 
 export interface GenerateSettingsResult {
-    settings: Setting[];
+    settings: GeneratedSettingData[];
     metadata: ArrayGeneratorMetadata;
 }
 
@@ -237,7 +242,7 @@ export interface GeneratePartsParams {
 }
 
 export interface GeneratePartsResult {
-    parts: Part[];
+    parts: GeneratedPartData[];
     metadata: ArrayGeneratorMetadata;
 }
 
@@ -255,7 +260,7 @@ export interface GenerateChaptersParams {
 }
 
 export interface GenerateChaptersResult {
-    chapters: Chapter[];
+    chapters: GeneratedChapterData[];
     metadata: ArrayGeneratorMetadata;
 }
 
@@ -271,7 +276,7 @@ export interface GenerateSceneSummariesParams {
 }
 
 export interface GenerateSceneSummariesResult {
-    scenes: Scene[];
+    scenes: GeneratedSceneData[];
     metadata: ArrayGeneratorMetadata;
 }
 

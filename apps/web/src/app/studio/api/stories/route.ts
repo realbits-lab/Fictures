@@ -220,7 +220,7 @@ export async function POST(request: NextRequest) {
             preferredTone,
         };
 
-        const generationResult: Awaited<ReturnType<typeof generateStory>> =
+        const generationResult: GenerateStoryResult =
             await generateStory(generateParams);
 
         console.log("[STORIES API] ✅ Story generation completed:", {

@@ -212,7 +212,7 @@ export async function POST(request: NextRequest) {
             partsCount: validatedData.partsCount,
         };
 
-        const generationResult: Awaited<ReturnType<typeof generateParts>> =
+        const generationResult: GeneratePartsResult =
             await generateParts(generateParams);
 
         console.log("[PARTS API] ✅ Parts generation completed:", {

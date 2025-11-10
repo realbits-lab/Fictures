@@ -11,7 +11,10 @@
 import { textGenerationClient } from "./ai-client";
 import { promptManager } from "./prompt-manager";
 import type { GeneratePartsParams, GeneratePartsResult } from "./types";
-import { insertPartSchema, type Part } from "./zod-schemas.generated";
+import {
+    type GeneratedPartData,
+    GeneratedPartSchema,
+} from "./zod-schemas.generated";
 
 /**
  * Generate story parts (acts)
@@ -28,7 +31,7 @@ export async function generateParts(
     const { story, characters, partsCount, onProgress }: GeneratePartsParams =
         params;
 
-    const parts: Part[] = [];
+    const parts: GeneratedPartData[] = [];
 
     // 2. Generate each part in sequence
     for (let i = 0; i < partsCount; i++) {
@@ -51,22 +54,29 @@ export async function generateParts(
         );
 
         // 5. Get the prompt template for part generation
+        const promptParams: {
+            partNumber: string;
+            storyTitle: string;
+            storyGenre: string;
+            storySummary: string;
+            moralFramework: string;
+            characters: string;
+        } = {
+            partNumber: String(i + 1),
+            storyTitle: story.title,
+            storyGenre: story.genre ?? "General Fiction",
+            storySummary: story.summary ?? "A story of adversity and triumph",
+            moralFramework: story.moralFramework ?? "Universal human virtues",
+            characters: charactersStr,
+        };
+
         const {
             system: systemPrompt,
             user: userPromptText,
         }: { system: string; user: string } = promptManager.getPrompt(
             textGenerationClient.getProviderType(),
             "part",
-            {
-                partNumber: String(i + 1),
-                storyTitle: story.title,
-                storyGenre: story.genre ?? "General Fiction",
-                storySummary:
-                    story.summary ?? "A story of adversity and triumph",
-                moralFramework:
-                    story.moralFramework ?? "Universal human virtues",
-                characters: charactersStr,
-            },
+            promptParams,
         );
 
         console.log(
@@ -74,15 +84,16 @@ export async function generateParts(
         );
 
         // 6. Generate part using structured output
-        const partData: Part = await textGenerationClient.generateStructured(
-            userPromptText,
-            insertPartSchema,
-            {
-                systemPrompt,
-                temperature: 0.85,
-                maxTokens: 8192,
-            },
-        );
+        const partData: GeneratedPartData =
+            await textGenerationClient.generateStructured(
+                userPromptText,
+                GeneratedPartSchema,
+                {
+                    systemPrompt,
+                    temperature: 0.85,
+                    maxTokens: 8192,
+                },
+            );
 
         parts.push(partData);
 

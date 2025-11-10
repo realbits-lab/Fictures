@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
             chaptersPerPart: validatedData.chaptersPerPart,
         };
 
-        const generationResult: Awaited<ReturnType<typeof generateChapters>> =
+        const generationResult: GenerateChaptersResult =
             await generateChapters(generateParams);
 
         console.log("[CHAPTERS API] ✅ Chapters generation completed:", {

@@ -11,7 +11,10 @@
 import { textGenerationClient } from "./ai-client";
 import { promptManager } from "./prompt-manager";
 import type { GenerateSettingsParams, GenerateSettingsResult } from "./types";
-import { type GeneratedSettingData, generatedSettingSchema } from "./zod-schemas.generated";
+import {
+    type GeneratedSettingData,
+    GeneratedSettingSchema,
+} from "./zod-schemas.generated";
 
 /**
  * Generate story settings
@@ -41,22 +44,29 @@ export async function generateSettings(
         }
 
         // 4. Get the prompt template for setting generation
+        const promptParams: {
+            settingNumber: string;
+            settingCount: string;
+            storyTitle: string;
+            storyGenre: string;
+            storySummary: string;
+            moralFramework: string;
+        } = {
+            settingNumber: String(i + 1),
+            settingCount: String(settingCount),
+            storyTitle: story.title,
+            storyGenre: story.genre ?? "General Fiction",
+            storySummary: story.summary ?? "A story of adversity and triumph",
+            moralFramework: story.moralFramework ?? "Universal human virtues",
+        };
+
         const {
             system: systemPrompt,
             user: userPromptText,
         }: { system: string; user: string } = promptManager.getPrompt(
             textGenerationClient.getProviderType(),
             "setting",
-            {
-                settingNumber: String(i + 1),
-                settingCount: String(settingCount),
-                storyTitle: story.title,
-                storyGenre: story.genre ?? "General Fiction",
-                storySummary:
-                    story.summary ?? "A story of adversity and triumph",
-                moralFramework:
-                    story.moralFramework ?? "Universal human virtues",
-            },
+            promptParams,
         );
 
         console.log(
@@ -67,7 +77,7 @@ export async function generateSettings(
         const settingData: GeneratedSettingData =
             await textGenerationClient.generateStructured(
                 userPromptText,
-                generatedSettingSchema,
+                GeneratedSettingSchema,
                 {
                     systemPrompt,
                     temperature: 0.85,

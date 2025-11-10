@@ -14,7 +14,10 @@ import type {
     GenerateCharactersParams,
     GenerateCharactersResult,
 } from "./types";
-import { type GeneratedCharacterData, GeneratedCharacterSchema } from "./zod-schemas.generated";
+import {
+    type GeneratedCharacterData,
+    GeneratedCharacterSchema,
+} from "./zod-schemas.generated";
 
 /**
  * Generate character profiles for a story
@@ -54,24 +57,33 @@ export async function generateCharacters(
         console.log(`[characters-generator] Character type: ${characterType}`);
 
         // 5. Get the prompt template for character generation
+        const promptParams: {
+            characterNumber: string;
+            characterCount: string;
+            storyTitle: string;
+            storyGenre: string;
+            storySummary: string;
+            moralFramework: string;
+            characterType: string;
+            language: string;
+        } = {
+            characterNumber: String(i + 1),
+            characterCount: String(characterCount),
+            storyTitle: story.title,
+            storyGenre: story.genre ?? "General Fiction",
+            storySummary: story.summary ?? "A story of adversity and triumph",
+            moralFramework: story.moralFramework ?? "Universal human virtues",
+            characterType,
+            language,
+        };
+
         const {
             system: systemPrompt,
             user: userPromptText,
         }: { system: string; user: string } = promptManager.getPrompt(
             textGenerationClient.getProviderType(),
             "character",
-            {
-                characterNumber: String(i + 1),
-                characterCount: String(characterCount),
-                storyTitle: story.title,
-                storyGenre: story.genre ?? "General Fiction",
-                storySummary:
-                    story.summary ?? "A story of adversity and triumph",
-                moralFramework:
-                    story.moralFramework ?? "Universal human virtues",
-                characterType,
-                language,
-            },
+            promptParams,
         );
 
         console.log(

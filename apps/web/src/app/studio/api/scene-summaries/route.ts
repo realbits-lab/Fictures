@@ -251,9 +251,8 @@ export async function POST(request: NextRequest) {
             scenesPerChapter: validatedData.scenesPerChapter ?? 3,
         };
 
-        const generationResult: Awaited<
-            ReturnType<typeof generateSceneSummaries>
-        > = await generateSceneSummaries(generateParams);
+        const generationResult: GenerateSceneSummariesResult =
+            await generateSceneSummaries(generateParams);
 
         console.log(
             "[SCENE SUMMARIES API] ✅ Scene summaries generation completed:",

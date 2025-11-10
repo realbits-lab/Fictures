@@ -36,18 +36,25 @@ export async function generateStory(
     }: GenerateStoryParams = params;
 
     // 2. Get the prompt template for story generation
+    const promptParams: {
+        userPrompt: string;
+        genre: string;
+        tone: string;
+        language: string;
+    } = {
+        userPrompt,
+        genre: preferredGenre,
+        tone: preferredTone,
+        language,
+    };
+
     const {
         system: systemPrompt,
         user: userPromptText,
     }: { system: string; user: string } = promptManager.getPrompt(
         textGenerationClient.getProviderType(),
         "story",
-        {
-            userPrompt,
-            genre: preferredGenre,
-            tone: preferredTone,
-            language,
-        },
+        promptParams,
     );
 
     console.log(

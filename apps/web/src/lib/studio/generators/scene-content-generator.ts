@@ -11,8 +11,8 @@
 import { textGenerationClient } from "./ai-client";
 import { promptManager } from "./prompt-manager";
 import type {
-	GenerateSceneContentParams,
-	GenerateSceneContentResult,
+    GenerateSceneContentParams,
+    GenerateSceneContentResult,
 } from "./types";
 
 /**
@@ -22,69 +22,81 @@ import type {
  * @returns Scene content (caller responsible for database save)
  */
 export async function generateSceneContent(
-	params: GenerateSceneContentParams,
+    params: GenerateSceneContentParams,
 ): Promise<GenerateSceneContentResult> {
-	const startTime = Date.now();
-	const { scene, characters, settings, language = "English" } = params;
+    const startTime = Date.now();
+    const { scene, characters, settings, language = "English" } = params;
 
-	// Find the setting and character for this scene
-	const setting = settings.find((s) => s.id === scene.settingId);
-	const character = characters.find((c) =>
-		scene.characterFocus?.includes(c.id),
-	);
+    // Find the setting and character for this scene
+    const setting = settings.find((s) => s.id === scene.settingId);
+    const character = characters.find((c) =>
+        scene.characterFocus?.includes(c.id),
+    );
 
-	// Get the prompt template for scene content generation
-	const {
-		system: systemPrompt,
-		user: userPromptText,
-	}: { system: string; user: string } = promptManager.getPrompt(
-		textGenerationClient.getProviderType(),
-		"scene_content",
-		{
-			sceneSummary: scene.summary,
-			cyclePhase: scene.cyclePhase,
-			emotionalBeat: scene.emotionalBeat || "neutral",
-			suggestedLength: scene.suggestedLength || "medium",
-			settingDescription: setting
-				? `${setting.name} - ${setting.description}`
-				: "Generic setting",
-			sensoryAnchors: scene.sensoryAnchors
-				? scene.sensoryAnchors.join(", ")
-				: "Use setting-appropriate details",
-			characterName: character ? character.name : "Unknown character",
-			voiceStyle: character
-				? `${character.voiceStyle.tone}, ${character.voiceStyle.vocabulary}`
-				: "Neutral",
-			language,
-		},
-	);
+    // Get the prompt template for scene content generation
+    const promptParams: {
+        sceneSummary: string | null;
+        cyclePhase: string | null;
+        emotionalBeat: string;
+        suggestedLength: string;
+        settingDescription: string;
+        sensoryAnchors: string;
+        characterName: string;
+        voiceStyle: string;
+        language: string;
+    } = {
+        sceneSummary: scene.summary,
+        cyclePhase: scene.cyclePhase,
+        emotionalBeat: scene.emotionalBeat || "neutral",
+        suggestedLength: scene.suggestedLength || "medium",
+        settingDescription: setting
+            ? `${setting.name} - ${setting.description}`
+            : "Generic setting",
+        sensoryAnchors: scene.sensoryAnchors
+            ? scene.sensoryAnchors.join(", ")
+            : "Use setting-appropriate details",
+        characterName: character ? character.name : "Unknown character",
+        voiceStyle: character
+            ? `${character.voiceStyle.tone}, ${character.voiceStyle.vocabulary}`
+            : "Neutral",
+        language,
+    };
 
-	console.log(
-		"[scene-content-generator] Generating scene content using text generation",
-	);
+    const {
+        system: systemPrompt,
+        user: userPromptText,
+    }: { system: string; user: string } = promptManager.getPrompt(
+        textGenerationClient.getProviderType(),
+        "scene_content",
+        promptParams,
+    );
 
-	// Generate scene content using direct text generation (no schema)
-	const response = await textGenerationClient.generate(userPromptText, {
-		systemPrompt,
-		temperature: 0.85,
-		maxTokens: 8192,
-	});
+    console.log(
+        "[scene-content-generator] Generating scene content using text generation",
+    );
 
-	const content = response.text.trim();
-	const wordCount = content.split(/\s+/).length;
+    // Generate scene content using direct text generation (no schema)
+    const response = await textGenerationClient.generate(userPromptText, {
+        systemPrompt,
+        temperature: 0.85,
+        maxTokens: 8192,
+    });
 
-	console.log("[scene-content-generator] Generated scene content:", {
-		sceneId: params.sceneId,
-		wordCount,
-		generationTime: Date.now() - startTime,
-	});
+    const content = response.text.trim();
+    const wordCount = content.split(/\s+/).length;
 
-	return {
-		content,
-		wordCount,
-		metadata: {
-			generationTime: Date.now() - startTime,
-			model: response.model,
-		},
-	};
+    console.log("[scene-content-generator] Generated scene content:", {
+        sceneId: params.sceneId,
+        wordCount,
+        generationTime: Date.now() - startTime,
+    });
+
+    return {
+        content,
+        wordCount,
+        metadata: {
+            generationTime: Date.now() - startTime,
+            model: response.model,
+        },
+    };
 }

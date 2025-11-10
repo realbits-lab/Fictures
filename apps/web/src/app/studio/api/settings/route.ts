@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
             settingCount: validatedData.settingCount,
         };
 
-        const generationResult: Awaited<ReturnType<typeof generateSettings>> =
+        const generationResult: GenerateSettingsResult =
             await generateSettings(generateParams);
 
         console.log("[SETTINGS API] ✅ Settings generation completed:", {

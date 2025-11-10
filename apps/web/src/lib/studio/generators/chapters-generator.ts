@@ -11,7 +11,10 @@
 import { textGenerationClient } from "./ai-client";
 import { promptManager } from "./prompt-manager";
 import type { GenerateChaptersParams, GenerateChaptersResult } from "./types";
-import { insertChapterSchema, type Chapter } from "./zod-schemas.generated";
+import {
+    type GeneratedChapterData,
+    GeneratedChapterSchema,
+} from "./zod-schemas.generated";
 
 /**
  * Generate story chapters
@@ -33,7 +36,7 @@ export async function generateChapters(
         onProgress,
     }: GenerateChaptersParams = params;
 
-    const chapters: Chapter[] = [];
+    const chapters: GeneratedChapterData[] = [];
     let chapterIndex: number = 0;
 
     // 2. Generate chapters for each part
@@ -78,33 +81,45 @@ export async function generateChapters(
             );
 
             // 5. Get the prompt template for chapter generation
+            const promptParams: {
+                chapterNumber: string;
+                totalChapters: string;
+                partTitle: string;
+                storyTitle: string;
+                storyGenre: string;
+                storySummary: string;
+                partSummary: string;
+                characterName: string;
+                characterFlaw: string;
+                characterArc: string;
+                previousChapterContext: string;
+            } = {
+                chapterNumber: String(chapterIndex),
+                totalChapters: String(parts.length * chaptersPerPart),
+                partTitle: part.title,
+                storyTitle: story.title,
+                storyGenre: story.genre ?? "General Fiction",
+                storySummary:
+                    story.summary ?? "A story of adversity and triumph",
+                partSummary: part.summary ?? "Part of the story",
+                characterName: focusCharacter.name,
+                characterFlaw: focusCharacter.internalFlaw || "unresolved fear",
+                characterArc:
+                    characterArc?.macroAdversity?.internal || "personal growth",
+                previousChapterContext:
+                    chapters.length > 0
+                        ? (chapters[chapters.length - 1].summary ??
+                          "Previous chapter")
+                        : "None (this is the first chapter)",
+            };
+
             const {
                 system: systemPrompt,
                 user: userPromptText,
             }: { system: string; user: string } = promptManager.getPrompt(
                 textGenerationClient.getProviderType(),
                 "chapter",
-                {
-                    chapterNumber: String(chapterIndex),
-                    totalChapters: String(parts.length * chaptersPerPart),
-                    partTitle: part.title,
-                    storyTitle: story.title,
-                    storyGenre: story.genre ?? "General Fiction",
-                    storySummary:
-                        story.summary ?? "A story of adversity and triumph",
-                    partSummary: part.summary ?? "Part of the story",
-                    characterName: focusCharacter.name,
-                    characterFlaw:
-                        focusCharacter.internalFlaw || "unresolved fear",
-                    characterArc:
-                        characterArc?.macroAdversity?.internal ||
-                        "personal growth",
-                    previousChapterContext:
-                        chapters.length > 0
-                            ? (chapters[chapters.length - 1].summary ??
-                              "Previous chapter")
-                            : "None (this is the first chapter)",
-                },
+                promptParams,
             );
 
             console.log(
@@ -112,10 +127,10 @@ export async function generateChapters(
             );
 
             // 6. Generate chapter using structured output
-            const chapterData: Chapter =
+            const chapterData: GeneratedChapterData =
                 await textGenerationClient.generateStructured(
                     userPromptText,
-                    insertChapterSchema,
+                    GeneratedChapterSchema,
                     {
                         systemPrompt,
                         temperature: 0.85,
@@ -123,17 +138,12 @@ export async function generateChapters(
                     },
                 );
 
-            // 7. Explicitly set partId from the actual part being processed
-            // (AI might generate incorrect partId like "part-1" instead of actual DB ID)
-            chapterData.partId = part.id;
-
             chapters.push(chapterData);
 
             console.log(
                 `[chapters-generator] ✅ Generated chapter ${chapterIndex}/${parts.length * chaptersPerPart}:`,
                 {
                     title: chapterData.title,
-                    partId: chapterData.partId,
                     summary: chapterData.summary?.substring(0, 50) || "N/A",
                 },
             );

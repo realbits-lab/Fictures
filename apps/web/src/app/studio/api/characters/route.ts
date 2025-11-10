@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
             language: validatedData.language,
         };
 
-        const generationResult: Awaited<ReturnType<typeof generateCharacters>> =
+        const generationResult: GenerateCharactersResult =
             await generateCharacters(generateParams);
 
         console.log("[CHARACTERS API] ✅ Characters generation completed:", {
