@@ -144,81 +144,64 @@ describe("Character Generation API", () => {
             expect(character.isMain).toBeDefined();
             expect(typeof character.isMain).toBe("boolean");
 
-            // summary can be null or string
-            expect(
-                character.summary === null ||
-                    typeof character.summary === "string",
-            ).toBe(true);
+            // summary is required (.notNull())
+            expect(character.summary).toBeDefined();
+            expect(typeof character.summary).toBe("string");
+            expect(character.summary.length).toBeGreaterThan(0);
 
             // === ADVERSITY-TRIUMPH CORE FIELDS ===
-            // coreTrait can be null or string
-            expect(
-                character.coreTrait === null ||
-                    typeof character.coreTrait === "string",
-            ).toBe(true);
+            // coreTrait is required (.notNull())
+            expect(character.coreTrait).toBeDefined();
+            expect(typeof character.coreTrait).toBe("string");
+            expect(character.coreTrait.length).toBeGreaterThan(0);
 
-            // internalFlaw can be null or string
-            expect(
-                character.internalFlaw === null ||
-                    typeof character.internalFlaw === "string",
-            ).toBe(true);
+            // internalFlaw is required (.notNull())
+            expect(character.internalFlaw).toBeDefined();
+            expect(typeof character.internalFlaw).toBe("string");
+            expect(character.internalFlaw.length).toBeGreaterThan(0);
 
-            // externalGoal can be null or string
-            expect(
-                character.externalGoal === null ||
-                    typeof character.externalGoal === "string",
-            ).toBe(true);
+            // externalGoal is required (.notNull())
+            expect(character.externalGoal).toBeDefined();
+            expect(typeof character.externalGoal).toBe("string");
+            expect(character.externalGoal.length).toBeGreaterThan(0);
 
             // === CHARACTER DEPTH FIELDS ===
-            // personality can be null or object
-            expect(
-                character.personality === null ||
-                    typeof character.personality === "object",
-            ).toBe(true);
+            // personality is required (.notNull())
+            expect(character.personality).toBeDefined();
+            expect(typeof character.personality).toBe("object");
 
-            // backstory can be null or string
-            expect(
-                character.backstory === null ||
-                    typeof character.backstory === "string",
-            ).toBe(true);
+            // backstory is required (.notNull())
+            expect(character.backstory).toBeDefined();
+            expect(typeof character.backstory).toBe("string");
+            expect(character.backstory.length).toBeGreaterThan(0);
 
             // === RELATIONSHIPS (JEONG SYSTEM) ===
-            // relationships can be null or object
+            // relationships is nullable (only this, imageUrl, imageVariants can be null)
             expect(
                 character.relationships === null ||
                     typeof character.relationships === "object",
             ).toBe(true);
 
             // === PROSE GENERATION FIELDS ===
-            // physicalDescription can be null or object
-            expect(
-                character.physicalDescription === null ||
-                    typeof character.physicalDescription === "object",
-            ).toBe(true);
+            // physicalDescription is required (.notNull())
+            expect(character.physicalDescription).toBeDefined();
+            expect(typeof character.physicalDescription).toBe("object");
 
-            // voiceStyle can be null or object
-            expect(
-                character.voiceStyle === null ||
-                    typeof character.voiceStyle === "object",
-            ).toBe(true);
+            // voiceStyle is required (.notNull())
+            expect(character.voiceStyle).toBeDefined();
+            expect(typeof character.voiceStyle).toBe("object");
 
             // === VISUAL GENERATION FIELDS ===
-            // imageUrl can be null or string
+            // imageUrl is nullable (one of three nullable fields)
             expect(
                 character.imageUrl === null ||
                     typeof character.imageUrl === "string",
             ).toBe(true);
 
-            // imageVariants can be null or object
+            // imageVariants is nullable (one of three nullable fields)
             expect(
                 character.imageVariants === null ||
                     typeof character.imageVariants === "object",
-            ).toBe(true);
-
-            // visualStyle can be null or string
-            expect(
-                character.visualStyle === null ||
-                    typeof character.visualStyle === "string",
             ).toBe(true);
 
             // === METADATA FIELDS ===
@@ -262,7 +245,6 @@ describe("Character Generation API", () => {
             console.log(
                 `     Image Variants: ${char.imageVariants ? "Present" : "N/A"}`,
             );
-            console.log(`     Visual Style: ${char.visualStyle || "N/A"}`);
         }
     }, 60000);
 });

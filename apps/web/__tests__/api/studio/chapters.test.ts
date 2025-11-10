@@ -202,26 +202,27 @@ describe("Chapters API", () => {
                 // === IDENTITY FIELDS ===
                 expect(chapter.id).toMatch(/^chapter_/);
                 expect(chapter.storyId).toBe(testStoryId);
+                // partId is nullable in schema but should be testPartId in this test
                 expect(chapter.partId).toBe(testPartId);
                 expect(chapter.title).toBeDefined();
                 expect(typeof chapter.title).toBe("string");
                 expect(chapter.title.length).toBeGreaterThan(0);
 
                 // === ADVERSITY-TRIUMPH CORE ===
-                // summary can be null or string
+                // summary is nullable
                 expect(
                     chapter.summary === null ||
                         typeof chapter.summary === "string",
                 ).toBe(true);
 
                 // === NESTED CYCLE TRACKING ===
-                // characterId can be null or string
+                // characterId is nullable
                 expect(
                     chapter.characterId === null ||
                         typeof chapter.characterId === "string",
                 ).toBe(true);
 
-                // arcPosition can be null or enum value
+                // arcPosition is nullable
                 expect(
                     chapter.arcPosition === null ||
                         [
@@ -232,20 +233,17 @@ describe("Chapters API", () => {
                         ].includes(chapter.arcPosition),
                 ).toBe(true);
 
-                // contributesToMacroArc can be null or string
+                // contributesToMacroArc is nullable
                 expect(
                     chapter.contributesToMacroArc === null ||
                         typeof chapter.contributesToMacroArc === "string",
                 ).toBe(true);
 
                 // === CYCLE TRACKING ===
-                // focusCharacters can be null or array
-                expect(
-                    chapter.focusCharacters === null ||
-                        Array.isArray(chapter.focusCharacters),
-                ).toBe(true);
+                // focusCharacters has default([]) - should be array, not null
+                expect(Array.isArray(chapter.focusCharacters)).toBe(true);
 
-                // adversityType can be null or enum value
+                // adversityType is nullable
                 expect(
                     chapter.adversityType === null ||
                         ["internal", "external", "both"].includes(
@@ -253,7 +251,7 @@ describe("Chapters API", () => {
                         ),
                 ).toBe(true);
 
-                // virtueType can be null or enum value
+                // virtueType is nullable
                 expect(
                     chapter.virtueType === null ||
                         [
@@ -267,47 +265,39 @@ describe("Chapters API", () => {
                 ).toBe(true);
 
                 // === CAUSAL LINKING ===
-                // seedsPlanted can be null or array
-                expect(
-                    chapter.seedsPlanted === null ||
-                        Array.isArray(chapter.seedsPlanted),
-                ).toBe(true);
+                // seedsPlanted has default([]) - should be array, not null
+                expect(Array.isArray(chapter.seedsPlanted)).toBe(true);
 
-                // seedsResolved can be null or array
-                expect(
-                    chapter.seedsResolved === null ||
-                        Array.isArray(chapter.seedsResolved),
-                ).toBe(true);
+                // seedsResolved has default([]) - should be array, not null
+                expect(Array.isArray(chapter.seedsResolved)).toBe(true);
 
                 // === CONNECTION TO NARRATIVE FLOW ===
-                // connectsToPreviousChapter can be null or string
+                // connectsToPreviousChapter is nullable
                 expect(
                     chapter.connectsToPreviousChapter === null ||
                         typeof chapter.connectsToPreviousChapter === "string",
                 ).toBe(true);
 
-                // createsNextAdversity can be null or string
+                // createsNextAdversity is nullable
                 expect(
                     chapter.createsNextAdversity === null ||
                         typeof chapter.createsNextAdversity === "string",
                 ).toBe(true);
 
                 // === PUBLISHING ===
-                // status should be defined
+                // status has default("writing").notNull() - required field
                 expect(chapter.status).toBeDefined();
-                expect(
-                    ["writing", "published", "archived"].includes(
-                        chapter.status,
-                    ),
-                ).toBe(true);
+                expect(["writing", "published"].includes(chapter.status)).toBe(
+                    true,
+                );
 
-                // publishedAt can be null or string
+                // publishedAt is nullable
                 expect(
                     chapter.publishedAt === null ||
                         typeof chapter.publishedAt === "string",
                 ).toBe(true);
 
-                // scheduledFor can be null or string
+                // scheduledFor is nullable
                 expect(
                     chapter.scheduledFor === null ||
                         typeof chapter.scheduledFor === "string",

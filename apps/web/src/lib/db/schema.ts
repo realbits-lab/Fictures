@@ -152,29 +152,28 @@ export const characters = pgTable(
         id: text().primaryKey().notNull(),
         storyId: text("story_id").notNull(),
         name: varchar({ length: 255 }).notNull(),
-        isMain: boolean("is_main").default(false), // Main characters (2-4) get MACRO arcs
-        summary: text(), // 1-2 sentence essence: "[CoreTrait] [role] [internalFlaw], seeking [externalGoal]"
+        isMain: boolean("is_main").default(false).notNull(), // Main characters (2-4) get MACRO arcs
+        summary: text().notNull(), // 1-2 sentence essence: "[CoreTrait] [role] [internalFlaw], seeking [externalGoal]"
 
         // === ADVERSITY-TRIUMPH CORE (The Engine) ===
-        coreTrait: coreTrait("core_trait"), // THE defining moral virtue: courage | compassion | integrity | loyalty | wisdom | sacrifice
-        internalFlaw: text("internal_flaw"), // MUST include cause: "[fears/believes/wounded by] X because Y"
-        externalGoal: text("external_goal"), // What they THINK will solve their problem (healing flaw actually will)
+        coreTrait: coreTrait("core_trait").notNull(), // THE defining moral virtue: courage | compassion | integrity | loyalty | wisdom | sacrifice
+        internalFlaw: text("internal_flaw").notNull(), // MUST include cause: "[fears/believes/wounded by] X because Y"
+        externalGoal: text("external_goal").notNull(), // What they THINK will solve their problem (healing flaw actually will)
 
         // === CHARACTER DEPTH (For Realistic Portrayal) ===
-        personality: json(), // { traits: string[], values: string[] }
-        backstory: text(), // Focused history providing motivation context (2-4 paragraphs)
+        personality: json().notNull(), // { traits: string[], values: string[] }
+        backstory: text().notNull(), // Focused history providing motivation context (2-4 paragraphs)
 
         // === RELATIONSHIPS (Jeong System) ===
         relationships: json(), // { [characterId]: { type, jeongLevel, sharedHistory, currentDynamic } }
 
         // === PROSE GENERATION ===
-        physicalDescription: json("physical_description"), // { age, appearance, distinctiveFeatures, style }
-        voiceStyle: json("voice_style"), // { tone, vocabulary, quirks, emotionalRange }
+        physicalDescription: json("physical_description").notNull(), // { age, appearance, distinctiveFeatures, style }
+        voiceStyle: json("voice_style").notNull(), // { tone, vocabulary, quirks, emotionalRange }
 
         // === VISUAL GENERATION ===
         imageUrl: text("image_url"), // Original portrait (1024×1024 from DALL-E 3)
         imageVariants: json("image_variants"),
-        visualStyle: text("visual_style"), // "realistic" | "anime" | "painterly" | "cinematic"
 
         // === METADATA ===
         createdAt: timestamp("created_at", { mode: "string" })

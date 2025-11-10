@@ -521,7 +521,6 @@ interface Character {
     }>;
     generatedAt: string;
   } | null;
-  visualStyle: string | null; // "realistic" | "anime" | "painterly" | "cinematic"
 
   // === METADATA ===
   createdAt: Date;
