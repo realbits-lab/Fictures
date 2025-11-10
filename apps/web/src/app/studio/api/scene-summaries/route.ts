@@ -16,7 +16,10 @@ import { db } from "@/lib/db";
 import { chapters, scenes, settings, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateSceneSummaries } from "@/lib/studio/generators/scene-summaries-generator";
-import type { GenerateSceneSummariesParams } from "@/lib/studio/generators/types";
+import type {
+    GenerateSceneSummariesParams,
+    GenerateSceneSummariesResult,
+} from "@/lib/studio/generators/types";
 import {
     type Chapter,
     insertSceneSchema,

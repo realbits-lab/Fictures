@@ -9,7 +9,10 @@ import {
     invalidateStudioCache,
 } from "@/lib/db/studio-queries";
 import { generateStory } from "@/lib/studio/generators/story-generator";
-import type { GenerateStoryParams } from "@/lib/studio/generators/types";
+import type {
+    GenerateStoryParams,
+    GenerateStoryResult,
+} from "@/lib/studio/generators/types";
 import {
     insertStorySchema,
     type Story,

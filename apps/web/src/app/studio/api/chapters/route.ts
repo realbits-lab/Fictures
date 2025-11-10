@@ -15,7 +15,10 @@ import { db } from "@/lib/db";
 import { chapters, characters, parts, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateChapters } from "@/lib/studio/generators/chapters-generator";
-import type { GenerateChaptersParams } from "@/lib/studio/generators/types";
+import type {
+    GenerateChaptersParams,
+    GenerateChaptersResult,
+} from "@/lib/studio/generators/types";
 import {
     type Chapter,
     type Character,

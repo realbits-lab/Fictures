@@ -11,6 +11,7 @@
 import { textGenerationClient } from "./ai-client";
 import { promptManager } from "./prompt-manager";
 import type {
+    CharacterPromptParams,
     GenerateCharactersParams,
     GenerateCharactersResult,
 } from "./types";
@@ -57,16 +58,7 @@ export async function generateCharacters(
         console.log(`[characters-generator] Character type: ${characterType}`);
 
         // 5. Get the prompt template for character generation
-        const promptParams: {
-            characterNumber: string;
-            characterCount: string;
-            storyTitle: string;
-            storyGenre: string;
-            storySummary: string;
-            moralFramework: string;
-            characterType: string;
-            language: string;
-        } = {
+        const promptParams: CharacterPromptParams = {
             characterNumber: String(i + 1),
             characterCount: String(characterCount),
             storyTitle: story.title,

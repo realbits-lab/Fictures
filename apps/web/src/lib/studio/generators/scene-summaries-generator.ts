@@ -14,10 +14,11 @@ import type {
     CyclePhase,
     GenerateSceneSummariesParams,
     GenerateSceneSummariesResult,
+    SceneSummaryPromptParams,
 } from "./types";
 import {
-    type GeneratedSceneData,
-    GeneratedSceneSchema,
+    type GeneratedSceneSummaryData,
+    GeneratedSceneSummarySchema,
 } from "./zod-schemas.generated";
 
 /**
@@ -32,7 +33,7 @@ export async function generateSceneSummaries(
     const startTime = Date.now();
     const { chapters, settings, scenesPerChapter, onProgress } = params;
 
-    const scenes: GeneratedSceneData[] = [];
+    const scenes: GeneratedSceneSummaryData[] = [];
     let sceneIndex = 0;
 
     for (const chapter of chapters) {
@@ -60,14 +61,7 @@ export async function generateSceneSummaries(
                 .join("\n");
 
             // Get the prompt template for scene summary generation
-            const promptParams: {
-                sceneNumber: string;
-                sceneCount: string;
-                chapterTitle: string;
-                chapterSummary: string;
-                cyclePhase: CyclePhase;
-                settings: string;
-            } = {
+            const promptParams: SceneSummaryPromptParams = {
                 sceneNumber: String(i + 1),
                 sceneCount: String(scenesPerChapter),
                 chapterTitle: chapter.title,
@@ -87,10 +81,10 @@ export async function generateSceneSummaries(
             );
 
             // Generate scene summary using structured output
-            const sceneData: GeneratedSceneData =
+            const sceneData: GeneratedSceneSummaryData =
                 await textGenerationClient.generateStructured(
                     userPromptText,
-                    GeneratedSceneSchema,
+                    GeneratedSceneSummarySchema,
                     {
                         systemPrompt,
                         temperature: 0.8,

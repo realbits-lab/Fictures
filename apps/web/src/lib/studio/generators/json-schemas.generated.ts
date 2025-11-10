@@ -9,12 +9,12 @@
 
 import { z } from "zod";
 import {
+    GeneratedChapterSchema,
     GeneratedCharacterSchema,
+    GeneratedPartSchema,
+    GeneratedSceneSummarySchema,
+    GeneratedSettingSchema,
     GeneratedStorySchema,
-    generatedSettingSchema,
-    insertChapterSchema,
-    insertPartSchema,
-    insertSceneSchema,
 } from "./zod-schemas.generated";
 
 /**
@@ -83,9 +83,9 @@ export const CharacterJsonSchema = toGeminiJsonSchema(GeneratedCharacterSchema);
 
 /**
  * JSON Schema for Setting generation (Gemini structured output)
- * Uses generatedSettingSchema to avoid Gemini validation issues with DB-specific fields
+ * Uses GeneratedSettingSchema to avoid Gemini validation issues with DB-specific fields
  */
-export const SettingJsonSchema = toGeminiJsonSchema(generatedSettingSchema);
+export const SettingJsonSchema = toGeminiJsonSchema(GeneratedSettingSchema);
 
 // ============================================================================
 // Part JSON Schema
@@ -93,8 +93,9 @@ export const SettingJsonSchema = toGeminiJsonSchema(generatedSettingSchema);
 
 /**
  * JSON Schema for Part generation (Gemini structured output)
+ * Uses GeneratedPartSchema to avoid Gemini validation issues with DB-specific fields
  */
-export const PartJsonSchema = toGeminiJsonSchema(insertPartSchema);
+export const PartJsonSchema = toGeminiJsonSchema(GeneratedPartSchema);
 
 // ============================================================================
 // Chapter JSON Schema
@@ -102,8 +103,9 @@ export const PartJsonSchema = toGeminiJsonSchema(insertPartSchema);
 
 /**
  * JSON Schema for Chapter generation (Gemini structured output)
+ * Uses GeneratedChapterSchema to avoid Gemini validation issues with DB-specific fields
  */
-export const ChapterJsonSchema = toGeminiJsonSchema(insertChapterSchema);
+export const ChapterJsonSchema = toGeminiJsonSchema(GeneratedChapterSchema);
 
 // ============================================================================
 // Scene JSON Schema
@@ -111,8 +113,11 @@ export const ChapterJsonSchema = toGeminiJsonSchema(insertChapterSchema);
 
 /**
  * JSON Schema for Scene Summary generation (Gemini structured output)
+ * Uses GeneratedSceneSummarySchema to avoid Gemini validation issues with DB-specific fields
  */
-export const SceneSummaryJsonSchema = toGeminiJsonSchema(insertSceneSchema);
+export const SceneSummaryJsonSchema = toGeminiJsonSchema(
+    GeneratedSceneSummarySchema,
+);
 
 // ============================================================================
 // Re-export for convenience

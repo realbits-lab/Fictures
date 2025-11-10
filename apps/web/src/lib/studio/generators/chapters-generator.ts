@@ -10,7 +10,11 @@
 
 import { textGenerationClient } from "./ai-client";
 import { promptManager } from "./prompt-manager";
-import type { GenerateChaptersParams, GenerateChaptersResult } from "./types";
+import type {
+    ChapterPromptParams,
+    GenerateChaptersParams,
+    GenerateChaptersResult,
+} from "./types";
 import {
     type GeneratedChapterData,
     GeneratedChapterSchema,
@@ -81,19 +85,7 @@ export async function generateChapters(
             );
 
             // 5. Get the prompt template for chapter generation
-            const promptParams: {
-                chapterNumber: string;
-                totalChapters: string;
-                partTitle: string;
-                storyTitle: string;
-                storyGenre: string;
-                storySummary: string;
-                partSummary: string;
-                characterName: string;
-                characterFlaw: string;
-                characterArc: string;
-                previousChapterContext: string;
-            } = {
+            const promptParams: ChapterPromptParams = {
                 chapterNumber: String(chapterIndex),
                 totalChapters: String(parts.length * chaptersPerPart),
                 partTitle: part.title,

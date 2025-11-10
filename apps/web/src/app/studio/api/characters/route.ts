@@ -16,7 +16,10 @@ import { db } from "@/lib/db";
 import { characters, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateCharacters } from "@/lib/studio/generators/characters-generator";
-import type { GenerateCharactersParams } from "@/lib/studio/generators/types";
+import type {
+    GenerateCharactersParams,
+    GenerateCharactersResult,
+} from "@/lib/studio/generators/types";
 import {
     type Character,
     insertCharacterSchema,

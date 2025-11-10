@@ -34,17 +34,7 @@ export async function generateSceneContent(
     );
 
     // Get the prompt template for scene content generation
-    const promptParams: {
-        sceneSummary: string | null;
-        cyclePhase: string | null;
-        emotionalBeat: string;
-        suggestedLength: string;
-        settingDescription: string;
-        sensoryAnchors: string;
-        characterName: string;
-        voiceStyle: string;
-        language: string;
-    } = {
+    const promptParams: SceneContentPromptParams = {
         sceneSummary: scene.summary,
         cyclePhase: scene.cyclePhase,
         emotionalBeat: scene.emotionalBeat || "neutral",

@@ -10,7 +10,11 @@
 
 import { textGenerationClient } from "./ai-client";
 import { promptManager } from "./prompt-manager";
-import type { GenerateStoryParams, GenerateStoryResult } from "./types";
+import type {
+    GenerateStoryParams,
+    GenerateStoryResult,
+    StoryPromptParams,
+} from "./types";
 import {
     type GeneratedStoryData,
     GeneratedStorySchema,
@@ -36,12 +40,7 @@ export async function generateStory(
     }: GenerateStoryParams = params;
 
     // 2. Get the prompt template for story generation
-    const promptParams: {
-        userPrompt: string;
-        genre: string;
-        tone: string;
-        language: string;
-    } = {
+    const promptParams: StoryPromptParams = {
         userPrompt,
         genre: preferredGenre,
         tone: preferredTone,

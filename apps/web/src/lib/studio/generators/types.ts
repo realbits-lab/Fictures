@@ -54,7 +54,7 @@ import type {
     GeneratedChapterData,
     GeneratedCharacterData,
     GeneratedPartData,
-    GeneratedSceneData,
+    GeneratedSceneSummaryData,
     GeneratedSettingData,
     GeneratedStoryData,
     Part,
@@ -194,6 +194,13 @@ export interface GenerateStoryParams {
     preferredTone?: string;
 }
 
+export interface StoryPromptParams extends Record<string, string> {
+    userPrompt: string;
+    genre: string;
+    tone: string;
+    language: string;
+}
+
 export interface GenerateStoryResult {
     story: GeneratedStoryData;
     metadata: GeneratorMetadata;
@@ -208,6 +215,17 @@ export interface GenerateCharactersParams {
     characterCount: number;
     language?: string;
     onProgress?: ProgressCallback;
+}
+
+export interface CharacterPromptParams extends Record<string, string> {
+    characterNumber: string;
+    characterCount: string;
+    storyTitle: string;
+    storyGenre: string;
+    storySummary: string;
+    moralFramework: string;
+    characterType: string;
+    language: string;
 }
 
 export interface GenerateCharactersResult {
@@ -225,6 +243,15 @@ export interface GenerateSettingsParams {
     onProgress?: ProgressCallback;
 }
 
+export interface SettingPromptParams extends Record<string, string> {
+    settingNumber: string;
+    settingCount: string;
+    storyTitle: string;
+    storyGenre: string;
+    storySummary: string;
+    moralFramework: string;
+}
+
 export interface GenerateSettingsResult {
     settings: GeneratedSettingData[];
     metadata: ArrayGeneratorMetadata;
@@ -239,6 +266,15 @@ export interface GeneratePartsParams {
     characters: Character[];
     partsCount: number;
     onProgress?: ProgressCallback;
+}
+
+export interface PartPromptParams extends Record<string, string> {
+    partNumber: string;
+    storyTitle: string;
+    storyGenre: string;
+    storySummary: string;
+    moralFramework: string;
+    characters: string;
 }
 
 export interface GeneratePartsResult {
@@ -259,6 +295,20 @@ export interface GenerateChaptersParams {
     onProgress?: ProgressCallback;
 }
 
+export interface ChapterPromptParams extends Record<string, string> {
+    chapterNumber: string;
+    totalChapters: string;
+    partTitle: string;
+    storyTitle: string;
+    storyGenre: string;
+    storySummary: string;
+    partSummary: string;
+    characterName: string;
+    characterFlaw: string;
+    characterArc: string;
+    previousChapterContext: string;
+}
+
 export interface GenerateChaptersResult {
     chapters: GeneratedChapterData[];
     metadata: ArrayGeneratorMetadata;
@@ -276,7 +326,7 @@ export interface GenerateSceneSummariesParams {
 }
 
 export interface GenerateSceneSummariesResult {
-    scenes: GeneratedSceneData[];
+    scenes: GeneratedSceneSummaryData[];
     metadata: ArrayGeneratorMetadata;
 }
 

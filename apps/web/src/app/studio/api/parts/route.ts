@@ -7,7 +7,10 @@ import { db } from "@/lib/db";
 import { characters, parts, settings, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateParts } from "@/lib/studio/generators/parts-generator";
-import type { GeneratePartsParams } from "@/lib/studio/generators/types";
+import type {
+    GeneratePartsParams,
+    GeneratePartsResult,
+} from "@/lib/studio/generators/types";
 import {
     type Character,
     insertPartSchema,

@@ -16,7 +16,10 @@ import { db } from "@/lib/db";
 import { settings, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { generateSettings } from "@/lib/studio/generators/settings-generator";
-import type { GenerateSettingsParams } from "@/lib/studio/generators/types";
+import type {
+    GenerateSettingsParams,
+    GenerateSettingsResult,
+} from "@/lib/studio/generators/types";
 import {
     insertSettingSchema,
     type Setting,

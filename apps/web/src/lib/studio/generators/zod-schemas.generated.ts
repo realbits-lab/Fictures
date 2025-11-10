@@ -436,11 +436,11 @@ export type Scene = z.infer<typeof selectSceneSchema>;
 export type InsertScene = z.infer<typeof insertSceneSchema>;
 
 /**
- * Minimal schema for scene generation (only fields AI generates)
+ * Minimal schema for scene summary generation (only fields AI generates)
  * Manually defined to avoid Gemini JSON schema validation issues with complex fields
  * Fields must match insertSceneSchema but without database-specific fields
  */
-export const GeneratedSceneSchema = z.object({
+export const GeneratedSceneSummarySchema = z.object({
     title: z.string().max(255),
     summary: z.string().nullable(),
     cyclePhase: z
@@ -466,9 +466,37 @@ export const GeneratedSceneSchema = z.object({
 });
 
 /**
- * TypeScript type for generated scene data (AI output)
+ * TypeScript type for generated scene summary data (AI output)
  */
-export type GeneratedSceneData = z.infer<typeof GeneratedSceneSchema>;
+export type GeneratedSceneSummaryData = z.infer<
+    typeof GeneratedSceneSummarySchema
+>;
+
+// ============================================================================
+// Scene Evaluation Schemas
+// ============================================================================
+
+/**
+ * Minimal schema for scene evaluation output (AI generates)
+ * Used by scene-evaluation-generator to parse evaluation JSON
+ */
+export const GeneratedSceneEvaluationSchema = z.object({
+    plot: z.number().min(1).max(4),
+    character: z.number().min(1).max(4),
+    pacing: z.number().min(1).max(4),
+    prose: z.number().min(1).max(4),
+    worldBuilding: z.number().min(1).max(4),
+    overallScore: z.number().min(1).max(4),
+    feedback: z.string(),
+    suggestedImprovements: z.string(),
+});
+
+/**
+ * TypeScript type for scene evaluation data (AI output)
+ */
+export type GeneratedSceneEvaluationData = z.infer<
+    typeof GeneratedSceneEvaluationSchema
+>;
 
 // ============================================================================
 // Re-export for convenience

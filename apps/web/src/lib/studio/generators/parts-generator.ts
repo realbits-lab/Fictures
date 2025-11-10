@@ -10,7 +10,11 @@
 
 import { textGenerationClient } from "./ai-client";
 import { promptManager } from "./prompt-manager";
-import type { GeneratePartsParams, GeneratePartsResult } from "./types";
+import type {
+    GeneratePartsParams,
+    GeneratePartsResult,
+    PartPromptParams,
+} from "./types";
 import {
     type GeneratedPartData,
     GeneratedPartSchema,
@@ -54,14 +58,7 @@ export async function generateParts(
         );
 
         // 5. Get the prompt template for part generation
-        const promptParams: {
-            partNumber: string;
-            storyTitle: string;
-            storyGenre: string;
-            storySummary: string;
-            moralFramework: string;
-            characters: string;
-        } = {
+        const promptParams: PartPromptParams = {
             partNumber: String(i + 1),
             storyTitle: story.title,
             storyGenre: story.genre ?? "General Fiction",

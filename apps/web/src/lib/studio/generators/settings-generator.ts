@@ -10,7 +10,11 @@
 
 import { textGenerationClient } from "./ai-client";
 import { promptManager } from "./prompt-manager";
-import type { GenerateSettingsParams, GenerateSettingsResult } from "./types";
+import type {
+    GenerateSettingsParams,
+    GenerateSettingsResult,
+    SettingPromptParams,
+} from "./types";
 import {
     type GeneratedSettingData,
     GeneratedSettingSchema,
@@ -44,14 +48,7 @@ export async function generateSettings(
         }
 
         // 4. Get the prompt template for setting generation
-        const promptParams: {
-            settingNumber: string;
-            settingCount: string;
-            storyTitle: string;
-            storyGenre: string;
-            storySummary: string;
-            moralFramework: string;
-        } = {
+        const promptParams: SettingPromptParams = {
             settingNumber: String(i + 1),
             settingCount: String(settingCount),
             storyTitle: story.title,
