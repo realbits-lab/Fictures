@@ -16,6 +16,7 @@ import {
     varchar,
 } from "drizzle-orm/pg-core";
 import {
+    ADVERSITY_TYPES,
     CHAPTER_ARC_POSITIONS,
     CHARACTER_ARC_POSITIONS,
 } from "@/lib/constants/arc-positions";
@@ -23,11 +24,10 @@ import { CORE_TRAITS } from "@/lib/constants/core-traits";
 import { STORY_GENRES } from "@/lib/constants/genres";
 import { STORY_TONES } from "@/lib/constants/tones";
 
-export const adversityType = pgEnum("adversity_type", [
-    "internal",
-    "external",
-    "both",
-]);
+export const adversityType = pgEnum(
+    "adversity_type",
+    ADVERSITY_TYPES as unknown as [string, ...string[]],
+);
 
 export const genre = pgEnum(
     "genre",

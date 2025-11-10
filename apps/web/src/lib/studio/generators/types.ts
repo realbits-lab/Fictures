@@ -76,9 +76,7 @@ export type PromptType =
     | "part"
     | "chapter"
     | "scene_summary"
-    | "scene_content"
-    | "character_dialogue"
-    | "setting_description";
+    | "scene_content";
 
 export interface PromptTemplate {
     system: string;

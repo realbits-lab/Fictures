@@ -8,6 +8,7 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import {
+    ADVERSITY_TYPES,
     CHAPTER_ARC_POSITIONS,
     CHARACTER_ARC_POSITIONS,
 } from "@/lib/constants/arc-positions";
@@ -533,21 +534,47 @@ export type GeneratedPartData = z.infer<typeof GeneratedPartSchema>;
 
 /**
  * Nested schema for seeds planted in a chapter
+ * Seeds are narrative elements (questions, mysteries, promises, setups) introduced for future payoff
  */
 const seedPlantedSchema = z.object({
-    id: z.string(),
-    description: z.string(),
-    expectedPayoff: z.string(),
+    id: z
+        .string()
+        .describe(
+            "Unique identifier for this seed - used to track its resolution in later chapters",
+        ),
+    description: z
+        .string()
+        .describe(
+            "What narrative element is being planted - a question raised, mystery introduced, promise made, or setup established",
+        ),
+    expectedPayoff: z
+        .string()
+        .describe(
+            "How this seed is expected to pay off - what answer, revelation, fulfillment, or payoff the reader should anticipate",
+        ),
 });
 
 /**
  * Nested schema for seeds resolved in a chapter
+ * Tracks the resolution of previously planted narrative elements
  */
 const seedResolvedSchema = z.object({
-    sourceChapterId: z.string(),
-    sourceSceneId: z.string(),
-    seedId: z.string(),
-    payoffDescription: z.string(),
+    sourceChapterId: z
+        .string()
+        .describe("ID of the chapter where the seed was originally planted"),
+    sourceSceneId: z
+        .string()
+        .describe("ID of the scene where the seed was originally planted"),
+    seedId: z
+        .string()
+        .describe(
+            "ID of the seed being resolved - must match the id from seedPlantedSchema",
+        ),
+    payoffDescription: z
+        .string()
+        .describe(
+            "How the seed is resolved - the answer revealed, mystery solved, promise fulfilled, or setup paid off",
+        ),
 });
 
 /**
@@ -558,7 +585,7 @@ export const insertChapterSchema = createInsertSchema(chapters, {
         CHAPTER_ARC_POSITIONS as unknown as [string, ...string[]],
     ),
     focusCharacters: z.array(z.string()),
-    adversityType: z.enum(["internal", "external", "both"]),
+    adversityType: z.enum(ADVERSITY_TYPES as unknown as [string, ...string[]]),
     virtueType: z.enum(CORE_TRAITS),
     seedsPlanted: z.array(seedPlantedSchema),
     seedsResolved: z.array(seedResolvedSchema),
@@ -610,9 +637,9 @@ export const GeneratedChapterSchema = z.object({
             "Array of character IDs who are the primary focus of this chapter",
         ),
     adversityType: z
-        .enum(["internal", "external", "both"])
+        .enum(ADVERSITY_TYPES as unknown as [string, ...string[]])
         .describe(
-            "Type of adversity faced - internal (psychological), external (physical/social), or both",
+            "Type of adversity faced - must be one of: internal (psychological), external (physical/social), or both",
         ),
     virtueType: z
         .enum(CORE_TRAITS)
