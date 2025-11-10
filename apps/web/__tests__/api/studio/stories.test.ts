@@ -87,31 +87,24 @@ describe("Story Generation API", () => {
         expect(story.title.length).toBeGreaterThan(0);
 
         // 11. Adversity-Triumph Core fields (summary, genre, tone, moralFramework)
-        // summary can be null, so check for string or null
-        expect(
-            story.summary === null || typeof story.summary === "string",
-        ).toBe(true);
+        // All of these fields are required and cannot be null
+        expect(story.summary).toBeDefined();
+        expect(typeof story.summary).toBe("string");
+        expect(story.summary.length).toBeGreaterThan(0);
 
-        // genre can be null, so check for string or null
-        expect(story.genre === null || typeof story.genre === "string").toBe(
-            true,
+        expect(story.genre).toBeDefined();
+        expect(typeof story.genre).toBe("string");
+        expect(story.genre.length).toBeGreaterThan(0);
+
+        expect(story.tone).toBeDefined();
+        expect(typeof story.tone).toBe("string");
+        expect(["hopeful", "dark", "bittersweet", "satirical"]).toContain(
+            story.tone,
         );
 
-        // tone can be null, so check for string or null
-        expect(story.tone === null || typeof story.tone === "string").toBe(
-            true,
-        );
-        if (story.tone !== null) {
-            expect(["hopeful", "dark", "bittersweet", "satirical"]).toContain(
-                story.tone,
-            );
-        }
-
-        // moralFramework can be null, so check for string or null
-        expect(
-            story.moralFramework === null ||
-                typeof story.moralFramework === "string",
-        ).toBe(true);
+        expect(story.moralFramework).toBeDefined();
+        expect(typeof story.moralFramework).toBe("string");
+        expect(story.moralFramework.length).toBeGreaterThan(0);
 
         // 12. Publishing & Engagement fields (status, viewCount, rating, ratingCount)
         expect(story.status).toBeDefined();

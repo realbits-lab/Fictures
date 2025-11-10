@@ -13,6 +13,8 @@ import {
     CHARACTER_ARC_POSITIONS,
 } from "@/lib/constants/arc-positions";
 import { CORE_TRAITS } from "@/lib/constants/core-traits";
+import { CYCLE_PHASES } from "@/lib/constants/cycle-phases";
+import { EMOTIONAL_BEATS } from "@/lib/constants/emotional-beats";
 import { STORY_GENRES } from "@/lib/constants/genres";
 import { STORY_TONES } from "@/lib/constants/tones";
 import {
@@ -676,29 +678,10 @@ export type GeneratedChapterData = z.infer<typeof GeneratedChapterSchema>;
 // ============================================================================
 
 /**
- * Cycle phase enum for scene structure
+ * Re-export cycle phase and emotional beat constants for convenience
  */
-export const CYCLE_PHASES = [
-    "setup",
-    "confrontation",
-    "virtue",
-    "consequence",
-    "transition",
-] as const;
-
-/**
- * Emotional beat enum for scene atmosphere
- */
-export const EMOTIONAL_BEATS = [
-    "fear",
-    "hope",
-    "tension",
-    "relief",
-    "elevation",
-    "catharsis",
-    "despair",
-    "joy",
-] as const;
+export { CYCLE_PHASES } from "@/lib/constants/cycle-phases";
+export { EMOTIONAL_BEATS } from "@/lib/constants/emotional-beats";
 
 /**
  * Suggested scene length enum

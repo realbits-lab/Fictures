@@ -21,12 +21,10 @@ import {
     CHARACTER_ARC_POSITIONS,
 } from "@/lib/constants/arc-positions";
 import { CORE_TRAITS } from "@/lib/constants/core-traits";
+import { CYCLE_PHASES } from "@/lib/constants/cycle-phases";
+import { EMOTIONAL_BEATS } from "@/lib/constants/emotional-beats";
 import { STORY_GENRES } from "@/lib/constants/genres";
 import { STORY_TONES } from "@/lib/constants/tones";
-import {
-    CYCLE_PHASES,
-    EMOTIONAL_BEATS,
-} from "@/lib/studio/generators/zod-schemas.generated";
 
 export const adversityType = pgEnum(
     "adversity_type",
@@ -282,16 +280,16 @@ export const stories = pgTable(
         title: varchar({ length: 255 }).notNull(),
 
         // === ADVERSITY-TRIUMPH CORE ===
-        summary: text(), // General thematic premise and moral framework
-        genre: genre(),
-        tone: tone(), // "hopeful" | "dark" | "bittersweet" | "satirical"
-        moralFramework: text("moral_framework"), // What virtues are valued in this world?
+        summary: text().notNull(), // General thematic premise and moral framework
+        genre: genre().notNull(),
+        tone: tone().notNull(), // "hopeful" | "dark" | "bittersweet" | "satirical"
+        moralFramework: text("moral_framework").notNull(), // What virtues are valued in this world?
 
         // === PUBLISHING & ENGAGEMENT ===
         status: status().default("writing").notNull(),
-        viewCount: integer("view_count").default(0),
-        rating: integer().default(0),
-        ratingCount: integer("rating_count").default(0),
+        viewCount: integer("view_count").default(0).notNull(),
+        rating: integer().default(0).notNull(),
+        ratingCount: integer("rating_count").default(0).notNull(),
 
         // === VISUAL ===
         imageUrl: text("image_url"),

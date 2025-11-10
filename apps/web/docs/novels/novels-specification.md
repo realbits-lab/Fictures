@@ -676,10 +676,10 @@ interface Story {
   title: string;
 
   // === ADVERSITY-TRIUMPH CORE ===
-  summary: string | null; // General thematic premise and moral framework
-  genre: StoryGenre | null; // See Genre Catalog (section 2.1.1)
-  tone: StoryTone | null; // 'hopeful' | 'dark' | 'bittersweet' | 'satirical' (see Tone Catalog 2.1.2)
-  moralFramework: string | null; // What virtues are valued in this world?
+  summary: string; // General thematic premise and moral framework
+  genre: StoryGenre; // See Genre Catalog (section 2.1.1)
+  tone: StoryTone; // 'hopeful' | 'dark' | 'bittersweet' | 'satirical' (see Tone Catalog 2.1.2)
+  moralFramework: string; // What virtues are valued in this world?
 
   // === PUBLISHING & ENGAGEMENT ===
   status: 'writing' | 'published'; // Default: 'writing'
