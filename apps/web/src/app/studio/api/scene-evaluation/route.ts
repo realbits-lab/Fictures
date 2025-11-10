@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
 	console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
 	try {
+		// 1. Authenticate the request
 		const authResult = await authenticateRequest(request);
 
 		if (!authResult) {
@@ -46,6 +47,7 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
+		// 2. Check if user has permission to write stories
 		if (!hasRequiredScope(authResult, "stories:write")) {
 			console.error("❌ [SCENE-EVALUATION API] Insufficient scopes:", {
 				required: "stories:write",
@@ -63,7 +65,7 @@ export async function POST(request: NextRequest) {
 			email: authResult.user.email,
 		});
 
-		// Parse and validate request body
+		// 3. Parse and validate request body
 		const body = await request.json();
 		const validatedData = evaluateSceneSchema.parse(body);
 
@@ -72,17 +74,20 @@ export async function POST(request: NextRequest) {
 			maxIterations: validatedData.maxIterations,
 		});
 
-		// Fetch scene and verify ownership
-		const [scene] = await db
+		// 4. Fetch scene and verify ownership
+		const sceneResults = await db
 			.select()
 			.from(scenes)
 			.where(eq(scenes.id, validatedData.sceneId));
+
+		const scene = sceneResults[0];
 
 		if (!scene) {
 			console.error("❌ [SCENE-EVALUATION API] Scene not found");
 			return NextResponse.json({ error: "Scene not found" }, { status: 404 });
 		}
 
+		// 5. Verify scene has content
 		if (!scene.content || scene.content.trim() === "") {
 			console.error("❌ [SCENE-EVALUATION API] Scene has no content");
 			return NextResponse.json(
@@ -91,17 +96,20 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// Get story to verify ownership
-		const [story] = await db
+		// 6. Get story to verify ownership
+		const storyResults = await db
 			.select()
 			.from(stories)
 			.where(eq(stories.id, scene.storyId));
+
+		const story = storyResults[0];
 
 		if (!story) {
 			console.error("❌ [SCENE-EVALUATION API] Story not found");
 			return NextResponse.json({ error: "Story not found" }, { status: 404 });
 		}
 
+		// 7. Verify user is story author
 		if (story.authorId !== authResult.user.id) {
 			console.error(
 				"❌ [SCENE-EVALUATION API] Access denied - not story author",
@@ -114,7 +122,7 @@ export async function POST(request: NextRequest) {
 			title: scene.title,
 		});
 
-		// Evaluate scene using AI
+		// 8. Evaluate scene using AI
 		console.log("[SCENE-EVALUATION API] 🤖 Calling scene evaluator...");
 		const evaluateParams: EvaluateSceneParams = {
 			content: scene.content,
@@ -131,27 +139,32 @@ export async function POST(request: NextRequest) {
 			generationTime: evaluationResult.metadata.generationTime,
 		});
 
-		// Update scene with improved content and evaluation
+		// 9. Update scene with improved content and evaluation
 		console.log("[SCENE-EVALUATION API] 💾 Saving evaluation results...");
-		const [updatedScene] = await db
+		const now: string = new Date().toISOString();
+
+		const updatedSceneResults = await db
 			.update(scenes)
 			.set({
 				content: evaluationResult.finalContent,
 				qualityScore: evaluationResult.score,
-				updatedAt: new Date(),
+				updatedAt: now,
 			})
 			.where(eq(scenes.id, validatedData.sceneId))
 			.returning();
 
+		const updatedScene = updatedSceneResults[0];
+
 		console.log("[SCENE-EVALUATION API] ✅ Evaluation results saved");
 
-		// Invalidate cache
+		// 10. Invalidate cache
 		await invalidateStudioCache(authResult.user.id);
 		console.log("[SCENE-EVALUATION API] ✅ Cache invalidated");
 
 		console.log("✅ [SCENE-EVALUATION API] Request completed successfully");
 		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
+		// 11. Return typed response
 		return NextResponse.json(
 			{
 				success: true,

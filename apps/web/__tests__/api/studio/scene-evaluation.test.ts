@@ -8,9 +8,9 @@
  */
 
 import type {
-    EvaluateSceneErrorResponse,
-    EvaluateSceneRequest,
-    EvaluateSceneResponse,
+	EvaluateSceneErrorResponse,
+	EvaluateSceneRequest,
+	EvaluateSceneResponse,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
@@ -18,188 +18,194 @@ import { loadWriterAuth } from "../../helpers/auth-loader";
 const apiKey: string = loadWriterAuth();
 
 describe("Scene Evaluation API", () => {
-    let testStoryId: string = "";
-    let testPartId: string = "";
-    let testChapterId: string = "";
-    let testSceneId: string = "";
+	const testStoryId: string = "";
+	const testPartId: string = "";
+	const testChapterId: string = "";
+	const testSceneId: string = "";
 
-    beforeAll(async () => {
-        // Create test story with full generation (includes parts, chapters, scenes)
-        const storyResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/stories",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-api-key": apiKey,
-                },
-                body: JSON.stringify({
-                    userPrompt: "A test story for scene evaluation testing",
-                    language: "English",
-                    preferredGenre: "Fantasy",
-                    preferredTone: "mysterious",
-                }),
-            },
-        );
+	beforeAll(async () => {
+		console.log("🔧 Setting up test story...");
 
-        const storyData: { story: { id: string } } = await storyResponse.json();
-        if (!storyResponse.ok) {
-            throw new Error(
-                `Failed to create test story: ${JSON.stringify(storyData)}`,
-            );
-        }
+		// 1. Create test story with full generation (includes parts, chapters, scenes)
+		const storyRequestBody = {
+			userPrompt: "A test story for scene evaluation testing",
+			language: "English",
+			preferredGenre: "Fantasy",
+			preferredTone: "mysterious",
+		};
 
-        testStoryId = storyData.story.id;
-        console.log(`✅ Test story created: ${testStoryId}`);
+		const storyResponse: Response = await fetch(
+			"http://localhost:3000/studio/api/stories",
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"x-api-key": apiKey,
+				},
+				body: JSON.stringify(storyRequestBody),
+			},
+		);
 
-        // Story generation creates parts, chapters, and scenes automatically
-        // We need to fetch the first scene to test evaluation updates
-        const partsResponse: Response = await fetch(
-            `http://localhost:3000/studio/api/parts?storyId=${testStoryId}`,
-            {
-                headers: { "x-api-key": apiKey },
-            },
-        );
-        const partsData: { parts?: Array<{ id: string }> } =
-            await partsResponse.json();
-        testPartId = partsData.parts?.[0]?.id || "";
+		const storyData: { story: { id: string } } = await storyResponse.json();
+		if (!storyResponse.ok) {
+			throw new Error(
+				`Failed to create test story: ${JSON.stringify(storyData)}`,
+			);
+		}
 
-        if (testPartId) {
-            const chaptersResponse: Response = await fetch(
-                `http://localhost:3000/studio/api/chapters?partId=${testPartId}`,
-                {
-                    headers: { "x-api-key": apiKey },
-                },
-            );
-            const chaptersData: { chapters?: Array<{ id: string }> } =
-                await chaptersResponse.json();
-            testChapterId = chaptersData.chapters?.[0]?.id || "";
+		testStoryId = storyData.story.id;
+		console.log(`✅ Test story created: ${testStoryId}`);
 
-            if (testChapterId) {
-                const scenesResponse: Response = await fetch(
-                    `http://localhost:3000/studio/api/scenes?chapterId=${testChapterId}`,
-                    {
-                        headers: { "x-api-key": apiKey },
-                    },
-                );
-                const scenesData: { scenes?: Array<{ id: string }> } =
-                    await scenesResponse.json();
-                testSceneId = scenesData.scenes?.[0]?.id || "";
-            }
-        }
+		// 2. Story generation creates parts, chapters, and scenes automatically
+		// We need to fetch the first scene to test evaluation updates
+		const partsResponse: Response = await fetch(
+			`http://localhost:3000/studio/api/parts?storyId=${testStoryId}`,
+			{
+				headers: { "x-api-key": apiKey },
+			},
+		);
+		const partsData: { parts?: Array<{ id: string }> } =
+			await partsResponse.json();
+		testPartId = partsData.parts?.[0]?.id || "";
 
-        console.log(`✅ Test scene retrieved: ${testSceneId}`);
-    }, 300000); // 5 min for full story generation
+		if (testPartId) {
+			// 3. Fetch chapters for the part
+			const chaptersResponse: Response = await fetch(
+				`http://localhost:3000/studio/api/chapters?partId=${testPartId}`,
+				{
+					headers: { "x-api-key": apiKey },
+				},
+			);
+			const chaptersData: { chapters?: Array<{ id: string }> } =
+				await chaptersResponse.json();
+			testChapterId = chaptersData.chapters?.[0]?.id || "";
 
-    it("should evaluate scene quality via POST /studio/api/scene-evaluation", async () => {
-        // 1. Prepare request body with proper TypeScript type
-        const requestBody: EvaluateSceneRequest = {
-            sceneId: testSceneId,
-            maxIterations: 2, // Allow up to 2 improvement iterations
-        };
+			if (testChapterId) {
+				// 4. Fetch scenes for the chapter
+				const scenesResponse: Response = await fetch(
+					`http://localhost:3000/studio/api/scenes?chapterId=${testChapterId}`,
+					{
+						headers: { "x-api-key": apiKey },
+					},
+				);
+				const scenesData: { scenes?: Array<{ id: string }> } =
+					await scenesResponse.json();
+				testSceneId = scenesData.scenes?.[0]?.id || "";
+			}
+		}
 
-        // 2. Send POST request to scene evaluation API
-        const response: Response = await fetch(
-            "http://localhost:3000/studio/api/scene-evaluation",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-api-key": apiKey,
-                },
-                body: JSON.stringify(requestBody),
-            },
-        );
+		console.log(`✅ Test scene retrieved: ${testSceneId}`);
+	}, 300000); // 5 min for full story generation
 
-        // 3. Parse response data with proper typing
-        const data: EvaluateSceneResponse | EvaluateSceneErrorResponse =
-            await response.json();
+	it("should evaluate scene quality via POST /studio/api/scene-evaluation", async () => {
+		// 1. Prepare request body with proper TypeScript type
+		const requestBody: EvaluateSceneRequest = {
+			sceneId: testSceneId,
+			maxIterations: 2, // Allow up to 2 improvement iterations
+		};
 
-        // 4. Log error if request failed
-        if (!response.ok) {
-            console.error("❌ Scene Evaluation API Error:", data);
-            expect(response.ok).toBe(true); // Force fail with proper error logged
-        }
+		// 2. Send POST request to scene evaluation API
+		const response: Response = await fetch(
+			"http://localhost:3000/studio/api/scene-evaluation",
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"x-api-key": apiKey,
+				},
+				body: JSON.stringify(requestBody),
+			},
+		);
 
-        // 5. Verify response status
-        expect(response.status).toBe(200);
+		// 3. Parse response data with proper typing
+		const data: EvaluateSceneResponse | EvaluateSceneErrorResponse =
+			await response.json();
 
-        // 6. Type guard to ensure we have success response
-        if (!("success" in data) || !data.success) {
-            throw new Error("Expected EvaluateSceneResponse but got error");
-        }
+		// 4. Log error if request failed
+		if (!response.ok) {
+			console.error("❌ Scene Evaluation API Error:", data);
+			expect(response.ok).toBe(true); // Force fail with proper error logged
+		}
 
-        // 7. Cast to success response type
-        const successData: EvaluateSceneResponse =
-            data as EvaluateSceneResponse;
+		// 5. Verify response status
+		expect(response.status).toBe(200);
 
-        // 8. Verify response structure
-        expect(successData.success).toBe(true);
-        expect(successData.scene).toBeDefined();
-        expect(successData.scene.id).toBe(testSceneId);
+		// 6. Type guard to ensure we have success response
+		if (!("success" in data) || !data.success) {
+			throw new Error("Expected EvaluateSceneResponse but got error");
+		}
 
-        // 9. Verify evaluation data
-        expect(successData.evaluation).toBeDefined();
-        expect(successData.evaluation.score).toBeGreaterThan(0);
-        expect(successData.evaluation.score).toBeLessThanOrEqual(4);
-        expect(successData.evaluation.iterations).toBeGreaterThanOrEqual(1);
-        expect(successData.evaluation.iterations).toBeLessThanOrEqual(
-            requestBody.maxIterations || 2,
-        );
+		// 7. Cast to success response type
+		const successData: EvaluateSceneResponse =
+			data as EvaluateSceneResponse;
 
-        // 10. Verify evaluation categories
-        expect(successData.evaluation.categories).toBeDefined();
-        expect(successData.evaluation.categories.plot).toBeGreaterThan(0);
-        expect(successData.evaluation.categories.character).toBeGreaterThan(0);
-        expect(successData.evaluation.categories.pacing).toBeGreaterThan(0);
-        expect(successData.evaluation.categories.prose).toBeGreaterThan(0);
-        expect(successData.evaluation.categories.worldBuilding).toBeGreaterThan(
-            0,
-        );
+		// 8. Verify response structure
+		expect(successData.success).toBe(true);
+		expect(successData.scene).toBeDefined();
+		expect(successData.scene.id).toBe(testSceneId);
 
-        // 11. Verify evaluation feedback
-        expect(successData.evaluation.feedback).toBeDefined();
-        expect(Array.isArray(successData.evaluation.feedback.strengths)).toBe(
-            true,
-        );
-        expect(
-            Array.isArray(successData.evaluation.feedback.improvements),
-        ).toBe(true);
+		// 9. Verify evaluation data
+		expect(successData.evaluation).toBeDefined();
+		expect(successData.evaluation.score).toBeGreaterThan(0);
+		expect(successData.evaluation.score).toBeLessThanOrEqual(4);
+		expect(successData.evaluation.iterations).toBeGreaterThanOrEqual(1);
+		expect(successData.evaluation.iterations).toBeLessThanOrEqual(
+			requestBody.maxIterations || 2,
+		);
 
-        // 12. Verify metadata
-        expect(successData.metadata).toBeDefined();
-        expect(successData.metadata.generationTime).toBeGreaterThan(0);
+		// 10. Verify evaluation categories
+		expect(successData.evaluation.categories).toBeDefined();
+		expect(successData.evaluation.categories.plot).toBeGreaterThan(0);
+		expect(successData.evaluation.categories.character).toBeGreaterThan(0);
+		expect(successData.evaluation.categories.pacing).toBeGreaterThan(0);
+		expect(successData.evaluation.categories.prose).toBeGreaterThan(0);
+		expect(successData.evaluation.categories.worldBuilding).toBeGreaterThan(
+			0,
+		);
 
-        // 13. Log success details
-        console.log("✅ Scene evaluation completed successfully:");
-        console.log(`  Scene ID: ${successData.scene.id}`);
-        console.log(`  Quality Score: ${successData.evaluation.score}/4.0`);
-        console.log(`  Iterations: ${successData.evaluation.iterations}`);
-        console.log(`  Improved: ${successData.evaluation.improved}`);
-        console.log("  Categories:");
-        console.log(
-            `    - Plot: ${successData.evaluation.categories.plot}/4.0`,
-        );
-        console.log(
-            `    - Character: ${successData.evaluation.categories.character}/4.0`,
-        );
-        console.log(
-            `    - Pacing: ${successData.evaluation.categories.pacing}/4.0`,
-        );
-        console.log(
-            `    - Prose: ${successData.evaluation.categories.prose}/4.0`,
-        );
-        console.log(
-            `    - World-Building: ${successData.evaluation.categories.worldBuilding}/4.0`,
-        );
-        console.log(
-            `  Strengths: ${successData.evaluation.feedback.strengths.join(", ")}`,
-        );
-        console.log(
-            `  Improvements: ${successData.evaluation.feedback.improvements.join(", ")}`,
-        );
-        console.log(
-            `  Generation time: ${successData.metadata.generationTime}ms`,
-        );
-    }, 180000); // 3 minute timeout for AI evaluation with improvements
+		// 11. Verify evaluation feedback
+		expect(successData.evaluation.feedback).toBeDefined();
+		expect(Array.isArray(successData.evaluation.feedback.strengths)).toBe(
+			true,
+		);
+		expect(
+			Array.isArray(successData.evaluation.feedback.improvements),
+		).toBe(true);
+
+		// 12. Verify metadata
+		expect(successData.metadata).toBeDefined();
+		expect(successData.metadata.generationTime).toBeGreaterThan(0);
+
+		// 13. Log success details
+		console.log("✅ Scene evaluation completed successfully:");
+		console.log(`  Scene ID: ${successData.scene.id}`);
+		console.log(`  Quality Score: ${successData.evaluation.score}/4.0`);
+		console.log(`  Iterations: ${successData.evaluation.iterations}`);
+		console.log(`  Improved: ${successData.evaluation.improved}`);
+		console.log("  Categories:");
+		console.log(
+			`    - Plot: ${successData.evaluation.categories.plot}/4.0`,
+		);
+		console.log(
+			`    - Character: ${successData.evaluation.categories.character}/4.0`,
+		);
+		console.log(
+			`    - Pacing: ${successData.evaluation.categories.pacing}/4.0`,
+		);
+		console.log(
+			`    - Prose: ${successData.evaluation.categories.prose}/4.0`,
+		);
+		console.log(
+			`    - World-Building: ${successData.evaluation.categories.worldBuilding}/4.0`,
+		);
+		console.log(
+			`  Strengths: ${successData.evaluation.feedback.strengths.join(", ")}`,
+		);
+		console.log(
+			`  Improvements: ${successData.evaluation.feedback.improvements.join(", ")}`,
+		);
+		console.log(
+			`  Generation time: ${successData.metadata.generationTime}ms`,
+		);
+	}, 180000); // 3 minute timeout for AI evaluation with improvements
 });

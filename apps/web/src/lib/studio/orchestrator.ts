@@ -35,7 +35,6 @@ export interface NovelGenerationOptions {
     chaptersPerPart?: number; // Default: 1
     scenesPerChapter?: number; // Default: 3
     language?: string; // Default: 'English'
-    skipImages?: boolean; // Default: false (for testing without image generation)
 }
 
 /**
@@ -125,7 +124,6 @@ export async function generateCompleteNovel(
         chaptersPerPart = 1,
         scenesPerChapter = 3,
         language = "English",
-        skipImages = false,
     } = options;
 
     try {
@@ -135,12 +133,19 @@ export async function generateCompleteNovel(
             message: "Generating story foundation...",
         });
 
-        const storyResult = await generateStory({
+        const storyParams: {
+            userPrompt: string;
+            language?: string;
+            preferredGenre?: string;
+            preferredTone?: string;
+        } = {
             userPrompt,
             language,
             preferredGenre,
             preferredTone,
-        });
+        };
+
+        const storyResult = await generateStory(storyParams);
 
         const storyData: GeneratedNovelResult["story"] = storyResult.story;
 
@@ -156,7 +161,13 @@ export async function generateCompleteNovel(
             message: `Generating ${characterCount} characters...`,
         });
 
-        const charactersResult = await generateCharacters({
+        const charactersParams: {
+            storyId: string;
+            story: GeneratedNovelResult["story"];
+            characterCount: number;
+            language?: string;
+            onProgress?: (current: number, total: number) => void;
+        } = {
             storyId: "", // Not needed for orchestrator (no DB save)
             story: storyData,
             characterCount,
@@ -168,7 +179,9 @@ export async function generateCompleteNovel(
                     data: { currentItem: current, totalItems: total },
                 });
             },
-        });
+        };
+
+        const charactersResult = await generateCharacters(charactersParams);
 
         const characters: Character[] = charactersResult.characters;
 
@@ -184,7 +197,12 @@ export async function generateCompleteNovel(
             message: `Generating ${settingCount} settings...`,
         });
 
-        const settingsResult = await generateSettings({
+        const settingsParams: {
+            storyId: string;
+            story: GeneratedNovelResult["story"];
+            settingCount: number;
+            onProgress?: (current: number, total: number) => void;
+        } = {
             storyId: "", // Not needed for orchestrator (no DB save)
             story: storyData,
             settingCount,
@@ -195,7 +213,9 @@ export async function generateCompleteNovel(
                     data: { currentItem: current, totalItems: total },
                 });
             },
-        });
+        };
+
+        const settingsResult = await generateSettings(settingsParams);
 
         const settings: Setting[] = settingsResult.settings;
 
@@ -211,7 +231,13 @@ export async function generateCompleteNovel(
             message: `Generating ${partsCount} parts...`,
         });
 
-        const partsResult = await generateParts({
+        const partsParams: {
+            storyId: string;
+            story: GeneratedNovelResult["story"];
+            characters: Character[];
+            partsCount: number;
+            onProgress?: (current: number, total: number) => void;
+        } = {
             storyId: "", // Not needed for orchestrator (no DB save)
             story: storyData,
             characters,
@@ -223,7 +249,9 @@ export async function generateCompleteNovel(
                     data: { currentItem: current, totalItems: total },
                 });
             },
-        });
+        };
+
+        const partsResult = await generateParts(partsParams);
 
         const parts: Part[] = partsResult.parts;
 
@@ -239,7 +267,14 @@ export async function generateCompleteNovel(
             message: "Generating chapters...",
         });
 
-        const chaptersResult = await generateChapters({
+        const chaptersParams: {
+            storyId: string;
+            story: GeneratedNovelResult["story"];
+            parts: Part[];
+            characters: Character[];
+            chaptersPerPart: number;
+            onProgress?: (current: number, total: number) => void;
+        } = {
             storyId: "", // Not needed for orchestrator (no DB save)
             story: storyData,
             parts,
@@ -252,7 +287,9 @@ export async function generateCompleteNovel(
                     data: { currentItem: current, totalItems: total },
                 });
             },
-        });
+        };
+
+        const chaptersResult = await generateChapters(chaptersParams);
 
         const chapters: Chapter[] = chaptersResult.chapters;
 
@@ -268,8 +305,12 @@ export async function generateCompleteNovel(
             message: "Generating scene summaries...",
         });
 
-        const sceneSummariesResult = await generateSceneSummaries({
-            storyId: "", // Not needed for orchestrator (no DB save)
+        const sceneSummariesParams: {
+            chapters: Chapter[];
+            settings: Setting[];
+            scenesPerChapter: number;
+            onProgress?: (current: number, total: number) => void;
+        } = {
             chapters,
             settings,
             scenesPerChapter,
@@ -280,7 +321,10 @@ export async function generateCompleteNovel(
                     data: { currentItem: current, totalItems: total },
                 });
             },
-        });
+        };
+
+        const sceneSummariesResult =
+            await generateSceneSummaries(sceneSummariesParams);
 
         const scenesWithSummaries: Scene[] = sceneSummariesResult.scenes;
 
@@ -326,13 +370,22 @@ export async function generateCompleteNovel(
                 });
 
                 // 7.1. Generate content for this scene using common generator
-                const sceneContentResult = await generateSceneContent({
+                const sceneContentParams: {
+                    sceneId: string;
+                    scene: Scene;
+                    characters: Character[];
+                    settings: Setting[];
+                    language?: string;
+                } = {
                     sceneId: `scene_${sceneIndex}`,
                     scene: sceneSummary,
                     characters,
                     settings,
                     language,
-                });
+                };
+
+                const sceneContentResult =
+                    await generateSceneContent(sceneContentParams);
 
                 const sceneWithContent: SceneWithContent = {
                     id: `scene_${sceneIndex}`,
