@@ -11,6 +11,7 @@ import type {
     Part,
     Scene,
     Setting,
+    Story,
 } from "@/lib/studio/generators/zod-schemas.generated";
 import {
     generateChapters,
@@ -161,9 +162,7 @@ export async function generateCompleteNovel(
             message: `Generating ${characterCount} characters...`,
         });
 
-        const charactersParams: Omit<GenerateCharactersParams, "story"> & {
-            story: Story;
-        } = {
+        const charactersParams: GenerateCharactersParams = {
             story: storyResult.story,
             characterCount,
             language,
@@ -177,9 +176,7 @@ export async function generateCompleteNovel(
         };
 
         const charactersResult: GenerateCharactersResult =
-            await generateCharacters(
-                charactersParams as GenerateCharactersParams,
-            );
+            await generateCharacters(charactersParams);
 
         onProgress({
             phase: "characters_complete",
@@ -193,9 +190,7 @@ export async function generateCompleteNovel(
             message: `Generating ${settingCount} settings...`,
         });
 
-        const settingsParams: Omit<GenerateSettingsParams, "story"> & {
-            story: Story;
-        } = {
+        const settingsParams: GenerateSettingsParams = {
             story: storyResult.story,
             settingCount,
             onProgress: (current: number, total: number) => {
@@ -207,9 +202,8 @@ export async function generateCompleteNovel(
             },
         };
 
-        const settingsResult: GenerateSettingsResult = await generateSettings(
-            settingsParams as GenerateSettingsParams,
-        );
+        const settingsResult: GenerateSettingsResult =
+            await generateSettings(settingsParams);
 
         onProgress({
             phase: "settings_complete",
@@ -223,9 +217,7 @@ export async function generateCompleteNovel(
             message: `Generating ${partsCount} parts...`,
         });
 
-        const partsParams: Omit<GeneratePartsParams, "story"> & {
-            story: Story;
-        } = {
+        const partsParams: GeneratePartsParams = {
             story: storyResult.story,
             characters: charactersResult.characters,
             partsCount,
@@ -238,9 +230,8 @@ export async function generateCompleteNovel(
             },
         };
 
-        const partsResult: GeneratePartsResult = await generateParts(
-            partsParams as GeneratePartsParams,
-        );
+        const partsResult: GeneratePartsResult =
+            await generateParts(partsParams);
 
         onProgress({
             phase: "parts_complete",
@@ -254,9 +245,7 @@ export async function generateCompleteNovel(
             message: "Generating chapters...",
         });
 
-        const chaptersParams: Omit<GenerateChaptersParams, "story"> & {
-            story: Story;
-        } = {
+        const chaptersParams: GenerateChaptersParams = {
             storyId: "", // Not needed for orchestrator (no DB save)
             story: storyResult.story,
             parts: partsResult.parts,
@@ -271,9 +260,8 @@ export async function generateCompleteNovel(
             },
         };
 
-        const chaptersResult: GenerateChaptersResult = await generateChapters(
-            chaptersParams as GenerateChaptersParams,
-        );
+        const chaptersResult: GenerateChaptersResult =
+            await generateChapters(chaptersParams);
 
         onProgress({
             phase: "chapters_complete",

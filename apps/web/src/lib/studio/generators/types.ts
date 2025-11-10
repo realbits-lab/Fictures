@@ -56,7 +56,6 @@ import type {
     GeneratedPartData,
     GeneratedSceneSummaryData,
     GeneratedSettingData,
-    GeneratedStoryData,
     Part,
     Scene,
     Setting,
@@ -202,7 +201,7 @@ export interface StoryPromptParams extends Record<string, string> {
 }
 
 export interface GenerateStoryResult {
-    story: GeneratedStoryData;
+    story: Story;
     metadata: GeneratorMetadata;
 }
 

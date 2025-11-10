@@ -114,3 +114,15 @@ export const generateSceneContentSchema = z.object({
     sceneId: z.string(),
     language: z.string().optional().default("English"),
 });
+
+// ============================================================================
+// Scene Evaluation
+// ============================================================================
+
+/**
+ * Validation schema for evaluating scene quality
+ */
+export const evaluateSceneSchema = z.object({
+    sceneId: z.string(),
+    maxIterations: z.number().min(1).max(3).optional().default(2),
+});

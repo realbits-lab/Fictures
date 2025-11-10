@@ -38,8 +38,8 @@ import {
 } from "@/lib/studio/generators/zod-schemas.generated";
 import {
     type GeneratedNovelResult,
+    type GenerateNovelParams,
     generateCompleteNovel,
-    type NovelGenerationOptions,
     type ProgressData,
 } from "@/lib/studio/orchestrator";
 
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest): Promise<Response> {
 
     try {
         // 3. Parse and validate request body
-        const body = (await request.json()) as NovelGenerationOptions;
+        const body = (await request.json()) as GenerateNovelParams;
         const {
             userPrompt,
             preferredGenre,
