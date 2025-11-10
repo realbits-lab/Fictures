@@ -613,7 +613,7 @@ export async function POST(request: NextRequest) {
 							);
 
 							const storyCoverResponse = await fetch(
-								`${baseUrl}/studio/api/generation/images`,
+								`${baseUrl}/studio/api/images`,
 								{
 									method: "POST",
 									headers: { "Content-Type": "application/json" },
@@ -686,7 +686,7 @@ export async function POST(request: NextRequest) {
 								);
 
 								const imageResponse = await fetch(
-									`${baseUrl}/studio/api/generation/images`,
+									`${baseUrl}/studio/api/images`,
 									{
 										method: "POST",
 										headers: { "Content-Type": "application/json" },
@@ -757,7 +757,7 @@ export async function POST(request: NextRequest) {
 								);
 
 								const imageResponse = await fetch(
-									`${baseUrl}/studio/api/generation/images`,
+									`${baseUrl}/studio/api/images`,
 									{
 										method: "POST",
 										headers: { "Content-Type": "application/json" },
@@ -828,7 +828,7 @@ export async function POST(request: NextRequest) {
 								);
 
 								const imageResponse = await fetch(
-									`${baseUrl}/studio/api/generation/images`,
+									`${baseUrl}/studio/api/images`,
 									{
 										method: "POST",
 										headers: { "Content-Type": "application/json" },

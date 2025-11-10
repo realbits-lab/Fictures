@@ -27,7 +27,7 @@ test.describe("Generation API", () => {
 
 	test.describe("Generate Images", () => {
 		test("TC-API-GEN-024: Invalid prompts return 400", async ({ request }) => {
-			const response = await request.post("/studio/api/generation/images", {
+			const response = await request.post("/studio/api/images", {
 				headers: getAuthHeaders("writer"),
 				data: {
 					prompt: "", // Empty prompt

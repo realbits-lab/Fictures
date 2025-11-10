@@ -340,7 +340,7 @@ export const generateImages = tool({
             entityId,
         };
 
-        const response = await fetch("/studio/api/generation/images", {
+        const response = await fetch("/studio/api/images", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),

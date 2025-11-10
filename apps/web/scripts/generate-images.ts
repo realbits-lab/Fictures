@@ -274,7 +274,7 @@ async function generateImage(params: {
 }): Promise<string> {
 	console.log(`   🎨 Generating ${params.imageType} image...`);
 
-	const response = await fetch(`${BASE_URL}/studio/api/generation/images`, {
+	const response = await fetch(`${BASE_URL}/studio/api/images`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
