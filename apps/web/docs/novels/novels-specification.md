@@ -607,7 +607,7 @@ interface Setting {
     touch: string[];                // Tactile sensations (2-5 items)
     taste: string[] | null;         // Flavor elements (0-2 items, optional - can be null)
   };
-  architecturalStyle: string | null; // Structural design language (if applicable)
+  architecturalStyle: string; // Structural design language (if applicable)
 
   // === VISUAL GENERATION ===
   imageUrl: string | null;  // Original environment image (1792×1024, 16:9 from DALL-E 3)
@@ -736,7 +736,7 @@ interface Part {
   title: string;
 
   // === ADVERSITY-TRIUMPH CORE (Act Structure) ===
-  summary: string | null; // MACRO adversity-triumph arcs per character with progression planning
+  summary: string; // MACRO adversity-triumph arcs per character with progression planning
 
   // === MACRO ARC TRACKING (Nested Cycles) ===
   // Stored as JSON in database
@@ -761,7 +761,7 @@ interface Part {
   }> | null;
 
   // === ORDERING ===
-  orderIndex: number | null; // Act number / order
+  orderIndex: number; // Act number / order
 
   // === METADATA ===
   createdAt: string; // Timestamp as ISO string
@@ -789,21 +789,21 @@ interface Chapter {
   // === IDENTITY ===
   id: string;
   storyId: string;
-  partId: string | null;
+  partId: string;
   title: string;
 
   // === ADVERSITY-TRIUMPH CORE (Micro Cycle) ===
-  summary: string | null; // ONE complete adversity-triumph cycle
+  summary: string; // ONE complete adversity-triumph cycle
 
   // === NESTED CYCLE TRACKING (Links micro-cycle to macro arc) ===
-  characterId: string | null; // References Character.id (the character whose macro arc this chapter advances)
-  arcPosition: 'beginning' | 'middle' | 'climax' | 'resolution' | null; // 'climax' = MACRO moment
-  contributesToMacroArc: string | null; // How this chapter advances the macro arc
+  characterId: string; // References Character.id (the character whose macro arc this chapter advances)
+  arcPosition: 'beginning' | 'middle' | 'climax' | 'resolution'; // 'climax' = MACRO moment
+  contributesToMacroArc: string; // How this chapter advances the macro arc
 
   // === CYCLE TRACKING ===
   focusCharacters: string[]; // Array of Character IDs, default: []
-  adversityType: 'internal' | 'external' | 'both' | null;
-  virtueType: 'courage' | 'compassion' | 'integrity' | 'sacrifice' | 'loyalty' | 'wisdom' | null;
+  adversityType: 'internal' | 'external' | 'both';
+  virtueType: 'courage' | 'compassion' | 'integrity' | 'sacrifice' | 'loyalty' | 'wisdom';
 
   // === CAUSAL LINKING (For Earned Luck) ===
   // Both stored as JSON in database
@@ -821,8 +821,8 @@ interface Chapter {
   }>; // Default: []
 
   // === CONNECTION TO NARRATIVE FLOW ===
-  connectsToPreviousChapter: string | null; // How previous resolution created this adversity
-  createsNextAdversity: string | null; // How this resolution creates next problem
+  connectsToPreviousChapter: string; // How previous resolution created this adversity
+  createsNextAdversity: string; // How this resolution creates next problem
 
   // === PUBLISHING ===
   status: 'writing' | 'published'; // Default: 'writing'
@@ -869,7 +869,7 @@ interface Scene {
   title: string;
 
   // === SCENE SPECIFICATION (Planning Layer) ===
-  summary: string | null; // Scene specification: what happens, emotional beat, purpose, sensory anchors
+  summary: string; // Scene specification: what happens, emotional beat, purpose, sensory anchors
 
   // === CYCLE PHASE TRACKING ===
   cyclePhase: 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition' | null;
@@ -879,8 +879,8 @@ interface Scene {
   characterFocus: string[]; // Array of Character IDs, default: []
   settingId: string | null; // Setting ID where this scene takes place (references Setting.id, nullable for legacy/ambiguous scenes)
   sensoryAnchors: string[]; // Array of sensory details, default: []
-  dialogueVsDescription: string | null; // Balance guidance (e.g., "60% dialogue, 40% description")
-  suggestedLength: 'short' | 'medium' | 'long' | null; // short: 300-500, medium: 500-800, long: 800-1000 words
+  dialogueVsDescription: string; // Balance guidance (e.g., "60% dialogue, 40% description")
+  suggestedLength: 'short' | 'medium' | 'long'; // short: 300-500, medium: 500-800, long: 800-1000 words
 
   // === GENERATED PROSE (Execution Layer) ===
   content: string; // Full prose narrative generated from summary, default: ""
