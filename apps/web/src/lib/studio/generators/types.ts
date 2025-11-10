@@ -389,7 +389,10 @@ export interface EvaluateSceneResult {
         prose: number;
         worldBuilding: number;
     };
-    feedback: string;
+    feedback: {
+        strengths: string[];
+        improvements: string[];
+    };
     iterations: number;
     improved: boolean;
     metadata: GeneratorMetadata;

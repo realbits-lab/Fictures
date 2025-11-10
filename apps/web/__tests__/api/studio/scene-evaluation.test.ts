@@ -18,16 +18,23 @@ import { loadWriterAuth } from "../../helpers/auth-loader";
 const apiKey: string = loadWriterAuth();
 
 describe("Scene Evaluation API", () => {
-	const testStoryId: string = "";
-	const testPartId: string = "";
-	const testChapterId: string = "";
-	const testSceneId: string = "";
+	let testStoryId: string = "";
+	let testPartId: string = "";
+	let testChapterId: string = "";
+	let testSceneId: string = "";
 
 	beforeAll(async () => {
 		console.log("🔧 Setting up test story...");
 
 		// 1. Create test story with full generation (includes parts, chapters, scenes)
-		const storyRequestBody = {
+		interface StoryRequestBody {
+			userPrompt: string;
+			language: string;
+			preferredGenre: string;
+			preferredTone: string;
+		}
+
+		const storyRequestBody: StoryRequestBody = {
 			userPrompt: "A test story for scene evaluation testing",
 			language: "English",
 			preferredGenre: "Fantasy",
@@ -46,7 +53,13 @@ describe("Scene Evaluation API", () => {
 			},
 		);
 
-		const storyData: { story: { id: string } } = await storyResponse.json();
+		interface StoryResponseData {
+			story: {
+				id: string;
+			};
+		}
+
+		const storyData: StoryResponseData = await storyResponse.json();
 		if (!storyResponse.ok) {
 			throw new Error(
 				`Failed to create test story: ${JSON.stringify(storyData)}`,
@@ -64,8 +77,11 @@ describe("Scene Evaluation API", () => {
 				headers: { "x-api-key": apiKey },
 			},
 		);
-		const partsData: { parts?: Array<{ id: string }> } =
-			await partsResponse.json();
+		interface PartsResponseData {
+			parts?: Array<{ id: string }>;
+		}
+
+		const partsData: PartsResponseData = await partsResponse.json();
 		testPartId = partsData.parts?.[0]?.id || "";
 
 		if (testPartId) {
@@ -76,7 +92,11 @@ describe("Scene Evaluation API", () => {
 					headers: { "x-api-key": apiKey },
 				},
 			);
-			const chaptersData: { chapters?: Array<{ id: string }> } =
+			interface ChaptersResponseData {
+				chapters?: Array<{ id: string }>;
+			}
+
+			const chaptersData: ChaptersResponseData =
 				await chaptersResponse.json();
 			testChapterId = chaptersData.chapters?.[0]?.id || "";
 
@@ -88,8 +108,11 @@ describe("Scene Evaluation API", () => {
 						headers: { "x-api-key": apiKey },
 					},
 				);
-				const scenesData: { scenes?: Array<{ id: string }> } =
-					await scenesResponse.json();
+				interface ScenesResponseData {
+					scenes?: Array<{ id: string }>;
+				}
+
+				const scenesData: ScenesResponseData = await scenesResponse.json();
 				testSceneId = scenesData.scenes?.[0]?.id || "";
 			}
 		}

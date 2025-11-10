@@ -11,10 +11,13 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { db } from "@/lib/db";
-import { scenes, stories } from "@/lib/db/schema";
+import { chapters, scenes, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { evaluateScene } from "@/lib/studio/generators/scene-evaluation-generator";
-import type { EvaluateSceneParams } from "@/lib/studio/generators/types";
+import type {
+	EvaluateSceneParams,
+	EvaluateSceneResult,
+} from "@/lib/studio/generators/types";
 
 export const runtime = "nodejs";
 
@@ -66,8 +69,9 @@ export async function POST(request: NextRequest) {
 		});
 
 		// 3. Parse and validate request body
-		const body = await request.json();
-		const validatedData = evaluateSceneSchema.parse(body);
+		const body: unknown = await request.json();
+		const validatedData: z.infer<typeof evaluateSceneSchema> =
+			evaluateSceneSchema.parse(body);
 
 		console.log("[SCENE-EVALUATION API] Request parameters:", {
 			sceneId: validatedData.sceneId,
@@ -75,12 +79,14 @@ export async function POST(request: NextRequest) {
 		});
 
 		// 4. Fetch scene and verify ownership
-		const sceneResults = await db
+		type SceneRecord = typeof scenes.$inferSelect;
+
+		const sceneResults: SceneRecord[] = await db
 			.select()
 			.from(scenes)
 			.where(eq(scenes.id, validatedData.sceneId));
 
-		const scene = sceneResults[0];
+		const scene: SceneRecord | undefined = sceneResults[0];
 
 		if (!scene) {
 			console.error("❌ [SCENE-EVALUATION API] Scene not found");
@@ -96,20 +102,37 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// 6. Get story to verify ownership
-		const storyResults = await db
+		// 6. Get chapter to get story ID
+		type ChapterRecord = typeof chapters.$inferSelect;
+
+		const chapterResults: ChapterRecord[] = await db
+			.select()
+			.from(chapters)
+			.where(eq(chapters.id, scene.chapterId));
+
+		const chapter: ChapterRecord | undefined = chapterResults[0];
+
+		if (!chapter) {
+			console.error("❌ [SCENE-EVALUATION API] Chapter not found");
+			return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
+		}
+
+		// 7. Get story to verify ownership
+		type StoryRecord = typeof stories.$inferSelect;
+
+		const storyResults: StoryRecord[] = await db
 			.select()
 			.from(stories)
-			.where(eq(stories.id, scene.storyId));
+			.where(eq(stories.id, chapter.storyId));
 
-		const story = storyResults[0];
+		const story: StoryRecord | undefined = storyResults[0];
 
 		if (!story) {
 			console.error("❌ [SCENE-EVALUATION API] Story not found");
 			return NextResponse.json({ error: "Story not found" }, { status: 404 });
 		}
 
-		// 7. Verify user is story author
+		// 8. Verify user is story author
 		if (story.authorId !== authResult.user.id) {
 			console.error(
 				"❌ [SCENE-EVALUATION API] Access denied - not story author",
@@ -122,7 +145,7 @@ export async function POST(request: NextRequest) {
 			title: scene.title,
 		});
 
-		// 8. Evaluate scene using AI
+		// 9. Evaluate scene using AI
 		console.log("[SCENE-EVALUATION API] 🤖 Calling scene evaluator...");
 		const evaluateParams: EvaluateSceneParams = {
 			content: scene.content,
@@ -130,7 +153,8 @@ export async function POST(request: NextRequest) {
 			maxIterations: validatedData.maxIterations,
 		};
 
-		const evaluationResult = await evaluateScene(evaluateParams);
+		const evaluationResult: EvaluateSceneResult =
+			await evaluateScene(evaluateParams);
 
 		console.log("[SCENE-EVALUATION API] ✅ Scene evaluation completed:", {
 			finalScore: evaluationResult.score,
@@ -139,32 +163,31 @@ export async function POST(request: NextRequest) {
 			generationTime: evaluationResult.metadata.generationTime,
 		});
 
-		// 9. Update scene with improved content and evaluation
+		// 10. Update scene with improved content
 		console.log("[SCENE-EVALUATION API] 💾 Saving evaluation results...");
 		const now: string = new Date().toISOString();
 
-		const updatedSceneResults = await db
+		const updatedSceneResults: SceneRecord[] = await db
 			.update(scenes)
 			.set({
 				content: evaluationResult.finalContent,
-				qualityScore: evaluationResult.score,
 				updatedAt: now,
 			})
 			.where(eq(scenes.id, validatedData.sceneId))
 			.returning();
 
-		const updatedScene = updatedSceneResults[0];
+		const updatedScene: SceneRecord = updatedSceneResults[0];
 
 		console.log("[SCENE-EVALUATION API] ✅ Evaluation results saved");
 
-		// 10. Invalidate cache
+		// 11. Invalidate cache
 		await invalidateStudioCache(authResult.user.id);
 		console.log("[SCENE-EVALUATION API] ✅ Cache invalidated");
 
 		console.log("✅ [SCENE-EVALUATION API] Request completed successfully");
 		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-		// 11. Return typed response
+		// 12. Return typed response
 		return NextResponse.json(
 			{
 				success: true,

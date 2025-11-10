@@ -35,7 +35,9 @@ export async function evaluateScene(
 	let improved: boolean = false;
 
 	// 2. Initialize evaluation categories based on "Architectonics of Engagement"
-	const categories = {
+	type EvaluationCategories = EvaluateSceneResult["categories"];
+
+	const categories: EvaluationCategories = {
 		plot: 0,
 		character: 0,
 		pacing: 0,
@@ -141,11 +143,16 @@ Rewrite the scene addressing the feedback. Maintain the core narrative while imp
 Return only the improved prose content (no JSON, no wrapper).`;
 
 		// 10. Generate improved scene content
-		const improveResponse = await textGenerationClient.generate({
-			prompt: improvementPrompt,
-			temperature: 0.85,
-			maxTokens: 8192,
-		});
+		type TextGenerationResponse = Awaited<
+			ReturnType<typeof textGenerationClient.generate>
+		>;
+
+		const improveResponse: TextGenerationResponse =
+			await textGenerationClient.generate({
+				prompt: improvementPrompt,
+				temperature: 0.85,
+				maxTokens: 8192,
+			});
 
 		const improvedContent: string = improveResponse.text.trim();
 
