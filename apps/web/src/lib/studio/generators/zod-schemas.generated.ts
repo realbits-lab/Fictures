@@ -47,7 +47,7 @@ export type InsertStory = z.infer<typeof insertStorySchema>;
  * Manually defined to avoid Gemini JSON schema validation issues with complex fields
  * Fields must match insertStorySchema but without database-specific fields
  */
-export const generatedStorySchema = z.object({
+export const GeneratedStorySchema = z.object({
     title: z.string().max(255),
     summary: z.string().nullable(),
     genre: z.string().max(100).nullable(),
@@ -58,7 +58,7 @@ export const generatedStorySchema = z.object({
 /**
  * TypeScript type for generated story data (AI output)
  */
-export type GeneratedStoryData = z.infer<typeof generatedStorySchema>;
+export type GeneratedStoryData = z.infer<typeof GeneratedStorySchema>;
 
 // ============================================================================
 // Character Schemas
@@ -129,7 +129,7 @@ export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
  * Manually defined to avoid Gemini JSON schema validation issues with complex fields
  * Fields must match insertCharacterSchema but without database-specific fields
  */
-export const generatedCharacterSchema = z.object({
+export const GeneratedCharacterSchema = z.object({
     name: z.string().max(255),
     isMain: z.boolean(),
     summary: z.string().nullable(),
@@ -154,7 +154,7 @@ export const generatedCharacterSchema = z.object({
 /**
  * TypeScript type for generated character data (AI output)
  */
-export type GeneratedCharacterData = z.infer<typeof generatedCharacterSchema>;
+export type GeneratedCharacterData = z.infer<typeof GeneratedCharacterSchema>;
 
 // ============================================================================
 // Setting Schemas

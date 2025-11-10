@@ -9,50 +9,52 @@
 
 import { z } from "zod";
 import {
-	generatedCharacterSchema,
-	generatedSettingSchema,
-	generatedStorySchema,
-	insertChapterSchema,
-	insertPartSchema,
-	insertSceneSchema,
+    GeneratedCharacterSchema,
+    GeneratedStorySchema,
+    generatedSettingSchema,
+    insertChapterSchema,
+    insertPartSchema,
+    insertSceneSchema,
 } from "./zod-schemas.generated";
 
 /**
  * Remove fields that Gemini doesn't accept and recursively clean the schema
  */
 const cleanGeminiSchema = (obj: unknown): unknown => {
-	if (obj === null || obj === undefined) {
-		return obj;
-	}
+    if (obj === null || obj === undefined) {
+        return obj;
+    }
 
-	if (Array.isArray(obj)) {
-		return obj.map((item) => cleanGeminiSchema(item));
-	}
+    if (Array.isArray(obj)) {
+        return obj.map((item) => cleanGeminiSchema(item));
+    }
 
-	if (typeof obj === "object") {
-		const cleaned: Record<string, unknown> = {};
-		for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
-			// Skip fields that Gemini doesn't support
-			if (key === "$schema" || key === "additionalProperties") {
-				continue;
-			}
-			cleaned[key] = cleanGeminiSchema(value);
-		}
-		return cleaned;
-	}
+    if (typeof obj === "object") {
+        const cleaned: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(
+            obj as Record<string, unknown>,
+        )) {
+            // Skip fields that Gemini doesn't support
+            if (key === "$schema" || key === "additionalProperties") {
+                continue;
+            }
+            cleaned[key] = cleanGeminiSchema(value);
+        }
+        return cleaned;
+    }
 
-	return obj;
+    return obj;
 };
 
 /**
  * Convert Zod schema to JSON Schema for Gemini API using Zod's built-in method
  */
 const toGeminiJsonSchema = (zodSchema: z.ZodType) => {
-	const jsonSchema = z.toJSONSchema(zodSchema, {
-		target: "openapi-3.0",
-		$refStrategy: "none",
-	});
-	return cleanGeminiSchema(jsonSchema) as Record<string, unknown>;
+    const jsonSchema = z.toJSONSchema(zodSchema, {
+        target: "openapi-3.0",
+        $refStrategy: "none",
+    });
+    return cleanGeminiSchema(jsonSchema) as Record<string, unknown>;
 };
 
 // ============================================================================
@@ -63,7 +65,7 @@ const toGeminiJsonSchema = (zodSchema: z.ZodType) => {
  * JSON Schema for Story generation (Gemini structured output)
  * Uses minimal schema to avoid Gemini validation issues with complex fields
  */
-export const StoryJsonSchema = toGeminiJsonSchema(generatedStorySchema);
+export const StoryJsonSchema = toGeminiJsonSchema(GeneratedStorySchema);
 
 // ============================================================================
 // Character JSON Schema
@@ -71,9 +73,9 @@ export const StoryJsonSchema = toGeminiJsonSchema(generatedStorySchema);
 
 /**
  * JSON Schema for Character generation (Gemini structured output)
- * Uses generatedCharacterSchema to avoid Gemini validation issues with DB-specific fields
+ * Uses GeneratedCharacterSchema to avoid Gemini validation issues with DB-specific fields
  */
-export const CharacterJsonSchema = toGeminiJsonSchema(generatedCharacterSchema);
+export const CharacterJsonSchema = toGeminiJsonSchema(GeneratedCharacterSchema);
 
 // ============================================================================
 // Setting JSON Schema
@@ -117,10 +119,10 @@ export const SceneSummaryJsonSchema = toGeminiJsonSchema(insertSceneSchema);
 // ============================================================================
 
 export const jsonSchemas = {
-	story: StoryJsonSchema,
-	character: CharacterJsonSchema,
-	setting: SettingJsonSchema,
-	part: PartJsonSchema,
-	chapter: ChapterJsonSchema,
-	scene: SceneSummaryJsonSchema,
+    story: StoryJsonSchema,
+    character: CharacterJsonSchema,
+    setting: SettingJsonSchema,
+    part: PartJsonSchema,
+    chapter: ChapterJsonSchema,
+    scene: SceneSummaryJsonSchema,
 } as const;
