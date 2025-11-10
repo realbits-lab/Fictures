@@ -36,17 +36,19 @@ export async function generateStory(
     }: GenerateStoryParams = params;
 
     // 2. Get the prompt template for story generation
-    const { system, user }: { system: string; user: string } =
-        promptManager.getPrompt(
-            textGenerationClient.getProviderType(),
-            "story",
-            {
-                userPrompt,
-                genre: preferredGenre,
-                tone: preferredTone,
-                language,
-            },
-        );
+    const {
+        system: systemPrompt,
+        user: userPromptText,
+    }: { system: string; user: string } = promptManager.getPrompt(
+        textGenerationClient.getProviderType(),
+        "story",
+        {
+            userPrompt,
+            genre: preferredGenre,
+            tone: preferredTone,
+            language,
+        },
+    );
 
     console.log(
         "[story-generator] Using generateStructured method with manual schema",
@@ -55,10 +57,10 @@ export async function generateStory(
     // 3. Generate story data using structured output method
     const storyData: GeneratedStoryData =
         await textGenerationClient.generateStructured(
-            user,
+            userPromptText,
             GeneratedStorySchema,
             {
-                systemPrompt: system,
+                systemPrompt,
                 temperature: 0.8,
                 maxTokens: 4096,
             },
