@@ -25,31 +25,48 @@ import type {
 export async function generateSceneContent(
     params: GenerateSceneContentParams,
 ): Promise<GenerateSceneContentResult> {
-    const startTime = Date.now();
-    const { scene, characters, settings, language = "English" } = params;
+    const startTime: number = Date.now();
 
-    // Find the setting and character for this scene
+    // 1. Extract and set default parameters
+    const {
+        scene,
+        characters,
+        settings,
+        language = "English",
+    }: GenerateSceneContentParams = params;
+
+    // 2. Find the setting and character for this scene
     const setting = settings.find((s) => s.id === scene.settingId);
+
+    // Type guard for characterFocus array
+    const characterFocusArray = Array.isArray(scene.characterFocus)
+        ? scene.characterFocus
+        : [];
+
     const character = characters.find((c) =>
-        scene.characterFocus?.includes(c.id),
+        characterFocusArray.includes(c.id),
     );
 
-    // Get the prompt template for scene content generation
+    // 3. Get the prompt template for scene content generation
     const promptParams: SceneContentPromptParams = {
-        sceneSummary: scene.summary,
-        cyclePhase: scene.cyclePhase,
+        sceneSummary: scene.summary ?? "",
+        cyclePhase: scene.cyclePhase ?? "",
         emotionalBeat: scene.emotionalBeat || "neutral",
         suggestedLength: scene.suggestedLength || "medium",
         settingDescription: setting
-            ? `${setting.name} - ${setting.description}`
+            ? `${setting.name} - ${setting.summary || ""}`
             : "Generic setting",
-        sensoryAnchors: scene.sensoryAnchors
+        sensoryAnchors: Array.isArray(scene.sensoryAnchors)
             ? scene.sensoryAnchors.join(", ")
             : "Use setting-appropriate details",
         characterName: character ? character.name : "Unknown character",
-        voiceStyle: character
-            ? `${character.voiceStyle.tone}, ${character.voiceStyle.vocabulary}`
-            : "Neutral",
+        voiceStyle:
+            character?.voiceStyle &&
+            typeof character.voiceStyle === "object" &&
+            "tone" in character.voiceStyle &&
+            "vocabulary" in character.voiceStyle
+                ? `${character.voiceStyle.tone}, ${character.voiceStyle.vocabulary}`
+                : "Neutral",
         language,
     };
 
@@ -66,27 +83,33 @@ export async function generateSceneContent(
         "[scene-content-generator] Generating scene content using text generation",
     );
 
-    // Generate scene content using direct text generation (no schema)
-    const response = await textGenerationClient.generate(userPromptText, {
+    // 4. Generate scene content using direct text generation (no schema)
+    const response = await textGenerationClient.generate({
+        prompt: userPromptText,
         systemPrompt,
         temperature: 0.85,
         maxTokens: 8192,
     });
 
-    const content = response.text.trim();
-    const wordCount = content.split(/\s+/).length;
+    // 5. Extract and process generated content
+    const content: string = response.text.trim();
+    const wordCount: number = content.split(/\s+/).length;
 
-    console.log("[scene-content-generator] Generated scene content:", {
+    // 6. Calculate total generation time
+    const totalTime: number = Date.now() - startTime;
+
+    console.log("[scene-content-generator] ✅ Generated scene content:", {
         sceneId: params.sceneId,
         wordCount,
-        generationTime: Date.now() - startTime,
+        generationTime: totalTime,
     });
 
+    // 7. Return scene content result
     return {
         content,
         wordCount,
         metadata: {
-            generationTime: Date.now() - startTime,
+            generationTime: totalTime,
             model: response.model,
         },
     };
