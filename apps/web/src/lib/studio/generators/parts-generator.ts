@@ -9,9 +9,9 @@
  */
 
 import { textGenerationClient } from "./ai-client";
-import { PartJsonSchema } from "./json-schemas.generated";
+import { promptManager } from "./prompt-manager";
 import type { GeneratePartsParams, GeneratePartsResult } from "./types";
-import type { Part } from "./zod-schemas.generated";
+import { insertPartSchema, type Part } from "./zod-schemas.generated";
 
 /**
  * Generate story parts (acts)
@@ -50,10 +50,12 @@ export async function generateParts(
             `[parts-generator] Character list prepared: ${characters.length} characters`,
         );
 
-        // 5. Generate part using template
-        const response: Awaited<
-            ReturnType<typeof textGenerationClient.generateWithTemplate>
-        > = await textGenerationClient.generateWithTemplate(
+        // 5. Get the prompt template for part generation
+        const {
+            system: systemPrompt,
+            user: userPromptText,
+        }: { system: string; user: string } = promptManager.getPrompt(
+            textGenerationClient.getProviderType(),
             "part",
             {
                 partNumber: String(i + 1),
@@ -65,18 +67,23 @@ export async function generateParts(
                     story.moralFramework ?? "Universal human virtues",
                 characters: charactersStr,
             },
+        );
+
+        console.log(
+            `[parts-generator] Generating part ${i + 1} using structured output`,
+        );
+
+        // 6. Generate part using structured output
+        const partData: Part = await textGenerationClient.generateStructured(
+            userPromptText,
+            insertPartSchema,
             {
+                systemPrompt,
                 temperature: 0.85,
                 maxTokens: 8192,
-                responseFormat: "json",
-                responseSchema: PartJsonSchema,
             },
         );
 
-        console.log(`[parts-generator] AI response received for part ${i + 1}`);
-
-        // 6. Parse and validate part data
-        const partData: Part = JSON.parse(response.text) as Part;
         parts.push(partData);
 
         console.log(

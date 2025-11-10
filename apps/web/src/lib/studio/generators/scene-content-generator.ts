@@ -9,6 +9,7 @@
  */
 
 import { textGenerationClient } from "./ai-client";
+import { promptManager } from "./prompt-manager";
 import type {
 	GenerateSceneContentParams,
 	GenerateSceneContentResult,
@@ -32,8 +33,12 @@ export async function generateSceneContent(
 		scene.characterFocus?.includes(c.id),
 	);
 
-	// Generate scene content using template
-	const response = await textGenerationClient.generateWithTemplate(
+	// Get the prompt template for scene content generation
+	const {
+		system: systemPrompt,
+		user: userPromptText,
+	}: { system: string; user: string } = promptManager.getPrompt(
+		textGenerationClient.getProviderType(),
 		"scene_content",
 		{
 			sceneSummary: scene.summary,
@@ -52,11 +57,18 @@ export async function generateSceneContent(
 				: "Neutral",
 			language,
 		},
-		{
-			temperature: 0.85,
-			maxTokens: 8192,
-		},
 	);
+
+	console.log(
+		"[scene-content-generator] Generating scene content using text generation",
+	);
+
+	// Generate scene content using direct text generation (no schema)
+	const response = await textGenerationClient.generate(userPromptText, {
+		systemPrompt,
+		temperature: 0.85,
+		maxTokens: 8192,
+	});
 
 	const content = response.text.trim();
 	const wordCount = content.split(/\s+/).length;

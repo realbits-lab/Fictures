@@ -40,10 +40,12 @@ export async function generateSettings(
             onProgress(i + 1, settingCount);
         }
 
-        // 4. Generate setting using template
-        const response: Awaited<
-            ReturnType<typeof textGenerationClient.generateWithTemplate>
-        > = await textGenerationClient.generateWithTemplate(
+        // 4. Get the prompt template for setting generation
+        const {
+            system: systemPrompt,
+            user: userPromptText,
+        }: { system: string; user: string } = promptManager.getPrompt(
+            textGenerationClient.getProviderType(),
             "setting",
             {
                 settingNumber: String(i + 1),
@@ -55,20 +57,24 @@ export async function generateSettings(
                 moralFramework:
                     story.moralFramework ?? "Universal human virtues",
             },
-            {
-                temperature: 0.85,
-                maxTokens: 8192,
-                responseFormat: "json",
-                responseSchema: SettingJsonSchema,
-            },
         );
 
         console.log(
-            `[settings-generator] AI response received for setting ${i + 1}`,
+            `[settings-generator] Generating setting ${i + 1} using structured output`,
         );
 
-        // 5. Parse and validate setting data
-        const settingData: Setting = JSON.parse(response.text) as Setting;
+        // 5. Generate setting using structured output
+        const settingData: GeneratedSettingData =
+            await textGenerationClient.generateStructured(
+                userPromptText,
+                generatedSettingSchema,
+                {
+                    systemPrompt,
+                    temperature: 0.85,
+                    maxTokens: 8192,
+                },
+            );
+
         settings.push(settingData);
 
         console.log(
