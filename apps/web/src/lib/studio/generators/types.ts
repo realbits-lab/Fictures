@@ -153,13 +153,10 @@ export type ArcPosition = ChapterArcPosition;
 
 /**
  * Adversity-Triumph cycle phases for scene structure
+ * Uses CYCLE_PHASES constant from zod-schemas.generated.ts
  */
 export type CyclePhase =
-    | "setup"
-    | "confrontation"
-    | "virtue"
-    | "consequence"
-    | "transition";
+    typeof import("./zod-schemas.generated").CYCLE_PHASES[number];
 
 // ============================================================================
 // Base Generator Interfaces

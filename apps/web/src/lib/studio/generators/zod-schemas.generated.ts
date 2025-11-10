@@ -676,29 +676,44 @@ export type GeneratedChapterData = z.infer<typeof GeneratedChapterSchema>;
 // ============================================================================
 
 /**
+ * Cycle phase enum for scene structure
+ */
+export const CYCLE_PHASES = [
+    "setup",
+    "confrontation",
+    "virtue",
+    "consequence",
+    "transition",
+] as const;
+
+/**
+ * Emotional beat enum for scene atmosphere
+ */
+export const EMOTIONAL_BEATS = [
+    "fear",
+    "hope",
+    "tension",
+    "relief",
+    "elevation",
+    "catharsis",
+    "despair",
+    "joy",
+] as const;
+
+/**
+ * Suggested scene length enum
+ */
+export const SUGGESTED_LENGTHS = ["short", "medium", "long"] as const;
+
+/**
  * Zod schema for inserting a new scene
  */
 export const insertSceneSchema = createInsertSchema(scenes, {
-    cyclePhase: z.enum([
-        "setup",
-        "confrontation",
-        "virtue",
-        "consequence",
-        "transition",
-    ]),
-    emotionalBeat: z.enum([
-        "fear",
-        "hope",
-        "tension",
-        "relief",
-        "elevation",
-        "catharsis",
-        "despair",
-        "joy",
-    ]),
+    cyclePhase: z.enum(CYCLE_PHASES),
+    emotionalBeat: z.enum(EMOTIONAL_BEATS),
     characterFocus: z.array(z.string()),
     sensoryAnchors: z.array(z.string()),
-    suggestedLength: z.enum(["short", "medium", "long"]).optional(),
+    suggestedLength: z.enum(SUGGESTED_LENGTHS).optional(),
     dialogueVsDescription: z.string().optional(),
 });
 
@@ -723,28 +738,50 @@ export type InsertScene = z.infer<typeof insertSceneSchema>;
  * Fields must match insertSceneSchema but without database-specific fields
  */
 export const GeneratedSceneSummarySchema = z.object({
-    title: z.string().max(255),
-    summary: z.string().nullable(),
+    title: z
+        .string()
+        .max(255)
+        .describe("Scene title - descriptive and engaging"),
+    summary: z
+        .string()
+        .describe(
+            "Scene specification: what happens, emotional beat, purpose, and key moments",
+        ),
     cyclePhase: z
-        .enum(["setup", "confrontation", "virtue", "consequence", "transition"])
-        .nullable(),
+        .enum(CYCLE_PHASES)
+        .describe(
+            "Position in adversity-triumph cycle - must be one of: setup (establish adversity), confrontation (face challenge), virtue (moral action), consequence (earned payoff), transition (new adversity emerges)",
+        ),
     emotionalBeat: z
-        .enum([
-            "fear",
-            "hope",
-            "tension",
-            "relief",
-            "elevation",
-            "catharsis",
-            "despair",
-            "joy",
-        ])
-        .nullable(),
-    characterFocus: z.array(z.string()).nullable(),
-    settingId: z.string().nullable(),
-    sensoryAnchors: z.array(z.string()).nullable(),
-    dialogueVsDescription: z.string().nullable(),
-    suggestedLength: z.enum(["short", "medium", "long"]).nullable(),
+        .enum(EMOTIONAL_BEATS)
+        .describe(
+            "Target emotional response - must be one of: fear (dread/anxiety), hope (optimism/possibility), tension (conflict/suspense), relief (resolution/safety), elevation (moral inspiration), catharsis (emotional release), despair (loss/hopelessness), joy (happiness/triumph)",
+        ),
+    characterFocus: z
+        .array(z.string())
+        .describe(
+            "Array of character IDs who are the primary focus of this scene",
+        ),
+    settingId: z
+        .string()
+        .describe(
+            "Setting ID where this scene takes place (references Setting.id)",
+        ),
+    sensoryAnchors: z
+        .array(z.string())
+        .describe(
+            "Concrete sensory details to ground the scene (sight, sound, smell, touch, taste) - specific and evocative for show-don't-tell prose",
+        ),
+    dialogueVsDescription: z
+        .string()
+        .describe(
+            'Balance guidance for prose generation - format: "X% dialogue, Y% description" - example: "60% dialogue, 40% description" or "dialogue-heavy" or "description-focused"',
+        ),
+    suggestedLength: z
+        .enum(SUGGESTED_LENGTHS)
+        .describe(
+            "Recommended word count - must be one of: short (300-500 words), medium (500-800 words), long (800-1000 words)",
+        ),
 });
 
 /**
@@ -761,16 +798,63 @@ export type GeneratedSceneSummaryData = z.infer<
 /**
  * Minimal schema for scene evaluation output (AI generates)
  * Used by scene-evaluation-generator to parse evaluation JSON
+ *
+ * Based on "Architectonics of Engagement" framework for scene quality assessment
+ * Scoring Scale: 1 (Nascent) → 2 (Developing) → 3 (Effective/PASSING) → 4 (Exemplary)
  */
 export const GeneratedSceneEvaluationSchema = z.object({
-    plot: z.number().min(1).max(4),
-    character: z.number().min(1).max(4),
-    pacing: z.number().min(1).max(4),
-    prose: z.number().min(1).max(4),
-    worldBuilding: z.number().min(1).max(4),
-    overallScore: z.number().min(1).max(4),
-    feedback: z.string(),
-    suggestedImprovements: z.string(),
+    plot: z
+        .number()
+        .min(1)
+        .max(4)
+        .describe(
+            "Plot quality score (1-4): Evaluates goal clarity, conflict engagement, and stakes progression. Score 3+ = clear dramatic goal with compelling conflict and evident stakes",
+        ),
+    character: z
+        .number()
+        .min(1)
+        .max(4)
+        .describe(
+            "Character quality score (1-4): Evaluates voice distinctiveness, motivation clarity, and emotional authenticity. Score 3+ = unique character voices with clear motivations and genuine emotions",
+        ),
+    pacing: z
+        .number()
+        .min(1)
+        .max(4)
+        .describe(
+            "Pacing quality score (1-4): Evaluates tension modulation, scene rhythm, and narrative momentum. Score 3+ = tension rises and falls strategically with engaging pace that propels story forward",
+        ),
+    prose: z
+        .number()
+        .min(1)
+        .max(4)
+        .describe(
+            "Prose quality score (1-4): Evaluates sentence variety, word choice precision, and sensory engagement. Score 3+ = varied sentences, precise words, and multiple senses engaged",
+        ),
+    worldBuilding: z
+        .number()
+        .min(1)
+        .max(4)
+        .describe(
+            "World-building quality score (1-4): Evaluates setting integration, detail balance, and immersion. Score 3+ = setting supports and enhances action with enriching details",
+        ),
+    overallScore: z
+        .number()
+        .min(1)
+        .max(4)
+        .describe(
+            "Overall scene quality score (1-4): Average of the five category scores. Score 3.0+ = PASSING (professionally crafted, ready for publication). Below 3.0 = needs improvement",
+        ),
+    feedback: z
+        .string()
+        .describe(
+            "General qualitative feedback on the scene's strengths and areas for improvement - should be constructive and specific",
+        ),
+    suggestedImprovements: z
+        .string()
+        .describe(
+            "Specific, actionable improvement suggestions if score < 3.0 - should point to exact sentences or sections with concrete fixes, prioritizing 1-3 high-impact changes",
+        ),
 });
 
 /**

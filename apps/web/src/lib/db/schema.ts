@@ -23,6 +23,10 @@ import {
 import { CORE_TRAITS } from "@/lib/constants/core-traits";
 import { STORY_GENRES } from "@/lib/constants/genres";
 import { STORY_TONES } from "@/lib/constants/tones";
+import {
+    CYCLE_PHASES,
+    EMOTIONAL_BEATS,
+} from "@/lib/studio/generators/zod-schemas.generated";
 
 export const adversityType = pgEnum(
     "adversity_type",
@@ -55,23 +59,14 @@ export const contentType = pgEnum("content_type", [
     "html",
     "plain",
 ]);
-export const cyclePhase = pgEnum("cycle_phase", [
-    "setup",
-    "confrontation",
-    "virtue",
-    "consequence",
-    "transition",
-]);
-export const emotionalBeat = pgEnum("emotional_beat", [
-    "fear",
-    "hope",
-    "tension",
-    "relief",
-    "elevation",
-    "catharsis",
-    "despair",
-    "joy",
-]);
+export const cyclePhase = pgEnum(
+    "cycle_phase",
+    CYCLE_PHASES as unknown as [string, ...string[]],
+);
+export const emotionalBeat = pgEnum(
+    "emotional_beat",
+    EMOTIONAL_BEATS as unknown as [string, ...string[]],
+);
 export const eventType = pgEnum("event_type", [
     "page_view",
     "story_view",
