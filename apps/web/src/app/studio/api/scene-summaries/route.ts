@@ -170,11 +170,10 @@ export async function POST(request: NextRequest) {
         });
 
         // 3. Parse and validate request body
-        const body: unknown = await request.json();
-        const validatedData: GenerateSceneSummariesRequest =
-            generateSceneSummariesSchema.parse(
-                body as GenerateSceneSummariesRequest,
-            );
+        const body: GenerateSceneSummariesRequest =
+            (await request.json()) as GenerateSceneSummariesRequest;
+        const validatedData: z.infer<typeof generateSceneSummariesSchema> =
+            generateSceneSummariesSchema.parse(body);
 
         console.log("[SCENE SUMMARIES API] Request parameters:", {
             storyId: validatedData.storyId,
@@ -277,12 +276,20 @@ export async function POST(request: NextRequest) {
             const sceneId: string = `scene_${nanoid(16)}`;
             const now: string = new Date().toISOString();
 
+            // Calculate which chapter this scene belongs to
+            // Scenes are generated in order: chapter1_scene1, chapter1_scene2, ..., chapter2_scene1, chapter2_scene2, ...
+            const chapterIndex: number = Math.floor(
+                i / (validatedData.scenesPerChapter ?? 3),
+            );
+            const currentChapter: Chapter = storyChapters[chapterIndex];
+            const currentChapterId: string = currentChapter.id;
+
             // Validate scene data before insert
             const validatedScene: z.infer<typeof insertSceneSchema> =
                 insertSceneSchema.parse({
                     // === IDENTITY ===
                     id: sceneId,
-                    chapterId: sceneData.chapterId,
+                    chapterId: currentChapterId,
                     title: sceneData.title || `Scene ${i + 1}`,
 
                     // === SCENE SPECIFICATION (Planning Layer) ===
