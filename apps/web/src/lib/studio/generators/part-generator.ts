@@ -6,7 +6,7 @@
  * with full context of all previous parts.
  *
  * NOTE: This generator does NOT save to database.
- * Database operations are handled by the caller (API route).
+ * Database operations are handled by the caller (service/API layer).
  */
 
 import { textGenerationClient } from "./ai-client";
@@ -24,7 +24,7 @@ import {
 /**
  * Generate ONE next story part with full context
  *
- * @param params - Part generation parameters with previous parts context
+ * @param params - Part generation parameters with previous parts
  * @returns Part data (caller responsible for database save)
  */
 export async function generatePart(
@@ -108,6 +108,7 @@ export async function generatePart(
                           };
                           macroVirtue?: string;
                           macroConsequence?: string;
+                          macroNewAdversity?: string;
                       }> | null;
 
                       return `Part ${idx + 1}: ${part.title}
@@ -118,7 +119,7 @@ Character Arcs: ${
                                   const char = characters.find(
                                       (c) => c.id === arc.characterId,
                                   );
-                                  return `\n  - ${char?.name || "Unknown"}: ${arc.macroAdversity?.internal || "N/A"} → ${arc.macroVirtue || "N/A"} → ${arc.macroConsequence || "N/A"}`;
+                                  return `\n  - ${char?.name || "Unknown"}: ${arc.macroAdversity?.internal || "N/A"} / ${arc.macroAdversity?.external || "N/A"} → ${arc.macroVirtue || "N/A"} → ${arc.macroConsequence || "N/A"} → ${arc.macroNewAdversity || "N/A"}`;
                               })
                               .join("") || "None"
                       }`;
