@@ -2,10 +2,17 @@
 
 import asyncio
 import logging
+import os
 from typing import Optional, AsyncGenerator
 from vllm import AsyncLLMEngine, AsyncEngineArgs, SamplingParams
 from src.config import settings
 from src.utils.gpu_utils import cleanup_gpu_memory, get_gpu_memory_info
+
+# Set CUDA environment variables before vLLM initialization
+os.environ.setdefault("CUDA_HOME", "/usr/local/cuda-12.6")
+os.environ["PATH"] = f"/usr/local/cuda-12.6/bin:{os.environ.get('PATH', '')}"
+os.environ["LD_LIBRARY_PATH"] = f"/usr/local/cuda-12.6/lib64:{os.environ.get('LD_LIBRARY_PATH', '')}"
+os.environ.setdefault("VLLM_TORCH_COMPILE_LEVEL", "0")  # Disable torch compilation
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +53,7 @@ class TextGenerationService:
                 gpu_memory_utilization=settings.text_gpu_memory_utilization,
                 max_num_seqs=settings.vllm_max_num_seqs,
                 trust_remote_code=True,
+                enforce_eager=True,  # Disable CUDA graphs and torch compilation to avoid triton issues
             )
 
             # Create async engine
