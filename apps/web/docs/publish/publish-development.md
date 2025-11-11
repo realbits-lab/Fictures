@@ -213,7 +213,7 @@ dotenv --file .env.local run pnpm db:migrate
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { scheduledPublications, publishingSchedules } from '@/drizzle/schema';
+import { scheduledPublications, publishingSchedules } from '@/lib/db/schema';
 import { eq, and, lte } from 'drizzle-orm';
 
 /**
@@ -371,7 +371,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { publishingSchedules, scheduledPublications, scenes, chapters } from '@/drizzle/schema';
+import { publishingSchedules, scheduledPublications, scenes, chapters } from '@/lib/db/schema';
 import { eq, and, isNull } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { z } from 'zod';
@@ -570,7 +570,7 @@ async function generatePublicationQueue(
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { scheduledPublications, scenes, chapters, stories } from '@/drizzle/schema';
+import { scheduledPublications, scenes, chapters, stories } from '@/lib/db/schema';
 import { eq, and, gte, lte, inArray } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
@@ -654,7 +654,7 @@ export async function GET(request: NextRequest) {
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { scenes } from '@/drizzle/schema';
+import { scenes } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 export async function POST(
@@ -707,7 +707,7 @@ export async function POST(
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { scenes } from '@/drizzle/schema';
+import { scenes } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 export async function POST(
@@ -760,7 +760,7 @@ export async function POST(
 
 ```typescript
 import { db } from '@/lib/db';
-import { publishingSchedules, scheduledPublications, scenes } from '@/drizzle/schema';
+import { publishingSchedules, scheduledPublications, scenes } from '@/lib/db/schema';
 import { eq, and, isNull, sql } from 'drizzle-orm';
 
 export interface CreateScheduleParams {

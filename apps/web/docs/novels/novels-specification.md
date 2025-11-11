@@ -124,10 +124,146 @@ Example: "In a fractured post-war society where trust has been shattered, the po
 ```
 
 **Metadata to Track:**
-- **Genre**: mystery, romance, thriller, fantasy, etc.
-- **Tone**: hopeful, dark, bittersweet, satirical
+- **Genre**: See Genre Catalog (section 2.1.1) for complete list and descriptions
+- **Tone**: See Tone Catalog (section 2.1.2) for complete list and emotional characteristics
 - **Moral Framework**: What virtues are valued? What vices are punished?
 - **Characters** (2-4 main): name, core trait, internal flaw, external goal
+
+#### 2.1.1 Genre Catalog
+
+**Complete list of supported story genres with descriptions and characteristics:**
+
+| Genre | Icon | Description | Key Elements | Emotional Appeal |
+|-------|------|-------------|--------------|------------------|
+| **Fantasy** | 🧙 | Magical worlds and supernatural elements | Magic systems, mythical creatures, epic quests, chosen ones, supernatural powers | Wonder, escapism, heroism, transformation |
+| **Romance** | 💖 | Love stories and relationships | Emotional connections, relationship development, intimacy, partnership challenges, happy endings | Love, passion, connection, emotional fulfillment |
+| **SciFi** | 🚀 | Future technology and space exploration | Advanced technology, space travel, AI, time travel, alternate realities, scientific concepts | Innovation, exploration, intellectual curiosity, futurism |
+| **Mystery** | 🔍 | Puzzles and investigation | Clues, red herrings, detective work, plot twists, intellectual challenges, crime solving | Curiosity, suspense, intellectual satisfaction, revelation |
+| **Horror** | 👻 | Fear and supernatural terror | Monsters, psychological terror, survival, supernatural threats, dark atmospheres | Fear, adrenaline, catharsis through terror, thrill |
+| **Action** | ⚡ | Fast-paced battles and adventures | Combat sequences, chase scenes, physical conflict, high stakes, heroic feats | Excitement, adrenaline, vicarious thrill, empowerment |
+| **Isekai** | 🌀 | Reborn or transported to new worlds | World transition, second chances, power growth, parallel worlds, adventure in foreign settings | Escapism, wish fulfillment, transformation, new beginnings |
+| **LitRPG** | 🎮 | Game-like systems and progression | Stats and leveling, skill trees, quests, game mechanics, progression systems, achievement | Strategic satisfaction, measurable growth, gaming appeal |
+| **Cultivation** | ⚔️ | Martial arts and power progression | Qi/energy systems, martial arts, power levels, spiritual growth, ancient wisdom, combat mastery | Mastery, self-improvement, power fantasy, discipline |
+| **Slice** | ☕ | Everyday moments and relationships | Daily life, subtle emotions, character studies, mundane beauty, small victories, quiet reflection | Comfort, relatability, gentle warmth, peaceful reflection |
+| **Paranormal** | 🌙 | Vampires, werewolves, and supernatural beings | Supernatural creatures, hidden worlds, forbidden love, dual identities, supernatural powers | Dark romance, mystique, forbidden attraction, otherworldly allure |
+| **Dystopian** | 🏚️ | Dark futures and oppressive societies | Totalitarian governments, post-apocalyptic worlds, social commentary, survival, resistance | Social awareness, cautionary tales, rebellion, hope in darkness |
+| **Historical** | 📜 | Stories set in the past | Period-accurate settings, historical events, cultural context, authentic details, bygone eras | Nostalgia, education, cultural appreciation, time travel through story |
+| **LGBTQ** | 🏳️‍🌈 | LGBTQ+ romance and stories | Queer relationships, identity exploration, coming out, LGBTQ+ experiences, representation | Identity affirmation, representation, authentic love stories, community |
+
+**Genre Selection Guidelines:**
+
+1. **Primary Genre**: Choose the most dominant genre that defines the story's core experience
+2. **Genre Blending**: Stories can incorporate elements from multiple genres, but select one primary
+3. **Audience Targeting**: Consider target audience preferences when selecting genre
+4. **Moral Framework Alignment**: Ensure genre supports the story's moral exploration
+5. **Adversity-Triumph Compatibility**: Each genre should amplify the adversity-triumph cycles:
+   - **Fantasy**: External magic/power obstacles force internal growth
+   - **Romance**: Relationship adversity tests emotional maturity
+   - **Mystery**: Investigation challenges reveal character depth
+   - **Horror**: Fear forces courage and moral choices
+   - **Action**: Physical conflict requires moral strength
+   - **Isekai**: New world challenges test core values
+   - **LitRPG**: System limitations force strategic virtue
+   - **Cultivation**: Power progression mirrors spiritual growth
+   - **Slice**: Small adversities create meaningful moments
+   - **Paranormal**: Supernatural nature tests humanity/morality
+   - **Dystopian**: Oppression challenges moral integrity
+   - **Historical**: Period constraints force timeless choices
+   - **LGBTQ**: Identity adversity demonstrates authentic courage
+
+**Genre-Specific Adversity-Triumph Examples:**
+
+**Fantasy:**
+- **Adversity**: Young mage fears their destructive power (internal) + dark lord threatens kingdom (external)
+- **Virtue**: Uses dangerous magic to save innocents despite risk of corruption
+- **Consequence**: Power transforms into healing magic through selfless intent
+- **New Adversity**: Healing power draws attention of jealous council
+
+**Romance:**
+- **Adversity**: Protagonist fears vulnerability (internal) + forced proximity with rival (external)
+- **Virtue**: Chooses honesty about feelings despite risk of rejection
+- **Consequence**: Rival reveals shared fear, connection deepens unexpectedly
+- **New Adversity**: Past relationship trauma resurfaces, threatening new bond
+
+**Mystery:**
+- **Adversity**: Detective doubts own judgment (internal) + complex murder case (external)
+- **Virtue**: Pursues truth despite pressure to close case quickly
+- **Consequence**: Overlooked clue reveals institutional corruption
+- **New Adversity**: Investigation puts detective's family at risk
+
+**Cultivation:**
+- **Adversity**: Cultivator believes power = worth (internal) + rival challenges them (external)
+- **Virtue**: Helps weaker disciple instead of training for duel
+- **Consequence**: Disciple's technique insight unlocks new cultivation path
+- **New Adversity**: New path attracts forbidden sect's attention
+
+**Code Reference:**
+- **Constants**: `src/lib/constants/genres.ts` - Single source of truth for genre definitions
+- **Type**: `StoryGenre` - TypeScript type for genre values
+- **Metadata**: `GENRE_METADATA` - Detailed genre characteristics for UI and generation
+- **Array**: `STORY_GENRES` - Array of all valid genre values for validation
+
+#### 2.1.2 Tone Catalog
+
+**Complete list of supported story tones with emotional characteristics and narrative guidance:**
+
+| Tone | Label | Description | Emotional Characteristics | Narrative Guidance |
+|------|-------|-------------|--------------------------|-------------------|
+| **hopeful** | Hopeful | Optimistic and uplifting narratives that emphasize positive outcomes and character growth | Warmth, inspiration, light overcoming darkness, faith in humanity | Focus on resilience, redemption arcs, meaningful connections, and earned victories |
+| **dark** | Dark | Grim and somber narratives exploring moral complexity, tragedy, and harsh realities | Tension, dread, moral ambiguity, harsh consequences, psychological depth | Emphasize difficult choices, moral compromise, tragic outcomes, and psychological realism |
+| **bittersweet** | Bittersweet | Emotionally nuanced narratives balancing joy and sorrow, victory and loss | Melancholy beauty, poignant reflection, mixed emotions, nostalgic resonance | Balance triumph with sacrifice, happiness with loss, growth with letting go |
+| **satirical** | Satirical | Witty and critical narratives using humor and irony to expose flaws and absurdities | Sharp wit, irony, social commentary, absurd humor, critical observation | Use irony and exaggeration to critique society, institutions, or human nature |
+
+**Tone Selection Guidelines:**
+
+1. **Emotional Foundation**: Choose tone based on the story's core emotional journey
+2. **Genre Compatibility**: Ensure tone complements the selected genre
+   - Fantasy + Hopeful = Epic triumph over darkness
+   - Horror + Dark = Psychological terror and grim outcomes
+   - Romance + Bittersweet = Love with sacrifices and losses
+   - SciFi + Satirical = Social commentary through futuristic lens
+3. **Adversity-Triumph Alignment**: Each tone amplifies the cycle differently:
+   - **Hopeful**: Virtues lead to uplifting consequences, darkness eventually yields to light
+   - **Dark**: Virtues may lead to tragic outcomes, moral complexity in consequences
+   - **Bittersweet**: Virtues bring mixed blessings, joy and sorrow intertwined
+   - **Satirical**: Virtues expose absurdities, ironic consequences reveal deeper truths
+4. **Consistency**: Maintain tone throughout the story while allowing emotional variety within scenes
+5. **Audience Appeal**: Consider reader expectations for emotional experience
+
+**Tone-Specific Adversity-Triumph Examples:**
+
+**Hopeful Tone:**
+- **Adversity**: War orphan fears trusting others (internal) + must join refugee group to survive (external)
+- **Virtue**: Shares last food with sick stranger despite own hunger
+- **Consequence**: Stranger's family adopts orphan, providing home and belonging
+- **New Adversity**: Family faces eviction, orphan must help save new home
+- **Emotional Arc**: Fear → Generosity → Warmth → Renewed purpose
+
+**Dark Tone:**
+- **Adversity**: Detective compromised moral code (internal) + serial killer targets the innocent (external)
+- **Virtue**: Refuses to use illegal methods despite pressure to stop killer quickly
+- **Consequence**: Killer claims another victim while detective follows proper procedure
+- **New Adversity**: Detective must live with guilt while continuing ethical investigation
+- **Emotional Arc**: Moral conflict → Principled stand → Tragic loss → Haunting responsibility
+
+**Bittersweet Tone:**
+- **Adversity**: Aging artist fears irrelevance (internal) + final exhibition approaches (external)
+- **Virtue**: Mentors young rival artist instead of competing for spotlight
+- **Consequence**: Young artist's success overshadows mentor's final work, yet mentor finds peace in legacy
+- **New Adversity**: Must accept fading recognition while celebrating student's rise
+- **Emotional Arc**: Fear of obscurity → Generosity → Mixed triumph → Poignant acceptance
+
+**Satirical Tone:**
+- **Adversity**: Corporate drone believes success = conformity (internal) + absurd workplace demands (external)
+- **Virtue**: Exposes ridiculous policy despite risk of termination
+- **Consequence**: Gets promoted for "innovative thinking" while nothing actually changes
+- **New Adversity**: Now must enforce same absurd policies as management
+- **Emotional Arc**: Compliance → Bold honesty → Ironic reward → Absurd entrapment
+
+**Code Reference:**
+- **Constants**: `src/lib/constants/tones.ts` - Single source of truth for tone definitions
+- **Type**: `StoryTone` - TypeScript type for tone values
+- **Metadata**: `TONE_METADATA` - Detailed tone characteristics for UI and generation
 
 ### 2.2 Part Level (Act Structure)
 
@@ -373,20 +509,18 @@ interface Character {
   };
 
   // === VISUAL GENERATION ===
-  imageUrl?: string;  // Original portrait (1024×1024 from DALL-E 3)
-  imageVariants?: {
+  imageUrl: string | null;  // Original portrait (1024×1024 from DALL-E 3)
+  imageVariants: {
     imageId: string;
     originalUrl: string;
     variants: Array<{
-      format: 'avif' | 'webp' | 'jpeg';
+      format: 'avif' | 'jpeg';
       width: number;
       height: number;
       url: string;
-      size: number;
     }>;
     generatedAt: string;
-  };
-  visualStyle?: string; // "realistic" | "anime" | "painterly" | "cinematic"
+  } | null;
 
   // === METADATA ===
   createdAt: Date;
@@ -443,7 +577,7 @@ interface Setting {
   id: string;
   storyId: string;
   name: string;
-  description: string; // Comprehensive paragraph (3-5 sentences)
+  summary: string; // Comprehensive paragraph (3-5 sentences)
 
   // === ADVERSITY-TRIUMPH CORE (The Engine) ===
   adversityElements: {
@@ -471,25 +605,23 @@ interface Setting {
     sound: string[];                // Auditory elements (3-7 items)
     smell: string[];                // Olfactory details (2-5 items)
     touch: string[];                // Tactile sensations (2-5 items)
-    taste: string[];                // Flavor elements (0-2 items, optional)
+    taste: string[] | null;         // Flavor elements (0-2 items, optional - can be null)
   };
-  architecturalStyle?: string;      // Structural design language (if applicable)
+  architecturalStyle: string; // Structural design language (if applicable)
 
   // === VISUAL GENERATION ===
-  imageUrl?: string;  // Original environment image (1792×1024, 16:9 from DALL-E 3)
-  imageVariants?: {
+  imageUrl: string | null;  // Original environment image (1792×1024, 16:9 from DALL-E 3)
+  imageVariants: {
     imageId: string;
     originalUrl: string;
     variants: Array<{
-      format: 'avif' | 'webp' | 'jpeg';
+      format: 'avif' | 'jpeg';
       width: number;
       height: number;
       url: string;
-      size: number;
     }>;
     generatedAt: string;
-  };
-  visualStyle: string;              // "realistic" | "anime" | "painterly" | "cinematic"
+  } | null;
   visualReferences: string[];       // Style inspirations: ["Blade Runner 2049", "Studio Ghibli countryside"]
   colorPalette: string[];           // Dominant colors: ["warm golds", "dusty browns", "deep greens"]
 
@@ -535,51 +667,80 @@ interface Setting {
 ### 3.3 Story Schema
 
 ```typescript
-// Story table
+// Story table (from src/lib/db/schema.ts)
 interface Story {
+  // === IDENTITY ===
   id: string;
-  userId: string;
+  authorId: string;
+  title: string;
 
-  // NEW: Consistent with part/chapter naming
+  // === ADVERSITY-TRIUMPH CORE ===
   summary: string; // General thematic premise and moral framework
+  genre: StoryGenre; // See Genre Catalog (section 2.1.1)
+  tone: StoryTone; // 'hopeful' | 'dark' | 'bittersweet' | 'satirical' (see Tone Catalog 2.1.2)
+  moralFramework: string; // What virtues are valued in this world?
 
-  // Metadata
-  genre: string;
-  tone: string; // "hopeful" | "dark" | "bittersweet" | "satirical"
-  moralFramework: string; // "What virtues are valued in this world?"
+  // === PUBLISHING & ENGAGEMENT ===
+  status: 'writing' | 'published'; // Default: 'writing'
+  viewCount: number; // Default: 0
+  rating: number; // Default: 0
+  ratingCount: number; // Default: 0
 
-  // Main characters reference (stored in characters table)
-  // 2-4 main characters with isMain=true
+  // === VISUAL ===
+  imageUrl: string | null; // Original story cover image (1344×768, 7:4 aspect ratio)
+  imageVariants: {
+    imageId: string;
+    originalUrl: string;
+    variants: Array<{
+      format: 'avif' | 'jpeg';
+      width: number;
+      height: number;
+      url: string;
+    }>;
+    generatedAt: string;
+  } | null;
 
-  // Settings reference (stored in settings table)
-  // 2-6 primary settings where story unfolds
+  // === METADATA ===
+  createdAt: string; // Timestamp as ISO string
+  updatedAt: string; // Timestamp as ISO string
 
-  // Deprecated (keep for migration)
-  premise?: string;
-  dramaticQuestion?: string;
-  theme?: string; // Deprecated - migrated to summary
-
-  createdAt: Date;
-  updatedAt: Date;
+  // Note: Main characters (2-4 with isMain=true) stored in characters table
+  // Note: Settings (2-6 primary) stored in settings table
 }
 ```
+
+**Database Column Mapping:**
+- TypeScript fields use camelCase (e.g., `authorId`, `viewCount`)
+- Database columns use snake_case (e.g., `author_id`, `view_count`)
+- Drizzle ORM automatically handles the mapping
+
+**Nullability:**
+- Core identity fields (id, authorId, title, status) are NOT NULL
+- Content fields (summary, genre, tone, moralFramework) are nullable (generated during creation)
+- Visual fields (imageUrl, imageVariants) are nullable
+- Engagement metrics have default values (0)
+
+**Code Reference:**
+- **Schema**: `src/lib/db/schema.ts:273-333` - Complete story table definition
+- **Types**: `src/lib/studio/generators/zod-schemas.generated.ts` - Generated Zod schemas
+- **Constants**: `src/lib/constants/genres.ts`, `src/lib/constants/tones.ts` - Genre and tone definitions
 
 ### 3.4 Part Schema
 
 ```typescript
-// Part table
+// Part table (from src/lib/db/schema.ts)
 interface Part {
+  // === IDENTITY ===
   id: string;
   storyId: string;
-
-  actNumber: number; // 1, 2, or 3
   title: string;
 
-  // NEW: MACRO adversity-triumph arcs with progression planning
-  summary: string; // Multi-character MACRO arcs with progression strategy
+  // === ADVERSITY-TRIUMPH CORE (Act Structure) ===
+  summary: string; // MACRO adversity-triumph arcs per character with progression planning
 
-  // Tracking structure - ENHANCED for nested cycles
-  characterArcs: {
+  // === MACRO ARC TRACKING (Nested Cycles) ===
+  // Stored as JSON in database
+  characterArcs: Array<{
     characterId: string; // References Character.id
 
     // MACRO ARC (Part-level transformation)
@@ -592,141 +753,250 @@ interface Part {
     macroConsequence: string;    // Earned payoff for virtue
     macroNewAdversity: string;   // How resolution creates next act's challenge
 
-    // NEW: Progression planning
+    // Progression planning
     estimatedChapters: number;     // 2-4 typical
     arcPosition: 'primary' | 'secondary';  // Primary arcs get more chapters
     progressionStrategy: string;    // How does this unfold gradually?
     // Example: "Gradual escalation across 3 chapters: setup → crisis → resolution"
-  }[];
+  }> | null;
 
-  // Deprecated
-  description?: string;
-  thematicFocus?: string;
+  // === ORDERING ===
+  orderIndex: number; // Act number / order
 
-  order: number;
-  createdAt: Date;
-  updatedAt: Date;
+  // === METADATA ===
+  createdAt: string; // Timestamp as ISO string
+  updatedAt: string; // Timestamp as ISO string
 }
 ```
+
+**Database Column Mapping:**
+- TypeScript fields use camelCase (e.g., `storyId`, `orderIndex`)
+- Database columns use snake_case (e.g., `story_id`, `order_index`)
+- `characterArcs` stored as JSON type in database
+
+**Nullability:**
+- Core identity fields (id, storyId, title) are NOT NULL
+- Content fields (summary, characterArcs, orderIndex) are nullable
+
+**Code Reference:**
+- **Schema**: `src/lib/db/schema.ts:335-385` - Complete part table definition
 
 ### 3.5 Chapter Schema
 
 ```typescript
-// Chapter table
+// Chapter table (from src/lib/db/schema.ts)
 interface Chapter {
+  // === IDENTITY ===
   id: string;
-  partId: string;
   storyId: string;
-
+  partId: string;
   title: string;
 
-  // NEW: Single adversity-triumph cycle
-  summary: string;
+  // === ADVERSITY-TRIUMPH CORE (Micro Cycle) ===
+  summary: string; // ONE complete adversity-triumph cycle
 
-  // NEW: Nested cycle tracking (links micro-cycle to macro arc)
+  // === NESTED CYCLE TRACKING (Links micro-cycle to macro arc) ===
   characterId: string; // References Character.id (the character whose macro arc this chapter advances)
   arcPosition: 'beginning' | 'middle' | 'climax' | 'resolution'; // 'climax' = MACRO moment
   contributesToMacroArc: string; // How this chapter advances the macro arc
 
-  // Cycle tracking
-  focusCharacters: string[]; // Character ID(s)
+  // === CYCLE TRACKING ===
+  focusCharacters: string[]; // Array of Character IDs, default: []
   adversityType: 'internal' | 'external' | 'both';
   virtueType: 'courage' | 'compassion' | 'integrity' | 'sacrifice' | 'loyalty' | 'wisdom';
 
-  // Causal linking for earned luck
-  seedsPlanted: {
+  // === CAUSAL LINKING (For Earned Luck) ===
+  // Both stored as JSON in database
+  seedsPlanted: Array<{
     id: string;
     description: string;
     expectedPayoff: string;
-  }[];
+  }>; // Default: []
 
-  seedsResolved: {
+  seedsResolved: Array<{
     sourceChapterId: string;
     sourceSceneId: string;
     seedId: string;
     payoffDescription: string;
-  }[];
+  }>; // Default: []
 
-  // Connection to narrative flow
+  // === CONNECTION TO NARRATIVE FLOW ===
   connectsToPreviousChapter: string; // How previous resolution created this adversity
   createsNextAdversity: string; // How this resolution creates next problem
 
-  // Deprecated
-  description?: string;
-  dramaticQuestion?: string;
+  // === PUBLISHING ===
+  status: 'writing' | 'published'; // Default: 'writing'
+  publishedAt: string | null; // Timestamp as ISO string
+  scheduledFor: string | null; // Timestamp as ISO string
 
-  order: number;
-  createdAt: Date;
-  updatedAt: Date;
+  // === ORDERING ===
+  orderIndex: number;
+
+  // === METADATA ===
+  createdAt: string; // Timestamp as ISO string
+  updatedAt: string; // Timestamp as ISO string
 }
 ```
+
+**Database Column Mapping:**
+- TypeScript fields use camelCase (e.g., `storyId`, `partId`, `publishedAt`)
+- Database columns use snake_case (e.g., `story_id`, `part_id`, `published_at`)
+- JSON fields: `focusCharacters`, `seedsPlanted`, `seedsResolved`
+
+**Nullability:**
+- Core identity fields (id, storyId, title, status, orderIndex) are NOT NULL
+- Part relationship (partId) is nullable
+- All Adversity-Triumph tracking fields are nullable
+- Causal linking arrays have default empty array values
+
+**Code Reference:**
+- **Schema**: `src/lib/db/schema.ts:387-468` - Complete chapter table definition
+- **Enums**: `adversityType` (line 21-25), `arcPosition` (line 35-40), `virtueType` (line 134-141)
 
 ### 3.6 Scene Schema
 
+**Important**: Scene has two schema definitions:
+- **Database Schema** (below): Allows nulls for flexibility during creation/editing
+- **Generation Schema** (`GeneratedSceneSummarySchema`): All fields required for AI generation
+
 ```typescript
-// Scene table
+// Scene table (from src/lib/db/schema.ts)
+// Database storage schema - allows nulls for flexibility
 interface Scene {
+  // === IDENTITY ===
   id: string;
   chapterId: string;
-  storyId: string;
-
   title: string;
 
-  // NEW: Scene specification (planning layer)
+  // === SCENE SPECIFICATION (Planning Layer) ===
   summary: string; // Scene specification: what happens, emotional beat, purpose, sensory anchors
 
-  // Cycle phase tracking
-  cyclePhase: 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition';
-  emotionalBeat: 'fear' | 'hope' | 'tension' | 'relief' | 'elevation' | 'catharsis' | 'despair' | 'joy';
+  // === CYCLE PHASE TRACKING ===
+  cyclePhase: 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition' | null;
+  emotionalBeat: 'fear' | 'hope' | 'tension' | 'relief' | 'elevation' | 'catharsis' | 'despair' | 'joy' | null;
 
-  // Planning metadata (guides content generation)
-  characterFocus: string[]; // Character IDs appearing in this scene
-  settingId?: string; // Setting ID where this scene takes place (references Setting.id, nullable for legacy/ambiguous scenes)
-  sensoryAnchors: string[]; // Key sensory details to include (e.g., "rain on metal roof", "smell of smoke")
+  // === PLANNING METADATA (Guides Content Generation) ===
+  characterFocus: string[]; // Array of Character IDs, default: []
+  settingId: string | null; // Setting ID where this scene takes place (references Setting.id, nullable for legacy/ambiguous scenes)
+  sensoryAnchors: string[]; // Array of sensory details, default: []
   dialogueVsDescription: string; // Balance guidance (e.g., "60% dialogue, 40% description")
   suggestedLength: 'short' | 'medium' | 'long'; // short: 300-500, medium: 500-800, long: 800-1000 words
 
-  // Generated prose (execution layer)
-  content: string; // Full prose narrative generated from summary
+  // === GENERATED PROSE (Execution Layer) ===
+  content: string; // Full prose narrative generated from summary, default: ""
 
-  // Existing fields
-  imageUrl?: string;
-  imageVariants?: ImageVariants;
+  // === VISUAL ===
+  imageUrl: string | null;
+  imageVariants: {
+    imageId: string;
+    originalUrl: string;
+    variants: Array<{
+      format: 'avif' | 'jpeg';
+      width: number;
+      height: number;
+      url: string;
+    }>;
+    generatedAt: string;
+  } | null;
 
-  order: number;
-  createdAt: Date;
-  updatedAt: Date;
+  // === PUBLISHING (Novel Format) ===
+  visibility: 'private' | 'unlisted' | 'public'; // Default: 'private'
+  publishedAt: string | null; // Timestamp as ISO string
+  publishedBy: string | null; // User ID who published
+  unpublishedAt: string | null; // Timestamp as ISO string
+  unpublishedBy: string | null; // User ID who unpublished
+  scheduledFor: string | null; // Timestamp as ISO string
+  autoPublish: boolean; // Default: false
+
+  // === COMIC FORMAT ===
+  comicStatus: 'none' | 'draft' | 'published'; // Default: 'none'
+  comicPublishedAt: string | null; // Timestamp as ISO string
+  comicPublishedBy: string | null; // User ID who published comic
+  comicUnpublishedAt: string | null; // Timestamp as ISO string
+  comicUnpublishedBy: string | null; // User ID who unpublished comic
+  comicGeneratedAt: string | null; // Timestamp as ISO string
+  comicPanelCount: number; // Default: 0
+  comicVersion: number; // Default: 1
+
+  // === ANALYTICS ===
+  viewCount: number; // Default: 0
+  uniqueViewCount: number; // Default: 0
+  novelViewCount: number; // Default: 0
+  novelUniqueViewCount: number; // Default: 0
+  comicViewCount: number; // Default: 0
+  comicUniqueViewCount: number; // Default: 0
+  lastViewedAt: string | null; // Timestamp as ISO string
+
+  // === ORDERING ===
+  orderIndex: number;
+
+  // === METADATA ===
+  createdAt: string; // Timestamp as ISO string
+  updatedAt: string; // Timestamp as ISO string
 }
 ```
 
-### 3.7 Migration Strategy
+**Database Column Mapping:**
+- TypeScript fields use camelCase (e.g., `chapterId`, `imageUrl`, `publishedAt`)
+- Database columns use snake_case (e.g., `chapter_id`, `image_url`, `published_at`)
+- JSONB fields: `characterFocus`, `sensoryAnchors`
 
-**Phase 1**: Add new fields alongside existing
-- Story: Add `summary`, `genre`, `tone`, `moralFramework`
-- Character: Add `isMain`, `summary`, `coreTrait`, `internalFlaw`, `externalGoal`, `relationships`, `voiceStyle`
-- Setting: Add `adversityElements`, `symbolicMeaning`, `cycleAmplification`, `emotionalResonance`
-- Part: Add `summary`, `characterArcs`
-- Chapter: Add `summary`, cycle tracking fields
-- Scene: Add `summary`, `cyclePhase`, `emotionalBeat`, `characterFocus`, `sensoryAnchors`, `dialogueVsDescription`, `suggestedLength`
+**Nullability (Database Schema):**
+- Core identity fields (id, chapterId, title, visibility, orderIndex) are NOT NULL
+- Content generation fields (summary, cyclePhase, emotionalBeat, settingId, dialogueVsDescription, suggestedLength) are nullable to allow:
+  - Manual editing and draft states
+  - Legacy scenes created before schema updates
+  - Incremental scene development
+- Generated prose (content) has default empty string
+- JSONB arrays (characterFocus, sensoryAnchors) have default empty array values
+- All publishing and analytics fields are nullable or have default values
 
-**Phase 2**: Migrate existing data
-- Convert old `premise` + `dramaticQuestion` + `theme` → new `summary`
-- Convert old part `description` → new `summary`
-- Convert old chapter `description` → new `summary`
-- Scene `summary` starts empty (new field, no migration needed)
+**Nullability (Generation Schema):**
+- ✅ ALL fields are required - AI must provide complete scene specifications
+- ⚠️ This is enforced at the Zod schema level, not the database level
+- 🔄 When AI generates scenes, all fields must be present and valid
 
-**Phase 3**: Deprecate old fields
-- Mark `premise`, `dramaticQuestion`, `theme` as optional in schema
-- Remove from UI
-- Remove from new story generation
+**Code Reference:**
+- **Database Schema**: `src/lib/db/schema.ts:470-591` - Complete scene table definition
+- **Generation Schema**: `src/lib/studio/generators/zod-schemas.generated.ts:740-785` - AI generation schema
+- **Enums**: `cyclePhase` (line 62-67), `emotionalBeat` (line 68-73), `visibility` (line 142-146), `comicStatus` (line 48-52)
+- **Enum Constants**: `CYCLE_PHASES`, `EMOTIONAL_BEATS`, `SUGGESTED_LENGTHS` (line 681-706)
 
-**Naming Consistency**:
-All hierarchical levels now use `summary` for their planning/specification layer:
-- `Story.summary`: General thematic premise and moral framework
-- `Part.summary`: Adversity-triumph cycles for this act
-- `Chapter.summary`: Single adversity-triumph cycle
-- `Scene.summary`: Scene specification (what happens, purpose, sensory anchors)
-- `Scene.content`: Full prose narrative (execution layer)
+#### Scene Generation Schema
+
+The `GeneratedSceneSummarySchema` is used by AI to generate scene summaries. Unlike the database schema, **all fields are required** to ensure complete scene specifications:
+
+```typescript
+// GeneratedSceneSummarySchema (from zod-schemas.generated.ts)
+// AI generation schema - all fields required
+interface GeneratedSceneSummary {
+  title: string;                    // Scene title - descriptive and engaging
+  summary: string;                  // Scene specification: what happens, emotional beat, purpose, and key moments
+  cyclePhase: CyclePhase;          // Position in adversity-triumph cycle (required)
+  emotionalBeat: EmotionalBeat;    // Target emotional response (required)
+  characterFocus: string[];         // Array of character IDs (required, can be empty array)
+  settingId: string;               // Setting ID where scene takes place (required)
+  sensoryAnchors: string[];        // Concrete sensory details (required, can be empty array)
+  dialogueVsDescription: string;   // Balance guidance (required, e.g., "60% dialogue, 40% description")
+  suggestedLength: SuggestedLength; // Recommended word count (required)
+}
+
+// Enum types
+type CyclePhase = 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition';
+type EmotionalBeat = 'fear' | 'hope' | 'tension' | 'relief' | 'elevation' | 'catharsis' | 'despair' | 'joy';
+type SuggestedLength = 'short' | 'medium' | 'long';
+```
+
+**Key Differences from Database Schema:**
+- ✅ All fields are **required** (no nulls)
+- ✅ Enum types are strictly typed using exported constants
+- ✅ Arrays cannot be null (use empty arrays instead)
+- ✅ Comprehensive `.describe()` annotations guide AI generation
+- ⚠️ `settingId` is required (AI must always assign a setting)
+
+**Why Two Schemas?**
+- **Database**: Flexible for manual editing, legacy data, and incomplete scenes
+- **Generation**: Strict requirements ensure AI produces complete, valid scene specifications
 
 ---
 
@@ -781,79 +1051,6 @@ From "The Last Garden" test story:
 
 ---
 
-## Part V: Implementation Roadmap
-
-### Phase 1: Database Schema (Week 1-2)
-
-**Tasks**:
-1. Add new fields to existing tables (theme, summary, cycle tracking)
-2. Create migration script for existing stories
-3. Update TypeScript types
-4. Implement database access layer for new fields
-
-**Deliverables**:
-- Updated schema.ts with new fields
-- Migration script: `scripts/migrate-to-adversity-triumph.mjs`
-- Updated types in `src/types/`
-
-### Phase 2: Generation APIs (Week 3-4)
-
-**Tasks**:
-1. Implement story summary generation endpoint
-2. Implement part summary generation endpoint
-3. Implement chapter summary generation endpoint
-4. Implement scene specification generation endpoint
-5. Update scene content generation with cycle-aware prompts
-
-**Deliverables**:
-- `/api/generation/story-summary`
-- `/api/generation/parts`
-- `/api/generation/chapters`
-- `/api/generation/scene-summaries`
-- Updated `/api/generation/scene-content`
-
-### Phase 3: Complete Flow Integration (Week 5-6)
-
-**Tasks**:
-1. Update `scripts/generate-complete-story.mjs` to use new APIs
-2. Implement seed planting and resolution tracking
-3. Add causal linking visualization (optional UI feature)
-4. Test full generation flow end-to-end
-
-**Deliverables**:
-- Updated story generation script
-- Seed tracking system
-- Complete adversity-triumph cycle generation working
-
-### Phase 4: Evaluation & Optimization (Week 7-8)
-
-**Tasks**:
-1. Integrate scene evaluation with cycle phase awareness
-2. Add cycle-specific quality metrics
-3. Optimize prompts based on generation results
-4. A/B test emotional resonance with test readers
-
-**Deliverables**:
-- Enhanced scene evaluation for cycle phases
-- Prompt optimization based on testing
-- Quality metrics dashboard
-
-### Phase 5: Documentation & Testing (Week 9-10)
-
-**Tasks**:
-1. Complete API documentation
-2. Write developer guide
-3. Create example stories using new system
-4. Comprehensive testing suite
-
-**Deliverables**:
-- Complete API docs
-- Developer implementation guide
-- 5+ example stories showcasing system
-- Test suite with 80%+ coverage
-
----
-
 ## Part VI: Adversity-Triumph Engine
 
 ### System Overview
@@ -868,43 +1065,3 @@ From "The Last Garden" test story:
 - **Publishing Flow**: Automated scene-by-scene scheduling
 - **Generation Pipeline**: 9-phase system with iterative improvement
 - **Add**: Seed tracking, causal linking validation, emotional metrics
-
----
-
-## Part VII: References
-
-This architecture is grounded in:
-
-1. **"The Architecture of Affect" Research Document**
-   - Adversity-Triumph Engine mechanics
-   - Causally-linked serendipity principles
-   - Emotional trigger taxonomy
-   - Gam-dong, Jeong, Han concepts
-
-2. **Narrative Theory**
-   - Three-Act Structure (Aristotle, Syd Field)
-   - The Hero's Journey (Joseph Campbell)
-   - Character Arc Theory (internal + external conflict)
-
-3. **Psychology**
-   - Moral elevation (Haidt)
-   - Catharsis (Aristotelian interpretation)
-   - Narrative transportation (Green & Brock)
-   - Empathy through fiction (Mar & Oatley)
-
-4. **Cultural Studies**
-   - Korean drama narrative techniques
-   - Affective interludes
-   - Jeong-based storytelling
-
----
-
-## Conclusion
-
-This specification transforms story generation from plot-driven to **emotion-driven**, using the Cyclic Adversity-Triumph Engine as the core mechanism for creating profound emotional resonance.
-
-**Key Innovation**: Every level of the narrative hierarchy (story → part → chapter → scene) is structured around adversity-triumph cycles, with each cycle designed to trigger specific emotions (empathy → moral elevation → catharsis → Gam-dong).
-
-**Implementation Priority**: Focus on system prompt engineering first—this is where 80% of the quality comes from. The data model and APIs are just scaffolding for the prompts to work effectively.
-
-**Expected Outcome**: Stories that don't just entertain, but move readers deeply through the careful architecture of moral beauty, earned triumph, and the affirmation of human virtue.

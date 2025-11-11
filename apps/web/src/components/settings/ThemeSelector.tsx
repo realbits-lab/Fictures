@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
+import { useTheme } from "next-themes";
+import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils/cn";
 
 interface ThemeSelectorProps {
@@ -255,10 +255,10 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
 		if (!session?.user?.id) return;
 
 		try {
-			await fetch('/settings/api/user', {
-				method: 'PUT',
+			await fetch("/settings/api/user", {
+				method: "PUT",
 				headers: {
-					'Content-Type': 'application/json',
+					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
 					preferences: {
@@ -267,7 +267,7 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
 				}),
 			});
 		} catch (error) {
-			console.error('Failed to save theme preference:', error);
+			console.error("Failed to save theme preference:", error);
 		}
 	};
 
@@ -283,15 +283,18 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
 			if (!session?.user?.id) return;
 
 			try {
-				const response = await fetch('/settings/api/user');
+				const response = await fetch("/settings/api/user");
 				if (response.ok) {
 					const settings = await response.json();
-					if (settings.preferences?.theme && settings.preferences.theme !== theme) {
+					if (
+						settings.preferences?.theme &&
+						settings.preferences.theme !== theme
+					) {
 						setTheme(settings.preferences.theme);
 					}
 				}
 			} catch (error) {
-				console.error('Failed to load user theme preference:', error);
+				console.error("Failed to load user theme preference:", error);
 			}
 		};
 

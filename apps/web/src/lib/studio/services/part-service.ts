@@ -1,0 +1,150 @@
+/**
+ * Part Service (Singular - Extreme Incremental)
+ *
+ * Service layer for generating ONE next part with full context awareness.
+ * This is the extreme incremental approach where each part is generated
+ * one at a time, seeing all previous parts.
+ */
+
+import { eq } from "drizzle-orm";
+import { nanoid } from "nanoid";
+import { db } from "@/lib/db";
+import { characters, parts, stories } from "@/lib/db/schema";
+import { generatePart } from "../generators/part-generator";
+import type {
+    GeneratePartParams,
+    GeneratePartResult,
+} from "../generators/types";
+import {
+    type Character,
+    insertPartSchema,
+    type Part,
+    type Story,
+} from "../generators/zod-schemas.generated";
+
+export interface GeneratePartServiceParams {
+    storyId: string;
+    userId: string;
+}
+
+export interface GeneratePartServiceResult {
+    part: Part;
+    metadata: {
+        generationTime: number;
+        partIndex: number;
+        totalParts: number;
+    };
+}
+
+export class PartService {
+    /**
+     * Generate and save ONE next part with full context
+     *
+     * Automatically fetches all previous parts and uses them as context
+     * for generating the next part in sequence.
+     */
+    async generateAndSave(
+        params: GeneratePartServiceParams,
+    ): Promise<GeneratePartServiceResult> {
+        const { storyId, userId } = params;
+
+        console.log(
+            "[part-service] 🎬 Generating next part with full context...",
+        );
+
+        // 1. Fetch and verify story
+        const storyResult: Story[] = (await db
+            .select()
+            .from(stories)
+            .where(eq(stories.id, storyId))) as Story[];
+
+        const story: Story | undefined = storyResult[0];
+
+        if (!story) {
+            throw new Error(`Story not found: ${storyId}`);
+        }
+
+        // 2. Verify ownership
+        if (story.authorId !== userId) {
+            throw new Error(
+                "Access denied: You do not have permission to modify this story",
+            );
+        }
+
+        // 3. Fetch characters for the story
+        const storyCharacters: Character[] = (await db
+            .select()
+            .from(characters)
+            .where(eq(characters.storyId, storyId))) as Character[];
+
+        if (storyCharacters.length === 0) {
+            throw new Error(
+                "Story must have characters before generating parts",
+            );
+        }
+
+        // 4. Fetch ALL previous parts for this story (FULL CONTEXT)
+        const previousParts: Part[] = (await db
+            .select()
+            .from(parts)
+            .where(eq(parts.storyId, storyId))
+            .orderBy(parts.orderIndex)) as Part[];
+
+        const nextPartIndex = previousParts.length;
+
+        console.log(
+            `[part-service] Found ${previousParts.length} previous parts`,
+        );
+        console.log(`[part-service] Generating part ${nextPartIndex + 1}...`);
+
+        // 5. Generate next part using singular generator with full context
+        const generateParams: GeneratePartParams = {
+            story,
+            characters: storyCharacters,
+            previousParts,
+            partIndex: nextPartIndex,
+        };
+
+        const generationResult: GeneratePartResult =
+            await generatePart(generateParams);
+
+        // 6. Save part to database
+        const now: string = new Date().toISOString();
+        const partId: string = `part_${nanoid(16)}`;
+
+        const validatedPart = insertPartSchema.parse({
+            id: partId,
+            storyId,
+            title: generationResult.part.title || `Part ${nextPartIndex + 1}`,
+            summary: generationResult.part.summary || null,
+            characterArcs: generationResult.part.characterArcs || null,
+            orderIndex: nextPartIndex + 1,
+            createdAt: now,
+            updatedAt: now,
+        });
+
+        const savedPartArray: Part[] = (await db
+            .insert(parts)
+            .values(validatedPart)
+            .returning()) as Part[];
+        const savedPart: Part = savedPartArray[0];
+
+        console.log(`[part-service] ✅ Saved part ${nextPartIndex + 1}:`, {
+            id: savedPart.id,
+            title: savedPart.title,
+            orderIndex: savedPart.orderIndex,
+        });
+
+        // 7. Return result
+        return {
+            part: savedPart,
+            metadata: {
+                generationTime: generationResult.metadata.generationTime,
+                partIndex: nextPartIndex,
+                totalParts: previousParts.length + 1,
+            },
+        };
+    }
+}
+
+export const partService = new PartService();

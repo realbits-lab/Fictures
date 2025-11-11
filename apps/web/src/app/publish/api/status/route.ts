@@ -1,76 +1,82 @@
-import { NextRequest, NextResponse } from "next/server";
+import { and, desc, eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { stories, chapters } from "@/lib/db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { chapters, stories } from "@/lib/db/schema";
 
 export async function GET(request: NextRequest) {
-  try {
-    const session = await auth();
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+	try {
+		const session = await auth();
 
-    // Get user's stories and chapters for scheduling
-    const userStories = await db
-      .select()
-      .from(stories)
-      .where(eq(stories.authorId, session.user.id))
-      .orderBy(desc(stories.updatedAt))
-      .limit(10);
+		if (!session?.user?.id) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
 
-    // Get user's chapters by joining with stories
-    const userChapters = await db
-      .select({
-        id: chapters.id,
-        title: chapters.title,
-        summary: chapters.summary,
-        status: chapters.status,
-        storyId: chapters.storyId,
-        updatedAt: chapters.updatedAt,
-      })
-      .from(chapters)
-      .innerJoin(stories, eq(chapters.storyId, stories.id))
-      .where(eq(stories.authorId, session.user.id))
-      .orderBy(desc(chapters.updatedAt))
-      .limit(20);
+		// Get user's stories and chapters for scheduling
+		const userStories = await db
+			.select()
+			.from(stories)
+			.where(eq(stories.authorId, session.user.id))
+			.orderBy(desc(stories.updatedAt))
+			.limit(10);
 
-    // Mock publish status data based on actual user data
-    const scheduledItems = userChapters.slice(0, 4).map((chapter, index) => ({
-      id: chapter.id,
-      date: new Date(Date.now() + (index + 1) * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { 
-        weekday: 'short', 
-        month: 'short', 
-        day: 'numeric' 
-      }),
-      title: chapter.title || `Chapter ${index + 1}`,
-      time: ['12:00 PM', '2:00 PM', '6:00 PM', '9:00 AM'][index],
-      status: ['ready', 'draft', 'planned', 'idea'][index]
-    }));
+		// Get user's chapters by joining with stories
+		const userChapters = await db
+			.select({
+				id: chapters.id,
+				title: chapters.title,
+				summary: chapters.summary,
+				status: chapters.status,
+				storyId: chapters.storyId,
+				updatedAt: chapters.updatedAt,
+			})
+			.from(chapters)
+			.innerJoin(stories, eq(chapters.storyId, stories.id))
+			.where(eq(stories.authorId, session.user.id))
+			.orderBy(desc(chapters.updatedAt))
+			.limit(20);
 
-    // For now, just use the first chapter since there's no 'completed' status
-    const readyToPublish = userChapters[0];
+		// Mock publish status data based on actual user data
+		const scheduledItems = userChapters.slice(0, 4).map((chapter, index) => ({
+			id: chapter.id,
+			date: new Date(
+				Date.now() + (index + 1) * 24 * 60 * 60 * 1000,
+			).toLocaleDateString("en-US", {
+				weekday: "short",
+				month: "short",
+				day: "numeric",
+			}),
+			title: chapter.title || `Chapter ${index + 1}`,
+			time: ["12:00 PM", "2:00 PM", "6:00 PM", "9:00 AM"][index],
+			status: ["ready", "draft", "planned", "idea"][index],
+		}));
 
-    const publishStatus = {
-      scheduledItems,
-      readyToPublish: readyToPublish ? {
-        id: readyToPublish.id,
-        title: readyToPublish.title || 'Untitled Chapter',
-        shortTitle: readyToPublish.title?.substring(0, 20) || 'Untitled',
-        preview: readyToPublish.summary?.substring(0, 150) + '...' || 'No preview available',
-        scheduledTime: 'Tomorrow at 2:00 PM',
-        communityPoll: '"What happens next?"'
-      } : null,
-      pending: userChapters.filter(c => c.status === 'writing').length
-    };
+		// For now, just use the first chapter since there's no 'completed' status
+		const readyToPublish = userChapters[0];
 
-    return NextResponse.json(publishStatus);
-  } catch (error) {
-    console.error("Publish status API error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch publish status" },
-      { status: 500 }
-    );
-  }
+		const publishStatus = {
+			scheduledItems,
+			readyToPublish: readyToPublish
+				? {
+						id: readyToPublish.id,
+						title: readyToPublish.title || "Untitled Chapter",
+						shortTitle: readyToPublish.title?.substring(0, 20) || "Untitled",
+						preview:
+							readyToPublish.summary?.substring(0, 150) + "..." ||
+							"No preview available",
+						scheduledTime: "Tomorrow at 2:00 PM",
+						communityPoll: '"What happens next?"',
+					}
+				: null,
+			pending: userChapters.filter((c) => c.status === "writing").length,
+		};
+
+		return NextResponse.json(publishStatus);
+	} catch (error) {
+		console.error("Publish status API error:", error);
+		return NextResponse.json(
+			{ error: "Failed to fetch publish status" },
+			{ status: 500 },
+		);
+	}
 }

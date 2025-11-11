@@ -1,42 +1,42 @@
-import { auth } from '@/lib/auth';
-import { redirect } from 'next/navigation';
-import { CreateStoryForm } from '@/components/stories/CreateStoryForm';
-import { StoryCreationProvider } from '@/components/stories/StoryCreationContext';
-import { JsonDataSidebar } from '@/components/stories/JsonDataSidebar';
+import { redirect } from "next/navigation";
+import { CreateStoryForm } from "@/components/stories/CreateStoryForm";
+import { JsonDataSidebar } from "@/components/stories/JsonDataSidebar";
+import { StoryCreationProvider } from "@/components/stories/StoryCreationContext";
+import { auth } from "@/lib/auth";
 
 export default async function NewStoryPage() {
-  const session = await auth();
-  
-  if (!session) {
-    redirect('/login');
-  }
+	const session = await auth();
 
-  return (
-    <StoryCreationProvider>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-        <main className="container mx-auto max-w-screen-2xl px-4 py-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              Create New Story
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
-              Start your next literary adventure
-            </p>
-          </div>
+	if (!session) {
+		redirect("/login");
+	}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Form */}
-            <div className="lg:col-span-2">
-              <CreateStoryForm />
-            </div>
+	return (
+		<StoryCreationProvider>
+			<div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+				<main className="container mx-auto max-w-screen-2xl px-4 py-8">
+					<div className="mb-8">
+						<h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+							Create New Story
+						</h1>
+						<p className="text-gray-600 dark:text-gray-400 mt-2">
+							Start your next literary adventure
+						</p>
+					</div>
 
-            {/* JSON Data Sidebar */}
-            <div className="lg:col-span-1">
-              <JsonDataSidebar />
-            </div>
-          </div>
-        </main>
-      </div>
-    </StoryCreationProvider>
-  );
+					<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+						{/* Main Form */}
+						<div className="lg:col-span-2">
+							<CreateStoryForm />
+						</div>
+
+						{/* JSON Data Sidebar */}
+						<div className="lg:col-span-1">
+							<JsonDataSidebar />
+						</div>
+					</div>
+				</main>
+			</div>
+		</StoryCreationProvider>
+	);
 }

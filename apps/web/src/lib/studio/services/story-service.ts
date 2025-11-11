@@ -1,0 +1,101 @@
+/**
+ * Story Service
+ *
+ * Service layer for story generation and database persistence.
+ */
+
+import { nanoid } from "nanoid";
+import type { StoryGenre } from "@/lib/constants/genres";
+import type { StoryTone } from "@/lib/constants/tones";
+import { db } from "@/lib/db";
+import { stories } from "@/lib/db/schema";
+import { generateStory } from "../generators/story-generator";
+import type {
+    GenerateStoryParams,
+    GenerateStoryResult,
+} from "../generators/types";
+import {
+    insertStorySchema,
+    type Story,
+} from "../generators/zod-schemas.generated";
+
+export interface GenerateStoryServiceParams {
+    userPrompt: string;
+    language?: string;
+    preferredGenre?: StoryGenre;
+    preferredTone?: StoryTone;
+    userId: string;
+}
+
+export interface GenerateStoryServiceResult {
+    story: Story;
+    metadata: {
+        generationTime: number;
+        model?: string;
+    };
+}
+
+export class StoryService {
+    async generateAndSave(
+        params: GenerateStoryServiceParams,
+    ): Promise<GenerateStoryServiceResult> {
+        const {
+            userPrompt,
+            language = "English",
+            preferredGenre,
+            preferredTone,
+            userId,
+        } = params;
+
+        // 1. Generate story using pure generator
+        const generateParams: GenerateStoryParams = {
+            userPrompt,
+            language,
+            preferredGenre,
+            preferredTone,
+        };
+
+        const generationResult: GenerateStoryResult =
+            await generateStory(generateParams);
+
+        // 2. Prepare story data for database
+        const storyId: string = `story_${nanoid(16)}`;
+        const now: string = new Date().toISOString();
+
+        const storyData = insertStorySchema.parse({
+            id: storyId,
+            authorId: userId,
+            title: generationResult.story.title || "Untitled Story",
+            summary: generationResult.story.summary || null,
+            genre: generationResult.story.genre || null,
+            tone: generationResult.story.tone || "hopeful",
+            moralFramework: generationResult.story.moralFramework || null,
+            status: "writing",
+            viewCount: 0,
+            rating: 0,
+            ratingCount: 0,
+            imageUrl: null,
+            imageVariants: null,
+            createdAt: now,
+            updatedAt: now,
+        });
+
+        // 3. Save to database
+        const savedStoryArray: Story[] = (await db
+            .insert(stories)
+            .values(storyData)
+            .returning()) as Story[];
+        const savedStory: Story = savedStoryArray[0];
+
+        // 4. Return result
+        return {
+            story: savedStory,
+            metadata: {
+                generationTime: generationResult.metadata.generationTime,
+                model: generationResult.metadata.model,
+            },
+        };
+    }
+}
+
+export const storyService = new StoryService();

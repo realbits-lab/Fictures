@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import yaml from "js-yaml";
+import React, { useEffect, useState } from "react";
 import {
+	Badge,
+	Button,
 	Card,
+	CardContent,
 	CardHeader,
 	CardTitle,
-	CardContent,
-	Button,
 	Progress,
-	Badge,
 } from "@/components/ui";
-import yaml from "js-yaml";
 
 // Story YAML interface based on story-specification.md
 interface StoryData {
@@ -199,22 +199,26 @@ export function StoryEditor({
 	// State for collapsible sections
 	const [charactersCollapsed, setCharactersCollapsed] = useState(true);
 	const [placesCollapsed, setPlacesCollapsed] = useState(true);
-	const [collapsedPlaceCards, setCollapsedPlaceCards] = useState<Record<string, boolean>>({});
-	const [collapsedCharacterCards, setCollapsedCharacterCards] = useState<Record<string, boolean>>({});
+	const [collapsedPlaceCards, setCollapsedPlaceCards] = useState<
+		Record<string, boolean>
+	>({});
+	const [collapsedCharacterCards, setCollapsedCharacterCards] = useState<
+		Record<string, boolean>
+	>({});
 
 	// Helper function to toggle individual place card collapse
 	const togglePlaceCard = (placeId: string) => {
-		setCollapsedPlaceCards(prev => ({
+		setCollapsedPlaceCards((prev) => ({
 			...prev,
-			[placeId]: !prev[placeId]
+			[placeId]: !prev[placeId],
 		}));
 	};
 
 	// Helper function to toggle individual character card collapse
 	const toggleCharacterCard = (characterId: string) => {
-		setCollapsedCharacterCards(prev => ({
+		setCollapsedCharacterCards((prev) => ({
 			...prev,
-			[characterId]: !prev[characterId]
+			[characterId]: !prev[characterId],
 		}));
 	};
 
@@ -273,10 +277,6 @@ export function StoryEditor({
 			onStoryUpdate(updatedData);
 		}
 	};
-
-
-
-
 
 	return (
 		<div className="space-y-6">

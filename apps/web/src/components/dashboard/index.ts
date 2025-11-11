@@ -5,5 +5,5 @@ export { DashboardClient } from "./DashboardClient";
 export { PublishingSchedule } from "./PublishingSchedule";
 export { RecentActivity } from "./RecentActivity";
 export { StoryCard } from "./StoryCard";
-export { ViewToggle } from "./view-toggle";
 export { StoryTableView } from "./story-table-view";
+export { ViewToggle } from "./view-toggle";

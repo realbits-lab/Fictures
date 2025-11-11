@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useReadingHistorySync } from '@/lib/hooks/use-reading-history-sync';
+import { useReadingHistorySync } from "@/lib/hooks/use-reading-history-sync";
 
 /**
  * Component to handle automatic syncing of localStorage reading history
@@ -10,6 +10,6 @@ import { useReadingHistorySync } from '@/lib/hooks/use-reading-history-sync';
  * it's always active and can detect login events
  */
 export function ReadingHistorySync() {
-  useReadingHistorySync();
-  return null;
+	useReadingHistorySync();
+	return null;
 }

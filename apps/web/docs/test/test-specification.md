@@ -19,7 +19,7 @@ For test execution details, automation setup, and implementation guidance, see [
    - Removed zoom/pan tests from `/comics` (not implemented)
 3. **API Path Verification**: Updated all API endpoint paths to match current codebase structure
    - Story API: `/studio/api/stories/*` (not `/api/stories/*`)
-   - Generation API: `/studio/api/generation/*` and `/studio/api/novels/generate`
+   - Generation API: `/studio/api/novels/*` and `/studio/api/novels`
    - Community API: `/community/api/*` (not `/api/community/*`)
    - Analysis API: `/analysis/api/*` (not `/api/analytics/*`)
    - Publish API: `/publish/api/*` (scene-level publishing)
@@ -594,7 +594,7 @@ The application has 8 main navigation items:
 
 ### Generation API
 
-#### Generate Story (POST /studio/api/novels/generate)
+#### Generate Story (POST /studio/api/novels)
 - **TC-API-GEN-001**: Authenticated writer can generate story
 - **TC-API-GEN-002**: Invalid input parameters return 400
 - **TC-API-GEN-003**: SSE streaming returns events correctly
@@ -604,24 +604,24 @@ The application has 8 main navigation items:
 - **TC-API-GEN-007**: Concurrent generation requests handled
 - **TC-API-GEN-008**: Generation timeout handled correctly
 
-#### Generate Characters (POST /studio/api/generation/characters)
+#### Generate Characters (POST /studio/api/novels/characters)
 - **TC-API-GEN-009**: Character generation works correctly
 - **TC-API-GEN-010**: Character portraits generated
 - **TC-API-GEN-011**: Character traits follow constraints
 - **TC-API-GEN-012**: Multiple characters generated correctly
 
-#### Generate Settings (POST /studio/api/generation/settings)
+#### Generate Settings (POST /studio/api/novels/settings)
 - **TC-API-GEN-013**: Setting generation works correctly
 - **TC-API-GEN-014**: Setting images generated
 - **TC-API-GEN-015**: Setting descriptions detailed
 
-#### Generate Scene Content (POST /studio/api/generation/scene-content)
+#### Generate Scene Content (POST /studio/api/novels/scene-content)
 - **TC-API-GEN-016**: Scene generation works correctly
 - **TC-API-GEN-017**: Scene images generated
 - **TC-API-GEN-018**: Scene content follows story arc
 - **TC-API-GEN-019**: Scene evaluation scores returned
 
-#### Generate Images (POST /studio/api/generation/images)
+#### Generate Images (POST /studio/api/novels/images)
 - **TC-API-GEN-020**: Image generation works with valid prompt
 - **TC-API-GEN-021**: Image optimization creates 4 variants
 - **TC-API-GEN-022**: Images uploaded to Blob storage

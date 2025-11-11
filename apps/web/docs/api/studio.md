@@ -320,7 +320,7 @@ curl -X DELETE http://localhost:3000/studio/api/stories/story_abc123 \
 
 Generate a complete novel using the Adversity-Triumph Engine.
 
-**Endpoint:** `POST /studio/api/novels/generate`
+**Endpoint:** `POST /studio/api/novels`
 
 **Authentication:** Required (API Key with `stories:write` OR Session)
 
@@ -384,7 +384,7 @@ data: {"error":"Generation failed","details":"..."}
 **Example:**
 
 ```bash
-curl -X POST http://localhost:3000/studio/api/novels/generate \
+curl -X POST http://localhost:3000/studio/api/novels \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
@@ -402,7 +402,7 @@ curl -X POST http://localhost:3000/studio/api/novels/generate \
 
 Generate images for story, characters, settings, or scenes.
 
-**Endpoint:** `POST /studio/api/generation/images`
+**Endpoint:** `POST /studio/api/novels/images`
 
 **Authentication:** Required (Session)
 
@@ -641,10 +641,10 @@ Delete a specific scene.
 ### Story Creation Workflow
 
 1. **Create Story**: POST `/studio/api/stories`
-2. **Generate Novel**: POST `/studio/api/novels/generate` (optional)
+2. **Generate Novel**: POST `/studio/api/novels` (optional)
 3. **Edit Content**: PATCH `/studio/api/chapters/[id]` or `/studio/api/scenes/[id]`
 4. **Evaluate Quality**: POST `/studio/api/evaluate/scene`
-5. **Generate Images**: POST `/studio/api/generation/images`
+5. **Generate Images**: POST `/studio/api/novels/images`
 6. **Publish**: PATCH `/studio/api/stories/[id]` with `status: "published"`
 
 ### Performance Optimization

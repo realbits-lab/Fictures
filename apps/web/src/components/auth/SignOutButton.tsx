@@ -1,21 +1,18 @@
 "use client";
 
-import { signOut } from 'next-auth/react';
-import { Button } from '@/components/ui';
-import { trackEngagement } from '@/lib/analysis/google-analytics';
+import { signOut } from "next-auth/react";
+import { Button } from "@/components/ui";
+import { trackEngagement } from "@/lib/analysis/google-analytics";
 
 export function SignOutButton() {
-  const handleSignOut = () => {
-    trackEngagement.signOut();
-    signOut({ callbackUrl: '/' });
-  };
+	const handleSignOut = () => {
+		trackEngagement.signOut();
+		signOut({ callbackUrl: "/" });
+	};
 
-  return (
-    <Button
-      variant="ghost"
-      onClick={handleSignOut}
-    >
-      Sign Out
-    </Button>
-  );
+	return (
+		<Button variant="ghost" onClick={handleSignOut}>
+			Sign Out
+		</Button>
+	);
 }

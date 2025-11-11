@@ -1,47 +1,47 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
-import { updateChapter } from '@/lib/db/queries';
-import { z } from 'zod';
+import { type NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { auth } from "@/lib/auth";
+import { updateChapter } from "@/lib/db/queries";
 
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
 
 const autosaveSchema = z.object({
-  content: z.string(),
+	content: z.string(),
 });
 
 // POST /api/chapters/[id]/autosave - Auto-save chapter content
 export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+	request: NextRequest,
+	{ params }: { params: Promise<{ id: string }> },
 ) {
-  try {
-    const { id } = await params;
-    const session = await auth();
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+	try {
+		const { id } = await params;
+		const session = await auth();
 
-    const body = await request.json();
-    const { content } = body;
+		if (!session?.user?.id) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
 
-    const chapter = await updateChapter(id, session.user.id, {
-      content,
-    });
+		const body = await request.json();
+		const { content } = body;
 
-    return NextResponse.json({ 
-      success: true, 
-      savedAt: new Date().toISOString(),
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid input', details: error.issues },
-        { status: 400 }
-      );
-    }
-    
-    console.error('Error auto-saving chapter:', error);
-    return NextResponse.json({ error: 'Auto-save failed' }, { status: 500 });
-  }
+		const chapter = await updateChapter(id, session.user.id, {
+			content,
+		});
+
+		return NextResponse.json({
+			success: true,
+			savedAt: new Date().toISOString(),
+		});
+	} catch (error) {
+		if (error instanceof z.ZodError) {
+			return NextResponse.json(
+				{ error: "Invalid input", details: error.issues },
+				{ status: 400 },
+			);
+		}
+
+		console.error("Error auto-saving chapter:", error);
+		return NextResponse.json({ error: "Auto-save failed" }, { status: 500 });
+	}
 }
