@@ -6,13 +6,7 @@
 
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import {
-    chapters,
-    characters,
-    scenes,
-    settings,
-    stories,
-} from "@/lib/db/schema";
+import { chapters, scenes, stories } from "@/lib/db/schema";
 import { generateSceneContent } from "../generators/scene-content-generator";
 import type {
     GenerateSceneContentParams,
@@ -20,9 +14,7 @@ import type {
 } from "../generators/types";
 import type {
     Chapter,
-    Character,
     Scene,
-    Setting,
     Story,
 } from "../generators/zod-schemas.generated";
 
@@ -89,24 +81,14 @@ export class SceneContentService {
             );
         }
 
-        // 5. Fetch characters for the story
-        const storyCharacters: Character[] = (await db
-            .select()
-            .from(characters)
-            .where(eq(characters.storyId, story.id))) as Character[];
-
-        // 6. Fetch settings for the story
-        const storySettings: Setting[] = (await db
-            .select()
-            .from(settings)
-            .where(eq(settings.storyId, story.id))) as Setting[];
-
-        // 7. Generate scene content using pure generator
+        // 5. Generate scene content using pure generator
+        // Generator will fetch all necessary data (story, part, chapter, characters, settings)
         const generateParams: GenerateSceneContentParams = {
+            storyId: story.id,
+            partId: chapter.partId,
+            chapterId: chapter.id,
             sceneId,
             scene,
-            characters: storyCharacters,
-            settings: storySettings,
             language,
         };
 

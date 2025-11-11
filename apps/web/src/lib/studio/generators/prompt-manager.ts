@@ -925,32 +925,27 @@ Write: "She uncapped the bottle. Tilted it. The first drop caught the light. Fel
 Return ONLY the prose narrative, no metadata, no explanations.`,
                 userTemplate: `Write the full scene content for:
 
-Scene Summary: {sceneSummary}
-Cycle Phase: {cyclePhase}
-Emotional Beat: {emotionalBeat}
-Suggested Length: {suggestedLength}
-
 Story Context:
-Genre: {storyGenre}
-Tone: {storyTone}
+{story}
+
+Part Context:
+{part}
 
 Chapter Context:
-Title: {chapterTitle}
-Summary: {chapterSummary}
+{chapter}
 
-Setting: {settingName}
-Setting Description: {settingDescription}
-Sensory Anchors: {sensoryAnchors}
+Scene Specification:
+{scene}
 
-Character: {characterName}
-Voice Style: {voiceStyle}
-Internal State: {characterInternalState}
+Characters:
+{characters}
 
-Previous Scene Content: {previousSceneContent}
+Setting:
+{setting}
 
 Language: {language}
 
-Write the scene content following the cycle-specific guidelines for {cyclePhase} phase.`,
+Write the scene content following the cycle-specific guidelines based on the scene's cycle phase.`,
             },
         };
     }

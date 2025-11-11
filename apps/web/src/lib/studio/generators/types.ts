@@ -259,9 +259,9 @@ export interface GenerateSettingsResult {
 // ============================================================================
 
 export interface GeneratePartsParams {
-    story: Story;
-    characters: Character[];
-    settings: Setting[];
+    story: Partial<Story>;
+    characters: Partial<Character>[];
+    settings: Partial<Setting>[];
     partsCount: number;
     onProgress?: ProgressCallback;
 }
@@ -302,10 +302,10 @@ export interface GeneratePartResult {
 
 export interface GenerateChaptersParams {
     storyId: string;
-    story: Story;
-    parts: Part[];
-    characters: Character[];
-    settings?: Setting[]; // Optional settings for atmospheric context
+    story: Partial<Story>;
+    parts: Partial<Part>[];
+    characters: Partial<Character>[];
+    settings?: Partial<Setting>[]; // Optional settings for atmospheric context
     chaptersPerPart: number;
     onProgress?: ProgressCallback;
 }
@@ -347,11 +347,11 @@ export interface GenerateChapterResult {
 // ============================================================================
 
 export interface GenerateSceneSummariesParams {
-    story: Story;
-    part: Part;
-    chapters: Chapter[];
-    characters: Character[];
-    settings: Setting[];
+    story: Partial<Story>;
+    part: Partial<Part>;
+    chapters: Partial<Chapter>[];
+    characters: Partial<Character>[];
+    settings: Partial<Setting>[];
     scenesPerChapter: number;
     onProgress?: ProgressCallback;
 }
@@ -396,22 +396,32 @@ export interface GenerateSceneSummaryResult {
 // ============================================================================
 
 export interface GenerateSceneContentParams {
+    // === Database IDs (Service mode) ===
+    storyId?: string;
+    partId?: string;
+    chapterId?: string;
     sceneId: string;
-    scene: Scene;
-    characters: Character[];
-    settings: Setting[];
+
+    // === Full Objects (Orchestrator mode) ===
+    // Use Partial to allow both generated data and full database records
+    story?: Partial<Story>;
+    part?: Partial<Part>;
+    chapter?: Partial<Chapter>;
+    characters?: Partial<Character>[];
+    settings?: Partial<Setting>[];
+
+    // === Required ===
+    scene: Scene | Partial<Scene>;
     language?: string;
 }
 
 export interface SceneContentPromptParams extends Record<string, string> {
-    sceneSummary: string;
-    cyclePhase: string;
-    emotionalBeat: string;
-    suggestedLength: string;
-    settingDescription: string;
-    sensoryAnchors: string;
-    characterName: string;
-    voiceStyle: string;
+    story: string;
+    part: string;
+    chapter: string;
+    scene: string;
+    characters: string;
+    setting: string;
     language: string;
 }
 
