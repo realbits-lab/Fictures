@@ -60,23 +60,68 @@ Generate a story foundation with:
             },
 
             character: {
-                system: `You are a character development specialist who creates multi-dimensional story characters.
+                system: `You are a character development specialist who creates multi-dimensional story characters using the Adversity-Triumph Engine methodology.
+
+# REQUIRED OUTPUT FIELDS
+
+Generate characters with exactly these fields:
+
+1. **name** (string, max 255 chars)
+   - Character's full name, memorable and fitting the genre
+
+2. **isMain** (boolean)
+   - true = Main character (gets MACRO arc, drives story)
+   - false = Supporting character (enriches story world)
+
+3. **summary** (string, 2-3 sentences)
+   - Format: "[CoreTrait] [role] with [internalFlaw], seeking [externalGoal]"
+   - Example: "Courageous knight with fear of failure, seeking to prove worthy of her title"
+
+4. **coreTrait** (string, must be ONE of: courage, compassion, integrity, loyalty, wisdom, sacrifice)
+   - THE defining MORAL virtue that drives virtue scenes
+   - This is different from personality traits (which are behavioral)
+
+5. **internalFlaw** (string, MUST include cause)
+   - Format: "[fears/believes/wounded by] X because Y"
+   - Source of internal ADVERSITY in the story
+   - Examples:
+     * ✅ "fears abandonment because lost family in war and never felt secure since"
+     * ✅ "believes strength means never showing emotion because father punished vulnerability"
+     * ❌ "has trust issues" (too vague, no cause)
+
+6. **externalGoal** (string)
+   - What character THINKS will solve their problem
+   - Creates dramatic irony (healing flaw is the actual solution)
+   - External objective that drives their actions
+
+7. **personality** (object with two arrays)
+   - **traits**: array of 3-5 BEHAVIORAL characteristics
+     * Examples: "impulsive", "optimistic", "stubborn", "cautious", "charismatic"
+   - **values**: array of 3-5 core beliefs/principles they care about
+     * Examples: "family", "honor", "freedom", "justice", "loyalty"
+
+8. **backstory** (string, 2-4 paragraphs)
+   - Focused history providing motivation context
+   - Explain how their past shaped their flaw and goals
+
+9. **physicalDescription** (object with 4 fields)
+   - **age**: Age description (e.g., "early 20s", "mid-30s", "elderly", "teenage")
+   - **appearance**: Overall look, build, height, first impression
+   - **distinctiveFeatures**: Memorable physical traits (e.g., "scar on left cheek", "piercing green eyes")
+   - **style**: How they dress and present themselves
+
+10. **voiceStyle** (object with 4 fields)
+    - **tone**: Emotional coloring (e.g., "warm", "sarcastic", "formal", "gentle")
+    - **vocabulary**: Language complexity (e.g., "simple", "educated", "technical", "poetic")
+    - **quirks**: array of verbal tics/repeated phrases (e.g., ["you know", "clears throat often"])
+    - **emotionalRange**: How expressively they show emotions (e.g., "reserved", "expressive", "volatile")
 
 # CHARACTER DESIGN PHILOSOPHY
 
-Great characters are defined by:
-- **Internal Flaw**: Deep-seated limitation preventing growth
-- **External Goal**: What they consciously want
-- **Internal Need**: What they unconsciously need (opposite of flaw)
-- **Unique Voice**: Distinct way of speaking and thinking
-
-# CHARACTER ARC COMPONENTS
-
-1. **Core Trait**: Defining characteristic (both strength and weakness)
-2. **Wound**: Past event that created the flaw
-3. **Misbelief**: False truth they believe about themselves/world
-4. **Growth**: How adversity forces them to change
-5. **Transformation**: Who they become by story's end
+- coreTrait = MORAL virtue (for virtue scenes)
+- personality.traits = BEHAVIORAL characteristics (for everyday scenes)
+- Both needed for dimensional, realistic characters
+- voiceStyle ensures each character speaks distinctly
 
 # DIVERSITY GUIDELINES
 
@@ -187,7 +232,25 @@ Moral Framework: {moralFramework}
 Character Type: {characterType}
 Language: {language}
 
-Return a character with rich internal psychology, unique voice, and compelling arc potential that aligns with the genre's key elements and tone's emotional characteristics.`,
+REQUIRED OUTPUT:
+Generate a character object with ALL 10 required fields as specified in the system prompt:
+1. name (string)
+2. isMain (boolean) - {characterType} characters
+3. summary (string, 2-3 sentences)
+4. coreTrait (one of: courage, compassion, integrity, loyalty, wisdom, sacrifice)
+5. internalFlaw (string with cause: "[fears/believes/wounded by] X because Y")
+6. externalGoal (string)
+7. personality (object: { traits: string[], values: string[] })
+8. backstory (string, 2-4 paragraphs)
+9. physicalDescription (object: { age, appearance, distinctiveFeatures, style })
+10. voiceStyle (object: { tone, vocabulary, quirks: string[], emotionalRange })
+
+Ensure the character:
+- Aligns with the {storyGenre} genre's key elements and emotional appeal
+- Embodies the {storyTone} tone's emotional characteristics and character arc patterns
+- Has rich internal psychology with clear internal flaw and external goal
+- Speaks with a unique, distinctive voice (voiceStyle)
+- Fits naturally into the story's moral framework`,
             },
 
             setting: {
@@ -270,47 +333,61 @@ Genre: {storyGenre}
 Tone: {storyTone}
 Summary: {storySummary}
 Moral Framework: {moralFramework}
-
-Create a comprehensive setting with:
-
-1. **Name**: Evocative location name
-2. **Summary**: Comprehensive paragraph (3-5 sentences) describing overall environment
-
-3. **Adversity Elements** (Critical - specify all four):
-   - Physical Obstacles: [List specific environmental challenges]
-   - Scarcity Factors: [List limited resources]
-   - Danger Sources: [List environmental threats]
-   - Social Dynamics: [List community factors]
-
-4. **Symbolic Meaning**: What does this setting represent thematically? (1-2 sentences)
-
-5. **Cycle Amplification** (How setting enhances each phase):
-   - Setup: [How environment establishes adversity]
-   - Confrontation: [How setting intensifies conflict]
-   - Virtue: [How setting contrasts/witnesses moral beauty]
-   - Consequence: [How setting transforms or reveals]
-   - Transition: [How setting hints at new problems]
-
-6. **Emotional Atmosphere**:
-   - Mood: Primary emotional quality (e.g., "oppressive and surreal", "hopeful but fragile")
-   - Emotional Resonance: What emotion this amplifies (e.g., "isolation", "hope", "fear", "connection")
-
-7. **Sensory Immersion** (Provide specific, concrete details):
-   - Sight: [5-10 specific visual details]
-   - Sound: [3-7 specific auditory elements]
-   - Smell: [2-5 specific olfactory details]
-   - Touch: [2-5 specific tactile sensations]
-   - Taste: [0-2 flavor elements, if applicable]
-   - Architectural Style: [Structural design language, if applicable]
-
-8. **Visual Generation** (For image creation):
-   - Visual Style: [Choose: realistic | anime | painterly | cinematic]
-   - Visual References: [List style inspirations]
-   - Color Palette: [List dominant colors]
-
 Language: {language}
 
-Ensure the setting actively participates in the adversity-triumph cycle and provides rich sensory details for immersive prose generation.`,
+REQUIRED OUTPUT:
+Generate a setting object with ALL 11 required fields as specified in the system prompt:
+
+1. **name** (string, max 255 chars)
+   - Evocative location name (e.g., "The Last Garden", "Refugee Camp", "Downtown Market")
+
+2. **summary** (string, 3-5 sentences)
+   - Comprehensive paragraph describing physical and emotional characteristics
+
+3. **adversityElements** (object with 4 arrays)
+   - physicalObstacles: array of environmental challenges (e.g., ["harsh desert heat", "crumbling infrastructure"])
+   - scarcityFactors: array of limited resources (e.g., ["water shortage", "food scarcity"])
+   - dangerSources: array of threats (e.g., ["unstable buildings", "hostile wildlife"])
+   - socialDynamics: array of community factors (e.g., ["distrust between neighbors", "gang territories"])
+
+4. **symbolicMeaning** (string, 1-2 sentences)
+   - How setting reflects story's moral framework
+   - Example: "Destroyed city represents broken trust and loss of community"
+
+5. **cycleAmplification** (object with 5 fields)
+   - setup: How setting establishes adversity (e.g., "oppressive heat weighs on characters")
+   - confrontation: How setting intensifies conflict (e.g., "confined space forces interaction")
+   - virtue: How setting contrasts/witnesses moral beauty (e.g., "barren land vs. act of nurture")
+   - consequence: How setting transforms or reveals (e.g., "garden blooms, proving hope possible")
+   - transition: How setting hints at new problems (e.g., "storm clouds gathering")
+
+6. **mood** (string)
+   - Primary emotional quality (e.g., "oppressive and surreal", "hopeful but fragile", "tense and uncertain")
+
+7. **emotionalResonance** (string)
+   - What emotion this setting amplifies (e.g., "isolation", "hope", "fear", "connection", "despair")
+
+8. **sensory** (object with 5 arrays)
+   - sight: array of 5-10 specific visual details (e.g., ["cracked asphalt", "faded paint", "rust-stained walls"])
+   - sound: array of 3-7 auditory elements (e.g., ["wind rattling leaves", "distant sirens", "children's laughter"])
+   - smell: array of 2-5 olfactory details (e.g., ["damp earth", "cooking spices", "gasoline"])
+   - touch: array of 2-5 tactile sensations (e.g., ["rough concrete", "cool breeze", "gritty dust"])
+   - taste: array of 0-2 flavor elements (optional) (e.g., ["metallic tang", "bitter smoke"])
+
+9. **architecturalStyle** (string)
+   - Structural design language if applicable (e.g., "brutalist concrete", "traditional wooden", "modern glass and steel")
+
+10. **visualReferences** (array of strings)
+    - Style inspirations (e.g., ["Blade Runner 2049", "Studio Ghibli countryside", "Mad Max Fury Road"])
+
+11. **colorPalette** (array of strings)
+    - Dominant colors (e.g., ["warm golds", "dusty browns", "deep greens", "ash gray", "rust red"])
+
+Ensure the setting:
+- Actively participates in the adversity-triumph cycle
+- Provides rich, SPECIFIC sensory details (not generic)
+- Creates external conflict through adversity elements
+- Aligns with the {storyGenre} genre and {storyTone} tone`,
             },
 
             part: {
