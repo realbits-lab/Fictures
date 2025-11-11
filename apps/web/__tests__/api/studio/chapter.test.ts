@@ -12,11 +12,11 @@
  */
 
 import type {
-    GenerateCharactersRequest,
-    GenerateCharactersResponse,
     GenerateChapterErrorResponse,
     GenerateChapterRequest,
     GenerateChapterResponse,
+    GenerateCharactersRequest,
+    GenerateCharactersResponse,
     GeneratePartRequest,
     GeneratePartResponse,
     GenerateStoryRequest,
@@ -55,8 +55,7 @@ describe("Chapter API (Singular - Extreme Incremental)", () => {
             },
         );
 
-        const storyData: { story: { id: string } } =
-            await storyResponse.json();
+        const storyData: { story: { id: string } } = await storyResponse.json();
 
         if (!storyResponse.ok) {
             console.error("❌ Failed to create test story:", storyData);

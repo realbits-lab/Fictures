@@ -12,10 +12,10 @@
  */
 
 import type {
-    GenerateCharactersRequest,
-    GenerateCharactersResponse,
     GenerateChapterRequest,
     GenerateChapterResponse,
+    GenerateCharactersRequest,
+    GenerateCharactersResponse,
     GeneratePartRequest,
     GeneratePartResponse,
     GenerateSceneSummaryErrorResponse,
@@ -57,8 +57,7 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
             },
         );
 
-        const storyData: { story: { id: string } } =
-            await storyResponse.json();
+        const storyData: { story: { id: string } } = await storyResponse.json();
 
         if (!storyResponse.ok) {
             console.error("❌ Failed to create test story:", storyData);
@@ -278,7 +277,9 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
         expect(metadata.totalScenesInChapter).toBe(2);
         expect(metadata.totalScenesInStory).toBe(2);
 
-        console.log("✅ Second scene summary generated successfully with context:");
+        console.log(
+            "✅ Second scene summary generated successfully with context:",
+        );
         console.log(`  Title: ${scene.title}`);
         console.log(`  ID: ${scene.id}`);
         console.log(`  Cycle phase: ${scene.cyclePhase}`);
