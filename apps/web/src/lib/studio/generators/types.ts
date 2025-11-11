@@ -259,9 +259,9 @@ export interface GenerateSettingsResult {
 // ============================================================================
 
 export interface GeneratePartsParams {
-    story: Partial<Story>;
-    characters: Partial<Character>[];
-    settings: Partial<Setting>[];
+    story: Story;
+    characters: Character[];
+    settings: Setting[];
     partsCount: number;
     onProgress?: ProgressCallback;
 }
@@ -302,10 +302,10 @@ export interface GeneratePartResult {
 
 export interface GenerateChaptersParams {
     storyId: string;
-    story: Partial<Story>;
-    parts: Partial<Part>[];
-    characters: Partial<Character>[];
-    settings?: Partial<Setting>[]; // Optional settings for atmospheric context
+    story: Story;
+    parts: Part[];
+    characters: Character[];
+    settings?: Setting[]; // Optional settings for atmospheric context
     chaptersPerPart: number;
     onProgress?: ProgressCallback;
 }
@@ -347,11 +347,11 @@ export interface GenerateChapterResult {
 // ============================================================================
 
 export interface GenerateSceneSummariesParams {
-    story: Partial<Story>;
-    part: Partial<Part>;
-    chapters: Partial<Chapter>[];
-    characters: Partial<Character>[];
-    settings: Partial<Setting>[];
+    story: Story;
+    part: Part;
+    chapters: Chapter[];
+    characters: Character[];
+    settings: Setting[];
     scenesPerChapter: number;
     onProgress?: ProgressCallback;
 }
@@ -403,15 +403,14 @@ export interface GenerateSceneContentParams {
     sceneId: string;
 
     // === Full Objects (Orchestrator mode) ===
-    // Use Partial to allow both generated data and full database records
-    story?: Partial<Story>;
-    part?: Partial<Part>;
-    chapter?: Partial<Chapter>;
-    characters?: Partial<Character>[];
-    settings?: Partial<Setting>[];
+    story?: Story;
+    part?: Part;
+    chapter?: Chapter;
+    characters?: Character[];
+    settings?: Setting[];
 
     // === Required ===
-    scene: Scene | Partial<Scene>;
+    scene: Scene;
     language?: string;
 }
 

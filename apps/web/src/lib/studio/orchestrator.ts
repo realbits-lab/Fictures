@@ -10,6 +10,10 @@ import type { StoryTone } from "@/lib/constants/tones";
 import type {
     Chapter,
     Character,
+    GeneratedCharacterData,
+    GeneratedPartData,
+    GeneratedSceneSummaryData,
+    GeneratedSettingData,
     Part,
     Scene,
     Setting,
@@ -97,12 +101,12 @@ export interface ProgressData {
         | "error";
     message: string;
     data?: {
-        story?: Partial<Story>;
-        characters?: Partial<Character>[];
-        settings?: Partial<Setting>[];
-        parts?: Partial<Part>[];
-        chapters?: Partial<Chapter>[];
-        scenes?: Partial<Scene>[];
+        story?: Story;
+        characters?: GeneratedCharacterData[];
+        settings?: GeneratedSettingData[];
+        parts?: (GeneratedPartData & { id: string })[];
+        chapters?: Chapter[];
+        scenes?: (GeneratedSceneSummaryData & { id: string; chapterId: string })[];
         currentItem?: number;
         totalItems?: number;
     };
@@ -112,12 +116,12 @@ export interface ProgressData {
  * Generated Novel Result
  */
 export interface GeneratedNovelResult {
-    story: Partial<Story>;
-    characters: Partial<Character>[];
-    settings: Partial<Setting>[];
-    parts: Partial<Part>[];
-    chapters: Partial<Chapter>[];
-    scenes: Partial<Scene>[];
+    story: Story;
+    characters: GeneratedCharacterData[];
+    settings: GeneratedSettingData[];
+    parts: (GeneratedPartData & { id: string })[];
+    chapters: Chapter[];
+    scenes: Scene[];
 }
 
 /**
@@ -304,7 +308,7 @@ export async function generateCompleteNovel(
         });
 
         // 6.1. Get the first part for scene summaries context
-        const firstPart: Partial<Part> | undefined = partsResult.parts[0];
+        const firstPart: Part | undefined = partsWithIds[0];
         if (!firstPart) {
             throw new Error("No parts generated");
         }
@@ -329,14 +333,13 @@ export async function generateCompleteNovel(
             await generateSceneSummaries(sceneSummariesParams);
 
         // 6.1. Build chapter-to-scene mapping for later use
-        const chapterSceneMap = new Map<string, Partial<Scene>[]>();
+        const chapterSceneMap = new Map<string, Scene[]>();
         let sceneIdx = 0;
         for (const chapter of chaptersWithIds) {
-            const chapSummaries: Partial<Scene>[] =
-                sceneSummariesResult.scenes.slice(
-                    sceneIdx,
-                    sceneIdx + scenesPerChapter,
-                );
+            const chapSummaries: Scene[] = sceneSummariesResult.scenes.slice(
+                sceneIdx,
+                sceneIdx + scenesPerChapter,
+            );
             chapterSceneMap.set(chapter.id!, chapSummaries);
             sceneIdx += scenesPerChapter;
         }
@@ -352,11 +355,11 @@ export async function generateCompleteNovel(
             message: "Generating scene content...",
         });
 
-        const scenes: Partial<Scene>[] = [];
+        const scenes: Scene[] = [];
         let sceneIndex = 0;
 
         for (const chapter of chaptersWithIds) {
-            const chapterScenes: Partial<Scene>[] =
+            const chapterScenes: Scene[] =
                 chapterSceneMap.get(chapter.id!) || [];
 
             for (const sceneSummary of chapterScenes) {
@@ -371,8 +374,9 @@ export async function generateCompleteNovel(
                 });
 
                 // 7.1. Find the part for this chapter
-                const chapterPart: Partial<Part> | undefined =
-                    partsWithIds.find((p) => p.id === chapter.partId);
+                const chapterPart: Part | undefined = partsWithIds.find(
+                    (p) => p.id === chapter.partId,
+                );
 
                 if (!chapterPart) {
                     throw new Error(
@@ -395,7 +399,7 @@ export async function generateCompleteNovel(
                 const sceneContentResult: GenerateSceneContentResult =
                     await generateSceneContent(sceneContentParams);
 
-                const sceneWithContent: Partial<Scene> = {
+                const sceneWithContent: Scene = {
                     id: `scene_${sceneIndex}`,
                     chapterId: chapter.id,
                     ...sceneSummary,
@@ -418,7 +422,7 @@ export async function generateCompleteNovel(
                 message: "Evaluating and improving scene quality...",
             });
 
-            const evaluatedScenes: Partial<Scene>[] = [];
+            const evaluatedScenes: Scene[] = [];
             let evaluatedCount = 0;
 
             for (const scene of scenes) {

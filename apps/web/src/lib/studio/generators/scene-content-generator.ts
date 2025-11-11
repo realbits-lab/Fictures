@@ -18,6 +18,15 @@ import {
     stories,
 } from "@/lib/db/schema";
 import { textGenerationClient } from "./ai-client";
+import {
+    buildChapterContext,
+    buildCharactersContext,
+    buildGenericSettingContext,
+    buildPartContext,
+    buildSceneContext,
+    buildSettingContext,
+    buildStoryContext,
+} from "./context-builders";
 import { promptManager } from "./prompt-manager";
 import type {
     GenerateSceneContentParams,
@@ -163,119 +172,18 @@ export async function generateSceneContent(
         }
     }
 
-    // 7. Build story context string
-    const storyContext: string = `Title: ${story.title}
-Genre: ${story.genre ?? "General Fiction"}
-Summary: ${story.summary ?? "A story of adversity and triumph"}
-Moral Framework: ${story.moralFramework ?? "Universal human virtues"}`;
-
-    // 8. Build part context string
-    const partContext: string = `Title: ${part.title}
-Summary: ${part.summary || "N/A"}`;
-
-    // 9. Build chapter context string
-    const chapterContext: string = `Title: ${chapter.title}
-Summary: ${chapter.summary}
-Arc Position: ${chapter.arcPosition || "N/A"}
-Adversity Type: ${chapter.adversityType || "N/A"}
-Virtue Type: ${chapter.virtueType || "N/A"}`;
-
-    // 10. Build scene context string (the summary/specification)
-    const sceneContext: string = `Title: ${scene.title}
-Summary: ${scene.summary || "N/A"}
-Cycle Phase: ${scene.cyclePhase || "N/A"}
-Emotional Beat: ${scene.emotionalBeat || "N/A"}
-Suggested Length: ${scene.suggestedLength || "medium"}
-Sensory Anchors: ${Array.isArray(scene.sensoryAnchors) ? scene.sensoryAnchors.join(", ") : "Use setting-appropriate details"}
-Dialogue vs Description: ${scene.dialogueVsDescription || "Balanced mix"}`;
-
-    // 11. Build comprehensive character list string
-    const charactersStr: string = storyCharacters
-        .map((c) => {
-            const personality =
-                typeof c.personality === "object" && c.personality !== null
-                    ? (c.personality as {
-                          traits?: string[];
-                          values?: string[];
-                      })
-                    : { traits: [], values: [] };
-            const physicalDesc =
-                typeof c.physicalDescription === "object" &&
-                c.physicalDescription !== null
-                    ? (c.physicalDescription as {
-                          age?: string;
-                          appearance?: string;
-                          distinctiveFeatures?: string;
-                          style?: string;
-                      })
-                    : {};
-            const voice =
-                typeof c.voiceStyle === "object" && c.voiceStyle !== null
-                    ? (c.voiceStyle as {
-                          tone?: string;
-                          vocabulary?: string;
-                          quirks?: string[];
-                          emotionalRange?: string;
-                      })
-                    : {};
-
-            return `Character: ${c.name} (${c.isMain ? "Main" : "Supporting"})
-  Summary: ${c.summary || "N/A"}
-  External Goal: ${c.externalGoal || "N/A"}
-  Core Trait: ${c.coreTrait || "N/A"}
-  Internal Flaw: ${c.internalFlaw || "N/A"}
-  Personality:
-    - Traits: ${personality.traits?.join(", ") || "N/A"}
-    - Values: ${personality.values?.join(", ") || "N/A"}
-  Backstory: ${c.backstory || "N/A"}
-  Physical Description:
-    - Age: ${physicalDesc.age || "N/A"}
-    - Appearance: ${physicalDesc.appearance || "N/A"}
-    - Distinctive Features: ${physicalDesc.distinctiveFeatures || "N/A"}
-    - Style: ${physicalDesc.style || "N/A"}
-  Voice Style:
-    - Tone: ${voice.tone || "N/A"}
-    - Vocabulary: ${voice.vocabulary || "N/A"}
-    - Quirks: ${voice.quirks?.join("; ") || "N/A"}
-    - Emotional Range: ${voice.emotionalRange || "N/A"}`;
-        })
-        .join("\n\n");
-
-    console.log(
-        `[scene-content-generator] Character list prepared: ${storyCharacters.length} characters`,
-    );
-
-    // 12. Build setting context string (the specific setting for this scene)
+    // 7. Build context strings using common builders
+    const storyContext: string = buildStoryContext(story);
+    const partContext: string = buildPartContext(part);
+    const chapterContext: string = buildChapterContext(chapter);
+    const sceneContext: string = buildSceneContext(scene);
+    const charactersStr: string = buildCharactersContext(storyCharacters);
     const settingStr: string = setting
-        ? (() => {
-              const sensory =
-                  typeof setting.sensory === "object" &&
-                  setting.sensory !== null
-                      ? (setting.sensory as {
-                            sight?: string[];
-                            sound?: string[];
-                            smell?: string[];
-                            touch?: string[];
-                            taste?: string[];
-                        })
-                      : {};
-
-              return `Setting: ${setting.name}
-Summary: ${setting.summary || "N/A"}
-Mood: ${setting.mood || "N/A"}
-Emotional Resonance: ${setting.emotionalResonance || "N/A"}
-Architectural Style: ${setting.architecturalStyle || "N/A"}
-Sensory Details:
-  - Sight: ${sensory.sight?.join(", ") || "N/A"}
-  - Sound: ${sensory.sound?.join(", ") || "N/A"}
-  - Smell: ${sensory.smell?.join(", ") || "N/A"}
-  - Touch: ${sensory.touch?.join(", ") || "N/A"}
-  - Taste: ${sensory.taste?.join(", ") || "N/A"}`;
-          })()
-        : "Generic setting - use appropriate environmental details";
+        ? buildSettingContext(setting)
+        : buildGenericSettingContext();
 
     console.log(
-        `[scene-content-generator] Setting prepared: ${setting?.name || "Generic"}`,
+        `[scene-content-generator] Context prepared: ${storyCharacters.length} characters, ${setting?.name || "generic"} setting`,
     );
 
     // 13. Get the prompt template for scene content generation
