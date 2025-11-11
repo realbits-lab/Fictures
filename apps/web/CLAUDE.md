@@ -521,6 +521,44 @@ VERCEL_OIDC_TOKEN="auto-generated-by-vercel-cli"
 - **DATABASE_URL_UNPOOLED**: Direct connection (no `-pooler`) - Required for Drizzle migrations
 - Both connections point to the same database, only the connection method differs
 
+## Authentication System
+
+**Cross-System Compatible Authentication**
+
+The web app uses a unified authentication system compatible with the AI server, supporting both API keys and session-based authentication.
+
+**Complete Documentation**: [../../docs/operation/cross-system-authentication.md](../../docs/operation/cross-system-authentication.md)
+
+### Quick Reference
+
+**API Key Format**: `fic_<base64url>` (~47 characters total)
+- **Generation**: 32 random bytes, base64url encoded
+- **Hashing**: bcrypt (compatible with ai-server)
+- **Prefix Length**: 16 characters (for fast lookup)
+
+**Setup Authentication**:
+```bash
+# Create users and API keys
+dotenv --file .env.local run pnpm exec tsx scripts/setup-auth-users.ts
+
+# Verify setup
+dotenv --file .env.local run pnpm exec tsx scripts/verify-auth-setup.ts
+
+# Validate credentials
+node scripts/validate-auth-credentials.mjs --verbose
+```
+
+**Permission Scopes** (aligned with ai-server):
+- **Manager**: All scopes including `admin:all`
+- **Writer**: `stories:write`, `images:write`, `ai:use`, etc.
+- **Reader**: Read-only scopes (`stories:read`, `images:read`, etc.)
+
+**Dual Authentication**:
+- **API Keys**: For scripts, external services, cross-system calls
+- **Sessions**: For web app users (NextAuth.js with Google OAuth + email/password)
+
+See [cross-system-authentication.md](../../docs/operation/cross-system-authentication.md) for complete details.
+
 ## Development Workflow
 
 1. **Setup**: `pnpm install` → Set up `.env.local` → `pnpm db:migrate`

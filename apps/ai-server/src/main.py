@@ -1,5 +1,13 @@
 """FastAPI main application for Fictures AI Server."""
 
+# IMPORTANT: Set CUDA environment variables BEFORE any other imports
+# This ensures vLLM and triton can find CUDA libraries during initialization
+import os
+os.environ.setdefault("CUDA_HOME", "/usr/local/cuda-12.6")
+os.environ["PATH"] = f"/usr/local/cuda-12.6/bin:{os.environ.get('PATH', '')}"
+os.environ["LD_LIBRARY_PATH"] = f"/usr/local/cuda-12.6/lib64:{os.environ.get('LD_LIBRARY_PATH', '')}"
+os.environ.setdefault("VLLM_TORCH_COMPILE_LEVEL", "0")  # Disable torch compilation
+
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI

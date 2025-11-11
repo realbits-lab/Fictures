@@ -1,9 +1,23 @@
 """Text generation service using vLLM with Qwen models (AWQ quantization)."""
 
 import asyncio
+import json
 import logging
-from typing import Optional, AsyncGenerator
+import os
+from typing import Optional, AsyncGenerator, Dict, Any
+
+# Set CUDA environment variables before vLLM initialization
+os.environ.setdefault("CUDA_HOME", "/usr/local/cuda-12.6")
+os.environ["PATH"] = f"/usr/local/cuda-12.6/bin:{os.environ.get('PATH', '')}"
+# Include user lib directory with libcuda.so symlink for triton compilation in V1 subprocess
+user_lib = os.path.expanduser("~/lib")
+os.environ["LD_LIBRARY_PATH"] = f"{user_lib}:/usr/local/cuda-12.6/lib64:/lib/x86_64-linux-gnu:{os.environ.get('LD_LIBRARY_PATH', '')}"
+os.environ.setdefault("VLLM_TORCH_COMPILE_LEVEL", "0")  # Disable torch compilation
+
+# vLLM 0.11.0 uses V1 engine (V0 has been removed)
+
 from vllm import AsyncLLMEngine, AsyncEngineArgs, SamplingParams
+from vllm.sampling_params import GuidedDecodingParams
 from src.config import settings
 from src.utils.gpu_utils import cleanup_gpu_memory, get_gpu_memory_info
 
@@ -46,6 +60,9 @@ class TextGenerationService:
                 gpu_memory_utilization=settings.text_gpu_memory_utilization,
                 max_num_seqs=settings.vllm_max_num_seqs,
                 trust_remote_code=True,
+                enforce_eager=True,  # Disable CUDA graphs and torch compilation to avoid triton issues
+                # Use outlines backend for guided decoding (works with legacy engine)
+                guided_decoding_backend="outlines",
             )
 
             # Create async engine
@@ -174,6 +191,110 @@ class TextGenerationService:
 
         except Exception as e:
             logger.error(f"Streaming text generation failed: {e}")
+            raise
+
+    async def generate_structured(
+        self,
+        prompt: str,
+        guided_type: str,
+        json_schema: Optional[Dict[str, Any]] = None,
+        regex_pattern: Optional[str] = None,
+        choices: Optional[list[str]] = None,
+        grammar: Optional[str] = None,
+        max_tokens: int = 2048,
+        temperature: float = 0.7,
+        top_p: float = 0.9,
+    ) -> dict:
+        """
+        Generate structured output using vLLM guided decoding.
+
+        Args:
+            prompt: Input text prompt
+            guided_type: Type of guided decoding ("json", "regex", "choice", "grammar")
+            json_schema: JSON schema for type "json"
+            regex_pattern: Regex pattern for type "regex"
+            choices: List of valid choices for type "choice"
+            grammar: Context-free grammar for type "grammar"
+            max_tokens: Maximum number of tokens to generate
+            temperature: Sampling temperature (0.0 to 2.0)
+            top_p: Nucleus sampling parameter (0.0 to 1.0)
+
+        Returns:
+            Dictionary containing structured output and metadata
+        """
+        if not self._initialized or self.engine is None:
+            await self.initialize()
+
+        try:
+            # Create guided decoding params based on type
+            guided_params = None
+            if guided_type == "json" and json_schema:
+                guided_params = GuidedDecodingParams(json=json_schema)
+            elif guided_type == "regex" and regex_pattern:
+                guided_params = GuidedDecodingParams(regex=regex_pattern)
+            elif guided_type == "choice" and choices:
+                guided_params = GuidedDecodingParams(choice=choices)
+            elif guided_type == "grammar" and grammar:
+                guided_params = GuidedDecodingParams(grammar=grammar)
+            else:
+                raise ValueError(
+                    f"Invalid guided decoding configuration: type={guided_type}, "
+                    f"json_schema={json_schema is not None}, regex={regex_pattern is not None}, "
+                    f"choices={choices is not None}, grammar={grammar is not None}"
+                )
+
+            # Create sampling parameters with guided decoding
+            sampling_params = SamplingParams(
+                temperature=temperature,
+                top_p=top_p,
+                max_tokens=max_tokens,
+                guided_decoding=guided_params,
+            )
+
+            # Generate text with guided decoding
+            logger.info(
+                f"Generating structured output (type: {guided_type}) with prompt length: {len(prompt)}"
+            )
+            request_id = f"structured-{asyncio.current_task().get_name()}"
+
+            results = []
+            async for request_output in self.engine.generate(
+                prompt, sampling_params, request_id=request_id
+            ):
+                results.append(request_output)
+
+            # Get final output
+            final_output = results[-1]
+            generated_text = final_output.outputs[0].text
+            tokens_used = len(final_output.outputs[0].token_ids)
+            finish_reason = final_output.outputs[0].finish_reason
+
+            logger.info(
+                f"Structured output generation completed. Tokens used: {tokens_used}"
+            )
+
+            # Parse JSON if type is "json"
+            parsed_output = None
+            is_valid = True
+            if guided_type == "json":
+                try:
+                    parsed_output = json.loads(generated_text)
+                    logger.info("JSON output parsed successfully")
+                except json.JSONDecodeError as e:
+                    logger.warning(f"Failed to parse JSON output: {e}")
+                    is_valid = False
+
+            return {
+                "output": generated_text,
+                "parsed_output": parsed_output,
+                "model": self.model_name,
+                "tokens_used": tokens_used,
+                "finish_reason": finish_reason if finish_reason else "unknown",
+                "is_valid": is_valid,
+            }
+
+        except Exception as e:
+            logger.error(f"Structured output generation failed: {e}")
             raise
 
     async def get_model_info(self) -> dict:

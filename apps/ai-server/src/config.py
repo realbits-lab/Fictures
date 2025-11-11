@@ -30,6 +30,14 @@ class Settings(BaseSettings):
     # Database Configuration (for API key authentication)
     database_url: str = ""  # PostgreSQL connection string from web app
 
+    # Text Generation Configuration (vLLM with Qwen AWQ models)
+    text_model_name: str = "Qwen/Qwen3-14B-AWQ"  # 14B params, 4-bit AWQ quantization
+    vllm_quantization: str = "awq"  # AWQ quantization method
+    vllm_tensor_parallel_size: int = 1  # Number of GPUs for tensor parallelism
+    text_max_model_len: int = 16384  # Maximum sequence length (reduced for VRAM constraints)
+    text_gpu_memory_utilization: float = 0.8  # GPU memory utilization (0.0-1.0)
+    vllm_max_num_seqs: int = 256  # Maximum number of sequences in a batch
+
 
 # Global settings instance
 settings = Settings()

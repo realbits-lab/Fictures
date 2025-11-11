@@ -33,9 +33,15 @@ const __dirname = path.dirname(__filename);
 // Configuration
 const AUTH_FILE_PATH = path.join(__dirname, "../.auth/user.json");
 const PASSWORD_LENGTH = 24;
+<<<<<<< HEAD
 const API_KEY_MIN_LENGTH = 16; // Minimum length without 'fic_' prefix
 const API_KEY_MAX_LENGTH = 64; // Maximum length without 'fic_' prefix (generous limit)
 const API_KEY_PREFIX = "fic_";
+=======
+const API_KEY_MIN_LENGTH = 40; // Minimum length without 'fic_' prefix (base64url encoded)
+const API_KEY_MAX_LENGTH = 50; // Maximum length without 'fic_' prefix (base64url encoded)
+const API_KEY_PREFIX = 'fic_';
+>>>>>>> 10ebf9f8 (feat: enhance authentication system and API key management)
 
 // Validation rules
 const VALIDATION_RULES = {
