@@ -172,17 +172,15 @@ describe("Chapter API (Singular - Extreme Incremental)", () => {
         expect(typeof chapter.title).toBe("string");
 
         // 5. Verify metadata
-        expect(metadata.chapterIndex).toBe(0); // First chapter in part
-        expect(metadata.globalChapterIndex).toBe(0); // First chapter in story
-        expect(metadata.totalChaptersInPart).toBe(1);
-        expect(metadata.totalChaptersInStory).toBe(1);
+        expect(metadata.chapterIndex).toBe(0); // First chapter (global index)
+        expect(metadata.totalChapters).toBe(1); // Total chapters in story
         expect(metadata.generationTime).toBeGreaterThan(0);
 
         console.log("✅ Chapter generated successfully:");
         console.log(`  Title: ${chapter.title}`);
         console.log(`  ID: ${chapter.id}`);
-        console.log(`  Chapter index (in part): ${metadata.chapterIndex}`);
-        console.log(`  Global chapter index: ${metadata.globalChapterIndex}`);
+        console.log(`  Chapter index: ${metadata.chapterIndex}`);
+        console.log(`  Total chapters: ${metadata.totalChapters}`);
         console.log(`  Generation time: ${metadata.generationTime}ms`);
     }, 180000);
 
@@ -231,16 +229,14 @@ describe("Chapter API (Singular - Extreme Incremental)", () => {
         expect(chapter.partId).toBe(testPartId);
 
         // 4. Verify metadata shows context awareness
-        expect(metadata.chapterIndex).toBe(1); // Second chapter in part
-        expect(metadata.globalChapterIndex).toBe(1); // Second chapter in story
-        expect(metadata.totalChaptersInPart).toBe(2);
-        expect(metadata.totalChaptersInStory).toBe(2);
+        expect(metadata.chapterIndex).toBe(1); // Second chapter (global index)
+        expect(metadata.totalChapters).toBe(2); // Total chapters in story
 
         console.log("✅ Second chapter generated successfully with context:");
         console.log(`  Title: ${chapter.title}`);
         console.log(`  ID: ${chapter.id}`);
-        console.log(`  Chapter index (in part): ${metadata.chapterIndex}`);
-        console.log(`  Global chapter index: ${metadata.globalChapterIndex}`);
+        console.log(`  Chapter index: ${metadata.chapterIndex}`);
+        console.log(`  Total chapters: ${metadata.totalChapters}`);
         console.log(`  Generation time: ${metadata.generationTime}ms`);
     }, 180000);
 });

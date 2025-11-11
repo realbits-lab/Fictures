@@ -87,10 +87,7 @@ export async function POST(request: NextRequest) {
                 sceneId: serviceResult.scene.id,
                 title: serviceResult.scene.title,
                 sceneIndex: serviceResult.metadata.sceneIndex,
-                globalSceneIndex: serviceResult.metadata.globalSceneIndex,
-                totalScenesInChapter:
-                    serviceResult.metadata.totalScenesInChapter,
-                totalScenesInStory: serviceResult.metadata.totalScenesInStory,
+                totalScenes: serviceResult.metadata.totalScenes,
                 generationTime: serviceResult.metadata.generationTime,
             },
         );
@@ -109,10 +106,7 @@ export async function POST(request: NextRequest) {
             metadata: {
                 generationTime: serviceResult.metadata.generationTime,
                 sceneIndex: serviceResult.metadata.sceneIndex,
-                globalSceneIndex: serviceResult.metadata.globalSceneIndex,
-                totalScenesInChapter:
-                    serviceResult.metadata.totalScenesInChapter,
-                totalScenesInStory: serviceResult.metadata.totalScenesInStory,
+                totalScenes: serviceResult.metadata.totalScenes,
             },
         };
 

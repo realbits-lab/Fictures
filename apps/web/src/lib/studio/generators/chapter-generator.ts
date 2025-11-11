@@ -39,11 +39,10 @@ export async function generateChapter(
         characters,
         previousChapters,
         chapterIndex,
-        globalChapterIndex,
     }: GenerateChapterParams = params;
 
     console.log(
-        `[chapter-generator] 📖 Generating chapter ${globalChapterIndex + 1} (Part: ${part.title}, Local index: ${chapterIndex + 1})...`,
+        `[chapter-generator] 📖 Generating chapter ${chapterIndex + 1} (Part: ${part.title})...`,
     );
     console.log(
         `[chapter-generator] Previous chapters count: ${previousChapters.length}`,
@@ -97,8 +96,8 @@ Arc Position: ${ch.arcPosition || "N/A"}`;
 
     // 5. Get the prompt template for chapter generation
     const promptParams: ChapterPromptParams = {
-        chapterNumber: String(globalChapterIndex + 1),
-        totalChapters: String(globalChapterIndex + 10), // Estimate, will be updated
+        chapterNumber: String(chapterIndex + 1),
+        totalChapters: String(chapterIndex + 10), // Estimate, will be updated
         partTitle: part.title,
         storyTitle: story.title,
         storyGenre: story.genre ?? "General Fiction",
@@ -122,7 +121,7 @@ Arc Position: ${ch.arcPosition || "N/A"}`;
     );
 
     console.log(
-        `[chapter-generator] Generating chapter ${globalChapterIndex + 1} using structured output with full previous context`,
+        `[chapter-generator] Generating chapter ${chapterIndex + 1} using structured output with full previous context`,
     );
 
     // 6. Generate chapter using structured output
@@ -141,7 +140,7 @@ Arc Position: ${ch.arcPosition || "N/A"}`;
     const totalTime: number = Date.now() - startTime;
 
     console.log(
-        `[chapter-generator] ✅ Generated chapter ${globalChapterIndex + 1}:`,
+        `[chapter-generator] ✅ Generated chapter ${chapterIndex + 1}:`,
         {
             title: chapterData.title,
             summary: chapterData.summary?.substring(0, 50) || "N/A",

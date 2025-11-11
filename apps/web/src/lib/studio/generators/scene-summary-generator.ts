@@ -39,11 +39,10 @@ export async function generateSceneSummary(
         settings,
         previousScenes,
         sceneIndex,
-        globalSceneIndex,
     }: GenerateSceneSummaryParams = params;
 
     console.log(
-        `[scene-summary-generator] 📄 Generating scene ${globalSceneIndex + 1} (Chapter: ${chapter.title}, Local index: ${sceneIndex + 1})...`,
+        `[scene-summary-generator] 📄 Generating scene ${sceneIndex + 1} (Chapter: ${chapter.title})...`,
     );
     console.log(
         `[scene-summary-generator] Previous scenes count: ${previousScenes.length}`,
@@ -106,7 +105,7 @@ Emotional Beat: ${scene.emotionalBeat || "N/A"}`;
     );
 
     console.log(
-        `[scene-summary-generator] Generating scene summary ${globalSceneIndex + 1} using structured output with full previous context`,
+        `[scene-summary-generator] Generating scene summary ${sceneIndex + 1} using structured output with full previous context`,
     );
 
     // 6. Generate scene summary using structured output
@@ -125,7 +124,7 @@ Emotional Beat: ${scene.emotionalBeat || "N/A"}`;
     const totalTime = Date.now() - startTime;
 
     console.log(
-        `[scene-summary-generator] ✅ Generated scene summary ${globalSceneIndex + 1}:`,
+        `[scene-summary-generator] ✅ Generated scene summary ${sceneIndex + 1}:`,
         {
             title: sceneData.title,
             cyclePhase: sceneData.cyclePhase,

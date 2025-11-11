@@ -338,8 +338,7 @@ export interface GenerateChapterParams {
     part: Part;
     characters: Character[];
     previousChapters: Chapter[];
-    chapterIndex: number;
-    globalChapterIndex: number;
+    chapterIndex: number; // Global index (position in entire story)
 }
 
 export interface GenerateChapterResult {
@@ -381,8 +380,7 @@ export interface GenerateSceneSummaryParams {
     chapter: Chapter;
     settings: Setting[];
     previousScenes: Scene[];
-    sceneIndex: number;
-    globalSceneIndex: number;
+    sceneIndex: number; // Global index (position in entire story)
 }
 
 export interface GenerateSceneSummaryResult {

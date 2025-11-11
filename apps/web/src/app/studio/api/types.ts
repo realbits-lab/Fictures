@@ -206,10 +206,8 @@ export interface GenerateChapterResponse {
     chapter: Chapter;
     metadata: {
         generationTime: number;
-        chapterIndex: number;
-        globalChapterIndex: number;
-        totalChaptersInPart: number;
-        totalChaptersInStory: number;
+        chapterIndex: number; // Global index (position in entire story)
+        totalChapters: number; // Total chapters in story
     };
 }
 
@@ -256,10 +254,8 @@ export interface GenerateSceneSummaryResponse {
     scene: Scene;
     metadata: {
         generationTime: number;
-        sceneIndex: number;
-        globalSceneIndex: number;
-        totalScenesInChapter: number;
-        totalScenesInStory: number;
+        sceneIndex: number; // Global index (position in entire story)
+        totalScenes: number; // Total scenes in story
     };
 }
 

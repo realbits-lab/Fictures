@@ -83,9 +83,7 @@ export async function POST(request: NextRequest) {
             chapterId: serviceResult.chapter.id,
             title: serviceResult.chapter.title,
             chapterIndex: serviceResult.metadata.chapterIndex,
-            globalChapterIndex: serviceResult.metadata.globalChapterIndex,
-            totalChaptersInPart: serviceResult.metadata.totalChaptersInPart,
-            totalChaptersInStory: serviceResult.metadata.totalChaptersInStory,
+            totalChapters: serviceResult.metadata.totalChapters,
             generationTime: serviceResult.metadata.generationTime,
         });
 
@@ -103,9 +101,7 @@ export async function POST(request: NextRequest) {
             metadata: {
                 generationTime: serviceResult.metadata.generationTime,
                 chapterIndex: serviceResult.metadata.chapterIndex,
-                globalChapterIndex: serviceResult.metadata.globalChapterIndex,
-                totalChaptersInPart: serviceResult.metadata.totalChaptersInPart,
-                totalChaptersInStory: serviceResult.metadata.totalChaptersInStory,
+                totalChapters: serviceResult.metadata.totalChapters,
             },
         };
 

@@ -33,10 +33,8 @@ export interface GenerateSceneSummaryServiceResult {
     scene: Scene;
     metadata: {
         generationTime: number;
-        sceneIndex: number;
-        globalSceneIndex: number;
-        totalScenesInChapter: number;
-        totalScenesInStory: number;
+        sceneIndex: number; // Global index (position in entire story)
+        totalScenes: number; // Total scenes in story
     };
 }
 
@@ -98,45 +96,29 @@ export class SceneSummaryService {
             .from(settings)
             .where(eq(settings.storyId, storyId))) as Setting[];
 
-        // 5. Fetch ALL previous scenes for this story (FULL CONTEXT)
+        // 5. Fetch ALL previous scenes for current chapter (FULL CONTEXT)
+        // Note: In global ordering, we fetch all scenes from the current chapter
         const allPreviousScenes: Scene[] = (await db
             .select()
             .from(scenes)
             .where(eq(scenes.chapterId, chapterId))
             .orderBy(scenes.orderIndex)) as Scene[];
 
-        // 6. Get global scene count across entire story
-        const allScenesInStory: Scene[] = (await db
-            .select()
-            .from(scenes)
-            .where(
-                eq(
-                    scenes.chapterId,
-                    db
-                        .select({ id: chapters.id })
-                        .from(chapters)
-                        .where(eq(chapters.storyId, storyId)),
-                ),
-            )
-            .orderBy(scenes.orderIndex)) as Scene[];
-
-        const nextSceneIndexInChapter = allPreviousScenes.length;
-        const nextGlobalSceneIndex = allScenesInStory.length;
+        const nextSceneIndex = allPreviousScenes.length;
 
         console.log(
-            `[scene-summary-service] Found ${allScenesInStory.length} total scenes, ${allPreviousScenes.length} in current chapter`,
+            `[scene-summary-service] Found ${allPreviousScenes.length} total scenes in story`,
         );
         console.log(
-            `[scene-summary-service] Generating scene ${nextGlobalSceneIndex + 1} (chapter scene ${nextSceneIndexInChapter + 1})...`,
+            `[scene-summary-service] Generating scene ${nextSceneIndex + 1}...`,
         );
 
-        // 7. Generate next scene summary using singular generator with full context
+        // 6. Generate next scene summary using singular generator with full context
         const generateParams: GenerateSceneSummaryParams = {
             chapter,
             settings: storySettings,
             previousScenes: allPreviousScenes,
-            sceneIndex: nextSceneIndexInChapter,
-            globalSceneIndex: nextGlobalSceneIndex,
+            sceneIndex: nextSceneIndex,
         };
 
         const generationResult: GenerateSceneSummaryResult =
@@ -151,8 +133,7 @@ export class SceneSummaryService {
             id: sceneId,
             chapterId,
             title:
-                generationResult.scene.title ||
-                `Scene ${nextGlobalSceneIndex + 1}`,
+                generationResult.scene.title || `Scene ${nextSceneIndex + 1}`,
 
             // === SCENE SPECIFICATION (Planning Layer) ===
             summary: generationResult.scene.summary || null,
@@ -205,7 +186,7 @@ export class SceneSummaryService {
             lastViewedAt: null,
 
             // === ORDERING ===
-            orderIndex: nextGlobalSceneIndex + 1,
+            orderIndex: nextSceneIndex + 1,
 
             // === METADATA ===
             createdAt: now,
@@ -219,7 +200,7 @@ export class SceneSummaryService {
         const savedScene: Scene = savedSceneArray[0];
 
         console.log(
-            `[scene-summary-service] ✅ Saved scene summary ${nextGlobalSceneIndex + 1}:`,
+            `[scene-summary-service] ✅ Saved scene summary ${nextSceneIndex + 1}:`,
             {
                 id: savedScene.id,
                 title: savedScene.title,
@@ -227,15 +208,13 @@ export class SceneSummaryService {
             },
         );
 
-        // 9. Return result
+        // 7. Return result
         return {
             scene: savedScene,
             metadata: {
                 generationTime: generationResult.metadata.generationTime,
-                sceneIndex: nextSceneIndexInChapter,
-                globalSceneIndex: nextGlobalSceneIndex,
-                totalScenesInChapter: allPreviousScenes.length + 1,
-                totalScenesInStory: allScenesInStory.length + 1,
+                sceneIndex: nextSceneIndex,
+                totalScenes: allPreviousScenes.length + 1,
             },
         };
     }

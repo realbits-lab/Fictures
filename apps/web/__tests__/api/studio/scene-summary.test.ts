@@ -209,10 +209,8 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
         expect(scene.emotionalBeat).toBeDefined();
 
         // 5. Verify metadata
-        expect(metadata.sceneIndex).toBe(0); // First scene in chapter
-        expect(metadata.globalSceneIndex).toBe(0); // First scene in story
-        expect(metadata.totalScenesInChapter).toBe(1);
-        expect(metadata.totalScenesInStory).toBe(1);
+        expect(metadata.sceneIndex).toBe(0); // First scene (global index)
+        expect(metadata.totalScenes).toBe(1); // Total scenes in story
         expect(metadata.generationTime).toBeGreaterThan(0);
 
         console.log("✅ Scene summary generated successfully:");
@@ -220,8 +218,8 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
         console.log(`  ID: ${scene.id}`);
         console.log(`  Cycle phase: ${scene.cyclePhase}`);
         console.log(`  Emotional beat: ${scene.emotionalBeat}`);
-        console.log(`  Scene index (in chapter): ${metadata.sceneIndex}`);
-        console.log(`  Global scene index: ${metadata.globalSceneIndex}`);
+        console.log(`  Scene index: ${metadata.sceneIndex}`);
+        console.log(`  Total scenes: ${metadata.totalScenes}`);
         console.log(`  Generation time: ${metadata.generationTime}ms`);
     }, 180000);
 
@@ -272,10 +270,8 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
         expect(scene.chapterId).toBe(testChapterId);
 
         // 4. Verify metadata shows context awareness
-        expect(metadata.sceneIndex).toBe(1); // Second scene in chapter
-        expect(metadata.globalSceneIndex).toBe(1); // Second scene in story
-        expect(metadata.totalScenesInChapter).toBe(2);
-        expect(metadata.totalScenesInStory).toBe(2);
+        expect(metadata.sceneIndex).toBe(1); // Second scene (global index)
+        expect(metadata.totalScenes).toBe(2); // Total scenes in story
 
         console.log(
             "✅ Second scene summary generated successfully with context:",
@@ -283,8 +279,8 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
         console.log(`  Title: ${scene.title}`);
         console.log(`  ID: ${scene.id}`);
         console.log(`  Cycle phase: ${scene.cyclePhase}`);
-        console.log(`  Scene index (in chapter): ${metadata.sceneIndex}`);
-        console.log(`  Global scene index: ${metadata.globalSceneIndex}`);
+        console.log(`  Scene index: ${metadata.sceneIndex}`);
+        console.log(`  Total scenes: ${metadata.totalScenes}`);
         console.log(`  Generation time: ${metadata.generationTime}ms`);
     }, 180000);
 });

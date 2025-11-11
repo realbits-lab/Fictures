@@ -33,10 +33,8 @@ export interface GenerateChapterServiceResult {
     chapter: Chapter;
     metadata: {
         generationTime: number;
-        chapterIndex: number;
-        globalChapterIndex: number;
-        totalChaptersInPart: number;
-        totalChaptersInStory: number;
+        chapterIndex: number; // Global index (position in entire story)
+        totalChapters: number; // Total chapters in story
     };
 }
 
@@ -110,29 +108,22 @@ export class ChapterService {
             .where(eq(chapters.storyId, storyId))
             .orderBy(chapters.orderIndex)) as Chapter[];
 
-        // 6. Fetch chapters for current part only
-        const partChapters: Chapter[] = allPreviousChapters.filter(
-            (ch) => ch.partId === partId,
-        );
-
-        const nextChapterIndexInPart = partChapters.length;
-        const nextGlobalChapterIndex = allPreviousChapters.length;
+        const nextChapterIndex = allPreviousChapters.length;
 
         console.log(
-            `[chapter-service] Found ${allPreviousChapters.length} total chapters, ${partChapters.length} in current part`,
+            `[chapter-service] Found ${allPreviousChapters.length} total chapters`,
         );
         console.log(
-            `[chapter-service] Generating chapter ${nextGlobalChapterIndex + 1} (part chapter ${nextChapterIndexInPart + 1})...`,
+            `[chapter-service] Generating chapter ${nextChapterIndex + 1}...`,
         );
 
-        // 7. Generate next chapter using singular generator with full context
+        // 6. Generate next chapter using singular generator with full context
         const generateParams: GenerateChapterParams = {
             story,
             part,
             characters: storyCharacters,
             previousChapters: allPreviousChapters,
-            chapterIndex: nextChapterIndexInPart,
-            globalChapterIndex: nextGlobalChapterIndex,
+            chapterIndex: nextChapterIndex,
         };
 
         const generationResult: GenerateChapterResult =
@@ -154,7 +145,7 @@ export class ChapterService {
             partId,
             title:
                 generationResult.chapter.title ||
-                `Chapter ${nextGlobalChapterIndex + 1}`,
+                `Chapter ${nextChapterIndex + 1}`,
             summary: generationResult.chapter.summary || "Chapter summary",
             characterId: focusCharacterId,
             arcPosition: generationResult.chapter.arcPosition || "beginning",
@@ -168,7 +159,7 @@ export class ChapterService {
             seedsResolved: generationResult.chapter.seedsResolved || [],
             connectsToPreviousChapter:
                 generationResult.chapter.connectsToPreviousChapter?.trim() ||
-                (nextGlobalChapterIndex === 0
+                (nextChapterIndex === 0
                     ? "First chapter"
                     : "Continues from previous chapter"),
             createsNextAdversity:
@@ -177,7 +168,7 @@ export class ChapterService {
             status: "writing",
             publishedAt: now,
             scheduledFor: now,
-            orderIndex: nextGlobalChapterIndex + 1,
+            orderIndex: nextChapterIndex + 1,
             createdAt: now,
             updatedAt: now,
         });
@@ -189,7 +180,7 @@ export class ChapterService {
         const savedChapter: Chapter = savedChapterArray[0];
 
         console.log(
-            `[chapter-service] ✅ Saved chapter ${nextGlobalChapterIndex + 1}:`,
+            `[chapter-service] ✅ Saved chapter ${nextChapterIndex + 1}:`,
             {
                 id: savedChapter.id,
                 title: savedChapter.title,
@@ -197,15 +188,13 @@ export class ChapterService {
             },
         );
 
-        // 10. Return result
+        // 7. Return result
         return {
             chapter: savedChapter,
             metadata: {
                 generationTime: generationResult.metadata.generationTime,
-                chapterIndex: nextChapterIndexInPart,
-                globalChapterIndex: nextGlobalChapterIndex,
-                totalChaptersInPart: partChapters.length + 1,
-                totalChaptersInStory: allPreviousChapters.length + 1,
+                chapterIndex: nextChapterIndex,
+                totalChapters: allPreviousChapters.length + 1,
             },
         };
     }
