@@ -71,6 +71,13 @@
       "when": 1762787100134,
       "tag": "0009_smooth_secret_warriors",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1762861874921,
+      "tag": "0010_handy_amazoness",
+      "breakpoints": true
     }
   ]
 }

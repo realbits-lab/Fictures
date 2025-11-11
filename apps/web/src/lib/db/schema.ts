@@ -164,9 +164,6 @@ export const characters = pgTable(
         personality: json().notNull(), // { traits: string[], values: string[] }
         backstory: text().notNull(), // Focused history providing motivation context (2-4 paragraphs)
 
-        // === RELATIONSHIPS (Jeong System) ===
-        relationships: json(), // { [characterId]: { type, jeongLevel, sharedHistory, currentDynamic } }
-
         // === PROSE GENERATION ===
         physicalDescription: json("physical_description").notNull(), // { age, appearance, distinctiveFeatures, style }
         voiceStyle: json("voice_style").notNull(), // { tone, vocabulary, quirks, emotionalRange }
@@ -413,7 +410,9 @@ export const chapters = pgTable(
         seedsResolved: json("seeds_resolved").default([]).notNull(),
 
         // === CONNECTION TO NARRATIVE FLOW ===
-        connectsToPreviousChapter: text("connects_to_previous_chapter").notNull(), // How previous resolution created this adversity
+        connectsToPreviousChapter: text(
+            "connects_to_previous_chapter",
+        ).notNull(), // How previous resolution created this adversity
         createsNextAdversity: text("creates_next_adversity").notNull(), // How this resolution creates next problem
 
         // === PUBLISHING ===

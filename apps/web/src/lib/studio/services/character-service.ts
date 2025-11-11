@@ -92,7 +92,6 @@ export class CharacterService {
                 externalGoal: characterData.externalGoal ?? null,
                 personality: characterData.personality ?? null,
                 backstory: characterData.backstory ?? null,
-                relationships: null,
                 physicalDescription: characterData.physicalDescription ?? null,
                 voiceStyle: characterData.voiceStyle ?? null,
                 imageUrl: null,

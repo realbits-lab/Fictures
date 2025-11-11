@@ -74,7 +74,6 @@ const mappedCharacterFocus = scene.characterFocus?.map((charId) =>
 **Character Depth:**
 - `personality` (with `{traits[], values[]}` structure)
 - `backstory` (TEXT)
-- `relationships`
 
 **Prose Generation:**
 - `physicalDescription`, `voiceStyle`

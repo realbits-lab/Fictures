@@ -175,13 +175,6 @@ describe("Character Generation API", () => {
             expect(typeof character.backstory).toBe("string");
             expect(character.backstory.length).toBeGreaterThan(0);
 
-            // === RELATIONSHIPS (JEONG SYSTEM) ===
-            // relationships is nullable (only this, imageUrl, imageVariants can be null)
-            expect(
-                character.relationships === null ||
-                    typeof character.relationships === "object",
-            ).toBe(true);
-
             // === PROSE GENERATION FIELDS ===
             // physicalDescription is required (.notNull())
             expect(character.physicalDescription).toBeDefined();

@@ -363,37 +363,10 @@ export async function POST(request: NextRequest): Promise<Response> {
                             );
                         });
 
-                        // Second pass: Build character records with remapped relationship IDs
+                        // Second pass: Build character records
                         const characterRecords = result.characters.map(
                             (char) => {
                                 const newId = characterIdMap.get(char.id)!;
-
-                                // Remap character IDs in relationships JSON
-                                let mappedRelationships = char.relationships;
-                                if (
-                                    char.relationships &&
-                                    typeof char.relationships === "object"
-                                ) {
-                                    console.log(
-                                        `[Novel Generation] Remapping relationships for ${char.name}:`,
-                                        Object.keys(char.relationships),
-                                    );
-                                    mappedRelationships = {};
-                                    for (const [
-                                        tempCharId,
-                                        relationshipData,
-                                    ] of Object.entries(char.relationships)) {
-                                        // Map temporary character ID to database ID
-                                        const dbCharId =
-                                            characterIdMap.get(tempCharId) ||
-                                            tempCharId;
-                                        console.log(
-                                            `[Novel Generation]   ${tempCharId} → ${dbCharId}`,
-                                        );
-                                        mappedRelationships[dbCharId] =
-                                            relationshipData;
-                                    }
-                                }
 
                                 // Validate character data before insert
                                 return insertCharacterSchema.parse({
@@ -407,7 +380,6 @@ export async function POST(request: NextRequest): Promise<Response> {
                                     externalGoal: char.externalGoal,
                                     personality: char.personality,
                                     backstory: char.backstory,
-                                    relationships: mappedRelationships,
                                     physicalDescription:
                                         char.physicalDescription,
                                     voiceStyle: char.voiceStyle,
