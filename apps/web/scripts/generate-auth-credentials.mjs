@@ -33,8 +33,13 @@ const __dirname = path.dirname(__filename);
 // Configuration
 const AUTH_FILE_PATH = path.join(__dirname, "../.auth/user.json");
 const PASSWORD_LENGTH = 24;
+<<<<<<< HEAD
 const API_KEY_LENGTH = 16; // Length without 'fic_' prefix
 const API_KEY_PREFIX = "fic_";
+=======
+const API_KEY_BYTES = 32; // Bytes for base64url encoding (results in ~43 chars)
+const API_KEY_PREFIX = 'fic';
+>>>>>>> 10ebf9f8 (feat: enhance authentication system and API key management)
 
 /**
  * Character sets for password generation
@@ -97,15 +102,22 @@ function generatePassword(length = PASSWORD_LENGTH) {
 
 /**
  * Generate an API key
- * Format: fic_XXXXXXXXXXXXXXXX (16 chars after prefix)
+ * Format: fic_<base64url> (~43 chars after prefix)
+ * Uses base64url encoding for URL-safe random bytes
  * @returns {string} API key
  */
 function generateApiKey() {
+<<<<<<< HEAD
 	// Use alphanumeric + some URL-safe special chars for API keys
 	const charset =
 		"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
 	const randomPart = generateRandomString(charset, API_KEY_LENGTH);
 	return `${API_KEY_PREFIX}${randomPart}`;
+=======
+  const randomBytes = crypto.randomBytes(API_KEY_BYTES);
+  const randomPart = randomBytes.toString('base64url');
+  return `${API_KEY_PREFIX}_${randomPart}`;
+>>>>>>> 10ebf9f8 (feat: enhance authentication system and API key management)
 }
 
 /**
@@ -206,6 +218,7 @@ function displayCredentials(updates) {
 			console.log(`  Password: ${creds.password}`);
 			console.log(`  API Key:  ${creds.apiKey}`);
 
+<<<<<<< HEAD
 			// Validate API key format
 			const keyWithoutPrefix = creds.apiKey.replace(API_KEY_PREFIX, "");
 			const isValid =
@@ -215,6 +228,16 @@ function displayCredentials(updates) {
 				`  ✓ API Key Format: ${isValid ? "✅ Valid" : "❌ Invalid"} (${keyWithoutPrefix.length} chars after prefix)`,
 			);
 		}
+=======
+      // Validate API key format (fic_<base64url>)
+      const expectedPrefix = `${API_KEY_PREFIX}_`;
+      const keyWithoutPrefix = creds.apiKey.startsWith(expectedPrefix)
+        ? creds.apiKey.slice(expectedPrefix.length)
+        : creds.apiKey;
+      const isValid = creds.apiKey.startsWith(expectedPrefix) && keyWithoutPrefix.length >= 40;
+      console.log(`  ✓ API Key Format: ${isValid ? '✅ Valid' : '❌ Invalid'} (${keyWithoutPrefix.length} chars after prefix)`);
+    }
+>>>>>>> 10ebf9f8 (feat: enhance authentication system and API key management)
 
 		console.log("");
 	}

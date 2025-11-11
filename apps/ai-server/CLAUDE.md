@@ -83,9 +83,17 @@ python --version  # Should show 3.12.7
 
 **IMPORTANT**: All API endpoints require authentication via API key. Authentication is always enabled and cannot be disabled.
 
+**Cross-System Compatible**: The AI server uses the same authentication system as the web app for seamless integration.
+
+**Complete Documentation**: [../../docs/operation/cross-system-authentication.md](../../docs/operation/cross-system-authentication.md)
+
 ### Authentication Method
 
-The AI server validates API keys against the web application's PostgreSQL database. API keys are stored securely using bcrypt hashing.
+The AI server validates API keys against the web application's PostgreSQL database. API keys are stored securely using bcrypt hashing, ensuring compatibility between both systems.
+
+**API Key Format**: `fic_<base64url>` (~47 characters total)
+- **Hashing**: bcrypt (compatible with web app)
+- **Prefix Length**: 16 characters (for fast lookup)
 
 **Required Header Formats:**
 ```bash
@@ -145,12 +153,31 @@ DATABASE_URL=postgresql://user:password@host-pooler.region.aws.neon.tech:5432/da
 
 ### Authentication Scopes
 
-API keys can have different scopes for fine-grained access control:
-- `images:read` - View image generation information
-- `images:write` - Generate images
-- `stories:read` - Read story data
-- `stories:write` - Create/update stories
-- `admin:all` - Full administrative access
+API keys can have different scopes for fine-grained access control (aligned with web app):
+
+**Story Management**:
+- `stories:read`, `stories:write`, `stories:delete`, `stories:publish`
+
+**Image Management**:
+- `images:read`, `images:write`
+
+**Chapter & Content Management** (web app):
+- `chapters:read`, `chapters:write`, `chapters:delete`
+
+**Analytics & Features** (web app):
+- `analytics:read`, `ai:use`
+
+**Community & Settings** (web app):
+- `community:read`, `community:write`
+- `settings:read`, `settings:write`
+
+**Administrative Access**:
+- `admin:all` - Full access to all endpoints
+
+**Role-Based Scopes**:
+- **Manager**: All scopes including `admin:all`
+- **Writer**: `stories:write`, `images:write`, `ai:use`, etc. (content creation)
+- **Reader**: Read-only scopes (`stories:read`, `images:read`, etc.)
 
 ## Generation Mode Configuration
 

@@ -3,10 +3,26 @@
 import asyncio
 import httpx
 import json
+import os
+from pathlib import Path
 from typing import AsyncGenerator
 
 # Base URL for API (change if needed)
 BASE_URL = "http://localhost:8000"
+
+# Load API key from .auth/user.json
+def load_api_key() -> str:
+    """Load API key from auth file."""
+    auth_file = Path(__file__).parent.parent / ".auth" / "user.json"
+    if auth_file.exists():
+        with open(auth_file) as f:
+            auth_data = json.load(f)
+            # Use develop manager API key
+            return auth_data["develop"]["profiles"]["manager"]["apiKey"]
+    raise FileNotFoundError("API key file not found. Please create .auth/user.json")
+
+API_KEY = load_api_key()
+AUTH_HEADERS = {"Authorization": f"Bearer {API_KEY}"}
 
 
 async def test_health_endpoint():
@@ -25,7 +41,7 @@ async def test_list_text_models():
     """Test listing available text models."""
     print("\n=== Testing List Text Models ===")
     async with httpx.AsyncClient() as client:
-        response = await client.get(f"{BASE_URL}/api/v1/text/models")
+        response = await client.get(f"{BASE_URL}/api/v1/text/models", headers=AUTH_HEADERS)
         print(f"Status Code: {response.status_code}")
         print(f"Response: {json.dumps(response.json(), indent=2)}")
         assert response.status_code == 200
@@ -50,6 +66,7 @@ async def test_text_generation_basic():
         response = await client.post(
             f"{BASE_URL}/api/v1/text/generate",
             json=request_data,
+            headers=AUTH_HEADERS,
         )
 
         print(f"\nStatus Code: {response.status_code}")
@@ -88,6 +105,7 @@ async def test_text_generation_with_stop_sequences():
         response = await client.post(
             f"{BASE_URL}/api/v1/text/generate",
             json=request_data,
+            headers=AUTH_HEADERS,
         )
 
         print(f"\nStatus Code: {response.status_code}")
@@ -119,6 +137,7 @@ async def test_text_streaming():
             "POST",
             f"{BASE_URL}/api/v1/text/stream",
             json=request_data,
+            headers=AUTH_HEADERS,
         ) as response:
             print(f"\nStatus Code: {response.status_code}")
             print("\nStreaming output:")
@@ -174,6 +193,7 @@ async def test_text_generation_error_handling():
         response = await client.post(
             f"{BASE_URL}/api/v1/text/generate",
             json=request_data,
+            headers=AUTH_HEADERS,
         )
 
         print(f"Empty prompt - Status Code: {response.status_code}")
@@ -189,6 +209,7 @@ async def test_text_generation_error_handling():
         response = await client.post(
             f"{BASE_URL}/api/v1/text/generate",
             json=request_data,
+            headers=AUTH_HEADERS,
         )
 
         print(f"Long prompt - Status Code: {response.status_code}")
