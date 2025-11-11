@@ -9,7 +9,7 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { characters, parts, stories } from "@/lib/db/schema";
+import { characters, parts, settings, stories } from "@/lib/db/schema";
 import { generatePart } from "../generators/part-generator";
 import type {
     GeneratePartParams,
@@ -19,6 +19,7 @@ import {
     type Character,
     insertPartSchema,
     type Part,
+    type Setting,
     type Story,
 } from "../generators/zod-schemas.generated";
 
@@ -83,7 +84,17 @@ export class PartService {
             );
         }
 
-        // 4. Fetch ALL previous parts for this story (FULL CONTEXT)
+        // 4. Fetch settings for the story
+        const storySettings: Setting[] = (await db
+            .select()
+            .from(settings)
+            .where(eq(settings.storyId, storyId))) as Setting[];
+
+        if (storySettings.length === 0) {
+            throw new Error("Story must have settings before generating parts");
+        }
+
+        // 5. Fetch ALL previous parts for this story (FULL CONTEXT)
         const previousParts: Part[] = (await db
             .select()
             .from(parts)
@@ -97,10 +108,11 @@ export class PartService {
         );
         console.log(`[part-service] Generating part ${nextPartIndex + 1}...`);
 
-        // 5. Generate next part using singular generator with full context
+        // 6. Generate next part using singular generator with full context
         const generateParams: GeneratePartParams = {
             story,
             characters: storyCharacters,
+            settings: storySettings,
             previousParts,
             partIndex: nextPartIndex,
         };
@@ -108,7 +120,7 @@ export class PartService {
         const generationResult: GeneratePartResult =
             await generatePart(generateParams);
 
-        // 6. Save part to database
+        // 7. Save part to database
         const now: string = new Date().toISOString();
         const partId: string = `part_${nanoid(16)}`;
 
@@ -135,7 +147,7 @@ export class PartService {
             orderIndex: savedPart.orderIndex,
         });
 
-        // 7. Return result
+        // 8. Return result
         return {
             part: savedPart,
             metadata: {

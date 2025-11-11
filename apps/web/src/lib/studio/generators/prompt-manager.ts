@@ -409,6 +409,14 @@ Ensure the setting:
 - **Climax chapter**: Contains MACRO consequence (major earned payoff resulting from virtue)
 - **Resolution chapter**: Contains MACRO new adversity (how success creates next challenge)
 
+# SETTINGS USAGE
+
+Use the provided settings to:
+- Ground character arcs in specific, atmospheric locations
+- Leverage sensory details (mood, lighting, sounds, temperature) to enhance emotional beats
+- Match setting atmosphere to arc positions (e.g., darker settings for adversity, hopeful settings for consequence)
+- Create meaningful connections between external environment and internal transformation
+
 # THREE-ACT STRUCTURE REQUIREMENTS
 
 ## ACT I: SETUP
@@ -519,6 +527,9 @@ Story Context:
 
 Characters:
 {characters}
+
+Settings:
+{settings}
 
 Previous Parts Context:
 {previousPartsContext}
@@ -649,37 +660,41 @@ SCENE BREAKDOWN GUIDANCE:
 10. Emotional pacing builds toward part's climax
 11. Virtuous actions MUST be intrinsically motivated
 12. Consequences MUST feel earned through causality`,
-                userTemplate: `Generate chapter {chapterNumber} of {totalChapters} for {partTitle}:
+                userTemplate: `Generate chapter {chapterNumber} of {totalChapters}:
 
 Story Context:
-Title: {storyTitle}
-Genre: {storyGenre}
-Tone: {storyTone}
-Summary: {storySummary}
-Moral Framework: {moralFramework}
+{story}
 
-Part Context:
-Part Number: {partNumber}
-Part Summary: {partSummary}
-Character Macro Arcs: {characterMacroArcs}
+Parts Context:
+{parts}
 
-Character Focus: {characterName}
-Character ID: {characterId}
-Arc Position: {arcPosition}
-Internal Flaw: {characterFlaw}
-Core Trait: {characterCoreTrait}
+Characters Context:
+{characters}
 
-Previous Chapter: {previousChapterSummary}
+Settings Context:
+{settings}
 
-Create a complete micro-cycle chapter that:
-1. Advances the character's MACRO arc position ({arcPosition})
-2. Contains ONE complete adversity-triumph cycle
-3. Shows clear causal link from previous chapter
-4. Creates adversity for next chapter
-5. Plants and/or resolves seeds
-6. Progressively builds toward the MACRO virtue moment
+Previous Chapters Context:
+{previousChaptersContext}
 
-Return structured text with clear chapter sections following the template above.`,
+IMPORTANT INSTRUCTIONS:
+1. Use the chapter number ({chapterNumber}) to infer:
+   - Which part this chapter belongs to
+   - Arc position (beginning/middle/climax/resolution)
+   - Which character arc to focus on
+
+2. Create a complete micro-cycle chapter that:
+   - Contains ONE complete adversity-triumph cycle
+   - Shows clear causal link from previous chapter
+   - Creates adversity for next chapter
+   - Plants and/or resolves seeds
+   - Progressively builds toward the MACRO virtue moment
+
+3. Balance focus across characters by rotating arcs for variety
+
+4. Use the provided settings to enhance emotional beats and atmosphere
+
+Return structured chapter data following the template specified in the system prompt.`,
             },
 
             scene_summary: {

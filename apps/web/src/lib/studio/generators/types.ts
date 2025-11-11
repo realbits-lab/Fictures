@@ -261,6 +261,7 @@ export interface GenerateSettingsResult {
 export interface GeneratePartsParams {
     story: Story;
     characters: Character[];
+    settings: Setting[];
     partsCount: number;
     onProgress?: ProgressCallback;
 }
@@ -269,6 +270,7 @@ export interface PartPromptParams extends Record<string, string> {
     partNumber: string;
     story: string;
     characters: string;
+    settings: string;
     previousPartsContext: string;
 }
 
@@ -284,6 +286,7 @@ export interface GeneratePartsResult {
 export interface GeneratePartParams {
     story: Story;
     characters: Character[];
+    settings: Setting[];
     previousParts: Part[];
     partIndex: number;
 }
@@ -302,23 +305,18 @@ export interface GenerateChaptersParams {
     story: Story;
     parts: Part[];
     characters: Character[];
+    settings?: Setting[]; // Optional settings for atmospheric context
     chaptersPerPart: number;
     onProgress?: ProgressCallback;
 }
 
 export interface ChapterPromptParams extends Record<string, string> {
     chapterNumber: string;
-    totalChapters: string;
-    partTitle: string;
-    storyTitle: string;
-    storyGenre: string;
-    storySummary: string;
-    partSummary: string;
-    characterName: string;
-    characterFlaw: string;
-    characterArc: string;
-    previousChapterContext: string;
-    previousChaptersContext?: string;
+    story: string; // Comprehensive story context (title, genre, summary, moral framework)
+    parts: string; // All parts with summaries and character arcs
+    characters: string; // All characters with full details
+    settings: string; // All settings with atmosphere and sensory details
+    previousChaptersContext: string; // All previous chapters context
 }
 
 export interface GenerateChaptersResult {
@@ -354,14 +352,14 @@ export interface GenerateSceneSummariesParams {
     onProgress?: ProgressCallback;
 }
 
-export interface SceneSummaryPromptParams extends Record<string, string> {
+export interface SceneSummaryPromptParams {
     sceneNumber: string;
     sceneCount: string;
     chapterTitle: string;
     chapterSummary: string;
     cyclePhase: string;
     settings: string;
-    previousScenesContext?: string;
+    previousScenesContext: string;
 }
 
 export interface GenerateSceneSummariesResult {

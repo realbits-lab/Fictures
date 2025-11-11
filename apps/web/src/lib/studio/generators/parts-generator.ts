@@ -32,8 +32,13 @@ export async function generateParts(
     const startTime: number = Date.now();
 
     // 1. Extract and set default parameters
-    const { story, characters, partsCount, onProgress }: GeneratePartsParams =
-        params;
+    const {
+        story,
+        characters,
+        settings,
+        partsCount,
+        onProgress,
+    }: GeneratePartsParams = params;
 
     const parts: GeneratedPartData[] = [];
 
@@ -104,17 +109,39 @@ export async function generateParts(
             `[parts-generator] Character list prepared: ${characters.length} characters`,
         );
 
-        // 5. Build merged story context string
+        // 5. Build comprehensive settings list string
+        const settingsStr: string = settings
+            .map((s) => {
+                const atmosphere =
+                    typeof s.atmosphere === "object" && s.atmosphere !== null
+                        ? (s.atmosphere as {
+                              mood?: string;
+                              lighting?: string;
+                              sounds?: string;
+                              temperature?: string;
+                          })
+                        : {};
+
+                return `Setting: ${s.name} - Description: ${s.description || "N/A"} - Atmosphere: ${atmosphere.mood || "N/A"} (mood), ${atmosphere.lighting || "N/A"} (lighting), ${atmosphere.sounds || "N/A"} (sounds), ${atmosphere.temperature || "N/A"} (temperature) - Sensory Details: ${s.sensoryDetails || "N/A"}`;
+            })
+            .join("\n");
+
+        console.log(
+            `[parts-generator] Settings list prepared: ${settings.length} settings`,
+        );
+
+        // 6. Build merged story context string
         const storyContext: string = `Title: ${story.title}
 Genre: ${story.genre ?? "General Fiction"}
 Summary: ${story.summary ?? "A story of adversity and triumph"}
 Moral Framework: ${story.moralFramework ?? "Universal human virtues"}`;
 
-        // 6. Get the prompt template for part generation
+        // 7. Get the prompt template for part generation
         const promptParams: PartPromptParams = {
             partNumber: String(i + 1),
             story: storyContext,
             characters: charactersStr,
+            settings: settingsStr,
             previousPartsContext:
                 "None (this is the first part in a batch generation)",
         };
@@ -132,7 +159,7 @@ Moral Framework: ${story.moralFramework ?? "Universal human virtues"}`;
             `[parts-generator] Generating part ${i + 1} using structured output`,
         );
 
-        // 7. Generate part using structured output
+        // 8. Generate part using structured output
         const partData: GeneratedPartData =
             await textGenerationClient.generateStructured(
                 userPromptText,
@@ -156,7 +183,7 @@ Moral Framework: ${story.moralFramework ?? "Universal human virtues"}`;
         );
     }
 
-    // 8. Calculate total generation time
+    // 9. Calculate total generation time
     const totalTime: number = Date.now() - startTime;
 
     console.log("[parts-generator] ✅ All parts generated successfully:", {
@@ -164,7 +191,7 @@ Moral Framework: ${story.moralFramework ?? "Universal human virtues"}`;
         generationTime: totalTime,
     });
 
-    // 9. Build and return result with metadata
+    // 10. Build and return result with metadata
     const result: GeneratePartsResult = {
         parts,
         metadata: {

@@ -33,8 +33,13 @@ export async function generatePart(
     const startTime: number = Date.now();
 
     // 1. Extract parameters
-    const { story, characters, previousParts, partIndex }: GeneratePartParams =
-        params;
+    const {
+        story,
+        characters,
+        settings,
+        previousParts,
+        partIndex,
+    }: GeneratePartParams = params;
 
     console.log(
         `[part-generator] 🎬 Generating part ${partIndex + 1} with full context...`,
@@ -95,7 +100,24 @@ export async function generatePart(
         })
         .join("\n\n");
 
-    // 3. Build previous parts context string (FULL CONTEXT)
+    // 3. Build comprehensive settings list string
+    const settingsStr: string = settings
+        .map((s) => {
+            const atmosphere =
+                typeof s.atmosphere === "object" && s.atmosphere !== null
+                    ? (s.atmosphere as {
+                          mood?: string;
+                          lighting?: string;
+                          sounds?: string;
+                          temperature?: string;
+                      })
+                    : {};
+
+            return `Setting: ${s.name} - Description: ${s.description || "N/A"} - Atmosphere: ${atmosphere.mood || "N/A"} (mood), ${atmosphere.lighting || "N/A"} (lighting), ${atmosphere.sounds || "N/A"} (sounds), ${atmosphere.temperature || "N/A"} (temperature) - Sensory Details: ${s.sensoryDetails || "N/A"}`;
+        })
+        .join("\n");
+
+    // 4. Build previous parts context string (FULL CONTEXT)
     const previousPartsContext: string =
         previousParts.length > 0
             ? previousParts
@@ -131,17 +153,18 @@ Character Arcs: ${
         `[part-generator] Previous parts context prepared (${previousPartsContext.length} characters)`,
     );
 
-    // 4. Build merged story context string
+    // 5. Build merged story context string
     const storyContext: string = `Title: ${story.title}
 Genre: ${story.genre ?? "General Fiction"}
 Summary: ${story.summary ?? "A story of adversity and triumph"}
 Moral Framework: ${story.moralFramework ?? "Universal human virtues"}`;
 
-    // 5. Get the prompt template for part generation
+    // 6. Get the prompt template for part generation
     const promptParams: PartPromptParams = {
         partNumber: String(partIndex + 1),
         story: storyContext,
         characters: charactersStr,
+        settings: settingsStr,
         previousPartsContext,
     };
 
@@ -158,7 +181,7 @@ Moral Framework: ${story.moralFramework ?? "Universal human virtues"}`;
         `[part-generator] Generating part ${partIndex + 1} using structured output with full previous context`,
     );
 
-    // 6. Generate part using structured output
+    // 7. Generate part using structured output
     const partData: GeneratedPartData =
         await textGenerationClient.generateStructured(
             userPromptText,
@@ -170,7 +193,7 @@ Moral Framework: ${story.moralFramework ?? "Universal human virtues"}`;
             },
         );
 
-    // 7. Calculate total generation time
+    // 8. Calculate total generation time
     const totalTime: number = Date.now() - startTime;
 
     console.log(`[part-generator] ✅ Generated part ${partIndex + 1}:`, {
@@ -180,7 +203,7 @@ Moral Framework: ${story.moralFramework ?? "Universal human virtues"}`;
         generationTime: totalTime,
     });
 
-    // 8. Build and return result with metadata
+    // 9. Build and return result with metadata
     const result: GeneratePartResult = {
         part: partData,
         metadata: {
