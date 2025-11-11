@@ -267,10 +267,7 @@ export interface GeneratePartsParams {
 
 export interface PartPromptParams extends Record<string, string> {
     partNumber: string;
-    storyTitle: string;
-    storyGenre: string;
-    storySummary: string;
-    moralFramework: string;
+    story: string;
     characters: string;
     previousPartsContext?: string;
 }

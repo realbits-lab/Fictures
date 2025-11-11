@@ -8,6 +8,14 @@
  */
 
 import type {
+    GenerateChapterRequest,
+    GenerateChapterResponse,
+    GenerateCharactersRequest,
+    GenerateCharactersResponse,
+    GeneratePartRequest,
+    GeneratePartResponse,
+    GenerateSceneSummaryRequest,
+    GenerateSceneSummaryResponse,
     GenerateStoryErrorResponse,
     GenerateStoryRequest,
     GenerateStoryResponse,
@@ -184,4 +192,347 @@ describe("Story Generation API", () => {
         console.log(`  Generation time: ${metadata.generationTime}ms`);
         console.log(`  Model: ${metadata.model || "N/A"}`);
     }, 60000); // 60 second timeout for AI generation
+
+    it("should generate complete story structure: 2 parts, 3 chapters per part, 3 scene-summaries per chapter", async () => {
+        console.log("\n🚀 Starting comprehensive story generation test...\n");
+
+        // ====================================================================
+        // STEP 1: Generate Story
+        // ====================================================================
+        console.log("📖 Step 1/5: Generating story...");
+        const storyRequestBody: GenerateStoryRequest = {
+            userPrompt:
+                "An epic fantasy adventure about a hero's journey to save their kingdom",
+            language: "English",
+            preferredGenre: "Fantasy",
+            preferredTone: "hopeful",
+        };
+
+        const storyResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/stories",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify(storyRequestBody),
+            },
+        );
+
+        const storyData: GenerateStoryResponse | GenerateStoryErrorResponse =
+            await storyResponse.json();
+
+        if (!storyResponse.ok) {
+            console.error("❌ Story generation failed:", storyData);
+            expect(storyResponse.ok).toBe(true);
+        }
+
+        expect(storyResponse.status).toBe(201);
+        expect("success" in storyData && storyData.success).toBe(true);
+
+        const story = (storyData as GenerateStoryResponse).story;
+        const testStoryId = story.id;
+
+        console.log(`✅ Story created: ${testStoryId}`);
+        console.log(`   Title: ${story.title}`);
+
+        // ====================================================================
+        // STEP 2: Generate Characters (prerequisite)
+        // ====================================================================
+        console.log("\n👥 Step 2/5: Generating 2 characters...");
+        const charactersRequestBody: GenerateCharactersRequest = {
+            storyId: testStoryId,
+            characterCount: 2,
+            language: "English",
+        };
+
+        const charactersResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/characters",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify(charactersRequestBody),
+            },
+        );
+
+        const charactersData: GenerateCharactersResponse =
+            await charactersResponse.json();
+
+        if (!charactersResponse.ok) {
+            console.error("❌ Character generation failed:", charactersData);
+            expect(charactersResponse.ok).toBe(true);
+        }
+
+        expect(charactersResponse.status).toBe(201);
+        expect(charactersData.characters.length).toBe(2);
+
+        console.log(
+            `✅ Characters generated: ${charactersData.characters.length}`,
+        );
+        for (const char of charactersData.characters) {
+            console.log(`   - ${char.name} (${char.id})`);
+        }
+
+        // ====================================================================
+        // STEP 3-5: Generate Parts → Chapters → Scenes (Incremental Workflow)
+        // ====================================================================
+        console.log(
+            "\n📚 Step 3/3: Generating 2 parts with chapters and scenes incrementally...",
+        );
+
+        const allPartIds: string[] = [];
+        const allChapterIds: string[] = [];
+        const allSceneIds: string[] = [];
+
+        let globalChapterIndex = 0;
+        let globalSceneIndex = 0;
+
+        // Generate 2 parts incrementally
+        for (let partNum = 0; partNum < 2; partNum++) {
+            console.log(`\n   ╔═══ PART ${partNum + 1}/2 ═══╗`);
+
+            // ================================================================
+            // STEP 3.1: Generate Part
+            // ================================================================
+            console.log(`   ║ Generating part ${partNum + 1}...`);
+
+            const partRequestBody: GeneratePartRequest = {
+                storyId: testStoryId,
+            };
+
+            const partResponse: Response = await fetch(
+                "http://localhost:3000/studio/api/part",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-api-key": apiKey,
+                    },
+                    body: JSON.stringify(partRequestBody),
+                },
+            );
+
+            const partData: GeneratePartResponse = await partResponse.json();
+
+            if (!partResponse.ok) {
+                console.error(
+                    `❌ Part ${partNum + 1} generation failed:`,
+                    partData,
+                );
+                expect(partResponse.ok).toBe(true);
+            }
+
+            expect(partResponse.status).toBe(201);
+            expect(partData.success).toBe(true);
+
+            const part = partData.part;
+            allPartIds.push(part.id);
+
+            // Verify part metadata
+            expect(part.id).toMatch(/^part_/);
+            expect(part.storyId).toBe(testStoryId);
+            expect(part.title).toBeDefined();
+            expect(typeof part.title).toBe("string");
+            expect(partData.metadata.partIndex).toBe(partNum);
+            expect(partData.metadata.totalParts).toBe(partNum + 1);
+
+            console.log(`   ║ ✅ Part ${partNum + 1}: ${part.title}`);
+            console.log(`   ║    ID: ${part.id}`);
+            console.log(
+                `   ║    Index: ${partData.metadata.partIndex}, Total: ${partData.metadata.totalParts}`,
+            );
+
+            // ================================================================
+            // STEP 3.2: Generate 3 Chapters for this Part
+            // ================================================================
+            console.log(`   ║`);
+            console.log(
+                `   ║ Generating 3 chapters for part ${partNum + 1}...`,
+            );
+
+            for (let chapterNum = 0; chapterNum < 3; chapterNum++) {
+                console.log(
+                    `   ║   📖 Chapter ${globalChapterIndex + 1}/6 (Part ${partNum + 1}, Chapter ${chapterNum + 1}/3)`,
+                );
+
+                const chapterRequestBody: GenerateChapterRequest = {
+                    storyId: testStoryId,
+                    partId: part.id,
+                };
+
+                const chapterResponse: Response = await fetch(
+                    "http://localhost:3000/studio/api/chapter",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "x-api-key": apiKey,
+                        },
+                        body: JSON.stringify(chapterRequestBody),
+                    },
+                );
+
+                const chapterData: GenerateChapterResponse =
+                    await chapterResponse.json();
+
+                if (!chapterResponse.ok) {
+                    console.error(
+                        `❌ Chapter ${globalChapterIndex + 1} failed:`,
+                        chapterData,
+                    );
+                    expect(chapterResponse.ok).toBe(true);
+                }
+
+                expect(chapterResponse.status).toBe(201);
+                expect(chapterData.success).toBe(true);
+
+                const chapter = chapterData.chapter;
+                allChapterIds.push(chapter.id);
+
+                // Verify chapter metadata
+                expect(chapter.id).toMatch(/^chapter_/);
+                expect(chapter.partId).toBe(part.id);
+                expect(chapter.title).toBeDefined();
+                expect(typeof chapter.title).toBe("string");
+                expect(chapterData.metadata.chapterIndex).toBe(
+                    globalChapterIndex,
+                );
+                expect(chapterData.metadata.totalChapters).toBe(
+                    globalChapterIndex + 1,
+                );
+
+                console.log(`   ║      ✅ ${chapter.title}`);
+                console.log(
+                    `   ║         ID: ${chapter.id}, Global Index: ${chapterData.metadata.chapterIndex}`,
+                );
+
+                // ============================================================
+                // STEP 3.3: Generate 3 Scene Summaries for this Chapter
+                // ============================================================
+                console.log(
+                    `   ║         Generating 3 scenes for chapter ${globalChapterIndex + 1}...`,
+                );
+
+                for (let sceneNum = 0; sceneNum < 3; sceneNum++) {
+                    console.log(
+                        `   ║            📄 Scene ${globalSceneIndex + 1}/18 (Ch ${globalChapterIndex + 1}, Scene ${sceneNum + 1}/3)`,
+                    );
+
+                    const sceneRequestBody: GenerateSceneSummaryRequest = {
+                        storyId: testStoryId,
+                        chapterId: chapter.id,
+                    };
+
+                    const sceneResponse: Response = await fetch(
+                        "http://localhost:3000/studio/api/scene-summary",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "x-api-key": apiKey,
+                            },
+                            body: JSON.stringify(sceneRequestBody),
+                        },
+                    );
+
+                    const sceneData: GenerateSceneSummaryResponse =
+                        await sceneResponse.json();
+
+                    if (!sceneResponse.ok) {
+                        console.error(
+                            `❌ Scene ${globalSceneIndex + 1} failed:`,
+                            sceneData,
+                        );
+                        expect(sceneResponse.ok).toBe(true);
+                    }
+
+                    expect(sceneResponse.status).toBe(201);
+                    expect(sceneData.success).toBe(true);
+
+                    const scene = sceneData.scene;
+                    allSceneIds.push(scene.id);
+
+                    // Verify scene metadata
+                    expect(scene.id).toMatch(/^scene_/);
+                    expect(scene.chapterId).toBe(chapter.id);
+                    expect(scene.title).toBeDefined();
+                    expect(typeof scene.title).toBe("string");
+                    expect(sceneData.metadata.sceneIndex).toBe(
+                        globalSceneIndex,
+                    );
+                    expect(sceneData.metadata.totalScenes).toBe(
+                        globalSceneIndex + 1,
+                    );
+
+                    console.log(`   ║               ✅ ${scene.title}`);
+                    console.log(
+                        `   ║                  ID: ${scene.id}, Global Index: ${sceneData.metadata.sceneIndex}`,
+                    );
+
+                    globalSceneIndex++;
+                }
+
+                globalChapterIndex++;
+            }
+
+            console.log(`   ╚═══ Part ${partNum + 1} Complete ═══╝\n`);
+        }
+
+        // Verify final counts
+        expect(allPartIds.length).toBe(2);
+        expect(allChapterIds.length).toBe(6);
+        expect(allSceneIds.length).toBe(18);
+
+        console.log(
+            `✅ All parts, chapters, and scenes generated incrementally`,
+        );
+
+        // ====================================================================
+        // FINAL VALIDATION
+        // ====================================================================
+        console.log("\n🔍 Final Validation:");
+
+        // Verify all IDs are unique
+        const allIds = [
+            testStoryId,
+            ...charactersData.characters.map((c) => c.id),
+            ...allPartIds,
+            ...allChapterIds,
+            ...allSceneIds,
+        ];
+        const uniqueIds = new Set(allIds);
+        expect(uniqueIds.size).toBe(allIds.length);
+        console.log(`   ✅ All ${allIds.length} IDs are unique`);
+
+        // Verify ID formats
+        expect(testStoryId).toMatch(/^story_/);
+        for (const char of charactersData.characters) {
+            expect(char.id).toMatch(/^character_/);
+        }
+        for (const partId of allPartIds) {
+            expect(partId).toMatch(/^part_/);
+        }
+        for (const chapterId of allChapterIds) {
+            expect(chapterId).toMatch(/^chapter_/);
+        }
+        for (const sceneId of allSceneIds) {
+            expect(sceneId).toMatch(/^scene_/);
+        }
+        console.log("   ✅ All ID formats are valid");
+
+        // Final counts
+        console.log("\n📊 Final Statistics:");
+        console.log(`   Story: 1 (${testStoryId})`);
+        console.log(`   Characters: ${charactersData.characters.length}`);
+        console.log(`   Parts: ${allPartIds.length}`);
+        console.log(`   Chapters: ${allChapterIds.length}`);
+        console.log(`   Scene Summaries: ${allSceneIds.length}`);
+        console.log(
+            "\n✅ Comprehensive incremental story generation test PASSED\n",
+        );
+    }, 600000); // 10 minute timeout for full generation
 });
