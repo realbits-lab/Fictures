@@ -8,20 +8,13 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { eq } from "drizzle-orm";
-import { db } from "@/lib/db";
-import {
-    chapters,
-    characters,
-    parts,
-    settings,
-    stories,
-} from "@/lib/db/schema";
 import { textGenerationClient } from "./ai-client";
 import {
+    buildChapterContext,
     buildCharactersContext,
     buildGenericSettingContext,
     buildPartContext,
+    buildSceneContext,
     buildSettingContext,
     buildStoryContext,
 } from "./context-builders";
@@ -31,13 +24,6 @@ import type {
     GenerateSceneContentResult,
     SceneContentPromptParams,
 } from "./types";
-import type {
-    Chapter,
-    Character,
-    Part,
-    Setting,
-    Story,
-} from "./zod-schemas.generated";
 
 /**
  * Generate prose content for a single scene
@@ -50,17 +36,14 @@ export async function generateSceneContent(
 ): Promise<GenerateSceneContentResult> {
     const startTime: number = Date.now();
 
-    // 1. Extract and set default parameters
+    // 1. Extract parameters
     const {
-        storyId,
-        partId,
-        chapterId,
-        story: storyParam,
-        part: partParam,
-        chapter: chapterParam,
-        characters: charactersParam,
-        settings: settingsParam,
+        story,
+        part,
+        chapter,
         scene,
+        characters,
+        settings,
         language = "English",
     }: GenerateSceneContentParams = params;
 
@@ -68,133 +51,26 @@ export async function generateSceneContent(
         `[scene-content-generator] 📝 Generating content for scene: ${scene.title}`,
     );
 
-    // 2. Get story - use provided object or fetch from database
-    let story: Partial<Story>;
-    if (storyParam) {
-        // Orchestrator mode - use provided object
-        story = storyParam;
-    } else if (storyId) {
-        // Service mode - fetch from database
-        const storyResult: Story[] = (await db
-            .select()
-            .from(stories)
-            .where(eq(stories.id, storyId))) as Story[];
-        const fetchedStory: Story | undefined = storyResult[0];
+    // 2. Find setting if scene has one
+    const setting = scene.settingId
+        ? settings.find((s) => s.id === scene.settingId)
+        : undefined;
 
-        if (!fetchedStory) {
-            throw new Error(`Story not found: ${storyId}`);
-        }
-        story = fetchedStory;
-    } else {
-        throw new Error(
-            "Either storyId or story object must be provided in params",
-        );
-    }
-
-    // 3. Get part - use provided object or fetch from database
-    let part: Partial<Part>;
-    if (partParam) {
-        // Orchestrator mode - use provided object
-        part = partParam;
-    } else if (partId) {
-        // Service mode - fetch from database
-        const partResult: Part[] = (await db
-            .select()
-            .from(parts)
-            .where(eq(parts.id, partId))) as Part[];
-        const fetchedPart: Part | undefined = partResult[0];
-
-        if (!fetchedPart) {
-            throw new Error(`Part not found: ${partId}`);
-        }
-        part = fetchedPart;
-    } else {
-        throw new Error(
-            "Either partId or part object must be provided in params",
-        );
-    }
-
-    // 4. Get chapter - use provided object or fetch from database
-    let chapter: Partial<Chapter>;
-    if (chapterParam) {
-        // Orchestrator mode - use provided object
-        chapter = chapterParam;
-    } else if (chapterId) {
-        // Service mode - fetch from database
-        const chapterResult: Chapter[] = (await db
-            .select()
-            .from(chapters)
-            .where(eq(chapters.id, chapterId))) as Chapter[];
-        const fetchedChapter: Chapter | undefined = chapterResult[0];
-
-        if (!fetchedChapter) {
-            throw new Error(`Chapter not found: ${chapterId}`);
-        }
-        chapter = fetchedChapter;
-    } else {
-        throw new Error(
-            "Either chapterId or chapter object must be provided in params",
-        );
-    }
-
-    // 5. Get characters - use provided array or fetch from database
-    let storyCharacters: Partial<Character>[];
-    if (charactersParam) {
-        // Orchestrator mode - use provided array
-        storyCharacters = charactersParam;
-    } else if (storyId) {
-        // Service mode - fetch from database
-        storyCharacters = (await db
-            .select()
-            .from(characters)
-            .where(eq(characters.storyId, storyId))) as Character[];
-    } else {
-        throw new Error(
-            "Either storyId or characters array must be provided in params",
-        );
-    }
-
-    // 6. Get setting - use provided array or fetch from database
-    let setting: Partial<Setting> | undefined;
-    if (scene.settingId) {
-        if (settingsParam) {
-            // Orchestrator mode - find in provided array
-            setting = settingsParam.find((s) => s.id === scene.settingId);
-        } else if (storyId) {
-            // Service mode - fetch from database
-            const settingResult: Setting[] = (await db
-                .select()
-                .from(settings)
-                .where(eq(settings.id, scene.settingId))) as Setting[];
-            setting = settingResult[0];
-        }
-    }
-
-    // 7. Build context strings using common builders
+    // 3. Build context strings using common builders
     const storyContext: string = buildStoryContext(story);
-    const partContext: string = buildPartContext(part, storyCharacters);
-    const chapterContext: string = `Title: ${chapter.title || "Untitled Chapter"}
-Summary: ${chapter.summary || "N/A"}
-Arc Position: ${chapter.arcPosition || "N/A"}
-Adversity Type: ${chapter.adversityType || "N/A"}
-Virtue Type: ${chapter.virtueType || "N/A"}`;
-    const sceneContext: string = `Title: ${scene.title || "Untitled Scene"}
-Summary: ${scene.summary || "N/A"}
-Cycle Phase: ${scene.cyclePhase || "N/A"}
-Emotional Beat: ${scene.emotionalBeat || "N/A"}
-Suggested Length: ${scene.suggestedLength || "medium"}
-Sensory Anchors: ${Array.isArray(scene.sensoryAnchors) ? scene.sensoryAnchors.join(", ") : "Use setting-appropriate details"}
-Dialogue vs Description: ${scene.dialogueVsDescription || "Balanced mix"}`;
-    const charactersStr: string = buildCharactersContext(storyCharacters);
+    const partContext: string = buildPartContext(part, characters);
+    const chapterContext: string = buildChapterContext(chapter);
+    const sceneContext: string = buildSceneContext(scene);
+    const charactersStr: string = buildCharactersContext(characters);
     const settingStr: string = setting
         ? buildSettingContext(setting)
         : buildGenericSettingContext();
 
     console.log(
-        `[scene-content-generator] Context prepared: ${storyCharacters.length} characters, ${setting?.name || "generic"} setting`,
+        `[scene-content-generator] Context prepared: ${characters.length} characters, ${setting?.name || "generic"} setting`,
     );
 
-    // 13. Get the prompt template for scene content generation
+    // 4. Get the prompt template for scene content generation
     const promptParams: SceneContentPromptParams = {
         story: storyContext,
         part: partContext,
@@ -234,7 +110,7 @@ Dialogue vs Description: ${scene.dialogueVsDescription || "Balanced mix"}`;
     const totalTime: number = Date.now() - startTime;
 
     console.log("[scene-content-generator] ✅ Generated scene content:", {
-        sceneId: params.sceneId,
+        sceneId: scene.id,
         wordCount,
         generationTime: totalTime,
     });

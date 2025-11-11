@@ -6,7 +6,14 @@
 
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { chapters, scenes, stories } from "@/lib/db/schema";
+import {
+    chapters,
+    characters,
+    parts,
+    scenes,
+    settings,
+    stories,
+} from "@/lib/db/schema";
 import { generateSceneContent } from "../generators/scene-content-generator";
 import type {
     GenerateSceneContentParams,
@@ -14,7 +21,10 @@ import type {
 } from "../generators/types";
 import type {
     Chapter,
+    Character,
+    Part,
     Scene,
+    Setting,
     Story,
 } from "../generators/zod-schemas.generated";
 
@@ -81,21 +91,45 @@ export class SceneContentService {
             );
         }
 
-        // 5. Generate scene content using pure generator
-        // Generator will fetch all necessary data (story, part, chapter, characters, settings)
+        // 5. Fetch part
+        const partResult = await db
+            .select()
+            .from(parts)
+            .where(eq(parts.id, chapter.partId));
+
+        const part = partResult[0] as Part | undefined;
+
+        if (!part) {
+            throw new Error(`Part not found: ${chapter.partId}`);
+        }
+
+        // 6. Fetch all characters for the story
+        const storyCharacters = (await db
+            .select()
+            .from(characters)
+            .where(eq(characters.storyId, story.id))) as Character[];
+
+        // 7. Fetch all settings for the story
+        const storySettings = (await db
+            .select()
+            .from(settings)
+            .where(eq(settings.storyId, story.id))) as Setting[];
+
+        // 8. Generate scene content using pure generator
         const generateParams: GenerateSceneContentParams = {
-            storyId: story.id,
-            partId: chapter.partId,
-            chapterId: chapter.id,
-            sceneId,
+            story,
+            part,
+            chapter,
             scene,
+            characters: storyCharacters,
+            settings: storySettings,
             language,
         };
 
         const generationResult: GenerateSceneContentResult =
             await generateSceneContent(generateParams);
 
-        // 8. Update scene with generated content
+        // 9. Update scene with generated content
         const now: string = new Date().toISOString();
 
         const updatedSceneArray: Scene[] = (await db
@@ -109,7 +143,7 @@ export class SceneContentService {
 
         const updatedScene: Scene = updatedSceneArray[0];
 
-        // 9. Return result
+        // 10. Return result
         return {
             scene: updatedScene,
             metadata: {

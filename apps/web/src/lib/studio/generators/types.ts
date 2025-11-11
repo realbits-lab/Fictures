@@ -392,21 +392,15 @@ export interface GenerateSceneSummaryResult {
 // ============================================================================
 
 export interface GenerateSceneContentParams {
-    // === Database IDs (Service mode) ===
-    storyId?: string;
-    partId?: string;
-    chapterId?: string;
-    sceneId: string;
+    // === Required Objects ===
+    story: Story;
+    part: Part;
+    chapter: Chapter;
+    scene: Scene;
+    characters: Character[];
+    settings: Setting[];
 
-    // === Full Objects (Orchestrator mode) ===
-    story?: Story;
-    part?: GeneratedPartData & { id: string };
-    chapter?: GeneratedChapterData & { id: string; partId: string };
-    characters?: (GeneratedCharacterData & { id: string })[];
-    settings?: (GeneratedSettingData & { id: string })[];
-
-    // === Required ===
-    scene: GeneratedSceneSummaryData & { id: string; chapterId: string };
+    // === Optional ===
     language?: string;
 }
 
