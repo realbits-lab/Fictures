@@ -5,16 +5,21 @@ import json
 import logging
 import os
 from typing import Optional, AsyncGenerator, Dict, Any
-from vllm import AsyncLLMEngine, AsyncEngineArgs, SamplingParams
-from vllm.sampling_params import GuidedDecodingParams
-from src.config import settings
-from src.utils.gpu_utils import cleanup_gpu_memory, get_gpu_memory_info
 
 # Set CUDA environment variables before vLLM initialization
 os.environ.setdefault("CUDA_HOME", "/usr/local/cuda-12.6")
 os.environ["PATH"] = f"/usr/local/cuda-12.6/bin:{os.environ.get('PATH', '')}"
-os.environ["LD_LIBRARY_PATH"] = f"/usr/local/cuda-12.6/lib64:{os.environ.get('LD_LIBRARY_PATH', '')}"
+# Include user lib directory with libcuda.so symlink for triton compilation in V1 subprocess
+user_lib = os.path.expanduser("~/lib")
+os.environ["LD_LIBRARY_PATH"] = f"{user_lib}:/usr/local/cuda-12.6/lib64:/lib/x86_64-linux-gnu:{os.environ.get('LD_LIBRARY_PATH', '')}"
 os.environ.setdefault("VLLM_TORCH_COMPILE_LEVEL", "0")  # Disable torch compilation
+
+# vLLM 0.11.0 uses V1 engine (V0 has been removed)
+
+from vllm import AsyncLLMEngine, AsyncEngineArgs, SamplingParams
+from vllm.sampling_params import GuidedDecodingParams
+from src.config import settings
+from src.utils.gpu_utils import cleanup_gpu_memory, get_gpu_memory_info
 
 logger = logging.getLogger(__name__)
 
@@ -56,8 +61,8 @@ class TextGenerationService:
                 max_num_seqs=settings.vllm_max_num_seqs,
                 trust_remote_code=True,
                 enforce_eager=True,  # Disable CUDA graphs and torch compilation to avoid triton issues
-                # NOTE: guided_decoding_backend cannot be set due to triton compilation issues
-                # in vLLM subprocesses. Structured output support is disabled.
+                # Use outlines backend for guided decoding (works with legacy engine)
+                guided_decoding_backend="outlines",
             )
 
             # Create async engine
