@@ -435,16 +435,13 @@ SHARED MOMENTS:
                 userTemplate: `Generate Part {partNumber} (Act {partNumber}) for the story:
 
 Story Context:
-Title: {storyTitle}
-Genre: {storyGenre}
-Tone: {storyTone}
-Summary: {storySummary}
-Moral Framework: {moralFramework}
+{story}
 
 Characters:
 {characters}
 
-Number of Parts: {numberOfParts}
+Previous Parts Context:
+{previousPartsContext}
 
 Design MACRO adversity-triumph arcs for each character across this act, ensuring:
 1. Each MACRO arc demonstrates the story's moral framework

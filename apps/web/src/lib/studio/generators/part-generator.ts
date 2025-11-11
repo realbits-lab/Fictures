@@ -43,10 +43,57 @@ export async function generatePart(
         `[part-generator] Previous parts count: ${previousParts.length}`,
     );
 
-    // 2. Build character list string
+    // 2. Build comprehensive character list string
     const charactersStr: string = characters
-        .map((c) => `- ${c.name}: ${c.coreTrait} (flaw: ${c.internalFlaw})`)
-        .join("\n");
+        .map((c) => {
+            const personality =
+                typeof c.personality === "object" && c.personality !== null
+                    ? (c.personality as {
+                          traits?: string[];
+                          values?: string[];
+                      })
+                    : { traits: [], values: [] };
+            const physicalDesc =
+                typeof c.physicalDescription === "object" &&
+                c.physicalDescription !== null
+                    ? (c.physicalDescription as {
+                          age?: string;
+                          appearance?: string;
+                          distinctiveFeatures?: string;
+                          style?: string;
+                      })
+                    : {};
+            const voice =
+                typeof c.voiceStyle === "object" && c.voiceStyle !== null
+                    ? (c.voiceStyle as {
+                          tone?: string;
+                          vocabulary?: string;
+                          quirks?: string[];
+                          emotionalRange?: string;
+                      })
+                    : {};
+
+            return `Character: ${c.name} (${c.isMain ? "Main" : "Supporting"})
+  Summary: ${c.summary || "N/A"}
+  External Goal: ${c.externalGoal || "N/A"}
+  Core Trait: ${c.coreTrait || "N/A"}
+  Internal Flaw: ${c.internalFlaw || "N/A"}
+  Personality:
+    - Traits: ${personality.traits?.join(", ") || "N/A"}
+    - Values: ${personality.values?.join(", ") || "N/A"}
+  Backstory: ${c.backstory || "N/A"}
+  Physical Description:
+    - Age: ${physicalDesc.age || "N/A"}
+    - Appearance: ${physicalDesc.appearance || "N/A"}
+    - Distinctive Features: ${physicalDesc.distinctiveFeatures || "N/A"}
+    - Style: ${physicalDesc.style || "N/A"}
+  Voice Style:
+    - Tone: ${voice.tone || "N/A"}
+    - Vocabulary: ${voice.vocabulary || "N/A"}
+    - Quirks: ${voice.quirks?.join("; ") || "N/A"}
+    - Emotional Range: ${voice.emotionalRange || "N/A"}`;
+        })
+        .join("\n\n");
 
     // 3. Build previous parts context string (FULL CONTEXT)
     const previousPartsContext: string =
@@ -83,13 +130,16 @@ Character Arcs: ${
         `[part-generator] Previous parts context prepared (${previousPartsContext.length} characters)`,
     );
 
-    // 4. Get the prompt template for part generation
+    // 4. Build merged story context string
+    const storyContext: string = `Title: ${story.title}
+Genre: ${story.genre ?? "General Fiction"}
+Summary: ${story.summary ?? "A story of adversity and triumph"}
+Moral Framework: ${story.moralFramework ?? "Universal human virtues"}`;
+
+    // 5. Get the prompt template for part generation
     const promptParams: PartPromptParams = {
         partNumber: String(partIndex + 1),
-        storyTitle: story.title,
-        storyGenre: story.genre ?? "General Fiction",
-        storySummary: story.summary ?? "A story of adversity and triumph",
-        moralFramework: story.moralFramework ?? "Universal human virtues",
+        story: storyContext,
         characters: charactersStr,
         previousPartsContext,
     };
@@ -107,7 +157,7 @@ Character Arcs: ${
         `[part-generator] Generating part ${partIndex + 1} using structured output with full previous context`,
     );
 
-    // 5. Generate part using structured output
+    // 6. Generate part using structured output
     const partData: GeneratedPartData =
         await textGenerationClient.generateStructured(
             userPromptText,
@@ -119,7 +169,7 @@ Character Arcs: ${
             },
         );
 
-    // 6. Calculate total generation time
+    // 7. Calculate total generation time
     const totalTime: number = Date.now() - startTime;
 
     console.log(`[part-generator] ✅ Generated part ${partIndex + 1}:`, {
@@ -129,7 +179,7 @@ Character Arcs: ${
         generationTime: totalTime,
     });
 
-    // 7. Build and return result with metadata
+    // 8. Build and return result with metadata
     const result: GeneratePartResult = {
         part: partData,
         metadata: {

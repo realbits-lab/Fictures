@@ -269,7 +269,7 @@ export interface PartPromptParams extends Record<string, string> {
     partNumber: string;
     story: string;
     characters: string;
-    previousPartsContext?: string;
+    previousPartsContext: string;
 }
 
 export interface GeneratePartsResult {

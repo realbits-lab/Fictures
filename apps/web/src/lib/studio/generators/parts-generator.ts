@@ -48,23 +48,75 @@ export async function generateParts(
             onProgress(i + 1, partsCount);
         }
 
-        // 4. Build character list string
+        // 4. Build comprehensive character list string
         const charactersStr: string = characters
-            .map((c) => `- ${c.name}: ${c.coreTrait} (flaw: ${c.internalFlaw})`)
-            .join("\n");
+            .map((c) => {
+                const personality =
+                    typeof c.personality === "object" && c.personality !== null
+                        ? (c.personality as {
+                              traits?: string[];
+                              values?: string[];
+                          })
+                        : { traits: [], values: [] };
+                const physicalDesc =
+                    typeof c.physicalDescription === "object" &&
+                    c.physicalDescription !== null
+                        ? (c.physicalDescription as {
+                              age?: string;
+                              appearance?: string;
+                              distinctiveFeatures?: string;
+                              style?: string;
+                          })
+                        : {};
+                const voice =
+                    typeof c.voiceStyle === "object" && c.voiceStyle !== null
+                        ? (c.voiceStyle as {
+                              tone?: string;
+                              vocabulary?: string;
+                              quirks?: string[];
+                              emotionalRange?: string;
+                          })
+                        : {};
+
+                return `Character: ${c.name} (${c.isMain ? "Main" : "Supporting"})
+  Summary: ${c.summary || "N/A"}
+  External Goal: ${c.externalGoal || "N/A"}
+  Core Trait: ${c.coreTrait || "N/A"}
+  Internal Flaw: ${c.internalFlaw || "N/A"}
+  Personality:
+    - Traits: ${personality.traits?.join(", ") || "N/A"}
+    - Values: ${personality.values?.join(", ") || "N/A"}
+  Backstory: ${c.backstory || "N/A"}
+  Physical Description:
+    - Age: ${physicalDesc.age || "N/A"}
+    - Appearance: ${physicalDesc.appearance || "N/A"}
+    - Distinctive Features: ${physicalDesc.distinctiveFeatures || "N/A"}
+    - Style: ${physicalDesc.style || "N/A"}
+  Voice Style:
+    - Tone: ${voice.tone || "N/A"}
+    - Vocabulary: ${voice.vocabulary || "N/A"}
+    - Quirks: ${voice.quirks?.join("; ") || "N/A"}
+    - Emotional Range: ${voice.emotionalRange || "N/A"}`;
+            })
+            .join("\n\n");
 
         console.log(
             `[parts-generator] Character list prepared: ${characters.length} characters`,
         );
 
-        // 5. Get the prompt template for part generation
+        // 5. Build merged story context string
+        const storyContext: string = `Title: ${story.title}
+Genre: ${story.genre ?? "General Fiction"}
+Summary: ${story.summary ?? "A story of adversity and triumph"}
+Moral Framework: ${story.moralFramework ?? "Universal human virtues"}`;
+
+        // 6. Get the prompt template for part generation
         const promptParams: PartPromptParams = {
             partNumber: String(i + 1),
-            storyTitle: story.title,
-            storyGenre: story.genre ?? "General Fiction",
-            storySummary: story.summary ?? "A story of adversity and triumph",
-            moralFramework: story.moralFramework ?? "Universal human virtues",
+            story: storyContext,
             characters: charactersStr,
+            previousPartsContext:
+                "None (this is the first part in a batch generation)",
         };
 
         const {
@@ -80,7 +132,7 @@ export async function generateParts(
             `[parts-generator] Generating part ${i + 1} using structured output`,
         );
 
-        // 6. Generate part using structured output
+        // 7. Generate part using structured output
         const partData: GeneratedPartData =
             await textGenerationClient.generateStructured(
                 userPromptText,
@@ -104,7 +156,7 @@ export async function generateParts(
         );
     }
 
-    // 7. Calculate total generation time
+    // 8. Calculate total generation time
     const totalTime: number = Date.now() - startTime;
 
     console.log("[parts-generator] ✅ All parts generated successfully:", {
@@ -112,7 +164,7 @@ export async function generateParts(
         generationTime: totalTime,
     });
 
-    // 8. Build and return result with metadata
+    // 9. Build and return result with metadata
     const result: GeneratePartsResult = {
         parts,
         metadata: {
