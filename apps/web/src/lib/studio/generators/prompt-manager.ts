@@ -328,7 +328,9 @@ Ensure the setting actively participates in the adversity-triumph cycle and prov
 - Each chapter is still a COMPLETE adversity-triumph cycle
 - Chapters progressively advance the macro arc
 - Arc positions: beginning → middle → climax → resolution
-- Climax chapter contains the MACRO virtue and MACRO consequence
+- **Beginning/Middle chapters**: Contain MACRO adversity and MACRO virtue (the defining moral choice)
+- **Climax chapter**: Contains MACRO consequence (major earned payoff resulting from virtue)
+- **Resolution chapter**: Contains MACRO new adversity (how success creates next challenge)
 
 # THREE-ACT STRUCTURE REQUIREMENTS
 
@@ -389,9 +391,10 @@ PROGRESSION PLANNING:
 - Estimated Chapters: [2-4 typically]
 - Arc Position: [primary/secondary - primary gets more chapters]
 - Progression Strategy: [How arc unfolds gradually across chapters]
-  * Chapter 1-2: [beginning phase - setup, initial confrontation]
-  * Chapter 3-4: [middle/climax - escalation, MACRO virtue moment]
-  * Chapter 5+: [resolution phase - consequence, stabilization]
+  * Beginning chapters: [MACRO adversity introduced, initial confrontation]
+  * Middle chapters: [escalation builds, MACRO virtue moment (defining moral choice)]
+  * Climax chapter: [MACRO consequence (earned payoff resulting from virtue)]
+  * Resolution chapter: [MACRO new adversity revealed, stabilization]
 
 # CHARACTER INTERACTION REQUIREMENTS
 
@@ -464,7 +467,9 @@ Return structured text with clear section headers for each character's macro arc
 - Each chapter is ONE complete adversity-triumph cycle (micro-cycle)
 - Chapters progressively build toward the MACRO virtue and consequence
 - Arc positions: beginning → middle → climax → resolution
-- Climax chapter contains the MACRO virtue and MACRO consequence
+- **Beginning/Middle chapters**: Contain MACRO adversity and MACRO virtue (the defining moral choice)
+- **Climax chapter**: Contains MACRO consequence (major earned payoff resulting from virtue)
+- **Resolution chapter**: Contains MACRO new adversity (how success creates next challenge)
 
 # MICRO-CYCLE CHAPTER TEMPLATE
 
@@ -474,8 +479,11 @@ Each chapter must contain:
 CHAPTER {number}: {title}
 
 CHARACTER: {name}
-MACRO ARC: {brief macro adversity → macro virtue summary}
-POSITION IN ARC: {beginning/middle/climax/resolution} (climax = MACRO virtue/consequence)
+MACRO ARC: {brief macro adversity → macro virtue → macro consequence summary}
+POSITION IN ARC: {beginning/middle/climax/resolution}
+  - beginning/middle: MACRO adversity + MACRO virtue
+  - climax: MACRO consequence
+  - resolution: MACRO new adversity
 CONNECTED TO: {how previous chapter created THIS adversity}
 
 ## 2. MICRO-CYCLE ADVERSITY (This Chapter)

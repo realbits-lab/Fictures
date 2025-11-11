@@ -37,10 +37,15 @@ export async function authenticateRequest(
 ): Promise<AuthResult | null> {
 	// Try API key authentication first
 	const apiKeyHeader = request.headers.get("x-api-key");
+	console.log("[AUTH DEBUG] x-api-key header:", apiKeyHeader ? `${apiKeyHeader.substring(0, 20)}...` : "NOT FOUND");
 
 	if (apiKeyHeader) {
+		console.log("[AUTH DEBUG] API key header found, calling authenticateApiKey");
 		const result = await authenticateApiKey(apiKeyHeader);
+		console.log("[AUTH DEBUG] authenticateApiKey result:", result ? "SUCCESS" : "FAILED");
 		if (result) return result;
+	} else {
+		console.log("[AUTH DEBUG] No API key header, will try session auth");
 	}
 
 	// Fall back to session authentication
@@ -78,12 +83,17 @@ export async function authenticateRequest(
  * Authenticate using API key
  */
 async function authenticateApiKey(apiKey: string): Promise<AuthResult | null> {
+	console.log("[AUTH DEBUG] Starting API key authentication");
+	console.log("[AUTH DEBUG] API key length:", apiKey?.length);
+
 	if (!apiKey || apiKey.length < 16) {
+		console.log("[AUTH DEBUG] API key too short or missing");
 		return null;
 	}
 
 	// Extract prefix from API key (first 16 characters before the hash part)
 	const keyPrefix = apiKey.substring(0, 16);
+	console.log("[AUTH DEBUG] Extracted prefix:", keyPrefix);
 
 	// Find API key by prefix
 	const apiKeyResults = await db
@@ -92,14 +102,19 @@ async function authenticateApiKey(apiKey: string): Promise<AuthResult | null> {
 		.where(and(eq(apiKeys.keyPrefix, keyPrefix), eq(apiKeys.isActive, true)))
 		.limit(10); // Get all keys with this prefix (should be very few)
 
+	console.log("[AUTH DEBUG] Found", apiKeyResults.length, "keys with prefix");
+
 	if (apiKeyResults.length === 0) {
+		console.log("[AUTH DEBUG] No API keys found with this prefix");
 		return null;
 	}
 
 	// Verify the full API key hash
 	let matchedKey = null;
 	for (const key of apiKeyResults) {
+		console.log("[AUTH DEBUG] Comparing with key prefix:", key.keyPrefix);
 		const isMatch = await bcrypt.compare(apiKey, key.keyHash);
+		console.log("[AUTH DEBUG] bcrypt.compare result:", isMatch);
 		if (isMatch) {
 			matchedKey = key;
 			break;
@@ -107,8 +122,11 @@ async function authenticateApiKey(apiKey: string): Promise<AuthResult | null> {
 	}
 
 	if (!matchedKey) {
+		console.log("[AUTH DEBUG] No matching API key found after bcrypt comparison");
 		return null;
 	}
+
+	console.log("[AUTH DEBUG] API key matched successfully");
 
 	// Check if key is expired
 	if (matchedKey.expiresAt && new Date(matchedKey.expiresAt) < new Date()) {
