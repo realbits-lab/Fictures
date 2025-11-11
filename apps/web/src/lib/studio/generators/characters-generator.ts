@@ -9,6 +9,7 @@
  */
 
 import { textGenerationClient } from "./ai-client";
+import { buildStoryContext } from "./context-builders";
 import { promptManager } from "./prompt-manager";
 import type {
     CharacterPromptParams,
@@ -41,31 +42,31 @@ export async function generateCharacters(
 
     const characters: GeneratedCharacterData[] = [];
 
-    // 2. Generate each character in sequence
+    // 2. Build story context once (used for all characters)
+    const storyContext: string = buildStoryContext(story);
+    console.log("[characters-generator] Story context prepared");
+
+    // 3. Generate each character in sequence
     for (let i = 0; i < characterCount; i++) {
         console.log(
             `[characters-generator] 👤 Generating character ${i + 1}/${characterCount}...`,
         );
 
-        // 3. Report progress callback if provided
+        // 4. Report progress callback if provided
         if (onProgress) {
             onProgress(i + 1, characterCount);
         }
 
-        // 4. Determine character type (main vs supporting)
+        // 5. Determine character type (main vs supporting)
         const characterType: string =
             i === 0 ? "main protagonist" : "supporting character";
         console.log(`[characters-generator] Character type: ${characterType}`);
 
-        // 5. Get the prompt template for character generation
+        // 6. Get the prompt template for character generation
         const promptParams: CharacterPromptParams = {
             characterNumber: String(i + 1),
             characterCount: String(characterCount),
-            storyTitle: story.title,
-            storyGenre: story.genre ?? "General Fiction",
-            storyTone: story.tone ?? "hopeful",
-            storySummary: story.summary ?? "A story of adversity and triumph",
-            moralFramework: story.moralFramework ?? "Universal human virtues",
+            story: storyContext,
             characterType,
             language,
         };
@@ -83,7 +84,7 @@ export async function generateCharacters(
             `[characters-generator] Generating character ${i + 1} using structured output`,
         );
 
-        // 6. Generate character using structured output
+        // 7. Generate character using structured output
         const characterData: GeneratedCharacterData =
             await textGenerationClient.generateStructured(
                 userPromptText,
@@ -109,7 +110,7 @@ export async function generateCharacters(
         );
     }
 
-    // 7. Calculate total generation time
+    // 8. Calculate total generation time
     const totalTime: number = Date.now() - startTime;
 
     console.log(
@@ -120,7 +121,7 @@ export async function generateCharacters(
         },
     );
 
-    // 8. Build and return result with metadata
+    // 9. Build and return result with metadata
     const result: GenerateCharactersResult = {
         characters,
         metadata: {

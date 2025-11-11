@@ -222,12 +222,7 @@ Generate characters with exactly these fields:
 - Character Arc: Use irony to critique, expose absurdities through character decisions`,
                 userTemplate: `Generate character {characterNumber} of {characterCount} for the story:
 
-Story Context:
-Title: {storyTitle}
-Genre: {storyGenre}
-Tone: {storyTone}
-Summary: {storySummary}
-Moral Framework: {moralFramework}
+{story}
 
 Character Type: {characterType}
 Language: {language}
@@ -246,11 +241,9 @@ Generate a character object with ALL 10 required fields as specified in the syst
 10. voiceStyle (object: { tone, vocabulary, quirks: string[], emotionalRange })
 
 Ensure the character:
-- Aligns with the {storyGenre} genre's key elements and emotional appeal
-- Embodies the {storyTone} tone's emotional characteristics and character arc patterns
+- Fits naturally into the story's genre, tone, and moral framework
 - Has rich internal psychology with clear internal flaw and external goal
-- Speaks with a unique, distinctive voice (voiceStyle)
-- Fits naturally into the story's moral framework`,
+- Speaks with a unique, distinctive voice (voiceStyle)`,
             },
 
             setting: {
@@ -327,13 +320,7 @@ Provide SPECIFIC sensory details (not generic):
 - Balance adversity with atmospheric richness`,
                 userTemplate: `Generate setting {settingNumber} of {settingCount} for the story:
 
-Story Context:
-Title: {storyTitle}
-Genre: {storyGenre}
-Tone: {storyTone}
-Summary: {storySummary}
-Moral Framework: {moralFramework}
-Language: {language}
+{story}
 
 REQUIRED OUTPUT:
 Generate a setting object with ALL 11 required fields as specified in the system prompt:
@@ -387,7 +374,7 @@ Ensure the setting:
 - Actively participates in the adversity-triumph cycle
 - Provides rich, SPECIFIC sensory details (not generic)
 - Creates external conflict through adversity elements
-- Aligns with the {storyGenre} genre and {storyTone} tone`,
+- Aligns with the story's genre and tone`,
             },
 
             part: {

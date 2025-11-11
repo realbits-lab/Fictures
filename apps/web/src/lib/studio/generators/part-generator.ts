@@ -12,6 +12,7 @@
 import { textGenerationClient } from "./ai-client";
 import {
     buildCharactersContext,
+    buildPartsContext,
     buildSettingsContext,
     buildStoryContext,
 } from "./context-builders";
@@ -58,37 +59,11 @@ export async function generatePart(
     const settingsStr: string = buildSettingsContext(settings);
     const storyContext: string = buildStoryContext(story);
 
-    // 3. Build previous parts context string (FULL CONTEXT)
-    const previousPartsContext: string =
-        previousParts.length > 0
-            ? previousParts
-                  .map((part, idx) => {
-                      const arcs = part.characterArcs as Array<{
-                          characterId: string;
-                          macroAdversity?: {
-                              internal?: string;
-                              external?: string;
-                          };
-                          macroVirtue?: string;
-                          macroConsequence?: string;
-                          macroNewAdversity?: string;
-                      }> | null;
-
-                      return `Part ${idx + 1}: ${part.title}
-Summary: ${part.summary}
-Character Arcs: ${
-                          arcs
-                              ?.map((arc) => {
-                                  const char = characters.find(
-                                      (c) => c.id === arc.characterId,
-                                  );
-                                  return `\n  - ${char?.name || "Unknown"}: ${arc.macroAdversity?.internal || "N/A"} / ${arc.macroAdversity?.external || "N/A"} → ${arc.macroVirtue || "N/A"} → ${arc.macroConsequence || "N/A"} → ${arc.macroNewAdversity || "N/A"}`;
-                              })
-                              .join("") || "None"
-                      }`;
-                  })
-                  .join("\n\n")
-            : "None (this is the first part)";
+    // 3. Build previous parts context string using builder function
+    const previousPartsContext: string = buildPartsContext(
+        previousParts,
+        characters,
+    );
 
     console.log(
         `[part-generator] Context prepared: ${characters.length} characters, ${settings.length} settings`,

@@ -14,11 +14,11 @@
  */
 
 import type {
-    Character,
     GeneratedChapterData,
+    GeneratedCharacterData,
     GeneratedPartData,
     GeneratedSceneSummaryData,
-    Setting,
+    GeneratedSettingData,
     Story,
 } from "./zod-schemas.generated";
 
@@ -51,7 +51,7 @@ export function buildStoryContext(story: Story): string {
  */
 export function buildPartContext(
     part: GeneratedPartData & { id: string },
-    characters: Character[],
+    characters: (GeneratedCharacterData & { id: string })[],
 ): string {
     const arcs = part.characterArcs;
     const arcsContext =
@@ -72,22 +72,76 @@ export function buildPartContext(
   Character Arcs: ${arcsContext}`;
 }
 
+/**
+ * Build multiple parts context string for part generation
+ * Used to provide full context of all previously generated parts
+ * Uses buildPartContext internally for each part
+ */
+export function buildPartsContext(
+    parts: (GeneratedPartData & { id: string })[],
+    characters: (GeneratedCharacterData & { id: string })[],
+): string {
+    if (parts.length === 0) {
+        return "None (this is the first part)";
+    }
+
+    return parts
+        .map((part, idx) => {
+            return `Part ${idx + 1}:\n${buildPartContext(part, characters)}`;
+        })
+        .join("\n\n");
+}
+
 // =============================================================================
 // Chapter Context Builders (Phase 5)
 // =============================================================================
 
 /**
  * Build comprehensive chapter context string
- * Includes title, summary, arc position, adversity type, and virtue type
+ * Includes all chapter information: title, summary, arc position, adversity/virtue types,
+ * focus characters, seeds planted/resolved, and causal connections
  */
 export function buildChapterContext(
     chapter: GeneratedChapterData & { id: string; partId: string },
 ): string {
+    // Format focus characters array
+    const focusCharactersStr = Array.isArray(chapter.focusCharacters)
+        ? chapter.focusCharacters.join(", ")
+        : "N/A";
+
+    // Format seeds planted array
+    const seedsPlantedStr =
+        Array.isArray(chapter.seedsPlanted) && chapter.seedsPlanted.length > 0
+            ? chapter.seedsPlanted
+                  .map(
+                      (seed) =>
+                          `\n    - ${seed.id}: ${seed.description} (Expected: ${seed.expectedPayoff || "N/A"})`,
+                  )
+                  .join("")
+            : "None";
+
+    // Format seeds resolved array
+    const seedsResolvedStr =
+        Array.isArray(chapter.seedsResolved) && chapter.seedsResolved.length > 0
+            ? chapter.seedsResolved
+                  .map(
+                      (seed) =>
+                          `\n    - Seed ${seed.seedId} from Chapter ${seed.sourceChapterId}, Scene ${seed.sourceSceneId}: ${seed.payoffDescription}`,
+                  )
+                  .join("")
+            : "None";
+
     return `Title: ${chapter.title || "Untitled Chapter"}
 Summary: ${chapter.summary || "N/A"}
 Arc Position: ${chapter.arcPosition || "N/A"}
+Contributes to Macro Arc: ${chapter.contributesToMacroArc || "N/A"}
+Focus Characters: ${focusCharactersStr}
 Adversity Type: ${chapter.adversityType || "N/A"}
-Virtue Type: ${chapter.virtueType || "N/A"}`;
+Virtue Type: ${chapter.virtueType || "N/A"}
+Seeds Planted: ${seedsPlantedStr}
+Seeds Resolved: ${seedsResolvedStr}
+Connects to Previous Chapter: ${chapter.connectsToPreviousChapter || "N/A"}
+Creates Next Adversity: ${chapter.createsNextAdversity || "N/A"}`;
 }
 
 // =============================================================================
@@ -110,6 +164,37 @@ Sensory Anchors: ${Array.isArray(scene.sensoryAnchors) ? scene.sensoryAnchors.jo
 Dialogue vs Description: ${scene.dialogueVsDescription || "Balanced mix"}`;
 }
 
+/**
+ * Build previous scenes context string for scene summary generation
+ * Used to provide full context of all previously generated scenes in the chapter
+ * Includes content preview if available
+ * Uses buildSceneContext internally for each scene
+ */
+export function buildScenesContext(
+    scenes: Array<
+        GeneratedSceneSummaryData & {
+            id: string;
+            chapterId: string;
+            content?: string | null;
+        }
+    >,
+): string {
+    if (scenes.length === 0) {
+        return "None (this is the first scene)";
+    }
+
+    return scenes
+        .map((scene, idx) => {
+            const sceneContext = buildSceneContext(scene);
+            const contentPreview = scene.content
+                ? `\nContent: ${scene.content.substring(0, 500)}...`
+                : "\nContent: Not yet generated...";
+
+            return `Scene ${idx + 1}:\n${sceneContext}${contentPreview}`;
+        })
+        .join("\n\n");
+}
+
 // =============================================================================
 // Character Context Builders (Phase 2)
 // =============================================================================
@@ -117,7 +202,9 @@ Dialogue vs Description: ${scene.dialogueVsDescription || "Balanced mix"}`;
 /**
  * Build comprehensive character list string
  */
-export function buildCharactersContext(characters: Character[]): string {
+export function buildCharactersContext(
+    characters: (GeneratedCharacterData & { id: string })[],
+): string {
     return characters
         .map((c) => {
             const personality =
@@ -179,7 +266,9 @@ export function buildCharactersContext(characters: Character[]): string {
  * Build single setting context string (comprehensive format with all information)
  * Includes adversityElements, cycleAmplification, visual references, etc.
  */
-export function buildSettingContext(setting: Setting): string {
+export function buildSettingContext(
+    setting: GeneratedSettingData & { id: string },
+): string {
     const adversityElements =
         typeof setting.adversityElements === "object" &&
         setting.adversityElements !== null
@@ -254,7 +343,9 @@ export function buildSettingContext(setting: Setting): string {
  * Used for part/chapter/scene-summary generation
  * Uses buildSettingContext internally for each setting
  */
-export function buildSettingsContext(settings: Setting[]): string {
+export function buildSettingsContext(
+    settings: (GeneratedSettingData & { id: string })[],
+): string {
     return settings.map((s) => buildSettingContext(s)).join("\n\n");
 }
 

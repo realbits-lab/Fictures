@@ -21,6 +21,7 @@ import { textGenerationClient } from "./ai-client";
 import {
     buildCharactersContext,
     buildGenericSettingContext,
+    buildPartContext,
     buildSettingContext,
     buildStoryContext,
 } from "./context-builders";
@@ -171,8 +172,7 @@ export async function generateSceneContent(
 
     // 7. Build context strings using common builders
     const storyContext: string = buildStoryContext(story);
-    const partContext: string = `Title: ${part.title || "Untitled Part"}
-Summary: ${part.summary || "N/A"}`;
+    const partContext: string = buildPartContext(part, storyCharacters);
     const chapterContext: string = `Title: ${chapter.title || "Untitled Chapter"}
 Summary: ${chapter.summary || "N/A"}
 Arc Position: ${chapter.arcPosition || "N/A"}

@@ -98,8 +98,8 @@ export interface ProgressData {
     message: string;
     data?: {
         story?: Story;
-        characters?: GeneratedCharacterData[];
-        settings?: GeneratedSettingData[];
+        characters?: (GeneratedCharacterData & { id: string })[];
+        settings?: (GeneratedSettingData & { id: string })[];
         parts?: (GeneratedPartData & { id: string })[];
         chapters?: (GeneratedChapterData & { id: string; partId: string })[];
         scenes?: (GeneratedSceneSummaryData & {
@@ -116,8 +116,8 @@ export interface ProgressData {
  */
 export interface GeneratedNovelResult {
     story: Story;
-    characters: GeneratedCharacterData[];
-    settings: GeneratedSettingData[];
+    characters: (GeneratedCharacterData & { id: string })[];
+    settings: (GeneratedSettingData & { id: string })[];
     parts: (GeneratedPartData & { id: string })[];
     chapters: (GeneratedChapterData & { id: string; partId: string })[];
     scenes: (GeneratedSceneSummaryData & {
@@ -194,10 +194,16 @@ export async function generateCompleteNovel(
         const charactersResult: GenerateCharactersResult =
             await generateCharacters(charactersParams);
 
+        // Add temporary IDs to characters for orchestrator mode
+        const charactersWithIds = charactersResult.characters.map((c, idx) => ({
+            ...c,
+            id: `character_${idx + 1}`,
+        }));
+
         onProgress({
             phase: "characters_complete",
-            message: `Generated ${charactersResult.characters.length} characters`,
-            data: { characters: charactersResult.characters },
+            message: `Generated ${charactersWithIds.length} characters`,
+            data: { characters: charactersWithIds },
         });
 
         // 3. Generate story settings (Phase 3 of 9)
@@ -221,10 +227,16 @@ export async function generateCompleteNovel(
         const settingsResult: GenerateSettingsResult =
             await generateSettings(settingsParams);
 
+        // Add temporary IDs to settings for orchestrator mode
+        const settingsWithIds = settingsResult.settings.map((s, idx) => ({
+            ...s,
+            id: `setting_${idx + 1}`,
+        }));
+
         onProgress({
             phase: "settings_complete",
-            message: `Generated ${settingsResult.settings.length} settings`,
-            data: { settings: settingsResult.settings },
+            message: `Generated ${settingsWithIds.length} settings`,
+            data: { settings: settingsWithIds },
         });
 
         // 4. Generate story parts incrementally (Phase 4 of 9)
@@ -243,8 +255,8 @@ export async function generateCompleteNovel(
 
             const partParams: GeneratePartParams = {
                 story: storyResult.story,
-                characters: charactersResult.characters,
-                settings: settingsResult.settings,
+                characters: charactersWithIds,
+                settings: settingsWithIds,
                 previousParts: partsWithIds,
                 partIndex: i,
             };
@@ -294,8 +306,8 @@ export async function generateCompleteNovel(
                 const chapterParams: GenerateChapterParams = {
                     story: storyResult.story,
                     part,
-                    characters: charactersResult.characters,
-                    settings: settingsResult.settings,
+                    characters: charactersWithIds,
+                    settings: settingsWithIds,
                     previousChapters: chaptersWithIds,
                     chapterIndex,
                 };
@@ -366,8 +378,8 @@ export async function generateCompleteNovel(
                     story: storyResult.story,
                     part: chapterPart,
                     chapter,
-                    characters: charactersResult.characters,
-                    settings: settingsResult.settings,
+                    characters: charactersWithIds,
+                    settings: settingsWithIds,
                     previousScenes: allSceneSummaries,
                     sceneIndex,
                 };
@@ -449,8 +461,8 @@ export async function generateCompleteNovel(
                     story: storyResult.story,
                     part: chapterPart,
                     chapter,
-                    characters: charactersResult.characters,
-                    settings: settingsResult.settings,
+                    characters: charactersWithIds,
+                    settings: settingsWithIds,
                     scene: sceneSummary,
                     language,
                 };
@@ -560,8 +572,8 @@ export async function generateCompleteNovel(
         // 9. Return the complete novel
         const result: GeneratedNovelResult = {
             story: storyResult.story,
-            characters: charactersResult.characters,
-            settings: settingsResult.settings,
+            characters: charactersWithIds,
+            settings: settingsWithIds,
             parts: partsWithIds,
             chapters: chaptersWithIds,
             scenes,

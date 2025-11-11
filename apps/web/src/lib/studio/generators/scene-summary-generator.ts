@@ -12,6 +12,8 @@
 import { textGenerationClient } from "./ai-client";
 import {
     buildCharactersContext,
+    buildPartContext,
+    buildScenesContext,
     buildSettingsContext,
     buildStoryContext,
 } from "./context-builders";
@@ -71,8 +73,7 @@ export async function generateSceneSummary(
 
     // 3. Build context strings using common builders
     const storyContext: string = buildStoryContext(story);
-    const partContext: string = `Title: ${part.title || "Untitled Part"}
-Summary: ${part.summary || "N/A"}`;
+    const partContext: string = buildPartContext(part, characters);
     const chapterContext: string = `Title: ${chapter.title || "Untitled Chapter"}
 Summary: ${chapter.summary || "N/A"}
 Arc Position: ${chapter.arcPosition || "N/A"}
@@ -85,19 +86,8 @@ Virtue Type: ${chapter.virtueType || "N/A"}`;
         `[scene-summary-generator] Context prepared: ${characters.length} characters, ${settings.length} settings`,
     );
 
-    // 8. Build previous scenes context string (FULL CONTEXT with FULL CONTENT)
-    const previousScenesContext: string =
-        previousScenes.length > 0
-            ? previousScenes
-                  .map((scene, idx) => {
-                      return `Scene ${idx + 1}: ${scene.title}
-Phase: ${scene.cyclePhase || "N/A"}
-Summary: ${scene.summary || "N/A"}
-Content: ${scene.content ? scene.content.substring(0, 500) : "Not yet generated"}...
-Emotional Beat: ${scene.emotionalBeat || "N/A"}`;
-                  })
-                  .join("\n\n")
-            : "None (this is the first scene)";
+    // 8. Build previous scenes context string using builder function
+    const previousScenesContext: string = buildScenesContext(previousScenes);
 
     console.log(
         `[scene-summary-generator] Previous scenes context prepared (${previousScenesContext.length} characters)`,

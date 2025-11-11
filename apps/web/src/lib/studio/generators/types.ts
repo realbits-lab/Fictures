@@ -216,11 +216,7 @@ export interface GenerateCharactersParams {
 export interface CharacterPromptParams extends Record<string, string> {
     characterNumber: string;
     characterCount: string;
-    storyTitle: string;
-    storyGenre: string;
-    storyTone: string;
-    storySummary: string;
-    moralFramework: string;
+    story: string;
     characterType: string;
     language: string;
 }
@@ -243,10 +239,7 @@ export interface GenerateSettingsParams {
 export interface SettingPromptParams extends Record<string, string> {
     settingNumber: string;
     settingCount: string;
-    storyTitle: string;
-    storyGenre: string;
-    storySummary: string;
-    moralFramework: string;
+    story: string;
 }
 
 export interface GenerateSettingsResult {
@@ -285,8 +278,8 @@ export interface GeneratePartsResult {
 
 export interface GeneratePartParams {
     story: Story;
-    characters: GeneratedCharacterData[];
-    settings: GeneratedSettingData[];
+    characters: (GeneratedCharacterData & { id: string })[];
+    settings: (GeneratedSettingData & { id: string })[];
     previousParts: (GeneratedPartData & { id: string })[];
     partIndex: number;
 }
@@ -331,8 +324,8 @@ export interface GenerateChaptersResult {
 export interface GenerateChapterParams {
     story: Story;
     part: GeneratedPartData & { id: string };
-    characters: GeneratedCharacterData[];
-    settings?: GeneratedSettingData[]; // Optional settings for atmospheric context
+    characters: (GeneratedCharacterData & { id: string })[];
+    settings?: (GeneratedSettingData & { id: string })[]; // Optional settings for atmospheric context
     previousChapters: (GeneratedChapterData & { id: string; partId: string })[];
     chapterIndex: number; // Global index (position in entire story)
 }
@@ -380,8 +373,8 @@ export interface GenerateSceneSummaryParams {
     story: Story;
     part: GeneratedPartData & { id: string };
     chapter: GeneratedChapterData & { id: string; partId: string };
-    characters: GeneratedCharacterData[];
-    settings: GeneratedSettingData[];
+    characters: (GeneratedCharacterData & { id: string })[];
+    settings: (GeneratedSettingData & { id: string })[];
     previousScenes: (GeneratedSceneSummaryData & {
         id: string;
         chapterId: string;
@@ -409,8 +402,8 @@ export interface GenerateSceneContentParams {
     story?: Story;
     part?: GeneratedPartData & { id: string };
     chapter?: GeneratedChapterData & { id: string; partId: string };
-    characters?: GeneratedCharacterData[];
-    settings?: GeneratedSettingData[];
+    characters?: (GeneratedCharacterData & { id: string })[];
+    settings?: (GeneratedSettingData & { id: string })[];
 
     // === Required ===
     scene: GeneratedSceneSummaryData & { id: string; chapterId: string };

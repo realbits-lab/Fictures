@@ -11,7 +11,9 @@
 
 import { textGenerationClient } from "./ai-client";
 import {
+    buildChapterContext,
     buildCharactersContext,
+    buildPartContext,
     buildSettingsContext,
     buildStoryContext,
 } from "./context-builders";
@@ -86,39 +88,15 @@ export async function generateChapter(
         `[chapter-generator] Context prepared: ${characters.length} characters, ${settings?.length || 0} settings`,
     );
 
-    // 4. Build comprehensive part context string (with character arcs)
-    const arcs = part.characterArcs as Array<{
-        characterId: string;
-        macroAdversity?: {
-            internal?: string;
-            external?: string;
-        };
-        macroVirtue?: string;
-        macroConsequence?: string;
-        macroNewAdversity?: string;
-    }> | null;
+    // 4. Build comprehensive part context string using context builder
+    const partContext: string = buildPartContext(part, characters);
 
-    const partContext: string = `Part: ${part.title}
-  ID: ${part.id}
-  Summary: ${part.summary}
-  Character Arcs: ${
-      arcs
-          ?.map((arc) => {
-              const char = characters.find((c) => c.id === arc.characterId);
-              return `\n    - ${char?.name || "Unknown"}: ${arc.macroAdversity?.internal || "N/A"} / ${arc.macroAdversity?.external || "N/A"} → ${arc.macroVirtue || "N/A"} → ${arc.macroConsequence || "N/A"} → ${arc.macroNewAdversity || "N/A"}`;
-          })
-          .join("") || "None"
-  }`;
-
-    // 7. Build previous chapters context string (FULL CONTEXT)
+    // 5. Build previous chapters context string using context builder
     const previousChaptersContext: string =
         previousChapters.length > 0
             ? previousChapters
                   .map((ch, idx) => {
-                      return `Chapter ${idx + 1}: ${ch.title}
-Summary: ${ch.summary || "N/A"}
-Arc Position: ${ch.arcPosition || "N/A"}
-Contributes to Macro Arc: ${ch.contributesToMacroArc || "N/A"}`;
+                      return `Chapter ${idx + 1}:\n${buildChapterContext(ch)}`;
                   })
                   .join("\n\n")
             : "None (this is the first chapter)";
