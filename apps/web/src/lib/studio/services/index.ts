@@ -16,7 +16,7 @@ export {
     chapterService,
     type GenerateChaptersServiceParams,
     type GenerateChaptersServiceResult,
-} from "./chapter-service";
+} from "./chapters-service";
 
 export {
     CharacterService,
@@ -29,7 +29,7 @@ export {
     type GeneratePartsServiceResult,
     PartService,
     partService,
-} from "./part-service";
+} from "./parts-service";
 export {
     type GenerateSceneContentServiceParams,
     type GenerateSceneContentServiceResult,

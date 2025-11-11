@@ -272,11 +272,28 @@ export interface PartPromptParams extends Record<string, string> {
     storySummary: string;
     moralFramework: string;
     characters: string;
+    previousPartsContext?: string;
 }
 
 export interface GeneratePartsResult {
     parts: GeneratedPartData[];
     metadata: ArrayGeneratorMetadata;
+}
+
+// ============================================================================
+// Part Generator (Singular - Extreme Incremental)
+// ============================================================================
+
+export interface GeneratePartParams {
+    story: Story;
+    characters: Character[];
+    previousParts: Part[];
+    partIndex: number;
+}
+
+export interface GeneratePartResult {
+    part: GeneratedPartData;
+    metadata: GeneratorMetadata;
 }
 
 // ============================================================================
@@ -304,11 +321,30 @@ export interface ChapterPromptParams extends Record<string, string> {
     characterFlaw: string;
     characterArc: string;
     previousChapterContext: string;
+    previousChaptersContext?: string;
 }
 
 export interface GenerateChaptersResult {
     chapters: GeneratedChapterData[];
     metadata: ArrayGeneratorMetadata;
+}
+
+// ============================================================================
+// Chapter Generator (Singular - Extreme Incremental)
+// ============================================================================
+
+export interface GenerateChapterParams {
+    story: Story;
+    part: Part;
+    characters: Character[];
+    previousChapters: Chapter[];
+    chapterIndex: number;
+    globalChapterIndex: number;
+}
+
+export interface GenerateChapterResult {
+    chapter: GeneratedChapterData;
+    metadata: GeneratorMetadata;
 }
 
 // ============================================================================
@@ -329,11 +365,29 @@ export interface SceneSummaryPromptParams extends Record<string, string> {
     chapterSummary: string;
     cyclePhase: string;
     settings: string;
+    previousScenesContext?: string;
 }
 
 export interface GenerateSceneSummariesResult {
     scenes: GeneratedSceneSummaryData[];
     metadata: ArrayGeneratorMetadata;
+}
+
+// ============================================================================
+// Scene Summary Generator (Singular - Extreme Incremental)
+// ============================================================================
+
+export interface GenerateSceneSummaryParams {
+    chapter: Chapter;
+    settings: Setting[];
+    previousScenes: Scene[];
+    sceneIndex: number;
+    globalSceneIndex: number;
+}
+
+export interface GenerateSceneSummaryResult {
+    scene: GeneratedSceneSummaryData;
+    metadata: GeneratorMetadata;
 }
 
 // ============================================================================

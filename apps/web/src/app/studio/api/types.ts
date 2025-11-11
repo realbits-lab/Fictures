@@ -146,6 +146,29 @@ export interface GeneratePartsErrorResponse {
 }
 
 // ============================================================================
+// Part Generation (Singular - Extreme Incremental)
+// ============================================================================
+
+export interface GeneratePartRequest {
+    storyId: string;
+}
+
+export interface GeneratePartResponse {
+    success: true;
+    part: Part;
+    metadata: {
+        generationTime: number;
+        partIndex: number;
+        totalParts: number;
+    };
+}
+
+export interface GeneratePartErrorResponse {
+    error: string;
+    details?: unknown;
+}
+
+// ============================================================================
 // Chapter Generation
 // ============================================================================
 
@@ -170,6 +193,32 @@ export interface GenerateChaptersErrorResponse {
 }
 
 // ============================================================================
+// Chapter Generation (Singular - Extreme Incremental)
+// ============================================================================
+
+export interface GenerateChapterRequest {
+    storyId: string;
+    partId: string;
+}
+
+export interface GenerateChapterResponse {
+    success: true;
+    chapter: Chapter;
+    metadata: {
+        generationTime: number;
+        chapterIndex: number;
+        globalChapterIndex: number;
+        totalChaptersInPart: number;
+        totalChaptersInStory: number;
+    };
+}
+
+export interface GenerateChapterErrorResponse {
+    error: string;
+    details?: unknown;
+}
+
+// ============================================================================
 // Scene Summary Generation
 // ============================================================================
 
@@ -189,6 +238,32 @@ export interface GenerateSceneSummariesResponse {
 }
 
 export interface GenerateSceneSummariesErrorResponse {
+    error: string;
+    details?: unknown;
+}
+
+// ============================================================================
+// Scene Summary Generation (Singular - Extreme Incremental)
+// ============================================================================
+
+export interface GenerateSceneSummaryRequest {
+    storyId: string;
+    chapterId: string;
+}
+
+export interface GenerateSceneSummaryResponse {
+    success: true;
+    scene: Scene;
+    metadata: {
+        generationTime: number;
+        sceneIndex: number;
+        globalSceneIndex: number;
+        totalScenesInChapter: number;
+        totalScenesInStory: number;
+    };
+}
+
+export interface GenerateSceneSummaryErrorResponse {
     error: string;
     details?: unknown;
 }
