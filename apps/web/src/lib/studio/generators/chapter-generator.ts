@@ -11,9 +11,9 @@
 
 import { textGenerationClient } from "./ai-client";
 import {
-    buildDetailedCharactersContext,
-    buildDetailedSettingsContext,
-    buildDetailedStoryContext,
+    buildCharactersContext,
+    buildSettingsContext,
+    buildStoryContext,
 } from "./context-builders";
 import { promptManager } from "./prompt-manager";
 import type {
@@ -75,11 +75,11 @@ export async function generateChapter(
         `[chapter-generator] Character arc: ${characterArc?.macroAdversity?.internal || "personal growth"}`,
     );
 
-    // 3. Build context strings using detailed builders
-    const charactersStr: string = buildDetailedCharactersContext(characters);
-    const storyContext: string = buildDetailedStoryContext(story);
+    // 3. Build context strings using comprehensive builders
+    const charactersStr: string = buildCharactersContext(characters);
+    const storyContext: string = buildStoryContext(story);
     const settingsStr: string = settings
-        ? buildDetailedSettingsContext(settings)
+        ? buildSettingsContext(settings)
         : "N/A";
 
     console.log(

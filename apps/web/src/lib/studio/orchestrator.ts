@@ -8,40 +8,36 @@
 import { GENRE, type StoryGenre } from "@/lib/constants/genres";
 import type { StoryTone } from "@/lib/constants/tones";
 import type {
-    Chapter,
-    Character,
+    GeneratedChapterData,
     GeneratedCharacterData,
     GeneratedPartData,
     GeneratedSceneSummaryData,
     GeneratedSettingData,
-    Part,
-    Scene,
-    Setting,
     Story,
 } from "@/lib/studio/generators/zod-schemas.generated";
 import {
-    generateChapters,
     generateCharacters,
-    generateParts,
     generateSceneContent,
-    generateSceneSummaries,
     generateSettings,
     generateStory,
 } from "./generators";
+import { generateChapter } from "./generators/chapter-generator";
+import { generatePart } from "./generators/part-generator";
 import { evaluateScene } from "./generators/scene-evaluation-generator";
+import { generateSceneSummary } from "./generators/scene-summary-generator";
 import type {
     EvaluateSceneParams,
     EvaluateSceneResult,
-    GenerateChaptersParams,
-    GenerateChaptersResult,
+    GenerateChapterParams,
+    GenerateChapterResult,
     GenerateCharactersParams,
     GenerateCharactersResult,
-    GeneratePartsParams,
-    GeneratePartsResult,
+    GeneratePartParams,
+    GeneratePartResult,
     GenerateSceneContentParams,
     GenerateSceneContentResult,
-    GenerateSceneSummariesParams,
-    GenerateSceneSummariesResult,
+    GenerateSceneSummaryParams,
+    GenerateSceneSummaryResult,
     GenerateSettingsParams,
     GenerateSettingsResult,
     GenerateStoryParams,
@@ -105,8 +101,11 @@ export interface ProgressData {
         characters?: GeneratedCharacterData[];
         settings?: GeneratedSettingData[];
         parts?: (GeneratedPartData & { id: string })[];
-        chapters?: Chapter[];
-        scenes?: (GeneratedSceneSummaryData & { id: string; chapterId: string })[];
+        chapters?: (GeneratedChapterData & { id: string; partId: string })[];
+        scenes?: (GeneratedSceneSummaryData & {
+            id: string;
+            chapterId: string;
+        })[];
         currentItem?: number;
         totalItems?: number;
     };
@@ -120,8 +119,12 @@ export interface GeneratedNovelResult {
     characters: GeneratedCharacterData[];
     settings: GeneratedSettingData[];
     parts: (GeneratedPartData & { id: string })[];
-    chapters: Chapter[];
-    scenes: Scene[];
+    chapters: (GeneratedChapterData & { id: string; partId: string })[];
+    scenes: (GeneratedSceneSummaryData & {
+        id: string;
+        chapterId: string;
+        content: string;
+    })[];
 }
 
 /**
@@ -224,34 +227,37 @@ export async function generateCompleteNovel(
             data: { settings: settingsResult.settings },
         });
 
-        // 4. Generate story parts (Phase 4 of 9)
+        // 4. Generate story parts incrementally (Phase 4 of 9)
         onProgress({
             phase: "parts_start",
             message: `Generating ${partsCount} parts...`,
         });
 
-        const partsParams: GeneratePartsParams = {
-            story: storyResult.story,
-            characters: charactersResult.characters,
-            settings: settingsResult.settings,
-            partsCount,
-            onProgress: (current: number, total: number) => {
-                onProgress({
-                    phase: "parts_progress",
-                    message: `Generating part ${current}/${total}...`,
-                    data: { currentItem: current, totalItems: total },
-                });
-            },
-        };
+        const partsWithIds: (GeneratedPartData & { id: string })[] = [];
+        for (let i = 0; i < partsCount; i++) {
+            onProgress({
+                phase: "parts_progress",
+                message: `Generating part ${i + 1}/${partsCount}...`,
+                data: { currentItem: i + 1, totalItems: partsCount },
+            });
 
-        const partsResult: GeneratePartsResult =
-            await generateParts(partsParams);
+            const partParams: GeneratePartParams = {
+                story: storyResult.story,
+                characters: charactersResult.characters,
+                settings: settingsResult.settings,
+                previousParts: partsWithIds,
+                partIndex: i,
+            };
 
-        // Assign temporary IDs to parts for orchestrator mode
-        const partsWithIds = partsResult.parts.map((part, idx) => ({
-            ...part,
-            id: `part_${idx + 1}`,
-        }));
+            const partResult: GeneratePartResult =
+                await generatePart(partParams);
+
+            // Add temporary ID for orchestrator mode
+            partsWithIds.push({
+                ...partResult.part,
+                id: `part_${i + 1}`,
+            });
+        }
 
         onProgress({
             phase: "parts_complete",
@@ -259,41 +265,52 @@ export async function generateCompleteNovel(
             data: { parts: partsWithIds },
         });
 
-        // 5. Generate chapters (Phase 5 of 9)
+        // 5. Generate chapters incrementally (Phase 5 of 9)
         onProgress({
             phase: "chapters_start",
             message: "Generating chapters...",
         });
 
-        const chaptersParams: GenerateChaptersParams = {
-            storyId: "", // Not needed for orchestrator (no DB save)
-            story: storyResult.story,
-            parts: partsWithIds,
-            characters: charactersResult.characters,
-            chaptersPerPart,
-            onProgress: (current: number, total: number) => {
+        const chaptersWithIds: (GeneratedChapterData & {
+            id: string;
+            partId: string;
+        })[] = [];
+        const totalChapters = partsWithIds.length * chaptersPerPart;
+
+        for (const part of partsWithIds) {
+            // Generate chapters for this part
+            for (let i = 0; i < chaptersPerPart; i++) {
+                const chapterIndex = chaptersWithIds.length;
+
                 onProgress({
                     phase: "chapters_progress",
-                    message: `Generating chapter ${current}/${total}...`,
-                    data: { currentItem: current, totalItems: total },
+                    message: `Generating chapter ${chapterIndex + 1}/${totalChapters}...`,
+                    data: {
+                        currentItem: chapterIndex + 1,
+                        totalItems: totalChapters,
+                    },
                 });
-            },
-        };
 
-        const chaptersResult: GenerateChaptersResult =
-            await generateChapters(chaptersParams);
+                const chapterParams: GenerateChapterParams = {
+                    story: storyResult.story,
+                    part,
+                    characters: charactersResult.characters,
+                    settings: settingsResult.settings,
+                    previousChapters: chaptersWithIds,
+                    chapterIndex,
+                };
 
-        // Assign temporary IDs and partId to chapters for orchestrator mode
-        let chapterIdx = 0;
-        const chaptersWithIds = chaptersResult.chapters.map((chapter) => {
-            const partIndex = Math.floor(chapterIdx / chaptersPerPart);
-            chapterIdx++;
-            return {
-                ...chapter,
-                id: `chapter_${chapterIdx}`,
-                partId: partsWithIds[partIndex]?.id || "part_1",
-            };
-        });
+                const chapterResult: GenerateChapterResult =
+                    await generateChapter(chapterParams);
+
+                // Add temporary ID and partId for orchestrator mode
+                chaptersWithIds.push({
+                    ...chapterResult.chapter,
+                    id: `chapter_${chapterIndex + 1}`,
+                    partId: part.id,
+                });
+            }
+        }
 
         onProgress({
             phase: "chapters_complete",
@@ -301,52 +318,80 @@ export async function generateCompleteNovel(
             data: { chapters: chaptersWithIds },
         });
 
-        // 6. Generate scene summaries (Phase 6 of 9)
+        // 6. Generate scene summaries incrementally (Phase 6 of 9)
         onProgress({
             phase: "scene_summaries_start",
             message: "Generating scene summaries...",
         });
 
-        // 6.1. Get the first part for scene summaries context
-        const firstPart: Part | undefined = partsWithIds[0];
-        if (!firstPart) {
-            throw new Error("No parts generated");
-        }
+        // Build chapter-to-scene mapping as we generate
+        const chapterSceneMap = new Map<
+            string,
+            (GeneratedSceneSummaryData & { id: string; chapterId: string })[]
+        >();
+        const allSceneSummaries: (GeneratedSceneSummaryData & {
+            id: string;
+            chapterId: string;
+        })[] = [];
+        const totalScenes = chaptersWithIds.length * scenesPerChapter;
 
-        const sceneSummariesParams: GenerateSceneSummariesParams = {
-            story: storyResult.story,
-            part: firstPart,
-            chapters: chaptersWithIds,
-            characters: charactersResult.characters,
-            settings: settingsResult.settings,
-            scenesPerChapter,
-            onProgress: (current: number, total: number) => {
+        for (const chapter of chaptersWithIds) {
+            const chapterScenes: (GeneratedSceneSummaryData & {
+                id: string;
+                chapterId: string;
+            })[] = [];
+
+            // Find the part for this chapter
+            const chapterPart = partsWithIds.find(
+                (p) => p.id === chapter.partId,
+            );
+            if (!chapterPart) {
+                throw new Error(`Part not found for chapter: ${chapter.id}`);
+            }
+
+            // Generate scenes for this chapter
+            for (let i = 0; i < scenesPerChapter; i++) {
+                const sceneIndex = allSceneSummaries.length;
+
                 onProgress({
                     phase: "scene_summaries_progress",
-                    message: `Generating scene summary ${current}/${total}...`,
-                    data: { currentItem: current, totalItems: total },
+                    message: `Generating scene summary ${sceneIndex + 1}/${totalScenes}...`,
+                    data: {
+                        currentItem: sceneIndex + 1,
+                        totalItems: totalScenes,
+                    },
                 });
-            },
-        };
 
-        const sceneSummariesResult: GenerateSceneSummariesResult =
-            await generateSceneSummaries(sceneSummariesParams);
+                const sceneSummaryParams: GenerateSceneSummaryParams = {
+                    story: storyResult.story,
+                    part: chapterPart,
+                    chapter,
+                    characters: charactersResult.characters,
+                    settings: settingsResult.settings,
+                    previousScenes: allSceneSummaries,
+                    sceneIndex,
+                };
 
-        // 6.1. Build chapter-to-scene mapping for later use
-        const chapterSceneMap = new Map<string, Scene[]>();
-        let sceneIdx = 0;
-        for (const chapter of chaptersWithIds) {
-            const chapSummaries: Scene[] = sceneSummariesResult.scenes.slice(
-                sceneIdx,
-                sceneIdx + scenesPerChapter,
-            );
-            chapterSceneMap.set(chapter.id!, chapSummaries);
-            sceneIdx += scenesPerChapter;
+                const sceneSummaryResult: GenerateSceneSummaryResult =
+                    await generateSceneSummary(sceneSummaryParams);
+
+                // Add temporary ID and chapterId for orchestrator mode
+                const sceneWithIds = {
+                    ...sceneSummaryResult.scene,
+                    id: `scene_${sceneIndex + 1}`,
+                    chapterId: chapter.id,
+                };
+
+                chapterScenes.push(sceneWithIds);
+                allSceneSummaries.push(sceneWithIds);
+            }
+
+            chapterSceneMap.set(chapter.id, chapterScenes);
         }
 
         onProgress({
             phase: "scene_summaries_complete",
-            message: `Generated ${sceneSummariesResult.scenes.length} scene summaries`,
+            message: `Generated ${allSceneSummaries.length} scene summaries`,
         });
 
         // 7. Generate scene content (Phase 7 of 9)
@@ -355,26 +400,40 @@ export async function generateCompleteNovel(
             message: "Generating scene content...",
         });
 
-        const scenes: Scene[] = [];
+        const scenes: (GeneratedSceneSummaryData & {
+            id: string;
+            chapterId: string;
+            content: string;
+        })[] = [];
         let sceneIndex = 0;
 
         for (const chapter of chaptersWithIds) {
-            const chapterScenes: Scene[] =
-                chapterSceneMap.get(chapter.id!) || [];
+            const chapterScenes:
+                | (GeneratedSceneSummaryData & {
+                      id: string;
+                      chapterId: string;
+                  })[]
+                | undefined = chapterSceneMap.get(chapter.id);
+
+            if (!chapterScenes) {
+                continue;
+            }
 
             for (const sceneSummary of chapterScenes) {
                 sceneIndex++;
                 onProgress({
                     phase: "scene_content_progress",
-                    message: `Generating scene content ${sceneIndex}/${sceneSummariesResult.scenes.length}...`,
+                    message: `Generating scene content ${sceneIndex}/${allSceneSummaries.length}...`,
                     data: {
                         currentItem: sceneIndex,
-                        totalItems: sceneSummariesResult.scenes.length,
+                        totalItems: allSceneSummaries.length,
                     },
                 });
 
                 // 7.1. Find the part for this chapter
-                const chapterPart: Part | undefined = partsWithIds.find(
+                const chapterPart:
+                    | (GeneratedPartData & { id: string })
+                    | undefined = partsWithIds.find(
                     (p) => p.id === chapter.partId,
                 );
 
@@ -399,9 +458,11 @@ export async function generateCompleteNovel(
                 const sceneContentResult: GenerateSceneContentResult =
                     await generateSceneContent(sceneContentParams);
 
-                const sceneWithContent: Scene = {
-                    id: `scene_${sceneIndex}`,
-                    chapterId: chapter.id,
+                const sceneWithContent: GeneratedSceneSummaryData & {
+                    id: string;
+                    chapterId: string;
+                    content: string;
+                } = {
                     ...sceneSummary,
                     content: sceneContentResult.content,
                 };
@@ -422,7 +483,11 @@ export async function generateCompleteNovel(
                 message: "Evaluating and improving scene quality...",
             });
 
-            const evaluatedScenes: Scene[] = [];
+            const evaluatedScenes: (GeneratedSceneSummaryData & {
+                id: string;
+                chapterId: string;
+                content: string;
+            })[] = [];
             let evaluatedCount = 0;
 
             for (const scene of scenes) {
@@ -457,7 +522,11 @@ export async function generateCompleteNovel(
                     await evaluateScene(evaluateParams);
 
                 // 8.2. Update scene with improved content
-                const evaluatedScene: Partial<Scene> = {
+                const evaluatedScene: GeneratedSceneSummaryData & {
+                    id: string;
+                    chapterId: string;
+                    content: string;
+                } = {
                     ...scene,
                     content: evaluationResult.finalContent,
                 };
@@ -481,7 +550,7 @@ export async function generateCompleteNovel(
 
             // Replace scenes with evaluated scenes
             scenes.length = 0;
-            scenes.push(...(evaluatedScenes as Partial<Scene>[]));
+            scenes.push(...evaluatedScenes);
         } else {
             console.log(
                 "[Orchestrator] Scene evaluation skipped (enableSceneEvaluation=false)",

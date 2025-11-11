@@ -11,9 +11,9 @@
 
 import { textGenerationClient } from "./ai-client";
 import {
-    buildDetailedCharactersContext,
-    buildDetailedSettingsContext,
-    buildDetailedStoryContext,
+    buildCharactersContext,
+    buildSettingsContext,
+    buildStoryContext,
 } from "./context-builders";
 import { promptManager } from "./prompt-manager";
 import type {
@@ -53,10 +53,10 @@ export async function generatePart(
         `[part-generator] Previous parts count: ${previousParts.length}`,
     );
 
-    // 2. Build context strings using detailed builders
-    const charactersStr: string = buildDetailedCharactersContext(characters);
-    const settingsStr: string = buildDetailedSettingsContext(settings);
-    const storyContext: string = buildDetailedStoryContext(story);
+    // 2. Build context strings using comprehensive builders
+    const charactersStr: string = buildCharactersContext(characters);
+    const settingsStr: string = buildSettingsContext(settings);
+    const storyContext: string = buildStoryContext(story);
 
     // 3. Build previous parts context string (FULL CONTEXT)
     const previousPartsContext: string =

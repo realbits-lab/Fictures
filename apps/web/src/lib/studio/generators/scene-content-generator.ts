@@ -19,11 +19,8 @@ import {
 } from "@/lib/db/schema";
 import { textGenerationClient } from "./ai-client";
 import {
-    buildChapterContext,
     buildCharactersContext,
     buildGenericSettingContext,
-    buildPartContext,
-    buildSceneContext,
     buildSettingContext,
     buildStoryContext,
 } from "./context-builders";
@@ -174,9 +171,20 @@ export async function generateSceneContent(
 
     // 7. Build context strings using common builders
     const storyContext: string = buildStoryContext(story);
-    const partContext: string = buildPartContext(part);
-    const chapterContext: string = buildChapterContext(chapter);
-    const sceneContext: string = buildSceneContext(scene);
+    const partContext: string = `Title: ${part.title || "Untitled Part"}
+Summary: ${part.summary || "N/A"}`;
+    const chapterContext: string = `Title: ${chapter.title || "Untitled Chapter"}
+Summary: ${chapter.summary || "N/A"}
+Arc Position: ${chapter.arcPosition || "N/A"}
+Adversity Type: ${chapter.adversityType || "N/A"}
+Virtue Type: ${chapter.virtueType || "N/A"}`;
+    const sceneContext: string = `Title: ${scene.title || "Untitled Scene"}
+Summary: ${scene.summary || "N/A"}
+Cycle Phase: ${scene.cyclePhase || "N/A"}
+Emotional Beat: ${scene.emotionalBeat || "N/A"}
+Suggested Length: ${scene.suggestedLength || "medium"}
+Sensory Anchors: ${Array.isArray(scene.sensoryAnchors) ? scene.sensoryAnchors.join(", ") : "Use setting-appropriate details"}
+Dialogue vs Description: ${scene.dialogueVsDescription || "Balanced mix"}`;
     const charactersStr: string = buildCharactersContext(storyCharacters);
     const settingStr: string = setting
         ? buildSettingContext(setting)

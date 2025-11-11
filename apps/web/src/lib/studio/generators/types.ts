@@ -285,9 +285,9 @@ export interface GeneratePartsResult {
 
 export interface GeneratePartParams {
     story: Story;
-    characters: Character[];
-    settings: Setting[];
-    previousParts: Part[];
+    characters: GeneratedCharacterData[];
+    settings: GeneratedSettingData[];
+    previousParts: (GeneratedPartData & { id: string })[];
     partIndex: number;
 }
 
@@ -330,10 +330,10 @@ export interface GenerateChaptersResult {
 
 export interface GenerateChapterParams {
     story: Story;
-    part: Part;
-    characters: Character[];
-    settings?: Setting[]; // Optional settings for atmospheric context
-    previousChapters: Chapter[];
+    part: GeneratedPartData & { id: string };
+    characters: GeneratedCharacterData[];
+    settings?: GeneratedSettingData[]; // Optional settings for atmospheric context
+    previousChapters: (GeneratedChapterData & { id: string; partId: string })[];
     chapterIndex: number; // Global index (position in entire story)
 }
 
@@ -378,11 +378,14 @@ export interface GenerateSceneSummariesResult {
 
 export interface GenerateSceneSummaryParams {
     story: Story;
-    part: Part;
-    chapter: Chapter;
-    characters: Character[];
-    settings: Setting[];
-    previousScenes: Scene[];
+    part: GeneratedPartData & { id: string };
+    chapter: GeneratedChapterData & { id: string; partId: string };
+    characters: GeneratedCharacterData[];
+    settings: GeneratedSettingData[];
+    previousScenes: (GeneratedSceneSummaryData & {
+        id: string;
+        chapterId: string;
+    })[];
     sceneIndex: number; // Global index (position in entire story)
 }
 
@@ -404,13 +407,13 @@ export interface GenerateSceneContentParams {
 
     // === Full Objects (Orchestrator mode) ===
     story?: Story;
-    part?: Part;
-    chapter?: Chapter;
-    characters?: Character[];
-    settings?: Setting[];
+    part?: GeneratedPartData & { id: string };
+    chapter?: GeneratedChapterData & { id: string; partId: string };
+    characters?: GeneratedCharacterData[];
+    settings?: GeneratedSettingData[];
 
     // === Required ===
-    scene: Scene;
+    scene: GeneratedSceneSummaryData & { id: string; chapterId: string };
     language?: string;
 }
 
