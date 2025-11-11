@@ -433,9 +433,10 @@ export const parts = pgTable(
                     macroVirtue: string;
                     macroConsequence: string;
                     macroNewAdversity: string;
-                    estimatedChapters: number;
-                    arcPosition: "primary" | "secondary";
-                    progressionStrategy: string;
+                    // Optional planning fields (not used in incremental generation)
+                    estimatedChapters?: number;
+                    arcPosition?: "primary" | "secondary";
+                    progressionStrategy?: string;
                 }>
             >()
             .notNull(),

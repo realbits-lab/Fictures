@@ -11,7 +11,6 @@
 import { textGenerationClient } from "./ai-client";
 import { promptManager } from "./prompt-manager";
 import type {
-    CyclePhase,
     GenerateSceneSummariesParams,
     GenerateSceneSummariesResult,
     SceneSummaryPromptParams,
@@ -31,12 +30,93 @@ export async function generateSceneSummaries(
     params: GenerateSceneSummariesParams,
 ): Promise<GenerateSceneSummariesResult> {
     const startTime = Date.now();
-    const { chapters, settings, scenesPerChapter, onProgress } = params;
+    const {
+        story,
+        part,
+        chapters,
+        characters,
+        settings,
+        scenesPerChapter,
+        onProgress,
+    } = params;
 
     const scenes: GeneratedSceneSummaryData[] = [];
     let sceneIndex = 0;
 
+    // Build story context once (used for all scenes)
+    const storyContext: string = `Title: ${story.title}
+Genre: ${story.genre ?? "General Fiction"}
+Summary: ${story.summary ?? "A story of adversity and triumph"}
+Moral Framework: ${story.moralFramework ?? "Universal human virtues"}`;
+
+    // Build part context once
+    const partContext: string = `Title: ${part.title}
+Summary: ${part.summary || "N/A"}`;
+
+    // Build characters context once
+    const charactersStr: string = characters
+        .map((c) => {
+            const personality =
+                typeof c.personality === "object" && c.personality !== null
+                    ? (c.personality as {
+                          traits?: string[];
+                          values?: string[];
+                      })
+                    : { traits: [], values: [] };
+            const physicalDesc =
+                typeof c.physicalDescription === "object" &&
+                c.physicalDescription !== null
+                    ? (c.physicalDescription as {
+                          age?: string;
+                          appearance?: string;
+                          distinctiveFeatures?: string;
+                          style?: string;
+                      })
+                    : {};
+            const voice =
+                typeof c.voiceStyle === "object" && c.voiceStyle !== null
+                    ? (c.voiceStyle as {
+                          tone?: string;
+                          vocabulary?: string;
+                          quirks?: string[];
+                          emotionalRange?: string;
+                      })
+                    : {};
+
+            return `Character: ${c.name} (${c.isMain ? "Main" : "Supporting"})
+  Summary: ${c.summary || "N/A"}
+  External Goal: ${c.externalGoal || "N/A"}
+  Core Trait: ${c.coreTrait || "N/A"}
+  Internal Flaw: ${c.internalFlaw || "N/A"}
+  Personality:
+    - Traits: ${personality.traits?.join(", ") || "N/A"}
+    - Values: ${personality.values?.join(", ") || "N/A"}
+  Backstory: ${c.backstory || "N/A"}
+  Physical Description:
+    - Age: ${physicalDesc.age || "N/A"}
+    - Appearance: ${physicalDesc.appearance || "N/A"}
+    - Distinctive Features: ${physicalDesc.distinctiveFeatures || "N/A"}
+    - Style: ${physicalDesc.style || "N/A"}
+  Voice Style:
+    - Tone: ${voice.tone || "N/A"}
+    - Vocabulary: ${voice.vocabulary || "N/A"}
+    - Quirks: ${voice.quirks?.join("; ") || "N/A"}
+    - Emotional Range: ${voice.emotionalRange || "N/A"}`;
+        })
+        .join("\n\n");
+
+    console.log(
+        `[scene-summaries-generator] Character list prepared: ${characters.length} characters`,
+    );
+
     for (const chapter of chapters) {
+        // Build chapter context for this chapter
+        const chapterContext: string = `Title: ${chapter.title}
+Summary: ${chapter.summary}
+Arc Position: ${chapter.arcPosition || "N/A"}
+Adversity Type: ${chapter.adversityType || "N/A"}
+Virtue Type: ${chapter.virtueType || "N/A"}`;
+
         for (let i = 0; i < scenesPerChapter; i++) {
             sceneIndex++;
 
@@ -45,30 +125,38 @@ export async function generateSceneSummaries(
                 onProgress(sceneIndex, chapters.length * scenesPerChapter);
             }
 
-            // Determine cycle phase
-            const cyclePhases: CyclePhase[] = [
-                "setup",
-                "confrontation",
-                "virtue",
-                "consequence",
-                "transition",
-            ];
-            const cyclePhase = cyclePhases[Math.min(i, cyclePhases.length - 1)];
+            // Build comprehensive settings list string
+            const settingsStr: string = settings
+                .map((s) => {
+                    const sensory =
+                        typeof s.sensory === "object" && s.sensory !== null
+                            ? (s.sensory as {
+                                  sight?: string[];
+                                  sound?: string[];
+                                  smell?: string[];
+                                  touch?: string[];
+                                  taste?: string[];
+                              })
+                            : {};
 
-            // Build settings string
-            const settingsStr = settings
-                .map((s, idx) => `${idx + 1}. ${s.name}: ${s.summary}`)
+                    return `Setting: ${s.name} - Summary: ${s.summary || "N/A"} - Mood: ${s.mood || "N/A"} - Emotional Resonance: ${s.emotionalResonance || "N/A"} - Sensory: sight (${sensory.sight?.join(", ") || "N/A"}), sound (${sensory.sound?.join(", ") || "N/A"}), smell (${sensory.smell?.join(", ") || "N/A"}), touch (${sensory.touch?.join(", ") || "N/A"})`;
+                })
                 .join("\n");
+
+            console.log(
+                `[scene-summaries-generator] Settings list prepared: ${settings.length} settings`,
+            );
 
             // Get the prompt template for scene summary generation
             const promptParams: SceneSummaryPromptParams = {
                 sceneNumber: String(i + 1),
                 sceneCount: String(scenesPerChapter),
-                chapterTitle: chapter.title,
-                chapterSummary:
-                    chapter.summary ?? "Chapter summary not available",
-                cyclePhase,
+                story: storyContext,
+                part: partContext,
+                chapter: chapterContext,
+                characters: charactersStr,
                 settings: settingsStr,
+                previousScenesContext: "", // Not available in batch generation
             };
 
             const {

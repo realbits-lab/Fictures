@@ -771,28 +771,25 @@ Total: 3-7 scenes
                 userTemplate: `Generate scene {sceneNumber} of {sceneCount} for the chapter:
 
 Story Context:
-Title: {storyTitle}
-Genre: {storyGenre}
-Tone: {storyTone}
-Summary: {storySummary}
+{story}
+
+Part Context:
+{part}
 
 Chapter Context:
-Title: {chapterTitle}
-Summary: {chapterSummary}
-Arc Position: {arcPosition}
-Character Focus: {characterName}
+{chapter}
 
-Available Settings:
-{settings}
-
-Available Characters:
+Characters:
 {characters}
 
-Language: {language}
+Settings:
+{settings}
 
-Break down this chapter's adversity-triumph cycle into {sceneCount} scene summaries, where each summary provides a complete specification for prose generation.
+{previousScenesContext}
 
-Return structured data for all scenes with clear sections for each scene following the template above.`,
+Break down this chapter's adversity-triumph cycle into scene summaries, where each summary provides a complete specification for prose generation.
+
+Return structured data for scenes with clear sections following the template above.`,
             },
 
             scene_content: {

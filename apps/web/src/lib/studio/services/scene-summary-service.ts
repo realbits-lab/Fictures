@@ -9,7 +9,14 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { chapters, scenes, settings, stories } from "@/lib/db/schema";
+import {
+    chapters,
+    characters,
+    parts,
+    scenes,
+    settings,
+    stories,
+} from "@/lib/db/schema";
 import { generateSceneSummary } from "../generators/scene-summary-generator";
 import type {
     GenerateSceneSummaryParams,
@@ -17,7 +24,9 @@ import type {
 } from "../generators/types";
 import {
     type Chapter,
+    type Character,
     insertSceneSchema,
+    type Part,
     type Scene,
     type Setting,
     type Story,
@@ -90,7 +99,25 @@ export class SceneSummaryService {
             throw new Error("Chapter does not belong to the specified story");
         }
 
-        // 4. Fetch settings for the story
+        // 4. Fetch the part for this chapter
+        const partResult: Part[] = (await db
+            .select()
+            .from(parts)
+            .where(eq(parts.id, chapter.partId))) as Part[];
+
+        const part: Part | undefined = partResult[0];
+
+        if (!part) {
+            throw new Error(`Part not found: ${chapter.partId}`);
+        }
+
+        // 5. Fetch characters for the story
+        const storyCharacters: Character[] = (await db
+            .select()
+            .from(characters)
+            .where(eq(characters.storyId, storyId))) as Character[];
+
+        // 6. Fetch settings for the story
         const storySettings: Setting[] = (await db
             .select()
             .from(settings)
@@ -113,9 +140,12 @@ export class SceneSummaryService {
             `[scene-summary-service] Generating scene ${nextSceneIndex + 1}...`,
         );
 
-        // 6. Generate next scene summary using singular generator with full context
+        // 7. Generate next scene summary using singular generator with full context
         const generateParams: GenerateSceneSummaryParams = {
+            story,
+            part,
             chapter,
+            characters: storyCharacters,
             settings: storySettings,
             previousScenes: allPreviousScenes,
             sceneIndex: nextSceneIndex,

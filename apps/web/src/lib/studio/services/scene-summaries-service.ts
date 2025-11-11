@@ -7,7 +7,14 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { chapters, scenes, settings, stories } from "@/lib/db/schema";
+import {
+    chapters,
+    characters,
+    parts,
+    scenes,
+    settings,
+    stories,
+} from "@/lib/db/schema";
 import { generateSceneSummaries } from "../generators/scene-summaries-generator";
 import type {
     GenerateSceneSummariesParams,
@@ -15,7 +22,9 @@ import type {
 } from "../generators/types";
 import {
     type Chapter,
+    type Character,
     insertSceneSchema,
+    type Part,
     type Scene,
     type Setting,
     type Story,
@@ -73,15 +82,37 @@ export class SceneSummariesService {
             );
         }
 
-        // 4. Fetch settings for the story
+        // 4. Fetch the part for the first chapter (assuming all chapters belong to same part)
+        const firstChapter = storyChapters[0];
+        const partResult: Part[] = (await db
+            .select()
+            .from(parts)
+            .where(eq(parts.id, firstChapter.partId))) as Part[];
+
+        const part: Part | undefined = partResult[0];
+
+        if (!part) {
+            throw new Error(`Part not found: ${firstChapter.partId}`);
+        }
+
+        // 5. Fetch characters for the story
+        const storyCharacters: Character[] = (await db
+            .select()
+            .from(characters)
+            .where(eq(characters.storyId, storyId))) as Character[];
+
+        // 6. Fetch settings for the story
         const storySettings: Setting[] = (await db
             .select()
             .from(settings)
             .where(eq(settings.storyId, storyId))) as Setting[];
 
-        // 5. Generate scene summaries using pure generator
+        // 7. Generate scene summaries using pure generator
         const generateParams: GenerateSceneSummariesParams = {
+            story,
+            part,
             chapters: storyChapters,
+            characters: storyCharacters,
             settings: storySettings,
             scenesPerChapter,
         };

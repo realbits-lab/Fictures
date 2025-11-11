@@ -332,6 +332,7 @@ export interface GenerateChapterParams {
     story: Story;
     part: Part;
     characters: Character[];
+    settings?: Setting[]; // Optional settings for atmospheric context
     previousChapters: Chapter[];
     chapterIndex: number; // Global index (position in entire story)
 }
@@ -346,18 +347,22 @@ export interface GenerateChapterResult {
 // ============================================================================
 
 export interface GenerateSceneSummariesParams {
+    story: Story;
+    part: Part;
     chapters: Chapter[];
+    characters: Character[];
     settings: Setting[];
     scenesPerChapter: number;
     onProgress?: ProgressCallback;
 }
 
-export interface SceneSummaryPromptParams {
+export interface SceneSummaryPromptParams extends Record<string, string> {
     sceneNumber: string;
     sceneCount: string;
-    chapterTitle: string;
-    chapterSummary: string;
-    cyclePhase: string;
+    story: string;
+    part: string;
+    chapter: string;
+    characters: string;
     settings: string;
     previousScenesContext: string;
 }
@@ -372,7 +377,10 @@ export interface GenerateSceneSummariesResult {
 // ============================================================================
 
 export interface GenerateSceneSummaryParams {
+    story: Story;
+    part: Part;
     chapter: Chapter;
+    characters: Character[];
     settings: Setting[];
     previousScenes: Scene[];
     sceneIndex: number; // Global index (position in entire story)

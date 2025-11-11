@@ -53,9 +53,10 @@ export async function generateParts(
             onProgress(i + 1, partsCount);
         }
 
-        // 4. Build comprehensive character list string
+        // 4. Build comprehensive character list string (ALL fields from schema)
         const charactersStr: string = characters
             .map((c) => {
+                // Type assertion for personality
                 const personality =
                     typeof c.personality === "object" && c.personality !== null
                         ? (c.personality as {
@@ -63,6 +64,8 @@ export async function generateParts(
                               values?: string[];
                           })
                         : { traits: [], values: [] };
+
+                // Type assertion for physicalDescription
                 const physicalDesc =
                     typeof c.physicalDescription === "object" &&
                     c.physicalDescription !== null
@@ -73,6 +76,8 @@ export async function generateParts(
                               style?: string;
                           })
                         : {};
+
+                // Type assertion for voiceStyle
                 const voice =
                     typeof c.voiceStyle === "object" && c.voiceStyle !== null
                         ? (c.voiceStyle as {
@@ -84,10 +89,11 @@ export async function generateParts(
                         : {};
 
                 return `Character: ${c.name} (${c.isMain ? "Main" : "Supporting"})
+  ID: ${c.id}
   Summary: ${c.summary || "N/A"}
-  External Goal: ${c.externalGoal || "N/A"}
   Core Trait: ${c.coreTrait || "N/A"}
   Internal Flaw: ${c.internalFlaw || "N/A"}
+  External Goal: ${c.externalGoal || "N/A"}
   Personality:
     - Traits: ${personality.traits?.join(", ") || "N/A"}
     - Values: ${personality.values?.join(", ") || "N/A"}
@@ -109,32 +115,98 @@ export async function generateParts(
             `[parts-generator] Character list prepared: ${characters.length} characters`,
         );
 
-        // 5. Build comprehensive settings list string
+        // 5. Build comprehensive settings list string (ALL fields from schema)
         const settingsStr: string = settings
             .map((s) => {
-                const atmosphere =
-                    typeof s.atmosphere === "object" && s.atmosphere !== null
-                        ? (s.atmosphere as {
-                              mood?: string;
-                              lighting?: string;
-                              sounds?: string;
-                              temperature?: string;
+                // Type assertion for adversityElements
+                const adversityElements =
+                    typeof s.adversityElements === "object" &&
+                    s.adversityElements !== null
+                        ? (s.adversityElements as {
+                              physicalObstacles?: string[];
+                              scarcityFactors?: string[];
+                              dangerSources?: string[];
+                              socialDynamics?: string[];
                           })
                         : {};
 
-                return `Setting: ${s.name} - Description: ${s.description || "N/A"} - Atmosphere: ${atmosphere.mood || "N/A"} (mood), ${atmosphere.lighting || "N/A"} (lighting), ${atmosphere.sounds || "N/A"} (sounds), ${atmosphere.temperature || "N/A"} (temperature) - Sensory Details: ${s.sensoryDetails || "N/A"}`;
+                // Type assertion for cycleAmplification
+                const cycleAmplification =
+                    typeof s.cycleAmplification === "object" &&
+                    s.cycleAmplification !== null
+                        ? (s.cycleAmplification as {
+                              setup?: string;
+                              confrontation?: string;
+                              virtue?: string;
+                              consequence?: string;
+                              transition?: string;
+                          })
+                        : {};
+
+                // Type assertion for sensory
+                const sensory =
+                    typeof s.sensory === "object" && s.sensory !== null
+                        ? (s.sensory as {
+                              sight?: string[];
+                              sound?: string[];
+                              smell?: string[];
+                              touch?: string[];
+                              taste?: string[];
+                          })
+                        : {};
+
+                // Type assertion for visualReferences and colorPalette
+                const visualReferences = Array.isArray(s.visualReferences)
+                    ? s.visualReferences
+                    : [];
+                const colorPalette = Array.isArray(s.colorPalette)
+                    ? s.colorPalette
+                    : [];
+
+                return `Setting: ${s.name}
+  ID: ${s.id}
+  Summary: ${s.summary || "N/A"}
+  Adversity Elements:
+    - Physical Obstacles: ${adversityElements.physicalObstacles?.join(", ") || "N/A"}
+    - Scarcity Factors: ${adversityElements.scarcityFactors?.join(", ") || "N/A"}
+    - Danger Sources: ${adversityElements.dangerSources?.join(", ") || "N/A"}
+    - Social Dynamics: ${adversityElements.socialDynamics?.join(", ") || "N/A"}
+  Symbolic Meaning: ${s.symbolicMeaning || "N/A"}
+  Cycle Amplification:
+    - Setup: ${cycleAmplification.setup || "N/A"}
+    - Confrontation: ${cycleAmplification.confrontation || "N/A"}
+    - Virtue: ${cycleAmplification.virtue || "N/A"}
+    - Consequence: ${cycleAmplification.consequence || "N/A"}
+    - Transition: ${cycleAmplification.transition || "N/A"}
+  Mood: ${s.mood || "N/A"}
+  Emotional Resonance: ${s.emotionalResonance || "N/A"}
+  Sensory:
+    - Sight: ${sensory.sight?.join(", ") || "N/A"}
+    - Sound: ${sensory.sound?.join(", ") || "N/A"}
+    - Smell: ${sensory.smell?.join(", ") || "N/A"}
+    - Touch: ${sensory.touch?.join(", ") || "N/A"}
+    - Taste: ${sensory.taste?.join(", ") || "N/A"}
+  Architectural Style: ${s.architecturalStyle || "N/A"}
+  Visual References: ${visualReferences.join(", ") || "N/A"}
+  Color Palette: ${colorPalette.join(", ") || "N/A"}`;
             })
-            .join("\n");
+            .join("\n\n");
 
         console.log(
             `[parts-generator] Settings list prepared: ${settings.length} settings`,
         );
 
-        // 6. Build merged story context string
-        const storyContext: string = `Title: ${story.title}
-Genre: ${story.genre ?? "General Fiction"}
-Summary: ${story.summary ?? "A story of adversity and triumph"}
-Moral Framework: ${story.moralFramework ?? "Universal human virtues"}`;
+        // 6. Build comprehensive story context string (ALL fields from schema)
+        const storyContext: string = `Story Information:
+  ID: ${story.id}
+  Title: ${story.title}
+  Genre: ${story.genre ?? "General Fiction"}
+  Tone: ${story.tone ?? "hopeful"}
+  Summary: ${story.summary ?? "A story of adversity and triumph"}
+  Moral Framework: ${story.moralFramework ?? "Universal human virtues"}
+  Status: ${story.status ?? "writing"}
+  View Count: ${story.viewCount ?? 0}
+  Rating: ${story.rating ?? 0} (${story.ratingCount ?? 0} ratings)`;
 
         // 7. Get the prompt template for part generation
         const promptParams: PartPromptParams = {

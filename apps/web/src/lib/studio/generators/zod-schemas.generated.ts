@@ -464,16 +464,20 @@ const characterArcSchema = z.object({
         .describe(
             "New challenges or complications that arise from the consequences",
         ),
+    // Optional planning fields (not used in incremental generation)
     estimatedChapters: z
         .number()
+        .optional()
         .describe("Expected number of chapters to develop this character arc"),
     arcPosition: z
         .enum(CHARACTER_ARC_POSITIONS)
+        .optional()
         .describe(
             "Priority level of this character arc - primary (main focus) or secondary (supporting)",
         ),
     progressionStrategy: z
         .string()
+        .optional()
         .describe(
             "Plan for how the character's development will unfold across chapters",
         ),

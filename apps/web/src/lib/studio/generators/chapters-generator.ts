@@ -96,22 +96,96 @@ export async function generateChapters(
         })
         .join("\n\n");
 
-    // 3. Build comprehensive settings list string (simplified from part-generator)
+    // 3. Build comprehensive settings list string (ALL fields from schema)
     const settingsStr: string = params.settings
         ? params.settings
               .map((s: Setting) => {
+                  // Type assertion for adversityElements
+                  const adversityElements =
+                      typeof s.adversityElements === "object" &&
+                      s.adversityElements !== null
+                          ? (s.adversityElements as {
+                                physicalObstacles?: string[];
+                                scarcityFactors?: string[];
+                                dangerSources?: string[];
+                                socialDynamics?: string[];
+                            })
+                          : {};
+
+                  // Type assertion for cycleAmplification
+                  const cycleAmplification =
+                      typeof s.cycleAmplification === "object" &&
+                      s.cycleAmplification !== null
+                          ? (s.cycleAmplification as {
+                                setup?: string;
+                                confrontation?: string;
+                                virtue?: string;
+                                consequence?: string;
+                                transition?: string;
+                            })
+                          : {};
+
+                  // Type assertion for sensory
+                  const sensory =
+                      typeof s.sensory === "object" && s.sensory !== null
+                          ? (s.sensory as {
+                                sight?: string[];
+                                sound?: string[];
+                                smell?: string[];
+                                touch?: string[];
+                                taste?: string[];
+                            })
+                          : {};
+
+                  // Type assertion for visualReferences and colorPalette
+                  const visualReferences = Array.isArray(s.visualReferences)
+                      ? s.visualReferences
+                      : [];
+                  const colorPalette = Array.isArray(s.colorPalette)
+                      ? s.colorPalette
+                      : [];
+
                   return `Setting: ${s.name}
+  ID: ${s.id}
   Summary: ${s.summary || "N/A"}
-  Mood: ${s.mood || "N/A"}`;
+  Adversity Elements:
+    - Physical Obstacles: ${adversityElements.physicalObstacles?.join(", ") || "N/A"}
+    - Scarcity Factors: ${adversityElements.scarcityFactors?.join(", ") || "N/A"}
+    - Danger Sources: ${adversityElements.dangerSources?.join(", ") || "N/A"}
+    - Social Dynamics: ${adversityElements.socialDynamics?.join(", ") || "N/A"}
+  Symbolic Meaning: ${s.symbolicMeaning || "N/A"}
+  Cycle Amplification:
+    - Setup: ${cycleAmplification.setup || "N/A"}
+    - Confrontation: ${cycleAmplification.confrontation || "N/A"}
+    - Virtue: ${cycleAmplification.virtue || "N/A"}
+    - Consequence: ${cycleAmplification.consequence || "N/A"}
+    - Transition: ${cycleAmplification.transition || "N/A"}
+  Mood: ${s.mood || "N/A"}
+  Emotional Resonance: ${s.emotionalResonance || "N/A"}
+  Sensory:
+    - Sight: ${sensory.sight?.join(", ") || "N/A"}
+    - Sound: ${sensory.sound?.join(", ") || "N/A"}
+    - Smell: ${sensory.smell?.join(", ") || "N/A"}
+    - Touch: ${sensory.touch?.join(", ") || "N/A"}
+    - Taste: ${sensory.taste?.join(", ") || "N/A"}
+  Architectural Style: ${s.architecturalStyle || "N/A"}
+  Visual References: ${visualReferences.join(", ") || "N/A"}
+  Color Palette: ${colorPalette.join(", ") || "N/A"}`;
               })
               .join("\n\n")
         : "N/A";
 
-    // 4. Build merged story context string
-    const storyContext: string = `Title: ${story.title}
-Genre: ${story.genre ?? "General Fiction"}
-Summary: ${story.summary ?? "A story of adversity and triumph"}
-Moral Framework: ${story.moralFramework ?? "Universal human virtues"}`;
+    // 4. Build comprehensive story context string (ALL fields from schema)
+    const storyContext: string = `Story Information:
+  ID: ${story.id}
+  Title: ${story.title}
+  Genre: ${story.genre ?? "General Fiction"}
+  Tone: ${story.tone ?? "hopeful"}
+  Summary: ${story.summary ?? "A story of adversity and triumph"}
+  Moral Framework: ${story.moralFramework ?? "Universal human virtues"}
+  Status: ${story.status ?? "writing"}
+  View Count: ${story.viewCount ?? 0}
+  Rating: ${story.rating ?? 0} (${story.ratingCount ?? 0} ratings)`;
 
     // 5. Build parts context string with character arcs
     const partsStr: string = parts
