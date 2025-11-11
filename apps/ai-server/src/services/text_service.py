@@ -56,7 +56,8 @@ class TextGenerationService:
                 max_num_seqs=settings.vllm_max_num_seqs,
                 trust_remote_code=True,
                 enforce_eager=True,  # Disable CUDA graphs and torch compilation to avoid triton issues
-                guided_decoding_backend="outlines",  # Use outlines backend to avoid xgrammar compilation issues
+                # NOTE: guided_decoding_backend cannot be set due to triton compilation issues
+                # in vLLM subprocesses. Structured output support is disabled.
             )
 
             # Create async engine

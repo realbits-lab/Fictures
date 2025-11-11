@@ -12,20 +12,6 @@ from pathlib import Path
 BASE_URL = "http://localhost:8000"
 
 # Load API key from .auth/user.json
-<<<<<<< Updated upstream
-def load_api_key() -> str:
-    """Load API key from auth file."""
-    auth_file = Path(__file__).parent.parent / ".auth" / "user.json"
-    if auth_file.exists():
-        with open(auth_file) as f:
-            auth_data = json.load(f)
-            # Use develop manager API key
-            return auth_data["develop"]["profiles"]["manager"]["apiKey"]
-    raise FileNotFoundError("API key file not found. Please create .auth/user.json")
-
-API_KEY = load_api_key()
-AUTH_HEADERS = {"Authorization": f"Bearer {API_KEY}"}
-=======
 AUTH_FILE = Path(__file__).parent.parent / ".auth" / "user.json"
 with open(AUTH_FILE) as f:
     auth_data = json.load(f)
@@ -33,7 +19,6 @@ with open(AUTH_FILE) as f:
 
 # Headers with authentication (using x-api-key header)
 HEADERS = {"x-api-key": API_KEY}
->>>>>>> Stashed changes
 
 
 async def test_health_endpoint():
@@ -52,11 +37,7 @@ async def test_list_text_models():
     """Test listing available text models."""
     print("\n=== Testing List Text Models ===")
     async with httpx.AsyncClient() as client:
-<<<<<<< Updated upstream
-        response = await client.get(f"{BASE_URL}/api/v1/text/models", headers=AUTH_HEADERS)
-=======
         response = await client.get(f"{BASE_URL}/api/v1/text/models", headers=HEADERS)
->>>>>>> Stashed changes
         print(f"Status Code: {response.status_code}")
         print(f"Response: {json.dumps(response.json(), indent=2)}")
         assert response.status_code == 200
@@ -81,11 +62,7 @@ async def test_text_generation_basic():
         response = await client.post(
             f"{BASE_URL}/api/v1/text/generate",
             json=request_data,
-<<<<<<< Updated upstream
-            headers=AUTH_HEADERS,
-=======
             headers=HEADERS,
->>>>>>> Stashed changes
         )
 
         print(f"\nStatus Code: {response.status_code}")
@@ -124,11 +101,7 @@ async def test_text_generation_with_stop_sequences():
         response = await client.post(
             f"{BASE_URL}/api/v1/text/generate",
             json=request_data,
-<<<<<<< Updated upstream
-            headers=AUTH_HEADERS,
-=======
             headers=HEADERS,
->>>>>>> Stashed changes
         )
 
         print(f"\nStatus Code: {response.status_code}")
@@ -160,11 +133,7 @@ async def test_text_streaming():
             "POST",
             f"{BASE_URL}/api/v1/text/stream",
             json=request_data,
-<<<<<<< Updated upstream
-            headers=AUTH_HEADERS,
-=======
             headers=HEADERS,
->>>>>>> Stashed changes
         ) as response:
             print(f"\nStatus Code: {response.status_code}")
             print("\nStreaming output:")
@@ -220,11 +189,7 @@ async def test_text_generation_error_handling():
         response = await client.post(
             f"{BASE_URL}/api/v1/text/generate",
             json=request_data,
-<<<<<<< Updated upstream
-            headers=AUTH_HEADERS,
-=======
             headers=HEADERS,
->>>>>>> Stashed changes
         )
 
         print(f"Empty prompt - Status Code: {response.status_code}")
@@ -240,11 +205,7 @@ async def test_text_generation_error_handling():
         response = await client.post(
             f"{BASE_URL}/api/v1/text/generate",
             json=request_data,
-<<<<<<< Updated upstream
-            headers=AUTH_HEADERS,
-=======
             headers=HEADERS,
->>>>>>> Stashed changes
         )
 
         print(f"Long prompt - Status Code: {response.status_code}")
