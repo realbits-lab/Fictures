@@ -101,11 +101,14 @@ class TextGenerationService:
             await self.initialize()
 
         try:
-            # Create sampling parameters
+            # Create sampling parameters with min_tokens for long-form generation
+            # Ensure min_tokens doesn't exceed max_tokens (use 80% of max_tokens or 512, whichever is smaller)
+            calculated_min_tokens = min(512, int(max_tokens * 0.8))
             sampling_params = SamplingParams(
                 temperature=temperature,
                 top_p=top_p,
                 max_tokens=max_tokens,
+                min_tokens=calculated_min_tokens if calculated_min_tokens > 0 else None,
                 stop=stop_sequences,
             )
 
@@ -163,11 +166,14 @@ class TextGenerationService:
             await self.initialize()
 
         try:
-            # Create sampling parameters
+            # Create sampling parameters with min_tokens for long-form generation
+            # Ensure min_tokens doesn't exceed max_tokens (use 80% of max_tokens or 512, whichever is smaller)
+            calculated_min_tokens = min(512, int(max_tokens * 0.8))
             sampling_params = SamplingParams(
                 temperature=temperature,
                 top_p=top_p,
                 max_tokens=max_tokens,
+                min_tokens=calculated_min_tokens if calculated_min_tokens > 0 else None,
                 stop=stop_sequences,
             )
 
