@@ -59,7 +59,7 @@ export class SceneSummaryService {
     async generateAndSave(
         params: ServiceSceneSummaryParams,
     ): Promise<ServiceSceneSummaryResult> {
-        const { storyId, chapterId, userId } = params;
+        const { storyId, chapterId, userId, apiKey } = params;
 
         console.log(
             "[scene-summary-service] 📄 Generating next scene summary with full context...",
@@ -150,6 +150,7 @@ export class SceneSummaryService {
             settings: storySettings,
             previousScenes: allPreviousScenes,
             sceneIndex: nextSceneIndex,
+            apiKey,
         };
 
         const generationResult: GeneratorSceneSummaryResult =

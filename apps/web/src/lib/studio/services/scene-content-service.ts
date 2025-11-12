@@ -47,7 +47,7 @@ export class SceneContentService {
     async generateAndSave(
         params: ServiceSceneContentParams,
     ): Promise<ServiceSceneContentResult> {
-        const { sceneId, language = "English", userId } = params;
+        const { sceneId, language = "English", userId, apiKey } = params;
 
         // 1. Fetch scene
         const sceneResult = await db

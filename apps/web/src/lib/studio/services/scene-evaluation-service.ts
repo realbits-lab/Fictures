@@ -34,6 +34,7 @@ export interface ServiceSceneEvaluationParams {
     sceneId: string;
     userId?: string; // Optional: For ownership verification
     maxIterations?: number;
+    apiKey?: string; // Optional: API key for AI server authentication
 }
 
 /**
@@ -58,6 +59,7 @@ export interface EvaluateSceneWithDataParams {
     };
     userId?: string; // Optional: For ownership verification
     maxIterations?: number;
+    apiKey?: string; // Optional: API key for AI server authentication
 }
 
 /**
@@ -106,7 +108,7 @@ export class SceneEvaluationService {
     async evaluateAndSave(
         params: ServiceSceneEvaluationParams,
     ): Promise<ServiceSceneEvaluationResult> {
-        const { sceneId, userId, maxIterations = 2 } = params;
+        const { sceneId, userId, maxIterations = 2, apiKey } = params;
 
         // 1. Fetch scene from database
         const sceneResults = await db
@@ -262,7 +264,7 @@ export class SceneEvaluationService {
     async evaluateAndSaveWithData(
         params: EvaluateSceneWithDataParams,
     ): Promise<ServiceSceneEvaluationResult> {
-        const { sceneId, scene, story, maxIterations = 2 } = params;
+        const { sceneId, scene, story, maxIterations = 2, apiKey } = params;
 
         if (!scene.content || scene.content.trim() === "") {
             throw new Error("Scene must have content before evaluation");
@@ -369,6 +371,7 @@ export class SceneEvaluationService {
             moralFramework: string;
         },
         maxIterations = 2,
+        apiKey?: string,
     ): Promise<GeneratorSceneEvaluationResult> {
         const evaluateParams: GeneratorSceneEvaluationParams = {
             content,

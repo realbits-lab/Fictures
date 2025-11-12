@@ -125,6 +125,7 @@ export class ChapterService {
             characters: storyCharacters,
             previousChapters: allPreviousChapters,
             chapterIndex: nextChapterIndex,
+            apiKey: params.apiKey,
         };
 
         const generationResult: GeneratorChapterResult =
