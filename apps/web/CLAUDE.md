@@ -457,6 +457,13 @@ AI_SERVER_IMAGE_TIMEOUT="120000"
 AI_SERVER_TEXT_URL="http://localhost:8000"
 AI_SERVER_TEXT_TIMEOUT="120000"
 
+# ComfyUI Configuration for AI Server (optional - used by ai-server for image generation)
+AI_SERVER_COMFYUI_URL="http://127.0.0.1:8188"
+
+# AI Server Generation Mode (optional - used by ai-server to control generation behavior)
+# Options: "image" | "text" | "both"
+AI_SERVER_GENERATION_MODE="image"
+
 # =============================================================================
 # Authentication
 # =============================================================================
@@ -484,13 +491,6 @@ DATABASE_URL_UNPOOLED="postgresql://user:password@host.region.aws.neon.tech:5432
 # =============================================================================
 # Vercel Blob Storage
 BLOB_READ_WRITE_TOKEN="vercel_blob_rw_your-token-here"
-
-# =============================================================================
-# ComfyUI Configuration (Image Generation)
-# =============================================================================
-# ComfyUI server URL (external image generation server)
-# Install ComfyUI at ~/.local/comfyui and run separately
-COMFYUI_URL="http://127.0.0.1:8188"
 
 # =============================================================================
 # Gemini Model Configuration
@@ -543,10 +543,14 @@ The platform supports flexible AI server configuration with separate servers for
   - `AI_SERVER_TEXT_URL` - Dedicated server for text generation
   - `AI_SERVER_IMAGE_TIMEOUT` - Image generation timeout (optional)
   - `AI_SERVER_TEXT_TIMEOUT` - Text generation timeout (optional)
+  - `AI_SERVER_COMFYUI_URL` - ComfyUI server URL (used by ai-server, optional)
+  - `AI_SERVER_GENERATION_MODE` - Generation mode control (used by ai-server, optional)
 
 - **Single Server** (Simpler for development):
   - `AI_SERVER_URL` - Shared server for both image and text
   - `AI_SERVER_TIMEOUT` - Shared timeout for both operations
+  - `AI_SERVER_COMFYUI_URL` - ComfyUI server URL (used by ai-server, optional)
+  - `AI_SERVER_GENERATION_MODE` - Generation mode: "image" | "text" | "both" (used by ai-server, optional)
 
 **Fallback Behavior:**
 - If `AI_SERVER_IMAGE_URL` is not set → falls back to `AI_SERVER_URL`
