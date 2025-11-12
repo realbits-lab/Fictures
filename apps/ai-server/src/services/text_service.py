@@ -315,10 +315,8 @@ class TextGenerationService:
             # vLLM doesn't have explicit shutdown, engine will be cleaned up
             self.engine = None
             self._initialized = False
-
-            # Clean up GPU memory after shutdown
-            logger.info("Cleaning up GPU memory after text model shutdown")
-            cleanup_gpu_memory(force=True)
+            # GPU memory will be automatically cleaned up when engine is destroyed
+            logger.info("vLLM engine shut down")
 
 
 # Global service instance

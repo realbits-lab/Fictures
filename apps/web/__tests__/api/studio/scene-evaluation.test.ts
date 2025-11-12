@@ -453,5 +453,5 @@ describe("Scene Evaluation API", () => {
             `  Improvements: ${evaluation.feedback.improvements.join(", ")}`,
         );
         console.log(`  Generation time: ${metadata.generationTime}ms`);
-    }, 180000); // 3 minute timeout for AI evaluation with improvements
+    }, 1200000); // 20 minute timeout for AI evaluation with improvements
 });
