@@ -443,17 +443,12 @@ src/
 # =============================================================================
 # AI Server Configuration
 # =============================================================================
-# Shared configuration (fallback for image and text if specific URLs not set)
-AI_SERVER_TIMEOUT="120000"
-AI_SERVER_URL="http://localhost:8000"
 
-# Image Generation AI Server (optional - falls back to AI_SERVER_URL if not set)
-# Use this when you have a separate server for image generation
+# Image Generation AI Server
 AI_SERVER_IMAGE_URL="http://localhost:8000"
 AI_SERVER_IMAGE_TIMEOUT="120000"
 
-# Text Generation AI Server (optional - falls back to AI_SERVER_URL if not set)
-# Use this when you have a separate server for text generation
+# Text Generation AI Server
 AI_SERVER_TEXT_URL="http://localhost:8000"
 AI_SERVER_TEXT_TIMEOUT="120000"
 
@@ -537,48 +532,42 @@ VERCEL_OIDC_TOKEN="auto-generated-by-vercel-cli"
 
 The platform supports flexible AI server configuration with separate servers for image and text generation:
 
-**Configuration Strategy:**
-- **Dedicated Servers** (Recommended for production):
-  - `AI_SERVER_IMAGE_URL` - Dedicated server for image generation
-  - `AI_SERVER_TEXT_URL` - Dedicated server for text generation
-  - `AI_SERVER_IMAGE_TIMEOUT` - Image generation timeout (optional)
-  - `AI_SERVER_TEXT_TIMEOUT` - Text generation timeout (optional)
-  - `AI_SERVER_COMFYUI_URL` - ComfyUI server URL (used by ai-server, optional)
-  - `AI_SERVER_GENERATION_MODE` - Generation mode control (used by ai-server, optional)
+**Required Environment Variables:**
+- `AI_SERVER_IMAGE_URL` - Dedicated server for image generation (required)
+- `AI_SERVER_IMAGE_TIMEOUT` - Image generation timeout in ms (default: 120000)
+- `AI_SERVER_TEXT_URL` - Dedicated server for text generation (required)
+- `AI_SERVER_TEXT_TIMEOUT` - Text generation timeout in ms (default: 120000)
+- `AI_SERVER_COMFYUI_URL` - ComfyUI server URL (used by ai-server, optional)
+- `AI_SERVER_GENERATION_MODE` - Generation mode: "image" | "text" | "both" (used by ai-server, optional)
 
-- **Single Server** (Simpler for development):
-  - `AI_SERVER_URL` - Shared server for both image and text
-  - `AI_SERVER_TIMEOUT` - Shared timeout for both operations
-  - `AI_SERVER_COMFYUI_URL` - ComfyUI server URL (used by ai-server, optional)
-  - `AI_SERVER_GENERATION_MODE` - Generation mode: "image" | "text" | "both" (used by ai-server, optional)
+**Configuration Approach:**
 
-**Fallback Behavior:**
-- If `AI_SERVER_IMAGE_URL` is not set → falls back to `AI_SERVER_URL`
-- If `AI_SERVER_TEXT_URL` is not set → falls back to `AI_SERVER_URL`
-- If `AI_SERVER_IMAGE_TIMEOUT` is not set → falls back to `AI_SERVER_TIMEOUT`
-- If `AI_SERVER_TEXT_TIMEOUT` is not set → falls back to `AI_SERVER_TIMEOUT`
-
-**Use Cases:**
-1. **Separate Servers**: Set both `AI_SERVER_IMAGE_URL` and `AI_SERVER_TEXT_URL` to use dedicated servers
-2. **Single Server**: Only set `AI_SERVER_URL` to use one server for both
-3. **Hybrid**: Set only one specific URL to use dedicated server for that task, shared for the other
+The platform uses **explicit configuration** with separate URLs for image and text generation. This provides:
+- Clear separation of concerns
+- Independent scaling of image and text servers
+- No ambiguity about which server handles which task
 
 **Example Configurations:**
 
 ```bash
-# Configuration 1: Separate servers for image and text
+# Configuration 1: Separate servers for image and text (recommended for production)
 AI_SERVER_IMAGE_URL="http://image-server.example.com:8000"
+AI_SERVER_IMAGE_TIMEOUT="120000"
 AI_SERVER_TEXT_URL="http://text-server.example.com:8001"
+AI_SERVER_TEXT_TIMEOUT="120000"
 
-# Configuration 2: Single shared server (backward compatible)
-AI_SERVER_URL="http://localhost:8000"
+# Configuration 2: Same server for both (simpler for development)
+AI_SERVER_IMAGE_URL="http://localhost:8000"
+AI_SERVER_IMAGE_TIMEOUT="120000"
+AI_SERVER_TEXT_URL="http://localhost:8000"
+AI_SERVER_TEXT_TIMEOUT="120000"
 
-# Configuration 3: Dedicated image server, shared text server
-AI_SERVER_IMAGE_URL="http://image-server.example.com:8000"
-AI_SERVER_URL="http://localhost:8000"  # Used for text generation
+# Configuration 3: With ComfyUI integration
+AI_SERVER_IMAGE_URL="http://localhost:8000"
+AI_SERVER_TEXT_URL="http://localhost:8000"
+AI_SERVER_COMFYUI_URL="http://127.0.0.1:8188"
+AI_SERVER_GENERATION_MODE="both"
 ```
-
-This architecture provides maximum flexibility while maintaining backward compatibility with existing configurations.
 
 ## Authentication System
 

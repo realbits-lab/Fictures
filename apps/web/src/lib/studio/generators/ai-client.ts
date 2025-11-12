@@ -30,14 +30,9 @@ const getConfig = () => {
             maxTokens: parseInt(process.env.GEMINI_MAX_TOKENS || "8192", 10),
         },
         aiServer: {
-            url:
-                process.env.AI_SERVER_TEXT_URL ||
-                process.env.AI_SERVER_URL ||
-                "http://localhost:8000",
+            url: process.env.AI_SERVER_TEXT_URL || "http://localhost:8000",
             timeout: parseInt(
-                process.env.AI_SERVER_TEXT_TIMEOUT ||
-                    process.env.AI_SERVER_TIMEOUT ||
-                    "120000",
+                process.env.AI_SERVER_TEXT_TIMEOUT || "120000",
                 10,
             ),
         },
