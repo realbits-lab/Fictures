@@ -9,15 +9,18 @@ import { expect, test } from "@playwright/test";
 import { getAuthHeaders } from "../helpers/auth";
 
 test.describe("Publish API", () => {
-	test.describe("Publish Scene", () => {
-		test("TC-API-PUBLISH-002: Non-owner cannot publish scene (403)", async ({
-			request,
-		}) => {
-			const response = await request.post("/publish/api/scenes/some-scene-id", {
-				headers: getAuthHeaders("reader"),
-			});
+    test.describe("Publish Scene", () => {
+        test("TC-API-PUBLISH-002: Non-owner cannot publish scene (403)", async ({
+            request,
+        }) => {
+            const response = await request.post(
+                "/publish/api/scenes/some-scene-id",
+                {
+                    headers: getAuthHeaders("reader"),
+                },
+            );
 
-			expect([403, 404]).toContain(response.status());
-		});
-	});
+            expect([403, 404]).toContain(response.status());
+        });
+    });
 });

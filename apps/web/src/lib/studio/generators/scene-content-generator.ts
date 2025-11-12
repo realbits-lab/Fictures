@@ -9,10 +9,19 @@
  */
 
 import { textGenerationClient } from "./ai-client";
+import {
+    buildChapterContext,
+    buildCharactersContext,
+    buildGenericSettingContext,
+    buildPartContext,
+    buildSceneContext,
+    buildSettingContext,
+    buildStoryContext,
+} from "./context-builders";
 import { promptManager } from "./prompt-manager";
 import type {
-    GenerateSceneContentParams,
-    GenerateSceneContentResult,
+    GeneratorSceneContentParams,
+    GeneratorSceneContentResult,
     SceneContentPromptParams,
 } from "./types";
 
@@ -23,50 +32,52 @@ import type {
  * @returns Scene content (caller responsible for database save)
  */
 export async function generateSceneContent(
-    params: GenerateSceneContentParams,
-): Promise<GenerateSceneContentResult> {
+    params: GeneratorSceneContentParams,
+): Promise<GeneratorSceneContentResult> {
     const startTime: number = Date.now();
 
-    // 1. Extract and set default parameters
+    // 1. Extract parameters
     const {
+        story,
+        part,
+        chapter,
         scene,
         characters,
         settings,
         language = "English",
-    }: GenerateSceneContentParams = params;
+    }: GeneratorSceneContentParams = params;
 
-    // 2. Find the setting and character for this scene
-    const setting = settings.find((s) => s.id === scene.settingId);
-
-    // Type guard for characterFocus array
-    const characterFocusArray = Array.isArray(scene.characterFocus)
-        ? scene.characterFocus
-        : [];
-
-    const character = characters.find((c) =>
-        characterFocusArray.includes(c.id),
+    console.log(
+        `[scene-content-generator] 📝 Generating content for scene: ${scene.title}`,
     );
 
-    // 3. Get the prompt template for scene content generation
+    // 2. Find setting if scene has one
+    const setting = scene.settingId
+        ? settings.find((s) => s.id === scene.settingId)
+        : undefined;
+
+    // 3. Build context strings using common builders
+    const storyContext: string = buildStoryContext(story);
+    const partContext: string = buildPartContext(part, characters);
+    const chapterContext: string = buildChapterContext(chapter);
+    const sceneContext: string = buildSceneContext(scene);
+    const charactersStr: string = buildCharactersContext(characters);
+    const settingStr: string = setting
+        ? buildSettingContext(setting)
+        : buildGenericSettingContext();
+
+    console.log(
+        `[scene-content-generator] Context prepared: ${characters.length} characters, ${setting?.name || "generic"} setting`,
+    );
+
+    // 4. Get the prompt template for scene content generation
     const promptParams: SceneContentPromptParams = {
-        sceneSummary: scene.summary ?? "",
-        cyclePhase: scene.cyclePhase ?? "",
-        emotionalBeat: scene.emotionalBeat || "neutral",
-        suggestedLength: scene.suggestedLength || "medium",
-        settingDescription: setting
-            ? `${setting.name} - ${setting.summary || ""}`
-            : "Generic setting",
-        sensoryAnchors: Array.isArray(scene.sensoryAnchors)
-            ? scene.sensoryAnchors.join(", ")
-            : "Use setting-appropriate details",
-        characterName: character ? character.name : "Unknown character",
-        voiceStyle:
-            character?.voiceStyle &&
-            typeof character.voiceStyle === "object" &&
-            "tone" in character.voiceStyle &&
-            "vocabulary" in character.voiceStyle
-                ? `${character.voiceStyle.tone}, ${character.voiceStyle.vocabulary}`
-                : "Neutral",
+        story: storyContext,
+        part: partContext,
+        chapter: chapterContext,
+        scene: sceneContext,
+        characters: charactersStr,
+        setting: settingStr,
         language,
     };
 
@@ -99,7 +110,7 @@ export async function generateSceneContent(
     const totalTime: number = Date.now() - startTime;
 
     console.log("[scene-content-generator] ✅ Generated scene content:", {
-        sceneId: params.sceneId,
+        sceneId: scene.id,
         wordCount,
         generationTime: totalTime,
     });

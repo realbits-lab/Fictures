@@ -161,19 +161,48 @@ export const characters = pgTable(
         externalGoal: text("external_goal").notNull(), // What they THINK will solve their problem (healing flaw actually will)
 
         // === CHARACTER DEPTH (For Realistic Portrayal) ===
-        personality: json().notNull(), // { traits: string[], values: string[] }
+        personality: json()
+            .$type<{
+                traits: string[];
+                values: string[];
+            }>()
+            .notNull(),
         backstory: text().notNull(), // Focused history providing motivation context (2-4 paragraphs)
 
-        // === RELATIONSHIPS (Jeong System) ===
-        relationships: json(), // { [characterId]: { type, jeongLevel, sharedHistory, currentDynamic } }
-
         // === PROSE GENERATION ===
-        physicalDescription: json("physical_description").notNull(), // { age, appearance, distinctiveFeatures, style }
-        voiceStyle: json("voice_style").notNull(), // { tone, vocabulary, quirks, emotionalRange }
+        physicalDescription: json("physical_description")
+            .$type<{
+                age: string;
+                appearance: string;
+                distinctiveFeatures: string;
+                style: string;
+            }>()
+            .notNull(),
+        voiceStyle: json("voice_style")
+            .$type<{
+                tone: string;
+                vocabulary: string;
+                quirks: string[];
+                emotionalRange: string;
+            }>()
+            .notNull(),
 
         // === VISUAL GENERATION ===
         imageUrl: text("image_url"), // Original portrait (1024×1024 from DALL-E 3)
-        imageVariants: json("image_variants"),
+        imageVariants: json("image_variants").$type<{
+            imageId: string;
+            originalUrl: string;
+            variants: Array<{
+                format: "avif" | "jpeg";
+                device: "mobile" | "tablet" | "desktop";
+                resolution: "1x" | "2x";
+                width: number;
+                height: number;
+                url: string;
+                size: number;
+            }>;
+            generatedAt: string;
+        }>(),
 
         // === METADATA ===
         createdAt: timestamp("created_at", { mode: "string" })
@@ -217,7 +246,14 @@ export const settings = pgTable(
         //   dangerSources: string[];      // Threats from environment
         //   socialDynamics: string[];     // Community factors
         // }
-        adversityElements: json("adversity_elements").notNull(),
+        adversityElements: json("adversity_elements")
+            .$type<{
+                physicalObstacles: string[];
+                scarcityFactors: string[];
+                dangerSources: string[];
+                socialDynamics: string[];
+            }>()
+            .notNull(),
         symbolicMeaning: text("symbolic_meaning").notNull(), // How setting reflects story's moral framework (1-2 sentences)
         // cycleAmplification: {
         //   setup: string;         // How setting establishes adversity
@@ -226,7 +262,15 @@ export const settings = pgTable(
         //   consequence: string;   // How setting transforms or reveals
         //   transition: string;    // How setting hints at new problems
         // }
-        cycleAmplification: json("cycle_amplification").notNull(),
+        cycleAmplification: json("cycle_amplification")
+            .$type<{
+                setup: string;
+                confrontation: string;
+                virtue: string;
+                consequence: string;
+                transition: string;
+            }>()
+            .notNull(),
 
         // === EMOTIONAL ATMOSPHERE ===
         mood: text().notNull(), // Primary emotional quality: "oppressive and surreal", "hopeful but fragile"
@@ -240,12 +284,33 @@ export const settings = pgTable(
         //   touch: string[];   // Tactile sensations (2-5 items)
         //   taste: string[];   // Flavor elements (0-2 items, optional)
         // }
-        sensory: json().notNull(),
+        sensory: json()
+            .$type<{
+                sight: string[];
+                sound: string[];
+                smell: string[];
+                touch: string[];
+                taste?: string[];
+            }>()
+            .notNull(),
         architecturalStyle: text("architectural_style").notNull(), // Structural design language (if applicable)
 
         // === VISUAL GENERATION ===
         imageUrl: text("image_url"), // Original environment image (1792×1024, 16:9 from DALL-E 3)
-        imageVariants: json("image_variants"),
+        imageVariants: json("image_variants").$type<{
+            imageId: string;
+            originalUrl: string;
+            variants: Array<{
+                format: "avif" | "jpeg";
+                device: "mobile" | "tablet" | "desktop";
+                resolution: "1x" | "2x";
+                width: number;
+                height: number;
+                url: string;
+                size: number;
+            }>;
+            generatedAt: string;
+        }>(),
         visualReferences: json("visual_references").$type<string[]>().notNull(), // Style inspirations: ["Blade Runner 2049", "Studio Ghibli countryside"]
         colorPalette: json("color_palette").$type<string[]>().notNull(), // Dominant colors: ["warm golds", "dusty browns", "deep greens"]
 
@@ -292,7 +357,20 @@ export const stories = pgTable(
 
         // === VISUAL ===
         imageUrl: text("image_url"),
-        imageVariants: json("image_variants"),
+        imageVariants: json("image_variants").$type<{
+            imageId: string;
+            originalUrl: string;
+            variants: Array<{
+                format: "avif" | "jpeg";
+                device: "mobile" | "tablet" | "desktop";
+                resolution: "1x" | "2x";
+                width: number;
+                height: number;
+                url: string;
+                size: number;
+            }>;
+            generatedAt: string;
+        }>(),
 
         // === METADATA ===
         createdAt: timestamp("created_at", { mode: "string" })
@@ -344,17 +422,24 @@ export const parts = pgTable(
         summary: text().notNull(), // MACRO adversity-triumph arcs per character with progression planning
 
         // === MACRO ARC TRACKING (Nested Cycles) ===
-        // characterArcs: Array<{
-        //   characterId: string;
-        //   macroAdversity: { internal, external };
-        //   macroVirtue: string;
-        //   macroConsequence: string;
-        //   macroNewAdversity: string;
-        //   estimatedChapters: number;
-        //   arcPosition: 'primary' | 'secondary';
-        //   progressionStrategy: string;
-        // }>
-        characterArcs: json("character_arcs").notNull(),
+        characterArcs: json("character_arcs")
+            .$type<
+                Array<{
+                    characterId: string;
+                    macroAdversity: {
+                        internal: string;
+                        external: string;
+                    };
+                    macroVirtue: string;
+                    macroConsequence: string;
+                    macroNewAdversity: string;
+                    // Optional planning fields (not used in incremental generation)
+                    estimatedChapters?: number;
+                    arcPosition?: "primary" | "secondary";
+                    progressionStrategy?: string;
+                }>
+            >()
+            .notNull(),
 
         // === ORDERING ===
         orderIndex: integer("order_index").notNull(), // Act number / order
@@ -402,18 +487,40 @@ export const chapters = pgTable(
         contributesToMacroArc: text("contributes_to_macro_arc").notNull(), // How this chapter advances the macro arc
 
         // === CYCLE TRACKING ===
-        focusCharacters: json("focus_characters").default([]).notNull(), // Character ID(s)
+        focusCharacters: json("focus_characters")
+            .$type<string[]>()
+            .default([])
+            .notNull(),
         adversityType: adversityType("adversity_type").notNull(), // 'internal' | 'external' | 'both'
         virtueType: virtueType("virtue_type").notNull(), // 'courage' | 'compassion' | 'integrity' | 'sacrifice' | 'loyalty' | 'wisdom'
 
         // === CAUSAL LINKING (For Earned Luck) ===
-        // seedsPlanted: Array<{ id, description, expectedPayoff }>
-        seedsPlanted: json("seeds_planted").default([]).notNull(),
-        // seedsResolved: Array<{ sourceChapterId, sourceSceneId, seedId, payoffDescription }>
-        seedsResolved: json("seeds_resolved").default([]).notNull(),
+        seedsPlanted: json("seeds_planted")
+            .$type<
+                Array<{
+                    id: string;
+                    description: string;
+                    expectedPayoff: string;
+                }>
+            >()
+            .default([])
+            .notNull(),
+        seedsResolved: json("seeds_resolved")
+            .$type<
+                Array<{
+                    sourceChapterId: string;
+                    sourceSceneId: string;
+                    seedId: string;
+                    payoffDescription: string;
+                }>
+            >()
+            .default([])
+            .notNull(),
 
         // === CONNECTION TO NARRATIVE FLOW ===
-        connectsToPreviousChapter: text("connects_to_previous_chapter").notNull(), // How previous resolution created this adversity
+        connectsToPreviousChapter: text(
+            "connects_to_previous_chapter",
+        ).notNull(), // How previous resolution created this adversity
         createsNextAdversity: text("creates_next_adversity").notNull(), // How this resolution creates next problem
 
         // === PUBLISHING ===
@@ -483,9 +590,15 @@ export const scenes = pgTable(
         emotionalBeat: emotionalBeat("emotional_beat").notNull(), // 'fear' | 'hope' | 'tension' | 'relief' | 'elevation' | 'catharsis' | 'despair' | 'joy'
 
         // === PLANNING METADATA (Guides Content Generation) ===
-        characterFocus: jsonb("character_focus").default([]).notNull(), // Character IDs appearing in this scene
+        characterFocus: jsonb("character_focus")
+            .$type<string[]>()
+            .default([])
+            .notNull(),
         settingId: text("setting_id").notNull(), // Setting ID where this scene takes place (references Setting.id, nullable for legacy/ambiguous scenes)
-        sensoryAnchors: jsonb("sensory_anchors").default([]).notNull(), // Key sensory details to include (e.g., "rain on metal roof", "smell of smoke")
+        sensoryAnchors: jsonb("sensory_anchors")
+            .$type<string[]>()
+            .default([])
+            .notNull(),
         dialogueVsDescription: text("dialogue_vs_description").notNull(), // Balance guidance (e.g., "60% dialogue, 40% description")
         suggestedLength: text("suggested_length").notNull(), // 'short' | 'medium' | 'long' (short: 300-500, medium: 500-800, long: 800-1000 words)
 
@@ -494,7 +607,20 @@ export const scenes = pgTable(
 
         // === VISUAL ===
         imageUrl: text("image_url"),
-        imageVariants: json("image_variants"),
+        imageVariants: json("image_variants").$type<{
+            imageId: string;
+            originalUrl: string;
+            variants: Array<{
+                format: "avif" | "jpeg";
+                device: "mobile" | "tablet" | "desktop";
+                resolution: "1x" | "2x";
+                width: number;
+                height: number;
+                url: string;
+                size: number;
+            }>;
+            generatedAt: string;
+        }>(),
 
         // === PUBLISHING (Novel Format) ===
         visibility: visibility().default("private").notNull(),

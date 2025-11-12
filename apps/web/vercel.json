@@ -1,12 +1,12 @@
 {
-	"crons": [
-		{
-			"path": "/publish/api/cron",
-			"schedule": "0 8 * * *"
-		},
-		{
-			"path": "/api/cron/analytics-daily",
-			"schedule": "0 1 * * *"
-		}
-	]
+    "crons": [
+        {
+            "path": "/publish/api/cron",
+            "schedule": "0 8 * * *"
+        },
+        {
+            "path": "/api/cron/analytics-daily",
+            "schedule": "0 1 * * *"
+        }
+    ]
 }

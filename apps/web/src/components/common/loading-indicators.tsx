@@ -6,8 +6,8 @@
  */
 
 interface BackgroundValidationIndicatorProps {
-	/** Loading text to display - defaults to "Refreshing..." */
-	text?: string;
+    /** Loading text to display - defaults to "Refreshing..." */
+    text?: string;
 }
 
 /**
@@ -22,14 +22,14 @@ interface BackgroundValidationIndicatorProps {
  * )}
  */
 export function BackgroundValidationIndicator({
-	text = "Refreshing...",
+    text = "Refreshing...",
 }: BackgroundValidationIndicatorProps) {
-	return (
-		<div className="fixed top-20 right-4 z-50 bg-[rgb(var(--color-background))] rounded-lg shadow-lg border border-[rgb(var(--color-border))] px-3 py-2">
-			<div className="flex items-center gap-2 text-sm text-[rgb(var(--color-muted-foreground))]">
-				<div className="w-4 h-4 border-2 border-[rgb(var(--color-primary)/30%)] border-t-[rgb(var(--color-primary))] rounded-full animate-spin" />
-				<span>{text}</span>
-			</div>
-		</div>
-	);
+    return (
+        <div className="fixed top-20 right-4 z-50 bg-[rgb(var(--color-background))] rounded-lg shadow-lg border border-[rgb(var(--color-border))] px-3 py-2">
+            <div className="flex items-center gap-2 text-sm text-[rgb(var(--color-muted-foreground))]">
+                <div className="w-4 h-4 border-2 border-[rgb(var(--color-primary)/30%)] border-t-[rgb(var(--color-primary))] rounded-full animate-spin" />
+                <span>{text}</span>
+            </div>
+        </div>
+    );
 }

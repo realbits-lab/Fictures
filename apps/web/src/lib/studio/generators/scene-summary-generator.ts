@@ -10,16 +10,23 @@
  */
 
 import { textGenerationClient } from "./ai-client";
+import {
+    buildCharactersContext,
+    buildPartContext,
+    buildScenesContext,
+    buildSettingsContext,
+    buildStoryContext,
+} from "./context-builders";
 import { promptManager } from "./prompt-manager";
 import type {
     CyclePhase,
-    GenerateSceneSummaryParams,
-    GenerateSceneSummaryResult,
+    GeneratorSceneSummaryParams,
+    GeneratorSceneSummaryResult,
     SceneSummaryPromptParams,
 } from "./types";
 import {
-    type GeneratedSceneSummaryData,
-    GeneratedSceneSummarySchema,
+    type AiSceneSummaryType,
+    AiSceneSummaryZodSchema,
 } from "./zod-schemas.generated";
 
 /**
@@ -29,17 +36,20 @@ import {
  * @returns Scene summary data (caller responsible for database save)
  */
 export async function generateSceneSummary(
-    params: GenerateSceneSummaryParams,
-): Promise<GenerateSceneSummaryResult> {
+    params: GeneratorSceneSummaryParams,
+): Promise<GeneratorSceneSummaryResult> {
     const startTime = Date.now();
 
     // 1. Extract parameters
     const {
+        story,
+        part,
         chapter,
+        characters,
         settings,
         previousScenes,
         sceneIndex,
-    }: GenerateSceneSummaryParams = params;
+    }: GeneratorSceneSummaryParams = params;
 
     console.log(
         `[scene-summary-generator] 📄 Generating scene ${sceneIndex + 1} (Chapter: ${chapter.title})...`,
@@ -61,36 +71,36 @@ export async function generateSceneSummary(
 
     console.log(`[scene-summary-generator] Cycle phase: ${cyclePhase}`);
 
-    // 3. Build settings string
-    const settingsStr = settings
-        .map((s, idx) => `${idx + 1}. ${s.name}: ${s.summary}`)
-        .join("\n");
+    // 3. Build context strings using common builders
+    const storyContext: string = buildStoryContext(story);
+    const partContext: string = buildPartContext(part, characters);
+    const chapterContext: string = `Title: ${chapter.title || "Untitled Chapter"}
+Summary: ${chapter.summary || "N/A"}
+Arc Position: ${chapter.arcPosition || "N/A"}
+Adversity Type: ${chapter.adversityType || "N/A"}
+Virtue Type: ${chapter.virtueType || "N/A"}`;
+    const charactersStr: string = buildCharactersContext(characters);
+    const settingsStr: string = buildSettingsContext(settings);
 
-    // 4. Build previous scenes context string (FULL CONTEXT with FULL CONTENT)
-    const previousScenesContext: string =
-        previousScenes.length > 0
-            ? previousScenes
-                  .map((scene, idx) => {
-                      return `Scene ${idx + 1}: ${scene.title}
-Phase: ${scene.cyclePhase || "N/A"}
-Summary: ${scene.summary || "N/A"}
-Content: ${scene.content ? scene.content.substring(0, 500) : "Not yet generated"}...
-Emotional Beat: ${scene.emotionalBeat || "N/A"}`;
-                  })
-                  .join("\n\n")
-            : "None (this is the first scene)";
+    console.log(
+        `[scene-summary-generator] Context prepared: ${characters.length} characters, ${settings.length} settings`,
+    );
+
+    // 8. Build previous scenes context string using builder function
+    const previousScenesContext: string = buildScenesContext(previousScenes);
 
     console.log(
         `[scene-summary-generator] Previous scenes context prepared (${previousScenesContext.length} characters)`,
     );
 
-    // 5. Get the prompt template for scene summary generation
+    // 9. Get the prompt template for scene summary generation
     const promptParams: SceneSummaryPromptParams = {
         sceneNumber: String(sceneIndex + 1),
         sceneCount: String(5), // Standard 5 scenes per chapter
-        chapterTitle: chapter.title,
-        chapterSummary: chapter.summary ?? "Chapter summary not available",
-        cyclePhase,
+        story: storyContext,
+        part: partContext,
+        chapter: chapterContext,
+        characters: charactersStr,
         settings: settingsStr,
         previousScenesContext,
     };
@@ -109,10 +119,10 @@ Emotional Beat: ${scene.emotionalBeat || "N/A"}`;
     );
 
     // 6. Generate scene summary using structured output
-    const sceneData: GeneratedSceneSummaryData =
+    const sceneData: AiSceneSummaryType =
         await textGenerationClient.generateStructured(
             userPromptText,
-            GeneratedSceneSummarySchema,
+            AiSceneSummaryZodSchema,
             {
                 systemPrompt,
                 temperature: 0.8,

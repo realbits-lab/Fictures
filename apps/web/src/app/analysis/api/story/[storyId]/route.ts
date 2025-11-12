@@ -9,32 +9,45 @@ import { getStoryAnalytics } from "@/lib/services/analytics";
  * Used for the story detail analytics dashboard
  */
 export async function GET(
-	request: NextRequest,
-	{ params }: { params: Promise<{ storyId: string }> },
+    request: NextRequest,
+    { params }: { params: Promise<{ storyId: string }> },
 ) {
-	try {
-		const session = await auth();
-		if (!session?.user?.id) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
+    try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json(
+                { error: "Unauthorized" },
+                { status: 401 },
+            );
+        }
 
-		const { storyId } = await params;
-		const { searchParams } = new URL(request.url);
-		const range = (searchParams.get("range") || "30d") as "7d" | "30d" | "90d";
+        const { storyId } = await params;
+        const { searchParams } = new URL(request.url);
+        const range = (searchParams.get("range") || "30d") as
+            | "7d"
+            | "30d"
+            | "90d";
 
-		const analytics = await getStoryAnalytics(storyId, session.user.id, range);
+        const analytics = await getStoryAnalytics(
+            storyId,
+            session.user.id,
+            range,
+        );
 
-		return NextResponse.json(analytics);
-	} catch (error) {
-		console.error("Failed to fetch story analytics:", error);
+        return NextResponse.json(analytics);
+    } catch (error) {
+        console.error("Failed to fetch story analytics:", error);
 
-		if (error instanceof Error && error.message === "Story not found") {
-			return NextResponse.json({ error: "Story not found" }, { status: 404 });
-		}
+        if (error instanceof Error && error.message === "Story not found") {
+            return NextResponse.json(
+                { error: "Story not found" },
+                { status: 404 },
+            );
+        }
 
-		return NextResponse.json(
-			{ error: "Failed to fetch analytics" },
-			{ status: 500 },
-		);
-	}
+        return NextResponse.json(
+            { error: "Failed to fetch analytics" },
+            { status: 500 },
+        );
+    }
 }

@@ -16,9 +16,9 @@ import { characters, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { characterService } from "@/lib/studio/services";
 import type {
-    GenerateCharactersErrorResponse,
-    GenerateCharactersRequest,
-    GenerateCharactersResponse,
+    ApiCharactersErrorResponse,
+    ApiCharactersRequest,
+    ApiCharactersResponse,
 } from "../types";
 import { generateCharactersSchema } from "../validation-schemas";
 
@@ -151,8 +151,8 @@ export async function POST(request: NextRequest) {
         });
 
         // 3. Parse and validate request body with type safety
-        const body: GenerateCharactersRequest =
-            (await request.json()) as GenerateCharactersRequest;
+        const body: ApiCharactersRequest =
+            (await request.json()) as ApiCharactersRequest;
         const validatedData: z.infer<typeof generateCharactersSchema> =
             generateCharactersSchema.parse(body);
 
@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
         // 6. Return typed response
-        const response: GenerateCharactersResponse = {
+        const response: ApiCharactersResponse = {
             success: true,
             characters: serviceResult.characters,
             metadata: {
@@ -203,14 +203,14 @@ export async function POST(request: NextRequest) {
         console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
         if (error instanceof z.ZodError) {
-            const errorResponse: GenerateCharactersErrorResponse = {
+            const errorResponse: ApiCharactersErrorResponse = {
                 error: "Invalid input",
                 details: error.issues,
             };
             return NextResponse.json(errorResponse, { status: 400 });
         }
 
-        const errorResponse: GenerateCharactersErrorResponse = {
+        const errorResponse: ApiCharactersErrorResponse = {
             error: "Failed to generate and save characters",
             details: error instanceof Error ? error.message : "Unknown error",
         };

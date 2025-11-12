@@ -329,6 +329,7 @@ Playwright tests use **direct email/password authentication** via the `/login` p
 - **Authentication**: NextAuth.js v5 with Google OAuth and email/password
 - **AI Integration**:
   - **ai-server**: Python FastAPI service for AI text and image generation (port 8000)
+  - **Separate servers**: Supports dedicated servers for image and text generation
   - Google Gemini 2.5 Flash & Flash Lite via Vercel AI SDK (text generation)
   - Google Gemini 2.5 Flash (image generation - 7:4 aspect ratio, 1344×768)
   - Direct provider API integration (no AI SDK Gateway)
@@ -442,8 +443,21 @@ src/
 # =============================================================================
 # AI Server Configuration
 # =============================================================================
-AI_SERVER_TIMEOUT="120000"
-AI_SERVER_URL="http://localhost:8000"
+
+# Image Generation AI Server
+AI_SERVER_IMAGE_URL="http://localhost:8000"
+AI_SERVER_IMAGE_TIMEOUT="120000"
+
+# Text Generation AI Server
+AI_SERVER_TEXT_URL="http://localhost:8000"
+AI_SERVER_TEXT_TIMEOUT="120000"
+
+# ComfyUI Configuration for AI Server (optional - used by ai-server for image generation)
+AI_SERVER_COMFYUI_URL="http://127.0.0.1:8188"
+
+# AI Server Generation Mode (optional - used by ai-server to control generation behavior)
+# Options: "image" | "text" | "both"
+AI_SERVER_GENERATION_MODE="image"
 
 # =============================================================================
 # Authentication
@@ -472,13 +486,6 @@ DATABASE_URL_UNPOOLED="postgresql://user:password@host.region.aws.neon.tech:5432
 # =============================================================================
 # Vercel Blob Storage
 BLOB_READ_WRITE_TOKEN="vercel_blob_rw_your-token-here"
-
-# =============================================================================
-# ComfyUI Configuration (Image Generation)
-# =============================================================================
-# ComfyUI server URL (external image generation server)
-# Install ComfyUI at ~/.local/comfyui and run separately
-COMFYUI_URL="http://127.0.0.1:8188"
 
 # =============================================================================
 # Gemini Model Configuration
@@ -520,6 +527,47 @@ VERCEL_OIDC_TOKEN="auto-generated-by-vercel-cli"
 - **DATABASE_URL**: Pooled connection (with `-pooler` in hostname) - Use for application runtime
 - **DATABASE_URL_UNPOOLED**: Direct connection (no `-pooler`) - Required for Drizzle migrations
 - Both connections point to the same database, only the connection method differs
+
+**AI Server Configuration Details:**
+
+The platform supports flexible AI server configuration with separate servers for image and text generation:
+
+**Required Environment Variables:**
+- `AI_SERVER_IMAGE_URL` - Dedicated server for image generation (required)
+- `AI_SERVER_IMAGE_TIMEOUT` - Image generation timeout in ms (default: 120000)
+- `AI_SERVER_TEXT_URL` - Dedicated server for text generation (required)
+- `AI_SERVER_TEXT_TIMEOUT` - Text generation timeout in ms (default: 120000)
+- `AI_SERVER_COMFYUI_URL` - ComfyUI server URL (used by ai-server, optional)
+- `AI_SERVER_GENERATION_MODE` - Generation mode: "image" | "text" | "both" (used by ai-server, optional)
+
+**Configuration Approach:**
+
+The platform uses **explicit configuration** with separate URLs for image and text generation. This provides:
+- Clear separation of concerns
+- Independent scaling of image and text servers
+- No ambiguity about which server handles which task
+
+**Example Configurations:**
+
+```bash
+# Configuration 1: Separate servers for image and text (recommended for production)
+AI_SERVER_IMAGE_URL="http://image-server.example.com:8000"
+AI_SERVER_IMAGE_TIMEOUT="120000"
+AI_SERVER_TEXT_URL="http://text-server.example.com:8001"
+AI_SERVER_TEXT_TIMEOUT="120000"
+
+# Configuration 2: Same server for both (simpler for development)
+AI_SERVER_IMAGE_URL="http://localhost:8000"
+AI_SERVER_IMAGE_TIMEOUT="120000"
+AI_SERVER_TEXT_URL="http://localhost:8000"
+AI_SERVER_TEXT_TIMEOUT="120000"
+
+# Configuration 3: With ComfyUI integration
+AI_SERVER_IMAGE_URL="http://localhost:8000"
+AI_SERVER_TEXT_URL="http://localhost:8000"
+AI_SERVER_COMFYUI_URL="http://127.0.0.1:8188"
+AI_SERVER_GENERATION_MODE="both"
+```
 
 ## Authentication System
 

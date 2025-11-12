@@ -2,19 +2,22 @@
  * Auto-generated JSON Schemas from Zod schemas
  * DO NOT EDIT MANUALLY
  *
- * Flow: Drizzle schema.ts → drizzle-zod → Zod schemas → z.toJSONSchema() → JSON schemas
+ * Type Naming Convention:
+ * - AI Layer (SSOT): Ai{Entity}ZodSchema → z.toJSONSchema → Ai{Entity}JsonSchema
+ *
+ * SSOT Flow: AiStoryZodSchema (Zod) → z.toJSONSchema → AiStoryJsonSchema (JSON Schema)
  *
  * These JSON schemas are used for Gemini's structured output API.
  */
 
 import { z } from "zod";
 import {
-    GeneratedChapterSchema,
-    GeneratedCharacterSchema,
-    GeneratedPartSchema,
-    GeneratedSceneSummarySchema,
-    GeneratedSettingSchema,
-    GeneratedStorySchema,
+    AiChapterZodSchema,
+    AiCharacterZodSchema,
+    AiPartZodSchema,
+    AiSceneSummaryZodSchema,
+    AiSettingZodSchema,
+    AiStoryZodSchema,
 } from "./zod-schemas.generated";
 
 /**
@@ -65,7 +68,7 @@ const toGeminiJsonSchema = (zodSchema: z.ZodType) => {
  * JSON Schema for Story generation (Gemini structured output)
  * Uses minimal schema to avoid Gemini validation issues with complex fields
  */
-export const StoryJsonSchema = toGeminiJsonSchema(GeneratedStorySchema);
+export const AiStoryJsonSchema = toGeminiJsonSchema(AiStoryZodSchema);
 
 // ============================================================================
 // Character JSON Schema
@@ -75,7 +78,7 @@ export const StoryJsonSchema = toGeminiJsonSchema(GeneratedStorySchema);
  * JSON Schema for Character generation (Gemini structured output)
  * Uses GeneratedCharacterSchema to avoid Gemini validation issues with DB-specific fields
  */
-export const CharacterJsonSchema = toGeminiJsonSchema(GeneratedCharacterSchema);
+export const AiCharacterJsonSchema = toGeminiJsonSchema(AiCharacterZodSchema);
 
 // ============================================================================
 // Setting JSON Schema
@@ -85,7 +88,7 @@ export const CharacterJsonSchema = toGeminiJsonSchema(GeneratedCharacterSchema);
  * JSON Schema for Setting generation (Gemini structured output)
  * Uses GeneratedSettingSchema to avoid Gemini validation issues with DB-specific fields
  */
-export const SettingJsonSchema = toGeminiJsonSchema(GeneratedSettingSchema);
+export const AiSettingJsonSchema = toGeminiJsonSchema(AiSettingZodSchema);
 
 // ============================================================================
 // Part JSON Schema
@@ -95,7 +98,7 @@ export const SettingJsonSchema = toGeminiJsonSchema(GeneratedSettingSchema);
  * JSON Schema for Part generation (Gemini structured output)
  * Uses GeneratedPartSchema to avoid Gemini validation issues with DB-specific fields
  */
-export const PartJsonSchema = toGeminiJsonSchema(GeneratedPartSchema);
+export const AiPartJsonSchema = toGeminiJsonSchema(AiPartZodSchema);
 
 // ============================================================================
 // Chapter JSON Schema
@@ -105,7 +108,7 @@ export const PartJsonSchema = toGeminiJsonSchema(GeneratedPartSchema);
  * JSON Schema for Chapter generation (Gemini structured output)
  * Uses GeneratedChapterSchema to avoid Gemini validation issues with DB-specific fields
  */
-export const ChapterJsonSchema = toGeminiJsonSchema(GeneratedChapterSchema);
+export const AiChapterJsonSchema = toGeminiJsonSchema(AiChapterZodSchema);
 
 // ============================================================================
 // Scene JSON Schema
@@ -113,10 +116,10 @@ export const ChapterJsonSchema = toGeminiJsonSchema(GeneratedChapterSchema);
 
 /**
  * JSON Schema for Scene Summary generation (Gemini structured output)
- * Uses GeneratedSceneSummarySchema to avoid Gemini validation issues with DB-specific fields
+ * Uses AiSceneSummaryZodSchema to avoid Gemini validation issues with DB-specific fields
  */
-export const SceneSummaryJsonSchema = toGeminiJsonSchema(
-    GeneratedSceneSummarySchema,
+export const AiSceneSummaryJsonSchema = toGeminiJsonSchema(
+    AiSceneSummaryZodSchema,
 );
 
 // ============================================================================
@@ -124,10 +127,10 @@ export const SceneSummaryJsonSchema = toGeminiJsonSchema(
 // ============================================================================
 
 export const jsonSchemas = {
-    story: StoryJsonSchema,
-    character: CharacterJsonSchema,
-    setting: SettingJsonSchema,
-    part: PartJsonSchema,
-    chapter: ChapterJsonSchema,
-    scene: SceneSummaryJsonSchema,
+    story: AiStoryJsonSchema,
+    character: AiCharacterJsonSchema,
+    setting: AiSettingJsonSchema,
+    part: AiPartJsonSchema,
+    chapter: AiChapterJsonSchema,
+    scene: AiSceneSummaryJsonSchema,
 } as const;

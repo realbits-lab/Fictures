@@ -34,18 +34,18 @@ import { useAuthModal } from "@/contexts/AuthModalContext";
  * );
  */
 export function useProtectedAction(action: () => void, redirectTo?: string) {
-	const { data: session } = useSession();
-	const { requireAuth } = useAuthModal();
+    const { data: session } = useSession();
+    const { requireAuth } = useAuthModal();
 
-	const executeAction = () => {
-		requireAuth(action, redirectTo);
-	};
+    const executeAction = () => {
+        requireAuth(action, redirectTo);
+    };
 
-	return {
-		executeAction,
-		requiresAuth: !session,
-		isAuthenticated: !!session,
-	};
+    return {
+        executeAction,
+        requiresAuth: !session,
+        isAuthenticated: !!session,
+    };
 }
 
 /**
@@ -57,36 +57,36 @@ export function useProtectedAction(action: () => void, redirectTo?: string) {
  * }, ['writer', 'manager'], '/stories');
  */
 export function useRoleProtectedAction(
-	action: () => void,
-	requiredRoles: string[],
-	redirectTo?: string,
+    action: () => void,
+    requiredRoles: string[],
+    redirectTo?: string,
 ) {
-	const { data: session } = useSession();
-	const { requireAuth } = useAuthModal();
+    const { data: session } = useSession();
+    const { requireAuth } = useAuthModal();
 
-	const hasRequiredRole =
-		session?.user?.role && requiredRoles.includes(session.user.role);
+    const hasRequiredRole =
+        session?.user?.role && requiredRoles.includes(session.user.role);
 
-	const executeAction = () => {
-		if (!session) {
-			// Not authenticated - show login modal
-			requireAuth(action, redirectTo);
-		} else if (!hasRequiredRole) {
-			// Authenticated but doesn't have required role
-			alert(
-				`This action requires one of the following roles: ${requiredRoles.join(", ")}`,
-			);
-		} else {
-			// Authenticated and has required role
-			action();
-		}
-	};
+    const executeAction = () => {
+        if (!session) {
+            // Not authenticated - show login modal
+            requireAuth(action, redirectTo);
+        } else if (!hasRequiredRole) {
+            // Authenticated but doesn't have required role
+            alert(
+                `This action requires one of the following roles: ${requiredRoles.join(", ")}`,
+            );
+        } else {
+            // Authenticated and has required role
+            action();
+        }
+    };
 
-	return {
-		executeAction,
-		requiresAuth: !session,
-		requiresRole: session && !hasRequiredRole,
-		isAuthorized: !!hasRequiredRole,
-		userRole: session?.user?.role,
-	};
+    return {
+        executeAction,
+        requiresAuth: !session,
+        requiresRole: session && !hasRequiredRole,
+        isAuthorized: !!hasRequiredRole,
+        userRole: session?.user?.role,
+    };
 }

@@ -9,15 +9,16 @@
  */
 
 import { textGenerationClient } from "./ai-client";
+import { buildStoryContext } from "./context-builders";
 import { promptManager } from "./prompt-manager";
 import type {
-    GenerateSettingsParams,
-    GenerateSettingsResult,
+    GeneratorSettingsParams,
+    GeneratorSettingsResult,
     SettingPromptParams,
 } from "./types";
 import {
-    type GeneratedSettingData,
-    GeneratedSettingSchema,
+    type AiSettingType,
+    AiSettingZodSchema,
 } from "./zod-schemas.generated";
 
 /**
@@ -27,34 +28,35 @@ import {
  * @returns Settings data (caller responsible for database save)
  */
 export async function generateSettings(
-    params: GenerateSettingsParams,
-): Promise<GenerateSettingsResult> {
+    params: GeneratorSettingsParams,
+): Promise<GeneratorSettingsResult> {
     const startTime: number = Date.now();
 
     // 1. Extract and set default parameters
-    const { story, settingCount, onProgress }: GenerateSettingsParams = params;
+    const { story, settingCount, onProgress }: GeneratorSettingsParams = params;
 
-    const settings: GeneratedSettingData[] = [];
+    const settings: AiSettingType[] = [];
 
-    // 2. Generate each setting in sequence
+    // 2. Build story context once (used for all settings)
+    const storyContext: string = buildStoryContext(story);
+    console.log("[settings-generator] Story context prepared");
+
+    // 3. Generate each setting in sequence
     for (let i = 0; i < settingCount; i++) {
         console.log(
             `[settings-generator] 🏰 Generating setting ${i + 1}/${settingCount}...`,
         );
 
-        // 3. Report progress callback if provided
+        // 4. Report progress callback if provided
         if (onProgress) {
             onProgress(i + 1, settingCount);
         }
 
-        // 4. Get the prompt template for setting generation
+        // 5. Get the prompt template for setting generation
         const promptParams: SettingPromptParams = {
             settingNumber: String(i + 1),
             settingCount: String(settingCount),
-            storyTitle: story.title,
-            storyGenre: story.genre ?? "General Fiction",
-            storySummary: story.summary ?? "A story of adversity and triumph",
-            moralFramework: story.moralFramework ?? "Universal human virtues",
+            story: storyContext,
         };
 
         const {
@@ -70,11 +72,11 @@ export async function generateSettings(
             `[settings-generator] Generating setting ${i + 1} using structured output`,
         );
 
-        // 5. Generate setting using structured output
-        const settingData: GeneratedSettingData =
+        // 6. Generate setting using structured output
+        const settingData: AiSettingType =
             await textGenerationClient.generateStructured(
                 userPromptText,
-                GeneratedSettingSchema,
+                AiSettingZodSchema,
                 {
                     systemPrompt,
                     temperature: 0.85,
@@ -94,7 +96,7 @@ export async function generateSettings(
         );
     }
 
-    // 6. Calculate total generation time
+    // 7. Calculate total generation time
     const totalTime: number = Date.now() - startTime;
 
     console.log(
@@ -105,8 +107,8 @@ export async function generateSettings(
         },
     );
 
-    // 7. Build and return result with metadata
-    const result: GenerateSettingsResult = {
+    // 8. Build and return result with metadata
+    const result: GeneratorSettingsResult = {
         settings,
         metadata: {
             totalGenerated: settings.length,

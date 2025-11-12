@@ -2,7 +2,11 @@
  * Auto-generated Zod schemas from Drizzle ORM
  * DO NOT EDIT MANUALLY - Source of truth: src/lib/db/schema.ts
  *
- * Flow: Drizzle schema.ts → drizzle-zod → Zod schemas → TypeScript types
+ * Type Naming Convention:
+ * - AI Layer (SSOT): Ai{Entity}ZodSchema → z.infer → Ai{Entity}Type
+ * - Database Layer: insert{Entity}Schema, select{Entity}Schema, {Entity}, Insert{Entity}
+ *
+ * SSOT Flow: AiStoryZodSchema (Zod) → z.infer → AiStoryType (TypeScript)
  */
 
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
@@ -56,8 +60,10 @@ export type InsertStory = z.infer<typeof insertStorySchema>;
  * Minimal schema for story generation (only fields AI generates)
  * Manually defined to avoid Gemini JSON schema validation issues with complex fields
  * Fields must match insertStorySchema but without database-specific fields
+ *
+ * SSOT: Zod Schema (AI Layer)
  */
-export const GeneratedStorySchema = z.object({
+export const AiStoryZodSchema = z.object({
     title: z
         .string()
         .max(255)
@@ -85,9 +91,9 @@ export const GeneratedStorySchema = z.object({
 });
 
 /**
- * TypeScript type for generated story data (AI output)
+ * TypeScript type for AI-generated story data (derived from Zod schema)
  */
-export type GeneratedStoryData = z.infer<typeof GeneratedStorySchema>;
+export type AiStoryType = z.infer<typeof AiStoryZodSchema>;
 
 // ============================================================================
 // Character Schemas
@@ -190,8 +196,10 @@ export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
  * Minimal schema for character generation (only fields AI generates)
  * Manually defined to avoid Gemini JSON schema validation issues with complex fields
  * Fields must match insertCharacterSchema but without database-specific fields
+ *
+ * SSOT: Zod Schema (AI Layer)
  */
-export const GeneratedCharacterSchema = z.object({
+export const AiCharacterZodSchema = z.object({
     name: z
         .string()
         .max(255)
@@ -240,9 +248,9 @@ export const GeneratedCharacterSchema = z.object({
 });
 
 /**
- * TypeScript type for generated character data (AI output)
+ * TypeScript type for AI-generated character data (derived from Zod schema)
  */
-export type GeneratedCharacterData = z.infer<typeof GeneratedCharacterSchema>;
+export type AiCharacterType = z.infer<typeof AiCharacterZodSchema>;
 
 // ============================================================================
 // Setting Schemas
@@ -364,7 +372,7 @@ export type InsertSetting = z.infer<typeof insertSettingSchema>;
  * Manually defined to avoid Gemini JSON schema validation issues with complex fields
  * Fields must match insertSettingSchema but without database-specific fields
  */
-export const GeneratedSettingSchema = z.object({
+export const AiSettingZodSchema = z.object({
     name: z
         .string()
         .max(255)
@@ -420,7 +428,7 @@ export const GeneratedSettingSchema = z.object({
 /**
  * TypeScript type for generated setting data (AI output)
  */
-export type GeneratedSettingData = z.infer<typeof GeneratedSettingSchema>;
+export type AiSettingType = z.infer<typeof AiSettingZodSchema>;
 
 // ============================================================================
 // Part Schemas
@@ -464,16 +472,20 @@ const characterArcSchema = z.object({
         .describe(
             "New challenges or complications that arise from the consequences",
         ),
+    // Optional planning fields (not used in incremental generation)
     estimatedChapters: z
         .number()
+        .optional()
         .describe("Expected number of chapters to develop this character arc"),
     arcPosition: z
         .enum(CHARACTER_ARC_POSITIONS)
+        .optional()
         .describe(
             "Priority level of this character arc - primary (main focus) or secondary (supporting)",
         ),
     progressionStrategy: z
         .string()
+        .optional()
         .describe(
             "Plan for how the character's development will unfold across chapters",
         ),
@@ -506,7 +518,7 @@ export type InsertPart = z.infer<typeof insertPartSchema>;
  * Manually defined to avoid Gemini JSON schema validation issues with complex fields
  * Fields must match insertPartSchema but without database-specific fields
  */
-export const GeneratedPartSchema = z.object({
+export const AiPartZodSchema = z.object({
     title: z
         .string()
         .max(255)
@@ -528,7 +540,7 @@ export const GeneratedPartSchema = z.object({
 /**
  * TypeScript type for generated part data (AI output)
  */
-export type GeneratedPartData = z.infer<typeof GeneratedPartSchema>;
+export type AiPartType = z.infer<typeof AiPartZodSchema>;
 
 // ============================================================================
 // Chapter Schemas
@@ -613,7 +625,7 @@ export type InsertChapter = z.infer<typeof insertChapterSchema>;
  * Manually defined to avoid Gemini JSON schema validation issues with complex fields
  * Fields must match insertChapterSchema but without database-specific fields
  */
-export const GeneratedChapterSchema = z.object({
+export const AiChapterZodSchema = z.object({
     title: z
         .string()
         .max(255)
@@ -671,7 +683,7 @@ export const GeneratedChapterSchema = z.object({
 /**
  * TypeScript type for generated chapter data (AI output)
  */
-export type GeneratedChapterData = z.infer<typeof GeneratedChapterSchema>;
+export type AiChapterType = z.infer<typeof AiChapterZodSchema>;
 
 // ============================================================================
 // Scene Schemas
@@ -720,7 +732,7 @@ export type InsertScene = z.infer<typeof insertSceneSchema>;
  * Manually defined to avoid Gemini JSON schema validation issues with complex fields
  * Fields must match insertSceneSchema but without database-specific fields
  */
-export const GeneratedSceneSummarySchema = z.object({
+export const AiSceneSummaryZodSchema = z.object({
     title: z
         .string()
         .max(255)
@@ -770,9 +782,7 @@ export const GeneratedSceneSummarySchema = z.object({
 /**
  * TypeScript type for generated scene summary data (AI output)
  */
-export type GeneratedSceneSummaryData = z.infer<
-    typeof GeneratedSceneSummarySchema
->;
+export type AiSceneSummaryType = z.infer<typeof AiSceneSummaryZodSchema>;
 
 // ============================================================================
 // Scene Evaluation Schemas
@@ -785,7 +795,7 @@ export type GeneratedSceneSummaryData = z.infer<
  * Based on "Architectonics of Engagement" framework for scene quality assessment
  * Scoring Scale: 1 (Nascent) → 2 (Developing) → 3 (Effective/PASSING) → 4 (Exemplary)
  */
-export const GeneratedSceneEvaluationSchema = z.object({
+export const AiSceneEvaluationZodSchema = z.object({
     plot: z
         .number()
         .min(1)
@@ -843,9 +853,7 @@ export const GeneratedSceneEvaluationSchema = z.object({
 /**
  * TypeScript type for scene evaluation data (AI output)
  */
-export type GeneratedSceneEvaluationData = z.infer<
-    typeof GeneratedSceneEvaluationSchema
->;
+export type AiSceneEvaluationType = z.infer<typeof AiSceneEvaluationZodSchema>;
 
 // ============================================================================
 // Re-export for convenience

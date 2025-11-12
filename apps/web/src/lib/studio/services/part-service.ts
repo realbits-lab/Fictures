@@ -9,25 +9,26 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { characters, parts, stories } from "@/lib/db/schema";
+import { characters, parts, settings, stories } from "@/lib/db/schema";
 import { generatePart } from "../generators/part-generator";
 import type {
-    GeneratePartParams,
-    GeneratePartResult,
+    GeneratorPartParams,
+    GeneratorPartResult,
 } from "../generators/types";
 import {
     type Character,
     insertPartSchema,
     type Part,
+    type Setting,
     type Story,
 } from "../generators/zod-schemas.generated";
 
-export interface GeneratePartServiceParams {
+export interface ServicePartParams {
     storyId: string;
     userId: string;
 }
 
-export interface GeneratePartServiceResult {
+export interface ServicePartResult {
     part: Part;
     metadata: {
         generationTime: number;
@@ -44,8 +45,8 @@ export class PartService {
      * for generating the next part in sequence.
      */
     async generateAndSave(
-        params: GeneratePartServiceParams,
-    ): Promise<GeneratePartServiceResult> {
+        params: ServicePartParams,
+    ): Promise<ServicePartResult> {
         const { storyId, userId } = params;
 
         console.log(
@@ -83,7 +84,17 @@ export class PartService {
             );
         }
 
-        // 4. Fetch ALL previous parts for this story (FULL CONTEXT)
+        // 4. Fetch settings for the story
+        const storySettings: Setting[] = (await db
+            .select()
+            .from(settings)
+            .where(eq(settings.storyId, storyId))) as Setting[];
+
+        if (storySettings.length === 0) {
+            throw new Error("Story must have settings before generating parts");
+        }
+
+        // 5. Fetch ALL previous parts for this story (FULL CONTEXT)
         const previousParts: Part[] = (await db
             .select()
             .from(parts)
@@ -97,18 +108,19 @@ export class PartService {
         );
         console.log(`[part-service] Generating part ${nextPartIndex + 1}...`);
 
-        // 5. Generate next part using singular generator with full context
-        const generateParams: GeneratePartParams = {
+        // 6. Generate next part using singular generator with full context
+        const generateParams: GeneratorPartParams = {
             story,
             characters: storyCharacters,
+            settings: storySettings,
             previousParts,
             partIndex: nextPartIndex,
         };
 
-        const generationResult: GeneratePartResult =
+        const generationResult: GeneratorPartResult =
             await generatePart(generateParams);
 
-        // 6. Save part to database
+        // 7. Save part to database
         const now: string = new Date().toISOString();
         const partId: string = `part_${nanoid(16)}`;
 
@@ -135,7 +147,7 @@ export class PartService {
             orderIndex: savedPart.orderIndex,
         });
 
-        // 7. Return result
+        // 8. Return result
         return {
             part: savedPart,
             metadata: {

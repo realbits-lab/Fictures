@@ -9,10 +9,13 @@
  */
 
 import { textGenerationClient } from "./ai-client";
-import type { EvaluateSceneParams, EvaluateSceneResult } from "./types";
+import type {
+    GeneratorSceneEvaluationParams,
+    GeneratorSceneEvaluationResult,
+} from "./types";
 import {
-    type GeneratedSceneEvaluationData,
-    GeneratedSceneEvaluationSchema,
+    type AiSceneEvaluationType,
+    AiSceneEvaluationZodSchema,
 } from "./zod-schemas.generated";
 
 /**
@@ -22,8 +25,8 @@ import {
  * @returns Evaluated and improved scene content
  */
 export async function evaluateScene(
-    params: EvaluateSceneParams,
-): Promise<EvaluateSceneResult> {
+    params: GeneratorSceneEvaluationParams,
+): Promise<GeneratorSceneEvaluationResult> {
     const startTime = Date.now();
     const { content, story, maxIterations = 2 } = params;
 
@@ -33,7 +36,7 @@ export async function evaluateScene(
     let improved = false;
 
     // Initialize evaluation categories based on "Architectonics of Engagement"
-    type EvaluationCategories = EvaluateSceneResult["categories"];
+    type EvaluationCategories = GeneratorSceneEvaluationResult["categories"];
 
     const categories: EvaluationCategories = {
         plot: 0,
@@ -78,10 +81,10 @@ Return as JSON:
 }`;
 
         // Generate structured evaluation
-        const evaluation: GeneratedSceneEvaluationData =
+        const evaluation: AiSceneEvaluationType =
             await textGenerationClient.generateStructured(
                 evaluationPrompt,
-                GeneratedSceneEvaluationSchema,
+                AiSceneEvaluationZodSchema,
                 {
                     temperature: 0.3,
                     maxTokens: 2048,

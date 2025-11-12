@@ -33,62 +33,63 @@ export const experimental_ppr = true;
 // ⚡ Strategy 2: Streaming SSR with Suspense Boundaries
 // Server Component for data fetching
 async function CommunityContent() {
-	const ssrStart = performance.now();
-	console.log("\n🏘️ [SSR] Community page rendering started");
+    const ssrStart = performance.now();
+    console.log("\n🏘️ [SSR] Community page rendering started");
 
-	try {
-		// Fetch community stories with Redis caching
-		// This uses optimized queries with Promise.all and field selection
-		const stories = await getCommunityStoriesOptimized();
+    try {
+        // Fetch community stories with Redis caching
+        // This uses optimized queries with Promise.all and field selection
+        const stories = await getCommunityStoriesOptimized();
 
-		const ssrEnd = performance.now();
-		const ssrDuration = Math.round(ssrEnd - ssrStart);
-		console.log(`✅ [SSR] Community data fetched in ${ssrDuration}ms`);
-		console.log(`📊 [SSR] Stories count: ${stories.length}`);
+        const ssrEnd = performance.now();
+        const ssrDuration = Math.round(ssrEnd - ssrStart);
+        console.log(`✅ [SSR] Community data fetched in ${ssrDuration}ms`);
+        console.log(`📊 [SSR] Stories count: ${stories.length}`);
 
-		// Pass SSR data to client component as initial fallback
-		return <CommunityContentClient initialStories={stories} />;
-	} catch (error) {
-		const errorDuration = Math.round(performance.now() - ssrStart);
-		console.error(
-			`❌ [SSR] Community data fetch failed after ${errorDuration}ms:`,
-			error,
-		);
+        // Pass SSR data to client component as initial fallback
+        return <CommunityContentClient initialStories={stories} />;
+    } catch (error) {
+        const errorDuration = Math.round(performance.now() - ssrStart);
+        console.error(
+            `❌ [SSR] Community data fetch failed after ${errorDuration}ms:`,
+            error,
+        );
 
-		// Return empty state on error - client will handle error display
-		return <CommunityContentClient initialStories={[]} />;
-	}
+        // Return empty state on error - client will handle error display
+        return <CommunityContentClient initialStories={[]} />;
+    }
 }
 
 // Main page component
 export default function CommunityPage() {
-	console.log("📄 [SSR] Community page component rendering");
+    console.log("📄 [SSR] Community page component rendering");
 
-	return (
-		<MainLayout>
-			<div className="space-y-8">
-				{/* Page Header - Static, no data fetching */}
-				<div className="text-center">
-					<div className="flex items-center justify-center gap-3 mb-4">
-						<h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-							<span>💬</span>
-							Community Hub
-						</h1>
-					</div>
-					<p className="text-xl text-gray-600 dark:text-gray-400 mb-2">
-						Connect with readers and fellow writers through story discussions
-					</p>
-					<p className="text-sm text-gray-500 dark:text-gray-500">
-						Choose a story below to join the conversation • No login required to
-						read • Sign in to participate
-					</p>
-				</div>
+    return (
+        <MainLayout>
+            <div className="space-y-8">
+                {/* Page Header - Static, no data fetching */}
+                <div className="text-center">
+                    <div className="flex items-center justify-center gap-3 mb-4">
+                        <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+                            <span>💬</span>
+                            Community Hub
+                        </h1>
+                    </div>
+                    <p className="text-xl text-gray-600 dark:text-gray-400 mb-2">
+                        Connect with readers and fellow writers through story
+                        discussions
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-500">
+                        Choose a story below to join the conversation • No login
+                        required to read • Sign in to participate
+                    </p>
+                </div>
 
-				{/* Progressive content streaming with Suspense */}
-				<Suspense fallback={<CommunityPageSkeleton />}>
-					<CommunityContent />
-				</Suspense>
-			</div>
-		</MainLayout>
-	);
+                {/* Progressive content streaming with Suspense */}
+                <Suspense fallback={<CommunityPageSkeleton />}>
+                    <CommunityContent />
+                </Suspense>
+            </div>
+        </MainLayout>
+    );
 }

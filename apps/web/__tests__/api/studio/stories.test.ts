@@ -8,17 +8,19 @@
  */
 
 import type {
-    GenerateChapterRequest,
-    GenerateChapterResponse,
-    GenerateCharactersRequest,
-    GenerateCharactersResponse,
-    GeneratePartRequest,
-    GeneratePartResponse,
-    GenerateSceneSummaryRequest,
-    GenerateSceneSummaryResponse,
-    GenerateStoryErrorResponse,
-    GenerateStoryRequest,
-    GenerateStoryResponse,
+    ApiChapterRequest,
+    ApiChapterResponse,
+    ApiCharactersRequest,
+    ApiCharactersResponse,
+    ApiPartRequest,
+    ApiPartResponse,
+    ApiSceneSummaryRequest,
+    ApiSceneSummaryResponse,
+    ApiSettingsRequest,
+    ApiSettingsResponse,
+    ApiStoryErrorResponse,
+    ApiStoryRequest,
+    ApiStoryResponse,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
@@ -28,7 +30,7 @@ const apiKey: string = loadWriterAuth();
 describe("Story Generation API", () => {
     it("should generate and save story via POST /studio/api/stories", async () => {
         // 1. Prepare request body with proper TypeScript type
-        const requestBody: GenerateStoryRequest = {
+        const requestBody: ApiStoryRequest = {
             userPrompt: "A short story about a brave knight on a quest",
             language: "English",
             preferredGenre: "Fantasy",
@@ -49,7 +51,7 @@ describe("Story Generation API", () => {
         );
 
         // 3. Parse response data with proper typing
-        const data: GenerateStoryResponse | GenerateStoryErrorResponse =
+        const data: ApiStoryResponse | ApiStoryErrorResponse =
             await response.json();
 
         // 4. Log error if request failed
@@ -63,11 +65,11 @@ describe("Story Generation API", () => {
 
         // 6. Type guard to ensure we have success response
         if (!("success" in data) || !data.success) {
-            throw new Error("Expected GenerateStoryResponse but got error");
+            throw new Error("Expected ApiStoryResponse but got error");
         }
 
         // 7. Cast to success response type
-        const successData = data as GenerateStoryResponse;
+        const successData = data as ApiStoryResponse;
 
         // ============================================================================
         // 8. Verify ALL top-level response structure
@@ -79,8 +81,7 @@ describe("Story Generation API", () => {
         // ============================================================================
         // 9. Verify ALL story object attributes (15 total fields from Story type)
         // ============================================================================
-        const { story }: { story: GenerateStoryResponse["story"] } =
-            successData;
+        const { story }: { story: ApiStoryResponse["story"] } = successData;
 
         // 10. Identity fields (id, authorId, title)
         expect(story.id).toBeDefined();
@@ -152,9 +153,9 @@ describe("Story Generation API", () => {
         expect(typeof story.updatedAt).toBe("string");
 
         // ============================================================================
-        // Verify ALL metadata attributes (as defined in GenerateStoryResponse)
+        // Verify ALL metadata attributes (as defined in ApiStoryResponse)
         // ============================================================================
-        const { metadata }: { metadata: GenerateStoryResponse["metadata"] } =
+        const { metadata }: { metadata: ApiStoryResponse["metadata"] } =
             successData;
 
         expect(metadata.generationTime).toBeDefined();
@@ -200,7 +201,7 @@ describe("Story Generation API", () => {
         // STEP 1: Generate Story
         // ====================================================================
         console.log("📖 Step 1/5: Generating story...");
-        const storyRequestBody: GenerateStoryRequest = {
+        const storyRequestBody: ApiStoryRequest = {
             userPrompt:
                 "An epic fantasy adventure about a hero's journey to save their kingdom",
             language: "English",
@@ -220,7 +221,7 @@ describe("Story Generation API", () => {
             },
         );
 
-        const storyData: GenerateStoryResponse | GenerateStoryErrorResponse =
+        const storyData: ApiStoryResponse | ApiStoryErrorResponse =
             await storyResponse.json();
 
         if (!storyResponse.ok) {
@@ -231,7 +232,7 @@ describe("Story Generation API", () => {
         expect(storyResponse.status).toBe(201);
         expect("success" in storyData && storyData.success).toBe(true);
 
-        const story = (storyData as GenerateStoryResponse).story;
+        const story = (storyData as ApiStoryResponse).story;
         const testStoryId = story.id;
 
         console.log(`✅ Story created: ${testStoryId}`);
@@ -241,7 +242,7 @@ describe("Story Generation API", () => {
         // STEP 2: Generate Characters (prerequisite)
         // ====================================================================
         console.log("\n👥 Step 2/5: Generating 2 characters...");
-        const charactersRequestBody: GenerateCharactersRequest = {
+        const charactersRequestBody: ApiCharactersRequest = {
             storyId: testStoryId,
             characterCount: 2,
             language: "English",
@@ -259,7 +260,7 @@ describe("Story Generation API", () => {
             },
         );
 
-        const charactersData: GenerateCharactersResponse =
+        const charactersData: ApiCharactersResponse =
             await charactersResponse.json();
 
         if (!charactersResponse.ok) {
@@ -275,6 +276,44 @@ describe("Story Generation API", () => {
         );
         for (const char of charactersData.characters) {
             console.log(`   - ${char.name} (${char.id})`);
+        }
+
+        // ====================================================================
+        // STEP 2.5: Generate Settings (Required for Parts)
+        // ====================================================================
+        console.log("\n🏞️  Step 2.5/3: Generating settings...");
+
+        const settingsRequestBody: ApiSettingsRequest = {
+            storyId: testStoryId,
+            settingCount: 2,
+        };
+
+        const settingsResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/settings",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify(settingsRequestBody),
+            },
+        );
+
+        const settingsData: ApiSettingsResponse = await settingsResponse.json();
+
+        if (!settingsResponse.ok) {
+            console.error("❌ Settings generation failed:", settingsData);
+            expect(settingsResponse.ok).toBe(true);
+        }
+
+        expect(settingsResponse.status).toBe(201);
+        expect(settingsData.settings).toBeDefined();
+        expect(settingsData.settings.length).toBe(2);
+
+        console.log(`✅ Settings generated: ${settingsData.settings.length}`);
+        for (const setting of settingsData.settings) {
+            console.log(`   - ${setting.name} (${setting.id})`);
         }
 
         // ====================================================================
@@ -300,7 +339,7 @@ describe("Story Generation API", () => {
             // ================================================================
             console.log(`   ║ Generating part ${partNum + 1}...`);
 
-            const partRequestBody: GeneratePartRequest = {
+            const partRequestBody: ApiPartRequest = {
                 storyId: testStoryId,
             };
 
@@ -316,7 +355,7 @@ describe("Story Generation API", () => {
                 },
             );
 
-            const partData: GeneratePartResponse = await partResponse.json();
+            const partData: ApiPartResponse = await partResponse.json();
 
             if (!partResponse.ok) {
                 console.error(
@@ -359,7 +398,7 @@ describe("Story Generation API", () => {
                     `   ║   📖 Chapter ${globalChapterIndex + 1}/6 (Part ${partNum + 1}, Chapter ${chapterNum + 1}/3)`,
                 );
 
-                const chapterRequestBody: GenerateChapterRequest = {
+                const chapterRequestBody: ApiChapterRequest = {
                     storyId: testStoryId,
                     partId: part.id,
                 };
@@ -376,7 +415,7 @@ describe("Story Generation API", () => {
                     },
                 );
 
-                const chapterData: GenerateChapterResponse =
+                const chapterData: ApiChapterResponse =
                     await chapterResponse.json();
 
                 if (!chapterResponse.ok) {
@@ -422,7 +461,7 @@ describe("Story Generation API", () => {
                         `   ║            📄 Scene ${globalSceneIndex + 1}/18 (Ch ${globalChapterIndex + 1}, Scene ${sceneNum + 1}/3)`,
                     );
 
-                    const sceneRequestBody: GenerateSceneSummaryRequest = {
+                    const sceneRequestBody: ApiSceneSummaryRequest = {
                         storyId: testStoryId,
                         chapterId: chapter.id,
                     };
@@ -439,7 +478,7 @@ describe("Story Generation API", () => {
                         },
                     );
 
-                    const sceneData: GenerateSceneSummaryResponse =
+                    const sceneData: ApiSceneSummaryResponse =
                         await sceneResponse.json();
 
                     if (!sceneResponse.ok) {
@@ -461,16 +500,13 @@ describe("Story Generation API", () => {
                     expect(scene.chapterId).toBe(chapter.id);
                     expect(scene.title).toBeDefined();
                     expect(typeof scene.title).toBe("string");
-                    expect(sceneData.metadata.sceneIndex).toBe(
-                        globalSceneIndex,
-                    );
-                    expect(sceneData.metadata.totalScenes).toBe(
-                        globalSceneIndex + 1,
-                    );
+                    // sceneIndex is per-chapter, not global
+                    expect(sceneData.metadata.sceneIndex).toBe(sceneNum);
+                    expect(sceneData.metadata.totalScenes).toBe(sceneNum + 1);
 
                     console.log(`   ║               ✅ ${scene.title}`);
                     console.log(
-                        `   ║                  ID: ${scene.id}, Global Index: ${sceneData.metadata.sceneIndex}`,
+                        `   ║                  ID: ${scene.id}, Chapter Scene Index: ${sceneData.metadata.sceneIndex}`,
                     );
 
                     globalSceneIndex++;
@@ -511,7 +547,7 @@ describe("Story Generation API", () => {
         // Verify ID formats
         expect(testStoryId).toMatch(/^story_/);
         for (const char of charactersData.characters) {
-            expect(char.id).toMatch(/^character_/);
+            expect(char.id).toMatch(/^char_/);
         }
         for (const partId of allPartIds) {
             expect(partId).toMatch(/^part_/);

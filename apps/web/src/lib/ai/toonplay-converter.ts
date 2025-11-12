@@ -15,86 +15,89 @@ import type { characters, scenes, settings, stories } from "@/lib/db/schema";
 // ============================================
 
 export const ComicPanelSpecSchema = z
-	.object({
-		panel_number: z.number().min(1),
-		shot_type: z.enum([
-			"establishing_shot",
-			"wide_shot",
-			"medium_shot",
-			"close_up",
-			"extreme_close_up",
-			"over_shoulder",
-			"dutch_angle",
-		]),
-		summary: z
-			.string()
-			.describe("Detailed visual description for image generation"),
-		characters_visible: z
-			.array(z.string())
-			.describe("Array of character IDs visible in panel"),
-		character_poses: z
-			.record(z.string(), z.string())
-			.describe("Map of character_id to pose description"),
-		setting_focus: z
-			.string()
-			.describe("Which part of the setting is emphasized"),
-		lighting: z.string().describe("Lighting setup and mood"),
-		camera_angle: z
-			.string()
-			.describe("Camera positioning (e.g., low angle, eye level, birds eye)"),
-		narrative: z
-			.string()
-			.optional()
-			.describe(
-				"Narrative text explaining the current situation. REQUIRED when characters_visible is empty.",
-			),
-		dialogue: z
-			.array(
-				z.object({
-					character_id: z.string(),
-					text: z
-						.string()
-						.max(200)
-						.describe("Max 200 characters for readability"),
-					tone: z.string().optional(),
-				}),
-			)
-			.default([]),
-		sfx: z
-			.array(
-				z.object({
-					text: z.string(),
-					emphasis: z.enum(["normal", "large", "dramatic"]),
-				}),
-			)
-			.default([]),
-		mood: z
-			.string()
-			.default("neutral")
-			.describe("Overall emotional tone of the panel"),
-	})
-	.refine(
-		(data) => {
-			// Every panel MUST have either narrative text OR dialogue
-			const hasNarrative = !!data.narrative && data.narrative.trim().length > 0;
-			const hasDialogue = data.dialogue && data.dialogue.length > 0;
-			return hasNarrative || hasDialogue;
-		},
-		{
-			message:
-				"Every panel MUST have either narrative text OR dialogue. No panel can be without text overlay. This is critical for webtoon readability.",
-		},
-	);
+    .object({
+        panel_number: z.number().min(1),
+        shot_type: z.enum([
+            "establishing_shot",
+            "wide_shot",
+            "medium_shot",
+            "close_up",
+            "extreme_close_up",
+            "over_shoulder",
+            "dutch_angle",
+        ]),
+        summary: z
+            .string()
+            .describe("Detailed visual description for image generation"),
+        characters_visible: z
+            .array(z.string())
+            .describe("Array of character IDs visible in panel"),
+        character_poses: z
+            .record(z.string(), z.string())
+            .describe("Map of character_id to pose description"),
+        setting_focus: z
+            .string()
+            .describe("Which part of the setting is emphasized"),
+        lighting: z.string().describe("Lighting setup and mood"),
+        camera_angle: z
+            .string()
+            .describe(
+                "Camera positioning (e.g., low angle, eye level, birds eye)",
+            ),
+        narrative: z
+            .string()
+            .optional()
+            .describe(
+                "Narrative text explaining the current situation. REQUIRED when characters_visible is empty.",
+            ),
+        dialogue: z
+            .array(
+                z.object({
+                    character_id: z.string(),
+                    text: z
+                        .string()
+                        .max(200)
+                        .describe("Max 200 characters for readability"),
+                    tone: z.string().optional(),
+                }),
+            )
+            .default([]),
+        sfx: z
+            .array(
+                z.object({
+                    text: z.string(),
+                    emphasis: z.enum(["normal", "large", "dramatic"]),
+                }),
+            )
+            .default([]),
+        mood: z
+            .string()
+            .default("neutral")
+            .describe("Overall emotional tone of the panel"),
+    })
+    .refine(
+        (data) => {
+            // Every panel MUST have either narrative text OR dialogue
+            const hasNarrative =
+                !!data.narrative && data.narrative.trim().length > 0;
+            const hasDialogue = data.dialogue && data.dialogue.length > 0;
+            return hasNarrative || hasDialogue;
+        },
+        {
+            message:
+                "Every panel MUST have either narrative text OR dialogue. No panel can be without text overlay. This is critical for webtoon readability.",
+        },
+    );
 
 export const ComicToonplaySchema = z.object({
-	scene_id: z.string(),
-	scene_title: z.string(),
-	total_panels: z.number().min(1).max(12),
-	panels: z.array(ComicPanelSpecSchema),
-	pacing_notes: z.string().optional(),
-	narrative_arc: z
-		.string()
-		.describe("How the panels collectively tell the scene story"),
+    scene_id: z.string(),
+    scene_title: z.string(),
+    total_panels: z.number().min(1).max(12),
+    panels: z.array(ComicPanelSpecSchema),
+    pacing_notes: z.string().optional(),
+    narrative_arc: z
+        .string()
+        .describe("How the panels collectively tell the scene story"),
 });
 
 export type ComicPanelSpec = z.infer<typeof ComicPanelSpecSchema>;
@@ -105,70 +108,71 @@ export type ComicToonplay = z.infer<typeof ComicToonplaySchema>;
 // ============================================
 
 export interface ConvertToToonplayOptions {
-	scene: typeof scenes.$inferSelect;
-	characters: (typeof characters.$inferSelect)[];
-	setting: typeof settings.$inferSelect;
-	storyGenre: string;
-	targetPanelCount?: number;
+    scene: typeof scenes.$inferSelect;
+    characters: (typeof characters.$inferSelect)[];
+    setting: typeof settings.$inferSelect;
+    storyGenre: string;
+    targetPanelCount?: number;
 }
 
 export async function convertSceneToToonplay(
-	options: ConvertToToonplayOptions,
+    options: ConvertToToonplayOptions,
 ): Promise<ComicToonplay> {
-	const { scene, characters, setting, storyGenre, targetPanelCount } = options;
+    const { scene, characters, setting, storyGenre, targetPanelCount } =
+        options;
 
-	const sceneTitle = scene.title || "Untitled Scene";
+    const sceneTitle = scene.title || "Untitled Scene";
 
-	// Derive narrative context from Adversity-Triumph Engine schema
-	const goal = scene.summary || "Advance the story";
-	const conflict =
-		scene.cyclePhase === "confrontation"
-			? "Characters face obstacles and challenges"
-			: scene.cyclePhase === "virtue"
-				? "Characters must demonstrate moral courage"
-				: "Tension and obstacles";
-	const outcome =
-		scene.cyclePhase === "consequence"
-			? "Actions lead to meaningful consequences"
-			: scene.cyclePhase === "transition"
-				? "Scene transitions to next phase"
-				: "Resolution";
+    // Derive narrative context from Adversity-Triumph Engine schema
+    const goal = scene.summary || "Advance the story";
+    const conflict =
+        scene.cyclePhase === "confrontation"
+            ? "Characters face obstacles and challenges"
+            : scene.cyclePhase === "virtue"
+              ? "Characters must demonstrate moral courage"
+              : "Tension and obstacles";
+    const outcome =
+        scene.cyclePhase === "consequence"
+            ? "Actions lead to meaningful consequences"
+            : scene.cyclePhase === "transition"
+              ? "Scene transitions to next phase"
+              : "Resolution";
 
-	// Map emotionalBeat to emotional shift for toonplay context
-	const emotionalFrom =
-		scene.emotionalBeat === "fear"
-			? "anxious"
-			: scene.emotionalBeat === "hope"
-				? "uncertain"
-				: scene.emotionalBeat === "tension"
-					? "tense"
-					: scene.emotionalBeat === "despair"
-						? "defeated"
-						: "neutral";
+    // Map emotionalBeat to emotional shift for toonplay context
+    const emotionalFrom =
+        scene.emotionalBeat === "fear"
+            ? "anxious"
+            : scene.emotionalBeat === "hope"
+              ? "uncertain"
+              : scene.emotionalBeat === "tension"
+                ? "tense"
+                : scene.emotionalBeat === "despair"
+                  ? "defeated"
+                  : "neutral";
 
-	const emotionalTo =
-		scene.emotionalBeat === "relief"
-			? "relieved"
-			: scene.emotionalBeat === "elevation"
-				? "inspired"
-				: scene.emotionalBeat === "catharsis"
-					? "transformed"
-					: scene.emotionalBeat === "joy"
-						? "joyful"
-						: "resolved";
+    const emotionalTo =
+        scene.emotionalBeat === "relief"
+            ? "relieved"
+            : scene.emotionalBeat === "elevation"
+              ? "inspired"
+              : scene.emotionalBeat === "catharsis"
+                ? "transformed"
+                : scene.emotionalBeat === "joy"
+                  ? "joyful"
+                  : "resolved";
 
-	console.log(`\n🎬 Converting scene to toonplay: "${sceneTitle}"`);
+    console.log(`\n🎬 Converting scene to toonplay: "${sceneTitle}"`);
 
-	// Build character descriptions from Adversity-Triumph Engine fields
-	const characterDescriptions = characters
-		.map(
-			(c) =>
-				`${c.name}: ${c.summary || c.coreTrait || c.internalFlaw || c.externalGoal || "pursuing their goals"}`,
-		)
-		.join("\n");
+    // Build character descriptions from Adversity-Triumph Engine fields
+    const characterDescriptions = characters
+        .map(
+            (c) =>
+                `${c.name}: ${c.summary || c.coreTrait || c.internalFlaw || c.externalGoal || "pursuing their goals"}`,
+        )
+        .join("\n");
 
-	// Build toonplay prompt with detailed visual grammar from docs/comics/comics-toonplay.md
-	const toonplayPrompt = `You are an expert comic storyboard artist. Convert this narrative scene into a panel-by-panel toonplay optimized for vertical-scroll comics.
+    // Build toonplay prompt with detailed visual grammar from docs/comics/comics-toonplay.md
+    const toonplayPrompt = `You are an expert comic storyboard artist. Convert this narrative scene into a panel-by-panel toonplay optimized for vertical-scroll comics.
 
 SCENE INFORMATION:
 Title: ${sceneTitle}
@@ -328,21 +332,21 @@ IMPORTANT: This is for a ${storyGenre} story. Match the visual style and tone ac
 
 Return your response as a valid JSON object matching the ComicToonplay schema.`;
 
-	console.log(`   Sending toonplay generation request...`);
+    console.log(`   Sending toonplay generation request...`);
 
-	const result = await generateObject({
-		model: gateway("google/gemini-2.5-flash-lite"),
-		schema: ComicToonplaySchema,
-		prompt: toonplayPrompt,
-		temperature: 0.7,
-	});
+    const result = await generateObject({
+        model: gateway("google/gemini-2.5-flash-lite"),
+        schema: ComicToonplaySchema,
+        prompt: toonplayPrompt,
+        temperature: 0.7,
+    });
 
-	const toonplay = result.object;
+    const toonplay = result.object;
 
-	console.log(`   ✅ Toonplay generated: ${toonplay.total_panels} panels`);
-	console.log(
-		`   Panel types: ${toonplay.panels.map((p) => p.shot_type).join(", ")}`,
-	);
+    console.log(`   ✅ Toonplay generated: ${toonplay.total_panels} panels`);
+    console.log(
+        `   Panel types: ${toonplay.panels.map((p) => p.shot_type).join(", ")}`,
+    );
 
-	return toonplay;
+    return toonplay;
 }

@@ -10,15 +10,22 @@
  */
 
 import { textGenerationClient } from "./ai-client";
+import {
+    buildChapterContext,
+    buildCharactersContext,
+    buildPartContext,
+    buildSettingsContext,
+    buildStoryContext,
+} from "./context-builders";
 import { promptManager } from "./prompt-manager";
 import type {
     ChapterPromptParams,
-    GenerateChapterParams,
-    GenerateChapterResult,
+    GeneratorChapterParams,
+    GeneratorChapterResult,
 } from "./types";
 import {
-    type GeneratedChapterData,
-    GeneratedChapterSchema,
+    type AiChapterType,
+    AiChapterZodSchema,
 } from "./zod-schemas.generated";
 
 /**
@@ -28,8 +35,8 @@ import {
  * @returns Chapter data (caller responsible for database save)
  */
 export async function generateChapter(
-    params: GenerateChapterParams,
-): Promise<GenerateChapterResult> {
+    params: GeneratorChapterParams,
+): Promise<GeneratorChapterResult> {
     const startTime: number = Date.now();
 
     // 1. Extract parameters
@@ -37,9 +44,10 @@ export async function generateChapter(
         story,
         part,
         characters,
+        settings,
         previousChapters,
         chapterIndex,
-    }: GenerateChapterParams = params;
+    }: GeneratorChapterParams = params;
 
     console.log(
         `[chapter-generator] 📖 Generating chapter ${chapterIndex + 1} (Part: ${part.title})...`,
@@ -69,45 +77,41 @@ export async function generateChapter(
         `[chapter-generator] Character arc: ${characterArc?.macroAdversity?.internal || "personal growth"}`,
     );
 
-    // 3. Build previous chapters context string (FULL CONTEXT)
+    // 3. Build context strings using comprehensive builders
+    const charactersStr: string = buildCharactersContext(characters);
+    const storyContext: string = buildStoryContext(story);
+    const settingsStr: string = settings
+        ? buildSettingsContext(settings)
+        : "N/A";
+
+    console.log(
+        `[chapter-generator] Context prepared: ${characters.length} characters, ${settings?.length || 0} settings`,
+    );
+
+    // 4. Build comprehensive part context string using context builder
+    const partContext: string = buildPartContext(part, characters);
+
+    // 5. Build previous chapters context string using context builder
     const previousChaptersContext: string =
         previousChapters.length > 0
             ? previousChapters
                   .map((ch, idx) => {
-                      return `Chapter ${idx + 1}: ${ch.title}
-Summary: ${ch.summary}
-Adversity: ${ch.adversityType || "N/A"}
-Virtue: ${ch.virtueType || "N/A"}
-Arc Position: ${ch.arcPosition || "N/A"}`;
+                      return `Chapter ${idx + 1}:\n${buildChapterContext(ch)}`;
                   })
                   .join("\n\n")
-            : "None (this is the first chapter)";
-
-    // 4. Get previous chapter's specific context (most recent)
-    const previousChapterContext: string =
-        previousChapters.length > 0
-            ? (previousChapters[previousChapters.length - 1].summary ??
-              "Previous chapter")
             : "None (this is the first chapter)";
 
     console.log(
         `[chapter-generator] Previous chapters context prepared (${previousChaptersContext.length} characters)`,
     );
 
-    // 5. Get the prompt template for chapter generation
+    // 8. Get the prompt template for chapter generation
     const promptParams: ChapterPromptParams = {
         chapterNumber: String(chapterIndex + 1),
-        totalChapters: String(chapterIndex + 10), // Estimate, will be updated
-        partTitle: part.title,
-        storyTitle: story.title,
-        storyGenre: story.genre ?? "General Fiction",
-        storySummary: story.summary ?? "A story of adversity and triumph",
-        partSummary: part.summary ?? "Part of the story",
-        characterName: focusCharacter.name,
-        characterFlaw: focusCharacter.internalFlaw || "unresolved fear",
-        characterArc:
-            characterArc?.macroAdversity?.internal || "personal growth",
-        previousChapterContext,
+        story: storyContext,
+        parts: partContext,
+        characters: charactersStr,
+        settings: settingsStr,
         previousChaptersContext,
     };
 
@@ -124,11 +128,11 @@ Arc Position: ${ch.arcPosition || "N/A"}`;
         `[chapter-generator] Generating chapter ${chapterIndex + 1} using structured output with full previous context`,
     );
 
-    // 6. Generate chapter using structured output
-    const chapterData: GeneratedChapterData =
+    // 9. Generate chapter using structured output
+    const chapterData: AiChapterType =
         await textGenerationClient.generateStructured(
             userPromptText,
-            GeneratedChapterSchema,
+            AiChapterZodSchema,
             {
                 systemPrompt,
                 temperature: 0.85,
@@ -136,7 +140,7 @@ Arc Position: ${ch.arcPosition || "N/A"}`;
             },
         );
 
-    // 7. Calculate total generation time
+    // 10. Calculate total generation time
     const totalTime: number = Date.now() - startTime;
 
     console.log(
@@ -148,8 +152,8 @@ Arc Position: ${ch.arcPosition || "N/A"}`;
         },
     );
 
-    // 8. Build and return result with metadata
-    const result: GenerateChapterResult = {
+    // 11. Build and return result with metadata
+    const result: GeneratorChapterResult = {
         chapter: chapterData,
         metadata: {
             generationTime: totalTime,

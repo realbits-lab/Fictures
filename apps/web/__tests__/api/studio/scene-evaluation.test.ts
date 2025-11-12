@@ -8,15 +8,19 @@
  */
 
 import type {
-    EvaluateSceneErrorResponse,
-    EvaluateSceneRequest,
-    EvaluateSceneResponse,
-    GenerateChaptersRequest,
-    GenerateCharactersRequest,
-    GeneratePartsRequest,
-    GenerateSceneContentRequest,
-    GenerateSceneSummariesRequest,
-    GenerateStoryRequest,
+    ApiChapterRequest,
+    ApiChapterResponse,
+    ApiCharactersRequest,
+    ApiPartRequest,
+    ApiPartResponse,
+    ApiSceneContentRequest,
+    ApiSceneEvaluationErrorResponse,
+    ApiSceneEvaluationRequest,
+    ApiSceneEvaluationResponse,
+    ApiSceneSummaryRequest,
+    ApiSceneSummaryResponse,
+    ApiSettingsRequest,
+    ApiStoryRequest,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
@@ -32,7 +36,7 @@ describe("Scene Evaluation API", () => {
         console.log("🔧 Setting up test story...");
 
         // 1. Create test story (no auto-generation)
-        const storyRequestBody: GenerateStoryRequest = {
+        const storyRequestBody: ApiStoryRequest = {
             userPrompt: "A test story for scene evaluation testing",
             language: "English",
             preferredGenre: "Fantasy",
@@ -63,7 +67,7 @@ describe("Scene Evaluation API", () => {
 
         // 2. Generate characters
         console.log("🔧 Generating characters...");
-        const charactersRequestBody: GenerateCharactersRequest = {
+        const charactersRequestBody: ApiCharactersRequest = {
             storyId: testStoryId,
             characterCount: 2,
             language: "English",
@@ -92,101 +96,124 @@ describe("Scene Evaluation API", () => {
             `✅ Characters generated: ${charactersData.characters.length}`,
         );
 
-        // 3. Generate parts
-        console.log("🔧 Generating parts for story...");
-        const partsRequestBody: GeneratePartsRequest = {
+        // 3. Generate settings (required for parts generation)
+        console.log("🔧 Generating settings...");
+        const settingsRequestBody: ApiSettingsRequest = {
             storyId: testStoryId,
-            partsCount: 1,
-            language: "English",
+            settingCount: 2,
         };
 
-        const partsResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/parts",
+        const settingsResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/settings",
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "x-api-key": apiKey,
                 },
-                body: JSON.stringify(partsRequestBody),
+                body: JSON.stringify(settingsRequestBody),
             },
         );
 
-        const partsData: { parts: Array<{ id: string }> } =
-            await partsResponse.json();
-        if (!partsResponse.ok) {
+        const settingsData: { settings: Array<{ id: string }> } =
+            await settingsResponse.json();
+        if (!settingsResponse.ok) {
             throw new Error(
-                `Failed to generate parts: ${JSON.stringify(partsData)}`,
+                `Failed to generate settings: ${JSON.stringify(settingsData)}`,
             );
         }
+        console.log(`✅ Settings generated: ${settingsData.settings.length}`);
 
-        console.log(`✅ Test part created: ${partsData.parts[0].id}`);
-
-        // 4. Generate chapters
-        console.log("🔧 Generating chapters...");
-        const chaptersRequestBody: GenerateChaptersRequest = {
+        // 4. Generate part (singular)
+        console.log("🔧 Generating part...");
+        const partRequestBody: ApiPartRequest = {
             storyId: testStoryId,
-            chaptersPerPart: 1,
-            language: "English",
         };
 
-        const chaptersResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/chapters",
+        const partResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/part",
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "x-api-key": apiKey,
                 },
-                body: JSON.stringify(chaptersRequestBody),
+                body: JSON.stringify(partRequestBody),
             },
         );
 
-        const chaptersData: { chapters: Array<{ id: string }> } =
-            await chaptersResponse.json();
-        if (!chaptersResponse.ok) {
+        const partData: ApiPartResponse = await partResponse.json();
+        if (!partResponse.ok) {
             throw new Error(
-                `Failed to generate chapters: ${JSON.stringify(chaptersData)}`,
+                `Failed to generate part: ${JSON.stringify(partData)}`,
             );
         }
 
-        testChapterId = chaptersData.chapters[0].id;
+        const testPartId = partData.part.id;
+        console.log(`✅ Test part created: ${testPartId}`);
+
+        // 5. Generate chapter (singular)
+        console.log("🔧 Generating chapter...");
+        const chapterRequestBody: ApiChapterRequest = {
+            storyId: testStoryId,
+            partId: testPartId,
+        };
+
+        const chapterResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/chapter",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify(chapterRequestBody),
+            },
+        );
+
+        const chapterData: ApiChapterResponse = await chapterResponse.json();
+        if (!chapterResponse.ok) {
+            throw new Error(
+                `Failed to generate chapter: ${JSON.stringify(chapterData)}`,
+            );
+        }
+
+        testChapterId = chapterData.chapter.id;
         console.log(`✅ Test chapter created: ${testChapterId}`);
 
-        // 5. Generate scene summaries
-        console.log("🔧 Generating scene summaries...");
-        const sceneSummariesRequestBody: GenerateSceneSummariesRequest = {
+        // 6. Generate scene summary (singular)
+        console.log("🔧 Generating scene summary...");
+        const sceneSummaryRequestBody: ApiSceneSummaryRequest = {
             storyId: testStoryId,
-            scenesPerChapter: 1, // Only 1 scene for faster testing
-            language: "English",
+            chapterId: testChapterId,
         };
 
-        const sceneSummariesResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/scene-summaries",
+        const sceneSummaryResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/scene-summary",
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "x-api-key": apiKey,
                 },
-                body: JSON.stringify(sceneSummariesRequestBody),
+                body: JSON.stringify(sceneSummaryRequestBody),
             },
         );
 
-        const sceneSummariesData: { scenes: Array<{ id: string }> } =
-            await sceneSummariesResponse.json();
-        if (!sceneSummariesResponse.ok) {
+        const sceneSummaryData: ApiSceneSummaryResponse =
+            await sceneSummaryResponse.json();
+        if (!sceneSummaryResponse.ok) {
             throw new Error(
-                `Failed to generate scene summaries: ${JSON.stringify(sceneSummariesData)}`,
+                `Failed to generate scene summary: ${JSON.stringify(sceneSummaryData)}`,
             );
         }
 
-        testSceneId = sceneSummariesData.scenes[0].id;
+        testSceneId = sceneSummaryData.scene.id;
         console.log(`✅ Test scene summary created: ${testSceneId}`);
 
         // 6. Generate scene content
         console.log("🔧 Generating scene content...");
-        const sceneContentRequestBody: GenerateSceneContentRequest = {
+        const sceneContentRequestBody: ApiSceneContentRequest = {
             sceneId: testSceneId,
             language: "English",
         };
@@ -218,7 +245,7 @@ describe("Scene Evaluation API", () => {
         console.log("🔧 Evaluating scene quality...");
 
         // 1. Prepare request body with proper TypeScript type
-        const requestBody: EvaluateSceneRequest = {
+        const requestBody: ApiSceneEvaluationRequest = {
             sceneId: testSceneId,
             maxIterations: 2, // Allow up to 2 improvement iterations
         };
@@ -237,8 +264,9 @@ describe("Scene Evaluation API", () => {
         );
 
         // 3. Parse response data with proper typing
-        const data: EvaluateSceneResponse | EvaluateSceneErrorResponse =
-            await response.json();
+        const data:
+            | ApiSceneEvaluationResponse
+            | ApiSceneEvaluationErrorResponse = await response.json();
 
         // 4. Log error if request failed
         if (!response.ok) {
@@ -251,15 +279,17 @@ describe("Scene Evaluation API", () => {
 
         // 6. Type guard to ensure we have success response
         if (!("success" in data) || !data.success) {
-            throw new Error("Expected EvaluateSceneResponse but got error");
+            throw new Error(
+                "Expected ApiSceneEvaluationResponse but got error",
+            );
         }
 
         // 7. Cast to success response type
-        const successData: EvaluateSceneResponse =
-            data as EvaluateSceneResponse;
+        const successData: ApiSceneEvaluationResponse =
+            data as ApiSceneEvaluationResponse;
 
         // ========================================================================
-        // 8. Verify ALL fields of EvaluateSceneResponse
+        // 8. Verify ALL fields of ApiSceneEvaluationResponse
         // ========================================================================
 
         // 8a. Validate 'success' field (required, must be true)
@@ -395,9 +425,11 @@ describe("Scene Evaluation API", () => {
         // ========================================================================
         const {
             evaluation,
-        }: { evaluation: EvaluateSceneResponse["evaluation"] } = successData;
-        const { metadata }: { metadata: EvaluateSceneResponse["metadata"] } =
+        }: { evaluation: ApiSceneEvaluationResponse["evaluation"] } =
             successData;
+        const {
+            metadata,
+        }: { metadata: ApiSceneEvaluationResponse["metadata"] } = successData;
 
         expect(evaluation.score).toBeGreaterThan(0);
         expect(metadata.generationTime).toBeGreaterThan(0);

@@ -8,10 +8,10 @@
  */
 
 import type {
-    GenerateCharactersErrorResponse,
-    GenerateCharactersRequest,
-    GenerateCharactersResponse,
-    GenerateStoryRequest,
+    ApiCharactersErrorResponse,
+    ApiCharactersRequest,
+    ApiCharactersResponse,
+    ApiStoryRequest,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
@@ -26,7 +26,7 @@ describe("Character Generation API", () => {
         console.log("🔧 Setting up test story...");
 
         // 1. Prepare story request body with proper TypeScript type
-        const storyRequestBody: GenerateStoryRequest = {
+        const storyRequestBody: ApiStoryRequest = {
             userPrompt: "A test story for character testing",
             language: "English",
             preferredGenre: "Fantasy",
@@ -63,7 +63,7 @@ describe("Character Generation API", () => {
 
     it("should generate characters via POST /studio/api/characters", async () => {
         // 1. Prepare request body with proper TypeScript type
-        const requestBody: GenerateCharactersRequest = {
+        const requestBody: ApiCharactersRequest = {
             storyId: testStoryId,
             characterCount: 3,
             language: "English",
@@ -83,9 +83,8 @@ describe("Character Generation API", () => {
         );
 
         // 3. Parse response data with proper typing
-        const data:
-            | GenerateCharactersResponse
-            | GenerateCharactersErrorResponse = await response.json();
+        const data: ApiCharactersResponse | ApiCharactersErrorResponse =
+            await response.json();
 
         // 4. Log error if request failed
         if (!response.ok) {
@@ -98,13 +97,11 @@ describe("Character Generation API", () => {
 
         // 6. Type guard to ensure we have success response
         if (!("success" in data) || !data.success) {
-            throw new Error(
-                "Expected GenerateCharactersResponse but got error",
-            );
+            throw new Error("Expected ApiCharactersResponse but got error");
         }
 
         // 7. Cast to success response type
-        const successData = data as GenerateCharactersResponse;
+        const successData = data as ApiCharactersResponse;
 
         // ============================================================================
         // 8. Verify ALL top-level response structure
@@ -118,9 +115,8 @@ describe("Character Generation API", () => {
         // ============================================================================
         // 9. Verify ALL metadata attributes
         // ============================================================================
-        const {
-            metadata,
-        }: { metadata: GenerateCharactersResponse["metadata"] } = successData;
+        const { metadata }: { metadata: ApiCharactersResponse["metadata"] } =
+            successData;
         expect(metadata.totalGenerated).toBe(3);
         expect(metadata.generationTime).toBeGreaterThan(0);
 
@@ -129,8 +125,7 @@ describe("Character Generation API", () => {
         // ============================================================================
         const {
             characters,
-        }: { characters: GenerateCharactersResponse["characters"] } =
-            successData;
+        }: { characters: ApiCharactersResponse["characters"] } = successData;
 
         // 11. Loop through ALL characters and verify each one
         for (const character of characters) {
@@ -174,13 +169,6 @@ describe("Character Generation API", () => {
             expect(character.backstory).toBeDefined();
             expect(typeof character.backstory).toBe("string");
             expect(character.backstory.length).toBeGreaterThan(0);
-
-            // === RELATIONSHIPS (JEONG SYSTEM) ===
-            // relationships is nullable (only this, imageUrl, imageVariants can be null)
-            expect(
-                character.relationships === null ||
-                    typeof character.relationships === "object",
-            ).toBe(true);
 
             // === PROSE GENERATION FIELDS ===
             // physicalDescription is required (.notNull())

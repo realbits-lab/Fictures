@@ -484,16 +484,6 @@ interface Character {
   };
   backstory: string; // Focused history providing motivation context (2-4 paragraphs)
 
-  // === RELATIONSHIPS (Jeong System) ===
-  relationships: {
-    [characterId: string]: {
-      type: 'ally' | 'rival' | 'family' | 'romantic' | 'mentor' | 'adversary';
-      jeongLevel: number;      // 0-10: depth of connection (정 - affective bonds)
-      sharedHistory: string;   // What binds them
-      currentDynamic: string;  // Current relationship state
-    };
-  };
-
   // === PROSE GENERATION ===
   physicalDescription: {
     age: string;               // "mid-30s", "elderly", "young adult"
@@ -554,12 +544,6 @@ interface Character {
 - `coreTrait` = **MORAL** virtue (drives virtue scenes)
 - `personality.traits` = **BEHAVIORAL** characteristics (drives everyday scenes)
 - Both needed for dimensional, realistic characters
-
-**relationships (Jeong System)**:
-- Tracks 정 (deep affective bonds) between characters
-- `jeongLevel` (0-10) determines emotional stakes
-- High jeongLevel (7-10) makes virtuous actions more meaningful
-- Enables relationship arcs parallel to character arcs
 
 **voiceStyle**:
 - Ensures distinct, authentic dialogue per character

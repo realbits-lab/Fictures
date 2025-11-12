@@ -12,14 +12,16 @@
  */
 
 import type {
-    GenerateChapterErrorResponse,
-    GenerateChapterRequest,
-    GenerateChapterResponse,
-    GenerateCharactersRequest,
-    GenerateCharactersResponse,
-    GeneratePartRequest,
-    GeneratePartResponse,
-    GenerateStoryRequest,
+    ApiChapterErrorResponse,
+    ApiChapterRequest,
+    ApiChapterResponse,
+    ApiCharactersRequest,
+    ApiCharactersResponse,
+    ApiPartRequest,
+    ApiPartResponse,
+    ApiSettingsRequest,
+    ApiSettingsResponse,
+    ApiStoryRequest,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
@@ -35,7 +37,7 @@ describe("Chapter API (Singular - Extreme Incremental)", () => {
         console.log("🔧 Setting up test story...");
 
         // 1. Create story
-        const storyRequestBody: GenerateStoryRequest = {
+        const storyRequestBody: ApiStoryRequest = {
             userPrompt:
                 "A short fantasy adventure for testing singular chapter generation",
             language: "English",
@@ -67,7 +69,7 @@ describe("Chapter API (Singular - Extreme Incremental)", () => {
 
         // 2. Generate characters
         console.log("🔧 Generating characters...");
-        const charactersRequestBody: GenerateCharactersRequest = {
+        const charactersRequestBody: ApiCharactersRequest = {
             storyId: testStoryId,
             characterCount: 2,
             language: "English",
@@ -85,7 +87,7 @@ describe("Chapter API (Singular - Extreme Incremental)", () => {
             },
         );
 
-        const charactersData: GenerateCharactersResponse =
+        const charactersData: ApiCharactersResponse =
             await charactersResponse.json();
         if (!charactersResponse.ok) {
             console.error("❌ Failed to generate characters:", charactersData);
@@ -96,9 +98,36 @@ describe("Chapter API (Singular - Extreme Incremental)", () => {
             `✅ Characters generated: ${charactersData.characters.length}`,
         );
 
-        // 3. Generate part (required for chapter generation)
+        // 3. Generate settings (required for part generation)
+        console.log("🔧 Generating settings...");
+        const settingsRequestBody: ApiSettingsRequest = {
+            storyId: testStoryId,
+            settingCount: 2,
+        };
+
+        const settingsResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/settings",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify(settingsRequestBody),
+            },
+        );
+
+        const settingsData: ApiSettingsResponse = await settingsResponse.json();
+        if (!settingsResponse.ok) {
+            console.error("❌ Failed to generate settings:", settingsData);
+            throw new Error("Test setup failed: could not generate settings");
+        }
+
+        console.log(`✅ Settings generated: ${settingsData.settings.length}`);
+
+        // 4. Generate part (required for chapter generation)
         console.log("🔧 Generating part...");
-        const partRequestBody: GeneratePartRequest = {
+        const partRequestBody: ApiPartRequest = {
             storyId: testStoryId,
         };
 
@@ -114,7 +143,7 @@ describe("Chapter API (Singular - Extreme Incremental)", () => {
             },
         );
 
-        const partData: GeneratePartResponse = await partResponse.json();
+        const partData: ApiPartResponse = await partResponse.json();
         if (!partResponse.ok) {
             console.error("❌ Failed to generate part:", partData);
             throw new Error("Test setup failed: could not generate part");
@@ -126,7 +155,7 @@ describe("Chapter API (Singular - Extreme Incremental)", () => {
 
     it("should generate first chapter via POST /studio/api/chapter", async () => {
         // 1. Prepare request body
-        const requestBody: GenerateChapterRequest = {
+        const requestBody: ApiChapterRequest = {
             storyId: testStoryId,
             partId: testPartId,
         };
@@ -145,7 +174,7 @@ describe("Chapter API (Singular - Extreme Incremental)", () => {
         );
 
         // 3. Parse response
-        const data: GenerateChapterResponse | GenerateChapterErrorResponse =
+        const data: ApiChapterResponse | ApiChapterErrorResponse =
             await response.json();
 
         if (!response.ok) {
@@ -156,11 +185,10 @@ describe("Chapter API (Singular - Extreme Incremental)", () => {
         expect(response.status).toBe(201);
 
         if (!("success" in data) || !data.success) {
-            throw new Error("Expected GenerateChapterResponse but got error");
+            throw new Error("Expected ApiChapterResponse but got error");
         }
 
-        const successData: GenerateChapterResponse =
-            data as GenerateChapterResponse;
+        const successData: ApiChapterResponse = data as ApiChapterResponse;
 
         // 4. Verify chapter attributes
         const { chapter, metadata } = successData;
@@ -186,7 +214,7 @@ describe("Chapter API (Singular - Extreme Incremental)", () => {
 
     it("should generate second chapter with context via POST /studio/api/chapter", async () => {
         // 1. Prepare request body
-        const requestBody: GenerateChapterRequest = {
+        const requestBody: ApiChapterRequest = {
             storyId: testStoryId,
             partId: testPartId,
         };
@@ -204,7 +232,7 @@ describe("Chapter API (Singular - Extreme Incremental)", () => {
             },
         );
 
-        const data: GenerateChapterResponse | GenerateChapterErrorResponse =
+        const data: ApiChapterResponse | ApiChapterErrorResponse =
             await response.json();
 
         if (!response.ok) {
@@ -215,11 +243,10 @@ describe("Chapter API (Singular - Extreme Incremental)", () => {
         expect(response.status).toBe(201);
 
         if (!("success" in data) || !data.success) {
-            throw new Error("Expected GenerateChapterResponse but got error");
+            throw new Error("Expected ApiChapterResponse but got error");
         }
 
-        const successData: GenerateChapterResponse =
-            data as GenerateChapterResponse;
+        const successData: ApiChapterResponse = data as ApiChapterResponse;
 
         // 3. Verify second chapter
         const { chapter, metadata } = successData;

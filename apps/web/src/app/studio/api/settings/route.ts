@@ -16,9 +16,9 @@ import { settings, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { settingService } from "@/lib/studio/services";
 import type {
-    GenerateSettingsErrorResponse,
-    GenerateSettingsRequest,
-    GenerateSettingsResponse,
+    ApiSettingsErrorResponse,
+    ApiSettingsRequest,
+    ApiSettingsResponse,
 } from "../types";
 import { generateSettingsSchema } from "../validation-schemas";
 
@@ -149,8 +149,8 @@ export async function POST(request: NextRequest) {
         });
 
         // 3. Parse and validate request body with type safety
-        const body: GenerateSettingsRequest =
-            (await request.json()) as GenerateSettingsRequest;
+        const body: ApiSettingsRequest =
+            (await request.json()) as ApiSettingsRequest;
         const validatedData: z.infer<typeof generateSettingsSchema> =
             generateSettingsSchema.parse(body);
 
@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
         // 6. Return typed response
-        const response: GenerateSettingsResponse = {
+        const response: ApiSettingsResponse = {
             success: true,
             settings: serviceResult.settings,
             metadata: {
@@ -199,14 +199,14 @@ export async function POST(request: NextRequest) {
         console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
         if (error instanceof z.ZodError) {
-            const errorResponse: GenerateSettingsErrorResponse = {
+            const errorResponse: ApiSettingsErrorResponse = {
                 error: "Invalid input",
                 details: error.issues,
             };
             return NextResponse.json(errorResponse, { status: 400 });
         }
 
-        const errorResponse: GenerateSettingsErrorResponse = {
+        const errorResponse: ApiSettingsErrorResponse = {
             error: "Failed to generate and save settings",
             details: error instanceof Error ? error.message : "Unknown error",
         };

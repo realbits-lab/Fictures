@@ -21,16 +21,16 @@ import { getBlobPath } from "@/lib/utils/blob-path";
 // Mobile 2x uses original size (1344×768) - no resizing, just format conversion
 // Mobile 1x is exact half (672×384) for optimal scaling while maintaining 7:4 ratio
 export const IMAGE_SIZES = {
-	mobile: {
-		"1x": { width: 672, height: 384 }, // Mobile standard displays (exact half)
-		"2x": { width: 1344, height: 768, noResize: true }, // Original size - no resize needed!
-	},
+    mobile: {
+        "1x": { width: 672, height: 384 }, // Mobile standard displays (exact half)
+        "2x": { width: 1344, height: 768, noResize: true }, // Original size - no resize needed!
+    },
 } as const;
 
 // Original image dimensions from Gemini 2.5 Flash Image
 export const ORIGINAL_IMAGE_SIZE = {
-	width: 1344,
-	height: 768,
+    width: 1344,
+    height: 768,
 } as const;
 
 // Supported output formats in priority order
@@ -42,77 +42,80 @@ export type DeviceResolution = "1x" | "2x";
 
 // Quality settings per format
 const QUALITY_SETTINGS: Record<ImageFormat, number> = {
-	avif: 75, // AVIF can maintain quality at lower settings
-	jpeg: 85, // JPEG needs higher quality setting
+    avif: 75, // AVIF can maintain quality at lower settings
+    jpeg: 85, // JPEG needs higher quality setting
 };
 
 export interface ImageVariant {
-	format: ImageFormat;
-	device: DeviceType;
-	resolution: DeviceResolution;
-	width: number;
-	height: number;
-	url: string;
-	size: number; // File size in bytes
+    format: ImageFormat;
+    device: DeviceType;
+    resolution: DeviceResolution;
+    width: number;
+    height: number;
+    url: string;
+    size: number; // File size in bytes
 }
 
 export interface OptimizedImageSet {
-	imageId: string;
-	originalUrl: string;
-	variants: ImageVariant[];
-	generatedAt: string;
+    imageId: string;
+    originalUrl: string;
+    variants: ImageVariant[];
+    generatedAt: string;
 }
 
 /**
  * Download image from URL as buffer with retry logic for CDN propagation
  */
 async function downloadImage(
-	url: string,
-	maxRetries = 3,
-	initialDelay = 1000,
+    url: string,
+    maxRetries = 3,
+    initialDelay = 1000,
 ): Promise<Buffer> {
-	let lastError: Error | null = null;
+    let lastError: Error | null = null;
 
-	for (let attempt = 1; attempt <= maxRetries; attempt++) {
-		try {
-			const response = await fetch(url);
-			if (response.ok) {
-				const arrayBuffer = await response.arrayBuffer();
-				if (attempt > 1) {
-					console.log(
-						`[Image Optimization] ✓ Download succeeded on attempt ${attempt}/${maxRetries}`,
-					);
-				}
-				return Buffer.from(arrayBuffer);
-			}
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            const response = await fetch(url);
+            if (response.ok) {
+                const arrayBuffer = await response.arrayBuffer();
+                if (attempt > 1) {
+                    console.log(
+                        `[Image Optimization] ✓ Download succeeded on attempt ${attempt}/${maxRetries}`,
+                    );
+                }
+                return Buffer.from(arrayBuffer);
+            }
 
-			// If 404, it might be CDN propagation delay - retry
-			if (response.status === 404 && attempt < maxRetries) {
-				const delay = initialDelay * 2 ** (attempt - 1); // Exponential backoff
-				console.log(
-					`[Image Optimization] ⏳ Image not found (attempt ${attempt}/${maxRetries}), retrying in ${delay}ms...`,
-				);
-				await new Promise((resolve) => setTimeout(resolve, delay));
-				continue;
-			}
+            // If 404, it might be CDN propagation delay - retry
+            if (response.status === 404 && attempt < maxRetries) {
+                const delay = initialDelay * 2 ** (attempt - 1); // Exponential backoff
+                console.log(
+                    `[Image Optimization] ⏳ Image not found (attempt ${attempt}/${maxRetries}), retrying in ${delay}ms...`,
+                );
+                await new Promise((resolve) => setTimeout(resolve, delay));
+                continue;
+            }
 
-			// Other errors or final 404 - throw
-			throw new Error(`Failed to download image: ${response.statusText}`);
-		} catch (error) {
-			lastError = error as Error;
-			if (attempt < maxRetries && (error as any).code !== "ECONNREFUSED") {
-				const delay = initialDelay * 2 ** (attempt - 1);
-				console.log(
-					`[Image Optimization] ⏳ Download failed (attempt ${attempt}/${maxRetries}), retrying in ${delay}ms...`,
-				);
-				await new Promise((resolve) => setTimeout(resolve, delay));
-			} else if (attempt === maxRetries) {
-				throw lastError;
-			}
-		}
-	}
+            // Other errors or final 404 - throw
+            throw new Error(`Failed to download image: ${response.statusText}`);
+        } catch (error) {
+            lastError = error as Error;
+            if (
+                attempt < maxRetries &&
+                (error as any).code !== "ECONNREFUSED"
+            ) {
+                const delay = initialDelay * 2 ** (attempt - 1);
+                console.log(
+                    `[Image Optimization] ⏳ Download failed (attempt ${attempt}/${maxRetries}), retrying in ${delay}ms...`,
+                );
+                await new Promise((resolve) => setTimeout(resolve, delay));
+            } else if (attempt === maxRetries) {
+                throw lastError;
+            }
+        }
+    }
 
-	throw lastError || new Error("Failed to download image after retries");
+    throw lastError || new Error("Failed to download image after retries");
 }
 
 /**
@@ -121,60 +124,60 @@ async function downloadImage(
  * @param noResize - Skip resizing (for mobile 2x which uses original 1344×768)
  */
 async function generateVariant(
-	imageBuffer: Buffer,
-	width: number,
-	height: number,
-	format: ImageFormat,
-	quality: number,
-	noResize: boolean = false,
+    imageBuffer: Buffer,
+    width: number,
+    height: number,
+    format: ImageFormat,
+    quality: number,
+    noResize: boolean = false,
 ): Promise<{ buffer: Buffer; size: number }> {
-	let sharpInstance = sharp(imageBuffer);
+    let sharpInstance = sharp(imageBuffer);
 
-	// Skip resize for mobile 2x (already at optimal 1344×768)
-	// This saves processing time and maintains original quality
-	if (!noResize) {
-		sharpInstance = sharpInstance.resize(width, height, {
-			fit: "cover",
-			position: "center",
-		});
-	}
+    // Skip resize for mobile 2x (already at optimal 1344×768)
+    // This saves processing time and maintains original quality
+    if (!noResize) {
+        sharpInstance = sharpInstance.resize(width, height, {
+            fit: "cover",
+            position: "center",
+        });
+    }
 
-	// Apply format-specific conversion
-	switch (format) {
-		case "avif":
-			sharpInstance = sharpInstance.avif({ quality, effort: 6 });
-			break;
-		case "jpeg":
-			sharpInstance = sharpInstance.jpeg({ quality, progressive: true });
-			break;
-	}
+    // Apply format-specific conversion
+    switch (format) {
+        case "avif":
+            sharpInstance = sharpInstance.avif({ quality, effort: 6 });
+            break;
+        case "jpeg":
+            sharpInstance = sharpInstance.jpeg({ quality, progressive: true });
+            break;
+    }
 
-	const buffer = await sharpInstance.toBuffer();
-	return { buffer, size: buffer.length };
+    const buffer = await sharpInstance.toBuffer();
+    return { buffer, size: buffer.length };
 }
 
 /**
  * Upload image variant to Vercel Blob
  */
 async function uploadVariant(
-	buffer: Buffer,
-	basePath: string,
-	format: ImageFormat,
-	width: number,
-	height: number,
-	imageId: string,
+    buffer: Buffer,
+    basePath: string,
+    format: ImageFormat,
+    width: number,
+    height: number,
+    imageId: string,
 ): Promise<string> {
-	const filename = `${imageId}.${format}`;
-	const relativePath = `${basePath}/${format}/${width}x${height}/${filename}`;
-	const path = getBlobPath(relativePath);
+    const filename = `${imageId}.${format}`;
+    const relativePath = `${basePath}/${format}/${width}x${height}/${filename}`;
+    const path = getBlobPath(relativePath);
 
-	const blob = await put(path, buffer, {
-		access: "public",
-		contentType: `image/${format}`,
-		addRandomSuffix: true, // Avoid conflicts with existing files
-	});
+    const blob = await put(path, buffer, {
+        access: "public",
+        contentType: `image/${format}`,
+        addRandomSuffix: true, // Avoid conflicts with existing files
+    });
 
-	return blob.url;
+    return blob.url;
 }
 
 /**
@@ -187,119 +190,119 @@ async function uploadVariant(
  * @returns OptimizedImageSet with all generated variants
  */
 export async function optimizeImage(
-	originalImageUrl: string,
-	imageId: string,
-	storyId: string,
-	imageType: "story" | "scene" | "character" | "setting" | "panel" = "story",
-	sceneId?: string,
+    originalImageUrl: string,
+    imageId: string,
+    storyId: string,
+    imageType: "story" | "scene" | "character" | "setting" | "panel" = "story",
+    sceneId?: string,
 ): Promise<OptimizedImageSet> {
-	console.log(
-		`[Image Optimization] Starting optimization for ${imageType} image ${imageId}`,
-	);
+    console.log(
+        `[Image Optimization] Starting optimization for ${imageType} image ${imageId}`,
+    );
 
-	// Download original image
-	const originalBuffer = await downloadImage(originalImageUrl);
+    // Download original image
+    const originalBuffer = await downloadImage(originalImageUrl);
 
-	// Define storage path - place panel variants under specific scene directory
-	const basePath =
-		imageType === "panel" && sceneId
-			? `stories/${storyId}/comics/${sceneId}/panel`
-			: imageType === "panel"
-				? `stories/${storyId}/comics/panel`
-				: `stories/${storyId}/${imageType}`;
+    // Define storage path - place panel variants under specific scene directory
+    const basePath =
+        imageType === "panel" && sceneId
+            ? `stories/${storyId}/comics/${sceneId}/panel`
+            : imageType === "panel"
+              ? `stories/${storyId}/comics/panel`
+              : `stories/${storyId}/${imageType}`;
 
-	// Store original (use addRandomSuffix to avoid conflicts)
-	const originalRelativePath = `${basePath}/original/${imageId}.png`;
-	const originalPath = getBlobPath(originalRelativePath);
-	const originalBlob = await put(originalPath, originalBuffer, {
-		access: "public",
-		contentType: "image/png",
-		addRandomSuffix: true,
-	});
+    // Store original (use addRandomSuffix to avoid conflicts)
+    const originalRelativePath = `${basePath}/original/${imageId}.png`;
+    const originalPath = getBlobPath(originalRelativePath);
+    const originalBlob = await put(originalPath, originalBuffer, {
+        access: "public",
+        contentType: "image/png",
+        addRandomSuffix: true,
+    });
 
-	const variants: ImageVariant[] = [];
-	let processedCount = 0;
-	const totalVariants =
-		Object.keys(IMAGE_SIZES).length *
-		Object.keys(IMAGE_SIZES.mobile).length *
-		IMAGE_FORMATS.length;
+    const variants: ImageVariant[] = [];
+    let processedCount = 0;
+    const totalVariants =
+        Object.keys(IMAGE_SIZES).length *
+        Object.keys(IMAGE_SIZES.mobile).length *
+        IMAGE_FORMATS.length;
 
-	// Generate all variants (device × resolution × format)
-	for (const [device, resolutions] of Object.entries(IMAGE_SIZES)) {
-		for (const [resolution, dimensions] of Object.entries(resolutions)) {
-			const { width, height, noResize } = dimensions as {
-				width: number;
-				height: number;
-				noResize?: boolean;
-			};
+    // Generate all variants (device × resolution × format)
+    for (const [device, resolutions] of Object.entries(IMAGE_SIZES)) {
+        for (const [resolution, dimensions] of Object.entries(resolutions)) {
+            const { width, height, noResize } = dimensions as {
+                width: number;
+                height: number;
+                noResize?: boolean;
+            };
 
-			for (const format of IMAGE_FORMATS) {
-				processedCount++;
-				const action = noResize ? "convert only" : "resize + convert";
-				console.log(
-					`[Image Optimization] Processing variant ${processedCount}/${totalVariants}: ${device} ${resolution} ${format} (${width}x${height}) [${action}]`,
-				);
+            for (const format of IMAGE_FORMATS) {
+                processedCount++;
+                const action = noResize ? "convert only" : "resize + convert";
+                console.log(
+                    `[Image Optimization] Processing variant ${processedCount}/${totalVariants}: ${device} ${resolution} ${format} (${width}x${height}) [${action}]`,
+                );
 
-				try {
-					// Generate optimized variant (skip resize for mobile 2x)
-					const { buffer, size } = await generateVariant(
-						originalBuffer,
-						width,
-						height,
-						format,
-						QUALITY_SETTINGS[format],
-						noResize || false,
-					);
+                try {
+                    // Generate optimized variant (skip resize for mobile 2x)
+                    const { buffer, size } = await generateVariant(
+                        originalBuffer,
+                        width,
+                        height,
+                        format,
+                        QUALITY_SETTINGS[format],
+                        noResize || false,
+                    );
 
-					// Upload to Vercel Blob
-					const url = await uploadVariant(
-						buffer,
-						basePath,
-						format,
-						width,
-						height,
-						imageId,
-					);
+                    // Upload to Vercel Blob
+                    const url = await uploadVariant(
+                        buffer,
+                        basePath,
+                        format,
+                        width,
+                        height,
+                        imageId,
+                    );
 
-					variants.push({
-						format,
-						device: device as DeviceType,
-						resolution: resolution as DeviceResolution,
-						width,
-						height,
-						url,
-						size,
-					});
+                    variants.push({
+                        format,
+                        device: device as DeviceType,
+                        resolution: resolution as DeviceResolution,
+                        width,
+                        height,
+                        url,
+                        size,
+                    });
 
-					console.log(
-						`[Image Optimization] ✓ Generated ${format} ${width}x${height} (${Math.round(size / 1024)}KB)`,
-					);
-				} catch (error) {
-					console.error(
-						`[Image Optimization] ✗ Failed to generate ${format} ${width}x${height}:`,
-						error,
-					);
-					// Continue with other variants even if one fails
-				}
-			}
-		}
-	}
+                    console.log(
+                        `[Image Optimization] ✓ Generated ${format} ${width}x${height} (${Math.round(size / 1024)}KB)`,
+                    );
+                } catch (error) {
+                    console.error(
+                        `[Image Optimization] ✗ Failed to generate ${format} ${width}x${height}:`,
+                        error,
+                    );
+                    // Continue with other variants even if one fails
+                }
+            }
+        }
+    }
 
-	const result: OptimizedImageSet = {
-		imageId,
-		originalUrl: originalBlob.url,
-		variants,
-		generatedAt: new Date().toISOString(),
-	};
+    const result: OptimizedImageSet = {
+        imageId,
+        originalUrl: originalBlob.url,
+        variants,
+        generatedAt: new Date().toISOString(),
+    };
 
-	console.log(
-		`[Image Optimization] Complete! Generated ${variants.length}/${totalVariants} variants`,
-	);
-	console.log(
-		`[Image Optimization] Total size: ${Math.round(variants.reduce((sum, v) => sum + v.size, 0) / 1024)}KB across all variants`,
-	);
+    console.log(
+        `[Image Optimization] Complete! Generated ${variants.length}/${totalVariants} variants`,
+    );
+    console.log(
+        `[Image Optimization] Total size: ${Math.round(variants.reduce((sum, v) => sum + v.size, 0) / 1024)}KB across all variants`,
+    );
 
-	return result;
+    return result;
 }
 
 /**
@@ -313,37 +316,37 @@ export async function optimizeImage(
  * @returns URL of the best matching variant
  */
 export function getBestVariant(
-	variants: ImageVariant[],
-	viewportWidth: number,
-	format: ImageFormat = "avif",
+    variants: ImageVariant[],
+    viewportWidth: number,
+    format: ImageFormat = "avif",
 ): string | null {
-	// Try to find variant in preferred format
-	let formatVariants = variants.filter((v) => v.format === format);
+    // Try to find variant in preferred format
+    let formatVariants = variants.filter((v) => v.format === format);
 
-	// Fallback to jpeg if avif not available
-	if (formatVariants.length === 0) {
-		formatVariants = variants.filter((v) => v.format === "jpeg");
-	}
+    // Fallback to jpeg if avif not available
+    if (formatVariants.length === 0) {
+        formatVariants = variants.filter((v) => v.format === "jpeg");
+    }
 
-	// No variants available
-	if (formatVariants.length === 0) {
-		return null;
-	}
+    // No variants available
+    if (formatVariants.length === 0) {
+        return null;
+    }
 
-	// Account for device pixel ratio (assume 2x for retina)
-	const effectiveWidth =
-		viewportWidth *
-		(typeof window !== "undefined" && window.devicePixelRatio > 1 ? 2 : 1);
+    // Account for device pixel ratio (assume 2x for retina)
+    const effectiveWidth =
+        viewportWidth *
+        (typeof window !== "undefined" && window.devicePixelRatio > 1 ? 2 : 1);
 
-	// Find smallest variant that's still larger than viewport
-	const suitable = formatVariants
-		.filter((v) => v.width >= effectiveWidth)
-		.sort((a, b) => a.width - b.width);
+    // Find smallest variant that's still larger than viewport
+    const suitable = formatVariants
+        .filter((v) => v.width >= effectiveWidth)
+        .sort((a, b) => a.width - b.width);
 
-	// Return smallest suitable variant, or largest if none are big enough
-	return suitable.length > 0
-		? suitable[0].url
-		: formatVariants.sort((a, b) => b.width - a.width)[0].url;
+    // Return smallest suitable variant, or largest if none are big enough
+    return suitable.length > 0
+        ? suitable[0].url
+        : formatVariants.sort((a, b) => b.width - a.width)[0].url;
 }
 
 /**
@@ -354,14 +357,14 @@ export function getBestVariant(
  * @returns srcSet string for use in img tag
  */
 export function generateSrcSet(
-	variants: ImageVariant[],
-	format: ImageFormat = "avif",
+    variants: ImageVariant[],
+    format: ImageFormat = "avif",
 ): string {
-	const formatVariants = variants
-		.filter((v) => v.format === format)
-		.sort((a, b) => a.width - b.width);
+    const formatVariants = variants
+        .filter((v) => v.format === format)
+        .sort((a, b) => a.width - b.width);
 
-	return formatVariants.map((v) => `${v.url} ${v.width}w`).join(", ");
+    return formatVariants.map((v) => `${v.url} ${v.width}w`).join(", ");
 }
 
 /**
@@ -372,5 +375,5 @@ export function generateSrcSet(
  * @returns sizes string for use in img tag
  */
 export function generateSizesAttribute(): string {
-	return "(max-width: 640px) 100vw, 100vw";
+    return "(max-width: 640px) 100vw, 100vw";
 }

@@ -9,30 +9,32 @@ import { db } from "@/lib/db";
 import {
     chapters,
     characters,
+    parts,
     scenes,
     settings,
     stories,
 } from "@/lib/db/schema";
 import { generateSceneContent } from "../generators/scene-content-generator";
 import type {
-    GenerateSceneContentParams,
-    GenerateSceneContentResult,
+    GeneratorSceneContentParams,
+    GeneratorSceneContentResult,
 } from "../generators/types";
 import type {
     Chapter,
     Character,
+    Part,
     Scene,
     Setting,
     Story,
 } from "../generators/zod-schemas.generated";
 
-export interface GenerateSceneContentServiceParams {
+export interface ServiceSceneContentParams {
     sceneId: string;
     language?: string;
     userId: string;
 }
 
-export interface GenerateSceneContentServiceResult {
+export interface ServiceSceneContentResult {
     scene: Scene;
     metadata: {
         wordCount: number;
@@ -42,8 +44,8 @@ export interface GenerateSceneContentServiceResult {
 
 export class SceneContentService {
     async generateAndSave(
-        params: GenerateSceneContentServiceParams,
-    ): Promise<GenerateSceneContentServiceResult> {
+        params: ServiceSceneContentParams,
+    ): Promise<ServiceSceneContentResult> {
         const { sceneId, language = "English", userId } = params;
 
         // 1. Fetch scene
@@ -89,31 +91,45 @@ export class SceneContentService {
             );
         }
 
-        // 5. Fetch characters for the story
-        const storyCharacters: Character[] = (await db
+        // 5. Fetch part
+        const partResult = await db
+            .select()
+            .from(parts)
+            .where(eq(parts.id, chapter.partId));
+
+        const part = partResult[0] as Part | undefined;
+
+        if (!part) {
+            throw new Error(`Part not found: ${chapter.partId}`);
+        }
+
+        // 6. Fetch all characters for the story
+        const storyCharacters = (await db
             .select()
             .from(characters)
             .where(eq(characters.storyId, story.id))) as Character[];
 
-        // 6. Fetch settings for the story
-        const storySettings: Setting[] = (await db
+        // 7. Fetch all settings for the story
+        const storySettings = (await db
             .select()
             .from(settings)
             .where(eq(settings.storyId, story.id))) as Setting[];
 
-        // 7. Generate scene content using pure generator
-        const generateParams: GenerateSceneContentParams = {
-            sceneId,
+        // 8. Generate scene content using pure generator
+        const generateParams: GeneratorSceneContentParams = {
+            story,
+            part,
+            chapter,
             scene,
             characters: storyCharacters,
             settings: storySettings,
             language,
         };
 
-        const generationResult: GenerateSceneContentResult =
+        const generationResult: GeneratorSceneContentResult =
             await generateSceneContent(generateParams);
 
-        // 8. Update scene with generated content
+        // 9. Update scene with generated content
         const now: string = new Date().toISOString();
 
         const updatedSceneArray: Scene[] = (await db
@@ -127,7 +143,7 @@ export class SceneContentService {
 
         const updatedScene: Scene = updatedSceneArray[0];
 
-        // 9. Return result
+        // 10. Return result
         return {
             scene: updatedScene,
             metadata: {

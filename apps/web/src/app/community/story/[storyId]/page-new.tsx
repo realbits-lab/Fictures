@@ -20,12 +20,12 @@ import { CommunityStorySkeleton } from "@/components/community/CommunityLoadingS
 import { CommunityStoryDetailClient } from "@/components/community/CommunityStoryDetailClient";
 import { MainLayout } from "@/components/layout";
 import {
-	getCommunityPostsOptimized,
-	getCommunityStoryOptimized,
+    getCommunityPostsOptimized,
+    getCommunityStoryOptimized,
 } from "@/lib/db/cached-queries";
 
 interface StoryPageProps {
-	params: Promise<{ storyId: string }>;
+    params: Promise<{ storyId: string }>;
 }
 
 // ⚡ Enable Partial Prerendering (PPR)
@@ -33,55 +33,55 @@ export const experimental_ppr = true;
 
 // Server Component for data fetching
 async function StoryContent({ storyId }: { storyId: string }) {
-	const ssrStart = performance.now();
-	console.log("\n📖 [SSR] Community story page rendering started:", storyId);
+    const ssrStart = performance.now();
+    console.log("\n📖 [SSR] Community story page rendering started:", storyId);
 
-	try {
-		// Parallel data fetching for better performance
-		const [story, posts] = await Promise.all([
-			getCommunityStoryOptimized(storyId),
-			getCommunityPostsOptimized(storyId),
-		]);
+    try {
+        // Parallel data fetching for better performance
+        const [story, posts] = await Promise.all([
+            getCommunityStoryOptimized(storyId),
+            getCommunityPostsOptimized(storyId),
+        ]);
 
-		const ssrEnd = performance.now();
-		const ssrDuration = Math.round(ssrEnd - ssrStart);
-		console.log(`✅ [SSR] Story data fetched in ${ssrDuration}ms`);
-		console.log(`📊 [SSR] Posts count: ${posts.length}`);
+        const ssrEnd = performance.now();
+        const ssrDuration = Math.round(ssrEnd - ssrStart);
+        console.log(`✅ [SSR] Story data fetched in ${ssrDuration}ms`);
+        console.log(`📊 [SSR] Posts count: ${posts.length}`);
 
-		if (!story) {
-			console.log("❌ [SSR] Story not found:", storyId);
-			notFound();
-		}
+        if (!story) {
+            console.log("❌ [SSR] Story not found:", storyId);
+            notFound();
+        }
 
-		// Pass SSR data to client component
-		return (
-			<CommunityStoryDetailClient
-				initialStory={story}
-				initialPosts={posts}
-				storyId={storyId}
-			/>
-		);
-	} catch (error) {
-		const errorDuration = Math.round(performance.now() - ssrStart);
-		console.error(
-			`❌ [SSR] Story data fetch failed after ${errorDuration}ms:`,
-			error,
-		);
-		throw error;
-	}
+        // Pass SSR data to client component
+        return (
+            <CommunityStoryDetailClient
+                initialStory={story}
+                initialPosts={posts}
+                storyId={storyId}
+            />
+        );
+    } catch (error) {
+        const errorDuration = Math.round(performance.now() - ssrStart);
+        console.error(
+            `❌ [SSR] Story data fetch failed after ${errorDuration}ms:`,
+            error,
+        );
+        throw error;
+    }
 }
 
 // Main page component
 export default async function StoryCommunityPage({ params }: StoryPageProps) {
-	const { storyId } = await params;
-	console.log("📄 [SSR] Story community page component rendering:", storyId);
+    const { storyId } = await params;
+    console.log("📄 [SSR] Story community page component rendering:", storyId);
 
-	return (
-		<MainLayout>
-			{/* Progressive content streaming with Suspense */}
-			<Suspense fallback={<CommunityStorySkeleton />}>
-				<StoryContent storyId={storyId} />
-			</Suspense>
-		</MainLayout>
-	);
+    return (
+        <MainLayout>
+            {/* Progressive content streaming with Suspense */}
+            <Suspense fallback={<CommunityStorySkeleton />}>
+                <StoryContent storyId={storyId} />
+            </Suspense>
+        </MainLayout>
+    );
 }

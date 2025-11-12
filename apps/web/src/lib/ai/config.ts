@@ -8,25 +8,25 @@ export const IMAGE_GENERATION_MODEL = "google/gemini-2.5-flash-image-preview";
 
 // AI models configuration using AI Gateway
 export const AI_MODELS = {
-	// Main writing model - balanced for creative writing
-	writing: gateway(REASONING_MODEL),
+    // Main writing model - balanced for creative writing
+    writing: gateway(REASONING_MODEL),
 
-	// Reasoning model for complex analysis
-	analysis: gateway(REASONING_MODEL),
+    // Reasoning model for complex analysis
+    analysis: gateway(REASONING_MODEL),
 
-	// Fast model for quick suggestions
-	quick: gateway(DEFAULT_MODEL),
+    // Fast model for quick suggestions
+    quick: gateway(DEFAULT_MODEL),
 
-	// Generation model for content improvement
-	generation: gateway(DEFAULT_MODEL),
+    // Generation model for content improvement
+    generation: gateway(DEFAULT_MODEL),
 
-	// Default model
-	default: gateway(DEFAULT_MODEL),
+    // Default model
+    default: gateway(DEFAULT_MODEL),
 } as const;
 
 // AI prompt templates
 export const AI_PROMPTS = {
-	writing_assistance: `You are a professional writing assistant specialized in creative fiction. Your role is to help writers improve their storytelling through:
+    writing_assistance: `You are a professional writing assistant specialized in creative fiction. Your role is to help writers improve their storytelling through:
 
 1. Character development suggestions
 2. Plot structure analysis
@@ -37,7 +37,7 @@ export const AI_PROMPTS = {
 
 Always provide specific, actionable advice that respects the writer's creative vision while offering meaningful improvements.`,
 
-	character_development: `You are a character development expert. Help writers create compelling, three-dimensional characters by analyzing:
+    character_development: `You are a character development expert. Help writers create compelling, three-dimensional characters by analyzing:
 
 - Character motivation and goals
 - Internal conflicts and growth arcs
@@ -47,7 +47,7 @@ Always provide specific, actionable advice that respects the writer's creative v
 
 Provide specific examples and suggestions that enhance character depth.`,
 
-	plot_analysis: `You are a plot structure analyst. Help writers strengthen their narrative by examining:
+    plot_analysis: `You are a plot structure analyst. Help writers strengthen their narrative by examining:
 
 - Story pacing and rhythm
 - Plot holes and inconsistencies
@@ -57,7 +57,7 @@ Provide specific examples and suggestions that enhance character depth.`,
 
 Offer concrete suggestions for plot improvements while maintaining the author's intended direction.`,
 
-	style_coach: `You are a writing style coach. Help writers improve their prose by focusing on:
+    style_coach: `You are a writing style coach. Help writers improve their prose by focusing on:
 
 - Sentence variety and flow
 - Word choice and vocabulary
@@ -70,77 +70,83 @@ Provide specific examples of improvements with explanations of why they work bet
 
 // AI tool definitions for function calling
 export const AI_TOOLS = {
-	analyze_text: {
-		summary: "Analyze a piece of writing for structure, pacing, and style",
-		parameters: {
-			type: "object",
-			properties: {
-				text: {
-					type: "string",
-					summary: "The text to analyze",
-				},
-				focus: {
-					type: "string",
-					enum: ["structure", "pacing", "style", "character", "dialogue"],
-					summary: "What aspect to focus the analysis on",
-				},
-			},
-			required: ["text", "focus"],
-		},
-	},
+    analyze_text: {
+        summary: "Analyze a piece of writing for structure, pacing, and style",
+        parameters: {
+            type: "object",
+            properties: {
+                text: {
+                    type: "string",
+                    summary: "The text to analyze",
+                },
+                focus: {
+                    type: "string",
+                    enum: [
+                        "structure",
+                        "pacing",
+                        "style",
+                        "character",
+                        "dialogue",
+                    ],
+                    summary: "What aspect to focus the analysis on",
+                },
+            },
+            required: ["text", "focus"],
+        },
+    },
 
-	suggest_improvements: {
-		summary: "Suggest specific improvements for a piece of writing",
-		parameters: {
-			type: "object",
-			properties: {
-				text: {
-					type: "string",
-					summary: "The text to improve",
-				},
-				type: {
-					type: "string",
-					enum: [
-						"character",
-						"dialogue",
-						"description",
-						"action",
-						"transition",
-					],
-					summary: "Type of improvement needed",
-				},
-			},
-			required: ["text", "type"],
-		},
-	},
+    suggest_improvements: {
+        summary: "Suggest specific improvements for a piece of writing",
+        parameters: {
+            type: "object",
+            properties: {
+                text: {
+                    type: "string",
+                    summary: "The text to improve",
+                },
+                type: {
+                    type: "string",
+                    enum: [
+                        "character",
+                        "dialogue",
+                        "description",
+                        "action",
+                        "transition",
+                    ],
+                    summary: "Type of improvement needed",
+                },
+            },
+            required: ["text", "type"],
+        },
+    },
 
-	generate_content: {
-		summary: "Generate content based on context and requirements",
-		parameters: {
-			type: "object",
-			properties: {
-				context: {
-					type: "string",
-					summary: "Current story context or scene setup",
-				},
-				type: {
-					type: "string",
-					enum: [
-						"dialogue",
-						"description",
-						"action",
-						"transition",
-						"character_thought",
-					],
-					summary: "Type of content to generate",
-				},
-				length: {
-					type: "string",
-					enum: ["short", "medium", "long"],
-					summary: "Desired length of generated content",
-				},
-			},
-			required: ["context", "type"],
-		},
-	},
+    generate_content: {
+        summary: "Generate content based on context and requirements",
+        parameters: {
+            type: "object",
+            properties: {
+                context: {
+                    type: "string",
+                    summary: "Current story context or scene setup",
+                },
+                type: {
+                    type: "string",
+                    enum: [
+                        "dialogue",
+                        "description",
+                        "action",
+                        "transition",
+                        "character_thought",
+                    ],
+                    summary: "Type of content to generate",
+                },
+                length: {
+                    type: "string",
+                    enum: ["short", "medium", "long"],
+                    summary: "Desired length of generated content",
+                },
+            },
+            required: ["context", "type"],
+        },
+    },
 } as const;

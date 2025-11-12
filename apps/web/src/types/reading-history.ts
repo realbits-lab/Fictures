@@ -28,39 +28,39 @@
 export type ReadingFormat = "novel" | "comic";
 
 export interface HistoryItem {
-	storyId: string;
-	timestamp: number;
-	format: ReadingFormat;
+    storyId: string;
+    timestamp: number;
+    format: ReadingFormat;
 
-	// Format-specific progress
-	sceneId?: string; // For novels - which scene was last read
-	panelId?: string; // For comics - which panel was last viewed
-	pageNumber?: number; // For comics - which page was last viewed
+    // Format-specific progress
+    sceneId?: string; // For novels - which scene was last read
+    panelId?: string; // For comics - which panel was last viewed
+    pageNumber?: number; // For comics - which page was last viewed
 }
 
 export interface StorageData {
-	version: number;
-	items: HistoryItem[];
+    version: number;
+    items: HistoryItem[];
 }
 
 export interface ReadingHistoryRecord {
-	id: string;
-	userId: string;
-	storyId: string;
-	readingFormat: ReadingFormat;
-	lastReadAt: Date;
-	readCount: number;
+    id: string;
+    userId: string;
+    storyId: string;
+    readingFormat: ReadingFormat;
+    lastReadAt: Date;
+    readCount: number;
 
-	// Format-specific progress
-	lastSceneId?: string | null;
-	lastPanelId?: string | null;
-	lastPageNumber?: number | null;
+    // Format-specific progress
+    lastSceneId?: string | null;
+    lastPanelId?: string | null;
+    lastPageNumber?: number | null;
 
-	createdAt: Date;
+    createdAt: Date;
 }
 
 export interface AddToHistoryOptions {
-	sceneId?: string;
-	panelId?: string;
-	pageNumber?: number;
+    sceneId?: string;
+    panelId?: string;
+    pageNumber?: number;
 }

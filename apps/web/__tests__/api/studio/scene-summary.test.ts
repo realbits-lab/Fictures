@@ -12,16 +12,18 @@
  */
 
 import type {
-    GenerateChapterRequest,
-    GenerateChapterResponse,
-    GenerateCharactersRequest,
-    GenerateCharactersResponse,
-    GeneratePartRequest,
-    GeneratePartResponse,
-    GenerateSceneSummaryErrorResponse,
-    GenerateSceneSummaryRequest,
-    GenerateSceneSummaryResponse,
-    GenerateStoryRequest,
+    ApiChapterRequest,
+    ApiChapterResponse,
+    ApiCharactersRequest,
+    ApiCharactersResponse,
+    ApiPartRequest,
+    ApiPartResponse,
+    ApiSceneSummaryErrorResponse,
+    ApiSceneSummaryRequest,
+    ApiSceneSummaryResponse,
+    ApiSettingsRequest,
+    ApiSettingsResponse,
+    ApiStoryRequest,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
@@ -37,7 +39,7 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
         console.log("🔧 Setting up test story...");
 
         // 1. Create story
-        const storyRequestBody: GenerateStoryRequest = {
+        const storyRequestBody: ApiStoryRequest = {
             userPrompt:
                 "A short fantasy adventure for testing singular scene summary generation",
             language: "English",
@@ -69,7 +71,7 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
 
         // 2. Generate characters
         console.log("🔧 Generating characters...");
-        const charactersRequestBody: GenerateCharactersRequest = {
+        const charactersRequestBody: ApiCharactersRequest = {
             storyId: testStoryId,
             characterCount: 2,
             language: "English",
@@ -87,7 +89,7 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
             },
         );
 
-        const charactersData: GenerateCharactersResponse =
+        const charactersData: ApiCharactersResponse =
             await charactersResponse.json();
         if (!charactersResponse.ok) {
             console.error("❌ Failed to generate characters:", charactersData);
@@ -98,9 +100,36 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
             `✅ Characters generated: ${charactersData.characters.length}`,
         );
 
-        // 3. Generate part
+        // 3. Generate settings (required for part generation)
+        console.log("🔧 Generating settings...");
+        const settingsRequestBody: ApiSettingsRequest = {
+            storyId: testStoryId,
+            settingCount: 2,
+        };
+
+        const settingsResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/settings",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify(settingsRequestBody),
+            },
+        );
+
+        const settingsData: ApiSettingsResponse = await settingsResponse.json();
+        if (!settingsResponse.ok) {
+            console.error("❌ Failed to generate settings:", settingsData);
+            throw new Error("Test setup failed: could not generate settings");
+        }
+
+        console.log(`✅ Settings generated: ${settingsData.settings.length}`);
+
+        // 4. Generate part
         console.log("🔧 Generating part...");
-        const partRequestBody: GeneratePartRequest = {
+        const partRequestBody: ApiPartRequest = {
             storyId: testStoryId,
         };
 
@@ -116,7 +145,7 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
             },
         );
 
-        const partData: GeneratePartResponse = await partResponse.json();
+        const partData: ApiPartResponse = await partResponse.json();
         if (!partResponse.ok) {
             console.error("❌ Failed to generate part:", partData);
             throw new Error("Test setup failed: could not generate part");
@@ -127,7 +156,7 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
 
         // 4. Generate chapter (required for scene summary generation)
         console.log("🔧 Generating chapter...");
-        const chapterRequestBody: GenerateChapterRequest = {
+        const chapterRequestBody: ApiChapterRequest = {
             storyId: testStoryId,
             partId: testPartId,
         };
@@ -144,8 +173,7 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
             },
         );
 
-        const chapterData: GenerateChapterResponse =
-            await chapterResponse.json();
+        const chapterData: ApiChapterResponse = await chapterResponse.json();
         if (!chapterResponse.ok) {
             console.error("❌ Failed to generate chapter:", chapterData);
             throw new Error("Test setup failed: could not generate chapter");
@@ -157,7 +185,7 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
 
     it("should generate first scene summary via POST /studio/api/scene-summary", async () => {
         // 1. Prepare request body
-        const requestBody: GenerateSceneSummaryRequest = {
+        const requestBody: ApiSceneSummaryRequest = {
             storyId: testStoryId,
             chapterId: testChapterId,
         };
@@ -176,9 +204,8 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
         );
 
         // 3. Parse response
-        const data:
-            | GenerateSceneSummaryResponse
-            | GenerateSceneSummaryErrorResponse = await response.json();
+        const data: ApiSceneSummaryResponse | ApiSceneSummaryErrorResponse =
+            await response.json();
 
         if (!response.ok) {
             console.error("❌ Scene Summary API Error:", data);
@@ -188,13 +215,11 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
         expect(response.status).toBe(201);
 
         if (!("success" in data) || !data.success) {
-            throw new Error(
-                "Expected GenerateSceneSummaryResponse but got error",
-            );
+            throw new Error("Expected ApiSceneSummaryResponse but got error");
         }
 
-        const successData: GenerateSceneSummaryResponse =
-            data as GenerateSceneSummaryResponse;
+        const successData: ApiSceneSummaryResponse =
+            data as ApiSceneSummaryResponse;
 
         // 4. Verify scene attributes
         const { scene, metadata } = successData;
@@ -225,7 +250,7 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
 
     it("should generate second scene with context via POST /studio/api/scene-summary", async () => {
         // 1. Prepare request body
-        const requestBody: GenerateSceneSummaryRequest = {
+        const requestBody: ApiSceneSummaryRequest = {
             storyId: testStoryId,
             chapterId: testChapterId,
         };
@@ -243,9 +268,8 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
             },
         );
 
-        const data:
-            | GenerateSceneSummaryResponse
-            | GenerateSceneSummaryErrorResponse = await response.json();
+        const data: ApiSceneSummaryResponse | ApiSceneSummaryErrorResponse =
+            await response.json();
 
         if (!response.ok) {
             console.error("❌ Second Scene Summary API Error:", data);
@@ -255,13 +279,11 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
         expect(response.status).toBe(201);
 
         if (!("success" in data) || !data.success) {
-            throw new Error(
-                "Expected GenerateSceneSummaryResponse but got error",
-            );
+            throw new Error("Expected ApiSceneSummaryResponse but got error");
         }
 
-        const successData: GenerateSceneSummaryResponse =
-            data as GenerateSceneSummaryResponse;
+        const successData: ApiSceneSummaryResponse =
+            data as ApiSceneSummaryResponse;
 
         // 3. Verify second scene
         const { scene, metadata } = successData;

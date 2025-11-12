@@ -4,9 +4,9 @@ import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { partService } from "@/lib/studio/services/part-service";
 import type {
-    GeneratePartErrorResponse,
-    GeneratePartRequest,
-    GeneratePartResponse,
+    ApiPartErrorResponse,
+    ApiPartRequest,
+    ApiPartResponse,
 } from "../types";
 
 export const runtime = "nodejs";
@@ -60,8 +60,7 @@ export async function POST(request: NextRequest) {
         });
 
         // 3. Parse and validate request body with type safety
-        const body: GeneratePartRequest =
-            (await request.json()) as GeneratePartRequest;
+        const body: ApiPartRequest = (await request.json()) as ApiPartRequest;
         const validatedData: z.infer<typeof generatePartSchema> =
             generatePartSchema.parse(body);
 
@@ -92,7 +91,7 @@ export async function POST(request: NextRequest) {
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
         // 6. Return typed response
-        const response: GeneratePartResponse = {
+        const response: ApiPartResponse = {
             success: true,
             part: serviceResult.part,
             metadata: {
@@ -109,14 +108,14 @@ export async function POST(request: NextRequest) {
         console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
         if (error instanceof z.ZodError) {
-            const errorResponse: GeneratePartErrorResponse = {
+            const errorResponse: ApiPartErrorResponse = {
                 error: "Invalid input",
                 details: error.issues,
             };
             return NextResponse.json(errorResponse, { status: 400 });
         }
 
-        const errorResponse: GeneratePartErrorResponse = {
+        const errorResponse: ApiPartErrorResponse = {
             error: "Failed to generate and save part",
             details: error instanceof Error ? error.message : "Unknown error",
         };

@@ -10,8 +10,8 @@ import { db } from "@/lib/db";
 import { characters, stories } from "@/lib/db/schema";
 import { generateCharacters } from "../generators/characters-generator";
 import type {
-    GenerateCharactersParams,
-    GenerateCharactersResult,
+    GeneratorCharactersParams,
+    GeneratorCharactersResult,
 } from "../generators/types";
 import {
     type Character,
@@ -19,14 +19,14 @@ import {
     type Story,
 } from "../generators/zod-schemas.generated";
 
-export interface GenerateCharactersServiceParams {
+export interface ServiceCharactersParams {
     storyId: string;
     characterCount: number;
     language?: string;
     userId: string;
 }
 
-export interface GenerateCharactersServiceResult {
+export interface ServiceCharactersResult {
     characters: Character[];
     metadata: {
         totalGenerated: number;
@@ -36,8 +36,8 @@ export interface GenerateCharactersServiceResult {
 
 export class CharacterService {
     async generateAndSave(
-        params: GenerateCharactersServiceParams,
-    ): Promise<GenerateCharactersServiceResult> {
+        params: ServiceCharactersParams,
+    ): Promise<ServiceCharactersResult> {
         const {
             storyId,
             characterCount,
@@ -65,13 +65,13 @@ export class CharacterService {
         }
 
         // 3. Generate characters using pure generator
-        const generateParams: GenerateCharactersParams = {
+        const generateParams: GeneratorCharactersParams = {
             story,
             characterCount,
             language,
         };
 
-        const generationResult: GenerateCharactersResult =
+        const generationResult: GeneratorCharactersResult =
             await generateCharacters(generateParams);
 
         // 4. Save characters to database
@@ -92,7 +92,6 @@ export class CharacterService {
                 externalGoal: characterData.externalGoal ?? null,
                 personality: characterData.personality ?? null,
                 backstory: characterData.backstory ?? null,
-                relationships: null,
                 physicalDescription: characterData.physicalDescription ?? null,
                 voiceStyle: characterData.voiceStyle ?? null,
                 imageUrl: null,

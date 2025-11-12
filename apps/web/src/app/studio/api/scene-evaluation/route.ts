@@ -13,9 +13,9 @@ import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import type { Scene } from "@/lib/studio/generators/zod-schemas.generated";
 import { sceneEvaluationService } from "@/lib/studio/services";
 import type {
-    EvaluateSceneErrorResponse,
-    EvaluateSceneRequest,
-    EvaluateSceneResponse,
+    ApiSceneEvaluationErrorResponse,
+    ApiSceneEvaluationRequest,
+    ApiSceneEvaluationResponse,
 } from "../types";
 import { evaluateSceneSchema } from "../validation-schemas";
 
@@ -66,8 +66,8 @@ export async function POST(request: NextRequest) {
         });
 
         // 3. Parse and validate request body
-        const body: EvaluateSceneRequest =
-            (await request.json()) as EvaluateSceneRequest;
+        const body: ApiSceneEvaluationRequest =
+            (await request.json()) as ApiSceneEvaluationRequest;
         const validatedData: z.infer<typeof evaluateSceneSchema> =
             evaluateSceneSchema.parse(body);
 
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
         // 6. Return typed response
-        const response: EvaluateSceneResponse = {
+        const response: ApiSceneEvaluationResponse = {
             success: true,
             scene: serviceResult.scene as Scene,
             evaluation: {
@@ -124,14 +124,14 @@ export async function POST(request: NextRequest) {
         console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
         if (error instanceof z.ZodError) {
-            const errorResponse: EvaluateSceneErrorResponse = {
+            const errorResponse: ApiSceneEvaluationErrorResponse = {
                 error: "Invalid input",
                 details: error.issues,
             };
             return NextResponse.json(errorResponse, { status: 400 });
         }
 
-        const errorResponse: EvaluateSceneErrorResponse = {
+        const errorResponse: ApiSceneEvaluationErrorResponse = {
             error: "Failed to evaluate scene",
             details: error instanceof Error ? error.message : "Unknown error",
         };

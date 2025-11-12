@@ -14,51 +14,56 @@
 export {
     ChapterService,
     chapterService,
-    type GenerateChaptersServiceParams,
-    type GenerateChaptersServiceResult,
-} from "./chapters-service";
+    type ServiceChapterParams,
+    type ServiceChapterResult,
+} from "./chapter-service";
 
 export {
     CharacterService,
     characterService,
-    type GenerateCharactersServiceParams,
-    type GenerateCharactersServiceResult,
+    type ServiceCharactersParams,
+    type ServiceCharactersResult,
 } from "./character-service";
+
 export {
-    type GeneratePartsServiceParams,
-    type GeneratePartsServiceResult,
+    type ServicePartParams,
+    type ServicePartResult,
     PartService,
     partService,
-} from "./parts-service";
+} from "./part-service";
+
 export {
-    type GenerateSceneContentServiceParams,
-    type GenerateSceneContentServiceResult,
     SceneContentService,
+    type ServiceSceneContentParams,
+    type ServiceSceneContentResult,
     sceneContentService,
 } from "./scene-content-service";
+
 export {
-    type EvaluateSceneServiceParams,
-    type EvaluateSceneServiceResult,
     type EvaluateSceneWithDataParams,
     SceneEvaluationService,
+    type ServiceSceneEvaluationParams,
+    type ServiceSceneEvaluationResult,
     sceneEvaluationService,
 } from "./scene-evaluation-service";
 
 export {
-    type GenerateSceneSummariesServiceParams,
-    type GenerateSceneSummariesServiceResult,
-    SceneSummariesService,
-    sceneSummariesService,
-} from "./scene-summaries-service";
+    type ServiceSceneSummaryParams,
+    type ServiceSceneSummaryResult,
+    SceneSummaryService,
+    sceneSummaryService,
+} from "./scene-summary-service";
+
 export {
-    type GenerateSettingsServiceParams,
-    type GenerateSettingsServiceResult,
+    type ServiceSettingsParams,
+    type ServiceSettingsResult,
     SettingService,
     settingService,
 } from "./setting-service";
+
 export {
-    type GenerateStoryServiceParams,
-    type GenerateStoryServiceResult,
+    type ServiceStoryParams,
+    type ServiceStoryResult,
     StoryService,
     storyService,
 } from "./story-service";

@@ -12,12 +12,14 @@
  */
 
 import type {
-    GenerateCharactersRequest,
-    GenerateCharactersResponse,
-    GeneratePartErrorResponse,
-    GeneratePartRequest,
-    GeneratePartResponse,
-    GenerateStoryRequest,
+    ApiCharactersRequest,
+    ApiCharactersResponse,
+    ApiPartErrorResponse,
+    ApiPartRequest,
+    ApiPartResponse,
+    ApiSettingsRequest,
+    ApiSettingsResponse,
+    ApiStoryRequest,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
@@ -32,7 +34,7 @@ describe("Part API (Singular - Extreme Incremental)", () => {
         console.log("🔧 Setting up test story...");
 
         // 1. Prepare story request body with proper TypeScript type
-        const storyRequestBody: GenerateStoryRequest = {
+        const storyRequestBody: ApiStoryRequest = {
             userPrompt:
                 "A short fantasy adventure for testing singular part generation",
             language: "English",
@@ -68,7 +70,7 @@ describe("Part API (Singular - Extreme Incremental)", () => {
 
         // 6. Generate characters (required for part generation)
         console.log("🔧 Generating characters...");
-        const charactersRequestBody: GenerateCharactersRequest = {
+        const charactersRequestBody: ApiCharactersRequest = {
             storyId: testStoryId,
             characterCount: 2,
             language: "English",
@@ -87,7 +89,7 @@ describe("Part API (Singular - Extreme Incremental)", () => {
         );
 
         // 7. Validate characters response
-        const charactersData: GenerateCharactersResponse =
+        const charactersData: ApiCharactersResponse =
             await charactersResponse.json();
         if (!charactersResponse.ok) {
             console.error("❌ Failed to generate characters:", charactersData);
@@ -97,11 +99,39 @@ describe("Part API (Singular - Extreme Incremental)", () => {
         console.log(
             `✅ Characters generated: ${charactersData.characters.length}`,
         );
-    }, 180000); // 3 minute timeout for story + character creation
+
+        // 8. Generate settings (required for part generation)
+        console.log("🔧 Generating settings...");
+        const settingsRequestBody: ApiSettingsRequest = {
+            storyId: testStoryId,
+            settingCount: 2,
+        };
+
+        const settingsResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/settings",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify(settingsRequestBody),
+            },
+        );
+
+        // 9. Validate settings response
+        const settingsData: ApiSettingsResponse = await settingsResponse.json();
+        if (!settingsResponse.ok) {
+            console.error("❌ Failed to generate settings:", settingsData);
+            throw new Error("Test setup failed: could not generate settings");
+        }
+
+        console.log(`✅ Settings generated: ${settingsData.settings.length}`);
+    }, 240000); // 4 minute timeout for story + character + settings creation
 
     it("should generate first part via POST /studio/api/part", async () => {
         // 1. Prepare request body with proper TypeScript type
-        const requestBody: GeneratePartRequest = {
+        const requestBody: ApiPartRequest = {
             storyId: testStoryId,
         };
 
@@ -119,7 +149,7 @@ describe("Part API (Singular - Extreme Incremental)", () => {
         );
 
         // 3. Parse response data with proper typing
-        const data: GeneratePartResponse | GeneratePartErrorResponse =
+        const data: ApiPartResponse | ApiPartErrorResponse =
             await response.json();
 
         // 4. Log error if request failed
@@ -133,11 +163,11 @@ describe("Part API (Singular - Extreme Incremental)", () => {
 
         // 6. Type guard to ensure we have success response
         if (!("success" in data) || !data.success) {
-            throw new Error("Expected GeneratePartResponse but got error");
+            throw new Error("Expected ApiPartResponse but got error");
         }
 
         // 7. Cast to success response type
-        const successData: GeneratePartResponse = data as GeneratePartResponse;
+        const successData: ApiPartResponse = data as ApiPartResponse;
 
         // 8. Verify response structure
         expect(successData.success).toBe(true);
@@ -198,7 +228,7 @@ describe("Part API (Singular - Extreme Incremental)", () => {
 
     it("should generate second part with context via POST /studio/api/part", async () => {
         // 1. Prepare request body
-        const requestBody: GeneratePartRequest = {
+        const requestBody: ApiPartRequest = {
             storyId: testStoryId,
         };
 
@@ -216,7 +246,7 @@ describe("Part API (Singular - Extreme Incremental)", () => {
         );
 
         // 3. Parse response
-        const data: GeneratePartResponse | GeneratePartErrorResponse =
+        const data: ApiPartResponse | ApiPartErrorResponse =
             await response.json();
 
         if (!response.ok) {
@@ -227,10 +257,10 @@ describe("Part API (Singular - Extreme Incremental)", () => {
         expect(response.status).toBe(201);
 
         if (!("success" in data) || !data.success) {
-            throw new Error("Expected GeneratePartResponse but got error");
+            throw new Error("Expected ApiPartResponse but got error");
         }
 
-        const successData: GeneratePartResponse = data as GeneratePartResponse;
+        const successData: ApiPartResponse = data as ApiPartResponse;
 
         // 4. Verify second part
         const { part, metadata } = successData;

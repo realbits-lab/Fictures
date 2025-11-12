@@ -4,7 +4,8 @@
  * Layer: API (HTTP Contracts)
  * Used by: src/app/studio/api/* routes
  * Related:
- * - Service types: src/lib/studio/generators/types.ts
+ * - AI types: src/lib/studio/generators/zod-schemas.generated.ts
+ * - Service types: src/lib/studio/generators/types.ts (TBD)
  * - Domain types: src/lib/ai/types/image.ts
  * - Global types: src/types/index.ts
  *
@@ -13,7 +14,7 @@
  * These types represent the data exchanged between client and server.
  *
  * ## Naming Convention
- * Follows unified naming pattern: Generate{Entity}{Suffix}
+ * Follows layer-based naming pattern: Api{Entity}{Suffix}
  *
  * Type Suffixes:
  * - Request: HTTP request body (what client sends)
@@ -21,11 +22,14 @@
  * - ErrorResponse: HTTP error response (what server returns on error)
  *
  * ## Architecture
- * API Layer (this file) → Service Layer (generators/types.ts) → Domain Layer (ai/types)
+ * API Layer (this file) → Service Layer (generators/types.ts - TBD) → Generator Layer → AI Layer (Zod schemas)
  *
  * API types are mapped to service types in route handlers:
- * - GenerateStoryRequest → GenerateStoryParams (service input)
- * - GenerateStoryResult (service output) → GenerateStoryResponse
+ * - ApiStoryRequest → ServiceStoryParams (service input)
+ * - ServiceStoryResult (service output) → ApiStoryResponse
+ *
+ * ## SSOT Flow
+ * AiStoryZodSchema (Zod - SSOT) → AiStoryType (TypeScript) → ApiStoryResponse (API layer)
  *
  * ## Available Endpoints
  * - POST /studio/api/stories - Generate story summary
@@ -53,14 +57,14 @@ import type {
 // Story Generation
 // ============================================================================
 
-export interface GenerateStoryRequest {
+export interface ApiStoryRequest {
     userPrompt: string;
     language?: string;
     preferredGenre?: StoryGenre;
     preferredTone?: StoryTone;
 }
 
-export interface GenerateStoryResponse {
+export interface ApiStoryResponse {
     success: true;
     story: Story;
     metadata: {
@@ -69,7 +73,7 @@ export interface GenerateStoryResponse {
     };
 }
 
-export interface GenerateStoryErrorResponse {
+export interface ApiStoryErrorResponse {
     error: string;
     details?: string;
 }
@@ -78,13 +82,13 @@ export interface GenerateStoryErrorResponse {
 // Character Generation
 // ============================================================================
 
-export interface GenerateCharactersRequest {
+export interface ApiCharactersRequest {
     storyId: string;
     characterCount?: number;
     language?: string;
 }
 
-export interface GenerateCharactersResponse {
+export interface ApiCharactersResponse {
     success: true;
     characters: Character[];
     metadata: {
@@ -93,7 +97,7 @@ export interface GenerateCharactersResponse {
     };
 }
 
-export interface GenerateCharactersErrorResponse {
+export interface ApiCharactersErrorResponse {
     error: string;
     details?: unknown;
 }
@@ -102,12 +106,12 @@ export interface GenerateCharactersErrorResponse {
 // Setting Generation
 // ============================================================================
 
-export interface GenerateSettingsRequest {
+export interface ApiSettingsRequest {
     storyId: string;
     settingCount?: number;
 }
 
-export interface GenerateSettingsResponse {
+export interface ApiSettingsResponse {
     success: true;
     settings: Setting[];
     metadata: {
@@ -116,7 +120,7 @@ export interface GenerateSettingsResponse {
     };
 }
 
-export interface GenerateSettingsErrorResponse {
+export interface ApiSettingsErrorResponse {
     error: string;
     details?: unknown;
 }
@@ -125,13 +129,13 @@ export interface GenerateSettingsErrorResponse {
 // Part Generation
 // ============================================================================
 
-export interface GeneratePartsRequest {
+export interface ApiPartsRequest {
     storyId: string;
     partsCount?: number;
     language?: string;
 }
 
-export interface GeneratePartsResponse {
+export interface ApiPartsResponse {
     success: true;
     parts: Part[];
     metadata: {
@@ -140,7 +144,7 @@ export interface GeneratePartsResponse {
     };
 }
 
-export interface GeneratePartsErrorResponse {
+export interface ApiPartsErrorResponse {
     error: string;
     details?: unknown;
 }
@@ -149,11 +153,11 @@ export interface GeneratePartsErrorResponse {
 // Part Generation (Singular - Extreme Incremental)
 // ============================================================================
 
-export interface GeneratePartRequest {
+export interface ApiPartRequest {
     storyId: string;
 }
 
-export interface GeneratePartResponse {
+export interface ApiPartResponse {
     success: true;
     part: Part;
     metadata: {
@@ -163,7 +167,7 @@ export interface GeneratePartResponse {
     };
 }
 
-export interface GeneratePartErrorResponse {
+export interface ApiPartErrorResponse {
     error: string;
     details?: unknown;
 }
@@ -172,13 +176,13 @@ export interface GeneratePartErrorResponse {
 // Chapter Generation
 // ============================================================================
 
-export interface GenerateChaptersRequest {
+export interface ApiChaptersRequest {
     storyId: string;
     chaptersPerPart?: number;
     language?: string;
 }
 
-export interface GenerateChaptersResponse {
+export interface ApiChaptersResponse {
     success: true;
     chapters: Chapter[];
     metadata: {
@@ -187,7 +191,7 @@ export interface GenerateChaptersResponse {
     };
 }
 
-export interface GenerateChaptersErrorResponse {
+export interface ApiChaptersErrorResponse {
     error: string;
     details?: unknown;
 }
@@ -196,12 +200,12 @@ export interface GenerateChaptersErrorResponse {
 // Chapter Generation (Singular - Extreme Incremental)
 // ============================================================================
 
-export interface GenerateChapterRequest {
+export interface ApiChapterRequest {
     storyId: string;
     partId: string;
 }
 
-export interface GenerateChapterResponse {
+export interface ApiChapterResponse {
     success: true;
     chapter: Chapter;
     metadata: {
@@ -211,7 +215,7 @@ export interface GenerateChapterResponse {
     };
 }
 
-export interface GenerateChapterErrorResponse {
+export interface ApiChapterErrorResponse {
     error: string;
     details?: unknown;
 }
@@ -220,13 +224,13 @@ export interface GenerateChapterErrorResponse {
 // Scene Summary Generation
 // ============================================================================
 
-export interface GenerateSceneSummariesRequest {
+export interface ApiSceneSummariesRequest {
     storyId: string;
     scenesPerChapter?: number;
     language?: string;
 }
 
-export interface GenerateSceneSummariesResponse {
+export interface ApiSceneSummariesResponse {
     success: true;
     scenes: Scene[];
     metadata: {
@@ -235,7 +239,7 @@ export interface GenerateSceneSummariesResponse {
     };
 }
 
-export interface GenerateSceneSummariesErrorResponse {
+export interface ApiSceneSummariesErrorResponse {
     error: string;
     details?: unknown;
 }
@@ -244,12 +248,12 @@ export interface GenerateSceneSummariesErrorResponse {
 // Scene Summary Generation (Singular - Extreme Incremental)
 // ============================================================================
 
-export interface GenerateSceneSummaryRequest {
+export interface ApiSceneSummaryRequest {
     storyId: string;
     chapterId: string;
 }
 
-export interface GenerateSceneSummaryResponse {
+export interface ApiSceneSummaryResponse {
     success: true;
     scene: Scene;
     metadata: {
@@ -259,7 +263,7 @@ export interface GenerateSceneSummaryResponse {
     };
 }
 
-export interface GenerateSceneSummaryErrorResponse {
+export interface ApiSceneSummaryErrorResponse {
     error: string;
     details?: unknown;
 }
@@ -268,12 +272,12 @@ export interface GenerateSceneSummaryErrorResponse {
 // Scene Content Generation
 // ============================================================================
 
-export interface GenerateSceneContentRequest {
+export interface ApiSceneContentRequest {
     sceneId: string;
     language?: string;
 }
 
-export interface GenerateSceneContentResponse {
+export interface ApiSceneContentResponse {
     success: true;
     scene: Scene;
     metadata: {
@@ -282,7 +286,7 @@ export interface GenerateSceneContentResponse {
     };
 }
 
-export interface GenerateSceneContentErrorResponse {
+export interface ApiSceneContentErrorResponse {
     error: string;
     details?: unknown;
 }
@@ -291,12 +295,12 @@ export interface GenerateSceneContentErrorResponse {
 // Scene Evaluation
 // ============================================================================
 
-export interface EvaluateSceneRequest {
+export interface ApiSceneEvaluationRequest {
     sceneId: string;
     maxIterations?: number;
 }
 
-export interface EvaluateSceneResponse {
+export interface ApiSceneEvaluationResponse {
     success: true;
     scene: Scene;
     evaluation: {
@@ -320,7 +324,7 @@ export interface EvaluateSceneResponse {
     };
 }
 
-export interface EvaluateSceneErrorResponse {
+export interface ApiSceneEvaluationErrorResponse {
     error: string;
     details?: unknown;
 }

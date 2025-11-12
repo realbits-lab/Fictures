@@ -12,8 +12,8 @@ import { db } from "@/lib/db";
 import { chapters, characters, parts, stories } from "@/lib/db/schema";
 import { generateChapter } from "../generators/chapter-generator";
 import type {
-    GenerateChapterParams,
-    GenerateChapterResult,
+    GeneratorChapterParams,
+    GeneratorChapterResult,
 } from "../generators/types";
 import {
     type Chapter,
@@ -23,13 +23,13 @@ import {
     type Story,
 } from "../generators/zod-schemas.generated";
 
-export interface GenerateChapterServiceParams {
+export interface ServiceChapterParams {
     storyId: string;
     partId: string;
     userId: string;
 }
 
-export interface GenerateChapterServiceResult {
+export interface ServiceChapterResult {
     chapter: Chapter;
     metadata: {
         generationTime: number;
@@ -46,8 +46,8 @@ export class ChapterService {
      * and uses them as context for generating the next chapter in sequence.
      */
     async generateAndSave(
-        params: GenerateChapterServiceParams,
-    ): Promise<GenerateChapterServiceResult> {
+        params: ServiceChapterParams,
+    ): Promise<ServiceChapterResult> {
         const { storyId, partId, userId } = params;
 
         console.log(
@@ -118,7 +118,7 @@ export class ChapterService {
         );
 
         // 6. Generate next chapter using singular generator with full context
-        const generateParams: GenerateChapterParams = {
+        const generateParams: GeneratorChapterParams = {
             story,
             part,
             characters: storyCharacters,
@@ -126,7 +126,7 @@ export class ChapterService {
             chapterIndex: nextChapterIndex,
         };
 
-        const generationResult: GenerateChapterResult =
+        const generationResult: GeneratorChapterResult =
             await generateChapter(generateParams);
 
         // 8. Save chapter to database

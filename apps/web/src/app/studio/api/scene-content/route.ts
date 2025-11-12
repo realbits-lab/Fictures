@@ -12,9 +12,9 @@ import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { sceneContentService } from "@/lib/studio/services";
 import type {
-    GenerateSceneContentErrorResponse,
-    GenerateSceneContentRequest,
-    GenerateSceneContentResponse,
+    ApiSceneContentErrorResponse,
+    ApiSceneContentRequest,
+    ApiSceneContentResponse,
 } from "../types";
 import { generateSceneContentSchema } from "../validation-schemas";
 
@@ -65,8 +65,8 @@ export async function POST(request: NextRequest) {
         });
 
         // 3. Parse and validate request body
-        const body: GenerateSceneContentRequest =
-            (await request.json()) as GenerateSceneContentRequest;
+        const body: ApiSceneContentRequest =
+            (await request.json()) as ApiSceneContentRequest;
         const validatedData: z.infer<typeof generateSceneContentSchema> =
             generateSceneContentSchema.parse(body);
 
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
         // 6. Return typed response
-        const response: GenerateSceneContentResponse = {
+        const response: ApiSceneContentResponse = {
             success: true,
             scene: serviceResult.scene,
             metadata: {
@@ -115,14 +115,14 @@ export async function POST(request: NextRequest) {
         console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
         if (error instanceof z.ZodError) {
-            const errorResponse: GenerateSceneContentErrorResponse = {
+            const errorResponse: ApiSceneContentErrorResponse = {
                 error: "Invalid input",
                 details: error.issues,
             };
             return NextResponse.json(errorResponse, { status: 400 });
         }
 
-        const errorResponse: GenerateSceneContentErrorResponse = {
+        const errorResponse: ApiSceneContentErrorResponse = {
             error: "Failed to generate and save scene content",
             details: error instanceof Error ? error.message : "Unknown error",
         };

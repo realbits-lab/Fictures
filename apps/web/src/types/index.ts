@@ -106,42 +106,42 @@
 
 // Reading history types
 export type {
-	AddToHistoryOptions,
-	HistoryItem,
-	ReadingFormat,
-	ReadingHistoryRecord,
-	StorageData,
+    AddToHistoryOptions,
+    HistoryItem,
+    ReadingFormat,
+    ReadingHistoryRecord,
+    StorageData,
 } from "./reading-history";
 // Validation and evaluation types
 export type {
-	ChangeLog,
-	ChapterEvaluation,
-	CharacterEvaluation,
-	ComprehensiveReport,
-	CrossReferenceAnalysis,
-	EvaluationRequest,
-	// Evaluation types
-	EvaluationScore,
-	FullValidationResult,
-	OverallEvaluation,
-	PartEvaluation,
-	QuickEvaluationResult,
-	SceneEvaluation,
-	SettingEvaluation,
-	StoryAnalysisRequest,
-	StoryAnalysisResponse,
-	StoryAnalysisWithImprovementResponse,
-	StoryEvaluationResult,
-	// Improvement types
-	StoryImprovementRequest,
-	StoryImprovementResult,
-	ValidationError,
-	// API types
-	ValidationRequest,
-	// Validation types
-	ValidationResult,
-	ValidationStats,
-	ValidationWarning,
+    ChangeLog,
+    ChapterEvaluation,
+    CharacterEvaluation,
+    ComprehensiveReport,
+    CrossReferenceAnalysis,
+    EvaluationRequest,
+    // Evaluation types
+    EvaluationScore,
+    FullValidationResult,
+    OverallEvaluation,
+    PartEvaluation,
+    QuickEvaluationResult,
+    SceneEvaluation,
+    SettingEvaluation,
+    StoryAnalysisRequest,
+    StoryAnalysisResponse,
+    StoryAnalysisWithImprovementResponse,
+    StoryEvaluationResult,
+    // Improvement types
+    StoryImprovementRequest,
+    StoryImprovementResult,
+    ValidationError,
+    // API types
+    ValidationRequest,
+    // Validation types
+    ValidationResult,
+    ValidationStats,
+    ValidationWarning,
 } from "./validation-evaluation";
 
 // Note: next-auth.d.ts augments global types and doesn't need re-export

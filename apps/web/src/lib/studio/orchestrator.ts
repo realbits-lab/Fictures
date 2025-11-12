@@ -8,40 +8,40 @@
 import { GENRE, type StoryGenre } from "@/lib/constants/genres";
 import type { StoryTone } from "@/lib/constants/tones";
 import type {
-    Chapter,
-    Character,
-    Part,
-    Scene,
-    Setting,
+    AiChapterType,
+    AiCharacterType,
+    AiPartType,
+    AiSceneSummaryType,
+    AiSettingType,
     Story,
 } from "@/lib/studio/generators/zod-schemas.generated";
 import {
-    generateChapters,
     generateCharacters,
-    generateParts,
     generateSceneContent,
-    generateSceneSummaries,
     generateSettings,
     generateStory,
 } from "./generators";
+import { generateChapter } from "./generators/chapter-generator";
+import { generatePart } from "./generators/part-generator";
 import { evaluateScene } from "./generators/scene-evaluation-generator";
+import { generateSceneSummary } from "./generators/scene-summary-generator";
 import type {
-    EvaluateSceneParams,
-    EvaluateSceneResult,
-    GenerateChaptersParams,
-    GenerateChaptersResult,
-    GenerateCharactersParams,
-    GenerateCharactersResult,
-    GeneratePartsParams,
-    GeneratePartsResult,
-    GenerateSceneContentParams,
-    GenerateSceneContentResult,
-    GenerateSceneSummariesParams,
-    GenerateSceneSummariesResult,
-    GenerateSettingsParams,
-    GenerateSettingsResult,
-    GenerateStoryParams,
-    GenerateStoryResult,
+    GeneratorChapterParams,
+    GeneratorChapterResult,
+    GeneratorCharactersParams,
+    GeneratorCharactersResult,
+    GeneratorPartParams,
+    GeneratorPartResult,
+    GeneratorSceneContentParams,
+    GeneratorSceneContentResult,
+    GeneratorSceneEvaluationParams,
+    GeneratorSceneEvaluationResult,
+    GeneratorSceneSummaryParams,
+    GeneratorSceneSummaryResult,
+    GeneratorSettingsParams,
+    GeneratorSettingsResult,
+    GeneratorStoryParams,
+    GeneratorStoryResult,
 } from "./generators/types";
 
 /**
@@ -98,11 +98,14 @@ export interface ProgressData {
     message: string;
     data?: {
         story?: Story;
-        characters?: Character[];
-        settings?: Setting[];
-        parts?: Part[];
-        chapters?: Chapter[];
-        scenes?: Scene[];
+        characters?: (AiCharacterType & { id: string })[];
+        settings?: (AiSettingType & { id: string })[];
+        parts?: (AiPartType & { id: string })[];
+        chapters?: (AiChapterType & { id: string; partId: string })[];
+        scenes?: (AiSceneSummaryType & {
+            id: string;
+            chapterId: string;
+        })[];
         currentItem?: number;
         totalItems?: number;
     };
@@ -113,11 +116,15 @@ export interface ProgressData {
  */
 export interface GeneratedNovelResult {
     story: Story;
-    characters: Character[];
-    settings: Setting[];
-    parts: Part[];
-    chapters: Chapter[];
-    scenes: Scene[];
+    characters: (AiCharacterType & { id: string })[];
+    settings: (AiSettingType & { id: string })[];
+    parts: (AiPartType & { id: string })[];
+    chapters: (AiChapterType & { id: string; partId: string })[];
+    scenes: (AiSceneSummaryType & {
+        id: string;
+        chapterId: string;
+        content: string;
+    })[];
 }
 
 /**
@@ -149,14 +156,14 @@ export async function generateCompleteNovel(
             message: "Generating story foundation...",
         });
 
-        const storyParams: GenerateStoryParams = {
+        const storyParams: GeneratorStoryParams = {
             userPrompt,
             language,
             preferredGenre,
             preferredTone,
         };
 
-        const storyResult: GenerateStoryResult =
+        const storyResult: GeneratorStoryResult =
             await generateStory(storyParams);
 
         onProgress({
@@ -171,7 +178,7 @@ export async function generateCompleteNovel(
             message: `Generating ${characterCount} characters...`,
         });
 
-        const charactersParams: GenerateCharactersParams = {
+        const charactersParams: GeneratorCharactersParams = {
             story: storyResult.story,
             characterCount,
             language,
@@ -184,13 +191,19 @@ export async function generateCompleteNovel(
             },
         };
 
-        const charactersResult: GenerateCharactersResult =
+        const charactersResult: GeneratorCharactersResult =
             await generateCharacters(charactersParams);
+
+        // Add temporary IDs to characters for orchestrator mode
+        const charactersWithIds = charactersResult.characters.map((c, idx) => ({
+            ...c,
+            id: `character_${idx + 1}`,
+        }));
 
         onProgress({
             phase: "characters_complete",
-            message: `Generated ${charactersResult.characters.length} characters`,
-            data: { characters: charactersResult.characters },
+            message: `Generated ${charactersWithIds.length} characters`,
+            data: { characters: charactersWithIds },
         });
 
         // 3. Generate story settings (Phase 3 of 9)
@@ -199,7 +212,7 @@ export async function generateCompleteNovel(
             message: `Generating ${settingCount} settings...`,
         });
 
-        const settingsParams: GenerateSettingsParams = {
+        const settingsParams: GeneratorSettingsParams = {
             story: storyResult.story,
             settingCount,
             onProgress: (current: number, total: number) => {
@@ -211,110 +224,186 @@ export async function generateCompleteNovel(
             },
         };
 
-        const settingsResult: GenerateSettingsResult =
+        const settingsResult: GeneratorSettingsResult =
             await generateSettings(settingsParams);
+
+        // Add temporary IDs to settings for orchestrator mode
+        const settingsWithIds = settingsResult.settings.map((s, idx) => ({
+            ...s,
+            id: `setting_${idx + 1}`,
+        }));
 
         onProgress({
             phase: "settings_complete",
-            message: `Generated ${settingsResult.settings.length} settings`,
-            data: { settings: settingsResult.settings },
+            message: `Generated ${settingsWithIds.length} settings`,
+            data: { settings: settingsWithIds },
         });
 
-        // 4. Generate story parts (Phase 4 of 9)
+        // 4. Generate story parts incrementally (Phase 4 of 9)
         onProgress({
             phase: "parts_start",
             message: `Generating ${partsCount} parts...`,
         });
 
-        const partsParams: GeneratePartsParams = {
-            story: storyResult.story,
-            characters: charactersResult.characters,
-            partsCount,
-            onProgress: (current: number, total: number) => {
-                onProgress({
-                    phase: "parts_progress",
-                    message: `Generating part ${current}/${total}...`,
-                    data: { currentItem: current, totalItems: total },
-                });
-            },
-        };
+        const partsWithIds: (AiPartType & { id: string })[] = [];
+        for (let i = 0; i < partsCount; i++) {
+            onProgress({
+                phase: "parts_progress",
+                message: `Generating part ${i + 1}/${partsCount}...`,
+                data: { currentItem: i + 1, totalItems: partsCount },
+            });
 
-        const partsResult: GeneratePartsResult =
-            await generateParts(partsParams);
+            const partParams: GeneratorPartParams = {
+                story: storyResult.story,
+                characters: charactersWithIds,
+                settings: settingsWithIds,
+                previousParts: partsWithIds,
+                partIndex: i,
+            };
+
+            const partResult: GeneratorPartResult =
+                await generatePart(partParams);
+
+            // Add temporary ID for orchestrator mode
+            partsWithIds.push({
+                ...partResult.part,
+                id: `part_${i + 1}`,
+            });
+        }
 
         onProgress({
             phase: "parts_complete",
-            message: `Generated ${partsResult.parts.length} parts`,
-            data: { parts: partsResult.parts },
+            message: `Generated ${partsWithIds.length} parts`,
+            data: { parts: partsWithIds },
         });
 
-        // 5. Generate chapters (Phase 5 of 9)
+        // 5. Generate chapters incrementally (Phase 5 of 9)
         onProgress({
             phase: "chapters_start",
             message: "Generating chapters...",
         });
 
-        const chaptersParams: GenerateChaptersParams = {
-            storyId: "", // Not needed for orchestrator (no DB save)
-            story: storyResult.story,
-            parts: partsResult.parts,
-            characters: charactersResult.characters,
-            chaptersPerPart,
-            onProgress: (current: number, total: number) => {
+        const chaptersWithIds: (AiChapterType & {
+            id: string;
+            partId: string;
+        })[] = [];
+        const totalChapters = partsWithIds.length * chaptersPerPart;
+
+        for (const part of partsWithIds) {
+            // Generate chapters for this part
+            for (let i = 0; i < chaptersPerPart; i++) {
+                const chapterIndex = chaptersWithIds.length;
+
                 onProgress({
                     phase: "chapters_progress",
-                    message: `Generating chapter ${current}/${total}...`,
-                    data: { currentItem: current, totalItems: total },
+                    message: `Generating chapter ${chapterIndex + 1}/${totalChapters}...`,
+                    data: {
+                        currentItem: chapterIndex + 1,
+                        totalItems: totalChapters,
+                    },
                 });
-            },
-        };
 
-        const chaptersResult: GenerateChaptersResult =
-            await generateChapters(chaptersParams);
+                const chapterParams: GeneratorChapterParams = {
+                    story: storyResult.story,
+                    part,
+                    characters: charactersWithIds,
+                    settings: settingsWithIds,
+                    previousChapters: chaptersWithIds,
+                    chapterIndex,
+                };
+
+                const chapterResult: GeneratorChapterResult =
+                    await generateChapter(chapterParams);
+
+                // Add temporary ID and partId for orchestrator mode
+                chaptersWithIds.push({
+                    ...chapterResult.chapter,
+                    id: `chapter_${chapterIndex + 1}`,
+                    partId: part.id,
+                });
+            }
+        }
 
         onProgress({
             phase: "chapters_complete",
-            message: `Generated ${chaptersResult.chapters.length} chapters`,
-            data: { chapters: chaptersResult.chapters },
+            message: `Generated ${chaptersWithIds.length} chapters`,
+            data: { chapters: chaptersWithIds },
         });
 
-        // 6. Generate scene summaries (Phase 6 of 9)
+        // 6. Generate scene summaries incrementally (Phase 6 of 9)
         onProgress({
             phase: "scene_summaries_start",
             message: "Generating scene summaries...",
         });
 
-        const sceneSummariesParams: GenerateSceneSummariesParams = {
-            chapters: chaptersResult.chapters,
-            settings: settingsResult.settings,
-            scenesPerChapter,
-            onProgress: (current: number, total: number) => {
+        // Build chapter-to-scene mapping as we generate
+        const chapterSceneMap = new Map<
+            string,
+            (AiSceneSummaryType & { id: string; chapterId: string })[]
+        >();
+        const allSceneSummaries: (AiSceneSummaryType & {
+            id: string;
+            chapterId: string;
+        })[] = [];
+        const totalScenes = chaptersWithIds.length * scenesPerChapter;
+
+        for (const chapter of chaptersWithIds) {
+            const chapterScenes: (AiSceneSummaryType & {
+                id: string;
+                chapterId: string;
+            })[] = [];
+
+            // Find the part for this chapter
+            const chapterPart = partsWithIds.find(
+                (p) => p.id === chapter.partId,
+            );
+            if (!chapterPart) {
+                throw new Error(`Part not found for chapter: ${chapter.id}`);
+            }
+
+            // Generate scenes for this chapter
+            for (let i = 0; i < scenesPerChapter; i++) {
+                const sceneIndex = allSceneSummaries.length;
+
                 onProgress({
                     phase: "scene_summaries_progress",
-                    message: `Generating scene summary ${current}/${total}...`,
-                    data: { currentItem: current, totalItems: total },
+                    message: `Generating scene summary ${sceneIndex + 1}/${totalScenes}...`,
+                    data: {
+                        currentItem: sceneIndex + 1,
+                        totalItems: totalScenes,
+                    },
                 });
-            },
-        };
 
-        const sceneSummariesResult: GenerateSceneSummariesResult =
-            await generateSceneSummaries(sceneSummariesParams);
+                const sceneSummaryParams: GeneratorSceneSummaryParams = {
+                    story: storyResult.story,
+                    part: chapterPart,
+                    chapter,
+                    characters: charactersWithIds,
+                    settings: settingsWithIds,
+                    previousScenes: allSceneSummaries,
+                    sceneIndex,
+                };
 
-        // 6.1. Build chapter-to-scene mapping for later use
-        const chapterSceneMap = new Map<string, Scene[]>();
-        let sceneIdx = 0;
-        for (const chapter of chaptersResult.chapters) {
-            const chapSummaries: Scene[] = sceneSummariesResult.scenes.slice(
-                sceneIdx,
-                sceneIdx + scenesPerChapter,
-            );
-            chapterSceneMap.set(chapter.id, chapSummaries);
-            sceneIdx += scenesPerChapter;
+                const sceneSummaryResult: GeneratorSceneSummaryResult =
+                    await generateSceneSummary(sceneSummaryParams);
+
+                // Add temporary ID and chapterId for orchestrator mode
+                const sceneWithIds = {
+                    ...sceneSummaryResult.scene,
+                    id: `scene_${sceneIndex + 1}`,
+                    chapterId: chapter.id,
+                };
+
+                chapterScenes.push(sceneWithIds);
+                allSceneSummaries.push(sceneWithIds);
+            }
+
+            chapterSceneMap.set(chapter.id, chapterScenes);
         }
 
         onProgress({
             phase: "scene_summaries_complete",
-            message: `Generated ${sceneSummariesResult.scenes.length} scene summaries`,
+            message: `Generated ${allSceneSummaries.length} scene summaries`,
         });
 
         // 7. Generate scene content (Phase 7 of 9)
@@ -323,39 +412,66 @@ export async function generateCompleteNovel(
             message: "Generating scene content...",
         });
 
-        const scenes: Scene[] = [];
+        const scenes: (AiSceneSummaryType & {
+            id: string;
+            chapterId: string;
+            content: string;
+        })[] = [];
         let sceneIndex = 0;
 
-        for (const chapter of chaptersResult.chapters) {
-            const chapterScenes: Scene[] =
-                chapterSceneMap.get(chapter.id) || [];
+        for (const chapter of chaptersWithIds) {
+            const chapterScenes:
+                | (AiSceneSummaryType & {
+                      id: string;
+                      chapterId: string;
+                  })[]
+                | undefined = chapterSceneMap.get(chapter.id);
+
+            if (!chapterScenes) {
+                continue;
+            }
 
             for (const sceneSummary of chapterScenes) {
                 sceneIndex++;
                 onProgress({
                     phase: "scene_content_progress",
-                    message: `Generating scene content ${sceneIndex}/${sceneSummariesResult.scenes.length}...`,
+                    message: `Generating scene content ${sceneIndex}/${allSceneSummaries.length}...`,
                     data: {
                         currentItem: sceneIndex,
-                        totalItems: sceneSummariesResult.scenes.length,
+                        totalItems: allSceneSummaries.length,
                     },
                 });
 
-                // 7.1. Generate content for this scene using common generator
-                const sceneContentParams: GenerateSceneContentParams = {
+                // 7.1. Find the part for this chapter
+                const chapterPart: (AiPartType & { id: string }) | undefined =
+                    partsWithIds.find((p) => p.id === chapter.partId);
+
+                if (!chapterPart) {
+                    throw new Error(
+                        `Part not found for chapter: ${chapter.id}`,
+                    );
+                }
+
+                // 7.2. Generate content for this scene using common generator
+                const sceneContentParams: GeneratorSceneContentParams = {
                     sceneId: `scene_${sceneIndex}`,
+                    story: storyResult.story,
+                    part: chapterPart,
+                    chapter,
+                    characters: charactersWithIds,
+                    settings: settingsWithIds,
                     scene: sceneSummary,
-                    characters: charactersResult.characters,
-                    settings: settingsResult.settings,
                     language,
                 };
 
-                const sceneContentResult: GenerateSceneContentResult =
+                const sceneContentResult: GeneratorSceneContentResult =
                     await generateSceneContent(sceneContentParams);
 
-                const sceneWithContent: Scene = {
-                    id: `scene_${sceneIndex}`,
-                    chapterId: chapter.id,
+                const sceneWithContent: AiSceneSummaryType & {
+                    id: string;
+                    chapterId: string;
+                    content: string;
+                } = {
                     ...sceneSummary,
                     content: sceneContentResult.content,
                 };
@@ -376,7 +492,11 @@ export async function generateCompleteNovel(
                 message: "Evaluating and improving scene quality...",
             });
 
-            const evaluatedScenes: Scene[] = [];
+            const evaluatedScenes: (AiSceneSummaryType & {
+                id: string;
+                chapterId: string;
+                content: string;
+            })[] = [];
             let evaluatedCount = 0;
 
             for (const scene of scenes) {
@@ -391,25 +511,31 @@ export async function generateCompleteNovel(
                 });
 
                 // 8.1. Evaluate scene using pure generator (no DB save in orchestrator)
-                const evaluateParams: EvaluateSceneParams = {
+                const evaluateParams: GeneratorSceneEvaluationParams = {
                     content: scene.content || "",
                     story: {
-                        id: storyResult.story.id,
-                        title: storyResult.story.title,
-                        genre: storyResult.story.genre || GENRE.SLICE,
+                        id: storyResult.story.id || "story_temp",
+                        title: storyResult.story.title || "Untitled",
+                        genre: (storyResult.story.genre ||
+                            GENRE.SLICE) as import("@/lib/constants/genres").StoryGenre,
                         moralFramework:
                             storyResult.story.moralFramework || "courage",
                         summary: storyResult.story.summary || "",
-                        tone: storyResult.story.tone || "hopeful",
+                        tone: (storyResult.story.tone ||
+                            "hopeful") as import("@/lib/constants/tones").StoryTone,
                     },
                     maxIterations: maxEvaluationIterations,
                 };
 
-                const evaluationResult: EvaluateSceneResult =
+                const evaluationResult: GeneratorSceneEvaluationResult =
                     await evaluateScene(evaluateParams);
 
                 // 8.2. Update scene with improved content
-                const evaluatedScene: Scene = {
+                const evaluatedScene: AiSceneSummaryType & {
+                    id: string;
+                    chapterId: string;
+                    content: string;
+                } = {
                     ...scene,
                     content: evaluationResult.finalContent,
                 };
@@ -443,10 +569,10 @@ export async function generateCompleteNovel(
         // 9. Return the complete novel
         const result: GeneratedNovelResult = {
             story: storyResult.story,
-            characters: charactersResult.characters,
-            settings: settingsResult.settings,
-            parts: partsResult.parts,
-            chapters: chaptersResult.chapters,
+            characters: charactersWithIds,
+            settings: settingsWithIds,
+            parts: partsWithIds,
+            chapters: chaptersWithIds,
             scenes,
         };
 
