@@ -457,6 +457,109 @@ class AIServerProvider extends TextGenerationProvider {
             reader.releaseLock();
         }
     }
+
+    /**
+     * Generate structured output using AI Server's guided JSON generation
+     *
+     * This method uses AI Server's response_format and response_schema config
+     * to enforce strict schema validation via guided generation.
+     *
+     * @param prompt - The generation prompt
+     * @param zodSchema - Zod schema defining the expected output structure
+     * @param options - Additional generation options
+     * @returns Parsed and validated object matching the schema
+     */
+    async generateStructured<T>(
+        prompt: string,
+        zodSchema: z.ZodType<T>,
+        options?: {
+            systemPrompt?: string;
+            model?: string;
+            temperature?: number;
+            maxTokens?: number;
+            topP?: number;
+        },
+    ): Promise<T> {
+        const fullPrompt = options?.systemPrompt
+            ? `${options.systemPrompt}\n\n${prompt}`
+            : prompt;
+
+        // Convert Zod schema to JSON Schema using Zod's native method
+        console.log(
+            "[AIServerProvider] generateStructured - Converting Zod to JSON Schema (native)",
+        );
+
+        const jsonSchema = z.toJSONSchema(zodSchema, {
+            target: "openapi-3.0",
+            $refStrategy: "none",
+        });
+
+        console.log(
+            "[AIServerProvider] Full JSON Schema:",
+            JSON.stringify(jsonSchema, null, 2),
+        );
+        console.log("[AIServerProvider] Schema type:", jsonSchema.type);
+        console.log(
+            "[AIServerProvider] Schema properties:",
+            jsonSchema.properties ? Object.keys(jsonSchema.properties) : "none",
+        );
+
+        // Remove $schema field if present (AI Server doesn't need it)
+        const { $schema, ...cleanSchema } = jsonSchema;
+
+        console.log(
+            "[AIServerProvider] Cleaned schema sample:",
+            JSON.stringify(cleanSchema, null, 2).substring(0, 800),
+        );
+
+        // Build request body with structured output configuration
+        const requestBody: any = {
+            prompt: fullPrompt,
+            max_tokens: options?.maxTokens ?? 2048,
+            temperature: options?.temperature ?? 0.7,
+            top_p: options?.topP ?? 0.9,
+            response_format: "json",
+            response_schema: cleanSchema,
+        };
+
+        const response = await fetch(
+            `${this.config.url}/api/v1/text/generate`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(requestBody),
+                signal: AbortSignal.timeout(this.config.timeout),
+            },
+        );
+
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(`AI Server error: ${response.status} - ${error}`);
+        }
+
+        const result = await response.json();
+        const text = result.text;
+
+        console.log(
+            "[AIServerProvider] generateStructured - Response received",
+        );
+        console.log("[AIServerProvider] Response length:", text?.length || 0);
+        console.log("[AIServerProvider] Tokens used:", result.tokens_used);
+
+        if (!text || text.trim() === "") {
+            throw new Error("Empty response from AI Server structured output");
+        }
+
+        // Parse and validate the JSON response
+        const parsed = JSON.parse(text);
+
+        // Validate against the Zod schema to ensure type safety
+        const validated = zodSchema.parse(parsed);
+
+        return validated;
+    }
 }
 
 /**
@@ -559,8 +662,12 @@ class TextGenerationWrapper {
             topP?: number;
         },
     ): Promise<T> {
-        // Only Gemini provider supports structured output natively
+        // Both Gemini and AI Server providers support structured output natively
         if (this.provider instanceof GeminiProvider) {
+            return this.provider.generateStructured(prompt, zodSchema, options);
+        }
+
+        if (this.provider instanceof AIServerProvider) {
             return this.provider.generateStructured(prompt, zodSchema, options);
         }
 
