@@ -48,7 +48,7 @@ export class PartService {
     async generateAndSave(
         params: ServicePartParams,
     ): Promise<ServicePartResult> {
-        const { storyId, userId } = params;
+        const { storyId, userId, apiKey } = params;
 
         console.log(
             "[part-service] 🎬 Generating next part with full context...",
@@ -116,6 +116,7 @@ export class PartService {
             settings: storySettings,
             previousParts,
             partIndex: nextPartIndex,
+            apiKey,
         };
 
         const generationResult: GeneratorPartResult =

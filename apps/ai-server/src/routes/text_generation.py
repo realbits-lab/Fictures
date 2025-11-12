@@ -41,9 +41,9 @@ async def generate_text(
 
         logger.info(f"Received text generation request from user {auth.email}. Prompt length: {len(request.prompt)}")
 
-        # Validate prompt length
-        if len(request.prompt) > 8000:
-            raise HTTPException(status_code=400, detail="Prompt too long (max 8000 characters)")
+        # Validate prompt length (Qwen3-14B-AWQ supports 16384 tokens ≈ 12-13K chars)
+        if len(request.prompt) > 16000:
+            raise HTTPException(status_code=400, detail="Prompt too long (max 16000 characters)")
 
         # Generate text using service
         result = await text_service.generate(
@@ -86,9 +86,9 @@ async def stream_text(
 
         logger.info(f"Received streaming text generation request from user {auth.email}. Prompt length: {len(request.prompt)}")
 
-        # Validate prompt length
-        if len(request.prompt) > 8000:
-            raise HTTPException(status_code=400, detail="Prompt too long (max 8000 characters)")
+        # Validate prompt length (Qwen3-14B-AWQ supports 16384 tokens ≈ 12-13K chars)
+        if len(request.prompt) > 16000:
+            raise HTTPException(status_code=400, detail="Prompt too long (max 16000 characters)")
 
         async def generate():
             """Generate streaming response."""
@@ -147,9 +147,9 @@ async def generate_structured_output(
             f"Type: {request.guided_decoding.type}, Prompt length: {len(request.prompt)}"
         )
 
-        # Validate prompt length
-        if len(request.prompt) > 8000:
-            raise HTTPException(status_code=400, detail="Prompt too long (max 8000 characters)")
+        # Validate prompt length (Qwen3-14B-AWQ supports 16384 tokens ≈ 12-13K chars)
+        if len(request.prompt) > 16000:
+            raise HTTPException(status_code=400, detail="Prompt too long (max 16000 characters)")
 
         # Extract guided decoding config
         guided_config = request.guided_decoding
