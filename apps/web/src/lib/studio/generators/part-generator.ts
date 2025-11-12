@@ -18,8 +18,8 @@ import {
 } from "./context-builders";
 import { promptManager } from "./prompt-manager";
 import type {
-    GeneratePartParams,
-    GeneratePartResult,
+    GeneratorPartParams,
+    GeneratorPartResult,
     PartPromptParams,
 } from "./types";
 import { type AiPartType, AiPartZodSchema } from "./zod-schemas.generated";
@@ -31,8 +31,8 @@ import { type AiPartType, AiPartZodSchema } from "./zod-schemas.generated";
  * @returns Part data (caller responsible for database save)
  */
 export async function generatePart(
-    params: GeneratePartParams,
-): Promise<GeneratePartResult> {
+    params: GeneratorPartParams,
+): Promise<GeneratorPartResult> {
     const startTime: number = Date.now();
 
     // 1. Extract parameters
@@ -42,7 +42,7 @@ export async function generatePart(
         settings,
         previousParts,
         partIndex,
-    }: GeneratePartParams = params;
+    }: GeneratorPartParams = params;
 
     console.log(
         `[part-generator] 🎬 Generating part ${partIndex + 1} with full context...`,
@@ -110,7 +110,7 @@ export async function generatePart(
     });
 
     // 9. Build and return result with metadata
-    const result: GeneratePartResult = {
+    const result: GeneratorPartResult = {
         part: partData,
         metadata: {
             generationTime: totalTime,

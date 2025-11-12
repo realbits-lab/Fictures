@@ -77,7 +77,7 @@ const result = await generateCharacters({
 **Generator Function Signature Example:**
 
 ```typescript
-export interface GenerateCharactersParams {
+export interface GeneratorCharactersParams {
   storyId: string;
   userId: string;
   story: StorySummaryResult;
@@ -86,7 +86,7 @@ export interface GenerateCharactersParams {
   onProgress?: (current: number, total: number) => void;
 }
 
-export interface GenerateCharactersResult {
+export interface GeneratorCharactersResult {
   characters: Character[];
   metadata: {
     totalGenerated: number;
@@ -95,8 +95,8 @@ export interface GenerateCharactersResult {
 }
 
 export async function generateCharacters(
-  params: GenerateCharactersParams
-): Promise<GenerateCharactersResult>;
+  params: GeneratorCharactersParams
+): Promise<GeneratorCharactersResult>;
 ```
 
 **Implementation Status**: ✅ Implemented - See sections below for current architecture
@@ -283,6 +283,141 @@ const story: Story = await db.insert(stories).values({
 - ✅ **Consistency**: Same pattern across all generators and all layers
 - ✅ **Self-Documenting**: Type name immediately indicates layer and purpose
 - ✅ **Migration Safe**: Can add type aliases for backward compatibility
+
+#### 0.3.1 CRITICAL: API Response Types vs AI Types
+
+**Key Discovery**: API responses MUST use full database types, NOT AI-only types.
+
+**Problem:**
+- `Ai*Type` (e.g., `AiStoryType`, `AiCharacterType`) contains ONLY AI-generated fields
+- These types lack database metadata: `id`, `authorId`, `createdAt`, `updatedAt`, `status`, etc.
+- Using `Ai*Type` in API responses causes test failures and runtime errors
+
+**Solution:**
+API response types must use full database types that include all fields:
+
+```typescript
+// ❌ WRONG: Using AI-only type in API response
+export interface ApiStoryResponse {
+  success: true;
+  story: AiStoryType;  // Missing id, authorId, createdAt, updatedAt, etc.
+  metadata: { ... };
+}
+
+// ✅ CORRECT: Using full database type in API response
+export interface ApiStoryResponse {
+  success: true;
+  story: Story;  // Includes ALL fields (AI-generated + database metadata)
+  metadata: { ... };
+}
+```
+
+**Type Comparison:**
+
+```typescript
+// AI-Only Type (ONLY for AI generation)
+type AiStoryType = {
+  title: string;        // AI-generated
+  summary: string;      // AI-generated
+  genre: string;        // AI-generated
+  tone: string;         // AI-generated
+  moralFramework: string; // AI-generated
+};
+
+// Full Database Type (for API responses, services, database operations)
+type Story = {
+  // Database metadata
+  id: string;
+  authorId: string;
+  createdAt: string;
+  updatedAt: string;
+  status: 'writing' | 'published';
+  viewCount: number;
+  rating: number;
+  ratingCount: number;
+  imageUrl: string | null;
+  imageVariants: object | null;
+
+  // AI-generated content (same as AiStoryType)
+  title: string;
+  summary: string;
+  genre: string;
+  tone: string;
+  moralFramework: string;
+};
+```
+
+**Usage Guidelines:**
+
+| Context | Type to Use | Reason |
+|---------|-------------|--------|
+| AI generation input | `Ai*ZodSchema` | For Gemini structured output |
+| AI generation output validation | `Ai*Type` | Validated AI-generated content only |
+| Database insert | `InsertStory`, `InsertCharacter`, etc. | Zod schema for inserts |
+| Database query result | `Story`, `Character`, etc. | Full records with all fields |
+| **API Response** | **`Story`, `Character`, etc.** | **Clients need complete records** |
+| Service layer return | `Story`, `Character`, etc. | After saving to database |
+
+**Real-World Example:**
+
+```typescript
+// Generator Layer: Returns AI-generated content only
+async function generateStory(params: GeneratorStoryParams): Promise<GeneratorStoryResult> {
+  const aiData: AiStoryType = await gemini.generateStructured(
+    prompt,
+    AiStoryJsonSchema
+  );
+
+  return {
+    story: aiData,  // AiStoryType - AI-generated fields only
+    metadata: { ... }
+  };
+}
+
+// Service Layer: Saves to database and returns full record
+async function generateAndSave(params: ServiceStoryParams): Promise<ServiceStoryResult> {
+  const generated = await generateStory(...);
+
+  // Save to database with additional metadata
+  const saved: Story[] = await db.insert(stories).values({
+    id: generateId(),
+    authorId: params.userId,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    status: 'writing',
+    viewCount: 0,
+    rating: 0,
+    ratingCount: 0,
+    imageUrl: null,
+    imageVariants: null,
+    ...generated.story,  // Spread AI-generated fields
+  }).returning();
+
+  return {
+    story: saved[0],  // Story - full database record
+    metadata: { ... }
+  };
+}
+
+// API Layer: Returns full database record
+export async function POST(request: NextRequest) {
+  const result = await storyService.generateAndSave(params);
+
+  const response: ApiStoryResponse = {
+    success: true,
+    story: result.story,  // Story type - includes all fields
+    metadata: result.metadata
+  };
+
+  return NextResponse.json(response, { status: 201 });
+}
+```
+
+**Why This Matters:**
+- ✅ Tests expect complete records with IDs and timestamps
+- ✅ Clients need metadata for caching, updates, and navigation
+- ✅ Type safety ensures all required fields are present
+- ✅ Prevents runtime errors from missing fields
 
 **Type Flow Across All Layers:**
 

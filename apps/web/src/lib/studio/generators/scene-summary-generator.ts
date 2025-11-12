@@ -20,8 +20,8 @@ import {
 import { promptManager } from "./prompt-manager";
 import type {
     CyclePhase,
-    GenerateSceneSummaryParams,
-    GenerateSceneSummaryResult,
+    GeneratorSceneSummaryParams,
+    GeneratorSceneSummaryResult,
     SceneSummaryPromptParams,
 } from "./types";
 import {
@@ -36,8 +36,8 @@ import {
  * @returns Scene summary data (caller responsible for database save)
  */
 export async function generateSceneSummary(
-    params: GenerateSceneSummaryParams,
-): Promise<GenerateSceneSummaryResult> {
+    params: GeneratorSceneSummaryParams,
+): Promise<GeneratorSceneSummaryResult> {
     const startTime = Date.now();
 
     // 1. Extract parameters
@@ -49,7 +49,7 @@ export async function generateSceneSummary(
         settings,
         previousScenes,
         sceneIndex,
-    }: GenerateSceneSummaryParams = params;
+    }: GeneratorSceneSummaryParams = params;
 
     console.log(
         `[scene-summary-generator] 📄 Generating scene ${sceneIndex + 1} (Chapter: ${chapter.title})...`,

@@ -19,8 +19,8 @@ import {
 } from "@/lib/db/schema";
 import { generateSceneSummary } from "../generators/scene-summary-generator";
 import type {
-    GenerateSceneSummaryParams,
-    GenerateSceneSummaryResult,
+    GeneratorSceneSummaryParams,
+    GeneratorSceneSummaryResult,
 } from "../generators/types";
 import {
     type Chapter,
@@ -32,13 +32,13 @@ import {
     type Story,
 } from "../generators/zod-schemas.generated";
 
-export interface GenerateSceneSummaryServiceParams {
+export interface ServiceSceneSummaryParams {
     storyId: string;
     chapterId: string;
     userId: string;
 }
 
-export interface GenerateSceneSummaryServiceResult {
+export interface ServiceSceneSummaryResult {
     scene: Scene;
     metadata: {
         generationTime: number;
@@ -56,8 +56,8 @@ export class SceneSummaryService {
      * the next scene summary in sequence.
      */
     async generateAndSave(
-        params: GenerateSceneSummaryServiceParams,
-    ): Promise<GenerateSceneSummaryServiceResult> {
+        params: ServiceSceneSummaryParams,
+    ): Promise<ServiceSceneSummaryResult> {
         const { storyId, chapterId, userId } = params;
 
         console.log(
@@ -141,7 +141,7 @@ export class SceneSummaryService {
         );
 
         // 7. Generate next scene summary using singular generator with full context
-        const generateParams: GenerateSceneSummaryParams = {
+        const generateParams: GeneratorSceneSummaryParams = {
             story,
             part,
             chapter,
@@ -151,7 +151,7 @@ export class SceneSummaryService {
             sceneIndex: nextSceneIndex,
         };
 
-        const generationResult: GenerateSceneSummaryResult =
+        const generationResult: GeneratorSceneSummaryResult =
             await generateSceneSummary(generateParams);
 
         // 8. Save scene summary to database

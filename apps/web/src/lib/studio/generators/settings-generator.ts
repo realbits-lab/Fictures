@@ -12,8 +12,8 @@ import { textGenerationClient } from "./ai-client";
 import { buildStoryContext } from "./context-builders";
 import { promptManager } from "./prompt-manager";
 import type {
-    GenerateSettingsParams,
-    GenerateSettingsResult,
+    GeneratorSettingsParams,
+    GeneratorSettingsResult,
     SettingPromptParams,
 } from "./types";
 import {
@@ -28,12 +28,12 @@ import {
  * @returns Settings data (caller responsible for database save)
  */
 export async function generateSettings(
-    params: GenerateSettingsParams,
-): Promise<GenerateSettingsResult> {
+    params: GeneratorSettingsParams,
+): Promise<GeneratorSettingsResult> {
     const startTime: number = Date.now();
 
     // 1. Extract and set default parameters
-    const { story, settingCount, onProgress }: GenerateSettingsParams = params;
+    const { story, settingCount, onProgress }: GeneratorSettingsParams = params;
 
     const settings: AiSettingType[] = [];
 
@@ -108,7 +108,7 @@ export async function generateSettings(
     );
 
     // 8. Build and return result with metadata
-    const result: GenerateSettingsResult = {
+    const result: GeneratorSettingsResult = {
         settings,
         metadata: {
             totalGenerated: settings.length,

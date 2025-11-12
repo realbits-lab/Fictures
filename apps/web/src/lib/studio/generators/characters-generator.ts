@@ -13,8 +13,8 @@ import { buildStoryContext } from "./context-builders";
 import { promptManager } from "./prompt-manager";
 import type {
     CharacterPromptParams,
-    GenerateCharactersParams,
-    GenerateCharactersResult,
+    GeneratorCharactersParams,
+    GeneratorCharactersResult,
 } from "./types";
 import {
     type AiCharacterType,
@@ -28,8 +28,8 @@ import {
  * @returns Character data (caller responsible for database save)
  */
 export async function generateCharacters(
-    params: GenerateCharactersParams,
-): Promise<GenerateCharactersResult> {
+    params: GeneratorCharactersParams,
+): Promise<GeneratorCharactersResult> {
     const startTime: number = Date.now();
 
     // 1. Extract and set default parameters
@@ -38,7 +38,7 @@ export async function generateCharacters(
         characterCount,
         language = "English",
         onProgress,
-    }: GenerateCharactersParams = params;
+    }: GeneratorCharactersParams = params;
 
     const characters: AiCharacterType[] = [];
 
@@ -122,7 +122,7 @@ export async function generateCharacters(
     );
 
     // 9. Build and return result with metadata
-    const result: GenerateCharactersResult = {
+    const result: GeneratorCharactersResult = {
         characters,
         metadata: {
             totalGenerated: characters.length,

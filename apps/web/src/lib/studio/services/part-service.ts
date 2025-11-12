@@ -12,8 +12,8 @@ import { db } from "@/lib/db";
 import { characters, parts, settings, stories } from "@/lib/db/schema";
 import { generatePart } from "../generators/part-generator";
 import type {
-    GeneratePartParams,
-    GeneratePartResult,
+    GeneratorPartParams,
+    GeneratorPartResult,
 } from "../generators/types";
 import {
     type Character,
@@ -23,12 +23,12 @@ import {
     type Story,
 } from "../generators/zod-schemas.generated";
 
-export interface GeneratePartServiceParams {
+export interface ServicePartParams {
     storyId: string;
     userId: string;
 }
 
-export interface GeneratePartServiceResult {
+export interface ServicePartResult {
     part: Part;
     metadata: {
         generationTime: number;
@@ -45,8 +45,8 @@ export class PartService {
      * for generating the next part in sequence.
      */
     async generateAndSave(
-        params: GeneratePartServiceParams,
-    ): Promise<GeneratePartServiceResult> {
+        params: ServicePartParams,
+    ): Promise<ServicePartResult> {
         const { storyId, userId } = params;
 
         console.log(
@@ -109,7 +109,7 @@ export class PartService {
         console.log(`[part-service] Generating part ${nextPartIndex + 1}...`);
 
         // 6. Generate next part using singular generator with full context
-        const generateParams: GeneratePartParams = {
+        const generateParams: GeneratorPartParams = {
             story,
             characters: storyCharacters,
             settings: storySettings,
@@ -117,7 +117,7 @@ export class PartService {
             partIndex: nextPartIndex,
         };
 
-        const generationResult: GeneratePartResult =
+        const generationResult: GeneratorPartResult =
             await generatePart(generateParams);
 
         // 7. Save part to database

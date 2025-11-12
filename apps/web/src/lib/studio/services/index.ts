@@ -21,8 +21,8 @@ export {
 export {
     CharacterService,
     characterService,
-    type GenerateCharactersServiceParams,
-    type GenerateCharactersServiceResult,
+    type ServiceCharactersParams,
+    type ServiceCharactersResult,
 } from "./character-service";
 export {
     type GeneratePartsServiceParams,
@@ -31,16 +31,16 @@ export {
     partService,
 } from "./parts-service";
 export {
-    type GenerateSceneContentServiceParams,
-    type GenerateSceneContentServiceResult,
     SceneContentService,
+    type ServiceSceneContentParams,
+    type ServiceSceneContentResult,
     sceneContentService,
 } from "./scene-content-service";
 export {
-    type EvaluateSceneServiceParams,
-    type EvaluateSceneServiceResult,
     type EvaluateSceneWithDataParams,
     SceneEvaluationService,
+    type ServiceSceneEvaluationParams,
+    type ServiceSceneEvaluationResult,
     sceneEvaluationService,
 } from "./scene-evaluation-service";
 
@@ -51,14 +51,14 @@ export {
     sceneSummariesService,
 } from "./scene-summaries-service";
 export {
-    type GenerateSettingsServiceParams,
-    type GenerateSettingsServiceResult,
+    type ServiceSettingsParams,
+    type ServiceSettingsResult,
     SettingService,
     settingService,
 } from "./setting-service";
 export {
-    type GenerateStoryServiceParams,
-    type GenerateStoryServiceResult,
+    type ServiceStoryParams,
+    type ServiceStoryResult,
     StoryService,
     storyService,
 } from "./story-service";

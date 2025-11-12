@@ -20,8 +20,8 @@ import {
 } from "./context-builders";
 import { promptManager } from "./prompt-manager";
 import type {
-    GenerateSceneContentParams,
-    GenerateSceneContentResult,
+    GeneratorSceneContentParams,
+    GeneratorSceneContentResult,
     SceneContentPromptParams,
 } from "./types";
 
@@ -32,8 +32,8 @@ import type {
  * @returns Scene content (caller responsible for database save)
  */
 export async function generateSceneContent(
-    params: GenerateSceneContentParams,
-): Promise<GenerateSceneContentResult> {
+    params: GeneratorSceneContentParams,
+): Promise<GeneratorSceneContentResult> {
     const startTime: number = Date.now();
 
     // 1. Extract parameters
@@ -45,7 +45,7 @@ export async function generateSceneContent(
         characters,
         settings,
         language = "English",
-    }: GenerateSceneContentParams = params;
+    }: GeneratorSceneContentParams = params;
 
     console.log(
         `[scene-content-generator] 📝 Generating content for scene: ${scene.title}`,

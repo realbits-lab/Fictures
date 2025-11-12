@@ -26,22 +26,22 @@ import { generatePart } from "./generators/part-generator";
 import { evaluateScene } from "./generators/scene-evaluation-generator";
 import { generateSceneSummary } from "./generators/scene-summary-generator";
 import type {
-    EvaluateSceneParams,
-    EvaluateSceneResult,
-    GenerateChapterParams,
-    GenerateChapterResult,
-    GenerateCharactersParams,
-    GenerateCharactersResult,
-    GeneratePartParams,
-    GeneratePartResult,
-    GenerateSceneContentParams,
-    GenerateSceneContentResult,
-    GenerateSceneSummaryParams,
-    GenerateSceneSummaryResult,
-    GenerateSettingsParams,
-    GenerateSettingsResult,
-    GenerateStoryParams,
-    GenerateStoryResult,
+    GeneratorChapterParams,
+    GeneratorChapterResult,
+    GeneratorCharactersParams,
+    GeneratorCharactersResult,
+    GeneratorPartParams,
+    GeneratorPartResult,
+    GeneratorSceneContentParams,
+    GeneratorSceneContentResult,
+    GeneratorSceneEvaluationParams,
+    GeneratorSceneEvaluationResult,
+    GeneratorSceneSummaryParams,
+    GeneratorSceneSummaryResult,
+    GeneratorSettingsParams,
+    GeneratorSettingsResult,
+    GeneratorStoryParams,
+    GeneratorStoryResult,
 } from "./generators/types";
 
 /**
@@ -156,14 +156,14 @@ export async function generateCompleteNovel(
             message: "Generating story foundation...",
         });
 
-        const storyParams: GenerateStoryParams = {
+        const storyParams: GeneratorStoryParams = {
             userPrompt,
             language,
             preferredGenre,
             preferredTone,
         };
 
-        const storyResult: GenerateStoryResult =
+        const storyResult: GeneratorStoryResult =
             await generateStory(storyParams);
 
         onProgress({
@@ -178,7 +178,7 @@ export async function generateCompleteNovel(
             message: `Generating ${characterCount} characters...`,
         });
 
-        const charactersParams: GenerateCharactersParams = {
+        const charactersParams: GeneratorCharactersParams = {
             story: storyResult.story,
             characterCount,
             language,
@@ -191,7 +191,7 @@ export async function generateCompleteNovel(
             },
         };
 
-        const charactersResult: GenerateCharactersResult =
+        const charactersResult: GeneratorCharactersResult =
             await generateCharacters(charactersParams);
 
         // Add temporary IDs to characters for orchestrator mode
@@ -212,7 +212,7 @@ export async function generateCompleteNovel(
             message: `Generating ${settingCount} settings...`,
         });
 
-        const settingsParams: GenerateSettingsParams = {
+        const settingsParams: GeneratorSettingsParams = {
             story: storyResult.story,
             settingCount,
             onProgress: (current: number, total: number) => {
@@ -224,7 +224,7 @@ export async function generateCompleteNovel(
             },
         };
 
-        const settingsResult: GenerateSettingsResult =
+        const settingsResult: GeneratorSettingsResult =
             await generateSettings(settingsParams);
 
         // Add temporary IDs to settings for orchestrator mode
@@ -253,7 +253,7 @@ export async function generateCompleteNovel(
                 data: { currentItem: i + 1, totalItems: partsCount },
             });
 
-            const partParams: GeneratePartParams = {
+            const partParams: GeneratorPartParams = {
                 story: storyResult.story,
                 characters: charactersWithIds,
                 settings: settingsWithIds,
@@ -261,7 +261,7 @@ export async function generateCompleteNovel(
                 partIndex: i,
             };
 
-            const partResult: GeneratePartResult =
+            const partResult: GeneratorPartResult =
                 await generatePart(partParams);
 
             // Add temporary ID for orchestrator mode
@@ -303,7 +303,7 @@ export async function generateCompleteNovel(
                     },
                 });
 
-                const chapterParams: GenerateChapterParams = {
+                const chapterParams: GeneratorChapterParams = {
                     story: storyResult.story,
                     part,
                     characters: charactersWithIds,
@@ -312,7 +312,7 @@ export async function generateCompleteNovel(
                     chapterIndex,
                 };
 
-                const chapterResult: GenerateChapterResult =
+                const chapterResult: GeneratorChapterResult =
                     await generateChapter(chapterParams);
 
                 // Add temporary ID and partId for orchestrator mode
@@ -374,7 +374,7 @@ export async function generateCompleteNovel(
                     },
                 });
 
-                const sceneSummaryParams: GenerateSceneSummaryParams = {
+                const sceneSummaryParams: GeneratorSceneSummaryParams = {
                     story: storyResult.story,
                     part: chapterPart,
                     chapter,
@@ -384,7 +384,7 @@ export async function generateCompleteNovel(
                     sceneIndex,
                 };
 
-                const sceneSummaryResult: GenerateSceneSummaryResult =
+                const sceneSummaryResult: GeneratorSceneSummaryResult =
                     await generateSceneSummary(sceneSummaryParams);
 
                 // Add temporary ID and chapterId for orchestrator mode
@@ -453,7 +453,7 @@ export async function generateCompleteNovel(
                 }
 
                 // 7.2. Generate content for this scene using common generator
-                const sceneContentParams: GenerateSceneContentParams = {
+                const sceneContentParams: GeneratorSceneContentParams = {
                     sceneId: `scene_${sceneIndex}`,
                     story: storyResult.story,
                     part: chapterPart,
@@ -464,7 +464,7 @@ export async function generateCompleteNovel(
                     language,
                 };
 
-                const sceneContentResult: GenerateSceneContentResult =
+                const sceneContentResult: GeneratorSceneContentResult =
                     await generateSceneContent(sceneContentParams);
 
                 const sceneWithContent: AiSceneSummaryType & {
@@ -511,7 +511,7 @@ export async function generateCompleteNovel(
                 });
 
                 // 8.1. Evaluate scene using pure generator (no DB save in orchestrator)
-                const evaluateParams: EvaluateSceneParams = {
+                const evaluateParams: GeneratorSceneEvaluationParams = {
                     content: scene.content || "",
                     story: {
                         id: storyResult.story.id || "story_temp",
@@ -527,7 +527,7 @@ export async function generateCompleteNovel(
                     maxIterations: maxEvaluationIterations,
                 };
 
-                const evaluationResult: EvaluateSceneResult =
+                const evaluationResult: GeneratorSceneEvaluationResult =
                     await evaluateScene(evaluateParams);
 
                 // 8.2. Update scene with improved content

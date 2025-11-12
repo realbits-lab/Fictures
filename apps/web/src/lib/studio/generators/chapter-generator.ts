@@ -20,8 +20,8 @@ import {
 import { promptManager } from "./prompt-manager";
 import type {
     ChapterPromptParams,
-    GenerateChapterParams,
-    GenerateChapterResult,
+    GeneratorChapterParams,
+    GeneratorChapterResult,
 } from "./types";
 import {
     type AiChapterType,
@@ -35,8 +35,8 @@ import {
  * @returns Chapter data (caller responsible for database save)
  */
 export async function generateChapter(
-    params: GenerateChapterParams,
-): Promise<GenerateChapterResult> {
+    params: GeneratorChapterParams,
+): Promise<GeneratorChapterResult> {
     const startTime: number = Date.now();
 
     // 1. Extract parameters
@@ -47,7 +47,7 @@ export async function generateChapter(
         settings,
         previousChapters,
         chapterIndex,
-    }: GenerateChapterParams = params;
+    }: GeneratorChapterParams = params;
 
     console.log(
         `[chapter-generator] 📖 Generating chapter ${chapterIndex + 1} (Part: ${part.title})...`,
@@ -153,7 +153,7 @@ export async function generateChapter(
     );
 
     // 11. Build and return result with metadata
-    const result: GenerateChapterResult = {
+    const result: GeneratorChapterResult = {
         chapter: chapterData,
         metadata: {
             generationTime: totalTime,

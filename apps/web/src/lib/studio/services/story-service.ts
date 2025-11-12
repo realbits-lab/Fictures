@@ -11,15 +11,15 @@ import { db } from "@/lib/db";
 import { stories } from "@/lib/db/schema";
 import { generateStory } from "../generators/story-generator";
 import type {
-    GenerateStoryParams,
-    GenerateStoryResult,
+    GeneratorStoryParams,
+    GeneratorStoryResult,
 } from "../generators/types";
 import {
     insertStorySchema,
     type Story,
 } from "../generators/zod-schemas.generated";
 
-export interface GenerateStoryServiceParams {
+export interface ServiceStoryParams {
     userPrompt: string;
     language?: string;
     preferredGenre?: StoryGenre;
@@ -27,7 +27,7 @@ export interface GenerateStoryServiceParams {
     userId: string;
 }
 
-export interface GenerateStoryServiceResult {
+export interface ServiceStoryResult {
     story: Story;
     metadata: {
         generationTime: number;
@@ -37,8 +37,8 @@ export interface GenerateStoryServiceResult {
 
 export class StoryService {
     async generateAndSave(
-        params: GenerateStoryServiceParams,
-    ): Promise<GenerateStoryServiceResult> {
+        params: ServiceStoryParams,
+    ): Promise<ServiceStoryResult> {
         const {
             userPrompt,
             language = "English",
@@ -48,14 +48,14 @@ export class StoryService {
         } = params;
 
         // 1. Generate story using pure generator
-        const generateParams: GenerateStoryParams = {
+        const generateParams: GeneratorStoryParams = {
             userPrompt,
             language,
             preferredGenre,
             preferredTone,
         };
 
-        const generationResult: GenerateStoryResult =
+        const generationResult: GeneratorStoryResult =
             await generateStory(generateParams);
 
         // 2. Prepare story data for database

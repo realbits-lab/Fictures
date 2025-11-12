@@ -14,7 +14,7 @@
  * These types represent the service layer contract between route handlers and generators.
  *
  * ## Naming Convention
- * Follows layer-based naming pattern: Generator{Entity}{Suffix}
+ * Follows unified naming pattern: Generate{Entity}{Suffix}
  *
  * Type Suffixes:
  * - Params: Function input parameters (internal service input)
@@ -183,7 +183,7 @@ export type ProgressCallback = (current: number, total: number) => void;
 // Story Generator
 // ============================================================================
 
-export interface GeneratorStoryParams {
+export interface GenerateStoryParams {
     userPrompt: string;
     language?: string;
     preferredGenre?: import("@/lib/constants/genres").StoryGenre;
@@ -197,7 +197,7 @@ export interface StoryPromptParams extends Record<string, string> {
     language: string;
 }
 
-export interface GeneratorStoryResult {
+export interface GenerateStoryResult {
     story: Story;
     metadata: GeneratorMetadata;
 }
@@ -206,7 +206,7 @@ export interface GeneratorStoryResult {
 // Characters Generator
 // ============================================================================
 
-export interface GeneratorCharactersParams {
+export interface GenerateCharactersParams {
     story: Story;
     characterCount: number;
     language?: string;
@@ -221,7 +221,7 @@ export interface CharacterPromptParams extends Record<string, string> {
     language: string;
 }
 
-export interface GeneratorCharactersResult {
+export interface GenerateCharactersResult {
     characters: AiCharacterType[];
     metadata: ArrayGeneratorMetadata;
 }
@@ -230,7 +230,7 @@ export interface GeneratorCharactersResult {
 // Settings Generator
 // ============================================================================
 
-export interface GeneratorSettingsParams {
+export interface GenerateSettingsParams {
     story: Story;
     settingCount: number;
     onProgress?: ProgressCallback;
@@ -242,7 +242,7 @@ export interface SettingPromptParams extends Record<string, string> {
     story: string;
 }
 
-export interface GeneratorSettingsResult {
+export interface GenerateSettingsResult {
     settings: AiSettingType[];
     metadata: ArrayGeneratorMetadata;
 }
@@ -251,7 +251,7 @@ export interface GeneratorSettingsResult {
 // Parts Generator
 // ============================================================================
 
-export interface GeneratorPartsParams {
+export interface GeneratePartsParams {
     story: Story;
     characters: Character[];
     settings: Setting[];
@@ -267,7 +267,7 @@ export interface PartPromptParams extends Record<string, string> {
     previousPartsContext: string;
 }
 
-export interface GeneratorPartsResult {
+export interface GeneratePartsResult {
     parts: AiPartType[];
     metadata: ArrayGeneratorMetadata;
 }
@@ -276,7 +276,7 @@ export interface GeneratorPartsResult {
 // Part Generator (Singular - Extreme Incremental)
 // ============================================================================
 
-export interface GeneratorPartParams {
+export interface GeneratePartParams {
     story: Story;
     characters: (AiCharacterType & { id: string })[];
     settings: (AiSettingType & { id: string })[];
@@ -284,7 +284,7 @@ export interface GeneratorPartParams {
     partIndex: number;
 }
 
-export interface GeneratorPartResult {
+export interface GeneratePartResult {
     part: AiPartType;
     metadata: GeneratorMetadata;
 }
@@ -293,7 +293,7 @@ export interface GeneratorPartResult {
 // Chapters Generator
 // ============================================================================
 
-export interface GeneratorChaptersParams {
+export interface GenerateChaptersParams {
     storyId: string;
     story: Story;
     parts: Part[];
@@ -312,7 +312,7 @@ export interface ChapterPromptParams extends Record<string, string> {
     previousChaptersContext: string; // All previous chapters context
 }
 
-export interface GeneratorChaptersResult {
+export interface GenerateChaptersResult {
     chapters: AiChapterType[];
     metadata: ArrayGeneratorMetadata;
 }
@@ -321,7 +321,7 @@ export interface GeneratorChaptersResult {
 // Chapter Generator (Singular - Extreme Incremental)
 // ============================================================================
 
-export interface GeneratorChapterParams {
+export interface GenerateChapterParams {
     story: Story;
     part: AiPartType & { id: string };
     characters: (AiCharacterType & { id: string })[];
@@ -330,7 +330,7 @@ export interface GeneratorChapterParams {
     chapterIndex: number; // Global index (position in entire story)
 }
 
-export interface GeneratorChapterResult {
+export interface GenerateChapterResult {
     chapter: AiChapterType;
     metadata: GeneratorMetadata;
 }
@@ -339,7 +339,7 @@ export interface GeneratorChapterResult {
 // Scene Summaries Generator
 // ============================================================================
 
-export interface GeneratorSceneSummariesParams {
+export interface GenerateSceneSummariesParams {
     story: Story;
     part: Part;
     chapters: Chapter[];
@@ -360,7 +360,7 @@ export interface SceneSummaryPromptParams extends Record<string, string> {
     previousScenesContext: string;
 }
 
-export interface GeneratorSceneSummariesResult {
+export interface GenerateSceneSummariesResult {
     scenes: AiSceneSummaryType[];
     metadata: ArrayGeneratorMetadata;
 }
@@ -369,7 +369,7 @@ export interface GeneratorSceneSummariesResult {
 // Scene Summary Generator (Singular - Extreme Incremental)
 // ============================================================================
 
-export interface GeneratorSceneSummaryParams {
+export interface GenerateSceneSummaryParams {
     story: Story;
     part: AiPartType & { id: string };
     chapter: AiChapterType & { id: string; partId: string };
@@ -382,7 +382,7 @@ export interface GeneratorSceneSummaryParams {
     sceneIndex: number; // Global index (position in entire story)
 }
 
-export interface GeneratorSceneSummaryResult {
+export interface GenerateSceneSummaryResult {
     scene: AiSceneSummaryType;
     metadata: GeneratorMetadata;
 }
@@ -391,7 +391,7 @@ export interface GeneratorSceneSummaryResult {
 // Scene Content Generator
 // ============================================================================
 
-export interface GeneratorSceneContentParams {
+export interface GenerateSceneContentParams {
     // === Required Objects ===
     story: Story;
     part: Part;
@@ -414,7 +414,7 @@ export interface SceneContentPromptParams extends Record<string, string> {
     language: string;
 }
 
-export interface GeneratorSceneContentResult {
+export interface GenerateSceneContentResult {
     content: string;
     wordCount: number;
     metadata: GeneratorMetadata;
@@ -437,13 +437,13 @@ export interface SceneEvaluationStoryContext {
     tone: import("@/lib/constants/tones").StoryTone;
 }
 
-export interface GeneratorSceneEvaluationParams {
+export interface EvaluateSceneParams {
     content: string;
     story: SceneEvaluationStoryContext;
     maxIterations?: number;
 }
 
-export interface GeneratorSceneEvaluationResult {
+export interface EvaluateSceneResult {
     finalContent: string;
     score: number;
     categories: {
@@ -466,7 +466,7 @@ export interface GeneratorSceneEvaluationResult {
 // Images Generator
 // ============================================================================
 
-export interface GeneratorImagesParams {
+export interface GenerateImagesParams {
     storyId: string;
     story?: Story;
     characters?: Character[];
@@ -476,7 +476,7 @@ export interface GeneratorImagesParams {
     onProgress?: ProgressCallback;
 }
 
-export interface GeneratorImagesResult {
+export interface GenerateImagesResult {
     generatedImages: {
         type: "story" | "character" | "setting" | "scene";
         entityId: string;

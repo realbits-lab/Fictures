@@ -9,7 +9,7 @@
  */
 
 import { generateStoryImage } from "@/lib/services/image-generation";
-import type { GenerateImagesParams, GenerateImagesResult } from "./types";
+import type { GeneratorImagesParams, GeneratorImagesResult } from "./types";
 
 /**
  * Generate images for story assets
@@ -18,8 +18,8 @@ import type { GenerateImagesParams, GenerateImagesResult } from "./types";
  * @returns Generated images data (caller responsible for database save)
  */
 export async function generateImages(
-    params: GenerateImagesParams,
-): Promise<GenerateImagesResult> {
+    params: GeneratorImagesParams,
+): Promise<GeneratorImagesResult> {
     const startTime = Date.now();
     const {
         storyId,
@@ -31,7 +31,7 @@ export async function generateImages(
         onProgress,
     } = params;
 
-    const generatedImages: GenerateImagesResult["generatedImages"] = [];
+    const generatedImages: GeneratorImagesResult["generatedImages"] = [];
     let imageCount = 0;
 
     // Calculate total images to generate

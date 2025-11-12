@@ -10,8 +10,8 @@ import { db } from "@/lib/db";
 import { settings, stories } from "@/lib/db/schema";
 import { generateSettings } from "../generators/settings-generator";
 import type {
-    GenerateSettingsParams,
-    GenerateSettingsResult,
+    GeneratorSettingsParams,
+    GeneratorSettingsResult,
 } from "../generators/types";
 import {
     insertSettingSchema,
@@ -19,13 +19,13 @@ import {
     type Story,
 } from "../generators/zod-schemas.generated";
 
-export interface GenerateSettingsServiceParams {
+export interface ServiceSettingsParams {
     storyId: string;
     settingCount: number;
     userId: string;
 }
 
-export interface GenerateSettingsServiceResult {
+export interface ServiceSettingsResult {
     settings: Setting[];
     metadata: {
         totalGenerated: number;
@@ -35,8 +35,8 @@ export interface GenerateSettingsServiceResult {
 
 export class SettingService {
     async generateAndSave(
-        params: GenerateSettingsServiceParams,
-    ): Promise<GenerateSettingsServiceResult> {
+        params: ServiceSettingsParams,
+    ): Promise<ServiceSettingsResult> {
         const { storyId, settingCount, userId } = params;
 
         // 1. Fetch and verify story
@@ -59,12 +59,12 @@ export class SettingService {
         }
 
         // 3. Generate settings using pure generator
-        const generateParams: GenerateSettingsParams = {
+        const generateParams: GeneratorSettingsParams = {
             story,
             settingCount,
         };
 
-        const generationResult: GenerateSettingsResult =
+        const generationResult: GeneratorSettingsResult =
             await generateSettings(generateParams);
 
         // 4. Save settings to database

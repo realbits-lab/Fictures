@@ -11,8 +11,8 @@
 import { textGenerationClient } from "./ai-client";
 import { promptManager } from "./prompt-manager";
 import type {
-    GenerateStoryParams,
-    GenerateStoryResult,
+    GeneratorStoryParams,
+    GeneratorStoryResult,
     StoryPromptParams,
 } from "./types";
 import { type AiStoryType, AiStoryZodSchema } from "./zod-schemas.generated";
@@ -24,8 +24,8 @@ import { type AiStoryType, AiStoryZodSchema } from "./zod-schemas.generated";
  * @returns Story data (caller responsible for database save)
  */
 export async function generateStory(
-    params: GenerateStoryParams,
-): Promise<GenerateStoryResult> {
+    params: GeneratorStoryParams,
+): Promise<GeneratorStoryResult> {
     const startTime: number = Date.now();
 
     // 1. Extract and set default parameters
@@ -34,7 +34,7 @@ export async function generateStory(
         preferredGenre = "Slice" as const, // Default to Slice of Life genre
         preferredTone = "hopeful" as const,
         language = "English",
-    }: GenerateStoryParams = params;
+    }: GeneratorStoryParams = params;
 
     // 2. Get the prompt template for story generation
     const promptParams: StoryPromptParams = {
@@ -85,7 +85,7 @@ export async function generateStory(
     }
 
     // 5. Build and return result with metadata
-    const result: GenerateStoryResult = {
+    const result: GeneratorStoryResult = {
         story: storyData,
         metadata: {
             generationTime: Date.now() - startTime,

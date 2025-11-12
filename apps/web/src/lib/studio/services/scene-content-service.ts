@@ -16,8 +16,8 @@ import {
 } from "@/lib/db/schema";
 import { generateSceneContent } from "../generators/scene-content-generator";
 import type {
-    GenerateSceneContentParams,
-    GenerateSceneContentResult,
+    GeneratorSceneContentParams,
+    GeneratorSceneContentResult,
 } from "../generators/types";
 import type {
     Chapter,
@@ -28,13 +28,13 @@ import type {
     Story,
 } from "../generators/zod-schemas.generated";
 
-export interface GenerateSceneContentServiceParams {
+export interface ServiceSceneContentParams {
     sceneId: string;
     language?: string;
     userId: string;
 }
 
-export interface GenerateSceneContentServiceResult {
+export interface ServiceSceneContentResult {
     scene: Scene;
     metadata: {
         wordCount: number;
@@ -44,8 +44,8 @@ export interface GenerateSceneContentServiceResult {
 
 export class SceneContentService {
     async generateAndSave(
-        params: GenerateSceneContentServiceParams,
-    ): Promise<GenerateSceneContentServiceResult> {
+        params: ServiceSceneContentParams,
+    ): Promise<ServiceSceneContentResult> {
         const { sceneId, language = "English", userId } = params;
 
         // 1. Fetch scene
@@ -116,7 +116,7 @@ export class SceneContentService {
             .where(eq(settings.storyId, story.id))) as Setting[];
 
         // 8. Generate scene content using pure generator
-        const generateParams: GenerateSceneContentParams = {
+        const generateParams: GeneratorSceneContentParams = {
             story,
             part,
             chapter,
@@ -126,7 +126,7 @@ export class SceneContentService {
             language,
         };
 
-        const generationResult: GenerateSceneContentResult =
+        const generationResult: GeneratorSceneContentResult =
             await generateSceneContent(generateParams);
 
         // 9. Update scene with generated content

@@ -23,14 +23,14 @@ import { db } from "@/lib/db";
 import { chapters, scenes, stories } from "@/lib/db/schema";
 import { evaluateScene } from "../generators/scene-evaluation-generator";
 import type {
-    EvaluateSceneParams,
-    EvaluateSceneResult,
+    GeneratorSceneEvaluationParams,
+    GeneratorSceneEvaluationResult,
 } from "../generators/types";
 
 /**
  * Service parameters for scene evaluation
  */
-export interface EvaluateSceneServiceParams {
+export interface ServiceSceneEvaluationParams {
     sceneId: string;
     userId?: string; // Optional: For ownership verification
     maxIterations?: number;
@@ -63,7 +63,7 @@ export interface EvaluateSceneWithDataParams {
 /**
  * Service result including database record
  */
-export interface EvaluateSceneServiceResult {
+export interface ServiceSceneEvaluationResult {
     scene: {
         id: string;
         chapterId: string;
@@ -73,8 +73,8 @@ export interface EvaluateSceneServiceResult {
     };
     evaluation: {
         score: number;
-        categories: EvaluateSceneResult["categories"];
-        feedback: EvaluateSceneResult["feedback"];
+        categories: GeneratorSceneEvaluationResult["categories"];
+        feedback: GeneratorSceneEvaluationResult["feedback"];
         iterations: number;
         improved: boolean;
     };
@@ -104,8 +104,8 @@ export class SceneEvaluationService {
      * @throws Error if scene not found or evaluation fails
      */
     async evaluateAndSave(
-        params: EvaluateSceneServiceParams,
-    ): Promise<EvaluateSceneServiceResult> {
+        params: ServiceSceneEvaluationParams,
+    ): Promise<ServiceSceneEvaluationResult> {
         const { sceneId, userId, maxIterations = 2 } = params;
 
         // 1. Fetch scene from database
@@ -166,13 +166,13 @@ export class SceneEvaluationService {
             };
 
         // 5. Call pure generator for evaluation
-        const evaluateParams: EvaluateSceneParams = {
+        const evaluateParams: GeneratorSceneEvaluationParams = {
             content: scene.content,
             story: storyContext,
             maxIterations,
         };
 
-        const evaluationResult: EvaluateSceneResult =
+        const evaluationResult: GeneratorSceneEvaluationResult =
             await evaluateScene(evaluateParams);
 
         // 6. Check if score meets quality threshold before updating
@@ -260,7 +260,7 @@ export class SceneEvaluationService {
      */
     async evaluateAndSaveWithData(
         params: EvaluateSceneWithDataParams,
-    ): Promise<EvaluateSceneServiceResult> {
+    ): Promise<ServiceSceneEvaluationResult> {
         const { sceneId, scene, story, maxIterations = 2 } = params;
 
         if (!scene.content || scene.content.trim() === "") {
@@ -268,7 +268,7 @@ export class SceneEvaluationService {
         }
 
         // 1. Call pure generator for evaluation
-        const evaluateParams: EvaluateSceneParams = {
+        const evaluateParams: GeneratorSceneEvaluationParams = {
             content: scene.content,
             story: {
                 id: story.id,
@@ -281,7 +281,7 @@ export class SceneEvaluationService {
             maxIterations,
         };
 
-        const evaluationResult: EvaluateSceneResult =
+        const evaluationResult: GeneratorSceneEvaluationResult =
             await evaluateScene(evaluateParams);
 
         // 2. Check if score meets quality threshold before updating
@@ -367,8 +367,8 @@ export class SceneEvaluationService {
             moralFramework: string;
         },
         maxIterations = 2,
-    ): Promise<EvaluateSceneResult> {
-        const evaluateParams: EvaluateSceneParams = {
+    ): Promise<GeneratorSceneEvaluationResult> {
+        const evaluateParams: GeneratorSceneEvaluationParams = {
             content,
             story: {
                 id: "temp",
