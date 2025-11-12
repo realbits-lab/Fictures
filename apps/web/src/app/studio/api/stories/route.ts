@@ -202,7 +202,11 @@ export async function POST(request: NextRequest) {
 
         console.log("✅ [STORIES API] Validation passed");
 
-        // 4. Generate using service (handles generation and persistence)
+        // 4. Extract API key from request headers (for AI server authentication)
+        const apiKey = request.headers.get("x-api-key") || undefined;
+        console.log("[STORIES API] API key provided:", !!apiKey);
+
+        // 5. Generate using service (handles generation and persistence)
         console.log("[STORIES API] 🤖 Calling story service...");
         const serviceResult = await storyService.generateAndSave({
             userPrompt,
@@ -210,6 +214,7 @@ export async function POST(request: NextRequest) {
             preferredGenre,
             preferredTone,
             userId: authResult.user.id,
+            apiKey,
         });
 
         console.log("[STORIES API] ✅ Story generation and save completed:", {

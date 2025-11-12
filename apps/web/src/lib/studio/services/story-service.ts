@@ -25,6 +25,7 @@ export interface ServiceStoryParams {
     preferredGenre?: StoryGenre;
     preferredTone?: StoryTone;
     userId: string;
+    apiKey?: string;
 }
 
 export interface ServiceStoryResult {
@@ -45,6 +46,7 @@ export class StoryService {
             preferredGenre,
             preferredTone,
             userId,
+            apiKey,
         } = params;
 
         // 1. Generate story using pure generator
@@ -53,6 +55,7 @@ export class StoryService {
             language,
             preferredGenre,
             preferredTone,
+            apiKey,
         };
 
         const generationResult: GeneratorStoryResult =
