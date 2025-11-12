@@ -49,6 +49,7 @@
 
 import type { z } from "zod";
 import type { ChapterArcPosition } from "@/lib/constants/arc-positions";
+import type { OptimizedImageSet } from "@/lib/services/image-generation";
 import type {
     AiChapterType,
     AiCharacterType,
@@ -98,7 +99,7 @@ export type ResponseFormat = "text" | "json";
  * Schema definition for structured JSON output
  * Can be a Zod schema, JSON Schema object, or TypeScript type
  */
-export type ResponseSchema = z.ZodType<any> | Record<string, any>;
+export type ResponseSchema = z.ZodType<unknown> | Record<string, unknown>;
 
 export interface TextGenerationRequest {
     prompt: string;
@@ -478,7 +479,7 @@ export interface GeneratorImagesResult {
         type: "story" | "character" | "setting" | "scene";
         entityId: string;
         imageUrl: string;
-        variants: any;
+        variants?: OptimizedImageSet;
     }[];
     metadata: ArrayGeneratorMetadata;
 }
