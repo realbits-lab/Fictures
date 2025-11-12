@@ -133,16 +133,18 @@ export async function generateChapter(
     );
 
     // 9. Generate chapter using structured output
-    const chapterData: AiChapterType =
-        await client.generateStructured(
-            userPromptText,
-            AiChapterZodSchema,
-            {
-                systemPrompt,
-                temperature: 0.85,
-                maxTokens: 8192,
-            },
-        );
+    // NOTE: For structured output with Qwen3, DO NOT specify maxTokens
+    // The model automatically uses its maximum output capacity for JSON generation
+    // Specifying maxTokens can cause JSON truncation and parsing failures
+    const chapterData: AiChapterType = await client.generateStructured(
+        userPromptText,
+        AiChapterZodSchema,
+        {
+            systemPrompt,
+            temperature: 0.3, // Low temperature for consistent JSON structure
+            // maxTokens: undefined, // Intentionally omitted - let model use maximum
+        },
+    );
 
     // 10. Calculate total generation time
     const totalTime: number = Date.now() - startTime;

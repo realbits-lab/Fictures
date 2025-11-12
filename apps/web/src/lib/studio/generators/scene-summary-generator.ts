@@ -123,16 +123,15 @@ Virtue Type: ${chapter.virtueType || "N/A"}`;
     );
 
     // 6. Generate scene summary using structured output
-    const sceneData: AiSceneSummaryType =
-        await client.generateStructured(
-            userPromptText,
-            AiSceneSummaryZodSchema,
-            {
-                systemPrompt,
-                temperature: 0.8,
-                maxTokens: 8192,
-            },
-        );
+    const sceneData: AiSceneSummaryType = await client.generateStructured(
+        userPromptText,
+        AiSceneSummaryZodSchema,
+        {
+            systemPrompt,
+            temperature: 0.3, // Low temperature for consistent JSON structure
+            maxTokens: 8192,
+        },
+    );
 
     // 7. Calculate total generation time
     const totalTime = Date.now() - startTime;

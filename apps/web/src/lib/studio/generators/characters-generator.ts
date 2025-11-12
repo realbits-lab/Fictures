@@ -89,16 +89,15 @@ export async function generateCharacters(
         );
 
         // 7. Generate character using structured output
-        const characterData: AiCharacterType =
-            await client.generateStructured(
-                userPromptText,
-                AiCharacterZodSchema,
-                {
-                    systemPrompt,
-                    temperature: 0.9,
-                    maxTokens: 4096,
-                },
-            );
+        const characterData: AiCharacterType = await client.generateStructured(
+            userPromptText,
+            AiCharacterZodSchema,
+            {
+                systemPrompt,
+                temperature: 0.3, // Low temperature for consistent JSON structure
+                maxTokens: 4096,
+            },
+        );
 
         characters.push(characterData);
 

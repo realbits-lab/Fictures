@@ -98,7 +98,7 @@ export async function generatePart(
         AiPartZodSchema,
         {
             systemPrompt,
-            temperature: 0.85,
+            temperature: 0.3, // Low temperature for consistent JSON structure
             maxTokens: 8192,
         },
     );

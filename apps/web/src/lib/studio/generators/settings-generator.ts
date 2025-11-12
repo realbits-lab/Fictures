@@ -33,7 +33,8 @@ export async function generateSettings(
     const startTime: number = Date.now();
 
     // 1. Extract and set default parameters
-    const { story, settingCount, onProgress, apiKey }: GeneratorSettingsParams = params;
+    const { story, settingCount, onProgress, apiKey }: GeneratorSettingsParams =
+        params;
 
     // 2. Create text generation client with API key
     const client = createTextGenerationClient(apiKey);
@@ -76,16 +77,15 @@ export async function generateSettings(
         );
 
         // 6. Generate setting using structured output
-        const settingData: AiSettingType =
-            await client.generateStructured(
-                userPromptText,
-                AiSettingZodSchema,
-                {
-                    systemPrompt,
-                    temperature: 0.85,
-                    maxTokens: 8192,
-                },
-            );
+        const settingData: AiSettingType = await client.generateStructured(
+            userPromptText,
+            AiSettingZodSchema,
+            {
+                systemPrompt,
+                temperature: 0.3, // Low temperature for consistent JSON structure
+                maxTokens: 8192,
+            },
+        );
 
         settings.push(settingData);
 

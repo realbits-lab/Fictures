@@ -62,16 +62,15 @@ export async function generateStory(
     );
 
     // 4. Generate story data using structured output method
-    const storyData: AiStoryType =
-        await client.generateStructured(
-            userPromptText,
-            AiStoryZodSchema,
-            {
-                systemPrompt,
-                temperature: 0.8,
-                maxTokens: 4096,
-            },
-        );
+    const storyData: AiStoryType = await client.generateStructured(
+        userPromptText,
+        AiStoryZodSchema,
+        {
+            systemPrompt,
+            temperature: 0.3, // Low temperature for consistent JSON structure
+            maxTokens: 4096,
+        },
+    );
 
     console.log("[story-generator] Story generated:", {
         summary: storyData.summary,

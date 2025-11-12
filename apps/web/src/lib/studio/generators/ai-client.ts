@@ -5,6 +5,7 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { z } from "zod";
+import { loadProfile } from "@/lib/utils/auth-loader";
 import { promptManager } from "./prompt-manager";
 import type {
     GenerationOptions,
@@ -13,22 +14,29 @@ import type {
     TextGenerationRequest,
     TextGenerationResponse,
 } from "./types";
-import { loadProfile } from "@/lib/utils/auth-loader";
 
 /**
  * Environment configuration
  */
 const getConfig = () => {
     console.log("[ai-client] ===== ENVIRONMENT CONFIGURATION =====");
-    console.log("[ai-client] Reading TEXT_GENERATION_PROVIDER from process.env");
+    console.log(
+        "[ai-client] Reading TEXT_GENERATION_PROVIDER from process.env",
+    );
     console.log("[ai-client] Raw value:", process.env.TEXT_GENERATION_PROVIDER);
-    console.log("[ai-client] All TEXT env vars:", Object.keys(process.env).filter(k => k.includes('TEXT')));
+    console.log(
+        "[ai-client] All TEXT env vars:",
+        Object.keys(process.env).filter((k) => k.includes("TEXT")),
+    );
 
     const provider = (process.env.TEXT_GENERATION_PROVIDER ||
         "gemini") as ModelProvider;
 
     console.log("[ai-client] Selected provider:", provider);
-    console.log("[ai-client] Provider fallback applied:", !process.env.TEXT_GENERATION_PROVIDER);
+    console.log(
+        "[ai-client] Provider fallback applied:",
+        !process.env.TEXT_GENERATION_PROVIDER,
+    );
 
     const config = {
         provider,
@@ -50,7 +58,7 @@ const getConfig = () => {
     console.log("[ai-client] Final config:", {
         provider: config.provider,
         aiServerUrl: config.aiServer.url,
-        hasGeminiKey: !!config.gemini.apiKey
+        hasGeminiKey: !!config.gemini.apiKey,
     });
     console.log("[ai-client] ==========================================");
 
@@ -420,6 +428,15 @@ class AIServerProvider extends TextGenerationProvider {
 
         const result = await response.json();
 
+        // Validate finish_reason to detect truncation
+        if (result.finish_reason === "length") {
+            console.warn(
+                "[AIServerProvider] ⚠️ WARNING: Response was truncated due to token limit. " +
+                    `Tokens used: ${result.tokens_used}. ` +
+                    "Consider increasing max_tokens or using chunking strategy.",
+            );
+        }
+
         return {
             text: result.text,
             model: result.model,
@@ -580,13 +597,28 @@ class AIServerProvider extends TextGenerationProvider {
         );
         console.log("[AIServerProvider] Response length:", text?.length || 0);
         console.log("[AIServerProvider] Tokens used:", result.tokens_used);
+        console.log("[AIServerProvider] Finish reason:", result.finish_reason);
+
+        // Validate finish_reason to detect truncation
+        if (result.finish_reason === "length") {
+            console.warn(
+                "[AIServerProvider] ⚠️ WARNING: Response was truncated due to token limit. " +
+                    "Consider increasing max_tokens or using chunking strategy.",
+            );
+        }
 
         if (!text || text.trim() === "") {
             throw new Error("Empty response from AI Server structured output");
         }
 
-        console.log("[AIServerProvider] Raw response text (first 500 chars):", text.substring(0, 500));
-        console.log("[AIServerProvider] Raw response text (last 500 chars):", text.substring(Math.max(0, text.length - 500)));
+        console.log(
+            "[AIServerProvider] Raw response text (first 500 chars):",
+            text.substring(0, 500),
+        );
+        console.log(
+            "[AIServerProvider] Raw response text (last 500 chars):",
+            text.substring(Math.max(0, text.length - 500)),
+        );
 
         // Parse and validate the JSON response
         const parsed = JSON.parse(text);
@@ -611,23 +643,46 @@ class TextGenerationWrapper {
         console.log("[TextGenerationWrapper] API key provided:", !!apiKey);
         const config = getConfig();
         this.providerType = config.provider;
-        console.log("[TextGenerationWrapper] Provider type from config:", this.providerType);
+        console.log(
+            "[TextGenerationWrapper] Provider type from config:",
+            this.providerType,
+        );
 
         if (this.providerType === "gemini") {
-            console.log("[TextGenerationWrapper] ✅ Creating GeminiProvider instance");
+            console.log(
+                "[TextGenerationWrapper] ✅ Creating GeminiProvider instance",
+            );
             this.provider = new GeminiProvider();
-            console.log("[TextGenerationWrapper] GeminiProvider instance created");
+            console.log(
+                "[TextGenerationWrapper] GeminiProvider instance created",
+            );
         } else if (this.providerType === "ai-server") {
-            console.log("[TextGenerationWrapper] ✅ Creating AIServerProvider instance");
-            console.log("[TextGenerationWrapper] AI Server URL:", config.aiServer.url);
+            console.log(
+                "[TextGenerationWrapper] ✅ Creating AIServerProvider instance",
+            );
+            console.log(
+                "[TextGenerationWrapper] AI Server URL:",
+                config.aiServer.url,
+            );
             this.provider = new AIServerProvider(apiKey);
-            console.log("[TextGenerationWrapper] AIServerProvider instance created with API key:", !!apiKey);
+            console.log(
+                "[TextGenerationWrapper] AIServerProvider instance created with API key:",
+                !!apiKey,
+            );
         } else {
-            console.log("[TextGenerationWrapper] ❌ Unsupported provider:", this.providerType);
+            console.log(
+                "[TextGenerationWrapper] ❌ Unsupported provider:",
+                this.providerType,
+            );
             throw new Error(`Unsupported provider: ${this.providerType}`);
         }
-        console.log("[TextGenerationWrapper] Provider instance type:", this.provider.constructor.name);
-        console.log("[TextGenerationWrapper] ===========================================");
+        console.log(
+            "[TextGenerationWrapper] Provider instance type:",
+            this.provider.constructor.name,
+        );
+        console.log(
+            "[TextGenerationWrapper] ===========================================",
+        );
     }
 
     /**
@@ -636,9 +691,18 @@ class TextGenerationWrapper {
     async generate(
         request: TextGenerationRequest,
     ): Promise<TextGenerationResponse> {
-        console.log("[TextGenerationWrapper.generate] Provider type:", this.providerType);
-        console.log("[TextGenerationWrapper.generate] Provider instance:", this.provider.constructor.name);
-        console.log("[TextGenerationWrapper.generate] Request format:", request.responseFormat);
+        console.log(
+            "[TextGenerationWrapper.generate] Provider type:",
+            this.providerType,
+        );
+        console.log(
+            "[TextGenerationWrapper.generate] Provider instance:",
+            this.provider.constructor.name,
+        );
+        console.log(
+            "[TextGenerationWrapper.generate] Request format:",
+            request.responseFormat,
+        );
         return this.provider.generate(request);
     }
 
@@ -752,7 +816,9 @@ export { TextGenerationWrapper };
  * Create a new text generation client with optional API key
  * @param apiKey - Optional API key for AI server authentication
  */
-export function createTextGenerationClient(apiKey?: string): TextGenerationWrapper {
+export function createTextGenerationClient(
+    apiKey?: string,
+): TextGenerationWrapper {
     return new TextGenerationWrapper(apiKey);
 }
 

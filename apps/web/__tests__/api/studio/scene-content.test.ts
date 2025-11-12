@@ -469,5 +469,5 @@ describe("Scene Content API", () => {
         );
         console.log(`  Cycle phase: ${scene.cyclePhase || "N/A"}`);
         console.log(`  Emotional beat: ${scene.emotionalBeat || "N/A"}`);
-    }, 120000); // 2 minute timeout for AI content generation
+    }, 1200000); // 20 minute timeout for AI content generation
 });
