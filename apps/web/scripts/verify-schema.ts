@@ -3,8 +3,8 @@
  * Check column nullability in database
  */
 
-import { db } from "../src/lib/db";
 import { sql } from "drizzle-orm";
+import { db } from "../src/lib/db";
 
 async function verifySchema(): Promise<void> {
     console.log("🔍 Verifying database schema...\n");
@@ -21,7 +21,8 @@ async function verifySchema(): Promise<void> {
 
         console.log("📋 Settings table columns:");
         for (const row of settingsColumns.rows) {
-            const nullable = row.is_nullable === "YES" ? "✅ NULL" : "❌ NOT NULL";
+            const nullable =
+                row.is_nullable === "YES" ? "✅ NULL" : "❌ NOT NULL";
             console.log(
                 `  ${row.column_name.padEnd(25)} ${nullable.padEnd(12)} (${row.data_type})`,
             );
@@ -38,7 +39,8 @@ async function verifySchema(): Promise<void> {
 
         console.log("\n📋 Chapters table columns:");
         for (const row of chaptersColumns.rows) {
-            const nullable = row.is_nullable === "YES" ? "✅ NULL" : "❌ NOT NULL";
+            const nullable =
+                row.is_nullable === "YES" ? "✅ NULL" : "❌ NOT NULL";
             console.log(
                 `  ${row.column_name.padEnd(25)} ${nullable.padEnd(12)} (${row.data_type})`,
             );

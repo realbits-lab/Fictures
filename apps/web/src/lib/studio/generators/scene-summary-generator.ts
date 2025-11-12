@@ -25,8 +25,8 @@ import type {
     SceneSummaryPromptParams,
 } from "./types";
 import {
-    type GeneratedSceneSummaryData,
-    GeneratedSceneSummarySchema,
+    type AiSceneSummaryType,
+    AiSceneSummaryZodSchema,
 } from "./zod-schemas.generated";
 
 /**
@@ -119,10 +119,10 @@ Virtue Type: ${chapter.virtueType || "N/A"}`;
     );
 
     // 6. Generate scene summary using structured output
-    const sceneData: GeneratedSceneSummaryData =
+    const sceneData: AiSceneSummaryType =
         await textGenerationClient.generateStructured(
             userPromptText,
-            GeneratedSceneSummarySchema,
+            AiSceneSummaryZodSchema,
             {
                 systemPrompt,
                 temperature: 0.8,

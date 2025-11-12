@@ -7,9 +7,9 @@ import {
 } from "@/lib/db/studio-queries";
 import { storyService } from "@/lib/studio/services";
 import type {
-    GenerateStoryErrorResponse,
-    GenerateStoryRequest,
-    GenerateStoryResponse,
+    ApiStoryErrorResponse,
+    ApiStoryRequest,
+    ApiStoryResponse,
 } from "../types";
 
 export const runtime = "nodejs";
@@ -173,14 +173,13 @@ export async function POST(request: NextRequest) {
         });
 
         // 3. Parse request body with type safety
-        const body: GenerateStoryRequest =
-            (await request.json()) as GenerateStoryRequest;
+        const body: ApiStoryRequest = (await request.json()) as ApiStoryRequest;
         const {
             userPrompt,
             language = "English",
             preferredGenre,
             preferredTone,
-        }: GenerateStoryRequest = body;
+        }: ApiStoryRequest = body;
 
         console.log("[STORIES API] Request parameters:", {
             userPromptLength: userPrompt?.length || 0,
@@ -195,7 +194,7 @@ export async function POST(request: NextRequest) {
             console.error(
                 "❌ [STORIES API] Validation failed: userPrompt missing",
             );
-            const errorResponse: GenerateStoryErrorResponse = {
+            const errorResponse: ApiStoryErrorResponse = {
                 error: "userPrompt is required and must be a string",
             };
             return NextResponse.json(errorResponse, { status: 400 });
@@ -227,7 +226,7 @@ export async function POST(request: NextRequest) {
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
         // 6. Return the created story with metadata
-        const response: GenerateStoryResponse = {
+        const response: ApiStoryResponse = {
             success: true,
             story: serviceResult.story,
             metadata: {
@@ -242,7 +241,7 @@ export async function POST(request: NextRequest) {
         console.error("❌ [STORIES API] Error:", error);
         console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-        const errorResponse: GenerateStoryErrorResponse = {
+        const errorResponse: ApiStoryErrorResponse = {
             error: "Failed to generate and save story",
             details: error instanceof Error ? error.message : "Unknown error",
         };

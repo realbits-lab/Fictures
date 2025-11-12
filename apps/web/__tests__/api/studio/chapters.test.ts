@@ -12,13 +12,13 @@
  */
 
 import type {
-    GenerateChaptersErrorResponse,
-    GenerateChaptersRequest,
-    GenerateChaptersResponse,
-    GenerateCharactersRequest,
-    GenerateCharactersResponse,
-    GeneratePartsRequest,
-    GenerateStoryRequest,
+    ApiChaptersErrorResponse,
+    ApiChaptersRequest,
+    ApiChaptersResponse,
+    ApiCharactersRequest,
+    ApiCharactersResponse,
+    ApiPartsRequest,
+    ApiStoryRequest,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
@@ -34,7 +34,7 @@ describe("Chapters API", () => {
         console.log("🔧 Setting up test story...");
 
         // 1. Prepare story request
-        const storyRequestBody: GenerateStoryRequest = {
+        const storyRequestBody: ApiStoryRequest = {
             userPrompt: "A short fantasy tale for testing chapter creation",
             language: "English",
             preferredGenre: "Fantasy",
@@ -68,7 +68,7 @@ describe("Chapters API", () => {
 
         // 5. Generate characters (required for parts generation)
         console.log("🔧 Generating characters...");
-        const charactersRequestBody: GenerateCharactersRequest = {
+        const charactersRequestBody: ApiCharactersRequest = {
             storyId: testStoryId,
             characterCount: 2,
             language: "English",
@@ -86,7 +86,7 @@ describe("Chapters API", () => {
             },
         );
 
-        const charactersData: GenerateCharactersResponse =
+        const charactersData: ApiCharactersResponse =
             await charactersResponse.json();
 
         if (!charactersResponse.ok) {
@@ -100,7 +100,7 @@ describe("Chapters API", () => {
 
         // 6. Create parts for testing chapters with partId
         console.log("🔧 Generating parts for story...");
-        const partsRequestBody: GeneratePartsRequest = {
+        const partsRequestBody: ApiPartsRequest = {
             storyId: testStoryId,
             partsCount: 1,
             language: "English",
@@ -140,7 +140,7 @@ describe("Chapters API", () => {
             }
 
             // 2. Prepare request body with proper TypeScript type
-            const requestBody: GenerateChaptersRequest = {
+            const requestBody: ApiChaptersRequest = {
                 storyId: testStoryId,
                 chaptersPerPart: 2, // Generate 2 chapters per part for faster testing
                 language: "English",
@@ -160,9 +160,8 @@ describe("Chapters API", () => {
             );
 
             // 4. Parse response data with proper typing
-            const data:
-                | GenerateChaptersResponse
-                | GenerateChaptersErrorResponse = await response.json();
+            const data: ApiChaptersResponse | ApiChaptersErrorResponse =
+                await response.json();
 
             // 5. Log error if request failed
             if (!response.ok) {
@@ -175,14 +174,12 @@ describe("Chapters API", () => {
 
             // 7. Type guard to ensure we have success response
             if (!("success" in data) || !data.success) {
-                throw new Error(
-                    "Expected GenerateChaptersResponse but got error",
-                );
+                throw new Error("Expected ApiChaptersResponse but got error");
             }
 
             // 8. Cast to success response type
-            const successData: GenerateChaptersResponse =
-                data as GenerateChaptersResponse;
+            const successData: ApiChaptersResponse =
+                data as ApiChaptersResponse;
 
             // 9. Verify response structure
             expect(successData.success).toBe(true);
@@ -193,9 +190,8 @@ describe("Chapters API", () => {
             // ============================================================================
             // 10. Verify ALL chapter attributes for ALL chapters
             // ============================================================================
-            const {
-                chapters,
-            }: { chapters: GenerateChaptersResponse["chapters"] } = successData;
+            const { chapters }: { chapters: ApiChaptersResponse["chapters"] } =
+                successData;
             expect(chapters.length).toBeGreaterThan(0);
 
             for (const chapter of chapters) {
@@ -317,9 +313,8 @@ describe("Chapters API", () => {
             }
 
             // 11. Verify metadata
-            const {
-                metadata,
-            }: { metadata: GenerateChaptersResponse["metadata"] } = successData;
+            const { metadata }: { metadata: ApiChaptersResponse["metadata"] } =
+                successData;
             expect(metadata.totalGenerated).toBeGreaterThan(0);
             expect(metadata.generationTime).toBeGreaterThan(0);
 

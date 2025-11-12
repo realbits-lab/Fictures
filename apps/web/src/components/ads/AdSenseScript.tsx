@@ -12,19 +12,19 @@ import Script from "next/script";
  * Usage: Add once in your root layout or _app.tsx
  */
 export function AdSenseScript() {
-	const adsenseId = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID;
+    const adsenseId = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID;
 
-	// Only show ads in production
-	if (process.env.NODE_ENV !== "production" || !adsenseId) {
-		return null;
-	}
+    // Only show ads in production
+    if (process.env.NODE_ENV !== "production" || !adsenseId) {
+        return null;
+    }
 
-	return (
-		<Script
-			async
-			src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseId}`}
-			crossOrigin="anonymous"
-			strategy="afterInteractive"
-		/>
-	);
+    return (
+        <Script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseId}`}
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+        />
+    );
 }

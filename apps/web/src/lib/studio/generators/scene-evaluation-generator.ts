@@ -11,8 +11,8 @@
 import { textGenerationClient } from "./ai-client";
 import type { EvaluateSceneParams, EvaluateSceneResult } from "./types";
 import {
-    type GeneratedSceneEvaluationData,
-    GeneratedSceneEvaluationSchema,
+    type AiSceneEvaluationType,
+    AiSceneEvaluationZodSchema,
 } from "./zod-schemas.generated";
 
 /**
@@ -78,10 +78,10 @@ Return as JSON:
 }`;
 
         // Generate structured evaluation
-        const evaluation: GeneratedSceneEvaluationData =
+        const evaluation: AiSceneEvaluationType =
             await textGenerationClient.generateStructured(
                 evaluationPrompt,
-                GeneratedSceneEvaluationSchema,
+                AiSceneEvaluationZodSchema,
                 {
                     temperature: 0.3,
                     maxTokens: 2048,

@@ -4,112 +4,120 @@ import { type NextRequest, NextResponse } from "next/server";
 import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { db } from "@/lib/db";
 import {
-	chapters,
-	characters,
-	parts,
-	scenes,
-	settings,
-	stories,
+    chapters,
+    characters,
+    parts,
+    scenes,
+    settings,
+    stories,
 } from "@/lib/db/schema";
 
 export async function GET(
-	request: NextRequest,
-	context: { params: Promise<{ id: string }> },
+    request: NextRequest,
+    context: { params: Promise<{ id: string }> },
 ) {
-	const params = await context.params;
-	const { id: storyId } = params;
+    const params = await context.params;
+    const { id: storyId } = params;
 
-	try {
-		// Check authentication (supports both session and API key)
-		const authResult = await authenticateRequest(request);
-		if (!authResult) {
-			return NextResponse.json(
-				{ error: "Authentication required" },
-				{ status: 401 },
-			);
-		}
+    try {
+        // Check authentication (supports both session and API key)
+        const authResult = await authenticateRequest(request);
+        if (!authResult) {
+            return NextResponse.json(
+                { error: "Authentication required" },
+                { status: 401 },
+            );
+        }
 
-		// Check if user has permission to read stories
-		if (!hasRequiredScope(authResult, "stories:read")) {
-			return NextResponse.json(
-				{ error: "Insufficient permissions. Required scope: stories:read" },
-				{ status: 403 },
-			);
-		}
-		// Fetch all story data
-		const [story] = await db
-			.select()
-			.from(stories)
-			.where(eq(stories.id, storyId))
-			.limit(1);
+        // Check if user has permission to read stories
+        if (!hasRequiredScope(authResult, "stories:read")) {
+            return NextResponse.json(
+                {
+                    error: "Insufficient permissions. Required scope: stories:read",
+                },
+                { status: 403 },
+            );
+        }
+        // Fetch all story data
+        const [story] = await db
+            .select()
+            .from(stories)
+            .where(eq(stories.id, storyId))
+            .limit(1);
 
-		if (!story) {
-			return NextResponse.json({ error: "Story not found" }, { status: 404 });
-		}
+        if (!story) {
+            return NextResponse.json(
+                { error: "Story not found" },
+                { status: 404 },
+            );
+        }
 
-		// Check if user has access to this story (owner or published)
-		if (story.authorId !== authResult.user.id && story.status !== "published") {
-			return NextResponse.json(
-				{ error: "You do not have access to this story" },
-				{ status: 403 },
-			);
-		}
+        // Check if user has access to this story (owner or published)
+        if (
+            story.authorId !== authResult.user.id &&
+            story.status !== "published"
+        ) {
+            return NextResponse.json(
+                { error: "You do not have access to this story" },
+                { status: 403 },
+            );
+        }
 
-		// Fetch all related data
-		const [
-			storyParts,
-			storyChapters,
-			storyScenes,
-			storyCharacters,
-			storySettings,
-		] = await Promise.all([
-			db.select().from(parts).where(eq(parts.storyId, storyId)),
-			db.select().from(chapters).where(eq(chapters.storyId, storyId)),
-			db
-				.select()
-				.from(scenes)
-				.where(eq(scenes.chapterId, storyId)), // Will need to join properly
-			db.select().from(characters).where(eq(characters.storyId, storyId)),
-			db.select().from(settings).where(eq(settings.storyId, storyId)),
-		]);
+        // Fetch all related data
+        const [
+            storyParts,
+            storyChapters,
+            storyScenes,
+            storyCharacters,
+            storySettings,
+        ] = await Promise.all([
+            db.select().from(parts).where(eq(parts.storyId, storyId)),
+            db.select().from(chapters).where(eq(chapters.storyId, storyId)),
+            db
+                .select()
+                .from(scenes)
+                .where(eq(scenes.chapterId, storyId)), // Will need to join properly
+            db.select().from(characters).where(eq(characters.storyId, storyId)),
+            db.select().from(settings).where(eq(settings.storyId, storyId)),
+        ]);
 
-		// Get all scenes for all chapters
-		const chapterIds = storyChapters.map((c) => c.id);
-		const allScenes = await Promise.all(
-			chapterIds.map((chapterId) =>
-				db.select().from(scenes).where(eq(scenes.chapterId, chapterId)),
-			),
-		);
-		const flatScenes = allScenes.flat();
+        // Get all scenes for all chapters
+        const chapterIds = storyChapters.map((c) => c.id);
+        const allScenes = await Promise.all(
+            chapterIds.map((chapterId) =>
+                db.select().from(scenes).where(eq(scenes.chapterId, chapterId)),
+            ),
+        );
+        const flatScenes = allScenes.flat();
 
-		// Create ZIP file
-		const zip = new JSZip();
+        // Create ZIP file
+        const zip = new JSZip();
 
-		// Add story metadata
-		const storyMetadata = {
-			id: story.id,
-			title: story.title,
-			genre: story.genre,
-			status: story.status,
-			summary: story.summary,
-			tone: story.tone,
-			moralFramework: story.moralFramework,
-			createdAt: story.createdAt,
-			updatedAt: story.updatedAt,
-		};
+        // Add story metadata
+        const storyMetadata = {
+            id: story.id,
+            title: story.title,
+            genre: story.genre,
+            status: story.status,
+            summary: story.summary,
+            tone: story.tone,
+            moralFramework: story.moralFramework,
+            createdAt: story.createdAt,
+            updatedAt: story.updatedAt,
+        };
 
-		zip.file("story_metadata.json", JSON.stringify(storyMetadata, null, 2));
+        zip.file("story_metadata.json", JSON.stringify(storyMetadata, null, 2));
 
-		// Add HNS data files
-		if ((story as any).hnsData) {
-			zip.file(
-				"hns_data/story_hns.json",
-				JSON.stringify((story as any).hnsData, null, 2),
-			);
-		}
+        // Add HNS data files
+        if ((story as any).hnsData) {
+            zip.file(
+                "hns_data/story_hns.json",
+                JSON.stringify((story as any).hnsData, null, 2),
+            );
+        }
 
-		// Create HTML file with all content
-		let html = `<!DOCTYPE html>
+        // Create HTML file with all content
+        let html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -256,384 +264,410 @@ export async function GET(
 
     <div class="metadata">`;
 
-		if (story.summary) {
-			html += `
+        if (story.summary) {
+            html += `
       <h2>Description</h2>
       <p>${story.summary}</p>`;
-		}
+        }
 
-		if ((story as any).premise) {
-			html += `
+        if ((story as any).premise) {
+            html += `
       <h2>Premise</h2>
       <p>${(story as any).premise}</p>`;
-		}
+        }
 
-		if ((story as any).dramaticQuestion) {
-			html += `
+        if ((story as any).dramaticQuestion) {
+            html += `
       <h2>Dramatic Question</h2>
       <p>${(story as any).dramaticQuestion}</p>`;
-		}
+        }
 
-		if ((story as any).theme) {
-			html += `
+        if ((story as any).theme) {
+            html += `
       <h2>Theme</h2>
       <p>${(story as any).theme}</p>`;
-		}
+        }
 
-		html += `
+        html += `
     </div>
     <hr class="divider">`;
 
-		// Sort parts, chapters, and scenes by orderIndex
-		const sortedParts = [...storyParts].sort(
-			(a, b) => a.orderIndex - b.orderIndex,
-		);
-		const sortedChapters = [...storyChapters].sort(
-			(a, b) => a.orderIndex - b.orderIndex,
-		);
+        // Sort parts, chapters, and scenes by orderIndex
+        const sortedParts = [...storyParts].sort(
+            (a, b) => a.orderIndex - b.orderIndex,
+        );
+        const sortedChapters = [...storyChapters].sort(
+            (a, b) => a.orderIndex - b.orderIndex,
+        );
 
-		// Helper function to convert text content to HTML paragraphs
-		const formatContent = (content: string) => {
-			if (!content) return "";
-			return content
-				.split("\n\n")
-				.filter((p) => p.trim())
-				.map((p) => `<p>${p.trim()}</p>`)
-				.join("\n");
-		};
+        // Helper function to convert text content to HTML paragraphs
+        const formatContent = (content: string) => {
+            if (!content) return "";
+            return content
+                .split("\n\n")
+                .filter((p) => p.trim())
+                .map((p) => `<p>${p.trim()}</p>`)
+                .join("\n");
+        };
 
-		// Add parts and chapters to HTML
-		if (sortedParts.length > 0) {
-			// Story has parts structure
-			// Use 1-based indices for display and file names
-			sortedParts.forEach((part, partIndex) => {
-				const partNum = partIndex + 1;
-				html += `
+        // Add parts and chapters to HTML
+        if (sortedParts.length > 0) {
+            // Story has parts structure
+            // Use 1-based indices for display and file names
+            sortedParts.forEach((part, partIndex) => {
+                const partNum = partIndex + 1;
+                html += `
     <div class="part">
       <h2>Part ${partNum}: ${part.title}</h2>`;
 
-				if (part.summary) {
-					html += `
+                if (part.summary) {
+                    html += `
       <div class="summary">${part.summary}</div>`;
-				}
+                }
 
-				// Add part HNS data
-				if ((part as any).hnsData) {
-					zip.file(
-						`hns_data/parts/part_${partNum}_hns.json`,
-						JSON.stringify((part as any).hnsData, null, 2),
-					);
-				}
+                // Add part HNS data
+                if ((part as any).hnsData) {
+                    zip.file(
+                        `hns_data/parts/part_${partNum}_hns.json`,
+                        JSON.stringify((part as any).hnsData, null, 2),
+                    );
+                }
 
-				// Get chapters for this part
-				const partChapters = sortedChapters.filter((c) => c.partId === part.id);
+                // Get chapters for this part
+                const partChapters = sortedChapters.filter(
+                    (c) => c.partId === part.id,
+                );
 
-				partChapters.forEach((chapter, chapterIndex) => {
-					const chapterNum = chapterIndex + 1;
-					html += `
+                partChapters.forEach((chapter, chapterIndex) => {
+                    const chapterNum = chapterIndex + 1;
+                    html += `
       <div class="chapter">
         <h3>Chapter ${chapterNum}: ${chapter.title}</h3>`;
 
-					if (chapter.summary) {
-						html += `
+                    if (chapter.summary) {
+                        html += `
         <div class="summary">${chapter.summary}</div>`;
-					}
+                    }
 
-					// Add chapter HNS data
-					if ((chapter as any).hnsData) {
-						zip.file(
-							`hns_data/chapters/part_${partNum}_chapter_${chapterNum}_hns.json`,
-							JSON.stringify((chapter as any).hnsData, null, 2),
-						);
-					}
+                    // Add chapter HNS data
+                    if ((chapter as any).hnsData) {
+                        zip.file(
+                            `hns_data/chapters/part_${partNum}_chapter_${chapterNum}_hns.json`,
+                            JSON.stringify((chapter as any).hnsData, null, 2),
+                        );
+                    }
 
-					// Get scenes for this chapter
-					const chapterScenes = flatScenes
-						.filter((s) => s.chapterId === chapter.id)
-						.sort((a, b) => a.orderIndex - b.orderIndex);
+                    // Get scenes for this chapter
+                    const chapterScenes = flatScenes
+                        .filter((s) => s.chapterId === chapter.id)
+                        .sort((a, b) => a.orderIndex - b.orderIndex);
 
-					chapterScenes.forEach((scene, sceneIndex) => {
-						const sceneNum = sceneIndex + 1;
-						html += `
+                    chapterScenes.forEach((scene, sceneIndex) => {
+                        const sceneNum = sceneIndex + 1;
+                        html += `
         <div class="scene">
           <h4>Scene ${sceneNum}: ${scene.title}</h4>`;
 
-						// Add scene image if available
-						if (
-							(scene as any).hnsData &&
-							typeof (scene as any).hnsData === "object" &&
-							"scene_image" in (scene as any).hnsData
-						) {
-							const sceneImage = ((scene as any).hnsData as any).scene_image;
-							if (sceneImage && sceneImage.url) {
-								html += `
+                        // Add scene image if available
+                        if (
+                            (scene as any).hnsData &&
+                            typeof (scene as any).hnsData === "object" &&
+                            "scene_image" in (scene as any).hnsData
+                        ) {
+                            const sceneImage = ((scene as any).hnsData as any)
+                                .scene_image;
+                            if (sceneImage && sceneImage.url) {
+                                html += `
           <img src="${sceneImage.url}" alt="Scene ${sceneNum}: ${scene.title}" class="scene-image" />`;
-							}
-						}
+                            }
+                        }
 
-						if (scene.content) {
-							html += `
+                        if (scene.content) {
+                            html += `
           ${formatContent(scene.content)}`;
-						}
+                        }
 
-						// Add scene HNS data
-						if ((scene as any).hnsData) {
-							zip.file(
-								`hns_data/scenes/part_${partNum}_chapter_${chapterNum}_scene_${sceneNum}_hns.json`,
-								JSON.stringify((scene as any).hnsData, null, 2),
-							);
-						}
+                        // Add scene HNS data
+                        if ((scene as any).hnsData) {
+                            zip.file(
+                                `hns_data/scenes/part_${partNum}_chapter_${chapterNum}_scene_${sceneNum}_hns.json`,
+                                JSON.stringify((scene as any).hnsData, null, 2),
+                            );
+                        }
 
-						html += `
+                        html += `
         </div>`;
-					});
+                    });
 
-					html += `
+                    html += `
         <hr class="divider">
       </div>`;
-				});
+                });
 
-				html += `
+                html += `
     </div>`;
-			});
-		} else {
-			// Story has no parts, just chapters
-			sortedChapters.forEach((chapter, chapterIndex) => {
-				const chapterNum = chapterIndex + 1;
-				html += `
+            });
+        } else {
+            // Story has no parts, just chapters
+            sortedChapters.forEach((chapter, chapterIndex) => {
+                const chapterNum = chapterIndex + 1;
+                html += `
     <div class="chapter">
       <h2>Chapter ${chapterNum}: ${chapter.title}</h2>`;
 
-				if (chapter.summary) {
-					html += `
+                if (chapter.summary) {
+                    html += `
       <div class="summary">${chapter.summary}</div>`;
-				}
+                }
 
-				// Add chapter HNS data
-				if ((chapter as any).hnsData) {
-					zip.file(
-						`hns_data/chapters/chapter_${chapterNum}_hns.json`,
-						JSON.stringify((chapter as any).hnsData, null, 2),
-					);
-				}
+                // Add chapter HNS data
+                if ((chapter as any).hnsData) {
+                    zip.file(
+                        `hns_data/chapters/chapter_${chapterNum}_hns.json`,
+                        JSON.stringify((chapter as any).hnsData, null, 2),
+                    );
+                }
 
-				// Get scenes for this chapter
-				const chapterScenes = flatScenes
-					.filter((s) => s.chapterId === chapter.id)
-					.sort((a, b) => a.orderIndex - b.orderIndex);
+                // Get scenes for this chapter
+                const chapterScenes = flatScenes
+                    .filter((s) => s.chapterId === chapter.id)
+                    .sort((a, b) => a.orderIndex - b.orderIndex);
 
-				chapterScenes.forEach((scene, sceneIndex) => {
-					const sceneNum = sceneIndex + 1;
-					html += `
+                chapterScenes.forEach((scene, sceneIndex) => {
+                    const sceneNum = sceneIndex + 1;
+                    html += `
       <div class="scene">
         <h4>Scene ${sceneNum}: ${scene.title}</h4>`;
 
-					// Add scene image if available
-					if (
-						(scene as any).hnsData &&
-						typeof (scene as any).hnsData === "object" &&
-						"scene_image" in (scene as any).hnsData
-					) {
-						const sceneImage = ((scene as any).hnsData as any).scene_image;
-						if (sceneImage && sceneImage.url) {
-							html += `
+                    // Add scene image if available
+                    if (
+                        (scene as any).hnsData &&
+                        typeof (scene as any).hnsData === "object" &&
+                        "scene_image" in (scene as any).hnsData
+                    ) {
+                        const sceneImage = ((scene as any).hnsData as any)
+                            .scene_image;
+                        if (sceneImage && sceneImage.url) {
+                            html += `
         <img src="${sceneImage.url}" alt="Scene ${sceneNum}: ${scene.title}" class="scene-image" />`;
-						}
-					}
+                        }
+                    }
 
-					if (scene.content) {
-						html += `
+                    if (scene.content) {
+                        html += `
         ${formatContent(scene.content)}`;
-					}
+                    }
 
-					// Add scene HNS data
-					if ((scene as any).hnsData) {
-						zip.file(
-							`hns_data/scenes/chapter_${chapterNum}_scene_${sceneNum}_hns.json`,
-							JSON.stringify((scene as any).hnsData, null, 2),
-						);
-					}
+                    // Add scene HNS data
+                    if ((scene as any).hnsData) {
+                        zip.file(
+                            `hns_data/scenes/chapter_${chapterNum}_scene_${sceneNum}_hns.json`,
+                            JSON.stringify((scene as any).hnsData, null, 2),
+                        );
+                    }
 
-					html += `
+                    html += `
       </div>`;
-				});
+                });
 
-				html += `
+                html += `
       <hr class="divider">
     </div>`;
-			});
-		}
+            });
+        }
 
-		// Add Characters section
-		if (storyCharacters.length > 0) {
-			html += `
+        // Add Characters section
+        if (storyCharacters.length > 0) {
+            html += `
     <div class="reference-section">
       <h2>Characters</h2>
       <div class="reference-grid">`;
 
-			storyCharacters.forEach((character) => {
-				if (character.imageUrl) {
-					html += `
+            storyCharacters.forEach((character) => {
+                if (character.imageUrl) {
+                    html += `
         <div class="reference-item">
           <img src="${character.imageUrl}" alt="${character.name}" class="reference-image" />
           <div class="reference-title">${character.name}</div>
         </div>`;
-				}
-			});
+                }
+            });
 
-			html += `
+            html += `
       </div>
     </div>`;
-		}
+        }
 
-		// Add Settings section
-		if (storySettings.length > 0) {
-			html += `
+        // Add Settings section
+        if (storySettings.length > 0) {
+            html += `
     <div class="reference-section">
       <h2>Settings</h2>
       <div class="reference-grid">`;
 
-			storySettings.forEach((setting) => {
-				if (setting.imageUrl) {
-					html += `
+            storySettings.forEach((setting) => {
+                if (setting.imageUrl) {
+                    html += `
         <div class="reference-item">
           <img src="${setting.imageUrl}" alt="${setting.name}" class="reference-image" />
           <div class="reference-title">${setting.name}</div>
         </div>`;
-				}
-			});
+                }
+            });
 
-			html += `
+            html += `
       </div>
     </div>`;
-		}
+        }
 
-		// Close HTML document
-		html += `
+        // Close HTML document
+        html += `
   </div>
 </body>
 </html>`;
 
-		// Add complete story HTML file
-		zip.file(`${story.title.replace(/[^a-zA-Z0-9]/g, "_")}.html`, html);
+        // Add complete story HTML file
+        zip.file(`${story.title.replace(/[^a-zA-Z0-9]/g, "_")}.html`, html);
 
-		// Add characters data and images
-		if (storyCharacters.length > 0) {
-			const charactersData = storyCharacters.map((c) => ({
-				id: c.id,
-				name: c.name,
-				isMain: c.isMain,
-				role: (c as any).role,
-				archetype: (c as any).archetype,
-				summary: c.summary,
-				storyline: (c as any).storyline,
-				personality: c.personality,
-				backstory: c.backstory,
-				motivations: (c as any).motivations,
-				voice: (c as any).voice,
-				physicalDescription: c.physicalDescription,
-				imageUrl: c.imageUrl,
-				hnsData: (c as any).hnsData,
-			}));
+        // Add characters data and images
+        if (storyCharacters.length > 0) {
+            const charactersData = storyCharacters.map((c) => ({
+                id: c.id,
+                name: c.name,
+                isMain: c.isMain,
+                role: (c as any).role,
+                archetype: (c as any).archetype,
+                summary: c.summary,
+                storyline: (c as any).storyline,
+                personality: c.personality,
+                backstory: c.backstory,
+                motivations: (c as any).motivations,
+                voice: (c as any).voice,
+                physicalDescription: c.physicalDescription,
+                imageUrl: c.imageUrl,
+                hnsData: (c as any).hnsData,
+            }));
 
-			zip.file(
-				"characters/characters.json",
-				JSON.stringify(charactersData, null, 2),
-			);
+            zip.file(
+                "characters/characters.json",
+                JSON.stringify(charactersData, null, 2),
+            );
 
-			// Download character images
-			for (const character of storyCharacters) {
-				if (character.imageUrl) {
-					try {
-						const response = await fetch(character.imageUrl);
-						if (response.ok) {
-							const imageBuffer = await response.arrayBuffer();
-							const fileName = character.name.replace(/[^a-zA-Z0-9]/g, "_");
-							const extension =
-								character.imageUrl.split(".").pop()?.split("?")[0] || "png";
-							zip.file(
-								`characters/images/${fileName}.${extension}`,
-								imageBuffer,
-							);
-						}
-					} catch (error) {
-						console.error(
-							`Failed to download character image for ${character.name}:`,
-							error,
-						);
-					}
-				}
+            // Download character images
+            for (const character of storyCharacters) {
+                if (character.imageUrl) {
+                    try {
+                        const response = await fetch(character.imageUrl);
+                        if (response.ok) {
+                            const imageBuffer = await response.arrayBuffer();
+                            const fileName = character.name.replace(
+                                /[^a-zA-Z0-9]/g,
+                                "_",
+                            );
+                            const extension =
+                                character.imageUrl
+                                    .split(".")
+                                    .pop()
+                                    ?.split("?")[0] || "png";
+                            zip.file(
+                                `characters/images/${fileName}.${extension}`,
+                                imageBuffer,
+                            );
+                        }
+                    } catch (error) {
+                        console.error(
+                            `Failed to download character image for ${character.name}:`,
+                            error,
+                        );
+                    }
+                }
 
-				// Add individual character HNS data
-				if ((character as any).hnsData) {
-					const fileName = character.name.replace(/[^a-zA-Z0-9]/g, "_");
-					zip.file(
-						`hns_data/characters/${fileName}_hns.json`,
-						JSON.stringify((character as any).hnsData, null, 2),
-					);
-				}
-			}
-		}
+                // Add individual character HNS data
+                if ((character as any).hnsData) {
+                    const fileName = character.name.replace(
+                        /[^a-zA-Z0-9]/g,
+                        "_",
+                    );
+                    zip.file(
+                        `hns_data/characters/${fileName}_hns.json`,
+                        JSON.stringify((character as any).hnsData, null, 2),
+                    );
+                }
+            }
+        }
 
-		// Add settings data and images
-		if (storySettings.length > 0) {
-			const settingsData = storySettings.map((s) => ({
-				id: s.id,
-				name: s.name,
-				summary: s.summary,
-				mood: s.mood,
-				sensory: s.sensory,
-				visualReferences: s.visualReferences,
-				colorPalette: s.colorPalette,
-				architecturalStyle: s.architecturalStyle,
-				imageUrl: s.imageUrl,
-			}));
+        // Add settings data and images
+        if (storySettings.length > 0) {
+            const settingsData = storySettings.map((s) => ({
+                id: s.id,
+                name: s.name,
+                summary: s.summary,
+                mood: s.mood,
+                sensory: s.sensory,
+                visualReferences: s.visualReferences,
+                colorPalette: s.colorPalette,
+                architecturalStyle: s.architecturalStyle,
+                imageUrl: s.imageUrl,
+            }));
 
-			zip.file("settings/settings.json", JSON.stringify(settingsData, null, 2));
+            zip.file(
+                "settings/settings.json",
+                JSON.stringify(settingsData, null, 2),
+            );
 
-			// Download setting images
-			for (const setting of storySettings) {
-				if (setting.imageUrl) {
-					try {
-						const response = await fetch(setting.imageUrl);
-						if (response.ok) {
-							const imageBuffer = await response.arrayBuffer();
-							const fileName = setting.name.replace(/[^a-zA-Z0-9]/g, "_");
-							const extension =
-								setting.imageUrl.split(".").pop()?.split("?")[0] || "png";
-							zip.file(`settings/images/${fileName}.${extension}`, imageBuffer);
-						}
-					} catch (error) {
-						console.error(
-							`Failed to download setting image for ${setting.name}:`,
-							error,
-						);
-					}
-				}
-			}
-		}
+            // Download setting images
+            for (const setting of storySettings) {
+                if (setting.imageUrl) {
+                    try {
+                        const response = await fetch(setting.imageUrl);
+                        if (response.ok) {
+                            const imageBuffer = await response.arrayBuffer();
+                            const fileName = setting.name.replace(
+                                /[^a-zA-Z0-9]/g,
+                                "_",
+                            );
+                            const extension =
+                                setting.imageUrl
+                                    .split(".")
+                                    .pop()
+                                    ?.split("?")[0] || "png";
+                            zip.file(
+                                `settings/images/${fileName}.${extension}`,
+                                imageBuffer,
+                            );
+                        }
+                    } catch (error) {
+                        console.error(
+                            `Failed to download setting image for ${setting.name}:`,
+                            error,
+                        );
+                    }
+                }
+            }
+        }
 
-		// Generate ZIP file
-		const zipBuffer = await zip.generateAsync({ type: "nodebuffer" });
+        // Generate ZIP file
+        const zipBuffer = await zip.generateAsync({ type: "nodebuffer" });
 
-		// Return ZIP file as download
-		const fileName = `${story.title.replace(/[^a-zA-Z0-9]/g, "_")}_${storyId}.zip`;
+        // Return ZIP file as download
+        const fileName = `${story.title.replace(/[^a-zA-Z0-9]/g, "_")}_${storyId}.zip`;
 
-		// Convert Buffer to Uint8Array for NextResponse
-		return new NextResponse(new Uint8Array(zipBuffer), {
-			headers: {
-				"Content-Type": "application/zip",
-				"Content-Disposition": `attachment; filename="${fileName}"`,
-			},
-		});
-	} catch (error) {
-		console.error("Failed to create download package:", error);
-		return NextResponse.json(
-			{
-				error: "Failed to create download package",
-				details: error instanceof Error ? error.message : "Unknown error",
-			},
-			{ status: 500 },
-		);
-	}
+        // Convert Buffer to Uint8Array for NextResponse
+        return new NextResponse(new Uint8Array(zipBuffer), {
+            headers: {
+                "Content-Type": "application/zip",
+                "Content-Disposition": `attachment; filename="${fileName}"`,
+            },
+        });
+    } catch (error) {
+        console.error("Failed to create download package:", error);
+        return NextResponse.json(
+            {
+                error: "Failed to create download package",
+                details:
+                    error instanceof Error ? error.message : "Unknown error",
+            },
+            { status: 500 },
+        );
+    }
 }

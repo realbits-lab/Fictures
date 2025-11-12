@@ -15,10 +15,7 @@ import type {
     GenerateStoryResult,
     StoryPromptParams,
 } from "./types";
-import {
-    type GeneratedStoryData,
-    GeneratedStorySchema,
-} from "./zod-schemas.generated";
+import { type AiStoryType, AiStoryZodSchema } from "./zod-schemas.generated";
 
 /**
  * Generate story foundation from user prompt
@@ -61,10 +58,10 @@ export async function generateStory(
     );
 
     // 3. Generate story data using structured output method
-    const storyData: GeneratedStoryData =
+    const storyData: AiStoryType =
         await textGenerationClient.generateStructured(
             userPromptText,
-            GeneratedStorySchema,
+            AiStoryZodSchema,
             {
                 systemPrompt,
                 temperature: 0.8,

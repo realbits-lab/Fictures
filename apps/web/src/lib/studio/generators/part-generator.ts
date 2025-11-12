@@ -22,10 +22,7 @@ import type {
     GeneratePartResult,
     PartPromptParams,
 } from "./types";
-import {
-    type GeneratedPartData,
-    GeneratedPartSchema,
-} from "./zod-schemas.generated";
+import { type AiPartType, AiPartZodSchema } from "./zod-schemas.generated";
 
 /**
  * Generate ONE next story part with full context
@@ -92,16 +89,15 @@ export async function generatePart(
     );
 
     // 7. Generate part using structured output
-    const partData: GeneratedPartData =
-        await textGenerationClient.generateStructured(
-            userPromptText,
-            GeneratedPartSchema,
-            {
-                systemPrompt,
-                temperature: 0.85,
-                maxTokens: 8192,
-            },
-        );
+    const partData: AiPartType = await textGenerationClient.generateStructured(
+        userPromptText,
+        AiPartZodSchema,
+        {
+            systemPrompt,
+            temperature: 0.85,
+            maxTokens: 8192,
+        },
+    );
 
     // 8. Calculate total generation time
     const totalTime: number = Date.now() - startTime;

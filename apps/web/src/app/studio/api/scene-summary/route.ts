@@ -4,9 +4,9 @@ import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { sceneSummaryService } from "@/lib/studio/services/scene-summary-service";
 import type {
-    GenerateSceneSummaryErrorResponse,
-    GenerateSceneSummaryRequest,
-    GenerateSceneSummaryResponse,
+    ApiSceneSummaryErrorResponse,
+    ApiSceneSummaryRequest,
+    ApiSceneSummaryResponse,
 } from "../types";
 
 export const runtime = "nodejs";
@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
         });
 
         // 3. Parse and validate request body with type safety
-        const body: GenerateSceneSummaryRequest =
-            (await request.json()) as GenerateSceneSummaryRequest;
+        const body: ApiSceneSummaryRequest =
+            (await request.json()) as ApiSceneSummaryRequest;
         const validatedData: z.infer<typeof generateSceneSummarySchema> =
             generateSceneSummarySchema.parse(body);
 
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
         // 6. Return typed response
-        const response: GenerateSceneSummaryResponse = {
+        const response: ApiSceneSummaryResponse = {
             success: true,
             scene: serviceResult.scene,
             metadata: {
@@ -117,14 +117,14 @@ export async function POST(request: NextRequest) {
         console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
         if (error instanceof z.ZodError) {
-            const errorResponse: GenerateSceneSummaryErrorResponse = {
+            const errorResponse: ApiSceneSummaryErrorResponse = {
                 error: "Invalid input",
                 details: error.issues,
             };
             return NextResponse.json(errorResponse, { status: 400 });
         }
 
-        const errorResponse: GenerateSceneSummaryErrorResponse = {
+        const errorResponse: ApiSceneSummaryErrorResponse = {
             error: "Failed to generate and save scene summary",
             details: error instanceof Error ? error.message : "Unknown error",
         };

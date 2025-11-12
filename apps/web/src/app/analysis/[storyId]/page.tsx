@@ -5,25 +5,25 @@ import { auth } from "@/lib/auth";
 import { hasAnyRole } from "@/lib/auth/permissions";
 
 export default async function StoryAnalyticsPage({
-	params,
+    params,
 }: {
-	params: Promise<{ storyId: string }>;
+    params: Promise<{ storyId: string }>;
 }) {
-	const session = await auth();
+    const session = await auth();
 
-	if (!session) {
-		redirect("/login");
-	}
+    if (!session) {
+        redirect("/login");
+    }
 
-	if (!hasAnyRole(session, ["writer", "manager"])) {
-		redirect("/");
-	}
+    if (!hasAnyRole(session, ["writer", "manager"])) {
+        redirect("/");
+    }
 
-	const { storyId } = await params;
+    const { storyId } = await params;
 
-	return (
-		<MainLayout>
-			<StoryAnalyticsDashboard storyId={storyId} />
-		</MainLayout>
-	);
+    return (
+        <MainLayout>
+            <StoryAnalyticsDashboard storyId={storyId} />
+        </MainLayout>
+    );
 }

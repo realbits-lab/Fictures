@@ -4,9 +4,9 @@ import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { chapterService } from "@/lib/studio/services/chapter-service";
 import type {
-    GenerateChapterErrorResponse,
-    GenerateChapterRequest,
-    GenerateChapterResponse,
+    ApiChapterErrorResponse,
+    ApiChapterRequest,
+    ApiChapterResponse,
 } from "../types";
 
 export const runtime = "nodejs";
@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
         });
 
         // 3. Parse and validate request body with type safety
-        const body: GenerateChapterRequest =
-            (await request.json()) as GenerateChapterRequest;
+        const body: ApiChapterRequest =
+            (await request.json()) as ApiChapterRequest;
         const validatedData: z.infer<typeof generateChapterSchema> =
             generateChapterSchema.parse(body);
 
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
         // 6. Return typed response
-        const response: GenerateChapterResponse = {
+        const response: ApiChapterResponse = {
             success: true,
             chapter: serviceResult.chapter,
             metadata: {
@@ -112,14 +112,14 @@ export async function POST(request: NextRequest) {
         console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
         if (error instanceof z.ZodError) {
-            const errorResponse: GenerateChapterErrorResponse = {
+            const errorResponse: ApiChapterErrorResponse = {
                 error: "Invalid input",
                 details: error.issues,
             };
             return NextResponse.json(errorResponse, { status: 400 });
         }
 
-        const errorResponse: GenerateChapterErrorResponse = {
+        const errorResponse: ApiChapterErrorResponse = {
             error: "Failed to generate and save chapter",
             details: error instanceof Error ? error.message : "Unknown error",
         };

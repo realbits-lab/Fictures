@@ -2,6 +2,7 @@
  * Reset All Story Tables - Direct Database Approach
  */
 
+import { sql } from "drizzle-orm";
 import { db } from "../src/lib/db";
 import {
     chapters,
@@ -11,7 +12,6 @@ import {
     settings,
     stories,
 } from "../src/lib/db/schema";
-import { sql } from "drizzle-orm";
 
 async function resetTables(): Promise<void> {
     console.log("🔄 Resetting all story tables...\n");

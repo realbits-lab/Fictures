@@ -10,6 +10,6 @@ import { useReadingHistorySync } from "@/lib/hooks/use-reading-history-sync";
  * it's always active and can detect login events
  */
 export function ReadingHistorySync() {
-	useReadingHistorySync();
-	return null;
+    useReadingHistorySync();
+    return null;
 }

@@ -8,14 +8,14 @@
  */
 
 import type {
-    GenerateChaptersRequest,
-    GenerateCharactersRequest,
-    GeneratePartsRequest,
-    GenerateSceneContentErrorResponse,
-    GenerateSceneContentRequest,
-    GenerateSceneContentResponse,
-    GenerateSceneSummariesRequest,
-    GenerateStoryRequest,
+    ApiChaptersRequest,
+    ApiCharactersRequest,
+    ApiPartsRequest,
+    ApiSceneContentErrorResponse,
+    ApiSceneContentRequest,
+    ApiSceneContentResponse,
+    ApiSceneSummariesRequest,
+    ApiStoryRequest,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
@@ -30,7 +30,7 @@ describe("Scene Content API", () => {
         console.log("🔧 Setting up test story...");
 
         // 1. Create test story
-        const storyRequestBody: GenerateStoryRequest = {
+        const storyRequestBody: ApiStoryRequest = {
             userPrompt: "A test story for scene content testing",
             language: "English",
             preferredGenre: "Fantasy",
@@ -61,7 +61,7 @@ describe("Scene Content API", () => {
 
         // 2. Generate characters
         console.log("🔧 Generating characters...");
-        const charactersRequestBody: GenerateCharactersRequest = {
+        const charactersRequestBody: ApiCharactersRequest = {
             storyId: testStoryId,
             characterCount: 2,
             language: "English",
@@ -92,7 +92,7 @@ describe("Scene Content API", () => {
 
         // 3. Generate parts
         console.log("🔧 Generating parts for story...");
-        const partsRequestBody: GeneratePartsRequest = {
+        const partsRequestBody: ApiPartsRequest = {
             storyId: testStoryId,
             partsCount: 1,
             language: "English",
@@ -121,7 +121,7 @@ describe("Scene Content API", () => {
 
         // 4. Generate chapters
         console.log("🔧 Generating chapters...");
-        const chaptersRequestBody: GenerateChaptersRequest = {
+        const chaptersRequestBody: ApiChaptersRequest = {
             storyId: testStoryId,
             chaptersPerPart: 1,
             language: "English",
@@ -150,7 +150,7 @@ describe("Scene Content API", () => {
 
         // 5. Generate scene summaries
         console.log("🔧 Generating scene summaries...");
-        const sceneSummariesRequestBody: GenerateSceneSummariesRequest = {
+        const sceneSummariesRequestBody: ApiSceneSummariesRequest = {
             storyId: testStoryId,
             scenesPerChapter: 1, // Only 1 scene for faster testing
             language: "English",
@@ -182,7 +182,7 @@ describe("Scene Content API", () => {
 
     it("should generate scene content via POST /studio/api/scene-content", async () => {
         // 1. Prepare request body with proper TypeScript type
-        const requestBody: GenerateSceneContentRequest = {
+        const requestBody: ApiSceneContentRequest = {
             sceneId: testSceneId,
             language: "English",
         };
@@ -201,9 +201,8 @@ describe("Scene Content API", () => {
         );
 
         // 3. Parse response data with proper typing
-        const data:
-            | GenerateSceneContentResponse
-            | GenerateSceneContentErrorResponse = await response.json();
+        const data: ApiSceneContentResponse | ApiSceneContentErrorResponse =
+            await response.json();
 
         // 4. Log error if request failed
         if (!response.ok) {
@@ -216,14 +215,12 @@ describe("Scene Content API", () => {
 
         // 6. Type guard to ensure we have success response
         if (!("success" in data) || !data.success) {
-            throw new Error(
-                "Expected GenerateSceneContentResponse but got error",
-            );
+            throw new Error("Expected ApiSceneContentResponse but got error");
         }
 
         // 7. Cast to success response type
-        const successData: GenerateSceneContentResponse =
-            data as GenerateSceneContentResponse;
+        const successData: ApiSceneContentResponse =
+            data as ApiSceneContentResponse;
 
         // 8. Verify response structure
         expect(successData.success).toBe(true);

@@ -8,11 +8,11 @@
 import { GENRE, type StoryGenre } from "@/lib/constants/genres";
 import type { StoryTone } from "@/lib/constants/tones";
 import type {
-    GeneratedChapterData,
-    GeneratedCharacterData,
-    GeneratedPartData,
-    GeneratedSceneSummaryData,
-    GeneratedSettingData,
+    AiChapterType,
+    AiCharacterType,
+    AiPartType,
+    AiSceneSummaryType,
+    AiSettingType,
     Story,
 } from "@/lib/studio/generators/zod-schemas.generated";
 import {
@@ -98,11 +98,11 @@ export interface ProgressData {
     message: string;
     data?: {
         story?: Story;
-        characters?: (GeneratedCharacterData & { id: string })[];
-        settings?: (GeneratedSettingData & { id: string })[];
-        parts?: (GeneratedPartData & { id: string })[];
-        chapters?: (GeneratedChapterData & { id: string; partId: string })[];
-        scenes?: (GeneratedSceneSummaryData & {
+        characters?: (AiCharacterType & { id: string })[];
+        settings?: (AiSettingType & { id: string })[];
+        parts?: (AiPartType & { id: string })[];
+        chapters?: (AiChapterType & { id: string; partId: string })[];
+        scenes?: (AiSceneSummaryType & {
             id: string;
             chapterId: string;
         })[];
@@ -116,11 +116,11 @@ export interface ProgressData {
  */
 export interface GeneratedNovelResult {
     story: Story;
-    characters: (GeneratedCharacterData & { id: string })[];
-    settings: (GeneratedSettingData & { id: string })[];
-    parts: (GeneratedPartData & { id: string })[];
-    chapters: (GeneratedChapterData & { id: string; partId: string })[];
-    scenes: (GeneratedSceneSummaryData & {
+    characters: (AiCharacterType & { id: string })[];
+    settings: (AiSettingType & { id: string })[];
+    parts: (AiPartType & { id: string })[];
+    chapters: (AiChapterType & { id: string; partId: string })[];
+    scenes: (AiSceneSummaryType & {
         id: string;
         chapterId: string;
         content: string;
@@ -245,7 +245,7 @@ export async function generateCompleteNovel(
             message: `Generating ${partsCount} parts...`,
         });
 
-        const partsWithIds: (GeneratedPartData & { id: string })[] = [];
+        const partsWithIds: (AiPartType & { id: string })[] = [];
         for (let i = 0; i < partsCount; i++) {
             onProgress({
                 phase: "parts_progress",
@@ -283,7 +283,7 @@ export async function generateCompleteNovel(
             message: "Generating chapters...",
         });
 
-        const chaptersWithIds: (GeneratedChapterData & {
+        const chaptersWithIds: (AiChapterType & {
             id: string;
             partId: string;
         })[] = [];
@@ -339,16 +339,16 @@ export async function generateCompleteNovel(
         // Build chapter-to-scene mapping as we generate
         const chapterSceneMap = new Map<
             string,
-            (GeneratedSceneSummaryData & { id: string; chapterId: string })[]
+            (AiSceneSummaryType & { id: string; chapterId: string })[]
         >();
-        const allSceneSummaries: (GeneratedSceneSummaryData & {
+        const allSceneSummaries: (AiSceneSummaryType & {
             id: string;
             chapterId: string;
         })[] = [];
         const totalScenes = chaptersWithIds.length * scenesPerChapter;
 
         for (const chapter of chaptersWithIds) {
-            const chapterScenes: (GeneratedSceneSummaryData & {
+            const chapterScenes: (AiSceneSummaryType & {
                 id: string;
                 chapterId: string;
             })[] = [];
@@ -412,7 +412,7 @@ export async function generateCompleteNovel(
             message: "Generating scene content...",
         });
 
-        const scenes: (GeneratedSceneSummaryData & {
+        const scenes: (AiSceneSummaryType & {
             id: string;
             chapterId: string;
             content: string;
@@ -421,7 +421,7 @@ export async function generateCompleteNovel(
 
         for (const chapter of chaptersWithIds) {
             const chapterScenes:
-                | (GeneratedSceneSummaryData & {
+                | (AiSceneSummaryType & {
                       id: string;
                       chapterId: string;
                   })[]
@@ -443,11 +443,8 @@ export async function generateCompleteNovel(
                 });
 
                 // 7.1. Find the part for this chapter
-                const chapterPart:
-                    | (GeneratedPartData & { id: string })
-                    | undefined = partsWithIds.find(
-                    (p) => p.id === chapter.partId,
-                );
+                const chapterPart: (AiPartType & { id: string }) | undefined =
+                    partsWithIds.find((p) => p.id === chapter.partId);
 
                 if (!chapterPart) {
                     throw new Error(
@@ -470,7 +467,7 @@ export async function generateCompleteNovel(
                 const sceneContentResult: GenerateSceneContentResult =
                     await generateSceneContent(sceneContentParams);
 
-                const sceneWithContent: GeneratedSceneSummaryData & {
+                const sceneWithContent: AiSceneSummaryType & {
                     id: string;
                     chapterId: string;
                     content: string;
@@ -495,7 +492,7 @@ export async function generateCompleteNovel(
                 message: "Evaluating and improving scene quality...",
             });
 
-            const evaluatedScenes: (GeneratedSceneSummaryData & {
+            const evaluatedScenes: (AiSceneSummaryType & {
                 id: string;
                 chapterId: string;
                 content: string;
@@ -534,7 +531,7 @@ export async function generateCompleteNovel(
                     await evaluateScene(evaluateParams);
 
                 // 8.2. Update scene with improved content
-                const evaluatedScene: GeneratedSceneSummaryData & {
+                const evaluatedScene: AiSceneSummaryType & {
                     id: string;
                     chapterId: string;
                     content: string;

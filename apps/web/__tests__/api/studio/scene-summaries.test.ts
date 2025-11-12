@@ -8,13 +8,13 @@
  */
 
 import type {
-    GenerateChaptersRequest,
-    GenerateCharactersRequest,
-    GeneratePartsRequest,
-    GenerateSceneSummariesErrorResponse,
-    GenerateSceneSummariesRequest,
-    GenerateSceneSummariesResponse,
-    GenerateStoryRequest,
+    ApiChaptersRequest,
+    ApiCharactersRequest,
+    ApiPartsRequest,
+    ApiSceneSummariesErrorResponse,
+    ApiSceneSummariesRequest,
+    ApiSceneSummariesResponse,
+    ApiStoryRequest,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
@@ -29,7 +29,7 @@ describe("Scene Summary API", () => {
         console.log("🔧 Setting up test story...");
 
         // 1. Create test story (no auto-generation)
-        const storyRequestBody: GenerateStoryRequest = {
+        const storyRequestBody: ApiStoryRequest = {
             userPrompt: "A test story for scene summary testing",
             language: "English",
             preferredGenre: "Fantasy",
@@ -60,7 +60,7 @@ describe("Scene Summary API", () => {
 
         // 2. Generate characters
         console.log("🔧 Generating characters...");
-        const charactersRequestBody: GenerateCharactersRequest = {
+        const charactersRequestBody: ApiCharactersRequest = {
             storyId: testStoryId,
             characterCount: 2,
             language: "English",
@@ -91,7 +91,7 @@ describe("Scene Summary API", () => {
 
         // 3. Generate parts
         console.log("🔧 Generating parts for story...");
-        const partsRequestBody: GeneratePartsRequest = {
+        const partsRequestBody: ApiPartsRequest = {
             storyId: testStoryId,
             partsCount: 1,
             language: "English",
@@ -121,7 +121,7 @@ describe("Scene Summary API", () => {
 
         // 4. Generate chapters
         console.log("🔧 Generating chapters...");
-        const chaptersRequestBody: GenerateChaptersRequest = {
+        const chaptersRequestBody: ApiChaptersRequest = {
             storyId: testStoryId,
             chaptersPerPart: 1,
             language: "English",
@@ -155,7 +155,7 @@ describe("Scene Summary API", () => {
         console.log("🔧 Generating scene summaries...");
 
         // 1. Prepare request body with proper TypeScript type
-        const requestBody: GenerateSceneSummariesRequest = {
+        const requestBody: ApiSceneSummariesRequest = {
             storyId: testStoryId,
             scenesPerChapter: 3,
             language: "English",
@@ -175,9 +175,8 @@ describe("Scene Summary API", () => {
         );
 
         // 3. Parse response data with proper typing
-        const data:
-            | GenerateSceneSummariesResponse
-            | GenerateSceneSummariesErrorResponse = await response.json();
+        const data: ApiSceneSummariesResponse | ApiSceneSummariesErrorResponse =
+            await response.json();
 
         // 4. Log error if request failed
         if (!response.ok) {
@@ -190,17 +189,15 @@ describe("Scene Summary API", () => {
 
         // 6. Type guard to ensure we have success response
         if (!("success" in data) || !data.success) {
-            throw new Error(
-                "Expected GenerateSceneSummariesResponse but got error",
-            );
+            throw new Error("Expected ApiSceneSummariesResponse but got error");
         }
 
         // 7. Cast to success response type
-        const successData: GenerateSceneSummariesResponse =
-            data as GenerateSceneSummariesResponse;
+        const successData: ApiSceneSummariesResponse =
+            data as ApiSceneSummariesResponse;
 
         // ========================================================================
-        // 8. Verify ALL fields of GenerateSceneSummariesResponse
+        // 8. Verify ALL fields of ApiSceneSummariesResponse
         // ========================================================================
 
         // 8a. Validate 'success' field (required, must be true)
@@ -243,7 +240,7 @@ describe("Scene Summary API", () => {
         // ========================================================================
         // 9. Validate ALL fields of Scene objects in the array
         // ========================================================================
-        const { scenes }: { scenes: GenerateSceneSummariesResponse["scenes"] } =
+        const { scenes }: { scenes: ApiSceneSummariesResponse["scenes"] } =
             successData;
 
         for (const scene of scenes) {
@@ -389,8 +386,7 @@ describe("Scene Summary API", () => {
         // 10. Verify metadata
         const {
             metadata,
-        }: { metadata: GenerateSceneSummariesResponse["metadata"] } =
-            successData;
+        }: { metadata: ApiSceneSummariesResponse["metadata"] } = successData;
         expect(metadata.totalGenerated).toBeGreaterThan(0);
         expect(metadata.generationTime).toBeGreaterThan(0);
 

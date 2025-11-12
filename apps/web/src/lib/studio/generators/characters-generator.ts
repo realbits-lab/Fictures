@@ -17,8 +17,8 @@ import type {
     GenerateCharactersResult,
 } from "./types";
 import {
-    type GeneratedCharacterData,
-    GeneratedCharacterSchema,
+    type AiCharacterType,
+    AiCharacterZodSchema,
 } from "./zod-schemas.generated";
 
 /**
@@ -40,7 +40,7 @@ export async function generateCharacters(
         onProgress,
     }: GenerateCharactersParams = params;
 
-    const characters: GeneratedCharacterData[] = [];
+    const characters: AiCharacterType[] = [];
 
     // 2. Build story context once (used for all characters)
     const storyContext: string = buildStoryContext(story);
@@ -85,10 +85,10 @@ export async function generateCharacters(
         );
 
         // 7. Generate character using structured output
-        const characterData: GeneratedCharacterData =
+        const characterData: AiCharacterType =
             await textGenerationClient.generateStructured(
                 userPromptText,
-                GeneratedCharacterSchema,
+                AiCharacterZodSchema,
                 {
                     systemPrompt,
                     temperature: 0.9,

@@ -50,13 +50,13 @@
 import type { z } from "zod";
 import type { ChapterArcPosition } from "@/lib/constants/arc-positions";
 import type {
+    AiChapterType,
+    AiCharacterType,
+    AiPartType,
+    AiSceneSummaryType,
+    AiSettingType,
     Chapter,
     Character,
-    GeneratedChapterData,
-    GeneratedCharacterData,
-    GeneratedPartData,
-    GeneratedSceneSummaryData,
-    GeneratedSettingData,
     Part,
     Scene,
     Setting,
@@ -222,7 +222,7 @@ export interface CharacterPromptParams extends Record<string, string> {
 }
 
 export interface GenerateCharactersResult {
-    characters: GeneratedCharacterData[];
+    characters: AiCharacterType[];
     metadata: ArrayGeneratorMetadata;
 }
 
@@ -243,7 +243,7 @@ export interface SettingPromptParams extends Record<string, string> {
 }
 
 export interface GenerateSettingsResult {
-    settings: GeneratedSettingData[];
+    settings: AiSettingType[];
     metadata: ArrayGeneratorMetadata;
 }
 
@@ -268,7 +268,7 @@ export interface PartPromptParams extends Record<string, string> {
 }
 
 export interface GeneratePartsResult {
-    parts: GeneratedPartData[];
+    parts: AiPartType[];
     metadata: ArrayGeneratorMetadata;
 }
 
@@ -278,14 +278,14 @@ export interface GeneratePartsResult {
 
 export interface GeneratePartParams {
     story: Story;
-    characters: (GeneratedCharacterData & { id: string })[];
-    settings: (GeneratedSettingData & { id: string })[];
-    previousParts: (GeneratedPartData & { id: string })[];
+    characters: (AiCharacterType & { id: string })[];
+    settings: (AiSettingType & { id: string })[];
+    previousParts: (AiPartType & { id: string })[];
     partIndex: number;
 }
 
 export interface GeneratePartResult {
-    part: GeneratedPartData;
+    part: AiPartType;
     metadata: GeneratorMetadata;
 }
 
@@ -313,7 +313,7 @@ export interface ChapterPromptParams extends Record<string, string> {
 }
 
 export interface GenerateChaptersResult {
-    chapters: GeneratedChapterData[];
+    chapters: AiChapterType[];
     metadata: ArrayGeneratorMetadata;
 }
 
@@ -323,15 +323,15 @@ export interface GenerateChaptersResult {
 
 export interface GenerateChapterParams {
     story: Story;
-    part: GeneratedPartData & { id: string };
-    characters: (GeneratedCharacterData & { id: string })[];
-    settings?: (GeneratedSettingData & { id: string })[]; // Optional settings for atmospheric context
-    previousChapters: (GeneratedChapterData & { id: string; partId: string })[];
+    part: AiPartType & { id: string };
+    characters: (AiCharacterType & { id: string })[];
+    settings?: (AiSettingType & { id: string })[]; // Optional settings for atmospheric context
+    previousChapters: (AiChapterType & { id: string; partId: string })[];
     chapterIndex: number; // Global index (position in entire story)
 }
 
 export interface GenerateChapterResult {
-    chapter: GeneratedChapterData;
+    chapter: AiChapterType;
     metadata: GeneratorMetadata;
 }
 
@@ -361,7 +361,7 @@ export interface SceneSummaryPromptParams extends Record<string, string> {
 }
 
 export interface GenerateSceneSummariesResult {
-    scenes: GeneratedSceneSummaryData[];
+    scenes: AiSceneSummaryType[];
     metadata: ArrayGeneratorMetadata;
 }
 
@@ -371,11 +371,11 @@ export interface GenerateSceneSummariesResult {
 
 export interface GenerateSceneSummaryParams {
     story: Story;
-    part: GeneratedPartData & { id: string };
-    chapter: GeneratedChapterData & { id: string; partId: string };
-    characters: (GeneratedCharacterData & { id: string })[];
-    settings: (GeneratedSettingData & { id: string })[];
-    previousScenes: (GeneratedSceneSummaryData & {
+    part: AiPartType & { id: string };
+    chapter: AiChapterType & { id: string; partId: string };
+    characters: (AiCharacterType & { id: string })[];
+    settings: (AiSettingType & { id: string })[];
+    previousScenes: (AiSceneSummaryType & {
         id: string;
         chapterId: string;
     })[];
@@ -383,7 +383,7 @@ export interface GenerateSceneSummaryParams {
 }
 
 export interface GenerateSceneSummaryResult {
-    scene: GeneratedSceneSummaryData;
+    scene: AiSceneSummaryType;
     metadata: GeneratorMetadata;
 }
 

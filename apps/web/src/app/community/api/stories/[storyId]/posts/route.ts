@@ -12,58 +12,62 @@ import { getCommunityPosts } from "@/lib/db/cached-queries";
  * - localStorage: 1 hour
  */
 export async function GET(
-	request: NextRequest,
-	{ params }: { params: Promise<{ storyId: string }> },
+    request: NextRequest,
+    { params }: { params: Promise<{ storyId: string }> },
 ) {
-	const perfLogger = getPerformanceLogger();
-	const operationId = `get-community-posts-${Date.now()}`;
+    const perfLogger = getPerformanceLogger();
+    const operationId = `get-community-posts-${Date.now()}`;
 
-	try {
-		const { storyId } = await params;
+    try {
+        const { storyId } = await params;
 
-		if (!storyId) {
-			return NextResponse.json(
-				{ error: "Bad Request", message: "Story ID is required" },
-				{ status: 400 },
-			);
-		}
+        if (!storyId) {
+            return NextResponse.json(
+                { error: "Bad Request", message: "Story ID is required" },
+                { status: 400 },
+            );
+        }
 
-		perfLogger.start(
-			operationId,
-			"GET /api/community/stories/[storyId]/posts",
-			{
-				apiRoute: true,
-				storyId,
-			},
-		);
+        perfLogger.start(
+            operationId,
+            "GET /api/community/stories/[storyId]/posts",
+            {
+                apiRoute: true,
+                storyId,
+            },
+        );
 
-		const posts = await getCommunityPosts(storyId);
+        const posts = await getCommunityPosts(storyId);
 
-		const totalDuration = perfLogger.end(operationId, {
-			cached: true,
-			postCount: posts.length,
-		});
+        const totalDuration = perfLogger.end(operationId, {
+            cached: true,
+            postCount: posts.length,
+        });
 
-		return NextResponse.json(
-			{
-				success: true,
-				posts,
-				total: posts.length,
-			},
-			{
-				headers: {
-					"X-Server-Timing": `total;dur=${totalDuration}`,
-					"X-Server-Cache": "ENABLED",
-					"Cache-Control": "public, max-age=1800, stale-while-revalidate=3600", // 30min cache, 1hr stale
-				},
-			},
-		);
-	} catch (error) {
-		perfLogger.end(operationId, { error: true });
-		console.error("Error fetching posts:", error);
-		return NextResponse.json(
-			{ error: "Internal Server Error", message: "Failed to fetch posts" },
-			{ status: 500 },
-		);
-	}
+        return NextResponse.json(
+            {
+                success: true,
+                posts,
+                total: posts.length,
+            },
+            {
+                headers: {
+                    "X-Server-Timing": `total;dur=${totalDuration}`,
+                    "X-Server-Cache": "ENABLED",
+                    "Cache-Control":
+                        "public, max-age=1800, stale-while-revalidate=3600", // 30min cache, 1hr stale
+                },
+            },
+        );
+    } catch (error) {
+        perfLogger.end(operationId, { error: true });
+        console.error("Error fetching posts:", error);
+        return NextResponse.json(
+            {
+                error: "Internal Server Error",
+                message: "Failed to fetch posts",
+            },
+            { status: 500 },
+        );
+    }
 }

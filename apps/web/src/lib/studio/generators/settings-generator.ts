@@ -17,8 +17,8 @@ import type {
     SettingPromptParams,
 } from "./types";
 import {
-    type GeneratedSettingData,
-    GeneratedSettingSchema,
+    type AiSettingType,
+    AiSettingZodSchema,
 } from "./zod-schemas.generated";
 
 /**
@@ -35,7 +35,7 @@ export async function generateSettings(
     // 1. Extract and set default parameters
     const { story, settingCount, onProgress }: GenerateSettingsParams = params;
 
-    const settings: GeneratedSettingData[] = [];
+    const settings: AiSettingType[] = [];
 
     // 2. Build story context once (used for all settings)
     const storyContext: string = buildStoryContext(story);
@@ -73,10 +73,10 @@ export async function generateSettings(
         );
 
         // 6. Generate setting using structured output
-        const settingData: GeneratedSettingData =
+        const settingData: AiSettingType =
             await textGenerationClient.generateStructured(
                 userPromptText,
-                GeneratedSettingSchema,
+                AiSettingZodSchema,
                 {
                     systemPrompt,
                     temperature: 0.85,

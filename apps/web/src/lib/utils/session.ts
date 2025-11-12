@@ -21,34 +21,34 @@ const SESSION_EXPIRY_DAYS = 30;
  * @returns Session ID for anonymous users, null for logged-in users
  */
 export async function getOrCreateSessionId(
-	userId?: string | null,
+    userId?: string | null,
 ): Promise<string | null> {
-	// If user is logged in, don't use session ID
-	if (userId) {
-		return null;
-	}
+    // If user is logged in, don't use session ID
+    if (userId) {
+        return null;
+    }
 
-	// Check for existing session cookie
-	const cookieStore = await cookies();
-	const existingSession = cookieStore.get(SESSION_COOKIE_NAME);
+    // Check for existing session cookie
+    const cookieStore = await cookies();
+    const existingSession = cookieStore.get(SESSION_COOKIE_NAME);
 
-	if (existingSession?.value) {
-		return existingSession.value;
-	}
+    if (existingSession?.value) {
+        return existingSession.value;
+    }
 
-	// Create new session ID
-	const sessionId = `sess_${nanoid(32)}`;
+    // Create new session ID
+    const sessionId = `sess_${nanoid(32)}`;
 
-	// Set cookie with expiry
-	cookieStore.set(SESSION_COOKIE_NAME, sessionId, {
-		httpOnly: true,
-		secure: process.env.NODE_ENV === "production",
-		sameSite: "lax",
-		maxAge: SESSION_EXPIRY_DAYS * 24 * 60 * 60, // 30 days in seconds
-		path: "/",
-	});
+    // Set cookie with expiry
+    cookieStore.set(SESSION_COOKIE_NAME, sessionId, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: SESSION_EXPIRY_DAYS * 24 * 60 * 60, // 30 days in seconds
+        path: "/",
+    });
 
-	return sessionId;
+    return sessionId;
 }
 
 /**
@@ -58,25 +58,25 @@ export async function getOrCreateSessionId(
  * @returns Existing session ID, or null if none exists or user is logged in
  */
 export async function getSessionId(
-	userId?: string | null,
+    userId?: string | null,
 ): Promise<string | null> {
-	// If user is logged in, don't use session ID
-	if (userId) {
-		return null;
-	}
+    // If user is logged in, don't use session ID
+    if (userId) {
+        return null;
+    }
 
-	const cookieStore = await cookies();
-	const session = cookieStore.get(SESSION_COOKIE_NAME);
+    const cookieStore = await cookies();
+    const session = cookieStore.get(SESSION_COOKIE_NAME);
 
-	return session?.value || null;
+    return session?.value || null;
 }
 
 /**
  * Clear the session cookie
  */
 export async function clearSession(): Promise<void> {
-	const cookieStore = await cookies();
-	cookieStore.delete(SESSION_COOKIE_NAME);
+    const cookieStore = await cookies();
+    cookieStore.delete(SESSION_COOKIE_NAME);
 }
 
 /**
@@ -86,15 +86,15 @@ export async function clearSession(): Promise<void> {
  * @returns Object with user ID or session ID
  */
 export async function getSessionInfo(userId?: string | null): Promise<{
-	userId: string | null;
-	sessionId: string | null;
-	isAuthenticated: boolean;
+    userId: string | null;
+    sessionId: string | null;
+    isAuthenticated: boolean;
 }> {
-	const sessionId = await getOrCreateSessionId(userId);
+    const sessionId = await getOrCreateSessionId(userId);
 
-	return {
-		userId: userId || null,
-		sessionId,
-		isAuthenticated: !!userId,
-	};
+    return {
+        userId: userId || null,
+        sessionId,
+        isAuthenticated: !!userId,
+    };
 }

@@ -8,15 +8,15 @@
  */
 
 import type {
-    EvaluateSceneErrorResponse,
-    EvaluateSceneRequest,
-    EvaluateSceneResponse,
-    GenerateChaptersRequest,
-    GenerateCharactersRequest,
-    GeneratePartsRequest,
-    GenerateSceneContentRequest,
-    GenerateSceneSummariesRequest,
-    GenerateStoryRequest,
+    ApiChaptersRequest,
+    ApiCharactersRequest,
+    ApiPartsRequest,
+    ApiSceneContentRequest,
+    ApiSceneEvaluationErrorResponse,
+    ApiSceneEvaluationRequest,
+    ApiSceneEvaluationResponse,
+    ApiSceneSummariesRequest,
+    ApiStoryRequest,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
@@ -32,7 +32,7 @@ describe("Scene Evaluation API", () => {
         console.log("🔧 Setting up test story...");
 
         // 1. Create test story (no auto-generation)
-        const storyRequestBody: GenerateStoryRequest = {
+        const storyRequestBody: ApiStoryRequest = {
             userPrompt: "A test story for scene evaluation testing",
             language: "English",
             preferredGenre: "Fantasy",
@@ -63,7 +63,7 @@ describe("Scene Evaluation API", () => {
 
         // 2. Generate characters
         console.log("🔧 Generating characters...");
-        const charactersRequestBody: GenerateCharactersRequest = {
+        const charactersRequestBody: ApiCharactersRequest = {
             storyId: testStoryId,
             characterCount: 2,
             language: "English",
@@ -94,7 +94,7 @@ describe("Scene Evaluation API", () => {
 
         // 3. Generate parts
         console.log("🔧 Generating parts for story...");
-        const partsRequestBody: GeneratePartsRequest = {
+        const partsRequestBody: ApiPartsRequest = {
             storyId: testStoryId,
             partsCount: 1,
             language: "English",
@@ -124,7 +124,7 @@ describe("Scene Evaluation API", () => {
 
         // 4. Generate chapters
         console.log("🔧 Generating chapters...");
-        const chaptersRequestBody: GenerateChaptersRequest = {
+        const chaptersRequestBody: ApiChaptersRequest = {
             storyId: testStoryId,
             chaptersPerPart: 1,
             language: "English",
@@ -155,7 +155,7 @@ describe("Scene Evaluation API", () => {
 
         // 5. Generate scene summaries
         console.log("🔧 Generating scene summaries...");
-        const sceneSummariesRequestBody: GenerateSceneSummariesRequest = {
+        const sceneSummariesRequestBody: ApiSceneSummariesRequest = {
             storyId: testStoryId,
             scenesPerChapter: 1, // Only 1 scene for faster testing
             language: "English",
@@ -186,7 +186,7 @@ describe("Scene Evaluation API", () => {
 
         // 6. Generate scene content
         console.log("🔧 Generating scene content...");
-        const sceneContentRequestBody: GenerateSceneContentRequest = {
+        const sceneContentRequestBody: ApiSceneContentRequest = {
             sceneId: testSceneId,
             language: "English",
         };
@@ -218,7 +218,7 @@ describe("Scene Evaluation API", () => {
         console.log("🔧 Evaluating scene quality...");
 
         // 1. Prepare request body with proper TypeScript type
-        const requestBody: EvaluateSceneRequest = {
+        const requestBody: ApiSceneEvaluationRequest = {
             sceneId: testSceneId,
             maxIterations: 2, // Allow up to 2 improvement iterations
         };
@@ -237,8 +237,9 @@ describe("Scene Evaluation API", () => {
         );
 
         // 3. Parse response data with proper typing
-        const data: EvaluateSceneResponse | EvaluateSceneErrorResponse =
-            await response.json();
+        const data:
+            | ApiSceneEvaluationResponse
+            | ApiSceneEvaluationErrorResponse = await response.json();
 
         // 4. Log error if request failed
         if (!response.ok) {
@@ -251,15 +252,17 @@ describe("Scene Evaluation API", () => {
 
         // 6. Type guard to ensure we have success response
         if (!("success" in data) || !data.success) {
-            throw new Error("Expected EvaluateSceneResponse but got error");
+            throw new Error(
+                "Expected ApiSceneEvaluationResponse but got error",
+            );
         }
 
         // 7. Cast to success response type
-        const successData: EvaluateSceneResponse =
-            data as EvaluateSceneResponse;
+        const successData: ApiSceneEvaluationResponse =
+            data as ApiSceneEvaluationResponse;
 
         // ========================================================================
-        // 8. Verify ALL fields of EvaluateSceneResponse
+        // 8. Verify ALL fields of ApiSceneEvaluationResponse
         // ========================================================================
 
         // 8a. Validate 'success' field (required, must be true)
@@ -395,9 +398,11 @@ describe("Scene Evaluation API", () => {
         // ========================================================================
         const {
             evaluation,
-        }: { evaluation: EvaluateSceneResponse["evaluation"] } = successData;
-        const { metadata }: { metadata: EvaluateSceneResponse["metadata"] } =
+        }: { evaluation: ApiSceneEvaluationResponse["evaluation"] } =
             successData;
+        const {
+            metadata,
+        }: { metadata: ApiSceneEvaluationResponse["metadata"] } = successData;
 
         expect(evaluation.score).toBeGreaterThan(0);
         expect(metadata.generationTime).toBeGreaterThan(0);

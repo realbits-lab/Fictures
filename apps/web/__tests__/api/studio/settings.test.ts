@@ -8,10 +8,10 @@
  */
 
 import type {
-    GenerateSettingsErrorResponse,
-    GenerateSettingsRequest,
-    GenerateSettingsResponse,
-    GenerateStoryRequest,
+    ApiSettingsErrorResponse,
+    ApiSettingsRequest,
+    ApiSettingsResponse,
+    ApiStoryRequest,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
@@ -25,7 +25,7 @@ describe("Setting API", () => {
         console.log("🔧 Setting up test story...");
 
         // 1. Prepare story request body with proper TypeScript type
-        const storyRequestBody: GenerateStoryRequest = {
+        const storyRequestBody: ApiStoryRequest = {
             userPrompt: "A test story for setting testing",
             language: "English",
             preferredGenre: "Fantasy",
@@ -62,7 +62,7 @@ describe("Setting API", () => {
 
     it("should generate settings via POST /studio/api/settings", async () => {
         // 1. Prepare request body with proper TypeScript type
-        const requestBody: GenerateSettingsRequest = {
+        const requestBody: ApiSettingsRequest = {
             storyId: testStoryId,
             settingCount: 2, // Generate 2 settings for faster testing
         };
@@ -81,7 +81,7 @@ describe("Setting API", () => {
         );
 
         // 3. Parse response data with proper typing
-        const data: GenerateSettingsResponse | GenerateSettingsErrorResponse =
+        const data: ApiSettingsResponse | ApiSettingsErrorResponse =
             await response.json();
 
         // 4. Log error if request failed
@@ -95,11 +95,11 @@ describe("Setting API", () => {
 
         // 6. Type guard to ensure we have success response
         if (!("success" in data) || !data.success) {
-            throw new Error("Expected GenerateSettingsResponse but got error");
+            throw new Error("Expected ApiSettingsResponse but got error");
         }
 
         // 7. Cast to success response type
-        const successData = data as GenerateSettingsResponse;
+        const successData = data as ApiSettingsResponse;
 
         // 8. Verify response structure
         expect(successData.success).toBe(true);
@@ -109,7 +109,7 @@ describe("Setting API", () => {
         expect(successData.metadata).toBeDefined();
 
         // 9. Verify metadata
-        const { metadata }: { metadata: GenerateSettingsResponse["metadata"] } =
+        const { metadata }: { metadata: ApiSettingsResponse["metadata"] } =
             successData;
         expect(metadata.totalGenerated).toBe(2);
         expect(metadata.generationTime).toBeGreaterThan(0);
@@ -117,7 +117,7 @@ describe("Setting API", () => {
         // ============================================================================
         // 10. Verify ALL setting attributes for ALL settings (not just index 0)
         // ============================================================================
-        const { settings }: { settings: GenerateSettingsResponse["settings"] } =
+        const { settings }: { settings: ApiSettingsResponse["settings"] } =
             successData;
 
         // 11. Loop through ALL settings and verify each one

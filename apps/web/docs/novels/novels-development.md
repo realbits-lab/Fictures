@@ -103,131 +103,240 @@ export async function generateCharacters(
 
 ### 0.3 Type Naming Convention
 
-**Unified Naming Pattern**: `{Verb}{Noun}{Suffix}`
+**Layer-Based Naming Pattern**: `{Layer}{Entity}{Suffix}`
 
-All types follow a consistent "Generate" verb pattern across all layers:
+All types follow a consistent layer-prefix pattern with explicit suffixes for searchability and clarity.
 
-**Verbs:**
-- `Generate` - For actions/requests/parameters (present tense)
-- `Generated` - For data/results (past participle)
+**Layer Prefixes:**
+- `Api` - HTTP layer (API routes)
+- `Service` - Orchestration layer (business logic coordination)
+- `Generator` - Core business logic (generation functions)
+- `Ai` - AI output layer (Zod validation, JSON Schema)
 
 **Suffixes:**
-- `Request` - API request body (HTTP layer)
-- `Response` - API response body (HTTP layer)
-- `ErrorResponse` - API error response (HTTP layer)
-- `Params` - Generator function parameters (function layer)
-- `Result` - Generator function return type (function layer)
-- `Data` - Generated data objects (data layer)
-- `Schema` - Zod validation schemas (validation layer)
+- `Request` - HTTP request body (API layer)
+- `Response` - HTTP response body (API layer)
+- `ErrorResponse` - HTTP error response (API layer)
+- `Params` - Function parameters (Service/Generator layer)
+- `Result` - Function return type (Service/Generator layer)
+- `Type` - TypeScript type (AI layer - derived from Zod)
+- `ZodSchema` - Zod validation schema (AI layer - SSOT)
+- `JsonSchema` - JSON Schema for Gemini API (AI layer - derived from Zod)
 
-**Type Hierarchy for Story Generation:**
+**Complete Type Hierarchy for Story Generation:**
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
 │ API Layer (HTTP Contracts)                                         │
 ├────────────────────────────────────────────────────────────────────┤
 │ POST /studio/api/stories                                           │
-│   Request:  GenerateStoryRequest                                   │
-│   Response: GenerateStoryResponse | GenerateStoryErrorResponse     │
+│   Request:  ApiStoryRequest                                        │
+│   Response: ApiStoryResponse | ApiStoryErrorResponse               │
+│                                                                    │
+├────────────────────────────────────────────────────────────────────┤
+│ Service Layer (Orchestration)                                      │
+├────────────────────────────────────────────────────────────────────┤
+│ storyService.generate(params: ServiceStoryParams)                  │
+│   → returns ServiceStoryResult                                     │
 │                                                                    │
 ├────────────────────────────────────────────────────────────────────┤
 │ Generator Layer (Business Logic)                                   │
 ├────────────────────────────────────────────────────────────────────┤
-│ generateStory(params: GenerateStoryParams) -> GenerateStoryResult  │
-│   → promptManager.getPrompt(type, promptParams:StoryPromptParams)  │
+│ generateStory(params: GeneratorStoryParams) -> GeneratorStoryResult│
+│   → promptManager.getPrompt(type, promptParams: StoryPromptParams)│
 │   → textGenerationClient.generateStructured(                       │
 │        prompt: string,                                             │
-│        GeneratedStorySchema: GeneratedStorySchema,                 │
+│        AiStoryZodSchema,                                           │
 │        options: TextGenerationOptions                              │
-│      ): GeneratedStoryData                                         │
-│   → returns GenerateStoryResult {                                  │
-│        story: GeneratedStoryData,                                  │
+│      ): AiStoryType                                                │
+│   → returns GeneratorStoryResult {                                 │
+│        story: AiStoryType,                                         │
 │        metadata: GeneratorMetadata                                 │
 │      }                                                             │
+│                                                                    │
+├────────────────────────────────────────────────────────────────────┤
+│ AI Layer (SSOT - Zod Schema)                                      │
+├────────────────────────────────────────────────────────────────────┤
+│ AiStoryZodSchema (Zod)           ← SSOT                           │
+│    ↓ z.infer                                                       │
+│ AiStoryType (TypeScript)         ← Auto-derived                   │
+│    ↓ z.toJSONSchema (Zod v4 native)                               │
+│ AiStoryJsonSchema (JSON Schema)  ← Auto-derived                   │
 └────────────────────────────────────────────────────────────────────┘
 ```
 
-**Type Usage Pattern:**
+**SSOT Flow (AI Layer):**
 
 ```typescript
+// SSOT: Zod Schema
+const AiStoryZodSchema = z.object({
+  title: z.string().min(1).max(200),
+  summary: z.string().min(10).max(1000),
+  genre: z.string().min(1),
+  tone: z.enum(['hopeful', 'dark', 'bittersweet', 'satirical']),
+  moralFramework: z.string().min(50).max(2000),
+});
+
+// Derived: TypeScript Type
+type AiStoryType = z.infer<typeof AiStoryZodSchema>;
+
+// Derived: JSON Schema (Zod v4 native)
+const AiStoryJsonSchema = z.toJSONSchema(AiStoryZodSchema, {
+  target: "openapi-3.0",
+  $refStrategy: "none",
+});
+```
+
+**Type Usage Pattern Across All Layers:**
+
+```typescript
+// ─────────────────────────────────────────────────────
 // API Layer (Route Handler)
-const request: GenerateStoryRequest = await req.json();
-const params: GenerateStoryParams = {
+// ─────────────────────────────────────────────────────
+const request: ApiStoryRequest = await req.json();
+
+// Map API request to Service params
+const serviceParams: ServiceStoryParams = {
+  userId: session.user.id,
   userPrompt: request.userPrompt,
   language: request.language,
-  // ... map request to params
 };
 
-const result: GenerateStoryResult = await generateStory(params);
+const result: ServiceStoryResult = await storyService.generate(serviceParams);
 
-const response: GenerateStoryResponse = {
+const response: ApiStoryResponse = {
   success: true,
   story: result.story,
   metadata: result.metadata,
 };
 
-// Generator Layer
-const data: GeneratedStoryData = await generateStructured(
-  prompt,
-  GeneratedStorySchema
-);
+// ─────────────────────────────────────────────────────
+// Service Layer (Orchestration)
+// ─────────────────────────────────────────────────────
+async function generate(params: ServiceStoryParams): Promise<ServiceStoryResult> {
+  // Map Service params to Generator params
+  const generatorParams: GeneratorStoryParams = {
+    userPrompt: params.userPrompt,
+    language: params.language,
+  };
 
-// Database Layer
+  const result: GeneratorStoryResult = await generateStory(generatorParams);
+
+  return {
+    story: result.story,
+    metadata: result.metadata,
+  };
+}
+
+// ─────────────────────────────────────────────────────
+// Generator Layer (Business Logic)
+// ─────────────────────────────────────────────────────
+async function generateStory(
+  params: GeneratorStoryParams
+): Promise<GeneratorStoryResult> {
+  const prompt = promptManager.getPrompt('story', params);
+
+  // Generate using Gemini API with JSON Schema
+  const aiData: AiStoryType = await textGenerationClient.generateStructured(
+    prompt,
+    AiStoryJsonSchema,  // Uses derived JSON Schema
+    { temperature: 0.7 }
+  );
+
+  // Validate with Zod
+  const validated = AiStoryZodSchema.parse(aiData);
+
+  return {
+    story: validated,
+    metadata: { modelId: 'gemini-2.5-flash', tokens: 1250 }
+  };
+}
+
+// ─────────────────────────────────────────────────────
+// Database Layer (Persistence)
+// ─────────────────────────────────────────────────────
 const story: Story = await db.insert(stories).values({
-  ...generatedData,
-  id, authorId, createdAt, updatedAt
+  ...validated,  // AiStoryType
+  id: generateId(),
+  authorId: userId,
+  createdAt: new Date(),
+  updatedAt: new Date()
 });
 ```
 
-**All Generators Follow Same Pattern:**
+**Complete Type Table for All Generators:**
 
-| Generator | Request | Response | ErrorResponse | Params | PromptParams | Result | GeneratedData | Schema | JSONSchema | DatabaseEntity |
-|-----------|---------|----------|---------------|--------|--------------|--------|---------------|--------|------------|----------------|
-| Story | `GenerateStoryRequest` | `GenerateStoryResponse` | `GenerateStoryErrorResponse` | `GenerateStoryParams` | `StoryPromptParams` | `GenerateStoryResult` | `GeneratedStoryData` | `GeneratedStorySchema` | `StoryJsonSchema` | `Story`, `InsertStory` |
-| Characters | `GenerateCharactersRequest` | `GenerateCharactersResponse` | `GenerateCharactersErrorResponse` | `GenerateCharactersParams` | `CharacterPromptParams` | `GenerateCharactersResult` | `GeneratedCharacterData` | `GeneratedCharacterSchema` | `CharacterJsonSchema` | `Character`, `InsertCharacter` |
-| Settings | `GenerateSettingsRequest` | `GenerateSettingsResponse` | `GenerateSettingsErrorResponse` | `GenerateSettingsParams` | `SettingPromptParams` | `GenerateSettingsResult` | `GeneratedSettingData` | `GeneratedSettingSchema` | `SettingJsonSchema` | `Setting`, `InsertSetting` |
-| Parts | `GeneratePartsRequest` | `GeneratePartsResponse` | `GeneratePartsErrorResponse` | `GeneratePartsParams` | `PartPromptParams` | `GeneratePartsResult` | `GeneratedPartData` | `GeneratedPartSchema` | `PartJsonSchema` | `Part`, `InsertPart` |
-| Chapters | `GenerateChaptersRequest` | `GenerateChaptersResponse` | `GenerateChaptersErrorResponse` | `GenerateChaptersParams` | `ChapterPromptParams` | `GenerateChaptersResult` | `GeneratedChapterData` | `GeneratedChapterSchema` | `ChapterJsonSchema` | `Chapter`, `InsertChapter` |
-| Scene Summaries | `GenerateSceneSummariesRequest` | `GenerateSceneSummariesResponse` | `GenerateSceneSummariesErrorResponse` | `GenerateSceneSummariesParams` | `SceneSummaryPromptParams` | `GenerateSceneSummariesResult` | `GeneratedSceneSummaryData` | `GeneratedSceneSummarySchema` | `SceneSummaryJsonSchema` | `Scene`, `InsertScene` |
-| Scene Content | `GenerateSceneContentRequest` | `GenerateSceneContentResponse` | `GenerateSceneContentErrorResponse` | `GenerateSceneContentParams` | `SceneContentPromptParams` | `GenerateSceneContentResult` | `string` (prose) | N/A | N/A | `Scene` (updates content field) |
-| Scene Evaluation | `EvaluateSceneRequest` | `EvaluateSceneResponse` | `EvaluateSceneErrorResponse` | `EvaluateSceneParams` | N/A (inline) | `EvaluateSceneResult` | `GeneratedSceneEvaluationData` | `GeneratedSceneEvaluationSchema` | N/A | `Scene` (updates content field) |
+| Generator | API Request | API Response | API Error | Service Params | Service Result | Generator Params | Generator Result | **AI Zod Schema** | **AI Type** | **AI JSON Schema** | Database Entity |
+|-----------|-------------|--------------|-----------|----------------|----------------|------------------|------------------|-------------------|-------------|-------------------|----------------|
+| Story | `ApiStoryRequest` | `ApiStoryResponse` | `ApiStoryErrorResponse` | `ServiceStoryParams` | `ServiceStoryResult` | `GeneratorStoryParams` | `GeneratorStoryResult` | **`AiStoryZodSchema`** | **`AiStoryType`** | **`AiStoryJsonSchema`** | `Story`, `InsertStory` |
+| Characters | `ApiCharactersRequest` | `ApiCharactersResponse` | `ApiCharactersErrorResponse` | `ServiceCharactersParams` | `ServiceCharactersResult` | `GeneratorCharactersParams` | `GeneratorCharactersResult` | **`AiCharacterZodSchema`** | **`AiCharacterType`** | **`AiCharacterJsonSchema`** | `Character`, `InsertCharacter` |
+| Settings | `ApiSettingsRequest` | `ApiSettingsResponse` | `ApiSettingsErrorResponse` | `ServiceSettingsParams` | `ServiceSettingsResult` | `GeneratorSettingsParams` | `GeneratorSettingsResult` | **`AiSettingZodSchema`** | **`AiSettingType`** | **`AiSettingJsonSchema`** | `Setting`, `InsertSetting` |
+| Parts | `ApiPartsRequest` | `ApiPartsResponse` | `ApiPartsErrorResponse` | `ServicePartsParams` | `ServicePartsResult` | `GeneratorPartsParams` | `GeneratorPartsResult` | **`AiPartZodSchema`** | **`AiPartType`** | **`AiPartJsonSchema`** | `Part`, `InsertPart` |
+| Chapters | `ApiChaptersRequest` | `ApiChaptersResponse` | `ApiChaptersErrorResponse` | `ServiceChaptersParams` | `ServiceChaptersResult` | `GeneratorChaptersParams` | `GeneratorChaptersResult` | **`AiChapterZodSchema`** | **`AiChapterType`** | **`AiChapterJsonSchema`** | `Chapter`, `InsertChapter` |
+| Scene Summaries | `ApiSceneSummariesRequest` | `ApiSceneSummariesResponse` | `ApiSceneSummariesErrorResponse` | `ServiceSceneSummariesParams` | `ServiceSceneSummariesResult` | `GeneratorSceneSummariesParams` | `GeneratorSceneSummariesResult` | **`AiSceneSummaryZodSchema`** | **`AiSceneSummaryType`** | **`AiSceneSummaryJsonSchema`** | `Scene`, `InsertScene` |
+| Scene Content | `ApiSceneContentRequest` | `ApiSceneContentResponse` | `ApiSceneContentErrorResponse` | `ServiceSceneContentParams` | `ServiceSceneContentResult` | `GeneratorSceneContentParams` | `GeneratorSceneContentResult` | N/A | `string` (prose) | N/A | `Scene` (updates content) |
 
-**Benefits of Unified Naming:**
-- ✅ **Consistency**: All types use "Generate" verb family with consistent suffixes
-- ✅ **Layer Separation**: Request/Response (API) vs Params/Result (Generator)
-- ✅ **Clarity**: Type name immediately indicates its purpose and layer
-- ✅ **Error Handling**: Dedicated ErrorResponse types for each endpoint
-- ✅ **Scalability**: Pattern applies to all generators (Character, Scene, etc.)
-- ✅ **Searchability**: Easy to find all generation-related types
-- ✅ **Self-Documenting**: Type names reflect the actual operation
+**Benefits of Layer-Based Naming:**
+- ✅ **Explicit Layer Encoding**: Type name shows which layer it belongs to (`Api`, `Service`, `Generator`, `Ai`)
+- ✅ **Searchability**: Find all Zod schemas with `grep "ZodSchema"`, all types with `grep "Type"`
+- ✅ **SSOT**: AI layer uses Zod as single source of truth, derives TypeScript types and JSON Schemas
+- ✅ **Consistency**: Same pattern across all generators and all layers
+- ✅ **Self-Documenting**: Type name immediately indicates layer and purpose
+- ✅ **Migration Safe**: Can add type aliases for backward compatibility
 
-**Type Flow Across Layers:**
+**Type Flow Across All Layers:**
 
 ```
-Client Request
+Client HTTP Request
     ↓
-GenerateStoryRequest (API Layer - HTTP Contract)
+ApiStoryRequest (API Layer - HTTP Contract)
     ↓ (mapped in route handler)
-GenerateStoryParams (Generator Layer - Function Input)
-    ↓ (creates prompt params)
-StoryPromptParams (Prompt Layer - Template Variables)
-    ↓ (used by prompt manager)
-GeneratedStoryData (AI Output - Zod Validated)
-    ↓ (wrapped with metadata)
-GenerateStoryResult (Generator Layer - Function Output)
+ServiceStoryParams (Service Layer - Orchestration)
+    ↓ (calls generator)
+GeneratorStoryParams (Generator Layer - Business Logic)
+    ↓ (creates prompt, calls AI)
+AiStoryZodSchema (AI Layer - Zod SSOT)
+    ↓ z.infer
+AiStoryType (AI Layer - TypeScript Type)
+    ↓ (wrapped in result)
+GeneratorStoryResult (Generator Layer - Function Output)
+    ↓ (wrapped in service result)
+ServiceStoryResult (Service Layer - Orchestration Output)
     ↓ (mapped in route handler)
-GenerateStoryResponse (API Layer - HTTP Contract)
+ApiStoryResponse (API Layer - HTTP Contract)
     ↓
-Client Response
+Client HTTP Response
 ```
 
 **Type Locations:**
 
-- **API Layer** (`src/app/studio/api/types.ts`): Request, Response, ErrorResponse
-- **Generator Layer** (`src/lib/studio/generators/types.ts`): Params, PromptParams, Result, GeneratorMetadata
-- **Zod Schema Layer** (`src/lib/studio/generators/zod-schemas.generated.ts`): Schema, GeneratedData
-- **JSON Schema Layer** (`src/lib/studio/generators/json-schemas.generated.ts`): JSONSchema (for Gemini API)
-- **Database Layer** (`src/lib/db/schema.ts`): DatabaseEntity, InsertEntity
+- **API Layer** (`src/app/studio/api/types.ts`):
+  - `Api{Entity}Request`, `Api{Entity}Response`, `Api{Entity}ErrorResponse`
+
+- **Service Layer** (`src/lib/studio/services/types.ts`):
+  - `Service{Entity}Params`, `Service{Entity}Result`
+
+- **Generator Layer** (`src/lib/studio/generators/types.ts`):
+  - `Generator{Entity}Params`, `Generator{Entity}Result`, `{Entity}PromptParams`, `GeneratorMetadata`
+
+- **AI Layer** (`src/lib/studio/generators/ai-schemas.ts`):
+  - `Ai{Entity}ZodSchema` (Zod schema - SSOT)
+  - `Ai{Entity}Type` (TypeScript type - derived via `z.infer`)
+  - `Ai{Entity}JsonSchema` (JSON Schema - derived via `z.toJSONSchema`)
+
+- **Database Layer** (`src/lib/db/schema.ts`):
+  - `{Entity}`, `Insert{Entity}`
+
+**Migration Notes:**
+
+Old naming is deprecated but maintained via type aliases for backward compatibility:
+
+```typescript
+// Backward compatibility aliases (will be removed in future version)
+export type GeneratedStoryData = AiStoryType;
+export const GeneratedStorySchema = AiStoryZodSchema;
+export const StoryJsonSchema = AiStoryJsonSchema;
+```
 
 ---
 

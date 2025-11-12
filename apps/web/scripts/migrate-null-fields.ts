@@ -8,6 +8,7 @@
  *   dotenv --file .env.local run pnpm exec tsx scripts/migrate-null-fields.ts
  */
 
+import { isNull, or, sql } from "drizzle-orm";
 import { db } from "../src/lib/db";
 import {
     chapters,
@@ -16,7 +17,6 @@ import {
     scenes,
     settings,
 } from "../src/lib/db/schema";
-import { isNull, or, sql } from "drizzle-orm";
 
 async function migrateNullFields(): Promise<void> {
     console.log("🔄 Starting data migration to fix NULL fields...\n");
@@ -178,8 +178,7 @@ async function migrateNullFields(): Promise<void> {
         const chaptersWithNullNext = await db
             .update(chapters)
             .set({
-                createsNextAdversity:
-                    "This chapter sets up future challenges.",
+                createsNextAdversity: "This chapter sets up future challenges.",
             })
             .where(isNull(chapters.createsNextAdversity))
             .returning({ id: chapters.id });

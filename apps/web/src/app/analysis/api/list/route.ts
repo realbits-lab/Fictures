@@ -9,23 +9,29 @@ import { getStoriesAnalytics } from "@/lib/services/analytics";
  * Used for the analytics landing page story cards
  */
 export async function GET(request: NextRequest) {
-	try {
-		const session = await auth();
-		if (!session?.user?.id) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
+    try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json(
+                { error: "Unauthorized" },
+                { status: 401 },
+            );
+        }
 
-		const { searchParams } = new URL(request.url);
-		const range = (searchParams.get("range") || "30d") as "7d" | "30d" | "90d";
+        const { searchParams } = new URL(request.url);
+        const range = (searchParams.get("range") || "30d") as
+            | "7d"
+            | "30d"
+            | "90d";
 
-		const stories = await getStoriesAnalytics(session.user.id, range);
+        const stories = await getStoriesAnalytics(session.user.id, range);
 
-		return NextResponse.json({ stories });
-	} catch (error) {
-		console.error("Failed to fetch stories analytics list:", error);
-		return NextResponse.json(
-			{ error: "Failed to fetch stories" },
-			{ status: 500 },
-		);
-	}
+        return NextResponse.json({ stories });
+    } catch (error) {
+        console.error("Failed to fetch stories analytics list:", error);
+        return NextResponse.json(
+            { error: "Failed to fetch stories" },
+            { status: 500 },
+        );
+    }
 }

@@ -18,17 +18,17 @@ import { studioAgentUtilityTools } from "./agent-utility-tools";
 // ==============================================================================
 
 export const studioAgentTools = {
-	// CRUD Operations (22 tools)
-	...studioAgentCrudTools,
+    // CRUD Operations (22 tools)
+    ...studioAgentCrudTools,
 
-	// Generation Pipeline (9 tools)
-	...studioAgentGenerationTools,
+    // Generation Pipeline (9 tools)
+    ...studioAgentGenerationTools,
 
-	// Advisory & Validation (3 tools)
-	...studioAgentAdvisoryTools,
+    // Advisory & Validation (3 tools)
+    ...studioAgentAdvisoryTools,
 
-	// Utility (4 tools)
-	...studioAgentUtilityTools,
+    // Utility (4 tools)
+    ...studioAgentUtilityTools,
 };
 
 // Type-safe tool names
@@ -72,8 +72,8 @@ export type StudioAgentToolName = keyof typeof studioAgentTools;
 
 // Export individual tool categories for selective use
 export {
-	studioAgentCrudTools,
-	studioAgentGenerationTools,
-	studioAgentAdvisoryTools,
-	studioAgentUtilityTools,
+    studioAgentCrudTools,
+    studioAgentGenerationTools,
+    studioAgentAdvisoryTools,
+    studioAgentUtilityTools,
 };

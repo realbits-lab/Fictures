@@ -24,8 +24,8 @@ import type {
     GenerateChapterResult,
 } from "./types";
 import {
-    type GeneratedChapterData,
-    GeneratedChapterSchema,
+    type AiChapterType,
+    AiChapterZodSchema,
 } from "./zod-schemas.generated";
 
 /**
@@ -129,10 +129,10 @@ export async function generateChapter(
     );
 
     // 9. Generate chapter using structured output
-    const chapterData: GeneratedChapterData =
+    const chapterData: AiChapterType =
         await textGenerationClient.generateStructured(
             userPromptText,
-            GeneratedChapterSchema,
+            AiChapterZodSchema,
             {
                 systemPrompt,
                 temperature: 0.85,

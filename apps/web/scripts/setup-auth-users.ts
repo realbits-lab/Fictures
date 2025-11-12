@@ -22,24 +22,32 @@
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+
 import crypto from "crypto";
+
 =======
+
 import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
+
 >>>>>>> ac44128 (refactor: update authentication user setup script to use bcrypt for API key hashing)
 import { eq } from "drizzle-orm";
+
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { apiKeys, users } from "../src/lib/db/schema";
 import { type AuthData, saveAuthData } from "../src/lib/utils/auth-loader";
+
 =======
+
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { eq } from 'drizzle-orm';
-import crypto from 'crypto';
-import bcrypt from 'bcryptjs';
-import { users, apiKeys } from '../drizzle/schema';
-import { saveAuthData, type AuthData } from '../src/lib/utils/auth-loader';
+import { apiKeys, users } from '../drizzle/schema';
+import { type AuthData, saveAuthData } from '../src/lib/utils/auth-loader';
+
 >>>>>>> 10ebf9f8 (feat: enhance authentication system and API key management)
 
 // PBKDF2 password hashing (matching src/lib/auth/password.ts)

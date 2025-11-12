@@ -25,65 +25,67 @@ import type { characters, scenes, settings } from "@/lib/db/schema";
 // ============================================
 
 export const ToonplayEvaluationSchema = z.object({
-	category1_narrative_fidelity: z.object({
-		score: z.number().min(1).max(5),
-		reasoning: z
-			.string()
-			.describe("Explanation of score for narrative fidelity"),
-		strengths: z.array(z.string()).describe("What the toonplay does well"),
-		weaknesses: z.array(z.string()).describe("What needs improvement"),
-	}),
-	category2_visual_transformation: z.object({
-		score: z.number().min(1).max(5),
-		reasoning: z
-			.string()
-			.describe("Explanation of score for visual transformation"),
-		strengths: z.array(z.string()),
-		weaknesses: z.array(z.string()),
-	}),
-	category3_webtoon_pacing: z.object({
-		score: z.number().min(1).max(5),
-		reasoning: z.string().describe("Explanation of score for webtoon pacing"),
-		strengths: z.array(z.string()),
-		weaknesses: z.array(z.string()),
-	}),
-	category4_script_formatting: z.object({
-		score: z.number().min(1).max(5),
-		reasoning: z
-			.string()
-			.describe("Explanation of score for script formatting"),
-		strengths: z.array(z.string()),
-		weaknesses: z.array(z.string()),
-	}),
-	overall_assessment: z
-		.string()
-		.describe("Overall summary of toonplay quality"),
-	improvement_suggestions: z
-		.array(z.string())
-		.describe("Specific actionable improvements"),
-	narration_percentage: z
-		.number()
-		.min(0)
-		.max(100)
-		.describe("Percentage of panels using narration"),
-	dialogue_to_visual_ratio: z
-		.string()
-		.describe("Assessment of dialogue vs visual action balance"),
+    category1_narrative_fidelity: z.object({
+        score: z.number().min(1).max(5),
+        reasoning: z
+            .string()
+            .describe("Explanation of score for narrative fidelity"),
+        strengths: z.array(z.string()).describe("What the toonplay does well"),
+        weaknesses: z.array(z.string()).describe("What needs improvement"),
+    }),
+    category2_visual_transformation: z.object({
+        score: z.number().min(1).max(5),
+        reasoning: z
+            .string()
+            .describe("Explanation of score for visual transformation"),
+        strengths: z.array(z.string()),
+        weaknesses: z.array(z.string()),
+    }),
+    category3_webtoon_pacing: z.object({
+        score: z.number().min(1).max(5),
+        reasoning: z
+            .string()
+            .describe("Explanation of score for webtoon pacing"),
+        strengths: z.array(z.string()),
+        weaknesses: z.array(z.string()),
+    }),
+    category4_script_formatting: z.object({
+        score: z.number().min(1).max(5),
+        reasoning: z
+            .string()
+            .describe("Explanation of score for script formatting"),
+        strengths: z.array(z.string()),
+        weaknesses: z.array(z.string()),
+    }),
+    overall_assessment: z
+        .string()
+        .describe("Overall summary of toonplay quality"),
+    improvement_suggestions: z
+        .array(z.string())
+        .describe("Specific actionable improvements"),
+    narration_percentage: z
+        .number()
+        .min(0)
+        .max(100)
+        .describe("Percentage of panels using narration"),
+    dialogue_to_visual_ratio: z
+        .string()
+        .describe("Assessment of dialogue vs visual action balance"),
 });
 
 export type ToonplayEvaluation = z.infer<typeof ToonplayEvaluationSchema>;
 
 export interface ToonplayEvaluationResult extends ToonplayEvaluation {
-	weighted_score: number;
-	passes: boolean;
-	metrics: {
-		total_panels: number;
-		panels_with_narration: number;
-		panels_with_dialogue: number;
-		panels_with_neither: number;
-		shot_type_distribution: Record<string, number>;
-		average_dialogue_length: number;
-	};
+    weighted_score: number;
+    passes: boolean;
+    metrics: {
+        total_panels: number;
+        panels_with_narration: number;
+        panels_with_dialogue: number;
+        panels_with_neither: number;
+        shot_type_distribution: Record<string, number>;
+        average_dialogue_length: number;
+    };
 }
 
 // ============================================
@@ -91,73 +93,75 @@ export interface ToonplayEvaluationResult extends ToonplayEvaluation {
 // ============================================
 
 export interface EvaluateToonplayOptions {
-	toonplay: ComicToonplay;
-	sourceScene: typeof scenes.$inferSelect;
-	characters: (typeof characters.$inferSelect)[];
-	setting: typeof settings.$inferSelect;
-	storyGenre: string | null;
+    toonplay: ComicToonplay;
+    sourceScene: typeof scenes.$inferSelect;
+    characters: (typeof characters.$inferSelect)[];
+    setting: typeof settings.$inferSelect;
+    storyGenre: string | null;
 }
 
 export async function evaluateToonplay(
-	options: EvaluateToonplayOptions,
+    options: EvaluateToonplayOptions,
 ): Promise<ToonplayEvaluationResult> {
-	const { toonplay, sourceScene, characters, setting, storyGenre } = options;
+    const { toonplay, sourceScene, characters, setting, storyGenre } = options;
 
-	console.log(
-		`\n📊 Evaluating toonplay quality for: "${toonplay.scene_title}"`,
-	);
+    console.log(
+        `\n📊 Evaluating toonplay quality for: "${toonplay.scene_title}"`,
+    );
 
-	// Calculate metrics
-	const metrics = calculateToonplayMetrics(toonplay);
+    // Calculate metrics
+    const metrics = calculateToonplayMetrics(toonplay);
 
-	// Build evaluation prompt
-	const evaluationPrompt = buildEvaluationPrompt(
-		toonplay,
-		sourceScene,
-		characters,
-		setting,
-		storyGenre,
-		metrics,
-	);
+    // Build evaluation prompt
+    const evaluationPrompt = buildEvaluationPrompt(
+        toonplay,
+        sourceScene,
+        characters,
+        setting,
+        storyGenre,
+        metrics,
+    );
 
-	console.log(`   Sending evaluation request to AI...`);
+    console.log(`   Sending evaluation request to AI...`);
 
-	const result = await generateObject({
-		model: gateway("google/gemini-2.5-flash-lite"),
-		schema: ToonplayEvaluationSchema,
-		prompt: evaluationPrompt,
-		temperature: 0.3, // Lower temperature for more consistent evaluation
-	});
+    const result = await generateObject({
+        model: gateway("google/gemini-2.5-flash-lite"),
+        schema: ToonplayEvaluationSchema,
+        prompt: evaluationPrompt,
+        temperature: 0.3, // Lower temperature for more consistent evaluation
+    });
 
-	const evaluation = result.object;
+    const evaluation = result.object;
 
-	// Calculate weighted score
-	const weightedScore = calculateWeightedScore(evaluation);
-	const passes = weightedScore >= 3.0;
+    // Calculate weighted score
+    const weightedScore = calculateWeightedScore(evaluation);
+    const passes = weightedScore >= 3.0;
 
-	console.log(`   ✅ Evaluation complete`);
-	console.log(`   Weighted Score: ${weightedScore.toFixed(2)}/5.0`);
-	console.log(`   Passes: ${passes ? "✅ YES" : "❌ NO (needs improvement)"}`);
-	console.log(`   Category Scores:`);
-	console.log(
-		`     1. Narrative Fidelity: ${evaluation.category1_narrative_fidelity.score}/5 (weight: 20%)`,
-	);
-	console.log(
-		`     2. Visual Transformation: ${evaluation.category2_visual_transformation.score}/5 (weight: 30%)`,
-	);
-	console.log(
-		`     3. Webtoon Pacing: ${evaluation.category3_webtoon_pacing.score}/5 (weight: 30%)`,
-	);
-	console.log(
-		`     4. Script Formatting: ${evaluation.category4_script_formatting.score}/5 (weight: 20%)`,
-	);
+    console.log(`   ✅ Evaluation complete`);
+    console.log(`   Weighted Score: ${weightedScore.toFixed(2)}/5.0`);
+    console.log(
+        `   Passes: ${passes ? "✅ YES" : "❌ NO (needs improvement)"}`,
+    );
+    console.log(`   Category Scores:`);
+    console.log(
+        `     1. Narrative Fidelity: ${evaluation.category1_narrative_fidelity.score}/5 (weight: 20%)`,
+    );
+    console.log(
+        `     2. Visual Transformation: ${evaluation.category2_visual_transformation.score}/5 (weight: 30%)`,
+    );
+    console.log(
+        `     3. Webtoon Pacing: ${evaluation.category3_webtoon_pacing.score}/5 (weight: 30%)`,
+    );
+    console.log(
+        `     4. Script Formatting: ${evaluation.category4_script_formatting.score}/5 (weight: 20%)`,
+    );
 
-	return {
-		...evaluation,
-		weighted_score: weightedScore,
-		passes,
-		metrics,
-	};
+    return {
+        ...evaluation,
+        weighted_score: weightedScore,
+        passes,
+        metrics,
+    };
 }
 
 // ============================================
@@ -165,51 +169,51 @@ export async function evaluateToonplay(
 // ============================================
 
 function calculateToonplayMetrics(toonplay: ComicToonplay) {
-	const panels = toonplay.panels;
-	const totalPanels = panels.length;
+    const panels = toonplay.panels;
+    const totalPanels = panels.length;
 
-	// Count panels with narration, dialogue, or neither
-	const panelsWithNarration = panels.filter(
-		(p) => p.narrative && p.narrative.trim().length > 0,
-	).length;
-	const panelsWithDialogue = panels.filter(
-		(p) => p.dialogue && p.dialogue.length > 0,
-	).length;
-	const panelsWithNeither = panels.filter(
-		(p) =>
-			(!p.narrative || p.narrative.trim().length === 0) &&
-			(!p.dialogue || p.dialogue.length === 0),
-	).length;
+    // Count panels with narration, dialogue, or neither
+    const panelsWithNarration = panels.filter(
+        (p) => p.narrative && p.narrative.trim().length > 0,
+    ).length;
+    const panelsWithDialogue = panels.filter(
+        (p) => p.dialogue && p.dialogue.length > 0,
+    ).length;
+    const panelsWithNeither = panels.filter(
+        (p) =>
+            (!p.narrative || p.narrative.trim().length === 0) &&
+            (!p.dialogue || p.dialogue.length === 0),
+    ).length;
 
-	// Shot type distribution
-	const shotTypeDistribution: Record<string, number> = {};
-	panels.forEach((p) => {
-		shotTypeDistribution[p.shot_type] =
-			(shotTypeDistribution[p.shot_type] || 0) + 1;
-	});
+    // Shot type distribution
+    const shotTypeDistribution: Record<string, number> = {};
+    panels.forEach((p) => {
+        shotTypeDistribution[p.shot_type] =
+            (shotTypeDistribution[p.shot_type] || 0) + 1;
+    });
 
-	// Average dialogue length
-	let totalDialogueLength = 0;
-	let dialogueCount = 0;
-	panels.forEach((p) => {
-		if (p.dialogue) {
-			p.dialogue.forEach((d) => {
-				totalDialogueLength += d.text.length;
-				dialogueCount++;
-			});
-		}
-	});
-	const averageDialogueLength =
-		dialogueCount > 0 ? totalDialogueLength / dialogueCount : 0;
+    // Average dialogue length
+    let totalDialogueLength = 0;
+    let dialogueCount = 0;
+    panels.forEach((p) => {
+        if (p.dialogue) {
+            p.dialogue.forEach((d) => {
+                totalDialogueLength += d.text.length;
+                dialogueCount++;
+            });
+        }
+    });
+    const averageDialogueLength =
+        dialogueCount > 0 ? totalDialogueLength / dialogueCount : 0;
 
-	return {
-		total_panels: totalPanels,
-		panels_with_narration: panelsWithNarration,
-		panels_with_dialogue: panelsWithDialogue,
-		panels_with_neither: panelsWithNeither,
-		shot_type_distribution: shotTypeDistribution,
-		average_dialogue_length: averageDialogueLength,
-	};
+    return {
+        total_panels: totalPanels,
+        panels_with_narration: panelsWithNarration,
+        panels_with_dialogue: panelsWithDialogue,
+        panels_with_neither: panelsWithNeither,
+        shot_type_distribution: shotTypeDistribution,
+        average_dialogue_length: averageDialogueLength,
+    };
 }
 
 // ============================================
@@ -217,35 +221,36 @@ function calculateToonplayMetrics(toonplay: ComicToonplay) {
 // ============================================
 
 function buildEvaluationPrompt(
-	toonplay: ComicToonplay,
-	sourceScene: typeof scenes.$inferSelect,
-	sceneCharacters: (typeof characters.$inferSelect)[],
-	setting: typeof settings.$inferSelect,
-	storyGenre: string | null,
-	metrics: ReturnType<typeof calculateToonplayMetrics>,
+    toonplay: ComicToonplay,
+    sourceScene: typeof scenes.$inferSelect,
+    sceneCharacters: (typeof characters.$inferSelect)[],
+    setting: typeof settings.$inferSelect,
+    storyGenre: string | null,
+    metrics: ReturnType<typeof calculateToonplayMetrics>,
 ): string {
-	const sceneTitle = sourceScene.title;
-	const sceneContent = sourceScene.content;
-	const sceneSummary = sourceScene.summary || "";
+    const sceneTitle = sourceScene.title;
+    const sceneContent = sourceScene.content;
+    const sceneSummary = sourceScene.summary || "";
 
-	const characterNames = sceneCharacters.map((c) => c.name).join(", ");
+    const characterNames = sceneCharacters.map((c) => c.name).join(", ");
 
-	// Format toonplay for display
-	const toonplayFormatted = toonplay.panels
-		.map((p, i) => {
-			const dialogueText =
-				p.dialogue?.map((d) => `${d.character_id}: "${d.text}"`).join("; ") ||
-				"None";
-			const narrativeText = p.narrative || "None";
-			return `Panel ${i + 1} [${p.shot_type}]:
+    // Format toonplay for display
+    const toonplayFormatted = toonplay.panels
+        .map((p, i) => {
+            const dialogueText =
+                p.dialogue
+                    ?.map((d) => `${d.character_id}: "${d.text}"`)
+                    .join("; ") || "None";
+            const narrativeText = p.narrative || "None";
+            return `Panel ${i + 1} [${p.shot_type}]:
   Description: ${p.summary}
   Dialogue: ${dialogueText}
   Narrative: ${narrativeText}
   Characters: ${p.characters_visible.join(", ") || "None"}`;
-		})
-		.join("\n\n");
+        })
+        .join("\n\n");
 
-	return `You are an expert webtoon script evaluator. Evaluate this toonplay using the "Architectonics of Engagement" framework.
+    return `You are an expert webtoon script evaluator. Evaluate this toonplay using the "Architectonics of Engagement" framework.
 
 SOURCE SCENE INFORMATION:
 Title: ${sceneTitle}
@@ -271,8 +276,8 @@ CALCULATED METRICS:
 - Panels with Dialogue: ${metrics.panels_with_dialogue} (${((metrics.panels_with_dialogue / metrics.total_panels) * 100).toFixed(1)}%)
 - Panels with NEITHER (critical issue): ${metrics.panels_with_neither}
 - Shot Type Distribution: ${Object.entries(metrics.shot_type_distribution)
-		.map(([type, count]) => `${type}=${count}`)
-		.join(", ")}
+        .map(([type, count]) => `${type}=${count}`)
+        .join(", ")}
 - Average Dialogue Length: ${metrics.average_dialogue_length.toFixed(1)} chars
 
 EVALUATION RUBRIC:
@@ -327,21 +332,23 @@ Return your evaluation as a structured JSON object.`;
 // ============================================
 
 function calculateWeightedScore(evaluation: ToonplayEvaluation): number {
-	const weights = {
-		narrative_fidelity: 0.2,
-		visual_transformation: 0.3,
-		webtoon_pacing: 0.3,
-		script_formatting: 0.2,
-	};
+    const weights = {
+        narrative_fidelity: 0.2,
+        visual_transformation: 0.3,
+        webtoon_pacing: 0.3,
+        script_formatting: 0.2,
+    };
 
-	const weightedScore =
-		evaluation.category1_narrative_fidelity.score * weights.narrative_fidelity +
-		evaluation.category2_visual_transformation.score *
-			weights.visual_transformation +
-		evaluation.category3_webtoon_pacing.score * weights.webtoon_pacing +
-		evaluation.category4_script_formatting.score * weights.script_formatting;
+    const weightedScore =
+        evaluation.category1_narrative_fidelity.score *
+            weights.narrative_fidelity +
+        evaluation.category2_visual_transformation.score *
+            weights.visual_transformation +
+        evaluation.category3_webtoon_pacing.score * weights.webtoon_pacing +
+        evaluation.category4_script_formatting.score *
+            weights.script_formatting;
 
-	return Math.round(weightedScore * 100) / 100; // Round to 2 decimal places
+    return Math.round(weightedScore * 100) / 100; // Round to 2 decimal places
 }
 
 // ============================================
@@ -349,9 +356,9 @@ function calculateWeightedScore(evaluation: ToonplayEvaluation): number {
 // ============================================
 
 export function formatEvaluationReport(
-	result: ToonplayEvaluationResult,
+    result: ToonplayEvaluationResult,
 ): string {
-	const report = `
+    const report = `
 ═══════════════════════════════════════════════════════════════
 TOONPLAY QUALITY EVALUATION REPORT
 ═══════════════════════════════════════════════════════════════
@@ -400,8 +407,8 @@ Average Dialogue Length: ${result.metrics.average_dialogue_length.toFixed(0)} ch
 
 Shot Type Distribution:
 ${Object.entries(result.metrics.shot_type_distribution)
-	.map(([type, count]) => `  - ${type}: ${count}`)
-	.join("\n")}
+    .map(([type, count]) => `  - ${type}: ${count}`)
+    .join("\n")}
 
 ───────────────────────────────────────────────────────────────
 IMPROVEMENT SUGGESTIONS
@@ -418,5 +425,5 @@ ${result.overall_assessment}
 ═══════════════════════════════════════════════════════════════
 `;
 
-	return report;
+    return report;
 }
