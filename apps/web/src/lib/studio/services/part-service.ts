@@ -26,6 +26,7 @@ import {
 export interface ServicePartParams {
     storyId: string;
     userId: string;
+    apiKey?: string;
 }
 
 export interface ServicePartResult {

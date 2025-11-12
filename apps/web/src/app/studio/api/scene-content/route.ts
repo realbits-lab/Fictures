@@ -75,12 +75,17 @@ export async function POST(request: NextRequest) {
             language: validatedData.language,
         });
 
-        // 4. Generate using service (handles fetch, validation, generation, persistence)
+        // 4. Extract API key from request header (for AI server authentication)
+        const apiKey: string | null = request.headers.get("x-api-key");
+        console.log("[SCENE-CONTENT API] API key provided:", !!apiKey);
+
+        // 5. Generate using service (handles fetch, validation, generation, persistence)
         console.log("[SCENE-CONTENT API] 🤖 Calling scene content service...");
         const serviceResult = await sceneContentService.generateAndSave({
             sceneId: validatedData.sceneId,
             language: validatedData.language,
             userId: authResult.user.id,
+            apiKey: apiKey || undefined,
         });
 
         console.log(

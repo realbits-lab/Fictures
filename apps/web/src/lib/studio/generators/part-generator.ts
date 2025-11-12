@@ -9,7 +9,7 @@
  * Database operations are handled by the caller (service/API layer).
  */
 
-import { textGenerationClient } from "./ai-client";
+import { createTextGenerationClient } from "./ai-client";
 import {
     buildCharactersContext,
     buildPartsContext,
@@ -42,7 +42,11 @@ export async function generatePart(
         settings,
         previousParts,
         partIndex,
+        apiKey,
     }: GeneratorPartParams = params;
+
+    // 2. Create text generation client with API key
+    const client = createTextGenerationClient(apiKey);
 
     console.log(
         `[part-generator] 🎬 Generating part ${partIndex + 1} with full context...`,
@@ -79,7 +83,7 @@ export async function generatePart(
         system: systemPrompt,
         user: userPromptText,
     }: { system: string; user: string } = promptManager.getPrompt(
-        textGenerationClient.getProviderType(),
+        client.getProviderType(),
         "part",
         promptParams,
     );
@@ -89,7 +93,7 @@ export async function generatePart(
     );
 
     // 7. Generate part using structured output
-    const partData: AiPartType = await textGenerationClient.generateStructured(
+    const partData: AiPartType = await client.generateStructured(
         userPromptText,
         AiPartZodSchema,
         {

@@ -9,7 +9,7 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { textGenerationClient } from "./ai-client";
+import { createTextGenerationClient } from "./ai-client";
 import {
     buildCharactersContext,
     buildPartContext,
@@ -49,7 +49,11 @@ export async function generateSceneSummary(
         settings,
         previousScenes,
         sceneIndex,
+        apiKey,
     }: GeneratorSceneSummaryParams = params;
+
+    // 2. Create text generation client with API key
+    const client = createTextGenerationClient(apiKey);
 
     console.log(
         `[scene-summary-generator] 📄 Generating scene ${sceneIndex + 1} (Chapter: ${chapter.title})...`,
@@ -109,7 +113,7 @@ Virtue Type: ${chapter.virtueType || "N/A"}`;
         system: systemPrompt,
         user: userPromptText,
     }: { system: string; user: string } = promptManager.getPrompt(
-        textGenerationClient.getProviderType(),
+        client.getProviderType(),
         "scene_summary",
         promptParams,
     );
@@ -120,7 +124,7 @@ Virtue Type: ${chapter.virtueType || "N/A"}`;
 
     // 6. Generate scene summary using structured output
     const sceneData: AiSceneSummaryType =
-        await textGenerationClient.generateStructured(
+        await client.generateStructured(
             userPromptText,
             AiSceneSummaryZodSchema,
             {

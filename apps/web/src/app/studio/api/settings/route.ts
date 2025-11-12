@@ -159,12 +159,17 @@ export async function POST(request: NextRequest) {
             settingCount: validatedData.settingCount,
         });
 
-        // 4. Generate using service (handles fetch, validation, generation, persistence)
+        // 4. Extract API key from request header (for AI server authentication)
+        const apiKey: string | null = request.headers.get("x-api-key");
+        console.log("[SETTINGS API] API key provided:", !!apiKey);
+
+        // 5. Generate using service (handles fetch, validation, generation, persistence)
         console.log("[SETTINGS API] 🤖 Calling setting service...");
         const serviceResult = await settingService.generateAndSave({
             storyId: validatedData.storyId,
             settingCount: validatedData.settingCount,
             userId: authResult.user.id,
+            apiKey: apiKey || undefined,
         });
 
         console.log(

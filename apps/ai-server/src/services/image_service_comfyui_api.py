@@ -29,10 +29,10 @@ class QwenImageComfyUIAPIService:
         """Initialize the ComfyUI API service.
 
         Args:
-            comfyui_url: URL of the running ComfyUI server (defaults to config.settings.comfyui_url)
+            comfyui_url: URL of the running ComfyUI server (defaults to config.settings.ai_server_comfyui_url)
         """
         from src.config import settings
-        self.comfyui_url = comfyui_url or settings.comfyui_url
+        self.comfyui_url = comfyui_url or settings.ai_server_comfyui_url
         self._initialized = False
         self.device = "cuda"
 

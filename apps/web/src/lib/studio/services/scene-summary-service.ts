@@ -36,6 +36,7 @@ export interface ServiceSceneSummaryParams {
     storyId: string;
     chapterId: string;
     userId: string;
+    apiKey?: string;
 }
 
 export interface ServiceSceneSummaryResult {

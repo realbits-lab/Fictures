@@ -170,6 +170,7 @@ export class SceneEvaluationService {
             content: scene.content,
             story: storyContext,
             maxIterations,
+            apiKey,
         };
 
         const evaluationResult: GeneratorSceneEvaluationResult =
@@ -279,6 +280,7 @@ export class SceneEvaluationService {
                 tone: story.tone,
             },
             maxIterations,
+            apiKey,
         };
 
         const evaluationResult: GeneratorSceneEvaluationResult =
@@ -379,6 +381,7 @@ export class SceneEvaluationService {
                 tone: "hopeful" as const,
             },
             maxIterations,
+            apiKey,
         };
 
         return await evaluateScene(evaluateParams);

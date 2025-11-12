@@ -27,6 +27,7 @@ export interface ServiceChapterParams {
     storyId: string;
     partId: string;
     userId: string;
+    apiKey?: string;
 }
 
 export interface ServiceChapterResult {

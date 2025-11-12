@@ -545,18 +545,20 @@ class AIServerProvider extends TextGenerationProvider {
             JSON.stringify(cleanSchema, null, 2).substring(0, 800),
         );
 
-        // Build request body with structured output configuration
+        // Build request body for structured output endpoint
         const requestBody: any = {
             prompt: fullPrompt,
+            guided_decoding: {
+                type: "json",
+                schema: cleanSchema,
+            },
             max_tokens: options?.maxTokens ?? 2048,
             temperature: options?.temperature ?? 0.7,
             top_p: options?.topP ?? 0.9,
-            response_format: "json",
-            response_schema: cleanSchema,
         };
 
         const response = await fetch(
-            `${this.config.url}/api/v1/text/generate`,
+            `${this.config.url}/api/v1/text/structured`,
             {
                 method: "POST",
                 headers: this.buildHeaders(),
@@ -571,7 +573,7 @@ class AIServerProvider extends TextGenerationProvider {
         }
 
         const result = await response.json();
-        const text = result.text;
+        const text = result.output;
 
         console.log(
             "[AIServerProvider] generateStructured - Response received",

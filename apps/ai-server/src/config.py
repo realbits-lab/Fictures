@@ -21,11 +21,11 @@ class Settings(BaseSettings):
     # - "text": Only text generation (vLLM, uses ~10GB VRAM)
     # - "image": Only image generation (ComfyUI, uses ~8GB VRAM)
     # - "both": Both services (requires 24GB+ VRAM or CPU offload)
-    generation_mode: Literal["text", "image", "both"] = "image"
+    ai_server_generation_mode: Literal["text", "image", "both"] = "image"
 
     # ComfyUI Configuration (External Image Generation Server)
     # ComfyUI runs as separate process and manages its own models
-    comfyui_url: str = "http://127.0.0.1:8188"
+    ai_server_comfyui_url: str = "http://127.0.0.1:8188"
 
     # Database Configuration (for API key authentication)
     database_url: str = ""  # PostgreSQL connection string from web app

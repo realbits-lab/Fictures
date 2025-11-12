@@ -71,12 +71,17 @@ export async function POST(request: NextRequest) {
             partId: validatedData.partId,
         });
 
-        // 4. Generate using service (handles fetch, validation, generation, persistence)
+        // 4. Extract API key from request header (for AI server authentication)
+        const apiKey: string | null = request.headers.get("x-api-key");
+        console.log("[CHAPTER API] API key provided:", !!apiKey);
+
+        // 5. Generate using service (handles fetch, validation, generation, persistence)
         console.log("[CHAPTER API] 🤖 Calling chapter service (singular)...");
         const serviceResult = await chapterService.generateAndSave({
             storyId: validatedData.storyId,
             partId: validatedData.partId,
             userId: authResult.user.id,
+            apiKey: apiKey || undefined,
         });
 
         console.log("[CHAPTER API] ✅ Chapter generation and save completed:", {

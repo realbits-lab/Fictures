@@ -213,6 +213,7 @@ export interface GeneratorCharactersParams {
     characterCount: number;
     language?: string;
     onProgress?: ProgressCallback;
+    apiKey?: string;
 }
 
 export interface CharacterPromptParams extends Record<string, string> {
@@ -236,6 +237,7 @@ export interface GeneratorSettingsParams {
     story: Story;
     settingCount: number;
     onProgress?: ProgressCallback;
+    apiKey?: string;
 }
 
 export interface SettingPromptParams extends Record<string, string> {
@@ -284,6 +286,7 @@ export interface GeneratorPartParams {
     settings: Setting[];
     previousParts: Part[];
     partIndex: number;
+    apiKey?: string;
 }
 
 export interface GeneratorPartResult {
@@ -330,6 +333,7 @@ export interface GeneratorChapterParams {
     settings?: Setting[]; // Optional settings for atmospheric context
     previousChapters: Chapter[];
     chapterIndex: number; // Global index (position in entire story)
+    apiKey?: string;
 }
 
 export interface GeneratorChapterResult {
@@ -379,6 +383,7 @@ export interface GeneratorSceneSummaryParams {
     settings: Setting[];
     previousScenes: Scene[];
     sceneIndex: number; // Global index (position in entire story)
+    apiKey?: string;
 }
 
 export interface GeneratorSceneSummaryResult {
@@ -401,6 +406,7 @@ export interface GeneratorSceneContentParams {
 
     // === Optional ===
     language?: string;
+    apiKey?: string;
 }
 
 export interface SceneContentPromptParams extends Record<string, string> {
@@ -440,6 +446,7 @@ export interface GeneratorSceneEvaluationParams {
     content: string;
     story: SceneEvaluationStoryContext;
     maxIterations?: number;
+    apiKey?: string;
 }
 
 export interface GeneratorSceneEvaluationResult {

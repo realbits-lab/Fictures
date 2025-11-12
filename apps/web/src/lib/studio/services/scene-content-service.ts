@@ -32,6 +32,7 @@ export interface ServiceSceneContentParams {
     sceneId: string;
     language?: string;
     userId: string;
+    apiKey?: string;
 }
 
 export interface ServiceSceneContentResult {
@@ -124,6 +125,7 @@ export class SceneContentService {
             characters: storyCharacters,
             settings: storySettings,
             language,
+            apiKey,
         };
 
         const generationResult: GeneratorSceneContentResult =

@@ -71,7 +71,11 @@ export async function POST(request: NextRequest) {
             chapterId: validatedData.chapterId,
         });
 
-        // 4. Generate using service (handles fetch, validation, generation, persistence)
+        // 4. Extract API key from request header (for AI server authentication)
+        const apiKey: string | null = request.headers.get("x-api-key");
+        console.log("[SCENE-SUMMARY API] API key provided:", !!apiKey);
+
+        // 5. Generate using service (handles fetch, validation, generation, persistence)
         console.log(
             "[SCENE-SUMMARY API] 🤖 Calling scene summary service (singular)...",
         );
@@ -79,6 +83,7 @@ export async function POST(request: NextRequest) {
             storyId: validatedData.storyId,
             chapterId: validatedData.chapterId,
             userId: authResult.user.id,
+            apiKey: apiKey || undefined,
         });
 
         console.log(

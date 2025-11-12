@@ -9,7 +9,7 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { textGenerationClient } from "./ai-client";
+import { createTextGenerationClient } from "./ai-client";
 import {
     buildChapterContext,
     buildCharactersContext,
@@ -47,7 +47,11 @@ export async function generateChapter(
         settings,
         previousChapters,
         chapterIndex,
+        apiKey,
     }: GeneratorChapterParams = params;
+
+    // 2. Create text generation client with API key
+    const client = createTextGenerationClient(apiKey);
 
     console.log(
         `[chapter-generator] 📖 Generating chapter ${chapterIndex + 1} (Part: ${part.title})...`,
@@ -119,7 +123,7 @@ export async function generateChapter(
         system: systemPrompt,
         user: userPromptText,
     }: { system: string; user: string } = promptManager.getPrompt(
-        textGenerationClient.getProviderType(),
+        client.getProviderType(),
         "chapter",
         promptParams,
     );
@@ -130,7 +134,7 @@ export async function generateChapter(
 
     // 9. Generate chapter using structured output
     const chapterData: AiChapterType =
-        await textGenerationClient.generateStructured(
+        await client.generateStructured(
             userPromptText,
             AiChapterZodSchema,
             {

@@ -76,7 +76,11 @@ export async function POST(request: NextRequest) {
             maxIterations: validatedData.maxIterations,
         });
 
-        // 4. Evaluate scene using service (handles fetch, validation, generation, persistence)
+        // 4. Extract API key from request header (for AI server authentication)
+        const apiKey: string | null = request.headers.get("x-api-key");
+        console.log("[SCENE EVALUATION API] API key provided:", !!apiKey);
+
+        // 5. Evaluate scene using service (handles fetch, validation, generation, persistence)
         console.log(
             "[SCENE EVALUATION API] 🤖 Calling scene evaluation service...",
         );
@@ -85,6 +89,7 @@ export async function POST(request: NextRequest) {
             sceneId: validatedData.sceneId,
             userId: authResult.user.id, // Service will verify ownership
             maxIterations: validatedData.maxIterations,
+            apiKey: apiKey || undefined,
         });
 
         console.log("[SCENE EVALUATION API] ✅ Scene evaluation completed:", {

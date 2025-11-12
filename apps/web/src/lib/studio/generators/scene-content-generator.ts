@@ -8,7 +8,7 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { textGenerationClient } from "./ai-client";
+import { createTextGenerationClient } from "./ai-client";
 import {
     buildChapterContext,
     buildCharactersContext,
@@ -45,7 +45,11 @@ export async function generateSceneContent(
         characters,
         settings,
         language = "English",
+        apiKey,
     }: GeneratorSceneContentParams = params;
+
+    // 2. Create text generation client with API key
+    const client = createTextGenerationClient(apiKey);
 
     console.log(
         `[scene-content-generator] 📝 Generating content for scene: ${scene.title}`,
@@ -85,7 +89,7 @@ export async function generateSceneContent(
         system: systemPrompt,
         user: userPromptText,
     }: { system: string; user: string } = promptManager.getPrompt(
-        textGenerationClient.getProviderType(),
+        client.getProviderType(),
         "scene_content",
         promptParams,
     );
@@ -95,7 +99,7 @@ export async function generateSceneContent(
     );
 
     // 4. Generate scene content using direct text generation (no schema)
-    const response = await textGenerationClient.generate({
+    const response = await client.generate({
         prompt: userPromptText,
         systemPrompt,
         temperature: 0.85,
