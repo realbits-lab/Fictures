@@ -14,12 +14,15 @@ user_lib = os.path.expanduser("~/lib")
 os.environ["LD_LIBRARY_PATH"] = f"{user_lib}:/usr/local/cuda-12.6/lib64:/lib/x86_64-linux-gnu:{os.environ.get('LD_LIBRARY_PATH', '')}"
 os.environ.setdefault("VLLM_TORCH_COMPILE_LEVEL", "0")  # Disable torch compilation
 
+# Disable V1 multiprocessing to avoid spawn ctypes errors in FastAPI context
+# FastAPI doesn't use if __name__ == "__main__" guard, causing re-execution issues
+os.environ["VLLM_ENABLE_V1_MULTIPROCESSING"] = "0"
+
 # vLLM 0.11.0 uses V1 engine (V0 has been removed)
 
 from vllm import AsyncLLMEngine, AsyncEngineArgs, SamplingParams
 from vllm.sampling_params import GuidedDecodingParams
 from src.config import settings
-from src.utils.gpu_utils import cleanup_gpu_memory, get_gpu_memory_info
 
 logger = logging.getLogger(__name__)
 
@@ -40,13 +43,11 @@ class TextGenerationService:
             return
 
         try:
-            # Clean GPU memory before loading model
+            # Don't clean GPU memory before vLLM initialization
+            # cleanup_gpu_memory() calls torch.cuda.is_available() which initializes CUDA
+            # This forces vLLM to use spawn multiprocessing method, causing ctypes errors
+            # Let vLLM handle GPU initialization itself
             logger.info("Preparing GPU for text model loading...")
-            cleanup_gpu_memory(force=True)
-
-            mem_info = get_gpu_memory_info()
-            if mem_info["available"]:
-                logger.info(f"GPU Memory before loading: {mem_info['free']:.2f}GB free")
 
             logger.info(f"Initializing vLLM engine with model: {self.model_name}")
             logger.info(f"Quantization: {settings.vllm_quantization}")
