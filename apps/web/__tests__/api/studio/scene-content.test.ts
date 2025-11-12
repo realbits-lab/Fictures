@@ -15,6 +15,7 @@ import type {
     ApiSceneContentRequest,
     ApiSceneContentResponse,
     ApiSceneSummariesRequest,
+    ApiSettingsRequest,
     ApiStoryRequest,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
@@ -90,7 +91,35 @@ describe("Scene Content API", () => {
             `✅ Characters generated: ${charactersData.characters.length}`,
         );
 
-        // 3. Generate parts
+        // 3. Generate settings (required for parts generation)
+        console.log("🔧 Generating settings...");
+        const settingsRequestBody: ApiSettingsRequest = {
+            storyId: testStoryId,
+            settingCount: 2,
+        };
+
+        const settingsResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/settings",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify(settingsRequestBody),
+            },
+        );
+
+        const settingsData: { settings: Array<{ id: string }> } =
+            await settingsResponse.json();
+        if (!settingsResponse.ok) {
+            throw new Error(
+                `Failed to generate settings: ${JSON.stringify(settingsData)}`,
+            );
+        }
+        console.log(`✅ Settings generated: ${settingsData.settings.length}`);
+
+        // 4. Generate parts
         console.log("🔧 Generating parts for story...");
         const partsRequestBody: ApiPartsRequest = {
             storyId: testStoryId,

@@ -19,6 +19,8 @@ import type {
     ApiCharactersResponse,
     ApiPartRequest,
     ApiPartResponse,
+    ApiSettingsRequest,
+    ApiSettingsResponse,
     ApiStoryRequest,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
@@ -96,7 +98,34 @@ describe("Chapter API (Singular - Extreme Incremental)", () => {
             `✅ Characters generated: ${charactersData.characters.length}`,
         );
 
-        // 3. Generate part (required for chapter generation)
+        // 3. Generate settings (required for part generation)
+        console.log("🔧 Generating settings...");
+        const settingsRequestBody: ApiSettingsRequest = {
+            storyId: testStoryId,
+            settingCount: 2,
+        };
+
+        const settingsResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/settings",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify(settingsRequestBody),
+            },
+        );
+
+        const settingsData: ApiSettingsResponse = await settingsResponse.json();
+        if (!settingsResponse.ok) {
+            console.error("❌ Failed to generate settings:", settingsData);
+            throw new Error("Test setup failed: could not generate settings");
+        }
+
+        console.log(`✅ Settings generated: ${settingsData.settings.length}`);
+
+        // 4. Generate part (required for chapter generation)
         console.log("🔧 Generating part...");
         const partRequestBody: ApiPartRequest = {
             storyId: testStoryId,

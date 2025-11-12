@@ -16,6 +16,8 @@ import type {
     ApiPartResponse,
     ApiSceneSummaryRequest,
     ApiSceneSummaryResponse,
+    ApiSettingsRequest,
+    ApiSettingsResponse,
     ApiStoryErrorResponse,
     ApiStoryRequest,
     ApiStoryResponse,
@@ -274,6 +276,44 @@ describe("Story Generation API", () => {
         );
         for (const char of charactersData.characters) {
             console.log(`   - ${char.name} (${char.id})`);
+        }
+
+        // ====================================================================
+        // STEP 2.5: Generate Settings (Required for Parts)
+        // ====================================================================
+        console.log("\n🏞️  Step 2.5/3: Generating settings...");
+
+        const settingsRequestBody: ApiSettingsRequest = {
+            storyId: testStoryId,
+            settingCount: 2,
+        };
+
+        const settingsResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/settings",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify(settingsRequestBody),
+            },
+        );
+
+        const settingsData: ApiSettingsResponse = await settingsResponse.json();
+
+        if (!settingsResponse.ok) {
+            console.error("❌ Settings generation failed:", settingsData);
+            expect(settingsResponse.ok).toBe(true);
+        }
+
+        expect(settingsResponse.status).toBe(201);
+        expect(settingsData.settings).toBeDefined();
+        expect(settingsData.settings.length).toBe(2);
+
+        console.log(`✅ Settings generated: ${settingsData.settings.length}`);
+        for (const setting of settingsData.settings) {
+            console.log(`   - ${setting.name} (${setting.id})`);
         }
 
         // ====================================================================

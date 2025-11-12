@@ -17,6 +17,8 @@ import type {
     ApiPartErrorResponse,
     ApiPartRequest,
     ApiPartResponse,
+    ApiSettingsRequest,
+    ApiSettingsResponse,
     ApiStoryRequest,
 } from "@/app/studio/api/types";
 import { loadWriterAuth } from "../../helpers/auth-loader";
@@ -97,7 +99,35 @@ describe("Part API (Singular - Extreme Incremental)", () => {
         console.log(
             `✅ Characters generated: ${charactersData.characters.length}`,
         );
-    }, 180000); // 3 minute timeout for story + character creation
+
+        // 8. Generate settings (required for part generation)
+        console.log("🔧 Generating settings...");
+        const settingsRequestBody: ApiSettingsRequest = {
+            storyId: testStoryId,
+            settingCount: 2,
+        };
+
+        const settingsResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/settings",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify(settingsRequestBody),
+            },
+        );
+
+        // 9. Validate settings response
+        const settingsData: ApiSettingsResponse = await settingsResponse.json();
+        if (!settingsResponse.ok) {
+            console.error("❌ Failed to generate settings:", settingsData);
+            throw new Error("Test setup failed: could not generate settings");
+        }
+
+        console.log(`✅ Settings generated: ${settingsData.settings.length}`);
+    }, 240000); // 4 minute timeout for story + character + settings creation
 
     it("should generate first part via POST /studio/api/part", async () => {
         // 1. Prepare request body with proper TypeScript type
