@@ -278,9 +278,9 @@ export interface GeneratorPartsResult {
 
 export interface GeneratorPartParams {
     story: Story;
-    characters: (AiCharacterType & { id: string })[];
-    settings: (AiSettingType & { id: string })[];
-    previousParts: (AiPartType & { id: string })[];
+    characters: Character[];
+    settings: Setting[];
+    previousParts: Part[];
     partIndex: number;
 }
 
@@ -323,10 +323,10 @@ export interface GeneratorChaptersResult {
 
 export interface GeneratorChapterParams {
     story: Story;
-    part: AiPartType & { id: string };
-    characters: (AiCharacterType & { id: string })[];
-    settings?: (AiSettingType & { id: string })[]; // Optional settings for atmospheric context
-    previousChapters: (AiChapterType & { id: string; partId: string })[];
+    part: Part;
+    characters: Character[];
+    settings?: Setting[]; // Optional settings for atmospheric context
+    previousChapters: Chapter[];
     chapterIndex: number; // Global index (position in entire story)
 }
 
@@ -371,14 +371,11 @@ export interface GeneratorSceneSummariesResult {
 
 export interface GeneratorSceneSummaryParams {
     story: Story;
-    part: AiPartType & { id: string };
-    chapter: AiChapterType & { id: string; partId: string };
-    characters: (AiCharacterType & { id: string })[];
-    settings: (AiSettingType & { id: string })[];
-    previousScenes: (AiSceneSummaryType & {
-        id: string;
-        chapterId: string;
-    })[];
+    part: Part;
+    chapter: Chapter;
+    characters: Character[];
+    settings: Setting[];
+    previousScenes: Scene[];
     sceneIndex: number; // Global index (position in entire story)
 }
 
