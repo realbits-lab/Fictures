@@ -162,13 +162,18 @@ export async function POST(request: NextRequest) {
             language: validatedData.language,
         });
 
-        // 4. Generate using service (handles fetch, validation, generation, persistence)
+        // 4. Extract API key from request header (for AI server authentication)
+        const apiKey: string | null = request.headers.get("x-api-key");
+        console.log("[CHARACTERS API] API key provided:", !!apiKey);
+
+        // 5. Generate using service (handles fetch, validation, generation, persistence)
         console.log("[CHARACTERS API] 🤖 Calling character service...");
         const serviceResult = await characterService.generateAndSave({
             storyId: validatedData.storyId,
             characterCount: validatedData.characterCount,
             language: validatedData.language,
             userId: authResult.user.id,
+            apiKey: apiKey || undefined,
         });
 
         console.log(

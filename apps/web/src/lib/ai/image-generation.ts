@@ -32,7 +32,6 @@ const getConfig = () => {
                 process.env.AI_SERVER_IMAGE_TIMEOUT || "120000",
                 10,
             ),
-            apiKey: process.env.AI_SERVER_API_KEY,
         },
     };
 };
@@ -54,7 +53,7 @@ class ImageGenerationWrapper {
     private provider: ImageGenerationProvider;
     private providerType: ImageProvider;
 
-    constructor() {
+    constructor(apiKey?: string) {
         const config = getConfig();
         this.providerType = config.provider;
 
@@ -64,7 +63,10 @@ class ImageGenerationWrapper {
             ) as unknown as ImageGenerationProvider;
         } else if (this.providerType === "ai-server") {
             this.provider = new AIServerImageProvider(
-                config.aiServer,
+                {
+                    ...config.aiServer,
+                    apiKey,
+                },
             ) as unknown as ImageGenerationProvider;
         } else {
             throw new Error(`Unsupported provider: ${this.providerType}`);
@@ -88,8 +90,19 @@ class ImageGenerationWrapper {
     }
 }
 
+// Export the class for instantiation with API key
+export { ImageGenerationWrapper };
+
 /**
- * Global singleton instance
+ * Create a new image generation client with optional API key
+ * @param apiKey - Optional API key for AI server authentication
+ */
+export function createImageGenerationClient(apiKey?: string): ImageGenerationWrapper {
+    return new ImageGenerationWrapper(apiKey);
+}
+
+/**
+ * Global singleton instance (for backward compatibility - no API key)
  */
 export const imageGenerationClient = new ImageGenerationWrapper();
 

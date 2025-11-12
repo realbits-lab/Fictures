@@ -21,11 +21,11 @@ class Settings(BaseSettings):
     # - "text": Only text generation (vLLM, uses ~10GB VRAM)
     # - "image": Only image generation (ComfyUI, uses ~8GB VRAM)
     # - "both": Both services (requires 24GB+ VRAM or CPU offload)
-    generation_mode: Literal["text", "image", "both"] = "image"
+    ai_server_generation_mode: Literal["text", "image", "both"] = "image"
 
     # ComfyUI Configuration (External Image Generation Server)
     # ComfyUI runs as separate process and manages its own models
-    comfyui_url: str = "http://127.0.0.1:8188"
+    ai_server_comfyui_url: str = "http://127.0.0.1:8188"
 
     # Database Configuration (for API key authentication)
     database_url: str = ""  # PostgreSQL connection string from web app
@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     text_model_name: str = "Qwen/Qwen3-14B-AWQ"  # 14B params, 4-bit AWQ quantization
     vllm_quantization: str = "awq"  # AWQ quantization method
     vllm_tensor_parallel_size: int = 1  # Number of GPUs for tensor parallelism
-    text_max_model_len: int = 16384  # Maximum sequence length (reduced for VRAM constraints)
+    text_max_model_len: int = 40960  # Maximum sequence length (40K - model's native max)
     text_gpu_memory_utilization: float = 0.8  # GPU memory utilization (0.0-1.0)
     vllm_max_num_seqs: int = 256  # Maximum number of sequences in a batch
 

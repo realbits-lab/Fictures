@@ -20,35 +20,13 @@
  *   dotenv --file .env.local run pnpm exec tsx scripts/setup-auth-users.ts
  */
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-import crypto from "crypto";
-
-=======
-
-import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
-
->>>>>>> ac44128 (refactor: update authentication user setup script to use bcrypt for API key hashing)
+import crypto from "node:crypto";
 import { eq } from "drizzle-orm";
-
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { apiKeys, users } from "../src/lib/db/schema";
 import { type AuthData, saveAuthData } from "../src/lib/utils/auth-loader";
-
-=======
-
-import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
-import { eq } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import { apiKeys, users } from '../drizzle/schema';
-import { type AuthData, saveAuthData } from '../src/lib/utils/auth-loader';
-
->>>>>>> 10ebf9f8 (feat: enhance authentication system and API key management)
 
 // PBKDF2 password hashing (matching src/lib/auth/password.ts)
 async function hashPassword(password) {
@@ -111,39 +89,15 @@ function generateApiKey() {
     return `${prefix}_${randomPart}`;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-// Hash API key for storage
-function hashApiKey(apiKey) {
-	const hash = crypto.createHash("sha256").update(apiKey).digest("hex");
-	return hash;
-=======
-// Hash API key for storage using bcrypt
-async function hashApiKey(apiKey) {
-    const salt = await bcrypt.genSalt(10);
-    const hash = await bcrypt.hash(apiKey, salt);
-    return hash;
->>>>>>> ac44128 (refactor: update authentication user setup script to use bcrypt for API key hashing)
-}
-
-// Get API key prefix (first 16 characters)
-function getApiKeyPrefix(apiKey) {
-<<<<<<< HEAD
-	return apiKey.substring(0, 8);
-=======
 // Hash API key for storage using bcrypt (matching ai-server)
 async function hashApiKey(apiKey: string): Promise<string> {
-  const saltRounds = 12;
-  return await bcrypt.hash(apiKey, saltRounds);
+    const saltRounds = 12;
+    return await bcrypt.hash(apiKey, saltRounds);
 }
 
 // Get API key prefix (first 16 characters, matching ai-server)
 function getApiKeyPrefix(apiKey: string): string {
-  return apiKey.substring(0, 16);
->>>>>>> 10ebf9f8 (feat: enhance authentication system and API key management)
-=======
     return apiKey.substring(0, 16);
->>>>>>> ac44128 (refactor: update authentication user setup script to use bcrypt for API key hashing)
 }
 
 // Generate unique ID
@@ -154,148 +108,35 @@ function generateId(prefix = "usr") {
 // User configurations
 // Scopes aligned with both web app and ai-server
 const userConfigs = [
-<<<<<<< HEAD
-<<<<<<< HEAD
-	{
-		email: "manager@fictures.xyz",
-		name: "Fictures Manager",
-		username: "manager",
-		role: "manager",
-		scopes: [
-			"stories:read",
-			"stories:write",
-			"stories:delete",
-			"stories:publish",
-			"chapters:read",
-			"chapters:write",
-			"chapters:delete",
-			"analytics:read",
-			"ai:use",
-			"community:read",
-			"community:write",
-			"settings:read",
-			"settings:write",
-			"admin:all",
-		],
-	},
-	{
-		email: "writer@fictures.xyz",
-		name: "Writer User",
-		username: "writer",
-		role: "writer",
-		scopes: [
-			"stories:read",
-			"stories:write",
-			"chapters:read",
-			"chapters:write",
-			"analytics:read",
-			"ai:use",
-			"community:read",
-			"community:write",
-			"settings:read",
-		],
-	},
-	{
-		email: "reader@fictures.xyz",
-		name: "Reader User",
-		username: "reader",
-		role: "reader",
-		scopes: [
-			"stories:read",
-			"chapters:read",
-			"analytics:read",
-			"community:read",
-			"settings:read",
-		],
-	},
-=======
-  {
-    email: 'manager@fictures.xyz',
-    name: 'Fictures Manager',
-    username: 'manager',
-    role: 'manager',
-    scopes: [
-      // Story management (web + ai-server)
-      'stories:read', 'stories:write', 'stories:delete', 'stories:publish',
-      // Image management (ai-server)
-      'images:read', 'images:write',
-      // Chapter management (web)
-      'chapters:read', 'chapters:write', 'chapters:delete',
-      // Analytics (web)
-      'analytics:read',
-      // AI features (web)
-      'ai:use',
-      // Community (web)
-      'community:read', 'community:write',
-      // Settings (web)
-      'settings:read', 'settings:write',
-      // Admin (web + ai-server)
-      'admin:all'
-    ]
-  },
-  {
-    email: 'writer@fictures.xyz',
-    name: 'Writer User',
-    username: 'writer',
-    role: 'writer',
-    scopes: [
-      // Story management (web + ai-server)
-      'stories:read', 'stories:write',
-      // Image management (ai-server)
-      'images:read', 'images:write',
-      // Chapter management (web)
-      'chapters:read', 'chapters:write',
-      // Analytics (web)
-      'analytics:read',
-      // AI features (web)
-      'ai:use',
-      // Community (web)
-      'community:read', 'community:write',
-      // Settings (web)
-      'settings:read'
-    ]
-  },
-  {
-    email: 'reader@fictures.xyz',
-    name: 'Reader User',
-    username: 'reader',
-    role: 'reader',
-    scopes: [
-      // Story management (web + ai-server)
-      'stories:read',
-      // Image management (ai-server)
-      'images:read',
-      // Chapter management (web)
-      'chapters:read',
-      // Analytics (web)
-      'analytics:read',
-      // Community (web)
-      'community:read',
-      // Settings (web)
-      'settings:read'
-    ]
-  }
->>>>>>> 10ebf9f8 (feat: enhance authentication system and API key management)
-=======
     {
         email: "manager@fictures.xyz",
         name: "Fictures Manager",
         username: "manager",
         role: "manager",
         scopes: [
+            // Story management (web + ai-server)
             "stories:read",
             "stories:write",
             "stories:delete",
             "stories:publish",
+            // Image management (ai-server)
+            "images:read",
+            "images:write",
+            // Chapter management (web)
             "chapters:read",
             "chapters:write",
             "chapters:delete",
+            // Analytics (web)
             "analytics:read",
+            // AI features (web)
             "ai:use",
+            // Community (web)
             "community:read",
             "community:write",
+            // Settings (web)
             "settings:read",
             "settings:write",
+            // Admin (web + ai-server)
             "admin:all",
         ],
     },
@@ -305,14 +146,23 @@ const userConfigs = [
         username: "writer",
         role: "writer",
         scopes: [
+            // Story management (web + ai-server)
             "stories:read",
             "stories:write",
+            // Image management (ai-server)
+            "images:read",
+            "images:write",
+            // Chapter management (web)
             "chapters:read",
             "chapters:write",
+            // Analytics (web)
             "analytics:read",
+            // AI features (web)
             "ai:use",
+            // Community (web)
             "community:read",
             "community:write",
+            // Settings (web)
             "settings:read",
         ],
     },
@@ -322,14 +172,20 @@ const userConfigs = [
         username: "reader",
         role: "reader",
         scopes: [
+            // Story management (web + ai-server)
             "stories:read",
+            // Image management (ai-server)
+            "images:read",
+            // Chapter management (web)
             "chapters:read",
+            // Analytics (web)
             "analytics:read",
+            // Community (web)
             "community:read",
+            // Settings (web)
             "settings:read",
         ],
     },
->>>>>>> ac44128 (refactor: update authentication user setup script to use bcrypt for API key hashing)
 ];
 
 async function main() {
@@ -425,27 +281,11 @@ async function main() {
                 console.log(`   ✓ Created user account`);
             }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-			// Generate API key
-			const apiKey = generateApiKey();
-			const keyHash = hashApiKey(apiKey);
-			const keyPrefix = getApiKeyPrefix(apiKey);
-			const apiKeyId = generateId("key");
-=======
-      // Generate API key
-      const apiKey = generateApiKey();
-      const keyHash = await hashApiKey(apiKey);
-      const keyPrefix = getApiKeyPrefix(apiKey);
-      const apiKeyId = generateId('key');
->>>>>>> 10ebf9f8 (feat: enhance authentication system and API key management)
-=======
             // Generate API key
             const apiKey = generateApiKey();
             const keyHash = await hashApiKey(apiKey);
             const keyPrefix = getApiKeyPrefix(apiKey);
             const apiKeyId = generateId("key");
->>>>>>> ac44128 (refactor: update authentication user setup script to use bcrypt for API key hashing)
 
             // Delete existing API keys for this user using Drizzle query builder
             await db.delete(apiKeys).where(eq(apiKeys.userId, userId));

@@ -24,6 +24,7 @@ export interface ServiceCharactersParams {
     characterCount: number;
     language?: string;
     userId: string;
+    apiKey?: string;
 }
 
 export interface ServiceCharactersResult {
@@ -43,6 +44,7 @@ export class CharacterService {
             characterCount,
             language = "English",
             userId,
+            apiKey,
         } = params;
 
         // 1. Fetch and verify story
@@ -69,6 +71,7 @@ export class CharacterService {
             story,
             characterCount,
             language,
+            apiKey,
         };
 
         const generationResult: GeneratorCharactersResult =

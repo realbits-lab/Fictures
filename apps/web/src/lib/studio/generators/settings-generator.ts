@@ -8,7 +8,7 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { textGenerationClient } from "./ai-client";
+import { createTextGenerationClient } from "./ai-client";
 import { buildStoryContext } from "./context-builders";
 import { promptManager } from "./prompt-manager";
 import type {
@@ -33,7 +33,10 @@ export async function generateSettings(
     const startTime: number = Date.now();
 
     // 1. Extract and set default parameters
-    const { story, settingCount, onProgress }: GeneratorSettingsParams = params;
+    const { story, settingCount, onProgress, apiKey }: GeneratorSettingsParams = params;
+
+    // 2. Create text generation client with API key
+    const client = createTextGenerationClient(apiKey);
 
     const settings: AiSettingType[] = [];
 
@@ -63,7 +66,7 @@ export async function generateSettings(
             system: systemPrompt,
             user: userPromptText,
         }: { system: string; user: string } = promptManager.getPrompt(
-            textGenerationClient.getProviderType(),
+            client.getProviderType(),
             "setting",
             promptParams,
         );
@@ -74,7 +77,7 @@ export async function generateSettings(
 
         // 6. Generate setting using structured output
         const settingData: AiSettingType =
-            await textGenerationClient.generateStructured(
+            await client.generateStructured(
                 userPromptText,
                 AiSettingZodSchema,
                 {

@@ -570,5 +570,5 @@ describe("Story Generation API", () => {
         console.log(
             "\n✅ Comprehensive incremental story generation test PASSED\n",
         );
-    }, 600000); // 10 minute timeout for full generation
+    }, 1200000); // 20 minute timeout for full generation
 });

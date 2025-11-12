@@ -13,15 +13,24 @@ import type {
     TextGenerationRequest,
     TextGenerationResponse,
 } from "./types";
+import { loadProfile } from "@/lib/utils/auth-loader";
 
 /**
  * Environment configuration
  */
 const getConfig = () => {
+    console.log("[ai-client] ===== ENVIRONMENT CONFIGURATION =====");
+    console.log("[ai-client] Reading TEXT_GENERATION_PROVIDER from process.env");
+    console.log("[ai-client] Raw value:", process.env.TEXT_GENERATION_PROVIDER);
+    console.log("[ai-client] All TEXT env vars:", Object.keys(process.env).filter(k => k.includes('TEXT')));
+
     const provider = (process.env.TEXT_GENERATION_PROVIDER ||
         "gemini") as ModelProvider;
 
-    return {
+    console.log("[ai-client] Selected provider:", provider);
+    console.log("[ai-client] Provider fallback applied:", !process.env.TEXT_GENERATION_PROVIDER);
+
+    const config = {
         provider,
         gemini: {
             apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || "",
@@ -37,6 +46,15 @@ const getConfig = () => {
             ),
         },
     };
+
+    console.log("[ai-client] Final config:", {
+        provider: config.provider,
+        aiServerUrl: config.aiServer.url,
+        hasGeminiKey: !!config.gemini.apiKey
+    });
+    console.log("[ai-client] ==========================================");
+
+    return config;
 };
 
 /**
@@ -321,10 +339,27 @@ class GeminiProvider extends TextGenerationProvider {
  */
 class AIServerProvider extends TextGenerationProvider {
     private config: ReturnType<typeof getConfig>["aiServer"];
+    private apiKey?: string;
 
-    constructor() {
+    constructor(apiKey?: string) {
         super();
         this.config = getConfig().aiServer;
+        this.apiKey = apiKey;
+    }
+
+    /**
+     * Build headers with API key if available
+     */
+    private buildHeaders(): Record<string, string> {
+        const headers: Record<string, string> = {
+            "Content-Type": "application/json",
+        };
+
+        if (this.apiKey) {
+            headers["x-api-key"] = this.apiKey;
+        }
+
+        return headers;
     }
 
     async generate(
@@ -372,9 +407,7 @@ class AIServerProvider extends TextGenerationProvider {
             `${this.config.url}/api/v1/text/generate`,
             {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: this.buildHeaders(),
                 body: JSON.stringify(requestBody),
                 signal: AbortSignal.timeout(this.config.timeout),
             },
@@ -457,6 +490,112 @@ class AIServerProvider extends TextGenerationProvider {
             reader.releaseLock();
         }
     }
+
+    /**
+     * Generate structured output using AI Server's guided JSON generation
+     *
+     * This method uses AI Server's response_format and response_schema config
+     * to enforce strict schema validation via guided generation.
+     *
+     * @param prompt - The generation prompt
+     * @param zodSchema - Zod schema defining the expected output structure
+     * @param options - Additional generation options
+     * @returns Parsed and validated object matching the schema
+     */
+    async generateStructured<T>(
+        prompt: string,
+        zodSchema: z.ZodType<T>,
+        options?: {
+            systemPrompt?: string;
+            model?: string;
+            temperature?: number;
+            maxTokens?: number;
+            topP?: number;
+        },
+    ): Promise<T> {
+        const fullPrompt = options?.systemPrompt
+            ? `${options.systemPrompt}\n\n${prompt}`
+            : prompt;
+
+        // Convert Zod schema to JSON Schema using Zod's native method
+        console.log(
+            "[AIServerProvider] generateStructured - Converting Zod to JSON Schema (native)",
+        );
+
+        const jsonSchema = z.toJSONSchema(zodSchema, {
+            target: "openapi-3.0",
+            $refStrategy: "none",
+        });
+
+        console.log(
+            "[AIServerProvider] Full JSON Schema:",
+            JSON.stringify(jsonSchema, null, 2),
+        );
+        console.log("[AIServerProvider] Schema type:", jsonSchema.type);
+        console.log(
+            "[AIServerProvider] Schema properties:",
+            jsonSchema.properties ? Object.keys(jsonSchema.properties) : "none",
+        );
+
+        // Remove $schema field if present (AI Server doesn't need it)
+        const { $schema, ...cleanSchema } = jsonSchema;
+
+        console.log(
+            "[AIServerProvider] Cleaned schema sample:",
+            JSON.stringify(cleanSchema, null, 2).substring(0, 800),
+        );
+
+        // Build request body for structured output endpoint
+        const requestBody: any = {
+            prompt: fullPrompt,
+            guided_decoding: {
+                type: "json",
+                schema: cleanSchema,
+            },
+            max_tokens: options?.maxTokens ?? 2048,
+            temperature: options?.temperature ?? 0.7,
+            top_p: options?.topP ?? 0.9,
+        };
+
+        const response = await fetch(
+            `${this.config.url}/api/v1/text/structured`,
+            {
+                method: "POST",
+                headers: this.buildHeaders(),
+                body: JSON.stringify(requestBody),
+                signal: AbortSignal.timeout(this.config.timeout),
+            },
+        );
+
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(`AI Server error: ${response.status} - ${error}`);
+        }
+
+        const result = await response.json();
+        const text = result.output;
+
+        console.log(
+            "[AIServerProvider] generateStructured - Response received",
+        );
+        console.log("[AIServerProvider] Response length:", text?.length || 0);
+        console.log("[AIServerProvider] Tokens used:", result.tokens_used);
+
+        if (!text || text.trim() === "") {
+            throw new Error("Empty response from AI Server structured output");
+        }
+
+        console.log("[AIServerProvider] Raw response text (first 500 chars):", text.substring(0, 500));
+        console.log("[AIServerProvider] Raw response text (last 500 chars):", text.substring(Math.max(0, text.length - 500)));
+
+        // Parse and validate the JSON response
+        const parsed = JSON.parse(text);
+
+        // Validate against the Zod schema to ensure type safety
+        const validated = zodSchema.parse(parsed);
+
+        return validated;
+    }
 }
 
 /**
@@ -467,17 +606,28 @@ class TextGenerationWrapper {
     private provider: TextGenerationProvider;
     private providerType: ModelProvider;
 
-    constructor() {
+    constructor(apiKey?: string) {
+        console.log("[TextGenerationWrapper] ===== CONSTRUCTOR CALLED =====");
+        console.log("[TextGenerationWrapper] API key provided:", !!apiKey);
         const config = getConfig();
         this.providerType = config.provider;
+        console.log("[TextGenerationWrapper] Provider type from config:", this.providerType);
 
         if (this.providerType === "gemini") {
+            console.log("[TextGenerationWrapper] ✅ Creating GeminiProvider instance");
             this.provider = new GeminiProvider();
+            console.log("[TextGenerationWrapper] GeminiProvider instance created");
         } else if (this.providerType === "ai-server") {
-            this.provider = new AIServerProvider();
+            console.log("[TextGenerationWrapper] ✅ Creating AIServerProvider instance");
+            console.log("[TextGenerationWrapper] AI Server URL:", config.aiServer.url);
+            this.provider = new AIServerProvider(apiKey);
+            console.log("[TextGenerationWrapper] AIServerProvider instance created with API key:", !!apiKey);
         } else {
+            console.log("[TextGenerationWrapper] ❌ Unsupported provider:", this.providerType);
             throw new Error(`Unsupported provider: ${this.providerType}`);
         }
+        console.log("[TextGenerationWrapper] Provider instance type:", this.provider.constructor.name);
+        console.log("[TextGenerationWrapper] ===========================================");
     }
 
     /**
@@ -486,6 +636,9 @@ class TextGenerationWrapper {
     async generate(
         request: TextGenerationRequest,
     ): Promise<TextGenerationResponse> {
+        console.log("[TextGenerationWrapper.generate] Provider type:", this.providerType);
+        console.log("[TextGenerationWrapper.generate] Provider instance:", this.provider.constructor.name);
+        console.log("[TextGenerationWrapper.generate] Request format:", request.responseFormat);
         return this.provider.generate(request);
     }
 
@@ -559,8 +712,12 @@ class TextGenerationWrapper {
             topP?: number;
         },
     ): Promise<T> {
-        // Only Gemini provider supports structured output natively
+        // Both Gemini and AI Server providers support structured output natively
         if (this.provider instanceof GeminiProvider) {
+            return this.provider.generateStructured(prompt, zodSchema, options);
+        }
+
+        if (this.provider instanceof AIServerProvider) {
             return this.provider.generateStructured(prompt, zodSchema, options);
         }
 
@@ -588,7 +745,18 @@ class TextGenerationWrapper {
     }
 }
 
-// Global singleton instance
+// Export the class for instantiation with API key
+export { TextGenerationWrapper };
+
+/**
+ * Create a new text generation client with optional API key
+ * @param apiKey - Optional API key for AI server authentication
+ */
+export function createTextGenerationClient(apiKey?: string): TextGenerationWrapper {
+    return new TextGenerationWrapper(apiKey);
+}
+
+// Global singleton instance (for backward compatibility - no API key)
 export const textGenerationClient = new TextGenerationWrapper();
 
 /**

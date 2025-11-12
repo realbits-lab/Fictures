@@ -18,8 +18,7 @@
  * Prerequisites:
  *   - Dev server running on port 3000
  *   - Valid writer API key in .auth/user.json
- *   - AI_SERVER_API_KEY in .env.local
- *   - IMAGE_GENERATION_PROVIDER=ai-server
+ *   - IMAGE_GENERATION_PROVIDER=ai-server in .env.local
  */
 
 import fs from "fs";

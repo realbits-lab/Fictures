@@ -8,7 +8,7 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { textGenerationClient } from "./ai-client";
+import { createTextGenerationClient } from "./ai-client";
 import type {
     GeneratorSceneEvaluationParams,
     GeneratorSceneEvaluationResult,
@@ -28,7 +28,10 @@ export async function evaluateScene(
     params: GeneratorSceneEvaluationParams,
 ): Promise<GeneratorSceneEvaluationResult> {
     const startTime = Date.now();
-    const { content, story, maxIterations = 2 } = params;
+    const { content, story, maxIterations = 2, apiKey } = params;
+
+    // Create text generation client with API key
+    const client = createTextGenerationClient(apiKey);
 
     let currentContent = content;
     let iterations = 0;
@@ -82,7 +85,7 @@ Return as JSON:
 
         // Generate structured evaluation
         const evaluation: AiSceneEvaluationType =
-            await textGenerationClient.generateStructured(
+            await client.generateStructured(
                 evaluationPrompt,
                 AiSceneEvaluationZodSchema,
                 {
@@ -144,7 +147,7 @@ Rewrite the scene addressing the feedback. Maintain the core narrative while imp
 Return only the improved prose content (no JSON, no wrapper).`;
 
         // Generate improved scene content
-        const improveResponse = await textGenerationClient.generate({
+        const improveResponse = await client.generate({
             prompt: improvementPrompt,
             temperature: 0.85,
             maxTokens: 8192,

@@ -27,6 +27,7 @@ export interface ServiceChapterParams {
     storyId: string;
     partId: string;
     userId: string;
+    apiKey?: string;
 }
 
 export interface ServiceChapterResult {
@@ -124,6 +125,7 @@ export class ChapterService {
             characters: storyCharacters,
             previousChapters: allPreviousChapters,
             chapterIndex: nextChapterIndex,
+            apiKey: params.apiKey,
         };
 
         const generationResult: GeneratorChapterResult =

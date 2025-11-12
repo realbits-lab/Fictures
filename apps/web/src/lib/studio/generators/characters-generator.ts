@@ -8,7 +8,7 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { textGenerationClient } from "./ai-client";
+import { createTextGenerationClient } from "./ai-client";
 import { buildStoryContext } from "./context-builders";
 import { promptManager } from "./prompt-manager";
 import type {
@@ -38,7 +38,11 @@ export async function generateCharacters(
         characterCount,
         language = "English",
         onProgress,
+        apiKey,
     }: GeneratorCharactersParams = params;
+
+    // 2. Create text generation client with API key
+    const client = createTextGenerationClient(apiKey);
 
     const characters: AiCharacterType[] = [];
 
@@ -75,7 +79,7 @@ export async function generateCharacters(
             system: systemPrompt,
             user: userPromptText,
         }: { system: string; user: string } = promptManager.getPrompt(
-            textGenerationClient.getProviderType(),
+            client.getProviderType(),
             "character",
             promptParams,
         );
@@ -86,7 +90,7 @@ export async function generateCharacters(
 
         // 7. Generate character using structured output
         const characterData: AiCharacterType =
-            await textGenerationClient.generateStructured(
+            await client.generateStructured(
                 userPromptText,
                 AiCharacterZodSchema,
                 {

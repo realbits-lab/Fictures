@@ -848,7 +848,7 @@ LOG_LEVEL=info
 CORS_ORIGINS=http://localhost:3000,https://fictures.app
 
 # ComfyUI
-COMFYUI_URL=http://127.0.0.1:8188
+AI_SERVER_COMFYUI_URL=http://127.0.0.1:8188
 
 # Models (future use)
 TEXT_MODEL_NAME=Qwen/Qwen3-14B-AWQ
@@ -862,7 +862,7 @@ CUDA_VISIBLE_DEVICES=0
 ```python
 from src.config import settings
 
-comfyui_url = settings.comfyui_url  # Type-checked
+comfyui_url = settings.ai_server_comfyui_url  # Type-checked
 log_level = settings.log_level
 ```
 
@@ -986,7 +986,7 @@ services:
     image: fictures-ai:latest
     runtime: nvidia
     environment:
-      - COMFYUI_URL=http://comfyui:8188
+      - AI_SERVER_COMFYUI_URL=http://comfyui:8188
     ports:
       - "8000:8000"
     depends_on:

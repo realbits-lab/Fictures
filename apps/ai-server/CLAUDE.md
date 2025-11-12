@@ -185,7 +185,7 @@ API keys can have different scopes for fine-grained access control (aligned with
 
 ### Configuration Options
 
-The `GENERATION_MODE` environment variable controls which services are enabled:
+The `AI_SERVER_GENERATION_MODE` environment variable controls which services are enabled:
 
 | Mode | Services Enabled | VRAM Usage | Use Case |
 |------|------------------|------------|----------|
@@ -200,13 +200,13 @@ To switch generation modes:
 1. **Edit `.env.local`**:
    ```bash
    # For text generation only
-   GENERATION_MODE=text
+   AI_SERVER_GENERATION_MODE=text
 
    # For image generation only (default)
-   GENERATION_MODE=image
+   AI_SERVER_GENERATION_MODE=image
 
    # For both (requires 24GB+ VRAM)
-   GENERATION_MODE=both
+   AI_SERVER_GENERATION_MODE=both
    ```
 
 2. **Restart the server** - Changes take effect on next startup
@@ -219,15 +219,15 @@ To switch generation modes:
 
 ### API Behavior by Mode
 
-**Text Mode (`GENERATION_MODE=text`)**:
+**Text Mode (`AI_SERVER_GENERATION_MODE=text`)**:
 - ✅ `/api/v1/text/*` endpoints available
 - ❌ `/api/v1/images/*` endpoints return 404
 
-**Image Mode (`GENERATION_MODE=image`)** - Default:
+**Image Mode (`AI_SERVER_GENERATION_MODE=image`)** - Default:
 - ✅ `/api/v1/images/*` endpoints available
 - ❌ `/api/v1/text/*` endpoints return 404
 
-**Both Mode (`GENERATION_MODE=both`)**:
+**Both Mode (`AI_SERVER_GENERATION_MODE=both`)**:
 - ✅ All endpoints available
 - ⚠️ Requires 24GB+ VRAM
 
@@ -476,7 +476,7 @@ nohup python main.py --listen 127.0.0.1 --port 8188 > comfyui.log 2>&1 &
 The AI server connects to ComfyUI via HTTP API. Configure the URL in your `.env` file:
 
 ```bash
-COMFYUI_URL=http://127.0.0.1:8188
+AI_SERVER_COMFYUI_URL=http://127.0.0.1:8188
 ```
 
 ### Model Files
@@ -508,14 +508,14 @@ Create a `.env.local` file in `apps/ai-server/`:
 # - "text": Only text generation (vLLM, uses ~10GB VRAM)
 # - "image": Only image generation (ComfyUI, uses ~8GB VRAM) [DEFAULT]
 # - "both": Both services (requires 24GB+ VRAM or CPU offload)
-GENERATION_MODE=image
+AI_SERVER_GENERATION_MODE=image
 
 # =============================================================================
 # ComfyUI Configuration (External Image Generation Server)
 # =============================================================================
 # ComfyUI runs as a separate HTTP server and manages its own models
 # Install ComfyUI at: ~/.local/comfyui (see above for installation instructions)
-COMFYUI_URL=http://127.0.0.1:8188
+AI_SERVER_COMFYUI_URL=http://127.0.0.1:8188
 
 # =============================================================================
 # Authentication & Database
@@ -533,11 +533,11 @@ DATABASE_URL=postgresql://user:password@host:5432/database
 - `LOG_LEVEL` - Logging level (INFO)
 
 **Notes:**
-- `GENERATION_MODE` determines which models are loaded at startup (prevents VRAM overload)
+- `AI_SERVER_GENERATION_MODE` determines which models are loaded at startup (prevents VRAM overload)
 - When switching modes, simply change the environment variable and restart the server
-- ComfyUI manages its own models and runs externally (only used when `GENERATION_MODE` is "image" or "both")
+- ComfyUI manages its own models and runs externally (only used when `AI_SERVER_GENERATION_MODE` is "image" or "both")
 - API key authentication is **always enabled** (cannot be disabled)
-- No manual code changes needed - services load conditionally based on `GENERATION_MODE`
+- No manual code changes needed - services load conditionally based on `AI_SERVER_GENERATION_MODE`
 
 ## Code Guidelines
 

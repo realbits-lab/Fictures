@@ -23,6 +23,7 @@ export interface ServiceSettingsParams {
     storyId: string;
     settingCount: number;
     userId: string;
+    apiKey?: string;
 }
 
 export interface ServiceSettingsResult {
@@ -37,7 +38,7 @@ export class SettingService {
     async generateAndSave(
         params: ServiceSettingsParams,
     ): Promise<ServiceSettingsResult> {
-        const { storyId, settingCount, userId } = params;
+        const { storyId, settingCount, userId, apiKey } = params;
 
         // 1. Fetch and verify story
         const storyResult: Story[] = (await db
@@ -62,6 +63,7 @@ export class SettingService {
         const generateParams: GeneratorSettingsParams = {
             story,
             settingCount,
+            apiKey,
         };
 
         const generationResult: GeneratorSettingsResult =

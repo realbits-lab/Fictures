@@ -8,7 +8,7 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { textGenerationClient } from "./ai-client";
+import { createTextGenerationClient } from "./ai-client";
 import { promptManager } from "./prompt-manager";
 import type {
     GeneratorStoryParams,
@@ -34,9 +34,13 @@ export async function generateStory(
         preferredGenre = "Slice" as const, // Default to Slice of Life genre
         preferredTone = "hopeful" as const,
         language = "English",
+        apiKey,
     }: GeneratorStoryParams = params;
 
-    // 2. Get the prompt template for story generation
+    // 2. Create text generation client with API key
+    const client = createTextGenerationClient(apiKey);
+
+    // 3. Get the prompt template for story generation
     const promptParams: StoryPromptParams = {
         userPrompt,
         genre: preferredGenre,
@@ -48,7 +52,7 @@ export async function generateStory(
         system: systemPrompt,
         user: userPromptText,
     }: { system: string; user: string } = promptManager.getPrompt(
-        textGenerationClient.getProviderType(),
+        client.getProviderType(),
         "story",
         promptParams,
     );
@@ -57,9 +61,9 @@ export async function generateStory(
         "[story-generator] Using generateStructured method with manual schema",
     );
 
-    // 3. Generate story data using structured output method
+    // 4. Generate story data using structured output method
     const storyData: AiStoryType =
-        await textGenerationClient.generateStructured(
+        await client.generateStructured(
             userPromptText,
             AiStoryZodSchema,
             {
@@ -89,7 +93,7 @@ export async function generateStory(
         story: storyData,
         metadata: {
             generationTime: Date.now() - startTime,
-            model: textGenerationClient.getProviderType(),
+            model: client.getProviderType(),
         },
     };
 
