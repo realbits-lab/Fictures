@@ -583,6 +583,9 @@ class AIServerProvider extends TextGenerationProvider {
             throw new Error("Empty response from AI Server structured output");
         }
 
+        console.log("[AIServerProvider] Raw response text (first 500 chars):", text.substring(0, 500));
+        console.log("[AIServerProvider] Raw response text (last 500 chars):", text.substring(Math.max(0, text.length - 500)));
+
         // Parse and validate the JSON response
         const parsed = JSON.parse(text);
 
