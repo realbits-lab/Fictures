@@ -500,16 +500,13 @@ describe("Story Generation API", () => {
                     expect(scene.chapterId).toBe(chapter.id);
                     expect(scene.title).toBeDefined();
                     expect(typeof scene.title).toBe("string");
-                    expect(sceneData.metadata.sceneIndex).toBe(
-                        globalSceneIndex,
-                    );
-                    expect(sceneData.metadata.totalScenes).toBe(
-                        globalSceneIndex + 1,
-                    );
+                    // sceneIndex is per-chapter, not global
+                    expect(sceneData.metadata.sceneIndex).toBe(sceneNum);
+                    expect(sceneData.metadata.totalScenes).toBe(sceneNum + 1);
 
                     console.log(`   ║               ✅ ${scene.title}`);
                     console.log(
-                        `   ║                  ID: ${scene.id}, Global Index: ${sceneData.metadata.sceneIndex}`,
+                        `   ║                  ID: ${scene.id}, Chapter Scene Index: ${sceneData.metadata.sceneIndex}`,
                     );
 
                     globalSceneIndex++;
@@ -550,7 +547,7 @@ describe("Story Generation API", () => {
         // Verify ID formats
         expect(testStoryId).toMatch(/^story_/);
         for (const char of charactersData.characters) {
-            expect(char.id).toMatch(/^character_/);
+            expect(char.id).toMatch(/^char_/);
         }
         for (const partId of allPartIds) {
             expect(partId).toMatch(/^part_/);

@@ -27,8 +27,16 @@ const getConfig = () => {
                 "imagen-3.0-generate-001",
         },
         aiServer: {
-            url: process.env.AI_SERVER_URL || "http://localhost:8000",
-            timeout: parseInt(process.env.AI_SERVER_TIMEOUT || "120000", 10),
+            url:
+                process.env.AI_SERVER_IMAGE_URL ||
+                process.env.AI_SERVER_URL ||
+                "http://localhost:8000",
+            timeout: parseInt(
+                process.env.AI_SERVER_IMAGE_TIMEOUT ||
+                    process.env.AI_SERVER_TIMEOUT ||
+                    "120000",
+                10,
+            ),
             apiKey: process.env.AI_SERVER_API_KEY,
         },
     };

@@ -329,6 +329,7 @@ Playwright tests use **direct email/password authentication** via the `/login` p
 - **Authentication**: NextAuth.js v5 with Google OAuth and email/password
 - **AI Integration**:
   - **ai-server**: Python FastAPI service for AI text and image generation (port 8000)
+  - **Separate servers**: Supports dedicated servers for image and text generation
   - Google Gemini 2.5 Flash & Flash Lite via Vercel AI SDK (text generation)
   - Google Gemini 2.5 Flash (image generation - 7:4 aspect ratio, 1344×768)
   - Direct provider API integration (no AI SDK Gateway)
@@ -442,8 +443,19 @@ src/
 # =============================================================================
 # AI Server Configuration
 # =============================================================================
+# Shared configuration (fallback for image and text if specific URLs not set)
 AI_SERVER_TIMEOUT="120000"
 AI_SERVER_URL="http://localhost:8000"
+
+# Image Generation AI Server (optional - falls back to AI_SERVER_URL if not set)
+# Use this when you have a separate server for image generation
+AI_SERVER_IMAGE_URL="http://localhost:8000"
+AI_SERVER_IMAGE_TIMEOUT="120000"
+
+# Text Generation AI Server (optional - falls back to AI_SERVER_URL if not set)
+# Use this when you have a separate server for text generation
+AI_SERVER_TEXT_URL="http://localhost:8000"
+AI_SERVER_TEXT_TIMEOUT="120000"
 
 # =============================================================================
 # Authentication
@@ -520,6 +532,49 @@ VERCEL_OIDC_TOKEN="auto-generated-by-vercel-cli"
 - **DATABASE_URL**: Pooled connection (with `-pooler` in hostname) - Use for application runtime
 - **DATABASE_URL_UNPOOLED**: Direct connection (no `-pooler`) - Required for Drizzle migrations
 - Both connections point to the same database, only the connection method differs
+
+**AI Server Configuration Details:**
+
+The platform supports flexible AI server configuration with separate servers for image and text generation:
+
+**Configuration Strategy:**
+- **Dedicated Servers** (Recommended for production):
+  - `AI_SERVER_IMAGE_URL` - Dedicated server for image generation
+  - `AI_SERVER_TEXT_URL` - Dedicated server for text generation
+  - `AI_SERVER_IMAGE_TIMEOUT` - Image generation timeout (optional)
+  - `AI_SERVER_TEXT_TIMEOUT` - Text generation timeout (optional)
+
+- **Single Server** (Simpler for development):
+  - `AI_SERVER_URL` - Shared server for both image and text
+  - `AI_SERVER_TIMEOUT` - Shared timeout for both operations
+
+**Fallback Behavior:**
+- If `AI_SERVER_IMAGE_URL` is not set → falls back to `AI_SERVER_URL`
+- If `AI_SERVER_TEXT_URL` is not set → falls back to `AI_SERVER_URL`
+- If `AI_SERVER_IMAGE_TIMEOUT` is not set → falls back to `AI_SERVER_TIMEOUT`
+- If `AI_SERVER_TEXT_TIMEOUT` is not set → falls back to `AI_SERVER_TIMEOUT`
+
+**Use Cases:**
+1. **Separate Servers**: Set both `AI_SERVER_IMAGE_URL` and `AI_SERVER_TEXT_URL` to use dedicated servers
+2. **Single Server**: Only set `AI_SERVER_URL` to use one server for both
+3. **Hybrid**: Set only one specific URL to use dedicated server for that task, shared for the other
+
+**Example Configurations:**
+
+```bash
+# Configuration 1: Separate servers for image and text
+AI_SERVER_IMAGE_URL="http://image-server.example.com:8000"
+AI_SERVER_TEXT_URL="http://text-server.example.com:8001"
+
+# Configuration 2: Single shared server (backward compatible)
+AI_SERVER_URL="http://localhost:8000"
+
+# Configuration 3: Dedicated image server, shared text server
+AI_SERVER_IMAGE_URL="http://image-server.example.com:8000"
+AI_SERVER_URL="http://localhost:8000"  # Used for text generation
+```
+
+This architecture provides maximum flexibility while maintaining backward compatibility with existing configurations.
 
 ## Authentication System
 

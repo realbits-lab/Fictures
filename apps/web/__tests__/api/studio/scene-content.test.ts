@@ -8,13 +8,16 @@
  */
 
 import type {
-    ApiChaptersRequest,
+    ApiChapterRequest,
+    ApiChapterResponse,
     ApiCharactersRequest,
-    ApiPartsRequest,
+    ApiPartRequest,
+    ApiPartResponse,
     ApiSceneContentErrorResponse,
     ApiSceneContentRequest,
     ApiSceneContentResponse,
-    ApiSceneSummariesRequest,
+    ApiSceneSummaryRequest,
+    ApiSceneSummaryResponse,
     ApiSettingsRequest,
     ApiStoryRequest,
 } from "@/app/studio/api/types";
@@ -119,93 +122,89 @@ describe("Scene Content API", () => {
         }
         console.log(`✅ Settings generated: ${settingsData.settings.length}`);
 
-        // 4. Generate parts
-        console.log("🔧 Generating parts for story...");
-        const partsRequestBody: ApiPartsRequest = {
+        // 4. Generate part (singular)
+        console.log("🔧 Generating part...");
+        const partRequestBody: ApiPartRequest = {
             storyId: testStoryId,
-            partsCount: 1,
-            language: "English",
         };
 
-        const partsResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/parts",
+        const partResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/part",
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "x-api-key": apiKey,
                 },
-                body: JSON.stringify(partsRequestBody),
+                body: JSON.stringify(partRequestBody),
             },
         );
 
-        const partsData: { parts: Array<{ id: string }> } =
-            await partsResponse.json();
-        if (!partsResponse.ok) {
+        const partData: ApiPartResponse = await partResponse.json();
+        if (!partResponse.ok) {
             throw new Error(
-                `Failed to generate parts: ${JSON.stringify(partsData)}`,
+                `Failed to generate part: ${JSON.stringify(partData)}`,
             );
         }
-        console.log(`✅ Test part created: ${partsData.parts[0].id}`);
+        const testPartId = partData.part.id;
+        console.log(`✅ Test part created: ${testPartId}`);
 
-        // 4. Generate chapters
-        console.log("🔧 Generating chapters...");
-        const chaptersRequestBody: ApiChaptersRequest = {
+        // 5. Generate chapter (singular)
+        console.log("🔧 Generating chapter...");
+        const chapterRequestBody: ApiChapterRequest = {
             storyId: testStoryId,
-            chaptersPerPart: 1,
-            language: "English",
+            partId: testPartId,
         };
 
-        const chaptersResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/chapters",
+        const chapterResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/chapter",
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "x-api-key": apiKey,
                 },
-                body: JSON.stringify(chaptersRequestBody),
+                body: JSON.stringify(chapterRequestBody),
             },
         );
 
-        const chaptersData: { chapters: Array<{ id: string }> } =
-            await chaptersResponse.json();
-        if (!chaptersResponse.ok) {
+        const chapterData: ApiChapterResponse = await chapterResponse.json();
+        if (!chapterResponse.ok) {
             throw new Error(
-                `Failed to generate chapters: ${JSON.stringify(chaptersData)}`,
+                `Failed to generate chapter: ${JSON.stringify(chapterData)}`,
             );
         }
-        console.log(`✅ Test chapter created: ${chaptersData.chapters[0].id}`);
+        const testChapterId = chapterData.chapter.id;
+        console.log(`✅ Test chapter created: ${testChapterId}`);
 
-        // 5. Generate scene summaries
-        console.log("🔧 Generating scene summaries...");
-        const sceneSummariesRequestBody: ApiSceneSummariesRequest = {
+        // 6. Generate scene summary (singular)
+        console.log("🔧 Generating scene summary...");
+        const sceneSummaryRequestBody: ApiSceneSummaryRequest = {
             storyId: testStoryId,
-            scenesPerChapter: 1, // Only 1 scene for faster testing
-            language: "English",
+            chapterId: testChapterId,
         };
 
-        const sceneSummariesResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/scene-summaries",
+        const sceneSummaryResponse: Response = await fetch(
+            "http://localhost:3000/studio/api/scene-summary",
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "x-api-key": apiKey,
                 },
-                body: JSON.stringify(sceneSummariesRequestBody),
+                body: JSON.stringify(sceneSummaryRequestBody),
             },
         );
 
-        const sceneSummariesData: { scenes: Array<{ id: string }> } =
-            await sceneSummariesResponse.json();
-        if (!sceneSummariesResponse.ok) {
+        const sceneSummaryData: ApiSceneSummaryResponse =
+            await sceneSummaryResponse.json();
+        if (!sceneSummaryResponse.ok) {
             throw new Error(
-                `Failed to generate scene summaries: ${JSON.stringify(sceneSummariesData)}`,
+                `Failed to generate scene summary: ${JSON.stringify(sceneSummaryData)}`,
             );
         }
 
-        testSceneId = sceneSummariesData.scenes[0].id;
+        testSceneId = sceneSummaryData.scene.id;
         console.log(`✅ Test scene created: ${testSceneId}`);
     }, 300000); // 5 min for full story generation
 
