@@ -986,17 +986,17 @@ export const AiSceneSummaryZodSchema = insertSceneSchema
 export type AiSceneSummaryType = z.infer<typeof AiSceneSummaryZodSchema>;
 
 // ============================================================================
-// Scene Evaluation Schemas
+// Scene Improvement Schemas
 // ============================================================================
 
 /**
- * Minimal schema for scene evaluation output (AI generates)
- * Used by scene-evaluation-generator to parse evaluation JSON
+ * Minimal schema for scene improvement output (AI generates)
+ * Used by scene-improvement-generator to parse evaluation JSON
  *
  * Based on "Architectonics of Engagement" framework for scene quality assessment
  * Scoring Scale: 1 (Nascent) → 2 (Developing) → 3 (Effective/PASSING) → 4 (Exemplary)
  */
-export const AiSceneEvaluationZodSchema = z.object({
+export const AiSceneImprovementZodSchema = z.object({
     plot: z
         .number()
         .min(1)
@@ -1052,9 +1052,11 @@ export const AiSceneEvaluationZodSchema = z.object({
 });
 
 /**
- * TypeScript type for scene evaluation data (AI output)
+ * TypeScript type for scene improvement data (AI output)
  */
-export type AiSceneEvaluationType = z.infer<typeof AiSceneEvaluationZodSchema>;
+export type AiSceneImprovementType = z.infer<
+    typeof AiSceneImprovementZodSchema
+>;
 
 // ============================================================================
 // Re-export for convenience

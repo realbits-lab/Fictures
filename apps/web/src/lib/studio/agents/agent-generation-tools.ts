@@ -272,11 +272,11 @@ export const generateSceneContent = tool({
     },
 });
 
-export const evaluateScene = tool({
+export const improveScene = tool({
     summary:
-        "Evaluate scene quality using Architectonics of Engagement (Phase 8 of 9)",
+        "Improve scene quality using Architectonics of Engagement (Phase 8 of 9)",
     parameters: z.object({
-        sceneId: z.string().describe("The scene ID to evaluate"),
+        sceneId: z.string().describe("The scene ID to improve"),
     }),
     execute: async ({ sceneId }) => {
         const requestBody: {
@@ -285,7 +285,7 @@ export const evaluateScene = tool({
             sceneId,
         };
 
-        const response = await fetch("/api/studio/stories/scene-evaluation", {
+        const response = await fetch("/api/studio/stories/scene-improvement", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -294,7 +294,7 @@ export const evaluateScene = tool({
         if (!response.ok) {
             return {
                 success: false,
-                error: "Scene evaluation failed",
+                error: "Scene improvement failed",
             };
         }
 
@@ -302,7 +302,7 @@ export const evaluateScene = tool({
 
         return {
             success: true,
-            message: `Scene evaluated - Score: ${data.score}/4.0`,
+            message: `Scene improved - Score: ${data.score}/4.0`,
             score: data.score,
             categories: data.categories,
             feedback: data.feedback,
@@ -373,6 +373,6 @@ export const studioAgentGenerationTools = {
     generateChapters,
     generateSceneSummaries,
     generateSceneContent,
-    evaluateScene,
+    improveScene,
     generateImages,
 };

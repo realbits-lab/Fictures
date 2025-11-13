@@ -1,11 +1,11 @@
 /**
- * Scene Evaluation Service
+ * Scene Improvement Service
  *
- * Service layer that handles scene evaluation generation and database persistence.
+ * Service layer that handles scene quality improvement (evaluation + content update) and database persistence.
  * Implements the Service Layer Pattern to separate generation logic from data access.
  *
  * This service:
- * 1. Orchestrates scene evaluation using pure generator functions
+ * 1. Orchestrates scene improvement using pure generator functions
  * 2. Handles database operations (fetch, insert, update)
  * 3. Manages transaction coordination
  * 4. Provides reusable business logic for both API routes and orchestrator
@@ -21,16 +21,16 @@ import { eq } from "drizzle-orm";
 import { GENRE } from "@/lib/constants/genres";
 import { db } from "@/lib/db";
 import { chapters, scenes, stories } from "@/lib/db/schema";
-import { evaluateScene } from "../generators/scene-evaluation-generator";
+import { improveScene } from "../generators/scene-improvement-generator";
 import type {
-    GeneratorSceneEvaluationParams,
-    GeneratorSceneEvaluationResult,
+    GeneratorSceneImprovementParams,
+    GeneratorSceneImprovementResult,
 } from "../generators/types";
 
 /**
- * Service parameters for scene evaluation
+ * Service parameters for scene improvement
  */
-export interface ServiceSceneEvaluationParams {
+export interface ServiceSceneImprovementParams {
     sceneId: string;
     userId?: string; // Optional: For ownership verification
     maxIterations?: number;
@@ -40,7 +40,7 @@ export interface ServiceSceneEvaluationParams {
 /**
  * Service parameters with pre-fetched data
  */
-export interface EvaluateSceneWithDataParams {
+export interface ImproveSceneWithDataParams {
     sceneId: string;
     scene: {
         id: string;
@@ -65,7 +65,7 @@ export interface EvaluateSceneWithDataParams {
 /**
  * Service result including database record
  */
-export interface ServiceSceneEvaluationResult {
+export interface ServiceSceneImprovementResult {
     scene: {
         id: string;
         chapterId: string;
@@ -73,10 +73,10 @@ export interface ServiceSceneEvaluationResult {
         content: string;
         updatedAt: string;
     };
-    evaluation: {
+    improvement: {
         score: number;
-        categories: GeneratorSceneEvaluationResult["categories"];
-        feedback: GeneratorSceneEvaluationResult["feedback"];
+        categories: GeneratorSceneImprovementResult["categories"];
+        feedback: GeneratorSceneImprovementResult["feedback"];
         iterations: number;
         improved: boolean;
     };
@@ -86,12 +86,12 @@ export interface ServiceSceneEvaluationResult {
 }
 
 /**
- * Scene Evaluation Service Class
+ * Scene Improvement Service Class
  *
- * Handles scene evaluation with automatic database persistence.
+ * Handles scene quality improvement (evaluation + update) with automatic database persistence.
  * Separates generation logic from data access for better testing and reusability.
  */
-export class SceneEvaluationService {
+export class SceneImprovementService {
     /**
      * Evaluate and improve a scene with automatic database update
      *
@@ -105,9 +105,9 @@ export class SceneEvaluationService {
      * @returns Complete evaluation result with updated scene record
      * @throws Error if scene not found or evaluation fails
      */
-    async evaluateAndSave(
-        params: ServiceSceneEvaluationParams,
-    ): Promise<ServiceSceneEvaluationResult> {
+    async improveAndSave(
+        params: ServiceSceneImprovementParams,
+    ): Promise<ServiceSceneImprovementResult> {
         const { sceneId, userId, maxIterations = 2, apiKey } = params;
 
         // 1. Fetch scene from database
@@ -157,7 +157,7 @@ export class SceneEvaluationService {
             );
         }
 
-        const storyContext: import("../generators/types").SceneEvaluationStoryContext =
+        const storyContext: import("../generators/types").SceneImprovementStoryContext =
             {
                 id: story.id,
                 title: story.title,
@@ -168,23 +168,23 @@ export class SceneEvaluationService {
             };
 
         // 5. Call pure generator for evaluation
-        const evaluateParams: GeneratorSceneEvaluationParams = {
+        const improvementParams: GeneratorSceneImprovementParams = {
             content: scene.content,
             story: storyContext,
             maxIterations,
             apiKey,
         };
 
-        const evaluationResult: GeneratorSceneEvaluationResult =
-            await evaluateScene(evaluateParams);
+        const improvementResult: GeneratorSceneImprovementResult =
+            await improveScene(improvementParams);
 
         // 6. Check if score meets quality threshold before updating
         const QUALITY_THRESHOLD = 3.0; // Minimum "Effective" level (3.0/4.0)
         const meetsThreshold: boolean =
-            evaluationResult.score >= QUALITY_THRESHOLD;
+            improvementResult.score >= QUALITY_THRESHOLD;
 
         console.log(
-            `[SceneEvaluationService] Quality check: ${evaluationResult.score}/4.0 (threshold: ${QUALITY_THRESHOLD}/4.0) - ${meetsThreshold ? "PASS ✅" : "FAIL ❌"}`,
+            `[SceneImprovementService] Quality check: ${improvementResult.score}/4.0 (threshold: ${QUALITY_THRESHOLD}/4.0) - ${meetsThreshold ? "PASS ✅" : "FAIL ❌"}`,
         );
 
         let updatedScene: {
@@ -196,16 +196,16 @@ export class SceneEvaluationService {
         };
 
         // 7. Update scene with improved content if threshold met or content improved
-        if (meetsThreshold || evaluationResult.improved) {
+        if (meetsThreshold || improvementResult.improved) {
             console.log(
-                "[SceneEvaluationService] 💾 Saving evaluation results...",
+                "[SceneImprovementService] 💾 Saving evaluation results...",
             );
             const now: string = new Date().toISOString();
 
             const updatedSceneResults = await db
                 .update(scenes)
                 .set({
-                    content: evaluationResult.finalContent,
+                    content: improvementResult.finalContent,
                     updatedAt: now,
                 })
                 .where(eq(scenes.id, sceneId))
@@ -220,12 +220,12 @@ export class SceneEvaluationService {
                 updatedAt: dbScene.updatedAt,
             };
             console.log(
-                "[SceneEvaluationService] ✅ Evaluation results saved (content updated)",
+                "[SceneImprovementService] ✅ Evaluation results saved (content updated)",
             );
         } else {
             // 8. Keep original content if threshold not met and no improvement
             console.log(
-                "[SceneEvaluationService] ⚠️ Quality threshold not met - keeping original content",
+                "[SceneImprovementService] ⚠️ Quality threshold not met - keeping original content",
             );
             updatedScene = {
                 id: scene.id,
@@ -239,15 +239,15 @@ export class SceneEvaluationService {
         // 9. Return service result
         return {
             scene: updatedScene,
-            evaluation: {
-                score: evaluationResult.score,
-                categories: evaluationResult.categories,
-                feedback: evaluationResult.feedback,
-                iterations: evaluationResult.iterations,
-                improved: evaluationResult.improved,
+            improvement: {
+                score: improvementResult.score,
+                categories: improvementResult.categories,
+                feedback: improvementResult.feedback,
+                iterations: improvementResult.iterations,
+                improved: improvementResult.improved,
             },
             metadata: {
-                generationTime: evaluationResult.metadata.generationTime,
+                generationTime: improvementResult.metadata.generationTime,
             },
         };
     }
@@ -261,9 +261,9 @@ export class SceneEvaluationService {
      * @param params - Evaluation parameters with pre-fetched data
      * @returns Complete evaluation result with updated scene record
      */
-    async evaluateAndSaveWithData(
-        params: EvaluateSceneWithDataParams,
-    ): Promise<ServiceSceneEvaluationResult> {
+    async improveAndSaveWithData(
+        params: ImproveSceneWithDataParams,
+    ): Promise<ServiceSceneImprovementResult> {
         const { sceneId, scene, story, maxIterations = 2, apiKey } = params;
 
         if (!scene.content || scene.content.trim() === "") {
@@ -271,7 +271,7 @@ export class SceneEvaluationService {
         }
 
         // 1. Call pure generator for evaluation
-        const evaluateParams: GeneratorSceneEvaluationParams = {
+        const improvementParams: GeneratorSceneImprovementParams = {
             content: scene.content,
             story: {
                 id: story.id,
@@ -285,31 +285,31 @@ export class SceneEvaluationService {
             apiKey,
         };
 
-        const evaluationResult: GeneratorSceneEvaluationResult =
-            await evaluateScene(evaluateParams);
+        const improvementResult: GeneratorSceneImprovementResult =
+            await improveScene(improvementParams);
 
         // 2. Check if score meets quality threshold before updating
         const QUALITY_THRESHOLD = 3.0; // Minimum "Effective" level (3.0/4.0)
         const meetsThreshold: boolean =
-            evaluationResult.score >= QUALITY_THRESHOLD;
+            improvementResult.score >= QUALITY_THRESHOLD;
 
         console.log(
-            `[SceneEvaluationService] Quality check: ${evaluationResult.score}/4.0 (threshold: ${QUALITY_THRESHOLD}/4.0) - ${meetsThreshold ? "PASS ✅" : "FAIL ❌"}`,
+            `[SceneImprovementService] Quality check: ${improvementResult.score}/4.0 (threshold: ${QUALITY_THRESHOLD}/4.0) - ${meetsThreshold ? "PASS ✅" : "FAIL ❌"}`,
         );
 
         let updatedScene: typeof scene;
 
         // 3. Update scene with improved content if threshold met or content improved
-        if (meetsThreshold || evaluationResult.improved) {
+        if (meetsThreshold || improvementResult.improved) {
             console.log(
-                "[SceneEvaluationService] 💾 Saving evaluation results...",
+                "[SceneImprovementService] 💾 Saving evaluation results...",
             );
             const now: string = new Date().toISOString();
 
             const updatedSceneResults = await db
                 .update(scenes)
                 .set({
-                    content: evaluationResult.finalContent,
+                    content: improvementResult.finalContent,
                     updatedAt: now,
                 })
                 .where(eq(scenes.id, sceneId))
@@ -324,12 +324,12 @@ export class SceneEvaluationService {
                 updatedAt: dbScene.updatedAt,
             };
             console.log(
-                "[SceneEvaluationService] ✅ Evaluation results saved (content updated)",
+                "[SceneImprovementService] ✅ Evaluation results saved (content updated)",
             );
         } else {
             // 4. Keep original content if threshold not met and no improvement
             console.log(
-                "[SceneEvaluationService] ⚠️ Quality threshold not met - keeping original content",
+                "[SceneImprovementService] ⚠️ Quality threshold not met - keeping original content",
             );
             updatedScene = scene;
         }
@@ -337,15 +337,15 @@ export class SceneEvaluationService {
         // 5. Return service result
         return {
             scene: updatedScene,
-            evaluation: {
-                score: evaluationResult.score,
-                categories: evaluationResult.categories,
-                feedback: evaluationResult.feedback,
-                iterations: evaluationResult.iterations,
-                improved: evaluationResult.improved,
+            improvement: {
+                score: improvementResult.score,
+                categories: improvementResult.categories,
+                feedback: improvementResult.feedback,
+                iterations: improvementResult.iterations,
+                improved: improvementResult.improved,
             },
             metadata: {
-                generationTime: evaluationResult.metadata.generationTime,
+                generationTime: improvementResult.metadata.generationTime,
             },
         };
     }
@@ -363,7 +363,7 @@ export class SceneEvaluationService {
      * @param maxIterations - Maximum improvement iterations
      * @returns Evaluation result without database update
      */
-    async evaluateOnly(
+    async improveOnly(
         content: string,
         storyContext: {
             title: string;
@@ -372,8 +372,8 @@ export class SceneEvaluationService {
         },
         maxIterations = 2,
         apiKey?: string,
-    ): Promise<GeneratorSceneEvaluationResult> {
-        const evaluateParams: GeneratorSceneEvaluationParams = {
+    ): Promise<GeneratorSceneImprovementResult> {
+        const improvementParams: GeneratorSceneImprovementParams = {
             content,
             story: {
                 id: "temp",
@@ -387,7 +387,7 @@ export class SceneEvaluationService {
             apiKey,
         };
 
-        return await evaluateScene(evaluateParams);
+        return await improveScene(improvementParams);
     }
 }
 
@@ -395,4 +395,4 @@ export class SceneEvaluationService {
  * Default service instance
  * Use this for most cases unless you need custom configuration
  */
-export const sceneEvaluationService = new SceneEvaluationService();
+export const sceneImprovementService = new SceneImprovementService();

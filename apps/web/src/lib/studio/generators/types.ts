@@ -156,8 +156,7 @@ export type ArcPosition = ChapterArcPosition;
  * Adversity-Triumph cycle phases for scene structure
  * Uses CYCLE_PHASES constant from zod-schemas.ts
  */
-export type CyclePhase =
-    typeof import("./zod-schemas").CYCLE_PHASES[number];
+export type CyclePhase = typeof import("./zod-schemas").CYCLE_PHASES[number];
 
 // ============================================================================
 // Base Generator Interfaces
@@ -433,7 +432,7 @@ export interface GeneratorSceneContentResult {
  * Story context for scene evaluation
  * Only requires the fields actually used by the evaluation logic
  */
-export interface SceneEvaluationStoryContext {
+export interface SceneImprovementStoryContext {
     id: string;
     title: string;
     genre: import("@/lib/constants/genres").StoryGenre;
@@ -442,14 +441,14 @@ export interface SceneEvaluationStoryContext {
     tone: import("@/lib/constants/tones").StoryTone;
 }
 
-export interface GeneratorSceneEvaluationParams {
+export interface GeneratorSceneImprovementParams {
     content: string;
-    story: SceneEvaluationStoryContext;
+    story: SceneImprovementStoryContext;
     maxIterations?: number;
     apiKey?: string;
 }
 
-export interface GeneratorSceneEvaluationResult {
+export interface GeneratorSceneImprovementResult {
     finalContent: string;
     score: number;
     categories: {

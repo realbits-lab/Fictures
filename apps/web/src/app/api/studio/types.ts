@@ -39,7 +39,7 @@
  * - POST /api/studio/chapters - Generate chapters
  * - POST /api/studio/scenes - Generate scene summaries
  * - POST /api/studio/scene-content - Generate scene content
- * - POST /api/studio/scene-evaluation - Evaluate and improve scene quality
+ * - POST /api/studio/scene-improvement - Improve scene quality
  */
 
 import type { StoryGenre } from "@/lib/constants/genres";
@@ -292,18 +292,18 @@ export interface ApiSceneContentErrorResponse {
 }
 
 // ============================================================================
-// Scene Evaluation
+// Scene Improvement
 // ============================================================================
 
-export interface ApiSceneEvaluationRequest {
+export interface ApiSceneImprovementRequest {
     sceneId: string;
     maxIterations?: number;
 }
 
-export interface ApiSceneEvaluationResponse {
+export interface ApiSceneImprovementResponse {
     success: true;
     scene: Scene;
-    evaluation: {
+    improvement: {
         score: number;
         categories: {
             plot: number;
@@ -324,7 +324,7 @@ export interface ApiSceneEvaluationResponse {
     };
 }
 
-export interface ApiSceneEvaluationErrorResponse {
+export interface ApiSceneImprovementErrorResponse {
     error: string;
     details?: unknown;
 }

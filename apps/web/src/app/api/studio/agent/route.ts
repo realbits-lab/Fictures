@@ -40,7 +40,7 @@ REASONING PROCESS:
 
 AVAILABLE TOOLS:
 - Advisory: checkPrerequisites, validateStoryStructure, suggestNextPhase
-- Generation: generateStorySummary, generateCharacters, generateSettings, generateParts, generateChapters, generateSceneSummaries, generateSceneContent, evaluateScene, generateImages
+- Generation: generateStorySummary, generateCharacters, generateSettings, generateParts, generateChapters, generateSceneSummaries, generateSceneContent, improveScene, generateImages
 - Utility: validateApiKey, updatePhaseProgress, getGenerationProgress, createEmptyStory
 - CRUD: Full CRUD operations for all story entities
 

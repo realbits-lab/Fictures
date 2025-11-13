@@ -23,7 +23,7 @@ import {
 } from "./generators";
 import { generateChapter } from "./generators/chapter-generator";
 import { generatePart } from "./generators/part-generator";
-import { evaluateScene } from "./generators/scene-evaluation-generator";
+import { improveScene } from "./generators/scene-improvement-generator";
 import { generateSceneSummary } from "./generators/scene-summary-generator";
 import type {
     GeneratorChapterParams,
@@ -34,8 +34,8 @@ import type {
     GeneratorPartResult,
     GeneratorSceneContentParams,
     GeneratorSceneContentResult,
-    GeneratorSceneEvaluationParams,
-    GeneratorSceneEvaluationResult,
+    GeneratorSceneImprovementParams,
+    GeneratorSceneImprovementResult,
     GeneratorSceneSummaryParams,
     GeneratorSceneSummaryResult,
     GeneratorSettingsParams,
@@ -510,8 +510,8 @@ export async function generateCompleteNovel(
                     },
                 });
 
-                // 8.1. Evaluate scene using pure generator (no DB save in orchestrator)
-                const evaluateParams: GeneratorSceneEvaluationParams = {
+                // 8.1. Improve scene using pure generator (no DB save in orchestrator)
+                const improvementParams: GeneratorSceneImprovementParams = {
                     content: scene.content || "",
                     story: {
                         id: storyResult.story.id || "story_temp",
@@ -527,8 +527,8 @@ export async function generateCompleteNovel(
                     maxIterations: maxEvaluationIterations,
                 };
 
-                const evaluationResult: GeneratorSceneEvaluationResult =
-                    await evaluateScene(evaluateParams);
+                const improvementResult: GeneratorSceneImprovementResult =
+                    await improveScene(improvementParams);
 
                 // 8.2. Update scene with improved content
                 const evaluatedScene: AiSceneSummaryType & {
@@ -537,17 +537,17 @@ export async function generateCompleteNovel(
                     content: string;
                 } = {
                     ...scene,
-                    content: evaluationResult.finalContent,
+                    content: improvementResult.finalContent,
                 };
 
                 evaluatedScenes.push(evaluatedScene);
 
                 console.log(
-                    `[Orchestrator] Scene ${evaluatedCount}/${scenes.length} evaluated:`,
+                    `[Orchestrator] Scene ${evaluatedCount}/${scenes.length} improved:`,
                     {
-                        score: evaluationResult.score,
-                        iterations: evaluationResult.iterations,
-                        improved: evaluationResult.improved,
+                        score: improvementResult.score,
+                        iterations: improvementResult.iterations,
+                        improved: improvementResult.improved,
                     },
                 );
             }

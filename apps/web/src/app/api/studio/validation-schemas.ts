@@ -116,13 +116,13 @@ export const generateSceneContentSchema = z.object({
 });
 
 // ============================================================================
-// Scene Evaluation
+// Scene Improvement
 // ============================================================================
 
 /**
- * Validation schema for evaluating scene quality
+ * Validation schema for improving scene quality
  */
-export const evaluateSceneSchema = z.object({
+export const improveSceneSchema = z.object({
     sceneId: z.string(),
     maxIterations: z.number().min(1).max(3).optional().default(2),
 });

@@ -1,5 +1,5 @@
 /**
- * Scene Evaluation Generator
+ * Scene Improvement Generator
  *
  * Evaluates and iteratively improves scene content quality.
  * This is the eighth phase of novel generation.
@@ -10,12 +10,12 @@
 
 import { createTextGenerationClient } from "./ai-client";
 import type {
-    GeneratorSceneEvaluationParams,
-    GeneratorSceneEvaluationResult,
+    GeneratorSceneImprovementParams,
+    GeneratorSceneImprovementResult,
 } from "./types";
 import {
-    type AiSceneEvaluationType,
-    AiSceneEvaluationZodSchema,
+    type AiSceneImprovementType,
+    AiSceneImprovementZodSchema,
 } from "./zod-schemas";
 
 /**
@@ -24,9 +24,9 @@ import {
  * @param params - Scene evaluation parameters
  * @returns Evaluated and improved scene content
  */
-export async function evaluateScene(
-    params: GeneratorSceneEvaluationParams,
-): Promise<GeneratorSceneEvaluationResult> {
+export async function improveScene(
+    params: GeneratorSceneImprovementParams,
+): Promise<GeneratorSceneImprovementResult> {
     const startTime = Date.now();
     const { content, story, maxIterations = 2, apiKey } = params;
 
@@ -39,7 +39,7 @@ export async function evaluateScene(
     let improved = false;
 
     // Initialize evaluation categories based on "Architectonics of Engagement"
-    type EvaluationCategories = GeneratorSceneEvaluationResult["categories"];
+    type EvaluationCategories = GeneratorSceneImprovementResult["categories"];
 
     const categories: EvaluationCategories = {
         plot: 0,
@@ -84,10 +84,10 @@ Return as JSON:
 }`;
 
         // Generate structured evaluation
-        const evaluation: AiSceneEvaluationType =
+        const evaluation: AiSceneImprovementType =
             await client.generateStructured(
                 evaluationPrompt,
-                AiSceneEvaluationZodSchema,
+                AiSceneImprovementZodSchema,
                 {
                     temperature: 0.3,
                     maxTokens: 2048,
@@ -104,7 +104,7 @@ Return as JSON:
         const currentScore = evaluation.overallScore || 0;
 
         console.log(
-            `[scene-evaluation-generator] Iteration ${i + 1}/${maxIterations}:`,
+            `[scene-improvement-generator] Iteration ${i + 1}/${maxIterations}:`,
             {
                 score: currentScore,
                 categories,
@@ -167,7 +167,7 @@ Return only the improved prose content (no JSON, no wrapper).`;
     // Calculate total generation time
     const totalTime = Date.now() - startTime;
 
-    console.log("[scene-evaluation-generator] Evaluation complete:", {
+    console.log("[scene-improvement-generator] Improvement complete:", {
         finalScore: bestScore,
         iterations,
         improved,
