@@ -136,112 +136,6 @@ This document outlines a comprehensive evaluation strategy for the novels genera
 | **Formatting Compliance** | % of scenes following all formatting rules | 100% | 95% |
 | **Prose Variety** | Average sentence length variance (words) | 15-25 | 10-30 |
 
----
-
-## Part II: Metrics & Evaluation
-
-This section provides detailed metric descriptions organized by category, implementation examples, and iterative improvement methodology.
-
-### 2.1 Foundation Metrics
-
-**Story Generation Metrics:**
-
-| Metric | Definition | Success Criteria | Measurement Method |
-|--------|-----------|------------------|----------------------|
-| Moral Framework Clarity | How well the moral framework defines testable virtues and meaningful consequences | Explicit virtue identification, clear consequences, systemic challenges defined | Manual review: 3+ virtues named, causal logic present |
-| Thematic Coherence | Consistency between premise, moral framework, and genre | Theme supports moral tests, no contradictions | Automated: keyword alignment across fields |
-| Genre Consistency | Story elements align with genre conventions and reader expectations | Genre-appropriate tone, conflict types, world rules | Manual review against genre checklist |
-
-**Character Generation Metrics:**
-
-| Metric | Definition | Success Criteria | Measurement Method |
-|--------|-----------|------------------|----------------------|
-| Character Depth | Complexity of internal flaws, motivations, and arc potential | Each character has 1+ internal flaw, clear moral test | Automated: internal flaw field populated, backstory length > 200 chars |
-| Jeong System Implementation | Korean emotional bond system properly defined between characters | At least 2 Jeong relationships defined with type and intensity | Automated: Jeong array has 2+ entries with valid types |
-| Voice Distinctiveness | Each character has unique speech patterns and personality traits | No overlapping voice descriptions, distinct personality keywords | Automated: voice field uniqueness check, personality keyword overlap < 30% |
-
-**Settings Generation Metrics:**
-
-| Metric | Definition | Success Criteria | Measurement Method |
-|--------|-----------|------------------|----------------------|
-| Symbolic Meaning Clarity | Setting's connection to moral framework is explicit | Symbolic meaning field directly references moral themes | Manual review: symbolic meaning mentions moral framework elements |
-| Sensory Detail Richness | All 5 senses are engaged in setting description | At least 3 of 5 senses present in description | Automated: sense keyword detection (sight, sound, smell, touch, taste) |
-| Cycle Amplification Design | How setting amplifies adversity-triumph cycle phases | Each cycle phase has setting amplification note | Manual review: cycle amplification field populated per phase |
-
-### 2.2 Structure Metrics
-
-**Part Metrics:**
-
-| Metric | Definition | Success Criteria | Measurement Method |
-|--------|-----------|------------------|----------------------|
-| Cycle Coherence | 5-phase structure (Setup → Confrontation → Virtue → Consequence → Transition) is complete | All 5 phases present and distinct per character | Automated: phase detection in part summary |
-| Conflict Definition Clarity | Internal and external conflicts are explicitly stated | Both conflict types named with specific examples | Manual review: conflict fields populated with concrete details |
-| Earned Luck Tracking | Seeds planted in setup/confrontation, resolved in consequence | At least 1 seed per cycle with planting and resolution noted | Automated: seed tracking table has matching planted/resolved pairs |
-
-**Chapter Metrics:**
-
-| Metric | Definition | Success Criteria | Measurement Method |
-|--------|-----------|------------------|----------------------|
-| Single-Cycle Focus | Each chapter contains exactly ONE complete adversity-triumph cycle | Chapter focuses on 1-2 characters, one conflict | Manual review: cycle count per chapter = 1 |
-| Seed Tracking Completeness | All seeds from previous chapters are tracked | Previous chapter's unresolved seeds appear in current chapter notes | Automated: seed ID continuity check across chapters |
-| Adversity Connection | Each chapter's resolution creates next chapter's adversity | Chapter N consequence explicitly mentioned in Chapter N+1 setup | Manual review: causal link between adjacent chapters |
-
-**Cyclical Engine Metrics:**
-
-| Metric | Definition | Success Criteria | Measurement Method |
-|--------|-----------|------------------|----------------------|
-| Stakes Escalation | New adversity increases in complexity or intensity compared to previous cycle | 80%+ of new adversities raise stakes (higher severity score) | Manual review: Adversity severity comparison on 1-5 scale, new adversity ≥ previous |
-| Resolution-Adversity Transition Quality | How naturally and inevitably the resolution creates the next adversity | Transition feels organic and causally connected, not forced or arbitrary | Manual review: Transition logic rating on 1-4 scale (1=forced, 4=inevitable) |
-| Narrative Momentum | Reader desire to continue after cycle resolution | 80%+ readers report "need to know what happens next" after cycle completion | Reader survey: Forward momentum question with 4-point scale |
-
-**Scene Summary Metrics:**
-
-| Metric | Definition | Success Criteria | Measurement Method |
-|--------|-----------|------------------|----------------------|
-| Phase Distribution Balance | Scenes distributed across 5 cycle phases (3-7 scenes per chapter) | At least 1 scene per critical phase (virtue, consequence) | Automated: phase assignment count per chapter |
-| Emotional Beat Assignment | Each scene has clear emotional trajectory and purpose | Emotional beat field populated with specific emotion | Manual review: emotional beat clarity and variety |
-| Pacing Rhythm | Build to virtue scene (peak), release after consequence | Scene order follows: setup → build → peak → release → transition | Manual review: scene order matches cycle phase progression |
-
-### 2.3 Content Metrics
-
-**Scene Content Metrics:**
-
-| Metric | Definition | Success Criteria | Measurement Method |
-|--------|-----------|------------------|----------------------|
-| Word Count Range Compliance | Scene length appropriate for cycle phase | Setup/Transition: 300-600 words<br>Confrontation: 500-800 words<br>Virtue: 800-1000 words<br>Consequence: 600-900 words | Automated: word count by phase |
-| Cycle Alignment | Scene content matches assigned cycle phase guidelines | Phase-specific elements present (e.g., Virtue scene has moral elevation moment) | Manual review: phase checklist validation |
-| Emotional Resonance | Scene creates intended emotional response (Gam-dong) | Reader feedback or test panel indicates emotional impact | Manual review: test reader surveys, emotion intensity ratings |
-
-### 2.4 Quality Metrics
-
-**Scene Evaluation Metrics (Architectonics of Engagement):**
-
-| Category | Weight | Target Score | Measurement Method |
-|----------|--------|--------------|----------------------|
-| Plot Progression | 20% | ≥3.0/4.0 | AI evaluation: causal logic, conflict escalation, resolution quality |
-| Character Development | 25% | ≥3.0/4.0 | AI evaluation: internal change, motivation clarity, arc progression |
-| Pacing | 20% | ≥3.0/4.0 | AI evaluation: scene rhythm, tension management, beat timing |
-| Prose Quality | 20% | ≥3.0/4.0 | AI evaluation: clarity, imagery, voice consistency, dialogue naturalism |
-| World-Building | 15% | ≥3.0/4.0 | AI evaluation: setting integration, sensory details, world logic |
-
-**Overall Quality Metrics:**
-
-| Metric | Definition | Success Criteria | Measurement Method |
-|--------|-----------|------------------|----------------------|
-| Architectonics Scores | Weighted average across 5 categories | Overall score ≥3.0/4.0 ("Effective" level) | Automated: weighted average calculation |
-| Pass Rate | Percentage of scenes passing quality threshold on first generation | ≥70% pass rate | Automated: passed scenes / total scenes × 100 |
-| Iteration Count | Average number of improvement iterations per scene | ≤1.5 iterations per scene (max 2) | Automated: sum of iterations / scene count |
-
-### 2.5 Assets Metrics
-
-**Image Generation Metrics:**
-
-| Metric | Definition | Success Criteria | Measurement Method |
-|--------|-----------|------------------|----------------------|
-| Image Quality | Visual coherence, prompt accuracy, artistic quality | No artifacts, prompt elements present, aesthetically pleasing | Manual review: quality checklist (1-5 scale) |
-| Variant Generation Success | All 4 optimized variants generated successfully | AVIF + JPEG × mobile 1x/2x all present | Automated: variant count = 4 per image |
-| Optimization Ratio | File size reduction from original to optimized variants | Average 40-60% size reduction across variants | Automated: compressed size / original size × 100 |
-
 ### 1.3 Qualitative Evaluation Framework
 
 **Reader Survey Template** (Mapped to Core Principles):
@@ -304,3 +198,83 @@ This section provides detailed metric descriptions organized by category, implem
 
 ---
 
+## Part II: Metrics by Generation Phase
+
+This section provides detailed metric descriptions organized by generation phase, matching the 9-phase pipeline.
+
+### 2.1 Story Generation Metrics
+
+| Metric | Definition | Success Criteria | Measurement Method |
+|--------|-----------|------------------|----------------------|
+| Moral Framework Clarity | How well the moral framework defines testable virtues and meaningful consequences | Explicit virtue identification, clear consequences, systemic challenges defined | Manual review: 3+ virtues named, causal logic present |
+| Thematic Coherence | Consistency between premise, moral framework, and genre | Theme supports moral tests, no contradictions | Automated: keyword alignment across fields |
+| Genre Consistency | Story elements align with genre conventions and reader expectations | Genre-appropriate tone, conflict types, world rules | Manual review against genre checklist |
+
+### 2.2 Characters Generation Metrics
+
+| Metric | Definition | Success Criteria | Measurement Method |
+|--------|-----------|------------------|----------------------|
+| Character Depth | Complexity of internal flaws, motivations, and arc potential | Each character has 1+ internal flaw, clear moral test | Automated: internal flaw field populated, backstory length > 200 chars |
+| Jeong System Implementation | Korean emotional bond system properly defined between characters | At least 2 Jeong relationships defined with type and intensity | Automated: Jeong array has 2+ entries with valid types |
+| Voice Distinctiveness | Each character has unique speech patterns and personality traits | No overlapping voice descriptions, distinct personality keywords | Automated: voice field uniqueness check, personality keyword overlap < 30% |
+
+### 2.3 Settings Generation Metrics
+
+| Metric | Definition | Success Criteria | Measurement Method |
+|--------|-----------|------------------|----------------------|
+| Symbolic Meaning Clarity | Setting's connection to moral framework is explicit | Symbolic meaning field directly references moral themes | Manual review: symbolic meaning mentions moral framework elements |
+| Sensory Detail Richness | All 5 senses are engaged in setting description | At least 3 of 5 senses present in description | Automated: sense keyword detection (sight, sound, smell, touch, taste) |
+| Cycle Amplification Design | How setting amplifies adversity-triumph cycle phases | Each cycle phase has setting amplification note | Manual review: cycle amplification field populated per phase |
+
+### 2.4 Part Generation Metrics
+
+| Metric | Definition | Success Criteria | Measurement Method |
+|--------|-----------|------------------|----------------------|
+| Cycle Coherence | 5-phase structure (Setup → Confrontation → Virtue → Consequence → Transition) is complete | All 5 phases present and distinct per character | Automated: phase detection in part summary |
+| Conflict Definition Clarity | Internal and external conflicts are explicitly stated | Both conflict types named with specific examples | Manual review: conflict fields populated with concrete details |
+| Earned Luck Tracking | Seeds planted in setup/confrontation, resolved in consequence | At least 1 seed per cycle with planting and resolution noted | Automated: seed tracking table has matching planted/resolved pairs |
+
+### 2.5 Chapter Generation Metrics
+
+| Metric | Definition | Success Criteria | Measurement Method |
+|--------|-----------|------------------|----------------------|
+| Single-Cycle Focus | Each chapter contains exactly ONE complete adversity-triumph cycle | Chapter focuses on 1-2 characters, one conflict | Manual review: cycle count per chapter = 1 |
+| Seed Tracking Completeness | All seeds from previous chapters are tracked | Previous chapter's unresolved seeds appear in current chapter notes | Automated: seed ID continuity check across chapters |
+| Adversity Connection | Each chapter's resolution creates next chapter's adversity | Chapter N consequence explicitly mentioned in Chapter N+1 setup | Manual review: causal link between adjacent chapters |
+| Stakes Escalation | New adversity increases in complexity or intensity compared to previous cycle | 80%+ of new adversities raise stakes (higher severity score) | Manual review: Adversity severity comparison on 1-5 scale, new adversity ≥ previous |
+| Resolution-Adversity Transition Quality | How naturally and inevitably the resolution creates the next adversity | Transition feels organic and causally connected, not forced or arbitrary | Manual review: Transition logic rating on 1-4 scale (1=forced, 4=inevitable) |
+| Narrative Momentum | Reader desire to continue after cycle resolution | 80%+ readers report "need to know what happens next" after cycle completion | Reader survey: Forward momentum question with 4-point scale |
+
+### 2.6 Scene Summary Generation Metrics
+
+| Metric | Definition | Success Criteria | Measurement Method |
+|--------|-----------|------------------|----------------------|
+| Phase Distribution Balance | Scenes distributed across 5 cycle phases (3-7 scenes per chapter) | At least 1 scene per critical phase (virtue, consequence) | Automated: phase assignment count per chapter |
+| Emotional Beat Assignment | Each scene has clear emotional trajectory and purpose | Emotional beat field populated with specific emotion | Manual review: emotional beat clarity and variety |
+| Pacing Rhythm | Build to virtue scene (peak), release after consequence | Scene order follows: setup → build → peak → release → transition | Manual review: scene order matches cycle phase progression |
+
+### 2.7 Scene Content Generation Metrics
+
+| Metric | Definition | Success Criteria | Measurement Method |
+|--------|-----------|------------------|----------------------|
+| Word Count Range Compliance | Scene length appropriate for cycle phase | Setup/Transition: 300-600 words<br>Confrontation: 500-800 words<br>Virtue: 800-1000 words<br>Consequence: 600-900 words | Automated: word count by phase |
+| Cycle Alignment | Scene content matches assigned cycle phase guidelines | Phase-specific elements present (e.g., Virtue scene has moral elevation moment) | Manual review: phase checklist validation |
+| Emotional Resonance | Scene creates intended emotional response (Gam-dong) | Reader feedback or test panel indicates emotional impact | Manual review: test reader surveys, emotion intensity ratings |
+
+**Scene Quality Evaluation (Architectonics of Engagement):**
+
+| Category | Weight | Target Score | Measurement Method |
+|----------|--------|--------------|----------------------|
+| Plot Progression | 20% | ≥3.0/4.0 | AI evaluation: causal logic, conflict escalation, resolution quality |
+| Character Development | 25% | ≥3.0/4.0 | AI evaluation: internal change, motivation clarity, arc progression |
+| Pacing | 20% | ≥3.0/4.0 | AI evaluation: scene rhythm, tension management, beat timing |
+| Prose Quality | 20% | ≥3.0/4.0 | AI evaluation: clarity, imagery, voice consistency, dialogue naturalism |
+| World-Building | 15% | ≥3.0/4.0 | AI evaluation: setting integration, sensory details, world logic |
+
+**Overall Scene Quality Metrics:**
+
+| Metric | Definition | Success Criteria | Measurement Method |
+|--------|-----------|------------------|----------------------|
+| Architectonics Scores | Weighted average across 5 categories | Overall score ≥3.0/4.0 ("Effective" level) | Automated: weighted average calculation |
+| Pass Rate | Percentage of scenes passing quality threshold on first generation | ≥70% pass rate | Automated: passed scenes / total scenes × 100 |
+| Iteration Count | Average number of improvement iterations per scene | ≤1.5 iterations per scene (max 2) | Automated: sum of iterations / scene count |
