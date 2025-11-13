@@ -70,7 +70,7 @@ This document outlines the synchronization strategy between three critical compo
                         ↓
 ┌──────────────────────────────────────────────────────┐
 │ 5. UPDATE TESTS                                      │
-│    __tests__/ + docs/novels/novels-testing.md        │
+│    __tests__/ + docs/novels/novels-evaluation.md        │
 │    - Add tests for new fields                        │
 │    - Update validation tests                         │
 └──────────────────────────────────────────────────────┘
@@ -326,7 +326,7 @@ pnpm db:generate
 | `novels-specification.md` | **FIRST** - before any code changes |
 | `schema-gap-analysis.md` | After specification changes, before implementation |
 | `novels-development.md` | When API endpoints or system prompts change |
-| `novels-testing.md` | When validation rules or quality metrics change |
+| `novels-evaluation.md` | When validation rules or quality metrics change |
 | `schema-synchronization-strategy.md` | When sync process itself needs refinement |
 
 ### Documentation Review Checklist
@@ -498,7 +498,7 @@ When in doubt, **refer to the specification** - it is the single source of truth
 - **[Schema Simplification](./schema-simplification.md)** - Removal of bi-directional links (2025-11-01)
 - **[Novels Specification](./novels-specification.md)** - Complete data model and field definitions
 - **[Novels Development Guide](./novels-development.md)** - API implementation details
-- **[Novels Testing Guide](./novels-testing.md)** - Validation and quality metrics
+- **[Novels Testing Guide](./novels-evaluation.md)** - Validation and quality metrics
 
 ## Schema Evolution Milestones
 

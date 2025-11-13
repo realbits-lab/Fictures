@@ -14,7 +14,7 @@ This section provides a complete index of all feature documentation. Each direct
 - **[novels/](novels/)** - Novel generation using Adversity-Triumph Engine
   - `novels-specification.md` - Core concepts and data model
   - `novels-development.md` - API specs and system prompts
-  - `novels-testing.md` - Validation and quality metrics
+  - `novels-evaluation.md` - Validation and quality metrics
   - `novels-optimization.md` - Performance tuning
   - `novels-removal.md` - Deletion workflows
 

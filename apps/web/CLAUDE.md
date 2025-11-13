@@ -623,7 +623,7 @@ The platform uses the Adversity-Triumph Engine for novel generation, creating em
 **Complete Documentation:**
 - **📖 Specification**: [docs/novels/novels-specification.mdx](docs/novels/novels-specification.mdx) - Core concepts and data model
 - **🔧 Development Guide**: [docs/novels/novels-development.md](docs/novels/novels-development.md) - API specs and system prompts
-- **🧪 Testing Guide**: [docs/novels/novels-testing.mdx](docs/novels/novels-testing.mdx) - Validation and quality metrics
+- **🧪 Testing Guide**: [docs/novels/novels-evaluation.md](docs/novels/novels-evaluation.md) - Validation and quality metrics
 - **⚡ Optimization**: [docs/novels/novels-optimization.mdx](docs/novels/novels-optimization.mdx) - Performance tuning
 - **🗑️ Removal**: [docs/novels/novels-removal.mdx](docs/novels/novels-removal.mdx) - Deletion workflows
 
@@ -724,7 +724,7 @@ When making ANY changes to the novel generation system, ALWAYS follow this order
 - **Primary documentation files:**
   - `novels-specification.md` - Core concepts, data model, theoretical foundation
   - `novels-development.md` - API architecture, system prompts, implementation specs
-  - `novels-testing.md` - Validation methods, quality metrics, test strategies
+  - `novels-evaluation.md` - Validation methods, quality metrics, test strategies
   - `novels-optimization.md` - Performance tuning, cost optimization
   - `novels-removal.md` - Deletion workflows, cleanup procedures
 - **What to update:** API specifications, system prompts, data models, generation flows, examples
@@ -809,7 +809,7 @@ dotenv --file .env.local run node scripts/generate-minimal-story.mjs
 **Documentation Reference:**
 - 📖 **Specification**: `docs/novels/novels-specification.md` - Core concepts and data model
 - 🔧 **Development Guide**: `docs/novels/novels-development.md` - API specs and system prompts (now with dual auth)
-- 🧪 **Testing Guide**: `docs/novels/novels-testing.md` - Validation and quality metrics
+- 🧪 **Testing Guide**: `docs/novels/novels-evaluation.md` - Validation and quality metrics
 - ⚡ **Optimization**: `docs/novels/novels-optimization.md` - Performance and cost tuning
 - 🗑️ **Removal**: `docs/novels/novels-removal.md` - Deletion workflows
 - 🛠️ **Script**: `scripts/generate-minimal-story.mjs` - Production script for minimal story generation
@@ -931,7 +931,7 @@ dotenv --file .env.local run node scripts/test-imagen-generation.mjs
 **Complete Scene Quality Documentation:**
 - **📖 Specification**: [docs/novels/novels-specification.mdx](docs/novels/novels-specification.mdx) - Scene quality framework
 - **🔧 Development**: [docs/novels/novels-development.md](docs/novels/novels-development.md) - Evaluation API & implementation
-- **🧪 Testing**: [docs/novels/novels-testing.mdx](docs/novels/novels-testing.mdx) - Quality metrics & validation
+- **🧪 Testing**: [docs/novels/novels-evaluation.md](docs/novels/novels-evaluation.md) - Quality metrics & validation
 
 **Automated Scene Pipeline:**
 

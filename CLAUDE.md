@@ -52,6 +52,20 @@ cd apps/ai-server
 # See apps/ai-server/CLAUDE.md for detailed commands
 ```
 
+### Running Development Servers
+
+**IMPORTANT**: Before running development servers, always kill existing processes on the required ports:
+
+- **Web Server (Port 3000)**: Kill any process using port 3000 before running `pnpm dev` in `apps/web/`
+- **AI Server (Port 8000)**: Kill any process using port 8000 before running the server in `apps/ai-server/`
+
+**Workflow**:
+1. Kill existing processes on ports 3000 and 8000
+2. Run development servers as background processes
+3. Redirect output to logs directory (e.g., `logs/dev-server.log`, `logs/ai-server.log`)
+
+This prevents port conflicts and ensures clean server startup.
+
 ## Git and Repository Management
 
 - **Main branch**: `main` (production)
