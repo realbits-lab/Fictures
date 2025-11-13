@@ -61,7 +61,7 @@ export function useSceneView(
                 );
 
                 const response = await fetch(
-                    `/studio/api/scenes/${sceneId}/view`,
+                    `/api/studio/scenes/${sceneId}/view`,
                     {
                         method: "POST",
                         headers: {
@@ -129,7 +129,7 @@ export async function getSceneViewStats(sceneId: string): Promise<{
     hasViewedByCurrentUser: boolean;
 } | null> {
     try {
-        const response = await fetch(`/studio/api/scenes/${sceneId}/view`);
+        const response = await fetch(`/api/studio/scenes/${sceneId}/view`);
 
         if (!response.ok) {
             console.error(

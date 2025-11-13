@@ -18,7 +18,7 @@ import {
     AiSceneSummaryZodSchema,
     AiSettingZodSchema,
     AiStoryZodSchema,
-} from "./zod-schemas.generated";
+} from "./zod-schemas";
 
 /**
  * Remove fields that Gemini doesn't accept and recursively clean the schema

@@ -21,7 +21,7 @@ import {
     type Part,
     type Setting,
     type Story,
-} from "../generators/zod-schemas.generated";
+} from "../generators/zod-schemas";
 
 export interface ServicePartParams {
     storyId: string;

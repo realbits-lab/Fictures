@@ -1,5 +1,5 @@
 /**
- * Jest Test Suite for /studio/api/stories
+ * Jest Test Suite for /studio/api/story
  *
  * Tests story generation API with real API calls.
  *
@@ -28,7 +28,7 @@ import { loadWriterAuth } from "../../helpers/auth-loader";
 const apiKey: string = loadWriterAuth();
 
 describe("Story Generation API", () => {
-    it("should generate and save story via POST /studio/api/stories", async () => {
+    it("should generate and save story via POST /studio/api/story", async () => {
         // 1. Prepare request body with proper TypeScript type
         const requestBody: ApiStoryRequest = {
             userPrompt: "A short story about a brave knight on a quest",
@@ -39,7 +39,7 @@ describe("Story Generation API", () => {
 
         // 2. Send POST request to story generation API
         const response: Response = await fetch(
-            "http://localhost:3000/studio/api/stories",
+            "http://localhost:3000/studio/api/story",
             {
                 method: "POST",
                 headers: {
@@ -210,7 +210,7 @@ describe("Story Generation API", () => {
         };
 
         const storyResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/stories",
+            "http://localhost:3000/studio/api/story",
             {
                 method: "POST",
                 headers: {

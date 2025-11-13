@@ -380,7 +380,7 @@ export function ChapterReaderClient({
 
                 try {
                     const response = await fetch(
-                        `/studio/api/chapters/${chapter.id}/scenes`,
+                        `/api/studio/chapters/${chapter.id}/scenes`,
                         {
                             credentials: "include",
                         },

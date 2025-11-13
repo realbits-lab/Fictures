@@ -22,7 +22,7 @@ export const generateStorySummary = tool({
             concept: userPrompt,
         };
 
-        const response = await fetch("/studio/api/novels/story", {
+        const response = await fetch("/api/studio/stories/story", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -60,7 +60,7 @@ export const generateCharacters = tool({
             storyId,
         };
 
-        const response = await fetch("/studio/api/characters", {
+        const response = await fetch("/api/studio/characters", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -96,7 +96,7 @@ export const generateSettings = tool({
             storyId,
         };
 
-        const response = await fetch("/studio/api/settings", {
+        const response = await fetch("/api/studio/settings", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -131,7 +131,7 @@ export const generateParts = tool({
             storyId,
         };
 
-        const response = await fetch("/studio/api/parts", {
+        const response = await fetch("/api/studio/parts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -172,7 +172,7 @@ export const generateChapters = tool({
             partId,
         };
 
-        const response = await fetch("/studio/api/chapters", {
+        const response = await fetch("/api/studio/chapters", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -213,7 +213,7 @@ export const generateSceneSummaries = tool({
             chapterId,
         };
 
-        const response = await fetch("/studio/api/scene-summaries", {
+        const response = await fetch("/api/studio/scene-summaries", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -248,7 +248,7 @@ export const generateSceneContent = tool({
             sceneId,
         };
 
-        const response = await fetch("/studio/api/scene-content", {
+        const response = await fetch("/api/studio/scene-content", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -272,11 +272,11 @@ export const generateSceneContent = tool({
     },
 });
 
-export const evaluateScene = tool({
+export const improveScene = tool({
     summary:
-        "Evaluate scene quality using Architectonics of Engagement (Phase 8 of 9)",
+        "Improve scene quality using Architectonics of Engagement (Phase 8 of 9)",
     parameters: z.object({
-        sceneId: z.string().describe("The scene ID to evaluate"),
+        sceneId: z.string().describe("The scene ID to improve"),
     }),
     execute: async ({ sceneId }) => {
         const requestBody: {
@@ -285,7 +285,7 @@ export const evaluateScene = tool({
             sceneId,
         };
 
-        const response = await fetch("/studio/api/novels/scene-evaluation", {
+        const response = await fetch("/api/studio/stories/scene-improvement", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -294,7 +294,7 @@ export const evaluateScene = tool({
         if (!response.ok) {
             return {
                 success: false,
-                error: "Scene evaluation failed",
+                error: "Scene improvement failed",
             };
         }
 
@@ -302,7 +302,7 @@ export const evaluateScene = tool({
 
         return {
             success: true,
-            message: `Scene evaluated - Score: ${data.score}/4.0`,
+            message: `Scene improved - Score: ${data.score}/4.0`,
             score: data.score,
             categories: data.categories,
             feedback: data.feedback,
@@ -337,7 +337,7 @@ export const generateImages = tool({
             entityId,
         };
 
-        const response = await fetch("/studio/api/images", {
+        const response = await fetch("/api/studio/images", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -373,6 +373,6 @@ export const studioAgentGenerationTools = {
     generateChapters,
     generateSceneSummaries,
     generateSceneContent,
-    evaluateScene,
+    improveScene,
     generateImages,
 };

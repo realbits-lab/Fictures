@@ -14,7 +14,7 @@ export function useScenePrefetch() {
 
         const prefetchStartTime = performance.now();
         const prefetchId = Math.random().toString(36).substring(7);
-        const url = `/studio/api/chapters/${chapterId}/scenes`;
+        const url = `/api/studio/chapters/${chapterId}/scenes`;
 
         console.log(
             `[${prefetchId}] 🔮 PREFETCH START for chapter: ${chapterId}`,

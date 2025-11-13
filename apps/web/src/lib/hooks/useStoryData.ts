@@ -53,7 +53,7 @@ export function useStoryData(storyId: string | null) {
     const shouldFetch = storyId && sessionStatus !== "loading";
 
     const { data, error, isLoading, isValidating, mutate } = usePersistedSWR(
-        shouldFetch ? `/studio/api/stories/${storyId}/write` : null,
+        shouldFetch ? `/api/studio/story/${storyId}/write` : null,
         fetcher,
         {
             ...CACHE_CONFIGS.writing, // 30min TTL with localStorage persistence
@@ -98,7 +98,7 @@ export function useStoriesData(storyIds: string[]) {
         shouldFetch ? `stories-${storyIds.join(",")}` : null,
         async () => {
             const promises = storyIds.map((id) =>
-                fetcher(`/studio/api/stories/${id}/write`),
+                fetcher(`/api/studio/story/${id}/write`),
             );
             const results = await Promise.all(promises);
             return results.filter(Boolean);

@@ -63,7 +63,7 @@ export async function createTestStory(
     role: "manager" | "writer" = "writer",
     data?: Partial<TestStory>,
 ): Promise<TestStory> {
-    const response = await request.post("/studio/api/stories", {
+    const response = await request.post("/studio/api/story", {
         headers: getAuthHeaders(role),
         data: {
             title: data?.title || `Test Story ${generateTestId()}`,
@@ -91,7 +91,7 @@ export async function deleteTestStory(
     storyId: string,
     role: "manager" | "writer" = "writer",
 ): Promise<void> {
-    const response = await request.delete(`/studio/api/stories/${storyId}`, {
+    const response = await request.delete(`/studio/api/story/${storyId}`, {
         headers: getAuthHeaders(role),
     });
 
@@ -234,7 +234,7 @@ export async function getUserStories(
     request: APIRequestContext,
     role: "manager" | "writer" = "writer",
 ): Promise<TestStory[]> {
-    const response = await request.get("/studio/api/stories", {
+    const response = await request.get("/studio/api/story", {
         headers: getAuthHeaders(role),
     });
 
@@ -260,7 +260,7 @@ export async function waitForStoryGeneration(
     const startTime = Date.now();
 
     while (Date.now() - startTime < maxWaitMs) {
-        const response = await request.get(`/studio/api/stories/${storyId}`, {
+        const response = await request.get(`/studio/api/story/${storyId}`, {
             headers: getAuthHeaders(role),
         });
 

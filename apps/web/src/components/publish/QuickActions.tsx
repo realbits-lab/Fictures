@@ -30,8 +30,8 @@ export function QuickActions({
 
         try {
             const endpoint = sceneId
-                ? `/publish/api/scenes/${sceneId}`
-                : `/publish/api/chapters/${chapterId}`;
+                ? `/api/publish/scenes/${sceneId}`
+                : `/api/publish/chapters/${chapterId}`;
 
             const response = await fetch(endpoint, {
                 method: "POST",
@@ -62,8 +62,8 @@ export function QuickActions({
 
         try {
             const endpoint = sceneId
-                ? `/publish/api/scenes/${sceneId}/unpublish`
-                : `/publish/api/chapters/${chapterId}/unpublish`;
+                ? `/api/publish/scenes/${sceneId}/unpublish`
+                : `/api/publish/chapters/${chapterId}/unpublish`;
 
             const response = await fetch(endpoint, {
                 method: "POST",
@@ -94,8 +94,8 @@ export function QuickActions({
     ) => {
         try {
             const endpoint = sceneId
-                ? `/publish/api/scenes/${sceneId}/visibility`
-                : `/publish/api/chapters/${chapterId}/visibility`;
+                ? `/api/publish/scenes/${sceneId}/visibility`
+                : `/api/publish/chapters/${chapterId}/visibility`;
 
             const response = await fetch(endpoint, {
                 method: "PATCH",

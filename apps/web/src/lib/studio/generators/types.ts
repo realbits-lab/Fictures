@@ -4,9 +4,9 @@
  * Layer: Service (Business Logic)
  * Used by: src/lib/studio/generators/* services
  * Related:
- * - API types: src/app/studio/api/types.ts
+ * - API types: src/app/api/studio/types.ts
  * - Domain types: src/lib/ai/types/image.ts
- * - Entity types: ./zod-schemas.generated.ts
+ * - Entity types: ./zod-schemas.ts
  * - Global types: src/types/index.ts
  *
  * ## Purpose
@@ -62,7 +62,7 @@ import type {
     Scene,
     Setting,
     Story,
-} from "./zod-schemas.generated";
+} from "./zod-schemas";
 
 // ============================================================================
 // AI Provider Types
@@ -154,10 +154,9 @@ export type ArcPosition = ChapterArcPosition;
 
 /**
  * Adversity-Triumph cycle phases for scene structure
- * Uses CYCLE_PHASES constant from zod-schemas.generated.ts
+ * Uses CYCLE_PHASES constant from zod-schemas.ts
  */
-export type CyclePhase =
-    typeof import("./zod-schemas.generated").CYCLE_PHASES[number];
+export type CyclePhase = typeof import("./zod-schemas").CYCLE_PHASES[number];
 
 // ============================================================================
 // Base Generator Interfaces
@@ -433,7 +432,7 @@ export interface GeneratorSceneContentResult {
  * Story context for scene evaluation
  * Only requires the fields actually used by the evaluation logic
  */
-export interface SceneEvaluationStoryContext {
+export interface SceneImprovementStoryContext {
     id: string;
     title: string;
     genre: import("@/lib/constants/genres").StoryGenre;
@@ -442,14 +441,14 @@ export interface SceneEvaluationStoryContext {
     tone: import("@/lib/constants/tones").StoryTone;
 }
 
-export interface GeneratorSceneEvaluationParams {
+export interface GeneratorSceneImprovementParams {
     content: string;
-    story: SceneEvaluationStoryContext;
+    story: SceneImprovementStoryContext;
     maxIterations?: number;
     apiKey?: string;
 }
 
-export interface GeneratorSceneEvaluationResult {
+export interface GeneratorSceneImprovementResult {
     finalContent: string;
     score: number;
     categories: {

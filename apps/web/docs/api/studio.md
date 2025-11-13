@@ -23,7 +23,7 @@ The Studio APIs provide comprehensive functionality for writers to:
 
 Get all stories for the authenticated user with detailed dashboard data.
 
-**Endpoint:** `GET /studio/api/stories`
+**Endpoint:** `GET /studio/api/story`
 
 **Authentication:** Required (API Key with `stories:read` OR Session)
 
@@ -73,7 +73,7 @@ Get all stories for the authenticated user with detailed dashboard data.
 **Example:**
 
 ```bash
-curl -X GET http://localhost:3000/studio/api/stories \
+curl -X GET http://localhost:3000/studio/api/story \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -83,7 +83,7 @@ curl -X GET http://localhost:3000/studio/api/stories \
 
 Create a new empty story.
 
-**Endpoint:** `POST /studio/api/stories`
+**Endpoint:** `POST /studio/api/story`
 
 **Authentication:** Required (API Key with `stories:write` OR Session)
 
@@ -126,7 +126,7 @@ Create a new empty story.
 **Example:**
 
 ```bash
-curl -X POST http://localhost:3000/studio/api/stories \
+curl -X POST http://localhost:3000/studio/api/story \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
@@ -142,7 +142,7 @@ curl -X POST http://localhost:3000/studio/api/stories \
 
 Get detailed information about a specific story including chapters.
 
-**Endpoint:** `GET /studio/api/stories/[id]`
+**Endpoint:** `GET /studio/api/story/[id]`
 
 **Authentication:** Required (Session)
 
@@ -181,7 +181,7 @@ Get detailed information about a specific story including chapters.
 **Example:**
 
 ```bash
-curl -X GET http://localhost:3000/studio/api/stories/story_abc123 \
+curl -X GET http://localhost:3000/studio/api/story/story_abc123 \
   -H "Cookie: next-auth.session-token=YOUR_SESSION"
 ```
 
@@ -191,7 +191,7 @@ curl -X GET http://localhost:3000/studio/api/stories/story_abc123 \
 
 Update story metadata and settings.
 
-**Endpoint:** `PATCH /studio/api/stories/[id]`
+**Endpoint:** `PATCH /studio/api/story/[id]`
 
 **Authentication:** Required (Session)
 
@@ -243,7 +243,7 @@ Update story metadata and settings.
 **Example:**
 
 ```bash
-curl -X PATCH http://localhost:3000/studio/api/stories/story_abc123 \
+curl -X PATCH http://localhost:3000/studio/api/story/story_abc123 \
   -H "Content-Type: application/json" \
   -H "Cookie: next-auth.session-token=YOUR_SESSION" \
   -d '{
@@ -258,7 +258,7 @@ curl -X PATCH http://localhost:3000/studio/api/stories/story_abc123 \
 
 Delete a story and all associated data (cascading deletion).
 
-**Endpoint:** `DELETE /studio/api/stories/[id]`
+**Endpoint:** `DELETE /studio/api/story/[id]`
 
 **Authentication:** Required (Session)
 
@@ -308,7 +308,7 @@ Delete a story and all associated data (cascading deletion).
 **Example:**
 
 ```bash
-curl -X DELETE http://localhost:3000/studio/api/stories/story_abc123 \
+curl -X DELETE http://localhost:3000/studio/api/story/story_abc123 \
   -H "Cookie: next-auth.session-token=YOUR_SESSION"
 ```
 
@@ -640,12 +640,12 @@ Delete a specific scene.
 
 ### Story Creation Workflow
 
-1. **Create Story**: POST `/studio/api/stories`
+1. **Create Story**: POST `/studio/api/story`
 2. **Generate Novel**: POST `/studio/api/novels` (optional)
 3. **Edit Content**: PATCH `/studio/api/chapters/[id]` or `/studio/api/scenes/[id]`
 4. **Evaluate Quality**: POST `/studio/api/evaluate/scene`
 5. **Generate Images**: POST `/studio/api/novels/images`
-6. **Publish**: PATCH `/studio/api/stories/[id]` with `status: "published"`
+6. **Publish**: PATCH `/studio/api/story/[id]` with `status: "published"`
 
 ### Performance Optimization
 

@@ -26,10 +26,10 @@ export {
 } from "./character-service";
 
 export {
-    type ServicePartParams,
-    type ServicePartResult,
     PartService,
     partService,
+    type ServicePartParams,
+    type ServicePartResult,
 } from "./part-service";
 
 export {
@@ -40,17 +40,17 @@ export {
 } from "./scene-content-service";
 
 export {
-    type EvaluateSceneWithDataParams,
-    SceneEvaluationService,
-    type ServiceSceneEvaluationParams,
-    type ServiceSceneEvaluationResult,
-    sceneEvaluationService,
-} from "./scene-evaluation-service";
+    type ImproveSceneWithDataParams,
+    SceneImprovementService,
+    type ServiceSceneImprovementParams,
+    type ServiceSceneImprovementResult,
+    sceneImprovementService,
+} from "./scene-improvement-service";
 
 export {
+    SceneSummaryService,
     type ServiceSceneSummaryParams,
     type ServiceSceneSummaryResult,
-    SceneSummaryService,
     sceneSummaryService,
 } from "./scene-summary-service";
 

@@ -5,7 +5,7 @@
  * Used by: src/lib/ai/providers/* and src/lib/studio/generators/*
  * Related:
  * - Service types: src/lib/studio/generators/types.ts
- * - API types: src/app/studio/api/types.ts
+ * - API types: src/app/api/studio/types.ts
  * - Global types: src/types/index.ts
  *
  * ## Purpose

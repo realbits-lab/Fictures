@@ -108,7 +108,7 @@ Comparing to /novels and /comics optimizations:
    ```
 
 3. **Update API route to use cached queries**
-   - File: `src/app/studio/api/stories/route.ts`
+   - File: `src/app/studio/api/story/route.ts`
    - Replace: `getUserStoriesWithFirstChapter()`
    - With: `getCachedUserStories()` from `studio-queries.ts`
 
@@ -246,7 +246,7 @@ const storyDetailColumns = {
    - Extend dedupingInterval to 30 minutes
    - Add keepPreviousData option
 
-2. **`src/app/studio/api/stories/route.ts:33`**
+2. **`src/app/studio/api/story/route.ts:33`**
    - Replace `getUserStoriesWithFirstChapter()`
    - Use `getCachedUserStories()` from studio-queries.ts
 

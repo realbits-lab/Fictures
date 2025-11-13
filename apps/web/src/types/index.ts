@@ -38,7 +38,7 @@
  * - next-auth.d.ts - NextAuth.js authentication type augmentation
  *
  * ### API Layer Types
- * - app/studio/api/types.ts - Studio generation API contracts (stories, characters, settings, etc.)
+ * - app/api/studio/types.ts - Studio generation API contracts (stories, characters, settings, etc.)
  *
  * ### Service Layer Types
  * - lib/studio/generators/types.ts - Generator function parameters and results
@@ -89,7 +89,7 @@
  *
  * ### From API Types
  * @example
- * import type { GenerateStoryRequest } from '@/app/studio/api/types';
+ * import type { GenerateStoryRequest } from '@/app/api/studio/types';
  *
  * ### From Service Types
  * @example

@@ -19,8 +19,8 @@ Production: https://fictures.xyz
 
 | Endpoint | Method | Description | Auth |
 |----------|--------|-------------|------|
-| `/studio/api/stories` | GET | List user stories | Required |
-| `/studio/api/stories` | POST | Create new story | Required |
+| `/studio/api/story` | GET | List user stories | Required |
+| `/studio/api/story` | POST | Create new story | Required |
 | `/studio/api/novels` | POST | Generate complete novel (SSE) | Required |
 | `/api/images/generate` | POST | Generate AI image | Required |
 | `/analysis/api/track` | POST | Track analytics event | Optional |

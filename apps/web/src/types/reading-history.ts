@@ -4,7 +4,7 @@
  * Layer: Shared (Cross-cutting Concerns)
  * Used by: Novel/comic readers, user profile, reading analytics
  * Related:
- * - API types: src/app/studio/api/types.ts
+ * - API types: src/app/api/studio/types.ts
  * - Service types: src/lib/studio/generators/types.ts
  * - Global types: src/types/index.ts
  *

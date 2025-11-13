@@ -148,7 +148,7 @@ cacheManager.invalidatePageCache('community');
 ```typescript
 import { mutate } from 'swr';
 
-mutate(`/studio/api/stories/${storyId}`);
+mutate(`/studio/api/story/${storyId}`);
 mutate(`/studio/api/chapters/${chapterId}`);
 ```
 
@@ -225,7 +225,7 @@ export async function PATCH(request, { params }) {
 |-------|--------|--------|--------------|
 | `/studio/api/scenes/[id]` | PATCH, DELETE | ✅ | Scene → Chapter → Story |
 | `/studio/api/chapters/[id]` | PATCH | ✅ | Chapter → Story |
-| `/studio/api/stories/[id]/write` | PATCH | ✅ | Story → User Stories |
+| `/studio/api/story/[id]/write` | PATCH | ✅ | Story → User Stories |
 | `/community/api/posts` | POST | ✅ | Community feed |
 | `/community/api/posts/[postId]/like` | POST | ✅ | Post → Community |
 | `/community/api/posts/[postId]/replies` | POST | ✅ | Post → Replies |
@@ -487,8 +487,8 @@ export function StoryCard({ storyId }) {
   const { prefetch } = usePrefetch({
     strategy: 'hover',
     urls: [
-      `/studio/api/stories/${storyId}`,
-      `/studio/api/stories/${storyId}/chapters`,
+      `/studio/api/story/${storyId}`,
+      `/studio/api/story/${storyId}/chapters`,
     ],
     delay: 300, // ms
   });
@@ -662,7 +662,7 @@ export async function DELETE(
 1. ✅ `PATCH /studio/api/scenes/[id]` - Scene updates
 2. ✅ `DELETE /studio/api/scenes/[id]` - Scene deletion
 3. ✅ `PATCH /studio/api/chapters/[id]` - Chapter updates
-4. ✅ `PATCH /studio/api/stories/[id]/write` - Story updates
+4. ✅ `PATCH /studio/api/story/[id]/write` - Story updates
 
 **Community Routes** (3 routes):
 5. ✅ `POST /community/api/posts` - Post creation
@@ -1043,7 +1043,7 @@ This section provides the historical development timeline of the cache invalidat
 1. ✅ `PATCH /studio/api/scenes/[id]` - Lines 146-167 (full invalidation)
 2. ✅ `DELETE /studio/api/scenes/[id]` - Lines 214-232 (full invalidation)
 3. ✅ `PATCH /studio/api/chapters/[id]` - Lines 74-94 (full invalidation)
-4. ✅ `PATCH /studio/api/stories/[id]/write` - Lines 285-305 (full invalidation)
+4. ✅ `PATCH /studio/api/story/[id]/write` - Lines 285-305 (full invalidation)
 
 **Pattern Verified**:
 ```typescript
@@ -1126,7 +1126,7 @@ return NextResponse.json(data, {
 **API Routes**:
 - `src/app/studio/api/scenes/[id]/route.ts` - Scene mutations
 - `src/app/studio/api/chapters/[id]/route.ts` - Chapter mutations
-- `src/app/studio/api/stories/[id]/write/route.ts` - Story mutations
+- `src/app/studio/api/story/[id]/write/route.ts` - Story mutations
 - `src/app/community/api/posts/route.ts` - Post creation
 - `src/app/community/api/posts/[postId]/like/route.ts` - Post likes
 - `src/app/community/api/posts/[postId]/replies/route.ts` - Post replies

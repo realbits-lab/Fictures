@@ -6,8 +6,6 @@ This document specifies the novels generation system using a **Cyclic Adversity-
 
 **Core Principle**: Stories generate deep emotional resonance through continuous cycles of adversity and triumph, powered by causally-linked serendipity (earned luck), unintended karmic rewards, and virtuous character actions.
 
-**Status**: ✅ **Validated and Ready for Implementation**
-
 **Related Documents:**
 - 📋 **Development Guide** (`novels-development.md`): API specifications and system prompts for implementation
 - 🧪 **Evaluation Guide** (`novels-evaluation.md`): Testing strategies, metrics, and validation methods
@@ -98,11 +96,31 @@ See section 2.7 for how the 4-phase cycle maps to 5 scene types in practice.
 ### 1.5 Critical Success Factors
 
 **Core Principles:**
-1. **Intrinsic Motivation**: Virtuous actions MUST be genuine, not strategic
-2. **Causal Linking**: Every event connects to previous actions (no deus ex machina)
-3. **Seed Tracking**: Small actions pay off later as "earned luck"
-4. **Cyclical Engine**: Every resolution creates next adversity
-5. **Emotional Authenticity**: Show emotions through body/action, not tell
+
+1. **Cyclic Structure** (multi-scale)
+   - Every resolution creates next adversity (4-phase engine)
+   - Nested cycles: micro-cycles within macro arcs at all narrative levels
+   - Maintains perpetual narrative momentum
+
+2. **Intrinsic Motivation**
+   - Virtuous actions MUST be genuine, not transactional or strategic
+   - No expectation of reward shown during virtue phase
+   - Triggers moral elevation in audience
+
+3. **Earned Consequence** (causal linking + temporal separation)
+   - Every event causally linked to previous actions through traceable seeds (no deus ex machina)
+   - Virtue and consequence temporally separated (Pattern A timing)
+   - Creates "earned luck" feeling and karmic payoff
+
+4. **Character Transformation**
+   - Internal flaw (from Character.internalFlaw) drives adversity
+   - Virtuous action confronts and challenges flaw
+   - Earned consequence enables growth and healing
+
+5. **Emotional Resonance**
+   - Create empathy, catharsis, moral elevation, and Gam-dong (감동)
+   - Settings actively amplify emotional beats through element arrays
+   - Show emotions through body/action, not tell
 
 ---
 
@@ -113,12 +131,13 @@ See section 2.7 for how the 4-phase cycle maps to 5 scene types in practice.
 **IMPORTANT**: Story creation is a **multi-phase process**. The Story entity itself does NOT contain character or setting data directly.
 
 **Phase 1: Story Foundation** (see section 2.2)
+- Input: User prompt
 - Generate: genre, tone, moralFramework, summary
 - Output: Story record with foundational metadata
 - Characters and Settings are NOT created in this phase
 
 **Phase 2: Character Generation** (see section 2.3)
-- Input: Story (complete with genre, tone, moralFramework, summary)
+- Input: Story
 - Generate: 2-4 main characters with full Character schema data
 - Output: Character records linked to Story via storyId
 
@@ -138,22 +157,18 @@ See section 2.7 for how the 4-phase cycle maps to 5 scene types in practice.
 - Output: Chapter record with micro-cycle structure
 
 **Phase 6: Scene Generation** (see section 2.7)
-- **Phase 6a: Scene Summaries** (see section 2.7.1)
+- **Phase 6a: Scene Summary** (see section 2.7.1)
   - Input: Story, Part, Chapter, previousScenes, Characters, Settings
-  - Generate: Scene summaries and metadata (no content)
-  - Output: Scene records with summaries and specifications
+  - Generate: Scene summary and metadata (no content)
+  - Output: Scene record with summary and specifications
 - **Phase 6b: Scene Content** (see section 2.7.2)
-  - Input: Scene (with summary), Story, Part, Chapter, Characters, Setting
+  - Input: Story, Part, Chapter, previousScenes, Scene (with summary)
   - Generate: Full prose narrative content
-  - Output: Scene record with content field populated
+  - Output: Scene record with content
 
 ### 2.2 Phase 1: Story Foundation
 
 **Purpose**: Establish the world's moral framework and general thematic premise
-
-**Key Field**:
-- `summary` (text): General thematic premise, genre, tone, moral landscape
-- NOT detailed adversity-triumph - just the world and its rules
 
 **Content Format**:
 ```
@@ -167,7 +182,7 @@ Example: "In a fractured post-war society where trust has been shattered, the po
 - **Tone**: See Tone Catalog (section 2.2.3) for complete list and emotional characteristics
 - **Moral Framework**: What virtues are valued? What vices are punished?
 
-#### 2.2.1 Input/Output Specification
+#### 2.2.1 Generation Specification
 
 **INPUT** (Story Generation):
 ```typescript
@@ -192,7 +207,6 @@ Example: "In a fractured post-war society where trust has been shattered, the po
   tone: StoryTone;            // Generated
   moralFramework: string;     // Generated
   summary: string;            // Generated
-  // Visual and metadata fields initialized as null/defaults
 }
 ```
 
@@ -340,7 +354,7 @@ Example: "In a fractured post-war society where trust has been shattered, the po
 
 **Key Concept**: Characters are defined by their **coreTrait** (moral virtue), **internalFlaw** (source of adversity), and **externalGoal** (what they think will solve their problem). Their arcs emerge from healing internal flaws through virtuous actions.
 
-#### 2.3.1 Input/Output Specification
+#### 2.3.1 Generation Specification
 
 **INPUT** (Character Generation):
 ```typescript
@@ -395,15 +409,13 @@ Array<{
 }>
 ```
 
-**Note**: Character images (portraits) are generated later in the image generation phase. `imageUrl` and `imageVariants` are initialized as null.
-
 ### 2.4 Phase 3: Setting Generation
 
 **Purpose**: Generate 2-6 primary settings that serve as emotional environments amplifying cycle phases
 
 **Key Concept**: Settings create external adversity through physical/social obstacles, amplify each cycle phase (setup, adversity, virtue, consequence, transition), and serve as symbolic mirrors for character transformation.
 
-#### 2.4.1 Input/Output Specification
+#### 2.4.1 Generation Specification
 
 **INPUT** (Setting Generation):
 ```typescript
@@ -415,20 +427,13 @@ Array<{
 
 **GENERATION PROCESS**:
 1. **Determine Setting Count**: Generate 2-6 primary settings based on story scope
-2. **Define Adversity Elements**: For each setting, establish:
-   - physicalObstacles: Environmental challenges
-   - scarcityFactors: Limited resources forcing choices
-   - dangerSources: Threats from environment
-   - socialDynamics: Community factors
-3. **Create Cycle Amplification**: Define how setting amplifies each phase:
-   - setup: How setting establishes adversity
-   - adversity: How setting intensifies conflict
-   - virtue: How setting contrasts/witnesses moral beauty
-   - consequence: How setting transforms or reveals
-   - transition: How setting hints at new problems
-4. **Build Atmosphere**: Generate mood, emotionalResonance, and symbolicMeaning
-5. **Add Sensory Immersion**: Create detailed sensory arrays (sight, sound, smell, touch, taste)
-6. **Align with Story**: Ensure settings fit genre, tone, and support moralFramework
+2. **Define Element Arrays**: For each setting, establish reusable elements:
+   - **Adversity Elements**: Environmental challenges, scarcity, dangers, social dynamics
+   - **Virtue Elements**: Witnesses, contrasts, opportunities, sacred spaces
+   - **Consequence Elements**: Transformative features, reward sources, revelations, community responses
+3. **Build Atmosphere**: Generate mood and emotional resonance
+4. **Add Sensory Immersion**: Create detailed sensory arrays (sight, sound, smell, touch, taste)
+5. **Align with Story**: Ensure settings fit genre, tone, and support moralFramework
 
 **OUTPUT** (Setting Generation Data):
 ```typescript
@@ -436,21 +441,29 @@ Array<{
   name: string;               // Generated setting name
   summary: string;            // Comprehensive paragraph (3-5 sentences)
 
-  // Adversity-Triumph Core
+  // Adversity-Triumph Core (Element-Based Design)
   adversityElements: {
-    physicalObstacles: string[];    // Environmental challenges
-    scarcityFactors: string[];      // Limited resources
-    dangerSources: string[];        // Threats from environment
-    socialDynamics: string[];       // Community factors
+    physicalObstacles: string[];    // Environmental challenges (3-7 items)
+    scarcityFactors: string[];      // Limited resources (2-5 items)
+    dangerSources: string[];        // Threats from environment (2-5 items)
+    socialDynamics: string[];       // Community factors (2-5 items)
   };
+
+  virtueElements: {
+    witnessElements: string[];      // Who/what witnesses moral acts (2-5 items)
+    contrastElements: string[];     // Elements making virtue powerful by contrast (2-5 items)
+    opportunityElements: string[];  // Features enabling moral choices (2-5 items)
+    sacredSpaces: string[];         // Locations with moral/emotional significance (1-3 items)
+  };
+
+  consequenceElements: {
+    transformativeElements: string[]; // Features showing change/impact (2-5 items)
+    rewardSources: string[];          // Sources of karmic payoff (2-5 items)
+    revelationTriggers: string[];     // Elements revealing hidden connections (2-5 items)
+    communityResponses: string[];     // How setting inhabitants respond (2-5 items)
+  };
+
   symbolicMeaning: string;          // How setting reflects moral framework (1-2 sentences)
-  cycleAmplification: {
-    setup: string;                  // Establishes adversity
-    adversity: string;              // Intensifies conflict
-    virtue: string;                 // Contrasts/witnesses moral beauty
-    consequence: string;            // Transforms or reveals
-    transition: string;             // Hints at new problems
-  };
 
   // Emotional Atmosphere
   mood: string;                     // Primary emotional quality
@@ -504,12 +517,11 @@ Story (2-6 settings)
 **Story Level (All Settings)**:
 - Establishes complete world geography
 - 2-6 primary settings total
-- Each setting fully specified with adversityElements, sensory data, cycleAmplification
+- Each setting fully specified with element arrays (adversityElements, virtueElements, consequenceElements), sensory data, and symbolic meaning
 
 **Part Level (Act Settings)**:
 - Selects 2-4 settings from Story.settings
-- Settings match act's thematic needs and atmosphere
-- Act I might use "home" settings; Act II uses "journey" settings; Act III uses "climax" settings
+- Settings match part's thematic needs and atmosphere
 - Stored in `Part.settingIds`
 
 **Chapter Level (Chapter Settings)**:
@@ -533,18 +545,21 @@ Story (2-6 settings)
 
 **Chapter Generation**:
 - Choose settings that support micro-cycle phases
-- Consider setting's `cycleAmplification` for specific phases
+- Consider setting's element arrays for specific cycle phases:
+  - `adversityElements` for setup/adversity phases
+  - `virtueElements` for virtue phase
+  - `consequenceElements` for consequence phase
 - Aim for 1-3 settings max to maintain chapter coherence
 
 **Scene Generation**:
 
-| Cycle Phase | Setting Selection Strategy |
-|-------------|----------------------------|
-| **Setup** | Introduction/familiar settings (home, normal world) - establish comfort before adversity |
-| **Adversity** | Confined/adversity-rich settings - use `adversityElements` to create external pressure |
-| **Virtue** | Contrast settings - barren/hostile environment makes virtue more powerful symbolically |
-| **Consequence** | Transformation settings - use `symbolicMeaning` to reflect character change |
-| **Transition** | Bridge settings - hint at new location/adversity through environment |
+| Cycle Phase | Setting Selection Strategy | Element Array to Use |
+|-------------|----------------------------|---------------------|
+| **Setup** | Introduction/familiar settings (home, normal world) - establish comfort before adversity | `adversityElements` (preview coming obstacles) |
+| **Adversity** | Confined/adversity-rich settings - create external pressure | `adversityElements.physicalObstacles`, `scarcityFactors`, `dangerSources` |
+| **Virtue** | Contrast settings - barren/hostile environment makes virtue more powerful symbolically | `virtueElements.witnessElements`, `contrastElements`, `opportunityElements` |
+| **Consequence** | Transformation settings - reflect character change | `consequenceElements.transformativeElements`, `rewardSources`, `revelationTriggers` |
+| **Transition** | Bridge settings - hint at new location/adversity through environment | `adversityElements` (setup next cycle), `consequenceElements.communityResponses` |
 
 **Implementation Details**
 
@@ -554,17 +569,22 @@ Story (2-6 settings)
 - Enables setting-specific content generation
 
 **Setting Selection Criteria**:
-- **Cycle phase match**: Use setting's `cycleAmplification[phase]` to find best fit
+- **Cycle phase match**: Select appropriate element arrays based on scene's cycle phase
+  - Setup/Adversity → Use `adversityElements`
+  - Virtue → Use `virtueElements`
+  - Consequence → Use `consequenceElements`
+  - Transition → Mix of `adversityElements` and `consequenceElements`
+- **Element selection**: Choose specific items from element arrays to create scene details
 - **Action requirements**: Physical setting matches scene needs (confined space for confrontation, open space for freedom)
-- **Variety**: Distribute settings across scenes to avoid overuse
+- **Variety**: Distribute settings and element usage across scenes to avoid repetition
 
 **Cascading Hierarchy Benefits**
 
 - ✅ **Focused setting usage**: Each level narrows setting choices appropriately
-- ✅ **Act coherence**: Parts use consistent setting palette
+- ✅ **Part coherence**: Parts use consistent setting palette
 - ✅ **Chapter coherence**: Chapters don't jump between too many locations
 - ✅ **Explicit tracking**: Query-able setting relationships at every level
-- ✅ **Setting analytics**: Track which settings used in which acts/chapters
+- ✅ **Setting analytics**: Track which settings used in which parts/chapters
 - ✅ **Guided generation**: Narrower choices make setting selection easier and more appropriate
 - ✅ **Thematic consistency**: Settings match narrative scope at each level
 
@@ -577,11 +597,7 @@ Story (2-6 settings)
 - **Micro Cycles** (Chapter-level): Each chapter advances character toward macro payoff
 - **Incremental Writing**: Chapters generated one-by-one; Part defines MACRO arc only
 
-**Key Fields**:
-- `summary` (text): MACRO adversity-triumph arcs per character
-- `settingIds` (string[]): Settings available for use in this Part (subset of Story's settings)
-
-#### 2.5.1 Input/Output Specification
+#### 2.5.1 Generation Specification
 
 **INPUT** (Part Generation):
 ```typescript
@@ -617,11 +633,7 @@ Story (2-6 settings)
    - **Macro New Adversity**: How this resolution creates next part's challenge
      - What new problem emerges from the resolution?
      - How do stakes escalate?
-5. **Plan Character Interactions**: Determine how character arcs intersect
-   - Which relationships (Jeong) form or deepen?
-   - What shared Han (wounds) are revealed?
-   - How do arcs converge toward part climax (where CONSEQUENCE manifests)?
-6. **Generate Summary**: Comprehensive description of all macro arcs, their convergence, and this part's role in overall story
+5. **Generate Summary**: Comprehensive description of all macro arcs and this part's role in overall story
 
 **OUTPUT** (Part Generation Data):
 ```typescript
@@ -690,14 +702,7 @@ Part Structure (4-chapter example):
   - Middle chapters: MACRO virtue performed
   - Climax chapter: MACRO consequence manifests
 
-**Key Fields**:
-- `summary` (text): One micro-cycle adversity-triumph
-- `characterId` (text): References Character.id
-- `characterArc` (object): Structured micro-cycle tracking
-- `arcPosition` (enum): 'beginning' | 'middle' | 'climax' | 'resolution'
-- `settingIds` (string[]): Settings used in this chapter (subset of Part's settings)
-
-#### 2.6.1 Input/Output Specification
+#### 2.6.1 Generation Specification
 
 **INPUT** (Chapter Generation):
 ```typescript
@@ -787,11 +792,6 @@ Part Structure (4-chapter example):
 
 **Purpose**: Divide chapter's adversity-triumph cycle into 3-7 narrative beats
 
-**Key Fields**:
-- `summary` (text): Scene specification - what happens, emotional beat, purpose, sensory anchors
-- `content` (text): Full prose narrative generated from the summary
-- `settingId` (text): References Setting.id - the physical location (from Chapter.settingIds)
-
 **Mapping 4-Phase Cycle to 5 Scene Types:**
 
 The 4-phase narrative cycle (Adversity → Virtue → Consequence → New Adversity) is implemented as 5 scene types to provide better pacing and emotional flow:
@@ -823,7 +823,7 @@ The 4-phase narrative cycle (Adversity → Virtue → Consequence → New Advers
    - Hook for next chapter
    - Character's emotional state shifts
 
-#### 2.7.1 Scene Summary Generation (Planning Phase)
+#### 2.7.1 Planning Phase Generation Specification
 
 **Purpose**: Generate scene summaries and metadata for all scenes in a chapter (without content)
 
@@ -878,9 +878,7 @@ The 4-phase narrative cycle (Adversity → Virtue → Consequence → New Advers
 }
 ```
 
-**Note**: `chapterId` and `orderIndex` are automatically handled by the system (not part of generation data). Scene `content` is generated separately in section 2.7.2 (Execution Phase).
-
-#### 2.7.2 Scene Content Generation (Execution Phase)
+#### 2.7.2 Execution Phase Generation Specification
 
 **Purpose**: Generate full prose narrative content for each scene using its summary and metadata
 

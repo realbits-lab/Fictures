@@ -26,7 +26,7 @@ import type {
 import {
     type AiChapterType,
     AiChapterZodSchema,
-} from "./zod-schemas.generated";
+} from "./zod-schemas";
 
 /**
  * Generate ONE next chapter with full context

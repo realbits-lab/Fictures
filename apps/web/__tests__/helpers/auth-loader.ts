@@ -33,7 +33,7 @@ interface AuthData {
  *
  * @example
  * const apiKey = loadWriterAuth();
- * const response = await fetch('http://localhost:3000/studio/api/stories', {
+ * const response = await fetch('http://localhost:3000/studio/api/story', {
  *   headers: { 'x-api-key': apiKey }
  * });
  */

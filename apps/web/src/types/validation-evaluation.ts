@@ -4,7 +4,7 @@
  * Layer: Shared (Cross-cutting Concerns)
  * Used by: Multiple modules across API, service, and UI layers
  * Related:
- * - API types: src/app/studio/api/types.ts
+ * - API types: src/app/api/studio/types.ts
  * - Service types: src/lib/studio/generators/types.ts
  * - Global types: src/types/index.ts
  *

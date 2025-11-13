@@ -28,7 +28,7 @@ export function useStats() {
 
     const { data, error, isLoading, isValidating, mutate } = useSWR<UserStats>(
         // Only fetch if session is loaded (not loading state)
-        status !== "loading" ? "/analysis/api/stats" : null,
+        status !== "loading" ? "/api/analysis/stats" : null,
         fetcher,
         {
             revalidateOnFocus: false,

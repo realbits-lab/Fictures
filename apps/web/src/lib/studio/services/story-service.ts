@@ -17,7 +17,7 @@ import type {
 import {
     insertStorySchema,
     type Story,
-} from "../generators/zod-schemas.generated";
+} from "../generators/zod-schemas";
 
 export interface ServiceStoryParams {
     userPrompt: string;

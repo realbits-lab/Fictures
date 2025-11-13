@@ -229,54 +229,6 @@ export const getGenerationProgress = tool({
     },
 });
 
-export const createEmptyStory = tool({
-    summary: 'Create an empty story shell for "Create New Story" workflow',
-    parameters: z.object({
-        userId: z.string().describe("The user ID creating the story"),
-        title: z
-            .string()
-            .default("Untitled Story")
-            .describe("Initial story title"),
-    }),
-    execute: async ({ userId, title }) => {
-        try {
-            // Call the create-empty endpoint
-            const response = await fetch("/studio/api/stories/create-empty", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    userId,
-                    title,
-                }),
-            });
-
-            if (!response.ok) {
-                return {
-                    success: false,
-                    error: "Failed to create empty story",
-                };
-            }
-
-            const data = await response.json();
-
-            return {
-                success: true,
-                message: "Empty story created successfully",
-                storyId: data.storyId,
-                title: data.title,
-            };
-        } catch (error) {
-            return {
-                success: false,
-                error:
-                    error instanceof Error
-                        ? error.message
-                        : "Failed to create story",
-            };
-        }
-    },
-});
-
 // ==============================================================================
 // COMBINED UTILITY TOOLS EXPORT
 // ==============================================================================
@@ -285,5 +237,4 @@ export const studioAgentUtilityTools = {
     validateApiKey,
     updatePhaseProgress,
     getGenerationProgress,
-    createEmptyStory,
 };

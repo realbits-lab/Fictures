@@ -80,7 +80,7 @@ const {
 
 ### Server-Side Caching
 
-**File**: `src/app/studio/api/stories/[id]/comments/route.ts`
+**File**: `src/app/studio/api/story/[id]/comments/route.ts`
 
 Redis caching with public/private separation:
 
@@ -312,7 +312,7 @@ const handleCommentDeleted = async (commentId: string) => {
 The system provides detailed logging:
 
 ```
-[useComments] 🔄 Fetching comments from: /studio/api/stories/story_123/comments
+[useComments] 🔄 Fetching comments from: /studio/api/story/story_123/comments
 [useComments] 📋 Sending ETag: "a1b2c3d4..."
 [useComments] ✅ 304 Not Modified - using cached data
 

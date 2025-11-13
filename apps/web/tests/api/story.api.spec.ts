@@ -35,7 +35,7 @@ test.describe("Story API", () => {
         test("TC-API-STORY-002: Anonymous user cannot create story (401)", async ({
             request,
         }) => {
-            const response = await request.post("/studio/api/stories", {
+            const response = await request.post("/studio/api/story", {
                 data: {
                     title: "Test Story",
                     genre: "fantasy",
@@ -48,7 +48,7 @@ test.describe("Story API", () => {
         test("TC-API-STORY-004: Missing required fields returns 400", async ({
             request,
         }) => {
-            const response = await request.post("/studio/api/stories", {
+            const response = await request.post("/studio/api/story", {
                 headers: getAuthHeaders("writer"),
                 data: {
                     // Missing required fields
@@ -64,7 +64,7 @@ test.describe("Story API", () => {
             request,
         }) => {
             const response = await request.get(
-                "/studio/api/stories/nonexistent-id",
+                "/studio/api/story/nonexistent-id",
                 {
                     headers: getAuthHeaders("writer"),
                 },
@@ -78,7 +78,7 @@ test.describe("Story API", () => {
         test("TC-API-STORY-029: Returns paginated list of stories", async ({
             request,
         }) => {
-            const response = await request.get("/studio/api/stories", {
+            const response = await request.get("/studio/api/story", {
                 headers: getAuthHeaders("writer"),
             });
 

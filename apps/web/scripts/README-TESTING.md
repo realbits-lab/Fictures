@@ -57,7 +57,7 @@ All test logs are saved to the project root `logs/` directory:
 
 ### Stories API (`stories.test.ts`)
 Tests story generation and management:
-- POST `/studio/api/stories` - Generate new story
+- POST `/studio/api/story` - Generate new story
 - Story metadata validation
 - Generation time tracking
 

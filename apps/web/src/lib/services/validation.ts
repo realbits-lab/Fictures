@@ -1,137 +1,28 @@
+/**
+ * Validation Service
+ *
+ * Single Source of Truth: Drizzle ORM schema (via drizzle-zod)
+ * This file provides validation functions with business logic (warnings, stats)
+ * All base Zod schemas are generated from Drizzle schema
+ */
+
 import { z } from "zod";
+import {
+    insertChapterSchema,
+    insertCharacterSchema,
+    insertPartSchema,
+    insertSceneSchema,
+    insertSettingSchema,
+    insertStorySchema,
+} from "@/lib/studio/generators/zod-schemas";
 
-// Technical Validation Schemas
-export const StoryValidationSchema = z.object({
-    id: z.string().optional(),
-    title: z.string().min(1, "Title is required").max(255),
-    summary: z.string().optional(),
-    genre: z.string().optional(),
-    premise: z.string().optional(),
-    dramaticQuestion: z.string().optional(),
-    theme: z.string().optional(),
-    status: z
-        .enum([
-            "draft",
-            "phase1_in_progress",
-            "phase1_complete",
-            "phase2_complete",
-            "phase3_complete",
-            "phase4_complete",
-            "phase5_6_complete",
-            "generating_character_images",
-            "character_images_complete",
-            "generating_setting_images",
-            "setting_images_complete",
-            "completed",
-            "failed",
-            "active",
-            "hiatus",
-            "archived",
-        ])
-        .optional(),
-    partIds: z.array(z.string()).optional(),
-    chapterIds: z.array(z.string()).optional(),
-});
-
-export const PartValidationSchema = z.object({
-    id: z.string().optional(),
-    title: z.string().min(1, "Part title is required").max(255),
-    summary: z.string().optional(),
-    storyId: z.string().min(1, "Story ID is required"),
-    orderIndex: z.number().int().min(0),
-    structuralRole: z.string().optional(),
-    keyBeats: z.array(z.string()).optional(),
-    chapterIds: z.array(z.string()).optional(),
-});
-
-export const ChapterValidationSchema = z.object({
-    id: z.string().optional(),
-    title: z.string().min(1, "Chapter title is required").max(255),
-    summary: z.string().optional(),
-    storyId: z.string().min(1, "Story ID is required"),
-    partId: z.string().optional(),
-    orderIndex: z.number().int().min(0),
-    purpose: z.string().optional(),
-    hook: z.string().optional(),
-    characterFocus: z.string().optional(),
-    pacingGoal: z.string().optional(),
-    actionDialogueRatio: z.string().optional(),
-    wordCount: z.number().min(0).optional(),
-    sceneIds: z.array(z.string()).optional(),
-    chapterHook: z
-        .object({
-            type: z.string(),
-            summary: z.string(),
-            urgency_level: z.string(),
-        })
-        .optional(),
-});
-
-export const SceneValidationSchema = z.object({
-    id: z.string().optional(),
-    title: z.string().min(1, "Scene title is required").max(255),
-    content: z.string().optional(),
-    chapterId: z.string().min(1, "Chapter ID is required"),
-    orderIndex: z.number().int().min(0),
-    goal: z.string().optional(),
-    conflict: z.string().optional(),
-    outcome: z.string().optional(),
-    summary: z.string().optional(),
-    entryHook: z.string().optional(),
-    povCharacterId: z.string().optional(),
-    settingId: z.string().optional(),
-    narrativeVoice: z.string().optional(),
-    wordCount: z.number().min(0).optional(),
-    emotionalShift: z
-        .object({
-            from: z.string(),
-            to: z.string(),
-        })
-        .optional(),
-    characterIds: z.array(z.string()).optional(),
-    placeIds: z.array(z.string()).optional(),
-});
-
-export const CharacterValidationSchema = z.object({
-    id: z.string().optional(),
-    name: z.string().min(1, "Character name is required").max(255),
-    storyId: z.string().min(1, "Story ID is required"),
-    isMain: z.boolean().optional(),
-    role: z.string().optional(),
-    archetype: z.string().optional(),
-    summary: z.string().optional(),
-    storyline: z.string().optional(),
-    personality: z
-        .object({
-            traits: z.array(z.string()),
-            myers_briggs: z.string(),
-            enneagram: z.string(),
-        })
-        .optional(),
-    backstory: z.record(z.string(), z.string()).optional(),
-    motivations: z
-        .object({
-            primary: z.string(),
-            secondary: z.string(),
-            fear: z.string(),
-        })
-        .optional(),
-    voice: z.record(z.string(), z.unknown()).optional(),
-    physicalDescription: z.record(z.string(), z.unknown()).optional(),
-    visualReferenceId: z.string().optional(),
-});
-
-export const SettingValidationSchema = z.object({
-    id: z.string().optional(),
-    name: z.string().min(1, "Setting name is required").max(255),
-    storyId: z.string().min(1, "Story ID is required"),
-    summary: z.string().optional(),
-    mood: z.string().optional(),
-    sensory: z.record(z.string(), z.array(z.string())).optional(),
-    visualReferences: z.array(z.string()).optional(),
-    colorPalette: z.array(z.string()).optional(),
-    architecturalStyle: z.string().optional(),
-});
+// Re-export generated schemas for convenience
+export const StoryValidationSchema = insertStorySchema.partial();
+export const PartValidationSchema = insertPartSchema.partial();
+export const ChapterValidationSchema = insertChapterSchema.partial();
+export const SceneValidationSchema = insertSceneSchema.partial();
+export const CharacterValidationSchema = insertCharacterSchema.partial();
+export const SettingValidationSchema = insertSettingSchema.partial();
 
 // Validation Types
 export type ValidationResult = {
@@ -171,7 +62,7 @@ export function validateStory(data: unknown): ValidationResult {
     try {
         const parsed = StoryValidationSchema.parse(data);
 
-        // Additional business logic validation
+        // Additional business logic validation (Adversity-Triumph Engine fields)
         if (!parsed.summary) {
             warnings.push({
                 field: "summary",
@@ -191,10 +82,11 @@ export function validateStory(data: unknown): ValidationResult {
             });
         }
 
-        if (!parsed.premise) {
+        if (!parsed.moralFramework) {
             warnings.push({
-                field: "premise",
-                message: "A clear premise helps maintain story focus",
+                field: "moralFramework",
+                message:
+                    "A clear moral framework helps maintain thematic consistency",
                 severity: "warning",
                 type: "recommendation",
             });
@@ -202,8 +94,8 @@ export function validateStory(data: unknown): ValidationResult {
 
         const stats = calculateStats(
             parsed,
-            ["title"],
-            ["description", "genre", "premise", "dramaticQuestion", "theme"],
+            ["title", "authorId"],
+            ["summary", "genre", "tone", "moralFramework"],
         );
 
         return {
@@ -255,11 +147,11 @@ export function validatePart(data: unknown): ValidationResult {
             });
         }
 
-        if (!parsed.structuralRole) {
+        if (!parsed.characterArcs || parsed.characterArcs.length === 0) {
             warnings.push({
-                field: "structuralRole",
+                field: "characterArcs",
                 message:
-                    "Define the structural role (e.g., Setup, Confrontation, Resolution)",
+                    "Define character arcs for MACRO adversity-triumph progression",
                 severity: "warning",
                 type: "recommendation",
             });
@@ -268,7 +160,7 @@ export function validatePart(data: unknown): ValidationResult {
         const stats = calculateStats(
             parsed,
             ["title", "storyId", "orderIndex"],
-            ["description", "structuralRole", "summary", "keyBeats"],
+            ["summary", "characterArcs"],
         );
 
         return {
@@ -320,20 +212,21 @@ export function validateChapter(data: unknown): ValidationResult {
             });
         }
 
-        if (!parsed.purpose) {
+        if (!parsed.contributesToMacroArc) {
             warnings.push({
-                field: "purpose",
+                field: "contributesToMacroArc",
                 message:
-                    "Define the chapter's purpose in the overall narrative",
+                    "Define how this chapter advances the overall character arc",
                 severity: "warning",
                 type: "recommendation",
             });
         }
 
-        if (!parsed.hook) {
+        if (!parsed.createsNextAdversity) {
             warnings.push({
-                field: "hook",
-                message: "A chapter hook engages readers from the start",
+                field: "createsNextAdversity",
+                message:
+                    "Define how this chapter creates the next problem (narrative flow)",
                 severity: "warning",
                 type: "quality",
             });
@@ -341,8 +234,14 @@ export function validateChapter(data: unknown): ValidationResult {
 
         const stats = calculateStats(
             parsed,
-            ["title", "storyId", "orderIndex"],
-            ["summary", "purpose", "hook", "characterFocus", "pacingGoal"],
+            ["title", "storyId", "partId", "characterId", "orderIndex"],
+            [
+                "summary",
+                "arcPosition",
+                "contributesToMacroArc",
+                "adversityType",
+                "virtueType",
+            ],
         );
 
         return {
@@ -385,28 +284,30 @@ export function validateScene(data: unknown): ValidationResult {
     try {
         const parsed = SceneValidationSchema.parse(data);
 
-        if (!parsed.goal) {
+        if (!parsed.cyclePhase) {
             warnings.push({
-                field: "goal",
-                message: "Every scene should have a clear goal",
+                field: "cyclePhase",
+                message:
+                    "Define the cycle phase (setup, confrontation, virtue, consequence, transition)",
                 severity: "warning",
                 type: "quality",
             });
         }
 
-        if (!parsed.conflict) {
+        if (!parsed.emotionalBeat) {
             warnings.push({
-                field: "conflict",
-                message: "Conflict drives scene tension and engagement",
+                field: "emotionalBeat",
+                message:
+                    "Define the target emotional beat (fear, hope, tension, relief, etc.)",
                 severity: "warning",
                 type: "quality",
             });
         }
 
-        if (!parsed.outcome) {
+        if (!parsed.content) {
             warnings.push({
-                field: "outcome",
-                message: "Define how the scene resolves or transitions",
+                field: "content",
+                message: "Scene content should be generated from the summary",
                 severity: "warning",
                 type: "quality",
             });
@@ -415,7 +316,7 @@ export function validateScene(data: unknown): ValidationResult {
         const stats = calculateStats(
             parsed,
             ["title", "chapterId", "orderIndex"],
-            ["content", "goal", "conflict", "outcome", "summary"],
+            ["content", "cyclePhase", "emotionalBeat", "summary", "settingId"],
         );
 
         return {
@@ -458,29 +359,31 @@ export function validateCharacter(data: unknown): ValidationResult {
     try {
         const parsed = CharacterValidationSchema.parse(data);
 
-        if (!parsed.role) {
+        if (!parsed.coreTrait) {
             warnings.push({
-                field: "role",
+                field: "coreTrait",
                 message:
-                    "Define the character's role (protagonist, antagonist, etc.)",
+                    "Define the core virtue (courage, compassion, integrity, etc.)",
                 severity: "warning",
                 type: "incomplete",
             });
         }
 
-        if (!parsed.archetype) {
+        if (!parsed.internalFlaw) {
             warnings.push({
-                field: "archetype",
-                message: "Character archetype helps maintain consistency",
+                field: "internalFlaw",
+                message:
+                    "Internal flaw creates internal adversity for character development",
                 severity: "warning",
                 type: "recommendation",
             });
         }
 
-        if (!parsed.motivations) {
+        if (!parsed.externalGoal) {
             warnings.push({
-                field: "motivations",
-                message: "Clear motivations drive character actions",
+                field: "externalGoal",
+                message:
+                    "External goal drives character actions and creates conflict",
                 severity: "warning",
                 type: "quality",
             });
@@ -489,7 +392,14 @@ export function validateCharacter(data: unknown): ValidationResult {
         const stats = calculateStats(
             parsed,
             ["name", "storyId"],
-            ["role", "archetype", "summary", "storyline", "motivations"],
+            [
+                "coreTrait",
+                "internalFlaw",
+                "externalGoal",
+                "summary",
+                "personality",
+                "backstory",
+            ],
         );
 
         return {
@@ -600,7 +510,7 @@ export function validateSetting(data: unknown): ValidationResult {
 
 // Helper function to calculate completeness stats
 function calculateStats(
-    data: any,
+    data: Record<string, unknown>,
     requiredFields: string[],
     optionalFields: string[],
 ): ValidationStats {

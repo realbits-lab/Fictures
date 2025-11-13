@@ -30,7 +30,7 @@ export function useStudioAgentChat({
     const transport = useMemo(
         () =>
             new DefaultChatTransport({
-                api: "/studio/api/agent",
+                api: "/api/studio/agent",
                 body: {
                     ...(currentChatId ? { chatId: currentChatId } : {}), // Only include chatId if it exists
                     storyContext,
@@ -101,7 +101,7 @@ export function useStudioAgentChat({
             setLoadingHistory(true);
             try {
                 const response = await fetch(
-                    `/studio/api/agent/${currentChatId}/messages`,
+                    `/api/studio/agent/${currentChatId}/messages`,
                 );
                 if (response.ok) {
                     const { messages } = await response.json();
@@ -126,28 +126,6 @@ export function useStudioAgentChat({
             .map((t: any) => t.toolName);
     }, [messages]);
 
-    // Create new story workflow
-    const createNewStory = async (title: string = "Untitled Story") => {
-        const requestBody: {
-            title: string;
-        } = {
-            title,
-        };
-
-        const response = await fetch("/studio/api/stories/create-empty", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(requestBody),
-        });
-
-        if (!response.ok) {
-            throw new Error("Failed to create story");
-        }
-
-        const data = await response.json();
-        return data.storyId;
-    };
-
     return {
         messages,
         input,
@@ -162,6 +140,5 @@ export function useStudioAgentChat({
         historyLoaded,
         activeTools,
         chatId: currentChatId,
-        createNewStory,
     };
 }

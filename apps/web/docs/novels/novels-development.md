@@ -2,106 +2,23 @@
 
 ## Overview
 
-This document provides comprehensive implementation specifications for the novels generation APIs using the Adversity-Triumph Engine, including ultra-engineered system prompts, complete examples, and iterative improvement workflows.
+This document provides comprehensive implementation specifications for the novels generation APIs using the Adversity-Triumph Engine, including complete examples and iterative improvement workflows.
 
 **Related Documents:**
 - 📖 **Specification** (`novels-specification.md`): Core concepts, data model, and theoretical foundation
 - 🧪 **Evaluation Guide** (`novels-evaluation.md`): Validation methods, quality metrics, and test strategies
-- 🏗️ **Generator Refactoring** (`generator-refactoring-plan.md`): Common generator library architecture
 
 ---
 
-## Part 0: Code Architecture (Common Generator Library)
+## Part I: Code Architecture (Common Generator Library)
 
-### 0.1 Architectural Decision: Studio vs Novels
+### 1.1 Architectural Decision: Studio vs Novels
 
 **Purpose Separation:**
 - **`src/lib/studio/`**: Creation/generation functionality (write operations)
 - **`src/lib/novels/`**: Reading/viewing functionality (read operations)
 
-### 0.2 Generator Library Structure
-
-**Problem**: Code duplication between orchestrator and individual API endpoints
-- Same generation logic exists in `orchestrator.ts` AND `api/generation/*/route.ts`
-- Changes require updates in multiple places
-- Risk of inconsistency
-
-**Solution**: Common generator library at `src/lib/studio/generators/`
-
-```
-src/lib/studio/
-├── generators/                        # Common generator functions
-│   ├── index.ts                      # Export all generators
-│   ├── story-generator.ts            # Story generation
-│   ├── characters-generator.ts       # Character generation
-│   ├── settings-generator.ts         # Setting generation
-│   ├── parts-generator.ts            # Parts generation
-│   ├── chapters-generator.ts         # Chapters generation
-│   ├── scene-summaries-generator.ts  # Scene summaries generation
-│   ├── scene-content-generator.ts    # Scene content generation
-│   ├── scene-evaluation-generator.ts # Scene evaluation
-│   └── images-generator.ts           # Image generation
-└── agent-*.ts                         # Existing agent tools
-
-src/lib/novels/
-├── orchestrator.ts                    # Uses studio generators
-├── types.ts                          # Shared types
-├── system-prompts.ts                 # Shared prompts
-└── ai-client.ts                      # AI integration
-```
-
-**Benefits:**
-- ✅ Single source of truth (DRY principle)
-- ✅ Unified API and individual endpoints use same functions
-- ✅ Easier testing and maintenance
-- ✅ Guaranteed consistency
-
-**Usage Pattern:**
-
-```typescript
-// In orchestrator
-import { generateCharacters } from '@/lib/studio/generators';
-
-// In API endpoint
-import { generateCharacters } from '@/lib/studio/generators';
-
-// Both use the exact same function
-const result = await generateCharacters({
-  storyId,
-  userId,
-  story,
-  characterCount,
-});
-```
-
-**Generator Function Signature Example:**
-
-```typescript
-export interface GeneratorCharactersParams {
-  storyId: string;
-  userId: string;
-  story: StorySummaryResult;
-  characterCount: number;
-  language?: string;
-  onProgress?: (current: number, total: number) => void;
-}
-
-export interface GeneratorCharactersResult {
-  characters: Character[];
-  metadata: {
-    totalGenerated: number;
-    generationTime: number;
-  };
-}
-
-export async function generateCharacters(
-  params: GeneratorCharactersParams
-): Promise<GeneratorCharactersResult>;
-```
-
-**Implementation Status**: ✅ Implemented - See sections below for current architecture
-
-### 0.3 Type Naming Convention
+### 1.2 Type Naming Convention
 
 **Layer-Based Naming Pattern**: `{Layer}{Entity}{Suffix}`
 
@@ -123,20 +40,186 @@ All types follow a consistent layer-prefix pattern with explicit suffixes for se
 - `ZodSchema` - Zod validation schema (AI layer - SSOT)
 - `JsonSchema` - JSON Schema for Gemini API (AI layer - derived from Zod)
 
+### 1.3 Schema & Validation Architecture (Single Source of Truth)
+
+**Principle**: Database schema is the single source of truth. All validation schemas are auto-generated via `drizzle-zod`.
+
+#### Table-Level SSOT (Drizzle → Zod)
+
+For table structures, Drizzle schema is SSOT and generates Zod schemas via `drizzle-zod`:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  src/lib/db/schema.ts (Drizzle ORM)                    │
+│  SINGLE SOURCE OF TRUTH (Table Structure)              │
+│  - Define tables with pgTable()                         │
+│  - Database constraints (NOT NULL, length, etc.)        │
+└─────────────────┬───────────────────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────────────────────┐
+│  drizzle-zod (Auto-Generation Library)                  │
+│  - createInsertSchema() → Zod schema for INSERT         │
+│  - createSelectSchema() → Zod schema for SELECT         │
+└─────────────────┬───────────────────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────────────────────┐
+│  zod-schemas.ts (Generated Schemas)           │
+│  - insertStorySchema, selectStorySchema                 │
+│  - insertCharacterSchema, selectCharacterSchema         │
+│  - insertChapterSchema, selectChapterSchema             │
+│  - insertSceneSchema, selectSceneSchema                 │
+│  - + AI-specific schemas (AiStoryZodSchema, etc.)       │
+└─────────────────┬───────────────────────────────────────┘
+                  │
+                  ├─────────────────┬─────────────────┐
+                  │                 │                 │
+                  ▼                 ▼                 ▼
+       ┌──────────────────┐ ┌─────────────┐ ┌──────────────┐
+       │  validation.ts   │ │ API Routes  │ │  Services    │
+       │  (+ warnings)    │ │ (validate)  │ │  (persist)   │
+       └──────────────────┘ └─────────────┘ └──────────────┘
+```
+
+#### Nested JSON SSOT (Zod ← Drizzle) - HYBRID ARCHITECTURE
+
+For **nested JSON field structures** (like `personality`, `physicalDescription`, `sensory`), Zod is SSOT and Drizzle imports types:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  zod-schemas.ts (SSOT for Nested Types)       │
+│  - personalitySchema → PersonalityType                  │
+│  - physicalDescriptionSchema → PhysicalDescriptionType  │
+│  - voiceStyleSchema → VoiceStyleType                   │
+│  - adversityElementsSchema → AdversityElementsType     │
+│  - cycleAmplificationSchema → CycleAmplificationType   │
+│  - sensorySchema → SensoryType                         │
+└─────────────────┬───────────────────────────────────────┘
+                  │
+                  │ imports types (bidirectional)
+                  ▼
+┌─────────────────────────────────────────────────────────┐
+│  src/lib/db/schema.ts (Drizzle ORM)                    │
+│  - characters.personality .$type<PersonalityType>()     │
+│  - characters.physicalDescription .$type<...>()         │
+│  - characters.voiceStyle .$type<VoiceStyleType>()      │
+│  - settings.adversityElements .$type<...>()            │
+│  - settings.cycleAmplification .$type<...>()           │
+│  - settings.sensory .$type<SensoryType>()              │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Why Hybrid Architecture?**
+- Drizzle's `.$type<T>()` is **TypeScript-only** (compile-time) with no runtime information
+- `drizzle-zod` can only generate `z.unknown()` or `z.any()` for JSON fields
+- Zod provides **runtime validation** and detailed type definitions for nested structures
+- Solution: Define nested schemas in Zod, then reference those types in Drizzle
+
+**Files & Responsibilities**:
+
+| File | Purpose | Source |
+|------|---------|--------|
+| `src/lib/db/schema.ts` | Database schema (SSOT for tables) | Manual (Drizzle) |
+| `zod-schemas.ts` | Validation schemas (SSOT for nested types) | Semi-manual (drizzle-zod + manual nested schemas) |
+| `validation.ts` | Business logic (warnings, stats) | Uses generated schemas |
+| `validation-schemas.ts` | API request validation | Manual (different purpose) |
+
+**Benefits**:
+- ✅ **No Schema Drift**: DB and validation always match
+- ✅ **Single Update**: Change schema once, validation updates automatically
+- ✅ **Type Safety**: TypeScript types inferred from single source
+- ✅ **Consistency**: All layers use same schema definitions
+- ✅ **Runtime Validation**: Zod provides validation for nested JSON structures
+
+**Example Usage (Table-Level)**:
+
+```typescript
+// ✅ CORRECT: Using auto-generated schema from SSOT
+import { insertStorySchema } from "@/lib/studio/generators/zod-schemas";
+
+// Validate API request
+const validatedData = insertStorySchema.parse(requestBody);
+
+// Insert into database (types match perfectly!)
+await db.insert(stories).values(validatedData);
+
+// ❌ INCORRECT: Manual schema (causes drift)
+const manualSchema = z.object({
+  title: z.string().max(255),  // Can get out of sync with DB!
+});
+```
+
+**Example Usage (Nested JSON)**:
+
+```typescript
+// ✅ CORRECT: Using exported nested schemas (SSOT)
+import {
+  personalitySchema,
+  PersonalityType
+} from "@/lib/studio/generators/zod-schemas";
+
+// Validate nested JSON data
+const validatedPersonality: PersonalityType = personalitySchema.parse({
+  traits: ["brave", "compassionate"],
+  values: ["justice", "family"]
+});
+
+// In schema.ts - Import and use the type
+import type { PersonalityType } from "@/lib/studio/generators/zod-schemas";
+
+export const characters = pgTable("characters", {
+  // ...
+  personality: json().$type<PersonalityType>().notNull(),
+});
+
+// ❌ INCORRECT: Inline type definition (causes drift)
+personality: json().$type<{
+  traits: string[];
+  values: string[];
+}>().notNull()
+```
+
+**Exported Nested Schemas**:
+
+Characters table:
+- `personalitySchema` + `PersonalityType` (traits, values)
+- `physicalDescriptionSchema` + `PhysicalDescriptionType` (age, appearance, distinctiveFeatures, style)
+- `voiceStyleSchema` + `VoiceStyleType` (tone, vocabulary, quirks, emotionalRange)
+
+Settings table:
+- `adversityElementsSchema` + `AdversityElementsType` (physicalObstacles, scarcityFactors, dangerSources, socialDynamics)
+- `cycleAmplificationSchema` + `CycleAmplificationType` (setup, confrontation, virtue, consequence, transition)
+- `sensorySchema` + `SensoryType` (sight, sound, smell, touch, taste?)
+
+**When to Update**:
+
+**Table Structure Changes:**
+1. Modify `src/lib/db/schema.ts` (SSOT for tables)
+2. Run `pnpm db:generate` (regenerate Drizzle types)
+3. Schemas in `zod-schemas.ts` auto-update
+4. All validation uses updated schema automatically
+
+**Nested JSON Structure Changes:**
+1. Modify nested schema in `zod-schemas.ts` (SSOT for nested types)
+2. Export the schema and its type (if not already exported)
+3. Update imports in `src/lib/db/schema.ts` if needed
+4. Both layers stay synchronized automatically
+
 **Complete Type Hierarchy for Story Generation:**
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
 │ API Layer (HTTP Contracts)                                         │
 ├────────────────────────────────────────────────────────────────────┤
-│ POST /studio/api/stories                                           │
+│ POST /api/studio/story                                             │
 │   Request:  ApiStoryRequest                                        │
 │   Response: ApiStoryResponse | ApiStoryErrorResponse               │
 │                                                                    │
 ├────────────────────────────────────────────────────────────────────┤
-│ Service Layer (Orchestration)                                      │
+│ Service Layer (Generation + Persistence)                           │
 ├────────────────────────────────────────────────────────────────────┤
-│ storyService.generate(params: ServiceStoryParams)                  │
+│ storyService.generateAndSave(params: ServiceStoryParams)           │
 │   → returns ServiceStoryResult                                     │
 │                                                                    │
 ├────────────────────────────────────────────────────────────────────┤
@@ -211,19 +294,35 @@ const response: ApiStoryResponse = {
 };
 
 // ─────────────────────────────────────────────────────
-// Service Layer (Orchestration)
+// Service Layer (Generation + Persistence)
 // ─────────────────────────────────────────────────────
-async function generate(params: ServiceStoryParams): Promise<ServiceStoryResult> {
-  // Map Service params to Generator params
+async function generateAndSave(params: ServiceStoryParams): Promise<ServiceStoryResult> {
+  // 1. Map Service params to Generator params
   const generatorParams: GeneratorStoryParams = {
     userPrompt: params.userPrompt,
     language: params.language,
   };
 
+  // 2. Generate using pure generator (no DB operations)
   const result: GeneratorStoryResult = await generateStory(generatorParams);
 
+  // 3. Prepare & validate data for database
+  const storyData = insertStorySchema.parse({
+    id: nanoid(),
+    authorId: params.userId,
+    ...result.story,  // AiStoryType
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  });
+
+  // 4. Save to database
+  const savedStory: Story = await db.insert(stories)
+    .values(storyData)
+    .returning()[0];
+
+  // 5. Return result
   return {
-    story: result.story,
+    story: savedStory,
     metadata: result.metadata,
   };
 }
@@ -251,17 +350,6 @@ async function generateStory(
     metadata: { modelId: 'gemini-2.5-flash', tokens: 1250 }
   };
 }
-
-// ─────────────────────────────────────────────────────
-// Database Layer (Persistence)
-// ─────────────────────────────────────────────────────
-const story: Story = await db.insert(stories).values({
-  ...validated,  // AiStoryType
-  id: generateId(),
-  authorId: userId,
-  createdAt: new Date(),
-  updatedAt: new Date()
-});
 ```
 
 **Complete Type Table for All Generators:**
@@ -273,7 +361,7 @@ const story: Story = await db.insert(stories).values({
 | Settings | `ApiSettingsRequest` | `ApiSettingsResponse` | `ApiSettingsErrorResponse` | `ServiceSettingsParams` | `ServiceSettingsResult` | `GeneratorSettingsParams` | `GeneratorSettingsResult` | **`AiSettingZodSchema`** | **`AiSettingType`** | **`AiSettingJsonSchema`** | `Setting`, `InsertSetting` |
 | Parts | `ApiPartsRequest` | `ApiPartsResponse` | `ApiPartsErrorResponse` | `ServicePartsParams` | `ServicePartsResult` | `GeneratorPartsParams` | `GeneratorPartsResult` | **`AiPartZodSchema`** | **`AiPartType`** | **`AiPartJsonSchema`** | `Part`, `InsertPart` |
 | Chapters | `ApiChaptersRequest` | `ApiChaptersResponse` | `ApiChaptersErrorResponse` | `ServiceChaptersParams` | `ServiceChaptersResult` | `GeneratorChaptersParams` | `GeneratorChaptersResult` | **`AiChapterZodSchema`** | **`AiChapterType`** | **`AiChapterJsonSchema`** | `Chapter`, `InsertChapter` |
-| Scene Summaries | `ApiSceneSummariesRequest` | `ApiSceneSummariesResponse` | `ApiSceneSummariesErrorResponse` | `ServiceSceneSummariesParams` | `ServiceSceneSummariesResult` | `GeneratorSceneSummariesParams` | `GeneratorSceneSummariesResult` | **`AiSceneSummaryZodSchema`** | **`AiSceneSummaryType`** | **`AiSceneSummaryJsonSchema`** | `Scene`, `InsertScene` |
+| Scene Summary | `ApiSceneSummaryRequest` | `ApiSceneSummaryResponse` | `ApiSceneSummaryErrorResponse` | `ServiceSceneSummaryParams` | `ServiceSceneSummaryResult` | `GeneratorSceneSummaryParams` | `GeneratorSceneSummaryResult` | **`AiSceneSummaryZodSchema`** | **`AiSceneSummaryType`** | **`AiSceneSummaryJsonSchema`** | `Scene`, `InsertScene` |
 | Scene Content | `ApiSceneContentRequest` | `ApiSceneContentResponse` | `ApiSceneContentErrorResponse` | `ServiceSceneContentParams` | `ServiceSceneContentResult` | `GeneratorSceneContentParams` | `GeneratorSceneContentResult` | N/A | `string` (prose) | N/A | `Scene` (updates content) |
 
 **Benefits of Layer-Based Naming:**
@@ -284,200 +372,37 @@ const story: Story = await db.insert(stories).values({
 - ✅ **Self-Documenting**: Type name immediately indicates layer and purpose
 - ✅ **Migration Safe**: Can add type aliases for backward compatibility
 
-#### 0.3.1 CRITICAL: API Response Types vs AI Types
+## Part II: API Architecture
 
-**Key Discovery**: API responses MUST use full database types, NOT AI-only types.
+### 2.0 API Naming Convention
 
-**Problem:**
-- `Ai*Type` (e.g., `AiStoryType`, `AiCharacterType`) contains ONLY AI-generated fields
-- These types lack database metadata: `id`, `authorId`, `createdAt`, `updatedAt`, `status`, etc.
-- Using `Ai*Type` in API responses causes test failures and runtime errors
+**Unified API Namespace**: All API routes follow a centralized `/api/` root structure following RESTful conventions.
 
-**Solution:**
-API response types must use full database types that include all fields:
+**Pattern**: `/api/{feature}/{resource}/{action?}`
 
-```typescript
-// ❌ WRONG: Using AI-only type in API response
-export interface ApiStoryResponse {
-  success: true;
-  story: AiStoryType;  // Missing id, authorId, createdAt, updatedAt, etc.
-  metadata: { ... };
-}
+**Novel Generation APIs**: All novel generation endpoints are under `/api/studio/` namespace:
+- `/api/studio/story` - Story generation
+- `/api/studio/characters` - Character generation
+- `/api/studio/settings` - Settings generation
+- `/api/studio/part` - Part generation
+- `/api/studio/chapter` - Chapter generation
+- `/api/studio/scene-summary` - Scene summary generation
+- `/api/studio/scene-content` - Scene content generation
+- `/api/studio/scene-evaluation` - Scene evaluation
+- `/api/studio/images` - Image generation
 
-// ✅ CORRECT: Using full database type in API response
-export interface ApiStoryResponse {
-  success: true;
-  story: Story;  // Includes ALL fields (AI-generated + database metadata)
-  metadata: { ... };
-}
-```
+**Benefits**:
+- ✅ RESTful compliance with industry standards
+- ✅ Single `/api/` root for all endpoints
+- ✅ Predictable structure for developers
+- ✅ Better tooling support (Swagger, Postman)
+- ✅ Easier middleware and authentication management
 
-**Type Comparison:**
-
-```typescript
-// AI-Only Type (ONLY for AI generation)
-type AiStoryType = {
-  title: string;        // AI-generated
-  summary: string;      // AI-generated
-  genre: string;        // AI-generated
-  tone: string;         // AI-generated
-  moralFramework: string; // AI-generated
-};
-
-// Full Database Type (for API responses, services, database operations)
-type Story = {
-  // Database metadata
-  id: string;
-  authorId: string;
-  createdAt: string;
-  updatedAt: string;
-  status: 'writing' | 'published';
-  viewCount: number;
-  rating: number;
-  ratingCount: number;
-  imageUrl: string | null;
-  imageVariants: object | null;
-
-  // AI-generated content (same as AiStoryType)
-  title: string;
-  summary: string;
-  genre: string;
-  tone: string;
-  moralFramework: string;
-};
-```
-
-**Usage Guidelines:**
-
-| Context | Type to Use | Reason |
-|---------|-------------|--------|
-| AI generation input | `Ai*ZodSchema` | For Gemini structured output |
-| AI generation output validation | `Ai*Type` | Validated AI-generated content only |
-| Database insert | `InsertStory`, `InsertCharacter`, etc. | Zod schema for inserts |
-| Database query result | `Story`, `Character`, etc. | Full records with all fields |
-| **API Response** | **`Story`, `Character`, etc.** | **Clients need complete records** |
-| Service layer return | `Story`, `Character`, etc. | After saving to database |
-
-**Real-World Example:**
-
-```typescript
-// Generator Layer: Returns AI-generated content only
-async function generateStory(params: GeneratorStoryParams): Promise<GeneratorStoryResult> {
-  const aiData: AiStoryType = await gemini.generateStructured(
-    prompt,
-    AiStoryJsonSchema
-  );
-
-  return {
-    story: aiData,  // AiStoryType - AI-generated fields only
-    metadata: { ... }
-  };
-}
-
-// Service Layer: Saves to database and returns full record
-async function generateAndSave(params: ServiceStoryParams): Promise<ServiceStoryResult> {
-  const generated = await generateStory(...);
-
-  // Save to database with additional metadata
-  const saved: Story[] = await db.insert(stories).values({
-    id: generateId(),
-    authorId: params.userId,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    status: 'writing',
-    viewCount: 0,
-    rating: 0,
-    ratingCount: 0,
-    imageUrl: null,
-    imageVariants: null,
-    ...generated.story,  // Spread AI-generated fields
-  }).returning();
-
-  return {
-    story: saved[0],  // Story - full database record
-    metadata: { ... }
-  };
-}
-
-// API Layer: Returns full database record
-export async function POST(request: NextRequest) {
-  const result = await storyService.generateAndSave(params);
-
-  const response: ApiStoryResponse = {
-    success: true,
-    story: result.story,  // Story type - includes all fields
-    metadata: result.metadata
-  };
-
-  return NextResponse.json(response, { status: 201 });
-}
-```
-
-**Why This Matters:**
-- ✅ Tests expect complete records with IDs and timestamps
-- ✅ Clients need metadata for caching, updates, and navigation
-- ✅ Type safety ensures all required fields are present
-- ✅ Prevents runtime errors from missing fields
-
-**Type Flow Across All Layers:**
-
-```
-Client HTTP Request
-    ↓
-ApiStoryRequest (API Layer - HTTP Contract)
-    ↓ (mapped in route handler)
-ServiceStoryParams (Service Layer - Orchestration)
-    ↓ (calls generator)
-GeneratorStoryParams (Generator Layer - Business Logic)
-    ↓ (creates prompt, calls AI)
-AiStoryZodSchema (AI Layer - Zod SSOT)
-    ↓ z.infer
-AiStoryType (AI Layer - TypeScript Type)
-    ↓ (wrapped in result)
-GeneratorStoryResult (Generator Layer - Function Output)
-    ↓ (wrapped in service result)
-ServiceStoryResult (Service Layer - Orchestration Output)
-    ↓ (mapped in route handler)
-ApiStoryResponse (API Layer - HTTP Contract)
-    ↓
-Client HTTP Response
-```
-
-**Type Locations:**
-
-- **API Layer** (`src/app/studio/api/types.ts`):
-  - `Api{Entity}Request`, `Api{Entity}Response`, `Api{Entity}ErrorResponse`
-
-- **Service Layer** (`src/lib/studio/services/types.ts`):
-  - `Service{Entity}Params`, `Service{Entity}Result`
-
-- **Generator Layer** (`src/lib/studio/generators/types.ts`):
-  - `Generator{Entity}Params`, `Generator{Entity}Result`, `{Entity}PromptParams`, `GeneratorMetadata`
-
-- **AI Layer** (`src/lib/studio/generators/ai-schemas.ts`):
-  - `Ai{Entity}ZodSchema` (Zod schema - SSOT)
-  - `Ai{Entity}Type` (TypeScript type - derived via `z.infer`)
-  - `Ai{Entity}JsonSchema` (JSON Schema - derived via `z.toJSONSchema`)
-
-- **Database Layer** (`src/lib/db/schema.ts`):
-  - `{Entity}`, `Insert{Entity}`
-
-**Migration Notes:**
-
-Old naming is deprecated but maintained via type aliases for backward compatibility:
-
-```typescript
-// Backward compatibility aliases (will be removed in future version)
-export type GeneratedStoryData = AiStoryType;
-export const GeneratedStorySchema = AiStoryZodSchema;
-export const StoryJsonSchema = AiStoryJsonSchema;
-```
+**File Structure**: `src/app/api/studio/{endpoint}/route.ts`
 
 ---
 
-## Part I: API Architecture
-
-### 1.1 Generation Flow Diagram
+### 2.1 Generation Flow Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -487,1994 +412,542 @@ export const StoryJsonSchema = AiStoryJsonSchema;
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 1: Story Generation                                         │
-│  POST /studio/api/stories                                        │
-│                                                                   │
-│  System Prompt Focus:                                            │
-│  - Extract general thematic premise, NOT detailed plot           │
-│  - Identify moral framework and virtues to be tested            │
-│  - Define world rules and moral stakes                          │
-│  - Provide guidelines for character archetypes (NOT characters) │
-│                                                                   │
-│  Output: Story.title, summary, genre, tone, moralFramework      │
-│  Note: Characters are NOT created here - generated in Phase 2   │
+│  POST /api/studio/story                                          │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 2: Character Generation (Full Profiles)                    │
-│  POST /studio/api/characters                                     │
-│                                                                   │
-│  System Prompt Focus:                                            │
-│  - Design 2-4 characters FROM SCRATCH based on moral framework  │
-│  - Create personality, backstory, relationships (Jeong system)  │
-│  - Define physical description and voice style                  │
-│                                                                   │
-│  Output: Complete Character records in database (no images)     │
+│  POST /api/studio/characters                                     │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 3: Settings Generation (Primary Locations)                 │
-│  POST /studio/api/settings                                       │
-│                                                                   │
-│  System Prompt Focus:                                            │
-│  - Create 2-4 primary settings with adversity elements          │
-│  - Define symbolic meaning (reflect moral framework)            │
-│  - Specify cycle amplification (how setting amplifies phases)   │
-│  - Rich sensory details (sight, sound, smell, touch, taste)    │
-│                                                                   │
-│  Output: Complete Setting records in database (no images)       │
+│  POST /api/studio/settings                                       │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 4: Part Generation (Act Structure)                         │
-│  POST /studio/api/part                                           │
-│                                                                   │
-│  System Prompt Focus:                                            │
-│  - Create adversity-triumph cycle PER CHARACTER per act         │
-│  - Define internal + external conflicts                         │
-│  - Plan virtuous actions (intrinsically motivated)              │
-│  - Design earned luck mechanisms (seed planting)                │
-│  - Ensure each resolution creates next adversity               │
-│                                                                   │
-│  Output: Part with multi-character adversity cycles            │
+│  POST /api/studio/part                                           │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 5: Chapter Generation (Per Part)                           │
-│  POST /studio/api/chapter                                        │
-│                                                                   │
-│  System Prompt Focus:                                            │
-│  - Extract ONE adversity-triumph cycle per chapter              │
-│  - Focus on 1-2 characters from part's multi-char arcs         │
-│  - Connect to previous chapter's resolution                     │
-│  - Track seeds planted/resolved (earned luck tracking)         │
-│  - Create next chapter's adversity                             │
-│                                                                   │
-│  Output: Chapter with complete micro-cycle                      │
+│  POST /api/studio/chapter                                        │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 6: Scene Summary Generation (Per Chapter)                  │
-│  POST /studio/api/scene-summary                                  │
-│                                                                   │
-│  System Prompt Focus:                                            │
-│  - Divide cycle into 5 phases: setup → confrontation →         │
-│    virtue → consequence → transition                            │
-│  - Assign emotional beats per scene                            │
-│  - Plan pacing (build to virtue scene, release to consequence) │
-│  - Specify what happens, purpose, sensory anchors              │
-│                                                                   │
-│  Output: 3-7 scenes, each with Scene.summary specification     │
+│  POST /api/studio/scene-summary                                  │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  API 7: Scene Content Generation (Per Scene, One at a Time)     │
-│  POST /studio/api/scene-content                                  │
-│                                                                   │
-│  System Prompt Focus:                                            │
-│  - Uses Scene.summary as primary specification                 │
-│  - Cycle-specific writing guidelines per phase                 │
-│  - Setup: Build empathy, establish adversity                   │
-│  - Confrontation: Externalize internal conflict                │
-│  - Virtue: Create moral elevation moment (THE PEAK)            │
-│  - Consequence: Deliver earned payoff, trigger catharsis       │
-│  - Transition: Create next adversity, hook forward             │
-│                                                                   │
-│  Output: Scene.content - Full prose narrative (300-1200 words) │
+│  API 7: Scene Content Generation (Per Scene)                    │
+│  POST /api/studio/scene-content                                  │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 8: Scene Evaluation & Improvement                          │
-│  POST /studio/api/scene-evaluation                               │
-│                                                                   │
-│  System Prompt Focus:                                            │
-│  - Evaluate scene quality using "Architectonics of Engagement"  │
-│  - Score 5 categories: plot, character, pacing, prose, world   │
-│  - Provide improvement feedback if score < 3.0                  │
-│  - Iterate until quality threshold met (max 2 iterations)       │
-│                                                                   │
-│  Output: Evaluated & improved scene content                     │
+│  POST /api/studio/scene-evaluation                               │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 9: Image Generation (All Story Assets)                     │
-│  POST /studio/api/images                                         │
-│                                                                   │
-│  System Prompt Focus:                                            │
-│  - Generate story cover image (1344×768, 7:4)                  │
-│  - Generate character portraits (1024×1024 per character)       │
-│  - Generate setting environments (1344×768, 7:4 per setting)   │
-│  - Generate scene images (1344×768, 7:4 per scene)             │
-│  - Create 4 optimized variants per image (AVIF/JPEG)           │
-│                                                                   │
-│  Output: All images with optimized variants stored in Blob      │
+│  POST /api/studio/images                                         │
 └─────────────────────────────────────────────────────────────────┘
 
-Note: Two-step scene generation allows:
-- Pause/resume story generation between scenes
-- Edit scene summaries before content generation
-- Regenerate individual scene content without losing specification
-- Human review of scene plan before expensive prose generation
 ```
 
 ---
 
-### 1.3 Critical Architecture Note: Story Generation Separation
 
-**Common Misconception:** The story generation phase creates character outlines or basic character data.
+## Part III: Generator System Architecture & API Specifications
 
-**Reality:** Story generation creates ONLY:
-- ✅ Story title, summary, genre, tone, moral framework
-- ❌ NO character data whatsoever (no names, traits, flaws, or goals)
+### Overview: Novel Generation Architecture
 
-**Why This Separation?**
+The novel generation system uses a modular, layered architecture with **9 distinct generators**. Each generator is a pure function that focuses on a single phase of story creation.
 
-1. **Cost Optimization**: Story generation uses lightweight model (Flash Lite)
-2. **Flexibility**: Characters can be regenerated without recreating story
-3. **Quality**: Character generation uses full context and dedicated prompts
-4. **Database Design**: Separate tables (stories vs characters) allow independent updates
-5. **Workflow**: Allows review/editing of story foundation before character design
+#### **Architectural Layers**
 
-**Generation Flow:**
 ```
-Phase 1: Story Generation
-  ↓ Creates story record in database
-  ↓ Output: title, summary, genre, tone, moralFramework
-
-Phase 2: Character Generation
-  ↓ Reads story.moralFramework
-  ↓ Designs 2-4 characters FROM SCRATCH
-  ↓ Creates character records in database
-
-Phase 3: Settings Generation
-  ↓ Reads story + characters
-  ↓ Creates setting records
-
-Phase 4-9: Parts → Chapters → Scenes → Images
+┌─────────────────────────────────────────────────────────────┐
+│  API Layer (HTTP Contract)                                   │
+│  Location: src/app/api/studio/                               │
+│  Types: Api*Request, Api*Response, Api*ErrorResponse         │
+│  Purpose: HTTP endpoints, request validation, response        │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Service Layer (Generation + Persistence)                    │
+│  Location: src/lib/studio/services/*-service.ts              │
+│  Method: generateAndSave()                                   │
+│  Types: Service*Params, Service*Result                       │
+│  Purpose: Orchestrate generation + database persistence      │
+│  Pattern:                                                    │
+│    1. Fetch & verify related data (story, ownership, etc.)  │
+│    2. Call pure generator function (no DB operations)        │
+│    3. Validate & save to database using Drizzle ORM          │
+│    4. Return result with metadata                            │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Generator Layer (Pure Business Logic)                       │
+│  Location: src/lib/studio/generators/*-generator.ts          │
+│  Functions: generateStory(), generateCharacters(), etc.      │
+│  Types: Generator*Params, Generator*Result                   │
+│  Purpose: Pure AI generation logic (NO database operations)  │
+│  Characteristics:                                            │
+│    - Stateless, side-effect free                             │
+│    - Returns plain data structures                           │
+│    - Can be tested independently of database                 │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  AI Layer (Model Integration)                                │
+│  Location: src/lib/studio/generators/ai-client.ts            │
+│  Client: TextGenerationClient (supports Gemini & AI Server)  │
+│  Prompts: Managed by prompt-manager.ts (centralized)         │
+│  Purpose: Provider abstraction, structured output            │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-**Key Takeaway:** Each phase is a separate API call with its own database write operation. The unified `/studio/api/novels` endpoint orchestrates all phases, but under the hood they execute sequentially.
+**Service Layer Examples**:
 
----
-
-### 1.2 Complete Generation Flow API
+All services follow the same `generateAndSave()` pattern:
 
 ```typescript
-POST /studio/api/novels
+// Story Service
+class StoryService {
+  async generateAndSave(params: ServiceStoryParams): Promise<ServiceStoryResult> {
+    // 1. Generate using pure generator
+    const generationResult = await generateStory(params);
 
-Authentication: Dual authentication (supports both methods)
-  - API Key: Send in Authorization header as "Bearer {api_key}"
-  - Session: NextAuth session (logged-in user via browser)
+    // 2. Prepare & validate data for database
+    const storyData = insertStorySchema.parse({
+      id: nanoid(),
+      ...generationResult.story
+    });
 
-Required Scope: stories:write
+    // 3. Save to database
+    const savedStory = await db.insert(stories).values(storyData).returning();
 
-Request Headers (API Key method):
-{
-  'Content-Type': 'application/json',
-  'Authorization': 'Bearer fic_...'  // API key from .auth/user.json
-}
-
-Request:
-{
-  userPrompt: string;
-  preferredGenre?: string;
-  preferredTone?: 'hopeful' | 'dark' | 'bittersweet' | 'satirical';
-  characterCount?: number;  // Default: 3
-  settingCount?: number;    // Default: 3
-  partsCount?: number;      // Default: 1
-  chaptersPerPart?: number; // Default: 1
-  scenesPerChapter?: number; // Default: 3
-  language?: string;        // Default: 'English'
-}
-
-Response: Server-Sent Events (SSE)
-
-Progress Events:
-{
-  phase: 'story_start' | 'story_complete' |
-         'characters_start' | 'characters_progress' | 'characters_complete' |
-         'settings_start' | 'settings_progress' | 'settings_complete' |
-         'parts_start' | 'parts_progress' | 'parts_complete' |
-         'chapters_start' | 'chapters_progress' | 'chapters_complete' |
-         'scene_summaries_start' | 'scene_summaries_progress' | 'scene_summaries_complete' |
-         'scene_content_start' | 'scene_content_progress' | 'scene_content_complete' |
-         'scene_evaluation_start' | 'scene_evaluation_progress' | 'scene_evaluation_complete' |
-         'images_start' | 'images_progress' | 'images_complete',
-  message: string,
-  data?: {
-    // Phase-specific data
-    currentItem?: number,
-    totalItems?: number,
-    percentage?: number,
-    // Completed data (on *_complete events)
-    story?: StoryResult,
-    characters?: Character[],
-    settings?: Setting[],
-    parts?: Part[],
-    chapters?: Chapter[],
-    scenes?: Scene[]
+    // 4. Return result
+    return { story: savedStory[0], metadata: generationResult.metadata };
   }
 }
 
-Final Event:
-{
-  phase: 'complete',
-  message: 'Story generation complete!',
-  data: {
-    storyId: string,
-    story: Story,
-    charactersCount: number,
-    settingsCount: number,
-    partsCount: number,
-    chaptersCount: number,
-    scenesCount: number
-  }
-}
+// Character Service
+class CharacterService {
+  async generateAndSave(params: ServiceCharactersParams): Promise<ServiceCharactersResult> {
+    // 1. Fetch & verify story + ownership
+    const story = await db.select().from(stories).where(eq(stories.id, storyId));
+    if (story.authorId !== userId) throw new Error("Access denied");
 
-Error Event:
-{
-  phase: 'error',
-  message: string,
-  error: string
+    // 2. Generate using pure generator
+    const generationResult = await generateCharacters({ story, ...params });
+
+    // 3. Save to database
+    const savedCharacters = [];
+    for (const char of generationResult.characters) {
+      const characterData = insertCharacterSchema.parse({ id: nanoid(), ...char });
+      const saved = await db.insert(characters).values(characterData).returning();
+      savedCharacters.push(saved[0]);
+    }
+
+    // 4. Return result
+    return { characters: savedCharacters, metadata: generationResult.metadata };
+  }
 }
 ```
 
-**Usage Examples:**
+**Why No Separate `persist()` Function?**
 
-**Method 1: API Key Authentication (for scripts and automation)**
-```javascript
-// Load API key from .auth/user.json
-const authData = JSON.parse(fs.readFileSync('.auth/user.json', 'utf-8'));
-const apiKey = authData.profiles.writer.apiKey;
+Services are designed for **atomic operations** - generation and persistence happen together to:
+- Ensure data consistency (no partial saves)
+- Simplify error handling (rollback generation if save fails)
+- Maintain single responsibility (one method = one complete operation)
+- Enable better transaction management
 
-const response = await fetch('http://localhost:3000/studio/api/novels', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${apiKey}`,  // API key authentication
-  },
-  body: JSON.stringify({
-    userPrompt: 'A story about courage and redemption',
-    preferredGenre: 'Fantasy',
-    preferredTone: 'hopeful',
-    characterCount: 2,
-    settingCount: 2,
-    partsCount: 1,
-    chaptersPerPart: 1,
-    scenesPerChapter: 3,
-  }),
+#### **9-Phase Generation Pipeline**
+
+| Phase | Generator | Input | Output | Database Table |
+|-------|-----------|-------|--------|----------------|
+| 1 | `story-generator.ts` | User prompt + preferences | Story foundation | `stories` |
+| 2 | `characters-generator.ts` | Story + character count | Character profiles | `characters` |
+| 3 | `settings-generator.ts` | Story + setting count | Location details | `settings` |
+| 4 | `part-generator.ts` | Story + previous parts | Part/Act structure | `parts` |
+| 5 | `chapter-generator.ts` | Story + part + previous chapters | Chapter outline | `chapters` |
+| 6 | `scene-summary-generator.ts` | Story + chapter + previous scenes | Scene specification | `scenes` (summary) |
+| 7 | `scene-content-generator.ts` | Scene summary + context | Full prose content | `scenes` (content) |
+| 8 | `scene-evaluation-generator.ts` | Scene content | Quality score + improvements | `scenes` (updated) |
+| 9 | `images-generator.ts` | All entities | Generated images | `*` (imageUrl fields) |
+
+#### **AI Provider Support**
+
+The system supports multiple AI providers through a unified interface:
+
+**Supported Providers**:
+1. **Google Generative AI (Gemini)**
+   - Models: Gemini 2.5 Flash, Gemini 2.5 Flash Lite
+   - Method: `generateStructured()` with Zod schemas
+   - Use case: Primary text generation (fast, reliable)
+
+2. **AI Server (Custom)**
+   - Models: Qwen-3 or other self-hosted LLMs
+   - Method: `generate()` with JSON Schema
+   - Use case: Fallback or custom model deployment
+
+**Provider Selection**:
+- Environment variable: `TEXT_GENERATION_PROVIDER` (default: "gemini")
+- Per-request: Pass `apiKey` parameter to use specific provider
+
+#### **Authentication**
+
+**Dual Authentication** (API key OR session):
+
+**Method 1: API Key** (for scripts, automation, cross-system calls)
+```typescript
+const apiKey = 'fic_...'; // From .auth/user.json
+
+const result = await generateStory({
+  userPrompt: '...',
+  apiKey: apiKey  // Passed to generator
 });
 ```
 
-**Method 2: Session Authentication (for browser/UI)**
-```javascript
-const response = await fetch('/studio/api/novels', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    // Session cookie automatically sent by browser
-  },
-  body: JSON.stringify({
-    userPrompt: 'A story about courage and redemption',
-    preferredGenre: 'Fantasy',
-    preferredTone: 'hopeful',
-    characterCount: 2,
-    settingCount: 2,
-    partsCount: 1,
-    chaptersPerPart: 1,
-    scenesPerChapter: 3,
-  }),
+**Method 2: Session** (for web app users)
+```typescript
+// NextAuth session automatically available in API routes
+const session = await auth();
+const userId = session?.user?.id;
+
+// No apiKey needed - uses session credentials
+const result = await generateStory({
+  userPrompt: '...'
 });
+```
 
-const reader = response.body.getReader();
-const decoder = new TextDecoder();
+**Required Scope**: `stories:write` for all novel generation operations
 
-while (true) {
-  const { done, value } = await reader.read();
-  if (done) break;
+#### **Type System**
 
-  const text = decoder.decode(value);
-  const lines = text.split('\n');
+**3-Layer Type Structure**:
 
-  for (const line of lines) {
-    if (line.startsWith('data: ')) {
-      const data = JSON.parse(line.slice(6));
-      console.log(`[${data.phase}] ${data.message}`);
+1. **API Layer Types** (`src/app/api/studio/types.ts`)
+   - `Api{Entity}Request` - HTTP request body
+   - `Api{Entity}Response` - HTTP success response
+   - `Api{Entity}ErrorResponse` - HTTP error response
 
-      if (data.phase === 'complete') {
-        console.log('Story ID:', data.data.storyId);
-      }
-    }
-  }
-}
+2. **Generator Layer Types** (`src/lib/studio/generators/types.ts`)
+   - `Generator{Entity}Params` - Generator function parameters
+   - `Generator{Entity}Result` - Generator function return value
+   - `{Entity}PromptParams` - Prompt template variables
+
+3. **AI Layer Types** (`src/lib/studio/generators/zod-schemas.ts`)
+   - `Ai{Entity}ZodSchema` - Zod schema (SSOT)
+   - `Ai{Entity}Type` - TypeScript type derived from Zod
+   - `Ai{Entity}JsonSchema` - JSON Schema for AI models
+
+**Example Type Flow** (Story Generation):
+```
+ApiStoryRequest (API Layer)
+    ↓
+GeneratorStoryParams (Generator Layer)
+    ↓
+AiStoryZodSchema (AI Layer - validation)
+    ↓
+AiStoryType (AI Layer - result type)
+    ↓
+GeneratorStoryResult (Generator Layer)
+    ↓
+ApiStoryResponse (API Layer)
 ```
 
 ---
 
-## Part II: API Specifications with Ultra-Detailed System Prompts
+### 3.1 Story Generation API
 
-### 2.1 Story Generation API
+**Phase 1 of 9** - Creates the story foundation that establishes theme, moral framework, and genre/tone guidance.
 
-#### Endpoint
-```typescript
-POST /studio/api/stories
+**API Endpoint**: `POST /api/studio/story`
+**Service Function**: `storyService.generateAndSave()` (`src/lib/studio/services/story-service.ts`)
+**Generator Function**: `generateStory()` (`src/lib/studio/generators/story-generator.ts`)
 
-Request:
-{
-  userPrompt: string;
-  userId: string;
-  options?: {
-    preferredGenre?: string;
-    preferredTone?: 'dark' | 'hopeful' | 'bittersweet' | 'satirical';
-    characterCount?: number; // Default: 2-4
-  };
-}
-
-Response:
-{
-  title: string;
-  summary: string | null;
-  genre: string | null;
-  tone: "hopeful" | "dark" | "bittersweet" | "satirical";
-  moralFramework: string | null;
-  // Note: Characters are NOT generated in this phase.
-  // They are created separately via POST /studio/api/characters
-}
+**Type Flow**:
 ```
-
-#### System Prompt (v1.0)
-
-```markdown
-# ROLE AND CONTEXT
-You are an expert story architect with deep knowledge of narrative psychology, moral philosophy, and the principles of emotional resonance in fiction. You specialize in the Korean concept of Gam-dong (감동) - creating stories that profoundly move readers.
-
-Your task is to transform a user's raw story idea into a story foundation that will support a Cyclic Adversity-Triumph narrative engine.
-
-# CRITICAL CONSTRAINTS
-- Story summary must be GENERAL, not specific plot
-- Do NOT create detailed adversity-triumph cycles (that happens in Part generation)
-- Focus on establishing the WORLD and its MORAL RULES
-- Identify what makes virtue MEANINGFUL in this specific world
-
-# USER INPUT
-{userPrompt}
-
-# ANALYSIS FRAMEWORK
-
-## Step 1: Extract Core Elements
-From the user prompt, identify:
-1. **Setting/Context**: Where/when does this take place?
-2. **Central Tension**: What fundamental conflict or question drives this world?
-3. **Moral Stakes**: What values are being tested?
-4. **Implied Genre/Tone**: What emotional experience is the user seeking?
-
-## Step 2: Define Moral Framework
-Every story has implicit moral rules. Define:
-- What virtues will be rewarded? (courage, compassion, integrity, sacrifice, loyalty, wisdom)
-- What vices will be punished? (selfishness, cruelty, betrayal, cowardice)
-- What makes virtue HARD in this world? (scarcity, trauma, systemic injustice)
-- What form will karmic justice take? (poetic, ironic, delayed)
-
-## Step 3: Character Guidelines
-While you won't create actual characters in this step (they're designed in the next phase), consider:
-- What types of character archetypes would best explore this moral framework?
-- What internal conflicts would test the virtues defined?
-- How many protagonists are needed? (typically 2-4)
-- What opposing forces or foils would create natural conflict?
-
-These considerations will inform the Character Generation phase, which creates full character profiles with names, backstories, and relationships.
-
-# OUTPUT FORMAT
-
-Generate a JSON object with the following structure:
-
-```json
-{
-  "title": "[Story title - concise and evocative]",
-  "summary": "In [SETTING/CONTEXT], [MORAL PRINCIPLE] is tested when [INCITING SITUATION]",
-  "genre": "[Genre or genre blend]",
-  "tone": "[hopeful|dark|bittersweet|satirical]",
-  "moralFramework": "In this world, [VIRTUE] matters because [REASON]. Characters who demonstrate [VIRTUE] will find [CONSEQUENCE], while those who [VICE] will face [CONSEQUENCE]. Virtue is difficult here because [SYSTEMIC CHALLENGE]."
-}
+ApiStoryRequest (API Layer)
+    ↓
+ServiceStoryParams (Service Layer)
+    ↓ storyService.generateAndSave()
+GeneratorStoryParams (Generator Layer)
+    ↓ generateStory()
+AiStoryZodSchema (AI Layer - validation)
+    ↓ textGenerationClient.generateStructured()
+AiStoryType (AI Layer - result)
+    ↓
+GeneratorStoryResult (Generator Layer)
+    ↓ db.insert(stories)
+ServiceStoryResult (Service Layer)
+    ↓
+ApiStoryResponse (API Layer)
 ```
-
-**Note:** Do NOT include character data in this response. Characters will be designed in a separate generation phase that uses this story foundation.
-
-# CRITICAL RULES
-1. Title must be concise (max 10 words) and evocative
-2. Summary must be ONE sentence, following the format exactly
-3. Moral framework must be 3-5 sentences explaining the world's moral logic
-4. Do NOT create plot points or specific adversity-triumph cycles
-5. Do NOT create character names, profiles, or details
-6. Characters will be designed in Phase 2 (Character Generation API)
-7. Tone must be one of: hopeful, dark, bittersweet, or satirical
-
-# OUTPUT
-Return ONLY the JSON object, no explanations, no markdown formatting.
-```
-
-#### Implementation Notes
-- **AI Model**: Gemini 2.5 Flash Lite (cost-effective, sufficient for structured output)
-- **Temperature**: 0.7 (balanced creativity and consistency)
-- **Post-Processing**: Validate JSON, check summary format, verify character count
 
 ---
 
-### 2.2 Character Generation API
+### 3.2 Character Generation API
 
-**IMPORTANT:** This is a completely separate generation phase that runs AFTER story generation. Characters are designed FROM SCRATCH based on the story's moral framework.
+**Phase 2 of 9** - Generates 2-4 main characters with complete profiles designed from the story's moral framework.
 
-#### Endpoint
-```typescript
-POST /studio/api/characters
+**API Endpoint**: `POST /api/studio/characters`
+**Service Function**: `characterService.generateAndSave()` (`src/lib/studio/services/character-service.ts`)
+**Generator Function**: `generateCharacters()` (`src/lib/studio/generators/characters-generator.ts`)
 
-Request:
-{
-  storyId: string;
-  story: {              // Story metadata from Phase 1
-    title: string;
-    summary: string;
-    genre: string;
-    tone: string;
-    moralFramework: string;
-  };
-  characterCount: number;  // How many characters to generate (typically 2-4)
-  language?: string;       // Default: 'English'
-}
-
-Response:
-{
-  characters: Array<{
-    id: string;
-    name: string;
-    isMain: boolean;
-    summary: string;
-    coreTrait: string;
-    internalFlaw: string;
-    externalGoal: string;
-    personality: {
-      traits: string[];
-      values: string[];
-    };
-    backstory: string;
-    relationships: Record<string, Relationship>;
-    physicalDescription: {
-      age: string;
-      appearance: string;
-      distinctiveFeatures: string;
-      style: string;
-    };
-    voiceStyle: {
-      tone: string;
-      vocabulary: string;
-      quirks: string[];
-      emotionalRange: string;
-    };
-    imageUrl: string;
-    imageVariants: ImageVariantSet;
-  }>;
-}
+**Type Flow**:
 ```
-
-#### System Prompt (v1.0)
-
-```markdown
-# ROLE
-You are an expert character architect specializing in creating psychologically rich characters for adversity-triumph narratives. Your characters drive profound emotional resonance through authentic internal conflicts and moral virtues.
-
-# CONTEXT
-Story Summary: {storySummary}
-Moral Framework: {moralFramework}
-Genre: {genre}
-Tone: {tone}
-Visual Style: {visualStyle}
-
-Basic Character Data (to expand):
-{characters}
-
-# YOUR TASK
-For EACH character, expand the basic data into a complete character profile optimized for adversity-triumph cycle generation.
-
-# CHARACTER EXPANSION TEMPLATE
-
-For each character, generate:
-
-## 1. IDENTITY
+ApiCharactersRequest (API Layer)
+    ↓
+ServiceCharactersParams (Service Layer)
+    ↓ characterService.generateAndSave()
+GeneratorCharactersParams (Generator Layer)
+    ↓ generateCharacters()
+AiCharacterZodSchema (AI Layer - validation)
+    ↓ textGenerationClient.generateStructured()
+AiCharacterType[] (AI Layer - result)
+    ↓
+GeneratorCharactersResult (Generator Layer)
+    ↓ db.insert(characters)
+ServiceCharactersResult (Service Layer)
+    ↓
+ApiCharactersResponse (API Layer)
 ```
-NAME: {name}
-IS MAIN: true (for main characters with arcs, false for supporting)
-SUMMARY: "[CoreTrait] [role] [internalFlaw], seeking [externalGoal]"
-
-Example: "Brave knight haunted by past failure, seeking redemption through one final mission"
-```
-
-## 2. ADVERSITY-TRIUMPH CORE (Already Provided - Verify Quality)
-```
-CORE TRAIT: {coreTrait}
-- Verify this is ONE of: courage, compassion, integrity, loyalty, wisdom, sacrifice
-- This drives all virtue scenes
-
-INTERNAL FLAW: {internalFlaw}
-- MUST follow format: "[fears/believes/wounded by] X because Y"
-- Verify CAUSE is included
-- If cause missing, ADD it based on backstory you'll create
-
-EXTERNAL GOAL: {externalGoal}
-- What they THINK will solve problem
-- Should create dramatic irony
-```
-
-## 3. PERSONALITY (BEHAVIORAL TRAITS)
-```
-TRAITS: [4-6 behavioral characteristics]
-- Focus on HOW they act day-to-day
-- Mix positive and negative
-- Should contrast with coreTrait to create complexity
-
-Example:
-- coreTrait: "courage" (moral virtue)
-- traits: ["impulsive", "optimistic", "stubborn", "loyal"] (behaviors)
-
-VALUES: [3-5 things they care deeply about]
-- "family", "honor", "freedom", "justice", "tradition", "truth"
-- Creates motivation beyond just healing flaw
-```
-
-## 4. BACKSTORY (2-4 Paragraphs, 200-400 words)
-```
-FOCUS ON:
-- Formative experience that created internalFlaw
-- Key relationships (living or dead) that matter
-- Past actions that can "seed" for earned luck payoffs
-- Cultural/social context that shaped them
-
-EXCLUDE:
-- Entire life story
-- Irrelevant details
-- Generic background
-
-STRUCTURE:
-Paragraph 1: Early life, family, formative environment
-Paragraph 2: THE event/experience that created internalFlaw (be specific)
-Paragraph 3: How they've coped since, current situation
-Paragraph 4 (optional): Key relationship or skill that matters for story
-```
-
-## 5. RELATIONSHIPS
-```
-For EACH other character in the story, define:
-
-{characterName}:
-- TYPE: ally | rival | family | romantic | mentor | adversary
-- JEONG LEVEL: 0-10 (depth of affective bond)
-  * 0-2: Strangers
-  * 3-5: Acquaintances
-  * 6-8: Friends/allies
-  * 9-10: Deep bond (family, true love)
-- SHARED HISTORY: What binds them? (1-2 sentences)
-- CURRENT DYNAMIC: Current state of relationship (1 sentence)
-
-RULES:
-- Main characters should have SOME connection (jeongLevel 3+)
-- Opposing flaws create natural friction
-- At least one high-jeong relationship (7+) per main character
-```
-
-## 6. PHYSICAL DESCRIPTION
-```
-AGE: "mid-30s" | "elderly" | "young adult" | "middle-aged" | etc.
-
-APPEARANCE: (2-3 sentences)
-- Overall look, build, posture
-- Reflects personality and backstory
-- Genre-appropriate
-
-DISTINCTIVE FEATURES: (1-2 sentences)
-- Memorable visual details for "show don't tell"
-- Should be SPECIFIC: "scar across left eyebrow" not "scarred"
-- Used for character recognition in scenes
-
-STYLE: (1-2 sentences)
-- How they dress/present themselves
-- Reflects personality and values
-- Include one signature item if possible
-```
-
-## 7. VOICE STYLE
-```
-TONE: (1-2 words)
-- "warm", "sarcastic", "formal", "gentle", "gruff", "playful"
-
-VOCABULARY: (1-2 words + brief explanation)
-- "simple nautical terms", "educated formal", "street slang", "poetic metaphors"
-
-QUIRKS: [1-3 specific verbal tics]
-- Repeated phrases: "you know?", "as it were", "right?"
-- Speech patterns: "ends statements as questions", "speaks in short bursts"
-- Unique expressions: "calls everyone 'sailor'", "quotes scripture"
-
-EMOTIONAL RANGE: (1 sentence)
-- How they express emotion
-- "reserved until deeply moved", "volatile and expressive", "masks all feeling"
-```
-
-# CRITICAL RULES
-
-1. **Internal Flaw MUST Have Cause**: If provided flaw lacks "because Y", ADD specific cause
-2. **Distinct Voices**: Each character must sound DIFFERENT in dialogue
-3. **Opposing Flaws**: Characters' flaws should create natural conflict
-4. **Jeong System**: Define ALL relationships between characters
-5. **Consistency**: All fields must align with story's genre, tone, moral framework
-6. **Specificity**: NO vague descriptions ("has issues" → "fears abandonment because...")
-7. **Visual Consistency**: All descriptions match story's visualStyle
-
-# OUTPUT FORMAT
-
-Return JSON array of complete character objects:
-
-```json
-[
-  {
-    "name": "...",
-    "isMain": true,
-    "summary": "...",
-    "coreTrait": "...",
-    "internalFlaw": "...",
-    "externalGoal": "...",
-    "personality": {
-      "traits": ["...", "..."],
-      "values": ["...", "..."]
-    },
-    "backstory": "...",
-    "relationships": {
-      "char_id_1": {
-        "type": "...",
-        "jeongLevel": 7,
-        "sharedHistory": "...",
-        "currentDynamic": "..."
-      }
-    },
-    "physicalDescription": {
-      "age": "...",
-      "appearance": "...",
-      "distinctiveFeatures": "...",
-      "style": "..."
-    },
-    "voiceStyle": {
-      "tone": "...",
-      "vocabulary": "...",
-      "quirks": ["...", "..."],
-      "emotionalRange": "..."
-    }
-  }
-]
-```
-
-# OUTPUT
-Return ONLY the JSON array, no explanations.
-```
-
-#### Implementation Notes
-- **AI Model**: Gemini 2.5 Flash (needs higher capability for character depth)
-- **Temperature**: 0.8 (need creativity for unique characters)
-- **Post-Processing**:
-  1. Validate all required fields present
-  2. Verify internalFlaw has cause ("because")
-  3. Store in database without images (images generated later via API 9)
 
 ---
 
-### 2.3 Settings Generation API
+### 3.3 Settings Generation API
 
-#### Endpoint
-```typescript
-POST /studio/api/settings
+**Phase 3 of 9** - Generates 2-6 primary settings with environmental elements that amplify cycle phases.
 
-Request:
-{
-  storyId: string;
-  storyContext: {
-    summary: string;
-    genre: string;
-    tone: string;
-    moralFramework: string;
-  };
-  characters: Array<{  // For social dynamics and symbolic connections
-    name: string;
-    coreTrait: string;
-    internalFlaw: string;
-  }>;
-  numberOfSettings?: number; // Default: 2-4 primary settings
-  visualStyle: 'realistic' | 'anime' | 'painterly' | 'cinematic';
-}
+**API Endpoint**: `POST /api/studio/settings`
+**Service Function**: `settingService.generateAndSave()` (`src/lib/studio/services/setting-service.ts`)
+**Generator Function**: `generateSettings()` (`src/lib/studio/generators/settings-generator.ts`)
 
-Response:
-{
-  settings: Array<{
-    id: string;
-    name: string;
-    description: string;
-    adversityElements: {
-      physicalObstacles: string[];
-      scarcityFactors: string[];
-      dangerSources: string[];
-      socialDynamics: string[];
-    };
-    symbolicMeaning: string;
-    cycleAmplification: {
-      setup: string;
-      confrontation: string;
-      virtue: string;
-      consequence: string;
-      transition: string;
-    };
-    mood: string;
-    emotionalResonance: string;
-    sensory: {
-      sight: string[];
-      sound: string[];
-      smell: string[];
-      touch: string[];
-      taste: string[];
-    };
-    architecturalStyle?: string;
-    visualStyle: string;
-    visualReferences: string[];
-    colorPalette: string[];
-    imageUrl: string;
-    imageVariants: ImageVariantSet;
-  }>;
-}
+**Type Flow**:
 ```
-
-#### System Prompt (v1.0)
-
-```markdown
-# ROLE
-You are an expert world-builder specializing in creating emotionally resonant environments for adversity-triumph narratives. Your settings are not just backdrops—they are active participants in the story's emotional architecture.
-
-# CONTEXT
-Story Summary: {storySummary}
-Moral Framework: {moralFramework}
-Genre: {genre}
-Tone: {tone}
-Characters: {characters}
-Visual Style: {visualStyle}
-Number of Settings: {numberOfSettings}
-
-# YOUR TASK
-Create {numberOfSettings} primary settings that:
-1. Create external adversity through environmental obstacles
-2. Amplify emotional beats across all 5 cycle phases
-3. Symbolically reflect the story's moral framework
-4. Provide rich sensory details for immersive prose
-5. Support visual generation with consistent aesthetic
-
-# SETTING GENERATION TEMPLATE
-
-For EACH setting, generate:
-
-## 1. IDENTITY
+ApiSettingsRequest (API Layer)
+    ↓
+ServiceSettingsParams (Service Layer)
+    ↓ settingService.generateAndSave()
+GeneratorSettingsParams (Generator Layer)
+    ↓ generateSettings()
+AiSettingZodSchema (AI Layer - validation)
+    ↓ textGenerationClient.generateStructured()
+AiSettingType[] (AI Layer - result)
+    ↓
+GeneratorSettingsResult (Generator Layer)
+    ↓ db.insert(settings)
+ServiceSettingsResult (Service Layer)
+    ↓
+ApiSettingsResponse (API Layer)
 ```
-NAME: [Location designation - clear, memorable]
-DESCRIPTION: [3-5 sentences establishing:
-  - What this place is
-  - Current physical state
-  - Historical/contextual significance
-  - Why it matters to the story]
-
-Example: "The Ruined Garden is a bombed-out city block where Yuna attempts to grow vegetables in contaminated soil. Once a thriving community park, it now symbolizes both the destruction of war and the fragile possibility of renewal. Cracked concrete, twisted metal, and barren earth dominate the space, but a small cleared patch shows signs of determined cultivation."
-```
-
-## 2. ADVERSITY-TRIUMPH CORE (Critical)
-
-### Adversity Elements
-For EACH category, identify 2-4 specific obstacles:
-
-**Physical Obstacles**:
-- Environmental challenges from the setting itself
-- Examples: "extreme heat exhausts characters", "crumbling structures block paths"
-- Must be SPECIFIC, not generic
-
-**Scarcity Factors**:
-- Limited resources that force moral choices
-- Examples: "single working water pump—who gets access?", "limited shade—share or hoard?"
-- Should create tension between self-preservation and compassion
-
-**Danger Sources**:
-- Threats from the environment requiring courage
-- Examples: "unstable buildings risk collapse", "gang patrols at night"
-- Creates urgency and stakes
-
-**Social Dynamics**:
-- Community factors creating interpersonal conflict
-- Examples: "neighbors distrust outsiders", "rival factions claim territory"
-- Reflect character flaws externally (distrust in setting mirrors character's internal distrust)
-
-### Symbolic Meaning (1-2 sentences)
-How does this setting reflect the story's moral framework?
-
-**Formula**: "[Setting] represents [moral concept from framework] because [reason]. [How environment mirrors character journeys]."
-
-Example: "The ruined garden represents the possibility of healing through nurture despite overwhelming destruction. As the garden transforms from barren to blooming, it mirrors Yuna's journey from cynicism to hope."
-
-### Cycle Amplification
-For EACH cycle phase, specify HOW setting amplifies that emotional beat:
-
-**Setup Phase**:
-- How does setting establish/intensify adversity?
-- Example: "Oppressive heat and cracked soil emphasize the impossibility of growth"
-
-**Confrontation Phase**:
-- How does setting force conflict or intensify struggle?
-- Example: "Limited space around water source forces characters to interact"
-
-**Virtue Phase**:
-- How does setting contrast with or witness moral beauty?
-- Example: "Barren, hostile land makes act of nurturing more profound and sacrificial"
-
-**Consequence Phase**:
-- How does setting transform or reveal hidden aspects?
-- Example: "First sprouts emerge from soil, proving hope was not delusional"
-
-**Transition Phase**:
-- How does setting hint at new problems or changes?
-- Example: "Storm clouds gathering threaten fragile new growth"
-
-## 3. EMOTIONAL ATMOSPHERE
-
-**Mood**: [Primary emotional quality in 2-5 words]
-- Examples: "oppressive and fragile", "hopeful but dangerous", "haunted by past"
-
-**Emotional Resonance**: [What emotion this amplifies]
-- Single word or phrase: "isolation", "hope", "fear", "connection", "loss"
-- Should align with story's emotional journey
-
-## 4. SENSORY IMMERSION (Critical for Prose)
-
-For EACH sense, provide 5-10 SPECIFIC details:
-
-**Sight** (5-10 items):
-- Visual details across different scales: distant, mid-range, intimate
-- Include colors, lighting, movement, textures
-- Example: "Cracked concrete revealing rust-red earth", "Heat shimmer distorting distant ruins"
-- NOT generic: ✅ "Morning glories with translucent petals catching dawn light" ❌ "flowers"
-
-**Sound** (3-7 items):
-- Ambient environmental sounds
-- Absence of sound (silence is powerful)
-- How sounds echo or are absorbed
-- Example: "Wind rattling dry leaves", "Distant voices distorted by heat"
-
-**Smell** (2-5 items):
-- Distinctive olfactory signatures
-- Emotional associations (memory triggers)
-- Example: "Dusty concrete and metal", "Sweet decay beneath everything"
-
-**Touch** (2-5 items):
-- Tactile sensations characters experience
-- Temperature, texture, physical pressure
-- Example: "Scorching metal burns bare hands", "Rough earth crumbles between fingers"
-
-**Taste** (0-2 items, optional):
-- Airborne flavors, ambient tastes
-- Example: "Metallic dust on the tongue", "Bitter ash in the air"
-
-## 5. ARCHITECTURAL/SPATIAL (If Applicable)
-
-**Architectural Style**: [Design language, if relevant]
-- Only include for built environments
-- Examples: "Post-war brutalist ruins", "Traditional wooden structures weathered by neglect"
-- Omit for pure natural settings
-
-## 6. VISUAL GENERATION
-
-**Visual Style**: {visualStyle} [from context]
-
-**Visual References** (2-4):
-- Specific films, artists, games, or visual media
-- Example: "Mad Max Fury Road desert scenes", "Studio Ghibli's Princess Mononoke forest"
-- Should match genre and tone
-
-**Color Palette** (3-6):
-- Dominant colors that define visual aesthetic
-- Include emotional qualities of colors
-- Example: ["dusty browns", "harsh whites", "rare deep greens", "golden hour light"]
-
-# CRITICAL RULES
-
-1. **Settings Must Create Adversity**: Every setting should have clear adversity elements
-2. **Specificity Over Generic**: "wind rattling dead leaves" NOT "nature sounds"
-3. **Symbolic Connection**: Each setting must connect to moral framework
-4. **Cycle Participation**: Settings actively amplify each cycle phase
-5. **Sensory Richness**: Minimum 5 items per sense (except taste)
-6. **Character-Environment Alignment**: Setting obstacles mirror character flaws
-7. **Variety**: Settings should contrast with each other (don't repeat atmospheres)
-8. **Genre Consistency**: All settings fit story's genre and tone
-9. **Visual Coherence**: All settings share visualStyle but have distinct aesthetics
-
-# SETTING DIVERSITY GUIDELINES
-
-For multiple settings, ensure:
-- **Spatial Contrast**: Indoor vs outdoor, confined vs open, urban vs natural
-- **Emotional Contrast**: Hopeful setting vs threatening setting
-- **Function Contrast**: Safe haven vs dangerous territory
-- **Symbolic Range**: Different settings represent different moral themes
-
-Example Story Distribution:
-- Setting 1: Ruined garden (hope, growth, vulnerability)
-- Setting 2: Underground shelter (safety, community, scarcity)
-- Setting 3: Gang territory (danger, moral compromise, survival)
-- Setting 4: Abandoned church (memory, lost faith, potential sanctuary)
-
-# OUTPUT FORMAT
-
-Return JSON array of complete setting objects:
-
-```json
-[
-  {
-    "name": "...",
-    "description": "...",
-    "adversityElements": {
-      "physicalObstacles": ["...", "..."],
-      "scarcityFactors": ["...", "..."],
-      "dangerSources": ["...", "..."],
-      "socialDynamics": ["...", "..."]
-    },
-    "symbolicMeaning": "...",
-    "cycleAmplification": {
-      "setup": "...",
-      "confrontation": "...",
-      "virtue": "...",
-      "consequence": "...",
-      "transition": "..."
-    },
-    "mood": "...",
-    "emotionalResonance": "...",
-    "sensory": {
-      "sight": ["...", "...", "...", "...", "..."],
-      "sound": ["...", "...", "..."],
-      "smell": ["...", "..."],
-      "touch": ["...", "..."],
-      "taste": ["..."]
-    },
-    "architecturalStyle": "...",
-    "visualStyle": "...",
-    "visualReferences": ["...", "..."],
-    "colorPalette": ["...", "...", "..."]
-  }
-]
-```
-
-# OUTPUT
-Return ONLY the JSON array, no explanations.
-```
-
-#### Implementation Notes
-- **AI Model**: Gemini 2.5 Flash (needs high capability for symbolic reasoning and sensory richness)
-- **Temperature**: 0.8 (need creativity for unique, evocative settings)
-- **Post-Processing**:
-  1. Validate all required fields present
-  2. Check sensory arrays have minimum items (sight: 5+, sound: 3+, smell: 2+, touch: 2+)
-  3. Verify adversityElements has items in all 4 categories
-  4. Verify cycleAmplification has all 5 phases defined
-  5. Store in database without images (images generated later via API 9)
 
 ---
 
-### 2.4 Part Generation API
+### 3.4 Part Generation API
 
-#### Endpoint
-```typescript
-POST /studio/api/part
+**Phase 4 of 9** - Defines MACRO adversity-triumph arcs for each main character within this act.
 
-Request:
-{
-  storyId: string;
-  summary: string;
-  moralFramework: string;
-  characters: Character[];
-  numberOfParts?: number; // Default: 3
-}
+**API Endpoint**: `POST /api/studio/part`
+**Service Function**: `partService.generateAndSave()` (`src/lib/studio/services/part-service.ts`)
+**Generator Function**: `generatePart()` (`src/lib/studio/generators/part-generator.ts`)
 
-Response:
-{
-  parts: {
-    actNumber: number;
-    title: string;
-    summary: string;
-    characterArcs: {
-      characterId: string;
-      adversity: { internal: string; external: string; };
-      virtue: string;
-      consequence: string;
-      newAdversity: string;
-    }[];
-  }[];
-}
+**Type Flow**:
 ```
-
-#### System Prompt (v1.0)
-
-```markdown
-# ROLE
-You are a master narrative architect specializing in three-act structure and character-driven storytelling. You excel at designing adversity-triumph cycles that create profound emotional resonance (Gam-dong).
-
-# CONTEXT
-Story Summary: {summary}
-Moral Framework: {moralFramework}
-Characters: {characters}
-
-# YOUR TASK
-Design MACRO adversity-triumph arcs for each character across all three acts, ensuring:
-1. Each MACRO arc demonstrates the story's moral framework
-2. Arcs intersect and amplify each other
-3. Each MACRO arc spans 2-4 chapters (progressive transformation, not rushed)
-4. Stakes escalate across acts
-5. Character arcs show gradual, earned transformation
-
-## NESTED CYCLES ARCHITECTURE
-
-**MACRO ARC (Part Level)**: Complete character transformation over 2-4 chapters
-- Macro Adversity: Major internal flaw + external challenge
-- Macro Virtue: THE defining moral choice for this act
-- Macro Consequence: Major earned payoff/karmic result
-- Macro New Adversity: How this creates next act's challenge
-
-**MICRO CYCLES (Chapter Level)**: Progressive steps building toward macro payoff
-- Each chapter is still a COMPLETE adversity-triumph cycle
-- Chapters progressively advance the macro arc
-- Arc positions: beginning → middle → climax → resolution
-- Climax chapter contains the MACRO virtue and MACRO consequence
-
-# THREE-ACT STRUCTURE REQUIREMENTS
-
-## ACT I: SETUP
-- Adversity: Inciting incident exposes character flaw
-- Virtuous Action: Character demonstrates core goodness despite fear
-- Consequence: Small win that gives false hope OR unintended complication
-- New Adversity: Success attracts bigger problem OR reveals deeper flaw
-
-## ACT II: CONFRONTATION
-- Adversity: Stakes escalate; character's flaw becomes liability
-- Virtuous Action: Despite difficulty, character stays true to moral principle
-- Consequence: Major win at midpoint BUT creates catastrophic problem
-- New Adversity: Everything falls apart; darkest moment
-
-## ACT III: RESOLUTION
-- Adversity: Final test requires overcoming flaw completely
-- Virtuous Action: Character demonstrates full transformation
-- Consequence: Karmic payoff of ALL seeds planted; earned triumph
-- Resolution: Both internal (flaw healed) and external (goal achieved/transcended)
-
-# MACRO ARC TEMPLATE
-
-For EACH character in EACH act:
-
+ApiPartRequest (API Layer)
+    ↓
+ServicePartParams (Service Layer)
+    ↓ partService.generateAndSave()
+GeneratorPartParams (Generator Layer)
+    ↓ generatePart()
+AiPartZodSchema (AI Layer - validation)
+    ↓ textGenerationClient.generateStructured()
+AiPartType (AI Layer - result)
+    ↓
+GeneratorPartResult (Generator Layer)
+    ↓ db.insert(parts)
+ServicePartResult (Service Layer)
+    ↓
+ApiPartResponse (API Layer)
 ```
-CHARACTER: [Name]
-
-ACT [I/II/III]: [Act Title]
-
-MACRO ARC (Overall transformation for this act):
-
-MACRO ADVERSITY:
-- Internal (Flaw): [Core fear/wound requiring 2-4 chapters to confront]
-- External (Obstacle): [Major challenge that demands transformation]
-- Connection: [How external conflict forces facing internal flaw]
-
-MACRO VIRTUE:
-- What: [THE defining moral choice of this act]
-- Intrinsic Motivation: [Deep character reason]
-- Virtue Type: [courage/compassion/integrity/sacrifice/loyalty/wisdom]
-- Seeds Planted: [Actions that will pay off later]
-  * [Seed 1]: Expected Payoff in Act [X]
-  * [Seed 2]: Expected Payoff in Act [X]
-
-MACRO CONSEQUENCE (EARNED LUCK):
-- What: [Major resolution or reward]
-- Causal Link: [HOW connected to past actions across multiple chapters]
-- Seeds Resolved: [Previous seeds that pay off]
-- Why Earned: [Why this feels like justice]
-- Emotional Impact: [Catharsis/Gam-dong/Hope/Relief]
-
-MACRO NEW ADVERSITY:
-- What: [Next act's major problem]
-- How Created: [Specific mechanism]
-- Stakes Escalation: [How stakes are higher]
-
-PROGRESSION PLANNING:
-- Estimated Chapters: [2-4 typically]
-- Arc Position: [primary/secondary - primary gets more chapters]
-- Progression Strategy: [How arc unfolds gradually across chapters]
-  * Chapter 1-2: [beginning phase - setup, initial confrontation]
-  * Chapter 3-4: [middle/climax - escalation, MACRO virtue moment]
-  * Chapter 5+: [resolution phase - consequence, stabilization]
-```
-
-# CHARACTER INTERACTION REQUIREMENTS
-
-After individual cycles, define:
-
-```
-CHARACTER INTERACTIONS:
-- [Name] and [Name]:
-  * How cycles intersect
-  * Relationship arc (Jeong development)
-  * Conflicts (opposing flaws create friction)
-  * Synergies (help heal each other's wounds)
-
-SHARED MOMENTS:
-- Jeong (Connection) Building: [Scenes where bonds form]
-- Shared Han (Collective Wounds): [Collective pain revealed]
-- Moral Elevation Moments: [When one inspires another]
-```
-
-# SEED PLANTING STRATEGY
-
-**Good Seed Examples**:
-- Act I: Character helps stranger → Act III: Stranger saves them
-- Act I: Character shows integrity in small matter → Act II: Earns trust when crucial
-- Act I: Character plants literal garden → Act III: Garden becomes symbol of renewal
-
-**Seed Planting Rules**:
-1. Plant 3-5 seeds per act
-2. Each seed must have SPECIFIC expected payoff
-3. Seeds should feel natural, not forced
-4. Payoffs should feel surprising but inevitable
-5. Best seeds involve human relationships
-
-# CRITICAL RULES
-1. Each act must have complete cycles for EACH character
-2. Each resolution MUST create next adversity
-3. Virtuous actions MUST be intrinsically motivated
-4. Consequences MUST have clear causal links
-5. Character arcs MUST intersect and influence each other
-6. Seeds planted in Act I MUST pay off by Act III
-7. Act II MUST end with lowest point
-8. Act III MUST resolve both internal flaws and external conflicts
-
-# OUTPUT FORMAT
-Return structured text with clear section headers.
-```
-
-#### Implementation Notes
-- **AI Model**: Gemini 2.5 Flash (higher capability for complex multi-character planning)
-- **Temperature**: 0.8 (need creativity for compelling arcs)
-- **Post-Processing**: Parse into Part records, extract characterArcs JSON, validate seed logic
 
 ---
 
-### 2.5 Chapter Generation API
+### 3.5 Chapter Generation API
 
-#### Endpoint
-```typescript
-POST /studio/api/chapter
+**Phase 5 of 9** - Creates one complete adversity-triumph micro-cycle that progressively builds the character's macro arc.
 
-Request:
-{
-  storyId: string;
-  partId: string;
-  partSummary: string;
-  numberOfChapters: number;
-  previousChapterSummary?: string;
-}
+**API Endpoint**: `POST /api/studio/chapter`
+**Service Function**: `chapterService.generateAndSave()` (`src/lib/studio/services/chapter-service.ts`)
+**Generator Function**: `generateChapter()` (`src/lib/studio/generators/chapter-generator.ts`)
 
-Response:
-{
-  chapters: {
-    title: string;
-    summary: string;
-    characterId: string; // The character whose MACRO arc this chapter advances
-    arcPosition: 'beginning' | 'middle' | 'climax' | 'resolution';
-    contributesToMacroArc: string;
-    focusCharacters: string[];
-    adversityType: string;
-    virtueType: string;
-    seedsPlanted: Seed[];
-    seedsResolved: SeedResolution[];
-    connectsToPreviousChapter: string;
-    createsNextAdversity: string;
-  }[];
-}
+**Type Flow**:
 ```
-
-#### System Prompt (v1.0)
-
-```markdown
-# ROLE
-You are an expert at decomposing MACRO character arcs into progressive micro-cycle chapters that build gradually toward climactic transformation, maintaining emotional momentum and causal logic.
-
-# CONTEXT
-Part Summary: {partSummary}
-Character Macro Arcs: {characterMacroArcs}
-Number of Chapters: {numberOfChapters}
-Previous Chapter: {previousChapterSummary}
-
-# YOUR TASK
-Create {numberOfChapters} individual chapters from the part's MACRO arcs, where:
-1. EACH chapter is ONE complete adversity-triumph cycle (micro-cycle)
-2. Chapters progressively build toward the MACRO virtue and consequence
-3. Character arcs rotate to maintain variety
-4. Each chapter advances its character's MACRO arc position
-
-# MICRO-CYCLE CHAPTER TEMPLATE
-
-Each chapter must contain:
-
-## 1. MACRO ARC CONTEXT
+ApiChapterRequest (API Layer)
+    ↓
+ServiceChapterParams (Service Layer)
+    ↓ chapterService.generateAndSave()
+GeneratorChapterParams (Generator Layer)
+    ↓ generateChapter()
+AiChapterZodSchema (AI Layer - validation)
+    ↓ textGenerationClient.generateStructured()
+AiChapterType (AI Layer - result)
+    ↓
+GeneratorChapterResult (Generator Layer)
+    ↓ db.insert(chapters)
+ServiceChapterResult (Service Layer)
+    ↓
+ApiChapterResponse (API Layer)
 ```
-CHAPTER {number}: {title}
-
-CHARACTER: {name}
-MACRO ARC: {brief macro adversity → macro virtue summary}
-POSITION IN ARC: {beginning/middle/climax/resolution} (climax = MACRO virtue/consequence)
-CONNECTED TO: {how previous chapter created THIS adversity}
-```
-
-## 2. MICRO-CYCLE ADVERSITY (This Chapter)
-```
-ADVERSITY:
-- Internal: {specific fear/flaw confronted in THIS chapter}
-- External: {specific obstacle in THIS chapter}
-- Why Now: {why this is the right moment}
-```
-
-## 3. VIRTUOUS ACTION
-```
-VIRTUOUS ACTION:
-- What: {specific moral choice/act}
-- Why (Intrinsic Motivation): {true reason - NOT transactional}
-- Virtue Type: {type}
-- Moral Elevation Moment: {when audience feels uplifted}
-- Seeds Planted:
-  * {detail that will pay off later}
-    Expected Payoff: {when and how}
-```
-
-## 4. UNINTENDED CONSEQUENCE
-```
-UNINTENDED CONSEQUENCE:
-- What: {surprising resolution/reward}
-- Causal Link: {how connected to past actions}
-- Seeds Resolved:
-  * From Chapter {X}: {seed} → {payoff}
-- Why Earned: {why this feels like justice}
-- Emotional Impact: {catharsis/gam-dong/hope}
-```
-
-## 5. NEW ADVERSITY
-```
-NEW ADVERSITY:
-- What: {next problem created}
-- Stakes: {how complexity/intensity increases}
-- Hook: {why reader must continue}
-```
-
-## 6. PROGRESSION CONTRIBUTION
-```
-PROGRESSION CONTRIBUTION:
-- How This Advances Macro Arc: {specific progress toward MACRO virtue/consequence}
-- Position-Specific Guidance:
-  * If beginning: Establish flaw, hint at transformation needed
-  * If middle: Escalate tension, character wavers, doubt grows
-  * If climax: MACRO virtue moment, defining choice, highest stakes
-  * If resolution: Process consequence, stabilize, reflect on change
-- Setup for Next Chapter: {what this positions for next micro-cycle}
-```
-
-## 7. SCENE BREAKDOWN GUIDANCE
-```
-SCENE BREAKDOWN GUIDANCE:
-- Setup Scenes (1-2): {what to establish}
-- Confrontation Scenes (1-3): {conflicts to show}
-- Virtue Scene (1): {moral elevation moment}
-- Consequence Scenes (1-2): {how payoff manifests}
-- Transition Scene (1): {hook for next chapter}
-```
-
-# CAUSAL LINKING (CRITICAL)
-
-## Previous → This Chapter
-"How did previous chapter's resolution create THIS adversity?"
-
-**Good Examples**:
-- Previous: Defeated enemy → This: Enemy's superior seeks revenge
-- Previous: Gained allies → This: Allies bring their own problems
-
-**Bad Examples (AVOID)**:
-- "A new problem just happens" (no causal link)
-- "Meanwhile, unrelated thing occurs" (breaks chain)
-
-## This → Next Chapter
-"How does THIS resolution create NEXT adversity?"
-
-## Seed Tracking
-
-**Seeds Planted** must specify:
-- Specific Action: 'Gives watch' not 'is kind'
-- Specific Recipient: Named person, not 'stranger'
-- Specific Detail: Unique identifying feature
-- Expected Payoff: Chapter number and how it pays off
-
-# CRITICAL RULES
-1. EXACTLY {numberOfChapters} chapters required
-2. Each chapter = ONE complete micro-cycle (self-contained)
-3. Chapters MUST progressively advance MACRO arc (not rushed completion)
-4. ONE chapter per character arc must have arcPosition='climax' (the MACRO moment)
-5. Arc positions must progress: beginning → middle → climax → resolution
-6. MUST show causal link from previous chapter
-7. MUST create adversity for next chapter
-8. Seeds planted MUST have specific expected payoffs
-9. Seeds resolved MUST reference specific previous seeds
-10. Balance focus across characters (rotate arcs for variety)
-11. Emotional pacing builds toward part's climax
-12. Virtuous actions MUST be intrinsically motivated
-13. Consequences MUST feel earned through causality
-
-# OUTPUT FORMAT
-Return structured text with clear chapter separations.
-```
-
-#### Implementation Notes
-- **AI Model**: Gemini 2.5 Flash (complex decomposition task)
-- **Temperature**: 0.7
-- **Iterative Generation**: Generate chapters one at a time
-- **Post-Processing**: Parse into Chapter records, extract seeds with UUIDs, build causal chain map
 
 ---
 
-### 2.6 Scene Summary Generation API
+### 3.6 Scene Summary Generation API
 
-#### Endpoint
-```typescript
-POST /studio/api/scene-summary
+**Phase 6a of 9** - Divides chapter's adversity-triumph cycle into 3-7 narrative beats (scene summaries only, no content).
 
-Request:
-{
-  storyId: string;
-  chapterId: string;
-  chapterSummary: string;
-  numberOfScenes: number; // Typically 3-7
-  storySummary: string;
-  characters: Character[];
-}
+**API Endpoint**: `POST /api/studio/scene-summary`
+**Service Function**: `sceneSummaryService.generateAndSave()` (`src/lib/studio/services/scene-summary-service.ts`)
+**Generator Function**: `generateSceneSummaries()` (`src/lib/studio/generators/scene-summary-generator.ts`)
 
-Response:
-{
-  scenes: {
-    title: string;
-    summary: string; // Scene specification
-    cyclePhase: 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition';
-    emotionalBeat: string;
-    characterFocus: string[];
-    sensoryAnchors: string[];
-    dialogueVsDescription: string;
-    suggestedLength: 'short' | 'medium' | 'long';
-  }[];
-}
+**Type Flow**:
 ```
-
-#### System Prompt (v1.0)
-
-```markdown
-# ROLE
-You are an expert at breaking down adversity-triumph cycles into compelling scene specifications that guide prose generation.
-
-# CONTEXT
-Chapter Summary: {chapterSummary}
-Story Summary: {storySummary}
-Characters: {characters}
-Number of Scenes: {numberOfScenes}
-
-# YOUR TASK
-Break down this chapter's adversity-triumph cycle into {numberOfScenes} scene summaries, where each summary provides a complete specification for prose generation.
-
-# SCENE SUMMARY STRUCTURE
-
-Each scene summary must contain:
-
-## 1. TITLE
-Short, evocative scene title (3-7 words)
-
-## 2. SUMMARY
-Detailed specification (200-400 words) including:
-- What happens in this scene (actions, events, interactions)
-- Why this scene matters in the cycle (purpose, function)
-- What emotional beat to hit
-- Character internal states
-- Key dialogue or moments to include
-- How it connects to previous/next scene
-
-## 3. CYCLE PHASE
-One of: setup, confrontation, virtue, consequence, transition
-
-## 4. EMOTIONAL BEAT
-Primary emotion this scene should evoke:
-- setup → fear, tension, anxiety
-- confrontation → desperation, determination, conflict
-- virtue → elevation, moral beauty, witnessing goodness
-- consequence → catharsis, joy, relief, surprise, gam-dong
-- transition → anticipation, dread, curiosity
-
-## 5. CHARACTER FOCUS
-Which character(s) this scene focuses on (1-2 max for depth)
-
-## 6. SENSORY ANCHORS
-5-10 specific sensory details that should appear:
-- Visual details (colors, lighting, movement)
-- Sounds (ambient, dialogue quality, silence)
-- Tactile sensations (textures, temperatures, physical feelings)
-- Smells (environment, memory triggers)
-- Emotional/physical sensations (heart racing, tears, warmth)
-
-## 7. DIALOGUE VS DESCRIPTION
-Guidance on balance:
-- Dialogue-heavy: Conversation-driven, lots of back-and-forth
-- Balanced: Mix of action and dialogue
-- Description-heavy: Internal thoughts, sensory immersion, sparse dialogue
-
-## 8. SUGGESTED LENGTH
-- short: 300-500 words (transition, quick setup)
-- medium: 500-800 words (confrontation, consequence)
-- long: 800-1000 words (virtue scene - THE moment)
-
-# SCENE DISTRIBUTION REQUIREMENTS
-
-For a complete adversity-triumph cycle:
-- 1-2 Setup scenes (establish adversity)
-- 1-3 Confrontation scenes (build tension)
-- 1 Virtue scene (THE PEAK - must be longest)
-- 1-2 Consequence scenes (deliver payoff)
-- 1 Transition scene (hook to next chapter)
-
-Total: 3-7 scenes
-
-# CRITICAL RULES
-1. Virtue scene MUST be marked as "long" - this is THE moment
-2. Each summary must be detailed enough to guide prose generation
-3. Sensory anchors must be SPECIFIC (not "nature sounds" but "wind rattling dead leaves")
-4. Scene progression must build emotional intensity toward virtue, then release
-5. Each scene must have clear purpose in the cycle
-6. Character focus should alternate to maintain variety
-7. Summaries should NOT contain actual prose - just specifications
-
-# OUTPUT FORMAT
-Return structured data for all scenes with clear sections.
+ApiSceneSummaryRequest (API Layer)
+    ↓
+ServiceSceneSummaryParams (Service Layer)
+    ↓ sceneSummaryService.generateAndSave()
+GeneratorSceneSummaryParams (Generator Layer)
+    ↓ generateSceneSummaries()
+AiSceneSummaryZodSchema (AI Layer - validation)
+    ↓ textGenerationClient.generateStructured()
+AiSceneSummaryType[] (AI Layer - result)
+    ↓
+GeneratorSceneSummaryResult (Generator Layer)
+    ↓ db.insert(scenes) [summary only]
+ServiceSceneSummaryResult (Service Layer)
+    ↓
+ApiSceneSummaryResponse (API Layer)
 ```
-
-#### Implementation Notes
-- **AI Model**: Gemini 2.5 Flash Lite (structured breakdown task)
-- **Temperature**: 0.6 (need consistency in specifications)
-- **Post-Processing**: Validate scene count, ensure virtue scene is marked long, check cycle phase coverage
 
 ---
 
-### 2.7 Scene Content Generation API
+### 3.7 Scene Content Generation API
 
-#### Endpoint
-```typescript
-POST /studio/api/scene-content
+**Phase 6b of 9** - Generates full prose narrative content for each scene using its summary and metadata.
 
-Request:
-{
-  storyId: string;
-  sceneId: string;
-  sceneSummary: string; // Scene specification from Scene.summary
-  cyclePhase: string;
-  emotionalBeat: string;
-  chapterSummary: string;
-  storySummary: string;
-  characters: Character[];
-  previousSceneContent?: string;
-}
+**API Endpoint**: `POST /api/studio/scene-content`
+**Service Function**: `sceneContentService.generateAndUpdate()` (`src/lib/studio/services/scene-content-service.ts`)
+**Generator Function**: `generateSceneContent()` (`src/lib/studio/generators/scene-content-generator.ts`)
 
-Response:
-{
-  content: string;
-  wordCount: number;
-  emotionalTone: string;
-}
+**Type Flow**:
 ```
-
-#### System Prompt (v1.1 - Updated)
-
-```markdown
-# ROLE
-You are a master prose writer, crafting emotionally resonant scenes that form part of a larger adversity-triumph narrative cycle.
-
-# CONTEXT
-Scene Summary: {sceneSummary}
-Cycle Phase: {cyclePhase}
-Emotional Beat: {emotionalBeat}
-Chapter Summary: {chapterSummary}
-Story Summary: {storySummary}
-Characters: {characterContext}
-Previous Scene Content: {previousSceneContent}
-
-# TASK
-Write full prose narrative for this scene based on the scene summary, optimized for its role in the adversity-triumph cycle.
-
-The scene summary provides the specification for what this scene should accomplish. Use it as your primary guide while incorporating the broader context from chapter, story, and character information.
-
-# CYCLE-SPECIFIC WRITING GUIDELINES
-
-## IF CYCLE PHASE = "virtue"
-**Goal**: Create moral elevation moment
-
-**CRITICAL**: This is THE emotional peak
-
-### Ceremonial Pacing (v1.1 UPDATE)
-- SLOW DOWN during the virtuous action itself
-- Use short sentences or fragments to create reverent pace
-- Allow silence and stillness
-- Let reader witness every detail
-
-Example:
-Instead of: "She poured the water quickly."
-Write: "She uncapped the bottle. Tilted it. The first drop caught the light. Fell. The soil drank."
-
-### Emotional Lingering (v1.1 UPDATE)
-- After virtuous action, give 2-3 paragraphs for emotional resonance
-- Show character's internal state AFTER the act
-- Physical sensations (trembling, tears, breath)
-- NO immediate jump to next plot point
-
-### POV Discipline (v1.1 UPDATE)
-- If observer character present, do NOT switch to their POV in same scene
-- Their reaction can be next scene's opening
-- Stay with primary character's experience
-
-### Length Requirements (v1.1 UPDATE)
-- Virtue scenes should be LONGER than other scenes
-- Aim for 800-1000 words minimum
-- This is THE moment—take your time
-
-### Show Intrinsic Motivation
-- DO NOT state "they expected nothing in return"
-- SHOW through:
-  * Character's thoughts reveal true motivation
-  * Action taken despite risk/cost
-  * No calculation of reward visible
-- Use vivid, specific details
-- Multiple senses engaged
-- Allow audience to witness moral beauty
-
-**Example Peak**:
-> Minji didn't think about what she'd get in return. She didn't think about the risk. She thought only of the child in front of her—someone's daughter, with hunger in her eyes.
->
-> She held out her last piece of bread.
-
-## IF CYCLE PHASE = "consequence"
-**Goal**: Deliver earned payoff, trigger catharsis/Gam-dong
-
-- Reversal or revelation that surprises
-- SHOW causal link to past action
-- Emotional release for character and reader
-- Use poetic justice / karmic framing
-- Affirm moral order of story world
-
-## IF CYCLE PHASE = "setup"
-**Goal**: Build empathy, establish adversity
-
-- Deep POV to show internal state
-- Use specific sensory details
-- Show both internal conflict and external threat
-- Create intimacy between reader and character
-
-## IF CYCLE PHASE = "confrontation"
-**Goal**: Externalize internal conflict, escalate tension
-
-- Dramatize struggle through action and dialogue
-- Show internal resistance manifesting externally
-- Raise stakes progressively
-- Use shorter paragraphs, punchier sentences as tension builds
-
-## IF CYCLE PHASE = "transition"
-**Goal**: Create next adversity, hook for continuation
-
-- Resolution creates complication
-- New problem emerges from success
-- End on question, revelation, or threat
-- Pace: Quick and punchy
-
-# PROSE QUALITY STANDARDS
-
-## Description Paragraphs
-- **Maximum 3 sentences per paragraph**
-- Use specific, concrete sensory details
-- Avoid generic descriptions
-
-## Spacing
-- **Blank line (2 newlines) between description and dialogue**
-- Applied automatically in post-processing
-
-## Dialogue
-- Character voices must be distinct
-- Subtext over exposition
-- Interruptions, fragments, hesitations for realism
-
-## Sentence Variety
-- Mix short and long sentences
-- Vary sentence structure
-- Use fragments for emotional impact
-
-## Sensory Engagement
-- Engage multiple senses
-- Ground abstract emotions in physical sensations
-- Use setting to reflect internal state
-
-## Emotional Authenticity
-- Emotions must feel earned, not stated
-- Physical manifestations of emotion
-- Avoid purple prose or melodrama
-- Trust reader to feel without being told
-
-# WORD COUNT TARGET
-- Short scene: 300-500 words
-- Medium scene: 500-800 words
-- Long scene (VIRTUE): 800-1000 words
-
-Aim for {suggestedLength}
-
-# CRITICAL RULES
-1. Stay true to scene's cycle phase purpose
-2. Maintain character voice consistency
-3. Build or release tension as appropriate
-4. Show, don't tell (especially virtue and consequence)
-5. Every sentence must advance emotion or plot
-6. If virtue scene: THIS IS MOST IMPORTANT - make it memorable
-
-# OUTPUT
-Return ONLY the prose narrative, no metadata, no explanations.
+ApiSceneContentRequest (API Layer)
+    ↓
+ServiceSceneContentParams (Service Layer)
+    ↓ sceneContentService.generateAndUpdate()
+GeneratorSceneContentParams (Generator Layer)
+    ↓ generateSceneContent()
+string (prose content - no Zod schema)
+    ↓ textGenerationClient.generate()
+GeneratorSceneContentResult (Generator Layer)
+    ↓ db.update(scenes).set({ content })
+ServiceSceneContentResult (Service Layer)
+    ↓
+ApiSceneContentResponse (API Layer)
 ```
-
-#### Implementation Notes
-- **AI Model**: Gemini 2.5 Flash Lite for most scenes, Gemini 2.5 Flash for complex virtue/consequence scenes
-- **Temperature**: 0.7
-- **Post-Processing**: Scene formatting (paragraph splitting, spacing), validation
-- **Prompt Version**: v1.1 (improved from v1.0 based on testing)
 
 ---
 
-### 2.8 Scene Evaluation & Improvement API
+### 3.8 Scene Evaluation & Improvement API
 
-#### Endpoint
-```typescript
-POST /studio/api/scene-evaluation
+**Phase 7 of 9** - Evaluates scene quality and iteratively improves until passing score (3.0+/4.0).
 
-Request:
-{
-  sceneId: string;
-  content: string;
-  context: {
-    storyGenre: string;
-    cyclePhase: 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition';
-    arcPosition: 'beginning' | 'middle' | 'climax' | 'resolution';
-    chapterNumber: number;
-    characterContext: string[]; // Character summaries
-  };
-  options?: {
-    maxIterations?: number; // Default: 2
-    passingScore?: number; // Default: 3.0
-    improvementLevel?: 'light' | 'moderate' | 'heavy'; // Default: 'moderate'
-  };
-}
+**API Endpoint**: `POST /api/studio/scene-evaluation`
+**Service Function**: `sceneEvaluationService.evaluateAndImprove()` (`src/lib/studio/services/scene-evaluation-service.ts`)
+**Generator Function**: `evaluateAndImproveScene()` (`src/lib/studio/generators/scene-evaluation-generator.ts`)
 
-Response:
-{
-  scene: {
-    id: string;
-    content: string; // Final improved content
-  };
-  evaluations: Array<{
-    iteration: number;
-    scores: {
-      plot: number;          // 1-4 scale
-      character: number;     // 1-4 scale
-      pacing: number;        // 1-4 scale
-      prose: number;         // 1-4 scale
-      worldBuilding: number; // 1-4 scale
-    };
-    overallScore: number;    // Average of 5 categories
-    feedback: {
-      strengths: string[];
-      improvements: string[];
-      priorityFixes: string[];
-    };
-  }>;
-  iterations: number;
-  finalScore: number;
-  passed: boolean;
-  improvements: string[]; // List of changes made
-}
+**Type Flow**:
 ```
-
-#### System Prompt (v1.0)
-
-```markdown
-# ROLE
-You are an expert narrative evaluator using the "Architectonics of Engagement" framework to assess scene quality and provide actionable improvement feedback.
-
-# CONTEXT
-Scene Content: {sceneContent}
-Story Genre: {storyGenre}
-Cycle Phase: {cyclePhase}
-Arc Position: {arcPosition}
-Chapter Number: {chapterNumber}
-Characters: {characterContext}
-
-# YOUR TASK
-Evaluate this scene across 5 quality categories and provide improvement feedback if score < {passingScore}.
-
-# EVALUATION CATEGORIES (1-4 scale)
-
-## 1. PLOT (Goal Clarity, Conflict Engagement, Stakes Progression)
-
-**Score 1 - Nascent**: Scene lacks clear dramatic goal or conflict is unfocused
-**Score 2 - Developing**: Goal present but weak; conflict needs sharpening
-**Score 3 - Effective**: Clear goal, engaging conflict, stakes are evident ✅
-**Score 4 - Exemplary**: Urgent goal, compelling conflict, stakes deeply felt
-
-Evaluate:
-- Does the scene have a clear dramatic goal?
-- Is the conflict compelling and escalating?
-- Are the stakes evident and meaningful?
-
-## 2. CHARACTER (Voice Distinctiveness, Motivation Clarity, Emotional Authenticity)
-
-**Score 1 - Nascent**: Characters lack distinct voice or clear motivation
-**Score 2 - Developing**: Voice emerging but generic; motivations need depth
-**Score 3 - Effective**: Characters have unique voices, clear motivations ✅
-**Score 4 - Exemplary**: Voices are unforgettable, motivations drive action powerfully
-
-Evaluate:
-- Do characters have unique, consistent voices?
-- Are motivations clear and driving action?
-- Do emotions feel genuine and earned?
-
-## 3. PACING (Tension Modulation, Scene Rhythm, Narrative Momentum)
-
-**Score 1 - Nascent**: Pacing is uneven or drags
-**Score 2 - Developing**: Pacing functional but needs dynamic range
-**Score 3 - Effective**: Tension rises and falls strategically, engaging pace ✅
-**Score 4 - Exemplary**: Masterful rhythm, reader can't put it down
-
-Evaluate:
-- Does tension build and release effectively?
-- Is the scene's rhythm engaging (not too fast or slow)?
-- Does momentum propel story forward?
-
-## 4. PROSE (Sentence Variety, Word Choice Precision, Sensory Engagement)
-
-**Score 1 - Nascent**: Sentences repetitive, words generic, no sensory details
-**Score 2 - Developing**: Some variety, decent words, sparse sensory details
-**Score 3 - Effective**: Varied sentences, precise words, multiple senses engaged ✅
-**Score 4 - Exemplary**: Poetic craft, every word chosen with care, immersive
-
-Evaluate:
-- Do sentences vary in length and structure?
-- Are words precise and evocative?
-- Are multiple senses engaged (sight, sound, smell, touch)?
-
-## 5. WORLD-BUILDING (Setting Integration, Detail Balance, Immersion)
-
-**Score 1 - Nascent**: Setting is backdrop only, no integration with action
-**Score 2 - Developing**: Setting mentioned but not supporting story
-**Score 3 - Effective**: Setting supports and enhances action, details enrich ✅
-**Score 4 - Exemplary**: Setting is character itself, reader fully immersed
-
-Evaluate:
-- Does setting support and enhance the action?
-- Are details enriching without overwhelming?
-- Does reader feel present in the scene?
-
-# SCORING GUIDELINES
-
-- **3.0+ = PASSING** (Effective level, professionally crafted)
-- **Below 3.0 = NEEDS IMPROVEMENT** (provide specific feedback)
-
-# OUTPUT FORMAT
-
-Return JSON:
-
-```json
-{
-  "scores": {
-    "plot": 3.5,
-    "character": 3.0,
-    "pacing": 2.5,
-    "prose": 3.5,
-    "worldBuilding": 3.0
-  },
-  "overallScore": 3.1,
-  "feedback": {
-    "strengths": [
-      "Strong character voice for protagonist",
-      "Vivid sensory details in garden scene",
-      "Clear dramatic goal established early"
-    ],
-    "improvements": [
-      "Pacing drags in middle section - consider cutting 2-3 sentences",
-      "Antagonist's motivation unclear - add internal thought or dialogue",
-      "Setting could be more integrated - show how heat affects character actions"
-    ],
-    "priorityFixes": [
-      "PACING: Cut middle section from 'She knelt...' to '...finally stood' to maintain momentum",
-      "CHARACTER: Add line revealing why antagonist cares about garden's success"
-    ]
-  }
-}
+ApiSceneEvaluationRequest (API Layer)
+    ↓
+ServiceSceneEvaluationParams (Service Layer)
+    ↓ sceneEvaluationService.evaluateAndImprove()
+GeneratorSceneEvaluationParams (Generator Layer)
+    ↓ evaluateAndImproveScene()
+    ├─ evaluateScene() → AiSceneEvaluationType
+    └─ improveScene() → string (improved content)
+GeneratorSceneEvaluationResult (Generator Layer)
+    ↓ db.update(scenes).set({ content, evaluationScore })
+ServiceSceneEvaluationResult (Service Layer)
+    ↓
+ApiSceneEvaluationResponse (API Layer)
 ```
-
-# IMPROVEMENT GUIDANCE (if score < {passingScore})
-
-When providing improvement feedback:
-
-1. **Be Specific**: Point to exact sentences or sections
-2. **Be Actionable**: Suggest concrete fixes, not vague advice
-3. **Prioritize**: Focus on 1-3 high-impact improvements
-4. **Preserve Strengths**: Don't fix what's working
-
-Example Priority Fixes:
-- ✅ "Add sensory detail to opening: 'dust-choked air' → 'dust-choked air that burned her throat'"
-- ✅ "Tighten dialogue exchange between Sarah and Jin - current version is 4 lines, reduce to 2"
-- ❌ "Make it more engaging" (too vague)
-- ❌ "Improve character voice" (not specific enough)
-
-# OUTPUT
-Return ONLY the JSON evaluation, no explanations.
-```
-
-#### Implementation Notes
-- **AI Model**: Gemini 2.5 Flash (needs capability for nuanced literary analysis)
-- **Temperature**: 0.3 (need consistency in evaluation)
-- **Evaluation Loop**:
-  1. Evaluate scene content (first iteration)
-  2. If score < passingScore: Generate improvement feedback
-  3. Re-generate scene with feedback incorporated
-  4. Re-evaluate improved scene (second iteration)
-  5. Repeat until passing or max iterations reached
-- **Integration**: Called after scene content generation (API 7), before image generation (API 9)
 
 ---
 
-### 2.9 Image Generation API
+### 3.9 Image Generation API
 
-#### Endpoint
-```typescript
-POST /studio/api/images
+**Phase 8 of 9** - Generates and optimizes images for all story entities (story cover, characters, settings, scenes).
 
-Request:
-{
-  storyId: string;
-  imageTypes: Array<'story' | 'character' | 'setting' | 'scene'>;
-  options?: {
-    visualStyle: 'realistic' | 'anime' | 'painterly' | 'cinematic'; // Default from story
-    batchSize?: number; // Generate N images at a time, default: 5
-  };
-}
+**API Endpoint**: `POST /api/studio/images` (SSE streaming)
+**Service Function**: `imageService.generateAndOptimize()` (`src/lib/studio/services/image-service.ts`)
+**Generator Function**: `generateImages()` (`src/lib/studio/generators/images-generator.ts`)
 
-Response: Server-Sent Events (SSE)
-{
-  event: 'progress',
-  data: {
-    type: 'story' | 'character' | 'setting' | 'scene',
-    current: number,
-    total: number,
-    message: string
-  }
-}
-
-Final Event:
-{
-  event: 'complete',
-  data: {
-    generated: {
-      story: number,      // Count of story images
-      characters: number, // Count of character images
-      settings: number,   // Count of setting images
-      scenes: number      // Count of scene images
-    },
-    totalImages: number,
-    totalVariants: number // 18 variants per image
-  }
-}
+**Type Flow**:
+```
+ApiImagesRequest (API Layer)
+    ↓
+ServiceImagesParams (Service Layer)
+    ↓ imageService.generateAndOptimize()
+GeneratorImagesParams (Generator Layer)
+    ↓ generateImages()
+    ├─ generateStoryImage() → ImageUrl
+    ├─ generateCharacterImages() → ImageUrl[]
+    ├─ generateSettingImages() → ImageUrl[]
+    └─ generateSceneImages() → ImageUrl[]
+        ↓ imageGenerationClient.generate()
+        ↓ optimizeImage() → ImageVariantSet (4 variants)
+GeneratorImagesResult (Generator Layer)
+    ↓ db.update(stories/characters/settings/scenes).set({ imageUrl, imageVariants })
+ServiceImagesResult (Service Layer)
+    ↓ SSE streaming progress
+ApiImagesResponse (API Layer - SSE)
 ```
 
-#### Image Generation Specifications
+**Image Specifications**:
+- **Story Cover**: 1344×768 (7:4), book cover style
+- **Character Portrait**: 1024×1024 (square), concept art style
+- **Setting Environment**: 1344×768 (7:4), cinematic landscape
+- **Scene Image**: 1344×768 (7:4), cinematic scene composition
 
-**Story Cover Image**:
-- Size: 1344×768 (7:4 aspect ratio)
-- Prompt: `Book cover illustration for "{storyTitle}", {storySummary}, {genre} genre, {tone} atmosphere, {visualStyle} art style, dramatic composition, professional book cover design`
-
-**Character Portrait**:
-- Size: 1024×1024 (square)
-- Prompt: `Portrait of {characterName}, {physicalDescription.appearance}, {physicalDescription.distinctiveFeatures}, {visualStyle} style, {genre} genre aesthetic, character concept art`
-
-**Setting Environment**:
-- Size: 1344×768 (7:4 aspect ratio)
-- Prompt: `Wide landscape view of {settingName}, {settingDescription}, {visualReferences[0]} style, {genre} aesthetic, {colorPalette} colors, {mood} atmosphere, cinematic composition`
-
-**Scene Image**:
-- Size: 1344×768 (7:4 aspect ratio)
-- Prompt: `Cinematic scene from {storyTitle}: {sceneTitle}, {sceneVisualDescription}, {settingName} environment, {charactersPresent}, {visualStyle} style, {genre} aesthetic, 7:4 composition`
-
-#### Image Optimization
-
-For EACH generated image, automatically create 4 optimized variants:
-
-**Formats**: AVIF (best compression), JPEG (universal fallback)
-**Sizes**:
-- Mobile 1x: 672×384 (for 320-640px viewports)
-- Mobile 2x: 1344×768 (original Gemini size, also used for desktop)
-
-**Total per image**: 2 formats × 2 sizes = 4 variants
-
-**Why 4 variants?** Mobile-first optimization strategy:
-- AVIF provides 50% smaller files than JPEG with 93.8% browser support
-- No WebP needed (only 1.5% coverage gap, adds 50% more variants)
-- Desktop uses mobile 2x (original 1344×768) - no upscaling needed
-- Optimized for comics with many panels per scene
-
-#### Implementation Notes
-- **Image Generation Model**: Gemini 2.5 Flash via Google AI API
-- **Optimization Service**: Sharp.js for variant creation
-- **Storage**: Vercel Blob with public access
-- **Database Updates**: Store imageUrl and imageVariants for each entity
-- **Batch Processing**: Generate 5 images at a time to avoid rate limits
-- **Error Handling**: Retry failed generations up to 3 times
-- **Progress Tracking**: Use SSE to report real-time progress to client
-
-**Generation Order**:
-1. Story cover (1 image)
-2. Characters (2-4 images)
-3. Settings (2-4 images)
-4. Scenes (per chapter, 3-7 per chapter × N chapters)
-
-**Performance**:
-- Story cover: ~5-15 seconds
-- Character portrait: ~5-15 seconds each
-- Setting environment: ~5-15 seconds each
-- Scene image: ~5-15 seconds each
-- Optimization: ~2 seconds per image (4 variants)
+**Optimization**: 4 variants per image (AVIF + JPEG × mobile 1x/2x)
 
 ---
 
 
-## Part III: Iterative Improvement Methodology
+## Part IV: Iterative Improvement Methodology
 
-### 3.1 Overview
+### 4.1 Overview
 
-The Adversity-Triumph Engine uses a systematic, data-driven approach to continuously improve story generation quality through iterative prompt refinement. This methodology ensures that system prompts evolve based on empirical evidence from production testing and reader feedback.
+The Adversity-Triumph Engine uses a systematic, data-driven approach to continuously improve story generation quality through iterative prompt refinement. This methodology ensures that prompts evolve based on empirical evidence from production testing and reader feedback.
 
 **Key Principle**: All prompt changes must be validated through A/B testing with quantitative metrics before adoption.
 
@@ -2482,14 +955,14 @@ The Adversity-Triumph Engine uses a systematic, data-driven approach to continuo
 
 ---
 
-### 3.2 The 7-Step Optimization Loop
+### 4.2 The 7-Step Optimization Loop
 
-This cyclic process continuously refines system prompts based on measurable outcomes:
+This cyclic process continuously refines prompts based on measurable outcomes:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  1. GENERATE                                                 │
-│  Run current system prompt → Produce story/content          │
+│  Run current prompt → Produce story/content                 │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
@@ -2519,7 +992,7 @@ This cyclic process continuously refines system prompts based on measurable outc
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
 │  5. UPDATE PROMPT                                            │
-│  - Implement changes to system prompt                       │
+│  - Implement changes to prompt                              │
 │  - Version control (v1.0 → v1.1)                           │
 │  - Document rationale                                       │
 └────────────────────┬────────────────────────────────────────┘
@@ -2550,7 +1023,7 @@ This cyclic process continuously refines system prompts based on measurable outc
 
 ---
 
-### 3.3 Practical Implementation Example: "The Last Garden" Baseline Test
+### 4.3 Practical Implementation Example: "The Last Garden" Baseline Test
 
 This real example demonstrates the complete optimization loop from production testing.
 
@@ -2560,7 +1033,7 @@ This real example demonstrates the complete optimization loop from production te
 
 #### Step 1: Generate with Baseline Prompt
 
-Generate stories using initial system prompts (v1.0), collect all metrics defined in [novels-evaluation.md](novels-evaluation.md).
+Generate stories using initial prompts (v1.0), collect all metrics defined in [novels-evaluation.md](novels-evaluation.md).
 
 #### Step 2: Identify Issues
 
@@ -2574,7 +1047,7 @@ Example from "The Last Garden" baseline test:
 
 #### Step 3: Update Prompts
 
-Based on identified issues, enhance system prompts with specific instructions:
+Based on identified issues, enhance prompts with specific instructions:
 
 **VIRTUE SCENE SPECIAL INSTRUCTIONS (v1.1)**:
 
@@ -2658,39 +1131,13 @@ Generate 5 stories with updated prompts (v1.1), compare metrics:
 
 ---
 
-### 3.4 Version Control & Documentation
+### 4.4 Version Control & Documentation
 
 **Prompt Versioning Format**: `vMAJOR.MINOR`
 - **MAJOR**: Structural changes to generation pipeline or data model
 - **MINOR**: Refinements to existing prompts (instructions, examples, constraints)
 
 **Example Changelog**:
-
-```markdown
-# System Prompt Changelog
-
-## v1.0 (Baseline - 2025-11-15)
-- Initial system prompts for all 9 generation phases
-- Basic instruction sets for cycle integrity and moral framework
-- Word count targets: Virtue 600-800, Consequence 400-600
-
-## v1.1 (2025-11-20)
-- Updated: Virtue scene instructions
-  - Increased word count target to 800-1000
-  - Added ceremonial pacing guidelines
-  - Added emotional lingering requirements
-  - Added POV discipline rules
-- **Results**: +48% word count, +35% Gam-dong response
-- **Status**: ✅ ADOPTED
-
-## v1.2 (2025-12-01 - IN TESTING)
-- Updated: Consequence scene instructions
-  - Increased word count target to 600-900
-  - Added emotional aftermath requirements
-  - Added long-term impact visualization
-- **Results**: PENDING (5 test stories in progress)
-- **Status**: ⏳ TESTING
-```
 
 **Documentation Requirements**:
 1. **Hypothesis**: What problem are we solving?
@@ -2701,7 +1148,7 @@ Generate 5 stories with updated prompts (v1.1), compare metrics:
 
 ---
 
-### 3.5 Metrics Reference
+### 4.5 Metrics Reference
 
 For complete testing metrics, evaluation frameworks, and success criteria, see:
 
@@ -2728,7 +1175,7 @@ For complete testing metrics, evaluation frameworks, and success criteria, see:
 
 ---
 
-### 3.6 Best Practices
+### 4.6 Best Practices
 
 **DO**:
 - ✅ Test with at least 5 stories per prompt version (statistical validity)
