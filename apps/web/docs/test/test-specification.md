@@ -18,7 +18,7 @@ For test execution details, automation setup, and implementation guidance, see [
    - Removed bookmark functionality tests from `/novels` and `/comics` (not implemented)
    - Removed zoom/pan tests from `/comics` (not implemented)
 3. **API Path Verification**: Updated all API endpoint paths to match current codebase structure
-   - Story API: `/studio/api/stories/*` (not `/api/stories/*`)
+   - Story API: `/studio/api/story/*` (not `/api/stories/*`)
    - Generation API: `/studio/api/novels/*` and `/studio/api/novels`
    - Community API: `/community/api/*` (not `/api/community/*`)
    - Analysis API: `/analysis/api/*` (not `/api/analytics/*`)
@@ -547,7 +547,7 @@ The application has 8 main navigation items:
 
 ### Story API
 
-#### Create Story (POST /studio/api/stories)
+#### Create Story (POST /studio/api/story)
 - **TC-API-STORY-001**: Authenticated writer can create story
 - **TC-API-STORY-002**: Anonymous user cannot create story (401)
 - **TC-API-STORY-003**: Reader role cannot create story (403)
@@ -557,7 +557,7 @@ The application has 8 main navigation items:
 - **TC-API-STORY-007**: Duplicate story titles allowed
 - **TC-API-STORY-008**: Story ID generated correctly
 
-#### Get Story (GET /studio/api/stories/:id)
+#### Get Story (GET /studio/api/story/:id)
 - **TC-API-STORY-009**: Public story accessible to all
 - **TC-API-STORY-010**: Draft story accessible only to author
 - **TC-API-STORY-011**: Non-existent story returns 404
@@ -565,7 +565,7 @@ The application has 8 main navigation items:
 - **TC-API-STORY-013**: Story includes all required fields
 - **TC-API-STORY-014**: Story includes related data (chapters, characters)
 
-#### Update Story (PUT /studio/api/stories/:id)
+#### Update Story (PUT /studio/api/story/:id)
 - **TC-API-STORY-015**: Story owner can update story
 - **TC-API-STORY-016**: Non-owner cannot update story (403)
 - **TC-API-STORY-017**: Manager can update any story
@@ -574,7 +574,7 @@ The application has 8 main navigation items:
 - **TC-API-STORY-020**: Concurrent updates handled correctly
 - **TC-API-STORY-021**: Status transitions validated correctly
 
-#### Delete Story (DELETE /studio/api/stories/:id)
+#### Delete Story (DELETE /studio/api/story/:id)
 - **TC-API-STORY-022**: Story owner can delete story
 - **TC-API-STORY-023**: Non-owner cannot delete story (403)
 - **TC-API-STORY-024**: Manager can delete any story
@@ -583,7 +583,7 @@ The application has 8 main navigation items:
 - **TC-API-STORY-027**: Blob images deleted correctly
 - **TC-API-STORY-028**: Soft delete preserves data in archive
 
-#### List Stories (GET /studio/api/stories)
+#### List Stories (GET /studio/api/story)
 - **TC-API-STORY-029**: Returns paginated list of stories
 - **TC-API-STORY-030**: Filters by status work correctly
 - **TC-API-STORY-031**: Filters by genre work correctly

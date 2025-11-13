@@ -86,7 +86,7 @@ setup.describe("Test Data Setup", () => {
         console.log("Verifying test data...");
 
         // Verify stories exist
-        const storiesResponse = await request.get("/studio/api/stories", {
+        const storiesResponse = await request.get("/studio/api/story", {
             headers: {
                 Authorization: `Bearer ${process.env.WRITER_API_KEY}`,
             },

@@ -65,11 +65,11 @@ export function SceneDisplay({
 
     // Fetch scene data
     console.log(
-        `🔄 [CLIENT] SWR: Initiating scene data fetch from /studio/api/stories/${storyId}/scenes/${sceneId}`,
+        `🔄 [CLIENT] SWR: Initiating scene data fetch from /studio/api/story/${storyId}/scenes/${sceneId}`,
     );
     const swrSceneStart = Date.now();
     const { data: sceneData, isLoading: isLoadingScene } = useSWR(
-        `/studio/api/stories/${storyId}/scenes/${sceneId}`,
+        `/studio/api/story/${storyId}/scenes/${sceneId}`,
         fetcher,
         {
             onSuccess: (data) => {
@@ -90,11 +90,11 @@ export function SceneDisplay({
 
     // Fetch characters data
     console.log(
-        `🔄 [CLIENT] SWR: Initiating characters fetch from /studio/api/stories/${storyId}/characters`,
+        `🔄 [CLIENT] SWR: Initiating characters fetch from /studio/api/story/${storyId}/characters`,
     );
     const swrCharactersStart = Date.now();
     const { data: charactersData } = useSWR(
-        `/studio/api/stories/${storyId}/characters`,
+        `/studio/api/story/${storyId}/characters`,
         fetcher,
         {
             onSuccess: (data) => {
@@ -108,11 +108,11 @@ export function SceneDisplay({
 
     // Fetch settings data
     console.log(
-        `🔄 [CLIENT] SWR: Initiating settings fetch from /studio/api/stories/${storyId}/settings`,
+        `🔄 [CLIENT] SWR: Initiating settings fetch from /studio/api/story/${storyId}/settings`,
     );
     const swrSettingsStart = Date.now();
     const { data: settingsData } = useSWR(
-        `/studio/api/stories/${storyId}/settings`,
+        `/studio/api/story/${storyId}/settings`,
         fetcher,
         {
             onSuccess: (data) => {

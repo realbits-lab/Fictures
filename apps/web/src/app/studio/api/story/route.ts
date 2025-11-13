@@ -14,7 +14,7 @@ import type {
 
 export const runtime = "nodejs";
 
-// GET /api/stories - Get user's stories with detailed data for dashboard
+// GET /api/story - Get user's stories with detailed data for dashboard
 export async function GET(request: NextRequest) {
     try {
         // 1. Authenticate the request
@@ -133,11 +133,11 @@ export async function GET(request: NextRequest) {
     }
 }
 
-// POST /api/stories - Generate and create a new story using AI
+// POST /api/story - Generate and create a new story using AI
 export async function POST(request: NextRequest) {
     try {
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        console.log("📚 [STORIES API] POST request received");
+        console.log("📚 [STORY API] POST request received");
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
         // 1. Authenticate the request
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
             await authenticateRequest(request);
 
         if (!authResult) {
-            console.error("❌ [STORIES API] Authentication failed");
+            console.error("❌ [STORY API] Authentication failed");
             return NextResponse.json(
                 { error: "Unauthorized" },
                 { status: 401 },
@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
 
         // 2. Check if user has permission to write stories
         if (!hasRequiredScope(authResult, "stories:write")) {
-            console.error("❌ [STORIES API] Insufficient scopes:", {
+            console.error("❌ [STORY API] Insufficient scopes:", {
                 required: "stories:write",
                 actual: authResult.scopes,
             });
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.log("✅ [STORIES API] Authentication successful:", {
+        console.log("✅ [STORY API] Authentication successful:", {
             type: authResult.type,
             userId: authResult.user.id,
             email: authResult.user.email,
@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
             preferredTone,
         }: ApiStoryRequest = body;
 
-        console.log("[STORIES API] Request parameters:", {
+        console.log("[STORY API] Request parameters:", {
             userPromptLength: userPrompt?.length || 0,
             userPromptPreview: userPrompt?.substring(0, 100) || "(empty)",
             language,
@@ -192,7 +192,7 @@ export async function POST(request: NextRequest) {
         // 4. Validate required parameters
         if (!userPrompt || typeof userPrompt !== "string") {
             console.error(
-                "❌ [STORIES API] Validation failed: userPrompt missing",
+                "❌ [STORY API] Validation failed: userPrompt missing",
             );
             const errorResponse: ApiStoryErrorResponse = {
                 error: "userPrompt is required and must be a string",
@@ -200,14 +200,14 @@ export async function POST(request: NextRequest) {
             return NextResponse.json(errorResponse, { status: 400 });
         }
 
-        console.log("✅ [STORIES API] Validation passed");
+        console.log("✅ [STORY API] Validation passed");
 
         // 4. Extract API key from request headers (for AI server authentication)
         const apiKey = request.headers.get("x-api-key") || undefined;
-        console.log("[STORIES API] API key provided:", !!apiKey);
+        console.log("[STORY API] API key provided:", !!apiKey);
 
         // 5. Generate using service (handles generation and persistence)
-        console.log("[STORIES API] 🤖 Calling story service...");
+        console.log("[STORY API] 🤖 Calling story service...");
         const serviceResult = await storyService.generateAndSave({
             userPrompt,
             language,
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
             apiKey,
         });
 
-        console.log("[STORIES API] ✅ Story generation and save completed:", {
+        console.log("[STORY API] ✅ Story generation and save completed:", {
             storyId: serviceResult.story.id,
             title: serviceResult.story.title,
             generationTime: serviceResult.metadata.generationTime,
@@ -225,9 +225,9 @@ export async function POST(request: NextRequest) {
 
         // 5. Invalidate cache after creating new story
         await invalidateStudioCache(authResult.user.id);
-        console.log("[STORIES API] ✅ Cache invalidated");
+        console.log("[STORY API] ✅ Cache invalidated");
 
-        console.log("✅ [STORIES API] Request completed successfully");
+        console.log("✅ [STORY API] Request completed successfully");
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
         // 6. Return the created story with metadata
@@ -243,7 +243,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(response, { status: 201 });
     } catch (error) {
         console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        console.error("❌ [STORIES API] Error:", error);
+        console.error("❌ [STORY API] Error:", error);
         console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
         const errorResponse: ApiStoryErrorResponse = {

@@ -35,7 +35,7 @@ describe("Character Generation API", () => {
 
         // 2. Send POST request to story creation API
         const response: Response = await fetch(
-            "http://localhost:3000/studio/api/stories",
+            "http://localhost:3000/studio/api/story",
             {
                 method: "POST",
                 headers: {

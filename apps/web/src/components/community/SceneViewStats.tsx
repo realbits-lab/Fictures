@@ -32,7 +32,7 @@ export function SceneViewStats({
     className = "",
 }: SceneViewStatsProps) {
     const { data, error, isLoading } = useSWR(
-        `/studio/api/stories/${storyId}/scene-stats?limit=5&sortBy=views`,
+        `/studio/api/story/${storyId}/scene-stats?limit=5&sortBy=views`,
         fetcher,
         {
             revalidateOnFocus: false,

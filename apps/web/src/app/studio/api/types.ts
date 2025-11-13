@@ -32,7 +32,7 @@
  * AiStoryZodSchema (Zod - SSOT) → AiStoryType (TypeScript) → ApiStoryResponse (API layer)
  *
  * ## Available Endpoints
- * - POST /studio/api/stories - Generate story summary
+ * - POST /studio/api/story - Generate story summary
  * - POST /studio/api/characters - Generate characters
  * - POST /studio/api/settings - Generate story settings
  * - POST /studio/api/parts - Generate story parts

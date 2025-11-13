@@ -26,7 +26,7 @@ export function FormatDistributionCard({
     className = "",
 }: FormatDistributionCardProps) {
     const { data, error, isLoading } = useSWR(
-        `/studio/api/stories/${storyId}/scene-stats?limit=1`,
+        `/studio/api/story/${storyId}/scene-stats?limit=1`,
         fetcher,
         {
             revalidateOnFocus: false,

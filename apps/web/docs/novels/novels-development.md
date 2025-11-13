@@ -46,7 +46,7 @@ All types follow a consistent layer-prefix pattern with explicit suffixes for se
 ┌────────────────────────────────────────────────────────────────────┐
 │ API Layer (HTTP Contracts)                                         │
 ├────────────────────────────────────────────────────────────────────┤
-│ POST /studio/api/stories                                           │
+│ POST /studio/api/story                                           │
 │   Request:  ApiStoryRequest                                        │
 │   Response: ApiStoryResponse | ApiStoryErrorResponse               │
 │                                                                    │
@@ -213,7 +213,7 @@ async function generateStory(
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 1: Story Generation                                         │
-│  POST /studio/api/stories                                        │
+│  POST /studio/api/story                                        │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼

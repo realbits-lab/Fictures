@@ -44,7 +44,7 @@ export function LikeDislikeButton({
 
                 switch (entityType) {
                     case "story":
-                        endpoint = `/studio/api/stories/${entityId}/${voteType}`;
+                        endpoint = `/studio/api/story/${entityId}/${voteType}`;
                         break;
                     case "chapter":
                         endpoint = `/studio/api/chapters/${entityId}/${voteType}`;

@@ -621,7 +621,7 @@ export function UnifiedWritingEditor({
                 console.log("🎯 Story ID:", story.id);
 
                 const response = await fetch(
-                    `/studio/api/stories/${story.id}/write`,
+                    `/studio/api/story/${story.id}/write`,
                     {
                         method: "PATCH",
                         headers: {
@@ -833,7 +833,7 @@ export function UnifiedWritingEditor({
         setIsLoading(true);
         try {
             const response = await fetch(
-                `/studio/api/stories/${story.id}/visibility`,
+                `/studio/api/story/${story.id}/visibility`,
                 {
                     method: "PUT",
                     headers: {

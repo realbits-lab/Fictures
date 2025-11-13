@@ -1650,9 +1650,9 @@ The story creation flow has been simplified to use the existing story generation
 4. User interacts with agent to define story requirements
 5. Agent creates story record using one of these endpoints:
    - `/studio/api/novels` - Complete novel generation with Adversity-Triumph Engine (recommended)
-   - `/studio/api/stories` - Story generation and save via story service
+   - `/studio/api/story` - Story generation and save via story service
 
-This approach eliminates the need for a separate create-empty API and integrates story creation directly into the generation workflow using the existing `/studio/api/stories` and `/studio/api/novels` endpoints.
+This approach eliminates the need for a separate create-empty API and integrates story creation directly into the generation workflow using the existing `/studio/api/story` and `/studio/api/novels` endpoints.
 
 ---
 

@@ -461,7 +461,7 @@ export function StoryGrid({
                                         onMouseEnter={() => {
                                             // Prefetch story data on hover for instant navigation
                                             fetch(
-                                                `/studio/api/stories/${story.id}/read`,
+                                                `/studio/api/story/${story.id}/read`,
                                                 {
                                                     credentials: "include",
                                                 },
@@ -634,7 +634,7 @@ export function StoryGrid({
                                             onMouseEnter={() => {
                                                 // Prefetch story data on hover for instant navigation
                                                 fetch(
-                                                    `/studio/api/stories/${story.id}/read`,
+                                                    `/studio/api/story/${story.id}/read`,
                                                     {
                                                         credentials: "include",
                                                     },

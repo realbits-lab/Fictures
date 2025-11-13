@@ -42,7 +42,7 @@ export function useStories() {
 
     const { data, error, isLoading, isValidating, mutate } =
         useSWR<StoriesResponse>(
-            session?.user?.id ? "/studio/api/stories" : null,
+            session?.user?.id ? "/studio/api/story" : null,
             fetcher,
             {
                 revalidateOnFocus: false,

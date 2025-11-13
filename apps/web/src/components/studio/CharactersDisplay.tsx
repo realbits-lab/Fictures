@@ -39,7 +39,7 @@ export function CharactersDisplay({ storyData }: CharactersDisplayProps) {
 
             try {
                 const response = await fetch(
-                    `/studio/api/stories/${storyId}/characters`,
+                    `/studio/api/story/${storyId}/characters`,
                 );
                 if (response.ok) {
                     const data = await response.json();

@@ -143,8 +143,8 @@ These endpoints provide AI-powered analysis and modification of story elements u
 
 ### 3. Stories APIs (13 endpoints)
 
-#### GET `/studio/api/stories`
-- **File**: `src/app/studio/api/stories/route.ts` (311 lines)
+#### GET `/studio/api/story`
+- **File**: `src/app/studio/api/story/route.ts` (311 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
   - `src/hooks/useStories.ts` (line 48)
@@ -169,8 +169,8 @@ These endpoints provide AI-powered analysis and modification of story elements u
   ```
 - **Scopes Required**: `stories:read`
 
-#### POST `/studio/api/stories`
-- **File**: `src/app/studio/api/stories/route.ts`
+#### POST `/studio/api/story`
+- **File**: `src/app/studio/api/story/route.ts`
 - **Status**: ⚠️ DEFINED BUT NEEDS VERIFICATION
 - **Function**: Create new story
 - **Request Schema**:
@@ -183,29 +183,29 @@ These endpoints provide AI-powered analysis and modification of story elements u
   ```
 - **Validation**: Uses Zod schema `createStorySchema`
 
-#### GET `/studio/api/stories/[id]`
-- **File**: `src/app/studio/api/stories/[id]/route.ts` (311 lines)
+#### GET `/studio/api/story/[id]`
+- **File**: `src/app/studio/api/story/[id]/route.ts` (311 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
   - `src/components/studio/StoryMetadataEditor.tsx` (line 34)
 - **Function**: Get specific story details
 - **Response**: Story object with metadata, parts, chapters, characters, settings
 
-#### PUT/PATCH `/studio/api/stories/[id]`
-- **File**: `src/app/studio/api/stories/[id]/route.ts`
+#### PUT/PATCH `/studio/api/story/[id]`
+- **File**: `src/app/studio/api/story/[id]/route.ts`
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
   - `src/components/studio/UnifiedWritingEditor.tsx` (line 1575)
 - **Function**: Update story metadata
 - **Fields Updatable**: title, description, genre, status, etc.
 
-#### DELETE `/studio/api/stories/[id]`
-- **File**: `src/app/studio/api/stories/[id]/route.ts`
+#### DELETE `/studio/api/story/[id]`
+- **File**: `src/app/studio/api/story/[id]/route.ts`
 - **Status**: ✅ DEFINED
 - **Function**: Delete story with cascading deletion
 
-#### PUT `/studio/api/stories/[id]/write`
-- **File**: `src/app/studio/api/stories/[id]/write/route.ts` (292 lines)
+#### PUT `/studio/api/story/[id]/write`
+- **File**: `src/app/studio/api/story/[id]/write/route.ts` (292 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
   - `src/components/studio/StoryPromptWriter.tsx` (line 452)
@@ -218,7 +218,7 @@ These endpoints provide AI-powered analysis and modification of story elements u
   }
   ```
 
-#### PUT `/studio/api/stories/[id]/visibility`
+#### PUT `/studio/api/story/[id]/visibility`
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
   - `src/components/studio/UnifiedWritingEditor.tsx` (line 915)
@@ -230,7 +230,7 @@ These endpoints provide AI-powered analysis and modification of story elements u
   }
   ```
 
-#### GET/POST `/studio/api/stories/[id]/read`
+#### GET/POST `/studio/api/story/[id]/read`
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
   - `src/components/browse/StoryGrid.tsx` (line 343, 447)
@@ -239,7 +239,7 @@ These endpoints provide AI-powered analysis and modification of story elements u
 - **Response**: Complete story structure with chapters, scenes, characters
 - **Caching**: Uses ETag-based HTTP caching for optimization
 
-#### GET `/studio/api/stories/[id]/characters`
+#### GET `/studio/api/story/[id]/characters`
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
   - `src/components/studio/SceneDisplay.tsx` (line 79)
@@ -258,12 +258,12 @@ These endpoints provide AI-powered analysis and modification of story elements u
   }
   ```
 
-#### GET `/studio/api/stories/[id]/characters-places`
+#### GET `/studio/api/story/[id]/characters-places`
 - **Status**: ⚠️ DEFINED (might duplicate /characters)
 - **Function**: Get characters and places combined
 - **Note**: Verify if this duplicates `/characters` and `/settings`
 
-#### GET `/studio/api/stories/[id]/settings`
+#### GET `/studio/api/story/[id]/settings`
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
   - `src/components/studio/SceneDisplay.tsx` (line 93)
@@ -281,8 +281,8 @@ These endpoints provide AI-powered analysis and modification of story elements u
   }
   ```
 
-#### GET/POST `/studio/api/stories/[id]/comments`
-- **File**: `src/app/studio/api/stories/[id]/comments/route.ts` (232 lines)
+#### GET/POST `/studio/api/story/[id]/comments`
+- **File**: `src/app/studio/api/story/[id]/comments/route.ts` (232 lines)
 - **Status**: ✅ ACTIVELY USED
 - **Used In**:
   - `src/components/novels/CommentSection.tsx`
@@ -300,18 +300,18 @@ These endpoints provide AI-powered analysis and modification of story elements u
   }
   ```
 
-#### POST `/studio/api/stories/[id]/like`
+#### POST `/studio/api/story/[id]/like`
 - **Status**: ✅ DEFINED
 - **Function**: Toggle like on story
 - **Request Schema**: `{ liked?: boolean }`
 
-#### GET `/studio/api/stories/[id]/structure`
+#### GET `/studio/api/story/[id]/structure`
 - **Status**: ✅ DEFINED
 - **Function**: Get story structure (parts, chapters, scenes hierarchy)
 - **Response**: Hierarchical story structure
 
-#### GET `/studio/api/stories/[id]/download`
-- **File**: `src/app/studio/api/stories/[id]/download/route.ts` (587 lines)
+#### GET `/studio/api/story/[id]/download`
+- **File**: `src/app/studio/api/story/[id]/download/route.ts` (587 lines)
 - **Status**: ✅ DEFINED
 - **Function**: Download story as file (PDF, EPUB, TXT)
 - **Features**:
@@ -320,12 +320,12 @@ These endpoints provide AI-powered analysis and modification of story elements u
   - Large file support
 - **Response**: File download with appropriate MIME type
 
-#### GET `/studio/api/stories/[id]/scenes/[sceneId]`
+#### GET `/studio/api/story/[id]/scenes/[sceneId]`
 - **Status**: ✅ DEFINED
 - **Function**: Get specific scene data
 - **Response**: Scene with content, metadata, images
 
-#### GET `/studio/api/stories/published`
+#### GET `/studio/api/story/published`
 - **Status**: ✅ DEFINED
 - **Function**: Get published stories
 - **Response**: Array of published stories with metadata
@@ -668,9 +668,9 @@ These endpoints implement the 9-phase Adversity-Triumph Engine novel generation 
 
 | Hook | APIs Called | Purpose |
 |------|------------|---------|
-| `useStories.ts` | `GET /studio/api/stories` | Story list management |
+| `useStories.ts` | `GET /studio/api/story` | Story list management |
 | `useChapterScenes.ts` | `GET /studio/api/chapters/[id]/scenes` | Scene fetching with caching |
-| `useStoryReader.ts` | `GET /studio/api/stories/[id]/read` | Story reading data |
+| `useStoryReader.ts` | `GET /studio/api/story/[id]/read` | Story reading data |
 | `use-studio-agent-chat.ts` | `POST /studio/api/agent` | Agent chat operations |
 
 ### Service/Library Usage Map

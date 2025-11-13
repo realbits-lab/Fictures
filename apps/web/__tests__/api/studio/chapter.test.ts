@@ -46,7 +46,7 @@ describe("Chapter API (Singular - Extreme Incremental)", () => {
         };
 
         const storyResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/stories",
+            "http://localhost:3000/studio/api/story",
             {
                 method: "POST",
                 headers: {

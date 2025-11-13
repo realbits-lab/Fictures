@@ -48,9 +48,9 @@ User clicks story card
     ↓
 4. SceneDisplay Component (when scene selected)
     - Makes 3 separate SWR API calls:
-      * /studio/api/stories/{id}/scenes/{sceneId}
-      * /studio/api/stories/{id}/characters
-      * /studio/api/stories/{id}/settings
+      * /studio/api/story/{id}/scenes/{sceneId}
+      * /studio/api/story/{id}/characters
+      * /studio/api/story/{id}/settings
 ```
 
 ### Root Cause Identified
@@ -259,12 +259,12 @@ return (
 ### 3. Combine Multiple API Calls
 
 **Current:** SceneDisplay makes 3 separate calls:
-- `/studio/api/stories/{id}/scenes/{sceneId}`
-- `/studio/api/stories/{id}/characters`
-- `/studio/api/stories/{id}/settings`
+- `/studio/api/story/{id}/scenes/{sceneId}`
+- `/studio/api/story/{id}/characters`
+- `/studio/api/story/{id}/settings`
 
 **Optimization:** Create combined endpoint:
-- `/studio/api/stories/{id}/scenes/{sceneId}/full`
+- `/studio/api/story/{id}/scenes/{sceneId}/full`
 - Returns scene + related characters + settings in one request
 
 **Expected Benefit:**
@@ -280,7 +280,7 @@ useEffect(() => {
   const firstScene = story.parts[0]?.chapters[0]?.scenes[0];
   if (firstScene) {
     // Prefetch first scene immediately
-    fetch(`/studio/api/stories/${story.id}/scenes/${firstScene.id}`);
+    fetch(`/studio/api/story/${story.id}/scenes/${firstScene.id}`);
   }
 }, [story]);
 ```
