@@ -359,17 +359,19 @@ Example: "In a fractured post-war society where trust has been shattered, the po
      - External: What obstacle forces facing the internal conflict?
    - **Macro Virtue**: THE defining moral choice from Character.coreTrait
      - Intrinsically motivated act of courage/compassion/integrity/sacrifice/loyalty/wisdom
-     - This is the MORAL CLIMAX of this part's arc
+     - **Timing**: Performed in **beginning/middle chapters** (NOT at climax)
+     - This is the morally defining moment that sets up the earned consequence
    - **Macro Consequence**: Major earned payoff/karmic result
      - Surprising but causally-linked result of the virtue
-     - How does the moral universe reward this character?
+     - **Timing**: Manifests at **climax chapter** (after virtue, with temporal separation)
+     - How does the moral universe reward this character through seemingly unrelated events?
    - **Macro New Adversity**: How this resolution creates next part's challenge
      - What new problem emerges from the resolution?
      - How do stakes escalate?
 5. **Plan Character Interactions**: Determine how character arcs intersect
    - Which relationships (Jeong) form or deepen?
    - What shared Han (wounds) are revealed?
-   - How do parallel arcs converge toward part climax?
+   - How do arcs converge toward part climax (where CONSEQUENCE manifests)?
 6. **Generate Summary**: Comprehensive description of all macro arcs, their convergence, and this part's role in overall story
 
 **OUTPUT** (Part Generation Data):
@@ -398,6 +400,24 @@ Example: "In a fractured post-war society where trust has been shattered, the po
 
 **Note**: `storyId` and `orderIndex` are automatically handled by the system (not part of generation data).
 
+**Pattern A: MACRO Arc Timing** (Adversity-Triumph Engine Standard):
+
+The Part follows **Pattern A** for maximum Gam-dong (profound emotional impact):
+
+```
+Part Structure (4-chapter example):
+├─ Chapter 1 (Beginning): Setup MACRO adversity
+├─ Chapter 2-3 (Middle): MACRO Virtue performed ⭐
+├─ Chapter 4 (Climax): MACRO Consequence manifests 💫
+└─ Chapter 4 end: MACRO New Adversity emerges
+```
+
+**Why Pattern A?**
+- ✅ **Temporal separation**: Time between virtue and consequence makes payoff feel earned, not transactional
+- ✅ **Unintended consequence**: Events happen between virtue and payoff → feels serendipitous
+- ✅ **Gam-dong maximization**: Moral elevation (virtue) → anticipation → profound moving (consequence)
+- ✅ **Causal complexity**: Allows for complex narrative chains that feel inevitable in retrospect
+
 **Common Story Structures** (not prescriptive):
 - **Three-Act**: Setup → Confrontation → Resolution
 - **Four-Act**: Setup → Complication → Development → Resolution
@@ -415,8 +435,11 @@ Example: "In a fractured post-war society where trust has been shattered, the po
 
 **Key Concept: Micro Cycles within Macro Arcs**
 - Each chapter is a self-contained cycle (complete on its own)
-- Each micro-cycle advances the character toward their MACRO virtue moment
-- Multiple chapters collectively build one character's macro arc
+- Each micro-cycle advances the character toward their MACRO virtue (beginning/middle) and MACRO consequence (climax)
+- Multiple chapters collectively build one character's macro arc following Pattern A:
+  - Early chapters: Setup and build tension
+  - Middle chapters: MACRO virtue performed
+  - Climax chapter: MACRO consequence manifests
 
 **Key Fields**:
 - `summary` (text): One micro-cycle adversity-triumph
@@ -430,72 +453,51 @@ Example: "In a fractured post-war society where trust has been shattered, the po
 **INPUT** (Chapter Generation):
 ```typescript
 {
-  storyId: string;
-  partId: string;
-  title: string;
-  orderIndex: number;           // Chapter sequence within Part
+  // Story and Part context
+  story: Story;                 // Complete story with all metadata
+  part: Part;                   // Complete part with character arcs and settings
 
-  // Context from Story
-  story: {
-    genre: StoryGenre;
-    tone: StoryTone;
-    moralFramework: string;
-  };
-
-  // Context from Part
-  part: {
-    characterArcs: Array<{
-      characterId: string;
-      macroAdversity: { internal: string; external: string };
-      macroVirtue: string;
-      macroConsequence: string;
-      macroNewAdversity: string;
-    }>;
-    settingIds: string[];       // Available settings for this Part
-  };
-
-  // Focus character for THIS chapter
-  focusCharacterId: string;     // Which character's arc advances in this chapter
-  arcPosition: 'beginning' | 'middle' | 'climax' | 'resolution';
-
-  // Previous Chapter context (if exists)
-  previousChapter?: {
-    id: string;
-    characterArc: MicroCharacterArc;
-    seedsPlanted: Seed[];
-  };
+  // Previous Chapters context (all previous chapters in order)
+  previousChapters: Chapter[];  // Empty array if first Chapter
 
   // Available resources
-  characters: Character[];
+  characters: Character[];      // All story characters
   settings: Setting[];          // Filtered by Part.settingIds
 }
 ```
 
 **GENERATION PROCESS**:
-1. **Identify Macro Context**: Get character's MACRO arc from Part.characterArcs
-2. **Determine Micro-Cycle Position**: Is this beginning/middle/climax/resolution of macro arc?
-3. **Select Settings**: Choose 1-3 settings from Part.settingIds that fit this chapter's needs
-4. **Define Micro-Cycle**:
+1. **Select Focus Character**: Determine which character's MACRO arc advances in this chapter
+   - Rotate between characters for variety
+   - Consider which character needs development based on previousChapters
+   - Get character's MACRO arc from Part.characterArcs
+2. **Determine Arc Position**: Is this beginning/middle/climax/resolution of the MACRO arc?
+   - Use character's MACRO arc from Part.characterArcs to understand the overall journey
+   - Analyze previousChapters to understand arc progression
+   - **Pattern A Timing**: MACRO virtue happens in beginning/middle, MACRO consequence at climax
+3. **Generate Title**: Create chapter title based on focus character and arc position
+4. **Select Settings**: Choose 1-3 settings from Part.settingIds that fit this chapter's needs
+5. **Define Micro-Cycle**:
    - **Micro Adversity**: Specific challenge within larger macro adversity
-   - **Micro Virtue**: Moral choice building toward MACRO virtue
-   - **Micro Consequence**: Earned result (minor or MAJOR if climax)
+   - **Micro Virtue**: Moral choice building toward MACRO virtue (or IS the MACRO virtue if arcPosition='middle')
+   - **Micro Consequence**: Earned result (minor payoff OR MACRO consequence if arcPosition='climax')
    - **Micro New Adversity**: Next problem (feeds next chapter or next Part)
-5. **Plant/Resolve Seeds**: Setup future payoffs or resolve past setups
-6. **Generate Summary**: Comprehensive chapter description
+6. **Plant/Resolve Seeds**: Setup future payoffs or resolve past setups
+   - MACRO virtue plants the seed for MACRO consequence (resolved at climax)
+7. **Generate Summary**: Comprehensive chapter description
 
-**OUTPUT** (Chapter Record):
+**OUTPUT** (Chapter Generation Data):
 ```typescript
 {
-  id: string;
-  storyId: string;
-  partId: string;
-  title: string;
-  orderIndex: number;
+  title: string;                // Generated chapter title
 
   summary: string;              // Generated comprehensive summary
 
   // Primary character whose arc this chapter advances
-  characterId: string;
+  characterId: string;          // Generated (selected in step 1)
+
+  // Position in macro arc
+  arcPosition: 'beginning' | 'middle' | 'climax' | 'resolution'; // Generated (determined in step 2)
 
   // Structured micro-cycle tracking
   characterArc: {
@@ -509,11 +511,8 @@ Example: "In a fractured post-war society where trust has been shattered, the po
     contributesToMacroArc: string; // How this advances MACRO transformation
   };
 
-  // Position in macro arc
-  arcPosition: 'beginning' | 'middle' | 'climax' | 'resolution';
-
   // Settings used in this chapter
-  settingIds: string[];
+  settingIds: string[];         // Selected from Part.settingIds
 
   // Causal linking
   focusCharacters: string[];    // All characters featured (array of IDs)
@@ -525,10 +524,10 @@ Example: "In a fractured post-war society where trust has been shattered, the po
 
   connectsToPreviousChapter: string;
   createsNextAdversity: string;
-
-  status: 'writing';
 }
 ```
+
+**Note**: `storyId`, `partId`, and `orderIndex` are automatically handled by the system (not part of generation data).
 
 **Content Structure**:
 ```
