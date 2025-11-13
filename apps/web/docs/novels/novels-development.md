@@ -273,7 +273,7 @@ async function generateStory(
 
 ### Overview: Novel Generation Architecture
 
-The novel generation system uses a modular, layered architecture with **9 distinct generators** coordinated by a central orchestrator. Each generator is a pure function that focuses on a single phase of story creation.
+The novel generation system uses a modular, layered architecture with **9 distinct generators**. Each generator is a pure function that focuses on a single phase of story creation.
 
 #### **Architectural Layers**
 
@@ -288,9 +288,9 @@ The novel generation system uses a modular, layered architecture with **9 distin
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
 │  Service Layer (Orchestration)                               │
-│  Location: src/lib/studio/orchestrator.ts                    │
-│  Function: generateCompleteNovel()                           │
-│  Purpose: Coordinates all 9 phases, streams progress          │
+│  Location: src/lib/studio/services/*-service.ts              │
+│  Functions: generate(), persist()                            │
+│  Purpose: Coordinates generators, handles persistence         │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼

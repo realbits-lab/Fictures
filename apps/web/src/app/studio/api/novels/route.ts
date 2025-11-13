@@ -42,7 +42,7 @@ import {
     type GenerateNovelParams,
     generateCompleteNovel,
     type ProgressData,
-} from "@/lib/studio/orchestrator";
+} from "../../../../../scripts/lib/orchestrator";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes

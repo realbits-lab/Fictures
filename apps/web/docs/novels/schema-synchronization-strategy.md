@@ -140,7 +140,7 @@ Manually sync interfaces with schema.ts definitions
 ### 2.4 Generation Code
 
 **Locations**:
-- `src/lib/novels/` - Core generation logic, orchestrator, AI client
+- `src/lib/novels/` - Core generation logic, AI client
 - `src/app/studio/api/novels/` - API endpoints for each generation phase
 
 **Update Triggers**:
