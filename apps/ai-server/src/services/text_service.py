@@ -200,6 +200,70 @@ class TextGenerationService:
             logger.error(f"Streaming text generation failed: {e}")
             raise
 
+    def _analyze_json_schema(self, json_schema: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Analyze JSON schema to extract complexity metrics for buffer calculation.
+
+        Args:
+            json_schema: The JSON schema dict
+
+        Returns:
+            Dictionary with schema analysis metrics
+        """
+        analysis = {
+            "max_depth": 0,
+            "total_properties": 0,
+            "array_fields": 0,
+            "nested_objects": 0,
+            "field_list": []
+        }
+
+        def analyze_recursive(schema: Any, current_depth: int = 0, path: str = "root") -> int:
+            """Recursively analyze schema structure."""
+            if not isinstance(schema, dict):
+                return current_depth
+
+            max_depth = current_depth
+
+            # Count properties (object fields)
+            if "properties" in schema:
+                props = schema["properties"]
+                analysis["total_properties"] += len(props)
+
+                for prop_name, prop_schema in props.items():
+                    field_path = f"{path}.{prop_name}"
+                    analysis["field_list"].append(field_path)
+
+                    # Check if it's an array
+                    if isinstance(prop_schema, dict):
+                        if prop_schema.get("type") == "array":
+                            analysis["array_fields"] += 1
+                        elif "properties" in prop_schema:
+                            analysis["nested_objects"] += 1
+
+                    depth = analyze_recursive(prop_schema, current_depth + 1, field_path)
+                    max_depth = max(max_depth, depth)
+
+            # Check items (array nesting)
+            if "items" in schema:
+                analysis["array_fields"] += 1
+                depth = analyze_recursive(schema["items"], current_depth + 1, f"{path}[]")
+                max_depth = max(max_depth, depth)
+
+            # Check oneOf, anyOf, allOf
+            for key in ["oneOf", "anyOf", "allOf"]:
+                if key in schema:
+                    for idx, sub_schema in enumerate(schema[key]):
+                        depth = analyze_recursive(sub_schema, current_depth + 1, f"{path}.{key}[{idx}]")
+                        max_depth = max(max_depth, depth)
+
+            return max_depth
+
+        # Perform analysis
+        analysis["max_depth"] = analyze_recursive(json_schema)
+
+        return analysis
+
     def _estimate_json_closing_tokens(self, json_schema: Dict[str, Any]) -> int:
         """
         Estimate how many tokens are needed to properly close a JSON structure.
@@ -210,46 +274,41 @@ class TextGenerationService:
         Returns:
             Estimated number of tokens needed for closing brackets/braces
         """
-        # Estimate based on schema complexity
-        # Each level of nesting needs closing brackets
-        # Arrays need ], objects need }, plus commas and whitespace
+        # Analyze schema structure
+        analysis = self._analyze_json_schema(json_schema)
 
-        def estimate_depth(schema: Any, current_depth: int = 0) -> int:
-            """Recursively estimate max nesting depth."""
-            if not isinstance(schema, dict):
-                return current_depth
+        # Log detailed analysis
+        logger.info("=" * 80)
+        logger.info("JSON SCHEMA ANALYSIS:")
+        logger.info(f"  Max nesting depth: {analysis['max_depth']}")
+        logger.info(f"  Total properties: {analysis['total_properties']}")
+        logger.info(f"  Array fields: {analysis['array_fields']}")
+        logger.info(f"  Nested objects: {analysis['nested_objects']}")
+        logger.info(f"  Field structure: {', '.join(analysis['field_list'][:10])}{'...' if len(analysis['field_list']) > 10 else ''}")
 
-            max_depth = current_depth
+        # Calculate buffer with enhanced formula
+        # Base formula: depth * 10 + base_buffer
+        # Enhanced: Consider arrays and nested objects as they need more closing tokens
+        depth_tokens = analysis["max_depth"] * 10
+        array_tokens = analysis["array_fields"] * 5  # Arrays need closing brackets
+        nested_tokens = analysis["nested_objects"] * 3  # Nested objects need closing braces
+        base_buffer = 50  # Base safety buffer
 
-            # Check properties (object nesting)
-            if "properties" in schema:
-                for prop_schema in schema["properties"].values():
-                    depth = estimate_depth(prop_schema, current_depth + 1)
-                    max_depth = max(max_depth, depth)
-
-            # Check items (array nesting)
-            if "items" in schema:
-                depth = estimate_depth(schema["items"], current_depth + 1)
-                max_depth = max(max_depth, depth)
-
-            # Check oneOf, anyOf, allOf
-            for key in ["oneOf", "anyOf", "allOf"]:
-                if key in schema:
-                    for sub_schema in schema[key]:
-                        depth = estimate_depth(sub_schema, current_depth + 1)
-                        max_depth = max(max_depth, depth)
-
-            return max_depth
-
-        # Calculate estimated depth
-        depth = estimate_depth(json_schema)
-
-        # Rule of thumb: 10 tokens per nesting level + base buffer of 50
-        # This accounts for closing brackets, commas, and whitespace
-        estimated_tokens = (depth * 10) + 50
+        estimated_tokens = depth_tokens + array_tokens + nested_tokens + base_buffer
 
         # Cap at reasonable maximum
-        return min(estimated_tokens, 300)
+        final_buffer = min(estimated_tokens, 300)
+
+        logger.info(f"  Buffer calculation breakdown:")
+        logger.info(f"    - Depth tokens ({analysis['max_depth']} * 10): {depth_tokens}")
+        logger.info(f"    - Array tokens ({analysis['array_fields']} * 5): {array_tokens}")
+        logger.info(f"    - Nested tokens ({analysis['nested_objects']} * 3): {nested_tokens}")
+        logger.info(f"    - Base buffer: {base_buffer}")
+        logger.info(f"    - Total calculated: {estimated_tokens}")
+        logger.info(f"    - Final buffer (capped at 300): {final_buffer}")
+        logger.info("=" * 80)
+
+        return final_buffer
 
     async def generate_structured(
         self,
@@ -353,9 +412,22 @@ class TextGenerationService:
                 tokens_used = len(final_output.outputs[0].token_ids)
                 finish_reason = final_output.outputs[0].finish_reason
 
-                logger.info(
-                    f"Structured output generation completed. Tokens used: {tokens_used}"
-                )
+                # Calculate token usage metrics
+                token_allocation = int(current_max_tokens)
+                token_utilization = (tokens_used / token_allocation) * 100 if token_allocation > 0 else 0
+                tokens_unused = token_allocation - tokens_used
+                output_size = len(generated_text)
+
+                logger.info("=" * 80)
+                logger.info("GENERATION METRICS:")
+                logger.info(f"  Tokens allocated: {token_allocation}")
+                logger.info(f"  Tokens used: {tokens_used}")
+                logger.info(f"  Tokens unused: {tokens_unused}")
+                logger.info(f"  Token utilization: {token_utilization:.1f}%")
+                logger.info(f"  Finish reason: {finish_reason}")
+                logger.info(f"  Output size: {output_size} characters")
+                logger.info(f"  Retry attempt: {retry_count + 1}/{max_retries + 1}")
+                logger.info("=" * 80)
 
                 # Parse JSON if type is "json"
                 parsed_output = None
@@ -363,7 +435,21 @@ class TextGenerationService:
                 if guided_type == "json":
                     try:
                         parsed_output = json.loads(generated_text)
-                        logger.info("JSON output parsed successfully")
+
+                        # Calculate buffer efficiency
+                        if retry_count == 0:  # Only for first attempt
+                            actual_buffer_needed = token_allocation - tokens_used
+                            allocated_buffer = token_allocation - max_tokens
+                            buffer_efficiency = (actual_buffer_needed / allocated_buffer * 100) if allocated_buffer > 0 else 0
+
+                            logger.info("=" * 80)
+                            logger.info("✅ JSON PARSING SUCCESSFUL!")
+                            logger.info(f"  Buffer allocated: {allocated_buffer} tokens")
+                            logger.info(f"  Buffer actually needed: {actual_buffer_needed} tokens")
+                            logger.info(f"  Buffer efficiency: {buffer_efficiency:.1f}%")
+                            logger.info(f"  Recommendation: {'Buffer is well-sized' if 50 <= buffer_efficiency <= 150 else 'Consider adjusting buffer calculation'}")
+                            logger.info("=" * 80)
+
                         # Success! Return immediately
                         return {
                             "output": generated_text,
@@ -376,17 +462,42 @@ class TextGenerationService:
                         }
                     except json.JSONDecodeError as e:
                         last_error = e
-                        logger.warning(
-                            f"Failed to parse JSON output (attempt {retry_count + 1}): {e}"
-                        )
+
+                        logger.error("=" * 80)
+                        logger.error(f"❌ JSON PARSING FAILED (attempt {retry_count + 1}/{max_retries + 1})")
+                        logger.error(f"  Error: {e}")
+                        logger.error(f"  Error position: char {e.pos} (line {e.lineno}, col {e.colno})")
+                        logger.error(f"  Token allocation: {token_allocation}")
+                        logger.error(f"  Tokens used: {tokens_used} ({token_utilization:.1f}%)")
+
+                        # Show context around error
+                        if e.pos and e.pos > 0:
+                            context_start = max(0, e.pos - 100)
+                            context_end = min(len(generated_text), e.pos + 100)
+                            context = generated_text[context_start:context_end]
+                            logger.error(f"  Context: ...{context}...")
+
+                        # Analyze why parsing failed
+                        if token_utilization > 95:
+                            logger.error(f"  ⚠️  LIKELY CAUSE: Hit token limit (>{token_utilization:.0f}% used)")
+                            logger.error(f"  ⚠️  RECOMMENDATION: Increase buffer or max_tokens")
+                        elif finish_reason == "length":
+                            logger.error(f"  ⚠️  CONFIRMED CAUSE: Generation stopped due to length limit")
+                        else:
+                            logger.error(f"  ⚠️  POSSIBLE CAUSE: Model output formatting issue")
+
+                        logger.error("=" * 80)
+
                         is_valid = False
 
                         # If we've exhausted retries, return the last attempt
                         if retry_count >= max_retries:
-                            logger.error(
-                                f"JSON parsing failed after {retry_count + 1} attempts. "
-                                f"Returning invalid output."
-                            )
+                            logger.error("=" * 80)
+                            logger.error(f"🚫 RETRY LIMIT REACHED - Returning invalid output")
+                            logger.error(f"  Total attempts: {retry_count + 1}")
+                            logger.error(f"  Final error: {str(last_error)}")
+                            logger.error("=" * 80)
+
                             return {
                                 "output": generated_text,
                                 "parsed_output": None,
@@ -400,10 +511,14 @@ class TextGenerationService:
 
                         # Retry with increased tokens
                         retry_count += 1
-                        logger.info(
-                            f"Retrying JSON generation with increased max_tokens: "
-                            f"{int(effective_max_tokens * 1.2 * retry_count)}"
-                        )
+                        new_max_tokens = int(effective_max_tokens * 1.2)
+
+                        logger.info("=" * 80)
+                        logger.info(f"🔄 INITIATING RETRY #{retry_count}")
+                        logger.info(f"  Previous max_tokens: {token_allocation}")
+                        logger.info(f"  New max_tokens: {new_max_tokens} (+20%)")
+                        logger.info(f"  Reason: JSON truncation detected")
+                        logger.info("=" * 80)
                 else:
                     # Not JSON type, return immediately
                     return {

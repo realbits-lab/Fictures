@@ -493,14 +493,12 @@ Part Structure (4-chapter example):
 
   summary: string;              // Generated comprehensive summary
 
-  // Primary character whose arc this chapter advances
-  characterId: string;          // Generated (selected in step 1)
-
   // Position in macro arc
   arcPosition: 'beginning' | 'middle' | 'climax' | 'resolution'; // Generated (determined in step 2)
 
   // Structured micro-cycle tracking
   characterArc: {
+    characterId: string;        // Character whose arc advances (generated in step 1)
     microAdversity: {
       internal: string;         // Specific fear/flaw confronted
       external: string;         // Specific obstacle in this chapter
