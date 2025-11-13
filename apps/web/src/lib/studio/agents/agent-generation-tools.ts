@@ -22,7 +22,7 @@ export const generateStorySummary = tool({
             concept: userPrompt,
         };
 
-        const response = await fetch("/api/studio/novels/story", {
+        const response = await fetch("/api/studio/stories/story", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -285,7 +285,7 @@ export const evaluateScene = tool({
             sceneId,
         };
 
-        const response = await fetch("/api/studio/novels/scene-evaluation", {
+        const response = await fetch("/api/studio/stories/scene-evaluation", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),

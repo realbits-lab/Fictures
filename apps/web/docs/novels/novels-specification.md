@@ -182,7 +182,7 @@ Example: "In a fractured post-war society where trust has been shattered, the po
 - **Tone**: See Tone Catalog (section 2.2.3) for complete list and emotional characteristics
 - **Moral Framework**: What virtues are valued? What vices are punished?
 
-#### 2.2.1 Input/Output Specification
+#### 2.2.1 Generation Specification
 
 **INPUT** (Story Generation):
 ```typescript
@@ -354,7 +354,7 @@ Example: "In a fractured post-war society where trust has been shattered, the po
 
 **Key Concept**: Characters are defined by their **coreTrait** (moral virtue), **internalFlaw** (source of adversity), and **externalGoal** (what they think will solve their problem). Their arcs emerge from healing internal flaws through virtuous actions.
 
-#### 2.3.1 Input/Output Specification
+#### 2.3.1 Generation Specification
 
 **INPUT** (Character Generation):
 ```typescript
@@ -415,7 +415,7 @@ Array<{
 
 **Key Concept**: Settings create external adversity through physical/social obstacles, amplify each cycle phase (setup, adversity, virtue, consequence, transition), and serve as symbolic mirrors for character transformation.
 
-#### 2.4.1 Input/Output Specification
+#### 2.4.1 Generation Specification
 
 **INPUT** (Setting Generation):
 ```typescript
@@ -597,7 +597,7 @@ Story (2-6 settings)
 - **Micro Cycles** (Chapter-level): Each chapter advances character toward macro payoff
 - **Incremental Writing**: Chapters generated one-by-one; Part defines MACRO arc only
 
-#### 2.5.1 Input/Output Specification
+#### 2.5.1 Generation Specification
 
 **INPUT** (Part Generation):
 ```typescript
@@ -702,7 +702,7 @@ Part Structure (4-chapter example):
   - Middle chapters: MACRO virtue performed
   - Climax chapter: MACRO consequence manifests
 
-#### 2.6.1 Input/Output Specification
+#### 2.6.1 Generation Specification
 
 **INPUT** (Chapter Generation):
 ```typescript
@@ -823,7 +823,7 @@ The 4-phase narrative cycle (Adversity → Virtue → Consequence → New Advers
    - Hook for next chapter
    - Character's emotional state shifts
 
-#### 2.7.1 Scene Summary Generation (Planning Phase)
+#### 2.7.1 Planning Phase Generation Specification
 
 **Purpose**: Generate scene summaries and metadata for all scenes in a chapter (without content)
 
@@ -878,7 +878,7 @@ The 4-phase narrative cycle (Adversity → Virtue → Consequence → New Advers
 }
 ```
 
-#### 2.7.2 Scene Content Generation (Execution Phase)
+#### 2.7.2 Execution Phase Generation Specification
 
 **Purpose**: Generate full prose narrative content for each scene using its summary and metadata
 

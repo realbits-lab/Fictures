@@ -11,7 +11,7 @@
  * 4. Generates and optimizes images for all visual elements
  *
  * Usage:
- *   POST /api/studio/novels/generate
+ *   POST /api/studio/stories
  *   Body: { userPrompt, preferredGenre?, preferredTone?, characterCount?, language? }
  *   Returns: SSE stream with progress updates
  */
