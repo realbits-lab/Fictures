@@ -482,7 +482,182 @@ describe('System Performance', () => {
 
 ---
 
-## Part III: Evaluation Metrics
+
+---
+
+## Part III: Generation Metrics & Evaluation
+
+This section provides detailed metric descriptions organized by category, implementation examples, and iterative improvement methodology.
+
+### 2.3 Generation Metrics & Evaluation
+
+This section provides detailed metric descriptions organized by category, implementation examples, and iterative improvement methodology.
+
+### 3.1 Foundation Metrics
+
+**Story Generation Metrics:**
+
+| Metric | Definition | Success Criteria | Measurement Method |
+|--------|-----------|------------------|-------------------|
+| Moral Framework Clarity | How well the moral framework defines testable virtues and meaningful consequences | Explicit virtue identification, clear consequences, systemic challenges defined | Manual review: 3+ virtues named, causal logic present |
+| Thematic Coherence | Consistency between premise, moral framework, and genre | Theme supports moral tests, no contradictions | Automated: keyword alignment across fields |
+| Genre Consistency | Story elements align with genre conventions and reader expectations | Genre-appropriate tone, conflict types, world rules | Manual review against genre checklist |
+
+**Character Generation Metrics:**
+
+| Metric | Definition | Success Criteria | Measurement Method |
+|--------|-----------|------------------|-------------------|
+| Character Depth | Complexity of internal flaws, motivations, and arc potential | Each character has 1+ internal flaw, clear moral test | Automated: internal flaw field populated, backstory length > 200 chars |
+| Jeong System Implementation | Korean emotional bond system properly defined between characters | At least 2 Jeong relationships defined with type and intensity | Automated: Jeong array has 2+ entries with valid types |
+| Voice Distinctiveness | Each character has unique speech patterns and personality traits | No overlapping voice descriptions, distinct personality keywords | Automated: voice field uniqueness check, personality keyword overlap < 30% |
+
+**Settings Generation Metrics:**
+
+| Metric | Definition | Success Criteria | Measurement Method |
+|--------|-----------|------------------|-------------------|
+| Symbolic Meaning Clarity | Setting's connection to moral framework is explicit | Symbolic meaning field directly references moral themes | Manual review: symbolic meaning mentions moral framework elements |
+| Sensory Detail Richness | All 5 senses are engaged in setting description | At least 3 of 5 senses present in description | Automated: sense keyword detection (sight, sound, smell, touch, taste) |
+| Cycle Amplification Design | How setting amplifies adversity-triumph cycle phases | Each cycle phase has setting amplification note | Manual review: cycle amplification field populated per phase |
+
+### 3.2 Structure Metrics
+
+**Part Summaries Metrics:**
+
+| Metric | Definition | Success Criteria | Measurement Method |
+|--------|-----------|------------------|-------------------|
+| Cycle Coherence | 5-phase structure (Setup → Confrontation → Virtue → Consequence → Transition) is complete | All 5 phases present and distinct per character | Automated: phase detection in part summary |
+| Conflict Definition Clarity | Internal and external conflicts are explicitly stated | Both conflict types named with specific examples | Manual review: conflict fields populated with concrete details |
+| Earned Luck Tracking | Seeds planted in setup/confrontation, resolved in consequence | At least 1 seed per cycle with planting and resolution noted | Automated: seed tracking table has matching planted/resolved pairs |
+
+**Chapter Summaries Metrics:**
+
+| Metric | Definition | Success Criteria | Measurement Method |
+|--------|-----------|------------------|-------------------|
+| Single-Cycle Focus | Each chapter contains exactly ONE complete adversity-triumph cycle | Chapter focuses on 1-2 characters, one conflict | Manual review: cycle count per chapter = 1 |
+| Seed Tracking Completeness | All seeds from previous chapters are tracked | Previous chapter's unresolved seeds appear in current chapter notes | Automated: seed ID continuity check across chapters |
+| Adversity Connection | Each chapter's resolution creates next chapter's adversity | Chapter N consequence explicitly mentioned in Chapter N+1 setup | Manual review: causal link between adjacent chapters |
+
+**Scene Summaries Metrics:**
+
+| Metric | Definition | Success Criteria | Measurement Method |
+|--------|-----------|------------------|-------------------|
+| Phase Distribution Balance | Scenes distributed across 5 cycle phases (3-7 scenes per chapter) | At least 1 scene per critical phase (virtue, consequence) | Automated: phase assignment count per chapter |
+| Emotional Beat Assignment | Each scene has clear emotional trajectory and purpose | Emotional beat field populated with specific emotion | Manual review: emotional beat clarity and variety |
+| Pacing Rhythm | Build to virtue scene (peak), release after consequence | Scene order follows: setup → build → peak → release → transition | Manual review: scene order matches cycle phase progression |
+
+### 3.3 Content Metrics
+
+**Scene Content Metrics:**
+
+| Metric | Definition | Success Criteria | Measurement Method |
+|--------|-----------|------------------|-------------------|
+| Word Count Range Compliance | Scene length appropriate for cycle phase | Setup/Transition: 300-600 words<br>Confrontation: 500-800 words<br>Virtue: 800-1000 words<br>Consequence: 600-900 words | Automated: word count by phase |
+| Cycle Alignment | Scene content matches assigned cycle phase guidelines | Phase-specific elements present (e.g., Virtue scene has moral elevation moment) | Manual review: phase checklist validation |
+| Emotional Resonance | Scene creates intended emotional response (Gam-dong) | Reader feedback or test panel indicates emotional impact | Manual review: test reader surveys, emotion intensity ratings |
+
+### 3.4 Quality Metrics
+
+**Scene Evaluation Metrics (Architectonics of Engagement):**
+
+| Category | Weight | Target Score | Measurement Method |
+|----------|--------|--------------|-------------------|
+| Plot Progression | 20% | ≥3.0/4.0 | AI evaluation: causal logic, conflict escalation, resolution quality |
+| Character Development | 25% | ≥3.0/4.0 | AI evaluation: internal change, motivation clarity, arc progression |
+| Pacing | 20% | ≥3.0/4.0 | AI evaluation: scene rhythm, tension management, beat timing |
+| Prose Quality | 20% | ≥3.0/4.0 | AI evaluation: clarity, imagery, voice consistency, dialogue naturalism |
+| World-Building | 15% | ≥3.0/4.0 | AI evaluation: setting integration, sensory details, world logic |
+
+**Overall Quality Metrics:**
+
+| Metric | Definition | Success Criteria | Measurement Method |
+|--------|-----------|------------------|-------------------|
+| Architectonics Scores | Weighted average across 5 categories | Overall score ≥3.0/4.0 ("Effective" level) | Automated: weighted average calculation |
+| Pass Rate | Percentage of scenes passing quality threshold on first generation | ≥70% pass rate | Automated: passed scenes / total scenes × 100 |
+| Iteration Count | Average number of improvement iterations per scene | ≤1.5 iterations per scene (max 2) | Automated: sum of iterations / scene count |
+
+### 3.5 Assets Metrics
+
+**Image Generation Metrics:**
+
+| Metric | Definition | Success Criteria | Measurement Method |
+|--------|-----------|------------------|-------------------|
+| Image Quality | Visual coherence, prompt accuracy, artistic quality | No artifacts, prompt elements present, aesthetically pleasing | Manual review: quality checklist (1-5 scale) |
+| Variant Generation Success | All 4 optimized variants generated successfully | AVIF + JPEG × mobile 1x/2x all present | Automated: variant count = 4 per image |
+| Optimization Ratio | File size reduction from original to optimized variants | Average 40-60% size reduction across variants | Automated: compressed size / original size × 100 |
+
+### 3.6 Implementation Examples
+
+**Method 1: API Key Authentication (for scripts and automation)**
+
+```javascript
+// Load API key from .auth/user.json
+const authData = JSON.parse(fs.readFileSync('.auth/user.json', 'utf-8'));
+const apiKey = authData.profiles.writer.apiKey;
+
+const response = await fetch('http://localhost:3000/studio/api/novels', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${apiKey}`,  // API key authentication
+  },
+  body: JSON.stringify({
+    userPrompt: 'A story about courage and redemption',
+    preferredGenre: 'Fantasy',
+    preferredTone: 'hopeful',
+    characterCount: 2,
+    settingCount: 2,
+    partsCount: 1,
+    chaptersPerPart: 1,
+    scenesPerChapter: 3,
+  }),
+});
+```
+
+**Method 2: Session Authentication (for browser/UI)**
+
+```javascript
+const response = await fetch('/studio/api/novels', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    // Session cookie automatically sent by browser
+  },
+  body: JSON.stringify({
+    userPrompt: 'A story about courage and redemption',
+    preferredGenre: 'Fantasy',
+    preferredTone: 'hopeful',
+    characterCount: 2,
+    settingCount: 2,
+    partsCount: 1,
+    chaptersPerPart: 1,
+    scenesPerChapter: 3,
+  }),
+});
+
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+
+  const text = decoder.decode(value);
+  const lines = text.split('\n');
+
+  for (const line of lines) {
+    if (line.startsWith('data: ')) {
+      const data = JSON.parse(line.slice(6));
+      console.log(`[${data.phase}] ${data.message}`);
+
+      if (data.phase === 'complete') {
+        console.log('Story ID:', data.data.storyId);
+      }
+    }
+  }
+}
+```
+
+## Part IV: Evaluation Metrics
 
 ### 3.1 Quantitative Metrics
 
@@ -648,7 +823,7 @@ OVERALL CYCLE RATING:
 
 ---
 
-## Part IV: Production Testing Results
+## Part V: Production Testing Results
 
 ### 4.1 Test Story: "The Last Garden"
 
@@ -812,7 +987,7 @@ OVERALL CYCLE RATING:
 
 ---
 
-## Part V: Iterative Improvement Methodology
+## Part VI: Iterative Improvement Methodology
 
 ### 5.1 Prompt Optimization Loop
 
@@ -881,6 +1056,86 @@ OVERALL CYCLE RATING:
 ### 5.2 Common Failure Patterns & Solutions
 
 #### Failure Pattern 1: Deus Ex Machina (Unearned Resolutions)
+
+
+### 6.3 Practical Implementation Example
+
+This example demonstrates the iterative improvement process with real metrics from "The Last Garden" baseline test.
+
+**Step 1: Generate with Baseline Prompt**
+
+Generate stories using initial system prompts (v1.0), collect all metrics defined above.
+
+**Step 2: Identify Issues**
+
+Example from "The Last Garden" baseline test:
+
+| Issue | Metric | Baseline | Target | Gap |
+|-------|--------|----------|--------|-----|
+| Issue 1 | Virtue scene word count | 683 words | 800-1000 words | -14.6% |
+| Issue 2 | Emotional resonance (Gam-dong) | 40% positive response | 60% target | -20% |
+| Issue 3 | POV discipline | Fair | Excellent | Quality gap |
+
+**Step 3: Update Prompts**
+
+Based on identified issues, enhance system prompts with specific instructions:
+
+```markdown
+VIRTUE SCENE SPECIAL INSTRUCTIONS (v1.1):
+
+Length: Aim for 800-1000 words minimum. This is THE moment—take your time.
+
+Ceremonial Pacing:
+- SLOW DOWN during the virtuous action
+- Use short sentences or fragments
+- Allow silence and stillness
+- Let reader witness every detail
+
+Emotional Lingering:
+- After virtuous action, give 2-3 paragraphs for emotional resonance
+- Show character's internal state AFTER the act
+- Physical sensations (trembling, tears, breath)
+
+POV Discipline:
+- Do NOT switch to observer's POV in same scene
+- Their reaction can be next scene's opening
+```
+
+**Step 4: Test & Measure**
+
+Generate 5 stories with updated prompts (v1.1), compare metrics:
+
+| Metric | v1.0 Baseline | v1.1 Updated | Improvement | Status |
+|--------|---------------|--------------|-------------|--------|
+| Virtue Scene Word Count | 683 words | 1,011 words | +48% | ✅ Target met |
+| Gam-dong Response Rate | 40% | 75% | +35% | ✅ Exceeded target |
+| POV Discipline Score | Fair | Excellent | Qualitative | ✅ Improved |
+| Scene Quality (Overall) | 2.8/4.0 | 3.4/4.0 | +0.6 | ✅ Above threshold |
+
+**Step 5: Adopt or Revert**
+
+**Decision Criteria:**
+- ✅ **ADOPT** if all problem metrics improve without regressions
+- ⚠️ **REVISE** if some metrics improve but others regress
+- ❌ **REVERT** if overall quality decreases
+
+**Decision for v1.1**: ✅ **ADOPT as new baseline**
+
+Rationale: Significant improvements across all problem areas (word count +48%, emotional response +35%, POV quality excellent) with no regressions in other metrics.
+
+**Step 6: Continue Iteration**
+
+**Next Priority**: Consequence scenes
+- **Issue**: Need similar depth and emotional lingering as Virtue scenes
+- **Hypothesis**: Current consequence scenes rush through payoff
+- **Proposed Fix**: Add 600-900 word target, require 2+ paragraphs for emotional aftermath
+- **Testing**: Generate 5 stories with v1.2, measure consequence scene impact
+
+**Iteration Cadence:**
+- Monthly testing cycle
+- 5 stories per prompt version for statistical validity
+- Track all metrics in version-controlled JSON
+- Document prompt changes with rationale
 
 **Symptom**: Consequences feel random, not causally linked
 
@@ -1023,7 +1278,7 @@ Show the BODY'S response, not just the mind's.
 
 ---
 
-## Part VI: Test Data Sets
+## Part VII: Test Data Sets
 
 ### 6.1 Standard Test Prompts
 
@@ -1070,7 +1325,7 @@ describe('Regression Tests', () => {
 
 ---
 
-## Part VII: Evaluation Automation
+## Part VIII: Evaluation Automation
 
 ### 7.1 Automated Quality Checks
 
