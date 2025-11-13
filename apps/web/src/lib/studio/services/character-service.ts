@@ -17,7 +17,7 @@ import {
     type Character,
     insertCharacterSchema,
     type Story,
-} from "../generators/zod-schemas.generated";
+} from "../generators/zod-schemas";
 
 export interface ServiceCharactersParams {
     storyId: string;

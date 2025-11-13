@@ -4,7 +4,7 @@
  * Layer: API (HTTP Contracts)
  * Used by: src/app/api/studio/* routes
  * Related:
- * - AI types: src/lib/studio/generators/zod-schemas.generated.ts
+ * - AI types: src/lib/studio/generators/zod-schemas.ts
  * - Service types: src/lib/studio/generators/types.ts (TBD)
  * - Domain types: src/lib/ai/types/image.ts
  * - Global types: src/types/index.ts
@@ -51,7 +51,7 @@ import type {
     Scene,
     Setting,
     Story,
-} from "@/lib/studio/generators/zod-schemas.generated";
+} from "@/lib/studio/generators/zod-schemas";
 
 // ============================================================================
 // Story Generation

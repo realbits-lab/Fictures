@@ -17,7 +17,7 @@ import {
     insertSettingSchema,
     type Setting,
     type Story,
-} from "../generators/zod-schemas.generated";
+} from "../generators/zod-schemas";
 
 export interface ServiceSettingsParams {
     storyId: string;

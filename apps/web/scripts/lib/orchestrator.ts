@@ -14,7 +14,7 @@ import type {
     AiSceneSummaryType,
     AiSettingType,
     Story,
-} from "@/lib/studio/generators/zod-schemas.generated";
+} from "@/lib/studio/generators/zod-schemas";
 import {
     generateCharacters,
     generateSceneContent,

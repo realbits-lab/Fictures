@@ -26,7 +26,7 @@ import type {
     Scene,
     Setting,
     Story,
-} from "../generators/zod-schemas.generated";
+} from "../generators/zod-schemas";
 
 export interface ServiceSceneContentParams {
     sceneId: string;

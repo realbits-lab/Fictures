@@ -65,7 +65,7 @@ For table structures, Drizzle schema is SSOT and generates Zod schemas via `driz
                   │
                   ▼
 ┌─────────────────────────────────────────────────────────┐
-│  zod-schemas.generated.ts (Generated Schemas)           │
+│  zod-schemas.ts (Generated Schemas)           │
 │  - insertStorySchema, selectStorySchema                 │
 │  - insertCharacterSchema, selectCharacterSchema         │
 │  - insertChapterSchema, selectChapterSchema             │
@@ -88,7 +88,7 @@ For **nested JSON field structures** (like `personality`, `physicalDescription`,
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  zod-schemas.generated.ts (SSOT for Nested Types)       │
+│  zod-schemas.ts (SSOT for Nested Types)       │
 │  - personalitySchema → PersonalityType                  │
 │  - physicalDescriptionSchema → PhysicalDescriptionType  │
 │  - voiceStyleSchema → VoiceStyleType                   │
@@ -121,7 +121,7 @@ For **nested JSON field structures** (like `personality`, `physicalDescription`,
 | File | Purpose | Source |
 |------|---------|--------|
 | `src/lib/db/schema.ts` | Database schema (SSOT for tables) | Manual (Drizzle) |
-| `zod-schemas.generated.ts` | Validation schemas (SSOT for nested types) | Semi-manual (drizzle-zod + manual nested schemas) |
+| `zod-schemas.ts` | Validation schemas (SSOT for nested types) | Semi-manual (drizzle-zod + manual nested schemas) |
 | `validation.ts` | Business logic (warnings, stats) | Uses generated schemas |
 | `validation-schemas.ts` | API request validation | Manual (different purpose) |
 
@@ -136,7 +136,7 @@ For **nested JSON field structures** (like `personality`, `physicalDescription`,
 
 ```typescript
 // ✅ CORRECT: Using auto-generated schema from SSOT
-import { insertStorySchema } from "@/lib/studio/generators/zod-schemas.generated";
+import { insertStorySchema } from "@/lib/studio/generators/zod-schemas";
 
 // Validate API request
 const validatedData = insertStorySchema.parse(requestBody);
@@ -157,7 +157,7 @@ const manualSchema = z.object({
 import {
   personalitySchema,
   PersonalityType
-} from "@/lib/studio/generators/zod-schemas.generated";
+} from "@/lib/studio/generators/zod-schemas";
 
 // Validate nested JSON data
 const validatedPersonality: PersonalityType = personalitySchema.parse({
@@ -166,7 +166,7 @@ const validatedPersonality: PersonalityType = personalitySchema.parse({
 });
 
 // In schema.ts - Import and use the type
-import type { PersonalityType } from "@/lib/studio/generators/zod-schemas.generated";
+import type { PersonalityType } from "@/lib/studio/generators/zod-schemas";
 
 export const characters = pgTable("characters", {
   // ...
@@ -197,11 +197,11 @@ Settings table:
 **Table Structure Changes:**
 1. Modify `src/lib/db/schema.ts` (SSOT for tables)
 2. Run `pnpm db:generate` (regenerate Drizzle types)
-3. Schemas in `zod-schemas.generated.ts` auto-update
+3. Schemas in `zod-schemas.ts` auto-update
 4. All validation uses updated schema automatically
 
 **Nested JSON Structure Changes:**
-1. Modify nested schema in `zod-schemas.generated.ts` (SSOT for nested types)
+1. Modify nested schema in `zod-schemas.ts` (SSOT for nested types)
 2. Export the schema and its type (if not already exported)
 3. Update imports in `src/lib/db/schema.ts` if needed
 4. Both layers stay synchronized automatically
@@ -653,7 +653,7 @@ const result = await generateStory({
    - `Generator{Entity}Result` - Generator function return value
    - `{Entity}PromptParams` - Prompt template variables
 
-3. **AI Layer Types** (`src/lib/studio/generators/zod-schemas.generated.ts`)
+3. **AI Layer Types** (`src/lib/studio/generators/zod-schemas.ts`)
    - `Ai{Entity}ZodSchema` - Zod schema (SSOT)
    - `Ai{Entity}Type` - TypeScript type derived from Zod
    - `Ai{Entity}JsonSchema` - JSON Schema for AI models

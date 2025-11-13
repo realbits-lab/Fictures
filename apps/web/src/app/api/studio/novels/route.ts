@@ -36,7 +36,7 @@ import {
     insertPartSchema,
     insertSceneSchema,
     insertSettingSchema,
-} from "@/lib/studio/generators/zod-schemas.generated";
+} from "@/lib/studio/generators/zod-schemas";
 import {
     type GeneratedNovelResult,
     type GenerateNovelParams,

@@ -6,7 +6,7 @@
  * Related:
  * - API types: src/app/api/studio/types.ts
  * - Domain types: src/lib/ai/types/image.ts
- * - Entity types: ./zod-schemas.generated.ts
+ * - Entity types: ./zod-schemas.ts
  * - Global types: src/types/index.ts
  *
  * ## Purpose
@@ -62,7 +62,7 @@ import type {
     Scene,
     Setting,
     Story,
-} from "./zod-schemas.generated";
+} from "./zod-schemas";
 
 // ============================================================================
 // AI Provider Types
@@ -154,10 +154,10 @@ export type ArcPosition = ChapterArcPosition;
 
 /**
  * Adversity-Triumph cycle phases for scene structure
- * Uses CYCLE_PHASES constant from zod-schemas.generated.ts
+ * Uses CYCLE_PHASES constant from zod-schemas.ts
  */
 export type CyclePhase =
-    typeof import("./zod-schemas.generated").CYCLE_PHASES[number];
+    typeof import("./zod-schemas").CYCLE_PHASES[number];
 
 // ============================================================================
 // Base Generator Interfaces

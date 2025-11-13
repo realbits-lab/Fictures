@@ -1,10 +1,17 @@
 /**
- * Auto-generated Zod schemas from Drizzle ORM
- * DO NOT EDIT MANUALLY - Source of truth: src/lib/db/schema.ts
+ * Zod schemas for database validation and AI generation
+ *
+ * HYBRID SSOT Architecture:
+ * 1. Table Schemas: Auto-generated from Drizzle ORM via drizzle-zod
+ *    - Source: src/lib/db/schema.ts → insert{Entity}Schema, select{Entity}Schema
+ * 2. Nested JSON Schemas: Manually defined (SSOT for nested types)
+ *    - personalitySchema, physicalDescriptionSchema, voiceStyleSchema, etc.
+ *    - Exported with types for use in Drizzle .$type<T>()
  *
  * Type Naming Convention:
  * - AI Layer (SSOT): Ai{Entity}ZodSchema → z.infer → Ai{Entity}Type
  * - Database Layer: insert{Entity}Schema, select{Entity}Schema, {Entity}, Insert{Entity}
+ * - Nested Types: {field}Schema → z.infer → {Field}Type
  *
  * SSOT Flow: AiStoryZodSchema (Zod) → z.infer → AiStoryType (TypeScript)
  */

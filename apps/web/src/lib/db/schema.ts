@@ -34,7 +34,7 @@ import type {
     PhysicalDescriptionType,
     SensoryType,
     VoiceStyleType,
-} from "@/lib/studio/generators/zod-schemas.generated";
+} from "@/lib/studio/generators/zod-schemas";
 
 export const adversityType = pgEnum(
     "adversity_type",

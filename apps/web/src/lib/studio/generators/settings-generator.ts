@@ -19,7 +19,7 @@ import type {
 import {
     type AiSettingType,
     AiSettingZodSchema,
-} from "./zod-schemas.generated";
+} from "./zod-schemas";
 
 /**
  * Generate story settings
