@@ -512,11 +512,7 @@ Part Structure (4-chapter example):
   // Settings used in this chapter
   settingIds: string[];         // Selected from Part.settingIds
 
-  // Causal linking
-  focusCharacters: string[];    // All characters featured (array of IDs)
-  adversityType: 'internal' | 'external' | 'both';
-  virtueType: VirtueType;       // From Character.coreTrait
-
+  // Causal linking (for earned luck)
   seedsPlanted: Seed[];         // Setup for future chapters
   seedsResolved: SeedResolution[]; // Payoffs from past chapters
 
@@ -526,6 +522,8 @@ Part Structure (4-chapter example):
 ```
 
 **Note**: `storyId`, `partId`, and `orderIndex` are automatically handled by the system (not part of generation data).
+
+**Character Appearances**: Supporting characters are handled at Scene level via `scene.characterFocus`. The primary character is specified in `characterArc.characterId`.
 
 **Content Structure**:
 ```
@@ -627,24 +625,16 @@ The 4-phase narrative cycle (Adversity → Virtue → Consequence → New Advers
 **INPUT** (Scene Summaries Generation - Planning Phase):
 ```typescript
 {
-  chapterId: string;
-  orderIndices: number[];       // Scene sequence numbers
+  // Story, Part, and Chapter context
+  story: Story;                 // Complete story with all metadata
+  part: Part;                   // Complete part with character arcs
+  chapter: Chapter;             // Complete chapter with micro-cycle
 
-  // Context from Chapter
-  chapter: {
-    title: string;
-    characterArc: {
-      microAdversity: { internal: string; external: string };
-      microVirtue: string;
-      microConsequence: string;
-      microNewAdversity: string;
-    };
-    settingIds: string[];       // Available settings for this chapter
-    focusCharacters: string[];
-  };
+  // Previous Scenes context (all previous scenes in order)
+  previousScenes: Scene[];      // Empty array if first scene batch
 
   // Available resources
-  characters: Character[];
+  characters: Character[];      // All story characters
   settings: Setting[];          // Filtered by Chapter.settingIds
 }
 ```
@@ -664,13 +654,10 @@ The 4-phase narrative cycle (Adversity → Virtue → Consequence → New Advers
    - Sensory anchors, dialogue/description balance
    - Suggested length
 
-**OUTPUT** (Scene Summaries - Multiple Records):
+**OUTPUT** (Scene Summaries Generation Data - Multiple Records):
 ```typescript
 Array<{
-  id: string;
-  chapterId: string;
-  title: string;
-  orderIndex: number;
+  title: string;                // Generated scene title
 
   // Scene specification (planning layer)
   summary: string;              // Generated scene specification
@@ -678,45 +665,28 @@ Array<{
   emotionalBeat: 'fear' | 'hope' | 'tension' | 'relief' | 'elevation' | 'catharsis' | 'despair' | 'joy';
 
   // Scene metadata (guides content generation)
-  characterFocus: string[];     // Character IDs featured
+  characterFocus: string[];     // Character IDs featured (primary + supporting)
   settingId: string;            // Selected from Chapter.settingIds
   sensoryAnchors: string[];     // Concrete sensory details
   dialogueVsDescription: string; // e.g., "60% dialogue, 40% description"
   suggestedLength: 'short' | 'medium' | 'long';
-
-  content: "";                  // Empty initially - filled in execution phase
 }>
 ```
+
+**Note**: `chapterId` and `orderIndex` are automatically handled by the system (not part of generation data). Scene `content` is generated separately in the execution phase.
 
 **INPUT** (Scene Content Generation - Execution Phase):
 ```typescript
 {
-  sceneId: string;
-
   // Scene specification from planning phase
-  scene: {
-    title: string;
-    summary: string;
-    cyclePhase: CyclePhase;
-    emotionalBeat: EmotionalBeat;
-    characterFocus: string[];
-    settingId: string;
-    sensoryAnchors: string[];
-    dialogueVsDescription: string;
-    suggestedLength: SuggestedLength;
-  };
+  scene: Scene;                 // Scene with summary and metadata (no content yet)
 
-  // Context for prose generation
-  chapter: {
-    title: string;
-    characterArc: MicroCharacterArc;
-  };
+  // Full context for prose generation
+  story: Story;                 // Complete story with genre/tone
+  part: Part;                   // Complete part with character arcs
+  chapter: Chapter;             // Complete chapter with micro-cycle
   characters: Character[];      // Full character data for voice/appearance
   setting: Setting;             // Full setting data for sensory details
-  story: {
-    genre: StoryGenre;
-    tone: StoryTone;
-  };
 }
 ```
 

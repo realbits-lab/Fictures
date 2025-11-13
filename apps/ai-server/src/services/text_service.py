@@ -438,16 +438,33 @@ class TextGenerationService:
 
                         # Calculate buffer efficiency
                         if retry_count == 0:  # Only for first attempt
-                            actual_buffer_needed = token_allocation - tokens_used
                             allocated_buffer = token_allocation - max_tokens
-                            buffer_efficiency = (actual_buffer_needed / allocated_buffer * 100) if allocated_buffer > 0 else 0
+                            # How many tokens beyond max_tokens did we actually use?
+                            tokens_beyond_max = max(0, tokens_used - max_tokens)
+                            # Buffer efficiency = (tokens used beyond max) / (buffer allocated) * 100
+                            buffer_efficiency = (tokens_beyond_max / allocated_buffer * 100) if allocated_buffer > 0 else 0
+
+                            # Calculate buffer utilization percentage
+                            buffer_utilization = (tokens_beyond_max / allocated_buffer * 100) if allocated_buffer > 0 else 0
+                            tokens_unused_in_buffer = allocated_buffer - tokens_beyond_max
 
                             logger.info("=" * 80)
                             logger.info("✅ JSON PARSING SUCCESSFUL!")
+                            logger.info(f"  Base max_tokens: {max_tokens}")
                             logger.info(f"  Buffer allocated: {allocated_buffer} tokens")
-                            logger.info(f"  Buffer actually needed: {actual_buffer_needed} tokens")
-                            logger.info(f"  Buffer efficiency: {buffer_efficiency:.1f}%")
-                            logger.info(f"  Recommendation: {'Buffer is well-sized' if 50 <= buffer_efficiency <= 150 else 'Consider adjusting buffer calculation'}")
+                            logger.info(f"  Total allocated: {token_allocation} tokens")
+                            logger.info(f"  Tokens used: {tokens_used} tokens")
+                            logger.info(f"  Tokens beyond max_tokens: {tokens_beyond_max} tokens")
+                            logger.info(f"  Buffer utilization: {buffer_utilization:.1f}%")
+                            logger.info(f"  Buffer unused: {tokens_unused_in_buffer} tokens")
+                            if tokens_beyond_max == 0:
+                                logger.info(f"  ℹ️  Model finished within max_tokens - No buffer needed")
+                            elif buffer_utilization < 50:
+                                logger.info(f"  ✅ Buffer is over-allocated (used {buffer_utilization:.1f}%)")
+                            elif 50 <= buffer_utilization <= 100:
+                                logger.info(f"  ✅ Buffer is well-sized (used {buffer_utilization:.1f}%)")
+                            else:
+                                logger.info(f"  ⚠️  Buffer was insufficient (needed {buffer_utilization:.1f}%)")
                             logger.info("=" * 80)
 
                         # Success! Return immediately
