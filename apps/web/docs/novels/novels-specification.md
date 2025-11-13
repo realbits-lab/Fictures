@@ -154,35 +154,29 @@ Example: "In a fractured post-war society where trust has been shattered, the po
 **INPUT** (Story Generation):
 ```typescript
 {
-  authorId: string;           // User creating the story
-  title: string;             // Story title
-  userPrompt?: string;       // Optional creative direction from user
-  preferences?: {            // Optional constraints
-    preferredGenre?: StoryGenre;
-    preferredTone?: StoryTone;
-    thematicElements?: string[];
-  };
+  userPrompt: string;  // User's creative direction for the story
 }
 ```
 
 **GENERATION PROCESS**:
-1. Analyze user prompt and preferences
-2. Select appropriate genre from Genre Catalog (2.1.1)
-3. Select appropriate tone from Tone Catalog (2.1.2)
-4. Define moral framework (what virtues/vices matter in this world)
-5. Generate thematic summary using content format above
+1. Analyze user prompt to understand story concept and themes
+2. Generate story title based on prompt
+3. Select appropriate genre from Genre Catalog (2.1.1)
+4. Select appropriate tone from Tone Catalog (2.1.2)
+5. Define moral framework (what virtues/vices matter in this world)
+6. Generate thematic summary using content format above
 
 **OUTPUT** (Story Record):
 ```typescript
 {
   id: string;                 // Generated UUID
-  authorId: string;           // From input
-  title: string;             // From input
-  genre: StoryGenre;         // Generated
-  tone: StoryTone;           // Generated
-  moralFramework: string;    // Generated
-  summary: string;           // Generated
-  status: 'writing';         // Initial status
+  authorId: string;           // From authenticated session
+  title: string;              // Generated
+  genre: StoryGenre;          // Generated
+  tone: StoryTone;            // Generated
+  moralFramework: string;     // Generated
+  summary: string;            // Generated
+  status: 'writing';          // Initial status
   // Visual and metadata fields initialized as null/defaults
 }
 ```
@@ -343,48 +337,45 @@ Example: "In a fractured post-war society where trust has been shattered, the po
 **INPUT** (Part Generation):
 ```typescript
 {
-  storyId: string;              // Parent story
-  title: string;                // Act title (e.g., "Act I: The Breaking")
-  orderIndex: number;           // Act number (0, 1, 2 for three-act structure)
-
-  // Context from Story
-  story: {
-    genre: StoryGenre;
-    tone: StoryTone;
-    moralFramework: string;
-    summary: string;
-  };
+  // Story context
+  story: Story;                 // Complete story with all metadata
 
   // Available resources
   characters: Character[];      // Main characters (isMain=true)
   settings: Setting[];          // All story settings
 
-  // Previous Part context (if not first Part)
-  previousPart?: {
-    id: string;
-    characterArcs: CharacterArc[];  // How previous act ended
-  };
+  // Previous Parts context (all previous parts in order)
+  previousParts: Part[];        // Empty array if first Part
 }
 ```
 
 **GENERATION PROCESS**:
-1. **Determine Act Type**: Setup (Act I) vs. Confrontation (Act II) vs. Resolution (Act III)
-2. **Select Settings**: Choose 2-4 settings from Story.settings that fit this act's atmosphere
-3. **Define Character Arcs**: For each main character, create MACRO arc:
-   - **Macro Adversity**: Major challenge/flaw confrontation for this act
-   - **Macro Virtue**: THE defining moral choice (from Character.coreTrait)
+1. **Generate Title**: Create part title based on story arc position and themes
+2. **Determine Act Type**: Setup vs. Confrontation vs. Resolution (or other structure based on story needs)
+3. **Select Settings**: Choose 2-4 settings from Story.settings that fit this part's atmosphere and thematic needs
+4. **Define Character Arcs**: For each main character, create MACRO arc:
+   - **Macro Adversity**: Major challenge/flaw confrontation for this part
+     - Internal: From Character.internalFlaw (what fear/belief/wound is confronted?)
+     - External: What obstacle forces facing the internal conflict?
+   - **Macro Virtue**: THE defining moral choice from Character.coreTrait
+     - Intrinsically motivated act of courage/compassion/integrity/sacrifice/loyalty/wisdom
+     - This is the MORAL CLIMAX of this part's arc
    - **Macro Consequence**: Major earned payoff/karmic result
-   - **Macro New Adversity**: How resolution creates next act's challenge
-4. **Plan Character Interactions**: How do arcs intersect? Which relationships (Jeong) deepen?
-5. **Generate Summary**: Comprehensive description of all macro arcs and their convergence
+     - Surprising but causally-linked result of the virtue
+     - How does the moral universe reward this character?
+   - **Macro New Adversity**: How this resolution creates next part's challenge
+     - What new problem emerges from the resolution?
+     - How do stakes escalate?
+5. **Plan Character Interactions**: Determine how character arcs intersect
+   - Which relationships (Jeong) form or deepen?
+   - What shared Han (wounds) are revealed?
+   - How do parallel arcs converge toward part climax?
+6. **Generate Summary**: Comprehensive description of all macro arcs, their convergence, and this part's role in overall story
 
-**OUTPUT** (Part Record):
+**OUTPUT** (Part Generation Data):
 ```typescript
 {
-  id: string;                   // Generated UUID
-  storyId: string;              // From input
-  title: string;                // From input
-  orderIndex: number;           // From input
+  title: string;                // Generated act title
 
   summary: string;              // Generated comprehensive summary
 
@@ -405,38 +396,13 @@ Example: "In a fractured post-war society where trust has been shattered, the po
 }
 ```
 
-**Content Structure**:
-```
-ACT [I/II/III]: [Act Name]
+**Note**: `storyId` and `orderIndex` are automatically handled by the system (not part of generation data).
 
-CHARACTER: [Name]
-
-MACRO ARC (Overall transformation for this act):
-- Macro Adversity: [Major challenge/flaw confrontation]
-  - Internal: [From Character.internalFlaw]
-  - External: [Obstacle forcing confrontation]
-- Macro Virtue: [Defining moral choice from Character.coreTrait]
-- Macro Consequence: [Major earned payoff/karmic result]
-- Macro New Adversity: [How this creates next act's challenge]
-
-CHARACTER: [Name]
-- Macro Arc: [Same structure as above]
-
-CHARACTER INTERACTIONS:
-- How do their macro arcs intersect?
-- What relationships (Jeong) form or deepen?
-- What shared Han (wounds) are revealed?
-- How do arcs converge toward act climax?
-
-SETTINGS FOR THIS ACT:
-- [Setting 1]: [Why this setting fits this act]
-- [Setting 2]: [Why this setting fits this act]
-```
-
-**Three-Act Structure Mapping**:
-- **Act I (Setup)**: Introduce character flaws, inciting incident creates first adversity
-- **Act II (Confrontation)**: Escalating macro arcs, midpoint reversal, character hits lowest point
-- **Act III (Resolution)**: Final macro arcs resolve both internal and external conflicts
+**Common Story Structures** (not prescriptive):
+- **Three-Act**: Setup → Confrontation → Resolution
+- **Four-Act**: Setup → Complication → Development → Resolution
+- **Five-Act**: Exposition → Rising Action → Climax → Falling Action → Denouement
+- **Custom**: Generator determines optimal structure based on story needs
 
 **Note on Incremental Writing**:
 - Part defines **MACRO arc destination** but NOT detailed chapter-by-chapter progression
