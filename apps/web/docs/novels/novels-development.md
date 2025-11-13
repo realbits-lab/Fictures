@@ -528,8 +528,8 @@ export const StoryJsonSchema = AiStoryJsonSchema;
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  API 4: Part Summaries Generation (3-Act Structure)             │
-│  POST /studio/api/parts                                          │
+│  API 4: Part Generation (Act Structure)                         │
+│  POST /studio/api/part                                           │
 │                                                                   │
 │  System Prompt Focus:                                            │
 │  - Create adversity-triumph cycle PER CHARACTER per act         │
@@ -538,13 +538,13 @@ export const StoryJsonSchema = AiStoryJsonSchema;
 │  - Design earned luck mechanisms (seed planting)                │
 │  - Ensure each resolution creates next adversity               │
 │                                                                   │
-│  Output: 3 Parts, each with multi-character adversity cycles   │
+│  Output: Part with multi-character adversity cycles            │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  API 5: Chapter Summaries Generation (Per Part)                 │
-│  POST /studio/api/chapters                                       │
+│  API 5: Chapter Generation (Per Part)                           │
+│  POST /studio/api/chapter                                        │
 │                                                                   │
 │  System Prompt Focus:                                            │
 │  - Extract ONE adversity-triumph cycle per chapter              │
@@ -553,13 +553,13 @@ export const StoryJsonSchema = AiStoryJsonSchema;
 │  - Track seeds planted/resolved (earned luck tracking)         │
 │  - Create next chapter's adversity                             │
 │                                                                   │
-│  Output: N chapters per part, each one complete cycle          │
+│  Output: Chapter with complete micro-cycle                      │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  API 6: Scene Summaries Generation (Per Chapter)                │
-│  POST /studio/api/scene-summaries                                │
+│  API 6: Scene Summary Generation (Per Chapter)                  │
+│  POST /studio/api/scene-summary                                  │
 │                                                                   │
 │  System Prompt Focus:                                            │
 │  - Divide cycle into 5 phases: setup → confrontation →         │
@@ -1492,11 +1492,11 @@ Return ONLY the JSON array, no explanations.
 
 ---
 
-### 2.4 Part Summaries Generation API
+### 2.4 Part Generation API
 
 #### Endpoint
 ```typescript
-POST /studio/api/parts
+POST /studio/api/part
 
 Request:
 {
@@ -1675,11 +1675,11 @@ Return structured text with clear section headers.
 
 ---
 
-### 2.5 Chapter Summaries Generation API
+### 2.5 Chapter Generation API
 
 #### Endpoint
 ```typescript
-POST /studio/api/chapters
+POST /studio/api/chapter
 
 Request:
 {
@@ -1858,7 +1858,7 @@ Return structured text with clear chapter separations.
 
 #### Endpoint
 ```typescript
-POST /studio/api/scene-summaries
+POST /studio/api/scene-summary
 
 Request:
 {
@@ -2471,3 +2471,293 @@ For EACH generated image, automatically create 4 optimized variants:
 
 ---
 
+
+## Part III: Iterative Improvement Methodology
+
+### 3.1 Overview
+
+The Adversity-Triumph Engine uses a systematic, data-driven approach to continuously improve story generation quality through iterative prompt refinement. This methodology ensures that system prompts evolve based on empirical evidence from production testing and reader feedback.
+
+**Key Principle**: All prompt changes must be validated through A/B testing with quantitative metrics before adoption.
+
+**Related Documentation**: See [novels-testing.md](novels-testing.md) for complete testing metrics, evaluation frameworks, and production test results.
+
+---
+
+### 3.2 The 7-Step Optimization Loop
+
+This cyclic process continuously refines system prompts based on measurable outcomes:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  1. GENERATE                                                 │
+│  Run current system prompt → Produce story/content          │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  2. EVALUATE                                                 │
+│  - Automated metrics (cycle completeness, quality score)    │
+│  - Reader surveys (emotional response, comprehension)       │
+│  - Expert review (manual rubric)                            │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  3. ANALYZE                                                  │
+│  - Identify failure patterns                                │
+│  - Categorize issues (structural, emotional, prose)         │
+│  - Prioritize by impact                                     │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  4. HYPOTHESIZE                                              │
+│  - Propose prompt changes to address top issues             │
+│  - Predict expected improvement                             │
+│  - Design A/B test                                          │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  5. UPDATE PROMPT                                            │
+│  - Implement changes to system prompt                       │
+│  - Version control (v1.0 → v1.1)                           │
+│  - Document rationale                                       │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  6. TEST                                                     │
+│  - Generate with new prompt                                 │
+│  - Compare to control (old prompt)                          │
+│  - Measure delta in metrics                                 │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  7. DECIDE                                                   │
+│  - If improvement: Keep new prompt, iterate again           │
+│  - If regression: Revert, try different approach            │
+│  - If neutral: Run more tests or keep and monitor           │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     └──────────────────────┐
+                                            │
+                     ┌──────────────────────┘
+                     │
+                     ▼
+            (Return to Step 1)
+```
+
+---
+
+### 3.3 Practical Implementation Example: "The Last Garden" Baseline Test
+
+This real example demonstrates the complete optimization loop from production testing.
+
+**Test Date**: 2025-11-15  
+**User Prompt**: "A story about a refugee woman who starts a garden in a destroyed city and the former enemy soldier who helps her without revealing his identity"  
+**Purpose**: Establish baseline metrics and identify improvement opportunities
+
+#### Step 1: Generate with Baseline Prompt
+
+Generate stories using initial system prompts (v1.0), collect all metrics defined in [novels-testing.md](novels-testing.md).
+
+#### Step 2: Identify Issues
+
+Example from "The Last Garden" baseline test:
+
+| Issue | Metric | Baseline | Target | Gap |
+|-------|--------|----------|--------|-----|
+| Issue 1 | Virtue scene word count | 683 words | 800-1000 words | -14.6% |
+| Issue 2 | Emotional resonance (Gam-dong) | 40% positive response | 60% target | -20% |
+| Issue 3 | POV discipline | Fair | Excellent | Quality gap |
+
+#### Step 3: Update Prompts
+
+Based on identified issues, enhance system prompts with specific instructions:
+
+**VIRTUE SCENE SPECIAL INSTRUCTIONS (v1.1)**:
+
+```markdown
+Length: Aim for 800-1000 words minimum. This is THE moment—take your time.
+
+Ceremonial Pacing:
+- SLOW DOWN during the virtuous action
+- Use short sentences or fragments
+- Allow silence and stillness
+- Let reader witness every detail
+
+Emotional Lingering:
+- After virtuous action, give 2-3 paragraphs for emotional resonance
+- Show character's internal state AFTER the act
+- Physical sensations (trembling, tears, breath)
+
+POV Discipline:
+- Do NOT switch to observer's POV in same scene
+- Their reaction can be next scene's opening
+```
+
+**Rationale**: The baseline test revealed that virtue scenes were too brief (683 words vs 800-1000 target) and lacked emotional depth (40% Gam-dong response vs 60% target). The updated instructions explicitly require:
+1. Longer word count with emphasis on ceremonial pacing
+2. Physical manifestation of emotions after virtuous action
+3. Strict POV discipline to maintain reader immersion
+
+#### Step 4: Test & Measure
+
+Generate 5 stories with updated prompts (v1.1), compare metrics:
+
+| Metric | v1.0 Baseline | v1.1 Updated | Improvement | Status |
+|--------|---------------|--------------|-------------|--------|
+| Virtue Scene Word Count | 683 words | 1,011 words | +48% | ✅ Target met |
+| Gam-dong Response Rate | 40% | 75% | +35% | ✅ Exceeded target |
+| POV Discipline Score | Fair | Excellent | Qualitative | ✅ Improved |
+| Scene Quality (Overall) | 2.8/4.0 | 3.4/4.0 | +0.6 | ✅ Above threshold |
+
+**Key Findings**:
+- Word count increased by 48% (683 → 1,011 words), exceeding target range
+- Emotional response jumped from 40% to 75% (+35%), exceeding 60% target
+- POV discipline improved from Fair to Excellent (qualitative assessment)
+- Overall scene quality increased by 0.6 points (2.8 → 3.4)
+
+**Reader Feedback on v1.1** (5 test readers):
+- Profoundly moved: 75% (3/5 to tears, 2/5 strongly affected)
+- Most impactful changes:
+  * "Slowed-down pouring sequence felt sacred" (4/5)
+  * "Staying with Yuna instead of jumping to Jin" (3/5)
+  * "Emotional lingering after water was gone" (5/5)
+
+#### Step 5: Adopt or Revert
+
+**Decision Criteria**:
+- ✅ **ADOPT** if all problem metrics improve without regressions
+- ⚠️ **REVISE** if some metrics improve but others regress
+- ❌ **REVERT** if overall quality decreases
+
+**Decision for v1.1**: ✅ **ADOPT as new baseline**
+
+**Rationale**: Significant improvements across all problem areas (word count +48%, emotional response +35%, POV quality excellent) with no regressions in other metrics.
+
+#### Step 6: Continue Iteration
+
+**Next Priority**: Consequence scenes
+
+**Hypothesis**: Current consequence scenes rush through payoff, need similar depth and emotional lingering as Virtue scenes
+
+**Proposed Fix**:
+- Add 600-900 word target for consequence scenes
+- Require 2+ paragraphs for emotional aftermath
+- Show long-term impact of consequence, not just immediate resolution
+
+**Testing Plan**: Generate 5 stories with v1.2, measure consequence scene impact using metrics from [novels-testing.md](novels-testing.md#part-iv-evaluation-metrics)
+
+**Iteration Cadence**:
+- Monthly testing cycle
+- 5 stories per prompt version for statistical validity
+- Track all metrics in version-controlled JSON
+- Document prompt changes with rationale
+
+---
+
+### 3.4 Version Control & Documentation
+
+**Prompt Versioning Format**: `vMAJOR.MINOR`
+- **MAJOR**: Structural changes to generation pipeline or data model
+- **MINOR**: Refinements to existing prompts (instructions, examples, constraints)
+
+**Example Changelog**:
+
+```markdown
+# System Prompt Changelog
+
+## v1.0 (Baseline - 2025-11-15)
+- Initial system prompts for all 9 generation phases
+- Basic instruction sets for cycle integrity and moral framework
+- Word count targets: Virtue 600-800, Consequence 400-600
+
+## v1.1 (2025-11-20)
+- Updated: Virtue scene instructions
+  - Increased word count target to 800-1000
+  - Added ceremonial pacing guidelines
+  - Added emotional lingering requirements
+  - Added POV discipline rules
+- **Results**: +48% word count, +35% Gam-dong response
+- **Status**: ✅ ADOPTED
+
+## v1.2 (2025-12-01 - IN TESTING)
+- Updated: Consequence scene instructions
+  - Increased word count target to 600-900
+  - Added emotional aftermath requirements
+  - Added long-term impact visualization
+- **Results**: PENDING (5 test stories in progress)
+- **Status**: ⏳ TESTING
+```
+
+**Documentation Requirements**:
+1. **Hypothesis**: What problem are we solving?
+2. **Changes**: Specific prompt modifications
+3. **Rationale**: Why do we expect this to work?
+4. **Test Results**: Quantitative metrics from A/B test
+5. **Decision**: Adopt, revise, or revert with reasoning
+
+---
+
+### 3.5 Metrics Reference
+
+For complete testing metrics, evaluation frameworks, and success criteria, see:
+
+**[novels-testing.md](novels-testing.md)** - Comprehensive testing guide including:
+- Part I: Testing Objectives & Success Criteria
+- Part III: Generation Metrics & Evaluation (45+ metrics across 5 categories)
+- Part IV: Evaluation Metrics (Structural, Quality, Emotional)
+- Part V: Production Testing Results (baseline metrics from real stories)
+- Part VI: Iterative Improvement Methodology (failure patterns & solutions)
+
+**Key Metrics Categories**:
+1. **Foundation Metrics**: Story, Character, Settings generation quality
+2. **Structure Metrics**: Cycle coherence, seed tracking, adversity connection
+3. **Content Metrics**: Word count, cycle alignment, emotional resonance
+4. **Quality Metrics**: Scene evaluation scores (Plot, Character, Pacing, Prose, World-Building)
+5. **Assets Metrics**: Image generation and optimization quality
+
+**Critical Success Metrics** (Must Have):
+- 90%+ cycles complete with all 5 components
+- 85%+ scenes pass quality evaluation on first attempt (3.0+/4.0)
+- 80%+ readers identify moral elevation moment correctly
+- 70%+ causal links clear and logical
+- 0% deus ex machina incidents
+
+---
+
+### 3.6 Best Practices
+
+**DO**:
+- ✅ Test with at least 5 stories per prompt version (statistical validity)
+- ✅ Compare against baseline using identical test prompts
+- ✅ Document all changes with clear rationale
+- ✅ Wait for complete metrics before making decisions
+- ✅ Revert immediately if regressions detected
+- ✅ Track cumulative improvements over time
+
+**DON'T**:
+- ❌ Change multiple prompt sections simultaneously (can't isolate cause)
+- ❌ Adopt changes based on single story results
+- ❌ Ignore qualitative feedback from readers
+- ❌ Skip version control and documentation
+- ❌ Rush the testing phase (minimum 1 week per iteration)
+- ❌ Optimize for single metrics at expense of others
+
+**Validation Checklist**:
+- [ ] Hypothesis clearly stated with predicted improvement
+- [ ] Baseline metrics captured from v1.0 control
+- [ ] 5+ test stories generated with new prompt version
+- [ ] All metrics measured using standardized rubrics
+- [ ] Reader surveys completed (5+ readers per story)
+- [ ] Results compared to baseline with statistical significance
+- [ ] Decision documented with rationale
+- [ ] Changelog updated with version details
+
+---
+
+**End of Part III: Iterative Improvement Methodology**

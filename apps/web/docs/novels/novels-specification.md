@@ -187,14 +187,11 @@ Example: "In a fractured post-war society where trust has been shattered, the po
 **OUTPUT** (Story Record):
 ```typescript
 {
-  id: string;                 // Generated UUID
-  authorId: string;           // From authenticated session
   title: string;              // Generated
   genre: StoryGenre;          // Generated
   tone: StoryTone;            // Generated
   moralFramework: string;     // Generated
   summary: string;            // Generated
-  status: 'writing';          // Initial status
   // Visual and metadata fields initialized as null/defaults
 }
 ```
