@@ -6,7 +6,7 @@ This document provides comprehensive implementation specifications for the novel
 
 **Related Documents:**
 - 📖 **Specification** (`novels-specification.md`): Core concepts, data model, and theoretical foundation
-- 🧪 **Testing Guide** (`novels-testing.md`): Validation methods, quality metrics, and test strategies
+- 🧪 **Evaluation Guide** (`novels-evaluation.md`): Validation methods, quality metrics, and test strategies
 - 🏗️ **Generator Refactoring** (`generator-refactoring-plan.md`): Common generator library architecture
 
 ---
@@ -2478,7 +2478,7 @@ The Adversity-Triumph Engine uses a systematic, data-driven approach to continuo
 
 **Key Principle**: All prompt changes must be validated through A/B testing with quantitative metrics before adoption.
 
-**Related Documentation**: See [novels-testing.md](novels-testing.md) for complete testing metrics, evaluation frameworks, and production test results.
+**Related Documentation**: See [novels-evaluation.md](novels-evaluation.md) for complete testing metrics, evaluation frameworks, and production test results.
 
 ---
 
@@ -2560,7 +2560,7 @@ This real example demonstrates the complete optimization loop from production te
 
 #### Step 1: Generate with Baseline Prompt
 
-Generate stories using initial system prompts (v1.0), collect all metrics defined in [novels-testing.md](novels-testing.md).
+Generate stories using initial system prompts (v1.0), collect all metrics defined in [novels-evaluation.md](novels-evaluation.md).
 
 #### Step 2: Identify Issues
 
@@ -2648,7 +2648,7 @@ Generate 5 stories with updated prompts (v1.1), compare metrics:
 - Require 2+ paragraphs for emotional aftermath
 - Show long-term impact of consequence, not just immediate resolution
 
-**Testing Plan**: Generate 5 stories with v1.2, measure consequence scene impact using metrics from [novels-testing.md](novels-testing.md#part-iv-evaluation-metrics)
+**Testing Plan**: Generate 5 stories with v1.2, measure consequence scene impact using metrics from [novels-evaluation.md](novels-evaluation.md#part-iv-evaluation-metrics)
 
 **Iteration Cadence**:
 - Monthly testing cycle
@@ -2705,7 +2705,7 @@ Generate 5 stories with updated prompts (v1.1), compare metrics:
 
 For complete testing metrics, evaluation frameworks, and success criteria, see:
 
-**[novels-testing.md](novels-testing.md)** - Comprehensive testing guide including:
+**[novels-evaluation.md](novels-evaluation.md)** - Comprehensive evaluation guide including:
 - Part I: Testing Objectives & Success Criteria
 - Part III: Generation Metrics & Evaluation (45+ metrics across 5 categories)
 - Part IV: Evaluation Metrics (Structural, Quality, Emotional)

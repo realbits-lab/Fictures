@@ -10,7 +10,7 @@ This document specifies the novels generation system using a **Cyclic Adversity-
 
 **Related Documents:**
 - 📋 **Development Guide** (`novels-development.md`): API specifications and system prompts for implementation
-- 🧪 **Testing Guide** (`novels-testing.md`): Testing strategies, metrics, and validation methods
+- 🧪 **Evaluation Guide** (`novels-evaluation.md`): Testing strategies, metrics, and validation methods
 
 ---
 
@@ -931,11 +931,11 @@ This specification document focuses on core concepts and generation architecture
 - **Part II: API Architecture** - Generation flow and API structure
 - **Part III: API Specifications** - System prompts and implementation details
 
-### 🧪 **Testing Guide** (`novels-testing.md`)
+### 🧪 **Evaluation Guide** (`novels-evaluation.md`)
 - **Part II: Success Metrics** - Baseline performance targets and validated results
 - **Part III-VIII**: Complete testing methodology, evaluation metrics, and quality assurance
 
 **Navigation:**
 - 📖 Concepts & Architecture → This document (novels-specification.md)
 - 🔧 Implementation & Schemas → Development Guide (novels-development.md)
-- ✅ Validation & Metrics → Testing Guide (novels-testing.md)
+- ✅ Validation & Metrics → Evaluation Guide (novels-evaluation.md)

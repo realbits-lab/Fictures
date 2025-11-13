@@ -1,8 +1,8 @@
-# Novels Testing & Evaluation: Adversity-Triumph Engine
+# Novels Evaluation Guide: Adversity-Triumph Engine
 
 ## Executive Summary
 
-This document outlines a comprehensive testing strategy for the novels generation system using the Adversity-Triumph Engine, including quantitative metrics, qualitative evaluation frameworks, iterative prompt improvement methodology, and complete evaluation examples from production testing.
+This document outlines a comprehensive evaluation strategy for the novels generation system using the Adversity-Triumph Engine, including quantitative metrics, qualitative evaluation frameworks, iterative prompt improvement methodology, and complete evaluation examples from production testing.
 
 **Related Documents:**
 - 📖 **Specification** (`novels-specification.md`): Core concepts, data model, and success criteria

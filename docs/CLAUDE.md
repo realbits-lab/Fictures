@@ -419,7 +419,7 @@ The following sections document features that were previously in the root docs d
 **Files**:
 - `novels-specification.md` - ⭐ Core concepts, data model, Adversity-Triumph Engine theory
 - `novels-development.md` - API architecture, system prompts, implementation specs
-- `novels-testing.md` - Validation methods, quality metrics, test strategies
+- `novels-evaluation.md` - Validation methods, quality metrics, evaluation strategies
 - `novels-optimization.md` - Performance tuning, cost optimization
 - `novels-removal.md` - Story deletion workflows
 - `character-schema-sync-2025-11-02.md` - Character schema synchronization
