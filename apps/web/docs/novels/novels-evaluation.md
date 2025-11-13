@@ -5,10 +5,14 @@
 This document outlines a comprehensive evaluation strategy for the novels generation system using the Adversity-Triumph Engine. The evaluation framework is **directly synchronized with the Core Principles** defined in the specification, ensuring that all testing validates the fundamental principles of the narrative engine.
 
 **Key Features:**
-- **Core Principles Validation**: All evaluation objectives map to the Core Principles from the specification
-- **Quantitative & Qualitative Metrics**: Comprehensive measurement across structure, quality, and emotional impact
+- **Perfect 1:1 Core Principle Mapping**: Each Core Principle has dedicated Evaluation Objective, Success Criteria table, and Qualitative Rubric
+- **Table-Based Metrics**: All success criteria organized in clear tables with Target and Critical Threshold values
+- **Quantitative & Qualitative Framework**: Comprehensive measurement across structure, quality, and emotional impact
 - **Iterative Improvement**: Data-driven prompt optimization based on Core Principle adherence
-- **Production Testing Results**: Real-world validation with complete evaluation examples
+
+**Document Structure:**
+- **Part I (Testing Objectives)**: Evaluation objectives, success criteria tables, and qualitative framework
+- **Part II (Metrics & Evaluation)**: Detailed metric descriptions by generation phase
 
 **Related Documents:**
 - 📖 **Specification** (`novels-specification.md`): Core Principles (section 1.5), data model, and theoretical foundation
@@ -20,69 +24,117 @@ This document outlines a comprehensive evaluation strategy for the novels genera
 
 ### 1.1 Evaluation Objectives
 
-1. **Intrinsic Motivation Validation**
-   - Verify virtuous actions are genuine, not strategic or transactional
-   - Measure reader perception of character authenticity
-   - Assess dramatic irony between character's externalGoal and true needs
+**Each objective directly maps to a Core Principle (section 1.5 of specification):**
 
-2. **Causal Integrity Verification**
-   - Verify every event connects to previous actions
-   - Track seed planting and resolution across story
-   - Detect and eliminate deus ex machina incidents
-   - Measure "earned luck" vs random luck perception
-
-3. **Cyclical Engine Functionality**
-   - Verify complete adversity-triumph cycles
+1. **Cyclic Structure** (multi-scale)
+   - Verify complete adversity-triumph cycles (4-phase engine)
    - Confirm every resolution creates next adversity
-   - Track stakes escalation across cycles
-   - Assess narrative momentum maintenance
+   - Track nested cycles: micro-cycles within macro arcs at all narrative levels
+   - Assess perpetual narrative momentum maintenance
 
-4. **Emotional Resonance Achievement**
+2. **Intrinsic Motivation**
+   - Verify virtuous actions are genuine, not transactional or strategic
+   - Ensure no expectation of reward shown during virtue phase
+   - Measure reader perception of character authenticity
+   - Assess moral elevation triggering in audience
+
+3. **Earned Consequence** (causal linking + temporal separation)
+   - Verify every event causally linked to previous actions through traceable seeds (no deus ex machina)
+   - Verify temporal separation between virtue and consequence (Pattern A timing)
+   - Measure "earned luck" feeling and karmic payoff perception
+   - Track seed planting and resolution across story
+
+4. **Character Transformation**
+   - Verify internal flaw (from Character.internalFlaw) drives adversity
+   - Verify virtuous action confronts and challenges flaw
+   - Assess whether earned consequence enables growth and healing
+   - Track character arc progression and transformation across story
+
+5. **Emotional Resonance**
    - Measure empathy building (reader cares about characters)
    - Measure catharsis experience (emotional release)
    - Measure moral elevation response (inspired by virtue)
    - Measure Gam-dong achievement (profound emotional moving)
+   - Verify settings actively amplify emotional beats through element arrays
 
 ### 1.2 Success Criteria
 
-**Intrinsic Motivation:**
-- ✅ 90%+ character actions feel intrinsically motivated (reader survey)
-- ✅ 85%+ virtuous actions lack transactional language ("to get X")
-- ✅ 0% obviously strategic "good deeds" (e.g., helping only when witnessed)
-- ✅ 85%+ readers say character acted from "genuine goodness" not "to get something"
-- ✅ 90%+ dramatic irony between externalGoal and true needs
+**Each table validates a Core Principle with quantitative and qualitative metrics:**
 
-**Causal Linking:**
-- ✅ 70%+ causal links are clear and logical (manual review)
-- ✅ 0% deus ex machina incidents (no unearned resolutions)
-- ✅ 80%+ readers say success felt "earned through actions" not "lucky"
-- ✅ 90%+ story events have explicit causal connections to prior events
-- ✅ 85%+ consequences are inevitable in retrospect but surprising in moment
+#### Core Principle #1: Cyclic Structure (multi-scale)
 
-**Seed Tracking:**
-- ✅ 85%+ seed plantings successfully resolve in later content
-- ✅ 60-80% seed resolution rate (resolved seeds / planted seeds)
-- ✅ 100% seeds tracked with planting and expected payoff phases
-- ✅ 90%+ seed resolutions feel "surprising but inevitable"
-- ✅ 75%+ seeds involve human relationships (not just objects/events)
+| Metric | Measurement | Target | Critical Threshold |
+|--------|-------------|--------|-------------------|
+| **Cycle Completeness** | % of cycles with all 4 phases (adversity, virtue, consequence, new adversity) | 100% | 90% |
+| **Chapter Cycle Focus** | % of chapters containing exactly 1 complete micro-cycle | 100% | 100% |
+| **Phase Coverage** | % of chapters with all 5 scene phases (setup, adversity, virtue, consequence, transition) | 100% | 90% |
+| **Resolution-Adversity Transition** | % of cycle resolutions naturally creating next adversity with escalated stakes | 80% | 70% |
+| **Stakes Escalation Quality** | % of stake escalations feeling organic and logical | 85% | 75% |
+| **Narrative Momentum** | % of cycles maintaining perpetual narrative momentum (no pacing lulls) | 90% | 80% |
+| **Nested Cycle Alignment** | % of micro-cycles advancing their macro arcs | 85% | 75% |
+| **Causal Chain Continuity** | % of chapters with valid previous/next causal links | 100% | 95% |
+| **Forward Momentum (Reader)** | % of readers reporting "need to know what happens next" after cycle completion | 90% | 80% |
 
-**Cyclical Engine:**
-- ✅ 90%+ cycles have all 5 components (adversity, virtue, consequence, new adversity, causal link)
-- ✅ 80%+ cycle resolutions naturally create next adversity with escalated stakes
-- ✅ 100% chapters contain exactly 1 complete cycle
-- ✅ 85%+ stake escalations feel organic and logical
-- ✅ 90%+ cycles maintain narrative momentum (no pacing lulls)
+#### Core Principle #2: Intrinsic Motivation
 
-**Emotional Resonance:**
-- ✅ 85%+ scenes pass quality evaluation on first attempt (3.0+/4.0 score)
-- ✅ 80%+ test readers identify moral elevation moment correctly
-- ✅ 80%+ readers report feeling "moved" (Gam-dong)
-- ✅ 75%+ readers care about character outcomes (empathy building)
-- ✅ 70%+ readers report emotional release (catharsis experience)
-- ✅ 90%+ readers can articulate the moral framework
-- ✅ 75%+ scenes have distinct emotional beats matching cycle phase
-- ✅ 85%+ average scene quality score (3.5+/4.0)
-- ✅ 60%+ readers spontaneously mention specific scenes as "memorable"
+| Metric | Measurement | Target | Critical Threshold |
+|--------|-------------|--------|-------------------|
+| **Character Action Authenticity** | % of character actions feeling intrinsically motivated (reader survey) | 90% | 80% |
+| **Transactional Language Absence** | % of virtuous actions lacking transactional language ("to get X") | 85% | 75% |
+| **Strategic Good Deeds** | % of obviously strategic "good deeds" (e.g., helping only when witnessed) | 0% | 0% |
+| **Reward Expectation Display** | % of virtue scenes showing expectation of reward | 0% | 0% |
+| **Genuine Goodness Perception** | % of readers saying character acted from "genuine goodness" not "to get something" | 85% | 75% |
+| **Moral Elevation Trigger** | % of readers reporting moral elevation during virtue scenes | 80% | 70% |
+| **Dramatic Irony** | % of dramatic irony between externalGoal and true needs | 90% | 80% |
+
+#### Core Principle #3: Earned Consequence (causal linking + temporal separation)
+
+| Metric | Measurement | Target | Critical Threshold |
+|--------|-------------|--------|-------------------|
+| **Causal Connection Clarity** | % of story events with explicit causal connections to prior events through traceable seeds | 90% | 70% |
+| **Deus Ex Machina Incidents** | % of deus ex machina incidents (no unearned resolutions) | 0% | 0% |
+| **Temporal Separation (Pattern A)** | % of MACRO virtues and consequences temporally separated | 85% | 75% |
+| **Earned Success Perception** | % of readers saying success felt "earned through actions" not "lucky" | 80% | 70% |
+| **Surprising but Inevitable** | % of consequences feeling inevitable in retrospect but surprising in moment | 85% | 75% |
+| **Earned Luck Feeling** | % of readers perceiving "earned luck" feeling and karmic payoff | 90% | 80% |
+| **Seed Resolution Rate** | Resolved seeds / Planted seeds | 60-80% | 50% |
+| **Seed Planting Success** | % of seed plantings successfully resolving in later content | 85% | 75% |
+| **Seed Tracking Completeness** | % of seeds tracked with planting and expected payoff phases | 100% | 100% |
+| **Seed Resolution Quality** | % of seed resolutions feeling "surprising but inevitable" | 90% | 80% |
+| **Relationship Seed Depth** | % of seeds involving human relationships (not just objects/events) | 75% | 60% |
+
+#### Core Principle #4: Character Transformation
+
+| Metric | Measurement | Target | Critical Threshold |
+|--------|-------------|--------|-------------------|
+| **Internal Flaw Definition** | % of characters with explicitly defined internalFlaw with cause | 100% | 100% |
+| **Character Depth** | % of characters with 1+ internal flaw and clear moral test | 100% | 90% |
+| **Flaw-Driven Adversity** | % of internal flaws directly driving adversity creation | 90% | 80% |
+| **Virtue Confronts Flaw** | % of virtuous actions directly confronting and challenging the character's internalFlaw | 90% | 80% |
+| **Consequence Enables Growth** | % of earned consequences demonstrably enabling character growth and healing | 85% | 75% |
+| **Arc Progression Perception** | % of readers perceiving authentic character arc progression across story | 80% | 70% |
+| **Transformation Articulation** | % of readers able to articulate how character transformed by story end | 75% | 60% |
+| **Earned Transformation** | % of character transformations feeling earned, not sudden or arbitrary | 85% | 75% |
+| **Arc Structure Clarity** | % of character arcs showing clear beginning (flaw) → middle (virtue) → end (growth) progression | 90% | 80% |
+
+#### Core Principle #5: Emotional Resonance
+
+| Metric | Measurement | Target | Critical Threshold |
+|--------|-------------|--------|-------------------|
+| **Scene Quality Score** | Average scene evaluation score (1-4 scale) | 3.5+ | 3.0+ |
+| **First-Pass Success Rate** | % of scenes passing quality evaluation on first attempt (3.0+/4.0 score) | 85% | 70% |
+| **Moral Elevation Detection** | % of readers identifying moral elevation moment correctly | 80% | 70% |
+| **Gam-dong Achievement** | % of readers reporting feeling "profoundly moved" (Gam-dong) | 80% | 60% |
+| **Empathy Building** | % of readers caring about character outcomes | 75% | 60% |
+| **Catharsis Experience** | % of readers reporting emotional release | 70% | 50% |
+| **Moral Framework Clarity** | % of readers able to articulate the moral framework | 90% | 75% |
+| **Emotional Beat Accuracy** | % of scenes where readers identify intended emotion | 75% | 60% |
+| **Emotional Beat Assignment** | % of scenes with distinct emotional beats matching cycle phase | 75% | 60% |
+| **Scene Memorability** | % of readers spontaneously mentioning specific scenes as "memorable" | 60% | 50% |
+| **Setting Amplification** | % of settings successfully amplifying emotional beats through element arrays | 80% | 70% |
+| **Word Count Accuracy** | % of scenes within target word count ±10% | 90% | 75% |
+| **Formatting Compliance** | % of scenes following all formatting rules | 100% | 95% |
+| **Prose Variety** | Average sentence length variance (words) | 15-25 | 10-30 |
 
 ---
 
@@ -190,81 +242,65 @@ This section provides detailed metric descriptions organized by category, implem
 | Variant Generation Success | All 4 optimized variants generated successfully | AVIF + JPEG × mobile 1x/2x all present | Automated: variant count = 4 per image |
 | Optimization Ratio | File size reduction from original to optimized variants | Average 40-60% size reduction across variants | Automated: compressed size / original size × 100 |
 
----
-
-## Part III: Evaluation Metrics
-
-### 3.1 Quantitative Metrics
-
-#### Structural Metrics
-
-| Metric | Measurement | Target | Critical Threshold |
-|--------|-------------|--------|----------------------|
-| **Cycle Completeness** | % of cycles with all 5 components | 100% | 90% |
-| **Causal Chain Continuity** | % of chapters with valid previous/next links | 100% | 95% |
-| **Seed Resolution Rate** | Resolved seeds / Planted seeds | 60-80% | 50% |
-| **Virtue Scene Presence** | % of chapters with exactly 1 virtue scene | 100% | 100% |
-| **Phase Coverage** | % of chapters with all 5 cycle phases | 100% | 90% |
-
-#### Quality Metrics
-
-| Metric | Measurement | Target | Critical Threshold |
-|--------|-------------|--------|----------------------|
-| **Scene Quality Score** | Average evaluation score (1-4 scale) | 3.5+ | 3.0+ |
-| **First-Pass Success Rate** | % of scenes passing evaluation on first generation | 85% | 70% |
-| **Word Count Accuracy** | % of scenes within target word count ±10% | 90% | 75% |
-| **Formatting Compliance** | % of scenes following all formatting rules | 100% | 95% |
-| **Prose Variety** | Average sentence length variance | 15-25 words | 10-30 words |
-
-#### Emotional Metrics
-
-| Metric | Measurement | Target | Critical Threshold |
-|--------|-------------|--------|----------------------|
-| **Moral Elevation Detection** | % of readers identifying virtue scene correctly | 80% | 70% |
-| **Gam-dong Response Rate** | % of readers reporting feeling "profoundly moved" | 80% | 60% |
-| **Emotional Beat Accuracy** | % of scenes where readers identify intended emotion | 75% | 60% |
-| **Catharsis Experience** | % of readers reporting emotional release | 70% | 50% |
-| **Empathy Building** | % of readers caring about character outcomes | 90% | 75% |
-
-### 3.2 Qualitative Evaluation Framework
+### 1.3 Qualitative Evaluation Framework
 
 **Reader Survey Template** (Mapped to Core Principles):
 
-1. **Intrinsic Motivation** (Principle #1)
-   - "Did the character act from genuine goodness or to get something?"
-   - Target: 85%+ say "genuine goodness"
-
-2. **Causal Logic Understanding** (Principles #2, #3)
-   - "Did the character's success feel earned or lucky?"
-   - Target: 80%+ say "earned through their actions"
-
-3. **Moral Elevation Recognition** (Narrative Goal)
-   - "Which scene made you feel most inspired by the character's goodness?"
-   - Target: 80%+ identify the virtue scene
-
-4. **Emotional Impact** (Narrative Goal)
-   - "Rate how moved you felt by this story (1-5)"
-   - Target: Average 4.0+, 80%+ report being "profoundly moved" (Gam-dong)
+| Core Principle | Survey Question | Target Response |
+|----------------|----------------|-----------------|
+| **#1: Cyclic Structure** | "Did each chapter's resolution naturally lead to the next challenge?" | 85%+ say "yes, progression felt organic" |
+| **#2: Intrinsic Motivation** | "Did the character act from genuine goodness or to get something?" | 85%+ say "genuine goodness" |
+| **#3: Earned Consequence** | "Did the character's success feel earned or lucky?" | 80%+ say "earned through their actions" |
+| **#4: Character Transformation** | "Did you notice clear character growth from beginning to end?" | 80%+ say "yes, character clearly transformed" |
+| **#5: Emotional Resonance** | "Rate how moved you felt by this story (1-5)" | Average 4.0+, 80%+ report being "profoundly moved" (Gam-dong) |
+| **Narrative Goal** | "Which scene made you feel most inspired by the character's goodness?" | 80%+ identify the virtue scene |
 
 **Evaluation Rubric for Manual Review** (Core Principle Validation):
 
-**Principle #1: Intrinsic Motivation (1-4 scale)**
-- 4: All virtuous actions genuinely motivated, no transactional language
-- 3: Mostly intrinsic motivation, 1-2 slightly strategic moments
-- 2: Mix of genuine and strategic actions, undermines authenticity
-- 1: Obviously transactional "good deeds," no authentic virtue
+#### Core Principle #1: Cyclic Structure (1-4 scale)
 
-**Principles #2 & #3: Causal Linking & Seed Tracking (1-4 scale)**
-- 4: All events causally linked, seeds planted and resolved, no deus ex machina
-- 3: Mostly causally linked, 1-2 weak causal connections
-- 2: Several coincidences or unearned resolutions, weak seed tracking
-- 1: Deus ex machina present, no causal logic, random outcomes
+| Score | Criteria |
+|-------|----------|
+| **4** | All 4 cycle phases present, each resolution creates next adversity, nested cycles aligned, perpetual momentum |
+| **3** | All phases present, most transitions organic, minor momentum lulls |
+| **2** | Missing 1 phase or weak transitions, stakes don't escalate consistently |
+| **1** | Multiple phases missing, no causal logic, cycles don't perpetuate |
 
-**Principle #4: Cyclical Engine (1-4 scale)**
-- 4: All 5 cycle components present, clearly defined, each resolution creates next adversity
-- 3: All components present, some causal links weak, stakes escalate moderately
-- 2: Missing 1 component or major causal gap, stakes don't escalate
-- 1: Multiple components missing, no causal logic, no cycle perpetuation
+#### Core Principle #2: Intrinsic Motivation (1-4 scale)
+
+| Score | Criteria |
+|-------|----------|
+| **4** | All virtuous actions genuinely motivated, no transactional language, no expectation of reward shown |
+| **3** | Mostly intrinsic motivation, 1-2 slightly strategic moments |
+| **2** | Mix of genuine and strategic actions, undermines authenticity |
+| **1** | Obviously transactional "good deeds," no authentic virtue |
+
+#### Core Principle #3: Earned Consequence (1-4 scale)
+
+| Score | Criteria |
+|-------|----------|
+| **4** | All events causally linked through traceable seeds, temporal separation present, no deus ex machina, "earned luck" feeling |
+| **3** | Mostly causally linked with temporal separation, 1-2 weak causal connections |
+| **2** | Several coincidences or unearned resolutions, weak seed tracking, insufficient temporal separation |
+| **1** | Deus ex machina present, no causal logic, random outcomes, no temporal separation |
+
+#### Core Principle #4: Character Transformation (1-4 scale)
+
+| Score | Criteria |
+|-------|----------|
+| **4** | Internal flaw clearly drives adversity, virtuous actions confront flaw, earned consequences enable healing, arc progression evident |
+| **3** | Flaw drives most adversity, virtue confronts flaw, moderate growth visible |
+| **2** | Weak flaw-adversity connection, virtue doesn't address flaw, minimal transformation |
+| **1** | No clear flaw, no transformation, character static throughout story |
+
+#### Core Principle #5: Emotional Resonance (1-4 scale)
+
+| Score | Criteria |
+|-------|----------|
+| **4** | Strong empathy, catharsis, moral elevation, and Gam-dong achieved; settings amplify emotions effectively |
+| **3** | Most emotional goals achieved, settings support emotions adequately |
+| **2** | Some emotional impact, but inconsistent or weak; settings underutilized |
+| **1** | No emotional resonance, flat emotional experience, settings don't amplify |
 
 ---
 

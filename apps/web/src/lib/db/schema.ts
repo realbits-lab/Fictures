@@ -20,6 +20,7 @@ import {
     CHAPTER_ARC_POSITIONS,
     CHARACTER_ARC_POSITIONS,
 } from "@/lib/constants/arc-positions";
+import { CHARACTER_ROLES } from "@/lib/constants/character-roles";
 import { CORE_TRAITS } from "@/lib/constants/core-traits";
 import { CYCLE_PHASES } from "@/lib/constants/cycle-phases";
 import { EMOTIONAL_BEATS } from "@/lib/constants/emotional-beats";
@@ -29,10 +30,11 @@ import { STORY_TONES } from "@/lib/constants/tones";
 // Import Zod-derived types for nested JSON schemas (SSOT for nested structures)
 import type {
     AdversityElementsType,
-    CycleAmplificationType,
+    ConsequenceElementsType,
     PersonalityType,
     PhysicalDescriptionType,
     SensoryType,
+    VirtueElementsType,
     VoiceStyleType,
 } from "@/lib/studio/generators/zod-schemas";
 
@@ -56,6 +58,10 @@ export const arcPosition = pgEnum(
 export const characterArcPosition = pgEnum(
     "character_arc_position",
     CHARACTER_ARC_POSITIONS as unknown as [string, ...string[]],
+);
+export const characterRole = pgEnum(
+    "character_role",
+    CHARACTER_ROLES as unknown as [string, ...string[]],
 );
 export const comicStatus = pgEnum("comic_status", [
     "none",
@@ -162,6 +168,7 @@ export const characters = pgTable(
         id: text().primaryKey().notNull(),
         storyId: text("story_id").notNull(),
         name: varchar({ length: 255 }).notNull(),
+        role: characterRole("role").notNull(), // Character role in story: protagonist | deuteragonist | tritagonist | antagonist | supporting
         isMain: boolean("is_main").default(false).notNull(), // Main characters (2-4) get MACRO arcs
         summary: text().notNull(), // 1-2 sentence essence: "[CoreTrait] [role] [internalFlaw], seeking [externalGoal]"
 
@@ -242,17 +249,28 @@ export const settings = pgTable(
         adversityElements: json("adversity_elements")
             .$type<AdversityElementsType>()
             .notNull(),
-        symbolicMeaning: text("symbolic_meaning").notNull(), // How setting reflects story's moral framework (1-2 sentences)
-        // cycleAmplification: {
-        //   setup: string;         // How setting establishes adversity
-        //   confrontation: string; // How setting intensifies conflict
-        //   virtue: string;        // How setting contrasts/witnesses moral beauty
-        //   consequence: string;   // How setting transforms or reveals
-        //   transition: string;    // How setting hints at new problems
+
+        // virtueElements: {
+        //   witnessElements: string[];      // Who/what witnesses moral acts
+        //   contrastElements: string[];     // Elements making virtue powerful by contrast
+        //   opportunityElements: string[];  // Features enabling moral choices
+        //   sacredSpaces: string[];         // Locations with moral/emotional significance
         // }
-        cycleAmplification: json("cycle_amplification")
-            .$type<CycleAmplificationType>()
+        virtueElements: json("virtue_elements")
+            .$type<VirtueElementsType>()
             .notNull(),
+
+        // consequenceElements: {
+        //   transformativeElements: string[]; // Features showing change/impact
+        //   rewardSources: string[];          // Sources of karmic payoff
+        //   revelationTriggers: string[];     // Elements revealing hidden connections
+        //   communityResponses: string[];     // How setting inhabitants respond
+        // }
+        consequenceElements: json("consequence_elements")
+            .$type<ConsequenceElementsType>()
+            .notNull(),
+
+        symbolicMeaning: text("symbolic_meaning").notNull(), // How setting reflects story's moral framework (1-2 sentences)
 
         // === EMOTIONAL ATMOSPHERE ===
         mood: text().notNull(), // Primary emotional quality: "oppressive and surreal", "hopeful but fragile"
@@ -415,6 +433,9 @@ export const parts = pgTable(
             >()
             .notNull(),
 
+        // === SETTING HIERARCHY ===
+        settingIds: json("setting_ids").$type<string[]>().notNull(), // Selected settings from Story.settings for this Part
+
         // === ORDERING ===
         orderIndex: integer("order_index").notNull(), // Act number / order
 
@@ -460,6 +481,30 @@ export const chapters = pgTable(
         arcPosition: arcPosition("arc_position").notNull(), // 'beginning' | 'middle' | 'climax' | 'resolution' (climax = MACRO moment)
         contributesToMacroArc: text("contributes_to_macro_arc").notNull(), // How this chapter advances the macro arc
 
+        // === CHARACTER ARC (Micro-Cycle Narrative Tracking) ===
+        // characterArc: {
+        //   characterId: string;        // Character whose arc advances
+        //   microAdversity: {
+        //     internal: string;         // Specific fear/flaw confronted
+        //     external: string;         // Specific obstacle in this chapter
+        //   };
+        //   microVirtue: string;        // Moral choice (building toward MACRO)
+        //   microConsequence: string;   // Earned result
+        //   microNewAdversity: string;  // Next problem created
+        // }
+        characterArc: json("character_arc")
+            .$type<{
+                characterId: string;
+                microAdversity: {
+                    internal: string;
+                    external: string;
+                };
+                microVirtue: string;
+                microConsequence: string;
+                microNewAdversity: string;
+            }>()
+            .notNull(),
+
         // === CYCLE TRACKING ===
         focusCharacters: json("focus_characters")
             .$type<string[]>()
@@ -467,6 +512,9 @@ export const chapters = pgTable(
             .notNull(),
         adversityType: adversityType("adversity_type").notNull(), // 'internal' | 'external' | 'both'
         virtueType: virtueType("virtue_type").notNull(), // 'courage' | 'compassion' | 'integrity' | 'sacrifice' | 'loyalty' | 'wisdom'
+
+        // === SETTING HIERARCHY ===
+        settingIds: json("setting_ids").$type<string[]>().notNull(), // Selected settings from Part.settingIds for this Chapter
 
         // === CAUSAL LINKING (For Earned Luck) ===
         seedsPlanted: json("seeds_planted")

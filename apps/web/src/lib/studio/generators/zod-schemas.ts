@@ -23,6 +23,7 @@ import {
     CHAPTER_ARC_POSITIONS,
     CHARACTER_ARC_POSITIONS,
 } from "@/lib/constants/arc-positions";
+import { CHARACTER_ROLES } from "@/lib/constants/character-roles";
 import { CORE_TRAITS } from "@/lib/constants/core-traits";
 import { CYCLE_PHASES } from "@/lib/constants/cycle-phases";
 import { EMOTIONAL_BEATS } from "@/lib/constants/emotional-beats";
@@ -203,6 +204,7 @@ export type VoiceStyleType = z.infer<typeof voiceStyleSchema>;
  * Zod schema for inserting a new character
  */
 export const insertCharacterSchema = createInsertSchema(characters, {
+    role: z.enum(CHARACTER_ROLES as [string, ...string[]]),
     coreTrait: z.enum(CORE_TRAITS),
     personality: personalitySchema,
     physicalDescription: physicalDescriptionSchema,
@@ -232,6 +234,7 @@ export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
 export const AiCharacterZodSchema = insertCharacterSchema
     .pick({
         name: true,
+        role: true,
         isMain: true,
         summary: true,
         coreTrait: true,
@@ -248,6 +251,11 @@ export const AiCharacterZodSchema = insertCharacterSchema
             .max(255)
             .describe(
                 "Character's full name - should be memorable and fit the genre",
+            ),
+        role: z
+            .enum(CHARACTER_ROLES as [string, ...string[]])
+            .describe(
+                "Character's narrative role - must be one of: protagonist (main hero), deuteragonist (second most important), tritagonist (third most important), antagonist (opposes protagonist), supporting (assists narrative without major arc)",
             ),
         isMain: z
             .boolean()
@@ -331,38 +339,68 @@ export const adversityElementsSchema = z.object({
 export type AdversityElementsType = z.infer<typeof adversityElementsSchema>;
 
 /**
- * Nested schema for setting cycle amplification (SSOT)
+ * Nested schema for setting virtue elements (SSOT)
+ * Elements that amplify virtuous actions and moral elevation
  */
-export const cycleAmplificationSchema = z.object({
-    setup: z
-        .string()
+export const virtueElementsSchema = z.object({
+    witnessElements: z
+        .array(z.string())
         .describe(
-            "How setting establishes adversity: oppressive heat weighs on characters",
+            "Who/what witnesses moral acts (2-5 items): children watching, community gathering, hidden observers",
         ),
-    confrontation: z
-        .string()
+    contrastElements: z
+        .array(z.string())
         .describe(
-            "How setting intensifies conflict: confined space forces interaction",
+            "Elements making virtue powerful by contrast (2-5 items): barren wasteland vs. act of nurture, wealth disparity",
         ),
-    virtue: z
-        .string()
+    opportunityElements: z
+        .array(z.string())
         .describe(
-            "How setting contrasts/witnesses moral beauty: barren land vs. act of nurture",
+            "Features enabling moral choices (2-5 items): shared resources, public spaces, moment of crisis",
         ),
-    consequence: z
-        .string()
+    sacredSpaces: z
+        .array(z.string())
         .describe(
-            "How setting transforms or reveals: garden blooms, proving hope possible",
+            "Locations with moral/emotional significance (1-3 items): memorial site, family altar, meeting place",
         ),
-    transition: z
-        .string()
-        .describe("How setting hints at new problems: storm clouds gathering"),
 });
 
 /**
- * TypeScript type derived from cycleAmplificationSchema (SSOT)
+ * TypeScript type derived from virtueElementsSchema (SSOT)
  */
-export type CycleAmplificationType = z.infer<typeof cycleAmplificationSchema>;
+export type VirtueElementsType = z.infer<typeof virtueElementsSchema>;
+
+/**
+ * Nested schema for setting consequence elements (SSOT)
+ * Elements that manifest earned rewards and karmic payoffs
+ */
+export const consequenceElementsSchema = z.object({
+    transformativeElements: z
+        .array(z.string())
+        .describe(
+            "Features showing change/impact (2-5 items): blooming garden, repaired structure, gathered crowd",
+        ),
+    rewardSources: z
+        .array(z.string())
+        .describe(
+            "Sources of karmic payoff (2-5 items): hidden benefactor, unexpected ally, natural phenomenon",
+        ),
+    revelationTriggers: z
+        .array(z.string())
+        .describe(
+            "Elements revealing hidden connections (2-5 items): discovered letter, overheard conversation, symbolic object",
+        ),
+    communityResponses: z
+        .array(z.string())
+        .describe(
+            "How setting inhabitants respond (2-5 items): gratitude shown, reputation spreads, assistance offered",
+        ),
+});
+
+/**
+ * TypeScript type derived from consequenceElementsSchema (SSOT)
+ */
+export type ConsequenceElementsType = z.infer<typeof consequenceElementsSchema>;
 
 /**
  * Nested schema for setting sensory details (SSOT)
@@ -406,7 +444,8 @@ export type SensoryType = z.infer<typeof sensorySchema>;
  */
 export const insertSettingSchema = createInsertSchema(settings, {
     adversityElements: adversityElementsSchema,
-    cycleAmplification: cycleAmplificationSchema,
+    virtueElements: virtueElementsSchema,
+    consequenceElements: consequenceElementsSchema,
     sensory: sensorySchema,
 });
 
@@ -435,8 +474,9 @@ export const AiSettingZodSchema = insertSettingSchema
         name: true,
         summary: true,
         adversityElements: true,
+        virtueElements: true,
+        consequenceElements: true,
         symbolicMeaning: true,
-        cycleAmplification: true,
         mood: true,
         emotionalResonance: true,
         sensory: true,
@@ -459,14 +499,17 @@ export const AiSettingZodSchema = insertSettingSchema
         adversityElements: adversityElementsSchema.describe(
             "External conflict sources from the environment that create obstacles for characters",
         ),
+        virtueElements: virtueElementsSchema.describe(
+            "Elements that amplify virtuous actions and moral elevation: witnesses, contrasts, opportunities, sacred spaces",
+        ),
+        consequenceElements: consequenceElementsSchema.describe(
+            "Elements that manifest earned rewards and karmic payoffs: transformations, reward sources, revelations, community responses",
+        ),
         symbolicMeaning: z
             .string()
             .describe(
                 "How setting reflects story's moral framework (1-2 sentences): Destroyed city represents broken trust and loss of community",
             ),
-        cycleAmplification: cycleAmplificationSchema.describe(
-            "How the setting amplifies each phase of the adversity-triumph cycle through atmosphere and environment",
-        ),
         mood: z
             .string()
             .describe(
@@ -568,6 +611,7 @@ const characterArcSchema = z.object({
  */
 export const insertPartSchema = createInsertSchema(parts, {
     characterArcs: z.array(characterArcSchema),
+    settingIds: z.array(z.string()),
 });
 
 /**
@@ -595,6 +639,7 @@ export const AiPartZodSchema = insertPartSchema
         title: true,
         summary: true,
         characterArcs: true,
+        settingIds: true,
     })
     .extend({
         title: z
@@ -612,6 +657,11 @@ export const AiPartZodSchema = insertPartSchema
             .array(characterArcSchema)
             .describe(
                 "Collection of character development arcs that unfold during this part",
+            ),
+        settingIds: z
+            .array(z.string())
+            .describe(
+                "Array of setting IDs selected from Story.settings (2-4 settings) that are used in this Part",
             ),
     });
 
@@ -670,15 +720,50 @@ const seedResolvedSchema = z.object({
 });
 
 /**
+ * Nested schema for chapter character arc (micro-cycle)
+ * Tracks the detailed narrative progression within a chapter
+ */
+const chapterCharacterArcSchema = z.object({
+    characterId: z
+        .string()
+        .describe("ID of the character whose arc advances in this chapter"),
+    microAdversity: z
+        .object({
+            internal: z
+                .string()
+                .describe("Specific fear/flaw confronted in this chapter"),
+            external: z
+                .string()
+                .describe("Specific obstacle faced in this chapter"),
+        })
+        .describe(
+            "The adversity faced in this chapter - both internal and external challenges",
+        ),
+    microVirtue: z
+        .string()
+        .describe(
+            "The moral choice made in this chapter (building toward MACRO virtue)",
+        ),
+    microConsequence: z
+        .string()
+        .describe("The earned result of the virtue demonstrated"),
+    microNewAdversity: z
+        .string()
+        .describe("The new problem created by this chapter's resolution"),
+});
+
+/**
  * Zod schema for inserting a new chapter
  */
 export const insertChapterSchema = createInsertSchema(chapters, {
     arcPosition: z.enum(
         CHAPTER_ARC_POSITIONS as unknown as [string, ...string[]],
     ),
+    characterArc: chapterCharacterArcSchema,
     focusCharacters: z.array(z.string()),
     adversityType: z.enum(ADVERSITY_TYPES as unknown as [string, ...string[]]),
     virtueType: z.enum(CORE_TRAITS),
+    settingIds: z.array(z.string()),
     seedsPlanted: z.array(seedPlantedSchema),
     seedsResolved: z.array(seedResolvedSchema),
 });
@@ -709,9 +794,11 @@ export const AiChapterZodSchema = insertChapterSchema
         summary: true,
         arcPosition: true,
         contributesToMacroArc: true,
+        characterArc: true,
         focusCharacters: true,
         adversityType: true,
         virtueType: true,
+        settingIds: true,
         seedsPlanted: true,
         seedsResolved: true,
         connectsToPreviousChapter: true,
@@ -737,6 +824,9 @@ export const AiChapterZodSchema = insertChapterSchema
             .describe(
                 "How this chapter advances the overall story arc and character development",
             ),
+        characterArc: chapterCharacterArcSchema.describe(
+            "Structured micro-cycle tracking: characterId, microAdversity (internal/external), microVirtue, microConsequence, microNewAdversity",
+        ),
         focusCharacters: z
             .array(z.string())
             .describe(
@@ -751,6 +841,11 @@ export const AiChapterZodSchema = insertChapterSchema
             .enum(CORE_TRAITS)
             .describe(
                 "Core virtue demonstrated in this chapter - must be one of: courage, compassion, integrity, loyalty, wisdom, sacrifice",
+            ),
+        settingIds: z
+            .array(z.string())
+            .describe(
+                "Array of setting IDs selected from Part.settingIds (1-3 settings) that are used in this Chapter",
             ),
         seedsPlanted: z
             .array(seedPlantedSchema)

@@ -4,7 +4,7 @@
  */
 export const CYCLE_PHASES = [
     "setup",
-    "confrontation",
+    "adversity",
     "virtue",
     "consequence",
     "transition",
