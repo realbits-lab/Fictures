@@ -6,8 +6,6 @@ This document specifies the novels generation system using a **Cyclic Adversity-
 
 **Core Principle**: Stories generate deep emotional resonance through continuous cycles of adversity and triumph, powered by causally-linked serendipity (earned luck), unintended karmic rewards, and virtuous character actions.
 
-**Status**: ✅ **Validated and Ready for Implementation**
-
 **Related Documents:**
 - 📋 **Development Guide** (`novels-development.md`): API specifications and system prompts for implementation
 - 🧪 **Evaluation Guide** (`novels-evaluation.md`): Testing strategies, metrics, and validation methods
@@ -113,12 +111,13 @@ See section 2.7 for how the 4-phase cycle maps to 5 scene types in practice.
 **IMPORTANT**: Story creation is a **multi-phase process**. The Story entity itself does NOT contain character or setting data directly.
 
 **Phase 1: Story Foundation** (see section 2.2)
+- Input: User prompt
 - Generate: genre, tone, moralFramework, summary
 - Output: Story record with foundational metadata
 - Characters and Settings are NOT created in this phase
 
 **Phase 2: Character Generation** (see section 2.3)
-- Input: Story (complete with genre, tone, moralFramework, summary)
+- Input: Story
 - Generate: 2-4 main characters with full Character schema data
 - Output: Character records linked to Story via storyId
 
@@ -138,14 +137,14 @@ See section 2.7 for how the 4-phase cycle maps to 5 scene types in practice.
 - Output: Chapter record with micro-cycle structure
 
 **Phase 6: Scene Generation** (see section 2.7)
-- **Phase 6a: Scene Summaries** (see section 2.7.1)
+- **Phase 6a: Scene Summary** (see section 2.7.1)
   - Input: Story, Part, Chapter, previousScenes, Characters, Settings
-  - Generate: Scene summaries and metadata (no content)
-  - Output: Scene records with summaries and specifications
+  - Generate: Scene summary and metadata (no content)
+  - Output: Scene record with summary and specifications
 - **Phase 6b: Scene Content** (see section 2.7.2)
-  - Input: Scene (with summary), Story, Part, Chapter, Characters, Setting
+  - Input: Story, Part, Chapter, previousScenes, Scene (with summary)
   - Generate: Full prose narrative content
-  - Output: Scene record with content field populated
+  - Output: Scene record with content
 
 ### 2.2 Phase 1: Story Foundation
 
@@ -192,7 +191,6 @@ Example: "In a fractured post-war society where trust has been shattered, the po
   tone: StoryTone;            // Generated
   moralFramework: string;     // Generated
   summary: string;            // Generated
-  // Visual and metadata fields initialized as null/defaults
 }
 ```
 
