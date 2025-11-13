@@ -626,9 +626,7 @@ Note: Two-step scene generation allows:
 
 ---
 
-## ⚠️ CRITICAL ARCHITECTURE NOTE
-
-### Story Generation Does NOT Create Characters
+### 1.3 Critical Architecture Note: Story Generation Separation
 
 **Common Misconception:** The story generation phase creates character outlines or basic character data.
 
