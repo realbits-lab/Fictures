@@ -44,12 +44,14 @@ All types follow a consistent layer-prefix pattern with explicit suffixes for se
 
 **Principle**: Database schema is the single source of truth. All validation schemas are auto-generated via `drizzle-zod`.
 
-**Architecture Flow**:
+#### Table-Level SSOT (Drizzle → Zod)
+
+For table structures, Drizzle schema is SSOT and generates Zod schemas via `drizzle-zod`:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  src/lib/db/schema.ts (Drizzle ORM)                    │
-│  SINGLE SOURCE OF TRUTH                                 │
+│  SINGLE SOURCE OF TRUTH (Table Structure)              │
 │  - Define tables with pgTable()                         │
 │  - Database constraints (NOT NULL, length, etc.)        │
 └─────────────────┬───────────────────────────────────────┘
@@ -80,12 +82,46 @@ All types follow a consistent layer-prefix pattern with explicit suffixes for se
        └──────────────────┘ └─────────────┘ └──────────────┘
 ```
 
+#### Nested JSON SSOT (Zod ← Drizzle) - HYBRID ARCHITECTURE
+
+For **nested JSON field structures** (like `personality`, `physicalDescription`, `sensory`), Zod is SSOT and Drizzle imports types:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  zod-schemas.generated.ts (SSOT for Nested Types)       │
+│  - personalitySchema → PersonalityType                  │
+│  - physicalDescriptionSchema → PhysicalDescriptionType  │
+│  - voiceStyleSchema → VoiceStyleType                   │
+│  - adversityElementsSchema → AdversityElementsType     │
+│  - cycleAmplificationSchema → CycleAmplificationType   │
+│  - sensorySchema → SensoryType                         │
+└─────────────────┬───────────────────────────────────────┘
+                  │
+                  │ imports types (bidirectional)
+                  ▼
+┌─────────────────────────────────────────────────────────┐
+│  src/lib/db/schema.ts (Drizzle ORM)                    │
+│  - characters.personality .$type<PersonalityType>()     │
+│  - characters.physicalDescription .$type<...>()         │
+│  - characters.voiceStyle .$type<VoiceStyleType>()      │
+│  - settings.adversityElements .$type<...>()            │
+│  - settings.cycleAmplification .$type<...>()           │
+│  - settings.sensory .$type<SensoryType>()              │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Why Hybrid Architecture?**
+- Drizzle's `.$type<T>()` is **TypeScript-only** (compile-time) with no runtime information
+- `drizzle-zod` can only generate `z.unknown()` or `z.any()` for JSON fields
+- Zod provides **runtime validation** and detailed type definitions for nested structures
+- Solution: Define nested schemas in Zod, then reference those types in Drizzle
+
 **Files & Responsibilities**:
 
 | File | Purpose | Source |
 |------|---------|--------|
-| `src/lib/db/schema.ts` | Database schema (SSOT) | Manual (Drizzle) |
-| `zod-schemas.generated.ts` | Validation schemas | Auto-generated (drizzle-zod) |
+| `src/lib/db/schema.ts` | Database schema (SSOT for tables) | Manual (Drizzle) |
+| `zod-schemas.generated.ts` | Validation schemas (SSOT for nested types) | Semi-manual (drizzle-zod + manual nested schemas) |
 | `validation.ts` | Business logic (warnings, stats) | Uses generated schemas |
 | `validation-schemas.ts` | API request validation | Manual (different purpose) |
 
@@ -94,8 +130,9 @@ All types follow a consistent layer-prefix pattern with explicit suffixes for se
 - ✅ **Single Update**: Change schema once, validation updates automatically
 - ✅ **Type Safety**: TypeScript types inferred from single source
 - ✅ **Consistency**: All layers use same schema definitions
+- ✅ **Runtime Validation**: Zod provides validation for nested JSON structures
 
-**Example Usage**:
+**Example Usage (Table-Level)**:
 
 ```typescript
 // ✅ CORRECT: Using auto-generated schema from SSOT
@@ -113,11 +150,61 @@ const manualSchema = z.object({
 });
 ```
 
+**Example Usage (Nested JSON)**:
+
+```typescript
+// ✅ CORRECT: Using exported nested schemas (SSOT)
+import {
+  personalitySchema,
+  PersonalityType
+} from "@/lib/studio/generators/zod-schemas.generated";
+
+// Validate nested JSON data
+const validatedPersonality: PersonalityType = personalitySchema.parse({
+  traits: ["brave", "compassionate"],
+  values: ["justice", "family"]
+});
+
+// In schema.ts - Import and use the type
+import type { PersonalityType } from "@/lib/studio/generators/zod-schemas.generated";
+
+export const characters = pgTable("characters", {
+  // ...
+  personality: json().$type<PersonalityType>().notNull(),
+});
+
+// ❌ INCORRECT: Inline type definition (causes drift)
+personality: json().$type<{
+  traits: string[];
+  values: string[];
+}>().notNull()
+```
+
+**Exported Nested Schemas**:
+
+Characters table:
+- `personalitySchema` + `PersonalityType` (traits, values)
+- `physicalDescriptionSchema` + `PhysicalDescriptionType` (age, appearance, distinctiveFeatures, style)
+- `voiceStyleSchema` + `VoiceStyleType` (tone, vocabulary, quirks, emotionalRange)
+
+Settings table:
+- `adversityElementsSchema` + `AdversityElementsType` (physicalObstacles, scarcityFactors, dangerSources, socialDynamics)
+- `cycleAmplificationSchema` + `CycleAmplificationType` (setup, confrontation, virtue, consequence, transition)
+- `sensorySchema` + `SensoryType` (sight, sound, smell, touch, taste?)
+
 **When to Update**:
-1. Modify `src/lib/db/schema.ts` (SSOT)
+
+**Table Structure Changes:**
+1. Modify `src/lib/db/schema.ts` (SSOT for tables)
 2. Run `pnpm db:generate` (regenerate Drizzle types)
 3. Schemas in `zod-schemas.generated.ts` auto-update
 4. All validation uses updated schema automatically
+
+**Nested JSON Structure Changes:**
+1. Modify nested schema in `zod-schemas.generated.ts` (SSOT for nested types)
+2. Export the schema and its type (if not already exported)
+3. Update imports in `src/lib/db/schema.ts` if needed
+4. Both layers stay synchronized automatically
 
 **Complete Type Hierarchy for Story Generation:**
 

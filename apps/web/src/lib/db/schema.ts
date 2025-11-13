@@ -26,6 +26,16 @@ import { EMOTIONAL_BEATS } from "@/lib/constants/emotional-beats";
 import { STORY_GENRES } from "@/lib/constants/genres";
 import { STORY_TONES } from "@/lib/constants/tones";
 
+// Import Zod-derived types for nested JSON schemas (SSOT for nested structures)
+import type {
+    AdversityElementsType,
+    CycleAmplificationType,
+    PersonalityType,
+    PhysicalDescriptionType,
+    SensoryType,
+    VoiceStyleType,
+} from "@/lib/studio/generators/zod-schemas.generated";
+
 export const adversityType = pgEnum(
     "adversity_type",
     ADVERSITY_TYPES as unknown as [string, ...string[]],
@@ -161,31 +171,14 @@ export const characters = pgTable(
         externalGoal: text("external_goal").notNull(), // What they THINK will solve their problem (healing flaw actually will)
 
         // === CHARACTER DEPTH (For Realistic Portrayal) ===
-        personality: json()
-            .$type<{
-                traits: string[];
-                values: string[];
-            }>()
-            .notNull(),
+        personality: json().$type<PersonalityType>().notNull(),
         backstory: text().notNull(), // Focused history providing motivation context (2-4 paragraphs)
 
         // === PROSE GENERATION ===
         physicalDescription: json("physical_description")
-            .$type<{
-                age: string;
-                appearance: string;
-                distinctiveFeatures: string;
-                style: string;
-            }>()
+            .$type<PhysicalDescriptionType>()
             .notNull(),
-        voiceStyle: json("voice_style")
-            .$type<{
-                tone: string;
-                vocabulary: string;
-                quirks: string[];
-                emotionalRange: string;
-            }>()
-            .notNull(),
+        voiceStyle: json("voice_style").$type<VoiceStyleType>().notNull(),
 
         // === VISUAL GENERATION ===
         imageUrl: text("image_url"), // Original portrait (1024×1024 from DALL-E 3)
@@ -247,12 +240,7 @@ export const settings = pgTable(
         //   socialDynamics: string[];     // Community factors
         // }
         adversityElements: json("adversity_elements")
-            .$type<{
-                physicalObstacles: string[];
-                scarcityFactors: string[];
-                dangerSources: string[];
-                socialDynamics: string[];
-            }>()
+            .$type<AdversityElementsType>()
             .notNull(),
         symbolicMeaning: text("symbolic_meaning").notNull(), // How setting reflects story's moral framework (1-2 sentences)
         // cycleAmplification: {
@@ -263,13 +251,7 @@ export const settings = pgTable(
         //   transition: string;    // How setting hints at new problems
         // }
         cycleAmplification: json("cycle_amplification")
-            .$type<{
-                setup: string;
-                confrontation: string;
-                virtue: string;
-                consequence: string;
-                transition: string;
-            }>()
+            .$type<CycleAmplificationType>()
             .notNull(),
 
         // === EMOTIONAL ATMOSPHERE ===
@@ -284,15 +266,7 @@ export const settings = pgTable(
         //   touch: string[];   // Tactile sensations (2-5 items)
         //   taste: string[];   // Flavor elements (0-2 items, optional)
         // }
-        sensory: json()
-            .$type<{
-                sight: string[];
-                sound: string[];
-                smell: string[];
-                touch: string[];
-                taste?: string[];
-            }>()
-            .notNull(),
+        sensory: json().$type<SensoryType>().notNull(),
         architecturalStyle: text("architectural_style").notNull(), // Structural design language (if applicable)
 
         // === VISUAL GENERATION ===

@@ -106,9 +106,11 @@ export type AiStoryType = z.infer<typeof AiStoryZodSchema>;
 // ============================================================================
 
 /**
- * Nested schema for character personality
+ * SSOT for character personality structure
+ * Used in both Drizzle .$type<>() and Zod validation
+ * Export as named export so it can be imported in schema.ts
  */
-const personalitySchema = z.object({
+export const personalitySchema = z.object({
     traits: z
         .array(z.string())
         .describe(
@@ -122,9 +124,15 @@ const personalitySchema = z.object({
 });
 
 /**
- * Nested schema for character physical description
+ * TypeScript type derived from personalitySchema (SSOT)
  */
-const physicalDescriptionSchema = z.object({
+export type PersonalityType = z.infer<typeof personalitySchema>;
+
+/**
+ * SSOT for character physical description structure
+ * Used in both Drizzle .$type<>() and Zod validation
+ */
+export const physicalDescriptionSchema = z.object({
     age: z
         .string()
         .describe(
@@ -148,9 +156,15 @@ const physicalDescriptionSchema = z.object({
 });
 
 /**
- * Nested schema for character voice style
+ * TypeScript type derived from physicalDescriptionSchema (SSOT)
  */
-const voiceStyleSchema = z.object({
+export type PhysicalDescriptionType = z.infer<typeof physicalDescriptionSchema>;
+
+/**
+ * SSOT for character voice style structure
+ * Used in both Drizzle .$type<>() and Zod validation
+ */
+export const voiceStyleSchema = z.object({
     tone: z
         .string()
         .describe(
@@ -172,6 +186,11 @@ const voiceStyleSchema = z.object({
             "How expressively the character shows emotions through speech - examples: reserved, expressive, volatile, stoic, animated",
         ),
 });
+
+/**
+ * TypeScript type derived from voiceStyleSchema (SSOT)
+ */
+export type VoiceStyleType = z.infer<typeof voiceStyleSchema>;
 
 /**
  * Zod schema for inserting a new character
@@ -274,9 +293,9 @@ export type AiCharacterType = z.infer<typeof AiCharacterZodSchema>;
 // ============================================================================
 
 /**
- * Nested schema for setting adversity elements
+ * Nested schema for setting adversity elements (SSOT)
  */
-const adversityElementsSchema = z.object({
+export const adversityElementsSchema = z.object({
     physicalObstacles: z
         .array(z.string())
         .describe(
@@ -300,9 +319,14 @@ const adversityElementsSchema = z.object({
 });
 
 /**
- * Nested schema for setting cycle amplification
+ * TypeScript type derived from adversityElementsSchema (SSOT)
  */
-const cycleAmplificationSchema = z.object({
+export type AdversityElementsType = z.infer<typeof adversityElementsSchema>;
+
+/**
+ * Nested schema for setting cycle amplification (SSOT)
+ */
+export const cycleAmplificationSchema = z.object({
     setup: z
         .string()
         .describe(
@@ -329,9 +353,14 @@ const cycleAmplificationSchema = z.object({
 });
 
 /**
- * Nested schema for setting sensory details
+ * TypeScript type derived from cycleAmplificationSchema (SSOT)
  */
-const sensorySchema = z.object({
+export type CycleAmplificationType = z.infer<typeof cycleAmplificationSchema>;
+
+/**
+ * Nested schema for setting sensory details (SSOT)
+ */
+export const sensorySchema = z.object({
     sight: z
         .array(z.string())
         .describe(
@@ -359,6 +388,11 @@ const sensorySchema = z.object({
             "Flavor elements (0-2 items, optional): metallic tang, bitter smoke",
         ),
 });
+
+/**
+ * TypeScript type derived from sensorySchema (SSOT)
+ */
+export type SensoryType = z.infer<typeof sensorySchema>;
 
 /**
  * Zod schema for inserting a new setting
