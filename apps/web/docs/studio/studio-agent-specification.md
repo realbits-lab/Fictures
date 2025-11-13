@@ -83,31 +83,21 @@ The Studio Agent is an AI-powered assistant that guides writers through the comp
 **User Action**: Clicks "Create New Story" button on `/studio` page
 
 **System Response**:
-1. Create empty story record in database:
-   ```typescript
-   {
-     id: uuid(), // Generated
-     userId: session.user.id,
-     createdAt: new Date(),
-     updatedAt: new Date(),
-     // All other fields: null/empty
-   }
+1. Redirect to Studio Agent Chat:
+   ```
+   /studio/agent/new
    ```
 
-2. Redirect to Studio Agent Chat:
-   ```
-   /studio/agent/{storyId}
-   ```
-
-3. Initialize agent with context:
+2. Initialize agent with context:
    ```typescript
    {
-     storyId: storyId,
      currentPhase: 'story-summary',
      completedPhases: [],
      mode: 'generation'
    }
    ```
+
+3. Agent will create story record when generation begins
 
 **Agent's First Message**:
 ```
@@ -466,7 +456,6 @@ Every database operation:
 **Tool Categories**:
 
 **Story Operations**
-- `createStory()` - Create empty story row (on "Create New Story")
 - `updateStory(storyId, data)` - Update story metadata
 - `getStory(storyId)` - Retrieve story with all related data
 - `deleteStory(storyId)` - Remove story (with cascade warning)

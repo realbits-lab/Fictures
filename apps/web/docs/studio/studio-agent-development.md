@@ -1597,7 +1597,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Loader2, Sparkles } from 'lucide-react';
 
-export function CreateNewStoryButton({ userId }: { userId: string }) {
+export function CreateNewStoryButton() {
   const [isCreating, setIsCreating] = useState(false);
   const router = useRouter();
 
@@ -1605,19 +1605,9 @@ export function CreateNewStoryButton({ userId }: { userId: string }) {
     setIsCreating(true);
 
     try {
-      // Create empty story row
-      const response = await fetch('/studio/api/stories/create-empty', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
-      });
-
-      if (!response.ok) throw new Error('Failed to create story');
-
-      const { storyId, chatId } = await response.json();
-
-      // Redirect to agent chat
-      router.push(`/studio/agent/${chatId}`);
+      // Navigate directly to agent chat page
+      // The agent will handle story creation when generation begins
+      router.push('/studio/agent/new');
 
     } catch (error) {
       console.error('Create story error:', error);
@@ -1650,52 +1640,19 @@ export function CreateNewStoryButton({ userId }: { userId: string }) {
 }
 ```
 
-### 5.5 Create Empty Story Endpoint
+### 5.5 Story Creation Flow
 
-```typescript
-// app/studio/api/stories/create-empty/route.ts
-import { NextRequest } from 'next/server';
-import { auth } from '@/lib/auth';
-import { db } from '@/lib/db';
-import { stories } from '@/lib/db/schema';
-import { createStudioAgentChat } from '@/lib/db/studio-agent-operations';
+The story creation flow has been simplified to use the existing story generation APIs:
 
-export async function POST(request: NextRequest) {
-  try {
-    const { userId } = await request.json();
+1. User clicks "Create New Story" button
+2. User is navigated to `/studio/agent/new`
+3. Agent chat interface loads
+4. User interacts with agent to define story requirements
+5. Agent creates story record using one of these endpoints:
+   - `/studio/api/novels` - Complete novel generation with Adversity-Triumph Engine (recommended)
+   - `/studio/api/stories` - Story generation and save via story service
 
-    // Authentication
-    const session = await auth();
-    if (!session?.user || session.user.id !== userId) {
-      return new Response('Unauthorized', { status: 401 });
-    }
-
-    // Create empty story (only id and createdAt)
-    const [story] = await db.insert(stories).values({
-      userId,
-      // All other fields null/default
-    }).returning();
-
-    // Create agent chat for this story
-    const chat = await createStudioAgentChat({
-      userId,
-      storyId: story.id,
-      agentType: 'generation',
-      title: 'New Story',
-      context: { mode: 'new-story' },
-    });
-
-    return Response.json({
-      storyId: story.id,
-      chatId: chat.id,
-    });
-
-  } catch (error) {
-    console.error('Create empty story error:', error);
-    return new Response('Internal Server Error', { status: 500 });
-  }
-}
-```
+This approach eliminates the need for a separate create-empty API and integrates story creation directly into the generation workflow using the existing `/studio/api/stories` and `/studio/api/novels` endpoints.
 
 ---
 
@@ -2379,12 +2336,15 @@ src/
 │   │   │   └── [chatId]/
 │   │   │       └── messages/
 │   │   │           └── route.ts            # Chat history endpoint
-│   │   └── stories/
-│   │       └── create-empty/
-│   │           └── route.ts                # Empty story creation
+│   │   ├── stories/
+│   │   │   └── route.ts                    # Story creation via novel generation
+│   │   └── novels/
+│   │       └── route.ts                    # Novel generation endpoint (creates story)
 │   ├── agent/
+│   │   ├── new/
+│   │   │   └── page.tsx                    # New story agent chat page
 │   │   └── [chatId]/
-│   │       └── page.tsx                    # Agent chat page
+│   │       └── page.tsx                    # Existing chat page
 │   ├── page.tsx                            # Studio home (with "Create New Story" button)
 │   └── edit/
 │       └── [storyId]/

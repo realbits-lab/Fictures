@@ -96,11 +96,31 @@ See section 2.7 for how the 4-phase cycle maps to 5 scene types in practice.
 ### 1.5 Critical Success Factors
 
 **Core Principles:**
-1. **Intrinsic Motivation**: Virtuous actions MUST be genuine, not strategic
-2. **Causal Linking**: Every event connects to previous actions (no deus ex machina)
-3. **Seed Tracking**: Small actions pay off later as "earned luck"
-4. **Cyclical Engine**: Every resolution creates next adversity
-5. **Emotional Authenticity**: Show emotions through body/action, not tell
+
+1. **Cyclic Structure** (multi-scale)
+   - Every resolution creates next adversity (4-phase engine)
+   - Nested cycles: micro-cycles within macro arcs at all narrative levels
+   - Maintains perpetual narrative momentum
+
+2. **Intrinsic Motivation**
+   - Virtuous actions MUST be genuine, not transactional or strategic
+   - No expectation of reward shown during virtue phase
+   - Triggers moral elevation in audience
+
+3. **Earned Consequence** (causal linking + temporal separation)
+   - Every event causally linked to previous actions through traceable seeds (no deus ex machina)
+   - Virtue and consequence temporally separated (Pattern A timing)
+   - Creates "earned luck" feeling and karmic payoff
+
+4. **Character Transformation**
+   - Internal flaw (from Character.internalFlaw) drives adversity
+   - Virtuous action confronts and challenges flaw
+   - Earned consequence enables growth and healing
+
+5. **Emotional Resonance**
+   - Create empathy, catharsis, moral elevation, and Gam-dong (감동)
+   - Settings actively amplify emotional beats through element arrays
+   - Show emotions through body/action, not tell
 
 ---
 
