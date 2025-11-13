@@ -1,7 +1,7 @@
 /**
  * Scene Content API Route
  *
- * POST /studio/api/scene-content - Generate scene content using AI
+ * POST /api/studio/scene-content - Generate scene content using AI
  *
  * Authentication: Dual auth (API key OR session) with stories:write scope required
  */
@@ -21,7 +21,7 @@ import { generateSceneContentSchema } from "../validation-schemas";
 export const runtime = "nodejs";
 
 /**
- * POST /studio/api/scene-content
+ * POST /api/studio/scene-content
  *
  * Generate scene content for a scene using AI
  *

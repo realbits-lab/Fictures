@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const requestStart = performance.now();
 
     console.log(
-        `[${reqId}] 🌐 GET /community/api/stories - Request started at ${new Date().toISOString()}`,
+        `[${reqId}] 🌐 GET /api/community/stories - Request started at ${new Date().toISOString()}`,
     );
 
     try {

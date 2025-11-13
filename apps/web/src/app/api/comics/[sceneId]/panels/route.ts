@@ -1,7 +1,7 @@
 /**
  * Comic Panels Retrieval API Endpoint
  *
- * GET /comics/api/{sceneId}/panels
+ * GET /api/comics/{sceneId}/panels
  *
  * Retrieves all comic panels for a specific scene, including layout information.
  */

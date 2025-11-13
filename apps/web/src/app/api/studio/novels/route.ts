@@ -11,7 +11,7 @@
  * 4. Generates and optimizes images for all visual elements
  *
  * Usage:
- *   POST /studio/api/novels/generate
+ *   POST /api/studio/novels/generate
  *   Body: { userPrompt, preferredGenre?, preferredTone?, characterCount?, language? }
  *   Returns: SSE stream with progress updates
  */
@@ -687,7 +687,7 @@ export async function POST(request: NextRequest): Promise<Response> {
                             );
 
                             const storyCoverResponse = await fetch(
-                                `${baseUrl}/studio/api/images`,
+                                `${baseUrl}/api/studio/images`,
                                 {
                                     method: "POST",
                                     headers: {
@@ -768,7 +768,7 @@ export async function POST(request: NextRequest): Promise<Response> {
                                 );
 
                                 const imageResponse = await fetch(
-                                    `${baseUrl}/studio/api/images`,
+                                    `${baseUrl}/api/studio/images`,
                                     {
                                         method: "POST",
                                         headers: {
@@ -853,7 +853,7 @@ export async function POST(request: NextRequest): Promise<Response> {
                                 );
 
                                 const imageResponse = await fetch(
-                                    `${baseUrl}/studio/api/images`,
+                                    `${baseUrl}/api/studio/images`,
                                     {
                                         method: "POST",
                                         headers: {
@@ -935,7 +935,7 @@ export async function POST(request: NextRequest): Promise<Response> {
                                 );
 
                                 const imageResponse = await fetch(
-                                    `${baseUrl}/studio/api/images`,
+                                    `${baseUrl}/api/studio/images`,
                                     {
                                         method: "POST",
                                         headers: {

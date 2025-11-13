@@ -7,7 +7,7 @@ import { sceneLikes, scenes } from "@/lib/db/schema";
 
 export const runtime = "nodejs";
 
-// POST /studio/api/scenes/[id]/like - Toggle like on a scene
+// POST /api/studio/scenes/[id]/like - Toggle like on a scene
 export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> },

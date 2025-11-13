@@ -6,7 +6,7 @@ import {
 } from "@/lib/db/studio-agent-operations";
 
 /**
- * GET /studio/api/agent/[chatId]/messages
+ * GET /api/studio/agent/[chatId]/messages
  * Get all messages for a chat session
  */
 export async function GET(

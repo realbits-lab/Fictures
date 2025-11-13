@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { getDailyMetrics } from "@/lib/services/analytics";
 
 /**
- * GET /analysis/api/daily?storyId={id}&range={7d|30d|90d}
+ * GET /api/analysis/daily?storyId={id}&range={7d|30d|90d}
  *
  * Get daily time-series metrics for a specific story
  * Used for charts on the story detail page

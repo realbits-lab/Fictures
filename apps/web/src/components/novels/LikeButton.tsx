@@ -32,13 +32,13 @@ export function LikeButton({
 
                 switch (entityType) {
                     case "story":
-                        endpoint = `/studio/api/story/${entityId}/like`;
+                        endpoint = `/api/studio/story/${entityId}/like`;
                         break;
                     case "chapter":
-                        endpoint = `/studio/api/chapters/${entityId}/like`;
+                        endpoint = `/api/studio/chapters/${entityId}/like`;
                         break;
                     case "scene":
-                        endpoint = `/studio/api/scenes/${entityId}/like`;
+                        endpoint = `/api/studio/scenes/${entityId}/like`;
                         break;
                     case "comment":
                         endpoint = `/api/comments/${entityId}/like`;

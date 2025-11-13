@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { trackEvent } from "@/lib/services/event-tracker";
 
 /**
- * POST /analysis/api/track
+ * POST /api/analysis/track
  *
  * Track an analytics event
  * Called from client-side event tracking components

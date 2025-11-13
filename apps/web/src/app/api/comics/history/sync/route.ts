@@ -9,7 +9,7 @@ import type { HistoryItem, ReadingFormat } from "@/types/reading-history";
 const FORMAT: ReadingFormat = "comic";
 
 /**
- * POST /comics/api/history/sync
+ * POST /api/comics/history/sync
  * Sync localStorage reading history to server when user logs in
  * Merges local history with existing server history for comic format
  */

@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { chapters, scenes, stories } from "@/lib/db/schema";
 
 /**
- * GET /test/cache-performance/api/stories
+ * GET /api/test/cache-performance/stories
  *
  * Returns list of test stories for cache performance testing
  */

@@ -48,7 +48,7 @@ export function ComicStatusCard({
 
         try {
             const response = await fetch(
-                `/studio/api/scenes/${sceneId}/comic/publish`,
+                `/api/studio/scenes/${sceneId}/comic/publish`,
                 {
                     method: "POST",
                     headers: {
@@ -82,7 +82,7 @@ export function ComicStatusCard({
 
         try {
             const response = await fetch(
-                `/studio/api/scenes/${sceneId}/comic/unpublish`,
+                `/api/studio/scenes/${sceneId}/comic/unpublish`,
                 {
                     method: "POST",
                     headers: {
@@ -118,7 +118,7 @@ export function ComicStatusCard({
 
         try {
             const response = await fetch(
-                `/studio/api/scenes/${sceneId}/comic/generate`,
+                `/api/studio/scenes/${sceneId}/comic/generate`,
                 {
                     method: "POST",
                     headers: {

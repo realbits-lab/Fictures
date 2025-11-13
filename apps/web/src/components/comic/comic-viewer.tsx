@@ -96,7 +96,7 @@ export function ComicViewer({
                 setError(null);
                 setData(null); // Reset data when fetching new scene
 
-                const response = await fetch(`/comics/api/${sceneId}/panels`);
+                const response = await fetch(`/api/comics/${sceneId}/panels`);
 
                 if (!response.ok) {
                     throw new Error(

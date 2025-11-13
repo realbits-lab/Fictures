@@ -1,8 +1,8 @@
 /**
  * Characters API Route
  *
- * POST /studio/api/characters - Generate characters using AI
- * GET /studio/api/characters - Get characters for a story
+ * POST /api/studio/characters - Generate characters using AI
+ * GET /api/studio/characters - Get characters for a story
  *
  * Authentication: Dual auth (API key OR session) with stories:write scope required for POST
  */
@@ -25,7 +25,7 @@ import { generateCharactersSchema } from "../validation-schemas";
 export const runtime = "nodejs";
 
 /**
- * GET /studio/api/characters
+ * GET /api/studio/characters
  *
  * Get all characters for a story
  */
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST /studio/api/characters
+ * POST /api/studio/characters
  *
  * Generate characters for a story using AI
  *

@@ -2,7 +2,7 @@
  * Studio API Request/Response Type Definitions
  *
  * Layer: API (HTTP Contracts)
- * Used by: src/app/studio/api/* routes
+ * Used by: src/app/api/studio/* routes
  * Related:
  * - AI types: src/lib/studio/generators/zod-schemas.generated.ts
  * - Service types: src/lib/studio/generators/types.ts (TBD)
@@ -32,14 +32,14 @@
  * AiStoryZodSchema (Zod - SSOT) → AiStoryType (TypeScript) → ApiStoryResponse (API layer)
  *
  * ## Available Endpoints
- * - POST /studio/api/story - Generate story summary
- * - POST /studio/api/characters - Generate characters
- * - POST /studio/api/settings - Generate story settings
- * - POST /studio/api/parts - Generate story parts
- * - POST /studio/api/chapters - Generate chapters
- * - POST /studio/api/scenes - Generate scene summaries
- * - POST /studio/api/scene-content - Generate scene content
- * - POST /studio/api/scene-evaluation - Evaluate and improve scene quality
+ * - POST /api/studio/story - Generate story summary
+ * - POST /api/studio/characters - Generate characters
+ * - POST /api/studio/settings - Generate story settings
+ * - POST /api/studio/parts - Generate story parts
+ * - POST /api/studio/chapters - Generate chapters
+ * - POST /api/studio/scenes - Generate scene summaries
+ * - POST /api/studio/scene-content - Generate scene content
+ * - POST /api/studio/scene-evaluation - Evaluate and improve scene quality
  */
 
 import type { StoryGenre } from "@/lib/constants/genres";

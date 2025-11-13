@@ -7,7 +7,7 @@ import { readingHistory } from "@/lib/db/schema";
 import type { HistoryItem, ReadingFormat } from "@/types/reading-history";
 
 /**
- * POST /novels/api/history/sync
+ * POST /api/novels/history/sync
  * Sync localStorage reading history to server when user logs in
  * Merges local history with existing server history for novel format
  */

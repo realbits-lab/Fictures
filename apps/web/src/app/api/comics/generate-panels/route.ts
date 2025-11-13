@@ -1,7 +1,7 @@
 /**
  * Comic Panel Generation API Endpoint
  *
- * POST /comics/api/generate-panels
+ * POST /api/comics/generate-panels
  *
  * Generates comic panels for a scene using AI-powered toonplay conversion
  * and image generation. Streams progress updates via Server-Sent Events (SSE).

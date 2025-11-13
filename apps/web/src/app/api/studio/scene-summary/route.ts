@@ -17,7 +17,7 @@ const generateSceneSummarySchema = z.object({
 });
 
 /**
- * POST /studio/api/scene-summary - Generate ONE next scene summary (Extreme Incremental)
+ * POST /api/studio/scene-summary - Generate ONE next scene summary (Extreme Incremental)
  *
  * Generates the next scene summary in sequence with full context of all previous scenes.
  * This is the extreme incremental approach where scene summaries are generated one at a time.

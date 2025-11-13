@@ -30,7 +30,7 @@ export function useStudioAgentChat({
     const transport = useMemo(
         () =>
             new DefaultChatTransport({
-                api: "/studio/api/agent",
+                api: "/api/studio/agent",
                 body: {
                     ...(currentChatId ? { chatId: currentChatId } : {}), // Only include chatId if it exists
                     storyContext,
@@ -101,7 +101,7 @@ export function useStudioAgentChat({
             setLoadingHistory(true);
             try {
                 const response = await fetch(
-                    `/studio/api/agent/${currentChatId}/messages`,
+                    `/api/studio/agent/${currentChatId}/messages`,
                 );
                 if (response.ok) {
                     const { messages } = await response.json();

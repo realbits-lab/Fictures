@@ -13,7 +13,7 @@ const CACHE_CONFIG = {
 };
 
 /**
- * GET /test/cache-performance/api/stories/[id]
+ * GET /api/test/cache-performance/stories/[id]
  *
  * Returns single story with full caching implementation:
  * - Layer 3: Redis cache (server-side)
@@ -155,7 +155,7 @@ export async function GET(
 }
 
 /**
- * PATCH /test/cache-performance/api/stories/[id]
+ * PATCH /api/test/cache-performance/stories/[id]
  *
  * Updates story and invalidates cache
  * Tests cache invalidation behavior

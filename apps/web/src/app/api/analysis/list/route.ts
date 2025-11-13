@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { getStoriesAnalytics } from "@/lib/services/analytics";
 
 /**
- * GET /analysis/api/list
+ * GET /api/analysis/list
  *
  * Get analytics for all stories owned by the current user
  * Used for the analytics landing page story cards

@@ -17,7 +17,7 @@ const generateChapterSchema = z.object({
 });
 
 /**
- * POST /studio/api/chapter - Generate ONE next chapter (Extreme Incremental)
+ * POST /api/studio/chapter - Generate ONE next chapter (Extreme Incremental)
  *
  * Generates the next chapter in sequence with full context of all previous chapters.
  * This is the extreme incremental approach where chapters are generated one at a time.

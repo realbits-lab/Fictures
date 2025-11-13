@@ -4,7 +4,7 @@
  * Layer: Service (Business Logic)
  * Used by: src/lib/studio/generators/* services
  * Related:
- * - API types: src/app/studio/api/types.ts
+ * - API types: src/app/api/studio/types.ts
  * - Domain types: src/lib/ai/types/image.ts
  * - Entity types: ./zod-schemas.generated.ts
  * - Global types: src/types/index.ts

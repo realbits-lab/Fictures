@@ -556,7 +556,7 @@ export function UnifiedWritingEditor({
                 };
 
                 const response = await fetch(
-                    `/studio/api/scenes/${currentSelection.sceneId}`,
+                    `/api/studio/scenes/${currentSelection.sceneId}`,
                     {
                         method: "PATCH",
                         headers: {
@@ -587,7 +587,7 @@ export function UnifiedWritingEditor({
                 // Save chapter HNS data
                 console.log("💾 Saving chapter HNS data...");
                 const response = await fetch(
-                    `/studio/api/chapters/${currentSelection.chapterId}/write`,
+                    `/api/studio/chapters/${currentSelection.chapterId}/write`,
                     {
                         method: "PATCH",
                         headers: {
@@ -621,7 +621,7 @@ export function UnifiedWritingEditor({
                 console.log("🎯 Story ID:", story.id);
 
                 const response = await fetch(
-                    `/studio/api/story/${story.id}/write`,
+                    `/api/studio/story/${story.id}/write`,
                     {
                         method: "PATCH",
                         headers: {
@@ -658,7 +658,7 @@ export function UnifiedWritingEditor({
                 // Save part HNS data
                 console.log("💾 Saving part HNS data...");
                 const response = await fetch(
-                    `/studio/api/parts/${currentSelection.partId}/write`,
+                    `/api/studio/parts/${currentSelection.partId}/write`,
                     {
                         method: "PATCH",
                         headers: {
@@ -782,7 +782,7 @@ export function UnifiedWritingEditor({
         setIsLoading(true);
         try {
             const response = await fetch(
-                `/studio/api/chapters/${currentSelection.chapterId}/${endpoint}`,
+                `/api/studio/chapters/${currentSelection.chapterId}/${endpoint}`,
                 {
                     method: "POST",
                 },
@@ -833,7 +833,7 @@ export function UnifiedWritingEditor({
         setIsLoading(true);
         try {
             const response = await fetch(
-                `/studio/api/story/${story.id}/visibility`,
+                `/api/studio/story/${story.id}/visibility`,
                 {
                     method: "PUT",
                     headers: {
@@ -907,7 +907,7 @@ export function UnifiedWritingEditor({
             }
 
             // Update scene status via API using JSON
-            const response = await fetch(`/studio/api/scenes/${sceneId}`, {
+            const response = await fetch(`/api/studio/scenes/${sceneId}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",

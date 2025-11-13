@@ -1,8 +1,8 @@
 /**
  * Settings API Route
  *
- * POST /studio/api/settings - Generate settings using AI
- * GET /studio/api/settings - Get settings for a story
+ * POST /api/studio/settings - Generate settings using AI
+ * GET /api/studio/settings - Get settings for a story
  *
  * Authentication: Dual auth (API key OR session) with stories:write scope required for POST
  */
@@ -25,7 +25,7 @@ import { generateSettingsSchema } from "../validation-schemas";
 export const runtime = "nodejs";
 
 /**
- * GET /studio/api/settings
+ * GET /api/studio/settings
  *
  * Get all settings for a story
  */
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST /studio/api/settings
+ * POST /api/studio/settings
  *
  * Generate settings for a story using AI
  *

@@ -35,7 +35,7 @@ export function ScenePerformanceTable({
     const [limit] = useState(20);
 
     const { data, error, isLoading } = useSWR(
-        `/studio/api/story/${storyId}/scene-stats?sortBy=${sortBy}&order=${order}&limit=${limit}`,
+        `/api/studio/story/${storyId}/scene-stats?sortBy=${sortBy}&order=${order}&limit=${limit}`,
         fetcher,
         {
             revalidateOnFocus: false,

@@ -53,7 +53,7 @@ export default function CachePerformancePage() {
         error,
         isLoading,
         mutate,
-    } = useSWR<StoryData[]>("/test/cache-performance/api/stories", fetcher, {
+    } = useSWR<StoryData[]>("/api/test/cache-performance/stories", fetcher, {
         dedupingInterval: CACHE_CONFIG.SWR_DEDUPING_INTERVAL,
         keepPreviousData: true,
         onSuccess: (data) => {
@@ -134,7 +134,7 @@ export default function CachePerformancePage() {
 
             const coldLoad = await measurePerformance("Cold Load", async () => {
                 const response = await fetch(
-                    `/test/cache-performance/api/stories/${testStoryId}`,
+                    `/api/test/cache-performance/stories/${testStoryId}`,
                 );
                 return {
                     data: await response.json(),
@@ -149,7 +149,7 @@ export default function CachePerformancePage() {
 
             const warmLoad = await measurePerformance("Warm Load", async () => {
                 const response = await fetch(
-                    `/test/cache-performance/api/stories/${testStoryId}`,
+                    `/api/test/cache-performance/stories/${testStoryId}`,
                 );
                 return {
                     data: await response.json(),
@@ -165,7 +165,7 @@ export default function CachePerformancePage() {
             await new Promise((resolve) => setTimeout(resolve, 1000));
 
             // Update the story
-            await fetch(`/test/cache-performance/api/stories/${testStoryId}`, {
+            await fetch(`/api/test/cache-performance/stories/${testStoryId}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -179,7 +179,7 @@ export default function CachePerformancePage() {
                 "After Update",
                 async () => {
                     const response = await fetch(
-                        `/test/cache-performance/api/stories/${testStoryId}`,
+                        `/api/test/cache-performance/stories/${testStoryId}`,
                     );
                     return {
                         data: await response.json(),

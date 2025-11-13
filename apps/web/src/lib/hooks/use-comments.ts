@@ -68,7 +68,7 @@ export function useComments({
     const getCacheKey = useCallback(() => {
         if (!storyId) return null;
 
-        const key = `/studio/api/story/${storyId}/comments`;
+        const key = `/api/studio/story/${storyId}/comments`;
         const params: string[] = [];
 
         if (sceneId) {

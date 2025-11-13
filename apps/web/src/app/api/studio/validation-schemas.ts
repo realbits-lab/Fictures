@@ -2,8 +2,8 @@
  * Studio API Validation Schemas
  *
  * Layer: API Validation
- * Used by: src/app/studio/api/* routes
- * Related: src/app/studio/api/types.ts (TypeScript interfaces)
+ * Used by: src/app/api/studio/* routes
+ * Related: src/app/api/studio/types.ts (TypeScript interfaces)
  *
  * ## Purpose
  * Centralizes all Zod validation schemas for Studio API endpoints.

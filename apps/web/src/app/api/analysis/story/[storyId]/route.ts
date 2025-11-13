@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { getStoryAnalytics } from "@/lib/services/analytics";
 
 /**
- * GET /analysis/api/story/{storyId}?range={7d|30d|90d}
+ * GET /api/analysis/story/{storyId}?range={7d|30d|90d}
  *
  * Get comprehensive analytics for a single story
  * Used for the story detail analytics dashboard

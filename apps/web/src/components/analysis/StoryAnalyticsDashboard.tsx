@@ -37,7 +37,7 @@ export function StoryAnalyticsDashboard({
         error: analyticsError,
     } = useSWR(
         session?.user?.id
-            ? `/analysis/api/story/${storyId}?range=${timeRange}`
+            ? `/api/analysis/story/${storyId}?range=${timeRange}`
             : null,
         fetcher,
         {
@@ -48,7 +48,7 @@ export function StoryAnalyticsDashboard({
 
     const { data: dailyData, isLoading: dailyLoading } = useSWR(
         session?.user?.id
-            ? `/analysis/api/daily?storyId=${storyId}&range=${timeRange}`
+            ? `/api/analysis/daily?storyId=${storyId}&range=${timeRange}`
             : null,
         fetcher,
         {

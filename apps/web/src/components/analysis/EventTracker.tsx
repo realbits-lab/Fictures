@@ -52,7 +52,7 @@ export function EventTracker({
             : "desktop";
 
         // Track event
-        fetch("/analysis/api/track", {
+        fetch("/api/analysis/track", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

@@ -1,7 +1,7 @@
 /**
  * Scene Evaluation API Route
  *
- * POST /studio/api/scene-evaluation - Evaluate and improve scene quality using AI
+ * POST /api/studio/scene-evaluation - Evaluate and improve scene quality using AI
  *
  * Authentication: Dual auth (API key OR session) with stories:write scope required
  */
@@ -22,7 +22,7 @@ import { evaluateSceneSchema } from "../validation-schemas";
 export const runtime = "nodejs";
 
 /**
- * POST /studio/api/scene-evaluation
+ * POST /api/studio/scene-evaluation
  *
  * Evaluate and improve scene quality using AI
  *

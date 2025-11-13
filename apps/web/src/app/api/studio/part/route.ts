@@ -16,7 +16,7 @@ const generatePartSchema = z.object({
 });
 
 /**
- * POST /studio/api/part - Generate ONE next part (Extreme Incremental)
+ * POST /api/studio/part - Generate ONE next part (Extreme Incremental)
  *
  * Generates the next part in sequence with full context of all previous parts.
  * This is the extreme incremental approach where parts are generated one at a time.

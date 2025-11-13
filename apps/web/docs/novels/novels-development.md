@@ -46,14 +46,14 @@ All types follow a consistent layer-prefix pattern with explicit suffixes for se
 ┌────────────────────────────────────────────────────────────────────┐
 │ API Layer (HTTP Contracts)                                         │
 ├────────────────────────────────────────────────────────────────────┤
-│ POST /studio/api/story                                           │
+│ POST /api/studio/story                                             │
 │   Request:  ApiStoryRequest                                        │
 │   Response: ApiStoryResponse | ApiStoryErrorResponse               │
 │                                                                    │
 ├────────────────────────────────────────────────────────────────────┤
-│ Service Layer (Orchestration)                                      │
+│ Service Layer (Generation + Persistence)                           │
 ├────────────────────────────────────────────────────────────────────┤
-│ storyService.generate(params: ServiceStoryParams)                  │
+│ storyService.generateAndSave(params: ServiceStoryParams)           │
 │   → returns ServiceStoryResult                                     │
 │                                                                    │
 ├────────────────────────────────────────────────────────────────────┤
@@ -128,30 +128,35 @@ const response: ApiStoryResponse = {
 };
 
 // ─────────────────────────────────────────────────────
-// Service Layer (Orchestration)
+// Service Layer (Generation + Persistence)
 // ─────────────────────────────────────────────────────
-async function generate(params: ServiceStoryParams): Promise<ServiceStoryResult> {
-  // Map Service params to Generator params
+async function generateAndSave(params: ServiceStoryParams): Promise<ServiceStoryResult> {
+  // 1. Map Service params to Generator params
   const generatorParams: GeneratorStoryParams = {
     userPrompt: params.userPrompt,
     language: params.language,
   };
 
+  // 2. Generate using pure generator (no DB operations)
   const result: GeneratorStoryResult = await generateStory(generatorParams);
 
-  // ─────────────────────────────────────────────────────
-  // Database Layer (Persistence)
-  // ─────────────────────────────────────────────────────
-  const story: Story = await db.insert(stories).values({
-    ...result.story,  // AiStoryType
-    id: generateId(),
+  // 3. Prepare & validate data for database
+  const storyData = insertStorySchema.parse({
+    id: nanoid(),
     authorId: params.userId,
-    createdAt: new Date(),
-    updatedAt: new Date()
+    ...result.story,  // AiStoryType
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   });
 
+  // 4. Save to database
+  const savedStory: Story = await db.insert(stories)
+    .values(storyData)
+    .returning()[0];
+
+  // 5. Return result
   return {
-    story: story,
+    story: savedStory,
     metadata: result.metadata,
   };
 }
@@ -203,6 +208,34 @@ async function generateStory(
 
 ## Part II: API Architecture
 
+### 2.0 API Naming Convention
+
+**Unified API Namespace**: All API routes follow a centralized `/api/` root structure following RESTful conventions.
+
+**Pattern**: `/api/{feature}/{resource}/{action?}`
+
+**Novel Generation APIs**: All novel generation endpoints are under `/api/studio/` namespace:
+- `/api/studio/story` - Story generation
+- `/api/studio/characters` - Character generation
+- `/api/studio/settings` - Settings generation
+- `/api/studio/part` - Part generation
+- `/api/studio/chapter` - Chapter generation
+- `/api/studio/scene-summary` - Scene summary generation
+- `/api/studio/scene-content` - Scene content generation
+- `/api/studio/scene-evaluation` - Scene evaluation
+- `/api/studio/images` - Image generation
+
+**Benefits**:
+- ✅ RESTful compliance with industry standards
+- ✅ Single `/api/` root for all endpoints
+- ✅ Predictable structure for developers
+- ✅ Better tooling support (Swagger, Postman)
+- ✅ Easier middleware and authentication management
+
+**File Structure**: `src/app/api/studio/{endpoint}/route.ts`
+
+---
+
 ### 2.1 Generation Flow Diagram
 
 ```
@@ -213,55 +246,55 @@ async function generateStory(
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 1: Story Generation                                         │
-│  POST /studio/api/story                                        │
+│  POST /api/studio/story                                          │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 2: Character Generation (Full Profiles)                    │
-│  POST /studio/api/characters                                     │
+│  POST /api/studio/characters                                     │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 3: Settings Generation (Primary Locations)                 │
-│  POST /studio/api/settings                                       │
+│  POST /api/studio/settings                                       │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 4: Part Generation (Act Structure)                         │
-│  POST /studio/api/part                                           │
+│  POST /api/studio/part                                           │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 5: Chapter Generation (Per Part)                           │
-│  POST /studio/api/chapter                                        │
+│  POST /api/studio/chapter                                        │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 6: Scene Summary Generation (Per Chapter)                  │
-│  POST /studio/api/scene-summary                                  │
+│  POST /api/studio/scene-summary                                  │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 7: Scene Content Generation (Per Scene)                    │
-│  POST /studio/api/scene-content                                  │
+│  POST /api/studio/scene-content                                  │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 8: Scene Evaluation & Improvement                          │
-│  POST /studio/api/scene-evaluation                               │
+│  POST /api/studio/scene-evaluation                               │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  API 9: Image Generation (All Story Assets)                     │
-│  POST /studio/api/images                                         │
+│  POST /api/studio/images                                         │
 └─────────────────────────────────────────────────────────────────┘
 
 ```
@@ -280,26 +313,36 @@ The novel generation system uses a modular, layered architecture with **9 distin
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  API Layer (HTTP Contract)                                   │
-│  Location: src/app/studio/api/                               │
+│  Location: src/app/api/studio/                               │
 │  Types: Api*Request, Api*Response, Api*ErrorResponse         │
 │  Purpose: HTTP endpoints, request validation, response        │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Service Layer (Orchestration)                               │
+│  Service Layer (Generation + Persistence)                    │
 │  Location: src/lib/studio/services/*-service.ts              │
-│  Functions: generate(), persist()                            │
-│  Purpose: Coordinates generators, handles persistence         │
+│  Method: generateAndSave()                                   │
+│  Types: Service*Params, Service*Result                       │
+│  Purpose: Orchestrate generation + database persistence      │
+│  Pattern:                                                    │
+│    1. Fetch & verify related data (story, ownership, etc.)  │
+│    2. Call pure generator function (no DB operations)        │
+│    3. Validate & save to database using Drizzle ORM          │
+│    4. Return result with metadata                            │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Generator Layer (Business Logic)                            │
+│  Generator Layer (Pure Business Logic)                       │
 │  Location: src/lib/studio/generators/*-generator.ts          │
 │  Functions: generateStory(), generateCharacters(), etc.      │
 │  Types: Generator*Params, Generator*Result                   │
-│  Purpose: Pure AI generation logic (no database ops)         │
+│  Purpose: Pure AI generation logic (NO database operations)  │
+│  Characteristics:                                            │
+│    - Stateless, side-effect free                             │
+│    - Returns plain data structures                           │
+│    - Can be tested independently of database                 │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
@@ -311,6 +354,63 @@ The novel generation system uses a modular, layered architecture with **9 distin
 │  Purpose: Provider abstraction, structured output            │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+**Service Layer Examples**:
+
+All services follow the same `generateAndSave()` pattern:
+
+```typescript
+// Story Service
+class StoryService {
+  async generateAndSave(params: ServiceStoryParams): Promise<ServiceStoryResult> {
+    // 1. Generate using pure generator
+    const generationResult = await generateStory(params);
+
+    // 2. Prepare & validate data for database
+    const storyData = insertStorySchema.parse({
+      id: nanoid(),
+      ...generationResult.story
+    });
+
+    // 3. Save to database
+    const savedStory = await db.insert(stories).values(storyData).returning();
+
+    // 4. Return result
+    return { story: savedStory[0], metadata: generationResult.metadata };
+  }
+}
+
+// Character Service
+class CharacterService {
+  async generateAndSave(params: ServiceCharactersParams): Promise<ServiceCharactersResult> {
+    // 1. Fetch & verify story + ownership
+    const story = await db.select().from(stories).where(eq(stories.id, storyId));
+    if (story.authorId !== userId) throw new Error("Access denied");
+
+    // 2. Generate using pure generator
+    const generationResult = await generateCharacters({ story, ...params });
+
+    // 3. Save to database
+    const savedCharacters = [];
+    for (const char of generationResult.characters) {
+      const characterData = insertCharacterSchema.parse({ id: nanoid(), ...char });
+      const saved = await db.insert(characters).values(characterData).returning();
+      savedCharacters.push(saved[0]);
+    }
+
+    // 4. Return result
+    return { characters: savedCharacters, metadata: generationResult.metadata };
+  }
+}
+```
+
+**Why No Separate `persist()` Function?**
+
+Services are designed for **atomic operations** - generation and persistence happen together to:
+- Ensure data consistency (no partial saves)
+- Simplify error handling (rollback generation if save fails)
+- Maintain single responsibility (one method = one complete operation)
+- Enable better transaction management
 
 #### **9-Phase Generation Pipeline**
 
@@ -377,7 +477,7 @@ const result = await generateStory({
 
 **3-Layer Type Structure**:
 
-1. **API Layer Types** (`src/app/studio/api/types.ts`)
+1. **API Layer Types** (`src/app/api/studio/types.ts`)
    - `Api{Entity}Request` - HTTP request body
    - `Api{Entity}Response` - HTTP success response
    - `Api{Entity}ErrorResponse` - HTTP error response
@@ -504,11 +604,11 @@ console.log(result.metadata.generationTime);  // 2341 (ms)
 
 #### API Route Integration
 
-Story generation is typically called from `/studio/api/novels` (orchestrated) or can be accessed individually through custom endpoints.
+Story generation is typically called from `/api/studio/novels` (orchestrated) or can be accessed individually through custom endpoints.
 
 **Orchestrated Call** (as part of complete novel generation):
 ```typescript
-// Inside /studio/api/novels/route.ts
+// Inside /api/studio/novels/route.ts
 const storyResult = await generateStory({
   userPrompt: body.userPrompt,
   preferredGenre: body.preferredGenre,
@@ -539,7 +639,7 @@ const story = await db.insert(stories).values({
 
 #### Endpoint
 ```typescript
-POST /studio/api/characters
+POST /api/studio/characters
 
 Request:
 {
@@ -603,7 +703,7 @@ Response:
 
 #### Endpoint
 ```typescript
-POST /studio/api/settings
+POST /api/studio/settings
 
 Request:
 {
@@ -678,7 +778,7 @@ Response:
 
 #### Endpoint
 ```typescript
-POST /studio/api/part
+POST /api/studio/part
 
 Request:
 {
@@ -717,7 +817,7 @@ Response:
 
 #### Endpoint
 ```typescript
-POST /studio/api/chapter
+POST /api/studio/chapter
 
 Request:
 {
@@ -759,7 +859,7 @@ Response:
 
 #### Endpoint
 ```typescript
-POST /studio/api/scene-summary
+POST /api/studio/scene-summary
 
 Request:
 {
@@ -797,7 +897,7 @@ Response:
 
 #### Endpoint
 ```typescript
-POST /studio/api/scene-content
+POST /api/studio/scene-content
 
 Request:
 {
@@ -832,7 +932,7 @@ Response:
 
 #### Endpoint
 ```typescript
-POST /studio/api/scene-evaluation
+POST /api/studio/scene-evaluation
 
 Request:
 {
@@ -898,7 +998,7 @@ Response:
 
 #### Endpoint
 ```typescript
-POST /studio/api/images
+POST /api/studio/images
 
 Request:
 {

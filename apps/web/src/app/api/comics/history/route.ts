@@ -7,7 +7,7 @@ import { readingHistory } from "@/lib/db/schema";
 
 const FORMAT = "comic" as const;
 
-// GET /comics/api/history - Fetch user's comic reading history
+// GET /api/comics/history - Fetch user's comic reading history
 export async function GET(request: NextRequest) {
     try {
         const session = await auth();
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     }
 }
 
-// POST /comics/api/history - Record a comic story view
+// POST /api/comics/history - Record a comic story view
 export async function POST(request: NextRequest) {
     try {
         const session = await auth();

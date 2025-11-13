@@ -4,15 +4,15 @@
  * Provides real-time cache health monitoring and alerts.
  * Used by monitoring dashboards and alert systems.
  *
- * GET /studio/api/cache/monitoring - Get current health status
- * POST /studio/api/cache/monitoring/acknowledge - Acknowledge alert
+ * GET /api/studio/cache/monitoring - Get current health status
+ * POST /api/studio/cache/monitoring/acknowledge - Acknowledge alert
  */
 
 import { type NextRequest, NextResponse } from "next/server";
 import { cacheMonitor } from "@/lib/monitoring/cache-alerts";
 
 /**
- * GET /studio/api/cache/monitoring
+ * GET /api/studio/cache/monitoring
  *
  * Returns current cache health status and active alerts.
  */
@@ -61,7 +61,7 @@ export async function GET() {
 }
 
 /**
- * POST /studio/api/cache/monitoring/acknowledge
+ * POST /api/studio/cache/monitoring/acknowledge
  *
  * Acknowledges a specific alert.
  */

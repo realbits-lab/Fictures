@@ -4,8 +4,8 @@
  * Provides comprehensive cache performance metrics and analytics.
  * Used by the advanced metrics dashboard for real-time monitoring.
  *
- * GET /studio/api/cache/metrics
- * GET /studio/api/cache/metrics?timeRange=1h&groupBy=cacheType
+ * GET /api/studio/cache/metrics
+ * GET /api/studio/cache/metrics?timeRange=1h&groupBy=cacheType
  */
 
 import { type NextRequest, NextResponse } from "next/server";
@@ -43,7 +43,7 @@ function parseTimeRange(range: TimeRange): number {
 }
 
 /**
- * GET /studio/api/cache/metrics
+ * GET /api/studio/cache/metrics
  *
  * Returns comprehensive cache metrics with optional filtering and grouping.
  */
@@ -247,7 +247,7 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * DELETE /studio/api/cache/metrics
+ * DELETE /api/studio/cache/metrics
  *
  * Clears all cache metrics (admin only).
  */
