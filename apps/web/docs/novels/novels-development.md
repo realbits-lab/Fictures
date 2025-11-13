@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document provides comprehensive implementation specifications for the novels generation APIs using the Adversity-Triumph Engine, including ultra-engineered system prompts, complete examples, and iterative improvement workflows.
+This document provides comprehensive implementation specifications for the novels generation APIs using the Adversity-Triumph Engine, including complete examples and iterative improvement workflows.
 
 **Related Documents:**
 - 📖 **Specification** (`novels-specification.md`): Core concepts, data model, and theoretical foundation
@@ -269,112 +269,267 @@ async function generateStory(
 ---
 
 
-## Part III: API Specifications with Ultra-Detailed System Prompts
+## Part III: Generator System Architecture & API Specifications
+
+### Overview: Novel Generation Architecture
+
+The novel generation system uses a modular, layered architecture with **9 distinct generators** coordinated by a central orchestrator. Each generator is a pure function that focuses on a single phase of story creation.
+
+#### **Architectural Layers**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  API Layer (HTTP Contract)                                   │
+│  Location: src/app/studio/api/                               │
+│  Types: Api*Request, Api*Response, Api*ErrorResponse         │
+│  Purpose: HTTP endpoints, request validation, response        │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Service Layer (Orchestration)                               │
+│  Location: src/lib/studio/orchestrator.ts                    │
+│  Function: generateCompleteNovel()                           │
+│  Purpose: Coordinates all 9 phases, streams progress          │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Generator Layer (Business Logic)                            │
+│  Location: src/lib/studio/generators/*-generator.ts          │
+│  Functions: generateStory(), generateCharacters(), etc.      │
+│  Types: Generator*Params, Generator*Result                   │
+│  Purpose: Pure AI generation logic (no database ops)         │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  AI Layer (Model Integration)                                │
+│  Location: src/lib/studio/generators/ai-client.ts            │
+│  Client: TextGenerationClient (supports Gemini & AI Server)  │
+│  Prompts: Managed by prompt-manager.ts (centralized)         │
+│  Purpose: Provider abstraction, structured output            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### **9-Phase Generation Pipeline**
+
+| Phase | Generator | Input | Output | Database Table |
+|-------|-----------|-------|--------|----------------|
+| 1 | `story-generator.ts` | User prompt + preferences | Story foundation | `stories` |
+| 2 | `characters-generator.ts` | Story + character count | Character profiles | `characters` |
+| 3 | `settings-generator.ts` | Story + setting count | Location details | `settings` |
+| 4 | `part-generator.ts` | Story + previous parts | Part/Act structure | `parts` |
+| 5 | `chapter-generator.ts` | Story + part + previous chapters | Chapter outline | `chapters` |
+| 6 | `scene-summary-generator.ts` | Story + chapter + previous scenes | Scene specification | `scenes` (summary) |
+| 7 | `scene-content-generator.ts` | Scene summary + context | Full prose content | `scenes` (content) |
+| 8 | `scene-evaluation-generator.ts` | Scene content | Quality score + improvements | `scenes` (updated) |
+| 9 | `images-generator.ts` | All entities | Generated images | `*` (imageUrl fields) |
+
+#### **AI Provider Support**
+
+The system supports multiple AI providers through a unified interface:
+
+**Supported Providers**:
+1. **Google Generative AI (Gemini)**
+   - Models: Gemini 2.5 Flash, Gemini 2.5 Flash Lite
+   - Method: `generateStructured()` with Zod schemas
+   - Use case: Primary text generation (fast, reliable)
+
+2. **AI Server (Custom)**
+   - Models: Qwen-3 or other self-hosted LLMs
+   - Method: `generate()` with JSON Schema
+   - Use case: Fallback or custom model deployment
+
+**Provider Selection**:
+- Environment variable: `TEXT_GENERATION_PROVIDER` (default: "gemini")
+- Per-request: Pass `apiKey` parameter to use specific provider
+
+#### **Authentication**
+
+**Dual Authentication** (API key OR session):
+
+**Method 1: API Key** (for scripts, automation, cross-system calls)
+```typescript
+const apiKey = 'fic_...'; // From .auth/user.json
+
+const result = await generateStory({
+  userPrompt: '...',
+  apiKey: apiKey  // Passed to generator
+});
+```
+
+**Method 2: Session** (for web app users)
+```typescript
+// NextAuth session automatically available in API routes
+const session = await auth();
+const userId = session?.user?.id;
+
+// No apiKey needed - uses session credentials
+const result = await generateStory({
+  userPrompt: '...'
+});
+```
+
+**Required Scope**: `stories:write` for all novel generation operations
+
+#### **Type System**
+
+**3-Layer Type Structure**:
+
+1. **API Layer Types** (`src/app/studio/api/types.ts`)
+   - `Api{Entity}Request` - HTTP request body
+   - `Api{Entity}Response` - HTTP success response
+   - `Api{Entity}ErrorResponse` - HTTP error response
+
+2. **Generator Layer Types** (`src/lib/studio/generators/types.ts`)
+   - `Generator{Entity}Params` - Generator function parameters
+   - `Generator{Entity}Result` - Generator function return value
+   - `{Entity}PromptParams` - Prompt template variables
+
+3. **AI Layer Types** (`src/lib/studio/generators/zod-schemas.generated.ts`)
+   - `Ai{Entity}ZodSchema` - Zod schema (SSOT)
+   - `Ai{Entity}Type` - TypeScript type derived from Zod
+   - `Ai{Entity}JsonSchema` - JSON Schema for AI models
+
+**Example Type Flow** (Story Generation):
+```
+ApiStoryRequest (API Layer)
+    ↓
+GeneratorStoryParams (Generator Layer)
+    ↓
+AiStoryZodSchema (AI Layer - validation)
+    ↓
+AiStoryType (AI Layer - result type)
+    ↓
+GeneratorStoryResult (Generator Layer)
+    ↓
+ApiStoryResponse (API Layer)
+```
+
+---
 
 ### 3.1 Story Generation API
 
-#### Endpoint
+**Phase 1 of 9** - Creates the story foundation that establishes theme, moral framework, and genre/tone guidance.
+
+#### Generator Function
+
+**Location**: `src/lib/studio/generators/story-generator.ts`
+
 ```typescript
-POST /studio/api/stories
+export async function generateStory(
+  params: GeneratorStoryParams
+): Promise<GeneratorStoryResult>
+```
 
-Request:
-{
-  userPrompt: string;
-  userId: string;
-  options?: {
-    preferredGenre?: string;
-    preferredTone?: 'dark' | 'hopeful' | 'bittersweet' | 'satirical';
-    characterCount?: number; // Default: 2-4
-  };
-}
+#### Parameters (`GeneratorStoryParams`)
 
-Response:
+```typescript
 {
-  title: string;
-  summary: string | null;
-  genre: string | null;
-  tone: "hopeful" | "dark" | "bittersweet" | "satirical";
-  moralFramework: string | null;
-  // Note: Characters are NOT generated in this phase.
-  // They are created separately via POST /studio/api/characters
+  userPrompt: string;                    // Required: User's story concept
+  preferredGenre?: StoryGenre;          // Optional: Genre preference (default: "Slice")
+  preferredTone?: StoryTone;            // Optional: Tone preference (default: "hopeful")
+  language?: string;                    // Optional: Output language (default: "English")
+  apiKey?: string;                      // Optional: API key for authentication
 }
 ```
 
-#### System Prompt (v1.0)
+**Genre Options**: Fantasy, Romance, SciFi, Mystery, Horror, Action, Isekai, LitRPG, Cultivation, Slice, Paranormal, Dystopian, Historical, LGBTQ
 
-```markdown
-# ROLE AND CONTEXT
-You are an expert story architect with deep knowledge of narrative psychology, moral philosophy, and the principles of emotional resonance in fiction. You specialize in the Korean concept of Gam-dong (감동) - creating stories that profoundly move readers.
+**Tone Options**: hopeful, dark, bittersweet, satirical
 
-Your task is to transform a user's raw story idea into a story foundation that will support a Cyclic Adversity-Triumph narrative engine.
+#### Return Value (`GeneratorStoryResult`)
 
-# CRITICAL CONSTRAINTS
-- Story summary must be GENERAL, not specific plot
-- Do NOT create detailed adversity-triumph cycles (that happens in Part generation)
-- Focus on establishing the WORLD and its MORAL RULES
-- Identify what makes virtue MEANINGFUL in this specific world
-
-# USER INPUT
-{userPrompt}
-
-# ANALYSIS FRAMEWORK
-
-## Step 1: Extract Core Elements
-From the user prompt, identify:
-1. **Setting/Context**: Where/when does this take place?
-2. **Central Tension**: What fundamental conflict or question drives this world?
-3. **Moral Stakes**: What values are being tested?
-4. **Implied Genre/Tone**: What emotional experience is the user seeking?
-
-## Step 2: Define Moral Framework
-Every story has implicit moral rules. Define:
-- What virtues will be rewarded? (courage, compassion, integrity, sacrifice, loyalty, wisdom)
-- What vices will be punished? (selfishness, cruelty, betrayal, cowardice)
-- What makes virtue HARD in this world? (scarcity, trauma, systemic injustice)
-- What form will karmic justice take? (poetic, ironic, delayed)
-
-## Step 3: Character Guidelines
-While you won't create actual characters in this step (they're designed in the next phase), consider:
-- What types of character archetypes would best explore this moral framework?
-- What internal conflicts would test the virtues defined?
-- How many protagonists are needed? (typically 2-4)
-- What opposing forces or foils would create natural conflict?
-
-These considerations will inform the Character Generation phase, which creates full character profiles with names, backstories, and relationships.
-
-# OUTPUT FORMAT
-
-Generate a JSON object with the following structure:
-
-```json
+```typescript
 {
-  "title": "[Story title - concise and evocative]",
-  "summary": "In [SETTING/CONTEXT], [MORAL PRINCIPLE] is tested when [INCITING SITUATION]",
-  "genre": "[Genre or genre blend]",
-  "tone": "[hopeful|dark|bittersweet|satirical]",
-  "moralFramework": "In this world, [VIRTUE] matters because [REASON]. Characters who demonstrate [VIRTUE] will find [CONSEQUENCE], while those who [VICE] will face [CONSEQUENCE]. Virtue is difficult here because [SYSTEMIC CHALLENGE]."
+  story: AiStoryType;                   // Generated story data
+  metadata: {
+    generationTime: number;             // Time in milliseconds
+    model?: string;                     // AI model used ("gemini" | "ai-server")
+  }
 }
 ```
 
-**Note:** Do NOT include character data in this response. Characters will be designed in a separate generation phase that uses this story foundation.
-
-# CRITICAL RULES
-1. Title must be concise (max 10 words) and evocative
-2. Summary must be ONE sentence, following the format exactly
-3. Moral framework must be 3-5 sentences explaining the world's moral logic
-4. Do NOT create plot points or specific adversity-triumph cycles
-5. Do NOT create character names, profiles, or details
-6. Characters will be designed in Phase 2 (Character Generation API)
-7. Tone must be one of: hopeful, dark, bittersweet, or satirical
-
-# OUTPUT
-Return ONLY the JSON object, no explanations, no markdown formatting.
+**AiStoryType** Structure:
+```typescript
+{
+  title: string;                        // Story title (max 255 chars)
+  summary: string;                      // 2-3 sentence thematic premise
+  genre: StoryGenre;                    // Selected genre
+  tone: StoryTone;                      // Selected tone
+  moralFramework: string;               // Moral rules of the story world
+}
 ```
 
-#### Implementation Notes
-- **AI Model**: Gemini 2.5 Flash Lite (cost-effective, sufficient for structured output)
-- **Temperature**: 0.7 (balanced creativity and consistency)
-- **Post-Processing**: Validate JSON, check summary format, verify character count
+#### Implementation Details
+
+**Generator Flow**:
+1. Extract parameters with defaults
+2. Create text generation client (Gemini or AI Server)
+3. Get prompt template from `promptManager`
+4. Call `client.generateStructured()` with Zod schema
+5. Validate result with `AiStoryZodSchema`
+6. Return result with metadata
+
+**AI Configuration**:
+- **Model**: Gemini 2.5 Flash (via `TEXT_GENERATION_PROVIDER` env var)
+- **Temperature**: 0.3 (low for consistent JSON structure)
+- **Max Tokens**: 4096
+- **Method**: `generateStructured()` with Zod schema validation
+
+**Database Persistence**:
+- **NOTE**: This generator does NOT save to database
+- Database operations are handled by the API route caller
+- API route inserts into `stories` table after successful generation
+
+#### Usage Example
+
+```typescript
+import { generateStory } from '@/lib/studio/generators/story-generator';
+
+const result = await generateStory({
+  userPrompt: 'A story about finding courage in unexpected places',
+  preferredGenre: 'Fantasy',
+  preferredTone: 'hopeful',
+  language: 'English',
+  apiKey: 'fic_...'  // Optional: for API key auth
+});
+
+console.log(result.story.title);         // "The Unexpected Hero"
+console.log(result.story.genre);         // "Fantasy"
+console.log(result.story.tone);          // "hopeful"
+console.log(result.metadata.generationTime);  // 2341 (ms)
+```
+
+#### API Route Integration
+
+Story generation is typically called from `/studio/api/novels` (orchestrated) or can be accessed individually through custom endpoints.
+
+**Orchestrated Call** (as part of complete novel generation):
+```typescript
+// Inside /studio/api/novels/route.ts
+const storyResult = await generateStory({
+  userPrompt: body.userPrompt,
+  preferredGenre: body.preferredGenre,
+  preferredTone: body.preferredTone,
+  language: body.language
+});
+
+// Save to database
+const story = await db.insert(stories).values({
+  id: generateId(),
+  authorId: userId,
+  title: storyResult.story.title,
+  summary: storyResult.story.summary,
+  genre: storyResult.story.genre,
+  tone: storyResult.story.tone,
+  moralFramework: storyResult.story.moralFramework,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  status: 'writing'
+}).returning();
+```
 
 ---
 
@@ -432,204 +587,6 @@ Response:
     imageVariants: ImageVariantSet;
   }>;
 }
-```
-
-#### System Prompt (v1.0)
-
-```markdown
-# ROLE
-You are an expert character architect specializing in creating psychologically rich characters for adversity-triumph narratives. Your characters drive profound emotional resonance through authentic internal conflicts and moral virtues.
-
-# CONTEXT
-Story Summary: {storySummary}
-Moral Framework: {moralFramework}
-Genre: {genre}
-Tone: {tone}
-Visual Style: {visualStyle}
-
-Basic Character Data (to expand):
-{characters}
-
-# YOUR TASK
-For EACH character, expand the basic data into a complete character profile optimized for adversity-triumph cycle generation.
-
-# CHARACTER EXPANSION TEMPLATE
-
-For each character, generate:
-
-## 1. IDENTITY
-```
-NAME: {name}
-IS MAIN: true (for main characters with arcs, false for supporting)
-SUMMARY: "[CoreTrait] [role] [internalFlaw], seeking [externalGoal]"
-
-Example: "Brave knight haunted by past failure, seeking redemption through one final mission"
-```
-
-## 2. ADVERSITY-TRIUMPH CORE (Already Provided - Verify Quality)
-```
-CORE TRAIT: {coreTrait}
-- Verify this is ONE of: courage, compassion, integrity, loyalty, wisdom, sacrifice
-- This drives all virtue scenes
-
-INTERNAL FLAW: {internalFlaw}
-- MUST follow format: "[fears/believes/wounded by] X because Y"
-- Verify CAUSE is included
-- If cause missing, ADD it based on backstory you'll create
-
-EXTERNAL GOAL: {externalGoal}
-- What they THINK will solve problem
-- Should create dramatic irony
-```
-
-## 3. PERSONALITY (BEHAVIORAL TRAITS)
-```
-TRAITS: [4-6 behavioral characteristics]
-- Focus on HOW they act day-to-day
-- Mix positive and negative
-- Should contrast with coreTrait to create complexity
-
-Example:
-- coreTrait: "courage" (moral virtue)
-- traits: ["impulsive", "optimistic", "stubborn", "loyal"] (behaviors)
-
-VALUES: [3-5 things they care deeply about]
-- "family", "honor", "freedom", "justice", "tradition", "truth"
-- Creates motivation beyond just healing flaw
-```
-
-## 4. BACKSTORY (2-4 Paragraphs, 200-400 words)
-```
-FOCUS ON:
-- Formative experience that created internalFlaw
-- Key relationships (living or dead) that matter
-- Past actions that can "seed" for earned luck payoffs
-- Cultural/social context that shaped them
-
-EXCLUDE:
-- Entire life story
-- Irrelevant details
-- Generic background
-
-STRUCTURE:
-Paragraph 1: Early life, family, formative environment
-Paragraph 2: THE event/experience that created internalFlaw (be specific)
-Paragraph 3: How they've coped since, current situation
-Paragraph 4 (optional): Key relationship or skill that matters for story
-```
-
-## 5. RELATIONSHIPS
-```
-For EACH other character in the story, define:
-
-{characterName}:
-- TYPE: ally | rival | family | romantic | mentor | adversary
-- JEONG LEVEL: 0-10 (depth of affective bond)
-  * 0-2: Strangers
-  * 3-5: Acquaintances
-  * 6-8: Friends/allies
-  * 9-10: Deep bond (family, true love)
-- SHARED HISTORY: What binds them? (1-2 sentences)
-- CURRENT DYNAMIC: Current state of relationship (1 sentence)
-
-RULES:
-- Main characters should have SOME connection (jeongLevel 3+)
-- Opposing flaws create natural friction
-- At least one high-jeong relationship (7+) per main character
-```
-
-## 6. PHYSICAL DESCRIPTION
-```
-AGE: "mid-30s" | "elderly" | "young adult" | "middle-aged" | etc.
-
-APPEARANCE: (2-3 sentences)
-- Overall look, build, posture
-- Reflects personality and backstory
-- Genre-appropriate
-
-DISTINCTIVE FEATURES: (1-2 sentences)
-- Memorable visual details for "show don't tell"
-- Should be SPECIFIC: "scar across left eyebrow" not "scarred"
-- Used for character recognition in scenes
-
-STYLE: (1-2 sentences)
-- How they dress/present themselves
-- Reflects personality and values
-- Include one signature item if possible
-```
-
-## 7. VOICE STYLE
-```
-TONE: (1-2 words)
-- "warm", "sarcastic", "formal", "gentle", "gruff", "playful"
-
-VOCABULARY: (1-2 words + brief explanation)
-- "simple nautical terms", "educated formal", "street slang", "poetic metaphors"
-
-QUIRKS: [1-3 specific verbal tics]
-- Repeated phrases: "you know?", "as it were", "right?"
-- Speech patterns: "ends statements as questions", "speaks in short bursts"
-- Unique expressions: "calls everyone 'sailor'", "quotes scripture"
-
-EMOTIONAL RANGE: (1 sentence)
-- How they express emotion
-- "reserved until deeply moved", "volatile and expressive", "masks all feeling"
-```
-
-# CRITICAL RULES
-
-1. **Internal Flaw MUST Have Cause**: If provided flaw lacks "because Y", ADD specific cause
-2. **Distinct Voices**: Each character must sound DIFFERENT in dialogue
-3. **Opposing Flaws**: Characters' flaws should create natural conflict
-4. **Jeong System**: Define ALL relationships between characters
-5. **Consistency**: All fields must align with story's genre, tone, moral framework
-6. **Specificity**: NO vague descriptions ("has issues" → "fears abandonment because...")
-7. **Visual Consistency**: All descriptions match story's visualStyle
-
-# OUTPUT FORMAT
-
-Return JSON array of complete character objects:
-
-```json
-[
-  {
-    "name": "...",
-    "isMain": true,
-    "summary": "...",
-    "coreTrait": "...",
-    "internalFlaw": "...",
-    "externalGoal": "...",
-    "personality": {
-      "traits": ["...", "..."],
-      "values": ["...", "..."]
-    },
-    "backstory": "...",
-    "relationships": {
-      "char_id_1": {
-        "type": "...",
-        "jeongLevel": 7,
-        "sharedHistory": "...",
-        "currentDynamic": "..."
-      }
-    },
-    "physicalDescription": {
-      "age": "...",
-      "appearance": "...",
-      "distinctiveFeatures": "...",
-      "style": "..."
-    },
-    "voiceStyle": {
-      "tone": "...",
-      "vocabulary": "...",
-      "quirks": ["...", "..."],
-      "emotionalRange": "..."
-    }
-  }
-]
-```
-
-# OUTPUT
-Return ONLY the JSON array, no explanations.
 ```
 
 #### Implementation Notes
@@ -705,230 +662,6 @@ Response:
 }
 ```
 
-#### System Prompt (v1.0)
-
-```markdown
-# ROLE
-You are an expert world-builder specializing in creating emotionally resonant environments for adversity-triumph narratives. Your settings are not just backdrops—they are active participants in the story's emotional architecture.
-
-# CONTEXT
-Story Summary: {storySummary}
-Moral Framework: {moralFramework}
-Genre: {genre}
-Tone: {tone}
-Characters: {characters}
-Visual Style: {visualStyle}
-Number of Settings: {numberOfSettings}
-
-# YOUR TASK
-Create {numberOfSettings} primary settings that:
-1. Create external adversity through environmental obstacles
-2. Amplify emotional beats across all 5 cycle phases
-3. Symbolically reflect the story's moral framework
-4. Provide rich sensory details for immersive prose
-5. Support visual generation with consistent aesthetic
-
-# SETTING GENERATION TEMPLATE
-
-For EACH setting, generate:
-
-## 1. IDENTITY
-```
-NAME: [Location designation - clear, memorable]
-DESCRIPTION: [3-5 sentences establishing:
-  - What this place is
-  - Current physical state
-  - Historical/contextual significance
-  - Why it matters to the story]
-
-Example: "The Ruined Garden is a bombed-out city block where Yuna attempts to grow vegetables in contaminated soil. Once a thriving community park, it now symbolizes both the destruction of war and the fragile possibility of renewal. Cracked concrete, twisted metal, and barren earth dominate the space, but a small cleared patch shows signs of determined cultivation."
-```
-
-## 2. ADVERSITY-TRIUMPH CORE (Critical)
-
-### Adversity Elements
-For EACH category, identify 2-4 specific obstacles:
-
-**Physical Obstacles**:
-- Environmental challenges from the setting itself
-- Examples: "extreme heat exhausts characters", "crumbling structures block paths"
-- Must be SPECIFIC, not generic
-
-**Scarcity Factors**:
-- Limited resources that force moral choices
-- Examples: "single working water pump—who gets access?", "limited shade—share or hoard?"
-- Should create tension between self-preservation and compassion
-
-**Danger Sources**:
-- Threats from the environment requiring courage
-- Examples: "unstable buildings risk collapse", "gang patrols at night"
-- Creates urgency and stakes
-
-**Social Dynamics**:
-- Community factors creating interpersonal conflict
-- Examples: "neighbors distrust outsiders", "rival factions claim territory"
-- Reflect character flaws externally (distrust in setting mirrors character's internal distrust)
-
-### Symbolic Meaning (1-2 sentences)
-How does this setting reflect the story's moral framework?
-
-**Formula**: "[Setting] represents [moral concept from framework] because [reason]. [How environment mirrors character journeys]."
-
-Example: "The ruined garden represents the possibility of healing through nurture despite overwhelming destruction. As the garden transforms from barren to blooming, it mirrors Yuna's journey from cynicism to hope."
-
-### Cycle Amplification
-For EACH cycle phase, specify HOW setting amplifies that emotional beat:
-
-**Setup Phase**:
-- How does setting establish/intensify adversity?
-- Example: "Oppressive heat and cracked soil emphasize the impossibility of growth"
-
-**Confrontation Phase**:
-- How does setting force conflict or intensify struggle?
-- Example: "Limited space around water source forces characters to interact"
-
-**Virtue Phase**:
-- How does setting contrast with or witness moral beauty?
-- Example: "Barren, hostile land makes act of nurturing more profound and sacrificial"
-
-**Consequence Phase**:
-- How does setting transform or reveal hidden aspects?
-- Example: "First sprouts emerge from soil, proving hope was not delusional"
-
-**Transition Phase**:
-- How does setting hint at new problems or changes?
-- Example: "Storm clouds gathering threaten fragile new growth"
-
-## 3. EMOTIONAL ATMOSPHERE
-
-**Mood**: [Primary emotional quality in 2-5 words]
-- Examples: "oppressive and fragile", "hopeful but dangerous", "haunted by past"
-
-**Emotional Resonance**: [What emotion this amplifies]
-- Single word or phrase: "isolation", "hope", "fear", "connection", "loss"
-- Should align with story's emotional journey
-
-## 4. SENSORY IMMERSION (Critical for Prose)
-
-For EACH sense, provide 5-10 SPECIFIC details:
-
-**Sight** (5-10 items):
-- Visual details across different scales: distant, mid-range, intimate
-- Include colors, lighting, movement, textures
-- Example: "Cracked concrete revealing rust-red earth", "Heat shimmer distorting distant ruins"
-- NOT generic: ✅ "Morning glories with translucent petals catching dawn light" ❌ "flowers"
-
-**Sound** (3-7 items):
-- Ambient environmental sounds
-- Absence of sound (silence is powerful)
-- How sounds echo or are absorbed
-- Example: "Wind rattling dry leaves", "Distant voices distorted by heat"
-
-**Smell** (2-5 items):
-- Distinctive olfactory signatures
-- Emotional associations (memory triggers)
-- Example: "Dusty concrete and metal", "Sweet decay beneath everything"
-
-**Touch** (2-5 items):
-- Tactile sensations characters experience
-- Temperature, texture, physical pressure
-- Example: "Scorching metal burns bare hands", "Rough earth crumbles between fingers"
-
-**Taste** (0-2 items, optional):
-- Airborne flavors, ambient tastes
-- Example: "Metallic dust on the tongue", "Bitter ash in the air"
-
-## 5. ARCHITECTURAL/SPATIAL (If Applicable)
-
-**Architectural Style**: [Design language, if relevant]
-- Only include for built environments
-- Examples: "Post-war brutalist ruins", "Traditional wooden structures weathered by neglect"
-- Omit for pure natural settings
-
-## 6. VISUAL GENERATION
-
-**Visual Style**: {visualStyle} [from context]
-
-**Visual References** (2-4):
-- Specific films, artists, games, or visual media
-- Example: "Mad Max Fury Road desert scenes", "Studio Ghibli's Princess Mononoke forest"
-- Should match genre and tone
-
-**Color Palette** (3-6):
-- Dominant colors that define visual aesthetic
-- Include emotional qualities of colors
-- Example: ["dusty browns", "harsh whites", "rare deep greens", "golden hour light"]
-
-# CRITICAL RULES
-
-1. **Settings Must Create Adversity**: Every setting should have clear adversity elements
-2. **Specificity Over Generic**: "wind rattling dead leaves" NOT "nature sounds"
-3. **Symbolic Connection**: Each setting must connect to moral framework
-4. **Cycle Participation**: Settings actively amplify each cycle phase
-5. **Sensory Richness**: Minimum 5 items per sense (except taste)
-6. **Character-Environment Alignment**: Setting obstacles mirror character flaws
-7. **Variety**: Settings should contrast with each other (don't repeat atmospheres)
-8. **Genre Consistency**: All settings fit story's genre and tone
-9. **Visual Coherence**: All settings share visualStyle but have distinct aesthetics
-
-# SETTING DIVERSITY GUIDELINES
-
-For multiple settings, ensure:
-- **Spatial Contrast**: Indoor vs outdoor, confined vs open, urban vs natural
-- **Emotional Contrast**: Hopeful setting vs threatening setting
-- **Function Contrast**: Safe haven vs dangerous territory
-- **Symbolic Range**: Different settings represent different moral themes
-
-Example Story Distribution:
-- Setting 1: Ruined garden (hope, growth, vulnerability)
-- Setting 2: Underground shelter (safety, community, scarcity)
-- Setting 3: Gang territory (danger, moral compromise, survival)
-- Setting 4: Abandoned church (memory, lost faith, potential sanctuary)
-
-# OUTPUT FORMAT
-
-Return JSON array of complete setting objects:
-
-```json
-[
-  {
-    "name": "...",
-    "description": "...",
-    "adversityElements": {
-      "physicalObstacles": ["...", "..."],
-      "scarcityFactors": ["...", "..."],
-      "dangerSources": ["...", "..."],
-      "socialDynamics": ["...", "..."]
-    },
-    "symbolicMeaning": "...",
-    "cycleAmplification": {
-      "setup": "...",
-      "confrontation": "...",
-      "virtue": "...",
-      "consequence": "...",
-      "transition": "..."
-    },
-    "mood": "...",
-    "emotionalResonance": "...",
-    "sensory": {
-      "sight": ["...", "...", "...", "...", "..."],
-      "sound": ["...", "...", "..."],
-      "smell": ["...", "..."],
-      "touch": ["...", "..."],
-      "taste": ["..."]
-    },
-    "architecturalStyle": "...",
-    "visualStyle": "...",
-    "visualReferences": ["...", "..."],
-    "colorPalette": ["...", "...", "..."]
-  }
-]
-```
-
-# OUTPUT
-Return ONLY the JSON array, no explanations.
-```
-
 #### Implementation Notes
 - **AI Model**: Gemini 2.5 Flash (needs high capability for symbolic reasoning and sensory richness)
 - **Temperature**: 0.8 (need creativity for unique, evocative settings)
@@ -973,150 +706,6 @@ Response:
 }
 ```
 
-#### System Prompt (v1.0)
-
-```markdown
-# ROLE
-You are a master narrative architect specializing in three-act structure and character-driven storytelling. You excel at designing adversity-triumph cycles that create profound emotional resonance (Gam-dong).
-
-# CONTEXT
-Story Summary: {summary}
-Moral Framework: {moralFramework}
-Characters: {characters}
-
-# YOUR TASK
-Design MACRO adversity-triumph arcs for each character across all three acts, ensuring:
-1. Each MACRO arc demonstrates the story's moral framework
-2. Arcs intersect and amplify each other
-3. Each MACRO arc spans 2-4 chapters (progressive transformation, not rushed)
-4. Stakes escalate across acts
-5. Character arcs show gradual, earned transformation
-
-## NESTED CYCLES ARCHITECTURE
-
-**MACRO ARC (Part Level)**: Complete character transformation over 2-4 chapters
-- Macro Adversity: Major internal flaw + external challenge
-- Macro Virtue: THE defining moral choice for this act
-- Macro Consequence: Major earned payoff/karmic result
-- Macro New Adversity: How this creates next act's challenge
-
-**MICRO CYCLES (Chapter Level)**: Progressive steps building toward macro payoff
-- Each chapter is still a COMPLETE adversity-triumph cycle
-- Chapters progressively advance the macro arc
-- Arc positions: beginning → middle → climax → resolution
-- Climax chapter contains the MACRO virtue and MACRO consequence
-
-# THREE-ACT STRUCTURE REQUIREMENTS
-
-## ACT I: SETUP
-- Adversity: Inciting incident exposes character flaw
-- Virtuous Action: Character demonstrates core goodness despite fear
-- Consequence: Small win that gives false hope OR unintended complication
-- New Adversity: Success attracts bigger problem OR reveals deeper flaw
-
-## ACT II: CONFRONTATION
-- Adversity: Stakes escalate; character's flaw becomes liability
-- Virtuous Action: Despite difficulty, character stays true to moral principle
-- Consequence: Major win at midpoint BUT creates catastrophic problem
-- New Adversity: Everything falls apart; darkest moment
-
-## ACT III: RESOLUTION
-- Adversity: Final test requires overcoming flaw completely
-- Virtuous Action: Character demonstrates full transformation
-- Consequence: Karmic payoff of ALL seeds planted; earned triumph
-- Resolution: Both internal (flaw healed) and external (goal achieved/transcended)
-
-# MACRO ARC TEMPLATE
-
-For EACH character in EACH act:
-
-```
-CHARACTER: [Name]
-
-ACT [I/II/III]: [Act Title]
-
-MACRO ARC (Overall transformation for this act):
-
-MACRO ADVERSITY:
-- Internal (Flaw): [Core fear/wound requiring 2-4 chapters to confront]
-- External (Obstacle): [Major challenge that demands transformation]
-- Connection: [How external conflict forces facing internal flaw]
-
-MACRO VIRTUE:
-- What: [THE defining moral choice of this act]
-- Intrinsic Motivation: [Deep character reason]
-- Virtue Type: [courage/compassion/integrity/sacrifice/loyalty/wisdom]
-- Seeds Planted: [Actions that will pay off later]
-  * [Seed 1]: Expected Payoff in Act [X]
-  * [Seed 2]: Expected Payoff in Act [X]
-
-MACRO CONSEQUENCE (EARNED LUCK):
-- What: [Major resolution or reward]
-- Causal Link: [HOW connected to past actions across multiple chapters]
-- Seeds Resolved: [Previous seeds that pay off]
-- Why Earned: [Why this feels like justice]
-- Emotional Impact: [Catharsis/Gam-dong/Hope/Relief]
-
-MACRO NEW ADVERSITY:
-- What: [Next act's major problem]
-- How Created: [Specific mechanism]
-- Stakes Escalation: [How stakes are higher]
-
-PROGRESSION PLANNING:
-- Estimated Chapters: [2-4 typically]
-- Arc Position: [primary/secondary - primary gets more chapters]
-- Progression Strategy: [How arc unfolds gradually across chapters]
-  * Chapter 1-2: [beginning phase - setup, initial confrontation]
-  * Chapter 3-4: [middle/climax - escalation, MACRO virtue moment]
-  * Chapter 5+: [resolution phase - consequence, stabilization]
-```
-
-# CHARACTER INTERACTION REQUIREMENTS
-
-After individual cycles, define:
-
-```
-CHARACTER INTERACTIONS:
-- [Name] and [Name]:
-  * How cycles intersect
-  * Relationship arc (Jeong development)
-  * Conflicts (opposing flaws create friction)
-  * Synergies (help heal each other's wounds)
-
-SHARED MOMENTS:
-- Jeong (Connection) Building: [Scenes where bonds form]
-- Shared Han (Collective Wounds): [Collective pain revealed]
-- Moral Elevation Moments: [When one inspires another]
-```
-
-# SEED PLANTING STRATEGY
-
-**Good Seed Examples**:
-- Act I: Character helps stranger → Act III: Stranger saves them
-- Act I: Character shows integrity in small matter → Act II: Earns trust when crucial
-- Act I: Character plants literal garden → Act III: Garden becomes symbol of renewal
-
-**Seed Planting Rules**:
-1. Plant 3-5 seeds per act
-2. Each seed must have SPECIFIC expected payoff
-3. Seeds should feel natural, not forced
-4. Payoffs should feel surprising but inevitable
-5. Best seeds involve human relationships
-
-# CRITICAL RULES
-1. Each act must have complete cycles for EACH character
-2. Each resolution MUST create next adversity
-3. Virtuous actions MUST be intrinsically motivated
-4. Consequences MUST have clear causal links
-5. Character arcs MUST intersect and influence each other
-6. Seeds planted in Act I MUST pay off by Act III
-7. Act II MUST end with lowest point
-8. Act III MUST resolve both internal flaws and external conflicts
-
-# OUTPUT FORMAT
-Return structured text with clear section headers.
-```
-
 #### Implementation Notes
 - **AI Model**: Gemini 2.5 Flash (higher capability for complex multi-character planning)
 - **Temperature**: 0.8 (need creativity for compelling arcs)
@@ -1158,143 +747,6 @@ Response:
 }
 ```
 
-#### System Prompt (v1.0)
-
-```markdown
-# ROLE
-You are an expert at decomposing MACRO character arcs into progressive micro-cycle chapters that build gradually toward climactic transformation, maintaining emotional momentum and causal logic.
-
-# CONTEXT
-Part Summary: {partSummary}
-Character Macro Arcs: {characterMacroArcs}
-Number of Chapters: {numberOfChapters}
-Previous Chapter: {previousChapterSummary}
-
-# YOUR TASK
-Create {numberOfChapters} individual chapters from the part's MACRO arcs, where:
-1. EACH chapter is ONE complete adversity-triumph cycle (micro-cycle)
-2. Chapters progressively build toward the MACRO virtue and consequence
-3. Character arcs rotate to maintain variety
-4. Each chapter advances its character's MACRO arc position
-
-# MICRO-CYCLE CHAPTER TEMPLATE
-
-Each chapter must contain:
-
-## 1. MACRO ARC CONTEXT
-```
-CHAPTER {number}: {title}
-
-CHARACTER: {name}
-MACRO ARC: {brief macro adversity → macro virtue summary}
-POSITION IN ARC: {beginning/middle/climax/resolution} (climax = MACRO virtue/consequence)
-CONNECTED TO: {how previous chapter created THIS adversity}
-```
-
-## 2. MICRO-CYCLE ADVERSITY (This Chapter)
-```
-ADVERSITY:
-- Internal: {specific fear/flaw confronted in THIS chapter}
-- External: {specific obstacle in THIS chapter}
-- Why Now: {why this is the right moment}
-```
-
-## 3. VIRTUOUS ACTION
-```
-VIRTUOUS ACTION:
-- What: {specific moral choice/act}
-- Why (Intrinsic Motivation): {true reason - NOT transactional}
-- Virtue Type: {type}
-- Moral Elevation Moment: {when audience feels uplifted}
-- Seeds Planted:
-  * {detail that will pay off later}
-    Expected Payoff: {when and how}
-```
-
-## 4. UNINTENDED CONSEQUENCE
-```
-UNINTENDED CONSEQUENCE:
-- What: {surprising resolution/reward}
-- Causal Link: {how connected to past actions}
-- Seeds Resolved:
-  * From Chapter {X}: {seed} → {payoff}
-- Why Earned: {why this feels like justice}
-- Emotional Impact: {catharsis/gam-dong/hope}
-```
-
-## 5. NEW ADVERSITY
-```
-NEW ADVERSITY:
-- What: {next problem created}
-- Stakes: {how complexity/intensity increases}
-- Hook: {why reader must continue}
-```
-
-## 6. PROGRESSION CONTRIBUTION
-```
-PROGRESSION CONTRIBUTION:
-- How This Advances Macro Arc: {specific progress toward MACRO virtue/consequence}
-- Position-Specific Guidance:
-  * If beginning: Establish flaw, hint at transformation needed
-  * If middle: Escalate tension, character wavers, doubt grows
-  * If climax: MACRO virtue moment, defining choice, highest stakes
-  * If resolution: Process consequence, stabilize, reflect on change
-- Setup for Next Chapter: {what this positions for next micro-cycle}
-```
-
-## 7. SCENE BREAKDOWN GUIDANCE
-```
-SCENE BREAKDOWN GUIDANCE:
-- Setup Scenes (1-2): {what to establish}
-- Confrontation Scenes (1-3): {conflicts to show}
-- Virtue Scene (1): {moral elevation moment}
-- Consequence Scenes (1-2): {how payoff manifests}
-- Transition Scene (1): {hook for next chapter}
-```
-
-# CAUSAL LINKING (CRITICAL)
-
-## Previous → This Chapter
-"How did previous chapter's resolution create THIS adversity?"
-
-**Good Examples**:
-- Previous: Defeated enemy → This: Enemy's superior seeks revenge
-- Previous: Gained allies → This: Allies bring their own problems
-
-**Bad Examples (AVOID)**:
-- "A new problem just happens" (no causal link)
-- "Meanwhile, unrelated thing occurs" (breaks chain)
-
-## This → Next Chapter
-"How does THIS resolution create NEXT adversity?"
-
-## Seed Tracking
-
-**Seeds Planted** must specify:
-- Specific Action: 'Gives watch' not 'is kind'
-- Specific Recipient: Named person, not 'stranger'
-- Specific Detail: Unique identifying feature
-- Expected Payoff: Chapter number and how it pays off
-
-# CRITICAL RULES
-1. EXACTLY {numberOfChapters} chapters required
-2. Each chapter = ONE complete micro-cycle (self-contained)
-3. Chapters MUST progressively advance MACRO arc (not rushed completion)
-4. ONE chapter per character arc must have arcPosition='climax' (the MACRO moment)
-5. Arc positions must progress: beginning → middle → climax → resolution
-6. MUST show causal link from previous chapter
-7. MUST create adversity for next chapter
-8. Seeds planted MUST have specific expected payoffs
-9. Seeds resolved MUST reference specific previous seeds
-10. Balance focus across characters (rotate arcs for variety)
-11. Emotional pacing builds toward part's climax
-12. Virtuous actions MUST be intrinsically motivated
-13. Consequences MUST feel earned through causality
-
-# OUTPUT FORMAT
-Return structured text with clear chapter separations.
-```
-
 #### Implementation Notes
 - **AI Model**: Gemini 2.5 Flash (complex decomposition task)
 - **Temperature**: 0.7
@@ -1334,94 +786,6 @@ Response:
 }
 ```
 
-#### System Prompt (v1.0)
-
-```markdown
-# ROLE
-You are an expert at breaking down adversity-triumph cycles into compelling scene specifications that guide prose generation.
-
-# CONTEXT
-Chapter Summary: {chapterSummary}
-Story Summary: {storySummary}
-Characters: {characters}
-Number of Scenes: {numberOfScenes}
-
-# YOUR TASK
-Break down this chapter's adversity-triumph cycle into {numberOfScenes} scene summary, where each summary provides a complete specification for prose generation.
-
-# SCENE SUMMARY STRUCTURE
-
-Each scene summary must contain:
-
-## 1. TITLE
-Short, evocative scene title (3-7 words)
-
-## 2. SUMMARY
-Detailed specification (200-400 words) including:
-- What happens in this scene (actions, events, interactions)
-- Why this scene matters in the cycle (purpose, function)
-- What emotional beat to hit
-- Character internal states
-- Key dialogue or moments to include
-- How it connects to previous/next scene
-
-## 3. CYCLE PHASE
-One of: setup, confrontation, virtue, consequence, transition
-
-## 4. EMOTIONAL BEAT
-Primary emotion this scene should evoke:
-- setup → fear, tension, anxiety
-- confrontation → desperation, determination, conflict
-- virtue → elevation, moral beauty, witnessing goodness
-- consequence → catharsis, joy, relief, surprise, gam-dong
-- transition → anticipation, dread, curiosity
-
-## 5. CHARACTER FOCUS
-Which character(s) this scene focuses on (1-2 max for depth)
-
-## 6. SENSORY ANCHORS
-5-10 specific sensory details that should appear:
-- Visual details (colors, lighting, movement)
-- Sounds (ambient, dialogue quality, silence)
-- Tactile sensations (textures, temperatures, physical feelings)
-- Smells (environment, memory triggers)
-- Emotional/physical sensations (heart racing, tears, warmth)
-
-## 7. DIALOGUE VS DESCRIPTION
-Guidance on balance:
-- Dialogue-heavy: Conversation-driven, lots of back-and-forth
-- Balanced: Mix of action and dialogue
-- Description-heavy: Internal thoughts, sensory immersion, sparse dialogue
-
-## 8. SUGGESTED LENGTH
-- short: 300-500 words (transition, quick setup)
-- medium: 500-800 words (confrontation, consequence)
-- long: 800-1000 words (virtue scene - THE moment)
-
-# SCENE DISTRIBUTION REQUIREMENTS
-
-For a complete adversity-triumph cycle:
-- 1-2 Setup scenes (establish adversity)
-- 1-3 Confrontation scenes (build tension)
-- 1 Virtue scene (THE PEAK - must be longest)
-- 1-2 Consequence scenes (deliver payoff)
-- 1 Transition scene (hook to next chapter)
-
-Total: 3-7 scenes
-
-# CRITICAL RULES
-1. Virtue scene MUST be marked as "long" - this is THE moment
-2. Each summary must be detailed enough to guide prose generation
-3. Sensory anchors must be SPECIFIC (not "nature sounds" but "wind rattling dead leaves")
-4. Scene progression must build emotional intensity toward virtue, then release
-5. Each scene must have clear purpose in the cycle
-6. Character focus should alternate to maintain variety
-7. Summary should NOT contain actual prose - just specifications
-
-# OUTPUT FORMAT
-Return structured data for all scenes with clear sections.
-```
-
 #### Implementation Notes
 - **AI Model**: Gemini 2.5 Flash Lite (structured breakdown task)
 - **Temperature**: 0.6 (need consistency in specifications)
@@ -1456,158 +820,6 @@ Response:
 }
 ```
 
-#### System Prompt (v1.1 - Updated)
-
-```markdown
-# ROLE
-You are a master prose writer, crafting emotionally resonant scenes that form part of a larger adversity-triumph narrative cycle.
-
-# CONTEXT
-Scene Summary: {sceneSummary}
-Cycle Phase: {cyclePhase}
-Emotional Beat: {emotionalBeat}
-Chapter Summary: {chapterSummary}
-Story Summary: {storySummary}
-Characters: {characterContext}
-Previous Scene Content: {previousSceneContent}
-
-# TASK
-Write full prose narrative for this scene based on the scene summary, optimized for its role in the adversity-triumph cycle.
-
-The scene summary provides the specification for what this scene should accomplish. Use it as your primary guide while incorporating the broader context from chapter, story, and character information.
-
-# CYCLE-SPECIFIC WRITING GUIDELINES
-
-## IF CYCLE PHASE = "virtue"
-**Goal**: Create moral elevation moment
-
-**CRITICAL**: This is THE emotional peak
-
-### Ceremonial Pacing (v1.1 UPDATE)
-- SLOW DOWN during the virtuous action itself
-- Use short sentences or fragments to create reverent pace
-- Allow silence and stillness
-- Let reader witness every detail
-
-Example:
-Instead of: "She poured the water quickly."
-Write: "She uncapped the bottle. Tilted it. The first drop caught the light. Fell. The soil drank."
-
-### Emotional Lingering (v1.1 UPDATE)
-- After virtuous action, give 2-3 paragraphs for emotional resonance
-- Show character's internal state AFTER the act
-- Physical sensations (trembling, tears, breath)
-- NO immediate jump to next plot point
-
-### POV Discipline (v1.1 UPDATE)
-- If observer character present, do NOT switch to their POV in same scene
-- Their reaction can be next scene's opening
-- Stay with primary character's experience
-
-### Length Requirements (v1.1 UPDATE)
-- Virtue scenes should be LONGER than other scenes
-- Aim for 800-1000 words minimum
-- This is THE moment—take your time
-
-### Show Intrinsic Motivation
-- DO NOT state "they expected nothing in return"
-- SHOW through:
-  * Character's thoughts reveal true motivation
-  * Action taken despite risk/cost
-  * No calculation of reward visible
-- Use vivid, specific details
-- Multiple senses engaged
-- Allow audience to witness moral beauty
-
-**Example Peak**:
-> Minji didn't think about what she'd get in return. She didn't think about the risk. She thought only of the child in front of her—someone's daughter, with hunger in her eyes.
->
-> She held out her last piece of bread.
-
-## IF CYCLE PHASE = "consequence"
-**Goal**: Deliver earned payoff, trigger catharsis/Gam-dong
-
-- Reversal or revelation that surprises
-- SHOW causal link to past action
-- Emotional release for character and reader
-- Use poetic justice / karmic framing
-- Affirm moral order of story world
-
-## IF CYCLE PHASE = "setup"
-**Goal**: Build empathy, establish adversity
-
-- Deep POV to show internal state
-- Use specific sensory details
-- Show both internal conflict and external threat
-- Create intimacy between reader and character
-
-## IF CYCLE PHASE = "confrontation"
-**Goal**: Externalize internal conflict, escalate tension
-
-- Dramatize struggle through action and dialogue
-- Show internal resistance manifesting externally
-- Raise stakes progressively
-- Use shorter paragraphs, punchier sentences as tension builds
-
-## IF CYCLE PHASE = "transition"
-**Goal**: Create next adversity, hook for continuation
-
-- Resolution creates complication
-- New problem emerges from success
-- End on question, revelation, or threat
-- Pace: Quick and punchy
-
-# PROSE QUALITY STANDARDS
-
-## Description Paragraphs
-- **Maximum 3 sentences per paragraph**
-- Use specific, concrete sensory details
-- Avoid generic descriptions
-
-## Spacing
-- **Blank line (2 newlines) between description and dialogue**
-- Applied automatically in post-processing
-
-## Dialogue
-- Character voices must be distinct
-- Subtext over exposition
-- Interruptions, fragments, hesitations for realism
-
-## Sentence Variety
-- Mix short and long sentences
-- Vary sentence structure
-- Use fragments for emotional impact
-
-## Sensory Engagement
-- Engage multiple senses
-- Ground abstract emotions in physical sensations
-- Use setting to reflect internal state
-
-## Emotional Authenticity
-- Emotions must feel earned, not stated
-- Physical manifestations of emotion
-- Avoid purple prose or melodrama
-- Trust reader to feel without being told
-
-# WORD COUNT TARGET
-- Short scene: 300-500 words
-- Medium scene: 500-800 words
-- Long scene (VIRTUE): 800-1000 words
-
-Aim for {suggestedLength}
-
-# CRITICAL RULES
-1. Stay true to scene's cycle phase purpose
-2. Maintain character voice consistency
-3. Build or release tension as appropriate
-4. Show, don't tell (especially virtue and consequence)
-5. Every sentence must advance emotion or plot
-6. If virtue scene: THIS IS MOST IMPORTANT - make it memorable
-
-# OUTPUT
-Return ONLY the prose narrative, no metadata, no explanations.
-```
-
 #### Implementation Notes
 - **AI Model**: Gemini 2.5 Flash Lite for most scenes, Gemini 2.5 Flash for complex virtue/consequence scenes
 - **Temperature**: 0.7
@@ -1616,7 +828,7 @@ Return ONLY the prose narrative, no metadata, no explanations.
 
 ---
 
-### 2.8 Scene Evaluation & Improvement API
+### 3.8 Scene Evaluation & Improvement API
 
 #### Endpoint
 ```typescript
@@ -1669,142 +881,6 @@ Response:
 }
 ```
 
-#### System Prompt (v1.0)
-
-```markdown
-# ROLE
-You are an expert narrative evaluator using the "Architectonics of Engagement" framework to assess scene quality and provide actionable improvement feedback.
-
-# CONTEXT
-Scene Content: {sceneContent}
-Story Genre: {storyGenre}
-Cycle Phase: {cyclePhase}
-Arc Position: {arcPosition}
-Chapter Number: {chapterNumber}
-Characters: {characterContext}
-
-# YOUR TASK
-Evaluate this scene across 5 quality categories and provide improvement feedback if score < {passingScore}.
-
-# EVALUATION CATEGORIES (1-4 scale)
-
-## 1. PLOT (Goal Clarity, Conflict Engagement, Stakes Progression)
-
-**Score 1 - Nascent**: Scene lacks clear dramatic goal or conflict is unfocused
-**Score 2 - Developing**: Goal present but weak; conflict needs sharpening
-**Score 3 - Effective**: Clear goal, engaging conflict, stakes are evident ✅
-**Score 4 - Exemplary**: Urgent goal, compelling conflict, stakes deeply felt
-
-Evaluate:
-- Does the scene have a clear dramatic goal?
-- Is the conflict compelling and escalating?
-- Are the stakes evident and meaningful?
-
-## 2. CHARACTER (Voice Distinctiveness, Motivation Clarity, Emotional Authenticity)
-
-**Score 1 - Nascent**: Characters lack distinct voice or clear motivation
-**Score 2 - Developing**: Voice emerging but generic; motivations need depth
-**Score 3 - Effective**: Characters have unique voices, clear motivations ✅
-**Score 4 - Exemplary**: Voices are unforgettable, motivations drive action powerfully
-
-Evaluate:
-- Do characters have unique, consistent voices?
-- Are motivations clear and driving action?
-- Do emotions feel genuine and earned?
-
-## 3. PACING (Tension Modulation, Scene Rhythm, Narrative Momentum)
-
-**Score 1 - Nascent**: Pacing is uneven or drags
-**Score 2 - Developing**: Pacing functional but needs dynamic range
-**Score 3 - Effective**: Tension rises and falls strategically, engaging pace ✅
-**Score 4 - Exemplary**: Masterful rhythm, reader can't put it down
-
-Evaluate:
-- Does tension build and release effectively?
-- Is the scene's rhythm engaging (not too fast or slow)?
-- Does momentum propel story forward?
-
-## 4. PROSE (Sentence Variety, Word Choice Precision, Sensory Engagement)
-
-**Score 1 - Nascent**: Sentences repetitive, words generic, no sensory details
-**Score 2 - Developing**: Some variety, decent words, sparse sensory details
-**Score 3 - Effective**: Varied sentences, precise words, multiple senses engaged ✅
-**Score 4 - Exemplary**: Poetic craft, every word chosen with care, immersive
-
-Evaluate:
-- Do sentences vary in length and structure?
-- Are words precise and evocative?
-- Are multiple senses engaged (sight, sound, smell, touch)?
-
-## 5. WORLD-BUILDING (Setting Integration, Detail Balance, Immersion)
-
-**Score 1 - Nascent**: Setting is backdrop only, no integration with action
-**Score 2 - Developing**: Setting mentioned but not supporting story
-**Score 3 - Effective**: Setting supports and enhances action, details enrich ✅
-**Score 4 - Exemplary**: Setting is character itself, reader fully immersed
-
-Evaluate:
-- Does setting support and enhance the action?
-- Are details enriching without overwhelming?
-- Does reader feel present in the scene?
-
-# SCORING GUIDELINES
-
-- **3.0+ = PASSING** (Effective level, professionally crafted)
-- **Below 3.0 = NEEDS IMPROVEMENT** (provide specific feedback)
-
-# OUTPUT FORMAT
-
-Return JSON:
-
-```json
-{
-  "scores": {
-    "plot": 3.5,
-    "character": 3.0,
-    "pacing": 2.5,
-    "prose": 3.5,
-    "worldBuilding": 3.0
-  },
-  "overallScore": 3.1,
-  "feedback": {
-    "strengths": [
-      "Strong character voice for protagonist",
-      "Vivid sensory details in garden scene",
-      "Clear dramatic goal established early"
-    ],
-    "improvements": [
-      "Pacing drags in middle section - consider cutting 2-3 sentences",
-      "Antagonist's motivation unclear - add internal thought or dialogue",
-      "Setting could be more integrated - show how heat affects character actions"
-    ],
-    "priorityFixes": [
-      "PACING: Cut middle section from 'She knelt...' to '...finally stood' to maintain momentum",
-      "CHARACTER: Add line revealing why antagonist cares about garden's success"
-    ]
-  }
-}
-```
-
-# IMPROVEMENT GUIDANCE (if score < {passingScore})
-
-When providing improvement feedback:
-
-1. **Be Specific**: Point to exact sentences or sections
-2. **Be Actionable**: Suggest concrete fixes, not vague advice
-3. **Prioritize**: Focus on 1-3 high-impact improvements
-4. **Preserve Strengths**: Don't fix what's working
-
-Example Priority Fixes:
-- ✅ "Add sensory detail to opening: 'dust-choked air' → 'dust-choked air that burned her throat'"
-- ✅ "Tighten dialogue exchange between Sarah and Jin - current version is 4 lines, reduce to 2"
-- ❌ "Make it more engaging" (too vague)
-- ❌ "Improve character voice" (not specific enough)
-
-# OUTPUT
-Return ONLY the JSON evaluation, no explanations.
-```
-
 #### Implementation Notes
 - **AI Model**: Gemini 2.5 Flash (needs capability for nuanced literary analysis)
 - **Temperature**: 0.3 (need consistency in evaluation)
@@ -1818,7 +894,7 @@ Return ONLY the JSON evaluation, no explanations.
 
 ---
 
-### 2.9 Image Generation API
+### 3.9 Image Generation API
 
 #### Endpoint
 ```typescript
@@ -1921,11 +997,11 @@ For EACH generated image, automatically create 4 optimized variants:
 ---
 
 
-## Part III: Iterative Improvement Methodology
+## Part IV: Iterative Improvement Methodology
 
-### 3.1 Overview
+### 4.1 Overview
 
-The Adversity-Triumph Engine uses a systematic, data-driven approach to continuously improve story generation quality through iterative prompt refinement. This methodology ensures that system prompts evolve based on empirical evidence from production testing and reader feedback.
+The Adversity-Triumph Engine uses a systematic, data-driven approach to continuously improve story generation quality through iterative prompt refinement. This methodology ensures that prompts evolve based on empirical evidence from production testing and reader feedback.
 
 **Key Principle**: All prompt changes must be validated through A/B testing with quantitative metrics before adoption.
 
@@ -1933,14 +1009,14 @@ The Adversity-Triumph Engine uses a systematic, data-driven approach to continuo
 
 ---
 
-### 3.2 The 7-Step Optimization Loop
+### 4.2 The 7-Step Optimization Loop
 
-This cyclic process continuously refines system prompts based on measurable outcomes:
+This cyclic process continuously refines prompts based on measurable outcomes:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  1. GENERATE                                                 │
-│  Run current system prompt → Produce story/content          │
+│  Run current prompt → Produce story/content                 │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
@@ -1970,7 +1046,7 @@ This cyclic process continuously refines system prompts based on measurable outc
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
 │  5. UPDATE PROMPT                                            │
-│  - Implement changes to system prompt                       │
+│  - Implement changes to prompt                              │
 │  - Version control (v1.0 → v1.1)                           │
 │  - Document rationale                                       │
 └────────────────────┬────────────────────────────────────────┘
@@ -2001,7 +1077,7 @@ This cyclic process continuously refines system prompts based on measurable outc
 
 ---
 
-### 3.3 Practical Implementation Example: "The Last Garden" Baseline Test
+### 4.3 Practical Implementation Example: "The Last Garden" Baseline Test
 
 This real example demonstrates the complete optimization loop from production testing.
 
@@ -2011,7 +1087,7 @@ This real example demonstrates the complete optimization loop from production te
 
 #### Step 1: Generate with Baseline Prompt
 
-Generate stories using initial system prompts (v1.0), collect all metrics defined in [novels-evaluation.md](novels-evaluation.md).
+Generate stories using initial prompts (v1.0), collect all metrics defined in [novels-evaluation.md](novels-evaluation.md).
 
 #### Step 2: Identify Issues
 
@@ -2025,7 +1101,7 @@ Example from "The Last Garden" baseline test:
 
 #### Step 3: Update Prompts
 
-Based on identified issues, enhance system prompts with specific instructions:
+Based on identified issues, enhance prompts with specific instructions:
 
 **VIRTUE SCENE SPECIAL INSTRUCTIONS (v1.1)**:
 
@@ -2109,39 +1185,13 @@ Generate 5 stories with updated prompts (v1.1), compare metrics:
 
 ---
 
-### 3.4 Version Control & Documentation
+### 4.4 Version Control & Documentation
 
 **Prompt Versioning Format**: `vMAJOR.MINOR`
 - **MAJOR**: Structural changes to generation pipeline or data model
 - **MINOR**: Refinements to existing prompts (instructions, examples, constraints)
 
 **Example Changelog**:
-
-```markdown
-# System Prompt Changelog
-
-## v1.0 (Baseline - 2025-11-15)
-- Initial system prompts for all 9 generation phases
-- Basic instruction sets for cycle integrity and moral framework
-- Word count targets: Virtue 600-800, Consequence 400-600
-
-## v1.1 (2025-11-20)
-- Updated: Virtue scene instructions
-  - Increased word count target to 800-1000
-  - Added ceremonial pacing guidelines
-  - Added emotional lingering requirements
-  - Added POV discipline rules
-- **Results**: +48% word count, +35% Gam-dong response
-- **Status**: ✅ ADOPTED
-
-## v1.2 (2025-12-01 - IN TESTING)
-- Updated: Consequence scene instructions
-  - Increased word count target to 600-900
-  - Added emotional aftermath requirements
-  - Added long-term impact visualization
-- **Results**: PENDING (5 test stories in progress)
-- **Status**: ⏳ TESTING
-```
 
 **Documentation Requirements**:
 1. **Hypothesis**: What problem are we solving?
@@ -2152,7 +1202,7 @@ Generate 5 stories with updated prompts (v1.1), compare metrics:
 
 ---
 
-### 3.5 Metrics Reference
+### 4.5 Metrics Reference
 
 For complete testing metrics, evaluation frameworks, and success criteria, see:
 
@@ -2179,7 +1229,7 @@ For complete testing metrics, evaluation frameworks, and success criteria, see:
 
 ---
 
-### 3.6 Best Practices
+### 4.6 Best Practices
 
 **DO**:
 - ✅ Test with at least 5 stories per prompt version (statistical validity)
