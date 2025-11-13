@@ -139,8 +139,19 @@ async function generate(params: ServiceStoryParams): Promise<ServiceStoryResult>
 
   const result: GeneratorStoryResult = await generateStory(generatorParams);
 
+  // ─────────────────────────────────────────────────────
+  // Database Layer (Persistence)
+  // ─────────────────────────────────────────────────────
+  const story: Story = await db.insert(stories).values({
+    ...result.story,  // AiStoryType
+    id: generateId(),
+    authorId: params.userId,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  });
+
   return {
-    story: result.story,
+    story: story,
     metadata: result.metadata,
   };
 }
@@ -168,17 +179,6 @@ async function generateStory(
     metadata: { modelId: 'gemini-2.5-flash', tokens: 1250 }
   };
 }
-
-// ─────────────────────────────────────────────────────
-// Service Layer (Persistence)
-// ─────────────────────────────────────────────────────
-const story: Story = await db.insert(stories).values({
-  ...validated,  // AiStoryType
-  id: generateId(),
-  authorId: userId,
-  createdAt: new Date(),
-  updatedAt: new Date()
-});
 ```
 
 **Complete Type Table for All Generators:**
@@ -268,160 +268,6 @@ const story: Story = await db.insert(stories).values({
 
 ---
 
-
-### 2.2 Complete Generation Flow API
-
-```typescript
-POST /studio/api/novels
-
-Authentication: Dual authentication (supports both methods)
-  - API Key: Send in Authorization header as "Bearer {api_key}"
-  - Session: NextAuth session (logged-in user via browser)
-
-Required Scope: stories:write
-
-Request Headers (API Key method):
-{
-  'Content-Type': 'application/json',
-  'Authorization': 'Bearer fic_...'  // API key from .auth/user.json
-}
-
-Request:
-{
-  userPrompt: string;
-  preferredGenre?: string;
-  preferredTone?: 'hopeful' | 'dark' | 'bittersweet' | 'satirical';
-  characterCount?: number;  // Default: 3
-  settingCount?: number;    // Default: 3
-  partsCount?: number;      // Default: 1
-  chaptersPerPart?: number; // Default: 1
-  scenesPerChapter?: number; // Default: 3
-  language?: string;        // Default: 'English'
-}
-
-Response: Server-Sent Events (SSE)
-
-Progress Events:
-{
-  phase: 'story_start' | 'story_complete' |
-         'characters_start' | 'characters_progress' | 'characters_complete' |
-         'settings_start' | 'settings_progress' | 'settings_complete' |
-         'parts_start' | 'parts_progress' | 'parts_complete' |
-         'chapters_start' | 'chapters_progress' | 'chapters_complete' |
-         'scene_summary_start' | 'scene_summary_progress' | 'scene_summary_complete' |
-         'scene_content_start' | 'scene_content_progress' | 'scene_content_complete' |
-         'scene_evaluation_start' | 'scene_evaluation_progress' | 'scene_evaluation_complete' |
-         'images_start' | 'images_progress' | 'images_complete',
-  message: string,
-  data?: {
-    // Phase-specific data
-    currentItem?: number,
-    totalItems?: number,
-    percentage?: number,
-    // Completed data (on *_complete events)
-    story?: StoryResult,
-    characters?: Character[],
-    settings?: Setting[],
-    parts?: Part[],
-    chapters?: Chapter[],
-    scenes?: Scene[]
-  }
-}
-
-Final Event:
-{
-  phase: 'complete',
-  message: 'Story generation complete!',
-  data: {
-    storyId: string,
-    story: Story,
-    charactersCount: number,
-    settingsCount: number,
-    partsCount: number,
-    chaptersCount: number,
-    scenesCount: number
-  }
-}
-
-Error Event:
-{
-  phase: 'error',
-  message: string,
-  error: string
-}
-```
-
-**Usage Examples:**
-
-**Method 1: API Key Authentication (for scripts and automation)**
-```javascript
-// Load API key from .auth/user.json
-const authData = JSON.parse(fs.readFileSync('.auth/user.json', 'utf-8'));
-const apiKey = authData.profiles.writer.apiKey;
-
-const response = await fetch('http://localhost:3000/studio/api/novels', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${apiKey}`,  // API key authentication
-  },
-  body: JSON.stringify({
-    userPrompt: 'A story about courage and redemption',
-    preferredGenre: 'Fantasy',
-    preferredTone: 'hopeful',
-    characterCount: 2,
-    settingCount: 2,
-    partsCount: 1,
-    chaptersPerPart: 1,
-    scenesPerChapter: 3,
-  }),
-});
-```
-
-**Method 2: Session Authentication (for browser/UI)**
-```javascript
-const response = await fetch('/studio/api/novels', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    // Session cookie automatically sent by browser
-  },
-  body: JSON.stringify({
-    userPrompt: 'A story about courage and redemption',
-    preferredGenre: 'Fantasy',
-    preferredTone: 'hopeful',
-    characterCount: 2,
-    settingCount: 2,
-    partsCount: 1,
-    chaptersPerPart: 1,
-    scenesPerChapter: 3,
-  }),
-});
-
-const reader = response.body.getReader();
-const decoder = new TextDecoder();
-
-while (true) {
-  const { done, value } = await reader.read();
-  if (done) break;
-
-  const text = decoder.decode(value);
-  const lines = text.split('\n');
-
-  for (const line of lines) {
-    if (line.startsWith('data: ')) {
-      const data = JSON.parse(line.slice(6));
-      console.log(`[${data.phase}] ${data.message}`);
-
-      if (data.phase === 'complete') {
-        console.log('Story ID:', data.data.storyId);
-      }
-    }
-  }
-}
-```
-
----
 
 ## Part III: API Specifications with Ultra-Detailed System Prompts
 
