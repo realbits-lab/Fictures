@@ -62,7 +62,7 @@ export function validateStory(data: unknown): ValidationResult {
     try {
         const parsed = StoryValidationSchema.parse(data);
 
-        // Additional business logic validation
+        // Additional business logic validation (Adversity-Triumph Engine fields)
         if (!parsed.summary) {
             warnings.push({
                 field: "summary",
@@ -82,10 +82,11 @@ export function validateStory(data: unknown): ValidationResult {
             });
         }
 
-        if (!parsed.premise) {
+        if (!parsed.moralFramework) {
             warnings.push({
-                field: "premise",
-                message: "A clear premise helps maintain story focus",
+                field: "moralFramework",
+                message:
+                    "A clear moral framework helps maintain thematic consistency",
                 severity: "warning",
                 type: "recommendation",
             });
@@ -93,8 +94,8 @@ export function validateStory(data: unknown): ValidationResult {
 
         const stats = calculateStats(
             parsed,
-            ["title"],
-            ["description", "genre", "premise", "dramaticQuestion", "theme"],
+            ["title", "authorId"],
+            ["summary", "genre", "tone", "moralFramework"],
         );
 
         return {
@@ -146,11 +147,11 @@ export function validatePart(data: unknown): ValidationResult {
             });
         }
 
-        if (!parsed.structuralRole) {
+        if (!parsed.characterArcs || parsed.characterArcs.length === 0) {
             warnings.push({
-                field: "structuralRole",
+                field: "characterArcs",
                 message:
-                    "Define the structural role (e.g., Setup, Confrontation, Resolution)",
+                    "Define character arcs for MACRO adversity-triumph progression",
                 severity: "warning",
                 type: "recommendation",
             });
@@ -159,7 +160,7 @@ export function validatePart(data: unknown): ValidationResult {
         const stats = calculateStats(
             parsed,
             ["title", "storyId", "orderIndex"],
-            ["description", "structuralRole", "summary", "keyBeats"],
+            ["summary", "characterArcs"],
         );
 
         return {
@@ -211,20 +212,21 @@ export function validateChapter(data: unknown): ValidationResult {
             });
         }
 
-        if (!parsed.purpose) {
+        if (!parsed.contributesToMacroArc) {
             warnings.push({
-                field: "purpose",
+                field: "contributesToMacroArc",
                 message:
-                    "Define the chapter's purpose in the overall narrative",
+                    "Define how this chapter advances the overall character arc",
                 severity: "warning",
                 type: "recommendation",
             });
         }
 
-        if (!parsed.hook) {
+        if (!parsed.createsNextAdversity) {
             warnings.push({
-                field: "hook",
-                message: "A chapter hook engages readers from the start",
+                field: "createsNextAdversity",
+                message:
+                    "Define how this chapter creates the next problem (narrative flow)",
                 severity: "warning",
                 type: "quality",
             });
@@ -232,8 +234,14 @@ export function validateChapter(data: unknown): ValidationResult {
 
         const stats = calculateStats(
             parsed,
-            ["title", "storyId", "orderIndex"],
-            ["summary", "purpose", "hook", "characterFocus", "pacingGoal"],
+            ["title", "storyId", "partId", "characterId", "orderIndex"],
+            [
+                "summary",
+                "arcPosition",
+                "contributesToMacroArc",
+                "adversityType",
+                "virtueType",
+            ],
         );
 
         return {
@@ -276,28 +284,30 @@ export function validateScene(data: unknown): ValidationResult {
     try {
         const parsed = SceneValidationSchema.parse(data);
 
-        if (!parsed.goal) {
+        if (!parsed.cyclePhase) {
             warnings.push({
-                field: "goal",
-                message: "Every scene should have a clear goal",
+                field: "cyclePhase",
+                message:
+                    "Define the cycle phase (setup, confrontation, virtue, consequence, transition)",
                 severity: "warning",
                 type: "quality",
             });
         }
 
-        if (!parsed.conflict) {
+        if (!parsed.emotionalBeat) {
             warnings.push({
-                field: "conflict",
-                message: "Conflict drives scene tension and engagement",
+                field: "emotionalBeat",
+                message:
+                    "Define the target emotional beat (fear, hope, tension, relief, etc.)",
                 severity: "warning",
                 type: "quality",
             });
         }
 
-        if (!parsed.outcome) {
+        if (!parsed.content) {
             warnings.push({
-                field: "outcome",
-                message: "Define how the scene resolves or transitions",
+                field: "content",
+                message: "Scene content should be generated from the summary",
                 severity: "warning",
                 type: "quality",
             });
@@ -306,7 +316,7 @@ export function validateScene(data: unknown): ValidationResult {
         const stats = calculateStats(
             parsed,
             ["title", "chapterId", "orderIndex"],
-            ["content", "goal", "conflict", "outcome", "summary"],
+            ["content", "cyclePhase", "emotionalBeat", "summary", "settingId"],
         );
 
         return {
@@ -349,29 +359,31 @@ export function validateCharacter(data: unknown): ValidationResult {
     try {
         const parsed = CharacterValidationSchema.parse(data);
 
-        if (!parsed.role) {
+        if (!parsed.coreTrait) {
             warnings.push({
-                field: "role",
+                field: "coreTrait",
                 message:
-                    "Define the character's role (protagonist, antagonist, etc.)",
+                    "Define the core virtue (courage, compassion, integrity, etc.)",
                 severity: "warning",
                 type: "incomplete",
             });
         }
 
-        if (!parsed.archetype) {
+        if (!parsed.internalFlaw) {
             warnings.push({
-                field: "archetype",
-                message: "Character archetype helps maintain consistency",
+                field: "internalFlaw",
+                message:
+                    "Internal flaw creates internal adversity for character development",
                 severity: "warning",
                 type: "recommendation",
             });
         }
 
-        if (!parsed.motivations) {
+        if (!parsed.externalGoal) {
             warnings.push({
-                field: "motivations",
-                message: "Clear motivations drive character actions",
+                field: "externalGoal",
+                message:
+                    "External goal drives character actions and creates conflict",
                 severity: "warning",
                 type: "quality",
             });
@@ -380,7 +392,14 @@ export function validateCharacter(data: unknown): ValidationResult {
         const stats = calculateStats(
             parsed,
             ["name", "storyId"],
-            ["role", "archetype", "summary", "storyline", "motivations"],
+            [
+                "coreTrait",
+                "internalFlaw",
+                "externalGoal",
+                "summary",
+                "personality",
+                "backstory",
+            ],
         );
 
         return {
@@ -491,7 +510,7 @@ export function validateSetting(data: unknown): ValidationResult {
 
 // Helper function to calculate completeness stats
 function calculateStats(
-    data: any,
+    data: Record<string, unknown>,
     requiredFields: string[],
     optionalFields: string[],
 ): ValidationStats {

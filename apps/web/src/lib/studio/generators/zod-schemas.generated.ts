@@ -57,38 +57,44 @@ export type Story = z.infer<typeof selectStorySchema>;
 export type InsertStory = z.infer<typeof insertStorySchema>;
 
 /**
- * Minimal schema for story generation (only fields AI generates)
- * Manually defined to avoid Gemini JSON schema validation issues with complex fields
- * Fields must match insertStorySchema but without database-specific fields
- *
- * SSOT: Zod Schema (AI Layer)
+ * AI-generated story fields schema
+ * Derived from insertStorySchema (SSOT) using .pick()
+ * Picks only fields that AI generates, adds descriptions for Gemini
  */
-export const AiStoryZodSchema = z.object({
-    title: z
-        .string()
-        .max(255)
-        .describe("The story title - engaging and memorable"),
-    summary: z
-        .string()
-        .describe(
-            "2-3 sentences describing the thematic premise and moral framework",
-        ),
-    genre: z
-        .enum(STORY_GENRES as [string, ...string[]])
-        .describe(
-            "Story genre - must be one of: Fantasy, Romance, SciFi, Mystery, Horror, Action, Isekai, LitRPG, Cultivation, Slice, Paranormal, Dystopian, Historical, LGBTQ",
-        ),
-    tone: z
-        .enum(STORY_TONES)
-        .describe(
-            "Story tone - must be one of: hopeful, dark, bittersweet, satirical",
-        ),
-    moralFramework: z
-        .string()
-        .describe(
-            "The virtues valued in this story and moral questions explored",
-        ),
-});
+export const AiStoryZodSchema = insertStorySchema
+    .pick({
+        title: true,
+        summary: true,
+        genre: true,
+        tone: true,
+        moralFramework: true,
+    })
+    .extend({
+        title: z
+            .string()
+            .max(255)
+            .describe("The story title - engaging and memorable"),
+        summary: z
+            .string()
+            .describe(
+                "2-3 sentences describing the thematic premise and moral framework",
+            ),
+        genre: z
+            .enum(STORY_GENRES as [string, ...string[]])
+            .describe(
+                "Story genre - must be one of: Fantasy, Romance, SciFi, Mystery, Horror, Action, Isekai, LitRPG, Cultivation, Slice, Paranormal, Dystopian, Historical, LGBTQ",
+            ),
+        tone: z
+            .enum(STORY_TONES)
+            .describe(
+                "Story tone - must be one of: hopeful, dark, bittersweet, satirical",
+            ),
+        moralFramework: z
+            .string()
+            .describe(
+                "The virtues valued in this story and moral questions explored",
+            ),
+    });
 
 /**
  * TypeScript type for AI-generated story data (derived from Zod schema)
@@ -193,59 +199,70 @@ export type Character = z.infer<typeof selectCharacterSchema>;
 export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
 
 /**
- * Minimal schema for character generation (only fields AI generates)
- * Manually defined to avoid Gemini JSON schema validation issues with complex fields
- * Fields must match insertCharacterSchema but without database-specific fields
- *
- * SSOT: Zod Schema (AI Layer)
+ * AI-generated character fields schema
+ * Derived from insertCharacterSchema (SSOT) using .pick()
+ * Picks only fields that AI generates, adds descriptions for Gemini
  */
-export const AiCharacterZodSchema = z.object({
-    name: z
-        .string()
-        .max(255)
-        .describe(
-            "Character's full name - should be memorable and fit the genre",
+export const AiCharacterZodSchema = insertCharacterSchema
+    .pick({
+        name: true,
+        isMain: true,
+        summary: true,
+        coreTrait: true,
+        internalFlaw: true,
+        externalGoal: true,
+        personality: true,
+        backstory: true,
+        physicalDescription: true,
+        voiceStyle: true,
+    })
+    .extend({
+        name: z
+            .string()
+            .max(255)
+            .describe(
+                "Character's full name - should be memorable and fit the genre",
+            ),
+        isMain: z
+            .boolean()
+            .describe(
+                "Whether this is a main character (true) or supporting character (false)",
+            ),
+        summary: z
+            .string()
+            .describe(
+                "2-3 sentence overview of the character's role and significance in the story",
+            ),
+        coreTrait: z
+            .enum(CORE_TRAITS)
+            .describe(
+                "The primary virtue this character embodies - must be one of: courage, compassion, integrity, loyalty, wisdom, sacrifice",
+            ),
+        internalFlaw: z
+            .string()
+            .describe(
+                "The character's internal weakness or psychological challenge that creates internal adversity",
+            ),
+        externalGoal: z
+            .string()
+            .describe(
+                "The character's external objective or desire that drives their actions and creates external adversity",
+            ),
+        personality: personalitySchema.describe(
+            "Character's personality traits and values that shape their behavior and decisions",
         ),
-    isMain: z
-        .boolean()
-        .describe(
-            "Whether this is a main character (true) or supporting character (false)",
+        backstory: z
+            .string()
+            .describe(
+                "Character's history and formative experiences that explain their current state and motivations",
+            ),
+        physicalDescription: physicalDescriptionSchema.describe(
+            "Detailed physical appearance including age, looks, distinctive features, and style",
         ),
-    summary: z
-        .string()
-        .describe(
-            "2-3 sentence overview of the character's role and significance in the story",
+        voiceStyle: voiceStyleSchema.describe(
+            "How the character speaks and expresses themselves - tone, vocabulary, quirks, and emotional range",
         ),
-    coreTrait: z
-        .enum(CORE_TRAITS)
-        .describe(
-            "The primary virtue this character embodies - must be one of: courage, compassion, integrity, loyalty, wisdom, sacrifice",
-        ),
-    internalFlaw: z
-        .string()
-        .describe(
-            "The character's internal weakness or psychological challenge that creates internal adversity",
-        ),
-    externalGoal: z
-        .string()
-        .describe(
-            "The character's external objective or desire that drives their actions and creates external adversity",
-        ),
-    personality: personalitySchema.describe(
-        "Character's personality traits and values that shape their behavior and decisions",
-    ),
-    backstory: z
-        .string()
-        .describe(
-            "Character's history and formative experiences that explain their current state and motivations",
-        ),
-    physicalDescription: physicalDescriptionSchema.describe(
-        "Detailed physical appearance including age, looks, distinctive features, and style",
-    ),
-    voiceStyle: voiceStyleSchema.describe(
-        "How the character speaks and expresses themselves - tone, vocabulary, quirks, and emotional range",
-    ),
-});
+    });
 
 /**
  * TypeScript type for AI-generated character data (derived from Zod schema)
@@ -368,62 +385,76 @@ export type Setting = z.infer<typeof selectSettingSchema>;
 export type InsertSetting = z.infer<typeof insertSettingSchema>;
 
 /**
- * Minimal schema for setting generation (only fields AI generates)
- * Manually defined to avoid Gemini JSON schema validation issues with complex fields
- * Fields must match insertSettingSchema but without database-specific fields
+ * AI-generated setting fields schema
+ * Derived from insertSettingSchema (SSOT) using .pick()
+ * Picks only fields that AI generates, adds descriptions for Gemini
  */
-export const AiSettingZodSchema = z.object({
-    name: z
-        .string()
-        .max(255)
-        .describe(
-            "Setting name: The Last Garden, Refugee Camp, Downtown Market",
+export const AiSettingZodSchema = insertSettingSchema
+    .pick({
+        name: true,
+        summary: true,
+        adversityElements: true,
+        symbolicMeaning: true,
+        cycleAmplification: true,
+        mood: true,
+        emotionalResonance: true,
+        sensory: true,
+        architecturalStyle: true,
+        visualReferences: true,
+        colorPalette: true,
+    })
+    .extend({
+        name: z
+            .string()
+            .max(255)
+            .describe(
+                "Setting name: The Last Garden, Refugee Camp, Downtown Market",
+            ),
+        summary: z
+            .string()
+            .describe(
+                "Comprehensive paragraph (3-5 sentences) describing the setting's physical and emotional characteristics",
+            ),
+        adversityElements: adversityElementsSchema.describe(
+            "External conflict sources from the environment that create obstacles for characters",
         ),
-    summary: z
-        .string()
-        .describe(
-            "Comprehensive paragraph (3-5 sentences) describing the setting's physical and emotional characteristics",
+        symbolicMeaning: z
+            .string()
+            .describe(
+                "How setting reflects story's moral framework (1-2 sentences): Destroyed city represents broken trust and loss of community",
+            ),
+        cycleAmplification: cycleAmplificationSchema.describe(
+            "How the setting amplifies each phase of the adversity-triumph cycle through atmosphere and environment",
         ),
-    adversityElements: adversityElementsSchema.describe(
-        "External conflict sources from the environment that create obstacles for characters",
-    ),
-    symbolicMeaning: z
-        .string()
-        .describe(
-            "How setting reflects story's moral framework (1-2 sentences): Destroyed city represents broken trust and loss of community",
+        mood: z
+            .string()
+            .describe(
+                "Primary emotional quality: oppressive and surreal, hopeful but fragile, tense and uncertain",
+            ),
+        emotionalResonance: z
+            .string()
+            .describe(
+                "What emotion this setting amplifies: isolation, hope, fear, connection, despair",
+            ),
+        sensory: sensorySchema.describe(
+            "Concrete sensory details for show-don't-tell prose writing",
         ),
-    cycleAmplification: cycleAmplificationSchema.describe(
-        "How the setting amplifies each phase of the adversity-triumph cycle through atmosphere and environment",
-    ),
-    mood: z
-        .string()
-        .describe(
-            "Primary emotional quality: oppressive and surreal, hopeful but fragile, tense and uncertain",
-        ),
-    emotionalResonance: z
-        .string()
-        .describe(
-            "What emotion this setting amplifies: isolation, hope, fear, connection, despair",
-        ),
-    sensory: sensorySchema.describe(
-        "Concrete sensory details for show-don't-tell prose writing",
-    ),
-    architecturalStyle: z
-        .string()
-        .describe(
-            "Structural design language if applicable: brutalist concrete, traditional wooden, modern glass and steel",
-        ),
-    visualReferences: z
-        .array(z.string())
-        .describe(
-            "Style inspirations: Blade Runner 2049, Studio Ghibli countryside, Mad Max Fury Road",
-        ),
-    colorPalette: z
-        .array(z.string())
-        .describe(
-            "Dominant colors: warm golds, dusty browns, deep greens, ash gray, rust red",
-        ),
-});
+        architecturalStyle: z
+            .string()
+            .describe(
+                "Structural design language if applicable: brutalist concrete, traditional wooden, modern glass and steel",
+            ),
+        visualReferences: z
+            .array(z.string())
+            .describe(
+                "Style inspirations: Blade Runner 2049, Studio Ghibli countryside, Mad Max Fury Road",
+            ),
+        colorPalette: z
+            .array(z.string())
+            .describe(
+                "Dominant colors: warm golds, dusty browns, deep greens, ash gray, rust red",
+            ),
+    });
 
 /**
  * TypeScript type for generated setting data (AI output)
@@ -514,28 +545,34 @@ export type Part = z.infer<typeof selectPartSchema>;
 export type InsertPart = z.infer<typeof insertPartSchema>;
 
 /**
- * Minimal schema for part generation (only fields AI generates)
- * Manually defined to avoid Gemini JSON schema validation issues with complex fields
- * Fields must match insertPartSchema but without database-specific fields
+ * AI-generated part fields schema
+ * Derived from insertPartSchema (SSOT) using .pick()
+ * Picks only fields that AI generates, adds descriptions for Gemini
  */
-export const AiPartZodSchema = z.object({
-    title: z
-        .string()
-        .max(255)
-        .describe(
-            "Part title - should reflect the major story arc or theme of this section",
-        ),
-    summary: z
-        .string()
-        .describe(
-            "2-3 sentence overview of this part's narrative arc and character development",
-        ),
-    characterArcs: z
-        .array(characterArcSchema)
-        .describe(
-            "Collection of character development arcs that unfold during this part",
-        ),
-});
+export const AiPartZodSchema = insertPartSchema
+    .pick({
+        title: true,
+        summary: true,
+        characterArcs: true,
+    })
+    .extend({
+        title: z
+            .string()
+            .max(255)
+            .describe(
+                "Part title - should reflect the major story arc or theme of this section",
+            ),
+        summary: z
+            .string()
+            .describe(
+                "2-3 sentence overview of this part's narrative arc and character development",
+            ),
+        characterArcs: z
+            .array(characterArcSchema)
+            .describe(
+                "Collection of character development arcs that unfold during this part",
+            ),
+    });
 
 /**
  * TypeScript type for generated part data (AI output)
@@ -621,64 +658,80 @@ export type Chapter = z.infer<typeof selectChapterSchema>;
 export type InsertChapter = z.infer<typeof insertChapterSchema>;
 
 /**
- * Minimal schema for chapter generation (only fields AI generates)
- * Manually defined to avoid Gemini JSON schema validation issues with complex fields
- * Fields must match insertChapterSchema but without database-specific fields
+ * AI-generated chapter fields schema
+ * Derived from insertChapterSchema (SSOT) using .pick()
+ * Picks only fields that AI generates, adds descriptions for Gemini
  */
-export const AiChapterZodSchema = z.object({
-    title: z
-        .string()
-        .max(255)
-        .describe("Chapter title - engaging and descriptive"),
-    summary: z
-        .string()
-        .describe(
-            "2-3 sentence overview of the chapter's events and character development",
-        ),
-    arcPosition: z
-        .enum(CHAPTER_ARC_POSITIONS as unknown as [string, ...string[]])
-        .describe(
-            "Position in the macro story arc - must be one of: beginning, middle, climax, resolution",
-        ),
-    contributesToMacroArc: z
-        .string()
-        .describe(
-            "How this chapter advances the overall story arc and character development",
-        ),
-    focusCharacters: z
-        .array(z.string())
-        .describe(
-            "Array of character IDs who are the primary focus of this chapter",
-        ),
-    adversityType: z
-        .enum(ADVERSITY_TYPES as unknown as [string, ...string[]])
-        .describe(
-            "Type of adversity faced - must be one of: internal (psychological), external (physical/social), or both",
-        ),
-    virtueType: z
-        .enum(CORE_TRAITS)
-        .describe(
-            "Core virtue demonstrated in this chapter - must be one of: courage, compassion, integrity, loyalty, wisdom, sacrifice",
-        ),
-    seedsPlanted: z
-        .array(seedPlantedSchema)
-        .describe(
-            "Narrative elements introduced in this chapter for future payoff",
-        ),
-    seedsResolved: z
-        .array(seedResolvedSchema)
-        .describe("Previously planted seeds that are resolved in this chapter"),
-    connectsToPreviousChapter: z
-        .string()
-        .describe(
-            "How this chapter connects to and builds on the previous one",
-        ),
-    createsNextAdversity: z
-        .string()
-        .describe(
-            "New adversity or complication introduced for the next chapter",
-        ),
-});
+export const AiChapterZodSchema = insertChapterSchema
+    .pick({
+        title: true,
+        summary: true,
+        arcPosition: true,
+        contributesToMacroArc: true,
+        focusCharacters: true,
+        adversityType: true,
+        virtueType: true,
+        seedsPlanted: true,
+        seedsResolved: true,
+        connectsToPreviousChapter: true,
+        createsNextAdversity: true,
+    })
+    .extend({
+        title: z
+            .string()
+            .max(255)
+            .describe("Chapter title - engaging and descriptive"),
+        summary: z
+            .string()
+            .describe(
+                "2-3 sentence overview of the chapter's events and character development",
+            ),
+        arcPosition: z
+            .enum(CHAPTER_ARC_POSITIONS as unknown as [string, ...string[]])
+            .describe(
+                "Position in the macro story arc - must be one of: beginning, middle, climax, resolution",
+            ),
+        contributesToMacroArc: z
+            .string()
+            .describe(
+                "How this chapter advances the overall story arc and character development",
+            ),
+        focusCharacters: z
+            .array(z.string())
+            .describe(
+                "Array of character IDs who are the primary focus of this chapter",
+            ),
+        adversityType: z
+            .enum(ADVERSITY_TYPES as unknown as [string, ...string[]])
+            .describe(
+                "Type of adversity faced - must be one of: internal (psychological), external (physical/social), or both",
+            ),
+        virtueType: z
+            .enum(CORE_TRAITS)
+            .describe(
+                "Core virtue demonstrated in this chapter - must be one of: courage, compassion, integrity, loyalty, wisdom, sacrifice",
+            ),
+        seedsPlanted: z
+            .array(seedPlantedSchema)
+            .describe(
+                "Narrative elements introduced in this chapter for future payoff",
+            ),
+        seedsResolved: z
+            .array(seedResolvedSchema)
+            .describe(
+                "Previously planted seeds that are resolved in this chapter",
+            ),
+        connectsToPreviousChapter: z
+            .string()
+            .describe(
+                "How this chapter connects to and builds on the previous one",
+            ),
+        createsNextAdversity: z
+            .string()
+            .describe(
+                "New adversity or complication introduced for the next chapter",
+            ),
+    });
 
 /**
  * TypeScript type for generated chapter data (AI output)
@@ -728,56 +781,68 @@ export type Scene = z.infer<typeof selectSceneSchema>;
 export type InsertScene = z.infer<typeof insertSceneSchema>;
 
 /**
- * Minimal schema for scene summary generation (only fields AI generates)
- * Manually defined to avoid Gemini JSON schema validation issues with complex fields
- * Fields must match insertSceneSchema but without database-specific fields
+ * AI-generated scene summary fields schema
+ * Derived from insertSceneSchema (SSOT) using .pick()
+ * Picks only fields that AI generates, adds descriptions for Gemini
  */
-export const AiSceneSummaryZodSchema = z.object({
-    title: z
-        .string()
-        .max(255)
-        .describe("Scene title - descriptive and engaging"),
-    summary: z
-        .string()
-        .describe(
-            "Scene specification: what happens, emotional beat, purpose, and key moments",
-        ),
-    cyclePhase: z
-        .enum(CYCLE_PHASES)
-        .describe(
-            "Position in adversity-triumph cycle - must be one of: setup (establish adversity), confrontation (face challenge), virtue (moral action), consequence (earned payoff), transition (new adversity emerges)",
-        ),
-    emotionalBeat: z
-        .enum(EMOTIONAL_BEATS)
-        .describe(
-            "Target emotional response - must be one of: fear (dread/anxiety), hope (optimism/possibility), tension (conflict/suspense), relief (resolution/safety), elevation (moral inspiration), catharsis (emotional release), despair (loss/hopelessness), joy (happiness/triumph)",
-        ),
-    characterFocus: z
-        .array(z.string())
-        .describe(
-            "Array of character IDs who are the primary focus of this scene",
-        ),
-    settingId: z
-        .string()
-        .describe(
-            "Setting ID where this scene takes place (references Setting.id)",
-        ),
-    sensoryAnchors: z
-        .array(z.string())
-        .describe(
-            "Concrete sensory details to ground the scene (sight, sound, smell, touch, taste) - specific and evocative for show-don't-tell prose",
-        ),
-    dialogueVsDescription: z
-        .string()
-        .describe(
-            'Balance guidance for prose generation - format: "X% dialogue, Y% description" - example: "60% dialogue, 40% description" or "dialogue-heavy" or "description-focused"',
-        ),
-    suggestedLength: z
-        .enum(SUGGESTED_LENGTHS)
-        .describe(
-            "Recommended word count - must be one of: short (300-500 words), medium (500-800 words), long (800-1000 words)",
-        ),
-});
+export const AiSceneSummaryZodSchema = insertSceneSchema
+    .pick({
+        title: true,
+        summary: true,
+        cyclePhase: true,
+        emotionalBeat: true,
+        characterFocus: true,
+        settingId: true,
+        sensoryAnchors: true,
+        dialogueVsDescription: true,
+        suggestedLength: true,
+    })
+    .extend({
+        title: z
+            .string()
+            .max(255)
+            .describe("Scene title - descriptive and engaging"),
+        summary: z
+            .string()
+            .describe(
+                "Scene specification: what happens, emotional beat, purpose, and key moments",
+            ),
+        cyclePhase: z
+            .enum(CYCLE_PHASES)
+            .describe(
+                "Position in adversity-triumph cycle - must be one of: setup (establish adversity), confrontation (face challenge), virtue (moral action), consequence (earned payoff), transition (new adversity emerges)",
+            ),
+        emotionalBeat: z
+            .enum(EMOTIONAL_BEATS)
+            .describe(
+                "Target emotional response - must be one of: fear (dread/anxiety), hope (optimism/possibility), tension (conflict/suspense), relief (resolution/safety), elevation (moral inspiration), catharsis (emotional release), despair (loss/hopelessness), joy (happiness/triumph)",
+            ),
+        characterFocus: z
+            .array(z.string())
+            .describe(
+                "Array of character IDs who are the primary focus of this scene",
+            ),
+        settingId: z
+            .string()
+            .describe(
+                "Setting ID where this scene takes place (references Setting.id)",
+            ),
+        sensoryAnchors: z
+            .array(z.string())
+            .describe(
+                "Concrete sensory details to ground the scene (sight, sound, smell, touch, taste) - specific and evocative for show-don't-tell prose",
+            ),
+        dialogueVsDescription: z
+            .string()
+            .describe(
+                'Balance guidance for prose generation - format: "X% dialogue, Y% description" - example: "60% dialogue, 40% description" or "dialogue-heavy" or "description-focused"',
+            ),
+        suggestedLength: z
+            .enum(SUGGESTED_LENGTHS)
+            .describe(
+                "Recommended word count - must be one of: short (300-500 words), medium (500-800 words), long (800-1000 words)",
+            ),
+    });
 
 /**
  * TypeScript type for generated scene summary data (AI output)

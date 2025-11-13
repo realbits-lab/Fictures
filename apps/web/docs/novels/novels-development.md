@@ -40,6 +40,85 @@ All types follow a consistent layer-prefix pattern with explicit suffixes for se
 - `ZodSchema` - Zod validation schema (AI layer - SSOT)
 - `JsonSchema` - JSON Schema for Gemini API (AI layer - derived from Zod)
 
+### 1.3 Schema & Validation Architecture (Single Source of Truth)
+
+**Principle**: Database schema is the single source of truth. All validation schemas are auto-generated via `drizzle-zod`.
+
+**Architecture Flow**:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  src/lib/db/schema.ts (Drizzle ORM)                    │
+│  SINGLE SOURCE OF TRUTH                                 │
+│  - Define tables with pgTable()                         │
+│  - Database constraints (NOT NULL, length, etc.)        │
+└─────────────────┬───────────────────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────────────────────┐
+│  drizzle-zod (Auto-Generation Library)                  │
+│  - createInsertSchema() → Zod schema for INSERT         │
+│  - createSelectSchema() → Zod schema for SELECT         │
+└─────────────────┬───────────────────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────────────────────┐
+│  zod-schemas.generated.ts (Generated Schemas)           │
+│  - insertStorySchema, selectStorySchema                 │
+│  - insertCharacterSchema, selectCharacterSchema         │
+│  - insertChapterSchema, selectChapterSchema             │
+│  - insertSceneSchema, selectSceneSchema                 │
+│  - + AI-specific schemas (AiStoryZodSchema, etc.)       │
+└─────────────────┬───────────────────────────────────────┘
+                  │
+                  ├─────────────────┬─────────────────┐
+                  │                 │                 │
+                  ▼                 ▼                 ▼
+       ┌──────────────────┐ ┌─────────────┐ ┌──────────────┐
+       │  validation.ts   │ │ API Routes  │ │  Services    │
+       │  (+ warnings)    │ │ (validate)  │ │  (persist)   │
+       └──────────────────┘ └─────────────┘ └──────────────┘
+```
+
+**Files & Responsibilities**:
+
+| File | Purpose | Source |
+|------|---------|--------|
+| `src/lib/db/schema.ts` | Database schema (SSOT) | Manual (Drizzle) |
+| `zod-schemas.generated.ts` | Validation schemas | Auto-generated (drizzle-zod) |
+| `validation.ts` | Business logic (warnings, stats) | Uses generated schemas |
+| `validation-schemas.ts` | API request validation | Manual (different purpose) |
+
+**Benefits**:
+- ✅ **No Schema Drift**: DB and validation always match
+- ✅ **Single Update**: Change schema once, validation updates automatically
+- ✅ **Type Safety**: TypeScript types inferred from single source
+- ✅ **Consistency**: All layers use same schema definitions
+
+**Example Usage**:
+
+```typescript
+// ✅ CORRECT: Using auto-generated schema from SSOT
+import { insertStorySchema } from "@/lib/studio/generators/zod-schemas.generated";
+
+// Validate API request
+const validatedData = insertStorySchema.parse(requestBody);
+
+// Insert into database (types match perfectly!)
+await db.insert(stories).values(validatedData);
+
+// ❌ INCORRECT: Manual schema (causes drift)
+const manualSchema = z.object({
+  title: z.string().max(255),  // Can get out of sync with DB!
+});
+```
+
+**When to Update**:
+1. Modify `src/lib/db/schema.ts` (SSOT)
+2. Run `pnpm db:generate` (regenerate Drizzle types)
+3. Schemas in `zod-schemas.generated.ts` auto-update
+4. All validation uses updated schema automatically
+
 **Complete Type Hierarchy for Story Generation:**
 
 ```
