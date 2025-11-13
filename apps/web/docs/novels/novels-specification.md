@@ -856,8 +856,8 @@ interface Scene {
   summary: string; // Scene specification: what happens, emotional beat, purpose, sensory anchors
 
   // === CYCLE PHASE TRACKING ===
-  cyclePhase: 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition' | null;
-  emotionalBeat: 'fear' | 'hope' | 'tension' | 'relief' | 'elevation' | 'catharsis' | 'despair' | 'joy' | null;
+  cyclePhase: 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition';
+  emotionalBeat: 'fear' | 'hope' | 'tension' | 'relief' | 'elevation' | 'catharsis' | 'despair' | 'joy';
 
   // === PLANNING METADATA (Guides Content Generation) ===
   characterFocus: string[]; // Array of Character IDs, default: []
