@@ -562,75 +562,6 @@ export async function generateStory(
 }
 ```
 
-#### Implementation Details
-
-**Generator Flow**:
-1. Extract parameters with defaults
-2. Create text generation client (Gemini or AI Server)
-3. Get prompt template from `promptManager`
-4. Call `client.generateStructured()` with Zod schema
-5. Validate result with `AiStoryZodSchema`
-6. Return result with metadata
-
-**AI Configuration**:
-- **Model**: Gemini 2.5 Flash (via `TEXT_GENERATION_PROVIDER` env var)
-- **Temperature**: 0.3 (low for consistent JSON structure)
-- **Max Tokens**: 4096
-- **Method**: `generateStructured()` with Zod schema validation
-
-**Database Persistence**:
-- **NOTE**: This generator does NOT save to database
-- Database operations are handled by the API route caller
-- API route inserts into `stories` table after successful generation
-
-#### Usage Example
-
-```typescript
-import { generateStory } from '@/lib/studio/generators/story-generator';
-
-const result = await generateStory({
-  userPrompt: 'A story about finding courage in unexpected places',
-  preferredGenre: 'Fantasy',
-  preferredTone: 'hopeful',
-  language: 'English',
-  apiKey: 'fic_...'  // Optional: for API key auth
-});
-
-console.log(result.story.title);         // "The Unexpected Hero"
-console.log(result.story.genre);         // "Fantasy"
-console.log(result.story.tone);          // "hopeful"
-console.log(result.metadata.generationTime);  // 2341 (ms)
-```
-
-#### API Route Integration
-
-Story generation is typically called from `/api/studio/novels` (orchestrated) or can be accessed individually through custom endpoints.
-
-**Orchestrated Call** (as part of complete novel generation):
-```typescript
-// Inside /api/studio/novels/route.ts
-const storyResult = await generateStory({
-  userPrompt: body.userPrompt,
-  preferredGenre: body.preferredGenre,
-  preferredTone: body.preferredTone,
-  language: body.language
-});
-
-// Save to database
-const story = await db.insert(stories).values({
-  id: generateId(),
-  authorId: userId,
-  title: storyResult.story.title,
-  summary: storyResult.story.summary,
-  genre: storyResult.story.genre,
-  tone: storyResult.story.tone,
-  moralFramework: storyResult.story.moralFramework,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-  status: 'writing'
-}).returning();
-```
-
 ---
 
 ### 3.2 Character Generation API
@@ -688,14 +619,6 @@ Response:
   }>;
 }
 ```
-
-#### Implementation Notes
-- **AI Model**: Gemini 2.5 Flash (needs higher capability for character depth)
-- **Temperature**: 0.8 (need creativity for unique characters)
-- **Post-Processing**:
-  1. Validate all required fields present
-  2. Verify internalFlaw has cause ("because")
-  3. Store in database without images (images generated later via API 9)
 
 ---
 
@@ -762,16 +685,6 @@ Response:
 }
 ```
 
-#### Implementation Notes
-- **AI Model**: Gemini 2.5 Flash (needs high capability for symbolic reasoning and sensory richness)
-- **Temperature**: 0.8 (need creativity for unique, evocative settings)
-- **Post-Processing**:
-  1. Validate all required fields present
-  2. Check sensory arrays have minimum items (sight: 5+, sound: 3+, smell: 2+, touch: 2+)
-  3. Verify adversityElements has items in all 4 categories
-  4. Verify cycleAmplification has all 5 phases defined
-  5. Store in database without images (images generated later via API 9)
-
 ---
 
 ### 3.4 Part Generation API
@@ -805,11 +718,6 @@ Response:
   }[];
 }
 ```
-
-#### Implementation Notes
-- **AI Model**: Gemini 2.5 Flash (higher capability for complex multi-character planning)
-- **Temperature**: 0.8 (need creativity for compelling arcs)
-- **Post-Processing**: Parse into Part records, extract characterArcs JSON, validate seed logic
 
 ---
 
@@ -847,12 +755,6 @@ Response:
 }
 ```
 
-#### Implementation Notes
-- **AI Model**: Gemini 2.5 Flash (complex decomposition task)
-- **Temperature**: 0.7
-- **Iterative Generation**: Generate chapters one at a time
-- **Post-Processing**: Parse into Chapter records, extract seeds with UUIDs, build causal chain map
-
 ---
 
 ### 3.6 Scene Summary Generation API
@@ -886,11 +788,6 @@ Response:
 }
 ```
 
-#### Implementation Notes
-- **AI Model**: Gemini 2.5 Flash Lite (structured breakdown task)
-- **Temperature**: 0.6 (need consistency in specifications)
-- **Post-Processing**: Validate scene count, ensure virtue scene is marked long, check cycle phase coverage
-
 ---
 
 ### 3.7 Scene Content Generation API
@@ -919,12 +816,6 @@ Response:
   emotionalTone: string;
 }
 ```
-
-#### Implementation Notes
-- **AI Model**: Gemini 2.5 Flash Lite for most scenes, Gemini 2.5 Flash for complex virtue/consequence scenes
-- **Temperature**: 0.7
-- **Post-Processing**: Scene formatting (paragraph splitting, spacing), validation
-- **Prompt Version**: v1.1 (improved from v1.0 based on testing)
 
 ---
 
@@ -980,17 +871,6 @@ Response:
   improvements: string[]; // List of changes made
 }
 ```
-
-#### Implementation Notes
-- **AI Model**: Gemini 2.5 Flash (needs capability for nuanced literary analysis)
-- **Temperature**: 0.3 (need consistency in evaluation)
-- **Evaluation Loop**:
-  1. Evaluate scene content (first iteration)
-  2. If score < passingScore: Generate improvement feedback
-  3. Re-generate scene with feedback incorporated
-  4. Re-evaluate improved scene (second iteration)
-  5. Repeat until passing or max iterations reached
-- **Integration**: Called after scene content generation (API 7), before image generation (API 9)
 
 ---
 
@@ -1071,28 +951,6 @@ For EACH generated image, automatically create 4 optimized variants:
 - No WebP needed (only 1.5% coverage gap, adds 50% more variants)
 - Desktop uses mobile 2x (original 1344×768) - no upscaling needed
 - Optimized for comics with many panels per scene
-
-#### Implementation Notes
-- **Image Generation Model**: Gemini 2.5 Flash via Google AI API
-- **Optimization Service**: Sharp.js for variant creation
-- **Storage**: Vercel Blob with public access
-- **Database Updates**: Store imageUrl and imageVariants for each entity
-- **Batch Processing**: Generate 5 images at a time to avoid rate limits
-- **Error Handling**: Retry failed generations up to 3 times
-- **Progress Tracking**: Use SSE to report real-time progress to client
-
-**Generation Order**:
-1. Story cover (1 image)
-2. Characters (2-4 images)
-3. Settings (2-4 images)
-4. Scenes (per chapter, 3-7 per chapter × N chapters)
-
-**Performance**:
-- Story cover: ~5-15 seconds
-- Character portrait: ~5-15 seconds each
-- Setting environment: ~5-15 seconds each
-- Scene image: ~5-15 seconds each
-- Optimization: ~2 seconds per image (4 variants)
 
 ---
 
