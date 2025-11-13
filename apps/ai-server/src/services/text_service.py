@@ -200,6 +200,57 @@ class TextGenerationService:
             logger.error(f"Streaming text generation failed: {e}")
             raise
 
+    def _estimate_json_closing_tokens(self, json_schema: Dict[str, Any]) -> int:
+        """
+        Estimate how many tokens are needed to properly close a JSON structure.
+
+        Args:
+            json_schema: The JSON schema dict
+
+        Returns:
+            Estimated number of tokens needed for closing brackets/braces
+        """
+        # Estimate based on schema complexity
+        # Each level of nesting needs closing brackets
+        # Arrays need ], objects need }, plus commas and whitespace
+
+        def estimate_depth(schema: Any, current_depth: int = 0) -> int:
+            """Recursively estimate max nesting depth."""
+            if not isinstance(schema, dict):
+                return current_depth
+
+            max_depth = current_depth
+
+            # Check properties (object nesting)
+            if "properties" in schema:
+                for prop_schema in schema["properties"].values():
+                    depth = estimate_depth(prop_schema, current_depth + 1)
+                    max_depth = max(max_depth, depth)
+
+            # Check items (array nesting)
+            if "items" in schema:
+                depth = estimate_depth(schema["items"], current_depth + 1)
+                max_depth = max(max_depth, depth)
+
+            # Check oneOf, anyOf, allOf
+            for key in ["oneOf", "anyOf", "allOf"]:
+                if key in schema:
+                    for sub_schema in schema[key]:
+                        depth = estimate_depth(sub_schema, current_depth + 1)
+                        max_depth = max(max_depth, depth)
+
+            return max_depth
+
+        # Calculate estimated depth
+        depth = estimate_depth(json_schema)
+
+        # Rule of thumb: 10 tokens per nesting level + base buffer of 50
+        # This accounts for closing brackets, commas, and whitespace
+        estimated_tokens = (depth * 10) + 50
+
+        # Cap at reasonable maximum
+        return min(estimated_tokens, 300)
+
     async def generate_structured(
         self,
         prompt: str,
@@ -211,9 +262,10 @@ class TextGenerationService:
         max_tokens: int = 2048,
         temperature: float = 0.7,
         top_p: float = 0.9,
+        max_retries: int = 2,
     ) -> dict:
         """
-        Generate structured output using vLLM guided decoding.
+        Generate structured output using vLLM guided decoding with retry logic.
 
         Args:
             prompt: Input text prompt
@@ -225,12 +277,25 @@ class TextGenerationService:
             max_tokens: Maximum number of tokens to generate
             temperature: Sampling temperature (0.0 to 2.0)
             top_p: Nucleus sampling parameter (0.0 to 1.0)
+            max_retries: Maximum number of retries for incomplete JSON (default: 2)
 
         Returns:
             Dictionary containing structured output and metadata
         """
         if not self._initialized or self.engine is None:
             await self.initialize()
+
+        # Add buffer for JSON closing (approximately 200 tokens for safety)
+        # This ensures there's enough space to properly close nested structures
+        effective_max_tokens = max_tokens
+        if guided_type == "json" and json_schema:
+            # Estimate closing tokens needed based on schema depth
+            closing_buffer = self._estimate_json_closing_tokens(json_schema)
+            effective_max_tokens = max_tokens + closing_buffer
+            logger.info(
+                f"Added {closing_buffer} token buffer for JSON closing. "
+                f"Effective max_tokens: {effective_max_tokens}"
+            )
 
         try:
             # Create guided decoding params based on type
@@ -250,55 +315,106 @@ class TextGenerationService:
                     f"choices={choices is not None}, grammar={grammar is not None}"
                 )
 
-            # Create sampling parameters with guided decoding
-            sampling_params = SamplingParams(
-                temperature=temperature,
-                top_p=top_p,
-                max_tokens=max_tokens,
-                guided_decoding=guided_params,
-            )
+            # Retry loop for JSON generation
+            retry_count = 0
+            last_error = None
 
-            # Generate text with guided decoding
-            logger.info(
-                f"Generating structured output (type: {guided_type}) with prompt length: {len(prompt)}"
-            )
-            request_id = f"structured-{asyncio.current_task().get_name()}"
+            while retry_count <= max_retries:
+                # Create sampling parameters with guided decoding
+                # Use effective_max_tokens which includes buffer for closing
+                current_max_tokens = (
+                    effective_max_tokens if retry_count == 0 else effective_max_tokens * 1.2
+                )
 
-            results = []
-            async for request_output in self.engine.generate(
-                prompt, sampling_params, request_id=request_id
-            ):
-                results.append(request_output)
+                sampling_params = SamplingParams(
+                    temperature=temperature,
+                    top_p=top_p,
+                    max_tokens=int(current_max_tokens),
+                    guided_decoding=guided_params,
+                )
 
-            # Get final output
-            final_output = results[-1]
-            generated_text = final_output.outputs[0].text
-            tokens_used = len(final_output.outputs[0].token_ids)
-            finish_reason = final_output.outputs[0].finish_reason
+                # Generate text with guided decoding
+                attempt_msg = f" (attempt {retry_count + 1}/{max_retries + 1})" if retry_count > 0 else ""
+                logger.info(
+                    f"Generating structured output (type: {guided_type}) with prompt length: {len(prompt)}"
+                    f"{attempt_msg}"
+                )
+                request_id = f"structured-{asyncio.current_task().get_name()}-{retry_count}"
 
-            logger.info(
-                f"Structured output generation completed. Tokens used: {tokens_used}"
-            )
+                results = []
+                async for request_output in self.engine.generate(
+                    prompt, sampling_params, request_id=request_id
+                ):
+                    results.append(request_output)
 
-            # Parse JSON if type is "json"
-            parsed_output = None
-            is_valid = True
-            if guided_type == "json":
-                try:
-                    parsed_output = json.loads(generated_text)
-                    logger.info("JSON output parsed successfully")
-                except json.JSONDecodeError as e:
-                    logger.warning(f"Failed to parse JSON output: {e}")
-                    is_valid = False
+                # Get final output
+                final_output = results[-1]
+                generated_text = final_output.outputs[0].text
+                tokens_used = len(final_output.outputs[0].token_ids)
+                finish_reason = final_output.outputs[0].finish_reason
 
-            return {
-                "output": generated_text,
-                "parsed_output": parsed_output,
-                "model": self.model_name,
-                "tokens_used": tokens_used,
-                "finish_reason": finish_reason if finish_reason else "unknown",
-                "is_valid": is_valid,
-            }
+                logger.info(
+                    f"Structured output generation completed. Tokens used: {tokens_used}"
+                )
+
+                # Parse JSON if type is "json"
+                parsed_output = None
+                is_valid = True
+                if guided_type == "json":
+                    try:
+                        parsed_output = json.loads(generated_text)
+                        logger.info("JSON output parsed successfully")
+                        # Success! Return immediately
+                        return {
+                            "output": generated_text,
+                            "parsed_output": parsed_output,
+                            "model": self.model_name,
+                            "tokens_used": tokens_used,
+                            "finish_reason": finish_reason if finish_reason else "unknown",
+                            "is_valid": True,
+                            "retry_count": retry_count,
+                        }
+                    except json.JSONDecodeError as e:
+                        last_error = e
+                        logger.warning(
+                            f"Failed to parse JSON output (attempt {retry_count + 1}): {e}"
+                        )
+                        is_valid = False
+
+                        # If we've exhausted retries, return the last attempt
+                        if retry_count >= max_retries:
+                            logger.error(
+                                f"JSON parsing failed after {retry_count + 1} attempts. "
+                                f"Returning invalid output."
+                            )
+                            return {
+                                "output": generated_text,
+                                "parsed_output": None,
+                                "model": self.model_name,
+                                "tokens_used": tokens_used,
+                                "finish_reason": finish_reason if finish_reason else "unknown",
+                                "is_valid": False,
+                                "retry_count": retry_count,
+                                "error": str(last_error),
+                            }
+
+                        # Retry with increased tokens
+                        retry_count += 1
+                        logger.info(
+                            f"Retrying JSON generation with increased max_tokens: "
+                            f"{int(effective_max_tokens * 1.2 * retry_count)}"
+                        )
+                else:
+                    # Not JSON type, return immediately
+                    return {
+                        "output": generated_text,
+                        "parsed_output": parsed_output,
+                        "model": self.model_name,
+                        "tokens_used": tokens_used,
+                        "finish_reason": finish_reason if finish_reason else "unknown",
+                        "is_valid": is_valid,
+                        "retry_count": 0,
+                    }
 
         except Exception as e:
             logger.error(f"Structured output generation failed: {e}")
