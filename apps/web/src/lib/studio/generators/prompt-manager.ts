@@ -69,9 +69,12 @@ Generate characters with exactly these fields:
 1. **name** (string, max 255 chars)
    - Character's full name, memorable and fitting the genre
 
-2. **isMain** (boolean)
-   - true = Main character (gets MACRO arc, drives story)
-   - false = Supporting character (enriches story world)
+2. **role** (string, must be ONE of: protagonist, deuteragonist, tritagonist, antagonist, supporting)
+   - protagonist = Main character (drives primary narrative, gets MACRO arc)
+   - deuteragonist = Second most important character (supporting protagonist)
+   - tritagonist = Third most important character (adds complexity)
+   - antagonist = Opposes protagonist (creates conflict)
+   - supporting = Supporting character (enriches story world)
 
 3. **summary** (string, 2-3 sentences)
    - Format: "[CoreTrait] [role] with [internalFlaw], seeking [externalGoal]"
@@ -230,7 +233,7 @@ Language: {language}
 REQUIRED OUTPUT:
 Generate a character object with ALL 10 required fields as specified in the system prompt:
 1. name (string)
-2. isMain (boolean) - {characterType} characters
+2. role (one of: protagonist, deuteragonist, tritagonist, antagonist, supporting) - {characterType} characters
 3. summary (string, 2-3 sentences)
 4. coreTrait (one of: courage, compassion, integrity, loyalty, wisdom, sacrifice)
 5. internalFlaw (string with cause: "[fears/believes/wounded by] X because Y")
@@ -281,20 +284,31 @@ The setting MUST create external conflict through four categories:
 Connect setting to story's moral framework (1-2 sentences):
 - Example: "Destroyed city represents broken trust and loss of community—garden becomes symbol of healing and renewal"
 
-# CYCLE AMPLIFICATION
+# ELEMENT ARRAYS
 
-Specify HOW setting amplifies each phase (guides scene content generation):
+Settings use **element arrays** that provide specific features for different cycle phases:
 
-- **Setup**: How environment establishes adversity
-  - Example: "oppressive heat weighs on characters"
-- **Confrontation**: How setting intensifies conflict
-  - Example: "confined space forces interaction"
-- **Virtue**: How setting contrasts/witnesses moral beauty
-  - Example: "barren land vs. act of nurture"
-- **Consequence**: How setting transforms or reveals
-  - Example: "garden blooms, proving hope possible"
-- **Transition**: How setting hints at new problems
-  - Example: "storm clouds gathering"
+## Virtue Elements
+Amplify moral elevation moments and witness virtuous actions:
+- **witnessElements**: Who/what witnesses moral acts (2-5 items)
+  - Examples: "neighborhood children", "elderly shopkeeper", "migrating birds"
+- **contrastElements**: Elements making virtue powerful by contrast (2-5 items)
+  - Examples: "barren wasteland", "crumbling walls", "abandoned homes"
+- **opportunityElements**: Features enabling moral choices (2-5 items)
+  - Examples: "community garden plot", "shared water well", "open courtyard"
+- **sacredSpaces**: Locations with moral/emotional significance (1-3 items)
+  - Examples: "memorial tree", "old meeting hall", "grandmother's bench"
+
+## Consequence Elements
+Amplify karmic payoffs and show transformation:
+- **transformativeElements**: Features showing change/impact (2-5 items)
+  - Examples: "sprouting seeds", "repaired fence", "returning wildlife"
+- **rewardSources**: Sources of karmic payoff (2-5 items)
+  - Examples: "grateful neighbors", "discovered resources", "unexpected allies"
+- **revelationTriggers**: Elements revealing hidden connections (2-5 items)
+  - Examples: "old photographs", "overheard conversations", "shared memories"
+- **communityResponses**: How setting inhabitants respond (2-5 items)
+  - Examples: "neighbors gathering", "children playing", "doors opening"
 
 # SENSORY IMMERSION (For Prose Generation)
 
@@ -323,7 +337,7 @@ Provide SPECIFIC sensory details (not generic):
 {story}
 
 REQUIRED OUTPUT:
-Generate a setting object with ALL 11 required fields as specified in the system prompt:
+Generate a setting object with ALL 12 required fields as specified in the system prompt:
 
 1. **name** (string, max 255 chars)
    - Evocative location name (e.g., "The Last Garden", "Refugee Camp", "Downtown Market")
@@ -341,33 +355,38 @@ Generate a setting object with ALL 11 required fields as specified in the system
    - How setting reflects story's moral framework
    - Example: "Destroyed city represents broken trust and loss of community"
 
-5. **cycleAmplification** (object with 5 fields)
-   - setup: How setting establishes adversity (e.g., "oppressive heat weighs on characters")
-   - confrontation: How setting intensifies conflict (e.g., "confined space forces interaction")
-   - virtue: How setting contrasts/witnesses moral beauty (e.g., "barren land vs. act of nurture")
-   - consequence: How setting transforms or reveals (e.g., "garden blooms, proving hope possible")
-   - transition: How setting hints at new problems (e.g., "storm clouds gathering")
+5. **virtueElements** (object with 4 arrays)
+   - witnessElements: array of who/what witnesses moral acts (2-5 items)
+   - contrastElements: array of elements making virtue powerful by contrast (2-5 items)
+   - opportunityElements: array of features enabling moral choices (2-5 items)
+   - sacredSpaces: array of locations with moral/emotional significance (1-3 items)
 
-6. **mood** (string)
+6. **consequenceElements** (object with 4 arrays)
+   - transformativeElements: array of features showing change/impact (2-5 items)
+   - rewardSources: array of sources of karmic payoff (2-5 items)
+   - revelationTriggers: array of elements revealing hidden connections (2-5 items)
+   - communityResponses: array of how setting inhabitants respond (2-5 items)
+
+7. **mood** (string)
    - Primary emotional quality (e.g., "oppressive and surreal", "hopeful but fragile", "tense and uncertain")
 
-7. **emotionalResonance** (string)
+8. **emotionalResonance** (string)
    - What emotion this setting amplifies (e.g., "isolation", "hope", "fear", "connection", "despair")
 
-8. **sensory** (object with 5 arrays)
+9. **sensory** (object with 5 arrays)
    - sight: array of 5-10 specific visual details (e.g., ["cracked asphalt", "faded paint", "rust-stained walls"])
    - sound: array of 3-7 auditory elements (e.g., ["wind rattling leaves", "distant sirens", "children's laughter"])
    - smell: array of 2-5 olfactory details (e.g., ["damp earth", "cooking spices", "gasoline"])
    - touch: array of 2-5 tactile sensations (e.g., ["rough concrete", "cool breeze", "gritty dust"])
    - taste: array of 0-2 flavor elements (optional) (e.g., ["metallic tang", "bitter smoke"])
 
-9. **architecturalStyle** (string)
-   - Structural design language if applicable (e.g., "brutalist concrete", "traditional wooden", "modern glass and steel")
+10. **architecturalStyle** (string)
+    - Structural design language if applicable (e.g., "brutalist concrete", "traditional wooden", "modern glass and steel")
 
-10. **visualReferences** (array of strings)
+11. **visualReferences** (array of strings)
     - Style inspirations (e.g., ["Blade Runner 2049", "Studio Ghibli countryside", "Mad Max Fury Road"])
 
-11. **colorPalette** (array of strings)
+12. **colorPalette** (array of strings)
     - Dominant colors (e.g., ["warm golds", "dusty browns", "deep greens", "ash gray", "rust red"])
 
 Ensure the setting:
@@ -398,7 +417,13 @@ Ensure the setting:
 
 # SETTINGS USAGE
 
-Use the provided settings to:
+**Setting Selection for Part**:
+- Choose 2-4 settings from Story.settings that fit this part's atmosphere
+- Consider setting's symbolicMeaning alignment with act themes
+- Ensure variety: different settings for different act moods
+- Store selected setting IDs in Part.settingIds for chapter generation
+
+**Setting Integration**:
 - Ground character arcs in specific, atmospheric locations
 - Leverage sensory details (mood, lighting, sounds, temperature) to enhance emotional beats
 - Match setting atmosphere to arc positions (e.g., darker settings for adversity, hopeful settings for consequence)
@@ -527,8 +552,15 @@ Design MACRO adversity-triumph arcs for each character across this act, ensuring
 3. Each MACRO arc spans 2-4 chapters (progressive transformation, not rushed)
 4. Stakes escalate appropriately for Act {partNumber}
 5. Character arcs show gradual, earned transformation
+6. Select 2-4 settings from the provided settings that match this part's atmosphere and themes
 
-Return structured text with clear section headers for each character's macro arc and character interactions.`,
+**Required Output Fields**:
+- title: Part title
+- summary: Comprehensive part description
+- characterArcs: Array of macro arcs for each main character (role: protagonist, deuteragonist, tritagonist)
+- settingIds: Array of 2-4 setting IDs selected from the provided settings
+
+Return structured text with clear section headers for each character's macro arc, character interactions, and selected setting IDs.`,
             },
 
             chapter: {
@@ -679,7 +711,26 @@ IMPORTANT INSTRUCTIONS:
 
 3. Balance focus across characters by rotating arcs for variety
 
-4. Use the provided settings to enhance emotional beats and atmosphere
+4. Select 1-3 settings from Part.settingIds that fit this chapter's needs
+
+5. Generate structured characterArc object tracking this chapter's micro-cycle
+
+**Required Output Fields**:
+- title: Chapter title
+- summary: Comprehensive chapter description
+- arcPosition: beginning | middle | climax | resolution
+- characterArc: {
+    characterId: string (focused character ID)
+    microAdversity: { internal: string, external: string }
+    microVirtue: string (moral choice)
+    microConsequence: string (earned result)
+    microNewAdversity: string (next problem)
+  }
+- settingIds: Array of 1-3 setting IDs from Part.settingIds
+- seedsPlanted: Array of seeds for future payoffs
+- seedsResolved: Array of resolved seeds from past chapters
+- connectsToPreviousChapter: How previous chapter created this adversity
+- createsNextAdversity: How this creates next problem
 
 Return structured chapter data following the template specified in the system prompt.`,
             },
@@ -704,12 +755,12 @@ Detailed specification (200-400 words) including:
 - How it connects to previous/next scene
 
 ## 3. CYCLE PHASE
-One of: setup, confrontation, virtue, consequence, transition
+One of: setup, adversity, virtue, consequence, transition
 
 ## 4. EMOTIONAL BEAT
 Primary emotion this scene should evoke:
 - setup → fear, tension, anxiety
-- confrontation → desperation, determination, conflict
+- adversity → desperation, determination, conflict
 - virtue → elevation, moral beauty, witnessing goodness
 - consequence → catharsis, joy, relief, surprise, gam-dong
 - transition → anticipation, dread, curiosity
@@ -733,14 +784,14 @@ Guidance on balance:
 
 ## 8. SUGGESTED LENGTH
 - short: 300-500 words (transition, quick setup)
-- medium: 500-800 words (confrontation, consequence)
+- medium: 500-800 words (adversity, consequence)
 - long: 800-1000 words (virtue scene - THE moment)
 
 # SCENE DISTRIBUTION REQUIREMENTS
 
 For a complete adversity-triumph cycle:
 - 1-2 Setup scenes (establish adversity)
-- 1-3 Confrontation scenes (build tension)
+- 1-3 Adversity scenes (build tension, face challenge)
 - 1 Virtue scene (THE PEAK - must be longest)
 - 1-2 Consequence scenes (deliver payoff)
 - 1 Transition scene (hook to next chapter)
@@ -847,7 +898,7 @@ Write: "She uncapped the bottle. Tilted it. The first drop caught the light. Fel
 - Show both internal conflict and external threat
 - Create intimacy between reader and character
 
-## IF CYCLE PHASE = "confrontation"
+## IF CYCLE PHASE = "adversity"
 **Goal**: Externalize internal conflict, escalate tension
 
 - Dramatize struggle through action and dialogue
