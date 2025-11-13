@@ -858,8 +858,6 @@ The 4-phase narrative cycle (Adversity → Virtue → Consequence → New Advers
 }
 ```
 
-**Note**: `chapterId` and `orderIndex` are automatically handled by the system (not part of generation data). Scene `content` is generated separately in section 2.7.2 (Execution Phase).
-
 #### 2.7.2 Scene Content Generation (Execution Phase)
 
 **Purpose**: Generate full prose narrative content for each scene using its summary and metadata
