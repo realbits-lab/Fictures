@@ -513,444 +513,266 @@ ApiStoryResponse (API Layer)
 
 **Phase 1 of 9** - Creates the story foundation that establishes theme, moral framework, and genre/tone guidance.
 
-#### Generator Function
+**API Endpoint**: `POST /api/studio/story`
+**Service Function**: `storyService.generateAndSave()` (`src/lib/studio/services/story-service.ts`)
+**Generator Function**: `generateStory()` (`src/lib/studio/generators/story-generator.ts`)
 
-**Location**: `src/lib/studio/generators/story-generator.ts`
-
-```typescript
-export async function generateStory(
-  params: GeneratorStoryParams
-): Promise<GeneratorStoryResult>
+**Type Flow**:
 ```
-
-#### Parameters (`GeneratorStoryParams`)
-
-```typescript
-{
-  userPrompt: string;                    // Required: User's story concept
-  preferredGenre?: StoryGenre;          // Optional: Genre preference (default: "Slice")
-  preferredTone?: StoryTone;            // Optional: Tone preference (default: "hopeful")
-  language?: string;                    // Optional: Output language (default: "English")
-  apiKey?: string;                      // Optional: API key for authentication
-}
-```
-
-**Genre Options**: Fantasy, Romance, SciFi, Mystery, Horror, Action, Isekai, LitRPG, Cultivation, Slice, Paranormal, Dystopian, Historical, LGBTQ
-
-**Tone Options**: hopeful, dark, bittersweet, satirical
-
-#### Return Value (`GeneratorStoryResult`)
-
-```typescript
-{
-  story: AiStoryType;                   // Generated story data
-  metadata: {
-    generationTime: number;             // Time in milliseconds
-    model?: string;                     // AI model used ("gemini" | "ai-server")
-  }
-}
-```
-
-**AiStoryType** Structure:
-```typescript
-{
-  title: string;                        // Story title (max 255 chars)
-  summary: string;                      // 2-3 sentence thematic premise
-  genre: StoryGenre;                    // Selected genre
-  tone: StoryTone;                      // Selected tone
-  moralFramework: string;               // Moral rules of the story world
-}
+ApiStoryRequest (API Layer)
+    ↓
+ServiceStoryParams (Service Layer)
+    ↓ storyService.generateAndSave()
+GeneratorStoryParams (Generator Layer)
+    ↓ generateStory()
+AiStoryZodSchema (AI Layer - validation)
+    ↓ textGenerationClient.generateStructured()
+AiStoryType (AI Layer - result)
+    ↓
+GeneratorStoryResult (Generator Layer)
+    ↓ db.insert(stories)
+ServiceStoryResult (Service Layer)
+    ↓
+ApiStoryResponse (API Layer)
 ```
 
 ---
 
 ### 3.2 Character Generation API
 
-**IMPORTANT:** This is a completely separate generation phase that runs AFTER story generation. Characters are designed FROM SCRATCH based on the story's moral framework.
+**Phase 2 of 9** - Generates 2-4 main characters with complete profiles designed from the story's moral framework.
 
-#### Endpoint
-```typescript
-POST /api/studio/characters
+**API Endpoint**: `POST /api/studio/characters`
+**Service Function**: `characterService.generateAndSave()` (`src/lib/studio/services/character-service.ts`)
+**Generator Function**: `generateCharacters()` (`src/lib/studio/generators/characters-generator.ts`)
 
-Request:
-{
-  storyId: string;
-  story: {              // Story metadata from Phase 1
-    title: string;
-    summary: string;
-    genre: string;
-    tone: string;
-    moralFramework: string;
-  };
-  characterCount: number;  // How many characters to generate (typically 2-4)
-  language?: string;       // Default: 'English'
-}
-
-Response:
-{
-  characters: Array<{
-    id: string;
-    name: string;
-    isMain: boolean;
-    summary: string;
-    coreTrait: string;
-    internalFlaw: string;
-    externalGoal: string;
-    personality: {
-      traits: string[];
-      values: string[];
-    };
-    backstory: string;
-    relationships: Record<string, Relationship>;
-    physicalDescription: {
-      age: string;
-      appearance: string;
-      distinctiveFeatures: string;
-      style: string;
-    };
-    voiceStyle: {
-      tone: string;
-      vocabulary: string;
-      quirks: string[];
-      emotionalRange: string;
-    };
-    imageUrl: string;
-    imageVariants: ImageVariantSet;
-  }>;
-}
+**Type Flow**:
+```
+ApiCharactersRequest (API Layer)
+    ↓
+ServiceCharactersParams (Service Layer)
+    ↓ characterService.generateAndSave()
+GeneratorCharactersParams (Generator Layer)
+    ↓ generateCharacters()
+AiCharacterZodSchema (AI Layer - validation)
+    ↓ textGenerationClient.generateStructured()
+AiCharacterType[] (AI Layer - result)
+    ↓
+GeneratorCharactersResult (Generator Layer)
+    ↓ db.insert(characters)
+ServiceCharactersResult (Service Layer)
+    ↓
+ApiCharactersResponse (API Layer)
 ```
 
 ---
 
 ### 3.3 Settings Generation API
 
-#### Endpoint
-```typescript
-POST /api/studio/settings
+**Phase 3 of 9** - Generates 2-6 primary settings with environmental elements that amplify cycle phases.
 
-Request:
-{
-  storyId: string;
-  storyContext: {
-    summary: string;
-    genre: string;
-    tone: string;
-    moralFramework: string;
-  };
-  characters: Array<{  // For social dynamics and symbolic connections
-    name: string;
-    coreTrait: string;
-    internalFlaw: string;
-  }>;
-  numberOfSettings?: number; // Default: 2-4 primary settings
-  visualStyle: 'realistic' | 'anime' | 'painterly' | 'cinematic';
-}
+**API Endpoint**: `POST /api/studio/settings`
+**Service Function**: `settingService.generateAndSave()` (`src/lib/studio/services/setting-service.ts`)
+**Generator Function**: `generateSettings()` (`src/lib/studio/generators/settings-generator.ts`)
 
-Response:
-{
-  settings: Array<{
-    id: string;
-    name: string;
-    description: string;
-    adversityElements: {
-      physicalObstacles: string[];
-      scarcityFactors: string[];
-      dangerSources: string[];
-      socialDynamics: string[];
-    };
-    symbolicMeaning: string;
-    cycleAmplification: {
-      setup: string;
-      confrontation: string;
-      virtue: string;
-      consequence: string;
-      transition: string;
-    };
-    mood: string;
-    emotionalResonance: string;
-    sensory: {
-      sight: string[];
-      sound: string[];
-      smell: string[];
-      touch: string[];
-      taste: string[];
-    };
-    architecturalStyle?: string;
-    visualStyle: string;
-    visualReferences: string[];
-    colorPalette: string[];
-    imageUrl: string;
-    imageVariants: ImageVariantSet;
-  }>;
-}
+**Type Flow**:
+```
+ApiSettingsRequest (API Layer)
+    ↓
+ServiceSettingsParams (Service Layer)
+    ↓ settingService.generateAndSave()
+GeneratorSettingsParams (Generator Layer)
+    ↓ generateSettings()
+AiSettingZodSchema (AI Layer - validation)
+    ↓ textGenerationClient.generateStructured()
+AiSettingType[] (AI Layer - result)
+    ↓
+GeneratorSettingsResult (Generator Layer)
+    ↓ db.insert(settings)
+ServiceSettingsResult (Service Layer)
+    ↓
+ApiSettingsResponse (API Layer)
 ```
 
 ---
 
 ### 3.4 Part Generation API
 
-#### Endpoint
-```typescript
-POST /api/studio/part
+**Phase 4 of 9** - Defines MACRO adversity-triumph arcs for each main character within this act.
 
-Request:
-{
-  storyId: string;
-  summary: string;
-  moralFramework: string;
-  characters: Character[];
-  numberOfParts?: number; // Default: 3
-}
+**API Endpoint**: `POST /api/studio/part`
+**Service Function**: `partService.generateAndSave()` (`src/lib/studio/services/part-service.ts`)
+**Generator Function**: `generatePart()` (`src/lib/studio/generators/part-generator.ts`)
 
-Response:
-{
-  parts: {
-    actNumber: number;
-    title: string;
-    summary: string;
-    characterArcs: {
-      characterId: string;
-      adversity: { internal: string; external: string; };
-      virtue: string;
-      consequence: string;
-      newAdversity: string;
-    }[];
-  }[];
-}
+**Type Flow**:
+```
+ApiPartRequest (API Layer)
+    ↓
+ServicePartParams (Service Layer)
+    ↓ partService.generateAndSave()
+GeneratorPartParams (Generator Layer)
+    ↓ generatePart()
+AiPartZodSchema (AI Layer - validation)
+    ↓ textGenerationClient.generateStructured()
+AiPartType (AI Layer - result)
+    ↓
+GeneratorPartResult (Generator Layer)
+    ↓ db.insert(parts)
+ServicePartResult (Service Layer)
+    ↓
+ApiPartResponse (API Layer)
 ```
 
 ---
 
 ### 3.5 Chapter Generation API
 
-#### Endpoint
-```typescript
-POST /api/studio/chapter
+**Phase 5 of 9** - Creates one complete adversity-triumph micro-cycle that progressively builds the character's macro arc.
 
-Request:
-{
-  storyId: string;
-  partId: string;
-  partSummary: string;
-  numberOfChapters: number;
-  previousChapterSummary?: string;
-}
+**API Endpoint**: `POST /api/studio/chapter`
+**Service Function**: `chapterService.generateAndSave()` (`src/lib/studio/services/chapter-service.ts`)
+**Generator Function**: `generateChapter()` (`src/lib/studio/generators/chapter-generator.ts`)
 
-Response:
-{
-  chapters: {
-    title: string;
-    summary: string;
-    characterId: string; // The character whose MACRO arc this chapter advances
-    arcPosition: 'beginning' | 'middle' | 'climax' | 'resolution';
-    contributesToMacroArc: string;
-    focusCharacters: string[];
-    adversityType: string;
-    virtueType: string;
-    seedsPlanted: Seed[];
-    seedsResolved: SeedResolution[];
-    connectsToPreviousChapter: string;
-    createsNextAdversity: string;
-  }[];
-}
+**Type Flow**:
+```
+ApiChapterRequest (API Layer)
+    ↓
+ServiceChapterParams (Service Layer)
+    ↓ chapterService.generateAndSave()
+GeneratorChapterParams (Generator Layer)
+    ↓ generateChapter()
+AiChapterZodSchema (AI Layer - validation)
+    ↓ textGenerationClient.generateStructured()
+AiChapterType (AI Layer - result)
+    ↓
+GeneratorChapterResult (Generator Layer)
+    ↓ db.insert(chapters)
+ServiceChapterResult (Service Layer)
+    ↓
+ApiChapterResponse (API Layer)
 ```
 
 ---
 
 ### 3.6 Scene Summary Generation API
 
-#### Endpoint
-```typescript
-POST /api/studio/scene-summary
+**Phase 6a of 9** - Divides chapter's adversity-triumph cycle into 3-7 narrative beats (scene summaries only, no content).
 
-Request:
-{
-  storyId: string;
-  chapterId: string;
-  chapterSummary: string;
-  numberOfScenes: number; // Typically 3-7
-  storySummary: string;
-  characters: Character[];
-}
+**API Endpoint**: `POST /api/studio/scene-summary`
+**Service Function**: `sceneSummaryService.generateAndSave()` (`src/lib/studio/services/scene-summary-service.ts`)
+**Generator Function**: `generateSceneSummaries()` (`src/lib/studio/generators/scene-summary-generator.ts`)
 
-Response:
-{
-  scenes: {
-    title: string;
-    summary: string; // Scene specification
-    cyclePhase: 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition';
-    emotionalBeat: string;
-    characterFocus: string[];
-    sensoryAnchors: string[];
-    dialogueVsDescription: string;
-    suggestedLength: 'short' | 'medium' | 'long';
-  }[];
-}
+**Type Flow**:
+```
+ApiSceneSummaryRequest (API Layer)
+    ↓
+ServiceSceneSummaryParams (Service Layer)
+    ↓ sceneSummaryService.generateAndSave()
+GeneratorSceneSummaryParams (Generator Layer)
+    ↓ generateSceneSummaries()
+AiSceneSummaryZodSchema (AI Layer - validation)
+    ↓ textGenerationClient.generateStructured()
+AiSceneSummaryType[] (AI Layer - result)
+    ↓
+GeneratorSceneSummaryResult (Generator Layer)
+    ↓ db.insert(scenes) [summary only]
+ServiceSceneSummaryResult (Service Layer)
+    ↓
+ApiSceneSummaryResponse (API Layer)
 ```
 
 ---
 
 ### 3.7 Scene Content Generation API
 
-#### Endpoint
-```typescript
-POST /api/studio/scene-content
+**Phase 6b of 9** - Generates full prose narrative content for each scene using its summary and metadata.
 
-Request:
-{
-  storyId: string;
-  sceneId: string;
-  sceneSummary: string; // Scene specification from Scene.summary
-  cyclePhase: string;
-  emotionalBeat: string;
-  chapterSummary: string;
-  storySummary: string;
-  characters: Character[];
-  previousSceneContent?: string;
-}
+**API Endpoint**: `POST /api/studio/scene-content`
+**Service Function**: `sceneContentService.generateAndUpdate()` (`src/lib/studio/services/scene-content-service.ts`)
+**Generator Function**: `generateSceneContent()` (`src/lib/studio/generators/scene-content-generator.ts`)
 
-Response:
-{
-  content: string;
-  wordCount: number;
-  emotionalTone: string;
-}
+**Type Flow**:
+```
+ApiSceneContentRequest (API Layer)
+    ↓
+ServiceSceneContentParams (Service Layer)
+    ↓ sceneContentService.generateAndUpdate()
+GeneratorSceneContentParams (Generator Layer)
+    ↓ generateSceneContent()
+string (prose content - no Zod schema)
+    ↓ textGenerationClient.generate()
+GeneratorSceneContentResult (Generator Layer)
+    ↓ db.update(scenes).set({ content })
+ServiceSceneContentResult (Service Layer)
+    ↓
+ApiSceneContentResponse (API Layer)
 ```
 
 ---
 
 ### 3.8 Scene Evaluation & Improvement API
 
-#### Endpoint
-```typescript
-POST /api/studio/scene-evaluation
+**Phase 7 of 9** - Evaluates scene quality and iteratively improves until passing score (3.0+/4.0).
 
-Request:
-{
-  sceneId: string;
-  content: string;
-  context: {
-    storyGenre: string;
-    cyclePhase: 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition';
-    arcPosition: 'beginning' | 'middle' | 'climax' | 'resolution';
-    chapterNumber: number;
-    characterContext: string[]; // Character summary
-  };
-  options?: {
-    maxIterations?: number; // Default: 2
-    passingScore?: number; // Default: 3.0
-    improvementLevel?: 'light' | 'moderate' | 'heavy'; // Default: 'moderate'
-  };
-}
+**API Endpoint**: `POST /api/studio/scene-evaluation`
+**Service Function**: `sceneEvaluationService.evaluateAndImprove()` (`src/lib/studio/services/scene-evaluation-service.ts`)
+**Generator Function**: `evaluateAndImproveScene()` (`src/lib/studio/generators/scene-evaluation-generator.ts`)
 
-Response:
-{
-  scene: {
-    id: string;
-    content: string; // Final improved content
-  };
-  evaluations: Array<{
-    iteration: number;
-    scores: {
-      plot: number;          // 1-4 scale
-      character: number;     // 1-4 scale
-      pacing: number;        // 1-4 scale
-      prose: number;         // 1-4 scale
-      worldBuilding: number; // 1-4 scale
-    };
-    overallScore: number;    // Average of 5 categories
-    feedback: {
-      strengths: string[];
-      improvements: string[];
-      priorityFixes: string[];
-    };
-  }>;
-  iterations: number;
-  finalScore: number;
-  passed: boolean;
-  improvements: string[]; // List of changes made
-}
+**Type Flow**:
+```
+ApiSceneEvaluationRequest (API Layer)
+    ↓
+ServiceSceneEvaluationParams (Service Layer)
+    ↓ sceneEvaluationService.evaluateAndImprove()
+GeneratorSceneEvaluationParams (Generator Layer)
+    ↓ evaluateAndImproveScene()
+    ├─ evaluateScene() → AiSceneEvaluationType
+    └─ improveScene() → string (improved content)
+GeneratorSceneEvaluationResult (Generator Layer)
+    ↓ db.update(scenes).set({ content, evaluationScore })
+ServiceSceneEvaluationResult (Service Layer)
+    ↓
+ApiSceneEvaluationResponse (API Layer)
 ```
 
 ---
 
 ### 3.9 Image Generation API
 
-#### Endpoint
-```typescript
-POST /api/studio/images
+**Phase 8 of 9** - Generates and optimizes images for all story entities (story cover, characters, settings, scenes).
 
-Request:
-{
-  storyId: string;
-  imageTypes: Array<'story' | 'character' | 'setting' | 'scene'>;
-  options?: {
-    visualStyle: 'realistic' | 'anime' | 'painterly' | 'cinematic'; // Default from story
-    batchSize?: number; // Generate N images at a time, default: 5
-  };
-}
+**API Endpoint**: `POST /api/studio/images` (SSE streaming)
+**Service Function**: `imageService.generateAndOptimize()` (`src/lib/studio/services/image-service.ts`)
+**Generator Function**: `generateImages()` (`src/lib/studio/generators/images-generator.ts`)
 
-Response: Server-Sent Events (SSE)
-{
-  event: 'progress',
-  data: {
-    type: 'story' | 'character' | 'setting' | 'scene',
-    current: number,
-    total: number,
-    message: string
-  }
-}
-
-Final Event:
-{
-  event: 'complete',
-  data: {
-    generated: {
-      story: number,      // Count of story images
-      characters: number, // Count of character images
-      settings: number,   // Count of setting images
-      scenes: number      // Count of scene images
-    },
-    totalImages: number,
-    totalVariants: number // 18 variants per image
-  }
-}
+**Type Flow**:
+```
+ApiImagesRequest (API Layer)
+    ↓
+ServiceImagesParams (Service Layer)
+    ↓ imageService.generateAndOptimize()
+GeneratorImagesParams (Generator Layer)
+    ↓ generateImages()
+    ├─ generateStoryImage() → ImageUrl
+    ├─ generateCharacterImages() → ImageUrl[]
+    ├─ generateSettingImages() → ImageUrl[]
+    └─ generateSceneImages() → ImageUrl[]
+        ↓ imageGenerationClient.generate()
+        ↓ optimizeImage() → ImageVariantSet (4 variants)
+GeneratorImagesResult (Generator Layer)
+    ↓ db.update(stories/characters/settings/scenes).set({ imageUrl, imageVariants })
+ServiceImagesResult (Service Layer)
+    ↓ SSE streaming progress
+ApiImagesResponse (API Layer - SSE)
 ```
 
-#### Image Generation Specifications
+**Image Specifications**:
+- **Story Cover**: 1344×768 (7:4), book cover style
+- **Character Portrait**: 1024×1024 (square), concept art style
+- **Setting Environment**: 1344×768 (7:4), cinematic landscape
+- **Scene Image**: 1344×768 (7:4), cinematic scene composition
 
-**Story Cover Image**:
-- Size: 1344×768 (7:4 aspect ratio)
-- Prompt: `Book cover illustration for "{storyTitle}", {storySummary}, {genre} genre, {tone} atmosphere, {visualStyle} art style, dramatic composition, professional book cover design`
-
-**Character Portrait**:
-- Size: 1024×1024 (square)
-- Prompt: `Portrait of {characterName}, {physicalDescription.appearance}, {physicalDescription.distinctiveFeatures}, {visualStyle} style, {genre} genre aesthetic, character concept art`
-
-**Setting Environment**:
-- Size: 1344×768 (7:4 aspect ratio)
-- Prompt: `Wide landscape view of {settingName}, {settingDescription}, {visualReferences[0]} style, {genre} aesthetic, {colorPalette} colors, {mood} atmosphere, cinematic composition`
-
-**Scene Image**:
-- Size: 1344×768 (7:4 aspect ratio)
-- Prompt: `Cinematic scene from {storyTitle}: {sceneTitle}, {sceneVisualDescription}, {settingName} environment, {charactersPresent}, {visualStyle} style, {genre} aesthetic, 7:4 composition`
-
-#### Image Optimization
-
-For EACH generated image, automatically create 4 optimized variants:
-
-**Formats**: AVIF (best compression), JPEG (universal fallback)
-**Sizes**:
-- Mobile 1x: 672×384 (for 320-640px viewports)
-- Mobile 2x: 1344×768 (original Gemini size, also used for desktop)
-
-**Total per image**: 2 formats × 2 sizes = 4 variants
-
-**Why 4 variants?** Mobile-first optimization strategy:
-- AVIF provides 50% smaller files than JPEG with 93.8% browser support
-- No WebP needed (only 1.5% coverage gap, adds 50% more variants)
-- Desktop uses mobile 2x (original 1344×768) - no upscaling needed
-- Optimized for comics with many panels per scene
+**Optimization**: 4 variants per image (AVIF + JPEG × mobile 1x/2x)
 
 ---
 

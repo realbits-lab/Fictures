@@ -1,137 +1,28 @@
+/**
+ * Validation Service
+ *
+ * Single Source of Truth: Drizzle ORM schema (via drizzle-zod)
+ * This file provides validation functions with business logic (warnings, stats)
+ * All base Zod schemas are generated from Drizzle schema
+ */
+
 import { z } from "zod";
+import {
+    insertChapterSchema,
+    insertCharacterSchema,
+    insertPartSchema,
+    insertSceneSchema,
+    insertSettingSchema,
+    insertStorySchema,
+} from "@/lib/studio/generators/zod-schemas.generated";
 
-// Technical Validation Schemas
-export const StoryValidationSchema = z.object({
-    id: z.string().optional(),
-    title: z.string().min(1, "Title is required").max(255),
-    summary: z.string().optional(),
-    genre: z.string().optional(),
-    premise: z.string().optional(),
-    dramaticQuestion: z.string().optional(),
-    theme: z.string().optional(),
-    status: z
-        .enum([
-            "draft",
-            "phase1_in_progress",
-            "phase1_complete",
-            "phase2_complete",
-            "phase3_complete",
-            "phase4_complete",
-            "phase5_6_complete",
-            "generating_character_images",
-            "character_images_complete",
-            "generating_setting_images",
-            "setting_images_complete",
-            "completed",
-            "failed",
-            "active",
-            "hiatus",
-            "archived",
-        ])
-        .optional(),
-    partIds: z.array(z.string()).optional(),
-    chapterIds: z.array(z.string()).optional(),
-});
-
-export const PartValidationSchema = z.object({
-    id: z.string().optional(),
-    title: z.string().min(1, "Part title is required").max(255),
-    summary: z.string().optional(),
-    storyId: z.string().min(1, "Story ID is required"),
-    orderIndex: z.number().int().min(0),
-    structuralRole: z.string().optional(),
-    keyBeats: z.array(z.string()).optional(),
-    chapterIds: z.array(z.string()).optional(),
-});
-
-export const ChapterValidationSchema = z.object({
-    id: z.string().optional(),
-    title: z.string().min(1, "Chapter title is required").max(255),
-    summary: z.string().optional(),
-    storyId: z.string().min(1, "Story ID is required"),
-    partId: z.string().optional(),
-    orderIndex: z.number().int().min(0),
-    purpose: z.string().optional(),
-    hook: z.string().optional(),
-    characterFocus: z.string().optional(),
-    pacingGoal: z.string().optional(),
-    actionDialogueRatio: z.string().optional(),
-    wordCount: z.number().min(0).optional(),
-    sceneIds: z.array(z.string()).optional(),
-    chapterHook: z
-        .object({
-            type: z.string(),
-            summary: z.string(),
-            urgency_level: z.string(),
-        })
-        .optional(),
-});
-
-export const SceneValidationSchema = z.object({
-    id: z.string().optional(),
-    title: z.string().min(1, "Scene title is required").max(255),
-    content: z.string().optional(),
-    chapterId: z.string().min(1, "Chapter ID is required"),
-    orderIndex: z.number().int().min(0),
-    goal: z.string().optional(),
-    conflict: z.string().optional(),
-    outcome: z.string().optional(),
-    summary: z.string().optional(),
-    entryHook: z.string().optional(),
-    povCharacterId: z.string().optional(),
-    settingId: z.string().optional(),
-    narrativeVoice: z.string().optional(),
-    wordCount: z.number().min(0).optional(),
-    emotionalShift: z
-        .object({
-            from: z.string(),
-            to: z.string(),
-        })
-        .optional(),
-    characterIds: z.array(z.string()).optional(),
-    placeIds: z.array(z.string()).optional(),
-});
-
-export const CharacterValidationSchema = z.object({
-    id: z.string().optional(),
-    name: z.string().min(1, "Character name is required").max(255),
-    storyId: z.string().min(1, "Story ID is required"),
-    isMain: z.boolean().optional(),
-    role: z.string().optional(),
-    archetype: z.string().optional(),
-    summary: z.string().optional(),
-    storyline: z.string().optional(),
-    personality: z
-        .object({
-            traits: z.array(z.string()),
-            myers_briggs: z.string(),
-            enneagram: z.string(),
-        })
-        .optional(),
-    backstory: z.record(z.string(), z.string()).optional(),
-    motivations: z
-        .object({
-            primary: z.string(),
-            secondary: z.string(),
-            fear: z.string(),
-        })
-        .optional(),
-    voice: z.record(z.string(), z.unknown()).optional(),
-    physicalDescription: z.record(z.string(), z.unknown()).optional(),
-    visualReferenceId: z.string().optional(),
-});
-
-export const SettingValidationSchema = z.object({
-    id: z.string().optional(),
-    name: z.string().min(1, "Setting name is required").max(255),
-    storyId: z.string().min(1, "Story ID is required"),
-    summary: z.string().optional(),
-    mood: z.string().optional(),
-    sensory: z.record(z.string(), z.array(z.string())).optional(),
-    visualReferences: z.array(z.string()).optional(),
-    colorPalette: z.array(z.string()).optional(),
-    architecturalStyle: z.string().optional(),
-});
+// Re-export generated schemas for convenience
+export const StoryValidationSchema = insertStorySchema.partial();
+export const PartValidationSchema = insertPartSchema.partial();
+export const ChapterValidationSchema = insertChapterSchema.partial();
+export const SceneValidationSchema = insertSceneSchema.partial();
+export const CharacterValidationSchema = insertCharacterSchema.partial();
+export const SettingValidationSchema = insertSettingSchema.partial();
 
 // Validation Types
 export type ValidationResult = {
