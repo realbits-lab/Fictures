@@ -6,7 +6,7 @@ import {
     characters as charactersTable,
     settings as settingsTable,
     stories,
-} from "@/lib/schemas/drizzle";
+} from "@/lib/schemas/database";
 
 export const runtime = "nodejs";
 

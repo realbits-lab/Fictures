@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { characters as charactersTable, stories } from "@/lib/schemas/drizzle";
+import { characters as charactersTable, stories } from "@/lib/schemas/database";
 
 export const runtime = "nodejs";
 

@@ -14,7 +14,7 @@ import {
     insertSceneSchema,
     insertSettingSchema,
     insertStorySchema,
-} from "@/lib/schemas/generated-zod";
+} from "@/lib/schemas/zod/generated";
 
 // Re-export generated schemas for convenience
 export const StoryValidationSchema = insertStorySchema.partial();

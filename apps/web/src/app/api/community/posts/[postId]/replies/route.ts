@@ -8,7 +8,7 @@ import {
     invalidateEntityCache,
 } from "@/lib/cache/unified-invalidation";
 import { db } from "@/lib/db";
-import { communityPosts, communityReplies, users } from "@/lib/schemas/drizzle";
+import { communityPosts, communityReplies, users } from "@/lib/schemas/database";
 
 /**
  * GET /api/community/posts/[postId]/replies

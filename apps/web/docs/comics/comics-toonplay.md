@@ -2,7 +2,7 @@
 ## A Technical Guide to Novel-to-Webtoon Adaptation in Fictures
 
 **Document Status**: Production Reference
-**Last Updated**: 2025-11-03
+**Last Updated**: 2025-11-14
 **Related Code**: `src/lib/ai/toonplay-converter.ts`
 
 ---
@@ -12,8 +12,10 @@
 1. [Why "Toonplay" Not "Screenplay"](#why-toonplay-not-screenplay)
 2. [The Toonplay Format](#the-toonplay-format)
 3. [Writing for the Vertical Scroll](#writing-for-the-vertical-scroll)
+   - [Strategic Internal Monologue Guidelines](#strategic-internal-monologue-guidelines)
 4. [Visual Grammar for AI Image Generation](#visual-grammar-for-ai-image-generation)
 5. [Adaptation Principles](#adaptation-principles)
+   - [Case Study: Strategic Internal Monologue in Webtoons](#case-study-strategic-internal-monologue-in-webtoons)
 6. [Quality Evaluation Rubric](#quality-evaluation-rubric)
 7. [Implementation in Fictures](#implementation-in-fictures)
 
@@ -131,23 +133,58 @@ export const ComicToonplaySchema = z.object({
 For optimal webtoon adaptation:
 
 ```
-📊 Dialogue:        ~70% (Primary story driver)
-📊 Visual Action:   ~30% (Shown in panels, not told)
-📊 Narration:       <5%  (Only when absolutely necessary)
+📊 Dialogue:           ~70% (Primary story driver)
+📊 Visual Action:      ~30% (Shown in panels, not told)
+📊 Narration:          <5%  (Time/location markers, essential tone)
+📊 Internal Monologue: <10% (Strategic use at pivotal moments, 1-2 panels per scene)
 ```
+
+**Important**: Narration and internal monologue serve different purposes:
+- **Narration**: Scene-setting, time/location markers, atmospheric tone
+- **Internal Monologue**: Character thoughts at critical moments, psychological depth
 
 ### When to Use Narration
 
-Use caption narration ONLY for:
+Use caption narration strategically for:
 
 1. **Time/Location Markers**: "Seoul. Three days later..."
 2. **Essential Tone**: "The city was a cold machine..." (scene opener)
 3. **Critical Information**: Facts that cannot be visualized or spoken
+4. **Strategic Internal Monologue**: Character thoughts at pivotal moments (see guidelines below)
+
+#### Strategic Internal Monologue Guidelines
+
+**✅ ACCEPTABLE USE CASES** (Use sparingly, max 1-2 panels per scene):
+
+| Scenario | Why It Works | Example |
+|----------|--------------|---------|
+| **Critical Decision Moments** | Reveals character's internal conflict at turning points | "Should I trust him? Every instinct screams no..." |
+| **Psychological Thrillers** | Essential for genre conventions and tension building | "They don't know. They can't know what I did." |
+| **Complex Internal Struggles** | When visual externalization would be unclear or ambiguous | "I've killed before. But never someone innocent." |
+| **Dramatic Irony** | Reader knows character's thoughts while other characters don't | "She smiled at me. She has no idea I'm here to betray her." |
+| **Philosophical Reflection** | Brief existential moments that define character themes | "In the end, are we defined by our choices or our regrets?" |
+
+**❌ AVOID INTERNAL MONOLOGUE FOR** (Externalize instead):
+
+| Bad Use | Better Alternative |
+|---------|-------------------|
+| Describing emotions | **Show**: Trembling hands, tears, clenched fists |
+| Simple reactions | **Show**: Facial expressions, body language |
+| Obvious thoughts | **Show**: Action that reveals the thought |
+| World-building info dumps | **Show**: Visual symbols, brief dialogue |
+| Redundant narration | **Show**: The image already conveys this |
+
+**USAGE LIMITS**:
+- **Target**: <10% of panels with internal monologue (1-2 panels max per 10-12 panel scene)
+- **Length**: Max 2 sentences, <100 characters total
+- **Principle**: "Externalize first, internalize only when essential"
+
+#### General Narration Restrictions
 
 ❌ **NEVER use narration for**:
-- Internal monologue → Externalize through action/expression
 - Exposition → Show through dialogue or visual symbols
 - Description → That's what the image is for
+- Simple emotional states → Show through facial expressions and body language
 
 ### Pacing Through Space
 
@@ -283,15 +320,25 @@ The adapter's job is to:
 
 **The #1 Mistake**: Relying on narration to explain what's happening.
 
+**Core Principle**: "Externalize first, internalize only when essential"
+
 **Solution**: Externalize the internal through:
 
-| Internal Element | External Visualization |
-|------------------|------------------------|
-| **Internal Monologue** ("I'm so nervous...") | Physical action: character bites lip, hands trembling |
-| **Backstory** (long exposition) | Quick 2-3 panel flashback, stylized |
-| **Character Motivation** (paragraph of angst) | Silent panels of triggering memory at moment of decision |
-| **Emotional State** (narration box) | Dramatic facial expressions, body language, symbolic action |
-| **World-Building** (info dump) | Visual symbols, environmental storytelling, brief dialogue |
+| Internal Element | External Visualization | When Internal Monologue IS Acceptable |
+|------------------|------------------------|--------------------------------------|
+| **Simple Internal Monologue** ("I'm so nervous...") | Physical action: character bites lip, hands trembling | ❌ Never - Too simple, externalize it |
+| **Complex Internal Conflict** ("Should I save him or let him die?") | Silent panels showing character's hesitation, conflicted expression | ✅ Acceptable at critical decision moments |
+| **Backstory** (long exposition) | Quick 2-3 panel flashback, stylized | ❌ Never - Show visually instead |
+| **Character Motivation** (paragraph of angst) | Silent panels of triggering memory at moment of decision | ✅ Acceptable for 1-2 sentence philosophical reflection |
+| **Emotional State** (basic feelings) | Dramatic facial expressions, body language, symbolic action | ❌ Never - Show through visuals |
+| **Psychological State** (complex mental struggle) | Combine visuals with brief internal monologue | ✅ Acceptable in psychological thrillers, max 2 panels |
+| **World-Building** (info dump) | Visual symbols, environmental storytelling, brief dialogue | ❌ Never - Show through environment |
+
+**When Internal Monologue Works**:
+- **Genre-appropriate**: Psychological thrillers, mystery, philosophical stories
+- **Strategic placement**: 1-2 panels per scene maximum (<10% of total panels)
+- **Critical moments**: Decision points, dramatic irony, existential reflection
+- **Brief and impactful**: Max 2 sentences, <100 characters
 
 ### Case Study: Solo Leveling Adaptation
 
@@ -314,6 +361,84 @@ The adapter's job is to:
 - ✅ Preserves the "soul" (power fantasy) while sacrificing fidelity
 
 **Result**: More dramatic, faster-paced, better suited to vertical scroll.
+
+### Case Study: Strategic Internal Monologue in Webtoons
+
+**Successful Examples of Internal Monologue Usage**
+
+#### Example 1: Psychological Thriller - "Killing Stalking"
+
+**Usage Pattern**: Heavy internal monologue (~15-20% of panels) - Genre-appropriate for psychological horror
+
+**Why It Works**:
+- ✅ **Genre Convention**: Psychological thrillers demand access to character's disturbed mental state
+- ✅ **Unreliable Narrator**: Internal monologue creates dramatic irony (reader knows truth, character doesn't)
+- ✅ **Critical Information**: Character's twisted reasoning cannot be shown visually alone
+
+**Example Panel**:
+```
+[Visual: Character smiling at victim]
+Internal Monologue: "He said he loved me. But I know what love really means now."
+```
+
+#### Example 2: Action Fantasy - "Solo Leveling"
+
+**Usage Pattern**: Minimal internal monologue (~5% of panels) - Used sparingly for critical decisions
+
+**Why It Works**:
+- ✅ **Decision Moments**: "Should I use this skill now? No... I need to save it for the boss."
+- ✅ **System Interface**: Internal monologue integrates with game UI elements
+- ✅ **Strategic Thinking**: Brief tactical thoughts that enhance action without slowing it
+
+**Bad Alternative Would Be**:
+```
+❌ Narrator: "Sung Jin-Woo was nervous."
+✅ Internal Monologue: "My hands are shaking. But I can't let them see."
+✅ Visual Alone: Panel showing trembling hands, confident expression
+```
+
+#### Example 3: Romance Drama - "True Beauty"
+
+**Usage Pattern**: Rare internal monologue (~2-3% of panels) - Almost entirely externalized
+
+**Why It Works**:
+- ✅ **Reserved for Pivotal Moments**: "Should I tell him the truth about my face?"
+- ✅ **Everything Else Shown**: Embarrassment (blushing), anxiety (nervous gestures), attraction (lingering glances)
+- ✅ **Genre Fit**: Romance relies on visual chemistry and dialogue, not internal angst
+
+**Principle Illustrated**:
+If a romance webtoon can tell compelling stories with <5% internal monologue, most genres can too.
+
+#### Example 4: Mystery Thriller - "Bastard"
+
+**Usage Pattern**: Moderate internal monologue (~8-10% of panels) - Strategic use for dramatic irony
+
+**Why It Works**:
+- ✅ **Dramatic Irony**: Reader knows protagonist's dark thoughts while other characters don't
+- ✅ **Moral Conflict**: "I want to save her. But that would mean betraying him."
+- ✅ **Tension Building**: Internal countdown or planning that viewers see but characters don't
+
+**Key Technique**:
+```
+Panel 1: [Visual: Father and son at dinner, smiling]
+Internal Monologue: "He's going to kill her tonight. I have to stop him."
+Panel 2: [Visual: Son's hands gripping knife under table]
+Dialogue: "Dad, the food is delicious."
+```
+
+This creates maximum tension with minimal words.
+
+#### Guideline Summary from Real Webtoons
+
+| Genre | Internal Monologue % | When to Use | When NOT to Use |
+|-------|---------------------|-------------|-----------------|
+| **Psychological Thriller** | 15-20% | Character's disturbed mental state, unreliable narration | Simple emotional reactions |
+| **Action/Fantasy** | 3-5% | Critical tactical decisions, system integration | Describing what's shown in action |
+| **Romance** | 2-5% | Major relationship decisions, vulnerability moments | Basic attraction or embarrassment |
+| **Mystery** | 8-10% | Dramatic irony, hidden motivations, planning | Obvious clues or reactions |
+| **Slice of Life** | 1-3% | Rare philosophical reflection | Daily activities and emotions |
+
+**Universal Rule**: No matter the genre, if you can show it visually, show it visually. Internal monologue is a precision tool, not a crutch.
 
 ---
 
@@ -345,13 +470,37 @@ Each category scores 1 (Poor) to 5 (Excellent). Final score is weighted average.
 
 ### Category 2: Visual Transformation & Externalization (30%)
 
-**What It Measures**: How well does the script translate internal content into visual action?
+**What It Measures**: How well does the script translate internal content into visual action, with strategic use of internal monologue when appropriate?
 
-- **1 (Poor)**: Relies heavily on narration and internal monologue captions. "Too much black" on the page.
-- **3 (Average)**: Translates some interiority but falls back on narration for complex points.
-- **5 (Excellent)**: Masterfully physicalizes emotion. All internal monologues translated into visual actions, expressions, or concise dialogue.
+**Scoring Guidelines**:
 
-**This is the most common failure point for novel-adapters.**
+- **1 (Poor)**: Relies heavily on narration and internal monologue captions (>20% of panels). Overuses thought boxes for simple emotions. "Too much black" on the page. Uses internal monologue as a crutch instead of showing.
+
+- **2 (Below Average)**: Frequent internal monologue (10-20% of panels) for things that should be externalized. Uses thought boxes for basic emotions and obvious reactions. Misses opportunities for visual storytelling.
+
+- **3 (Average)**: Mostly externalizes content through visuals and dialogue, with occasional internal monologue (<10% of panels). Some instances could be better shown visually, but overall functional. Internal monologue used appropriately but not always at optimal moments.
+
+- **4 (Above Average)**: Strong visual storytelling with strategic internal monologue (<10% of panels). Reserves thought boxes for critical decision moments, psychological complexity, or dramatic irony. Most content effectively externalized through action, expression, and dialogue.
+
+- **5 (Excellent)**: Masterful balance of externalization and strategic internalization. Internal monologue used precisely at pivotal moments (1-2 panels per scene, <10% total). Every thought box serves a critical narrative purpose (decision points, psychological depth, dramatic irony). All simple emotions perfectly externalized through visual action, expressions, and body language. Genre-appropriate use of internal voice.
+
+**Evaluation Criteria**:
+
+✅ **GOOD Internal Monologue Usage**:
+- Reserved for critical decision moments
+- Psychological thrillers/complex mental states
+- Dramatic irony (reader knows, characters don't)
+- Brief philosophical reflection (<100 chars)
+- Max 1-2 panels per scene
+
+❌ **BAD Internal Monologue Usage**:
+- Describing basic emotions ("I'm scared")
+- Obvious reactions that visuals show
+- Info dumps and exposition
+- Redundant with visual content
+- >10% of panels contain thought boxes
+
+**This is the most common failure point for novel-adapters who over-rely on internal monologue instead of visual storytelling.**
 
 ### Category 3: Webtoon Pacing & Vertical Flow (30%)
 
@@ -488,8 +637,8 @@ comic_toonplay JSONB  -- Stores the generated toonplay specification
 
 ### The 5 Golden Rules
 
-1. **Dialogue > Description > Narration** (70% / 30% / <5%)
-2. **Show, Don't Tell** (externalize all internal content)
+1. **Dialogue > Visual Action > Narration > Internal Monologue** (70% / 30% / <5% / <10%)
+2. **Externalize First, Internalize Strategically** (show through visuals; use internal monologue only for critical moments)
 3. **Space = Time** (panel spacing controls perceived duration)
 4. **Character Consistency** (identical trait descriptions across all panels)
 5. **Distill, Don't Duplicate** (preserve the soul, not the text)
@@ -513,8 +662,11 @@ Harsh overhead fluorescent light creating shadows.
 ❌ Using "screenplay" terminology
 ✅ Use "toonplay" terminology
 
-❌ Writing long narration boxes
-✅ Externalize through visual action
+❌ Writing long narration boxes or overusing internal monologue (>10% of panels)
+✅ Externalize through visual action; use internal monologue strategically (1-2 panels max)
+
+❌ Using internal monologue for simple emotions ("I'm nervous")
+✅ Show through action (trembling hands, nervous glances); reserve internal monologue for complex conflicts
 
 ❌ Inconsistent character descriptions
 ✅ Copy-paste exact trait string
@@ -540,9 +692,9 @@ The toonplay generation system now includes automatic quality evaluation and ite
 - Scale: 1 (Barely recognizable) to 5 (Masterfully distills essence)
 
 **Category 2: Visual Transformation & Externalization (30% weight)**
-- Measures: How well does it translate internal content into visual action?
-- Scale: 1 (Heavy narration reliance) to 5 (Perfect physicalization)
-- **Most common failure point**
+- Measures: How well does it translate internal content into visual action, with strategic use of internal monologue?
+- Scale: 1 (Over-reliance on narration >20% panels) to 5 (Masterful balance with strategic internalization <10% panels)
+- **Most common failure point** - Over-using internal monologue instead of showing visually
 
 **Category 3: Webtoon Pacing & Vertical Flow (30% weight)**
 - Measures: Optimization for thumb-scroll reading
@@ -562,11 +714,14 @@ The toonplay generation system now includes automatic quality evaluation and ite
 ### Automatic Metrics
 
 The system automatically calculates:
-- **Narration Percentage**: Panels with narration / Total panels (target: <5%)
+- **Narration Percentage**: Panels with narration / Total panels (target: <5% for location/time markers)
+- **Internal Monologue Percentage**: Panels with internal monologue / Total panels (target: <10%, ideally 1-2 panels per scene)
+- **Total Narration Usage**: Combined narration + internal monologue (should remain reasonable)
 - **Dialogue Presence**: Panels with dialogue (target: ~70%)
 - **Text Overlay Validation**: All panels must have dialogue OR narrative (100% required)
 - **Shot Type Distribution**: Variety and adherence to recommended distribution
 - **Dialogue Length**: All dialogue under 150 characters
+- **Internal Monologue Length**: All internal monologue under 100 characters (2 sentences max)
 
 ### Improvement Loop
 

@@ -27,7 +27,7 @@ import type {
 import {
     type AiSceneSummaryType,
     AiSceneSummaryZodSchema,
-} from "@/lib/schemas/ai";
+} from "@/lib/schemas/zod/ai";
 
 /**
  * Generate ONE next scene summary with full context

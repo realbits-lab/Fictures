@@ -15,8 +15,8 @@ import {
     type Part,
     type Setting,
     type Story,
-} from "@/lib/schemas/ai";
-import { characters, parts, settings, stories } from "@/lib/schemas/drizzle";
+} from "@/lib/schemas/zod/ai";
+import { characters, parts, settings, stories } from "@/lib/schemas/database";
 import { generatePart } from "../generators/part-generator";
 import type {
     GeneratorPartParams,

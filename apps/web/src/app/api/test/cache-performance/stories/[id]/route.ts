@@ -1,7 +1,7 @@
 import { and, eq, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { chapters, scenes, stories } from "@/lib/schemas/drizzle";
+import { chapters, scenes, stories } from "@/lib/schemas/database";
 
 // Redis caching disabled for this test to focus on database and client-side caching
 const redis: null = null;

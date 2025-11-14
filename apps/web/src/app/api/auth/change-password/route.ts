@@ -4,7 +4,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { db } from "@/lib/db";
-import { users } from "@/lib/schemas/drizzle";
+import { users } from "@/lib/schemas/database";
 
 export const runtime = "nodejs";
 

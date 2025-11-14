@@ -20,7 +20,7 @@ import type {
 	Scene,
 	Setting,
 	Story,
-} from "@/lib/schemas/generated-zod";
+} from "@/lib/schemas/zod/generated";
 
 // =============================================================================
 // Story Context Builders (Phase 1)

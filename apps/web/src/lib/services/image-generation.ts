@@ -7,7 +7,7 @@
 
 import { put } from "@vercel/blob";
 import { generateImage } from "@/lib/ai/image-generation";
-import type { AspectRatio } from "@/lib/ai/types/image";
+import type { AspectRatio } from "@/lib/schemas/domain/image";
 import { getBlobPath } from "@/lib/utils/blob-path";
 
 /**

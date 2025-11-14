@@ -11,8 +11,8 @@ import {
     insertSettingSchema,
     type Setting,
     type Story,
-} from "@/lib/schemas/ai";
-import { settings, stories } from "@/lib/schemas/drizzle";
+} from "@/lib/schemas/zod/ai";
+import { settings, stories } from "@/lib/schemas/database";
 import { generateSettings } from "../generators/settings-generator";
 import type {
     GeneratorSettingsParams,

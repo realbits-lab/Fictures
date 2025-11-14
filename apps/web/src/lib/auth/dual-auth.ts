@@ -12,7 +12,7 @@ import { and, eq } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { apiKeys, users } from "@/lib/schemas/drizzle";
+import { apiKeys, users } from "@/lib/schemas/database";
 
 export type AuthResult = {
     type: "session" | "api_key";

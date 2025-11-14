@@ -11,7 +11,7 @@ import {
     scenes,
     stories,
     users,
-} from "@/lib/schemas/drizzle";
+} from "@/lib/schemas/database";
 
 // ============================================================================
 // Types

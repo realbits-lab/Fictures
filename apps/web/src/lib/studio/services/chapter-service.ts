@@ -15,8 +15,8 @@ import {
     insertChapterSchema,
     type Part,
     type Story,
-} from "@/lib/schemas/ai";
-import { chapters, characters, parts, stories } from "@/lib/schemas/drizzle";
+} from "@/lib/schemas/zod/ai";
+import { chapters, characters, parts, stories } from "@/lib/schemas/database";
 import { generateChapter } from "../generators/chapter-generator";
 import type {
     GeneratorChapterParams,

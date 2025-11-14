@@ -116,13 +116,13 @@ export type {
     SceneEvaluation,
     SettingEvaluation,
     StoryEvaluationResult,
-} from "@/lib/schemas/evaluation";
+} from "@/lib/schemas/services/evaluation";
 // Improvement types
 export type {
     ChangeLog,
     StoryImprovementRequest,
     StoryImprovementResult,
-} from "@/lib/schemas/improvement";
+} from "@/lib/schemas/services/improvement";
 // Validation types
 export type {
     FullValidationResult,
@@ -131,7 +131,7 @@ export type {
     ValidationResult,
     ValidationStats,
     ValidationWarning,
-} from "@/lib/schemas/validation";
+} from "@/lib/schemas/services/validation";
 // Reading history types
 export type {
     AddToHistoryOptions,

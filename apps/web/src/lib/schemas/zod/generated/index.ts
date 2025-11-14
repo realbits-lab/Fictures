@@ -27,7 +27,7 @@ import {
     scenes,
     settings,
     stories,
-} from "@/lib/schemas/drizzle";
+} from "@/lib/schemas/database";
 import {
     adversityElementsSchema,
     consequenceElementsSchema,
@@ -36,7 +36,7 @@ import {
     sensorySchema,
     virtueElementsSchema,
     voiceStyleSchema,
-} from "@/lib/schemas/nested-zod";
+} from "@/lib/schemas/zod/nested";
 
 // ============================================================================
 // Story Schemas

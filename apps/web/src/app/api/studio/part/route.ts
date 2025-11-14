@@ -7,7 +7,7 @@ import type {
     ApiPartErrorResponse,
     ApiPartRequest,
     ApiPartResponse,
-} from "../types";
+} from "@/lib/schemas/api/studio";
 
 export const runtime = "nodejs";
 

@@ -36,7 +36,7 @@ import type {
     SensoryType,
     VirtueElementsType,
     VoiceStyleType,
-} from "@/lib/schemas/nested-zod";
+} from "@/lib/schemas/zod/nested";
 
 export const adversityType = pgEnum(
     "adversity_type",

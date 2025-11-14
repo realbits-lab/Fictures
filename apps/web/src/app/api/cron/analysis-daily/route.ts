@@ -6,7 +6,7 @@ import {
     analysisEvents,
     dailyStoryMetrics,
     readingSessions,
-} from "@/lib/schemas/drizzle";
+} from "@/lib/schemas/database";
 
 /**
  * GET /api/cron/analysis-daily

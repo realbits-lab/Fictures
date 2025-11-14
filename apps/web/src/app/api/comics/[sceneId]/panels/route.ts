@@ -10,7 +10,7 @@ import { asc, eq } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { chapters, comicPanels, scenes, stories } from "@/lib/schemas/drizzle";
+import { chapters, comicPanels, scenes, stories } from "@/lib/schemas/database";
 import {
     COMIC_CONSTANTS,
     calculateTotalHeight,

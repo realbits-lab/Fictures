@@ -1,9 +1,9 @@
 import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({
-	schema: "./src/lib/schemas/drizzle/index.ts",
-	out: "./drizzle",
-	dialect: "postgresql",
+    schema: "./src/lib/schemas/database/index.ts",
+    out: "./drizzle",
+    dialect: "postgresql",
     dbCredentials: {
         // Use direct (unpooled) connection for migrations
         // Pooled connections don't support all DDL operations required by migrations

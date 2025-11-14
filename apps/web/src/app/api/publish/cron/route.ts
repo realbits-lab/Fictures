@@ -5,7 +5,7 @@ import {
     publishingSchedules,
     scenes,
     scheduledPublications,
-} from "@/lib/schemas/drizzle";
+} from "@/lib/schemas/database";
 import { publishScene } from "@/lib/services/publishing";
 
 /**

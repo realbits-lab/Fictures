@@ -13,7 +13,7 @@ import type {
     Scene,
     Setting,
     Story,
-} from "@/lib/schemas/ai";
+} from "@/lib/schemas/zod/ai";
 import {
     chapters,
     characters,
@@ -21,7 +21,7 @@ import {
     scenes,
     settings,
     stories,
-} from "@/lib/schemas/drizzle";
+} from "@/lib/schemas/database";
 import { generateSceneContent } from "../generators/scene-content-generator";
 import type {
     GeneratorSceneContentParams,

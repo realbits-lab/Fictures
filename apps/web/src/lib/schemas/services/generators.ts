@@ -55,7 +55,7 @@ import type {
     AiPartType,
     AiSceneSummaryType,
     AiSettingType,
-} from "@/lib/schemas/ai";
+} from "@/lib/schemas/zod/ai";
 import type {
     Chapter,
     Character,
@@ -63,7 +63,7 @@ import type {
     Scene,
     Setting,
     Story,
-} from "@/lib/schemas/generated-zod";
+} from "@/lib/schemas/zod/generated";
 import type { OptimizedImageSet } from "@/lib/services/image-generation";
 
 // ============================================================================
@@ -156,9 +156,10 @@ export type ArcPosition = ChapterArcPosition;
 
 /**
  * Adversity-Triumph cycle phases for scene structure
- * Uses CYCLE_PHASES constant from zod-schemas.ts
+ * Uses CYCLE_PHASES constant from zod/generated
  */
-export type CyclePhase = typeof import("./zod-schemas").CYCLE_PHASES[number];
+export type CyclePhase =
+    typeof import("@/lib/schemas/zod/generated").CYCLE_PHASES[number];
 
 // ============================================================================
 // Base Generator Interfaces

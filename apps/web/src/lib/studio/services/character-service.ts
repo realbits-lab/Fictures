@@ -11,8 +11,8 @@ import {
     type Character,
     insertCharacterSchema,
     type Story,
-} from "@/lib/schemas/ai";
-import { characters, stories } from "@/lib/schemas/drizzle";
+} from "@/lib/schemas/zod/ai";
+import { characters, stories } from "@/lib/schemas/database";
 import { generateCharacters } from "../generators/characters-generator";
 import type {
     GeneratorCharactersParams,

@@ -7,7 +7,7 @@ import {
     scenes,
     scheduledPublications,
     stories,
-} from "@/lib/schemas/drizzle";
+} from "@/lib/schemas/database";
 
 export async function GET(request: NextRequest) {
     try {

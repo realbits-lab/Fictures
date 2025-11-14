@@ -17,7 +17,7 @@ import {
     type Scene,
     type Setting,
     type Story,
-} from "@/lib/schemas/ai";
+} from "@/lib/schemas/zod/ai";
 import {
     chapters,
     characters,
@@ -25,7 +25,7 @@ import {
     scenes,
     settings,
     stories,
-} from "@/lib/schemas/drizzle";
+} from "@/lib/schemas/database";
 import { generateSceneSummary } from "../generators/scene-summary-generator";
 import type {
     GeneratorSceneSummaryParams,

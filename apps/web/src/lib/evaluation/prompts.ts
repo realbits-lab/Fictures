@@ -1,4 +1,4 @@
-import type { EvaluationContext } from "./schemas";
+import type { EvaluationContext } from "@/lib/schemas/services/evaluation";
 
 /**
  * Build evaluation prompt based on the Architectonics of Engagement framework

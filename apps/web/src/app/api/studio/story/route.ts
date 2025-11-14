@@ -10,7 +10,7 @@ import type {
     ApiStoryErrorResponse,
     ApiStoryRequest,
     ApiStoryResponse,
-} from "../types";
+} from "@/lib/schemas/api/studio";
 
 export const runtime = "nodejs";
 

@@ -8,8 +8,8 @@ import { nanoid } from "nanoid";
 import type { StoryGenre } from "@/lib/constants/genres";
 import type { StoryTone } from "@/lib/constants/tones";
 import { db } from "@/lib/db";
-import { insertStorySchema, type Story } from "@/lib/schemas/ai";
-import { stories } from "@/lib/schemas/drizzle";
+import { insertStorySchema, type Story } from "@/lib/schemas/zod/ai";
+import { stories } from "@/lib/schemas/database";
 import { generateStory } from "../generators/story-generator";
 import type {
     GeneratorStoryParams,

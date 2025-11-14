@@ -20,7 +20,7 @@ import type {
     ApiSettingsRequest,
     ApiSettingsResponse,
     ApiStoryRequest,
-} from "@/app/api/studio/types";
+} from "@/lib/schemas/api/studio";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
 // Load writer authentication

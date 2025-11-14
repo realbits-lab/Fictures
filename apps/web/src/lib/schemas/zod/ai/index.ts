@@ -26,7 +26,7 @@ import {
     insertSettingSchema,
     insertStorySchema,
     SUGGESTED_LENGTHS,
-} from "@/lib/schemas/generated-zod";
+} from "@/lib/schemas/zod/generated";
 import {
     adversityElementsSchema,
     consequenceElementsSchema,
@@ -35,7 +35,7 @@ import {
     sensorySchema,
     virtueElementsSchema,
     voiceStyleSchema,
-} from "@/lib/schemas/nested-zod";
+} from "@/lib/schemas/zod/nested";
 
 // ============================================================================
 // Story AI Schema

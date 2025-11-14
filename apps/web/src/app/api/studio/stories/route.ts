@@ -29,14 +29,14 @@ import {
     scenes,
     settings,
     stories,
-} from "@/lib/schemas/drizzle";
+} from "@/lib/schemas/database";
 import {
     insertChapterSchema,
     insertCharacterSchema,
     insertPartSchema,
     insertSceneSchema,
     insertSettingSchema,
-} from "@/lib/schemas/generated-zod";
+} from "@/lib/schemas/zod/generated";
 import {
     type GeneratedNovelResult,
     type GenerateNovelParams,

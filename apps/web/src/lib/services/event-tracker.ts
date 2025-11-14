@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { analysisEvents } from "@/lib/schemas/drizzle";
+import { analysisEvents } from "@/lib/schemas/database";
 
 interface TrackEventParams {
     eventType: string;

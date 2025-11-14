@@ -13,14 +13,14 @@ import { z } from "zod";
 import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { db } from "@/lib/db";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
-import { settings, stories } from "@/lib/schemas/drizzle";
+import { settings, stories } from "@/lib/schemas/database";
 import { settingService } from "@/lib/studio/services";
 import type {
     ApiSettingsErrorResponse,
     ApiSettingsRequest,
     ApiSettingsResponse,
-} from "../types";
-import { generateSettingsSchema } from "../types";
+} from "@/lib/schemas/api/studio";
+import { generateSettingsSchema } from "@/lib/schemas/api/studio";
 
 export const runtime = "nodejs";
 

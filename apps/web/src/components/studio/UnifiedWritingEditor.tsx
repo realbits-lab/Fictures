@@ -23,7 +23,7 @@ import type {
     scenes,
     settings,
     stories,
-} from "@/lib/schemas/drizzle";
+} from "@/lib/schemas/database";
 import { useCacheInvalidation } from "@/lib/hooks/use-cache-invalidation";
 import { useStoryData } from "@/lib/hooks/useStoryData";
 import { ImageContentDisplay } from "./ImageContentDisplay";

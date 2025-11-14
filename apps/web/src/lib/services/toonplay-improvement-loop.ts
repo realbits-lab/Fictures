@@ -13,7 +13,7 @@
 
 import { gateway } from "@ai-sdk/gateway";
 import { generateObject } from "ai";
-import type { characters, scenes, settings } from "@/lib/schemas/drizzle";
+import type { characters, scenes, settings } from "@/lib/schemas/database";
 
 // Type aliases
 type StoryScene = typeof scenes.$inferSelect;

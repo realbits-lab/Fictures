@@ -6,7 +6,7 @@
  * (no reference image support).
  */
 
-import type { characters as charactersTable } from "@/lib/schemas/drizzle";
+import type { characters as charactersTable } from "@/lib/schemas/database";
 
 // ============================================
 // CHARACTER VISUAL CACHE

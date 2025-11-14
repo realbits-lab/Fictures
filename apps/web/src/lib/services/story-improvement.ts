@@ -4,11 +4,11 @@ import { AI_MODELS } from "@/lib/ai/config";
 import type {
 	FullValidationResult,
 	ValidationResult,
-} from "@/lib/schemas/validation";
+} from "@/lib/schemas/services/validation";
 import type {
 	OverallEvaluation,
 	StoryEvaluationResult,
-} from "@/lib/schemas/evaluation";
+} from "@/lib/schemas/services/evaluation";
 
 // Improvement schemas
 const ImprovedStorySchema = z.object({

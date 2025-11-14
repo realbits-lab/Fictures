@@ -10,7 +10,7 @@ import {
     scenes,
     settings,
     stories,
-} from "@/lib/schemas/drizzle";
+} from "@/lib/schemas/database";
 
 export async function GET(
     request: NextRequest,

@@ -15,8 +15,8 @@ import type {
     ApiSceneContentErrorResponse,
     ApiSceneContentRequest,
     ApiSceneContentResponse,
-} from "../types";
-import { generateSceneContentSchema } from "../types";
+} from "@/lib/schemas/api/studio";
+import { generateSceneContentSchema } from "@/lib/schemas/api/studio";
 
 export const runtime = "nodejs";
 

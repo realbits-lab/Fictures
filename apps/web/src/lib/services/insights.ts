@@ -11,7 +11,7 @@ import {
     scenes,
     stories,
     storyInsights,
-} from "@/lib/schemas/drizzle";
+} from "@/lib/schemas/database";
 
 // Use Gemini Flash for analysis insights (fast, cost-effective for text generation)
 const analysisModel = google("gemini-2.0-flash-exp");

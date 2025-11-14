@@ -10,7 +10,7 @@ import {
     scenes,
     settings,
     stories,
-} from "@/lib/schemas/drizzle";
+} from "@/lib/schemas/database";
 import { improveStoryContent } from "@/lib/services/story-improvement";
 
 export const runtime = "nodejs";

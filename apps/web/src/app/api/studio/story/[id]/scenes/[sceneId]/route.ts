@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { scenes } from "@/lib/schemas/drizzle";
+import { scenes } from "@/lib/schemas/database";
 
 export async function GET(
     request: Request,
