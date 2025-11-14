@@ -537,11 +537,11 @@ async function main() {
   Results Saved:   ${OUTPUT_FILE}
 
   Summary:
-  - Cyclic Structure:        ${(aggregatedMetrics.cyclicStructure.cycleCompleteness * 100).toFixed(0)}%
-  - Intrinsic Motivation:    ${(aggregatedMetrics.intrinsicMotivation.genuineGoodnessPerception * 100).toFixed(0)}%
-  - Earned Consequence:      ${(aggregatedMetrics.earnedConsequence.earnedLuckFeeling * 100).toFixed(0)}%
-  - Character Transformation: ${(aggregatedMetrics.characterTransformation.earnedTransformation * 100).toFixed(0)}%
-  - Emotional Resonance:     ${(aggregatedMetrics.emotionalResonance.gamdongAchievement * 100).toFixed(0)}%
+  - Cyclic Structure:        ${((aggregatedMetrics.cyclicStructure.cycleCompleteness || 0) * 100).toFixed(0)}%
+  - Intrinsic Motivation:    ${((aggregatedMetrics.intrinsicMotivation.cycleCompleteness || 0) * 100).toFixed(0)}%
+  - Earned Consequence:      ${((aggregatedMetrics.earnedConsequence.cycleCompleteness || 0) * 100).toFixed(0)}%
+  - Character Transformation: ${((aggregatedMetrics.characterTransformation.cycleCompleteness || 0) * 100).toFixed(0)}%
+  - Emotional Resonance:     ${((aggregatedMetrics.emotionalResonance.cycleCompleteness || 0) * 100).toFixed(0)}%
 
   Top Issues:
 ${failurePatterns
