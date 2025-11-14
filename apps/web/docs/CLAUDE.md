@@ -18,10 +18,18 @@ This section provides a complete index of all feature documentation. Each direct
   - `novels-optimization.md` - Performance tuning
   - `novels-removal.md` - Deletion workflows
 
-- **[comics/](comics/)** - Comic panel generation and display
-  - Toonplay methodology (70% dialogue, 30% visual action)
-  - Panel generation pipeline
-  - Webtoon reader interface
+- **[toonplay/](toonplay/)** - Novel-to-Webtoon Adaptation System
+  - `toonplay-specification.md` - Core concepts, visual grammar, and data model
+  - `toonplay-development.md` - Implementation, API specs, and process flows
+  - `toonplay-evaluation.md` - Quality metrics and testing strategies
+  - Toonplay methodology (70% dialogue, 30% visual action, <5% narration, <10% internal monologue)
+  - Panel generation pipeline with character consistency
+  - Database-driven character descriptions for visual consistency
+
+- **[comics/](comics/)** - Comic reader interface and display
+  - Webtoon reader UI
+  - Panel display optimization
+  - Mobile reading experience
 
 - **[studio/](studio/)** - Story creation workspace
   - AI agent specifications
@@ -102,6 +110,7 @@ This section provides a complete index of all feature documentation. Each direct
 
 **Common Development Tasks:**
 - **Generate novels** → `novels/novels-specification.md`
+- **Adapt novels to webtoons** → `toonplay/toonplay-specification.md`
 - **Optimize images** → `image/image-optimization.md`
 - **Add UI components** → `ui/ui-specification.md`
 - **Improve performance** → `performance/performance-caching.md`
