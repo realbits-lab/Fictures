@@ -7,9 +7,9 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { type Setting, type Story } from "@/lib/schemas/zod/ai";
-import { insertSettingSchema } from "@/lib/schemas/zod/generated";
 import { settings, stories } from "@/lib/schemas/database";
+import type { Setting, Story } from "@/lib/schemas/zod/ai";
+import { insertSettingSchema } from "@/lib/schemas/zod/generated";
 import { generateSettings } from "../generators/settings-generator";
 import type {
     GeneratorSettingsParams,
@@ -20,7 +20,7 @@ export interface ServiceSettingsParams {
     storyId: string;
     settingCount: number;
     userId: string;
-    apiKey?: string;
+    // apiKey removed - now retrieved from auth context
 }
 
 export interface ServiceSettingsResult {
@@ -35,7 +35,7 @@ export class SettingService {
     async generateAndSave(
         params: ServiceSettingsParams,
     ): Promise<ServiceSettingsResult> {
-        const { storyId, settingCount, userId, apiKey } = params;
+        const { storyId, settingCount, userId } = params;
 
         // 1. Fetch and verify story
         const storyResult: Story[] = (await db
@@ -60,7 +60,6 @@ export class SettingService {
         const generateParams: GeneratorSettingsParams = {
             story,
             settingCount,
-            apiKey,
         };
 
         const generationResult: GeneratorSettingsResult =

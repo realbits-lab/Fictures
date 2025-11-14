@@ -34,7 +34,7 @@ export interface ServiceSceneImprovementParams {
     sceneId: string;
     userId?: string; // Optional: For ownership verification
     maxIterations?: number;
-    apiKey?: string; // Optional: API key for AI server authentication
+    // apiKey removed - now retrieved from auth context
 }
 
 /**
@@ -59,7 +59,7 @@ export interface ImproveSceneWithDataParams {
     };
     userId?: string; // Optional: For ownership verification
     maxIterations?: number;
-    apiKey?: string; // Optional: API key for AI server authentication
+    // apiKey removed - now retrieved from auth context
 }
 
 /**
@@ -108,7 +108,7 @@ export class SceneImprovementService {
     async improveAndSave(
         params: ServiceSceneImprovementParams,
     ): Promise<ServiceSceneImprovementResult> {
-        const { sceneId, userId, maxIterations = 2, apiKey } = params;
+        const { sceneId, userId, maxIterations = 2 } = params;
 
         // 1. Fetch scene from database
         const sceneResults = await db
@@ -172,7 +172,6 @@ export class SceneImprovementService {
             content: scene.content,
             story: storyContext,
             maxIterations,
-            apiKey,
         };
 
         const improvementResult: GeneratorSceneImprovementResult =
@@ -264,7 +263,7 @@ export class SceneImprovementService {
     async improveAndSaveWithData(
         params: ImproveSceneWithDataParams,
     ): Promise<ServiceSceneImprovementResult> {
-        const { sceneId, scene, story, maxIterations = 2, apiKey } = params;
+        const { sceneId, scene, story, maxIterations = 2 } = params;
 
         if (!scene.content || scene.content.trim() === "") {
             throw new Error("Scene must have content before evaluation");
@@ -282,7 +281,6 @@ export class SceneImprovementService {
                 tone: story.tone,
             },
             maxIterations,
-            apiKey,
         };
 
         const improvementResult: GeneratorSceneImprovementResult =
@@ -371,7 +369,6 @@ export class SceneImprovementService {
             moralFramework: string;
         },
         maxIterations = 2,
-        apiKey?: string,
     ): Promise<GeneratorSceneImprovementResult> {
         const improvementParams: GeneratorSceneImprovementParams = {
             content,
@@ -384,7 +381,6 @@ export class SceneImprovementService {
                 tone: "hopeful" as const,
             },
             maxIterations,
-            apiKey,
         };
 
         return await improveScene(improvementParams);
