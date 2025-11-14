@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { parts } from "@/lib/schemas/database";
-import type { PartEvaluationRequest, PartEvaluationResponse } from "../types";
+import type { PartEvaluationRequest, PartEvaluationResponse } from "@/lib/schemas/api/evaluation";
 import {
     calculateOverallScore,
     createErrorResponse,
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
         }
 
         // Evaluate metrics
-        const phasesPresent = detectPhases(part.partSummary || "");
+        const phasesPresent = detectPhases(part.summary || "");
 
         const cycleCoherence = {
             ...createMetricResult({

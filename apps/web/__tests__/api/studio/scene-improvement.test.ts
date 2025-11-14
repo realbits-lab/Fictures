@@ -22,6 +22,11 @@ import type {
     ApiSettingsRequest,
     ApiStoryRequest,
 } from "@/lib/schemas/api/studio";
+import type {
+    SceneContentEvaluationRequest,
+    SceneContentEvaluationResponse,
+    EvaluationError,
+} from "@/lib/schemas/api/evaluation";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
 // Load writer authentication
@@ -245,7 +250,7 @@ describe("Scene Evaluation API", () => {
         console.log("🔧 Evaluating scene quality...");
 
         // 1. Prepare request body with proper TypeScript type
-        const requestBody: ApiSceneEvaluationRequest = {
+        const requestBody: SceneContentEvaluationRequest = {
             sceneId: testSceneId,
             maxIterations: 2, // Allow up to 2 improvement iterations
         };
@@ -265,8 +270,8 @@ describe("Scene Evaluation API", () => {
 
         // 3. Parse response data with proper typing
         const data:
-            | ApiSceneEvaluationResponse
-            | ApiSceneEvaluationErrorResponse = await response.json();
+            | SceneContentEvaluationResponse
+            | EvaluationError = await response.json();
 
         // 4. Log error if request failed
         if (!response.ok) {
@@ -280,16 +285,16 @@ describe("Scene Evaluation API", () => {
         // 6. Type guard to ensure we have success response
         if (!("success" in data) || !data.success) {
             throw new Error(
-                "Expected ApiSceneEvaluationResponse but got error",
+                "Expected SceneContentEvaluationResponse but got error",
             );
         }
 
         // 7. Cast to success response type
-        const successData: ApiSceneEvaluationResponse =
-            data as ApiSceneEvaluationResponse;
+        const successData: SceneContentEvaluationResponse =
+            data as SceneContentEvaluationResponse;
 
         // ========================================================================
-        // 8. Verify ALL fields of ApiSceneEvaluationResponse
+        // 8. Verify ALL fields of SceneContentEvaluationResponse
         // ========================================================================
 
         // 8a. Validate 'success' field (required, must be true)
@@ -425,11 +430,11 @@ describe("Scene Evaluation API", () => {
         // ========================================================================
         const {
             evaluation,
-        }: { evaluation: ApiSceneEvaluationResponse["evaluation"] } =
+        }: { evaluation: SceneContentEvaluationResponse["evaluation"] } =
             successData;
         const {
             metadata,
-        }: { metadata: ApiSceneEvaluationResponse["metadata"] } = successData;
+        }: { metadata: SceneContentEvaluationResponse["metadata"] } = successData;
 
         expect(evaluation.score).toBeGreaterThan(0);
         expect(metadata.generationTime).toBeGreaterThan(0);

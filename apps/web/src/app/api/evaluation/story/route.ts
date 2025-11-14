@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { stories } from "@/lib/schemas/database";
-import type { StoryEvaluationRequest, StoryEvaluationResponse } from "../types";
+import type { StoryEvaluationRequest, StoryEvaluationResponse } from "@/lib/schemas/api/evaluation";
 import {
     calculateOverallScore,
     createErrorResponse,
@@ -222,8 +222,8 @@ function calculateMoralFrameworkScore(
 function evaluateThematicCoherence(story: typeof stories.$inferSelect): number {
     let score = 4; // Start with perfect score
 
-    // Check if premise exists and is substantial
-    if (!story.premise || story.premise.length < 100) {
+    // Check if summary exists and is substantial
+    if (!story.summary || story.summary.length < 100) {
         score -= 1;
     }
 
@@ -257,8 +257,8 @@ function evaluateGenreConsistency(story: typeof stories.$inferSelect): number {
         score -= 1;
     }
 
-    // Check premise alignment
-    if (!story.premise || story.premise.length < 100) {
+    // Check summary alignment
+    if (!story.summary || story.summary.length < 100) {
         score -= 1;
     }
 

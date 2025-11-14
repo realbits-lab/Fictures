@@ -610,8 +610,6 @@ export const POST = withAuthentication(async (req: Request) => {
 
 ---
 
-## Next Steps
+## Related Documentation
 
-1. Review the [Authentication Architecture v2.0](./authentication-architecture-v2.md) document
-2. Follow the [Migration Guide](./authentication-migration-guide.md) to update existing code
-3. Check the [API Reference](./authentication-api-reference.md) for complete API documentation
+- [Authentication Profiles](./authentication-profiles.md) - User roles, password hashing, and API key management

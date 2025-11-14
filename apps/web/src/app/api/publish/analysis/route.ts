@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { chapters, stories } from "@/lib/schemas/database";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
     try {
         const session = await auth();
 
@@ -43,7 +43,9 @@ export async function GET(request: NextRequest) {
                 ? {
                       id: chapter.id,
                       title: chapter.title || "Latest Chapter",
-                      publishedAgo: getTimeAgo(chapter.publishedAt!),
+                      publishedAgo: getTimeAgo(
+                          chapter.publishedAt! as unknown as string,
+                      ),
                       views: Math.floor(Math.random() * 5000) + 1000,
                       comments: Math.floor(Math.random() * 200) + 50,
                       reactions: Math.floor(Math.random() * 500) + 100,
@@ -84,7 +86,7 @@ export async function GET(request: NextRequest) {
     }
 }
 
-function getTimeAgo(date: Date): string {
+function getTimeAgo(date: string): string {
     const now = new Date();
     const diffInMs = now.getTime() - new Date(date).getTime();
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));

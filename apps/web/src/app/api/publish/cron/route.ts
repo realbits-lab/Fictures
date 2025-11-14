@@ -3,7 +3,6 @@ import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import {
     publishingSchedules,
-    scenes,
     scheduledPublications,
 } from "@/lib/schemas/database";
 import { publishScene } from "@/lib/services/publishing";
@@ -36,7 +35,7 @@ export async function GET(request: NextRequest) {
             .where(
                 and(
                     eq(scheduledPublications.status, "pending"),
-                    lte(scheduledPublications.scheduledFor, now),
+                    lte(scheduledPublications.scheduledFor, now.toISOString()),
                 ),
             )
             .limit(100); // Process max 100 per run
@@ -64,8 +63,8 @@ export async function GET(request: NextRequest) {
                         .update(scheduledPublications)
                         .set({
                             status: "published",
-                            publishedAt: now,
-                            updatedAt: now,
+                            publishedAt: now.toISOString(),
+                            updatedAt: now.toISOString(),
                         })
                         .where(eq(scheduledPublications.id, publication.id));
 
@@ -74,9 +73,9 @@ export async function GET(request: NextRequest) {
                         await db
                             .update(publishingSchedules)
                             .set({
-                                lastPublishedAt: now,
+                                lastPublishedAt: now.toISOString(),
                                 totalPublished: sql`${publishingSchedules.totalPublished} + 1`,
-                                updatedAt: now,
+                                updatedAt: now.toISOString(),
                             })
                             .where(
                                 eq(
@@ -102,7 +101,7 @@ export async function GET(request: NextRequest) {
                         status: "failed",
                         errorMessage,
                         retryCount: sql`${scheduledPublications.retryCount} + 1`,
-                        updatedAt: now,
+                        updatedAt: now.toISOString(),
                     })
                     .where(eq(scheduledPublications.id, publication.id));
 

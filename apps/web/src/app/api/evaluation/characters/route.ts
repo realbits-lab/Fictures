@@ -11,7 +11,7 @@ import type {
     CharacterEvaluationRequest,
     CharacterEvaluationResponse,
     CharacterEvaluationResult,
-} from "../types";
+} from "@/lib/schemas/api/evaluation";
 import {
     calculateOverallScore,
     createErrorResponse,
@@ -119,7 +119,7 @@ async function evaluateCharacter(
 ): Promise<CharacterEvaluationResult> {
     // Metric 1: Character Depth
     const internalFlawsCount = countInternalFlaws(character.internalFlaw || "");
-    const moralTestPresent = checkMoralTest(character.moralTest || "");
+    const moralTestPresent = false; // moralTest field doesn't exist in schema
     const backstoryLength = (character.backstory || "").length;
 
     const characterDepth = {
@@ -205,13 +205,6 @@ function countInternalFlaws(internalFlaw: string): number {
         .filter((f) => f.length > 0);
 
     return Math.min(flaws.length, 3); // Cap at 3 for scoring
-}
-
-/**
- * Check if moral test is defined
- */
-function checkMoralTest(moralTest: string): boolean {
-    return moralTest.trim().length >= 20; // At least 20 characters
 }
 
 /**

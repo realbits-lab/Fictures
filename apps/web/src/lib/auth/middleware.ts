@@ -9,8 +9,7 @@
 
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import {
     type AuthContext,
     createAnonymousContext,
@@ -22,7 +21,7 @@ import {
     InvalidApiKeyError,
 } from "./context";
 import { authenticateRequest } from "./dual-auth";
-import { getAuth, getAuthSafe, withAuth } from "./server-context";
+import { withAuth } from "./server-context";
 
 /**
  * Middleware configuration options
@@ -44,10 +43,10 @@ interface AuthMiddlewareOptions {
 /**
  * Extract client metadata from request
  */
-function extractMetadata(
-    request: NextRequest,
-): Partial<AuthContext["metadata"]> {
-    const requestHeaders = headers();
+async function extractMetadata(
+    _request: NextRequest,
+): Promise<Partial<AuthContext["metadata"]>> {
+    const requestHeaders = await headers();
 
     return {
         ip:
@@ -85,15 +84,15 @@ async function resolveAuthentication(
         return null;
     }
 
-    const metadata = extractMetadata(request);
+    const metadata = await extractMetadata(request);
 
     // Create appropriate context based on auth type
-    if (authResult.type === "apiKey" && authResult.apiKey) {
+    if (authResult.type === "api_key") {
         return createApiKeyContext(
-            authResult.apiKey,
+            request.headers.get("x-api-key") || "",
             authResult.user.id,
             authResult.user.email ?? "",
-            authResult.user.scopes || [],
+            authResult.scopes || [],
             metadata,
         );
     }
@@ -102,7 +101,7 @@ async function resolveAuthentication(
     return createSessionContext(
         authResult.user.id,
         authResult.user.email ?? "",
-        authResult.user.scopes || [],
+        authResult.scopes || [],
         metadata,
     );
 }
@@ -299,7 +298,7 @@ export function adminOnly(
  * ```
  */
 export async function getServerAuth(): Promise<AuthContext | null> {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user) {
         return null;

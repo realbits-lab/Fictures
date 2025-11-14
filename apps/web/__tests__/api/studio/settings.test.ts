@@ -146,10 +146,10 @@ describe("Setting API", () => {
             expect(typeof setting.symbolicMeaning).toBe("string");
             expect(setting.symbolicMeaning.length).toBeGreaterThan(0);
 
-            // cycleAmplification MUST be an object (notNull)
-            expect(setting.cycleAmplification).toBeDefined();
-            expect(typeof setting.cycleAmplification).toBe("object");
-            expect(setting.cycleAmplification).not.toBeNull();
+            // cycleAmplification field was removed from schema
+            // expect(setting.cycleAmplification).toBeDefined();
+            // expect(typeof setting.cycleAmplification).toBe("object");
+            // expect(setting.cycleAmplification).not.toBeNull();
 
             // === EMOTIONAL ATMOSPHERE ===
             // mood MUST be a string (notNull)

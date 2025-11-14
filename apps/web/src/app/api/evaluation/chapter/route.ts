@@ -10,7 +10,7 @@ import { chapters } from "@/lib/schemas/database";
 import type {
     ChapterEvaluationRequest,
     ChapterEvaluationResponse,
-} from "../types";
+} from "@/lib/schemas/api/evaluation";
 import {
     calculateOverallScore,
     createErrorResponse,

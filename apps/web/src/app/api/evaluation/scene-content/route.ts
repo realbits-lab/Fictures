@@ -10,7 +10,7 @@ import { scenes } from "@/lib/schemas/database";
 import type {
     SceneContentEvaluationRequest,
     SceneContentEvaluationResponse,
-} from "../types";
+} from "@/lib/schemas/api/evaluation";
 import {
     calculateOverallScore,
     countWords,

@@ -11,7 +11,7 @@ import type {
     SettingEvaluationRequest,
     SettingEvaluationResponse,
     SettingEvaluationResult,
-} from "../types";
+} from "@/lib/schemas/api/evaluation";
 import {
     calculateOverallScore,
     createErrorResponse,
@@ -101,7 +101,7 @@ function evaluateSetting(
     };
 
     // Sensory Detail Richness
-    const sensesEngaged = detectSenses(setting.description || "");
+    const sensesEngaged = detectSenses(setting.summary || "");
 
     const sensoryDetailRichness = {
         ...createMetricResult({

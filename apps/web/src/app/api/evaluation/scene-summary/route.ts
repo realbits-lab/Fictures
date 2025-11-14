@@ -10,7 +10,7 @@ import { scenes } from "@/lib/schemas/database";
 import type {
     SceneSummaryEvaluationRequest,
     SceneSummaryEvaluationResponse,
-} from "../types";
+} from "@/lib/schemas/api/evaluation";
 import {
     calculateOverallScore,
     createErrorResponse,
