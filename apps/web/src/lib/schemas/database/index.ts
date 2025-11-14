@@ -608,7 +608,7 @@ export const scenes = pgTable(
         summary: text().notNull(), // Scene specification: what happens, emotional beat, purpose, sensory anchors
 
         // === CYCLE PHASE TRACKING ===
-        cyclePhase: cyclePhase("cycle_phase").notNull(), // 'setup' | 'confrontation' | 'virtue' | 'consequence' | 'transition'
+        cyclePhase: cyclePhase("cycle_phase").notNull(), // 'setup' | 'adversity' | 'virtue' | 'consequence' | 'transition'
         emotionalBeat: emotionalBeat("emotional_beat").notNull(), // 'fear' | 'hope' | 'tension' | 'relief' | 'elevation' | 'catharsis' | 'despair' | 'joy'
 
         // === PLANNING METADATA (Guides Content Generation) ===

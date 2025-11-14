@@ -3,8 +3,8 @@
  */
 
 import type {
-	EvaluationError,
-	MetricResult,
+    EvaluationError,
+    MetricResult,
 } from "@/lib/schemas/api/evaluation";
 import { EVALUATION_ERROR_CODES } from "@/lib/schemas/api/evaluation";
 
@@ -398,7 +398,7 @@ export function getWordCountRange(phase: string): { min: number; max: number } {
     const ranges: Record<string, { min: number; max: number }> = {
         setup: { min: 300, max: 600 },
         transition: { min: 300, max: 600 },
-        confrontation: { min: 500, max: 800 },
+        adversity: { min: 500, max: 800 },
         virtue: { min: 800, max: 1000 },
         consequence: { min: 600, max: 900 },
     };

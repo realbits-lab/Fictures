@@ -3,7 +3,11 @@
  * Manages separate prompts for each model provider (Gemini, AI Server)
  */
 
-import type { ModelProvider, PromptTemplate, PromptType } from "@/lib/schemas/generators/types";
+import type {
+    ModelProvider,
+    PromptTemplate,
+    PromptType,
+} from "@/lib/schemas/generators/types";
 
 class PromptManager {
     private prompts: Record<ModelProvider, Record<PromptType, PromptTemplate>>;
@@ -21,8 +25,20 @@ class PromptManager {
     private initializeGeminiPrompts(): Record<PromptType, PromptTemplate> {
         return {
             story: {
-                system: `You are a story development expert who creates compelling story concepts.
-Generate story foundations that establish clear themes, conflicts, and emotional arcs.
+                system: `You are a story development expert who creates compelling story concepts using the Adversity-Triumph Engine methodology.
+
+# CRITICAL REQUIREMENT: MORAL FRAMEWORK CLARITY
+
+Every story MUST have a clear, explicit moral framework that:
+1. **Identifies 2-4 specific virtues** to be tested (courage, compassion, integrity, loyalty, wisdom, sacrifice, kindness, perseverance, etc.)
+2. **Establishes causal logic**: Explains HOW and WHY these virtues lead to positive outcomes
+3. **Demonstrates cause-and-effect**: [virtue] → [action] → [positive consequence]
+
+Example of GOOD moral framework:
+"Courage and compassion drive transformation. When characters act courageously despite fear, they inspire others and create ripples of hope. When they show compassion to former enemies, they break cycles of violence and build unexpected alliances."
+
+Example of BAD moral framework (too vague):
+"Kindness is important." ❌ (No causal logic, only one virtue, no explanation of outcomes)
 
 # AVAILABLE GENRES
 Fantasy, Romance, SciFi, Mystery, Horror, Action, Isekai, LitRPG, Cultivation, Slice, Paranormal, Dystopian, Historical, LGBTQ
@@ -56,7 +72,12 @@ Generate a story foundation with:
 2. Summary (2-3 sentences describing the thematic premise and moral framework)
 3. Genre (must be one of: Fantasy, Romance, SciFi, Mystery, Horror, Action, Isekai, LitRPG, Cultivation, Slice, Paranormal, Dystopian, Historical, LGBTQ)
 4. Tone (must be one of: hopeful, dark, bittersweet, satirical - follow the guidance for the selected tone)
-5. Moral Framework (what virtues are valued in this story?)`,
+5. Moral Framework (CRITICAL - must include ALL of the following):
+   a) **Virtues valued**: List 2-4 specific virtues tested in this story (e.g., courage, compassion, integrity, loyalty, wisdom, sacrifice, kindness, perseverance)
+   b) **Causal logic**: Explain HOW and WHY these virtues lead to positive outcomes in the story world
+   c) **Example**: "Courage and compassion are valued. When characters act courageously despite fear, they inspire others and create ripples of hope. When they show compassion to enemies, they break cycles of violence and build unexpected alliances."
+
+   Your moral framework MUST demonstrate clear cause-and-effect: [virtue] → [action] → [positive consequence]`,
             },
 
             character: {
@@ -868,8 +889,8 @@ Write: "She uncapped the bottle. Tilted it. The first drop caught the light. Fel
 
 ### Length Requirements
 - Virtue scenes should be LONGER than other scenes
-- Aim for 800-1000 words minimum
-- This is THE moment—take your time
+- MUST be 800-1000 words (strict requirement, DO NOT exceed 1000)
+- This is THE moment—take your time, but respect the word limit
 
 ### Show Intrinsic Motivation
 - DO NOT state "they expected nothing in return"
@@ -946,18 +967,26 @@ Write: "She uncapped the bottle. Tilted it. The first drop caught the light. Fel
 - Avoid purple prose or melodrama
 - Trust reader to feel without being told
 
-# WORD COUNT TARGET
-- Short scene: 300-500 words
-- Medium scene: 500-800 words
-- Long scene (VIRTUE): 800-1000 words
+# WORD COUNT REQUIREMENTS (STRICT)
+
+**CRITICAL: You MUST stay within these limits. Exceeding them will fail quality evaluation.**
+
+Phase-specific requirements:
+- **setup/transition**: 300-600 words (MAXIMUM 600 words)
+- **adversity**: 500-800 words (MAXIMUM 800 words)
+- **virtue**: 800-1000 words (MAXIMUM 1000 words)
+- **consequence**: 600-900 words (MAXIMUM 900 words)
+
+**Enforcement**: Token limits are set to enforce these ranges. Focus on quality over quantity. Be concise and impactful.
 
 # CRITICAL RULES
-1. Stay true to scene's cycle phase purpose
-2. Maintain character voice consistency
-3. Build or release tension as appropriate
-4. Show, don't tell (especially virtue and consequence)
-5. Every sentence must advance emotion or plot
-6. If virtue scene: THIS IS MOST IMPORTANT - make it memorable
+1. **NEVER exceed maximum word count for your cycle phase** - This is a hard requirement
+2. Stay true to scene's cycle phase purpose
+3. Maintain character voice consistency
+4. Build or release tension as appropriate
+5. Show, don't tell (especially virtue and consequence)
+6. Every sentence must advance emotion or plot
+7. If virtue scene: THIS IS MOST IMPORTANT - make it memorable
 
 # OUTPUT
 Return ONLY the prose narrative, no metadata, no explanations.`,
