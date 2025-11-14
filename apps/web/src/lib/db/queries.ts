@@ -16,7 +16,7 @@ import {
     stories,
     userStats,
     users,
-} from "./schema";
+} from "@/lib/schemas/database";
 
 // User authentication queries
 export async function findUserByEmail(email: string) {

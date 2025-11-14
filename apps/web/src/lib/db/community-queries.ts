@@ -15,7 +15,7 @@
 
 import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "./index";
-import { characters, communityPosts, settings, stories, users } from "./schema";
+import { characters, communityPosts, settings, stories, users } from "@/lib/schemas/database";
 
 /**
  * Get community stories list for reading (optimized)

@@ -49,7 +49,7 @@ describe("Scene Evaluation API", () => {
         };
 
         const storyResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/story",
+            "http://localhost:3000/api/studio/story",
             {
                 method: "POST",
                 headers: {
@@ -79,7 +79,7 @@ describe("Scene Evaluation API", () => {
         };
 
         const charactersResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/characters",
+            "http://localhost:3000/api/studio/characters",
             {
                 method: "POST",
                 headers: {
@@ -109,7 +109,7 @@ describe("Scene Evaluation API", () => {
         };
 
         const settingsResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/settings",
+            "http://localhost:3000/api/studio/settings",
             {
                 method: "POST",
                 headers: {
@@ -136,7 +136,7 @@ describe("Scene Evaluation API", () => {
         };
 
         const partResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/part",
+            "http://localhost:3000/api/studio/part",
             {
                 method: "POST",
                 headers: {
@@ -165,7 +165,7 @@ describe("Scene Evaluation API", () => {
         };
 
         const chapterResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/chapter",
+            "http://localhost:3000/api/studio/chapter",
             {
                 method: "POST",
                 headers: {
@@ -194,7 +194,7 @@ describe("Scene Evaluation API", () => {
         };
 
         const sceneSummaryResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/scene-summary",
+            "http://localhost:3000/api/studio/scene-summary",
             {
                 method: "POST",
                 headers: {
@@ -224,7 +224,7 @@ describe("Scene Evaluation API", () => {
         };
 
         const sceneContentResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/scene-content",
+            "http://localhost:3000/api/studio/scene-content",
             {
                 method: "POST",
                 headers: {
@@ -257,7 +257,7 @@ describe("Scene Evaluation API", () => {
 
         // 2. Send POST request to scene evaluation API
         const response: Response = await fetch(
-            "http://localhost:3000/studio/api/scene-evaluation",
+            "http://localhost:3000/api/studio/scene-evaluation",
             {
                 method: "POST",
                 headers: {

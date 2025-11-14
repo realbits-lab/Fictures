@@ -9,7 +9,7 @@ import {
     studioAgentChats,
     studioAgentMessages,
     studioAgentToolExecutions,
-} from "./schema";
+} from "@/lib/schemas/database";
 
 // ==============================================================================
 // STUDIO AGENT CHAT OPERATIONS

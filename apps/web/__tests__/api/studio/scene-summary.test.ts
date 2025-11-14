@@ -48,7 +48,7 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
         };
 
         const storyResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/story",
+            "http://localhost:3000/api/studio/story",
             {
                 method: "POST",
                 headers: {
@@ -78,7 +78,7 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
         };
 
         const charactersResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/characters",
+            "http://localhost:3000/api/studio/characters",
             {
                 method: "POST",
                 headers: {
@@ -108,7 +108,7 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
         };
 
         const settingsResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/settings",
+            "http://localhost:3000/api/studio/settings",
             {
                 method: "POST",
                 headers: {
@@ -134,7 +134,7 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
         };
 
         const partResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/part",
+            "http://localhost:3000/api/studio/part",
             {
                 method: "POST",
                 headers: {
@@ -162,7 +162,7 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
         };
 
         const chapterResponse: Response = await fetch(
-            "http://localhost:3000/studio/api/chapter",
+            "http://localhost:3000/api/studio/chapter",
             {
                 method: "POST",
                 headers: {
@@ -192,7 +192,7 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
 
         // 2. Send POST request
         const response: Response = await fetch(
-            "http://localhost:3000/studio/api/scene-summary",
+            "http://localhost:3000/api/studio/scene-summary",
             {
                 method: "POST",
                 headers: {
@@ -257,7 +257,7 @@ describe("Scene Summary API (Singular - Extreme Incremental)", () => {
 
         // 2. Send POST request
         const response: Response = await fetch(
-            "http://localhost:3000/studio/api/scene-summary",
+            "http://localhost:3000/api/studio/scene-summary",
             {
                 method: "POST",
                 headers: {

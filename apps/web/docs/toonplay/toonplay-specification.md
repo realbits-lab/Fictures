@@ -78,44 +78,13 @@ Every panel in a toonplay must specify:
 | **Narrative** | Caption text (use sparingly <5%) | `narrative?: string` |
 | **Mood** | Overall emotional tone | `mood: string` |
 
-#### TypeScript Schema (Fictures Implementation)
+#### Implementation Reference
 
-```typescript
-// src/lib/ai/toonplay-converter.ts
-export const ComicPanelSpecSchema = z.object({
-  panel_number: z.number().min(1),
-  shot_type: z.enum([
-    'establishing_shot', 'wide_shot', 'medium_shot',
-    'close_up', 'extreme_close_up', 'over_shoulder', 'dutch_angle'
-  ]),
-  description: z.string().describe('Detailed visual description for image generation'),
-  characters_visible: z.array(z.string()),
-  character_poses: z.record(z.string(), z.string()),
-  setting_focus: z.string(),
-  lighting: z.string(),
-  camera_angle: z.string(),
-  narrative: z.string().optional(),
-  dialogue: z.array(z.object({
-    character_id: z.string(),
-    text: z.string().max(150),
-    tone: z.string().optional()
-  })),
-  sfx: z.array(z.object({
-    text: z.string(),
-    emphasis: z.enum(['normal', 'large', 'dramatic'])
-  })),
-  mood: z.string()
-});
+For the complete TypeScript schema definitions (`ComicPanelSpecSchema` and `ComicToonplaySchema`), see:
+- **Development Guide**: `toonplay-development.md` § 1.3 TypeScript Schema Definitions
+- **Code Location**: `src/lib/ai/toonplay-converter.ts`
 
-export const ComicToonplaySchema = z.object({
-  scene_id: z.string(),
-  scene_title: z.string(),
-  total_panels: z.number().min(1).max(12),
-  panels: z.array(ComicPanelSpecSchema),
-  pacing_notes: z.string().optional(),
-  narrative_arc: z.string()
-});
-```
+The schemas implement all components listed above with Zod validation for type safety and runtime checking.
 
 ---
 
@@ -247,7 +216,7 @@ ACTION: ${description}
 
 MOOD: ${mood}
 
-COMPOSITION RULES FOR 9:16 PORTRAIT FORMAT (576×1024):
+COMPOSITION RULES FOR 9:16 PORTRAIT FORMAT (928×1664):
 - Vertical webtoon composition - taller than wide
 - Frame composition: Utilize vertical space for scroll-based storytelling
 - For establishing shots: Show expansive height with depth layers

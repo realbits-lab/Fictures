@@ -11,7 +11,7 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { getCache } from "@/lib/cache/redis-cache";
 import { db } from "./index";
-import { chapters, parts, stories } from "./schema";
+import { chapters, parts, stories } from "@/lib/schemas/database";
 
 // Cache TTL configuration
 const CACHE_TTL = {

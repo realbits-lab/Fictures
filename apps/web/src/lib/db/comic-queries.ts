@@ -1,7 +1,7 @@
 import { and, asc, eq } from "drizzle-orm";
 import { invalidateCache, withCache } from "@/lib/cache/redis-cache";
 import { db } from "./index";
-import { chapters, comicPanels, parts, scenes, stories } from "./schema";
+import { chapters, comicPanels, parts, scenes, stories } from "@/lib/schemas/database";
 
 /**
  * ⚡ Comic-Optimized Database Queries

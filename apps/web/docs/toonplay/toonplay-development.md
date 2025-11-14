@@ -233,13 +233,13 @@ interface ApiToonplayErrorResponse {
 │  │  - Database character descriptions (consistent)             │
 │  │  - Setting context and mood                                 │
 │  │                                                              │
-│  ├─ Generate images via AI Server                              │
-│  │  - Resolution: 576×1024 (9:16 portrait for webtoons)        │
+│  ├─ Generate images via AI Server (Qwen-Image-Lightning)       │
+│  │  - Resolution: 928×1664 (9:16 portrait for webtoons)        │
 │  │  - Format: PNG (original)                                   │
 │  │                                                              │
 │  └─ Create 4 optimized variants per panel                      │
-│     - AVIF format (mobile 1x: 288×512, mobile 2x: 576×1024)    │
-│     - JPEG format (mobile 1x: 288×512, mobile 2x: 576×1024)    │
+│     - AVIF format (mobile 1x: 464×832, mobile 2x: 928×1664)    │
+│     - JPEG format (mobile 1x: 464×832, mobile 2x: 928×1664)    │
 └────────────────────────────┬────────────────────────────────────┘
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
@@ -460,12 +460,12 @@ ACTION: ${panel.description}
 
 MOOD: ${panel.mood}
 
-COMPOSITION RULES FOR 7:4 LANDSCAPE FORMAT (1344×768):
-- Cinematic horizontal composition - wider than tall
-- Frame composition: Utilize horizontal space for panoramic storytelling
-- For establishing shots: Show expansive width
-- For medium shots: Position characters off-center using rule of thirds
-- For close-ups: Frame character detail with horizontal breathing room
+COMPOSITION RULES FOR 9:16 PORTRAIT FORMAT (928×1664):
+- Vertical webtoon composition - taller than wide
+- Frame composition: Utilize vertical space for scroll-based storytelling
+- For establishing shots: Show expansive height with depth layers
+- For medium shots: Position characters with vertical balance
+- For close-ups: Frame character detail with vertical flow
 
 VISUAL STYLE:
 - Clean comic linework, vibrant colors, semi-realistic proportions
@@ -520,10 +520,10 @@ ACTION: Hunter kneels before altar while healer stands behind him, hand on his s
 
 MOOD: Reverent and hopeful
 
-COMPOSITION RULES FOR 7:4 LANDSCAPE FORMAT (1344×768):
-- Cinematic horizontal composition - wider than tall
-- Frame composition: Utilize horizontal space for panoramic storytelling
-- For medium shots: Position characters off-center using rule of thirds
+COMPOSITION RULES FOR 9:16 PORTRAIT FORMAT (928×1664):
+- Vertical webtoon composition - taller than wide
+- Frame composition: Utilize vertical space for scroll-based storytelling
+- For medium shots: Position characters with vertical balance
 - Show depth with foreground, midground, background elements
 
 VISUAL STYLE:
@@ -538,23 +538,23 @@ Maintain exact character appearances - 20-year-old male hunter with black hair a
 ### 3.4 Image Generation Specifications
 
 **Model**: AI Server (Qwen-Image-Lightning)
-**Resolution**: 576×1024 pixels (9:16 portrait aspect ratio)
+**Resolution**: 928×1664 pixels (9:16 portrait aspect ratio)
 **Format**: PNG (original), then optimized to AVIF + JPEG
 
 **Optimization Pipeline**:
 
 Every generated panel creates **4 optimized variants**:
-- **AVIF Mobile 1x**: 288×512 (best compression)
-- **AVIF Mobile 2x**: 576×1024 (uses original)
-- **JPEG Mobile 1x**: 288×512 (universal fallback)
-- **JPEG Mobile 2x**: 576×1024 (uses original)
+- **AVIF Mobile 1x**: 464×832 (best compression)
+- **AVIF Mobile 2x**: 928×1664 (uses original)
+- **JPEG Mobile 1x**: 464×832 (universal fallback)
+- **JPEG Mobile 2x**: 928×1664 (uses original)
 
 **Storage**:
 ```typescript
 interface GeneratedPanel {
   id: string;
   panel_number: number;
-  imageUrl: string;           // Original PNG (576×1024)
+  imageUrl: string;           // Original PNG (928×1664)
   imageVariants: {
     imageId: string;
     originalUrl: string;

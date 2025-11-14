@@ -34,7 +34,7 @@ describe("Setting API", () => {
 
         // 2. Send POST request to story creation API
         const response: Response = await fetch(
-            "http://localhost:3000/studio/api/story",
+            "http://localhost:3000/api/studio/story",
             {
                 method: "POST",
                 headers: {
@@ -69,7 +69,7 @@ describe("Setting API", () => {
 
         // 2. Send POST request to settings generation API
         const response: Response = await fetch(
-            "http://localhost:3000/studio/api/settings",
+            "http://localhost:3000/api/studio/settings",
             {
                 method: "POST",
                 headers: {
