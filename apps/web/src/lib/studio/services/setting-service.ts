@@ -7,11 +7,8 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import {
-    insertSettingSchema,
-    type Setting,
-    type Story,
-} from "@/lib/schemas/zod/ai";
+import { type Setting, type Story } from "@/lib/schemas/zod/ai";
+import { insertSettingSchema } from "@/lib/schemas/zod/generated";
 import { settings, stories } from "@/lib/schemas/database";
 import { generateSettings } from "../generators/settings-generator";
 import type {
